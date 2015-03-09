@@ -78,6 +78,8 @@ public:
     }
 #endif
 
+    virtual bool bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode);
+
     bool canReadNotification();
     bool canWriteNotification();
     void canCloseNotification();

@@ -1678,7 +1678,7 @@ bool QWindow::setMouseGrabEnabled(bool grab)
 }
 
 /*!
-    Returns the screen on which the window is shown.
+    Returns the screen on which the window is shown, or null if there is none.
 
     For child windows, this returns the screen of the corresponding top level window.
 

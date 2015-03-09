@@ -32,17 +32,22 @@
 ****************************************************************************/
 
 #include "qfbvthandler_p.h"
-#include <QtCore/private/qcrashhandler_p.h>
-#include <QtGui/private/qguiapplication_p.h>
+#include <QtCore/QSocketNotifier>
 
-#if defined(Q_OS_LINUX) && !defined(QT_NO_EVDEV)
-#define HAS_VT
-#endif
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && (!defined(QT_NO_EVDEV) || !defined(QT_NO_LIBINPUT))
 
-#ifdef HAS_VT
+#define VTH_ENABLED
 
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/signalfd.h>
 #include <sys/ioctl.h>
 #include <linux/kd.h>
+
+#ifndef KDSKBMUTE
+#define KDSKBMUTE 0x4B51
+#endif
 
 #ifdef K_OFF
 #define KBD_OFF_MODE K_OFF
@@ -50,54 +55,125 @@
 #define KBD_OFF_MODE K_RAW
 #endif
 
-#endif // HAS_VT
+#endif
 
 QT_BEGIN_NAMESPACE
 
-QFbVtHandler *QFbVtHandler::self = 0;
-
 QFbVtHandler::QFbVtHandler(QObject *parent)
-    : QObject(parent), m_tty(-1)
+    : QObject(parent),
+      m_tty(-1),
+      m_signalFd(-1),
+      m_signalNotifier(0)
 {
-    Q_ASSERT(!self);
-    self = this;
+#ifdef VTH_ENABLED
+    if (isatty(0)) {
+        m_tty = 0;
+        ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
 
-#ifdef HAS_VT
-    if (!isatty(0))
-        return;
+        if (!qEnvironmentVariableIntValue("QT_QPA_ENABLE_TERMINAL_KEYBOARD")) {
+            // Disable the tty keyboard.
+            ioctl(m_tty, KDSKBMUTE, 1);
+            ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
+        }
+    }
 
-    m_tty = 0;
-    ::ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
-    if (!qEnvironmentVariableIntValue("QT_QPA_ENABLE_TERMINAL_KEYBOARD")) {
-        ::ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
-        QGuiApplicationPrivate *appd = QGuiApplicationPrivate::instance();
-        Q_ASSERT(appd);
-        QSegfaultHandler::initialize(appd->argv, appd->argc);
-        QSegfaultHandler::installCrashHandler(crashHandler);
+    // SIGSEGV and such cannot safely be blocked. We cannot handle them in an
+    // async-safe manner either. Restoring the keyboard, video mode, etc. may
+    // all contain calls that cannot safely be made from a signal handler.
+
+    // Other signals: block them and use signalfd.
+    sigset_t mask;
+    sigemptyset(&mask);
+
+    // Catch Ctrl+C.
+    sigaddset(&mask, SIGINT);
+
+    // Ctrl+Z. Up to the platform plugins to handle it in a meaningful way.
+    sigaddset(&mask, SIGTSTP);
+    sigaddset(&mask, SIGCONT);
+
+    // Default signal used by kill. To overcome the common issue of no cleaning
+    // up when killing a locally started app via a remote session.
+    sigaddset(&mask, SIGTERM);
+
+    m_signalFd = signalfd(-1, &mask, SFD_CLOEXEC);
+    if (m_signalFd < 0) {
+        qErrnoWarning(errno, "signalfd() failed");
+    } else {
+        m_signalNotifier = new QSocketNotifier(m_signalFd, QSocketNotifier::Read, this);
+        connect(m_signalNotifier, &QSocketNotifier::activated, this, &QFbVtHandler::handleSignal);
+
+        // Block the signals that are handled via signalfd. Applies only to the current
+        // thread, but new threads will inherit the creator's signal mask.
+        pthread_sigmask(SIG_BLOCK, &mask, 0);
     }
 #endif
 }
 
 QFbVtHandler::~QFbVtHandler()
 {
-    self->cleanup();
-    self = 0;
-}
+#ifdef VTH_ENABLED
+    restoreKeyboard();
 
-void QFbVtHandler::cleanup()
-{
-    if (m_tty == -1)
-        return;
-
-#ifdef HAS_VT
-    ::ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
+    if (m_signalFd != -1)
+        close(m_signalFd);
 #endif
 }
 
-void QFbVtHandler::crashHandler()
+void QFbVtHandler::restoreKeyboard()
 {
-    Q_ASSERT(self);
-    self->cleanup();
+#ifdef VTH_ENABLED
+    if (m_tty == -1)
+        return;
+
+    ioctl(m_tty, KDSKBMUTE, 0);
+    ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
+#endif
+}
+
+// To be called from the slot connected to suspendRequested() in case the
+// platform plugin does in fact allow suspending on Ctrl+Z.
+void QFbVtHandler::suspend()
+{
+#ifdef VTH_ENABLED
+    kill(getpid(), SIGSTOP);
+#endif
+}
+
+void QFbVtHandler::handleSignal()
+{
+#ifdef VTH_ENABLED
+    m_signalNotifier->setEnabled(false);
+
+    signalfd_siginfo sig;
+    if (read(m_signalFd, &sig, sizeof(sig)) == sizeof(sig)) {
+        switch (sig.ssi_signo) {
+        case SIGINT: // fallthrough
+        case SIGTERM:
+            handleInt();
+            break;
+        case SIGTSTP:
+            emit suspendRequested();
+            break;
+        case SIGCONT:
+            emit resumed();
+            break;
+        default:
+            break;
+        }
+    }
+
+    m_signalNotifier->setEnabled(true);
+#endif
+}
+
+void QFbVtHandler::handleInt()
+{
+#ifdef VTH_ENABLED
+    emit interrupted();
+    restoreKeyboard();
+    _exit(1);
+#endif
 }
 
 QT_END_NAMESPACE

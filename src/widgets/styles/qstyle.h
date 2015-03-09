@@ -848,7 +848,10 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::State)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::SubControls)
 
 #if !defined(QT_NO_DEBUG_STREAM)
+// ### Qt 6: Remove in favor of template<class T> QDebug operator<<(QDebug, const QFlags<T> &).
+#  if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QStyle::State state);
+#  endif
 #endif
 
 QT_END_NAMESPACE

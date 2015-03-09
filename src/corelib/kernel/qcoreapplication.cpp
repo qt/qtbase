@@ -368,7 +368,9 @@ struct QCoreApplicationData {
     }
 #endif
 
-    QString orgName, orgDomain, application;
+    QString orgName, orgDomain;
+    QString application; // application name, initially from argv[0], can then be modified.
+    QString applicationNameCompat; // for QDesktopServices. Only set explicitly.
     QString applicationVersion;
 
 #ifndef QT_NO_LIBRARY
@@ -749,6 +751,9 @@ void QCoreApplication::init()
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
+
+    // Store app name (so it's still available after QCoreApplication is destroyed)
+    coreappdata()->application = d_func()->appName();
 
     QLoggingRegistry::instance()->init();
 
@@ -2345,9 +2350,13 @@ QString QCoreApplication::organizationDomain()
 */
 void QCoreApplication::setApplicationName(const QString &application)
 {
-    if (coreappdata()->application == application)
+    QString newAppName = application;
+    if (newAppName.isEmpty() && QCoreApplication::self)
+        newAppName = QCoreApplication::self->d_func()->appName();
+    if (coreappdata()->application == newAppName)
         return;
-    coreappdata()->application = application;
+    coreappdata()->application = newAppName;
+    coreappdata()->applicationNameCompat = newAppName;
 #ifndef QT_NO_QOBJECT
     if (QCoreApplication::self)
         emit QCoreApplication::self->applicationNameChanged();
@@ -2359,16 +2368,13 @@ QString QCoreApplication::applicationName()
 #ifdef Q_OS_BLACKBERRY
     coreappdata()->loadManifest();
 #endif
-    QString appname = coreappdata() ? coreappdata()->application : QString();
-    if (appname.isEmpty() && QCoreApplication::self)
-        appname = QCoreApplication::self->d_func()->appName();
-    return appname;
+    return coreappdata() ? coreappdata()->application : QString();
 }
 
 // Exported for QDesktopServices (Qt4 behavior compatibility)
 Q_CORE_EXPORT QString qt_applicationName_noFallback()
 {
-    return coreappdata()->application;
+    return coreappdata()->applicationNameCompat;
 }
 
 /*!

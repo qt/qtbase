@@ -113,6 +113,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QJsonObject, 46, QJsonObject) \
     F(QJsonArray, 47, QJsonArray) \
     F(QJsonDocument, 48, QJsonDocument) \
+    F(QPersistentModelIndex, 50, QPersistentModelIndex) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*)
@@ -407,7 +408,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QByteArrayList,
+        LastCoreType = QPersistentModelIndex,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QSizePolicy,
@@ -431,7 +432,7 @@ public:
         QLocale = 18, QRect = 19, QRectF = 20, QSize = 21, QSizeF = 22,
         QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26, QRegExp = 27,
         QEasingCurve = 29, QUuid = 30, QVariant = 41, QModelIndex = 42,
-        QRegularExpression = 44,
+        QPersistentModelIndex = 50, QRegularExpression = 44,
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
         QByteArrayList = 49, QObjectStar = 39, SChar = 40,
         Void = 43,

@@ -1104,11 +1104,18 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
         GUID guid;
         CoCreateGuid(&guid);
 
+#ifdef Q_CC_GNU
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
         QString uniqueFamilyName = QLatin1Char('f')
                 + QString::number(guid.Data1, 36) + QLatin1Char('-')
                 + QString::number(guid.Data2, 36) + QLatin1Char('-')
                 + QString::number(guid.Data3, 36) + QLatin1Char('-')
                 + QString::number(*reinterpret_cast<quint64 *>(guid.Data4), 36);
+#ifdef Q_CC_GNU
+#  pragma GCC diagnostic pop
+#endif
 
         QString actualFontName = font.changeFamilyName(uniqueFamilyName);
         if (actualFontName.isEmpty()) {

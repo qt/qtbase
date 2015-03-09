@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 class QEglFSKmsDevice;
 class QEglFSKmsCursor;
+class QEglFSKmsInterruptHandler;
 
 struct QEglFSKmsOutput
 {
@@ -115,6 +116,8 @@ private:
     FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
 
     static QMutex m_waitForFlipMutex;
+
+    QEglFSKmsInterruptHandler *m_interruptHandler;
 };
 
 QT_END_NAMESPACE

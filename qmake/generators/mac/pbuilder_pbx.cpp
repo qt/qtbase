@@ -1573,6 +1573,52 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     }
 
+    // Scheme
+    {
+        QString xcodeSpecDir = project->first("QMAKE_XCODE_SPECDIR").toQString();
+
+        bool wroteCustomScheme = false;
+
+        QString projectSharedSchemesPath = pbx_dir + "/xcshareddata/xcschemes";
+        if (mkdir(projectSharedSchemesPath)) {
+            QString target = project->first("QMAKE_ORIG_TARGET").toQString();
+
+            QFile defaultSchemeFile(xcodeSpecDir + "/default.xcscheme");
+            QFile outputSchemeFile(projectSharedSchemesPath + Option::dir_sep + target + ".xcscheme");
+
+            if (defaultSchemeFile.open(QIODevice::ReadOnly)
+                && outputSchemeFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+                QTextStream defaultSchemeStream(&defaultSchemeFile);
+                QString schemeData = defaultSchemeStream.readAll();
+
+                schemeData.replace("@QMAKE_ORIG_TARGET@", target);
+                schemeData.replace("@TARGET_PBX_KEY@", keyFor(pbx_dir + "QMAKE_PBX_TARGET"));
+
+                QTextStream outputSchemeStream(&outputSchemeFile);
+                outputSchemeStream << schemeData;
+
+                wroteCustomScheme = true;
+            }
+        }
+
+        if (wroteCustomScheme) {
+             // Prevent Xcode from auto-generating schemes
+            QString workspaceSettingsFilename("WorkspaceSettings.xcsettings");
+            QString workspaceSharedDataPath = pbx_dir + "/project.xcworkspace/xcshareddata";
+            if (mkdir(workspaceSharedDataPath)) {
+                QFile::copy(xcodeSpecDir + Option::dir_sep + workspaceSettingsFilename,
+                            workspaceSharedDataPath + Option::dir_sep + workspaceSettingsFilename);
+            } else {
+                wroteCustomScheme = false;
+            }
+        }
+
+        if (!wroteCustomScheme)
+            warn_msg(WarnLogic, "Failed to generate schemes in '%s', " \
+                "falling back to Xcode auto-generated schemes", qPrintable(projectSharedSchemesPath));
+    }
+
     qmake_setpwd(input_dir);
 
     return true;

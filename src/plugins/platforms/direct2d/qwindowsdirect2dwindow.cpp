@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qwindowsdirect2dcontext.h"
+#include "qwindowsdirect2dbitmap.h"
 #include "qwindowsdirect2dwindow.h"
 #include "qwindowsdirect2ddevicecontext.h"
 #include "qwindowsdirect2dhelpers.h"
@@ -39,6 +40,8 @@
 
 #include <d3d11.h>
 #include <d2d1_1.h>
+#include <dxgi1_2.h>
+
 using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE

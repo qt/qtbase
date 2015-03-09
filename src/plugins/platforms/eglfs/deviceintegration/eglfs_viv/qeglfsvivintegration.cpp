@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,35 +31,22 @@
 **
 ****************************************************************************/
 
-#include "qeglfshooks.h"
+#include "qeglfsvivintegration.h"
 #include <EGL/eglvivante.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSImx6Hooks : public QEglFSHooks
+void QEglFSVivIntegration::platformInit()
 {
-public:
-    QEglFSImx6Hooks();
-    virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
-    virtual void destroyNativeWindow(EGLNativeWindowType window);
-    virtual EGLNativeDisplayType platformDisplay() const;
+    QEGLDeviceIntegration::platformInit();
 
-private:
-    QSize mScreenSize;
-    EGLNativeDisplayType mNativeDisplay;
-};
-
-
-QEglFSImx6Hooks::QEglFSImx6Hooks()
-{
     int width, height;
 
     bool multiBufferNotEnabledYet = qEnvironmentVariableIsEmpty("FB_MULTI_BUFFER");
     bool multiBuffer = qEnvironmentVariableIsEmpty("QT_EGLFS_IMX6_NO_FB_MULTI_BUFFER");
     if (multiBufferNotEnabledYet && multiBuffer) {
-        qWarning() << "QEglFSImx6Hooks will set environment variable FB_MULTI_BUFFER=2 to enable double buffering and vsync.\n"
+        qWarning() << "QEglFSVivIntegration will set environment variable FB_MULTI_BUFFER=2 to enable double buffering and vsync.\n"
                    << "If this is not desired, you can override this via: export QT_EGLFS_IMX6_NO_FB_MULTI_BUFFER=1";
         qputenv("FB_MULTI_BUFFER", "2");
     }
@@ -70,17 +57,17 @@ QEglFSImx6Hooks::QEglFSImx6Hooks()
     mScreenSize.setWidth(width);
 }
 
-QSize QEglFSImx6Hooks::screenSize() const
+QSize QEglFSVivIntegration::screenSize() const
 {
     return mScreenSize;
 }
 
-EGLNativeDisplayType QEglFSImx6Hooks::platformDisplay() const
+EGLNativeDisplayType QEglFSVivIntegration::platformDisplay() const
 {
     return mNativeDisplay;
 }
 
-EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSVivIntegration::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
     Q_UNUSED(window)
     Q_UNUSED(format)
@@ -89,13 +76,9 @@ EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(QPlatformWindow *window,
     return eglWindow;
 }
 
-
-void QEglFSImx6Hooks::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFSVivIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
     fbDestroyWindow(window);
 }
-
-QEglFSImx6Hooks eglFSImx6Hooks;
-QEglFSHooks *platformHooks = &eglFSImx6Hooks;
 
 QT_END_NAMESPACE

@@ -34,8 +34,6 @@
 #ifndef QWINDOWSOPENGLTESTER_H
 #define QWINDOWSOPENGLTESTER_H
 
-#include <qtwindowsglobal.h>
-
 #include <QtCore/QByteArray>
 #include <QtCore/QFlags>
 #include <private/qversionnumber_p.h>

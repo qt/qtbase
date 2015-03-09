@@ -34,7 +34,6 @@
 #ifndef QWINDOWSNATIVEINTERFACE_H
 #define QWINDOWSNATIVEINTERFACE_H
 
-#include "qtwindows_additional.h"
 #include <QtGui/qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +72,7 @@ public:
 
     Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
 
-    Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
+    Q_INVOKABLE void beep();
 
     Q_INVOKABLE void registerWindowsMime(void *mimeIn);
     Q_INVOKABLE void unregisterWindowsMime(void *mime);

@@ -93,7 +93,8 @@ public:
     bool setAddress(const QString &address);
 
     QAbstractSocket::NetworkLayerProtocol protocol() const;
-    quint32 toIPv4Address() const;
+    quint32 toIPv4Address() const; // ### Qt6: merge with next overload
+    quint32 toIPv4Address(bool *ok) const;
     Q_IPV6ADDR toIPv6Address() const;
 
     QString toString() const;

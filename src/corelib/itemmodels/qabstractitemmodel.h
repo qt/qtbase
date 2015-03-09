@@ -164,20 +164,20 @@ public:
     explicit QAbstractItemModel(QObject *parent = 0);
     virtual ~QAbstractItemModel();
 
-    bool hasIndex(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    virtual QModelIndex index(int row, int column,
+    Q_INVOKABLE bool hasIndex(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE virtual QModelIndex index(int row, int column,
                               const QModelIndex &parent = QModelIndex()) const = 0;
-    virtual QModelIndex parent(const QModelIndex &child) const = 0;
+    Q_INVOKABLE virtual QModelIndex parent(const QModelIndex &child) const = 0;
 
-    virtual QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const = 0;
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const = 0;
-    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE virtual QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
+    Q_INVOKABLE virtual int rowCount(const QModelIndex &parent = QModelIndex()) const = 0;
+    Q_INVOKABLE virtual int columnCount(const QModelIndex &parent = QModelIndex()) const = 0;
+    Q_INVOKABLE virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
 
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const = 0;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    Q_INVOKABLE virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const = 0;
+    Q_INVOKABLE virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-    virtual QVariant headerData(int section, Qt::Orientation orientation,
+    Q_INVOKABLE virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const;
     virtual bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value,
                                int role = Qt::EditRole);
@@ -217,9 +217,9 @@ public:
     inline bool moveColumn(const QModelIndex &sourceParent, int sourceColumn,
                            const QModelIndex &destinationParent, int destinationChild);
 
-    virtual void fetchMore(const QModelIndex &parent);
-    virtual bool canFetchMore(const QModelIndex &parent) const;
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
+    Q_INVOKABLE virtual void fetchMore(const QModelIndex &parent);
+    Q_INVOKABLE virtual bool canFetchMore(const QModelIndex &parent) const;
+    Q_INVOKABLE virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
     virtual QModelIndex buddy(const QModelIndex &index) const;
     virtual QModelIndexList match(const QModelIndex &start, int role,
@@ -484,6 +484,5 @@ inline uint qHash(const QModelIndex &index) Q_DECL_NOTHROW
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QModelIndexList)
-Q_DECLARE_METATYPE(QPersistentModelIndex)
 
 #endif // QABSTRACTITEMMODEL_H

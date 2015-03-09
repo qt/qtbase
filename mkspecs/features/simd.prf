@@ -27,6 +27,7 @@ defineTest(addSimdCompiler) {
 
     CONFIG($$1) {
         cflags = $$eval(QMAKE_CFLAGS_$${upname})
+        ltcg: cflags += $$QMAKE_CFLAGS_DISABLE_LTCG
         contains(QT_CPU_FEATURES, $$name) {
             # Default compiler settings include this feature, so just add to SOURCES
             SOURCES += $$eval($$sources_var)

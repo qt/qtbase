@@ -873,9 +873,14 @@ QWindowList QGuiApplication::topLevelWindows()
 }
 
 /*!
-    Returns the primary (or default) screen of the application.
+    Returns the primary (or default) screen of the application, or null if there is none
 
     This will be the screen where QWindows are initially shown, unless otherwise specified.
+
+    On some platforms, it may be null when there are actually no screens connected.
+    It is not possible to start a new QGuiApplication while there are no screens.
+    Applications which were running at the time the primary screen was removed
+    will stop rendering graphics until one or more screens are restored.
 */
 QScreen *QGuiApplication::primaryScreen()
 {
@@ -1858,6 +1863,13 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
             ) {
         window = QGuiApplication::focusWindow();
     }
+
+#if !defined(Q_OS_OSX)
+    // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
+    const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
+    if (checkShortcut && QWindowSystemInterface::tryHandleShortcutEvent(window, e->timestamp, e->key, e->modifiers, e->unicode))
+        return;
+#endif // Q_OS_OSX
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,

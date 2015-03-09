@@ -157,13 +157,17 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     if (!setNativeLocks(fd))
         qWarning() << "setNativeLocks failed:" << strerror(errno);
 
+    if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
+        close(fd);
+        if (!QFile::remove(fileName))
+            qWarning("QLockFile: Could not remove our own lock file %s.", qPrintable(fileName));
+        return QLockFile::UnknownError; // partition full
+    }
+
     // We hold the lock, continue.
     fileHandle = fd;
 
-    QLockFile::LockError error = QLockFile::NoError;
-    if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size())
-        error = QLockFile::UnknownError; // partition full
-    return error;
+    return QLockFile::NoError;
 }
 
 bool QLockFilePrivate::removeStaleLock()

@@ -1298,8 +1298,6 @@ void UnixMakefileGenerator::init2()
             else
                 project->values("TARGET") = project->values("TARGET_x.y.z");
         }
-        if(project->isEmpty("QMAKE_LN_SHLIB"))
-            project->values("QMAKE_LN_SHLIB").append("ln -s");
         if (!project->values("QMAKE_LFLAGS_SONAME").isEmpty()) {
             ProString soname;
             if(project->isActiveConfig("plugin")) {

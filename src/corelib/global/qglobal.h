@@ -585,6 +585,10 @@ class QDataStream;
 #  define QT_NO_SOCKS5
 #endif
 
+#if defined(Q_OS_IOS)
+#  define QT_NO_PROCESS
+#endif
+
 inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
@@ -660,7 +664,7 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) 
 
 #if !defined(Q_ASSERT)
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
-#    define Q_ASSERT(cond) do { } while (false && (cond))
+#    define Q_ASSERT(cond) do { } while ((false) && (cond))
 #  else
 #    define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
 #  endif

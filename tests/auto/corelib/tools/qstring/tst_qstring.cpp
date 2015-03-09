@@ -2040,6 +2040,9 @@ void tst_QString::simplified()
     QFETCH(QString, full);
     QFETCH(QString, simple);
 
+    QString orig_full = full;
+    orig_full.data();       // forces a detach
+
     QString result = full.simplified();
     if (simple.isNull()) {
         QVERIFY2(result.isNull(), qPrintable("'" + full + "' did not yield null: " + result));
@@ -2048,6 +2051,12 @@ void tst_QString::simplified()
     } else {
         QCOMPARE(result, simple);
     }
+    QCOMPARE(full, orig_full);
+
+    // without detaching:
+    QString copy1 = full;
+    QCOMPARE(qMove(full).simplified(), simple);
+    QCOMPARE(full, orig_full);
 
     // force a detach
     if (!full.isEmpty())

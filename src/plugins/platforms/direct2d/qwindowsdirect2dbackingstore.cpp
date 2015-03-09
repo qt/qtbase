@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qwindowsdirect2dbackingstore.h"
+#include "qwindowsdirect2dplatformpixmap.h"
 #include "qwindowsdirect2dintegration.h"
 #include "qwindowsdirect2dcontext.h"
 #include "qwindowsdirect2dpaintdevice.h"

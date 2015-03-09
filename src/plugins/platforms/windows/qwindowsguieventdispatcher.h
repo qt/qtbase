@@ -34,11 +34,8 @@
 #ifndef QWINDOWSGUIEVENTDISPATCHER_H
 #define QWINDOWSGUIEVENTDISPATCHER_H
 
-#include "qtwindowsglobal.h"
 #include "qtwindows_additional.h"
 
-#include <QtCore/QPair>
-#include <QtCore/QEventLoop>
 #include <QtCore/private/qeventdispatcher_win_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -156,6 +156,7 @@ class Q_CORE_EXPORT QVariant
         EasingCurve = QMetaType::QEasingCurve,
         Uuid = QMetaType::QUuid,
         ModelIndex = QMetaType::QModelIndex,
+        PersistentModelIndex = QMetaType::QPersistentModelIndex,
         LastCoreType = QMetaType::LastCoreType,
 
         Font = QMetaType::QFont,
@@ -245,6 +246,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QEasingCurve &easing);
     QVariant(const QUuid &uuid);
     QVariant(const QModelIndex &modelIndex);
+    QVariant(const QPersistentModelIndex &modelIndex);
     QVariant(const QJsonValue &jsonValue);
     QVariant(const QJsonObject &jsonObject);
     QVariant(const QJsonArray &jsonArray);
@@ -318,6 +320,7 @@ class Q_CORE_EXPORT QVariant
     QEasingCurve toEasingCurve() const;
     QUuid toUuid() const;
     QModelIndex toModelIndex() const;
+    QModelIndex toPersistentModelIndex() const;
     QJsonValue toJsonValue() const;
     QJsonObject toJsonObject() const;
     QJsonArray toJsonArray() const;

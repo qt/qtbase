@@ -423,6 +423,10 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 
         }
         else if (node->isInnerNode()) {
+            if (type == Node::Namespace) {
+                NamespaceNode* ns = static_cast<NamespaceNode*>(node);
+                ns->markSeen();
+            }
             /*
               This treats a class as a namespace.
              */

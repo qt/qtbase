@@ -39,6 +39,14 @@
 #if defined(QT_BOOTSTRAPPED)
 #  include <QtCore/qatomic_bootstrap.h>
 
+// The following two are used for testing only.
+// Note that we don't check the compiler support -- you had better
+// know what you're doing if you set them
+#elif defined(QT_ATOMIC_FORCE_CXX11)
+#  include <QtCore/qatomic_cxx11.h>
+#elif defined(QT_ATOMIC_FORCE_GCC)
+#  include <QtCore/qatomic_gcc.h>
+
 // Compiler dependent implementation
 #elif defined(Q_CC_MSVC)
 #  include <QtCore/qatomic_msvc.h>

@@ -38,8 +38,6 @@
 
 #include <QtGui/QImage>
 
-#include <QtCore/QtGlobal>
-
 QT_BEGIN_NAMESPACE
 
 class QWindowsNativeImage

@@ -34,8 +34,8 @@
 #ifndef QWINDOWSSCREEN_H
 #define QWINDOWSSCREEN_H
 
-#include "qwindowscursor.h"
 #include "qwindowsscaling.h"
+#include "qtwindowsglobal.h"
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
 #endif
@@ -75,7 +75,7 @@ class QWindowsScreen : public QPlatformScreen
 {
 public:
 #ifndef QT_NO_CURSOR
-    typedef QSharedPointer<QWindowsCursor> WindowsCursorPtr;
+    typedef QSharedPointer<QPlatformCursor> CursorPtr;
 #endif
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
@@ -105,8 +105,8 @@ public:
     inline void handleChanges(const QWindowsScreenData &newData);
 
 #ifndef QT_NO_CURSOR
-    QPlatformCursor *cursor() const               { return m_cursor.data(); }
-    const WindowsCursorPtr &windowsCursor() const { return m_cursor; }
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return m_cursor.data(); }
+    const CursorPtr &cursorPtr() const { return m_cursor; }
 #else
     QPlatformCursor *cursor() const               { return 0; }
 #endif // !QT_NO_CURSOR
@@ -117,7 +117,7 @@ public:
 private:
     QWindowsScreenData m_data;
 #ifndef QT_NO_CURSOR
-    const WindowsCursorPtr m_cursor;
+    const CursorPtr m_cursor;
 #endif
 };
 

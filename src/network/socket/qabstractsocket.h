@@ -135,9 +135,11 @@ public:
     PauseModes pauseMode() const;
     void setPauseMode(PauseModes pauseMode);
 
+    // ### Qt6: make the first one virtual
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
 
+    // ### Qt6: de-virtualize connectToHost(QHostAddress) overload
     virtual void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     virtual void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
     virtual void disconnectFromHost();

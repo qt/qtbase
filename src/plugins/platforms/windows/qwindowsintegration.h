@@ -35,7 +35,6 @@
 #ifndef QWINDOWSINTEGRATION_H
 #define QWINDOWSINTEGRATION_H
 
-#include <QtCore/qconfig.h>
 #include <qpa/qplatformintegration.h>
 #include <QtCore/QScopedPointer>
 

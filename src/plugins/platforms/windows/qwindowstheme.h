@@ -35,9 +35,6 @@
 #define QWINDOWSTHEME_H
 
 #include <qpa/qplatformtheme.h>
-#include <QtGui/QColor>
-
-#include "qtwindows_additional.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -78,12 +75,6 @@ private:
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
 };
-
-static inline COLORREF qColorToCOLORREF(const QColor &color)
-{ return RGB(color.red(), color.green(), color.blue()); }
-
-static inline QColor COLORREFToQColor(COLORREF cr)
-{ return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr)); }
 
 QT_END_NAMESPACE
 

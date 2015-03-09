@@ -102,6 +102,7 @@ public:
     void setGeometry(const QRect&);
     QRect geometry() const;
     QSpacerItem *spacerItem();
+    QSizePolicy sizePolicy() const;
 
 private:
     int width;

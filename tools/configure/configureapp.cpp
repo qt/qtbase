@@ -3626,6 +3626,16 @@ void Configure::generateConfigfiles()
 
 }
 
+QString Configure::formatConfigPath(const char *var)
+{
+    QString val = dictionary[var];
+    if (QFileInfo(val).isRelative()) {
+        QString pfx = dictionary["QT_INSTALL_PREFIX"];
+        val = (val == ".") ? pfx : QDir(pfx).absoluteFilePath(val);
+    }
+    return QDir::toNativeSeparators(val);
+}
+
 void Configure::displayConfig()
 {
     fstream sout;
@@ -3767,19 +3777,19 @@ void Configure::displayConfig()
     sout << "Sources are in.............." << QDir::toNativeSeparators(sourcePath) << endl;
     sout << "Build is done in............" << QDir::toNativeSeparators(buildPath) << endl;
     sout << "Install prefix.............." << QDir::toNativeSeparators(dictionary["QT_INSTALL_PREFIX"]) << endl;
-    sout << "Headers installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_HEADERS"]) << endl;
-    sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;
-    sout << "Arch-dep. data to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_ARCHDATA"]) << endl;
-    sout << "Plugins installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << endl;
-    sout << "Library execs installed to.." << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBEXECS"]) << endl;
-    sout << "QML1 imports installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << endl;
-    sout << "QML2 imports installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_QML"]) << endl;
-    sout << "Binaries installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_BINS"]) << endl;
-    sout << "Arch-indep. data to........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DATA"]) << endl;
-    sout << "Docs installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DOCS"]) << endl;
-    sout << "Translations installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << endl;
-    sout << "Examples installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << endl;
-    sout << "Tests installed to.........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TESTS"]) << endl;
+    sout << "Headers installed to........" << formatConfigPath("QT_REL_INSTALL_HEADERS") << endl;
+    sout << "Libraries installed to......" << formatConfigPath("QT_REL_INSTALL_LIBS") << endl;
+    sout << "Arch-dep. data to..........." << formatConfigPath("QT_REL_INSTALL_ARCHDATA") << endl;
+    sout << "Plugins installed to........" << formatConfigPath("QT_REL_INSTALL_PLUGINS") << endl;
+    sout << "Library execs installed to.." << formatConfigPath("QT_REL_INSTALL_LIBEXECS") << endl;
+    sout << "QML1 imports installed to..." << formatConfigPath("QT_REL_INSTALL_IMPORTS") << endl;
+    sout << "QML2 imports installed to..." << formatConfigPath("QT_REL_INSTALL_QML") << endl;
+    sout << "Binaries installed to......." << formatConfigPath("QT_REL_INSTALL_BINS") << endl;
+    sout << "Arch-indep. data to........." << formatConfigPath("QT_REL_INSTALL_DATA") << endl;
+    sout << "Docs installed to..........." << formatConfigPath("QT_REL_INSTALL_DOCS") << endl;
+    sout << "Translations installed to..." << formatConfigPath("QT_REL_INSTALL_TRANSLATIONS") << endl;
+    sout << "Examples installed to......." << formatConfigPath("QT_REL_INSTALL_EXAMPLES") << endl;
+    sout << "Tests installed to.........." << formatConfigPath("QT_REL_INSTALL_TESTS") << endl;
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
         sout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
@@ -4088,7 +4098,7 @@ void Configure::generateQConfigCpp()
                   << ";\n"
                   << endl;
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
-            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << QDir::cleanPath(dictionary["QT_INSTALL_SETTINGS"]) << "\"" << endl;
+            tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH \"" << dictionary["QT_REL_INSTALL_SETTINGS"] << "\"" << endl;
 
         tmpStream << endl
                   << "#ifdef QT_BUILD_QMAKE\n"

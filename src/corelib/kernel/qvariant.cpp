@@ -390,7 +390,25 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
-#endif
+    case QVariant::ModelIndex:
+        switch (d->type) {
+        case QVariant::PersistentModelIndex:
+            *static_cast<QModelIndex *>(result) = QModelIndex(*v_cast<QPersistentModelIndex>(d));
+            break;
+        default:
+            return false;
+        }
+        break;
+    case QVariant::PersistentModelIndex:
+        switch (d->type) {
+        case QVariant::ModelIndex:
+            *static_cast<QPersistentModelIndex *>(result) = QPersistentModelIndex(*v_cast<QModelIndex>(d));
+            break;
+        default:
+            return false;
+        }
+        break;
+#endif // QT_BOOTSTRAPPED
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
@@ -1208,6 +1226,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \value EasingCurve a QEasingCurve
     \value Uuid a QUuid
     \value ModelIndex a QModelIndex
+    \value PersistentModelIndex a QPersistentModelIndex (since 5.5)
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon
@@ -1455,7 +1474,14 @@ QVariant::QVariant(const char *val)
     \since 5.0
     \fn QVariant::QVariant(const QModelIndex &val)
 
-    Constructs a new variant with an modelIndex value, \a val.
+    Constructs a new variant with a QModelIndex value, \a val.
+*/
+
+/*!
+    \since 5.5
+    \fn QVariant::QVariant(const QPersistentModelIndex &val)
+
+    Constructs a new variant with a QPersistentModelIndex value, \a val.
 */
 
 /*!
@@ -1763,6 +1789,9 @@ QVariant::QVariant(const QUuid &uuid)
 QVariant::QVariant(const QModelIndex &modelIndex)
     : d(ModelIndex)
 { v_construct<QModelIndex>(&d, modelIndex); }
+QVariant::QVariant(const QPersistentModelIndex &modelIndex)
+    : d(PersistentModelIndex)
+{ v_construct<QPersistentModelIndex>(&d, modelIndex); }
 QVariant::QVariant(const QJsonValue &jsonValue)
     : d(QMetaType::QJsonValue)
 { v_construct<QJsonValue>(&d, jsonValue); }
@@ -2492,11 +2521,24 @@ QUuid QVariant::toUuid() const
     Returns the variant as a QModelIndex if the variant has userType() \l
     QModelIndex; otherwise returns a default constructed QModelIndex.
 
-    \sa canConvert(), convert()
+    \sa canConvert(), convert(), toPersistentModelIndex()
 */
 QModelIndex QVariant::toModelIndex() const
 {
     return qVariantToHelper<QModelIndex>(d, handlerManager);
+}
+
+/*!
+    \since 5.5
+
+    Returns the variant as a QPersistentModelIndex if the variant has userType() \l
+    QPersistentModelIndex; otherwise returns a default constructed QPersistentModelIndex.
+
+    \sa canConvert(), convert(), toModelIndex()
+*/
+QModelIndex QVariant::toPersistentModelIndex() const
+{
+    return qVariantToHelper<QPersistentModelIndex>(d, handlerManager);
 }
 
 /*!
@@ -2966,6 +3008,10 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
+    if ((targetTypeId == QMetaType::QModelIndex && d.type == QMetaType::QPersistentModelIndex)
+        || (targetTypeId == QMetaType::QPersistentModelIndex && d.type == QMetaType::QModelIndex))
+        return true;
+
     if (targetTypeId == QMetaType::QVariantList
             && (d.type == QMetaType::QVariantList
               || d.type == QMetaType::QStringList

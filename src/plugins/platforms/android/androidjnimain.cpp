@@ -589,8 +589,10 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 {
     m_activityActive = (state == Qt::ApplicationActive);
 
-    if (!m_main || !m_androidPlatformIntegration || !QGuiApplicationPrivate::platformIntegration())
+    if (!m_main || !m_androidPlatformIntegration || !QGuiApplicationPrivate::platformIntegration()) {
+        QAndroidPlatformIntegration::setDefaultApplicationState(Qt::ApplicationState(state));
         return;
+    }
 
     if (state <= Qt::ApplicationInactive) {
         // Don't send timers and sockets events anymore if we are going to hide all windows

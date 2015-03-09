@@ -37,9 +37,7 @@
 #include <QtCore/QScopedPointer>
 #include <QtGui/private/qpaintengineex_p.h>
 
-#include <d2d1_1.h>
-#include <dwrite_1.h>
-#include <wrl.h>
+struct ID2D1Geometry;
 
 QT_BEGIN_NAMESPACE
 

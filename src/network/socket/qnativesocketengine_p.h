@@ -232,6 +232,7 @@ public:
     };
 
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
+    QHostAddress adjustAddressProtocol(const QHostAddress &address) const;
 
     // native functions
     int option(QNativeSocketEngine::SocketOption option) const;

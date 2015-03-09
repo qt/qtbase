@@ -79,7 +79,8 @@ QPlatformWindow *QPlatformWindow::parent() const
 }
 
 /*!
-    Returns the platform screen handle corresponding to this platform window.
+    Returns the platform screen handle corresponding to this platform window,
+    or null if the window is not associated with a screen.
 */
 QPlatformScreen *QPlatformWindow::screen() const
 {

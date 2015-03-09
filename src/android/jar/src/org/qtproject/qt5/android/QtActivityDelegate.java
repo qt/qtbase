@@ -866,8 +866,8 @@ public class QtActivityDelegate
             while (itr.hasNext())
                 m_activity.runOnUiThread(itr.next());
 
+            QtNative.updateApplicationState(ApplicationActive);
             if (m_started) {
-                QtNative.updateApplicationState(ApplicationActive);
                 QtNative.clearLostActions();
                 QtNative.updateWindow();
                 updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
