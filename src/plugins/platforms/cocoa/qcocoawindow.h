@@ -262,7 +262,6 @@ public: // for QNSView
     bool m_effectivelyMaximized;
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;
-    QPointer<QWindow> m_activePopupWindow;
     QPointer<QWindow> m_enterLeaveTargetWindow;
     bool m_windowUnderMouse;
 

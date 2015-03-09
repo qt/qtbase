@@ -454,6 +454,10 @@ QCocoaWindow::~QCocoaWindow()
         [m_qtView clearQWindowPointers];
     }
 
+    // While it is unlikely that this window will be in the popup stack
+    // during deletetion we clear any pointers here to make sure.
+    QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+
     foreach (QCocoaWindow *child, m_childWindows) {
        [m_nsWindow removeChildWindow:child->m_nsWindow];
         child->m_parentCocoaWindow = 0;
@@ -646,16 +650,16 @@ void QCocoaWindow::setVisible(bool visible)
         // We need to recreate if the modality has changed as the style mask will need updating
         if (m_windowModality != window()->modality())
             recreateWindow(parent());
+
+        // Register popup windows. The Cocoa platform plugin will forward mouse events
+        // to them and close them when needed.
+        if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
+            QCocoaIntegration::instance()->pushPopupWindow(this);
+
         if (parentCocoaWindow) {
             // The parent window might have moved while this window was hidden,
             // update the window geometry if there is a parent.
             setGeometry(window()->geometry());
-
-            // Register popup windows so that the parent window can close them when needed.
-            if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip) {
-                // qDebug() << "transientParent and popup" << window()->type() << Qt::Popup << (window()->type() & Qt::Popup);
-                parentCocoaWindow->m_activePopupWindow = window();
-            }
 
             if (window()->type() == Qt::Popup) {
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
@@ -758,8 +762,11 @@ void QCocoaWindow::setVisible(bool visible)
             [NSEvent removeMonitor:monitor];
             monitor = nil;
         }
+
+        if (window()->type() == Qt::Popup)
+            QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
-            parentCocoaWindow->m_activePopupWindow = 0;
             if (m_resizableTransientParent
                 && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask))
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
@@ -1172,10 +1179,9 @@ void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
-    if (m_activePopupWindow) {
-        QWindowSystemInterface::handleCloseEvent(m_activePopupWindow);
+    while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
+        QWindowSystemInterface::handleCloseEvent(popup->window());
         QWindowSystemInterface::flushWindowSystemEvents();
-        m_activePopupWindow = 0;
     }
 }
 

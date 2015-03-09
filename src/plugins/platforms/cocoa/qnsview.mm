@@ -693,6 +693,10 @@ QT_WARNING_POP
             m_platformWindow->m_forwardWindow = 0;
     }
 
+    // Popups implicitly grap mouse events; forward to the active popup if there is one
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
+        targetView = popup->contentView();
+
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
@@ -760,16 +764,39 @@ QT_WARNING_POP
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseDown:theEvent];
     m_sendUpAsRightButton = false;
-    if (m_platformWindow->m_activePopupWindow) {
-        Qt::WindowType type = m_platformWindow->m_activePopupWindow->type();
-        QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
-        QWindowSystemInterface::flushWindowSystemEvents();
-        m_platformWindow->m_activePopupWindow = 0;
-        // Consume the mouse event when closing the popup, except for tool tips
-        // were it's expected that the event is processed normally.
-        if (type != Qt::ToolTip)
-            return;
+
+    // Handle any active poup windows; clicking outisde them should close them
+    // all. Don't do anything or clicks inside one of the menus, let Cocoa
+    // handle that case. Note that in practice many windows of the Qt::Popup type
+    // will actually close themselves in this case using logic implemented in
+    // that particular poup type (for example context menus). However, Qt expects
+    // that plain popup QWindows will also be closed, so we implement the logic
+    // here as well.
+    QList<QCocoaWindow *> *popups = QCocoaIntegration::instance()->popupWindowStack();
+    if (!popups->isEmpty()) {
+        // Check if the click is outside all popups.
+        bool inside = false;
+        QPointF qtScreenPoint = qt_mac_flipPoint([self screenMousePoint:theEvent]);
+        for (QList<QCocoaWindow *>::const_iterator it = popups->begin(); it != popups->end(); ++it) {
+            if ((*it)->geometry().contains(qtScreenPoint.toPoint())) {
+                inside = true;
+                break;
+            }
+        }
+        // Close the popups if the click was outside.
+        if (!inside) {
+            Qt::WindowType type = QCocoaIntegration::instance()->activePopupWindow()->window()->type();
+            while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
+                QWindowSystemInterface::handleCloseEvent(popup->window());
+                QWindowSystemInterface::flushWindowSystemEvents();
+            }
+            // Consume the mouse event when closing the popup, except for tool tips
+            // were it's expected that the event is processed normally.
+            if (type != Qt::ToolTip)
+                 return;
+        }
     }
+
     if ([self hasMarkedText]) {
         NSInputManager* inputManager = [NSInputManager currentInputManager];
         if ([inputManager wantsToHandleMouseEvents]) {
