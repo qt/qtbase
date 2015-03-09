@@ -1433,6 +1433,10 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
 {
     if (!d)
         return;
+
+    if (scaleFactor == d->devicePixelRatio)
+        return;
+
     detach();
     d->devicePixelRatio = scaleFactor;
 }
