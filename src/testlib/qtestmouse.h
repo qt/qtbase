@@ -98,7 +98,7 @@ namespace QTest
             mouseEvent(MouseRelease, window, button, stateKey, pos);
             return;
         }
-        QTEST_ASSERT(stateKey == 0 || stateKey & Qt::KeyboardModifierMask);
+        QTEST_ASSERT(uint(stateKey) == 0 || stateKey & Qt::KeyboardModifierMask);
 
         stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
 
