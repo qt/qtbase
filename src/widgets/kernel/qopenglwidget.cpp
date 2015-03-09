@@ -768,6 +768,7 @@ void QOpenGLWidgetPrivate::resolveSamples()
         q->makeCurrent();
         QRect rect(QPoint(0, 0), fbo->size());
         QOpenGLFramebufferObject::blitFramebuffer(resolvedFbo, rect, fbo, rect);
+        QOpenGLContext::currentContext()->functions()->glFlush();
     }
 }
 
