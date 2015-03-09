@@ -893,6 +893,22 @@ inline int qBlue565(quint16 rgb) {
     return (b << 3) | (b >> 2);
 }
 
+
+static Q_ALWAYS_INLINE const uint *qt_convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qPremultiply(src[i]);
+    return buffer;
+}
+
+static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
+    return buffer;
+}
+
+
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,
       0x3, 0xc3, 0x33, 0xf3, 0xf, 0xcf, 0x3f, 0xff},
