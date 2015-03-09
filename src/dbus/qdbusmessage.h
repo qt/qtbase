@@ -67,6 +67,8 @@ public:
 
     static QDBusMessage createSignal(const QString &path, const QString &interface,
                                      const QString &name);
+    static QDBusMessage createTargetedSignal(const QString &service, const QString &path,
+                                             const QString &interface, const QString &name);
     static QDBusMessage createMethodCall(const QString &destination, const QString &path,
                                          const QString &interface, const QString &method);
     static QDBusMessage createError(const QString &name, const QString &msg);

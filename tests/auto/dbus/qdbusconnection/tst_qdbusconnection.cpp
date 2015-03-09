@@ -105,6 +105,8 @@ private slots:
     void sendWithGui();
     void sendAsync();
     void sendSignal();
+    void sendSignalToName();
+    void sendSignalToOtherName();
 
     void registerObject_data();
     void registerObject();
@@ -187,6 +189,49 @@ void tst_QDBusConnection::sendSignal()
     QVERIFY(con.send(msg));
 
     QTest::qWait(1000);
+}
+
+void tst_QDBusConnection::sendSignalToName()
+{
+    QDBusSpy spy;
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    con.connect(con.baseService(), "/org/kde/selftest", "org.kde.selftest", "ping", &spy,
+                SLOT(handlePing(QString)));
+
+    QDBusMessage msg =
+        QDBusMessage::createTargetedSignal(con.baseService(), "/org/kde/selftest",
+                                           "org.kde.selftest", "ping");
+    msg << QLatin1String("ping");
+
+    QVERIFY(con.send(msg));
+
+    QTest::qWait(1000);
+
+    QCOMPARE(spy.args.count(), 1);
+    QCOMPARE(spy.args.at(0).toString(), QString("ping"));
+}
+
+void tst_QDBusConnection::sendSignalToOtherName()
+{
+    QDBusSpy spy;
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    con.connect(con.baseService(), "/org/kde/selftest", "org.kde.selftest", "ping", &spy,
+                SLOT(handlePing(QString)));
+
+    QDBusMessage msg =
+        QDBusMessage::createTargetedSignal("some.other.service", "/org/kde/selftest",
+                                           "org.kde.selftest", "ping");
+    msg << QLatin1String("ping");
+
+    QVERIFY(con.send(msg));
+
+    QTest::qWait(1000);
+
+    QCOMPARE(spy.args.count(), 0);
 }
 
 void tst_QDBusConnection::send()

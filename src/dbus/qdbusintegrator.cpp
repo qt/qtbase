@@ -1904,7 +1904,8 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
                      qPrintable(message.interface()), qPrintable(message.member()),
                      qPrintable(error.message()));
         else if (message.type() == QDBusMessage::SignalMessage)
-            qWarning("QDBusConnection: error: could not send signal path \"%s\" interface \"%s\" member \"%s\": %s",
+            qWarning("QDBusConnection: error: could not send signal to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
+                     qPrintable(message.service()),
                      qPrintable(message.path()), qPrintable(message.interface()),
                      qPrintable(message.member()),
                      qPrintable(error.message()));

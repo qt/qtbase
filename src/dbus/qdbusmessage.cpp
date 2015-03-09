@@ -153,8 +153,10 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         }
         break;
     case QDBusMessage::SignalMessage:
-        // nothing can be empty here
+        // only the service name can be empty here
         if (!d_ptr->parametersValidated) {
+            if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
+                return 0;
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
                 return 0;
             if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
@@ -165,6 +167,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
         msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
                                         d_ptr->name.toUtf8());
+        q_dbus_message_set_destination(msg, data(d_ptr->service.toUtf8()));
         break;
     }
 
@@ -364,6 +367,31 @@ QDBusMessage QDBusMessage::createSignal(const QString &path, const QString &inte
 {
     QDBusMessage message;
     message.d_ptr->type = SignalMessage;
+    message.d_ptr->path = path;
+    message.d_ptr->interface = interface;
+    message.d_ptr->name = name;
+
+    return message;
+}
+
+/*!
+    \since 5.6
+
+    Constructs a new DBus message with the given \a path, \a interface
+    and \a name, representing a signal emission to \a destination.
+
+    A DBus signal is emitted from one application and is received only by
+    the application owning the destination service name.
+
+    The QDBusMessage object that is returned can be sent using the
+    QDBusConnection::send() function.
+*/
+QDBusMessage QDBusMessage::createTargetedSignal(const QString &service, const QString &path,
+                                                const QString &interface, const QString &name)
+{
+    QDBusMessage message;
+    message.d_ptr->type = SignalMessage;
+    message.d_ptr->service = service;
     message.d_ptr->path = path;
     message.d_ptr->interface = interface;
     message.d_ptr->name = name;
