@@ -895,12 +895,6 @@ void tst_QPainterPath::operators()
     QCOMPARE(test, expected);
 }
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-#define ANGLE(t) ((t) * 2 * M_PI / 360.0)
-
-
 static inline bool pathFuzzyCompare(double p1, double p2)
 {
     return qAbs(p1 - p2) < 0.001;
@@ -931,7 +925,7 @@ void tst_QPainterPath::testArcMoveTo()
     qreal y_radius = rect.height() / 2.0;
 
     QPointF shouldBe = rect.center()
-                       + QPointF(x_radius * cos(ANGLE(angle)), -y_radius * sin(ANGLE(angle)));
+                       + QPointF(x_radius * qCos(qDegreesToRadians(angle)), -y_radius * qSin(qDegreesToRadians(angle)));
 
     qreal iw = 1 / rect.width();
     qreal ih = 1 / rect.height();

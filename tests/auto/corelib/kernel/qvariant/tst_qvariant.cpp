@@ -48,6 +48,7 @@
 
 #include <limits.h>
 #include <float.h>
+#include <cmath>
 
 #include <QLinkedList>
 #include <QRegularExpression>
@@ -3376,10 +3377,10 @@ void tst_QVariant::numericalConvert()
     switch (v.userType())
     {
     case QVariant::Double:
-        QCOMPARE(v.toString() , QString::number(num, 'g', DBL_MANT_DIG * log10(2.) + 2));
+        QCOMPARE(v.toString() , QString::number(num, 'g', DBL_MANT_DIG * std::log10(2.) + 2));
         break;
     case QMetaType::Float:
-        QCOMPARE(v.toString() , QString::number(float(num), 'g', FLT_MANT_DIG * log10(2.) + 2));
+        QCOMPARE(v.toString() , QString::number(float(num), 'g', FLT_MANT_DIG * std::log10(2.) + 2));
         break;
     }
 }
