@@ -460,6 +460,7 @@ void tst_QMimeDatabase::mimeTypeForData_data()
     QTest::newRow("tnef data, needs smi >= 0.20") << QByteArray("\x78\x9f\x3e\x22") << "application/vnd.ms-tnef";
     QTest::newRow("PDF magic") << QByteArray("%PDF-") << "application/pdf";
     QTest::newRow("PHP, High-priority rule") << QByteArray("<?php") << "application/x-php";
+    QTest::newRow("diff\\t") << QByteArray("diff\t") << "text/x-patch";
     QTest::newRow("unknown") << QByteArray("\001abc?}") << "application/octet-stream";
 }
 
