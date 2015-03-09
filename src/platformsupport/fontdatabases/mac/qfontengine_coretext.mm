@@ -250,11 +250,9 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
 
     int glyph_pos = 0;
     for (int i = 0; i < len; ++i) {
-        if (cgGlyphs[i]) {
-            glyphs->glyphs[glyph_pos] = cgGlyphs[i];
-            if (glyph_pos < i)
-                cgGlyphs[glyph_pos] = cgGlyphs[i];
-        }
+        glyphs->glyphs[glyph_pos] = cgGlyphs[i];
+        if (glyph_pos < i)
+            cgGlyphs[glyph_pos] = cgGlyphs[i];
         glyph_pos++;
 
         // If it's a non-BMP char, skip the lower part of surrogate pair and go

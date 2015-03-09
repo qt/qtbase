@@ -442,75 +442,73 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
 {
     QList<Section> sections;
 
-    if (inner->type() == Node::Class) {
-        const ClassNode *classNode = static_cast<const ClassNode *>(inner);
-
+    if (inner->isClass()) {
         if (style == Summary) {
-            FastSection privateFunctions(classNode,
+            FastSection privateFunctions(inner,
                                          "Private Functions",
                                          QString(),
                                          "private function",
                                          "private functions");
-            FastSection privateSlots(classNode, "Private Slots", QString(), "private slot", "private slots");
-            FastSection privateTypes(classNode, "Private Types", QString(), "private type", "private types");
-            FastSection protectedFunctions(classNode,
+            FastSection privateSlots(inner, "Private Slots", QString(), "private slot", "private slots");
+            FastSection privateTypes(inner, "Private Types", QString(), "private type", "private types");
+            FastSection protectedFunctions(inner,
                                            "Protected Functions",
                                            QString(),
                                            "protected function",
                                            "protected functions");
-            FastSection protectedSlots(classNode,
+            FastSection protectedSlots(inner,
                                        "Protected Slots",
                                        QString(),
                                        "protected slot",
                                        "protected slots");
-            FastSection protectedTypes(classNode,
+            FastSection protectedTypes(inner,
                                        "Protected Types",
                                        QString(),
                                        "protected type",
                                        "protected types");
-            FastSection protectedVariables(classNode,
+            FastSection protectedVariables(inner,
                                            "Protected Variables",
                                            QString(),
                                            "protected type",
                                            "protected variables");
-            FastSection publicFunctions(classNode,
+            FastSection publicFunctions(inner,
                                         "Public Functions",
                                         QString(),
                                         "public function",
                                         "public functions");
-            FastSection publicSignals(classNode, "Signals", QString(), "signal", "signals");
-            FastSection publicSlots(classNode, "Public Slots", QString(), "public slot", "public slots");
-            FastSection publicTypes(classNode, "Public Types", QString(), "public type", "public types");
-            FastSection publicVariables(classNode,
+            FastSection publicSignals(inner, "Signals", QString(), "signal", "signals");
+            FastSection publicSlots(inner, "Public Slots", QString(), "public slot", "public slots");
+            FastSection publicTypes(inner, "Public Types", QString(), "public type", "public types");
+            FastSection publicVariables(inner,
                                         "Public Variables",
                                         QString(),
                                         "public variable",
                                         "public variables");
-            FastSection properties(classNode, "Properties", QString(), "property", "properties");
-            FastSection relatedNonMembers(classNode,
+            FastSection properties(inner, "Properties", QString(), "property", "properties");
+            FastSection relatedNonMembers(inner,
                                           "Related Non-Members",
                                           QString(),
                                           "related non-member",
                                           "related non-members");
-            FastSection staticPrivateMembers(classNode,
+            FastSection staticPrivateMembers(inner,
                                              "Static Private Members",
                                              QString(),
                                              "static private member",
                                              "static private members");
-            FastSection staticProtectedMembers(classNode,
+            FastSection staticProtectedMembers(inner,
                                                "Static Protected Members",
                                                QString(),
                                                "static protected member",
                                                "static protected members");
-            FastSection staticPublicMembers(classNode,
+            FastSection staticPublicMembers(inner,
                                             "Static Public Members",
                                             QString(),
                                             "static public member",
                                             "static public members");
             FastSection macros(inner, "Macros", QString(), "macro", "macros");
 
-            NodeList::ConstIterator r = classNode->relatedNodes().constBegin();
-            while (r != classNode->relatedNodes().constEnd()) {
+            NodeList::ConstIterator r = inner->relatedNodes().constBegin();
+            while (r != inner->relatedNodes().constEnd()) {
                 if ((*r)->type() == Node::Function) {
                     FunctionNode *func = static_cast<FunctionNode *>(*r);
                     if (func->isMacro())
@@ -524,13 +522,13 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 ++r;
             }
 
-            QStack<const ClassNode *> stack;
-            stack.push(classNode);
+            QStack<const InnerNode *> stack;
+            stack.push(inner);
             while (!stack.isEmpty()) {
-                const ClassNode *ancestorClass = stack.pop();
+                const InnerNode* ancestor = stack.pop();
 
-                NodeList::ConstIterator c = ancestorClass->childNodes().constBegin();
-                while (c != ancestorClass->childNodes().constEnd()) {
+                NodeList::ConstIterator c = ancestor->childNodes().constBegin();
+                while (c != ancestor->childNodes().constEnd()) {
                     bool isSlot = false;
                     bool isSignal = false;
                     bool isStatic = false;
@@ -620,15 +618,16 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                     ++c;
                 }
 
-                QList<RelatedClass>::ConstIterator r =
-                        ancestorClass->baseClasses().constBegin();
-                while (r != ancestorClass->baseClasses().constEnd()) {
-                    if ((*r).node_)
-                        stack.prepend((*r).node_);
-                    ++r;
+                if (ancestor->isClass()) {
+                    const ClassNode* cn = static_cast<const ClassNode*>(ancestor);
+                    QList<RelatedClass>::ConstIterator r = cn->baseClasses().constBegin();
+                    while (r != cn->baseClasses().constEnd()) {
+                        if ((*r).node_)
+                            stack.prepend((*r).node_);
+                        ++r;
+                    }
                 }
             }
-
             append(sections, publicTypes);
             append(sections, properties);
             append(sections, publicFunctions);
@@ -649,15 +648,15 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             append(sections, macros);
         }
         else if (style == Detailed) {
-            FastSection memberFunctions(classNode,"Member Function Documentation","func","member","members");
-            FastSection memberTypes(classNode,"Member Type Documentation","types","member","members");
-            FastSection memberVariables(classNode,"Member Variable Documentation","vars","member","members");
-            FastSection properties(classNode,"Property Documentation","prop","member","members");
-            FastSection relatedNonMembers(classNode,"Related Non-Members","relnonmem","member","members");
-            FastSection macros(classNode,"Macro Documentation","macros","member","members");
+            FastSection memberFunctions(inner,"Member Function Documentation","func","member","members");
+            FastSection memberTypes(inner,"Member Type Documentation","types","member","members");
+            FastSection memberVariables(inner,"Member Variable Documentation","vars","member","members");
+            FastSection properties(inner,"Property Documentation","prop","member","members");
+            FastSection relatedNonMembers(inner,"Related Non-Members","relnonmem","member","members");
+            FastSection macros(inner,"Macro Documentation","macros","member","members");
 
-            NodeList::ConstIterator r = classNode->relatedNodes().constBegin();
-            while (r != classNode->relatedNodes().constEnd()) {
+            NodeList::ConstIterator r = inner->relatedNodes().constBegin();
+            while (r != inner->relatedNodes().constEnd()) {
                 if ((*r)->type() == Node::Function) {
                     FunctionNode *func = static_cast<FunctionNode *>(*r);
                     if (func->isMacro())
@@ -671,8 +670,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 ++r;
             }
 
-            NodeList::ConstIterator c = classNode->childNodes().constBegin();
-            while (c != classNode->childNodes().constEnd()) {
+            NodeList::ConstIterator c = inner->childNodes().constBegin();
+            while (c != inner->childNodes().constEnd()) {
                 if ((*c)->type() == Node::Enum ||
                         (*c)->type() == Node::Typedef) {
                     insert(memberTypes, *c, style, status);
@@ -700,28 +699,28 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
             append(sections, macros);
         }
         else {
-            FastSection all(classNode,QString(),QString(),"member","members");
+            FastSection all(inner,QString(),QString(),"member","members");
 
-            QStack<const ClassNode *> stack;
-            stack.push(classNode);
+            QStack<const InnerNode*> stack;
+            stack.push(inner);
 
             while (!stack.isEmpty()) {
-                const ClassNode *ancestorClass = stack.pop();
-
-                NodeList::ConstIterator c = ancestorClass->childNodes().constBegin();
-                while (c != ancestorClass->childNodes().constEnd()) {
-                    if ((*c)->access() != Node::Private &&
-                            (*c)->type() != Node::Property)
+                const InnerNode* ancestor = stack.pop();
+                NodeList::ConstIterator c = ancestor->childNodes().constBegin();
+                while (c != ancestor->childNodes().constEnd()) {
+                    if ((*c)->access() != Node::Private && (*c)->type() != Node::Property)
                         insert(all, *c, style, status);
                     ++c;
                 }
 
-                QList<RelatedClass>::ConstIterator r =
-                        ancestorClass->baseClasses().constBegin();
-                while (r != ancestorClass->baseClasses().constEnd()) {
-                    if ((*r).node_)
-                        stack.prepend((*r).node_);
-                    ++r;
+                if (ancestor->isClass()) {
+                    const ClassNode* cn = static_cast<const ClassNode*>(ancestor);
+                    QList<RelatedClass>::ConstIterator r = cn->baseClasses().constBegin();
+                    while (r != cn->baseClasses().constEnd()) {
+                        if ((*r).node_)
+                            stack.prepend((*r).node_);
+                        ++r;
+                    }
                 }
             }
             append(sections, all);

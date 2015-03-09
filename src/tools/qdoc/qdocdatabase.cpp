@@ -796,7 +796,6 @@ void QDocDatabase::processForest()
 {
     Tree* t = forest_.firstTree();
     while (t) {
-        findAllNamespaces(t->root());
         findAllClasses(t->root());
         findAllFunctions(t->root());
         findAllObsoleteThings(t->root());
@@ -805,6 +804,7 @@ void QDocDatabase::processForest()
         t->setTreeHasBeenAnalyzed();
         t = forest_.nextTree();
     }
+    resolveNamespaces();
 }
 
 /*!
@@ -872,16 +872,10 @@ NodeMap& QDocDatabase::getQmlTypesWithObsoleteMembers()
     return qmlTypesWithObsoleteMembers_;
 }
 
-/*!
-  Constructs the C++ namespace data structure, if it has not
-  already been constructed. Returns a reference to it.
+/*! \fn NodeMap& QDocDatabase::getNamespaces()
+  Returns a reference to the map of all namespace nodes.
+  This function must not be called in the -prepare phase.
  */
-NodeMap& QDocDatabase::getNamespaces()
-{
-    if (namespaceIndex_.isEmpty())
-        processForest(&QDocDatabase::findAllNamespaces);
-    return namespaceIndex_;
-}
 
 /*!
   Construct the C++ class data structures, if they have not
@@ -1082,14 +1076,15 @@ void QDocDatabase::findAllNamespaces(InnerNode* node)
 {
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
+        if ((*c)->access() != Node::Private || (*c)->isNamespace()) {
             if ((*c)->isInnerNode()) {
                 findAllNamespaces(static_cast<InnerNode *>(*c));
-                if ((*c)->type() == Node::Namespace) {
+                if ((*c)->isNamespace()) {
                     // Ensure that the namespace's name is not empty (the root
                     // namespace has no name).
-                    if (!(*c)->name().isEmpty())
-                        namespaceIndex_.insert((*c)->name(), *c);
+                    if (!(*c)->name().isEmpty()) {
+                        nmm_.insert((*c)->name(), *c);
+                    }
                 }
             }
         }
@@ -1332,7 +1327,55 @@ void QDocDatabase::resolveStuff()
     //primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
     primaryTree()->resolveUsingClauses();
+    resolveNamespaces();
 }
+
+/*!
+ */
+void QDocDatabase::resolveNamespaces()
+{
+    if (!namespaceIndex_.isEmpty())
+        return;
+    Tree* t = forest_.firstTree();
+    while (t) {
+        findAllNamespaces(t->root());
+        t = forest_.nextTree();
+    }
+    QList<QString> keys = nmm_.uniqueKeys();
+    foreach (QString s, keys) {
+        NamespaceNode* ns = 0;
+        QList<Node*> nodes = nmm_.values(s);
+        int count = nmm_.remove(s);
+        if (count > 1) {
+            foreach (Node* n, nodes) {
+                if (n->isNamespace() && n->wasSeen()) {
+                    ns = static_cast<NamespaceNode*>(n);
+                    break;
+                }
+            }
+        }
+        else if (count == 1)
+            ns = static_cast<NamespaceNode*>(nodes.at(0));
+        if (ns && ns->wasSeen()) {
+            if (count >1) {
+                foreach (Node* n, nodes) {
+                    if (n->isNamespace()) {
+                        NamespaceNode* NS = static_cast<NamespaceNode*>(n);
+                        if (NS != ns) {
+                            while (!NS->childNodes().isEmpty()) {
+                                Node* child = NS->childNodes().first();
+                                NS->removeChild(child);
+                                ns->addChild(child);
+                            }
+                        }
+                    }
+                }
+            }
+            namespaceIndex_.insert(ns->name(), ns);
+        }
+    }
+}
+
 
 /*!
   This function is called for autolinking to a \a type,

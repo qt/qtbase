@@ -326,7 +326,7 @@ private:
     // ### Qt6: Using a private here has high impact on runtime
     // on users such as QFileInfo. In Qt 6, the data members
     // should be inlined.
-    QExplicitlySharedDataPointer<QDateTimePrivate> d;
+    QSharedDataPointer<QDateTimePrivate> d;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);

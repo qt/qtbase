@@ -35,6 +35,52 @@
 #include <QtCore/qmath.h>
 #include <QtGui/qquaternion.h>
 
+// This is a more tolerant version of qFuzzyCompare that also handles the case
+// where one or more of the values being compare are close to zero
+static inline bool myFuzzyCompare(float p1, float p2)
+{
+    if (qFuzzyIsNull(p1) && qFuzzyIsNull(p2))
+        return true;
+    return qAbs(qAbs(p1) - qAbs(p2)) <= 0.00003f;
+}
+
+static inline bool myFuzzyCompare(const QVector3D &v1, const QVector3D &v2)
+{
+    return myFuzzyCompare(v1.x(), v2.x())
+            && myFuzzyCompare(v1.y(), v2.y())
+            && myFuzzyCompare(v1.z(), v2.z());
+}
+
+static inline bool myFuzzyCompare(const QQuaternion &q1, const QQuaternion &q2)
+{
+    const float d = QQuaternion::dotProduct(q1, q2);
+    return myFuzzyCompare(d * d, 1.0f);
+}
+
+static inline bool myFuzzyCompareRadians(float p1, float p2)
+{
+    static const float fPI = float(M_PI);
+    if (p1 < -fPI)
+        p1 += 2.0f * fPI;
+    else if (p1 > fPI)
+        p1 -= 2.0f * fPI;
+
+    if (p2 < -fPI)
+        p2 += 2.0f * fPI;
+    else if (p2 > fPI)
+        p2 -= 2.0f * fPI;
+
+    return qAbs(qAbs(p1) - qAbs(p2)) <= qDegreesToRadians(0.05f);
+}
+
+static inline bool myFuzzyCompareDegrees(float p1, float p2)
+{
+    p1 = qDegreesToRadians(p1);
+    p2 = qDegreesToRadians(p2);
+    return myFuzzyCompareRadians(p1, p2);
+}
+
+
 class tst_QQuaternion : public QObject
 {
     Q_OBJECT
@@ -44,6 +90,9 @@ public:
 
 private slots:
     void create();
+
+    void dotProduct_data();
+    void dotProduct();
 
     void length_data();
     void length();
@@ -85,6 +134,12 @@ private slots:
 
     void fromRotationMatrix_data();
     void fromRotationMatrix();
+
+    void fromAxes_data();
+    void fromAxes();
+
+    void rotationTo_data();
+    void rotationTo();
 
     void fromEulerAngles_data();
     void fromEulerAngles();
@@ -217,6 +272,58 @@ void tst_QQuaternion::create()
     QCOMPARE(v10.y(), 2.5f);
     QCOMPARE(v10.z(), -89.25f);
     QCOMPARE(v10.w(), 34.0f);
+}
+
+// Test the computation of dot product.
+void tst_QQuaternion::dotProduct_data()
+{
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("scalar1");
+    QTest::addColumn<float>("x2");
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("z2");
+    QTest::addColumn<float>("scalar2");
+    QTest::addColumn<float>("dot");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f;
+
+    QTest::newRow("identity")
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 0.0f << 0.0f << 0.0f << 1.0f
+        << 1.0f;
+
+    QTest::newRow("unitvec")
+        << 1.0f << 0.0f << 0.0f << 0.0f
+        << 0.0f << 1.0f << 0.0f << 0.0f
+        << 0.0f;
+
+    QTest::newRow("complex")
+        << 1.0f << 2.0f << 3.0f << 4.0f
+        << 4.0f << 5.0f << 6.0f << 7.0f
+        << 60.0f;
+}
+void tst_QQuaternion::dotProduct()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, scalar1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, scalar2);
+    QFETCH(float, dot);
+
+    QQuaternion q1(scalar1, x1, y1, z1);
+    QQuaternion q2(scalar2, x2, y2, z2);
+
+    QCOMPARE(QQuaternion::dotProduct(q1, q2), dot);
+    QCOMPARE(QQuaternion::dotProduct(q2, q1), dot);
 }
 
 // Test length computation for quaternions.
@@ -771,40 +878,115 @@ void tst_QQuaternion::fromRotationMatrix()
     QVERIFY(qFuzzyCompare(answer, result) || qFuzzyCompare(-answer, result));
 }
 
-// This is a more tolerant version of qFuzzyCompare that also handles the case
-// where one or more of the values being compare are close to zero
-static inline bool myFuzzyCompare(float p1, float p2)
+// Test quaternion convertion to and from orthonormal axes.
+void tst_QQuaternion::fromAxes_data()
 {
-    if (qFuzzyIsNull(p1))
-        return qFuzzyIsNull(p2);
-    if (qFuzzyIsNull(p2))
-        return false;
-    // a very slightly looser version of qFuzzyCompare
-    // for use with values that are not very close to zero
-    return qAbs(p1 - p2) <= 0.00003f * qMin(qAbs(p1), qAbs(p2));
+    QTest::addColumn<float>("x1");
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("z1");
+    QTest::addColumn<float>("angle");
+    QTest::addColumn<QVector3D>("xAxis");
+    QTest::addColumn<QVector3D>("yAxis");
+    QTest::addColumn<QVector3D>("zAxis");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f << 0.0f << 0.0f
+        << QVector3D(1, 0, 0) << QVector3D(0, 1, 0) << QVector3D(0, 0, 1);
+
+    QTest::newRow("xonly")
+        << 1.0f << 0.0f << 0.0f << 90.0f
+        << QVector3D(1, 0, 0) << QVector3D(0, 0, 1) << QVector3D(0, -1, 0);
+
+    QTest::newRow("yonly")
+        << 0.0f << 1.0f << 0.0f << 180.0f
+        << QVector3D(-1, 0, 0) << QVector3D(0, 1, 0) << QVector3D(0, 0, -1);
+
+    QTest::newRow("zonly")
+        << 0.0f << 0.0f << 1.0f << 270.0f
+        << QVector3D(0, -1, 0) << QVector3D(1, 0, 0) << QVector3D(0, 0, 1);
+
+    QTest::newRow("complex")
+        << 1.0f << 2.0f << -3.0f << 45.0f
+        << QVector3D(0.728028, -0.525105, -0.440727) << QVector3D(0.608789, 0.790791, 0.0634566) << QVector3D(0.315202, -0.314508, 0.895395);
+}
+void tst_QQuaternion::fromAxes()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle);
+    QFETCH(QVector3D, xAxis);
+    QFETCH(QVector3D, yAxis);
+    QFETCH(QVector3D, zAxis);
+
+    QQuaternion result = QQuaternion::fromAxisAndAngle(QVector3D(x1, y1, z1), angle);
+
+    QVector3D axes[3];
+    result.getAxes(&axes[0], &axes[1], &axes[2]);
+    QVERIFY(myFuzzyCompare(axes[0], xAxis));
+    QVERIFY(myFuzzyCompare(axes[1], yAxis));
+    QVERIFY(myFuzzyCompare(axes[2], zAxis));
+
+    QQuaternion answer = QQuaternion::fromAxes(axes[0], axes[1], axes[2]);
+
+    QVERIFY(qFuzzyCompare(answer, result) || qFuzzyCompare(-answer, result));
 }
 
-static inline bool myFuzzyCompareRadians(float p1, float p2)
+// Test shortest arc quaternion.
+void tst_QQuaternion::rotationTo_data()
 {
-    static const float fPI = float(M_PI);
-    if (p1 < -fPI)
-        p1 += 2.0f * fPI;
-    else if (p1 > fPI)
-        p1 -= 2.0f * fPI;
+    QTest::addColumn<QVector3D>("from");
+    QTest::addColumn<QVector3D>("to");
 
-    if (p2 < -fPI)
-        p2 += 2.0f * fPI;
-    else if (p2 > fPI)
-        p2 -= 2.0f * fPI;
+    // same
+    QTest::newRow("+X -> +X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("-X -> -X") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Y -> +Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-Y -> -Y") << QVector3D(0.0f, -10.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+Z -> +Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, 10.0f);
+    QTest::newRow("-Z -> -Z") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, 0.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> +X+Y+Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(10.0f, 10.0f, 10.0f);
+    QTest::newRow("-X-Y-Z -> -X-Y-Z") << QVector3D(-10.0f, -10.0f, -10.0f) << QVector3D(-10.0f, -10.0f, -10.0f);
 
-    return qAbs(qAbs(p1) - qAbs(p2)) <= qDegreesToRadians(0.05f);
+    // arbitrary
+    QTest::newRow("+Z -> +X") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Z -> -X") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Z -> +Y") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("+Z -> -Y") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("-Z -> +X") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("-Z -> -X") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("-Z -> +Y") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-Z -> -Y") << QVector3D(0.0f, 0.0f, -10.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+X -> +Y") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("+X -> -Y") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("-X -> +Y") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("-X -> -Y") << QVector3D(-10.0f, 0.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+X+Y+Z -> +X-Y-Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(10.0f, -10.0f, -10.0f);
+    QTest::newRow("-X-Y+Z -> -X+Y-Z") << QVector3D(-10.0f, -10.0f, 10.0f) << QVector3D(-10.0f, 10.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> +Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(0.0f, 0.0f, 10.0f);
+
+    // collinear
+    QTest::newRow("+X -> -X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("+Y -> -Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("+Z -> -Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, -10.0f);
+    QTest::newRow("+X+Y+Z -> -X-Y-Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(-10.0f, -10.0f, -10.0f);
 }
-
-static inline bool myFuzzyCompareDegrees(float p1, float p2)
+void tst_QQuaternion::rotationTo()
 {
-    p1 = qDegreesToRadians(p1);
-    p2 = qDegreesToRadians(p2);
-    return myFuzzyCompareRadians(p1, p2);
+    QFETCH(QVector3D, from);
+    QFETCH(QVector3D, to);
+
+    QQuaternion q1 = QQuaternion::rotationTo(from, to);
+    QVERIFY(myFuzzyCompare(q1, q1.normalized()));
+    QVector3D vec1(q1 * from);
+    vec1 *= (to.length() / from.length()); // discard rotated length
+    QVERIFY(myFuzzyCompare(vec1, to));
+
+    QQuaternion q2 = QQuaternion::rotationTo(to, from);
+    QVERIFY(myFuzzyCompare(q2, q2.normalized()));
+    QVector3D vec2(q2 * to);
+    vec2 *= (from.length() / to.length()); // discard rotated length
+    QVERIFY(myFuzzyCompare(vec2, from));
 }
 
 // Test quaternion creation from an axis and an angle.

@@ -90,6 +90,8 @@ public:
 
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
 
+    QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
+
 protected:
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
     virtual QEGLPlatformContext *createContext(const QSurfaceFormat &format,

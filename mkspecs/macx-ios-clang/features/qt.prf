@@ -1,5 +1,6 @@
 
-equals(TEMPLATE, app):contains(QT, gui(-private)?) {
+qt_depends = $$resolve_depends(QT, "QT.")
+equals(TEMPLATE, app):contains(qt_depends, gui(-private)?) {
     LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/platforms
 
     lib_name = qios

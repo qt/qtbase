@@ -238,6 +238,11 @@
     \property QDesktopWidget::screenCount
     \brief the number of screens currently available on the system.
 
+    Note that on some platforms, screenCount will be zero if there are actually
+    no screens connected. Applications which were running at the time the
+    screenCount went to zero will stop rendering graphics until one or more
+    screens are restored.
+
     \since 4.6
 */
 

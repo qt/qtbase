@@ -213,9 +213,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
+    \since 5.5
+
+    Returns the dot product of \a q1 and \a q2.
+
+    \sa length()
+*/
+
+/*!
     Returns the length of the quaternion.  This is also called the "norm".
 
-    \sa lengthSquared(), normalized()
+    \sa lengthSquared(), normalized(), dotProduct()
 */
 float QQuaternion::length() const
 {
@@ -225,7 +234,7 @@ float QQuaternion::length() const
 /*!
     Returns the squared length of the quaternion.
 
-    \sa length()
+    \sa length(), dotProduct()
 */
 float QQuaternion::lengthSquared() const
 {
@@ -240,7 +249,7 @@ float QQuaternion::lengthSquared() const
     will be returned as-is.  Otherwise the normalized form of the
     quaternion of length 1 will be returned.
 
-    \sa length(), normalize()
+    \sa normalize(), length(), dotProduct()
 */
 QQuaternion QQuaternion::normalized() const
 {
@@ -583,7 +592,7 @@ QQuaternion QQuaternion::fromEulerAngles(float pitch, float yaw, float roll)
     \note If this quaternion is not normalized,
     the resulting rotation matrix will contain scaling information.
 
-    \sa fromRotationMatrix()
+    \sa fromRotationMatrix(), getAxes()
 */
 QMatrix3x3 QQuaternion::toRotationMatrix() const
 {
@@ -626,7 +635,7 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
     \note If a given rotation matrix is not normalized,
     the resulting quaternion will contain scaling information.
 
-    \sa toRotationMatrix()
+    \sa toRotationMatrix(), fromAxes()
 */
 QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 {
@@ -662,6 +671,85 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
 
     return QQuaternion(scalar, axis[0], axis[1], axis[2]);
 }
+
+#ifndef QT_NO_VECTOR3D
+
+/*!
+    \since 5.5
+
+    Returns the 3 orthonormal axes (\a xAxis, \a yAxis, \a zAxis) defining the quaternion.
+
+    \sa fromAxes(), toRotationMatrix()
+*/
+void QQuaternion::getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const
+{
+    Q_ASSERT(xAxis && yAxis && zAxis);
+
+    const QMatrix3x3 rot3x3(toRotationMatrix());
+
+    *xAxis = QVector3D(rot3x3(0, 0), rot3x3(1, 0), rot3x3(2, 0));
+    *yAxis = QVector3D(rot3x3(0, 1), rot3x3(1, 1), rot3x3(2, 1));
+    *zAxis = QVector3D(rot3x3(0, 2), rot3x3(1, 2), rot3x3(2, 2));
+}
+
+/*!
+    \since 5.5
+
+    Constructs the quaternion using 3 axes (\a xAxis, \a yAxis, \a zAxis).
+
+    \note The axes are assumed to be orthonormal.
+
+    \sa getAxes(), fromRotationMatrix()
+*/
+QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis)
+{
+    QMatrix3x3 rot3x3(Qt::Uninitialized);
+    rot3x3(0, 0) = xAxis.x();
+    rot3x3(1, 0) = xAxis.y();
+    rot3x3(2, 0) = xAxis.z();
+    rot3x3(0, 1) = yAxis.x();
+    rot3x3(1, 1) = yAxis.y();
+    rot3x3(2, 1) = yAxis.z();
+    rot3x3(0, 2) = zAxis.x();
+    rot3x3(1, 2) = zAxis.y();
+    rot3x3(2, 2) = zAxis.z();
+
+    return QQuaternion::fromRotationMatrix(rot3x3);
+}
+
+/*!
+    \since 5.5
+
+    Returns the shortest arc quaternion to rotate from the direction described by the vector \a from
+    to the direction described by the vector \a to.
+*/
+QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
+{
+    // Based on Stan Melax's article in Game Programming Gems
+
+    const QVector3D v0(from.normalized());
+    const QVector3D v1(to.normalized());
+
+    float d = QVector3D::dotProduct(v0, v1) + 1.0f;
+
+    // if dest vector is close to the inverse of source vector, ANY axis of rotation is valid
+    if (qFuzzyIsNull(d)) {
+        QVector3D axis = QVector3D::crossProduct(QVector3D(1.0f, 0.0f, 0.0f), v0);
+        if (qFuzzyIsNull(axis.lengthSquared()))
+            axis = QVector3D::crossProduct(QVector3D(0.0f, 1.0f, 0.0f), v0);
+        axis.normalize();
+
+        // same as QQuaternion::fromAxisAndAngle(axis, 180.0f)
+        return QQuaternion(0.0f, axis.x(), axis.y(), axis.z());
+    }
+
+    d = std::sqrt(2.0f * d);
+    const QVector3D axis(QVector3D::crossProduct(v0, v1) / d);
+
+    return QQuaternion(d * 0.5f, axis).normalized();
+}
+
+#endif // QT_NO_VECTOR3D
 
 /*!
     \fn bool operator==(const QQuaternion &q1, const QQuaternion &q2)
@@ -792,13 +880,10 @@ QQuaternion QQuaternion::slerp
         return q2;
 
     // Determine the angle between the two quaternions.
-    QQuaternion q2b;
-    float dot;
-    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
-    if (dot >= 0.0f) {
-        q2b = q2;
-    } else {
-        q2b = -q2;
+    QQuaternion q2b(q2);
+    float dot = QQuaternion::dotProduct(q1, q2);
+    if (dot < 0.0f) {
+        q2b = -q2b;
         dot = -dot;
     }
 
@@ -844,13 +929,10 @@ QQuaternion QQuaternion::nlerp
         return q2;
 
     // Determine the angle between the two quaternions.
-    QQuaternion q2b;
-    float dot;
-    dot = q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
-    if (dot >= 0.0f)
-        q2b = q2;
-    else
-        q2b = -q2;
+    QQuaternion q2b(q2);
+    float dot = QQuaternion::dotProduct(q1, q2);
+    if (dot < 0.0f)
+        q2b = -q2b;
 
     // Perform the linear interpolation.
     return (q1 * (1.0f - t) + q2b * t).normalized();

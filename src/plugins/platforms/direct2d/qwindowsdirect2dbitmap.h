@@ -34,8 +34,9 @@
 #ifndef QWINDOWSDIRECT2DBITMAP_H
 #define QWINDOWSDIRECT2DBITMAP_H
 
+#include <QtCore/qnamespace.h>
+#include <QtCore/QRect>
 #include <QtCore/QScopedPointer>
-#include <QtGui/QImage>
 
 struct ID2D1DeviceContext;
 struct ID2D1Bitmap1;
@@ -44,6 +45,11 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsDirect2DDeviceContext;
 class QWindowsDirect2DBitmapPrivate;
+
+class QImage;
+class QSize;
+class QColor;
+
 class QWindowsDirect2DBitmap
 {
     Q_DECLARE_PRIVATE(QWindowsDirect2DBitmap)

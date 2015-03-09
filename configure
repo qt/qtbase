@@ -5283,6 +5283,8 @@ if [ "$CFG_LIBINPUT" != "no" ] && [ "$CFG_LIBUDEV" != "no" ]; then
     else
         CFG_LIBINPUT=no
     fi
+else
+    CFG_LIBINPUT=no
 fi
 if [ "$CFG_LIBINPUT" = "no" ]; then
     QMakeVar add DEFINES QT_NO_LIBINPUT
@@ -5551,6 +5553,22 @@ fi
 if [ "$CFG_EGLFS" != "no" ]; then
     if [ "$XPLATFORM_QNX" = "no" ] && [ "$CFG_OPENGL" != "no" ]; then
         CFG_EGLFS="$CFG_EGL"
+        # Detect eglfs backends.
+        if compileTest qpa/eglfs-brcm "eglfs-brcm"; then
+            CFG_EGLFS_BRCM=yes
+        else
+            CFG_EGLFS_BRCM=no
+        fi
+        if compileTest qpa/eglfs-mali "eglfs-mali"; then
+            CFG_EGLFS_MALI=yes
+        else
+            CFG_EGLFS_MALI=no
+        fi
+        if compileTest qpa/eglfs-viv "eglfs-viv"; then
+            CFG_EGLFS_VIV=yes
+        else
+            CFG_EGLFS_VIV=no
+        fi
     else
         CFG_EGLFS="no"
     fi
@@ -5961,6 +5979,16 @@ if [ "$CFG_EGLFS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGLFS"
+fi
+# eglfs backends
+if [ "$CFG_EGLFS_BRCM" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_brcm"
+fi
+if [ "$CFG_EGLFS_MALI" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_mali"
+fi
+if [ "$CFG_EGLFS_VIV" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_viv"
 fi
 
 # enable openvg
@@ -6996,7 +7024,11 @@ report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
 report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
-report_support "    KMS .................." "$CFG_KMS"
+report_support "      EGLFS i.MX6....... ." "$CFG_EGLFS_VIV"
+report_support "      EGLFS KMS .........." "$CFG_KMS"
+report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
+report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
+report_support "      EGLFS X11 .........." "$CFG_EGL_X"
 report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then

@@ -215,16 +215,6 @@ void QXcbConnection::updateScreens()
             }
             free(primary);
         }
-        // If there's no randr extension, or there was some error above, or the screen
-        // doesn't have outputs for some other reason (e.g. on VNC or ssh -X), just assume there is one screen.
-        if (connectedOutputCount == 0) {
-            qCDebug(lcQpaScreen, "found a screen with zero outputs");
-            QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen);
-            siblings << screen;
-            activeScreens << screen;
-            if (!primaryScreen)
-                primaryScreen = screen;
-        }
         foreach (QPlatformScreen* s, siblings)
             ((QXcbScreen*)s)->setVirtualSiblings(siblings);
         xcb_screen_next(&it);
@@ -282,6 +272,11 @@ void QXcbConnection::updateScreens()
 
     if (!m_screens.isEmpty())
         qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
+    else
+        // QTBUG-40174, QTBUG-42985: If there are no outputs, then there must be
+        // no QScreen instances; a Qt application can survive this situation, and
+        // start rendering again later when there is a screen again.
+        qCDebug(lcQpaScreen) << "xcb connection has no outputs";
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)

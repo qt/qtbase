@@ -2556,17 +2556,63 @@
         \li The unique ID of the app. Defaults to reusing the existing generated
             manifest's UUID, or generates a new UUID if none is present.
     \row
+        \li logo_30x30
+        \li Logo image file of size 30x30 pixels. This is not supported on Windows Phone.
+    \row
+        \li logo_41x41
+        \li Logo image file of size 41x41 pixels. This is only supported on Windows Phone.
+    \row
+        \li logo_70x70
+        \li Logo image file of size 70x70 pixels. This is not supported on Windows Phone.
+    \row
+        \li logo_71x71
+        \li Logo image file of size 71x71 pixels. This is only supported on Windows Phone.
+    \row
+        \li logo_150x150
+        \li Logo image file of size 150x150 pixels. This is supported on all Windows
+            Store App platforms.
+    \row
+        \li logo_310x150
+        \li Logo image file of size 310x150 pixels. This is supported on all Windows
+            Store App platforms.
+    \row
+        \li logo_310x310
+        \li Logo image file of size 310x310 pixels. This is supported on all Windows
+            Store App platforms.
+    \row
+        \li logo_620x300
+        \li Splash screen image file of size 620x300 pixels. This is not supported on
+            Windows Phone.
+    \row
+        \li logo_480x800
+        \li Splash sceen image file of size 480x800 pixels. This is only supported on
+            Windows Phone.
+    \row
         \li logo_large
-        \li Large logo image file. Default provided by the mkspec.
+        \li Large logo image file. This has to be 150x150 pixels. Supported on all
+            Windows Store App platforms. Default provided by the mkspec.
     \row
         \li logo_medium
-        \li Medium logo image file. Default provided by the mkspec.
+        \li Medium logo image file. For Windows Phone the image must have a pixel size
+            of 71x71, for other Windows Store App platforms 70x70. Default provided by
+            the mkspec.
     \row
         \li logo_small
-        \li Small logo image file. Default provided by the mkspec.
+        \li Small logo image file. For Windows Phone the image must have a pixel size
+            of 44x44, for other Windows Store App platforms 30x30. Default provided by
+            the mkspec.
+    \row
+        \li logo_splash
+        \li Splash screen image file. For Windows Phone the image must have a pixel size
+            of 480x800, for other Windows Store App platforms 620x300. Default provided
+            by the mkspec.
     \row
         \li logo_store
         \li Logo image file for Windows Store. Default provided by the mkspec.
+    \row
+        \li logo_wide
+        \li Wide logo image file. This has to be 310x150 pixels. Supported on all
+            Windows Store App platforms. Default provided by the mkspec.
     \row
         \li name
         \li The name of the package as displayed to the user. Defaults to TARGET.
@@ -2582,9 +2628,6 @@
     \row
         \li publisher_id
         \li The publisher's distinguished name (default: \c{CN=MyCN}).
-    \row
-        \li splash_screen
-        \li Splash screen image file. Default provided by the mkspec.
     \row
         \li target
         \li The name of the target (.exe). Defaults to TARGET.
@@ -2611,6 +2654,10 @@
     \code
     WINRT_MANIFEST = someManifest.xml.in
     \endcode
+
+    \note The required image sizes of \e logo_small, \e logo_medium, and \e logo_large
+          depend on the target platform. The general descriptions are overwritten if a
+          description that specifies the size is provided.
 
     \target YACCSOURCES
     \section1 YACCSOURCES

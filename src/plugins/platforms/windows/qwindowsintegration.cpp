@@ -316,9 +316,9 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
         << __FUNCTION__ << '<' << window
         << "\n    Requested: " << requested.geometry << "frame incl.: "
         << QWindowsGeometryHint::positionIncludesFrame(window)
-        << " Flags=" << QWindowsWindow::debugWindowFlags(requested.flags)
+        << " Flags=" << requested.flags
         << "\n    Obtained : " << obtained.geometry << " Margins "<< obtained.frame
-        << " Flags=" << QWindowsWindow::debugWindowFlags(obtained.flags)
+        << " Flags=" << obtained.flags
         << " Handle=" << obtained.hwnd << '\n';
 
     if (obtained.hwnd) {
@@ -420,7 +420,10 @@ QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 
 QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 {
-    QWindowsIntegrationPrivate *d = QWindowsIntegration::instance()->d.data();
+    QWindowsIntegration *integration = QWindowsIntegration::instance();
+    if (!integration)
+        return 0;
+    QWindowsIntegrationPrivate *d = integration->d.data();
     if (d->m_staticOpenGLContext.isNull())
         d->m_staticOpenGLContext = QSharedPointer<QWindowsStaticOpenGLContext>(QWindowsStaticOpenGLContext::create());
     return d->m_staticOpenGLContext.data();

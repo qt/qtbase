@@ -230,6 +230,102 @@ template <typename X> struct QAtomicOps
     {
         return _q_value.fetch_add(valueToAdd, std::memory_order_acq_rel);
     }
+
+    template <typename T> static inline
+    T fetchAndSubRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_sub(valueToAdd, std::memory_order_relaxed);
+    }
+
+    template <typename T> static inline
+    T fetchAndSubAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_sub(valueToAdd, std::memory_order_acquire);
+    }
+
+    template <typename T> static inline
+    T fetchAndSubRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_sub(valueToAdd, std::memory_order_release);
+    }
+
+    template <typename T> static inline
+    T fetchAndSubOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_sub(valueToAdd, std::memory_order_acq_rel);
+    }
+
+    template <typename T> static inline
+    T fetchAndAndRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_and(valueToAdd, std::memory_order_relaxed);
+    }
+
+    template <typename T> static inline
+    T fetchAndAndAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_and(valueToAdd, std::memory_order_acquire);
+    }
+
+    template <typename T> static inline
+    T fetchAndAndRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_and(valueToAdd, std::memory_order_release);
+    }
+
+    template <typename T> static inline
+    T fetchAndAndOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_and(valueToAdd, std::memory_order_acq_rel);
+    }
+
+    template <typename T> static inline
+    T fetchAndOrRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_or(valueToAdd, std::memory_order_relaxed);
+    }
+
+    template <typename T> static inline
+    T fetchAndOrAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_or(valueToAdd, std::memory_order_acquire);
+    }
+
+    template <typename T> static inline
+    T fetchAndOrRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_or(valueToAdd, std::memory_order_release);
+    }
+
+    template <typename T> static inline
+    T fetchAndOrOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_or(valueToAdd, std::memory_order_acq_rel);
+    }
+
+    template <typename T> static inline
+    T fetchAndXorRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_xor(valueToAdd, std::memory_order_relaxed);
+    }
+
+    template <typename T> static inline
+    T fetchAndXorAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_xor(valueToAdd, std::memory_order_acquire);
+    }
+
+    template <typename T> static inline
+    T fetchAndXorRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_xor(valueToAdd, std::memory_order_release);
+    }
+
+    template <typename T> static inline
+    T fetchAndXorOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        return _q_value.fetch_xor(valueToAdd, std::memory_order_acq_rel);
+    }
 };
 
 #ifdef ATOMIC_VAR_INIT

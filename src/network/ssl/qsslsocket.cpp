@@ -2404,6 +2404,29 @@ bool QSslSocketPrivate::isPaused() const
     return paused;
 }
 
+bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode)
+{
+    // this function is called from QAbstractSocket::bind
+    if (!initialized)
+        init();
+    initialized = false;
+
+#ifdef QSSLSOCKET_DEBUG
+    qCDebug(lcSsl) << "QSslSocket::bind(" << address << ',' << port << ',' << mode << ')';
+#endif
+    if (!plainSocket) {
+#ifdef QSSLSOCKET_DEBUG
+        qCDebug(lcSsl) << "\tcreating internal plain socket";
+#endif
+        createPlainSocket(QIODevice::ReadWrite);
+    }
+    bool ret = plainSocket->bind(address, port, mode);
+    localPort = plainSocket->localPort();
+    localAddress = plainSocket->localAddress();
+    cachedSocketDescriptor = plainSocket->socketDescriptor();
+    return ret;
+}
+
 /*!
     \internal
 */

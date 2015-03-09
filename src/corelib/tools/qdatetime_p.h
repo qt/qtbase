@@ -79,10 +79,9 @@ public:
     enum StatusFlag {
         NullDate            = 0x01,
         NullTime            = 0x02,
-        ValidDate           = 0x04,
-        ValidTime           = 0x08,
-        ValidDateTime       = 0x10,
-        TimeZoneCached      = 0x20,
+        ValidDate           = 0x04, // just the date field
+        ValidTime           = 0x08, // just the time field
+        ValidDateTime       = 0x10, // the whole object (including timezone)
         SetToStandardTime   = 0x40,
         SetToDaylightTime   = 0x80
     };
@@ -120,7 +119,7 @@ public:
     DaylightStatus daylightStatus() const;
 
     // Returns msecs since epoch, assumes offset value is current
-    inline qint64 toMSecsSinceEpoch() const { return (m_msecs - (m_offsetFromUtc * 1000)); }
+    inline qint64 toMSecsSinceEpoch() const;
 
     void checkValidDateTime();
     void refreshDateTime();
@@ -133,14 +132,11 @@ public:
     inline bool isValidDateTime() const { return m_status & ValidDateTime; }
     inline void setValidDateTime() { m_status |= ValidDateTime; }
     inline void clearValidDateTime() { m_status &= ~ValidDateTime; }
-    inline bool isTimeZoneCached() const { return m_status & TimeZoneCached; }
-    inline void setTimeZoneCached() { m_status |= TimeZoneCached; }
-    inline void clearTimeZoneCached() { m_status &= ~TimeZoneCached; }
     inline void clearSetToDaylightStatus() { m_status &= ~(SetToStandardTime | SetToDaylightTime); }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
-                                        QDate *localDate, QTime *localTime);
+                                        QDate *localDate = 0, QTime *localTime = 0);
 #endif // QT_BOOTSTRAPPED
 
     static inline qint64 minJd() { return QDate::minJd(); }

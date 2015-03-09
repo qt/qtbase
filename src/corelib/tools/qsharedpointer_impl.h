@@ -247,6 +247,7 @@ namespace QtSharedPointer {
             ExternalRefCountWithContiguousData *that =
                     static_cast<ExternalRefCountWithContiguousData *>(self);
             that->data.~T();
+            Q_UNUSED(that); // MSVC warns if T has a trivial destructor
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {

@@ -277,6 +277,7 @@ struct DefinedTypesFilter {
     \value QJsonArray QJsonArray
     \value QJsonDocument QJsonDocument
     \value QModelIndex QModelIndex
+    \value QPersistentModelIndex QPersistentModelIndex (since 5.5)
     \value QUuid QUuid
     \value QByteArrayList QByteArrayList
 
@@ -1209,6 +1210,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QModelIndex:
+    case QMetaType::QPersistentModelIndex:
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
@@ -1429,6 +1431,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QModelIndex:
+    case QMetaType::QPersistentModelIndex:
     case QMetaType::QJsonValue:
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:

@@ -78,6 +78,8 @@ public:
     void setZ(float z);
     void setScalar(float scalar);
 
+    Q_DECL_CONSTEXPR static inline float dotProduct(const QQuaternion &q1, const QQuaternion &q2);
+
     float length() const;
     float lengthSquared() const;
 
@@ -132,6 +134,13 @@ public:
     QMatrix3x3 toRotationMatrix() const;
     static QQuaternion fromRotationMatrix(const QMatrix3x3 &rot3x3);
 
+#ifndef QT_NO_VECTOR3D
+    void getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const;
+    static QQuaternion fromAxes(const QVector3D &xAxis, const QVector3D &yAxis, const QVector3D &zAxis);
+
+    static QQuaternion rotationTo(const QVector3D &from, const QVector3D &to);
+#endif
+
     static QQuaternion slerp
         (const QQuaternion& q1, const QQuaternion& q2, float t);
     static QQuaternion nlerp
@@ -167,6 +176,11 @@ inline void QQuaternion::setX(float aX) { xp = aX; }
 inline void QQuaternion::setY(float aY) { yp = aY; }
 inline void QQuaternion::setZ(float aZ) { zp = aZ; }
 inline void QQuaternion::setScalar(float aScalar) { wp = aScalar; }
+
+Q_DECL_CONSTEXPR inline float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
+{
+    return q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
+}
 
 inline QQuaternion QQuaternion::inverted() const
 {

@@ -399,7 +399,8 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
     // They need to be told the screen is back, it's OK to render.
     foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
         QXcbWindow *xcbWin = static_cast<QXcbWindow*>(window->handle());
-        xcbWin->maybeSetScreen(this);
+        if (xcbWin)
+            xcbWin->maybeSetScreen(this);
     }
 }
 

@@ -1663,6 +1663,7 @@ public:
     QT_Q_ENUM(ItemSelectionOperation)
     QT_Q_FLAG(ItemFlags)
     QT_Q_ENUM(CheckState)
+    QT_Q_ENUM(ItemDataRole)
     QT_Q_ENUM(SortOrder)
     QT_Q_ENUM(CaseSensitivity)
     QT_Q_FLAG(MatchFlags)

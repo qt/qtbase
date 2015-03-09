@@ -248,6 +248,7 @@ private slots:
     void movabilityTest();
     void variantInVariant();
     void userConversion();
+    void modelIndexConversion();
 
     void forwardDeclare();
     void debugStream_data();
@@ -3846,6 +3847,17 @@ void tst_QVariant::userConversion()
     }
 }
 
+void tst_QVariant::modelIndexConversion()
+{
+    QVariant modelIndexVariant = QModelIndex();
+    QVERIFY(modelIndexVariant.canConvert(QMetaType::QPersistentModelIndex));
+    QVERIFY(modelIndexVariant.convert(QMetaType::QPersistentModelIndex));
+    QCOMPARE(modelIndexVariant.type(), QVariant::PersistentModelIndex);
+    QVERIFY(modelIndexVariant.canConvert(QMetaType::QModelIndex));
+    QVERIFY(modelIndexVariant.convert(QMetaType::QModelIndex));
+    QCOMPARE(modelIndexVariant.type(), QVariant::ModelIndex);
+}
+
 class Forward;
 Q_DECLARE_OPAQUE_POINTER(Forward*)
 Q_DECLARE_METATYPE(Forward*)
@@ -4073,6 +4085,7 @@ void tst_QVariant::implicitConstruction()
     F(EasingCurve) \
     F(Uuid) \
     F(ModelIndex) \
+    F(PersistentModelIndex) \
     F(RegularExpression) \
     F(JsonValue) \
     F(JsonObject) \

@@ -34,11 +34,7 @@
 #ifndef QWINDOWSDIRECT2DBACKINGSTORE_H
 #define QWINDOWSDIRECT2DBACKINGSTORE_H
 
-#include "qwindowsdirect2dplatformpixmap.h"
-
-#include <QtCore/QScopedPointer>
 #include <QtGui/qpa/qplatformbackingstore.h>
-#include <QtGui/QPixmap>
 
 QT_BEGIN_NAMESPACE
 

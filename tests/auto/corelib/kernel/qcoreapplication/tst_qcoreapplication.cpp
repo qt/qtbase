@@ -102,10 +102,15 @@ void tst_QCoreApplication::qAppName()
     const char* appName = "tst_qcoreapplication";
 #endif
 
-    int argc = 1;
-    char *argv[] = { const_cast<char*>(appName) };
-    TestApplication app(argc, argv);
-    QCOMPARE(::qAppName(), QString::fromLatin1(appName));
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char*>(appName) };
+        TestApplication app(argc, argv);
+        QCOMPARE(::qAppName(), QString::fromLatin1(appName));
+        QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1(appName));
+    }
+    // The application name should still be available after destruction;
+    // global statics often rely on this.
     QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1(appName));
 }
 

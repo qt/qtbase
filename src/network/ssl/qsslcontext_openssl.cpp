@@ -60,7 +60,7 @@ static DH *get_dh1024()
                          "/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR7OZTgf//////////AgEC"));
 
     const char *ptr = params.constData();
-    DH *dh = q_d2i_DHparams(NULL, (unsigned char **)(&ptr), params.length());
+    DH *dh = q_d2i_DHparams(NULL, reinterpret_cast<const unsigned char **>(&ptr), params.length());
 
     return dh;
 }

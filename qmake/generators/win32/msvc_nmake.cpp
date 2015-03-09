@@ -340,16 +340,6 @@ void NmakeMakefileGenerator::init()
         MakefileGenerator::init();
         if(project->values("MAKEFILE").isEmpty())
             project->values("MAKEFILE").append("Makefile");
-        if(project->isEmpty("QMAKE_COPY_FILE"))
-            project->values("QMAKE_COPY_FILE").append("$(COPY)");
-        if(project->isEmpty("QMAKE_COPY_DIR"))
-            project->values("QMAKE_COPY_DIR").append("xcopy /s /q /y /i");
-        if(project->isEmpty("QMAKE_INSTALL_FILE"))
-            project->values("QMAKE_INSTALL_FILE").append("$(COPY_FILE)");
-        if(project->isEmpty("QMAKE_INSTALL_PROGRAM"))
-            project->values("QMAKE_INSTALL_PROGRAM").append("$(COPY_FILE)");
-        if(project->isEmpty("QMAKE_INSTALL_DIR"))
-            project->values("QMAKE_INSTALL_DIR").append("$(COPY_DIR)");
         return;
     }
 

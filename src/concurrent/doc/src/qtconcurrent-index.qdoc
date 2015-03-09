@@ -50,25 +50,25 @@
 
     \list
 
-    \li QtConcurrent::map() applies a function to every item in a container,
+    \li \l {QtConcurrent::map}{QtConcurrent::map()} applies a function to every item in a container,
     modifying the items in-place.
 
-    \li QtConcurrent::mapped() is like map(), except that it returns a new
+    \li \l {QtConcurrent::mapped}{QtConcurrent::mapped()} is like map(), except that it returns a new
     container with the modifications.
 
-    \li QtConcurrent::mappedReduced() is like mapped(), except that the
+    \li \l {QtConcurrent::mappedReduced}{QtConcurrent::mappedReduced()} is like mapped(), except that the
     modified results are reduced or folded into a single result.
 
-    \li QtConcurrent::filter() removes all items from a container based on the
+    \li \l {QtConcurrent::filter}{QtConcurrent::filter()} removes all items from a container based on the
     result of a filter function.
 
-    \li QtConcurrent::filtered() is like filter(), except that it returns a new
+    \li \l {QtConcurrent::filtered}{QtConcurrent::filtered()} is like filter(), except that it returns a new
     container with the filtered results.
 
-    \li QtConcurrent::filteredReduced() is like filtered(), except that the
+    \li \l {QtConcurrent::filteredReduced}{QtConcurrent::filteredReduced()} is like filtered(), except that the
     filtered results are reduced or folded into a single result.
 
-    \li QtConcurrent::run() runs a function in another thread.
+    \li \l {QtConcurrent::run}{QtConcurrent::run()} runs a function in another thread.
 
     \li QFuture represents the result of an asynchronous computation.
 

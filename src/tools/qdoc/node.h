@@ -373,9 +373,7 @@ public:
     virtual ~InnerNode();
 
     Node* findChildNode(const QString& name, Node::Genus genus) const;
-    //Node* findChildNode(const QString& name, bool qml) const;
     Node* findChildNode(const QString& name, Type type);
-    //void findNodes(const QString& name, NodeList& n);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
     FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone);
@@ -410,6 +408,8 @@ public:
     const QStringList& groupNames() const { return groupNames_; }
     virtual void appendGroupName(const QString& t) Q_DECL_OVERRIDE { groupNames_.append(t); }
     void printChildren(const QString& title);
+    void addChild(Node* child);
+    void removeChild(Node* child);
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -418,9 +418,7 @@ private:
     friend class Node;
 
     static bool isSameSignature(const FunctionNode* f1, const FunctionNode* f2);
-    void addChild(Node* child);
     void removeRelated(Node* pseudoChild);
-    void removeChild(Node* child);
 
     QString outputFileName_;
     QStringList pageKeywds;
@@ -455,9 +453,14 @@ public:
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const Q_DECL_OVERRIDE { return true; }
     virtual Tree* tree() const Q_DECL_OVERRIDE { return (parent() ? parent()->tree() : tree_); }
+    virtual bool wasSeen() const Q_DECL_OVERRIDE { return seen_; }
+
+    void markSeen() { seen_ = true; }
+    void markNotSeen() { seen_ = false; }
     void setTree(Tree* t) { tree_ = t; }
 
  private:
+    bool        seen_;
     Tree*       tree_;
 };
 
@@ -881,12 +884,24 @@ public:
     bool isOverload() const { return ove; }
     bool isReimp() const Q_DECL_OVERRIDE { return reimp; }
     bool isFunction() const Q_DECL_OVERRIDE { return true; }
-    virtual bool isQmlSignal() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsSignal() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
-    virtual bool isQmlSignalHandler() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsSignalHandler() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
-    virtual bool isQmlMethod() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
-    virtual bool isJsMethod() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
+    virtual bool isQmlSignal() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignal) && (genus() == Node::QML);
+    }
+    virtual bool isJsSignal() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignal) && (genus() == Node::JS);
+    }
+    virtual bool isQmlSignalHandler() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignalHandler) && (genus() == Node::QML);
+    }
+    virtual bool isJsSignalHandler() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlSignalHandler) && (genus() == Node::JS);
+    }
+    virtual bool isQmlMethod() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlMethod) && (genus() == Node::QML);
+    }
+    virtual bool isJsMethod() const Q_DECL_OVERRIDE {
+        return (type() == Node::QmlMethod) && (genus() == Node::JS);
+    }
     int overloadNumber() const;
     const QList<Parameter>& parameters() const { return params; }
     QStringList parameterNames() const;

@@ -165,6 +165,8 @@ private:
     void desc(const char *option, const char *description, bool skipIndent = false, char fillChar = '.');
     void desc(const char *mark_option, const char *mark, const char *option, const char *description, char fillChar = '.');
     void applySpecSpecifics();
+
+    QString formatConfigPath(const char *var);
 };
 
 class FileWriter : public QTextStream

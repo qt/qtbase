@@ -69,12 +69,10 @@ QIOSIntegration::QIOSIntegration()
     , m_accessibility(0)
 {
     if (![UIApplication sharedApplication]) {
-        qWarning()
-            << "Error: You are creating QApplication before calling UIApplicationMain.\n"
-            << "If you are writing a native iOS application, and only want to use Qt for\n"
-            << "parts of the application, a good place to create QApplication is from within\n"
-            << "'applicationDidFinishLaunching' inside your UIApplication delegate.\n";
-        exit(-1);
+        qFatal("Error: You are creating QApplication before calling UIApplicationMain.\n" \
+               "If you are writing a native iOS application, and only want to use Qt for\n" \
+               "parts of the application, a good place to create QApplication is from within\n" \
+               "'applicationDidFinishLaunching' inside your UIApplication delegate.\n");
     }
 
     // Set current directory to app bundle folder

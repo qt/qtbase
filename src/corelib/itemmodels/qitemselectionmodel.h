@@ -146,6 +146,7 @@ class Q_CORE_EXPORT QItemSelectionModel : public QObject
     Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel NOTIFY modelChanged)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false DESIGNABLE false)
     Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
+    Q_PROPERTY(QItemSelection selection READ selection NOTIFY selectionChanged STORED false DESIGNABLE false)
 
     Q_DECLARE_PRIVATE(QItemSelectionModel)
 
@@ -186,7 +187,7 @@ public:
     Q_INVOKABLE QModelIndexList selectedIndexes() const;
     Q_INVOKABLE QModelIndexList selectedRows(int column = 0) const;
     Q_INVOKABLE QModelIndexList selectedColumns(int row = 0) const;
-    Q_INVOKABLE const QItemSelection selection() const;
+    const QItemSelection selection() const;
 
     // ### Qt 6: Merge these two as "QAbstractItemModel *model() const"
     const QAbstractItemModel *model() const;

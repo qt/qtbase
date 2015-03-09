@@ -192,6 +192,11 @@ QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn,
     return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
 }
 
+void QWindowsNativeInterface::beep()
+{
+    MessageBeep(MB_OK);  // For QApplication
+}
+
 bool QWindowsNativeInterface::asyncExpose() const
 {
     return QWindowsContext::instance()->asyncExpose();
