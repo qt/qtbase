@@ -81,9 +81,11 @@ public:
     virtual QRect drawCursor(QPainter &painter);
 
     // input methods
-    virtual void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
+    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
+    QPoint pos() const Q_DECL_OVERRIDE;
+    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 #ifndef QT_NO_CURSOR
-    virtual void changeCursor(QCursor *widgetCursor, QWindow *window) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *widgetCursor, QWindow *window) Q_DECL_OVERRIDE;
 #endif
 
     virtual void setDirty();
@@ -107,6 +109,7 @@ private:
     bool mOnScreen;
     QPlatformCursorImage *mGraphic;
     QFbCursorDeviceListener *mDeviceListener;
+    QPoint m_pos;
 };
 
 QT_END_NAMESPACE
