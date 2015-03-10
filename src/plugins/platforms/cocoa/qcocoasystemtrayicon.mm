@@ -234,6 +234,10 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
         }
     }
 
+    // Handle SVG icons, which do not return anything for availableSizes().
+    if (!selectedSize.isValid())
+        selectedSize = icon.actualSize(QSize(maxPixmapHeight, maxPixmapHeight), mode);
+
     QPixmap pixmap = icon.pixmap(selectedSize, mode);
 
     // Draw a low-resolution icon if there is not enough pixels for a retina
