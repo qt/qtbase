@@ -2037,16 +2037,18 @@ bool Configure::displayHelp()
 // Locate a file and return its containing directory.
 QString Configure::locateFile(const QString &fileName) const
 {
+    const QString mkspec = dictionary.contains(QStringLiteral("XQMAKESPEC"))
+        ? dictionary[QStringLiteral("XQMAKESPEC")] : dictionary[QStringLiteral("QMAKESPEC")];
     const QString file = fileName.toLower();
     QStringList pathList;
     if (file.endsWith(".h")) {
         static const QStringList headerPaths =
-            Environment::headerPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+            Environment::headerPaths(Environment::compilerFromQMakeSpec(mkspec));
         pathList = qmakeIncludes;
         pathList += headerPaths;
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
         static const QStringList libPaths =
-            Environment::libraryPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+            Environment::libraryPaths(Environment::compilerFromQMakeSpec(mkspec));
         pathList = libPaths;
     } else {
          // Fallback for .exe and .dll (latter are not covered by QStandardPaths).
