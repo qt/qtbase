@@ -536,7 +536,7 @@ QList<QNetworkAddressEntry> QNetworkInterface::addressEntries() const
         QNetworkInterface::interfaceFromName(name).index()
     \endcode
 
-    \sa interfaceFromName(), interfaceNameFromIndex()
+    \sa interfaceFromName(), interfaceNameFromIndex(), QNetworkDatagram::interfaceIndex()
 */
 int QNetworkInterface::interfaceIndexFromName(const QString &name)
 {
@@ -596,7 +596,7 @@ QNetworkInterface QNetworkInterface::interfaceFromIndex(int index)
         QNetworkInterface::interfaceFromIndex(index).name()
     \endcode
 
-    \sa interfaceFromIndex(), interfaceIndexFromName()
+    \sa interfaceFromIndex(), interfaceIndexFromName(), QNetworkDatagram::interfaceIndex()
 */
 QString QNetworkInterface::interfaceNameFromIndex(int index)
 {

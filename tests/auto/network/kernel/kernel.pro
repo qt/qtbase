@@ -7,6 +7,7 @@ SUBDIRS=\
    qauthenticator \
    qnetworkproxy \
    qnetworkinterface \
+   qnetworkdatagram \
    qnetworkaddressentry \
    qhostaddress \
 

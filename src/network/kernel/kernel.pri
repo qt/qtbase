@@ -11,6 +11,7 @@ HEADERS += kernel/qauthenticator.h \
            kernel/qhostaddress_p.h \
            kernel/qhostinfo.h \
            kernel/qhostinfo_p.h \
+           kernel/qnetworkdatagram.h \
            kernel/qnetworkdatagram_p.h \
            kernel/qnetworkinterface.h \
            kernel/qnetworkinterface_p.h \
@@ -22,9 +23,10 @@ SOURCES += kernel/qauthenticator.cpp \
            kernel/qdnslookup.cpp \
            kernel/qhostaddress.cpp \
            kernel/qhostinfo.cpp \
-           kernel/qurlinfo.cpp \
+           kernel/qnetworkdatagram.cpp \
+           kernel/qnetworkinterface.cpp \
            kernel/qnetworkproxy.cpp \
-	   kernel/qnetworkinterface.cpp
+           kernel/qurlinfo.cpp
 
 unix {
     !integrity: SOURCES += kernel/qdnslookup_unix.cpp

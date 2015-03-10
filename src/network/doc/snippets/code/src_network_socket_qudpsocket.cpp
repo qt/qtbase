@@ -61,14 +61,7 @@ void Server::initSocket()
 void Server::readPendingDatagrams()
 {
     while (udpSocket->hasPendingDatagrams()) {
-        QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
-        QHostAddress sender;
-        quint16 senderPort;
-
-        udpSocket->readDatagram(datagram.data(), datagram.size(),
-                                &sender, &senderPort);
-
+        QNetworkDatagram datagram = udpSocket->receiveDatagram();
         processTheDatagram(datagram);
     }
 }

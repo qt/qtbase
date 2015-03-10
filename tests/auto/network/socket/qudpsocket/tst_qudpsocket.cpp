@@ -39,6 +39,7 @@
 #include <qhostinfo.h>
 #include <qtcpsocket.h>
 #include <qmap.h>
+#include <qnetworkdatagram.h>
 #include <QNetworkProxy>
 #include <QNetworkInterface>
 
@@ -114,6 +115,7 @@ protected slots:
     void async_readDatagramSlot();
 
 private:
+    QList<QHostAddress> allAddresses;
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager *netConfMan;
     QNetworkConfiguration networkConfiguration;
@@ -173,6 +175,7 @@ void tst_QUdpSocket::initTestCase()
 {
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+    allAddresses = QNetworkInterface::allAddresses();
 }
 
 void tst_QUdpSocket::init()
@@ -252,6 +255,11 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
                 int(strlen(message[i])));
         buf[strlen(message[i])] = '\0';
         QCOMPARE(QByteArray(buf), QByteArray(message[i]));
+        QCOMPARE(port, clientSocket.localPort());
+        if (host.toIPv4Address()) // in case the sender is IPv4 mapped in IPv6
+            QCOMPARE(host.toIPv4Address(), makeNonAny(clientSocket.localAddress()).toIPv4Address());
+        else
+            QCOMPARE(host, makeNonAny(clientSocket.localAddress()));
     }
 }
 
@@ -325,14 +333,32 @@ void tst_QUdpSocket::broadcasting()
             QVERIFY(serverSocket.hasPendingDatagrams());
 
             do {
-                QByteArray arr; arr.resize(serverSocket.pendingDatagramSize() + 1);
-                QHostAddress host;
-                quint16 port;
                 const int messageLength = int(strlen(message[i]));
-                QCOMPARE((int) serverSocket.readDatagram(arr.data(), arr.size() - 1, &host, &port),
-                         messageLength);
+                QNetworkDatagram dgram = serverSocket.receiveDatagram();
+                QVERIFY(dgram.isValid());
+                QByteArray arr = dgram.data();
+
+                QCOMPARE(arr.length(), messageLength);
                 arr.resize(messageLength);
                 QCOMPARE(arr, QByteArray(message[i]));
+
+                if (dgram.senderAddress().toIPv4Address()) // in case it's a v6-mapped address
+                    QVERIFY2(allAddresses.contains(QHostAddress(dgram.senderAddress().toIPv4Address())),
+                             dgram.senderAddress().toString().toLatin1());
+                else if (!dgram.senderAddress().isNull())
+                    QVERIFY2(allAddresses.contains(dgram.senderAddress()),
+                             dgram.senderAddress().toString().toLatin1());
+                QCOMPARE(dgram.senderPort(), int(broadcastSocket.localPort()));
+                if (!dgram.destinationAddress().isNull()) {
+                    QVERIFY2(dgram.destinationAddress() == QHostAddress::Broadcast
+                            || broadcastAddresses.contains(dgram.destinationAddress()),
+                             dgram.destinationAddress().toString().toLatin1());
+                    QCOMPARE(dgram.destinationPort(), int(serverSocket.localPort()));
+                }
+
+                int ttl = dgram.hopLimit();
+                if (ttl != -1)
+                    QVERIFY(ttl != 0);
             } while (serverSocket.hasPendingDatagrams());
         }
     }
@@ -1070,7 +1096,7 @@ void tst_QUdpSocket::zeroLengthDatagram()
 #ifdef FORCE_SESSION
     sender.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-    QCOMPARE(sender.writeDatagram(QByteArray(), QHostAddress::LocalHost, receiver.localPort()), qint64(0));
+    QCOMPARE(sender.writeDatagram(QNetworkDatagram(QByteArray(), QHostAddress::LocalHost, receiver.localPort())), qint64(0));
 
     QVERIFY2(receiver.waitForReadyRead(1000), QtNetworkSettings::msgSocketError(receiver).constData());
     QVERIFY(receiver.hasPendingDatagrams());
@@ -1355,10 +1381,20 @@ void tst_QUdpSocket::multicast()
     QVERIFY(receiver.hasPendingDatagrams());
     QList<QByteArray> receivedDatagrams;
     while (receiver.hasPendingDatagrams()) {
-        QByteArray datagram;
-        datagram.resize(receiver.pendingDatagramSize());
-        receiver.readDatagram(datagram.data(), datagram.size(), 0, 0);
-        receivedDatagrams << datagram;
+        QNetworkDatagram dgram = receiver.receiveDatagram();
+        receivedDatagrams << dgram.data();
+
+        QVERIFY2(allAddresses.contains(dgram.senderAddress()),
+                dgram.senderAddress().toString().toLatin1());
+        QCOMPARE(dgram.senderPort(), int(sender.localPort()));
+        if (!dgram.destinationAddress().isNull()) {
+            QCOMPARE(dgram.destinationAddress(), groupAddress);
+            QCOMPARE(dgram.destinationPort(), int(receiver.localPort()));
+        }
+
+        int ttl = dgram.hopLimit();
+        if (ttl != -1)
+            QVERIFY(ttl != 0);
     }
     QCOMPARE(receivedDatagrams, datagrams);
 
@@ -1453,7 +1489,8 @@ void tst_QUdpSocket::linkLocalIPv6()
     quint16 port = 0;
     foreach (const QHostAddress& addr, addresses) {
         QUdpSocket *s = new QUdpSocket;
-        QVERIFY2(s->bind(addr, port), qPrintable(s->errorString()));
+        QVERIFY2(s->bind(addr, port), addr.toString().toLatin1()
+                 + '/' + QByteArray::number(port) + ": " + qPrintable(s->errorString()));
         port = s->localPort(); //bind same port, different networks
         sockets << s;
     }
@@ -1463,24 +1500,25 @@ void tst_QUdpSocket::linkLocalIPv6()
     QSignalSpy neutralReadSpy(&neutral, SIGNAL(readyRead()));
 
     QByteArray testData("hello");
-    QByteArray receiveBuffer("xxxxx");
     foreach (QUdpSocket *s, sockets) {
         QSignalSpy spy(s, SIGNAL(readyRead()));
 
         neutralReadSpy.clear();
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QTRY_VERIFY(neutralReadSpy.count() > 0); //note may need to accept a firewall prompt
-        QHostAddress from;
-        quint16 fromPort;
-        QCOMPARE((int)neutral.readDatagram(receiveBuffer.data(), receiveBuffer.length(), &from, &fromPort), testData.length());
-        QCOMPARE(from, s->localAddress());
-        QCOMPARE(fromPort, s->localPort());
-        QCOMPARE(receiveBuffer, testData);
 
-        QVERIFY(neutral.writeDatagram(testData, s->localAddress(), s->localPort()));
+        QNetworkDatagram dgram = neutral.receiveDatagram(testData.length() * 2);
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.senderAddress(), s->localAddress());
+        QCOMPARE(dgram.senderPort(), int(s->localPort()));
+        QCOMPARE(dgram.data().length(), testData.length());
+        QCOMPARE(dgram.data(), testData);
+
+        QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
         QTRY_VERIFY(spy.count() > 0); //note may need to accept a firewall prompt
-        QCOMPARE((int)s->readDatagram(receiveBuffer.data(), receiveBuffer.length(), &from, &fromPort), testData.length());
-        QCOMPARE(receiveBuffer, testData);
+
+        dgram = s->receiveDatagram(testData.length() * 2);
+        QCOMPARE(dgram.data(), testData);
 
         //sockets bound to other interfaces shouldn't have received anything
         foreach (QUdpSocket *s2, sockets) {
@@ -1535,21 +1573,23 @@ void tst_QUdpSocket::linkLocalIPv4()
     QVERIFY(neutral.bind(QHostAddress(QHostAddress::AnyIPv4)));
 
     QByteArray testData("hello");
-    QByteArray receiveBuffer("xxxxx");
     foreach (QUdpSocket *s, sockets) {
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QVERIFY2(neutral.waitForReadyRead(10000), QtNetworkSettings::msgSocketError(neutral).constData());
-        QHostAddress from;
-        quint16 fromPort;
-        QCOMPARE((int)neutral.readDatagram(receiveBuffer.data(), receiveBuffer.length(), &from, &fromPort), testData.length());
-        QCOMPARE(from, s->localAddress());
-        QCOMPARE(fromPort, s->localPort());
-        QCOMPARE(receiveBuffer, testData);
 
-        QVERIFY(neutral.writeDatagram(testData, s->localAddress(), s->localPort()));
         QVERIFY2(s->waitForReadyRead(10000), QtNetworkSettings::msgSocketError(*s).constData());
-        QCOMPARE((int)s->readDatagram(receiveBuffer.data(), receiveBuffer.length(), &from, &fromPort), testData.length());
-        QCOMPARE(receiveBuffer, testData);
+        QNetworkDatagram dgram = neutral.receiveDatagram(testData.length() * 2);
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.senderAddress(), s->localAddress());
+        QCOMPARE(dgram.senderPort(), int(s->localPort()));
+        QCOMPARE(dgram.data().length(), testData.length());
+        QCOMPARE(dgram.data(), testData);
+
+        QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
+
+        dgram = s->receiveDatagram(testData.length() * 2);
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.data(), testData);
 
         //sockets bound to other interfaces shouldn't have received anything
         foreach (QUdpSocket *s2, sockets) {

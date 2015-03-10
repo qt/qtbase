@@ -73,6 +73,18 @@ public:
     quint16 destinationPort;
 };
 
+class QNetworkDatagramPrivate
+{
+public:
+    QNetworkDatagramPrivate(const QByteArray &data = QByteArray(),
+                            const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
+        : data(data), header(dstAddr, port)
+    {}
+
+    QByteArray data;
+    QIpPacketHeader header;
+};
+
 QT_END_NAMESPACE
 
 #endif // QNETWORKDATAGRAM_P_H
