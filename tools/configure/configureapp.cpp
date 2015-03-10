@@ -3621,7 +3621,11 @@ void Configure::generateConfigfiles()
         if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
-        if (dictionary["POSIX_IPC"] == "yes")        qconfigList += "QT_POSIX_IPC";
+        if (dictionary["POSIX_IPC"] == "yes")
+            qconfigList += "QT_POSIX_IPC";
+        else if ((platform() != ANDROID) && (platform() != WINDOWS) && (platform() != WINDOWS_CE)
+                    && (platform() != WINDOWS_RT))
+            qconfigList << "QT_NO_SYSTEMSEMAPHORE" << "QT_NO_SHAREDMEMORY";
 
         if (dictionary["FONT_CONFIG"] == "no")       qconfigList += "QT_NO_FONTCONFIG";
 
