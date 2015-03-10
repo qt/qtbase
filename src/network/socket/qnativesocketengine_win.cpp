@@ -443,7 +443,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         break;
     case QNativeSocketEngine::MulticastTtlOption:
 
-        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
             level = IPPROTO_IPV6;
             n = IPV6_MULTICAST_HOPS;
         } else
@@ -453,7 +453,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         }
         break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
             level = IPPROTO_IPV6;
             n = IPV6_MULTICAST_LOOP;
         } else
@@ -533,7 +533,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         n = SO_KEEPALIVE;
         break;
     case QNativeSocketEngine::MulticastTtlOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
             level = IPPROTO_IPV6;
             n = IPV6_MULTICAST_HOPS;
         } else
@@ -543,7 +543,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         }
         break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
             level = IPPROTO_IPV6;
             n = IPV6_MULTICAST_LOOP;
         } else
@@ -658,7 +658,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
     setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
 
-    if (socketProtocol == QAbstractSocket::IPv6Protocol && address.toIPv4Address()) {
+    if ((socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) && address.toIPv4Address()) {
         //IPV6_V6ONLY option must be cleared to connect to a V4 mapped address
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
             DWORD ipv6only = 0;
@@ -1035,7 +1035,7 @@ bool QNativeSocketEnginePrivate::nativeLeaveMulticastGroup(const QHostAddress &g
 
 QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
 {
-    if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+    if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
         uint v;
         QT_SOCKOPTLEN_T sizeofv = sizeof(v);
         if (::getsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_MULTICAST_IF, (char *) &v, &sizeofv) == -1)
@@ -1069,7 +1069,7 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
 bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInterface &iface)
 {
 
-    if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+    if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
         uint v = iface.isValid() ? iface.index() : 0;
         return (::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_MULTICAST_IF, (char *) &v, sizeof(v)) != -1);
     }
