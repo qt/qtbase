@@ -2681,6 +2681,8 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
             ver_struct_list[i].sizeHint
                 = qMax(ver_struct_list[i].sizeHint, ver_struct_list[i].minimumSize);
         }
+        if (have_central && ver_struct_list[0].empty && ver_struct_list[2].empty)
+            ver_struct_list[1].maximumSize = QWIDGETSIZE_MAX;
     }
 
     if (_hor_struct_list != 0) {
@@ -2740,6 +2742,9 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
             hor_struct_list[i].sizeHint
                 = qMax(hor_struct_list[i].sizeHint, hor_struct_list[i].minimumSize);
         }
+        if (have_central && hor_struct_list[0].empty && hor_struct_list[2].empty)
+            hor_struct_list[1].maximumSize = QWIDGETSIZE_MAX;
+
     }
 }
 
