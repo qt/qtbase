@@ -248,7 +248,7 @@ public:
     bool isEnabled() const;
     void setWindowIcon(const QIcon &icon);
 
-    void *surface(void *nativeConfig);
+    void *surface(void *nativeConfig, int *err);
     void invalidateSurface() Q_DECL_OVERRIDE;
     void aboutToMakeCurrent();
 

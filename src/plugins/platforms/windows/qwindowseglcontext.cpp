@@ -416,12 +416,15 @@ QWindowsOpenGLContext *QWindowsEGLStaticContext::createContext(QOpenGLContext *c
     return new QWindowsEGLContext(this, context->format(), context->shareHandle());
 }
 
-void *QWindowsEGLStaticContext::createWindowSurface(void *nativeWindow, void *nativeConfig)
+void *QWindowsEGLStaticContext::createWindowSurface(void *nativeWindow, void *nativeConfig, int *err)
 {
+    *err = 0;
     EGLSurface surface = libEGL.eglCreateWindowSurface(m_display, (EGLConfig) nativeConfig,
                                                        (EGLNativeWindowType) nativeWindow, 0);
-    if (surface == EGL_NO_SURFACE)
-        qWarning("%s: Could not create the EGL window surface: 0x%x\n", Q_FUNC_INFO, libEGL.eglGetError());
+    if (surface == EGL_NO_SURFACE) {
+        *err = libEGL.eglGetError();
+        qWarning("%s: Could not create the EGL window surface: 0x%x\n", Q_FUNC_INFO, *err);
+    }
 
     return surface;
 }
@@ -578,8 +581,15 @@ bool QWindowsEGLContext::makeCurrent(QPlatformSurface *surface)
 
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
     window->aboutToMakeCurrent();
-    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig));
-    Q_ASSERT(eglSurface);
+    int err = 0;
+    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
+    if (eglSurface == EGL_NO_SURFACE) {
+        if (err == EGL_CONTEXT_LOST) {
+            m_eglContext = EGL_NO_CONTEXT;
+            qCDebug(lcQpaGl) << "Got EGL context lost in createWindowSurface() for context" << this;
+        }
+        return false;
+    }
 
     // shortcut: on some GPUs, eglMakeCurrent is not a cheap operation
     if (QWindowsEGLStaticContext::libEGL.eglGetCurrentContext() == m_eglContext &&
@@ -597,7 +607,7 @@ bool QWindowsEGLContext::makeCurrent(QPlatformSurface *surface)
             QWindowsEGLStaticContext::libEGL.eglSwapInterval(m_staticContext->display(), m_swapInterval);
         }
     } else {
-        int err = QWindowsEGLStaticContext::libEGL.eglGetError();
+        err = QWindowsEGLStaticContext::libEGL.eglGetError();
         // EGL_CONTEXT_LOST (loss of the D3D device) is not necessarily fatal.
         // Qt Quick is able to recover for example.
         if (err == EGL_CONTEXT_LOST) {
@@ -625,8 +635,15 @@ void QWindowsEGLContext::swapBuffers(QPlatformSurface *surface)
 {
     QWindowsEGLStaticContext::libEGL.eglBindAPI(m_api);
     QWindowsWindow *window = static_cast<QWindowsWindow *>(surface);
-    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig));
-    Q_ASSERT(eglSurface);
+    int err = 0;
+    EGLSurface eglSurface = static_cast<EGLSurface>(window->surface(m_eglConfig, &err));
+    if (eglSurface == EGL_NO_SURFACE) {
+        if (err == EGL_CONTEXT_LOST) {
+            m_eglContext = EGL_NO_CONTEXT;
+            qCDebug(lcQpaGl) << "Got EGL context lost in createWindowSurface() for context" << this;
+        }
+        return;
+    }
 
     bool ok = QWindowsEGLStaticContext::libEGL.eglSwapBuffers(m_eglDisplay, eglSurface);
     if (!ok)

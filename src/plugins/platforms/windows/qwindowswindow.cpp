@@ -2259,14 +2259,14 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
     }
 }
 
-void *QWindowsWindow::surface(void *nativeConfig)
+void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
 #ifdef QT_NO_OPENGL
     return 0;
 #else
     if (!m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
-            m_surface = staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+            m_surface = staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig, err);
     }
 
     return m_surface;

@@ -56,7 +56,7 @@ public:
 
     // If the windowing system interface needs explicitly created window surfaces (like EGL),
     // reimplement these.
-    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/) { return 0; }
+    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/, int * /*err*/) { return 0; }
     virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
 
 private:
