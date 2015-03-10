@@ -2634,10 +2634,6 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add year to get to after tran FirstOccurrence
@@ -2676,10 +2672,6 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add month to get to after tran FirstOccurrence
@@ -2718,10 +2710,6 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add day to get to after tran FirstOccurrence

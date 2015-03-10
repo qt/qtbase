@@ -3436,6 +3436,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         epochMSecsToLocalTime(msecs, &dt, &tm, &status);
         d->setDateTime(dt, tm);
         d->setDaylightStatus(status);
+        d->refreshDateTime();
         break;
         }
     }
