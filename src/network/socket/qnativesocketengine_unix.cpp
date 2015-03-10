@@ -847,19 +847,29 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize, QIpPacketHeader *header,
                                                          QAbstractSocketEngine::PacketHeaderOptions options)
 {
+    struct msghdr msg;
+    struct iovec vec;
     qt_sockaddr aa;
+    char c;
+    memset(&msg, 0, sizeof(msg));
     memset(&aa, 0, sizeof(aa));
-    QT_SOCKLEN_T sz;
-    sz = sizeof(aa);
 
-    ssize_t recvFromResult = 0;
+    // we need to receive at least one byte, even if our user isn't interested in it
+    vec.iov_base = maxSize ? data : &c;
+    vec.iov_len = maxSize ? maxSize : 1;
+    msg.msg_iov = &vec;
+    msg.msg_iovlen = 1;
+    if (options & QAbstractSocketEngine::WantDatagramSender) {
+        msg.msg_name = &aa;
+        msg.msg_namelen = sizeof(aa);
+    }
+
+    ssize_t recvResult = 0;
     do {
-        char c;
-        recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
-                                    0, &aa.a, &sz);
-    } while (recvFromResult == -1 && errno == EINTR);
+        recvResult = ::recvmsg(socketDescriptor, &msg, 0);
+    } while (recvResult == -1 && errno == EINTR);
 
-    if (recvFromResult == -1) {
+    if (recvResult == -1) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
         if (header)
             header->clear();
@@ -870,46 +880,50 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %lli, %s, %i) == %lli",
-           data, qt_prettyDebug(data, qMin(recvFromResult, ssize_t(16)), recvFromResult).data(), maxSize,
+           data, qt_prettyDebug(data, qMin(recvResult, ssize_t(16)), recvResult).data(), maxSize,
            address ? address->toString().toLatin1().constData() : "(nil)",
-           port ? *port : 0, (qint64) recvFromResult);
+           port ? *port : 0, (qint64) recvResult);
 #endif
 
-    return qint64(maxSize ? recvFromResult : recvFromResult == -1 ? -1 : 0);
+    return qint64(maxSize ? recvResult : recvResult == -1 ? -1 : 0);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
-    struct sockaddr_in sockAddrIPv4;
-    struct sockaddr *sockAddrPtr = 0;
-    QT_SOCKLEN_T sockAddrSize = 0;
+    struct msghdr msg;
+    struct iovec vec;
+    qt_sockaddr aa;
 
-    struct sockaddr_in6 sockAddrIPv6;
-    const QHostAddress &host = header.destinationAddress;
-    quint16 port = header.destinationPort;
-    if (host.protocol() == QAbstractSocket::IPv6Protocol
+    memset(&msg, 0, sizeof(msg));
+    memset(&aa, 0, sizeof(aa));
+    vec.iov_base = const_cast<char *>(data);
+    vec.iov_len = len;
+    msg.msg_iov = &vec;
+    msg.msg_iovlen = 1;
+    msg.msg_name = &aa.a;
+
+    if (header.destinationAddress.protocol() == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-        memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
-        sockAddrIPv6.sin6_family = AF_INET6;
-        sockAddrIPv6.sin6_port = htons(port);
-        sockAddrIPv6.sin6_scope_id = makeScopeId(host);
+        aa.a6.sin6_family = AF_INET6;
+        aa.a6.sin6_port = htons(header.destinationPort);
+        aa.a6.sin6_scope_id = makeScopeId(header.destinationAddress);
 
-        Q_IPV6ADDR tmp = host.toIPv6Address();
-        memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &tmp, sizeof(tmp));
-        sockAddrSize = sizeof(sockAddrIPv6);
-        sockAddrPtr = (struct sockaddr *)&sockAddrIPv6;
-    } else if (host.protocol() == QAbstractSocket::IPv4Protocol) {
-        memset(&sockAddrIPv4, 0, sizeof(sockAddrIPv4));
-        sockAddrIPv4.sin_family = AF_INET;
-        sockAddrIPv4.sin_port = htons(port);
-        sockAddrIPv4.sin_addr.s_addr = htonl(host.toIPv4Address());
-        sockAddrSize = sizeof(sockAddrIPv4);
-        sockAddrPtr = (struct sockaddr *)&sockAddrIPv4;
+        Q_IPV6ADDR tmp = header.destinationAddress.toIPv6Address();
+        memcpy(&aa.a6.sin6_addr, &tmp, sizeof(tmp));
+        msg.msg_namelen = sizeof(aa.a6);
+    } else if (header.destinationAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        aa.a4.sin_family = AF_INET;
+        aa.a4.sin_port = htons(header.destinationPort);
+        aa.a4.sin_addr.s_addr = htonl(header.destinationAddress.toIPv4Address());
+        msg.msg_namelen = sizeof(aa.a4);
+    } else {
+        // Don't know what IP type this is, let's hope it sends
+        msg.msg_name = 0;
+        msg.msg_namelen = 0;
     }
 
-    ssize_t sentBytes = qt_safe_sendto(socketDescriptor, data, len,
-                                       0, sockAddrPtr, sockAddrSize);
+    ssize_t sentBytes = qt_safe_sendmsg(socketDescriptor, &msg, 0);
 
     if (sentBytes < 0) {
         switch (errno) {

@@ -420,6 +420,20 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             WS_ERROR_DEBUG(err);
         }
     }
+
+    // get the pointer to sendmsg and recvmsg
+    DWORD bytesReturned;
+    GUID recvmsgguid = WSAID_WSARECVMSG;
+    if (WSAIoctl(socketDescriptor, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                 &recvmsgguid, sizeof(recvmsgguid),
+                 &recvmsg, sizeof(recvmsg), &bytesReturned, NULL, NULL) == SOCKET_ERROR)
+        recvmsg = 0;
+
+    GUID sendmsgguid = WSAID_WSASENDMSG;
+    if (WSAIoctl(socketDescriptor, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                 &sendmsgguid, sizeof(sendmsgguid),
+                 &sendmsg, sizeof(sendmsg), &bytesReturned, NULL, NULL) == SOCKET_ERROR)
+        sendmsg = 0;
 #endif
 
     socketDescriptor = socket;
@@ -1196,33 +1210,39 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     return ret;
 }
 
+#ifdef Q_OS_WINCE
+// Windows CE has no support for sendmsg or recvmsg. We set it to null here to simplify the code below.
+static int (*const recvmsg)(...) = 0;
+static int (*const sendmsg)(...) = 0;
+#endif
 
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
                                                          QAbstractSocketEngine::PacketHeaderOptions options)
 {
-    qint64 ret = 0;
-
-    qt_sockaddr aa;
-    memset(&aa, 0, sizeof(aa));
-    QT_SOCKLEN_T sz;
-    sz = sizeof(aa);
-
+    WSAMSG msg;
     WSABUF buf;
-    buf.buf = data;
-    buf.len = maxLength;
-#if !defined(Q_OS_WINCE)
-    buf.buf = data;
-    buf.len = maxLength;
-#else
-    char tmpChar;
-    buf.buf = data ? data : &tmpChar;
-    buf.len = maxLength;
-#endif
+    qt_sockaddr aa;
+    char c;
+    memset(&msg, 0, sizeof(msg));
+    memset(&aa, 0, sizeof(aa));
+
+    // we need to receive at least one byte, even if our user isn't interested in it
+    buf.buf = maxLength ? data : &c;
+    buf.len = maxLength ? maxLength : 1;
+    msg.lpBuffers = &buf;
+    msg.dwBufferCount = 1;
+    msg.name = reinterpret_cast<LPSOCKADDR>(&aa);
+    msg.namelen = sizeof(aa);
 
     DWORD flags = 0;
     DWORD bytesRead = 0;
-    int wsaRet = ::WSARecvFrom(socketDescriptor, &buf, 1, &bytesRead, &flags, &aa.a, &sz,0,0);
-    if (wsaRet == SOCKET_ERROR) {
+    qint64 ret;
+
+    if (recvmsg)
+        ret = recvmsg(socketDescriptor, &msg, &bytesRead, 0,0);
+    else
+        ret = ::WSARecvFrom(socketDescriptor, &buf, 1, &bytesRead, &flags, msg.name, &msg.namelen,0,0);
+    if (ret == SOCKET_ERROR) {
         int err = WSAGetLastError();
         if (err == WSAEMSGSIZE) {
             // it is ok the buffer was to small if bytesRead is larger than
@@ -1256,26 +1276,34 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len,
                                                       const QIpPacketHeader &header)
 {
-    qint64 ret = -1;
-    struct sockaddr_in sockAddrIPv4;
-    qt_sockaddr_in6 sockAddrIPv6;
-    struct sockaddr *sockAddrPtr = 0;
-    QT_SOCKLEN_T sockAddrSize = 0;
-
-    setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, header.destinationPort,
-                      header.destinationAddress, &sockAddrPtr, &sockAddrSize);
-
+    WSAMSG msg;
     WSABUF buf;
+    qt_sockaddr aa;
+
+    memset(&msg, 0, sizeof(msg));
+    memset(&aa, 0, sizeof(aa));
 #if !defined(Q_OS_WINCE)
     buf.buf = len ? (char*)data : 0;
 #else
     char tmp;
     buf.buf = len ? (char*)data : &tmp;
 #endif
+    msg.lpBuffers = &buf;
+    msg.dwBufferCount = 1;
     buf.len = len;
+
+    setPortAndAddress(&aa.a4, &aa.a6, header.destinationPort,
+                      header.destinationAddress, &msg.name, &msg.namelen);
+
     DWORD flags = 0;
     DWORD bytesSent = 0;
-    if (::WSASendTo(socketDescriptor, &buf, 1, &bytesSent, flags, sockAddrPtr, sockAddrSize, 0,0) ==  SOCKET_ERROR) {
+    qint64 ret = -1;
+    if (sendmsg) {
+        ret = sendmsg(socketDescriptor, &msg, flags, &bytesSent, 0,0);
+    } else {
+        ret = ::WSASendTo(socketDescriptor, &buf, 1, &bytesSent, flags, msg.name, msg.namelen, 0,0);
+    }
+    if (ret == SOCKET_ERROR) {
         int err = WSAGetLastError();
         WS_ERROR_DEBUG(err);
         switch (err) {
