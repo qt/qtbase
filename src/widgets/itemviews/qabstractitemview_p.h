@@ -370,6 +370,7 @@ public:
 
     QPersistentModelIndex enteredIndex;
     QPersistentModelIndex pressedIndex;
+    QPersistentModelIndex currentSelectionStartIndex;
     Qt::KeyboardModifiers pressedModifiers;
     QPoint pressedPosition;
     bool pressedAlreadySelected;

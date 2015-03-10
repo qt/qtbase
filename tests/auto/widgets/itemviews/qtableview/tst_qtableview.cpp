@@ -4288,6 +4288,9 @@ void tst_QTableView::taskQTBUG_4516_clickOnRichTextLabel()
     QLabel label("rich text");
     label.setTextFormat(Qt::RichText);
     view.setIndexWidget(model.index(1,1), &label);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     view.setCurrentIndex(model.index(0,0));
     QCOMPARE(view.currentIndex(), model.index(0,0));
 
