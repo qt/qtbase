@@ -74,6 +74,7 @@ signals:
 
 private slots:
     void onReadyRead();
+    void onCursorPositionChangeRequested(const QPoint &pos);
 
 private:
     void processEvent(libinput_event *ev);

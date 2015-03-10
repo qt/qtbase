@@ -298,6 +298,7 @@ QPoint QEGLPlatformCursor::pos() const
 
 void QEGLPlatformCursor::setPos(const QPoint &pos)
 {
+    QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = pos;
     update(oldCursorRect | cursorRect());

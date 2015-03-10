@@ -69,8 +69,11 @@ public slots:
 private slots:
     void addMouse(const QString &deviceNode = QString());
     void removeMouse(const QString &deviceNode);
+    void handleCursorPositionChange(const QPoint &pos);
 
 private:
+    void clampPosition();
+
     QString m_spec;
     QHash<QString,QEvdevMouseHandler*> m_mice;
     QDeviceDiscovery *m_deviceDiscovery;

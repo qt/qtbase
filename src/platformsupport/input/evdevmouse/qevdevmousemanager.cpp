@@ -92,12 +92,30 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
             connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeMouse(QString)));
         }
     }
+
+    connect(QGuiApplicationPrivate::inputDeviceManager(), SIGNAL(cursorPositionChangeRequested(QPoint)),
+            this, SLOT(handleCursorPositionChange(QPoint)));
 }
 
 QEvdevMouseManager::~QEvdevMouseManager()
 {
     qDeleteAll(m_mice);
     m_mice.clear();
+}
+
+void QEvdevMouseManager::clampPosition()
+{
+    // clamp to screen geometry
+    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+    if (m_x + m_xoffset < g.left())
+        m_x = g.left() - m_xoffset;
+    else if (m_x + m_xoffset > g.right())
+        m_x = g.right() - m_xoffset;
+
+    if (m_y + m_yoffset < g.top())
+        m_y = g.top() - m_yoffset;
+    else if (m_y + m_yoffset > g.bottom())
+        m_y = g.bottom() - m_yoffset;
 }
 
 void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons)
@@ -111,17 +129,7 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButto
         m_y = y;
     }
 
-    // clamp to screen geometry
-    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
-    if (m_x + m_xoffset < g.left())
-        m_x = g.left() - m_xoffset;
-    else if (m_x + m_xoffset > g.right())
-        m_x = g.right() - m_xoffset;
-
-    if (m_y + m_yoffset < g.top())
-        m_y = g.top() - m_yoffset;
-    else if (m_y + m_yoffset > g.bottom())
-        m_y = g.bottom() - m_yoffset;
+    clampPosition();
 
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
     // Cannot track the keyboard modifiers ourselves here. Instead, report the
@@ -161,6 +169,13 @@ void QEvdevMouseManager::removeMouse(const QString &deviceNode)
             QInputDeviceManager::DeviceTypePointer, m_mice.count());
         delete handler;
     }
+}
+
+void QEvdevMouseManager::handleCursorPositionChange(const QPoint &pos)
+{
+    m_x = pos.x();
+    m_y = pos.y();
+    clampPosition();
 }
 
 QT_END_NAMESPACE
