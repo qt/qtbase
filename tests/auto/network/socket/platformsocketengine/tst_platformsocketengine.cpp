@@ -243,13 +243,13 @@ void tst_PlatformSocketEngine::udpLoopbackTest()
     QVERIFY(available > 0);
     QByteArray answer;
     answer.resize(available);
-    QHostAddress senderAddress;
-    quint16 senderPort = 0;
-    QVERIFY(udpSocket.readDatagram(answer.data(), answer.size(),
-                                  &senderAddress,
-                                  &senderPort) == message1.size());
-    QCOMPARE(senderAddress, QHostAddress("127.0.0.1"));
-    QVERIFY(senderPort != 0);
+    QIpPacketHeader header;
+    QCOMPARE(udpSocket.readDatagram(answer.data(), answer.size(),
+                                    &header, QAbstractSocketEngine::WantDatagramSender),
+             qint64(message1.size()));
+    QVERIFY(header.senderAddress == QHostAddress("127.0.0.1"));
+    QCOMPARE(header.senderAddress, QHostAddress("127.0.0.1"));
+    QVERIFY(header.senderPort != 0);
 }
 
 //---------------------------------------------------------------------------
@@ -291,13 +291,13 @@ void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
         QVERIFY(available > 0);
         QByteArray answer;
         answer.resize(available);
-        QHostAddress senderAddress;
-        quint16 senderPort = 0;
-        QVERIFY(udpSocket.readDatagram(answer.data(), answer.size(),
-                                      &senderAddress,
-                                      &senderPort) == message1.size());
-        QCOMPARE(senderAddress, QHostAddress("::1"));
-        QVERIFY(senderPort != 0);
+        QIpPacketHeader header;
+        QCOMPARE(udpSocket.readDatagram(answer.data(), answer.size(),
+                                        &header, QAbstractSocketEngine::WantDatagramSender),
+                 qint64(message1.size()));
+        QVERIFY(header.senderAddress == QHostAddress("::1"));
+        QCOMPARE(header.senderAddress, QHostAddress("::1"));
+        QVERIFY(header.senderPort != 0);
     }
 }
 
@@ -323,8 +323,7 @@ void tst_PlatformSocketEngine::broadcastTest()
         = "MOOT wtf is a MOOT? talk english not your sutpiD ENGLISH.";
     qint64 written = broadcastSocket.writeDatagram(trollMessage.data(),
                                          trollMessage.size(),
-                                         QHostAddress::Broadcast,
-                                         port);
+                                         QIpPacketHeader(QHostAddress::Broadcast, port));
 
     QCOMPARE((int)written, trollMessage.size());
 
@@ -636,7 +635,7 @@ void tst_PlatformSocketEngine::invalidSend()
 
     QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::writeDatagram() was"
                                " called by a socket other than QAbstractSocket::UdpSocket");
-    QCOMPARE(socket.writeDatagram("hei", 3, QHostAddress::LocalHost, 143),
+    QCOMPARE(socket.writeDatagram("hei", 3, QIpPacketHeader(QHostAddress::LocalHost, 143)),
             (qlonglong) -1);
 }
 

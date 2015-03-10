@@ -1197,8 +1197,8 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 }
 
 
-qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxLength,
-                                                      QHostAddress *address, quint16 *port)
+qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
+                                                         QAbstractSocketEngine::PacketHeaderOptions options)
 {
     qint64 ret = 0;
 
@@ -1232,12 +1232,15 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
             WS_ERROR_DEBUG(err);
             setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
             ret = -1;
+            if (header)
+                header->clear();
         }
     } else {
         ret = qint64(bytesRead);
+        if (options & QNativeSocketEngine::WantDatagramSender)
+            qt_socket_getPortAndAddress(socketDescriptor, &aa, &header->senderPort, &header->senderAddress);
     }
 
-    qt_socket_getPortAndAddress(socketDescriptor, &aa, port, address);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %li, %s, %i) == %li",
@@ -1251,7 +1254,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
 
 
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len,
-                                                   const QHostAddress &address, quint16 port)
+                                                      const QIpPacketHeader &header)
 {
     qint64 ret = -1;
     struct sockaddr_in sockAddrIPv4;
@@ -1259,7 +1262,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     struct sockaddr *sockAddrPtr = 0;
     QT_SOCKLEN_T sockAddrSize = 0;
 
-    setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
+    setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, header.destinationPort,
+                      header.destinationAddress, &sockAddrPtr, &sockAddrSize);
 
     WSABUF buf;
 #if !defined(Q_OS_WINCE)

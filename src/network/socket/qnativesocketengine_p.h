@@ -133,10 +133,9 @@ public:
     qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
     qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
-    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
-                            quint16 *port = 0) Q_DECL_OVERRIDE;
-    qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
-                             quint16 port) Q_DECL_OVERRIDE;
+    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader * = 0,
+                        PacketHeaderOptions = WantNone) Q_DECL_OVERRIDE;
+    qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     bool hasPendingDatagrams() const Q_DECL_OVERRIDE;
     qint64 pendingDatagramSize() const Q_DECL_OVERRIDE;
 
@@ -242,10 +241,9 @@ public:
 
     bool nativeHasPendingDatagrams() const;
     qint64 nativePendingDatagramSize() const;
-    qint64 nativeReceiveDatagram(char *data, qint64 maxLength,
-                                     QHostAddress *address, quint16 *port);
-    qint64 nativeSendDatagram(const char *data, qint64 length,
-                                  const QHostAddress &host, quint16 port);
+    qint64 nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
+                                 QAbstractSocketEngine::PacketHeaderOptions options);
+    qint64 nativeSendDatagram(const char *data, qint64 length, const QIpPacketHeader &header);
     qint64 nativeRead(char *data, qint64 maxLength);
     qint64 nativeWrite(const char *data, qint64 length);
     int nativeSelect(int timeout, bool selectForRead) const;

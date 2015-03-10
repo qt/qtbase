@@ -1383,7 +1383,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
 #endif
         dummy.setProxy(QNetworkProxy::NoProxy);
         if (!dummy.bind()
-            || writeDatagram(0,0, d->data->controlSocket->localAddress(), dummy.localPort()) != 0
+            || writeDatagram(0,0, QIpPacketHeader(d->data->controlSocket->localAddress(), dummy.localPort())) != 0
             || !dummy.waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))
             || dummy.readDatagram(0,0, &d->localAddress, &d->localPort) != 0) {
             QSOCKS5_DEBUG << "udp actual address and port lookup failed";
@@ -1555,7 +1555,7 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
 #ifndef QT_NO_UDPSOCKET
     } else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode) {
         // send to connected address
-        return writeDatagram(data, len, d->peerAddress, d->peerPort);
+        return writeDatagram(data, len, QIpPacketHeader(d->peerAddress, d->peerPort));
 #endif
     }
     //### set an error ???
@@ -1594,8 +1594,7 @@ bool QSocks5SocketEngine::setMulticastInterface(const QNetworkInterface &)
 }
 #endif // QT_NO_NETWORKINTERFACE
 
-qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress *addr,
-                                        quint16 *port)
+qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header, PacketHeaderOptions)
 {
     Q_D(QSocks5SocketEngine);
 
@@ -1607,15 +1606,12 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress
     QSocks5RevivedDatagram datagram = d->udpData->pendingDatagrams.dequeue();
     int copyLen = qMin<int>(maxlen, datagram.data.size());
     memcpy(data, datagram.data.constData(), copyLen);
-    if (addr)
-        *addr = datagram.address;
-    if (port)
-        *port = datagram.port;
+    header->senderAddress = datagram.address;
+    header->senderPort = datagram.port;
     return copyLen;
 }
 
-qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QHostAddress &address,
-                                         quint16 port)
+qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
     Q_D(QSocks5SocketEngine);
 
@@ -1634,7 +1630,7 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QH
     outBuf[0] = 0x00;
     outBuf[1] = 0x00;
     outBuf[2] = 0x00;
-    if (!qt_socks5_set_host_address_and_port(address, port, &outBuf)) {
+    if (!qt_socks5_set_host_address_and_port(header.destinationAddress, header.destinationPort, &outBuf)) {
     }
     outBuf += QByteArray(data, len);
     QSOCKS5_DEBUG << "sending" << dump(outBuf);

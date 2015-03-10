@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -58,6 +59,26 @@ class QNetworkInterface;
 #endif
 class QNetworkProxy;
 
+class QIpPacketHeader
+{
+public:
+    QIpPacketHeader(const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
+        : destinationAddress(dstAddr), destinationPort(port)
+    {}
+
+    void clear()
+    {
+        senderAddress.clear();
+        destinationAddress.clear();
+    }
+
+    QHostAddress senderAddress;
+    QHostAddress destinationAddress;
+
+    quint16 senderPort;
+    quint16 destinationPort;
+};
+
 class QAbstractSocketEngineReceiver {
 public:
     virtual ~QAbstractSocketEngineReceiver(){}
@@ -96,6 +117,14 @@ public:
         TypeOfServiceOption
     };
 
+    enum PacketHeaderOption {
+        WantNone = 0,
+        WantDatagramSender,
+
+        WantAll = 0xff
+    };
+    Q_DECLARE_FLAGS(PacketHeaderOptions, PacketHeaderOption)
+
     virtual bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) = 0;
 
     virtual bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState) = 0;
@@ -126,10 +155,9 @@ public:
     virtual bool setMulticastInterface(const QNetworkInterface &iface) = 0;
 #endif // QT_NO_NETWORKINTERFACE
 
-    virtual qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
-                                quint16 *port = 0) = 0;
-    virtual qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
-                                 quint16 port) = 0;
+    virtual qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header = 0,
+                                PacketHeaderOptions = WantNone) = 0;
+    virtual qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header) = 0;
     virtual bool hasPendingDatagrams() const = 0;
     virtual qint64 pendingDatagramSize() const = 0;
 #endif // QT_NO_UDPSOCKET
@@ -224,6 +252,8 @@ protected:
 private:
     friend class QAbstractSocketEngine;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocketEngine::PacketHeaderOptions)
 
 QT_END_NAMESPACE
 

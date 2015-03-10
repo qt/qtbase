@@ -844,8 +844,8 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     return qint64(recvResult);
 }
 
-qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize,
-                                                    QHostAddress *address, quint16 *port)
+qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize, QIpPacketHeader *header,
+                                                         QAbstractSocketEngine::PacketHeaderOptions options)
 {
     qt_sockaddr aa;
     memset(&aa, 0, sizeof(aa));
@@ -861,8 +861,11 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
     if (recvFromResult == -1) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
-    } else if (port || address) {
-        qt_socket_getPortAndAddress(&aa, port, address);
+        if (header)
+            header->clear();
+    } else if (options != QAbstractSocketEngine::WantNone) {
+        Q_ASSERT(header);
+        qt_socket_getPortAndAddress(&aa, &header->senderPort, &header->senderAddress);
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -875,14 +878,15 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     return qint64(maxSize ? recvFromResult : recvFromResult == -1 ? -1 : 0);
 }
 
-qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len,
-                                                   const QHostAddress &host, quint16 port)
+qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
     struct sockaddr_in sockAddrIPv4;
     struct sockaddr *sockAddrPtr = 0;
     QT_SOCKLEN_T sockAddrSize = 0;
 
     struct sockaddr_in6 sockAddrIPv6;
+    const QHostAddress &host = header.destinationAddress;
+    quint16 port = header.destinationPort;
     if (host.protocol() == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::AnyIPProtocol) {

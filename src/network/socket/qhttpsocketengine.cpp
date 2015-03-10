@@ -271,14 +271,12 @@ bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
 }
 #endif // QT_NO_NETWORKINTERFACE
 
-qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
-                                       quint16 *)
+qint64 QHttpSocketEngine::readDatagram(char *, qint64, QIpPacketHeader *, PacketHeaderOptions)
 {
     return 0;
 }
 
-qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QHostAddress &,
-                                        quint16)
+qint64 QHttpSocketEngine::writeDatagram(const char *, qint64, const QIpPacketHeader &)
 {
     return 0;
 }
