@@ -1464,7 +1464,7 @@ void tst_QWindow::initialSize()
     QSize defaultSize(0,0);
     {
     Window w;
-    w.show();
+    w.showNormal();
     QTRY_VERIFY(w.width() > 0);
     QTRY_VERIFY(w.height() > 0);
     defaultSize = QSize(w.width(), w.height());
@@ -1472,7 +1472,7 @@ void tst_QWindow::initialSize()
     {
     Window w;
     w.setWidth(m_testWindowSize.width());
-    w.show();
+    w.showNormal();
 #if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
                               // so we only expect one resize event
     QTRY_COMPARE(w.width(), qGuiApp->primaryScreen()->availableGeometry().width());
@@ -1485,7 +1485,7 @@ void tst_QWindow::initialSize()
     Window w;
     const QSize testSize(m_testWindowSize.width(), 42);
     w.resize(testSize);
-    w.show();
+    w.showNormal();
 
 #if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
                               // so we only expect one resize event
