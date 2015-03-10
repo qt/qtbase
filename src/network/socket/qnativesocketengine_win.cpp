@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -195,6 +196,64 @@ static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt
     }
 }
 
+static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
+                                    QAbstractSocket::NetworkLayerProtocol socketProtocol, int &level, int &n)
+{
+    n = 0;
+    level = SOL_SOCKET; // default
+
+    switch (opt) {
+    case QNativeSocketEngine::NonBlockingSocketOption:      // WSAIoctl
+    case QNativeSocketEngine::TypeOfServiceOption:          // not supported
+        Q_UNREACHABLE();
+
+    case QNativeSocketEngine::ReceiveBufferSocketOption:
+        n = SO_RCVBUF;
+        break;
+    case QNativeSocketEngine::SendBufferSocketOption:
+        n = SO_SNDBUF;
+        break;
+    case QNativeSocketEngine::BroadcastSocketOption:
+        n = SO_BROADCAST;
+        break;
+    case QNativeSocketEngine::AddressReusable:
+        n = SO_REUSEADDR;
+        break;
+    case QNativeSocketEngine::BindExclusively:
+        n = SO_EXCLUSIVEADDRUSE;
+        break;
+    case QNativeSocketEngine::ReceiveOutOfBandData:
+        n = SO_OOBINLINE;
+        break;
+    case QNativeSocketEngine::LowDelayOption:
+        level = IPPROTO_TCP;
+        n = TCP_NODELAY;
+        break;
+    case QNativeSocketEngine::KeepAliveOption:
+        n = SO_KEEPALIVE;
+        break;
+    case QNativeSocketEngine::MulticastTtlOption:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_HOPS;
+        } else
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_TTL;
+        }
+        break;
+    case QNativeSocketEngine::MulticastLoopbackOption:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_LOOP;
+        } else
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_LOOP;
+        }
+        break;
+    }
+}
 
 /*! \internal
 
@@ -404,19 +463,8 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     if (!q->isValid())
         return -1;
 
-    int n = -1;
-    int level = SOL_SOCKET; // default
-
+    // handle non-getsockopt
     switch (opt) {
-    case QNativeSocketEngine::ReceiveBufferSocketOption:
-        n = SO_RCVBUF;
-        break;
-    case QNativeSocketEngine::SendBufferSocketOption:
-        n = SO_SNDBUF;
-        break;
-    case QNativeSocketEngine::BroadcastSocketOption:
-        n = SO_BROADCAST;
-        break;
     case QNativeSocketEngine::NonBlockingSocketOption: {
         unsigned long buf = 0;
         if (WSAIoctl(socketDescriptor, FIONBIO, 0,0, &buf, sizeof(buf), 0,0,0) == 0)
@@ -425,53 +473,21 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
             return -1;
         break;
     }
-    case QNativeSocketEngine::AddressReusable:
-        n = SO_REUSEADDR;
-        break;
-    case QNativeSocketEngine::BindExclusively:
-        n = SO_EXCLUSIVEADDRUSE;
-        break;
-    case QNativeSocketEngine::ReceiveOutOfBandData:
-        n = SO_OOBINLINE;
-        break;
-    case QNativeSocketEngine::LowDelayOption:
-        level = IPPROTO_TCP;
-        n = TCP_NODELAY;
-        break;
-    case QNativeSocketEngine::KeepAliveOption:
-        n = SO_KEEPALIVE;
-        break;
-    case QNativeSocketEngine::MulticastTtlOption:
-
-        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            level = IPPROTO_IPV6;
-            n = IPV6_MULTICAST_HOPS;
-        } else
-        {
-            level = IPPROTO_IP;
-            n = IP_MULTICAST_TTL;
-        }
-        break;
-    case QNativeSocketEngine::MulticastLoopbackOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            level = IPPROTO_IPV6;
-            n = IPV6_MULTICAST_LOOP;
-        } else
-        {
-            level = IPPROTO_IP;
-            n = IP_MULTICAST_LOOP;
-        }
-        break;
     case QNativeSocketEngine::TypeOfServiceOption:
         return -1;
+
+    default:
         break;
     }
 
 #if Q_BYTE_ORDER != Q_LITTLE_ENDIAN
 #error code assumes windows is little endian
 #endif
+    int n, level;
     int v = 0; //note: windows doesn't write to all bytes if the option type is smaller than int
     QT_SOCKOPTLEN_T len = sizeof(v);
+
+    convertToLevelAndOption(opt, socketProtocol, level, n);
     if (getsockopt(socketDescriptor, level, n, (char *) &v, &len) == 0)
         return v;
     WS_ERROR_DEBUG(WSAGetLastError());
@@ -488,21 +504,12 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     if (!q->isValid())
         return false;
 
-    int n = 0;
-    int level = SOL_SOCKET; // default
-
+    // handle non-setsockopt options
     switch (opt) {
-    case QNativeSocketEngine::ReceiveBufferSocketOption:
-        n = SO_RCVBUF;
-        break;
     case QNativeSocketEngine::SendBufferSocketOption:
         // see QTBUG-30478 SO_SNDBUF should not be used on Vista or later
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
             return false;
-        n = SO_SNDBUF;
-        break;
-    case QNativeSocketEngine::BroadcastSocketOption:
-        n = SO_BROADCAST;
         break;
     case QNativeSocketEngine::NonBlockingSocketOption:
         {
@@ -516,47 +523,15 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return true;
         break;
         }
-    case QNativeSocketEngine::AddressReusable:
-        n = SO_REUSEADDR;
-        break;
-    case QNativeSocketEngine::BindExclusively:
-        n = SO_EXCLUSIVEADDRUSE;
-        break;
-    case QNativeSocketEngine::ReceiveOutOfBandData:
-        n = SO_OOBINLINE;
-        break;
-    case QNativeSocketEngine::LowDelayOption:
-        level = IPPROTO_TCP;
-        n = TCP_NODELAY;
-        break;
-    case QNativeSocketEngine::KeepAliveOption:
-        n = SO_KEEPALIVE;
-        break;
-    case QNativeSocketEngine::MulticastTtlOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            level = IPPROTO_IPV6;
-            n = IPV6_MULTICAST_HOPS;
-        } else
-        {
-            level = IPPROTO_IP;
-            n = IP_MULTICAST_TTL;
-        }
-        break;
-    case QNativeSocketEngine::MulticastLoopbackOption:
-        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            level = IPPROTO_IPV6;
-            n = IPV6_MULTICAST_LOOP;
-        } else
-        {
-            level = IPPROTO_IP;
-            n = IP_MULTICAST_LOOP;
-        }
-        break;
     case QNativeSocketEngine::TypeOfServiceOption:
         return false;
+
+    default:
         break;
     }
 
+    int n, level;
+    convertToLevelAndOption(opt, socketProtocol, level, n);
     if (::setsockopt(socketDescriptor, level, n, (char*)&v, sizeof(v)) != 0) {
         WS_ERROR_DEBUG(WSAGetLastError());
         return false;
