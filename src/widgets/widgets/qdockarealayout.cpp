@@ -1018,7 +1018,7 @@ QLayoutItem *QDockAreaLayoutInfo::plug(const QList<int> &path)
         index = -index - 1;
 
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->plug(path.mid(1));
     }
@@ -1064,7 +1064,7 @@ QLayoutItem *QDockAreaLayoutInfo::unplug(const QList<int> &path)
 
     const int index = path.first();
     if (path.count() > 1) {
-        const QDockAreaLayoutItem &item = item_list.at(index);
+        QDockAreaLayoutItem &item = item_list[index];
         Q_ASSERT(item.subinfo != 0);
         return item.subinfo->unplug(path.mid(1));
     }
