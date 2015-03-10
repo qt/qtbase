@@ -425,8 +425,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     // setReceiveBufferSize(49152);
     // setSendBufferSize(49152);
 
-    d->socketType = socketType;
-    d->socketProtocol = protocol;
     return true;
 }
 

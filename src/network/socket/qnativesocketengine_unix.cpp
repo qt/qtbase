@@ -259,6 +259,10 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #endif
 
     socketDescriptor = socket;
+    if (socket != -1) {
+        this->socketProtocol = socketProtocol;
+        this->socketType = socketType;
+    }
     return true;
 }
 

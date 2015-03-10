@@ -794,6 +794,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
+    this->socketType = socketType;
+
     // Make the socket nonblocking.
     if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {
         setError(QAbstractSocket::UnsupportedSocketOperationError, NonBlockingInitFailedErrorString);

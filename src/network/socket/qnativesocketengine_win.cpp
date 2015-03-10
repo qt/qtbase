@@ -442,6 +442,10 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #endif
 
     socketDescriptor = socket;
+    if (socket != INVALID_SOCKET) {
+        this->socketProtocol = socketProtocol;
+        this->socketType = socketType;
+    }
 
     // Make the socket nonblocking.
     if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {
