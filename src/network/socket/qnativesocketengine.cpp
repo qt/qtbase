@@ -413,13 +413,18 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         return false;
     }
 
-    // Set the broadcasting flag if it's a UDP socket.
-    if (socketType == QAbstractSocket::UdpSocket
-        && !setOption(BroadcastSocketOption, 1)) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
-        close();
-        return false;
+    if (socketType == QAbstractSocket::UdpSocket) {
+        // Set the broadcasting flag if it's a UDP socket.
+        if (!setOption(BroadcastSocketOption, 1)) {
+            d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                        QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
+            close();
+            return false;
+        }
+
+        // Set some extra flags that are interesting to us, but accept failure
+        setOption(ReceivePacketInformation, 1);
+        setOption(ReceiveHopLimit, 1);
     }
 
 

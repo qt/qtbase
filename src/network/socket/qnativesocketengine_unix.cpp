@@ -49,6 +49,9 @@
 #ifdef QT_LINUXBASE
 #include <arpa/inet.h>
 #endif
+#ifdef Q_OS_BSD4
+#include <net/if_dl.h>
+#endif
 
 #if defined QNATIVESOCKETENGINE_DEBUG
 #include <qstring.h>
@@ -202,6 +205,32 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
             n = IP_TOS;
         }
         break;
+    case QNativeSocketEngine::ReceivePacketInformation:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_RECVPKTINFO;
+        } else if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+            level = IPPROTO_IP;
+#ifdef IP_PKTINFO
+            n = IP_PKTINFO;
+#elif defined(IP_RECVDSTADDR)
+            // variant found in QNX and FreeBSD; it will get us only the
+            // destination address, not the interface; we need IP_RECVIF for that.
+            n = IP_RECVDSTADDR;
+#endif
+        }
+        break;
+    case QNativeSocketEngine::ReceiveHopLimit:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_RECVHOPLIMIT;
+        } else if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+#ifdef IP_RECVTTL               // IP_RECVTTL is a non-standard extension supported on some OS
+            level = IPPROTO_IP;
+            n = IP_RECVTTL;
+#endif
+        }
+        break;
     }
 }
 
@@ -285,7 +314,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     QT_SOCKOPTLEN_T len = sizeof(v);
 
     convertToLevelAndOption(opt, socketProtocol, level, n);
-    if (::getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
+    if (n != -1 && ::getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
         return v;
 
     return -1;
@@ -847,6 +876,9 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize, QIpPacketHeader *header,
                                                          QAbstractSocketEngine::PacketHeaderOptions options)
 {
+    // we use quintptr to force the alignment
+    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int)) + sizeof(quintptr) - 1) / sizeof(quintptr)];
+
     struct msghdr msg;
     struct iovec vec;
     qt_sockaddr aa;
@@ -863,6 +895,10 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
         msg.msg_name = &aa;
         msg.msg_namelen = sizeof(aa);
     }
+    if (options & (QAbstractSocketEngine::WantDatagramHopLimit | QAbstractSocketEngine::WantDatagramDestination)) {
+        msg.msg_control = cbuf;
+        msg.msg_controllen = sizeof(cbuf);
+    }
 
     ssize_t recvResult = 0;
     do {
@@ -876,6 +912,55 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     } else if (options != QAbstractSocketEngine::WantNone) {
         Q_ASSERT(header);
         qt_socket_getPortAndAddress(&aa, &header->senderPort, &header->senderAddress);
+        header->destinationPort = localPort;
+
+        // parse the ancillary data
+        struct cmsghdr *cmsgptr;
+        for (cmsgptr = CMSG_FIRSTHDR(&msg); cmsgptr != NULL;
+             cmsgptr = CMSG_NXTHDR(&msg, cmsgptr)) {
+            if (cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_PKTINFO
+                    && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in6_pktinfo))) {
+                in6_pktinfo *info = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
+
+                header->destinationAddress.setAddress(reinterpret_cast<quint8 *>(&info->ipi6_addr));
+                header->ifindex = info->ipi6_ifindex;
+                if (header->ifindex)
+                    header->destinationAddress.setScopeId(QString::number(info->ipi6_ifindex));
+            }
+
+#ifdef IP_PKTINFO
+            if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_PKTINFO
+                    && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in_pktinfo))) {
+                in_pktinfo *info = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
+
+                header->destinationAddress.setAddress(ntohl(info->ipi_addr.s_addr));
+                header->ifindex = info->ipi_ifindex;
+            }
+#else
+#  ifdef IP_RECVDSTADDR
+            if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_RECVDSTADDR
+                    && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in_addr))) {
+                in_addr *addr = reinterpret_cast<in_addr *>(CMSG_DATA(cmsgptr));
+
+                header->destinationAddress.setAddress(ntohl(addr->s_addr));
+            }
+#  endif
+#  if defined(IP_RECVIF) && defined(Q_OS_BSD4)
+            if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_RECVIF
+                    && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(sockaddr_dl))) {
+                sockaddr_dl *sdl = reinterpret_cast<sockaddr_dl *>(CMSG_DATA(cmsgptr));
+
+                header->ifindex = LLINDEX(sdl);
+            }
+#  endif
+#endif
+
+            if (cmsgptr->cmsg_len == CMSG_LEN(sizeof(int))
+                    && ((cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_HOPLIMIT)
+                        || (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_TTL))) {
+                header->hopLimit = *reinterpret_cast<int *>(CMSG_DATA(cmsgptr));
+            }
+        }
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)

@@ -59,6 +59,9 @@ QT_BEGIN_NAMESPACE
 #ifndef IPV6_V6ONLY
 #define IPV6_V6ONLY 27
 #endif
+#ifndef IP_HOPLIMIT
+#define IP_HOPLIMIT               21 // Receive packet hop limit.
+#endif
 
 #if defined(QNATIVESOCKETENGINE_DEBUG)
 
@@ -250,6 +253,24 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
         {
             level = IPPROTO_IP;
             n = IP_MULTICAST_LOOP;
+        }
+        break;
+    case QNativeSocketEngine::ReceivePacketInformation:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_PKTINFO;
+        } else if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+            level = IPPROTO_IP;
+            n = IP_PKTINFO;
+        }
+        break;
+    case QNativeSocketEngine::ReceiveHopLimit:
+        if (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_HOPLIMIT;
+        } else if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+            level = IPPROTO_IP;
+            n = IP_HOPLIMIT;
         }
         break;
     }
@@ -1219,6 +1240,10 @@ static int (*const sendmsg)(...) = 0;
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
                                                          QAbstractSocketEngine::PacketHeaderOptions options)
 {
+    union {
+        char cbuf[WSA_CMSG_SPACE(sizeof(struct in6_pktinfo)) + WSA_CMSG_SPACE(sizeof(int))];
+        WSACMSGHDR align;    // only to ensure alignment
+    };
     WSAMSG msg;
     WSABUF buf;
     qt_sockaddr aa;
@@ -1233,6 +1258,10 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
     msg.dwBufferCount = 1;
     msg.name = reinterpret_cast<LPSOCKADDR>(&aa);
     msg.namelen = sizeof(aa);
+    if (options & (QAbstractSocketEngine::WantDatagramHopLimit | QAbstractSocketEngine::WantDatagramDestination)) {
+        msg.Control.buf = cbuf;
+        msg.Control.len = sizeof(cbuf);
+    }
 
     DWORD flags = 0;
     DWORD bytesRead = 0;
@@ -1261,6 +1290,35 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
             qt_socket_getPortAndAddress(socketDescriptor, &aa, &header->senderPort, &header->senderAddress);
     }
 
+    if (ret != -1 && recvmsg) {
+        // get the ancillary data
+        WSACMSGHDR *cmsgptr;
+        for (cmsgptr = WSA_CMSG_FIRSTHDR(&msg); cmsgptr != NULL;
+             cmsgptr = WSA_CMSG_NXTHDR(&msg, cmsgptr)) {
+            if (cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_PKTINFO
+                    && cmsgptr->cmsg_len >= WSA_CMSG_LEN(sizeof(in6_pktinfo))) {
+                in6_pktinfo *info = reinterpret_cast<in6_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
+                QHostAddress target(reinterpret_cast<quint8 *>(&info->ipi6_addr));
+                if (info->ipi6_ifindex)
+                    target.setScopeId(QString::number(info->ipi6_ifindex));
+            }
+            if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_PKTINFO
+                    && cmsgptr->cmsg_len >= WSA_CMSG_LEN(sizeof(in_pktinfo))) {
+                in_pktinfo *info = reinterpret_cast<in_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
+                u_long addr;
+                WSANtohl(socketDescriptor, info->ipi_addr.s_addr, &addr);
+                QHostAddress target(addr);
+                if (info->ipi_ifindex)
+                    target.setScopeId(QString::number(info->ipi_ifindex));
+            }
+
+            if (cmsgptr->cmsg_len == WSA_CMSG_LEN(sizeof(int))
+                    && ((cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_HOPLIMIT)
+                        || (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_TTL))) {
+                header->hopLimit = *reinterpret_cast<int *>(WSA_CMSG_DATA(cmsgptr));
+            }
+        }
+    }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %li, %s, %i) == %li",

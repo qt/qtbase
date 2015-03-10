@@ -539,7 +539,7 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
 }
 
 qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header,
-                                         PacketHeaderOptions options)
+                                         PacketHeaderOptions)
 {
     Q_D(QNativeSocketEngine);
     if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
@@ -577,13 +577,13 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
     HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
                                     &hostNameFactory);
     RETURN_IF_FAILED("Could not obtain hostname factory", return -1);
-    const QString addressString = addr.toString();
+    const QString addressString = header.destinationAddress.toString();
     HStringReference hostNameRef(reinterpret_cast<LPCWSTR>(addressString.utf16()));
     hostNameFactory->CreateHostName(hostNameRef.Get(), &remoteHost);
 
     ComPtr<IAsyncOperation<IOutputStream *>> streamOperation;
     ComPtr<IOutputStream> stream;
-    const QString portString = QString::number(port);
+    const QString portString = QString::number(header.destinationPort);
     HStringReference portRef(reinterpret_cast<LPCWSTR>(portString.utf16()));
     hr = d->udpSocket()->GetOutputStreamAsync(remoteHost.Get(), portRef.Get(), &streamOperation);
     RETURN_IF_FAILED("Failed to get output stream to socket", return -1);

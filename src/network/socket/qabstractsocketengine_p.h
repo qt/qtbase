@@ -63,18 +63,22 @@ class QIpPacketHeader
 {
 public:
     QIpPacketHeader(const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
-        : destinationAddress(dstAddr), destinationPort(port)
+        : destinationAddress(dstAddr), ifindex(0), hopLimit(-1), destinationPort(port)
     {}
 
     void clear()
     {
         senderAddress.clear();
         destinationAddress.clear();
+        ifindex = 0;
+        hopLimit = -1;
     }
 
     QHostAddress senderAddress;
     QHostAddress destinationAddress;
 
+    uint ifindex;
+    qint16 hopLimit;
     quint16 senderPort;
     quint16 destinationPort;
 };
@@ -114,12 +118,16 @@ public:
         KeepAliveOption,
         MulticastTtlOption,
         MulticastLoopbackOption,
-        TypeOfServiceOption
+        TypeOfServiceOption,
+        ReceivePacketInformation,
+        ReceiveHopLimit
     };
 
     enum PacketHeaderOption {
         WantNone = 0,
         WantDatagramSender,
+        WantDatagramDestination,
+        WantDatagramHopLimit,
 
         WantAll = 0xff
     };
