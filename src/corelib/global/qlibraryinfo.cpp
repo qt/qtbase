@@ -158,35 +158,35 @@ void QLibrarySettings::load()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
+    if (QFile::exists(qtconfig))
+        return new QSettings(qtconfig, QSettings::IniFormat);
 #ifdef QT_BUILD_QMAKE
-    if(!QFile::exists(qtconfig))
-        qtconfig = qmake_libraryInfoFile();
+    qtconfig = qmake_libraryInfoFile();
+    if (QFile::exists(qtconfig))
+        return new QSettings(qtconfig, QSettings::IniFormat);
 #else
-    if (!QFile::exists(qtconfig)) {
 #ifdef Q_OS_MAC
-        CFBundleRef bundleRef = CFBundleGetMainBundle();
-        if (bundleRef) {
-            QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
-                                                               QCFString(QLatin1String("qt.conf")),
-                                                               0,
-                                                               0);
-            if (urlRef) {
-                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-                qtconfig = QDir::cleanPath(path);
-            }
-        }
-        if (qtconfig.isEmpty())
-#endif
-        {
-            if (QCoreApplication::instance()) {
-                QDir pwd(QCoreApplication::applicationDirPath());
-                qtconfig = pwd.filePath(QLatin1String("qt.conf"));
-            }
+    CFBundleRef bundleRef = CFBundleGetMainBundle();
+    if (bundleRef) {
+        QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
+                                                           QCFString(QLatin1String("qt.conf")),
+                                                           0,
+                                                           0);
+        if (urlRef) {
+            QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+            qtconfig = QDir::cleanPath(path);
+            if (QFile::exists(qtconfig))
+                return new QSettings(qtconfig, QSettings::IniFormat);
         }
     }
 #endif
-    if (QFile::exists(qtconfig))
-        return new QSettings(qtconfig, QSettings::IniFormat);
+    if (QCoreApplication::instance()) {
+        QDir pwd(QCoreApplication::applicationDirPath());
+        qtconfig = pwd.filePath(QLatin1String("qt.conf"));
+        if (QFile::exists(qtconfig))
+            return new QSettings(qtconfig, QSettings::IniFormat);
+    }
+#endif
     return 0;     //no luck
 }
 
