@@ -98,7 +98,7 @@ QT_USE_NAMESPACE
             | NSFontPanelStrikethroughEffectModeMask;
 }
 
-- (void)qt_sendPostedMessage:(NSEvent *)event
+- (void)QT_MANGLE_NAMESPACE(qt_sendPostedMessage):(NSEvent *)event
 {
     // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
@@ -126,7 +126,7 @@ QT_USE_NAMESPACE
 
 static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSEvent");
 
-- (BOOL)qt_filterEvent:(NSEvent *)event
+- (BOOL)QT_MANGLE_NAMESPACE(qt_filterEvent):(NSEvent *)event
 {
     if (qApp && qApp->eventDispatcher()->
             filterNativeEvent(q_macLocalEventType, static_cast<void*>(event), 0))
@@ -135,7 +135,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
     if ([event type] == NSApplicationDefined) {
         switch ([event subtype]) {
             case QtCocoaEventSubTypePostMessage:
-                [NSApp qt_sendPostedMessage:event];
+                [NSApp QT_MANGLE_NAMESPACE(qt_sendPostedMessage):event];
                 return true;
             default:
                 break;
@@ -163,7 +163,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
     // be called instead of sendEvent if redirection occurs.
     // 'self' will then be an instance of NSApplication
     // (and not QNSApplication)
-    if (![NSApp qt_filterEvent:event])
+    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event])
         [self qt_sendEvent_original:event];
 }
 
@@ -171,7 +171,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
 {
     // This method will be called if
     // no redirection occurs
-    if (![NSApp qt_filterEvent:event])
+    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event])
         [super sendEvent:event];
 }
 

@@ -42,6 +42,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
 
+QT_BEGIN_NAMESPACE
+
 static QList<QCocoaMenuBar*> static_menubars;
 
 static inline QCocoaMenuLoader *getMenuLoader()
@@ -381,4 +383,6 @@ NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole r)
                 return i->nsItem();
     return Q_NULLPTR;
 }
+
+QT_END_NAMESPACE
 

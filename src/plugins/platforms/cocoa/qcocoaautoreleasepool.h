@@ -35,9 +35,10 @@
 #define QCOCOAAUTORELEASEPOOL_H
 
 #undef slots
-
+#include <qglobal.h>
 #include <Cocoa/Cocoa.h>
 
+QT_BEGIN_NAMESPACE
 class QCocoaAutoReleasePool
 {
 public:
@@ -47,5 +48,6 @@ public:
 private:
     NSAutoreleasePool *pool;
 };
+QT_END_NAMESPACE
 
 #endif // QCOCOAAUTORELEASEPOOL_H

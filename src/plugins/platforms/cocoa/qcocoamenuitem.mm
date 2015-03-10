@@ -44,6 +44,8 @@
 
 #include <QtCore/QDebug>
 
+QT_BEGIN_NAMESPACE
+
 static inline QCocoaMenuLoader *getMenuLoader()
 {
     return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
@@ -423,3 +425,5 @@ void QCocoaMenuItem::setIconSize(int size)
 {
     m_iconSize = size;
 }
+
+QT_END_NAMESPACE

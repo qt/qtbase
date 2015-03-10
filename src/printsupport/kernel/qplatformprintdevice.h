@@ -173,8 +173,8 @@ protected:
 #endif
 };
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_PRINTER
+
+QT_END_NAMESPACE
 
 #endif // QPLATFORMPRINTDEVICE_H
