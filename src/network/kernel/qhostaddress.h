@@ -132,6 +132,7 @@ public:
 protected:
     QScopedPointer<QHostAddressPrivate> d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
 
 inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
 { return address2 == address1; }
