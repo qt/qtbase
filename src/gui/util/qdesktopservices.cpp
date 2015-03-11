@@ -185,7 +185,12 @@ bool QDesktopServices::openUrl(const QUrl &url)
     }
     if (!url.isValid())
         return false;
-    QPlatformServices *platformServices = QGuiApplicationPrivate::platformIntegration()->services();
+
+    QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!platformIntegration)
+        return false;
+
+    QPlatformServices *platformServices = platformIntegration->services();
     if (!platformServices) {
         qWarning("%s: The platform plugin does not support services.", Q_FUNC_INFO);
         return false;
