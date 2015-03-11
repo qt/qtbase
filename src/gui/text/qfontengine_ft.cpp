@@ -1843,9 +1843,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   const QTransform &t,
                                                   bool fetchBoundingBox)
 {
-    FT_Face face = 0;
     QGlyphSet *glyphSet = 0;
-    FT_Matrix ftMatrix = QTransformToFTMatrix(t);
     if (cacheEnabled) {
         if (t.type() > QTransform::TxTranslate && FT_IS_SCALABLE(freetype->face))
             glyphSet = loadTransformedGlyphSet(t);
@@ -1859,15 +1857,14 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
     if (!glyph || glyph->format != format) {
-        face = lockFace();
+        lockFace();
         FT_Matrix m = this->matrix;
+        FT_Matrix ftMatrix = glyphSet != 0 ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
         FT_Matrix_Multiply(&ftMatrix, &m);
         freetype->matrix = m;
         glyph = loadGlyph(glyphSet, g, subPixelPosition, format, false);
-    }
-
-    if (face)
         unlockFace();
+    }
 
     return glyph;
 }
