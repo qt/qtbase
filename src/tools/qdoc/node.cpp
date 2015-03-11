@@ -1863,6 +1863,7 @@ void FunctionNode::setReimp(bool r)
 }
 
 /*!
+  Append \a parameter to the parameter list.
  */
 void FunctionNode::addParameter(const Parameter& parameter)
 {

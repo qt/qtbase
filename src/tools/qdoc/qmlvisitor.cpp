@@ -42,6 +42,7 @@
 #include "codeparser.h"
 #include "qmlvisitor.h"
 #include "qdocdatabase.h"
+#include "tokenizer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -146,6 +147,29 @@ QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) cons
     return QQmlJS::AST::SourceLocation();
 }
 
+class QmlSignatureParser
+{
+  public:
+    QmlSignatureParser(FunctionNode* func, const QString& signature, const Location& loc);
+    void readToken() { tok_ = tokenizer_->getToken(); }
+    QString lexeme() { return tokenizer_->lexeme(); }
+    QString previousLexeme() { return tokenizer_->previousLexeme(); }
+
+    bool match(int target);
+    bool matchDataType(CodeChunk* dataType, QString* var);
+    bool matchParameter();
+    bool matchFunctionDecl();
+
+  private:
+    QString             signature_;
+    QStringList         names_;
+    QString             funcName_;
+    Tokenizer*          tokenizer_;
+    int                 tok_;
+    FunctionNode*       func_;
+    const Location&     location_;
+};
+
 /*!
   Finds the nearest unused qdoc comment above the QML entity
   represented by the \a node and processes the qdoc commands
@@ -216,6 +240,13 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
                     else
                         qDebug() << "  FAILED TO PARSE QML OR JS PROPERTY:" << topic << args;
                 }
+                else if ((topic == COMMAND_QMLMETHOD) || (topic == COMMAND_QMLATTACHEDMETHOD) ||
+                         (topic == COMMAND_JSMETHOD) || (topic == COMMAND_JSATTACHEDMETHOD)) {
+                    if (node->isFunction()) {
+                        FunctionNode* fn = static_cast<FunctionNode*>(node);
+                        QmlSignatureParser qsp(fn, args, doc.location());
+                    }
+                }
             }
         }
         for (int i=0; i<nodes.size(); ++i)
@@ -230,6 +261,174 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
     codeLoc.setLineNo(location.startLine);
     node->setLocation(codeLoc);
     return false;
+}
+
+QmlSignatureParser::QmlSignatureParser(FunctionNode* func, const QString& signature, const Location& loc)
+    : signature_(signature), func_(func), location_(loc)
+{
+    QByteArray latin1 = signature.toLatin1();
+    Tokenizer stringTokenizer(location_, latin1);
+    stringTokenizer.setParsingFnOrMacro(true);
+    tokenizer_ = &stringTokenizer;
+    readToken();
+    matchFunctionDecl();
+}
+
+/*!
+  If the current token matches \a target, read the next
+  token and return true. Otherwise, don't read the next
+  token, and return false.
+ */
+bool QmlSignatureParser::match(int target)
+{
+    if (tok_ == target) {
+        readToken();
+        return true;
+    }
+    return false;
+}
+
+/*!
+  Parse a QML data type into \a dataType and an optional
+  variable name into \a var.
+ */
+bool QmlSignatureParser::matchDataType(CodeChunk* dataType, QString* var)
+{
+    /*
+      This code is really hard to follow... sorry. The loop is there to match
+      Alpha::Beta::Gamma::...::Omega.
+    */
+    for (;;) {
+        bool virgin = true;
+
+        if (tok_ != Tok_Ident) {
+            while (match(Tok_signed) ||
+                   match(Tok_unsigned) ||
+                   match(Tok_short) ||
+                   match(Tok_long) ||
+                   match(Tok_int64)) {
+                dataType->append(previousLexeme());
+                virgin = false;
+            }
+        }
+
+        if (virgin) {
+            if (match(Tok_Ident)) {
+                dataType->append(previousLexeme());
+            }
+            else if (match(Tok_void) ||
+                     match(Tok_int) ||
+                     match(Tok_char) ||
+                     match(Tok_double) ||
+                     match(Tok_Ellipsis))
+                dataType->append(previousLexeme());
+            else
+                return false;
+        }
+        else if (match(Tok_int) ||
+                 match(Tok_char) ||
+                 match(Tok_double)) {
+            dataType->append(previousLexeme());
+        }
+
+        if (match(Tok_Gulbrandsen))
+            dataType->append(previousLexeme());
+        else
+            break;
+    }
+
+    while (match(Tok_Ampersand) ||
+           match(Tok_Aster) ||
+           match(Tok_const) ||
+           match(Tok_Caret))
+        dataType->append(previousLexeme());
+
+    /*
+      The usual case: Look for an optional identifier, then for
+      some array brackets.
+    */
+    dataType->appendHotspot();
+
+    if ((var != 0) && match(Tok_Ident))
+        *var = previousLexeme();
+
+    if (tok_ == Tok_LeftBracket) {
+        int bracketDepth0 = tokenizer_->bracketDepth();
+        while ((tokenizer_->bracketDepth() >= bracketDepth0 && tok_ != Tok_Eoi) ||
+               tok_ == Tok_RightBracket) {
+            dataType->append(lexeme());
+            readToken();
+        }
+    }
+    return true;
+}
+
+bool QmlSignatureParser::matchParameter()
+{
+    QString name;
+    CodeChunk dataType;
+    CodeChunk defaultValue;
+
+    bool result = matchDataType(&dataType, &name);
+    if (name.isEmpty()) {
+        name = dataType.toString();
+        dataType.clear();
+    }
+
+    if (!result)
+        return false;
+    if (match(Tok_Equal)) {
+        int parenDepth0 = tokenizer_->parenDepth();
+        while (tokenizer_->parenDepth() >= parenDepth0 &&
+               (tok_ != Tok_Comma ||
+                tokenizer_->parenDepth() > parenDepth0) &&
+               tok_ != Tok_Eoi) {
+            defaultValue.append(lexeme());
+            readToken();
+        }
+    }
+    func_->addParameter(Parameter(dataType.toString(), "", name, defaultValue.toString()));
+    return true;
+}
+
+bool QmlSignatureParser::matchFunctionDecl()
+{
+    CodeChunk returnType;
+
+    int firstBlank = signature_.indexOf(QChar(' '));
+    int leftParen = signature_.indexOf(QChar('('));
+    if ((firstBlank > 0) && (leftParen - firstBlank) > 1) {
+        if (!matchDataType(&returnType, 0))
+            return false;
+    }
+
+    while (match(Tok_Ident)) {
+        names_.append(previousLexeme());
+        if (!match(Tok_Gulbrandsen)) {
+            funcName_ = previousLexeme();
+            names_.pop_back();
+            break;
+        }
+    }
+
+    if (tok_ != Tok_LeftParen)
+        return false;
+
+    readToken();
+
+    func_->setLocation(location_);
+    func_->setReturnType(returnType.toString());
+
+    if (tok_ != Tok_RightParen) {
+        func_->clearParams();
+        do {
+            if (!matchParameter())
+                return false;
+        } while (match(Tok_Comma));
+    }
+    if (!match(Tok_RightParen))
+        return false;
+    return true;
 }
 
 /*!

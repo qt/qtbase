@@ -904,6 +904,7 @@ public:
     }
     int overloadNumber() const;
     const QList<Parameter>& parameters() const { return params; }
+    void clearParams() { params.clear(); }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;
     const FunctionNode* reimplementedFrom() const { return rf; }

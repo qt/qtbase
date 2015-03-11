@@ -3349,6 +3349,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
     }
 }
 
+// generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
 void HtmlGenerator::generateSynopsis(const Node *node,
                                      const Node *relative,
                                      CodeMarker *marker,
