@@ -146,6 +146,7 @@ public:
     QJsonValueRef &operator = (const QJsonValue &val);
     QJsonValueRef &operator = (const QJsonValueRef &val);
 
+    QVariant toVariant() const;
     inline QJsonValue::Type type() const { return toValue().type(); }
     inline bool isNull() const { return type() == QJsonValue::Null; }
     inline bool isBool() const { return type() == QJsonValue::Bool; }
