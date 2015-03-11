@@ -2411,8 +2411,9 @@
 
     Flags that alter the behavior:
 
-    \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
+    \value ImhHiddenText             The input method should not show the characters while typing.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
+                                     Note that setting \c ImhHiddenText does not change the echo mode.
     \value ImhSensitiveData          Typed text should not be stored by the active input method
                                      in any persistent storage like predictive user dictionary.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
