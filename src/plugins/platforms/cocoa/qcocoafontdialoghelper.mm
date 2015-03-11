@@ -84,20 +84,13 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     QFont newFont;
     if (cocoaFont) {
         int pSize = qRound([cocoaFont pointSize]);
-        QString family(QCFString::toQString([cocoaFont familyName]));
-        QString typeface(QCFString::toQString([cocoaFont fontName]));
+        QCFType<CTFontDescriptorRef> font(CTFontCopyFontDescriptor((CTFontRef)cocoaFont));
+        QString family(QCFString((CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute)));
+        QString style(QCFString(((CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute))));
 
-        int hyphenPos = typeface.indexOf(QLatin1Char('-'));
-        if (hyphenPos != -1) {
-            typeface.remove(0, hyphenPos + 1);
-        } else {
-            typeface = QLatin1String("Normal");
-        }
-
-        newFont = QFontDatabase().font(family, typeface, pSize);
+        newFont = QFontDatabase().font(family, style, pSize);
         newFont.setUnderline(resolveFont.underline());
         newFont.setStrikeOut(resolveFont.strikeOut());
-
     }
     return newFont;
 }
