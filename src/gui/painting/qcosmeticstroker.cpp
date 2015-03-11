@@ -437,8 +437,9 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
         int y = (y1 + 32) >> 6;
         int ys = (y2 + 32) >> 6;
 
+        int round = (xinc > 0) ? 32 : 0;
         if (y != ys) {
-            x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
+            x += ( ((((y << 6) + round - y1)))  * xinc ) >> 6;
 
             if (swapped) {
                 lastPixel.x = x >> 16;
@@ -468,8 +469,9 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
         int x = (x1 + 32) >> 6;
         int xs = (x2 + 32) >> 6;
 
+        int round = (yinc > 0) ? 32 : 0;
         if (x != xs) {
-            y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;
+            y += ( ((((x << 6) + round - x1)))  * yinc ) >> 6;
 
             if (swapped) {
                 lastPixel.x = x;
@@ -762,9 +764,10 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
 
         int y = (y1 + 32) >> 6;
         int ys = (y2 + 32) >> 6;
+        int round = (xinc > 0) ? 32 : 0;
 
         if (y != ys) {
-            x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
+            x += ( ((((y << 6) + round - y1)))  * xinc ) >> 6;
 
             // calculate first and last pixel and perform dropout control
             QCosmeticStroker::Point first;
@@ -837,9 +840,10 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
 
         int x = (x1 + 32) >> 6;
         int xs = (x2 + 32) >> 6;
+        int round = (yinc > 0) ? 32 : 0;
 
         if (x != xs) {
-            y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;
+            y += ( ((((x << 6) + round - x1)))  * yinc ) >> 6;
 
             // calculate first and last pixel to perform dropout control
             QCosmeticStroker::Point first;
