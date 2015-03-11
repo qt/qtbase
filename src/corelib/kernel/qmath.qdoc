@@ -215,6 +215,7 @@
     \snippet code/src_corelib_kernel_qmath.cpp 3
 
     \sa qDegreesToRadians()
+*/
 
 /*!
     \fn quint32 qNextPowerOfTwo(quint32 value)
