@@ -1300,7 +1300,8 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 xcb_window_t QXcbConnection::rootWindow()
 {
-    return primaryScreen()->root();
+    QXcbScreen *s = primaryScreen();
+    return s ? s->root() : 0;
 }
 
 #ifdef XCB_USE_XLIB
