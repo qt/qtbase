@@ -936,6 +936,8 @@ void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb co
 
 void QGIFFormat::nextY(unsigned char *bits, int bpl)
 {
+    if (out_of_bounds)
+        return;
     int my;
     switch (interlace) {
     case 0: // Non-interlaced
