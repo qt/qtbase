@@ -96,6 +96,18 @@ bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
+void QCocoaBackingStore::beginPaint(const QRegion &region)
+{
+    if (m_qImage.hasAlphaChannel()) {
+        QPainter p(&m_qImage);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QVector<QRect> rects = region.rects();
+        const QColor blank = Qt::transparent;
+        for (QVector<QRect>::const_iterator it = rects.begin(), end = rects.end(); it != end; ++it)
+            p.fillRect(*it, blank);
+    }
+}
+
 qreal QCocoaBackingStore::getBackingStoreDevicePixelRatio()
 {
     return m_qImage.devicePixelRatio();

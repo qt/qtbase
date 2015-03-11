@@ -54,6 +54,7 @@ public:
     QImage toImage() const;
     void resize (const QSize &size, const QRegion &);
     bool scroll(const QRegion &area, int dx, int dy);
+    void beginPaint(const QRegion &region);
     qreal getBackingStoreDevicePixelRatio();
 
 private:
