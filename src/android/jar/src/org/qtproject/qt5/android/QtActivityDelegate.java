@@ -65,6 +65,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -788,7 +789,29 @@ public class QtActivityDelegate
                                                   0, 0,
                                                   metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
         }
+
+        ViewGroup layout = null;
         m_layout = new QtLayout(m_activity);
+        if (Build.VERSION.SDK_INT >= 14) {
+            try {
+                ActivityInfo activityInfo = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
+                                                                                           PackageManager.GET_META_DATA);
+                if (activityInfo.metaData == null
+                    || !activityInfo.metaData.containsKey("android.app.allow_overlapping_system_ui")
+                    || !activityInfo.metaData.getBoolean("android.app.allow_overlapping_system_ui")) {
+                        layout = new LinearLayout(m_activity);
+                        layout.setFitsSystemWindows(true);
+                        layout.addView(m_layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                            ViewGroup.LayoutParams.MATCH_PARENT));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (layout == null)
+            layout = m_layout;
+
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
@@ -811,7 +834,7 @@ public class QtActivityDelegate
             Log.w("Qt A11y", "Unknown exception: " + e.toString());
         }
 
-        m_activity.setContentView(m_layout,
+        m_activity.setContentView(layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
 
