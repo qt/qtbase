@@ -2554,7 +2554,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     }
 
     if (availableGeometryChanged)
-        emit s->availableGeometryChanged(s->geometry());
+        emit s->availableGeometryChanged(s->availableGeometry());
 
     if (geometryChanged || availableGeometryChanged) {
         foreach (QScreen* sibling, s->virtualSiblings())
