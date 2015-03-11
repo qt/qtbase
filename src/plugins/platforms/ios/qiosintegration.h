@@ -45,8 +45,10 @@ QT_BEGIN_NAMESPACE
 
 class QIOSServices;
 
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+class QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
 {
+    Q_OBJECT
+
 public:
     QIOSIntegration();
     ~QIOSIntegration();
@@ -72,8 +74,6 @@ public:
     QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformNativeInterface *nativeInterface() const;
 
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-
     QTouchDevice *touchDevice();
     QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
 
@@ -82,6 +82,10 @@ public:
     void destroyScreen(QPlatformScreen *screen) { QPlatformIntegration::destroyScreen(screen); }
 
     static QIOSIntegration *instance();
+
+    // -- QPlatformNativeInterface --
+
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
 private:
     QPlatformFontDatabase *m_fontDatabase;
