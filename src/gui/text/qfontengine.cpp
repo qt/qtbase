@@ -1622,7 +1622,8 @@ void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamili
 
 void QFontEngineMulti::ensureEngineAt(int at)
 {
-    Q_ASSERT(m_fallbackFamiliesQueried);
+    if (!m_fallbackFamiliesQueried)
+        ensureFallbackFamiliesQueried();
     Q_ASSERT(at < m_engines.size());
     if (!m_engines.at(at)) {
         QFontEngine *engine = loadEngine(at);
