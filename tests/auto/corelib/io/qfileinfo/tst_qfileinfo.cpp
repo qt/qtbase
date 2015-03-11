@@ -655,6 +655,8 @@ void tst_QFileInfo::canonicalFilePath()
     QVERIFY(tempFile.open(QFile::WriteOnly));
     QFileInfo fi(tempFile.fileName());
     QCOMPARE(fi.canonicalFilePath(), QDir::currentPath() + "/" + fileName);
+    fi = QFileInfo(tempFile.fileName() + QString::fromLatin1("/"));
+    QCOMPARE(fi.canonicalFilePath(), QString::fromLatin1(""));
     tempFile.remove();
 
     // This used to crash on Mac, verify that it doesn't anymore.
