@@ -2440,11 +2440,12 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
     }
 }
 
-// Convert a LocalTime expressed in local msecs encoding into a UTC epoch msecs
-// Optionally populate the returned values from mktime for the adjusted local
-// date and time and daylight status.  Uses daylightStatus in calculation if populated.
-static qint64 localMSecsToEpochMSecs(qint64 localMsecs, QDate *localDate = 0, QTime *localTime = 0,
-                                     QDateTimePrivate::DaylightStatus *daylightStatus = 0,
+// Convert a LocalTime expressed in local msecs encoding and the corresponding
+// daylight status into a UTC epoch msecs. Optionally populate the returned
+// values from mktime for the adjusted local date and time.
+static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
+                                     QDateTimePrivate::DaylightStatus *daylightStatus,
+                                     QDate *localDate = 0, QTime *localTime = 0,
                                      QString *abbreviation = 0, bool *ok = 0)
 {
     QDate dt;
@@ -2680,9 +2681,11 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
     case Qt::UTC:
         return (m_msecs - (m_offsetFromUtc * 1000));
 
-    case Qt::LocalTime:
+    case Qt::LocalTime: {
         // recalculate the local timezone
-        return localMSecsToEpochMSecs(m_msecs);
+        DaylightStatus status = daylightStatus();
+        return localMSecsToEpochMSecs(m_msecs, &status);
+    }
 
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
@@ -2752,7 +2755,7 @@ void QDateTimePrivate::refreshDateTime()
     qint64 epochMSecs = 0;
     if (m_spec == Qt::LocalTime) {
         DaylightStatus status = daylightStatus();
-        epochMSecs = localMSecsToEpochMSecs(m_msecs, &testDate, &testTime, &status);
+        epochMSecs = localMSecsToEpochMSecs(m_msecs, &status, &testDate, &testTime);
 #ifndef QT_BOOTSTRAPPED
     } else {
         epochMSecs = zoneMSecsToEpochMSecs(m_msecs, m_timeZone, &testDate, &testTime);
@@ -3190,7 +3193,7 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::LocalTime:  {
         QString abbrev;
         QDateTimePrivate::DaylightStatus status = d->daylightStatus();
-        localMSecsToEpochMSecs(d->m_msecs, 0, 0, &status, &abbrev);
+        localMSecsToEpochMSecs(d->m_msecs, &status, 0, 0, &abbrev);
         return abbrev;
         }
     }
@@ -3221,7 +3224,7 @@ bool QDateTime::isDaylightTime() const
     case Qt::LocalTime: {
         QDateTimePrivate::DaylightStatus status = d->daylightStatus();
         if (status == QDateTimePrivate::UnknownDaylightTime)
-            localMSecsToEpochMSecs(d->m_msecs, 0, 0, &status, 0);
+            localMSecsToEpochMSecs(d->m_msecs, &status);
         return (status == QDateTimePrivate::DaylightTime);
         }
     }
@@ -3676,12 +3679,14 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     date = date.addDays(ndays);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3710,12 +3715,14 @@ QDateTime QDateTime::addMonths(int nmonths) const
     date = date.addMonths(nmonths);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3744,12 +3751,14 @@ QDateTime QDateTime::addYears(int nyears) const
     date = date.addYears(nyears);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }
