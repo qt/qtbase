@@ -72,6 +72,9 @@ NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
     QChar cocoa_key = qt_mac_qtKey2CocoaKey(Qt::Key(accel_key));
     if (cocoa_key.isNull())
         cocoa_key = QChar(accel_key).toLower().unicode();
+    // Similar to qt_mac_removePrivateUnicode change the delete key so the symbol is correctly seen in native menubar
+    if (cocoa_key.unicode() == NSDeleteFunctionKey)
+        cocoa_key = NSDeleteCharacter;
     return [NSString stringWithCharacters:&cocoa_key.unicode() length:1];
 }
 
