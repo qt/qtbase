@@ -1334,6 +1334,11 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len,
                                                       const QIpPacketHeader &header)
 {
+    union {
+        char cbuf[WSA_CMSG_SPACE(sizeof(struct in6_pktinfo)) + WSA_CMSG_SPACE(sizeof(int))];
+        WSACMSGHDR align;    // ensures alignment
+    };
+    WSACMSGHDR *cmsgptr = &align;
     WSAMSG msg;
     WSABUF buf;
     qt_sockaddr aa;
@@ -1352,6 +1357,59 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     setPortAndAddress(&aa.a4, &aa.a6, header.destinationPort,
                       header.destinationAddress, &msg.name, &msg.namelen);
+
+    if (msg.namelen == sizeof(aa.a6)) {
+        // sending IPv6
+        if (header.hopLimit != -1) {
+            msg.Control.len += WSA_CMSG_SPACE(sizeof(int));
+            cmsgptr->cmsg_len = WSA_CMSG_LEN(sizeof(int));
+            cmsgptr->cmsg_level = IPPROTO_IPV6;
+            cmsgptr->cmsg_type = IPV6_HOPLIMIT;
+            memcpy(WSA_CMSG_DATA(cmsgptr), &header.hopLimit, sizeof(int));
+            cmsgptr = reinterpret_cast<WSACMSGHDR *>(reinterpret_cast<char *>(cmsgptr)
+                                                     + WSA_CMSG_SPACE(sizeof(int)));
+        }
+        if (header.ifindex != 0 || !header.senderAddress.isNull()) {
+            struct in6_pktinfo *data = reinterpret_cast<in6_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
+            memset(data, 0, sizeof(*data));
+            msg.Control.len += WSA_CMSG_SPACE(sizeof(*data));
+            cmsgptr->cmsg_len = WSA_CMSG_LEN(sizeof(*data));
+            cmsgptr->cmsg_level = IPPROTO_IPV6;
+            cmsgptr->cmsg_type = IPV6_PKTINFO;
+            data->ipi6_ifindex = header.ifindex;
+
+            Q_IPV6ADDR tmp = header.senderAddress.toIPv6Address();
+            memcpy(&data->ipi6_addr, &tmp, sizeof(tmp));
+            cmsgptr = reinterpret_cast<WSACMSGHDR *>(reinterpret_cast<char *>(cmsgptr)
+                                                     + WSA_CMSG_SPACE(sizeof(*data)));
+        }
+    } else {
+        // sending IPv4
+        if (header.hopLimit != -1) {
+            msg.Control.len += WSA_CMSG_SPACE(sizeof(int));
+            cmsgptr->cmsg_len = WSA_CMSG_LEN(sizeof(int));
+            cmsgptr->cmsg_level = IPPROTO_IP;
+            cmsgptr->cmsg_type = IP_TTL;
+            memcpy(WSA_CMSG_DATA(cmsgptr), &header.hopLimit, sizeof(int));
+            cmsgptr = reinterpret_cast<WSACMSGHDR *>(reinterpret_cast<char *>(cmsgptr)
+                                                     + WSA_CMSG_SPACE(sizeof(int)));
+        }
+        if (header.ifindex != 0 || !header.senderAddress.isNull()) {
+            struct in_pktinfo *data = reinterpret_cast<in_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
+            memset(data, 0, sizeof(*data));
+            msg.Control.len += WSA_CMSG_SPACE(sizeof(*data));
+            cmsgptr->cmsg_len = WSA_CMSG_LEN(sizeof(*data));
+            cmsgptr->cmsg_level = IPPROTO_IP;
+            cmsgptr->cmsg_type = IP_PKTINFO;
+            data->ipi_ifindex = header.ifindex;
+            WSAHtonl(socketDescriptor, header.senderAddress.toIPv4Address(), &data->ipi_addr.s_addr);
+            cmsgptr = reinterpret_cast<WSACMSGHDR *>(reinterpret_cast<char *>(cmsgptr)
+                                                     + WSA_CMSG_SPACE(sizeof(*data)));
+        }
+    }
+
+    if (msg.Control.len != 0)
+        msg.Control.buf = cbuf;
 
     DWORD flags = 0;
     DWORD bytesSent = 0;

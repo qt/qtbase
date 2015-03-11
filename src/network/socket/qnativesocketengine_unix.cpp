@@ -975,6 +975,10 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
 qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
+    // we use quintptr to force the alignment
+    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int)) + sizeof(quintptr) - 1) / sizeof(quintptr)];
+
+    struct cmsghdr *cmsgptr = reinterpret_cast<struct cmsghdr *>(cbuf);
     struct msghdr msg;
     struct iovec vec;
     qt_sockaddr aa;
@@ -986,6 +990,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
     msg.msg_iov = &vec;
     msg.msg_iovlen = 1;
     msg.msg_name = &aa.a;
+    msg.msg_control = &cbuf;
 
     if (header.destinationAddress.protocol() == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
@@ -997,17 +1002,70 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
         Q_IPV6ADDR tmp = header.destinationAddress.toIPv6Address();
         memcpy(&aa.a6.sin6_addr, &tmp, sizeof(tmp));
         msg.msg_namelen = sizeof(aa.a6);
+
+        if (header.hopLimit != -1) {
+            msg.msg_controllen += CMSG_SPACE(sizeof(int));
+            cmsgptr->cmsg_len = CMSG_LEN(sizeof(int));
+            cmsgptr->cmsg_level = IPPROTO_IPV6;
+            cmsgptr->cmsg_type = IPV6_HOPLIMIT;
+            memcpy(CMSG_DATA(cmsgptr), &header.hopLimit, sizeof(int));
+            cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(int)));
+        }
+        if (header.ifindex != 0 || !header.senderAddress.isNull()) {
+            struct in6_pktinfo *data = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));
+            memset(data, 0, sizeof(*data));
+            msg.msg_controllen += CMSG_SPACE(sizeof(*data));
+            cmsgptr->cmsg_len = CMSG_LEN(sizeof(*data));
+            cmsgptr->cmsg_level = IPPROTO_IPV6;
+            cmsgptr->cmsg_type = IPV6_PKTINFO;
+            data->ipi6_ifindex = header.ifindex;
+
+            tmp = header.senderAddress.toIPv6Address();
+            memcpy(&data->ipi6_addr, &tmp, sizeof(tmp));
+            cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(*data)));
+        }
     } else if (header.destinationAddress.protocol() == QAbstractSocket::IPv4Protocol) {
         aa.a4.sin_family = AF_INET;
         aa.a4.sin_port = htons(header.destinationPort);
         aa.a4.sin_addr.s_addr = htonl(header.destinationAddress.toIPv4Address());
         msg.msg_namelen = sizeof(aa.a4);
+
+        if (header.hopLimit != -1) {
+            msg.msg_controllen += CMSG_SPACE(sizeof(int));
+            cmsgptr->cmsg_len = CMSG_LEN(sizeof(int));
+            cmsgptr->cmsg_level = IPPROTO_IP;
+            cmsgptr->cmsg_type = IP_TTL;
+            memcpy(CMSG_DATA(cmsgptr), &header.hopLimit, sizeof(int));
+            cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(int)));
+        }
+
+#if defined(IP_PKTINFO) || defined(IP_SENDSRCADDR)
+        if (header.ifindex != 0 || !header.senderAddress.isNull()) {
+#  ifdef IP_PKTINFO
+            struct in_pktinfo *data = reinterpret_cast<in_pktinfo *>(CMSG_DATA(cmsgptr));
+            memset(data, 0, sizeof(*data));
+            cmsgptr->cmsg_type = IP_PKTINFO;
+            data->ipi_ifindex = header.ifindex;
+            data->ipi_addr.s_addr = htonl(header.senderAddress.toIPv4Address());
+#  elif defined(IP_SENDSRCADDR)
+            struct in_addr *data = reinterpret_cast<in_addr *>(CMSG_DATA(cmsgptr));
+            cmsgptr->cmsg_type = IP_SENDSRCADDR;
+            addr->s_addr = htonl(header.senderAddress.toIPv4Address());
+#  endif
+            cmsgptr->cmsg_level = IPPROTO_IP;
+            msg.msg_controllen += CMSG_SPACE(sizeof(*data));
+            cmsgptr->cmsg_len = CMSG_LEN(sizeof(*data));
+            cmsgptr = reinterpret_cast<cmsghdr *>(reinterpret_cast<char *>(cmsgptr) + CMSG_SPACE(sizeof(*data)));
+        }
+#endif
     } else {
         // Don't know what IP type this is, let's hope it sends
         msg.msg_name = 0;
         msg.msg_namelen = 0;
     }
 
+    if (msg.msg_controllen == 0)
+        msg.msg_control = 0;
     ssize_t sentBytes = qt_safe_sendmsg(socketDescriptor, &msg, 0);
 
     if (sentBytes < 0) {
