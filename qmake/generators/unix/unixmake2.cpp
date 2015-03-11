@@ -779,14 +779,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         //copy the plist
         while (!project->isActiveConfig("no_plist")) {  // 'while' just to be able to 'break'
-            QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString()));
-            if (info_plist.isEmpty())
-                info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
-            if (!exists(Option::fixPathToLocalOS(info_plist))) {
+            QString info_plist = project->first("QMAKE_INFO_PLIST").toQString();
+            if (info_plist.isEmpty()) {
+                info_plist = escapeFilePath(specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE"));
+            } else if (!exists(Option::fixPathToLocalOS(info_plist))) {
                 warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.",
                          info_plist.toLatin1().constData());
                 break;
+            } else {
+                info_plist = escapeFilePath(fileFixify(info_plist));
             }
+
             bool isApp = (project->first("TEMPLATE") == "app");
             QString info_plist_out = escapeFilePath(
                     bundle_dir + (isApp ? "Contents/Info.plist"
