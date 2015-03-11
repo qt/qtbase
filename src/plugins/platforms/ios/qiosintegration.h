@@ -48,6 +48,7 @@ class QIOSServices;
 class QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
 {
     Q_OBJECT
+    Q_PROPERTY(bool debugWindowManagement READ debugWindowManagement WRITE setDebugWindowManagement);
 
 public:
     QIOSIntegration();
@@ -87,6 +88,9 @@ public:
 
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
+    void setDebugWindowManagement(bool);
+    bool debugWindowManagement() const;
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformClipboard *m_clipboard;
@@ -96,6 +100,8 @@ private:
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QIOSFileEngineFactory m_fileEngineFactory;
+
+    bool m_debugWindowManagement;
 };
 
 QT_END_NAMESPACE

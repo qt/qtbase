@@ -73,6 +73,20 @@
             self.hidden = YES;
 
         self.multipleTouchEnabled = YES;
+
+        if (QIOSIntegration::instance()->debugWindowManagement()) {
+            static CGFloat hue = 0.0;
+            CGFloat lastHue = hue;
+            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabsf(hue - lastHue))
+                hue = drand48();
+
+            #define colorWithBrightness(br) \
+                [UIColor colorWithHue:hue saturation:0.5 brightness:br alpha:1.0].CGColor
+
+            self.layer.backgroundColor = colorWithBrightness(0.5);
+            self.layer.borderColor = colorWithBrightness(1.0);
+            self.layer.borderWidth = 1.0;
+        }
     }
 
     return self;
