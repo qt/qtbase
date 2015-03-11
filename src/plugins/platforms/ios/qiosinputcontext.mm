@@ -587,28 +587,27 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
 
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
-    if (changedProperties & (Qt::ImEnabled | Qt::ImHints | Qt::ImPlatformData)) {
-        // Changes to enablement or hints require virtual keyboard reconfigure
-
-        qImDebug() << "changed IM properties" << changedProperties << "require keyboard reconfigure";
-
-        if (inputMethodAccepted()) {
-            qImDebug() << "replacing text responder with new text responder";
-            [m_textResponder autorelease];
-            m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
-            [m_textResponder becomeFirstResponder];
-        } else if ([UIResponder currentFirstResponder] == m_textResponder) {
-            qImDebug() << "IM not enabled, resigning text responder as first responder";
-            [m_textResponder resignFirstResponder];
-        } else {
-            qImDebug() << "IM not enabled. Text responder not first responder. Nothing to do";
-        }
-    } else {
-        [m_textResponder notifyInputDelegate:changedProperties];
+    if (m_textResponder && changedProperties & (Qt::ImHints | Qt::ImPlatformData)) {
+        qImDebug() << "current IM state requires new text responder";
+        [m_textResponder autorelease];
+        m_textResponder = 0;
     }
 
-    if (changedProperties & Qt::ImCursorRectangle)
-        scrollToCursor();
+    if (inputMethodAccepted()) {
+        if (!m_textResponder) {
+            qImDebug() << "creating new text responder";
+            m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+        }
+        if (![m_textResponder isFirstResponder])
+            [m_textResponder becomeFirstResponder];
+
+        [m_textResponder notifyInputDelegate:changedProperties];
+
+        if (changedProperties & Qt::ImCursorRectangle)
+            scrollToCursor();
+    } else if ([m_textResponder isFirstResponder]) {
+        [m_textResponder resignFirstResponder];
+    }
 }
 
 bool QIOSInputContext::inputMethodAccepted() const
