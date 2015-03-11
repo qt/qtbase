@@ -567,7 +567,7 @@ QImage ICOReader::iconAt(int index)
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)
                     format = QImage::Format_RGB32;
-                else if (icoAttrib.ncolors == 2)
+                else if (icoAttrib.ncolors == 2 && icoAttrib.depth == 1)
                     format = QImage::Format_Mono;
                 else if (icoAttrib.ncolors > 0)
                     format = QImage::Format_Indexed8;
