@@ -62,6 +62,8 @@ QPlatformWindow::QPlatformWindow(QWindow *window)
 */
 QPlatformWindow::~QPlatformWindow()
 {
+    // We don't flush window system events here, as the event will be
+    // delivered with a platform window that is half-way destroyed.
 }
 
 /*!

@@ -3570,7 +3570,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QVERIFY(QTest::qWaitForWindowExposed(testMenu1));
     QTest::qWait(20);
     mw.activateWindow();
-
+    qApp->processEvents();
     delete testMenu1;
     QCOMPARE(editingFinishedSpy.count(), 0);
     QTRY_VERIFY(le1->hasFocus());
@@ -3582,6 +3582,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QVERIFY(QTest::qWaitForWindowExposed(testMenu2));
     QTest::qWait(20);
     mw.activateWindow();
+    qApp->processEvents();
     delete testMenu2;
     QCOMPARE(editingFinishedSpy.count(), 1);
 }
