@@ -182,6 +182,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_EVDEV" ]        = "auto";
     dictionary[ "QT_MTDEV" ]        = "auto";
+    dictionary[ "QT_TSLIB" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
@@ -2274,6 +2275,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/evdev");
     } else if (part == "MTDEV") {
         available = tryCompileProject("unix/mtdev");
+    } else if (part == "TSLIB") {
+        available = tryCompileProject("unix/tslib");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
     } else if (part == "QT_EVENTFD") {
@@ -2443,6 +2446,10 @@ void Configure::autoDetection()
     // Detection of mtdev support
     if (dictionary["QT_MTDEV"] == "auto")
         dictionary["QT_MTDEV"] = checkAvailability("MTDEV") ? "yes" : "no";
+
+    // Detection of tslib support
+    if (dictionary["QT_TSLIB"] == "auto")
+        dictionary["QT_TSLIB"] = checkAvailability("TSLIB") ? "yes" : "no";
 
     // Detection of inotify
     if (dictionary["QT_INOTIFY"] == "auto")
@@ -2904,6 +2911,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["QT_MTDEV"] == "yes")
         qtConfig += "mtdev";
+
+    if (dictionary[ "QT_TSLIB" ] == "yes")
+        qtConfig += "tslib";
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
@@ -3611,6 +3621,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
         if (dictionary["QT_EVDEV"] == "no")          qconfigList += "QT_NO_EVDEV";
         if (dictionary["QT_MTDEV"] == "no")          qconfigList += "QT_NO_MTDEV";
+        if (dictionary["QT_TSLIB"] == "no")          qconfigList += "QT_NO_TSLIB";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
