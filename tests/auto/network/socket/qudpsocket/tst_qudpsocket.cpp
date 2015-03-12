@@ -1574,7 +1574,7 @@ void tst_QUdpSocket::readyRead()
     QSignalSpy spy(&receiver, SIGNAL(readyRead()));
 
     // send a datagram to that port
-    sender.writeDatagram("a", makeNonAny(receiver.localAddress()), port);
+    sender.writeDatagram("aa", makeNonAny(receiver.localAddress()), port);
 
     // wait a little
     // if QTBUG-43857 is still going, we'll live-lock on socket notifications from receiver's socket
@@ -1583,8 +1583,8 @@ void tst_QUdpSocket::readyRead()
     // make sure only one signal was emitted
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
-    QCOMPARE(receiver.bytesAvailable(), qint64(1));
-    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+    QCOMPARE(receiver.bytesAvailable(), qint64(2));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // write another datagram
     sender.writeDatagram("ab", makeNonAny(receiver.localAddress()), port);
@@ -1594,7 +1594,7 @@ void tst_QUdpSocket::readyRead()
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
     QVERIFY(receiver.bytesAvailable() >= 1);    // most likely is 1, but it could be 1 + 2 in the future
-    QCOMPARE(receiver.pendingDatagramSize(), qint64(1));
+    QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // read all the datagrams (we could read one only, but we can't be sure the OS is queueing)
     while (receiver.hasPendingDatagrams())
