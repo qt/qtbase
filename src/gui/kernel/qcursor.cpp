@@ -33,8 +33,6 @@
 
 #include "qcursor.h"
 
-#ifndef QT_NO_CURSOR
-
 #include <qcoreapplication.h>
 #include <qbitmap.h>
 #include <qimage.h>
@@ -258,6 +256,8 @@ void QCursor::setPos(int x, int y)
 {
     QCursor::setPos(QGuiApplication::primaryScreen(), x, y);
 }
+
+#ifndef QT_NO_CURSOR
 
 /*!
     \fn void QCursor::setPos (const QPoint &p)
