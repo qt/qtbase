@@ -284,14 +284,40 @@ public:
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
                      bool *selectForRead, bool *selectForWrite) const;
-#ifdef Q_OS_WIN
-    void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize);
-#endif
 
     void nativeClose();
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
+
+    static uint scopeIdFromString(const QString &scopeid);
+
+    /*! \internal
+        Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.
+        The address \a is converted to IPv6 if the current socket protocol is also IPv6.
+     */
+    void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
+    {
+        if (address.protocol() == QAbstractSocket::IPv6Protocol
+            || address.protocol() == QAbstractSocket::AnyIPProtocol
+            || socketProtocol == QAbstractSocket::IPv6Protocol
+            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
+            memset(&aa->a6, 0, sizeof(qt_sockaddr_in6));
+            aa->a6.sin6_family = AF_INET6;
+            aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
+            aa->a6.sin6_port = htons(port);
+            Q_IPV6ADDR tmp = address.toIPv6Address();
+            memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
+            *sockAddrSize = sizeof(qt_sockaddr_in6);
+        } else {
+            memset(&aa->a, 0, sizeof(sockaddr_in));
+            aa->a4.sin_family = AF_INET;
+            aa->a4.sin_port = htons(port);
+            aa->a4.sin_addr.s_addr = htonl(address.toIPv4Address());
+            *sockAddrSize = sizeof(sockaddr_in);
+        }
+    }
+
 };
 
 QT_END_NAMESPACE

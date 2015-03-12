@@ -278,32 +278,6 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
 
 /*! \internal
 
-    Sets the port and address to a sockaddr. Requires that sa point to the IPv6 struct if the address is IPv6.
-*/
-void QNativeSocketEnginePrivate::setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
-{
-    if (address.protocol() == QAbstractSocket::IPv6Protocol
-        || address.protocol() == QAbstractSocket::AnyIPProtocol
-        || socketProtocol == QAbstractSocket::IPv6Protocol
-        || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-        memset(&aa->a6, 0, sizeof(qt_sockaddr_in6));
-        aa->a6.sin6_family = AF_INET6;
-        aa->a6.sin6_scope_id = address.scopeId().toUInt();
-        WSAHtons(socketDescriptor, port, &aa->a6.sin6_port);
-        Q_IPV6ADDR tmp = address.toIPv6Address();
-        memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
-        *sockAddrSize = sizeof(qt_sockaddr_in6);
-    } else {
-        memset(&aa->a, 0, sizeof(sockaddr_in));
-        aa->a4.sin_family = AF_INET;
-        WSAHtons(socketDescriptor, port, &aa->a4.sin_port);
-        WSAHtonl(socketDescriptor, address.toIPv4Address(), &aa->a4.sin_addr.s_addr);
-        *sockAddrSize = sizeof(sockaddr_in);
-    }
-}
-
-/*! \internal
-
 */
 static inline QAbstractSocket::SocketType qt_socket_getType(qintptr socketDescriptor)
 {
@@ -347,6 +321,12 @@ static inline int qt_socket_getMaxMsgSize(qintptr socketDescriptor)
 #  endif
 #  define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
 #endif
+
+// inline on purpose
+inline uint QNativeSocketEnginePrivate::scopeIdFromString(const QString &scopeid)
+{
+    return scopeid.toUInt();
+}
 
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
