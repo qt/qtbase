@@ -927,6 +927,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super rightMouseDown:theEvent];
     m_buttons |= Qt::RightButton;
+    m_sendUpAsRightButton = true;
     [self handleMouseEvent:theEvent];
 }
 
@@ -944,6 +945,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super rightMouseUp:theEvent];
     m_buttons &= ~Qt::RightButton;
+    m_sendUpAsRightButton = false;
     [self handleMouseEvent:theEvent];
 }
 
