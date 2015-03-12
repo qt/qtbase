@@ -712,6 +712,7 @@ QThread::Priority QThread::priority() const
 */
 
 /*!
+    \since 5.5
     Returns the current event loop level for the thread.
 
     \note This can only be called within the thread itself, i.e. when
