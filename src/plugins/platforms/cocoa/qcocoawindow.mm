@@ -441,9 +441,12 @@ QCocoaWindow::~QCocoaWindow()
             m_parentCocoaWindow->removeChildWindow(this);
     } else if (parent()) {
         [m_contentView removeFromSuperview];
-    } else if (m_qtView) {
-        [[NSNotificationCenter defaultCenter] removeObserver:m_qtView
-                                              name:nil object:m_nsWindow];
+    }
+
+    // Make sure to disconnect observer in all case if view is valid
+    // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
+    if (m_qtView) {
+        [[NSNotificationCenter defaultCenter] removeObserver:m_qtView];
     }
 
     // The QNSView object may outlive the corresponding QCocoaWindow object,
