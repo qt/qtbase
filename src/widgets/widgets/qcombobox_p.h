@@ -373,7 +373,7 @@ public:
     void updateViewContainerPaletteAndOpacity();
     void updateFocusPolicy();
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
     void cleanupNativePopup();
     bool showNativePopup();
 #endif
@@ -403,7 +403,7 @@ public:
     QPersistentModelIndex root;
     Qt::CaseSensitivity autoCompletionCaseSensitivity;
     int indexBeforeChange;
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
     QPlatformMenu *m_platformMenu;
 #endif
 #ifndef QT_NO_COMPLETER

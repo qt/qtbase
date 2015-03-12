@@ -93,7 +93,7 @@ QComboBoxPrivate::QComboBoxPrivate()
       hoverControl(QStyle::SC_None),
       autoCompletionCaseSensitivity(Qt::CaseInsensitive),
       indexBeforeChange(-1)
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
       , m_platformMenu(0)
 #endif
 #ifndef QT_NO_COMPLETER
@@ -104,7 +104,7 @@ QComboBoxPrivate::QComboBoxPrivate()
 
 QComboBoxPrivate::~QComboBoxPrivate()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
     cleanupNativePopup();
 #endif
 }
@@ -2408,7 +2408,7 @@ QSize QComboBox::sizeHint() const
     return d->recomputeSizeHint(d->sizeHint);
 }
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
 
 namespace {
 struct IndexSetter {
@@ -2519,7 +2519,7 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
     if (usePopup
         && (!d->container
             || (view()->metaObject()->className() == QByteArray("QComboBoxListView")
@@ -2527,7 +2527,7 @@ void QComboBox::showPopup()
         && style->styleHint(QStyle::SH_ComboBox_UseNativePopup, &opt, this)
         && d->showNativePopup())
         return;
-#endif // Q_OS_OSX
+#endif // Q_OS_MAC
 
 #ifdef QT_KEYPAD_NAVIGATION
 #ifndef QT_NO_COMPLETER
