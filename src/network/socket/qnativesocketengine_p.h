@@ -285,8 +285,7 @@ public:
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
                      bool *selectForRead, bool *selectForWrite) const;
 #ifdef Q_OS_WIN
-    void setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
-                           quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize);
+    void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize);
 #endif
 
     void nativeClose();

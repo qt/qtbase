@@ -280,33 +280,25 @@ static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,
 
     Sets the port and address to a sockaddr. Requires that sa point to the IPv6 struct if the address is IPv6.
 */
-void QNativeSocketEnginePrivate::setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
-                                               quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize)
+void QNativeSocketEnginePrivate::setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
 {
     if (address.protocol() == QAbstractSocket::IPv6Protocol
         || address.protocol() == QAbstractSocket::AnyIPProtocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
         || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-        memset(sockAddrIPv6, 0, sizeof(qt_sockaddr_in6));
-        sockAddrIPv6->sin6_family = AF_INET6;
-        sockAddrIPv6->sin6_scope_id = address.scopeId().toUInt();
-        WSAHtons(socketDescriptor, port, &(sockAddrIPv6->sin6_port));
+        memset(&aa->a6, 0, sizeof(qt_sockaddr_in6));
+        aa->a6.sin6_family = AF_INET6;
+        aa->a6.sin6_scope_id = address.scopeId().toUInt();
+        WSAHtons(socketDescriptor, port, &aa->a6.sin6_port);
         Q_IPV6ADDR tmp = address.toIPv6Address();
-        memcpy(&(sockAddrIPv6->sin6_addr.qt_s6_addr), &tmp, sizeof(tmp));
+        memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
         *sockAddrSize = sizeof(qt_sockaddr_in6);
-        *sockAddrPtr = (struct sockaddr *) sockAddrIPv6;
-    } else
-
-    if (address.protocol() == QAbstractSocket::IPv4Protocol
-        || address.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
-        memset(sockAddrIPv4, 0, sizeof(sockaddr_in));
-        sockAddrIPv4->sin_family = AF_INET;
-        WSAHtons(socketDescriptor, port, &(sockAddrIPv4->sin_port));
-        WSAHtonl(socketDescriptor, address.toIPv4Address(), &(sockAddrIPv4->sin_addr.s_addr));
-        *sockAddrSize = sizeof(sockaddr_in);
-        *sockAddrPtr = (struct sockaddr *) sockAddrIPv4;
     } else {
-        // unreachable
+        memset(&aa->a, 0, sizeof(sockaddr_in));
+        aa->a4.sin_family = AF_INET;
+        WSAHtons(socketDescriptor, port, &aa->a4.sin_port);
+        WSAHtonl(socketDescriptor, address.toIPv4Address(), &aa->a4.sin_addr.s_addr);
+        *sockAddrSize = sizeof(sockaddr_in);
     }
 }
 
@@ -646,12 +638,10 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
     qDebug("QNativeSocketEnginePrivate::nativeConnect() to %s :: %i", address.toString().toLatin1().constData(), port);
 #endif
 
-    struct sockaddr_in sockAddrIPv4;
-    qt_sockaddr_in6 sockAddrIPv6;
-    struct sockaddr *sockAddrPtr = 0;
+    qt_sockaddr aa;
     QT_SOCKLEN_T sockAddrSize = 0;
 
-    setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
+    setPortAndAddress(port, address, &aa, &sockAddrSize);
 
     if ((socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) && address.toIPv4Address()) {
         //IPV6_V6ONLY option must be cleared to connect to a V4 mapped address
@@ -662,7 +652,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
     }
 
     forever {
-        int connectResult = ::WSAConnect(socketDescriptor, sockAddrPtr, sockAddrSize, 0,0,0,0);
+        int connectResult = ::WSAConnect(socketDescriptor, &aa.a, sockAddrSize, 0,0,0,0);
         if (connectResult == SOCKET_ERROR) {
             int err = WSAGetLastError();
             WS_ERROR_DEBUG(err);
@@ -816,15 +806,11 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
         break;
     }
 
-    struct sockaddr_in sockAddrIPv4;
-    qt_sockaddr_in6 sockAddrIPv6;
-    struct sockaddr *sockAddrPtr = 0;
+    qt_sockaddr aa;
     QT_SOCKLEN_T sockAddrSize = 0;
+    setPortAndAddress(port, address, &aa, &sockAddrSize);
 
-    setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
-
-
-    int bindResult = ::bind(socketDescriptor, sockAddrPtr, sockAddrSize);
+    int bindResult = ::bind(socketDescriptor, &aa.a, sockAddrSize);
     if (bindResult == SOCKET_ERROR) {
         int err = WSAGetLastError();
         WS_ERROR_DEBUG(err);
@@ -1353,10 +1339,10 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 #endif
     msg.lpBuffers = &buf;
     msg.dwBufferCount = 1;
+    msg.name = &aa.a;
     buf.len = len;
 
-    setPortAndAddress(&aa.a4, &aa.a6, header.destinationPort,
-                      header.destinationAddress, &msg.name, &msg.namelen);
+    setPortAndAddress(header.destinationPort, header.destinationAddress, &aa, &msg.namelen);
 
     if (msg.namelen == sizeof(aa.a6)) {
         // sending IPv6
