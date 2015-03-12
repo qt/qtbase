@@ -700,7 +700,6 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
         return false;
     }
 
-    QDBusDispatchLocker dispatchLocker(ConnectAction, d);
     QDBusWriteLocker locker(ConnectAction, d);
     return d->connectSignal(service, path, interface, name, argumentMatch, signature, receiver, slot);
 }
