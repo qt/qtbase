@@ -366,6 +366,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         // calles, which Qt and Qt applications do not excpect.
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
+        else
+            m_backingStore = QImage();
     }
 }
 
