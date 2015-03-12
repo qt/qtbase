@@ -3608,6 +3608,11 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_Menu_SupportsSections:
         return 1;
 
+#if defined(Q_OS_IOS)
+    case SH_ComboBox_UseNativePopup:
+        return 1;
+#endif
+
     case SH_ToolBox_SelectedPageTitleBold:
     case SH_ScrollView_FrameOnlyAroundContents:
     case SH_Menu_AllowActiveAndDisabled:
