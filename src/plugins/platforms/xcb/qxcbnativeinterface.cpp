@@ -233,6 +233,9 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     case Display:
         result = display();
         break;
+    case Connection:
+        result = connection();
+        break;
     default:
         break;
     }
@@ -452,6 +455,12 @@ void *QXcbNativeInterface::display()
         return defaultConnection->xlib_display();
 #endif
     return Q_NULLPTR;
+}
+
+void *QXcbNativeInterface::connection()
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    return integration->defaultConnection()->xcb_connection();
 }
 
 void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)
