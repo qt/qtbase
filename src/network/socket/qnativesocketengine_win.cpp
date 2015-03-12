@@ -775,42 +775,36 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
 {
     QHostAddress address = a;
-    DWORD ipv6only = 0;
-    switch (address.protocol()) {
-    case QAbstractSocket::IPv6Protocol:
-        if (address.toIPv6Address()[0] == 0xff) {
-            // binding to a multicast address
-            address = QHostAddress(QHostAddress::AnyIPv6);
-        }
-        //This is default in current windows versions, it may change in future so set it explicitly
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
-            ipv6only = 1;
-            ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
-        }
-        break;
-    case QAbstractSocket::IPv4Protocol:
+    if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         if ((address.toIPv4Address() & 0xffff0000) == 0xefff0000) {
             // binding to a multicast address
             address = QHostAddress(QHostAddress::AnyIPv4);
         }
-        break;
-    case QAbstractSocket::AnyIPProtocol:
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
-            ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
-        } else {
-            address = QHostAddress(QHostAddress::AnyIPv4); //xp/WS2003 and earlier don't support dual stack, so bind to IPv4
-            socketProtocol = QAbstractSocket::IPv4Protocol;
-        }
-        break;
-    default:
-        break;
     }
 
     qt_sockaddr aa;
     QT_SOCKLEN_T sockAddrSize = 0;
     setPortAndAddress(port, address, &aa, &sockAddrSize);
 
+    if (aa.a.sa_family == AF_INET6) {
+        // The default may change in future, so set it explicitly
+        int ipv6only = 0;
+        if (address.protocol() == QAbstractSocket::IPv6Protocol)
+            ipv6only = 1;
+        ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
+    }
+
+
     int bindResult = ::bind(socketDescriptor, &aa.a, sockAddrSize);
+    if (bindResult == SOCKET_ERROR && WSAGetLastError() == WSAEAFNOSUPPORT
+            && address.protocol() == QAbstractSocket::AnyIPProtocol) {
+        // retry with v4
+        aa.a4.sin_family = AF_INET;
+        aa.a4.sin_port = htons(port);
+        aa.a4.sin_addr.s_addr = htonl(address.toIPv4Address());
+        sockAddrSize = sizeof(aa.a4);
+        bindResult = ::bind(socketDescriptor, &aa.a, sockAddrSize);
+    }
     if (bindResult == SOCKET_ERROR) {
         int err = WSAGetLastError();
         WS_ERROR_DEBUG(err);
