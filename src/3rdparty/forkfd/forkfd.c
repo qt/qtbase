@@ -58,6 +58,10 @@
 #  include <sys/eventfd.h>
 #endif
 
+#if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
+#  define HAVE_WAITID   1
+#endif
+
 #if defined(__APPLE__)
 /* Up until OS X 10.7, waitid(P_ALL, ...) will return success, but will not
  * fill in the details of the dead child. That means waitid is not useful to us.
@@ -66,11 +70,9 @@
  */
 #  include <Availability.h>
 #  include <AvailabilityMacros.h>
-#  if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-#    define HAVE_WAITID 1
+#  if MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
+#    define HAVE_BROKEN_WAITID_ALL 1
 #  endif
-#elif _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
-#  define HAVE_WAITID   1
 #endif
 
 #ifndef FFD_ATOMIC_RELAXED
@@ -114,6 +116,12 @@ static SmallArray children;
 static struct sigaction old_sigaction;
 static pthread_once_t forkfd_initialization = PTHREAD_ONCE_INIT;
 static ffd_atomic_int forkfd_status = FFD_ATOMIC_INIT(0);
+
+#ifdef HAVE_BROKEN_WAITID_ALL
+static int waitid_p_all_works = 0;
+#else
+static const int waitid_p_all_works = 1;
+#endif
 
 static ProcessInfo *tryAllocateInSection(Header *header, ProcessInfo entries[], int maxCount)
 {
@@ -246,6 +254,9 @@ static void sigchld_handler(int signum)
         memset(&info, 0, sizeof info);
 
 #ifdef HAVE_WAITID
+        if (!waitid_p_all_works)
+            goto search_arrays;
+
         /* be optimistic: try to see if we can get the child that exited */
 search_next_child:
         /* waitid returns -1 ECHILD if there are no further children at all;
@@ -298,6 +309,8 @@ search_next_child:
          * belongs to one of the chained SIGCHLD handlers. However, there might be another
          * child that exited and does belong to us, so we need to check each one individually.
          */
+
+search_arrays:
 #endif
 
         for (i = 0; i < (int)sizeofarray(children.entries); ++i) {
@@ -352,6 +365,20 @@ chain_handler:
 
 static void forkfd_initialize()
 {
+#if defined(HAVE_BROKEN_WAITID_ALL)
+    pid_t pid = fork();
+    if (pid == 0) {
+        _exit(0);
+    } else if (pid > 0) {
+        siginfo_t info;
+        waitid(P_ALL, 0, &info, WNOWAIT | WEXITED);
+        waitid_p_all_works = (info.si_pid != 0);
+
+        // now really reap the child
+        waitid(P_PID, pid, &info, WEXITED);
+    }
+#endif
+
     /* install our signal handler */
     struct sigaction action;
     memset(&action, 0, sizeof action);
