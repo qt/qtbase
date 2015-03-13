@@ -41,7 +41,6 @@ equals(TEMPLATE, app) {
             RESOURCES =
             INSTALLS =
             QMAKE_EXTRA_COMPILERS =
-            QMAKE_EXTRA_TARGETS =
 
             !build_pass {
                 CONFIG += debug_and_release
