@@ -56,6 +56,7 @@ class QIOSWindow;
 
 - (id)initWithQIOSWindow:(QIOSWindow *)window;
 - (void)sendUpdatedExposeEvent;
+- (BOOL)isActiveWindow;
 @end
 
 @interface QUIView (Accessibility)

@@ -120,7 +120,7 @@ void QIOSWindow::setVisible(bool visible)
 
     if (visible && shouldAutoActivateWindow()) {
         requestActivateWindow();
-    } else if (!visible && qGuiApp->focusWindow() == window()) {
+    } else if (!visible && [m_view isActiveWindow]) {
         // Our window was active/focus window but now hidden, so relinquish
         // focus to the next possible window in the stack.
         NSArray *subviews = m_view.viewController.view.subviews;

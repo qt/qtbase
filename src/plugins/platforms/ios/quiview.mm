@@ -261,6 +261,23 @@
     return YES;
 }
 
+- (BOOL)isActiveWindow
+{
+    // Normally this is determined exclusivly by being firstResponder, but
+    // since we employ a separate first responder for text input we need to
+    // handle both cases as this view being the active Qt window.
+
+    if ([self isFirstResponder])
+        return YES;
+
+    UIResponder *firstResponder = [UIResponder currentFirstResponder];
+    if ([firstResponder isKindOfClass:[QIOSTextInputResponder class]]
+        && [firstResponder nextResponder] == self)
+        return YES;
+
+    return NO;
+}
+
 // -------------------------------------------------------------------------
 
 
