@@ -126,6 +126,9 @@ public:
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE
     {
         const QList<QSize> &sizes = availableSizes(mode, state);
+        if (sizes.isEmpty())
+            return QSize();
+
         foreach (const QSize &availableSize, sizes) {
             if (availableSize.width() >= size.width())
                 return availableSize;
@@ -321,6 +324,14 @@ static bool isCacheable(const QFileInfo &fi)
 
 QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 {
+    const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+    if (!theme)
+        return QIcon();
+
+    QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
+    if (sizes.isEmpty())
+        return QIcon();
+
     Q_Q(const QFileIconProvider);
     return QIcon(new QFileIconEngine(q, fi));
 }
