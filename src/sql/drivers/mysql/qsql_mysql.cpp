@@ -1500,6 +1500,9 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
         r = QLatin1String("NULL");
     } else {
         switch(field.type()) {
+        case QVariant::Double:
+            r = QString::number(field.value().toDouble(), 'g', field.precision());
+            break;
         case QVariant::String:
             // Escape '\' characters
             r = QSqlDriver::formatValue(field, trimStrings);
