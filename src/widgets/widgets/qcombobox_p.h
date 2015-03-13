@@ -71,6 +71,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QPlatformMenu;
 
 class QComboBoxListView : public QListView
 {
@@ -331,7 +332,7 @@ class Q_AUTOTEST_EXPORT QComboBoxPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QComboBox)
 public:
     QComboBoxPrivate();
-    ~QComboBoxPrivate() {}
+    ~QComboBoxPrivate();
     void init();
     QComboBoxPrivateContainer* viewContainer();
     void updateLineEditGeometry();
@@ -373,6 +374,7 @@ public:
     void updateFocusPolicy();
 
 #ifdef Q_OS_OSX
+    void cleanupNativePopup();
     bool showNativePopup();
 #endif
 
@@ -401,6 +403,9 @@ public:
     QPersistentModelIndex root;
     Qt::CaseSensitivity autoCompletionCaseSensitivity;
     int indexBeforeChange;
+#ifdef Q_OS_OSX
+    QPlatformMenu *m_platformMenu;
+#endif
 #ifndef QT_NO_COMPLETER
     QPointer<QCompleter> completer;
 #endif
