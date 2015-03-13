@@ -102,7 +102,7 @@ src_platformsupport.depends = src_corelib src_gui src_platformheaders
 
 src_widgets.subdir = $$PWD/widgets
 src_widgets.target = sub-widgets
-src_widgets.depends = src_corelib src_gui src_tools_uic
+src_widgets.depends = src_corelib src_gui src_tools_uic src_platformheaders
 
 src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
