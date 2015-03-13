@@ -209,7 +209,10 @@ static QPixmap colorizedImage(const QString &fileName, const QColor &color, int 
                 unsigned char green = gray + qt_div_255(sourceGreen * colorDiff);
                 unsigned char blue = gray + qt_div_255(sourceBlue * colorDiff);
                 unsigned char alpha = qt_div_255(qAlpha(col) * qAlpha(source));
-                data[x] = qRgba(red, green, blue, alpha);
+                data[x] = qRgba(std::min(alpha, red),
+                                std::min(alpha, green),
+                                std::min(alpha, blue),
+                                alpha);
             }
         }
         if (rotation != 0) {
