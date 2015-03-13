@@ -436,6 +436,7 @@ static int create_pipe(int filedes[], int flags)
     return ret;
 }
 
+#ifndef FORKFD_NO_FORKFD
 /**
  * @brief forkfd returns a file descriptor representing a child process
  * @return a file descriptor, or -1 in case of failure
@@ -590,8 +591,9 @@ err_free:
     freeInfo(header, info);
     return -1;
 }
+#endif // FORKFD_NO_FORKFD
 
-#ifdef _POSIX_SPAWN
+#if defined(_POSIX_SPAWN) && !defined(FORKFD_NO_SPAWNFD)
 int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_actions_t *file_actions,
             posix_spawnattr_t *attrp, char *const argv[], char *const envp[])
 {
@@ -652,4 +654,4 @@ err_free:
 out:
     return -1;
 }
-#endif // _POSIX_SPAWN
+#endif // _POSIX_SPAWN && !FORKFD_NO_SPAWNFD
