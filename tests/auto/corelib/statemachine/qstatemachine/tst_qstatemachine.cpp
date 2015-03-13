@@ -1898,7 +1898,7 @@ class DelayedEventPosterThread : public QThread
 public:
     DelayedEventPosterThread(QStateMachine *machine, QObject *parent = 0)
         : QThread(parent), firstEventWasCancelled(false),
-          m_machine(machine), m_count(0)
+          m_machine(machine)
     {
         moveToThread(this);
         QObject::connect(m_machine, SIGNAL(started()),
@@ -1919,7 +1919,6 @@ private Q_SLOTS:
     }
 private:
     QStateMachine *m_machine;
-    int m_count;
 };
 
 void tst_QStateMachine::postDelayedEventFromThread()
@@ -2744,7 +2743,7 @@ void tst_QStateMachine::eventTransitions()
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
 
-        QEventTransition *trans;
+        QEventTransition *trans = 0;
         if (x == 0) {
             trans = new QEventTransition();
             QCOMPARE(trans->eventSource(), (QObject*)0);
