@@ -47,6 +47,7 @@
 #include "qmlmarkupvisitor.h"
 #include "text.h"
 #include "tree.h"
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -205,8 +206,8 @@ static void replaceWithSpace(QString &str, int idx, int n)
   src/declarative/qml/qqmlscriptparser.cpp then modified to
   return a list of removed pragmas.
 
-  Searches for ".pragma <value>" declarations within \a script.
-  Currently supported pragmas are: library
+  Searches for ".pragma <value>" or ".import <stuff>" declarations
+  in \a script. Currently supported pragmas are: library
 */
 QList<QQmlJS::AST::SourceLocation> QmlCodeMarker::extractPragmas(QString &script)
 {
@@ -229,13 +230,22 @@ QList<QQmlJS::AST::SourceLocation> QmlCodeMarker::extractPragmas(QString &script
 
         token = l.lex();
 
-        if (token != QQmlJSGrammar::T_IDENTIFIER ||
-                l.tokenStartLine() != startLine ||
-                script.mid(l.tokenOffset(), l.tokenLength()) != pragma)
+        if (token != QQmlJSGrammar::T_PRAGMA && token != QQmlJSGrammar::T_IMPORT)
             return removed;
-
+        int endOffset = 0;
+        while (startLine == l.tokenStartLine()) {
+            endOffset = l.tokenLength() + l.tokenOffset();
+            token = l.lex();
+        }
+        replaceWithSpace(script, startOffset, endOffset - startOffset);
+        removed.append(QQmlJS::AST::SourceLocation(startOffset,
+                                                   endOffset - startOffset,
+                                                   startLine,
+                                                   startColumn));
+#if 0
         token = l.lex();
-
+        if (Generator::debugging())
+            qDebug() << "  third token";
         if (token != QQmlJSGrammar::T_IDENTIFIER ||
                 l.tokenStartLine() != startLine)
             return removed;
@@ -255,6 +265,7 @@ QList<QQmlJS::AST::SourceLocation> QmlCodeMarker::extractPragmas(QString &script
                             startLine, startColumn));
         } else
             return removed;
+#endif
     }
     return removed;
 }
