@@ -83,6 +83,8 @@ public:
 
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
+    qreal refreshRate() const Q_DECL_OVERRIDE;
+
     QEglFSKmsDevice *device() const { return m_device; }
 
     gbm_surface *surface() const { return m_gbm_surface; }

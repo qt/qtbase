@@ -60,6 +60,8 @@ public:
 
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
+    qreal refreshRate() const Q_DECL_OVERRIDE;
+
     EGLSurface primarySurface() const { return m_surface; }
 
 protected:
