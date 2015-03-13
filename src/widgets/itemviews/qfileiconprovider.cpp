@@ -126,15 +126,29 @@ public:
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE
     {
         const QList<QSize> &sizes = availableSizes(mode, state);
-        if (sizes.isEmpty())
+        const int numberSizes = sizes.length();
+        if (numberSizes == 0)
             return QSize();
 
-        foreach (const QSize &availableSize, sizes) {
-            if (availableSize.width() >= size.width())
-                return availableSize;
+        // Find the smallest available size whose area is still larger than the input
+        // size. Otherwise, use the largest area available size. (We don't assume the
+        // platform theme sizes are sorted, hence the extra logic.)
+        const int sizeArea = size.width() * size.height();
+        QSize actualSize = sizes.first();
+        int actualArea = actualSize.width() * actualSize.height();
+        for (int i = 1; i < numberSizes; ++i) {
+            const QSize &s = sizes.at(i);
+            const int a = s.width() * s.height();
+            if ((sizeArea <= a && a < actualArea) || (actualArea < sizeArea && actualArea < a)) {
+                actualSize = s;
+                actualArea = a;
+            }
         }
 
-        return sizes.last();
+        if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
+            actualSize.scale(size, Qt::KeepAspectRatio);
+
+        return actualSize;
     }
 
 private:
