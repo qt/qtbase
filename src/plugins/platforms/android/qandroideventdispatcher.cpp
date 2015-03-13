@@ -33,6 +33,7 @@
 
 #include "qandroideventdispatcher.h"
 #include "androidjnimain.h"
+#include "androiddeadlockprotector.h"
 
 QAndroidEventDispatcher::QAndroidEventDispatcher(QObject *parent) :
     QUnixEventDispatcherQPA(parent)
@@ -78,11 +79,13 @@ void QAndroidEventDispatcher::goingToStop(bool stop)
 
 int QAndroidEventDispatcher::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, timespec *timeout)
 {
-    if (m_stopRequest.testAndSetAcquire(StopRequest, Stopping)) {
-        m_semaphore.acquire();
-        wakeUp();
+    {
+        AndroidDeadlockProtector protector;
+        if (protector.acquire() && m_stopRequest.testAndSetAcquire(StopRequest, Stopping)) {
+            m_semaphore.acquire();
+            wakeUp();
+        }
     }
-
     return QUnixEventDispatcherQPA::select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
