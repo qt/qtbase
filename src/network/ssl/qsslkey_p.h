@@ -61,9 +61,10 @@ class QSslKeyPrivate
 {
 public:
     inline QSslKeyPrivate()
-        : opaque(0)
+        : algorithm(QSsl::Opaque)
+        , opaque(0)
     {
-        clear();
+        clear(false);
     }
 
     inline ~QSslKeyPrivate()
