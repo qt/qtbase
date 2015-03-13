@@ -498,8 +498,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
     case 305:
     case 307: {
         // Parse the response headers and get the "location" url
-        QUrl redirectUrl;
-        if (connection->d_func()->parseRedirectResponse(socket, reply, &redirectUrl))
+        QUrl redirectUrl = connection->d_func()->parseRedirectResponse(socket, reply);
+        if (redirectUrl.isValid())
             reply->setRedirectUrl(redirectUrl);
 
         if (qobject_cast<QHttpNetworkConnection *>(connection))

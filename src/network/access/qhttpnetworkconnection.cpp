@@ -506,10 +506,10 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     return false;
 }
 
-bool QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply, QUrl *redirectUrl)
+QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply)
 {
     if (!reply->request().isFollowRedirects())
-        return false;
+        return QUrl();
 
     QUrl rUrl;
     QList<QPair<QByteArray, QByteArray> > fields = reply->header();
@@ -523,13 +523,13 @@ bool QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
     // If the location url is invalid/empty, we emit ProtocolUnknownError
     if (!rUrl.isValid()) {
         emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
-        return false;
+        return QUrl();
     }
 
     // Check if we have exceeded max redirects allowed
     if (reply->request().redirectCount() <= 0) {
         emitReplyError(socket, reply, QNetworkReply::TooManyRedirectsError);
-        return false;
+        return QUrl();
     }
 
     // Resolve the URL if it's relative
@@ -544,15 +544,13 @@ bool QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
         if (previousUrlScheme == QLatin1String("https")
             && scheme == QLatin1String("http")) {
             emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
-            return false;
+            return QUrl();
         }
     } else {
         emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
-        return false;
+        return QUrl();
     }
-    redirectUrl->setUrl(QString(rUrl.toEncoded()));
-
-    return true;
+    return rUrl;
 }
 
 void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)
