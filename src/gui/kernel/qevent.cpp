@@ -3685,7 +3685,8 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "TouchPoint(" << tp.id() << ' ' << tp.rect() << ' ' << tp.state() << " vel " << tp.velocity() << ')';
+    dbg.nospace() << "TouchPoint(" << tp.id() << ' ' << tp.rect() << ' ' << tp.state() << " press " << tp.pressure()
+        << " vel " << tp.velocity() << " start " << tp.startPos() << " last " << tp.lastPos() << " delta " << tp.pos() - tp.lastPos() << ')';
     return dbg;
 }
 
