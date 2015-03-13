@@ -152,125 +152,125 @@ void tst_QWMatrix::mapping_data()
 
     // rotations
     float deg = 0.;
-    QTest::newRow( "rot 0 a" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                            sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 0 a" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                            std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                 << QRect( 0, 0, 30, 40 )
                                 << QPolygon ( QRect( 0, 0, 30, 40 ) );
     deg = 0.00001f;
-    QTest::newRow( "rot 0 b" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                            sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 0 b" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                            std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                 << QRect( 0, 0, 30, 40 )
                                 << QPolygon ( QRect( 0, 0, 30, 40 ) );
     deg = 0.;
-    QTest::newRow( "rot 0 c" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                            sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 0 c" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                            std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                 << QRect( 10, 20, 30, 40 )
                                 << QPolygon ( QRect( 10, 20, 30, 40 ) );
     deg = 0.00001f;
-    QTest::newRow( "rot 0 d" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                            sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 0 d" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                            std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                 << QRect( 10, 20, 30, 40 )
                                 << QPolygon ( QRect( 10, 20, 30, 40 ) );
 
 #if 0
     // rotations
     deg = 90.;
-    QTest::newRow( "rotscale 90 a" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                  10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 90 a" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                  10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                       << QRect( 0, 0, 30, 40 )
                                       << QPolygon( QRect( 0, -299, 400, 300 ) );
     deg = 90.00001;
-    QTest::newRow( "rotscale 90 b" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                  10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 90 b" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                  10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                       << QRect( 0, 0, 30, 40 )
                                       << QPolygon( QRect( 0, -299, 400, 300 ) );
     deg = 90.;
-    QTest::newRow( "rotscale 90 c" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                  10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 90 c" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                  10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                       << QRect( 10, 20, 30, 40 )
                                       << QPolygon( QRect( 200, -399, 400, 300 ) );
     deg = 90.00001;
-    QTest::newRow( "rotscale 90 d" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                  10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 90 d" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                  10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                       << QRect( 10, 20, 30, 40 )
                                       << QPolygon( QRect( 200, -399, 400, 300 ) );
 
     deg = 180.;
-    QTest::newRow( "rotscale 180 a" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 180 a" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 0, 0, 30, 40 )
                                        << QPolygon( QRect( -299, -399, 300, 400 ) );
     deg = 180.000001;
-    QTest::newRow( "rotscale 180 b" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 180 b" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 0, 0, 30, 40 )
                                        << QPolygon( QRect( -299, -399, 300, 400 ) );
     deg = 180.;
-    QTest::newRow( "rotscale 180 c" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 180 c" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 10, 20, 30, 40 )
                                        << QPolygon( QRect( -399, -599, 300, 400 ) );
     deg = 180.000001;
-    QTest::newRow( "rotscale 180 d" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 180 d" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 10, 20, 30, 40 )
                                        << QPolygon( QRect( -399, -599, 300, 400 ) );
 
     deg = 270.;
-    QTest::newRow( "rotscale 270 a" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 270 a" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 0, 0, 30, 40 )
                                        << QPolygon( QRect( -399, 00, 400, 300 ) );
     deg = 270.0000001;
-    QTest::newRow( "rotscale 270 b" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 270 b" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 0, 0, 30, 40 )
                                        << QPolygon( QRect( -399, 00, 400, 300 ) );
     deg = 270.;
-    QTest::newRow( "rotscale 270 c" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rotscale 270 c" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                        << QRect( 10, 20, 30, 40 )
                                        << QPolygon( QRect( -599, 100, 400, 300 ) );
     deg = 270.000001;
-    QTest::newRow( "rotscale 270 d" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                                   10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0,   0 )
+    QTest::newRow( "rotscale 270 d" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                                   10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0,   0 )
                                        << QRect( 10, 20, 30, 40 )
                                        << QPolygon( QRect( -599, 100, 400, 300 ) );
 
     // rotations that are not multiples of 90 degrees. mapRect returns the bounding rect here.
     deg = 45;
-    QTest::newRow( "rot 45 a" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                             sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 45 a" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                             std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                  << QRect( 0, 0, 10, 10 )
                                  << QPolygon( QRect( 0, -7, 14, 14 ) );
-    QTest::newRow( "rot 45 b" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                             sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 45 b" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                             std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                  << QRect( 10, 20, 30, 40 )
                                  << QPolygon( QRect( 21, -14, 49, 49 ) );
-    QTest::newRow( "rot 45 c" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                             10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 45 c" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                             10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                  << QRect( 0, 0, 10, 10 )
                                  << QPolygon( QRect( 0, -70, 141, 141 ) );
-    QTest::newRow( "rot 45 d" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                             10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot 45 d" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                             10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                  << QRect( 10, 20, 30, 40 )
                                  << QPolygon( QRect( 212, -141, 495, 495 ) );
 
     deg = -45;
-    QTest::newRow( "rot -45 a" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                              sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot -45 a" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                              std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                   << QRect( 0, 0, 10, 10 )
                                   << QPolygon( QRect( -7, 0, 14, 14 ) );
-    QTest::newRow( "rot -45 b" )  << QMatrix( cos( M_PI*deg/180. ), -sin( M_PI*deg/180. ),
-                                              sin( M_PI*deg/180. ),  cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot -45 b" )  << QMatrix( std::cos( M_PI*deg/180. ), -std::sin( M_PI*deg/180. ),
+                                              std::sin( M_PI*deg/180. ),  std::cos( M_PI*deg/180. ), 0, 0 )
                                   << QRect( 10, 20, 30, 40 )
                                   << QPolygon( QRect( -35, 21, 49, 49 ) );
-    QTest::newRow( "rot -45 c" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                              10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot -45 c" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                              10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                   << QRect( 0, 0, 10, 10 )
                                   << QPolygon( QRect( -70, 0, 141, 141 ) );
-    QTest::newRow( "rot -45 d" )  << QMatrix( 10*cos( M_PI*deg/180. ), -10*sin( M_PI*deg/180. ),
-                                              10*sin( M_PI*deg/180. ),  10*cos( M_PI*deg/180. ), 0, 0 )
+    QTest::newRow( "rot -45 d" )  << QMatrix( 10*std::cos( M_PI*deg/180. ), -10*std::sin( M_PI*deg/180. ),
+                                              10*std::sin( M_PI*deg/180. ),  10*std::cos( M_PI*deg/180. ), 0, 0 )
                                   << QRect( 10, 20, 30, 40 )
                                   << QPolygon( QRect( -353, 212, 495, 495 ) );
 #endif
