@@ -20,7 +20,7 @@ have_target:!static:!isEmpty(QMAKE_OBJCOPY) {
     chmod_debug_info = chmod -x $$shell_target_debug_info
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
-    QMAKE_POST_LINK = $$copy_debug_info $$escape_expand(\\n\\t)$$strip_debug_info $$escape_expand(\\n\\t)$$link_debug_info $$escape_expand(\\n\\t)$$chmod_debug_info $$QMAKE_POST_LINK
+    QMAKE_POST_LINK = $$copy_debug_info && $$strip_debug_info && $$link_debug_info && $$chmod_debug_info $$QMAKE_POST_LINK
     silent:QMAKE_POST_LINK = @echo creating $@.$$debug_info_suffix && $$QMAKE_POST_LINK
 
     target.targets += $$QMAKE_TARGET_DEBUG_INFO
