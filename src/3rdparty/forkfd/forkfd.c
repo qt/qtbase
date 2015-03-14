@@ -54,6 +54,9 @@
 #    define HAVE_PIPE2    1
 #  endif
 #endif
+#if defined(__FreeBSD__) && __FreeBSD__ >= 9
+#  include <sys/procdesc.h>
+#endif
 
 #if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
 #  define HAVE_WAITID   1
@@ -506,6 +509,46 @@ static int create_pipe(int filedes[], int flags)
     return ret;
 }
 
+#if defined(FORKFD_NO_SPAWNFD) && defined(__FreeBSD__) && __FreeBSD__ >= 9
+#  if __FreeBSD__ == 9
+/* PROCDESC is an optional feature in the kernel and wasn't enabled
+ * by default on FreeBSD 9. So we need to check for it at runtime. */
+static ffd_atomic_int system_has_forkfd = FFD_ATOMIC_INIT(1);
+#  else
+/* On FreeBSD 10, PROCDESC was enabled by default. On v11, it's not an option
+ * anymore and can't be disabled. */
+static const int system_has_forkfd = 1;
+#  endif
+
+static int system_forkfd(int flags, pid_t *ppid)
+{
+    int ret;
+    pid_t pid;
+    pid = pdfork(&ret, PD_DAEMON);
+    if (__builtin_expect(pid == -1, 0)) {
+#  if __FreeBSD__ == 9
+        if (errno == ENOSYS) {
+            /* PROCDESC wasn't compiled into the kernel: don't try it again. */
+            ffd_atomic_store(&system_has_forkfd, 0, FFD_ATOMIC_RELAXED);
+        }
+#  endif
+        return -1;
+    }
+    if (pid == 0) {
+        /* child process */
+        return FFD_CHILD_PROCESS;
+    }
+
+    /* parent process */
+    if (flags & FFD_CLOEXEC)
+        fcntl(ret, F_SETFD, FD_CLOEXEC);
+    if (flags & FFD_NONBLOCK)
+        fcntl(ret, F_SETFL, fcntl(ret, F_GETFL) | O_NONBLOCK);
+    if (ppid)
+        *ppid = pid;
+    return ret;
+}
+#else
 static const int system_has_forkfd = 0;
 static int system_forkfd(int flags, pid_t *ppid)
 {
@@ -513,6 +556,7 @@ static int system_forkfd(int flags, pid_t *ppid)
     (void)ppid;
     return -1;
 }
+#endif
 
 #ifndef FORKFD_NO_FORKFD
 /**
@@ -747,6 +791,26 @@ int forkfd_wait(int ffd, forkfd_info *info, struct rusage *rusage)
 {
     struct pipe_payload payload;
     int ret;
+
+    if (system_has_forkfd) {
+#if defined(__FreeBSD__) && __FreeBSD__ >= 9
+        pid_t pid;
+        int status;
+        int options = WEXITED;
+
+        ret = pdgetpid(ffd, &pid);
+        if (ret == -1)
+            return ret;
+        ret = fcntl(ffd, F_GETFL);
+        if (ret == -1)
+            return ret;
+        options |= (ret & O_NONBLOCK) ? WNOHANG : 0;
+        ret = wait4(pid, &status, options, rusage);
+        if (ret != -1 && info)
+            convertStatusToForkfdInfo(status, info);
+        return ret == -1 ? -1 : 0;
+#endif
+    }
 
     ret = read(ffd, &payload, sizeof(payload));
     if (ret == -1)
