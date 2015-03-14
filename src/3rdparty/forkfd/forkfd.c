@@ -25,9 +25,8 @@
 
 #ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
-#  define _POSIX_C_SOURCE 200809L
-#  define _XOPEN_SOURCE 700
 #endif
+
 #include "forkfd.h"
 
 #include <sys/types.h>
@@ -44,6 +43,7 @@
 #include <unistd.h>
 
 #ifdef __linux__
+#  define HAVE_WAIT4    1
 #  if (defined(__GLIBC__) && (__GLIBC__ << 16) + __GLIBC_MINOR__ >= 0x207) || defined(__BIONIC__)
 #    include <sys/eventfd.h>
 #    define HAVE_EVENTFD  1
@@ -55,6 +55,10 @@
 
 #if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
 #  define HAVE_WAITID   1
+#endif
+#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__) || \
+    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#  define HAVE_WAIT4    1
 #endif
 
 #if defined(__APPLE__)
@@ -188,12 +192,33 @@ static int isChildReady(pid_t pid, siginfo_t *info)
 }
 #endif
 
+static void convertStatusToForkfdInfo(int status, struct forkfd_info *info)
+{
+    if (WIFEXITED(status)) {
+        info->code = CLD_EXITED;
+        info->status = WEXITSTATUS(status);
+    } else if (WIFSIGNALED(status)) {
+        info->code = CLD_KILLED;
+#  ifdef WCOREDUMP
+        if (WCOREDUMP(status))
+            info->code = CLD_DUMPED;
+#  endif
+        info->status = WTERMSIG(status);
+    }
+}
+
 static int tryReaping(pid_t pid, struct pipe_payload *payload)
 {
     /* reap the child */
-#ifdef HAVE_WAITID
+#if defined(HAVE_WAIT4)
+    int status;
+    if (wait4(pid, &status, WNOHANG, &payload->rusage) <= 0)
+        return 0;
+    convertStatusToForkfdInfo(status, &payload->info);
+#else
+#  if defined(HAVE_WAITID)
     if (waitid_works) {
-        // we have waitid(2), which fills in siginfo_t for us
+        /* we have waitid(2), which gets us some payload values on some systems */
         siginfo_t info;
         info.si_pid = 0;
         int ret = waitid(P_PID, pid, &info, WEXITED | WNOHANG) == 0 && info.si_pid == pid;
@@ -202,30 +227,20 @@ static int tryReaping(pid_t pid, struct pipe_payload *payload)
 
         payload->info.code = info.si_code;
         payload->info.status = info.si_status;
-#  ifdef __linux__
+#    ifdef __linux__
         payload->rusage.ru_utime.tv_sec = info.si_utime / CLOCKS_PER_SEC;
         payload->rusage.ru_utime.tv_usec = info.si_utime % CLOCKS_PER_SEC;
         payload->rusage.ru_stime.tv_sec = info.si_stime / CLOCKS_PER_SEC;
         payload->rusage.ru_stime.tv_usec = info.si_stime % CLOCKS_PER_SEC;
-#  endif
+#    endif
         return 1;
     }
-#endif
+#  endif // HAVE_WAITID
     int status;
     if (waitpid(pid, &status, WNOHANG) <= 0)
         return 0;     // child did not change state
-
-    if (WIFEXITED(status)) {
-        payload->info.code = CLD_EXITED;
-        payload->info.status = WEXITSTATUS(status);
-    } else if (WIFSIGNALED(status)) {
-        payload->info.code = CLD_KILLED;
-#  ifdef WCOREDUMP
-        if (WCOREDUMP(status))
-            payload->info.code = CLD_DUMPED;
-#  endif
-        payload->info.status = WTERMSIG(status);
-    }
+    convertStatusToForkfdInfo(status, &payload->info);
+#endif // !HAVE_WAIT4
 
     return 1;
 }
