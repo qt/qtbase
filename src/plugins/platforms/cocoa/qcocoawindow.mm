@@ -1488,10 +1488,23 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     }
 
     Qt::WindowState predictedState = newState;
+    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
+        const int styleMask = [m_nsWindow styleMask];
+        const bool usePerform = styleMask & NSResizableWindowMask;
+        [m_nsWindow setStyleMask:styleMask | NSResizableWindowMask];
+        if (usePerform)
+            [m_nsWindow performZoom : m_nsWindow]; // toggles
+        else
+            [m_nsWindow zoom : m_nsWindow]; // toggles
+        [m_nsWindow setStyleMask:styleMask];
+    }
 
     if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
         if (newState & Qt::WindowMinimized) {
-            [m_nsWindow performMiniaturize : m_nsWindow];
+            if ([m_nsWindow styleMask] & NSMiniaturizableWindowMask)
+                [m_nsWindow performMiniaturize : m_nsWindow];
+            else
+                [m_nsWindow miniaturize : m_nsWindow];
         } else {
             [m_nsWindow deminiaturize : m_nsWindow];
         }
