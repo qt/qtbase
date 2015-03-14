@@ -1913,6 +1913,7 @@ QByteArray QBig5hkscsCodec::convertFromUnicode(const QChar *uc, int len, Convert
         } else {
             // Error
             *cursor++ = replacement;
+            ++invalid;
         }
     }
     rstr.resize(cursor - (uchar*)rstr.constData());
