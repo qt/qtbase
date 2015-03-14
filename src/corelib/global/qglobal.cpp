@@ -205,7 +205,7 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 
     The Q_DECLARE_FLAGS() macro does not expose the flags to the meta-object
     system, so they cannot be used by Qt Script or edited in Qt Designer.
-    To make the flags available for these purposes, the Q_FLAGS() macro must
+    To make the flags available for these purposes, the Q_FLAG() macro must
     be used:
 
     \snippet code/src_corelib_global_qglobal.cpp meta-object flags
