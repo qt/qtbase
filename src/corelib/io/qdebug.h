@@ -275,7 +275,10 @@ operator<<(QDebug dbg, T value)
 }
 
 template <class T>
-inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, QDebug>::Type operator<<(QDebug debug, const QFlags<T> &flags)
+inline typename QtPrivate::QEnableIf<
+    QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
+    QDebug>::Type
+operator<<(QDebug debug, const QFlags<T> &flags)
 {
     const QMetaObject *obj = qt_getEnumMetaObject(T());
     const char *name = qt_getEnumName(T());
@@ -283,7 +286,10 @@ inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, QDebug>
 }
 
 template <class T>
-inline typename QtPrivate::QEnableIf<!QtPrivate::IsQEnumHelper<T>::Value, QDebug>::Type operator<<(QDebug debug, const QFlags<T> &flags)
+inline typename QtPrivate::QEnableIf<
+    !QtPrivate::IsQEnumHelper<T>::Value && !QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
+    QDebug>::Type
+operator<<(QDebug debug, const QFlags<T> &flags)
 #else // !QT_NO_QOBJECT
 template <class T>
 inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
