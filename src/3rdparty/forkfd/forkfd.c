@@ -500,6 +500,14 @@ static int create_pipe(int filedes[], int flags)
     return ret;
 }
 
+static const int system_has_forkfd = 0;
+static int system_forkfd(int flags, pid_t *ppid)
+{
+    (void)flags;
+    (void)ppid;
+    return -1;
+}
+
 #ifndef FORKFD_NO_FORKFD
 /**
  * @brief forkfd returns a file descriptor representing a child process
@@ -546,6 +554,12 @@ int forkfd(int flags, pid_t *ppid)
 #ifdef __linux__
     int efd;
 #endif
+
+    if (system_has_forkfd) {
+        ret = system_forkfd(flags, ppid);
+        if (system_has_forkfd)
+            return ret;
+    }
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
@@ -669,6 +683,8 @@ int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_act
     int ret = -1;
     /* we can only do work if we have a way to start the child in stopped mode;
      * otherwise, we have a major race condition. */
+
+    assert(!system_has_forkfd);
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
