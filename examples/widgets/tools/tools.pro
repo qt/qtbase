@@ -8,6 +8,7 @@ SUBDIRS       = \
                 plugandpaintplugins \
                 plugandpaint \
                 regexp \
+                regularexpression \
                 settingseditor \
                 styleplugin \
                 treemodelcompleter \
