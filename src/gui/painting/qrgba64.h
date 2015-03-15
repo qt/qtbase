@@ -54,7 +54,12 @@ public:
     // When c++11 is mandatory, we can add all but a copy constructor.
     Q_DECL_RELAXED_CONSTEXPR static QRgba64 fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
     {
-        QRgba64 rgba64;
+        QRgba64 rgba64
+#ifdef Q_COMPILER_UNIFORM_INIT
+            = {}
+#endif
+        ;
+
         rgba64.c.red = red;
         rgba64.c.green = green;
         rgba64.c.blue = blue;
@@ -63,7 +68,11 @@ public:
     }
     Q_DECL_RELAXED_CONSTEXPR static QRgba64 fromRgba64(quint64 c)
     {
-        QRgba64 rgba64;
+        QRgba64 rgba64
+#ifdef Q_COMPILER_UNIFORM_INIT
+            = {}
+#endif
+        ;
         rgba64.rgba = c;
         return rgba64;
     }
