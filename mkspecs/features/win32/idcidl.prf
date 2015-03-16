@@ -46,7 +46,8 @@ contains(TEMPLATE, "vc.*") {
         QMAKE_POST_LINK += $$quote($$ACTIVEQT_IDL "$${ACTIVEQT_OUTPUT}.idl" /nologo /tlb "$${ACTIVEQT_TLBOUT}"$$ACTIVEQT_NEWLINE)
         message("No rc-file linked into project; type library will be a separate file.")
     }
-    QMAKE_POST_LINK += $$quote($$ACTIVEQT_IDC $${ACTIVEQT_TARGET} /regserver)
+    !qaxserver_no_register: \
+        QMAKE_POST_LINK += $$quote($$ACTIVEQT_IDC $${ACTIVEQT_TARGET} /regserver)
     QMAKE_CLEAN += $${ACTIVEQT_OUTPUT}.idl $${ACTIVEQT_OUTPUT}.tlb
 }
 
