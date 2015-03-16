@@ -1437,6 +1437,10 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {
+            // if escape is pressed we don't want interpretKeyEvents to close a dialog. This will be done via QWindowSystemInterface
+            if (keyCode == Qt::Key_Escape)
+                m_platformWindow->m_ignoreWindowShouldClose = true;
+
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
@@ -1446,6 +1450,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
                 }
             }
+
+            m_platformWindow->m_ignoreWindowShouldClose = false;;
         }
         if (m_resendKeyEvent)
             m_sendKeyEvent = true;

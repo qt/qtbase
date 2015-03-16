@@ -371,6 +371,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
+    , m_ignoreWindowShouldClose(false)
     , m_inConstructor(true)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
@@ -1218,6 +1219,9 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 bool QCocoaWindow::windowShouldClose()
 {
+    // might have been set from qnsview.mm
+    if (m_ignoreWindowShouldClose)
+       return false;
     bool accepted = false;
     QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();

@@ -265,6 +265,7 @@ public: // for QNSView
     QPointer<QWindow> m_enterLeaveTargetWindow;
     bool m_windowUnderMouse;
 
+    bool m_ignoreWindowShouldClose;
     bool m_inConstructor;
     bool m_inSetVisible;
     bool m_inSetGeometry;
