@@ -319,7 +319,7 @@ public:
     QmlTypeNode* qmlTypeNode();
     ClassNode* declarativeCppNode();
     const QString& outputSubdirectory() const { return outSubDir_; }
-    void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }
+    virtual void setOutputSubdirectory(const QString& t) { outSubDir_ = t; }
     QString fullDocumentName() const;
     static QString cleanId(const QString &str);
     QString idForNode() const;
@@ -410,6 +410,7 @@ public:
     void printChildren(const QString& title);
     void addChild(Node* child);
     void removeChild(Node* child);
+    virtual void setOutputSubdirectory(const QString& t);
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);

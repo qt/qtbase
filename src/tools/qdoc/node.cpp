@@ -1199,6 +1199,16 @@ void InnerNode::removeChild(Node *child)
 }
 
 /*!
+ Recursively sets the output subdirectory for children
+ */
+void InnerNode::setOutputSubdirectory(const QString &t)
+{
+    Node::setOutputSubdirectory(t);
+    for (int i = 0; i < childNodes().size(); ++i)
+        childNodes().at(i)->setOutputSubdirectory(t);
+}
+
+/*!
   Find the module (Qt Core, Qt GUI, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
   and examine everything between "src/" and the filename.  This is
