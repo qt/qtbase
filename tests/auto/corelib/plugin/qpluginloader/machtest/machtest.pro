@@ -3,11 +3,14 @@ OTHER_FILES += \
     ppcconverter.pl \
     generate-bad.pl
 
+# Needs explicit load()ing due to aux template. Relies on QT being non-empty.
+load(qt)
+
 i386.target = good.i386.dylib
-i386.commands = $(CXX) $(CXXFLAGS) -shared -arch i386 -o $@ -I$$[QT_INSTALL_HEADERS/get] $<
+i386.commands = $(CXX) $(CXXFLAGS) -shared -arch i386 -o $@ -I$(INCPATH) $<
 i386.depends += $$PWD/../fakeplugin.cpp
 x86_64.target = good.x86_64.dylib
-x86_64.commands = $(CXX) $(CXXFLAGS) -shared -arch x86_64 -o $@ -I$$[QT_INSTALL_HEADERS/get] $<
+x86_64.commands = $(CXX) $(CXXFLAGS) -shared -arch x86_64 -o $@ -I$(INCPATH) $<
 x86_64.depends += $$PWD/../fakeplugin.cpp
 
 # Current Mac OS X toolchains have no compiler for PPC anymore
