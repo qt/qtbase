@@ -67,6 +67,8 @@ private:
     NSEvent *m_lastEvent;
     NSView *m_lastView;
     Qt::DropAction m_executed_drop_action;
+
+    QPixmap dragPixmap(QDrag *drag, QPoint &hotSpot) const;
 };
 
 class QCocoaDropData : public QInternalMimeData
