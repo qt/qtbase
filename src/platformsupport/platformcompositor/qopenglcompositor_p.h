@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
+class QOpenGLFramebufferObject;
 class QWindow;
 class QPlatformTextureList;
 
@@ -76,6 +77,7 @@ public:
     QWindow *targetWindow() const { return m_targetWindow; }
 
     void update();
+    QImage grab();
 
     QList<QOpenGLCompositorWindow *> windows() const { return m_windows; }
     void addWindow(QOpenGLCompositorWindow *window);
@@ -87,12 +89,13 @@ signals:
     void topWindowChanged(QOpenGLCompositorWindow *window);
 
 private slots:
-    void renderAll();
+    void handleRenderAllRequest();
 
 private:
     QOpenGLCompositor();
     ~QOpenGLCompositor();
 
+    void renderAll(QOpenGLFramebufferObject *fbo);
     void render(QOpenGLCompositorWindow *window);
 
     QOpenGLContext *m_context;
