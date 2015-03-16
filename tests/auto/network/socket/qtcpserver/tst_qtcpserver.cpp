@@ -864,11 +864,12 @@ void tst_QTcpServer::serverAddress_data()
     QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::AnyIPv4);
     if (QtNetworkSettings::hasIPv6())
         QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6);
-    foreach (const QHostAddress& addr, QNetworkInterface::allAddresses()) {
-        if (addr.isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
-            || addr.isInSubnet(QHostAddress::parseSubnet("169.254/16")))
-            continue; //cannot bind on link local addresses
-        QTest::newRow(qPrintable(addr.toString())) << addr << addr;
+    foreach (const QNetworkInterface &iface, QNetworkInterface::allInterfaces()) {
+        if ((iface.flags() & QNetworkInterface::IsUp) == 0)
+            continue;
+        foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
+            QTest::newRow(qPrintable(entry.ip().toString())) << entry.ip() << entry.ip();
+        }
     }
 }
 

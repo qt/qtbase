@@ -77,6 +77,7 @@ public:
     virtual Qt::ScreenOrientation orientation() const;
     virtual int screenDepth() const;
     virtual QImage::Format screenFormat() const;
+    virtual qreal refreshRate() const;
     virtual QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
     virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                                    const QSize &size,

@@ -77,6 +77,9 @@ public:
     struct Gpu {
         Gpu() : vendorId(0), deviceId(0) {}
         bool isValid() const { return deviceId; }
+        bool equals(const Gpu &other) const {
+            return vendorId == other.vendorId && deviceId == other.deviceId && driverVersion == other.driverVersion;
+        }
 
         uint vendorId;
         uint deviceId;
@@ -92,6 +95,21 @@ public:
     static QSet<QString> gpuFeatures(const Gpu &gpu, const QJsonDocument &doc);
     static QSet<QString> gpuFeatures(const Gpu &gpu, const QString &fileName);
 };
+
+inline bool operator==(const QOpenGLConfig::Gpu &a, const QOpenGLConfig::Gpu &b)
+{
+    return a.equals(b);
+}
+
+inline bool operator!=(const QOpenGLConfig::Gpu &a, const QOpenGLConfig::Gpu &b)
+{
+    return !a.equals(b);
+}
+
+inline uint qHash(const QOpenGLConfig::Gpu &gpu)
+{
+    return qHash(gpu.vendorId) + qHash(gpu.deviceId) + qHash(gpu.driverVersion);
+}
 
 QT_END_NAMESPACE
 

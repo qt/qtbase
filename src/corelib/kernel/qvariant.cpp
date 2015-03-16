@@ -2536,7 +2536,7 @@ QModelIndex QVariant::toModelIndex() const
 
     \sa canConvert(), convert(), toModelIndex()
 */
-QModelIndex QVariant::toPersistentModelIndex() const
+QPersistentModelIndex QVariant::toPersistentModelIndex() const
 {
     return qVariantToHelper<QPersistentModelIndex>(d, handlerManager);
 }

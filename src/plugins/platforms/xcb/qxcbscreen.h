@@ -58,7 +58,8 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen,
-               xcb_randr_get_output_info_reply_t *output, const QString &outputName, int number);
+               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
+               QString outputName, int number);
     ~QXcbScreen();
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
@@ -80,11 +81,19 @@ public:
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
     QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
     void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
+    void removeVirtualSibling(QPlatformScreen *s) { m_siblings.removeOne(s); }
+    void addVirtualSibling(QPlatformScreen *s) { ((QXcbScreen *) s)->isPrimary() ? m_siblings.prepend(s) : m_siblings.append(s); }
+
+    void setPrimary(bool primary) { m_primary = primary; }
+    bool isPrimary() const { return m_primary; }
 
     int screenNumber() const { return m_number; }
 
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
+    xcb_randr_output_t output() const { return m_output; }
+    xcb_randr_crtc_t crtc() const { return m_crtc; }
+    xcb_randr_mode_t mode() const { return m_mode; }
 
     xcb_window_t clientLeader() const { return m_clientLeader; }
 
@@ -98,8 +107,9 @@ public:
     QString name() const Q_DECL_OVERRIDE { return m_outputName; }
 
     void handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event);
-    void updateGeometry(xcb_timestamp_t timestamp);
-    void updateRefreshRate();
+    void updateGeometry(const QRect &geom, uint8_t rotation);
+    void updateGeometry(xcb_timestamp_t timestamp = XCB_TIME_CURRENT_TIME);
+    void updateRefreshRate(xcb_randr_mode_t mode);
 
     void readXResources();
 
@@ -117,7 +127,12 @@ private:
     void sendStartupMessage(const QByteArray &message) const;
 
     xcb_screen_t *m_screen;
+    xcb_randr_output_t m_output;
     xcb_randr_crtc_t m_crtc;
+    xcb_randr_mode_t m_mode;
+    bool m_primary;
+    uint8_t m_rotation;
+
     QString m_outputName;
     QSizeF m_outputSizeMillimeters;
     QSizeF m_sizeMillimeters;

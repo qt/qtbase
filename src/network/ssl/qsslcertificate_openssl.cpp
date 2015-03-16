@@ -691,7 +691,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
         } else {
             break;
         }
-        size -= ((char *)data - der.data());
+        size -= ((const char *)data - der.data());
     }
 
     return certificates;

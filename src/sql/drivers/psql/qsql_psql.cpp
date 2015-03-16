@@ -448,7 +448,7 @@ QVariant QPSQLResult::data(int i)
     }
     case QVariant::ByteArray: {
         size_t len;
-        unsigned char *data = PQunescapeBytea((unsigned char*)val, &len);
+        unsigned char *data = PQunescapeBytea((const unsigned char*)val, &len);
         QByteArray ba((const char*)data, len);
         qPQfreemem(data);
         return QVariant(ba);
@@ -1312,9 +1312,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             QByteArray ba(field.value().toByteArray());
             size_t len;
 #if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 80200
-            unsigned char *data = PQescapeByteaConn(d->connection, (unsigned char*)ba.constData(), ba.size(), &len);
+            unsigned char *data = PQescapeByteaConn(d->connection, (const unsigned char*)ba.constData(), ba.size(), &len);
 #else
-            unsigned char *data = PQescapeBytea((unsigned char*)ba.constData(), ba.size(), &len);
+            unsigned char *data = PQescapeBytea((const unsigned char*)ba.constData(), ba.size(), &len);
 #endif
             r += QLatin1Char('\'');
             r += QLatin1String((const char*)data);

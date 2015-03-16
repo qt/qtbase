@@ -63,6 +63,7 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config);
 QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize = QSize());
 QSize q_screenSizeFromFb(int framebufferDevice);
 int q_screenDepthFromFb(int framebufferDevice);
+qreal q_refreshRateFromFb(int framebufferDevice);
 #endif
 
 class QEglConfigChooser

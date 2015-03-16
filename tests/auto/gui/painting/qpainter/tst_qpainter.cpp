@@ -111,6 +111,7 @@ private slots:
     void drawLine_task190634();
     void drawLine_task229459();
     void drawLine_task234891();
+    void drawLineEndPoints();
 
     void drawRect_data() { fillData(); }
     void drawRect();
@@ -1034,6 +1035,50 @@ void tst_QPainter::drawLine_task216948()
 
     for (int i = 0; i < img.height(); ++i)
         QCOMPARE(img.pixel(0, i), QColor(Qt::black).rgba());
+}
+
+void tst_QPainter::drawLineEndPoints()
+{
+    QImage img(256, 256, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0x0);
+
+    QPainter p;
+    for (int x = 0; x < img.width(); ++x) {
+        QRgb color = qRgb(x, 0, 0);
+        p.begin(&img);
+        p.setPen(QPen(color));
+        p.drawLine(x, 0, 255 - x, 255);
+        p.end();
+        QCOMPARE(img.pixel(x, 0), color);
+        QCOMPARE(img.pixel(255 - x, 255), color);
+    }
+    for (int y = 0; y < img.height(); ++y) {
+        QRgb color = qRgb(0, y, 0);
+        p.begin(&img);
+        p.setPen(QPen(color));
+        p.drawLine(0, y, 255, 255 - y);
+        p.end();
+        QCOMPARE(img.pixel(0, y), color);
+        QCOMPARE(img.pixel(255, 255 - y), color);
+    }
+    for (int x = 0; x < img.width(); ++x) {
+        QRgb color = qRgb(x, 0, x);
+        p.begin(&img);
+        p.setPen(QPen(color));
+        p.drawLine(x, 255, 255 - x, 0);
+        p.end();
+        QCOMPARE(img.pixel(x, 255), color);
+        QCOMPARE(img.pixel(255 - x, 0), color);
+    }
+    for (int y = 0; y < img.height(); ++y) {
+        QRgb color = qRgb(0, y, y);
+        p.begin(&img);
+        p.setPen(QPen(color));
+        p.drawLine(255, y, 0, 255 - y);
+        p.end();
+        QCOMPARE(img.pixel(255, y), color);
+        QCOMPARE(img.pixel(0, 255 - y), color);
+    }
 }
 
 void tst_QPainter::drawRect()

@@ -576,6 +576,33 @@ int q_screenDepthFromFb(int framebufferDevice)
     return depth;
 }
 
+qreal q_refreshRateFromFb(int framebufferDevice)
+{
+    static qreal rate = 0;
+
+#ifdef Q_OS_LINUX
+    if (rate == 0) {
+        if (framebufferDevice != -1) {
+            struct fb_var_screeninfo vinfo;
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) != -1) {
+                const quint64 quot = quint64(vinfo.left_margin + vinfo.right_margin + vinfo.xres + vinfo.hsync_len)
+                    * quint64(vinfo.upper_margin + vinfo.lower_margin + vinfo.yres + vinfo.vsync_len)
+                    * vinfo.pixclock;
+                if (quot)
+                    rate = 1000000000000LLU / quot;
+            } else {
+                qWarning("eglconvenience: Could not query screen info");
+            }
+        }
+    }
+#endif
+
+    if (rate == 0)
+        rate = 60;
+
+    return rate;
+}
+
 #endif // Q_OS_UNIX
 
 QT_END_NAMESPACE

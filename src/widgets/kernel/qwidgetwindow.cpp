@@ -554,7 +554,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                                             &qt_button_down, qt_last_mouse_receiver);
     }
 #ifndef QT_NO_CONTEXTMENU
-    if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton) {
+    if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton
+        && m_widget->rect().contains(event->pos())) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
         QGuiApplication::sendSpontaneousEvent(receiver, &e);
     }

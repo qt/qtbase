@@ -107,6 +107,9 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     m_keyboard.reset(new QLibInputKeyboard);
     m_touch.reset(new QLibInputTouch);
 
+    connect(QGuiApplicationPrivate::inputDeviceManager(), SIGNAL(cursorPositionChangeRequested(QPoint)),
+            this, SLOT(onCursorPositionChangeRequested(QPoint)));
+
     // Process the initial burst of DEVICE_ADDED events.
     onReadyRead();
 }
@@ -225,6 +228,11 @@ void QLibInputHandler::processEvent(libinput_event *ev)
     default:
         break;
     }
+}
+
+void QLibInputHandler::onCursorPositionChangeRequested(const QPoint &pos)
+{
+    m_pointer->setPos(pos);
 }
 
 QT_END_NAMESPACE

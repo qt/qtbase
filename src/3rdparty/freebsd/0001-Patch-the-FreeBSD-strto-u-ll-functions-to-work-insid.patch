@@ -9,15 +9,15 @@ Changes:
  - rename from strtoxx_l to qt_strtoxx (merging the two functions)
  - remove __restrict
  - remove the locale_t parameter and use ascii_isspace instead of isspace_l
+ - fix compilation with -Wcast-qual (requires C++)
 
-Change-Id: I1e522e12da90eb35eefcf4025102dc11b22c60a5
 ---
- src/3rdparty/freebsd/strtoll.c  | 27 +++++----------------------
- src/3rdparty/freebsd/strtoull.c | 27 +++++----------------------
- 2 files changed, 10 insertions(+), 44 deletions(-)
+ src/3rdparty/freebsd/strtoll.c  | 27 ++++-----------------------
+ src/3rdparty/freebsd/strtoull.c | 27 ++++-----------------------
+ 2 files changed, 8 insertions(+), 46 deletions(-)
 
 diff --git a/src/3rdparty/freebsd/strtoll.c b/src/3rdparty/freebsd/strtoll.c
-index 16a8196..0ded267 100644
+index 16a8196..7b4505e 100644
 --- a/src/3rdparty/freebsd/strtoll.c
 +++ b/src/3rdparty/freebsd/strtoll.c
 @@ -32,18 +32,6 @@
@@ -39,7 +39,7 @@ index 16a8196..0ded267 100644
  /*
   * Convert a string to a long long integer.
   *
-@@ -51,15 +39,15 @@ __FBSDID("$FreeBSD$");
+@@ -51,15 +39,13 @@ __FBSDID("$FreeBSD$");
   * alphabets and digits are each contiguous.
   */
  long long
@@ -72,7 +72,8 @@ index 16a8196..0ded267 100644
 -		acc = -acc;
 +		acc = (unsigned long long) -(long long)acc;
  	if (endptr != NULL)
- 		*endptr = (char *)(any ? s - 1 : nptr);
+-		*endptr = (char *)(any ? s - 1 : nptr);
++                *endptr = const_cast<char *>(any ? s - 1 : nptr);
  	return (acc);
  }
 -long long
@@ -81,7 +82,7 @@ index 16a8196..0ded267 100644
 -	return strtoll_l(nptr, endptr, base, __get_locale());
 -}
 diff --git a/src/3rdparty/freebsd/strtoull.c b/src/3rdparty/freebsd/strtoull.c
-index dc40e0e..cb04adb 100644
+index dc40e0e..1eb9257 100644
 --- a/src/3rdparty/freebsd/strtoull.c
 +++ b/src/3rdparty/freebsd/strtoull.c
 @@ -32,18 +32,6 @@
@@ -103,7 +104,7 @@ index dc40e0e..cb04adb 100644
  /*
   * Convert a string to an unsigned long long integer.
   *
-@@ -51,15 +39,15 @@ __FBSDID("$FreeBSD$");
+@@ -51,15 +39,13 @@ __FBSDID("$FreeBSD$");
   * alphabets and digits are each contiguous.
   */
  unsigned long long
@@ -136,7 +137,8 @@ index dc40e0e..cb04adb 100644
 -		acc = -acc;
 +		acc = (unsigned long long) -(long long)acc;
  	if (endptr != NULL)
- 		*endptr = (char *)(any ? s - 1 : nptr);
+-		*endptr = (char *)(any ? s - 1 : nptr);
++                *endptr = const_cast<char *>(any ? s - 1 : nptr);
  	return (acc);
  }
 -unsigned long long
@@ -145,5 +147,5 @@ index dc40e0e..cb04adb 100644
 -	return strtoull_l(nptr, endptr, base, __get_locale());
 -}
 -- 
-1.8.4.5
+2.1.4
 

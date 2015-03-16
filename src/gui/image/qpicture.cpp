@@ -1362,7 +1362,7 @@ void QPictureIO::init()
 QPictureIO::~QPictureIO()
 {
     if (d->parameters)
-        delete [] (char*)d->parameters;
+        delete [] d->parameters;
     delete d;
 }
 
@@ -1671,7 +1671,7 @@ const char *QPictureIO::parameters() const
 void QPictureIO::setParameters(const char *parameters)
 {
     if (d->parameters)
-        delete [] (char*)d->parameters;
+        delete [] d->parameters;
     d->parameters = qstrdup(parameters);
 }
 

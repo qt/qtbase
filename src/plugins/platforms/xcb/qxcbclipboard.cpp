@@ -97,7 +97,7 @@ protected:
             that->format_atoms = m_clipboard->getDataInFormat(modeAtom, m_clipboard->atom(QXcbAtom::TARGETS));
 
             if (format_atoms.size() > 0) {
-                xcb_atom_t *targets = (xcb_atom_t *) format_atoms.data();
+                const xcb_atom_t *targets = (const xcb_atom_t *) format_atoms.data();
                 int size = format_atoms.size() / sizeof(xcb_atom_t);
 
                 for (int i = 0; i < size; ++i) {
@@ -128,7 +128,7 @@ protected:
         (void)formats(); // trigger update of format list
 
         QVector<xcb_atom_t> atoms;
-        xcb_atom_t *targets = (xcb_atom_t *) format_atoms.data();
+        const xcb_atom_t *targets = (const xcb_atom_t *) format_atoms.data();
         int size = format_atoms.size() / sizeof(xcb_atom_t);
         atoms.reserve(size);
         for (int i = 0; i < size; ++i)

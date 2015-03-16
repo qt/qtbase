@@ -769,7 +769,7 @@ do {                                          \
 do {                                          \
     /* Duff's device */                       \
     ushort *_d = (ushort*)(dest);         \
-    const ushort *_s = (ushort*)(src);    \
+    const ushort *_s = (const ushort*)(src);    \
     int n = ((length) + 7) / 8;               \
     switch ((length) & 0x07)                  \
     {                                         \
@@ -892,6 +892,22 @@ inline int qBlue565(quint16 rgb) {
     const int b = (rgb & 0x001f);
     return (b << 3) | (b >> 2);
 }
+
+
+static Q_ALWAYS_INLINE const uint *qt_convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qPremultiply(src[i]);
+    return buffer;
+}
+
+static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
+    return buffer;
+}
+
 
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,

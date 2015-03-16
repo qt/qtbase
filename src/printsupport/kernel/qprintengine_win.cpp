@@ -89,6 +89,17 @@ QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
     d->initialize();
 }
 
+static QByteArray msgBeginFailed(const char *function, const DOCINFO &d)
+{
+    QString result;
+    QTextStream str(&result);
+    str << "QWin32PrintEngine::begin: " << function << " failed, document \""
+        << QString::fromWCharArray(d.lpszDocName) << '"';
+    if (d.lpszOutput[0])
+        str << ", file \"" << QString::fromWCharArray(d.lpszOutput) << '"';
+    return result.toLocal8Bit();
+}
+
 bool QWin32PrintEngine::begin(QPaintDevice *pdev)
 {
     Q_D(QWin32PrintEngine);
@@ -123,12 +134,12 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     if (d->printToFile)
         di.lpszOutput = d->fileName.isEmpty() ? L"FILE:" : reinterpret_cast<const wchar_t *>(d->fileName.utf16());
     if (ok && StartDoc(d->hdc, &di) == SP_ERROR) {
-        qErrnoWarning("QWin32PrintEngine::begin: StartDoc failed");
+        qErrnoWarning(msgBeginFailed("StartDoc", di));
         ok = false;
     }
 
     if (StartPage(d->hdc) <= 0) {
-        qErrnoWarning("QWin32PrintEngine::begin: StartPage failed");
+        qErrnoWarning(msgBeginFailed("StartPage", di));
         ok = false;
     }
 
@@ -175,8 +186,10 @@ bool QWin32PrintEngine::end()
         return true;
 
     if (d->hdc) {
-        EndPage(d->hdc);                 // end; printing done
-        EndDoc(d->hdc);
+        if (EndPage(d->hdc) <= 0) // end; printing done
+            qErrnoWarning("QWin32PrintEngine::end: EndPage failed (%p)", d->hdc);
+        if (EndDoc(d->hdc) <= 0)
+            qErrnoWarning("QWin32PrintEngine::end: EndDoc failed");
     }
 
     d->state = QPrinter::Idle;
@@ -201,10 +214,8 @@ bool QWin32PrintEngine::newPage()
     }
 
     if (d->reinit) {
-        if (!d->resetDC()) {
-            qErrnoWarning("QWin32PrintEngine::newPage: ResetDC failed");
+        if (!d->resetDC())
             return false;
-        }
         d->reinit = false;
     }
 
@@ -241,6 +252,8 @@ bool QWin32PrintEngine::newPage()
                 d->reinit = false;
             }
             success = (StartPage(d->hdc) > 0);
+            if (!success)
+                qErrnoWarning("Win32PrintEngine::newPage: StartPage failed (2)");
         }
         if (!success) {
             d->state = QPrinter::Aborted;
@@ -964,6 +977,21 @@ void QWin32PrintEnginePrivate::doReinit()
         resetDC();
         reinit = false;
     }
+}
+
+bool QWin32PrintEnginePrivate::resetDC()
+{
+    if (!hdc) {
+        qWarning() << "ResetDC() called with null hdc.";
+        return false;
+    }
+    const HDC oldHdc = hdc;
+    const HDC hdc = ResetDC(oldHdc, devMode);
+    if (!hdc) {
+        const int lastError = GetLastError();
+        qErrnoWarning(lastError, "ResetDC() on %p failed (%d)", oldHdc, lastError);
+    }
+    return hdc != 0;
 }
 
 static int indexOfId(const QList<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)

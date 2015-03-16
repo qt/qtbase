@@ -56,7 +56,7 @@ namespace QQmlJS { namespace AST {
 class SourceLocation
 {
 public:
-    SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
+    explicit SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
         : offset(offset), length(length),
           startLine(line), startColumn(column)
     { }

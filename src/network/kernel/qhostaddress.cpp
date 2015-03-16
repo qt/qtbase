@@ -415,6 +415,19 @@ QHostAddress::QHostAddress(quint8 *ip6Addr)
 }
 
 /*!
+    \since 5.5
+    Constructs a host address object with the IPv6 address \a ip6Addr.
+
+    \a ip6Addr must be a 16-byte array in network byte order (big
+    endian).
+*/
+QHostAddress::QHostAddress(const quint8 *ip6Addr)
+    : d(new QHostAddressPrivate)
+{
+    setAddress(ip6Addr);
+}
+
+/*!
     Constructs a host address object with the IPv6 address \a ip6Addr.
 */
 QHostAddress::QHostAddress(const Q_IPV6ADDR &ip6Addr)
@@ -449,9 +462,9 @@ QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
 {
 #ifndef Q_OS_WINRT
     if (sockaddr->sa_family == AF_INET)
-        setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
+        setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
-        setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+        setAddress(((const qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
 #else
     Q_UNUSED(sockaddr)
 #endif
@@ -575,6 +588,20 @@ void QHostAddress::setAddress(quint8 *ip6Addr)
 
 /*!
     \overload
+    \since 5.5
+
+    Set the IPv6 address specified by \a ip6Addr.
+
+    \a ip6Addr must be an array of 16 bytes in network byte order
+    (high-order byte first).
+*/
+void QHostAddress::setAddress(const quint8 *ip6Addr)
+{
+    d->setAddress(ip6Addr);
+}
+
+/*!
+    \overload
 
     Set the IPv6 address specified by \a ip6Addr.
 */
@@ -610,9 +637,9 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 #ifndef Q_OS_WINRT
     clear();
     if (sockaddr->sa_family == AF_INET)
-        setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
+        setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
-        setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+        setAddress(((const qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
 #else
     Q_UNUSED(sockaddr)
 #endif

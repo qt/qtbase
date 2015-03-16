@@ -99,7 +99,7 @@ inline QPixmapIconEngineEntry::QPixmapIconEngineEntry(const QString &file, const
     pixmap.setDevicePixelRatio(1.0);
 }
 
-class QPixmapIconEngine : public QIconEngine {
+class Q_GUI_EXPORT QPixmapIconEngine : public QIconEngine {
 public:
     QPixmapIconEngine();
     QPixmapIconEngine(const QPixmapIconEngine &);

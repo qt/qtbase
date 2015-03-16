@@ -444,19 +444,11 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     const QPoint cornerPoint(controlsRect.bottomRight() + QPoint(1, 1) - cornerOffset);
 
     // Some styles paints the corner if both scorllbars are showing and there is
-    // no corner widget. Also, on the Mac we paint if there is a native
-    // (transparent) sizegrip in the area where a corner widget would be.
-    if ((needv && needh && hasCornerWidget == false && hscrollOverlap == 0 && vscrollOverlap == 0)
-        || ((needv || needh)
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
-        && hasMacSizeGrip
-#endif
-        )
-    ) {
+    // no corner widget.
+    if (needv && needh && !hasCornerWidget && hscrollOverlap == 0 && vscrollOverlap == 0)
         cornerPaintingRect = QStyle::visualRect(opt.direction, opt.rect, QRect(cornerPoint, extSize));
-    } else {
+    else
         cornerPaintingRect = QRect();
-    }
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC
     if (hasMacReverseSizeGrip)

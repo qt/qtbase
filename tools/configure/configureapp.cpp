@@ -182,6 +182,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_EVDEV" ]        = "auto";
     dictionary[ "QT_MTDEV" ]        = "auto";
+    dictionary[ "QT_TSLIB" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
@@ -244,6 +245,8 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "USE_GOLD_LINKER" ] = "no";
 
     dictionary[ "SHARED" ]          = "yes";
+
+    dictionary[ "STATIC_RUNTIME" ]  = "no";
 
     dictionary[ "ZLIB" ]            = "auto";
 
@@ -464,6 +467,8 @@ void Configure::parseCmdLine()
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
             dictionary[ "SHARED" ] = "no";
+        else if (configCmdLine.at(i) == "-static-runtime")
+            dictionary[ "STATIC_RUNTIME" ] = "yes";
         else if (configCmdLine.at(i) == "-developer-build")
             dictionary[ "BUILDDEV" ] = "yes";
         else if (configCmdLine.at(i) == "-opensource") {
@@ -1269,12 +1274,6 @@ void Configure::parseCmdLine()
             dictionary["QT_INOTIFY"] = "no";
         }
 
-        else if (configCmdLine.at(i) == "-neon") {
-            dictionary["NEON"] = "yes";
-        } else if (configCmdLine.at(i) == "-no-neon") {
-            dictionary["NEON"] = "no";
-        }
-
         else if (configCmdLine.at(i) == "-largefile") {
             dictionary["LARGE_FILE"] = "yes";
         }
@@ -1781,6 +1780,8 @@ bool Configure::displayHelp()
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
+        desc("STATIC_RUNTIME",  "no", "-static-runtime","Statically link the C/C++ runtime library.\n");
+
         desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
         desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
 
@@ -1845,9 +1846,6 @@ bool Configure::displayHelp()
 
         desc("NIS",  "no",      "-no-nis",              "Do not compile NIS support.");
         desc("NIS",  "yes",     "-nis",                 "Compile NIS support.\n");
-
-        desc("NEON", "yes",     "-neon",                "Enable the use of NEON instructions.");
-        desc("NEON", "no",      "-no-neon",             "Do not enable the use of NEON instructions.\n");
 
         desc("QT_ICONV",    "disable", "-no-iconv",     "Do not enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
@@ -2277,6 +2275,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/evdev");
     } else if (part == "MTDEV") {
         available = tryCompileProject("unix/mtdev");
+    } else if (part == "TSLIB") {
+        available = tryCompileProject("unix/tslib");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
     } else if (part == "QT_EVENTFD") {
@@ -2447,6 +2447,10 @@ void Configure::autoDetection()
     if (dictionary["QT_MTDEV"] == "auto")
         dictionary["QT_MTDEV"] = checkAvailability("MTDEV") ? "yes" : "no";
 
+    // Detection of tslib support
+    if (dictionary["QT_TSLIB"] == "auto")
+        dictionary["QT_TSLIB"] = checkAvailability("TSLIB") ? "yes" : "no";
+
     // Detection of inotify
     if (dictionary["QT_INOTIFY"] == "auto")
         dictionary["QT_INOTIFY"] = checkAvailability("INOTIFY") ? "yes" : "no";
@@ -2506,6 +2510,11 @@ bool Configure::verifyConfiguration()
             cout << "Therefore -no-c++11 is ignored." << endl << endl;
 
         dictionary["C++11"] = "auto";
+    }
+
+    if (dictionary["STATIC_RUNTIME"] == "yes" && dictionary["SHARED"] == "yes") {
+        cout << "ERROR: -static-runtime requires -static" << endl << endl;
+        dictionary[ "DONE" ] = "error";
     }
 
     if (dictionary["SEPARATE_DEBUG_INFO"] == "yes") {
@@ -2652,6 +2661,9 @@ void Configure::generateOutputVars()
         qtConfig += "static";
     else
         qtConfig += "shared";
+
+    if (dictionary[ "STATIC_RUNTIME" ] == "yes")
+        qtConfig += "static_runtime";
 
     if (dictionary[ "GUI" ] == "no") {
         qtConfig += "no-gui";
@@ -2899,6 +2911,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["QT_MTDEV"] == "yes")
         qtConfig += "mtdev";
+
+    if (dictionary[ "QT_TSLIB" ] == "yes")
+        qtConfig += "tslib";
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
@@ -3371,6 +3386,8 @@ void Configure::generateQConfigPri()
         configStream << dictionary[ "BUILD" ];
         configStream << (dictionary[ "SHARED" ] == "no" ? " static" : " shared");
 
+        if (dictionary["STATIC_RUNTIME"] == "yes")
+            configStream << " static_runtime";
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
@@ -3604,6 +3621,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
         if (dictionary["QT_EVDEV"] == "no")          qconfigList += "QT_NO_EVDEV";
         if (dictionary["QT_MTDEV"] == "no")          qconfigList += "QT_NO_MTDEV";
+        if (dictionary["QT_TSLIB"] == "no")          qconfigList += "QT_NO_TSLIB";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";

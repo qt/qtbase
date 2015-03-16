@@ -376,10 +376,10 @@ public:
     Node* findChildNode(const QString& name, Type type);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
     FunctionNode* findFunctionNode(const QString& name) const;
-    FunctionNode* findFunctionNode(const FunctionNode* clone);
+    FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
-    void setOverload(const FunctionNode* func, bool overlode);
+    void setOverload(FunctionNode* func, bool overlode);
     void normalizeOverloads();
     void makeUndocumentedChildrenInternal();
     void deleteChildren();
@@ -904,6 +904,7 @@ public:
     }
     int overloadNumber() const;
     const QList<Parameter>& parameters() const { return params; }
+    void clearParams() { params.clear(); }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;
     const FunctionNode* reimplementedFrom() const { return rf; }

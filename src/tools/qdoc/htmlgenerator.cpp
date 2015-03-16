@@ -788,63 +788,63 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
 
             NodeMultiMap::const_iterator n = nsmap.constBegin();
             while (n != nsmap.constEnd()) {
-                const Node* node = n.value();
+                Node* node = n.value();
                 switch (node->type()) {
                 case Node::QmlType:
-                    sections[QmlClass].appendMember((Node*)node);
+                    sections[QmlClass].appendMember(node);
                     break;
                 case Node::Namespace:
-                    sections[Namespace].appendMember((Node*)node);
+                    sections[Namespace].appendMember(node);
                     break;
                 case Node::Class:
-                    sections[Class].appendMember((Node*)node);
+                    sections[Class].appendMember(node);
                     break;
                 case Node::Enum:
-                    sections[Enum].appendMember((Node*)node);
+                    sections[Enum].appendMember(node);
                     break;
                 case Node::Typedef:
-                    sections[Typedef].appendMember((Node*)node);
+                    sections[Typedef].appendMember(node);
                     break;
                 case Node::Function: {
                     const FunctionNode* fn = static_cast<const FunctionNode*>(node);
                     if (fn->isMacro())
-                        sections[Macro].appendMember((Node*)node);
+                        sections[Macro].appendMember(node);
                     else {
                         Node* p = fn->parent();
                         if (p) {
                             if (p->type() == Node::Class)
-                                sections[MemberFunction].appendMember((Node*)node);
+                                sections[MemberFunction].appendMember(node);
                             else if (p->type() == Node::Namespace) {
                                 if (p->name().isEmpty())
-                                    sections[GlobalFunction].appendMember((Node*)node);
+                                    sections[GlobalFunction].appendMember(node);
                                 else
-                                    sections[NamespaceFunction].appendMember((Node*)node);
+                                    sections[NamespaceFunction].appendMember(node);
                             }
                             else
-                                sections[GlobalFunction].appendMember((Node*)node);
+                                sections[GlobalFunction].appendMember(node);
                         }
                         else
-                            sections[GlobalFunction].appendMember((Node*)node);
+                            sections[GlobalFunction].appendMember(node);
                     }
                     break;
                 }
                 case Node::Property:
-                    sections[Property].appendMember((Node*)node);
+                    sections[Property].appendMember(node);
                     break;
                 case Node::Variable:
-                    sections[Variable].appendMember((Node*)node);
+                    sections[Variable].appendMember(node);
                     break;
                 case Node::QmlProperty:
-                    sections[QmlProperty].appendMember((Node*)node);
+                    sections[QmlProperty].appendMember(node);
                     break;
                 case Node::QmlSignal:
-                    sections[QmlSignal].appendMember((Node*)node);
+                    sections[QmlSignal].appendMember(node);
                     break;
                 case Node::QmlSignalHandler:
-                    sections[QmlSignalHandler].appendMember((Node*)node);
+                    sections[QmlSignalHandler].appendMember(node);
                     break;
                 case Node::QmlMethod:
-                    sections[QmlMethod].appendMember((Node*)node);
+                    sections[QmlMethod].appendMember(node);
                     break;
                 default:
                     break;
@@ -3349,6 +3349,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
     }
 }
 
+// generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
 void HtmlGenerator::generateSynopsis(const Node *node,
                                      const Node *relative,
                                      CodeMarker *marker,

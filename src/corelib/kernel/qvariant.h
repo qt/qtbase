@@ -320,7 +320,7 @@ class Q_CORE_EXPORT QVariant
     QEasingCurve toEasingCurve() const;
     QUuid toUuid() const;
     QModelIndex toModelIndex() const;
-    QModelIndex toPersistentModelIndex() const;
+    QPersistentModelIndex toPersistentModelIndex() const;
     QJsonValue toJsonValue() const;
     QJsonObject toJsonObject() const;
     QJsonArray toJsonArray() const;

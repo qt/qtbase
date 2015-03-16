@@ -545,4 +545,28 @@ void QCocoaIntegration::clearToolbars()
     mToolbars.clear();
 }
 
+void QCocoaIntegration::pushPopupWindow(QCocoaWindow *window)
+{
+    m_popupWindowStack.append(window);
+}
+
+QCocoaWindow *QCocoaIntegration::popPopupWindow()
+{
+    if (m_popupWindowStack.isEmpty())
+        return 0;
+    return m_popupWindowStack.takeLast();
+}
+
+QCocoaWindow *QCocoaIntegration::activePopupWindow() const
+{
+    if (m_popupWindowStack.isEmpty())
+        return 0;
+    return m_popupWindowStack.front();
+}
+
+QList<QCocoaWindow *> *QCocoaIntegration::popupWindowStack()
+{
+    return &m_popupWindowStack;
+}
+
 QT_END_NAMESPACE

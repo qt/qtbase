@@ -521,23 +521,23 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                 while (points < lastPoint) {
                     switch (*types) {
                     case QPainterPath::MoveToElement: {
-                        QPointF pt = (*(QPointF *) points) * state()->matrix;
+                        QPointF pt = (*(const QPointF *) points) * state()->matrix;
                         d->activeStroker->moveTo(pt.x(), pt.y());
                         points += 2;
                         ++types;
                         break;
                     }
                     case QPainterPath::LineToElement: {
-                        QPointF pt = (*(QPointF *) points) * state()->matrix;
+                        QPointF pt = (*(const QPointF *) points) * state()->matrix;
                         d->activeStroker->lineTo(pt.x(), pt.y());
                         points += 2;
                         ++types;
                         break;
                     }
                     case QPainterPath::CurveToElement: {
-                        QPointF c1 = ((QPointF *) points)[0] * state()->matrix;
-                        QPointF c2 = ((QPointF *) points)[1] * state()->matrix;
-                        QPointF e =  ((QPointF *) points)[2] * state()->matrix;
+                        QPointF c1 = ((const QPointF *) points)[0] * state()->matrix;
+                        QPointF c2 = ((const QPointF *) points)[1] * state()->matrix;
+                        QPointF e =  ((const QPointF *) points)[2] * state()->matrix;
                         d->activeStroker->cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
                         points += 6;
                         types += 3;
@@ -549,16 +549,16 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                     }
                 }
                 if (path.hasImplicitClose()) {
-                    QPointF pt = * ((QPointF *) path.points()) * state()->matrix;
+                    QPointF pt = * ((const QPointF *) path.points()) * state()->matrix;
                     d->activeStroker->lineTo(pt.x(), pt.y());
                 }
 
             } else {
-                QPointF p = ((QPointF *)points)[0] * state()->matrix;
+                QPointF p = ((const QPointF *)points)[0] * state()->matrix;
                 d->activeStroker->moveTo(p.x(), p.y());
                 points += 2;
                 while (points < lastPoint) {
-                    QPointF p = ((QPointF *)points)[0] * state()->matrix;
+                    QPointF p = ((const QPointF *)points)[0] * state()->matrix;
                     d->activeStroker->lineTo(p.x(), p.y());
                     points += 2;
                 }
@@ -786,7 +786,7 @@ void QPaintEngineEx::drawLines(const QLine *lines, int lineCount)
         qreal pts[64];
         int count2 = count<<1;
         for (int i=0; i<count2; ++i)
-            pts[i] = ((int *) lines)[i];
+            pts[i] = ((const int *) lines)[i];
 
         QVectorPath path(pts, count, qpaintengineex_line_types_16, QVectorPath::LinesHint);
         stroke(path, state()->pen);
@@ -802,7 +802,7 @@ void QPaintEngineEx::drawLines(const QLineF *lines, int lineCount)
     while (elementCount > 0) {
         int count = qMin(elementCount, 32);
 
-        QVectorPath path((qreal *) lines, count, qpaintengineex_line_types_16,
+        QVectorPath path((const qreal *) lines, count, qpaintengineex_line_types_16,
                          QVectorPath::LinesHint);
         stroke(path, state()->pen);
 
@@ -906,7 +906,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
 
 void QPaintEngineEx::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
-    QVectorPath path((qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
+    QVectorPath path((const qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
 
     if (mode == PolylineMode)
         stroke(path, state()->pen);
@@ -920,7 +920,7 @@ void QPaintEngineEx::drawPolygon(const QPoint *points, int pointCount, PolygonDr
     QVarLengthArray<qreal> pts(count);
 
     for (int i=0; i<count; ++i)
-        pts[i] = ((int *) points)[i];
+        pts[i] = ((const int *) points)[i];
 
     QVectorPath path(pts.data(), pointCount, 0, QVectorPath::polygonFlags(mode));
 

@@ -422,7 +422,7 @@ QT_USE_NAMESPACE
 
 QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     : QEventDispatcherCoreFoundation(parent)
-    , m_processEventCallsAfterExec(0)
+    , m_processEventLevel(0)
     , m_runLoopExitObserver(this, &QIOSEventDispatcher::handleRunLoopExit, kCFRunLoopExit)
 {
 }
@@ -439,8 +439,8 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         return false;
     }
 
-    if (!m_processEventCallsAfterExec && (flags & QEventLoop::EventLoopExec)) {
-        ++m_processEventCallsAfterExec;
+    if (!m_processEventLevel && (flags & QEventLoop::EventLoopExec)) {
+        ++m_processEventLevel;
 
         m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
 
@@ -465,13 +465,9 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         Q_UNREACHABLE();
     }
 
-    if (m_processEventCallsAfterExec)
-        ++m_processEventCallsAfterExec;
-
+    ++m_processEventLevel;
     bool processedEvents = QEventDispatcherCoreFoundation::processEvents(flags);
-
-    if (m_processEventCallsAfterExec)
-        --m_processEventCallsAfterExec;
+    --m_processEventLevel;
 
     return processedEvents;
 }
@@ -481,7 +477,7 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
     Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
-    if (m_processEventCallsAfterExec == 1 && !QThreadData::current()->eventLoops.top()->isRunning()) {
+    if (m_processEventLevel == 1 && !QThreadData::current()->eventLoops.top()->isRunning()) {
         qEventDispatcherDebug() << "Root runloop level exited";
         interruptEventLoopExec();
     }
@@ -489,9 +485,9 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
 
 void QIOSEventDispatcher::interruptEventLoopExec()
 {
-    Q_ASSERT(m_processEventCallsAfterExec == 1);
+    Q_ASSERT(m_processEventLevel == 1);
 
-    --m_processEventCallsAfterExec;
+    --m_processEventLevel;
 
     m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
 

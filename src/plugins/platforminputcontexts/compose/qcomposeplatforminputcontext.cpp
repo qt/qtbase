@@ -97,7 +97,7 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
     if ((m_tableState & TableGenerator::NoErrors) != TableGenerator::NoErrors)
         return false;
 
-    QKeyEvent *keyEvent = (QKeyEvent *)event;
+    const QKeyEvent *keyEvent = (const QKeyEvent *)event;
     // should pass only the key presses
     if (keyEvent->type() != QEvent::KeyPress) {
         return false;

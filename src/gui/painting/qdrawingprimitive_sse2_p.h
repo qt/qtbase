@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
     } \
 \
     for (; x < length-3; x += 4) { \
-        const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
+        const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]); \
         BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask) \
     } \
     for (; x < length; ++x) { \
@@ -207,7 +207,7 @@ QT_BEGIN_NAMESPACE
     } \
 \
     for (; x < length-3; x += 4) { \
-        __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
+        __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]); \
         if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) { \
             BYTE_MUL_SSE2(srcVector, srcVector, constAlphaVector, colorMask, half); \
 \

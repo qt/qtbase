@@ -173,7 +173,7 @@ static inline QWindowsSessionManager *platformSessionManager() {
 QWindowsUser32DLL::QWindowsUser32DLL() :
     setLayeredWindowAttributes(0), updateLayeredWindow(0),
     updateLayeredWindowIndirect(0),
-    isHungAppWindow(0),
+    isHungAppWindow(0), isTouchWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
     getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
     addClipboardFormatListener(0), removeClipboardFormatListener(0)
@@ -202,11 +202,12 @@ void QWindowsUser32DLL::init()
 bool QWindowsUser32DLL::initTouch()
 {
     QSystemLibrary library(QStringLiteral("user32"));
+    isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
     registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
     unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
     getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
     closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
-    return registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
+    return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
 }
 
 /*!

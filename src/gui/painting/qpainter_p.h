@@ -70,7 +70,7 @@ struct DataPtrContainer {
     void *ptr;
 };
 
-inline void *data_ptr(const QTransform &t) { return (DataPtrContainer *) &t; }
+inline const void *data_ptr(const QTransform &t) { return (const DataPtrContainer *) &t; }
 inline bool qtransform_fast_equals(const QTransform &a, const QTransform &b) { return data_ptr(a) == data_ptr(b); }
 
 // QPen inline functions...
@@ -226,7 +226,7 @@ public:
 
 #if !defined(QT_NO_RAWFONT)
     void drawGlyphs(const quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount,
-                    const QRawFont &font, bool overline = false, bool underline = false,
+                    QFontEngine *fontEngine, bool overline = false, bool underline = false,
                     bool strikeOut = false);
 #endif
 

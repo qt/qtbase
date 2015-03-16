@@ -100,7 +100,7 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
                 address.setScopeId(QLatin1String(scopeid));
             } else
 #endif
-                address.setScopeId(QString::number(scope));
+                address.setScopeId(QString::number(uint(scope)));
         }
     }
     return address;

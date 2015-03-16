@@ -75,7 +75,8 @@ public:
 
     QHostAddress();
     explicit QHostAddress(quint32 ip4Addr);
-    explicit QHostAddress(quint8 *ip6Addr);
+    explicit QHostAddress(quint8 *ip6Addr); // ### Qt 6: remove me
+    explicit QHostAddress(const quint8 *ip6Addr);
     explicit QHostAddress(const Q_IPV6ADDR &ip6Addr);
     explicit QHostAddress(const sockaddr *address);
     explicit QHostAddress(const QString &address);
@@ -87,7 +88,8 @@ public:
     QHostAddress &operator=(const QString &address);
 
     void setAddress(quint32 ip4Addr);
-    void setAddress(quint8 *ip6Addr);
+    void setAddress(quint8 *ip6Addr);   // ### Qt 6: remove me
+    void setAddress(const quint8 *ip6Addr);
     void setAddress(const Q_IPV6ADDR &ip6Addr);
     void setAddress(const sockaddr *address);
     bool setAddress(const QString &address);

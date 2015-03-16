@@ -426,6 +426,11 @@ void QCocoaMenu::setEnabled(bool enabled)
     syncModalState(!m_enabled);
 }
 
+bool QCocoaMenu::isEnabled() const
+{
+    return [m_nativeItem isEnabled];
+}
+
 void QCocoaMenu::setVisible(bool visible)
 {
     [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];

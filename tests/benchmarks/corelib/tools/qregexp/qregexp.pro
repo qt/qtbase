@@ -11,9 +11,11 @@ qtHaveModule(script):!pcre {
     QT += script
 }
 
-exists($$[QT_SYSROOT]/usr/include/boost/regex.hpp) {
-DEFINES+=HAVE_BOOST
-LIBS+=-lboost_regex
+!qnx {
+    exists($$[QT_SYSROOT]/usr/include/boost/regex.hpp) {
+        DEFINES += HAVE_BOOST
+        LIBS += -lboost_regex
+    }
 }
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

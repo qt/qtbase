@@ -175,7 +175,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
     if (qEnvironmentVariableIsSet("QT_QPA_EVDEV_DEBUG"))
-        ((QLoggingCategory &) qLcEvdevTouch()).setEnabled(QtDebugMsg, true);
+        const_cast<QLoggingCategory &>(qLcEvdevTouch()).setEnabled(QtDebugMsg, true);
 
     // only the first device argument is used for now
     QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));

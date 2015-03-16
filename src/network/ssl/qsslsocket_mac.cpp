@@ -942,6 +942,15 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
     return err == noErr;
 }
 
+bool QSslSocketBackendPrivate::canIgnoreTrustVerificationFailure() const
+{
+    const QSslSocket::PeerVerifyMode verifyMode = configuration.peerVerifyMode;
+    return mode == QSslSocket::SslServerMode
+           && (verifyMode == QSslSocket::QueryPeer
+               || verifyMode == QSslSocket::AutoVerifyPeer
+               || verifyMode == QSslSocket::VerifyNone);
+}
+
 bool QSslSocketBackendPrivate::verifySessionProtocol() const
 {
     bool protocolOk = false;
@@ -962,10 +971,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     Q_Q(QSslSocket);
 
     const QSslSocket::PeerVerifyMode verifyMode = configuration.peerVerifyMode;
-    const bool canIgnoreVerify = mode == QSslSocket::SslServerMode
-                                 && (verifyMode == QSslSocket::QueryPeer
-                                     || verifyMode == QSslSocket::AutoVerifyPeer
-                                     || verifyMode == QSslSocket::VerifyNone);
+    const bool canIgnoreVerify = canIgnoreTrustVerificationFailure();
 
     Q_ASSERT_X(context, Q_FUNC_INFO, "invalid SSL context (null)");
     Q_ASSERT(plainSocket);
@@ -1164,6 +1170,13 @@ bool QSslSocketBackendPrivate::startHandshake()
             return startHandshake();
         }
     } else if (err != errSecSuccess) {
+        if (err == errSSLBadCert && canIgnoreTrustVerificationFailure()) {
+            // We're on the server side and client did not provide any
+            // certificate. This is the new 'nice' error returned by
+            // Security Framework after it was recently updated.
+            return startHandshake();
+        }
+
         setError(QStringLiteral("Error during SSL handshake: %1").arg(err),
                  QAbstractSocket::SslHandshakeFailedError);
         plainSocket->disconnectFromHost();

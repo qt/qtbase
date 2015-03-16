@@ -385,14 +385,14 @@ void tst_QtConcurrentRun::recursive()
         count.store(0);
         QThreadPool::globalInstance()->setMaxThreadCount(i);
         recursiveRun(levels);
-        QCOMPARE(count.load(), (int)pow(2.0, levels) - 1);
+        QCOMPARE(count.load(), (int)std::pow(2.0, levels) - 1);
     }
 
     for (int i = 0; i < QThread::idealThreadCount(); ++i) {
         count.store(0);
         QThreadPool::globalInstance()->setMaxThreadCount(i);
         recursiveResult(levels);
-        QCOMPARE(count.load(), (int)pow(2.0, levels) - 1);
+        QCOMPARE(count.load(), (int)std::pow(2.0, levels) - 1);
     }
 }
 

@@ -93,13 +93,21 @@ QXcbNativeInterface::QXcbNativeInterface() :
 
 void QXcbNativeInterface::beep() // For QApplication::beep()
 {
-    QPlatformScreen *screen = QGuiApplication::primaryScreen()->handle();
+    QScreen *priScreen = QGuiApplication::primaryScreen();
+    if (!priScreen)
+        return;
+    QPlatformScreen *screen = priScreen->handle();
+    if (!screen)
+        return;
     xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
     xcb_bell(connection, 0);
 }
 
 static inline QXcbSystemTrayTracker *systemTrayTracker(const QScreen *s)
 {
+    if (!s)
+        return Q_NULLPTR;
+
     return static_cast<const QXcbScreen *>(s->handle())->connection()->systemTrayTracker();
 }
 
@@ -178,6 +186,9 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
         break;
     case AtspiBus:
         result = atspiBus();
+        break;
+    case Connection:
+        result = connection();
         break;
     default:
         break;
@@ -355,16 +366,25 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
 
 void *QXcbNativeInterface::appTime(const QXcbScreen *screen)
 {
+    if (!screen)
+        return Q_NULLPTR;
+
     return reinterpret_cast<void *>(quintptr(screen->connection()->time()));
 }
 
 void *QXcbNativeInterface::appUserTime(const QXcbScreen *screen)
 {
+    if (!screen)
+        return Q_NULLPTR;
+
     return reinterpret_cast<void *>(quintptr(screen->connection()->netWmUserTime()));
 }
 
 void *QXcbNativeInterface::getTimestamp(const QXcbScreen *screen)
 {
+    if (!screen)
+        return Q_NULLPTR;
+
     return reinterpret_cast<void *>(quintptr(screen->connection()->getTimestamp()));
 }
 
@@ -400,10 +420,16 @@ void *QXcbNativeInterface::display()
 #ifdef XCB_USE_XLIB
     QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
-    return defaultConnection->xlib_display();
-#else
-    return 0;
+    if (defaultConnection)
+        return defaultConnection->xlib_display();
 #endif
+    return Q_NULLPTR;
+}
+
+void *QXcbNativeInterface::connection()
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    return integration->defaultConnection()->xcb_connection();
 }
 
 void *QXcbNativeInterface::atspiBus()
@@ -429,12 +455,16 @@ void *QXcbNativeInterface::atspiBus()
 
 void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)
 {
-    static_cast<QXcbScreen *>(screen->handle())->connection()->setTime(time);
+    if (screen) {
+        static_cast<QXcbScreen *>(screen->handle())->connection()->setTime(time);
+    }
 }
 
 void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
 {
-    static_cast<QXcbScreen *>(screen->handle())->connection()->setNetWmUserTime(time);
+    if (screen) {
+        static_cast<QXcbScreen *>(screen->handle())->connection()->setNetWmUserTime(time);
+    }
 }
 
 void QXcbNativeInterface::setStartupId(const char *data)
@@ -450,9 +480,11 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QXcbScreen *screen;
     if (window) {
-        screen = static_cast<QXcbScreen *>(window->screen()->handle());
+        QScreen *qs = window->screen();
+        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
     } else {
-        screen = static_cast<QXcbScreen *>(QGuiApplication::primaryScreen()->handle());
+        QScreen *qs = QGuiApplication::primaryScreen();
+        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
     }
     return screen;
 }
@@ -461,23 +493,23 @@ void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_XLIB)
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen->connection()->xlib_display();
+    return screen ? screen->connection()->xlib_display() : Q_NULLPTR;
 #else
     Q_UNUSED(window);
-    return 0;
+    return Q_NULLPTR;
 #endif
 }
 
 void *QXcbNativeInterface::connectionForWindow(QWindow *window)
 {
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen->xcb_connection();
+    return screen ? screen->xcb_connection() : Q_NULLPTR;
 }
 
 void *QXcbNativeInterface::screenForWindow(QWindow *window)
 {
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen->screen();
+    return screen ? screen->screen() : Q_NULLPTR;
 }
 
 void QXcbNativeInterface::addHandler(QXcbNativeInterfaceHandler *handler)

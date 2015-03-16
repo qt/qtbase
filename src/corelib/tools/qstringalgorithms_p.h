@@ -120,21 +120,23 @@ template <typename StringType> struct QStringAlgorithms
 
         Char *dst = const_cast<Char *>(result.cbegin());
         Char *ptr = dst;
+        bool unmodified = true;
         forever {
             while (src != end && isSpace(*src))
                 ++src;
             while (src != end && !isSpace(*src))
                 *ptr++ = *src++;
-            if (src != end)
-                *ptr++ = QChar::Space;
-            else
+            if (src == end)
                 break;
+            if (*src != QChar::Space)
+                unmodified = false;
+            *ptr++ = QChar::Space;
         }
         if (ptr != dst && ptr[-1] == QChar::Space)
             --ptr;
 
         int newlen = ptr - dst;
-        if (isConst && newlen == str.size()) {
+        if (isConst && newlen == str.size() && unmodified) {
             // nothing happened, return the original
             return str;
         }

@@ -41,7 +41,6 @@ equals(TEMPLATE, app) {
             RESOURCES =
             INSTALLS =
             QMAKE_EXTRA_COMPILERS =
-            QMAKE_EXTRA_TARGETS =
 
             !build_pass {
                 CONFIG += debug_and_release
@@ -97,7 +96,24 @@ equals(TEMPLATE, app) {
 
                     target = $${sdk}-$${cfg}$${action_target_suffix}
 
-                    $${target}.commands = "@bash -o pipefail -c 'xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg) | grep -v setenv'"
+                    xcodebuild = "xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg)"
+
+                    equals(action, test):equals(sdk, iphoneos) {
+                        AVAILABLE_DEVICE_IDS = "$(shell system_profiler SPUSBDataType | sed -n -E -e '/(iPhone|iPad|iPod)/,/Serial/s/ *Serial Number: *(.+)/\1/p')"
+                        CUSTOM_DEVICE_IDS = "$(filter $(EXPORT_AVAILABLE_DEVICE_IDS), $(IOS_TEST_DEVICE_IDS))"
+                        TEST_DEVICE_IDS = "$(strip $(if $(EXPORT_CUSTOM_DEVICE_IDS), $(EXPORT_CUSTOM_DEVICE_IDS), $(EXPORT_AVAILABLE_DEVICE_IDS)))"
+
+                        QMAKE_EXTRA_VARIABLES += AVAILABLE_DEVICE_IDS CUSTOM_DEVICE_IDS TEST_DEVICE_IDS
+
+                        xcodebuild = "@$(if $(EXPORT_TEST_DEVICE_IDS),"\
+                            "echo Running tests on $(words $(EXPORT_TEST_DEVICE_IDS)) device\\(s\\): && ("\
+                                "$(foreach deviceid, $(EXPORT_TEST_DEVICE_IDS),"\
+                                    "(echo Testing on device ID '$(deviceid)' ... && $${xcodebuild} -destination 'platform=iOS,id=$(deviceid)' && echo) &&"\
+                                ") echo Tests completed successfully on all devices"\
+                            "), $(error No iOS devices connected, please connect at least one device that can be used for testing.))"
+                    }
+
+                    $${target}.commands = $$xcodebuild
                     QMAKE_EXTRA_TARGETS += $$target
 
                     $${action_target}.depends += $$target

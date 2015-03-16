@@ -223,25 +223,25 @@ void QEglFSKmsIntegration::loadConfig()
         return;
     }
 
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject()) {
         qCDebug(qLcEglfsKmsDebug) << "Invalid config file" << json
                                   << "- no top-level JSON object";
         return;
     }
 
-    QJsonObject object = doc.object();
+    const QJsonObject object = doc.object();
 
-    m_hwCursor = object.value("hwcursor").toBool(m_hwCursor);
-    m_pbuffers = object.value("pbuffers").toBool(m_pbuffers);
-    m_devicePath = object.value("device").toString();
+    m_hwCursor = object.value(QStringLiteral("hwcursor")).toBool(m_hwCursor);
+    m_pbuffers = object.value(QStringLiteral("pbuffers")).toBool(m_pbuffers);
+    m_devicePath = object.value(QStringLiteral("device")).toString();
 
-    QJsonArray outputs = object.value("outputs").toArray();
+    const QJsonArray outputs = object.value(QStringLiteral("outputs")).toArray();
     for (int i = 0; i < outputs.size(); i++) {
-        QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
+        const QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
 
-        if (outputSettings.contains("name")) {
-            QString name = outputSettings.value("name").toString();
+        if (outputSettings.contains(QStringLiteral("name"))) {
+            const QString name = outputSettings.value(QStringLiteral("name")).toString();
 
             if (m_outputSettings.contains(name)) {
                 qCDebug(qLcEglfsKmsDebug) << "Output" << name << "configured multiple times!";

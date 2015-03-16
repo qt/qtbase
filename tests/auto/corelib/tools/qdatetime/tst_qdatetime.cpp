@@ -611,13 +611,11 @@ void tst_QDateTime::setMSecsSinceEpoch()
         dt2.setTimeZone(europe);
         dt2.setMSecsSinceEpoch(msecs);
         QCOMPARE(dt2.date(), european.date());
-#ifdef Q_OS_MAC
-        // NSTimeZone doesn't apply DST to high values
-        if (msecs < (Q_INT64_C(123456) << 32))
-#else
-        // Linux and Win are OK except when they overflow
-        if (msecs != std::numeric_limits<qint64>::max())
-#endif
+
+        // don't compare the time if the date is too early or too late: prior
+        // to 1916, timezones in Europe were not standardised and some OS APIs
+        // have hard limits. Let's restrict it to the 32-bit Unix range
+        if (dt2.date().year() >= 1970 && dt2.date().year() <= 2037)
             QCOMPARE(dt2.time(), european.time());
         QCOMPARE(dt2.timeSpec(), Qt::TimeZone);
         QCOMPARE(dt2.timeZone(), europe);
@@ -2634,10 +2632,10 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
+#ifdef Q_OS_WIN
+        // Windows uses SecondOccurrence
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
+#endif // Q_OS_WIN
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add year to get to after tran FirstOccurrence
@@ -2676,10 +2674,10 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
+#ifdef Q_OS_WIN
+        // Windows uses SecondOccurrence
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
+#endif // Q_OS_WIN
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add month to get to after tran FirstOccurrence
@@ -2718,10 +2716,10 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        // Linux mktime bug uses last calculation
+#ifdef Q_OS_WIN
+        // Windows uses SecondOccurrence
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
+#endif // Q_OS_WIN
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add day to get to after tran FirstOccurrence

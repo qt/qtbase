@@ -44,6 +44,10 @@
                           signal is sent! -->
             <meta-data android:name="android.app.background_running" android:value="false"/>
             <!-- Background running -->
+
+            <!-- Show translucent UI on top of Qt's surface when system theme mandates it -->
+            <meta-data android:name="android.app.allow_overlapping_system_ui" android:value="false"/>
+            <!-- Show translucent UI on top of Qt's surface when system theme mandates it -->
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="14"/>

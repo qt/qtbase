@@ -71,7 +71,9 @@
         exists($$UUID_CACHE) {
             include($$UUID_CACHE)
         } else {
-            WINRT_UUID = "WINRT_MANIFEST.identity = $$system(uuidgen)"
+            WINRT_UUID = $$system(uuidgen)
+            isEmpty(WINRT_UUID): error("Unable to generate a UUID. Make sure uuidgen is in your PATH.")
+            WINRT_UUID = "WINRT_MANIFEST.identity = $$WINRT_UUID"
             write_file($$UUID_CACHE, WINRT_UUID)|error("Unable to write the UUID cache; aborting.")
             eval($$WINRT_UUID)
         }

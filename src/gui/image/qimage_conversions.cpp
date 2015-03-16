@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include <private/qdrawhelper_p.h>
-#include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>
@@ -110,17 +109,6 @@ static const uint *QT_FASTCALL convertRGB32FromARGB32PM(uint *buffer, const uint
     return buffer;
 }
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
-    return buffer;
-}
-#endif
-
 static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *src, int count,
                                                       const QPixelLayout *, const QRgb *)
 {
@@ -128,6 +116,10 @@ static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *
         buffer[i] = 0xff000000 |src[i];
     return buffer;
 }
+
+#ifdef QT_COMPILER_SUPPORTS_SSE4_1
+extern const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+#endif
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
@@ -152,7 +144,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         if (src->format == QImage::Format_RGB32)
             convertToARGB32PM = convertRGB32ToARGB32PM;
         if (dest->format == QImage::Format_RGB32) {
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+#ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
                 convertFromARGB32PM = convertRGB32FromARGB32PM_sse4;
             else
@@ -201,7 +193,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         if (data->format == QImage::Format_RGB32)
             convertToARGB32PM = convertRGB32ToARGB32PM;
         if (dst_format == QImage::Format_RGB32) {
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+#ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
                 convertFromARGB32PM = convertRGB32FromARGB32PM_sse4;
             else
@@ -257,7 +249,7 @@ static bool convert_passthrough_inplace(QImageData *data, Qt::ImageConversionFla
     return true;
 }
 
-static inline void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888);
     Q_ASSERT(dest->format == QImage::Format_ARGB32_Premultiplied || dest->format == QImage::Format_RGBA8888_Premultiplied);
@@ -281,15 +273,6 @@ static inline void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *s
     }
 }
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
-QT_FUNCTION_TARGET(SSE4_1)
-static void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags flags)
-{
-    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
-    convert_ARGB_to_ARGB_PM(dest, src, flags);
-}
-#endif
-
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dest_data, const uchar *src_data, int len)
 {
     int pixel = 0;
@@ -303,7 +286,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dest_data, con
 
     // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
     for (; pixel + 3 < len; pixel += 4) {
-        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 *src_packed = (const quint32 *) src_data;
         const quint32 src1 = qFromBigEndian(src_packed[0]);
         const quint32 src2 = qFromBigEndian(src_packed[1]);
         const quint32 src3 = qFromBigEndian(src_packed[2]);
@@ -338,7 +321,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgbx8888(quint32 *dest_data, 
 
     // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
     for (; pixel + 3 < len; pixel += 4) {
-        const quint32 *src_packed = (quint32 *) src_data;
+        const quint32 *src_packed = (const quint32 *) src_data;
         const quint32 src1 = src_packed[0];
         const quint32 src2 = src_packed[1];
         const quint32 src3 = src_packed[2];
@@ -1109,12 +1092,12 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
         } else {                                // 32 bit image
             if (fromalpha) {
                 while (p < end) {
-                    *b2++ = 255 - (*(uint*)p >> 24);
+                    *b2++ = 255 - (*(const uint*)p >> 24);
                     p += 4;
                 }
             } else {
                 while (p < end) {
-                    *b2++ = qGray(*(uint*)p);
+                    *b2++ = qGray(*(const uint*)p);
                     p += 4;
                 }
             }
@@ -1132,12 +1115,12 @@ void dither_to_Mono(QImageData *dst, const QImageData *src,
                 } else {                        // 24 bit image
                     if (fromalpha) {
                         while (p < end) {
-                            *b2++ = 255 - (*(uint*)p >> 24);
+                            *b2++ = 255 - (*(const uint*)p >> 24);
                             p += 4;
                         }
                     } else {
                         while (p < end) {
-                            *b2++ = qGray(*(uint*)p);
+                            *b2++ = qGray(*(const uint*)p);
                             p += 4;
                         }
                     }
@@ -2804,10 +2787,19 @@ void qInitImageConversions()
     }
 #endif
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1) && !defined(__SSE4_1__)
     if (qCpuHasFeature(SSE4_1)) {
+        extern void convert_ARGB_to_ARGB_PM_sse4(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
         qimage_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_sse4;
         qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBA8888_Premultiplied] = convert_ARGB_to_ARGB_PM_sse4;
+    }
+#endif
+
+#if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
+    if (qCpuHasFeature(AVX2)) {
+        extern void convert_ARGB_to_ARGB_PM_avx2(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+        qimage_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_avx2;
+        qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBA8888_Premultiplied] = convert_ARGB_to_ARGB_PM_avx2;
     }
 #endif
 

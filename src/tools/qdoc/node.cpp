@@ -807,7 +807,7 @@ FunctionNode *InnerNode::findFunctionNode(const QString& name) const
   that the function has the same name and signature as the
   \a clone node.
  */
-FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone)
+FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone) const
 {
     QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.constFind(clone->name());
     if (c != primaryFunctionMap.constEnd()) {
@@ -857,7 +857,7 @@ QStringList InnerNode::secondaryKeys()
 
 /*!
  */
-void InnerNode::setOverload(const FunctionNode *func, bool overlode)
+void InnerNode::setOverload(FunctionNode *func, bool overlode)
 {
     Node *node = (Node *) func;
     Node *&primary = primaryFunctionMap[func->name()];
@@ -1017,7 +1017,7 @@ const EnumNode *InnerNode::findEnumNodeForValue(const QString &enumValue) const
  */
 int InnerNode::overloadNumber(const FunctionNode *func) const
 {
-    Node *node = (Node *) func;
+    Node *node = const_cast<FunctionNode *>(func);
     if (primaryFunctionMap[func->name()] == node) {
         return 1;
     }
@@ -1863,6 +1863,7 @@ void FunctionNode::setReimp(bool r)
 }
 
 /*!
+  Append \a parameter to the parameter list.
  */
 void FunctionNode::addParameter(const Parameter& parameter)
 {

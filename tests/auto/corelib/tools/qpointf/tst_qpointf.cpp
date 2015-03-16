@@ -275,12 +275,12 @@ void tst_QPointF::division()
 {
     {
         QPointF p(1e-14, 1e-14);
-        p = p / sqrt(dot(p, p));
+        p = p / std::sqrt(dot(p, p));
         QCOMPARE(dot(p, p), qreal(1.0));
     }
     {
         QPointF p(1e-14, 1e-14);
-        p /= sqrt(dot(p, p));
+        p /= std::sqrt(dot(p, p));
         QCOMPARE(dot(p, p), qreal(1.0));
     }
 }

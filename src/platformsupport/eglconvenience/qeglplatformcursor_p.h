@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
 class QEGLPlatformCursor;
+class QEGLPlatformScreen;
 
 class QEGLPlatformCursorDeviceListener : public QObject
 {
@@ -127,7 +128,7 @@ private:
     } m_cursorAtlas;
 
     bool m_visible;
-    QPlatformScreen *m_screen;
+    QEGLPlatformScreen *m_screen;
     QOpenGLShaderProgram *m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;

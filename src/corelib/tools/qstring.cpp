@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2013 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -158,7 +158,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 QLatin1String needle, Qt::CaseSensitivity cs);
 
-#ifdef Q_COMPILER_LAMBDA
+#if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
 namespace {
 template <uint MaxCount> struct UnrollTailLoop
 {
@@ -239,7 +239,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
     size = size % 16;
     dst += offset;
     str += offset;
-#  ifdef Q_COMPILER_LAMBDA
+#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<15>::exec(int(size), [=](int i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
@@ -332,7 +332,7 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
     dst += offset;
     src += offset;
 
-#  ifdef Q_COMPILER_LAMBDA
+#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<15>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
 #  endif
 #elif defined(__ARM_NEON__)
@@ -470,7 +470,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                     - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
         }
     }
-#  ifdef Q_COMPILER_LAMBDA
+#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
     const auto &lambda = [=](int i) -> int {
         return reinterpret_cast<const QChar *>(ptr)[i].unicode()
                 - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
@@ -602,7 +602,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     uc += offset;
     c += offset;
 
-#  ifdef Q_COMPILER_LAMBDA
+#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
     const auto &lambda = [=](int i) { return uc[i] - ushort(c[i]); };
     return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
@@ -684,7 +684,7 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
                 }
             }
 
-#  ifdef Q_COMPILER_LAMBDA
+#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
             return UnrollTailLoop<7>::exec(e - n, -1,
                                            [=](int i) { return n[i] == c; },
                                            [=](int i) { return n - s + i; });
@@ -4797,11 +4797,11 @@ QString QString::trimmed_helper(QString &str)
 \overload operator[]()
 
 Returns the character at the specified \a position in the string as a
-modifiable reference. Equivalent to \c at(position).
+modifiable reference.
 */
 
 /*! \fn const QChar QString::operator[](uint position) const
-
+    Equivalent to \c at(position).
 \overload operator[]()
 */
 

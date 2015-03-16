@@ -560,22 +560,6 @@ int QDate::daysInYear() const
     January 2000 has week number 52 in the year 1999, and 31 December
     2002 has week number 1 in the year 2003.
 
-    \legalese
-    Copyright (c) 1989 The Regents of the University of California.
-    All rights reserved.
-
-    Redistribution and use in source and binary forms are permitted
-    provided that the above copyright notice and this paragraph are
-    duplicated in all such forms and that any documentation,
-    advertising materials, and other materials related to such
-    distribution and use acknowledge that the software was developed
-    by the University of California, Berkeley.  The name of the
-    University may not be used to endorse or promote products derived
-    from this software without specific prior written permission.
-    THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
-    IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-
     \sa isValid()
 */
 
@@ -585,46 +569,29 @@ int QDate::weekNumber(int *yearNumber) const
         return 0;
 
     int year = QDate::year();
-    int yday = dayOfYear() - 1;
+    int yday = dayOfYear();
     int wday = dayOfWeek();
-    if (wday == 7)
-        wday = 0;
-    int w;
 
-    for (;;) {
-        int len;
-        int bot;
-        int top;
+    int week = (yday - wday + 10) / 7;
 
-        len = isLeapYear(year) ? 366 : 365;
-        /*
-        ** What yday (-3 ... 3) does
-        ** the ISO year begin on?
-        */
-        bot = ((yday + 11 - wday) % 7) - 3;
-        /*
-        ** What yday does the NEXT
-        ** ISO year begin on?
-        */
-        top = bot - (len % 7);
-        if (top < -3)
-            top += 7;
-        top += len;
-        if (yday >= top) {
-            ++year;
-            w = 1;
-            break;
-        }
-        if (yday >= bot) {
-            w = 1 + ((yday - bot) / 7);
-            break;
-        }
+    if (week == 0) {
+        // last week of previous year
         --year;
-        yday += isLeapYear(year) ? 366 : 365;
+        week = (yday + 365 + (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
+        Q_ASSERT(week == 52 || week == 53);
+    } else if (week == 53) {
+        // maybe first week of next year
+        int w = (yday - 365 - (QDate::isLeapYear(year + 1) ? 1 : 0) - wday + 10) / 7;
+        if (w > 0) {
+            ++year;
+            week = w;
+        }
+        Q_ASSERT(week == 53 || week == 1);
     }
+
     if (yearNumber != 0)
         *yearNumber = year;
-    return w;
+    return week;
 }
 
 #ifndef QT_NO_TEXTDATE
@@ -2473,11 +2440,12 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
     }
 }
 
-// Convert a LocalTime expressed in local msecs encoding into a UTC epoch msecs
-// Optionally populate the returned values from mktime for the adjusted local
-// date and time and daylight status.  Uses daylightStatus in calculation if populated.
-static qint64 localMSecsToEpochMSecs(qint64 localMsecs, QDate *localDate = 0, QTime *localTime = 0,
-                                     QDateTimePrivate::DaylightStatus *daylightStatus = 0,
+// Convert a LocalTime expressed in local msecs encoding and the corresponding
+// daylight status into a UTC epoch msecs. Optionally populate the returned
+// values from mktime for the adjusted local date and time.
+static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
+                                     QDateTimePrivate::DaylightStatus *daylightStatus,
+                                     QDate *localDate = 0, QTime *localTime = 0,
                                      QString *abbreviation = 0, bool *ok = 0)
 {
     QDate dt;
@@ -2713,9 +2681,11 @@ qint64 QDateTimePrivate::toMSecsSinceEpoch() const
     case Qt::UTC:
         return (m_msecs - (m_offsetFromUtc * 1000));
 
-    case Qt::LocalTime:
+    case Qt::LocalTime: {
         // recalculate the local timezone
-        return localMSecsToEpochMSecs(m_msecs);
+        DaylightStatus status = daylightStatus();
+        return localMSecsToEpochMSecs(m_msecs, &status);
+    }
 
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
@@ -2785,7 +2755,7 @@ void QDateTimePrivate::refreshDateTime()
     qint64 epochMSecs = 0;
     if (m_spec == Qt::LocalTime) {
         DaylightStatus status = daylightStatus();
-        epochMSecs = localMSecsToEpochMSecs(m_msecs, &testDate, &testTime, &status);
+        epochMSecs = localMSecsToEpochMSecs(m_msecs, &status, &testDate, &testTime);
 #ifndef QT_BOOTSTRAPPED
     } else {
         epochMSecs = zoneMSecsToEpochMSecs(m_msecs, m_timeZone, &testDate, &testTime);
@@ -3223,7 +3193,7 @@ QString QDateTime::timeZoneAbbreviation() const
     case Qt::LocalTime:  {
         QString abbrev;
         QDateTimePrivate::DaylightStatus status = d->daylightStatus();
-        localMSecsToEpochMSecs(d->m_msecs, 0, 0, &status, &abbrev);
+        localMSecsToEpochMSecs(d->m_msecs, &status, 0, 0, &abbrev);
         return abbrev;
         }
     }
@@ -3254,7 +3224,7 @@ bool QDateTime::isDaylightTime() const
     case Qt::LocalTime: {
         QDateTimePrivate::DaylightStatus status = d->daylightStatus();
         if (status == QDateTimePrivate::UnknownDaylightTime)
-            localMSecsToEpochMSecs(d->m_msecs, 0, 0, &status, 0);
+            localMSecsToEpochMSecs(d->m_msecs, &status);
         return (status == QDateTimePrivate::DaylightTime);
         }
     }
@@ -3469,6 +3439,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         epochMSecsToLocalTime(msecs, &dt, &tm, &status);
         d->setDateTime(dt, tm);
         d->setDaylightStatus(status);
+        d->refreshDateTime();
         break;
         }
     }
@@ -3708,12 +3679,14 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     date = date.addDays(ndays);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3742,12 +3715,14 @@ QDateTime QDateTime::addMonths(int nmonths) const
     date = date.addMonths(nmonths);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }
@@ -3776,12 +3751,14 @@ QDateTime QDateTime::addYears(int nyears) const
     date = date.addYears(nyears);
     // Result might fall into "missing" DaylightTime transition hour,
     // so call conversion and use the adjusted returned time
-    if (d->m_spec == Qt::LocalTime)
-        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    if (d->m_spec == Qt::LocalTime) {
+        QDateTimePrivate::DaylightStatus status = d->daylightStatus();
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
 #ifndef QT_BOOTSTRAPPED
-    else if (d->m_spec == Qt::TimeZone)
+    } else if (d->m_spec == Qt::TimeZone) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time), d->m_timeZone, &date, &time);
 #endif // QT_BOOTSTRAPPED
+    }
     dt.d->setDateTime(date, time);
     return dt;
 }

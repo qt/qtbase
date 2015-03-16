@@ -56,7 +56,9 @@
 
 static void initResources()
 {
+#ifndef QT_NO_CURSOR
     Q_INIT_RESOURCE(cursor);
+#endif
 }
 
 QT_BEGIN_NAMESPACE

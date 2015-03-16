@@ -100,6 +100,7 @@ public:
     void *rootWindow();
     void *display();
     void *atspiBus();
+    void *connection();
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);

@@ -268,6 +268,10 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
 
         qUnIndent(); qEventDispatcherDebug() << "result = " << qPrintableResult(result);
 
+        eventsProcessed |= (result == kCFRunLoopRunHandledSource
+                            || m_processEvents.processedPostedEvents
+                            || m_processEvents.processedTimers);
+
         if (result == kCFRunLoopRunFinished) {
             // This should only happen at application shutdown, as the main runloop
             // will presumably always have sources registered.
@@ -301,10 +305,6 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
                 break;
             }
         }
-
-        eventsProcessed |= (result == kCFRunLoopRunHandledSource
-                            || m_processEvents.processedPostedEvents
-                            || m_processEvents.processedTimers);
 
         if (m_processEvents.flags & QEventLoop::EventLoopExec) {
             // We were called from QEventLoop's exec(), which blocks until the event

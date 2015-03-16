@@ -514,7 +514,7 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
         comment += it.value().toLatin1();
         if (comment.length() > 65530)
             comment.truncate(65530);
-        jpeg_write_marker(cinfo, JPEG_COM, (JOCTET *)comment.constData(), comment.size());
+        jpeg_write_marker(cinfo, JPEG_COM, (const JOCTET *)comment.constData(), comment.size());
     }
 }
 

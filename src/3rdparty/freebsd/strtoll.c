@@ -129,6 +129,6 @@ noconv:
 	} else if (neg)
 		acc = (unsigned long long) -(long long)acc;
 	if (endptr != NULL)
-		*endptr = (char *)(any ? s - 1 : nptr);
+                *endptr = const_cast<char *>(any ? s - 1 : nptr);
 	return (acc);
 }

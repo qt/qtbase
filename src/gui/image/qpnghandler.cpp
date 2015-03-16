@@ -942,7 +942,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
         //                0123456789aBC
         data[0xB] = looping%0x100;
         data[0xC] = looping/0x100;
-        png_write_chunk(png_ptr, (png_byte*)"gIFx", data, 13);
+        png_write_chunk(png_ptr, const_cast<png_bytep>((const png_byte *)"gIFx"), data, 13);
     }
     if (ms_delay >= 0 || disposal!=Unspecified) {
         uchar data[4];
@@ -950,7 +950,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
         data[1] = 0;
         data[2] = (ms_delay/10)/0x100; // hundredths
         data[3] = (ms_delay/10)%0x100;
-        png_write_chunk(png_ptr, (png_byte*)"gIFg", data, 4);
+        png_write_chunk(png_ptr, const_cast<png_bytep>((const png_byte *)"gIFg"), data, 4);
     }
 
     int height = image.height();
@@ -966,7 +966,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
         {
             png_bytep* row_pointers = new png_bytep[height];
             for (int y=0; y<height; y++)
-                row_pointers[y] = (png_bytep)image.constScanLine(y);
+                row_pointers[y] = const_cast<png_bytep>(image.constScanLine(y));
             png_write_image(png_ptr, row_pointers);
             delete [] row_pointers;
         }
@@ -978,7 +978,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
             png_bytep row_pointers[1];
             for (int y=0; y<height; y++) {
                 row = image.copy(0, y, width, 1).convertToFormat(fmt);
-                row_pointers[0] = png_bytep(row.constScanLine(0));
+                row_pointers[0] = const_cast<png_bytep>(row.constScanLine(0));
                 png_write_rows(png_ptr, row_pointers, 1);
             }
         }

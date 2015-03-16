@@ -76,6 +76,7 @@ public:
     void appendHotspot();
 
     bool isEmpty() const { return s.isEmpty(); }
+    void clear() { s.clear(); }
     QString toString() const;
     QStringList toPath() const;
     QString left() const { return s.left(hotspot == -1 ? s.length() : hotspot); }

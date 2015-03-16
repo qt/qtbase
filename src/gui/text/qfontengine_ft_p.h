@@ -268,7 +268,7 @@ private:
     Glyph *loadGlyph(QGlyphSet *set, uint glyph, QFixed subPixelPosition, GlyphFormat = Format_None, bool fetchMetricsOnly = false) const;
     Glyph *loadGlyphFor(glyph_t g, QFixed subPixelPosition, GlyphFormat format, const QTransform &t, bool fetchBoundingBox = false);
 
-    QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
+    QGlyphSet *loadGlyphSet(const QTransform &matrix);
 
     QFontEngineFT(const QFontDef &fd);
     virtual ~QFontEngineFT();

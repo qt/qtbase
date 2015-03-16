@@ -215,10 +215,24 @@ QPlatformTheme *QIOSIntegration::createPlatformTheme(const QString &name) const
     return QPlatformIntegration::createPlatformTheme(name);
 }
 
+QTouchDevice *QIOSIntegration::touchDevice()
+{
+    return m_touchDevice;
+}
+
+QPlatformAccessibility *QIOSIntegration::accessibility() const
+{
+    if (!m_accessibility)
+        m_accessibility = new QIOSPlatformAccessibility;
+    return m_accessibility;
+}
+
 QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
 {
     return const_cast<QIOSIntegration *>(this);
 }
+
+// ---------------------------------------------------------
 
 void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
@@ -235,16 +249,8 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
     return 0;
 }
 
-QTouchDevice *QIOSIntegration::touchDevice()
-{
-    return m_touchDevice;
-}
+// ---------------------------------------------------------
 
-QPlatformAccessibility *QIOSIntegration::accessibility() const
-{
-    if (!m_accessibility)
-        m_accessibility = new QIOSPlatformAccessibility;
-    return m_accessibility;
-}
+#include "moc_qiosintegration.cpp"
 
 QT_END_NAMESPACE
