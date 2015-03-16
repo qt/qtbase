@@ -47,7 +47,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate()
 {
 }
 
-void QSharedMemoryPrivate::setErrorString(const QString &function)
+void QSharedMemoryPrivate::setErrorString(QLatin1String function)
 {
     Q_UNUSED(function);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";

@@ -94,7 +94,7 @@ bool QSharedMemoryPrivate::create(int size)
 #endif
     if (fd == -1) {
         const int errorNumber = errno;
-        const QString function = QLatin1String("QSharedMemory::create");
+        const QLatin1String function("QSharedMemory::attach (shm_open)");
         switch (errorNumber) {
         case ENAMETOOLONG:
         case EINVAL:
@@ -138,7 +138,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 #endif
     if (hand == -1) {
         const int errorNumber = errno;
-        const QString function = QLatin1String("QSharedMemory::attach (shm_open)");
+        const QLatin1String function("QSharedMemory::attach (shm_open)");
         switch (errorNumber) {
         case ENAMETOOLONG:
         case EINVAL:

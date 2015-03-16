@@ -71,7 +71,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate()
 {
 }
 
-void QSharedMemoryPrivate::setErrorString(const QString &function)
+void QSharedMemoryPrivate::setErrorString(QLatin1String function)
 {
     // EINVAL is handled in functions so they can give better error strings
     switch (errno) {

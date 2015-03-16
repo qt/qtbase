@@ -149,7 +149,7 @@ bool QSharedMemoryPrivate::create(int size)
 
     // create
     if (-1 == shmget(unix_key, size, 0600 | IPC_CREAT | IPC_EXCL)) {
-        QString function = QLatin1String("QSharedMemory::create");
+        const QLatin1String function("QSharedMemory::create");
         switch (errno) {
         case EINVAL:
             errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg(QLatin1String("QSharedMemory::handle"));
@@ -199,7 +199,7 @@ bool QSharedMemoryPrivate::detach()
 {
     // detach from the memory segment
     if (-1 == shmdt(memory)) {
-        QString function = QLatin1String("QSharedMemory::detach");
+        const QLatin1String function("QSharedMemory::detach");
         switch (errno) {
         case EINVAL:
             errorString = QSharedMemory::tr("%1: not attached").arg(function);

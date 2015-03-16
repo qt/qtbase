@@ -47,9 +47,9 @@ QSharedMemoryPrivate::QSharedMemoryPrivate() : QObjectPrivate(),
 {
 }
 
-void QSharedMemoryPrivate::setErrorString(const QString &function)
+void QSharedMemoryPrivate::setErrorString(QLatin1String function)
 {
-    BOOL windowsError = GetLastError();
+    DWORD windowsError = GetLastError();
     if (windowsError == 0)
         return;
     switch (windowsError) {
@@ -91,7 +91,7 @@ void QSharedMemoryPrivate::setErrorString(const QString &function)
 HANDLE QSharedMemoryPrivate::handle()
 {
     if (!hand) {
-        QString function = QLatin1String("QSharedMemory::handle");
+        const QLatin1String function("QSharedMemory::handle");
         if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
             errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
@@ -130,7 +130,7 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    QString function = QLatin1String("QSharedMemory::create");
+    const QLatin1String function("QSharedMemory::create");
     if (nativeKey.isEmpty()) {
         error = QSharedMemory::KeyError;
         errorString = QSharedMemory::tr("%1: key error").arg(function);
