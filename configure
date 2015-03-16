@@ -356,7 +356,7 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$@" -o conftest-out.o conftest.cpp
+    "$@" -o conftest-out.o conftest.cpp >/dev/null 2>&1
     ret=$?
     rm -f conftest.cpp conftest-out.o
     return $ret
@@ -372,7 +372,7 @@ linkerSupportsFlag()
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
-    compilerSupportsFlag $compiler $lflags >/dev/null 2>&1
+    compilerSupportsFlag $compiler $lflags
 }
 
 # $1: newline-separated list of default paths
