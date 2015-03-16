@@ -201,7 +201,6 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)closeMenu
 {
-    [self listenForKeyboardWillHideNotification:NO];
     if (!m_visibleMenuItems.isEmpty())
         QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(m_selectedRow));
     else
@@ -210,7 +209,6 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)cancelMenu
 {
-    [self listenForKeyboardWillHideNotification:NO];
     QIOSMenu::currentMenu()->dismiss();
 }
 
@@ -466,12 +464,14 @@ void QIOSMenu::toggleShowUsingUIPickerView(bool show)
     } else {
         Q_ASSERT(focusObjectWithPickerView);
         focusObjectWithPickerView->removeEventFilter(this);
-        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
         focusObjectWithPickerView = 0;
 
         Q_ASSERT(m_pickerView);
+        [m_pickerView listenForKeyboardWillHideNotification:NO];
         [m_pickerView release];
         m_pickerView = 0;
+
+        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
     }
 }
 
