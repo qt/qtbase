@@ -156,8 +156,6 @@ public:
     static bool isParallel(const QAbstractState *s);
     bool isCompound(const QAbstractState *s) const;
     bool isAtomic(const QAbstractState *s) const;
-    static bool isDescendantOf(const QAbstractState *s, const QAbstractState *other);
-    static QList<QState*> properAncestors(const QAbstractState *s, const QState *upperBound);
 
     void goToState(QAbstractState *targetState);
 

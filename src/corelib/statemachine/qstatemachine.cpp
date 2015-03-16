@@ -177,6 +177,47 @@ QT_BEGIN_NAMESPACE
 // #define QSTATEMACHINE_DEBUG
 // #define QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
 
+/* The function as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
+
+function isDescendant(state1, state2)
+
+Returns 'true' if state1 is a descendant of state2 (a child, or a child of a child, or a child of a
+child of a child, etc.) Otherwise returns 'false'.
+*/
+static inline bool isDescendant(const QAbstractState *state1, const QAbstractState *state2)
+{
+    Q_ASSERT(state1 != 0);
+
+    for (QAbstractState *it = state1->parentState(); it != 0; it = it->parentState()) {
+        if (it == state2)
+            return true;
+    }
+
+    return false;
+}
+
+/* The function as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
+
+function getProperAncestors(state1, state2)
+
+If state2 is null, returns the set of all ancestors of state1 in ancestry order (state1's parent
+followed by the parent's parent, etc. up to an including the <scxml> element). If state2 is
+non-null, returns in ancestry order the set of all ancestors of state1, up to but not including
+state2. (A "proper ancestor" of a state is its parent, or the parent's parent, or the parent's
+parent's parent, etc.))If state2 is state1's parent, or equal to state1, or a descendant of state1,
+this returns the empty set.
+*/
+static QVector<QState*> getProperAncestors(const QAbstractState *state, const QAbstractState *upperBound)
+{
+    Q_ASSERT(state != 0);
+    QVector<QState*> result;
+    result.reserve(16);
+    for (QState *it = state->parentState(); it && it != upperBound; it = it->parentState()) {
+        result.append(it);
+    }
+    return result;
+}
+
 template <class T>
 static uint qHash(const QPointer<T> &p)
 { return qHash(p.data()); }
@@ -246,7 +287,7 @@ static int indexOfDescendant(QState *s, QAbstractState *desc)
     QList<QAbstractState*> childStates = QStatePrivate::get(s)->childStates();
     for (int i = 0; i < childStates.size(); ++i) {
         QAbstractState *c = childStates.at(i);
-        if ((c == desc) || QStateMachinePrivate::isDescendantOf(desc, c)) {
+        if ((c == desc) || isDescendant(desc, c)) {
             return i;
         }
     }
@@ -258,9 +299,9 @@ bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState
     if (s1->parent() == s2->parent()) {
         return s1->parent()->children().indexOf(s1)
             < s2->parent()->children().indexOf(s2);
-    } else if (isDescendantOf(s1, s2)) {
+    } else if (isDescendant(s1, s2)) {
         return false;
-    } else if (isDescendantOf(s2, s1)) {
+    } else if (isDescendant(s2, s1)) {
         return true;
     } else {
         Q_ASSERT(s1->machine() != 0);
@@ -276,9 +317,9 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
     if (s1->parent() == s2->parent()) {
         return s2->parent()->children().indexOf(s2)
             < s1->parent()->children().indexOf(s1);
-    } else if (isDescendantOf(s1, s2)) {
+    } else if (isDescendant(s1, s2)) {
         return true;
-    } else if (isDescendantOf(s2, s1)) {
+    } else if (isDescendant(s2, s1)) {
         return false;
     } else {
         Q_ASSERT(s1->machine() != 0);
@@ -293,13 +334,13 @@ QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states) cons
 {
     if (states.isEmpty())
         return 0;
-    QList<QState*> ancestors = properAncestors(states.at(0), rootState()->parentState());
+    QVector<QState*> ancestors = getProperAncestors(states.at(0), rootState()->parentState());
     for (int i = 0; i < ancestors.size(); ++i) {
         QState *anc = ancestors.at(i);
         bool ok = true;
         for (int j = states.size() - 1; (j > 0) && ok; --j) {
             const QAbstractState *s = states.at(j);
-            if (!isDescendantOf(s, anc))
+            if (!isDescendant(s, anc))
                 ok = false;
         }
         if (ok)
@@ -317,7 +358,7 @@ bool QStateMachinePrivate::isPreempted(const QAbstractState *s, const QSet<QAbst
         if (!lst.isEmpty()) {
             lst.prepend(t->sourceState());
             QAbstractState *lca = findLCA(lst);
-            if (isDescendantOf(s, lca)) {
+            if (isDescendant(s, lca)) {
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q_func() << ':' << transitions << "preempts selection of a transition from"
                          << s << "because" << s << "is a descendant of" << lca;
@@ -341,7 +382,7 @@ QSet<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *event
             continue;
         if (isPreempted(state, enabledTransitions))
             continue;
-        QList<QState*> lst = properAncestors(state, rootState()->parentState());
+        QVector<QState*> lst = getProperAncestors(state, rootState()->parentState());
         if (QState *grp = toStandardState(state))
             lst.prepend(grp);
         bool found = false;
@@ -433,7 +474,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToExit(const QList<QAb
             QSet<QAbstractState*>::const_iterator it;
             for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
                 QAbstractState *s = *it;
-                if (isDescendantOf(s, lca))
+                if (isDescendant(s, lca))
                     statesToExit.insert(s);
             }
         }
@@ -457,7 +498,7 @@ void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*
                 for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
                     QAbstractState *s0 = *it;
                     if (QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) {
-                        if (isAtomic(s0) && isDescendantOf(s0, s))
+                        if (isAtomic(s0) && isDescendant(s0, s))
                             QHistoryStatePrivate::get(h)->configuration.append(s0);
                     } else if (s0->parentState() == s) {
                         QHistoryStatePrivate::get(h)->configuration.append(s0);
@@ -721,7 +762,7 @@ void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QState *r
                                                     QSet<QAbstractState*> &statesToEnter,
                                                     QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    QList<QState*> ancs = properAncestors(s, root);
+    QVector<QState*> ancs = getProperAncestors(s, root);
     for (int i = 0; i < ancs.size(); ++i) {
         QState *anc = ancs.at(i);
         if (!anc->parentState())
@@ -734,7 +775,7 @@ void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QState *r
                 bool hasDescendantInList = false;
                 QSet<QAbstractState*>::const_iterator it;
                 for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
-                    if (isDescendantOf(*it, child)) {
+                    if (isDescendant(*it, child)) {
                         hasDescendantInList = true;
                         break;
                     }
@@ -776,27 +817,6 @@ bool QStateMachinePrivate::isAtomic(const QAbstractState *s) const
         || isFinal(s)
         // Treat the machine as atomic if it's a sub-state of this machine
         || (ss && QStatePrivate::get(ss)->isMachine && (ss != rootState()));
-}
-
-
-bool QStateMachinePrivate::isDescendantOf(const QAbstractState *state, const QAbstractState *other)
-{
-    Q_ASSERT(state != 0);
-    for (QAbstractState *s = state->parentState(); s != 0; s = s->parentState()) {
-        if (s == other)
-            return true;
-    }
-    return false;
-}
-
-QList<QState*> QStateMachinePrivate::properAncestors(const QAbstractState *state, const QState *upperBound)
-{
-    Q_ASSERT(state != 0);
-    QList<QState*> result;
-    for (QState *s = state->parentState(); s && s != upperBound; s = s->parentState()) {
-        result.append(s);
-    }
-    return result;
 }
 
 QState *QStateMachinePrivate::toStandardState(QAbstractState *state)
