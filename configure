@@ -4014,8 +4014,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         (cd "$outpath/qmake"; "$MAKE") || exit 2
     else
         # Hide the output of make
-        # Use bash to print dots, if we have it
-        if $WHICH bash > /dev/null 2>/dev/null; then
+        # Use bash to print dots, if we have it, and stdout is a tty.
+        if test -t 1 && $WHICH bash > /dev/null 2>/dev/null; then
             bash -c 'set -o pipefail
                 cd "$0/qmake"; "$1" | while read line; do
                     builtin echo -n .
