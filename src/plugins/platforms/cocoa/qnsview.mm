@@ -1883,6 +1883,48 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
         response = QWindowSystemInterface::handleDrag(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     }
 
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    const QPixmap pixmapCursor = nativeDrag->currentDrag()->dragCursor(response.acceptedAction());
+    NSCursor *nativeCursor = nil;
+
+    if (pixmapCursor.isNull()) {
+        switch (response.acceptedAction()) {
+            case Qt::CopyAction:
+                nativeCursor = [NSCursor dragCopyCursor];
+                break;
+            case Qt::LinkAction:
+                nativeCursor = [NSCursor dragLinkCursor];
+                break;
+            case Qt::IgnoreAction:
+                // Uncomment the next lines if forbiden cursor wanted on non droppable targets.
+                /*nativeCursor = [NSCursor operationNotAllowedCursor];
+                break;*/
+            case Qt::MoveAction:
+            default:
+                nativeCursor = [NSCursor arrowCursor];
+                break;
+        }
+    }
+    else {
+        NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
+        nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
+        [nsimage release];
+    }
+
+    // change the cursor
+    [nativeCursor set];
+
+    // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
+    // by creating a fake move event
+    const QPoint mousePos(QCursor::pos());
+    CGEventRef moveEvent(CGEventCreateMouseEvent(
+        NULL, kCGEventMouseMoved,
+        CGPointMake(mousePos.x(), mousePos.y()),
+        kCGMouseButtonLeft // ignored
+    ));
+    CGEventPost(kCGHIDEventTap, moveEvent);
+    CFRelease(moveEvent);
+
     return qt_mac_mapDropAction(response.acceptedAction());
 }
 
