@@ -81,6 +81,7 @@ bool qdbus_loadLibDBus()
         return lib && lib->isLoaded();
 
     lib = new QLibrary;
+    lib->setLoadHints(QLibrary::ExportExternalSymbolsHint); // make libdbus symbols available for apps that need more advanced control over the dbus
     triedToLoadLibrary = true;
 
     static int majorversions[] = { 3, 2, -1 };
