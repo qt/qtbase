@@ -1090,6 +1090,22 @@ bool QHostAddress::isLoopback() const
     return false;
 }
 
+/*!
+    \since 5.6
+
+    Returns \c true if the address is an IPv4 or IPv6 multicast address, \c
+    false otherwise.
+*/
+bool QHostAddress::isMulticast() const
+{
+    QT_ENSURE_PARSED(this);
+    if ((d->a & 0xF0000000) == 0xE0000000)
+        return true; // 224.0.0.0-239.255.255.255 (including v4-mapped IPv6 addresses)
+    if (d->protocol == QAbstractSocket::IPv6Protocol)
+        return d->a6.c[0] == 0xff;
+    return false;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QHostAddress &address)
 {
