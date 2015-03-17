@@ -1748,6 +1748,7 @@ void tst_QAccessibility::textEditTest()
     for (int pass = 0; pass < 2; ++pass) {
         {
         QTextEdit edit;
+        edit.setMinimumSize(600, 400);
         setFrameless(&edit);
         int startOffset;
         int endOffset;
