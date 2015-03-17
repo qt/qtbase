@@ -1310,11 +1310,24 @@ void QDocDatabase::resolveNamespaces()
                 foreach (Node* n, nodes) {
                     if (n->isNamespace()) {
                         NamespaceNode* NS = static_cast<NamespaceNode*>(n);
-                        if (NS != ns) {
-                            while (!NS->childNodes().isEmpty()) {
-                                Node* child = NS->childNodes().first();
-                                NS->removeChild(child);
-                                ns->addChild(child);
+                        if ((NS != ns) && !NS->childNodes().isEmpty()) {
+                            const NodeList& children = NS->childNodes();
+                            int i = children.size() - 1;
+                            while (i >= 0) {
+                                Node* child = children.at(i--);
+                                if (!child)
+                                    continue;
+                                if (!child->isClass()
+                                    && !child->isQmlType()
+                                    && !child->isNamespace()) {
+                                    NS->removeChild(child);
+                                    ns->addChild(child);
+                                }
+                                else {
+                                    NS->setStatus(Node::Intermediate);
+                                    NS->setAccess(Node::Public);
+                                    ns->addOrphan(child);
+                                }
                             }
                         }
                     }

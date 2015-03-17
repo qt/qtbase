@@ -883,12 +883,14 @@ void InnerNode::setOverload(FunctionNode *func, bool overlode)
 /*!
   Mark all child nodes that have no documentation as having
   private access and internal status. qdoc will then ignore
-  them for documentation purposes.
+  them for documentation purposes. Some nodes have an
+  Intermediate status, meaning that they should be ignored,
+  but not their children.
  */
 void InnerNode::makeUndocumentedChildrenInternal()
 {
     foreach (Node *child, childNodes()) {
-        if (child->doc().isEmpty()) {
+        if (child->doc().isEmpty() && child->status() != Node::Intermediate) {
             child->setAccess(Node::Private);
             child->setStatus(Node::Internal);
         }

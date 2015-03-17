@@ -1006,7 +1006,8 @@ void Generator::generateInnerNode(InnerNode* node)
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
-        if (node->isNamespace() || node->isClass()) {
+        if ((node->isNamespace() && node->status() != Node::Intermediate)
+            || node->isClass()) {
             beginSubPage(node, fileName(node));
             generateClassLikeNode(node, marker);
             endSubPage();

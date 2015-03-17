@@ -116,7 +116,8 @@ public:
         Deprecated,
         Preliminary,
         Commendable,
-        Internal
+        Internal,
+        Intermediate
     }; // don't reorder this enum
 
     enum ThreadSafeness {
@@ -458,10 +459,13 @@ public:
     void markSeen() { seen_ = true; }
     void markNotSeen() { seen_ = false; }
     void setTree(Tree* t) { tree_ = t; }
+    const NodeList& orphans() const { return orphans_; }
+    void addOrphan(Node* child) { orphans_.append(child); }
 
  private:
     bool        seen_;
     Tree*       tree_;
+    NodeList    orphans_;
 };
 
 struct RelatedClass
