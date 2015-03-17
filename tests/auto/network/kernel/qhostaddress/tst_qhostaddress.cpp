@@ -87,18 +87,6 @@ private slots:
     void convertv4v6();
 };
 
-QT_BEGIN_NAMESPACE
-namespace QTest {
-    template<>
-    char *toString(const QHostAddress &addr)
-    {
-        if (addr.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol)
-            return qstrdup("<invalid>");
-        return qstrdup(addr.toString().toLatin1());
-    }
-}
-QT_END_NAMESPACE
-
 tst_QHostAddress::tst_QHostAddress()
 {
 }
