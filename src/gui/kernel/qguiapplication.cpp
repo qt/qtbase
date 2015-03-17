@@ -185,6 +185,7 @@ extern void qRegisterGuiVariant();
 #ifndef QT_NO_ANIMATION
 extern void qRegisterGuiGetInterpolator();
 #endif
+extern void qInitBlendFunctions();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -1279,6 +1280,8 @@ void QGuiApplicationPrivate::init()
     if (platform_integration == 0)
         createPlatformIntegration();
 
+    // Set up blend function tables.
+    qInitBlendFunctions();
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
     // and QImage conversion functions
