@@ -77,7 +77,7 @@ bool shouldBeIgnored(QAccessibleInterface *interface);
 NSArray *unignoredChildren(QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
-QString translateAction(NSString *nsAction);
+QString translateAction(NSString *nsAction, QAccessibleInterface *interface);
 bool hasValueAttribute(QAccessibleInterface *interface);
 id getValueAttribute(QAccessibleInterface *interface);
 

@@ -501,7 +501,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface)
         return nil; // FIXME is that the right return type??
-    QString qtAction = QCocoaAccessible::translateAction(action);
+    QString qtAction = QCocoaAccessible::translateAction(action, iface);
     QString description;
     // Return a description from the action interface if this action is not known to the OS.
     if (qtAction.isEmpty()) {
@@ -518,7 +518,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
 - (void)accessibilityPerformAction:(NSString *)action {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (iface) {
-        const QString qtAction = QCocoaAccessible::translateAction(action);
+        const QString qtAction = QCocoaAccessible::translateAction(action, iface);
         QAccessibleBridgeUtils::performEffectiveAction(iface, qtAction);
     }
 }

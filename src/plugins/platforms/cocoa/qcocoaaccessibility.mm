@@ -284,6 +284,8 @@ NSString *getTranslatedAction(const QString &qtAction)
         return NSAccessibilityShowMenuAction;
     else if (qtAction == QAccessibleActionInterface::setFocusAction()) // Not 100% sure on this one
         return NSAccessibilityRaiseAction;
+    else if (qtAction == QAccessibleActionInterface::toggleAction())
+        return NSAccessibilityPressAction;
 
     // Not translated:
     //
@@ -305,11 +307,13 @@ NSString *getTranslatedAction(const QString &qtAction)
     Translates between a Mac action constant and a QAccessibleActionInterface action
     Returns an empty QString if there is no Qt predefined equivalent.
 */
-QString translateAction(NSString *nsAction)
+QString translateAction(NSString *nsAction, QAccessibleInterface *interface)
 {
-    if ([nsAction compare: NSAccessibilityPressAction] == NSOrderedSame)
+    if ([nsAction compare: NSAccessibilityPressAction] == NSOrderedSame) {
+        if (interface->role() == QAccessible::CheckBox || interface->role() == QAccessible::RadioButton)
+            return QAccessibleActionInterface::toggleAction();
         return QAccessibleActionInterface::pressAction();
-    else if ([nsAction compare: NSAccessibilityIncrementAction] == NSOrderedSame)
+    } else if ([nsAction compare: NSAccessibilityIncrementAction] == NSOrderedSame)
         return QAccessibleActionInterface::increaseAction();
     else if ([nsAction compare: NSAccessibilityDecrementAction] == NSOrderedSame)
         return QAccessibleActionInterface::decreaseAction();

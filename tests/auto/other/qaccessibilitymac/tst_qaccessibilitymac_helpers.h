@@ -44,3 +44,4 @@ bool testLineEdit();
 bool testHierarchy(QWidget *w);
 bool singleWidget();
 bool notifications(QWidget *w);
+bool testCheckBox();
