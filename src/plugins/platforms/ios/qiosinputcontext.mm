@@ -540,6 +540,9 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
         qImDebug() << "clearing focus object" << focusObject << "as hide-keyboard gesture is active";
         clearCurrentFocusObject();
         return;
+    } else if (focusObject == m_imeState.focusObject) {
+        qImDebug() << "same focus object as last update, skipping reset";
+        return;
     }
 
     reset();
@@ -575,37 +578,30 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     // Mask for properties that we are interested in and see if any of them changed
     updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImPlatformData);
 
-    if (updatedProperties & Qt::ImEnabled) {
-        // Switching on and off input-methods needs a re-fresh of hints and platform
-        // data when we turn them on again, as the IM state we have may have been
-        // invalidated when IM was switched off. We could defer this until we know
-        // if IM was turned on, to limit the extra query parameters, but for simplicity
-        // we always do the update.
-        updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
-    }
-
     qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
 
+    // Perform update first, so we can trust the value of inputMethodAccepted()
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
-    if (m_textResponder && changedProperties & (Qt::ImHints | Qt::ImPlatformData)) {
-        qImDebug() << "current IM state requires new text responder";
-        [m_textResponder autorelease];
-        m_textResponder = 0;
-    }
 
     if (inputMethodAccepted()) {
-        if (!m_textResponder) {
+        if (!m_textResponder || [m_textResponder needsKeyboardReconfigure:changedProperties]) {
             qImDebug() << "creating new text responder";
+            [m_textResponder autorelease];
             m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+        } else {
+            qImDebug() << "no need to reconfigure keyboard, just notifying input delegate";
+            [m_textResponder notifyInputDelegate:changedProperties];
         }
-        if (![m_textResponder isFirstResponder])
-            [m_textResponder becomeFirstResponder];
 
-        [m_textResponder notifyInputDelegate:changedProperties];
+        if (![m_textResponder isFirstResponder]) {
+            qImDebug() << "IM enabled, making text responder first responder";
+            [m_textResponder becomeFirstResponder];
+        }
 
         if (changedProperties & Qt::ImCursorRectangle)
             scrollToCursor();
     } else if ([m_textResponder isFirstResponder]) {
+        qImDebug() << "IM not enabled, resigning text responder as first responder";
         [m_textResponder resignFirstResponder];
     }
 }
@@ -635,6 +631,8 @@ bool QIOSInputContext::inputMethodAccepted() const
 */
 void QIOSInputContext::reset()
 {
+    qImDebug() << "updating Qt::ImQueryAll and unmarking text";
+
     update(Qt::ImQueryAll);
 
     [m_textResponder setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
@@ -651,6 +649,8 @@ void QIOSInputContext::reset()
 */
 void QIOSInputContext::commit()
 {
+    qImDebug() << "unmarking text";
+
     [m_textResponder unmarkText];
     [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
 }

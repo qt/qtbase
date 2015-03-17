@@ -34,6 +34,7 @@
 #import <UIKit/UIKit.h>
 
 #include <QtCore/qstring.h>
+#include <QtGui/qevent.h>
 
 class QIOSInputContext;
 
@@ -41,12 +42,15 @@ class QIOSInputContext;
 {
   @private
     QIOSInputContext *m_inputContext;
+    QInputMethodQueryEvent *m_configuredImeState;
     QString m_markedText;
     BOOL m_inSendEventToFocusObject;
     BOOL m_inSelectionChange;
 }
 
 - (id)initWithInputContext:(QIOSInputContext *)context;
+- (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties;
+
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
 
 @property(readwrite, retain) UIView *inputView;
