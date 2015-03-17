@@ -1753,6 +1753,7 @@ QMacStylePrivate::QMacStylePrivate()
 
 QMacStylePrivate::~QMacStylePrivate()
 {
+    AutoReleasePool pool;
     Q_FOREACH (NSView *b, cocoaControls)
         [b release];
 }
