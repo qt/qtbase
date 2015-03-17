@@ -3,6 +3,7 @@
 HEADERS += \
     codecs/qisciicodec_p.h \
     codecs/qlatincodec_p.h \
+    codecs/qsimplecodec_p.h \
     codecs/qtextcodec_p.h \
     codecs/qtextcodec.h \
     codecs/qtsciicodec_p.h \
@@ -11,6 +12,7 @@ HEADERS += \
 SOURCES += \
     codecs/qisciicodec.cpp \
     codecs/qlatincodec.cpp \
+    codecs/qsimplecodec.cpp \
     codecs/qtextcodec.cpp \
     codecs/qtsciicodec.cpp \
     codecs/qutfcodec.cpp
@@ -22,7 +24,6 @@ contains(QT_CONFIG,icu) {
         codecs/qicucodec.cpp
 } else {
     HEADERS += \
-        codecs/qsimplecodec_p.h \
         codecs/qgb18030codec_p.h \
         codecs/qeucjpcodec_p.h \
         codecs/qjiscodec_p.h \
@@ -31,7 +32,6 @@ contains(QT_CONFIG,icu) {
         codecs/qbig5codec_p.h
 
     SOURCES += \
-        codecs/qsimplecodec.cpp \
         codecs/qgb18030codec.cpp \
         codecs/qjpunicode.cpp \
         codecs/qeucjpcodec.cpp \
