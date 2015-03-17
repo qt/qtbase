@@ -1081,7 +1081,8 @@ void QImage::detach()
         if (d->ref.load() != 1 || d->ro_data)
             *this = copy();
 
-        ++d->detach_no;
+        if (d)
+            ++d->detach_no;
     }
 }
 
