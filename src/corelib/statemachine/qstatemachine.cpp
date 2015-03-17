@@ -196,6 +196,15 @@ static inline bool isDescendant(const QAbstractState *state1, const QAbstractSta
     return false;
 }
 
+static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbstractState *node)
+{
+    Q_FOREACH (QAbstractState *s, states)
+        if (isDescendant(s, node))
+            return true;
+
+    return false;
+}
+
 /* The function as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
 
 function getProperAncestors(state1, state2)
@@ -216,6 +225,41 @@ static QVector<QState*> getProperAncestors(const QAbstractState *state, const QA
         result.append(it);
     }
     return result;
+}
+
+/* The function as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
+
+function getEffectiveTargetStates(transition)
+
+Returns the states that will be the target when 'transition' is taken, dereferencing any history states.
+
+function getEffectiveTargetStates(transition)
+    targets = new OrderedSet()
+    for s in transition.target
+        if isHistoryState(s):
+            if historyValue[s.id]:
+                targets.union(historyValue[s.id])
+            else:
+                targets.union(getEffectiveTargetStates(s.transition))
+        else:
+            targets.add(s)
+    return targets
+*/
+static QSet<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *transition)
+{
+    QSet<QAbstractState *> targets;
+    foreach (QAbstractState *s, transition->targetStates()) {
+        if (QHistoryState *historyState = QStateMachinePrivate::toHistoryState(s)) {
+            QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(historyState)->configuration;
+            if (!historyConfiguration.isEmpty())
+                targets.unite(historyConfiguration.toSet());
+            else if (QAbstractState *defaultState = historyState->defaultState())
+                targets.insert(defaultState); // Qt does not support initial transitions, but uses the default state of the history state for this.
+        } else {
+            targets.insert(s);
+        }
+    }
+    return targets;
 }
 
 template <class T>
@@ -330,13 +374,16 @@ bool QStateMachinePrivate::stateExitLessThan(QAbstractState *s1, QAbstractState 
     }
 }
 
-QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states) const
+QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states, bool onlyCompound) const
 {
     if (states.isEmpty())
         return 0;
     QVector<QState*> ancestors = getProperAncestors(states.at(0), rootState()->parentState());
     for (int i = 0; i < ancestors.size(); ++i) {
         QState *anc = ancestors.at(i);
+        if (onlyCompound && !isCompound(anc))
+            continue;
+
         bool ok = true;
         for (int j = states.size() - 1; (j > 0) && ok; --j) {
             const QAbstractState *s = states.at(j);
@@ -347,6 +394,11 @@ QState *QStateMachinePrivate::findLCA(const QList<QAbstractState*> &states) cons
             return anc;
     }
     return 0;
+}
+
+QState *QStateMachinePrivate::findLCCA(const QList<QAbstractState*> &states) const
+{
+    return findLCA(states, true);
 }
 
 bool QStateMachinePrivate::isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const
@@ -416,7 +468,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     QHash<RestorableId, QVariant> pendingRestorables = computePendingRestorables(exitedStates);
 
     QSet<QAbstractState*> statesForDefaultEntry;
-    QList<QAbstractState*> enteredStates = computeStatesToEnter(enabledTransitions, statesForDefaultEntry);
+    QList<QAbstractState*> enteredStates = computeEntrySet(enabledTransitions, statesForDefaultEntry);
 
     QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
@@ -541,30 +593,22 @@ void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<Q
     }
 }
 
-QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QAbstractTransition *> &enabledTransitions,
-                                                                  QSet<QAbstractState *> &statesForDefaultEntry)
+QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstractTransition *> &enabledTransitions,
+                                                             QSet<QAbstractState *> &statesForDefaultEntry)
 {
     QSet<QAbstractState*> statesToEnter;
     if (pendingErrorStates.isEmpty()) {
-        for (int i = 0; i < enabledTransitions.size(); ++i) {
-            QAbstractTransition *t = enabledTransitions.at(i);
-            QList<QAbstractState*> lst = t->targetStates();
-            if (lst.isEmpty())
-                continue;
-            QAbstractState *src = t->sourceState();
-            if (src)
-                lst.prepend(src);
-            QState *lca = findLCA(lst);
-            for (int j = src ? 1 : 0; j < lst.size(); ++j) {
-                QAbstractState *s = lst.at(j);
-                addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
+        Q_FOREACH (QAbstractTransition *t, enabledTransitions) {
+            Q_FOREACH (QAbstractState *s, t->targetStates()) {
+                addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
             }
-            if (isParallel(lca)) {
-                QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
-                foreach (QAbstractState* child,lcac) {
-                    if (!statesToEnter.contains(child))
-                        addStatesToEnter(child,lca,statesToEnter,statesForDefaultEntry);
-                }
+#ifdef QSTATEMACHINE_DEBUG
+            qDebug() << "computed entry set after descendants:" << statesToEnter;
+#endif
+            QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t).toList();
+            QAbstractState *ancestor = getTransitionDomain(t, effectiveTargetStates);
+            Q_FOREACH (QAbstractState *s, effectiveTargetStates) {
+                addAncestorStatesToEnter(s, ancestor, statesToEnter, statesForDefaultEntry);
             }
         }
     }
@@ -581,6 +625,51 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QA
     QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
     std::sort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
     return statesToEnter_sorted;
+}
+
+/* The algorithm as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
+
+function getTransitionDomain(transition)
+
+Return the compound state such that 1) all states that are exited or entered as a result of taking
+'transition' are descendants of it 2) no descendant of it has this property.
+
+function getTransitionDomain(t)
+  tstates = getEffectiveTargetStates(t)
+  if not tstates:
+      return null
+  elif t.type == "internal" and isCompoundState(t.source) and tstates.every(lambda s: isDescendant(s,t.source)):
+      return t.source
+  else:
+      return findLCCA([t.source].append(tstates))
+*/
+QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t, const QList<QAbstractState *> &effectiveTargetStates)
+{
+    if (effectiveTargetStates.isEmpty())
+        return 0;
+
+#if 0
+    // Qt only has external transitions, so skip the special case for the internal transitions
+    if (QState *tSource = t->sourceState()) {
+        if (isCompound(tSource)) {
+            bool allDescendants = true;
+            Q_FOREACH (QAbstractState *s, effectiveTargetStates) {
+                if (!isDescendant(s, tSource)) {
+                    allDescendants = false;
+                    break;
+                }
+            }
+
+            if (allDescendants)
+                return tSource;
+        }
+    }
+#endif
+
+    QList<QAbstractState *> states(effectiveTargetStates);
+    if (QAbstractState *src = t->sourceState())
+        states.prepend(src);
+    return findLCCA(states);
 }
 
 void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
@@ -758,30 +847,126 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
     }
 }
 
-void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QState *root,
+/* The algorithm as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ has a bug. See
+ * QTBUG-44963 for details. The algorithm here is as described in
+ * http://www.w3.org/Voice/2013/scxml-irp/SCXML.htm as of Friday March 13, 2015.
+
+procedure addDescendantStatesToEnter(state,statesToEnter,statesForDefaultEntry, defaultHistoryContent):
+    if isHistoryState(state):
+        if historyValue[state.id]:
+            for s in historyValue[state.id]:
+                addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent)
+            for s in historyValue[state.id]:
+                addAncestorStatesToEnter(s, state.parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent)
+        else:
+            defaultHistoryContent[state.parent.id] = state.transition.content
+            for s in state.transition.target:
+                addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent)
+            for s in state.transition.target:
+                addAncestorStatesToEnter(s, state.parent, statesToEnter, statesForDefaultEntry, defaultHistoryContent)
+    else:
+        statesToEnter.add(state)
+        if isCompoundState(state):
+            statesForDefaultEntry.add(state)
+            for s in state.initial.transition.target:
+                addDescendantStatesToEnter(s,statesToEnter,statesForDefaultEntry, defaultHistoryContent)
+            for s in state.initial.transition.target:
+                addAncestorStatesToEnter(s, state, statesToEnter, statesForDefaultEntry, defaultHistoryContent)
+        else:
+            if isParallelState(state):
+                for child in getChildStates(state):
+                    if not statesToEnter.some(lambda s: isDescendant(s,child)):
+                        addDescendantStatesToEnter(child,statesToEnter,statesForDefaultEntry, defaultHistoryContent)
+*/
+void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
+                                                      QSet<QAbstractState*> &statesToEnter,
+                                                      QSet<QAbstractState*> &statesForDefaultEntry)
+{
+    if (QHistoryState *h = toHistoryState(state)) {
+        QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
+        if (!historyConfiguration.isEmpty()) {
+            Q_FOREACH (QAbstractState *s, historyConfiguration)
+                addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
+            Q_FOREACH (QAbstractState *s, historyConfiguration)
+                addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
+
+#ifdef QSTATEMACHINE_DEBUG
+            qDebug() << q_func() << ": restoring"
+                     << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
+                     << "history from" << state << ':' << historyConfiguration;
+#endif
+        } else {
+            QList<QAbstractState*> defaultHistoryContent;
+            if (QHistoryStatePrivate::get(h)->defaultState)
+                defaultHistoryContent.append(QHistoryStatePrivate::get(h)->defaultState);
+
+            if (defaultHistoryContent.isEmpty()) {
+                setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
+            } else {
+                Q_FOREACH (QAbstractState *s, defaultHistoryContent)
+                    addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
+                Q_FOREACH (QAbstractState *s, defaultHistoryContent)
+                    addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
+#ifdef QSTATEMACHINE_DEBUG
+                qDebug() << q_func() << ": initial history targets for" << state << ':' << defaultHistoryContent;
+#endif
+           }
+        }
+    } else {
+        if (state == rootState()) {
+            // Error has already been set by exitStates().
+            Q_ASSERT(error != QStateMachine::NoError);
+            return;
+        }
+        statesToEnter.insert(state);
+        if (isCompound(state)) {
+            statesForDefaultEntry.insert(state);
+            if (QAbstractState *initial = toStandardState(state)->initialState()) {
+                Q_ASSERT(initial->machine() == q_func());
+
+                // Qt does not support initial transitions (which is a problem for parallel states).
+                // The way it simulates this for other states, is by having a single initial state.
+                statesForDefaultEntry.insert(initial);
+
+                addDescendantStatesToEnter(initial, statesToEnter, statesForDefaultEntry);
+                addAncestorStatesToEnter(initial, state, statesToEnter, statesForDefaultEntry);
+            } else {
+                setError(QStateMachine::NoInitialStateError, state);
+                return;
+            }
+        } else if (isParallel(state)) {
+            QState *grp = toStandardState(state);
+            Q_FOREACH (QAbstractState *child, QStatePrivate::get(grp)->childStates()) {
+                if (!containsDecendantOf(statesToEnter, child))
+                    addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
+            }
+        }
+    }
+}
+
+
+/* The algorithm as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
+
+procedure addAncestorStatesToEnter(state, ancestor, statesToEnter, statesForDefaultEntry, defaultHistoryContent)
+   for anc in getProperAncestors(state,ancestor):
+       statesToEnter.add(anc)
+       if isParallelState(anc):
+           for child in getChildStates(anc):
+               if not statesToEnter.some(lambda s: isDescendant(s,child)):
+                  addDescendantStatesToEnter(child,statesToEnter,statesForDefaultEntry, defaultHistoryContent)
+*/
+void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QAbstractState *ancestor,
                                                     QSet<QAbstractState*> &statesToEnter,
                                                     QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    QVector<QState*> ancs = getProperAncestors(s, root);
-    for (int i = 0; i < ancs.size(); ++i) {
-        QState *anc = ancs.at(i);
+    Q_FOREACH (QState *anc, getProperAncestors(s, ancestor)) {
         if (!anc->parentState())
             continue;
         statesToEnter.insert(anc);
         if (isParallel(anc)) {
-            QList<QAbstractState*> lst = QStatePrivate::get(anc)->childStates();
-            for (int j = 0; j < lst.size(); ++j) {
-                QAbstractState *child = lst.at(j);
-                bool hasDescendantInList = false;
-                QSet<QAbstractState*>::const_iterator it;
-                for (it = statesToEnter.constBegin(); it != statesToEnter.constEnd(); ++it) {
-                    if (isDescendant(*it, child)) {
-                        hasDescendantInList = true;
-                        break;
-                    }
-                }
-                if (!hasDescendantInList)
-                    addStatesToEnter(child, anc, statesToEnter, statesForDefaultEntry);
+            Q_FOREACH (QAbstractState *child, QStatePrivate::get(anc)->childStates()) {
+                if (!containsDecendantOf(statesToEnter, child))
+                    addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
         }
     }
@@ -1403,8 +1588,7 @@ void QStateMachinePrivate::_q_start()
     executeTransitionContent(&nullEvent, transitions);
     QList<QAbstractState*> exitedStates = QList<QAbstractState*>();
     QSet<QAbstractState*> statesForDefaultEntry;
-    QList<QAbstractState*> enteredStates = computeStatesToEnter(transitions,
-                                                                statesForDefaultEntry);
+    QList<QAbstractState*> enteredStates = computeEntrySet(transitions, statesForDefaultEntry);
     QHash<RestorableId, QVariant> pendingRestorables;
     QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);

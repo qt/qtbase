@@ -244,6 +244,8 @@ private slots:
     void signalTransitionSenderInDifferentThread2();
     void signalTransitionRegistrationThreadSafety();
     void childModeConstructor();
+
+    void qtbug_44963();
 };
 
 class TestState : public QState
@@ -6167,6 +6169,91 @@ void tst_QStateMachine::childModeConstructor()
         QCOMPARE(machine.parent(), static_cast<QObject *>(&state));
         QCOMPARE(machine.parentState(), &state);
     }
+}
+
+void tst_QStateMachine::qtbug_44963()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState a(QState::ParallelStates, &machine);
+        QHistoryState ha(QHistoryState::DeepHistory, &a);
+        QState b(QState::ParallelStates, &a);
+            QState c(QState::ParallelStates, &b);
+                QState d(QState::ParallelStates, &c);
+                    QState e(QState::ParallelStates, &d);
+                        QState i(&e);
+                            QState i1(&i);
+                            QState i2(&i);
+                        QState j(&e);
+                    QState h(&d);
+                QState g(&c);
+        QState k(&a);
+    QState l(&machine);
+
+    machine.setInitialState(&a);
+    ha.setDefaultState(&b);
+    i.setInitialState(&i1);
+    i1.addTransition(&emitter, SIGNAL(signalWithIntArg(int)), &i2)->setObjectName("i1->i2");
+    i2.addTransition(&emitter, SIGNAL(signalWithDefaultArg(int)), &l)->setObjectName("i2->l");
+    l.addTransition(&emitter, SIGNAL(signalWithNoArg()), &ha)->setObjectName("l->ha");
+
+    a.setObjectName("a");
+    ha.setObjectName("ha");
+    b.setObjectName("b");
+    c.setObjectName("c");
+    d.setObjectName("d");
+    e.setObjectName("e");
+    i.setObjectName("i");
+    i1.setObjectName("i1");
+    i2.setObjectName("i2");
+    j.setObjectName("j");
+    h.setObjectName("h");
+    g.setObjectName("g");
+    k.setObjectName("k");
+    l.setObjectName("l");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), true);
+    QTRY_COMPARE(machine.configuration().contains(&i2), false);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    emitter.emitSignalWithIntArg(0);
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), true);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    emitter.emitSignalWithDefaultArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), false);
+    QTRY_COMPARE(machine.configuration().contains(&j), false);
+    QTRY_COMPARE(machine.configuration().contains(&h), false);
+    QTRY_COMPARE(machine.configuration().contains(&g), false);
+    QTRY_COMPARE(machine.configuration().contains(&k), false);
+    QTRY_COMPARE(machine.configuration().contains(&l), true);
+
+    emitter.emitSignalWithNoArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), true);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    QVERIFY(machine.isRunning());
 }
 
 QTEST_MAIN(tst_QStateMachine)

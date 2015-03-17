@@ -100,7 +100,8 @@ public:
 
     static QStateMachinePrivate *get(QStateMachine *q);
 
-    QState *findLCA(const QList<QAbstractState*> &states) const;
+    QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
+    QState *findLCCA(const QList<QAbstractState*> &states) const;
 
     static bool stateEntryLessThan(QAbstractState *s1, QAbstractState *s2);
     static bool stateExitLessThan(QAbstractState *s1, QAbstractState *s2);
@@ -137,12 +138,17 @@ public:
                      , const QList<QAbstractAnimation*> &selectedAnimations
 #endif
                      );
-    QList<QAbstractState*> computeStatesToEnter(const QList<QAbstractTransition*> &enabledTransitions,
-                                                QSet<QAbstractState*> &statesForDefaultEntry);
+    QList<QAbstractState*> computeEntrySet(const QList<QAbstractTransition*> &enabledTransitions,
+                                           QSet<QAbstractState*> &statesForDefaultEntry);
+    QAbstractState *getTransitionDomain(QAbstractTransition *t,
+                                        const QList<QAbstractState *> &effectiveTargetStates);
+    void addDescendantStatesToEnter(QAbstractState *state,
+                                    QSet<QAbstractState*> &statesToEnter,
+                                    QSet<QAbstractState*> &statesForDefaultEntry);
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);
-    void addAncestorStatesToEnter(QAbstractState *s, QState *root,
+    void addAncestorStatesToEnter(QAbstractState *s, QAbstractState *ancestor,
                                   QSet<QAbstractState*> &statesToEnter,
                                   QSet<QAbstractState*> &statesForDefaultEntry);
 
