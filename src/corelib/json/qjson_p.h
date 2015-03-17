@@ -629,7 +629,7 @@ public:
         if (value.latinKey)
             s += sizeof(ushort) + qFromLittleEndian(*(ushort *) ((const char *)this + sizeof(Entry)));
         else
-            s += sizeof(uint) + qFromLittleEndian(*(int *) ((const char *)this + sizeof(Entry)));
+            s += sizeof(uint) + sizeof(ushort)*qFromLittleEndian(*(int *) ((const char *)this + sizeof(Entry)));
         return alignedSize(s);
     }
 
