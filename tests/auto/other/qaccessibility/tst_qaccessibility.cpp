@@ -1716,7 +1716,10 @@ static QRect characterRect(const QTextEdit &edit, int offset)
     QPointF layoutPosition = layout->position();
     int relativeOffset = offset - block.position();
     QTextLine line = layout->lineForTextPosition(relativeOffset);
-    QFontMetrics fm(edit.currentFont());
+    QTextBlock::iterator it = block.begin();
+    while (!it.fragment().contains(offset))
+        ++it;
+    QFontMetrics fm(it.fragment().charFormat().font());
     QChar ch = edit.document()->characterAt(offset);
     int w = fm.width(ch);
     int h = fm.height();
@@ -1759,7 +1762,7 @@ void tst_QAccessibility::textEditTest()
             QFont font("Helvetica");
             font.setPointSizeF(12.5);
             font.setWordSpacing(1.1);
-            edit.setCurrentFont(font);
+            edit.document()->setDefaultFont(font);
         }
 
         edit.show();
@@ -1781,7 +1784,7 @@ void tst_QAccessibility::textEditTest()
         QCOMPARE(startOffset, 13);
         QCOMPARE(endOffset, 31);
         QCOMPARE(textIface->characterCount(), 48);
-        QFontMetrics fm(edit.currentFont());
+        QFontMetrics fm(edit.document()->defaultFont());
         QCOMPARE(textIface->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
         QCOMPARE(textIface->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
         QCOMPARE(textIface->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
