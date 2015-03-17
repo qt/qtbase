@@ -137,6 +137,12 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                           !(flags & (QDBusConnection::ExportScriptableInvokables | QDBusConnection::ExportNonScriptableInvokables))))
             continue;           // we're not exporting any slots or invokables
 
+        // we want to skip non-scriptable stuff as early as possible to avoid bogus warning
+        // for methods that are not being exported at all
+        bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
+        if (!isScriptable && !(flags & (isSignal ? QDBusConnection::ExportNonScriptableSignals : QDBusConnection::ExportNonScriptableInvokables | QDBusConnection::ExportNonScriptableSlots)))
+            continue;
+
         QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
                       .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
                       .arg(QString::fromLatin1(mm.name()));
@@ -179,7 +185,6 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             continue;           // cloned signal?
 
         int j;
-        bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
         for (j = 1; j < types.count(); ++j) {
             // input parameter for a slot or output for a signal
             if (types.at(j) == QDBusMetaTypeId::message()) {
