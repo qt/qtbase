@@ -36,6 +36,7 @@
 #include <QtTest/qtestcase.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfile.h>
+#include <QtCore/QSysInfo>
 
 #include <set>
 
@@ -119,6 +120,14 @@ static bool checkCondition(const QByteArray &condition)
     while (*m) {
         matches.insert(*m);
         ++m;
+    }
+
+    QByteArray distributionName = QSysInfo::productType().toLower().toUtf8();
+    QByteArray distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
+    if (!distributionName.isEmpty()) {
+        if (matches.find(distributionName) == matches.end())
+            matches.insert(distributionName);
+        matches.insert(distributionName + "-" + distributionRelease);
     }
 
     for (int i = 0; i < conds.size(); ++i) {
