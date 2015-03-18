@@ -103,6 +103,7 @@ public:
     QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
     QState *findLCCA(const QList<QAbstractState*> &states) const;
 
+    static bool transitionStateEntryLessThan(QAbstractTransition *t1, QAbstractTransition *t2);
     static bool stateEntryLessThan(QAbstractState *s1, QAbstractState *s2);
     static bool stateExitLessThan(QAbstractState *s1, QAbstractState *s2);
 
@@ -123,12 +124,13 @@ public:
     void clearHistory();
     QAbstractTransition *createInitialTransition() const;
 
+    void removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions);
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
-    bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
-    QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
+    QList<QAbstractTransition *> selectTransitions(QEvent *event);
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
                     const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
-    QList<QAbstractState*> computeStatesToExit(const QList<QAbstractTransition*> &enabledTransitions);
+    QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions);
+    QSet<QAbstractState*> computeExitSet_Unordered(const QList<QAbstractTransition*> &enabledTransitions);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
                      const QList<QAbstractState*> &statesToEnter_sorted,
@@ -141,7 +143,7 @@ public:
     QList<QAbstractState*> computeEntrySet(const QList<QAbstractTransition*> &enabledTransitions,
                                            QSet<QAbstractState*> &statesForDefaultEntry);
     QAbstractState *getTransitionDomain(QAbstractTransition *t,
-                                        const QList<QAbstractState *> &effectiveTargetStates);
+                                        const QList<QAbstractState *> &effectiveTargetStates) const;
     void addDescendantStatesToEnter(QAbstractState *state,
                                     QSet<QAbstractState*> &statesToEnter,
                                     QSet<QAbstractState*> &statesForDefaultEntry);
