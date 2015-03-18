@@ -356,7 +356,11 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$@" -o conftest-out.o conftest.cpp >/dev/null 2>&1
+    if [ "$OPT_VERBOSE" = "yes" ]; then
+        "$@" -o conftest-out.o conftest.cpp
+    else
+        "$@" -o conftest-out.o conftest.cpp >/dev/null 2>&1
+    fi
     ret=$?
     rm -f conftest.cpp conftest-out.o
     return $ret
