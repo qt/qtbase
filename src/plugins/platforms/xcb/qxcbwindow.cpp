@@ -318,6 +318,12 @@ void QXcbWindow::create()
     // currently no way to implement it for frame-exclusive geometries.
     QRect rect = window()->geometry();
     QPlatformWindow::setGeometry(rect);
+    QXcbScreen *currentScreen = xcbScreen();
+    QPlatformScreen *newScreen = screenForGeometry(rect);
+
+    if (newScreen != currentScreen)
+        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+
     const int dpr = int(devicePixelRatio());
 
     QSize minimumSize = window()->minimumSize();
@@ -582,8 +588,17 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
     propagateSizeHints();
 
-    const QRect xRect = mapToNative(rect, int(devicePixelRatio()));
+    QXcbScreen *currentScreen = xcbScreen();
+    QPlatformScreen *newScreen = screenForGeometry(rect);
+    if (!newScreen)
+        newScreen = currentScreen;
+
+    const QRect xRect = mapToNative(rect, int(newScreen->devicePixelRatio()));
     const QRect wmGeometry = windowToWmGeometry(xRect);
+
+
+    if (newScreen != currentScreen)
+        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
     if (qt_window_private(window())->positionAutomatic) {
         const quint32 mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
@@ -1858,7 +1873,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     if (newScreen != screen()) {
         if (newScreen)
             QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
-        int newDpr = devicePixelRatio();
+        int newDpr = newScreen->devicePixelRatio();
         if (newDpr != dpr) {
             QRect newRect = mapGeometryFromNative(nativeRect, newDpr);
             QPlatformWindow::setGeometry(newRect);
