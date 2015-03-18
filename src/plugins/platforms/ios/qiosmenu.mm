@@ -128,7 +128,8 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         if (m_selectedRow == -1)
             m_selectedRow = 0;
 
-        self.toolbar = [[[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 44)] autorelease];
+        self.toolbar = [[[UIToolbar alloc] init] autorelease];
+        self.toolbar.frame.size = [self.toolbar sizeThatFits:self.bounds.size];
         self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
         UIBarButtonItem *spaceButton = [[[UIBarButtonItem alloc]
