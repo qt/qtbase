@@ -231,13 +231,13 @@ void QDesktopServices::setUrlHandler(const QString &scheme, QObject *receiver, c
     QOpenUrlHandlerRegistry *registry = handlerRegistry();
     QMutexLocker locker(&registry->mutex);
     if (!receiver) {
-        registry->handlers.remove(scheme);
+        registry->handlers.remove(scheme.toLower());
         return;
     }
     QOpenUrlHandlerRegistry::Handler h;
     h.receiver = receiver;
     h.name = method;
-    registry->handlers.insert(scheme, h);
+    registry->handlers.insert(scheme.toLower(), h);
     QObject::connect(receiver, SIGNAL(destroyed(QObject*)),
                      registry, SLOT(handlerDestroyed(QObject*)));
 }
