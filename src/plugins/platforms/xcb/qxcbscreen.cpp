@@ -311,19 +311,16 @@ QImage::Format QXcbScreen::format() const
 
 QDpi QXcbScreen::logicalDpi() const
 {
-    int dpr = int(devicePixelRatio());
+    static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
+    if (overrideDpi)
+        return QDpi(overrideDpi, overrideDpi);
 
-    if (m_forcedDpi > 0)
-        return QDpi(m_forcedDpi/dpr, m_forcedDpi/dpr);
-
-    static const bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
-    if (auto_dpr) {
-        return QDpi(Q_MM_PER_INCH * m_geometry.width() / m_sizeMillimeters.width(),
-                    Q_MM_PER_INCH * m_geometry.height() / m_sizeMillimeters.height());
-    } else {
-        return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width() / dpr,
-                    Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height() / dpr);
+    if (m_forcedDpi > 0) {
+        int primaryDpr = int(connection()->screens().at(0)->devicePixelRatio());
+        return QDpi(m_forcedDpi/primaryDpr, m_forcedDpi/primaryDpr);
     }
+    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 
