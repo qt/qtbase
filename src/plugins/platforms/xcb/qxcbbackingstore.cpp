@@ -122,7 +122,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     xcb_generic_error_t *error = NULL;
     if (shm_present)
         error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
-    if (!shm_present || error) {
+    if (!shm_present || error || id == -1) {
         free(error);
 
         shmdt(m_shm_info.shmaddr);
