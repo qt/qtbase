@@ -468,11 +468,10 @@ bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T,
 {
     if (l.size() != r.size())
         return false;
-    for (int i = 0; i < l.size(); i++) {
-        if (l.at(i) != r.at(i))
-            return false;
-    }
-    return true;
+    const T *rb = r.begin();
+    const T *b  = l.begin();
+    const T *e  = l.end();
+    return std::equal(b, e, rb);
 }
 
 template <typename T, int Prealloc1, int Prealloc2>
