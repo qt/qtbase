@@ -350,7 +350,7 @@ bool CeSdkHandler::retrieveAvailableSDKs()
     return !m_list.empty();
 }
 
-QString CeSdkHandler::fixPaths(QString path) const
+QString CeSdkHandler::fixPaths(const QString &path) const
 {
     QRegExp searchStr(QLatin1String("(\\$\\(\\w+\\))"));
     QString fixedString = path;
