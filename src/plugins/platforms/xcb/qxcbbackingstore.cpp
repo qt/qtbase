@@ -310,7 +310,13 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
 {
     if (!m_image)
         return;
-    const int dpr = int(m_image->image()->devicePixelRatio());
+    int dpr = int(m_image->image()->devicePixelRatio());
+    const int windowDpr = int(window()->devicePixelRatio());
+    if (windowDpr != dpr) {
+        resize(window()->size(), QRegion());
+        dpr = int(m_image->image()->devicePixelRatio());
+    }
+
     QRegion xRegion =  dpr == 1 ? region : QTransform::fromScale(dpr,dpr).map(region);
     m_image->preparePaint(xRegion);
 
@@ -342,7 +348,15 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     if (!m_image || m_image->size().isEmpty())
         return;
 
-    QSize imageSize = m_image->size();
+    const int dpr = int(window->devicePixelRatio());
+
+#ifndef QT_NO_DEBUG
+    const int imageDpr = int(m_image->image()->devicePixelRatio());
+    if (dpr != imageDpr)
+        qWarning() <<  "QXcbBackingStore::flush() wrong devicePixelRatio for backingstore image" << dpr << imageDpr;
+#endif
+
+    QSize imageSize = m_image->size() / dpr; //because we multiply with the DPR later
 
     QRegion clipped = region;
     clipped &= QRect(0, 0, window->width(), window->height());
@@ -360,8 +374,6 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         qWarning("QXcbBackingStore::flush: QWindow has no platform window (QTBUG-32681)");
         return;
     }
-
-    const int dpr = int(window->devicePixelRatio());
 
     QVector<QRect> rects = clipped.rects();
     for (int i = 0; i < rects.size(); ++i) {
@@ -399,8 +411,7 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
     const int dpr = int(window()->devicePixelRatio());
     const QSize xSize = size * dpr;
-
-    if (m_image && xSize == m_image->size())
+    if (m_image && xSize == m_image->size() && dpr == m_image->image()->devicePixelRatio())
         return;
     Q_XCB_NOOP(connection());
 
