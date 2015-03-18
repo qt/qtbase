@@ -482,7 +482,7 @@ void QJsonDocument::setObject(const QJsonObject &object)
         if (d->compactionCounter)
             o.compact();
         else
-            o.detach();
+            o.detach2();
         d = o.d;
         d->ref.ref();
         return;
@@ -509,7 +509,7 @@ void QJsonDocument::setArray(const QJsonArray &array)
         if (d->compactionCounter)
             a.compact();
         else
-            a.detach();
+            a.detach2();
         d = a.d;
         d->ref.ref();
         return;

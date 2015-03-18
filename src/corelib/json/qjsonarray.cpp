@@ -382,7 +382,7 @@ void QJsonArray::removeAt(int i)
     if (!a || i < 0 || i >= (int)a->length)
         return;
 
-    detach();
+    detach2();
     a->removeItems(i, 1);
     ++d->compactionCounter;
     if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(a->length) / 2u)
@@ -442,7 +442,8 @@ void QJsonArray::insert(int i, const QJsonValue &value)
     bool compressed;
     int valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
 
-    detach(valueSize + sizeof(QJsonPrivate::Value));
+    if (!detach2(valueSize + sizeof(QJsonPrivate::Value)))
+        return;
 
     if (!a->length)
         a->tableOffset = sizeof(QJsonPrivate::Array);
@@ -492,7 +493,8 @@ void QJsonArray::replace(int i, const QJsonValue &value)
     bool compressed;
     int valueSize = QJsonPrivate::Value::requiredStorage(val, &compressed);
 
-    detach(valueSize);
+    if (!detach2(valueSize))
+        return;
 
     if (!a->length)
         a->tableOffset = sizeof(QJsonPrivate::Array);
@@ -1123,21 +1125,38 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
  */
 void QJsonArray::detach(uint reserve)
 {
+    Q_UNUSED(reserve)
+    Q_ASSERT(!reserve);
+    detach2(0);
+}
+
+/*!
+    \internal
+ */
+bool QJsonArray::detach2(uint reserve)
+{
     if (!d) {
+        if (reserve >= QJsonPrivate::Value::MaxSize) {
+            qWarning("QJson: Document too large to store in data structure");
+            return false;
+        }
         d = new QJsonPrivate::Data(reserve, QJsonValue::Array);
         a = static_cast<QJsonPrivate::Array *>(d->header->root());
         d->ref.ref();
-        return;
+        return true;
     }
     if (reserve == 0 && d->ref.load() == 1)
-        return;
+        return true;
 
     QJsonPrivate::Data *x = d->clone(a, reserve);
+    if (!x)
+        return false;
     x->ref.ref();
     if (!d->ref.deref())
         delete d;
     d = x;
     a = static_cast<QJsonPrivate::Array *>(d->header->root());
+    return true;
 }
 
 /*!
@@ -1148,7 +1167,7 @@ void QJsonArray::compact()
     if (!d || !d->compactionCounter)
         return;
 
-    detach();
+    detach2();
     d->compact();
     a = static_cast<QJsonPrivate::Array *>(d->header->root());
 }

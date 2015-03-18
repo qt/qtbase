@@ -182,10 +182,10 @@ public:
     friend class const_iterator;
 
     // STL style
-    inline iterator begin() { detach(); return iterator(this, 0); }
+    inline iterator begin() { detach2(); return iterator(this, 0); }
     inline const_iterator begin() const { return const_iterator(this, 0); }
     inline const_iterator constBegin() const { return const_iterator(this, 0); }
-    inline iterator end() { detach(); return iterator(this, size()); }
+    inline iterator end() { detach2(); return iterator(this, size()); }
     inline const_iterator end() const { return const_iterator(this, size()); }
     inline const_iterator constEnd() const { return const_iterator(this, size()); }
     iterator erase(iterator it);
@@ -215,7 +215,9 @@ private:
 
     QJsonObject(QJsonPrivate::Data *data, QJsonPrivate::Object *object);
     void initialize();
+    // ### Qt 6: remove me and merge with detach2
     void detach(uint reserve = 0);
+    bool detach2(uint reserve = 0);
     void compact();
 
     QString keyAt(int i) const;

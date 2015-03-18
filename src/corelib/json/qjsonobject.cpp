@@ -389,7 +389,8 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
     int valueOffset = sizeof(QJsonPrivate::Entry) + QJsonPrivate::qStringSize(key, latinKey);
     int requiredSize = valueOffset + valueSize;
 
-    detach(requiredSize + sizeof(QJsonPrivate::offset)); // offset for the new index entry
+    if (!detach2(requiredSize + sizeof(QJsonPrivate::offset))) // offset for the new index entry
+        return iterator();
 
     if (!o->length)
         o->tableOffset = sizeof(QJsonPrivate::Object);
@@ -433,7 +434,7 @@ void QJsonObject::remove(const QString &key)
     if (!keyExists)
         return;
 
-    detach();
+    detach2();
     o->removeItems(index, 1);
     ++d->compactionCounter;
     if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
@@ -460,7 +461,7 @@ QJsonValue QJsonObject::take(const QString &key)
         return QJsonValue(QJsonValue::Undefined);
 
     QJsonValue v(d, o, o->entryAt(index)->value);
-    detach();
+    detach2();
     o->removeItems(index, 1);
     ++d->compactionCounter;
     if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
@@ -554,7 +555,7 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
     int index = o ? o->indexOf(key, &keyExists) : 0;
     if (!keyExists)
         return end();
-    detach();
+    detach2();
     return iterator(this, index);
 }
 
@@ -1061,21 +1062,35 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
  */
 void QJsonObject::detach(uint reserve)
 {
+    Q_UNUSED(reserve)
+    Q_ASSERT(!reserve);
+    detach2(reserve);
+}
+
+bool QJsonObject::detach2(uint reserve)
+{
     if (!d) {
+        if (reserve >= QJsonPrivate::Value::MaxSize) {
+            qWarning("QJson: Document too large to store in data structure");
+            return false;
+        }
         d = new QJsonPrivate::Data(reserve, QJsonValue::Object);
         o = static_cast<QJsonPrivate::Object *>(d->header->root());
         d->ref.ref();
-        return;
+        return true;
     }
     if (reserve == 0 && d->ref.load() == 1)
-        return;
+        return true;
 
     QJsonPrivate::Data *x = d->clone(o, reserve);
+    if (!x)
+        return false;
     x->ref.ref();
     if (!d->ref.deref())
         delete d;
     d = x;
     o = static_cast<QJsonPrivate::Object *>(d->header->root());
+    return true;
 }
 
 /*!
@@ -1086,7 +1101,7 @@ void QJsonObject::compact()
     if (!d || !d->compactionCounter)
         return;
 
-    detach();
+    detach2();
     d->compact();
     o = static_cast<QJsonPrivate::Object *>(d->header->root());
 }
