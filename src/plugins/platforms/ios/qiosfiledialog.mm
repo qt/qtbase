@@ -95,8 +95,10 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     Q_UNUSED(windowFlags);
     Q_UNUSED(windowModality);
 
+    bool acceptOpen = options()->acceptMode() == QFileDialogOptions::AcceptOpen;
     QString directory = options()->initialDirectory().toLocalFile();
-    if (directory.startsWith(QLatin1String("assets-library:"))) {
+
+    if (acceptOpen && directory.startsWith(QLatin1String("assets-library:"))) {
         m_viewController = [[QIOSImagePickerController alloc] initWithQIOSFileDialog:this];
         UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
             : [UIApplication sharedApplication].keyWindow;
