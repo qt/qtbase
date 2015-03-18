@@ -54,6 +54,12 @@ private slots:
     void indexOf();
     void lastIndexOf();
     void contains();
+    void initializeListInt();
+    void initializeListMovable();
+    void initializeListComplex();
+private:
+    template<typename T>
+    void initializeList();
 };
 
 int fooCtor = 0;
@@ -333,11 +339,23 @@ struct MyPrimitive
 struct MyMovable
     : MyBase
 {
+    MyMovable(char input = 'j') : i(input) {}
+    bool operator==(const MyMovable &other) const
+    {
+        return i == other.i;
+    }
+    char i;
 };
 
 struct MyComplex
     : MyBase
 {
+    MyComplex(char input = 'j') : i(input) {}
+    bool operator==(const MyComplex &other) const
+    {
+        return i == other.i;
+    }
+    char i;
 };
 
 QT_BEGIN_NAMESPACE
@@ -732,6 +750,50 @@ void tst_QVarLengthArray::contains()
     // add it and make sure it does :)
     myvec.append(QLatin1String("I don't exist"));
     QVERIFY(myvec.contains(QLatin1String("I don't exist")));
+}
+
+void tst_QVarLengthArray::initializeListInt()
+{
+    initializeList<int>();
+}
+
+void tst_QVarLengthArray::initializeListMovable()
+{
+    const int instancesCount = MyMovable::liveCount;
+    initializeList<MyMovable>();
+    QCOMPARE(MyMovable::liveCount, instancesCount);
+}
+
+void tst_QVarLengthArray::initializeListComplex()
+{
+    const int instancesCount = MyComplex::liveCount;
+    initializeList<MyComplex>();
+    QCOMPARE(MyComplex::liveCount, instancesCount);
+}
+
+template<typename T>
+void tst_QVarLengthArray::initializeList()
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    T val1(110);
+    T val2(105);
+    T val3(101);
+    T val4(114);
+
+    QVarLengthArray<T> v1 {val1, val2, val3};
+    QCOMPARE(v1, QVarLengthArray<T>() << val1 << val2 << val3);
+    QCOMPARE(v1, (QVarLengthArray<T> {val1, val2, val3}));
+
+    QVarLengthArray<QVarLengthArray<T>, 4> v2{ v1, {val4}, QVarLengthArray<T>(), {val1, val2, val3} };
+    QVarLengthArray<QVarLengthArray<T>, 4> v3;
+    v3 << v1 << (QVarLengthArray<T>() << val4) << QVarLengthArray<T>() << v1;
+    QCOMPARE(v3, v2);
+
+    QVarLengthArray<T> v4({});
+    QCOMPARE(v4.size(), 0);
+#else
+    QSKIP("This tests requires a compiler that supports initializer lists.");
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

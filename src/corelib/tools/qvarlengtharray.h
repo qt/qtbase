@@ -42,6 +42,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <algorithm>
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +64,14 @@ public:
     {
         append(other.constData(), other.size());
     }
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QVarLengthArray(std::initializer_list<T> args)
+        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
+    {
+        append(args.begin(), args.size());
+    }
+#endif
 
     inline ~QVarLengthArray() {
         if (QTypeInfo<T>::isComplex) {
