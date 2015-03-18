@@ -75,6 +75,12 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
                 XFree(chosenVisualInfo);
                 return visualId;
             }
+            // Skip also for i.MX6 where 565 visuals are suggested for the default 444 configs and it works just fine.
+            const char *vendor = eglQueryString(eglDisplay, EGL_VENDOR);
+            if (vendor && strstr(vendor, "Vivante")) {
+                XFree(chosenVisualInfo);
+                return visualId;
+            }
 
             int visualRedSize = qPopulationCount(chosenVisualInfo->red_mask);
             int visualGreenSize = qPopulationCount(chosenVisualInfo->green_mask);
