@@ -197,11 +197,54 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
  */
 QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
 {
-    // ### this is implemented the trivial way, not the most efficient way
-
     QJsonObject object;
-    for (QVariantMap::const_iterator it = map.constBegin(); it != map.constEnd(); ++it)
-        object.insert(it.key(), QJsonValue::fromVariant(it.value()));
+    if (map.isEmpty())
+        return object;
+
+    object.detach2(1024);
+
+    QVector<QJsonPrivate::offset> offsets;
+    QJsonPrivate::offset currentOffset;
+    currentOffset = sizeof(QJsonPrivate::Base);
+
+    // the map is already sorted, so we can simply append one entry after the other and
+    // write the offset table at the end
+    for (QVariantMap::const_iterator it = map.constBegin(); it != map.constEnd(); ++it) {
+        QString key = it.key();
+        QJsonValue val = QJsonValue::fromVariant(it.value());
+
+        bool latinOrIntValue;
+        int valueSize = QJsonPrivate::Value::requiredStorage(val, &latinOrIntValue);
+
+        bool latinKey = QJsonPrivate::useCompressed(key);
+        int valueOffset = sizeof(QJsonPrivate::Entry) + QJsonPrivate::qStringSize(key, latinKey);
+        int requiredSize = valueOffset + valueSize;
+
+        if (!object.detach2(requiredSize + sizeof(QJsonPrivate::offset))) // offset for the new index entry
+            return QJsonObject();
+
+        QJsonPrivate::Entry *e = reinterpret_cast<QJsonPrivate::Entry *>(reinterpret_cast<char *>(object.o) + currentOffset);
+        e->value.type = val.t;
+        e->value.latinKey = latinKey;
+        e->value.latinOrIntValue = latinOrIntValue;
+        e->value.value = QJsonPrivate::Value::valueToStore(val, (char *)e - (char *)object.o + valueOffset);
+        QJsonPrivate::copyString((char *)(e + 1), key, latinKey);
+        if (valueSize)
+            QJsonPrivate::Value::copyData(val, (char *)e + valueOffset, latinOrIntValue);
+
+        offsets << currentOffset;
+        currentOffset += requiredSize;
+        object.o->size = currentOffset;
+    }
+
+    // write table
+    object.o->tableOffset = currentOffset;
+    if (!object.detach2(sizeof(QJsonPrivate::offset)*offsets.size()))
+        return QJsonObject();
+    memcpy(object.o->table(), offsets.constData(), offsets.size()*sizeof(uint));
+    object.o->length = offsets.size();
+    object.o->size = currentOffset + sizeof(QJsonPrivate::offset)*offsets.size();
+
     return object;
 }
 

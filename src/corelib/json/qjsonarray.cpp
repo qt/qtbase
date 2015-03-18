@@ -256,8 +256,45 @@ QJsonArray QJsonArray::fromStringList(const QStringList &list)
 QJsonArray QJsonArray::fromVariantList(const QVariantList &list)
 {
     QJsonArray array;
-    for (QVariantList::const_iterator it = list.constBegin(); it != list.constEnd(); ++it)
-        array.append(QJsonValue::fromVariant(*it));
+    if (list.isEmpty())
+        return array;
+
+    array.detach2(1024);
+
+    QVector<QJsonPrivate::Value> values;
+    values.resize(list.size());
+    QJsonPrivate::Value *valueData = values.data();
+    uint currentOffset = sizeof(QJsonPrivate::Base);
+
+    for (int i = 0; i < list.size(); ++i) {
+        QJsonValue val = QJsonValue::fromVariant(list.at(i));
+
+        bool latinOrIntValue;
+        int valueSize = QJsonPrivate::Value::requiredStorage(val, &latinOrIntValue);
+
+        if (!array.detach2(valueSize))
+            return QJsonArray();
+
+        QJsonPrivate::Value *v = valueData + i;
+        v->type = (val.t == QJsonValue::Undefined ? QJsonValue::Null : val.t);
+        v->latinOrIntValue = latinOrIntValue;
+        v->latinKey = false;
+        v->value = QJsonPrivate::Value::valueToStore(val, currentOffset);
+        if (valueSize)
+            QJsonPrivate::Value::copyData(val, (char *)array.a + currentOffset, latinOrIntValue);
+
+        currentOffset += valueSize;
+        array.a->size = currentOffset;
+    }
+
+    // write table
+    array.a->tableOffset = currentOffset;
+    if (!array.detach2(sizeof(QJsonPrivate::offset)*values.size()))
+        return QJsonArray();
+    memcpy(array.a->table(), values.constData(), values.size()*sizeof(uint));
+    array.a->length = values.size();
+    array.a->size = currentOffset + sizeof(QJsonPrivate::offset)*values.size();
+
     return array;
 }
 
