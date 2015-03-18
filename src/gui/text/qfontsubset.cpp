@@ -420,7 +420,7 @@ static quint32 checksum(const QByteArray &table)
 {
     quint32 sum = 0;
     int offset = 0;
-    const uchar *d = (uchar *)table.constData();
+    const uchar *d = (const uchar *)table.constData();
     while (offset <= table.size()-3) {
         sum += qFromBigEndian<quint32>(d + offset);
         offset += 4;

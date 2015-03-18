@@ -108,4 +108,11 @@ void QLibInputPointer::processAxis(libinput_event_pointer *e)
 #endif
 }
 
+void QLibInputPointer::setPos(const QPoint &pos)
+{
+    const QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+    m_pos.setX(qBound(g.left(), pos.x(), g.right()));
+    m_pos.setY(qBound(g.top(), pos.y(), g.bottom()));
+}
+
 QT_END_NAMESPACE

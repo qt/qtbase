@@ -103,6 +103,7 @@ public:
     virtual void setText(const QString &text) = 0;
     virtual void setIcon(const QIcon &icon) = 0;
     virtual void setEnabled(bool enabled) = 0;
+    virtual bool isEnabled() const { return true; }
     virtual void setVisible(bool visible) = 0;
     virtual void setMinimumWidth(int width) { Q_UNUSED(width); }
     virtual void setFont(const QFont &font) { Q_UNUSED(font); }

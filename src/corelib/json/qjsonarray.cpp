@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
     \class QJsonArray
     \inmodule QtCore
     \ingroup json
+    \ingroup shared
     \reentrant
     \since 5.0
 

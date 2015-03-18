@@ -68,8 +68,11 @@ public:
 
     int deviceCount(DeviceType type) const;
 
+    void setCursorPos(const QPoint &pos);
+
 signals:
     void deviceListChanged(DeviceType type);
+    void cursorPositionChangeRequested(const QPoint &pos);
 };
 
 QT_END_NAMESPACE

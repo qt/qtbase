@@ -79,9 +79,7 @@
 #  include "qwindowsglcontext.h"
 #endif
 
-#ifndef Q_OS_WINCE
-#  include "qwindowsopengltester.h"
-#endif
+#include "qwindowsopengltester.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -209,6 +207,10 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     : m_options(0)
     , m_fontDatabase(0)
 {
+#ifndef Q_OS_WINCE
+    Q_INIT_RESOURCE(openglblacklists);
+#endif
+
     static bool dpiAwarenessSet = false;
     int tabletAbsoluteRange = -1;
     // Default to per-monitor awareness to avoid being scaled when monitors with different DPI

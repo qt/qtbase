@@ -44,6 +44,7 @@
 #include <private/qshortcutmap_p.h>
 #include <private/qaction_p.h>
 #include <private/qwidgetwindow_p.h>
+#include <qpa/qplatformmenu.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -269,9 +270,13 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
             // On Mac, menu item shortcuts are processed before reaching any window.
             // That means that if a menu action shortcut has not been already processed
             // (and reaches this point), then the menu item itself has been disabled.
-            // This occurs at the QPA level on Mac, were we disable all the Cocoa menus
-            // when showing a modal window.
-            if (a->shortcut().count() < 1 || (a->shortcut().count() == 1 && (a->shortcut()[0] & Qt::MODIFIER_MASK) != 0))
+            // This occurs at the QPA level on Mac, where we disable all the Cocoa menus
+            // when showing a modal window. (Notice that only the QPA menu is disabled,
+            // not the QMenu.) Since we can also reach this code by climbing the menu
+            // hierarchy (see below), or when the shortcut is not a key-equivalent, we
+            // need to check whether the QPA menu is actually disabled.
+            QPlatformMenu *pm = menu->platformMenu();
+            if (!pm || !pm->isEnabled())
                 continue;
 #endif
             QAction *a = menu->menuAction();

@@ -129,7 +129,9 @@
          \li \list
             \li Date (QDate)
             \li Time (QTime)
-            \li The \l{Qt::TimeSpec}{time spec} (quint8)
+            \li The \l{Qt::TimeSpec}{time spec}
+                offsetFromUtc (qint32) if Qt::TimeSpec is offsetFromUtc
+                TimeZone(QTimeZone) if Qt::TimeSpec is TimeZone
             \endlist
     \row \li QEasingCurve
          \li \list
@@ -145,11 +147,19 @@
     \row \li QFont
          \li \list
             \li The family (QString)
-            \li The point size (qint16)
+            \li The style name (QString)
+            \li The point size (double)
+            \li The pixel size (qint32)
             \li The style hint (quint8)
+            \li The style strategy (quint16)
             \li The char set (quint8)
             \li The weight (quint8)
             \li The font bits (quint8)
+            \li The font stretch (quint16)
+            \li The extended font bits (quint8)
+            \li The letter spacing (double)
+            \li The word spacing (double)
+            \li The hinting preference (quint8)
             \endlist
     \row \li QHash<Key, T>
          \li \list

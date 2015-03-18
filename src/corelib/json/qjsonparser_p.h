@@ -62,12 +62,14 @@ public:
     class ParsedObject
     {
     public:
-        ParsedObject(Parser *p, int pos) : parser(p), objectPosition(pos) {}
+        ParsedObject(Parser *p, int pos) : parser(p), objectPosition(pos) {
+            offsets.reserve(64);
+        }
         void insert(uint offset);
 
         Parser *parser;
         int objectPosition;
-        QVarLengthArray<uint, 64> offsets;
+        QVector<uint> offsets;
 
         inline QJsonPrivate::Entry *entryAt(int i) const {
             return reinterpret_cast<QJsonPrivate::Entry *>(parser->data + objectPosition + offsets[i]);

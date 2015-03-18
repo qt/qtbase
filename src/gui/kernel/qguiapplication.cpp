@@ -147,11 +147,14 @@ QString *QGuiApplicationPrivate::displayName = 0;
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
 
 Qt::MouseButtons QGuiApplicationPrivate::buttons = Qt::NoButton;
+
 ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
 int QGuiApplicationPrivate::mouse_double_click_distance = -1;
+
+QWindow *QGuiApplicationPrivate::currentMousePressWindow = 0;
 
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
@@ -1703,6 +1706,17 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (e->nullWindow()) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
         if (window) {
+            // Moves and the release following a press must go to the same
+            // window, even if the cursor has moved on over another window.
+            if (e->buttons != Qt::NoButton) {
+                if (!currentMousePressWindow)
+                    currentMousePressWindow = window;
+                else
+                    window = currentMousePressWindow;
+            } else if (currentMousePressWindow) {
+                window = currentMousePressWindow;
+                currentMousePressWindow = 0;
+            }
             QPointF delta = globalPoint - globalPoint.toPoint();
             localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
         }
@@ -2554,7 +2568,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     }
 
     if (availableGeometryChanged)
-        emit s->availableGeometryChanged(s->geometry());
+        emit s->availableGeometryChanged(s->availableGeometry());
 
     if (geometryChanged || availableGeometryChanged) {
         foreach (QScreen* sibling, s->virtualSiblings())

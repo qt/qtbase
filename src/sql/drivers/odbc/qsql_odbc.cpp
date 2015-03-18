@@ -506,7 +506,7 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
         r = SQLGetData(hStmt,
                         column+1,
                         SQL_C_BINARY,
-                        (SQLPOINTER)(fieldVal.constData() + read),
+                        const_cast<char *>(fieldVal.constData() + read),
                         colSize,
                         &lengthIndicator);
         if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO)
@@ -1361,7 +1361,7 @@ bool QODBCResult::exec()
             case QVariant::Date: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(DATE_STRUCT));
-                DATE_STRUCT *dt = (DATE_STRUCT *)ba.constData();
+                DATE_STRUCT *dt = (DATE_STRUCT *)const_cast<char *>(ba.constData());
                 QDate qdt = val.toDate();
                 dt->year = qdt.year();
                 dt->month = qdt.month();
@@ -1380,7 +1380,7 @@ bool QODBCResult::exec()
             case QVariant::Time: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(TIME_STRUCT));
-                TIME_STRUCT *dt = (TIME_STRUCT *)ba.constData();
+                TIME_STRUCT *dt = (TIME_STRUCT *)const_cast<char *>(ba.constData());
                 QTime qdt = val.toTime();
                 dt->hour = qdt.hour();
                 dt->minute = qdt.minute();
@@ -1399,7 +1399,7 @@ bool QODBCResult::exec()
             case QVariant::DateTime: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(TIMESTAMP_STRUCT));
-                TIMESTAMP_STRUCT * dt = (TIMESTAMP_STRUCT *)ba.constData();
+                TIMESTAMP_STRUCT * dt = (TIMESTAMP_STRUCT *)const_cast<char *>(ba.constData());
                 QDateTime qdt = val.toDateTime();
                 dt->year = qdt.date().year();
                 dt->month = qdt.date().month();
@@ -1438,7 +1438,7 @@ bool QODBCResult::exec()
                                       SQL_INTEGER,
                                       0,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1450,7 +1450,7 @@ bool QODBCResult::exec()
                                       SQL_NUMERIC,
                                       15,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1462,7 +1462,7 @@ bool QODBCResult::exec()
                                       SQL_DOUBLE,
                                       0,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1474,7 +1474,7 @@ bool QODBCResult::exec()
                                       SQL_BIGINT,
                                       0,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1486,7 +1486,7 @@ bool QODBCResult::exec()
                                       SQL_BIGINT,
                                       0,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1501,7 +1501,7 @@ bool QODBCResult::exec()
                                       SQL_LONGVARBINARY,
                                       val.toByteArray().size(),
                                       0,
-                                      (void *) val.toByteArray().constData(),
+                                      const_cast<char *>(val.toByteArray().constData()),
                                       val.toByteArray().size(),
                                       ind);
                 break;
@@ -1513,7 +1513,7 @@ bool QODBCResult::exec()
                                       SQL_BIT,
                                       0,
                                       0,
-                                      (void *) val.constData(),
+                                      const_cast<void *>(val.constData()),
                                       0,
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
@@ -1535,7 +1535,7 @@ bool QODBCResult::exec()
                                             strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                             0, // god knows... don't change this!
                                             0,
-                                            (void *)ba.data(),
+                                            ba.data(),
                                             ba.size(),
                                             ind);
                         break;
@@ -1548,7 +1548,7 @@ bool QODBCResult::exec()
                                           strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                           strSize,
                                           0,
-                                          (SQLPOINTER)ba.constData(),
+                                          const_cast<char *>(ba.constData()),
                                           ba.size(),
                                           ind);
                     break;
@@ -1568,7 +1568,7 @@ bool QODBCResult::exec()
                                           strSize > 254 ? SQL_LONGVARCHAR : SQL_VARCHAR,
                                           strSize,
                                           0,
-                                          (void *)str.constData(),
+                                          const_cast<char *>(str.constData()),
                                           strSize,
                                           ind);
                     break;
@@ -1585,7 +1585,7 @@ bool QODBCResult::exec()
                                       SQL_VARBINARY,
                                       ba.length() + 1,
                                       0,
-                                      (void *) ba.constData(),
+                                      const_cast<char *>(ba.constData()),
                                       ba.length() + 1,
                                       ind);
                 break; }
@@ -1631,16 +1631,16 @@ bool QODBCResult::exec()
     for (i = 0; i < values.count(); ++i) {
         switch (values.at(i).type()) {
             case QVariant::Date: {
-                DATE_STRUCT ds = *((DATE_STRUCT *)tmpStorage.at(i).constData());
+                DATE_STRUCT ds = *((DATE_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QDate(ds.year, ds.month, ds.day));
                 break; }
             case QVariant::Time: {
-                TIME_STRUCT dt = *((TIME_STRUCT *)tmpStorage.at(i).constData());
+                TIME_STRUCT dt = *((TIME_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QTime(dt.hour, dt.minute, dt.second));
                 break; }
             case QVariant::DateTime: {
                 TIMESTAMP_STRUCT dt = *((TIMESTAMP_STRUCT*)
-                                        tmpStorage.at(i).constData());
+                                        const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QDateTime(QDate(dt.year, dt.month, dt.day),
                                QTime(dt.hour, dt.minute, dt.second, dt.fraction / 1000000)));
                 break; }
@@ -1658,7 +1658,7 @@ bool QODBCResult::exec()
                     if (bindValueType(i) & QSql::Out) {
                         const QByteArray &first = tmpStorage.at(i);
                         QVarLengthArray<SQLTCHAR> array;
-                        array.append((SQLTCHAR *)first.constData(), first.size());
+                        array.append((const SQLTCHAR *)first.constData(), first.size());
                         values[i] = fromSQLTCHAR(array, first.size()/sizeof(SQLTCHAR));
                     }
                     break;

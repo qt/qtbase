@@ -558,6 +558,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Qmake") << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
     }
 
@@ -795,6 +796,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Preprocessors") << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
    }
 
@@ -1070,6 +1072,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Postlink") << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_POST_LINK")) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
     }
 
@@ -1088,6 +1091,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", fixForOutput("cp -r $BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME " + IoUtils::shellQuoteUnix(destDir))) << ";\n"
+          << "\t\t\t" << writeSettings("showEnvVarsInLog", "0") << ";\n"
           << "\t\t};\n";
     }
     bool copyBundleResources = project->isActiveConfig("app_bundle") && project->first("TEMPLATE") == "app";

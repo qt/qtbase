@@ -46,6 +46,7 @@
 //
 
 #include <QtCore/QList>
+#include <QtCore/QPoint>
 #include <QtCore/qtextstream.h>
 #include <qpa/qplatformscreen.h>
 #include <EGL/egl.h>
@@ -53,6 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
+class QWindow;
 class QEGLPlatformWindow;
 
 class QEGLPlatformScreen : public QPlatformScreen
@@ -63,8 +65,11 @@ public:
 
     EGLDisplay display() const { return m_dpy; }
 
+    void handleCursorMove(const QPoint &pos);
+
 private:
     EGLDisplay m_dpy;
+    QWindow *m_pointerWindow;
 };
 
 QT_END_NAMESPACE

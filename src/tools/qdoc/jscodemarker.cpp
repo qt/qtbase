@@ -46,6 +46,7 @@
 #include "qmlmarkupvisitor.h"
 #include "text.h"
 #include "tree.h"
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -128,12 +129,12 @@ QString JsCodeMarker::addMarkUp(const QString &code,
         QQmlJS::AST::Node::accept(ast, &visitor);
         output = visitor.markedUpCode();
     } else {
-        location.warning(tr("Unable to parse JavaScript: \"%1\" at line %2, column %3").arg(
+        location.warning(location.fileName() +
+                         tr("Unable to parse JavaScript: \"%1\" at line %2, column %3").arg(
                              parser.errorMessage()).arg(parser.errorLineNumber()).arg(
                              parser.errorColumnNumber()));
         output = protect(code);
     }
-
     return output;
 }
 

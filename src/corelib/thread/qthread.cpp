@@ -711,6 +711,20 @@ QThread::Priority QThread::priority() const
     \sa terminate()
 */
 
+/*!
+    \since 5.5
+    Returns the current event loop level for the thread.
+
+    \note This can only be called within the thread itself, i.e. when
+    it is the current thread.
+*/
+
+int QThread::loopLevel() const
+{
+    Q_D(const QThread);
+    return d->data->eventLoops.size();
+}
+
 #else // QT_NO_THREAD
 
 QThread::QThread(QObject *parent)

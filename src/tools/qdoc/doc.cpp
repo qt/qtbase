@@ -49,6 +49,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <qdebug.h>
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -3319,9 +3320,7 @@ CodeMarker *Doc::quoteFromFile(const Location &location,
 
     QString dirPath = QFileInfo(filePath).path();
     CodeMarker *marker = CodeMarker::markerForFileName(fileName);
-    quoter.quoteFromFile(userFriendlyFilePath,
-                         code,
-                         marker->markedUpCode(code, 0, location));
+    quoter.quoteFromFile(userFriendlyFilePath, code, marker->markedUpCode(code, 0, location));
     return marker;
 }
 

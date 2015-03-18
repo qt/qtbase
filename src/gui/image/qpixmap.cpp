@@ -682,6 +682,9 @@ void QPixmap::setDevicePixelRatio(qreal scaleFactor)
     if (isNull())
         return;
 
+    if (scaleFactor == data->devicePixelRatio())
+        return;
+
     detach();
     data->setDevicePixelRatio(scaleFactor);
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2012 Intel Corporation.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1248,6 +1248,10 @@ void tst_QUrl::fromLocalFile_data()
                            << QString::fromLatin1("/a%25.txt");
     QTest::newRow("data10") << QString::fromLatin1("/%80.txt") << QString::fromLatin1("file:///%2580.txt")
                             << QString::fromLatin1("/%80.txt");
+    QTest::newRow("data11") << QString::fromLatin1("./a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("data12") << QString::fromLatin1("././a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("data13") << QString::fromLatin1("b/../a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("data14") << QString::fromLatin1("/b/../a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
 }
 
 void tst_QUrl::fromLocalFile()
@@ -2011,6 +2015,11 @@ void tst_QUrl::isValid()
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
         QVERIFY(url.errorString().contains("':' before any '/'"));
+    }
+
+    {
+        QUrl url("file://./localfile.html");
+        QVERIFY(!url.isValid());
     }
 }
 

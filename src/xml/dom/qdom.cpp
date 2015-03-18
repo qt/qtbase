@@ -514,7 +514,7 @@ public:
     QDomAttrPrivate* createAttributeNS(const QString& nsURI, const QString& qName);
     QDomEntityReferencePrivate* createEntityReference(const QString& name);
 
-    QDomNodePrivate* importNode(const QDomNodePrivate* importedNode, bool deep);
+    QDomNodePrivate* importNode(QDomNodePrivate* importedNode, bool deep);
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true) Q_DECL_OVERRIDE;
@@ -6371,7 +6371,7 @@ QDomEntityReferencePrivate* QDomDocumentPrivate::createEntityReference(const QSt
     return e;
 }
 
-QDomNodePrivate* QDomDocumentPrivate::importNode(const QDomNodePrivate *importedNode, bool deep)
+QDomNodePrivate* QDomDocumentPrivate::importNode(QDomNodePrivate *importedNode, bool deep)
 {
     QDomNodePrivate *node = 0;
     switch (importedNode->nodeType()) {

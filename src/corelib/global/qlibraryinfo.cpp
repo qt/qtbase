@@ -63,12 +63,16 @@ extern void qDumpCPUFeatures(); // in qsimd.cpp
 struct QLibrarySettings
 {
     QLibrarySettings();
+    void load();
+
     QScopedPointer<QSettings> settings;
 #ifdef QT_BUILD_QMAKE
     bool haveDevicePaths;
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
+#else
+    bool reloadOnQAppAvailable;
 #endif
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
@@ -93,16 +97,31 @@ public:
     static QSettings *configuration()
     {
         QLibrarySettings *ls = qt_library_settings();
-        return ls ? ls->settings.data() : 0;
+        if (ls) {
+#ifndef QT_BUILD_QMAKE
+            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != 0)
+                ls->load();
+#endif
+            return ls->settings.data();
+        } else {
+            return 0;
+        }
     }
 };
 
 static const char platformsSection[] = "Platforms";
 
 QLibrarySettings::QLibrarySettings()
-    : settings(QLibraryInfoPrivate::findConfiguration())
 {
+    load();
+}
+
+void QLibrarySettings::load()
+{
+    // If we get any settings here, those won't change when the application shows up.
+    settings.reset(QLibraryInfoPrivate::findConfiguration());
 #ifndef QT_BUILD_QMAKE
+    reloadOnQAppAvailable = (settings.data() == 0 && QCoreApplication::instance() == 0);
     bool haveDevicePaths;
     bool haveEffectivePaths;
     bool havePaths;
@@ -139,33 +158,35 @@ QLibrarySettings::QLibrarySettings()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
-#ifdef QT_BUILD_QMAKE
-    if(!QFile::exists(qtconfig))
-        qtconfig = qmake_libraryInfoFile();
-#else
-    if (!QFile::exists(qtconfig) && QCoreApplication::instance()) {
-#ifdef Q_OS_MAC
-        CFBundleRef bundleRef = CFBundleGetMainBundle();
-        if (bundleRef) {
-            QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
-                                                               QCFString(QLatin1String("qt.conf")),
-                                                               0,
-                                                               0);
-            if (urlRef) {
-                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-                qtconfig = QDir::cleanPath(path);
-            }
-        }
-        if (qtconfig.isEmpty())
-#endif
-            {
-                QDir pwd(QCoreApplication::applicationDirPath());
-                qtconfig = pwd.filePath(QLatin1String("qt.conf"));
-            }
-    }
-#endif
     if (QFile::exists(qtconfig))
         return new QSettings(qtconfig, QSettings::IniFormat);
+#ifdef QT_BUILD_QMAKE
+    qtconfig = qmake_libraryInfoFile();
+    if (QFile::exists(qtconfig))
+        return new QSettings(qtconfig, QSettings::IniFormat);
+#else
+#ifdef Q_OS_MAC
+    CFBundleRef bundleRef = CFBundleGetMainBundle();
+    if (bundleRef) {
+        QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
+                                                           QCFString(QLatin1String("qt.conf")),
+                                                           0,
+                                                           0);
+        if (urlRef) {
+            QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+            qtconfig = QDir::cleanPath(path);
+            if (QFile::exists(qtconfig))
+                return new QSettings(qtconfig, QSettings::IniFormat);
+        }
+    }
+#endif
+    if (QCoreApplication::instance()) {
+        QDir pwd(QCoreApplication::applicationDirPath());
+        qtconfig = pwd.filePath(QLatin1String("qt.conf"));
+        if (QFile::exists(qtconfig))
+            return new QSettings(qtconfig, QSettings::IniFormat);
+    }
+#endif
     return 0;     //no luck
 }
 

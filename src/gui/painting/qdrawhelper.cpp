@@ -355,24 +355,11 @@ static const uint *QT_FASTCALL convertPassThrough(uint *, const uint *src, int,
     return src;
 }
 
-static inline const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                              const QPixelLayout *, const QRgb *)
+static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
+                                                       const QPixelLayout *, const QRgb *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(src[i]);
-    return buffer;
+    return qt_convertARGB32ToARGB32PM(buffer, src, count);
 }
-
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                            const QPixelLayout *layout, const QRgb *clut)
-{
-    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
-    return convertARGB32ToARGB32PM(buffer, src, count, layout, clut);
-}
-#endif
-
 
 static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
                                                            const QPixelLayout *, const QRgb *)
@@ -382,23 +369,11 @@ static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const u
     return buffer;
 }
 
-static inline const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
+static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
                                                                 const QPixelLayout *, const QRgb *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
-    return buffer;
+    return qt_convertRGBA8888ToARGB32PM(buffer, src, count);
 }
-
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1) && !defined(__SSE4_1__)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                              const QPixelLayout *layout, const QRgb *clut)
-{
-    // Twice as fast autovectorized due to SSE4.1 PMULLD instructions.
-    return convertRGBA8888ToARGB32PM(buffer, src, count, layout, clut);
-}
-#endif
 
 static const uint *QT_FASTCALL convertAlpha8ToRGB32(uint *buffer, const uint *src, int count,
                                                         const QPixelLayout *, const QRgb *)
@@ -424,18 +399,6 @@ static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uin
     return buffer;
 }
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                              const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qUnpremultiply_sse4(src[i]);
-    return buffer;
-}
-#endif
-
-
 static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
                                                              const QPixelLayout *, const QRgb *)
 {
@@ -452,17 +415,6 @@ static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const u
     return buffer;
 }
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                              const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
-    return buffer;
-}
-#endif
-
 static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
                                                     const QPixelLayout *, const QRgb *)
 {
@@ -478,17 +430,6 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
         buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply(src[i]));
     return buffer;
 }
-
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
-QT_FUNCTION_TARGET(SSE4_1)
-static const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                            const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
-    return buffer;
-}
-#endif
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const uint *src, int count,
@@ -1454,7 +1395,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     lim -= 3;
                     for (; f < lim; x += 4, f += 4) {
                         // Load 4 pixels from s1, and split the alpha-green and red-blue component
-                        __m128i top = _mm_loadu_si128((__m128i*)((const uint *)(s1)+x));
+                        __m128i top = _mm_loadu_si128((const __m128i*)((const uint *)(s1)+x));
                         __m128i topAG = _mm_srli_epi16(top, 8);
                         __m128i topRB = _mm_and_si128(top, colorMask);
                         // Multiplies each colour component by idisty
@@ -1462,7 +1403,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         topRB = _mm_mullo_epi16 (topRB, idisty_);
 
                         // Same for the s2 vector
-                        __m128i bottom = _mm_loadu_si128((__m128i*)((const uint *)(s2)+x));
+                        __m128i bottom = _mm_loadu_si128((const __m128i*)((const uint *)(s2)+x));
                         __m128i bottomAG = _mm_srli_epi16(bottom, 8);
                         __m128i bottomRB = _mm_and_si128(bottom, colorMask);
                         bottomAG = _mm_mullo_epi16 (bottomAG, disty_);
@@ -4741,7 +4682,7 @@ static void blend_untransformed_argb(int count, const QSpan *spans, void *userDa
                 length = image_width - sx;
             if (length > 0) {
                 const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
-                const uint *src = (uint *)data->texture.scanLine(sy) + sx;
+                const uint *src = (const uint *)data->texture.scanLine(sy) + sx;
                 uint *dest = ((uint *)data->rasterBuffer->scanLine(spans->y)) + x;
                 op.func(dest, src, length, coverage);
             }
@@ -4840,7 +4781,7 @@ static void blend_untransformed_rgb565(int count, const QSpan *spans, void *user
                 length = image_width - sx;
             if (length > 0) {
                 quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + x;
-                const quint16 *src = (quint16 *)data->texture.scanLine(sy) + sx;
+                const quint16 *src = (const quint16 *)data->texture.scanLine(sy) + sx;
                 if (coverage == 255) {
                     memcpy(dest, src, length * sizeof(quint16));
                 } else {
@@ -4939,7 +4880,7 @@ static void blend_tiled_argb(int count, const QSpan *spans, void *userData)
             int l = qMin(image_width - sx, length);
             if (buffer_size < l)
                 l = buffer_size;
-            const uint *src = (uint *)data->texture.scanLine(sy) + sx;
+            const uint *src = (const uint *)data->texture.scanLine(sy) + sx;
             uint *dest = ((uint *)data->rasterBuffer->scanLine(spans->y)) + x;
             op.func(dest, src, l, coverage);
             x += l;
@@ -4998,7 +4939,7 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
                 if (buffer_size < l)
                     l = buffer_size;
                 quint16 *dest = ((quint16 *)data->rasterBuffer->scanLine(spans->y)) + tx;
-                const quint16 *src = (quint16 *)data->texture.scanLine(sy) + sx;
+                const quint16 *src = (const quint16 *)data->texture.scanLine(sy) + sx;
                 memcpy(dest, src, l * sizeof(quint16));
                 length -= l;
                 tx += l;
@@ -5032,7 +4973,7 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
                     if (buffer_size < l)
                         l = buffer_size;
                     quint16 *dest = ((quint16 *)data->rasterBuffer->scanLine(spans->y)) + x;
-                    const quint16 *src = (quint16 *)data->texture.scanLine(sy) + sx;
+                    const quint16 *src = (const quint16 *)data->texture.scanLine(sy) + sx;
                     blend_sourceOver_rgb16_rgb16(dest, src, l, alpha, ialpha);
                     x += l;
                     length -= l;
@@ -5108,8 +5049,8 @@ static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans, voi
                     fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_minx, src_maxx, x1, x2);
                     fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_miny, src_maxy, y1, y2);
 
-                    const quint16 *src1 = (quint16*)data->texture.scanLine(y1);
-                    const quint16 *src2 = (quint16*)data->texture.scanLine(y2);
+                    const quint16 *src1 = (const quint16*)data->texture.scanLine(y1);
+                    const quint16 *src2 = (const quint16*)data->texture.scanLine(y2);
                     quint16 tl = src1[x1];
                     const quint16 tr = src1[x2];
                     quint16 bl = src2[x1];
@@ -5195,8 +5136,8 @@ static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans, voi
                     fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_minx, src_maxx, x1, x2);
                     fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_miny, src_maxy, y1, y2);
 
-                    const quint16 *src1 = (quint16 *)data->texture.scanLine(y1);
-                    const quint16 *src2 = (quint16 *)data->texture.scanLine(y2);
+                    const quint16 *src1 = (const quint16 *)data->texture.scanLine(y1);
+                    const quint16 *src2 = (const quint16 *)data->texture.scanLine(y2);
                     quint16 tl = src1[x1];
                     const quint16 tr = src1[x2];
                     quint16 bl = src2[x1];
@@ -5392,7 +5333,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
                     const int px = qBound(0, x >> 16, image_width - 1);
                     const int py = qBound(0, y >> 16, image_height - 1);
 
-                    *b = ((quint16 *)data->texture.scanLine(py))[px];
+                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
 
                     x += fdx;
@@ -5451,7 +5392,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
                     const int px = qBound(0, int(tx) - (tx < 0), image_width - 1);
                     const int py = qBound(0, int(ty) - (ty < 0), image_height - 1);
 
-                    *b = ((quint16 *)data->texture.scanLine(py))[px];
+                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
 
                     x += fdx;
@@ -5495,7 +5436,7 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
             void *t = data->rasterBuffer->scanLine(spans->y);
 
             uint *target = ((uint *)t) + spans->x;
-            uint *image_bits = (uint *)data->texture.imageData;
+            const uint *image_bits = (const uint *)data->texture.imageData;
 
             const qreal cx = spans->x + qreal(0.5);
             const qreal cy = spans->y + qreal(0.5);
@@ -5550,7 +5491,7 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
             void *t = data->rasterBuffer->scanLine(spans->y);
 
             uint *target = ((uint *)t) + spans->x;
-            uint *image_bits = (uint *)data->texture.imageData;
+            const uint *image_bits = (const uint *)data->texture.imageData;
 
             const qreal cx = spans->x + qreal(0.5);
             const qreal cy = spans->y + qreal(0.5);
@@ -5661,7 +5602,7 @@ static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *
                     if (py < 0)
                         py += image_height;
 
-                    *b = ((quint16 *)data->texture.scanLine(py))[px];
+                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
 
                     x += fdx;
@@ -5727,7 +5668,7 @@ static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *
                     if (py < 0)
                         py += image_height;
 
-                    *b = ((quint16 *)data->texture.scanLine(py))[px];
+                    *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
 
                     x += fdx;
@@ -6793,15 +6734,29 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
+#if QT_COMPILER_SUPPORTS_SSE4_1
     if (qCpuHasFeature(SSE4_1)) {
 #if !defined(__SSE4_1__)
+        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
 #endif
+        extern const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
+    }
+#endif
+
+#if QT_COMPILER_SUPPORTS_AVX2 && !defined(__AVX2__)
+    if (qCpuHasFeature(AVX2)) {
+        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_avx2;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_avx2;
     }
 #endif
 

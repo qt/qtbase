@@ -7144,14 +7144,16 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     bool needsShow = false;
 
-    if (!(data.window_state & Qt::WindowFullScreen) && (w == 0 || h == 0)) {
-        q->setAttribute(Qt::WA_OutsideWSRange, true);
-        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
-            hide_sys();
-        data.crect = QRect(x, y, w, h);
-    } else if (q->isVisible() && q->testAttribute(Qt::WA_OutsideWSRange)) {
-        q->setAttribute(Qt::WA_OutsideWSRange, false);
-        needsShow = true;
+    if (q->isWindow()) {
+        if (!(data.window_state & Qt::WindowFullScreen) && (w == 0 || h == 0)) {
+            q->setAttribute(Qt::WA_OutsideWSRange, true);
+            if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+                hide_sys();
+            data.crect = QRect(x, y, w, h);
+        } else if (q->isVisible() && q->testAttribute(Qt::WA_OutsideWSRange)) {
+            q->setAttribute(Qt::WA_OutsideWSRange, false);
+            needsShow = true;
+        }
     }
 
     if (q->isVisible()) {

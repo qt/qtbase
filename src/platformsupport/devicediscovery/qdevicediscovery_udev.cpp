@@ -38,22 +38,17 @@
 #include <QObject>
 #include <QHash>
 #include <QSocketNotifier>
+#include <QLoggingCategory>
 
 #include <linux/input.h>
 
-//#define QT_QPA_DEVICE_DISCOVERY_DEBUG
-
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-#include <QtDebug>
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcDD, "qt.qpa.input")
 
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-    qWarning() << "Try to create new UDeviceHelper";
-#endif
+    qCDebug(lcDD) << "udev device discovery for type" << types;
 
     QDeviceDiscovery *helper = 0;
     struct udev *udev;
@@ -62,7 +57,7 @@ QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
     if (udev) {
         helper = new QDeviceDiscoveryUDev(types, udev, parent);
     } else {
-        qWarning("Failed to get udev library context.");
+        qWarning("Failed to get udev library context");
     }
 
     return helper;
@@ -72,18 +67,12 @@ QDeviceDiscoveryUDev::QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev
     QDeviceDiscovery(types, parent),
     m_udev(udev), m_udevMonitor(0), m_udevMonitorFileDescriptor(-1), m_udevSocketNotifier(0)
 {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-    qWarning() << "New UDeviceHelper created for type" << types;
-#endif
-
     if (!m_udev)
         return;
 
     m_udevMonitor = udev_monitor_new_from_netlink(m_udev, "udev");
     if (!m_udevMonitor) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-        qWarning("Unable to create an Udev monitor. No devices can be detected.");
-#endif
+        qWarning("Unable to create an udev monitor. No devices can be detected.");
         return;
     }
 
@@ -128,11 +117,11 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
     }
     if (m_types & Device_Tablet)
         udev_enumerate_add_match_property(ue, "ID_INPUT_TABLET", "1");
+    if (m_types & Device_Joystick)
+        udev_enumerate_add_match_property(ue, "ID_INPUT_JOYSTICK", "1");
 
     if (udev_enumerate_scan_devices(ue) != 0) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-        qWarning() << "UDeviceHelper scan connected devices for enumeration failed";
-#endif
+        qWarning("Failed to scan devices");
         return devices;
     }
 
@@ -158,9 +147,7 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
     }
     udev_enumerate_unref(ue);
 
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-    qWarning() << "UDeviceHelper found matching devices" << devices;
-#endif
+    qCDebug(lcDD) << "Found matching devices" << devices;
 
     return devices;
 }
@@ -249,6 +236,9 @@ bool QDeviceDiscoveryUDev::checkDeviceType(udev_device *dev)
         return true;
 
     if ((m_types & Device_Tablet) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TABLET"), "1") == 0))
+        return true;
+
+    if ((m_types & Device_Joystick) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"), "1") == 0))
         return true;
 
     if ((m_types & Device_DRM) && (qstrcmp(udev_device_get_subsystem(dev), "drm") == 0))

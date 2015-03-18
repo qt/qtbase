@@ -1599,6 +1599,8 @@ void QWindow::destroy()
         QGuiApplicationPrivate::focus_window = parent();
     if (QGuiApplicationPrivate::currentMouseWindow == this)
         QGuiApplicationPrivate::currentMouseWindow = parent();
+    if (QGuiApplicationPrivate::currentMousePressWindow == this)
+        QGuiApplicationPrivate::currentMousePressWindow = parent();
     if (QGuiApplicationPrivate::tabletPressTarget == this)
         QGuiApplicationPrivate::tabletPressTarget = parent();
 

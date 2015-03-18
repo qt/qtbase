@@ -353,10 +353,10 @@ void QPageSetupWidget::initPageSizes()
     // If PdfFormat or no available printer page sizes, populate with all page sizes
     for (int id = 0; id < QPageSize::LastPageSize; ++id) {
         if (QPageSize::PageSizeId(id) == QPageSize::Custom) {
-            m_ui.pageSizeCombo->addItem(tr("Custom"), id);
+            m_ui.pageSizeCombo->addItem(tr("Custom"), QVariant::fromValue(QPageSize::Custom));
         } else {
             QPageSize pageSize = QPageSize(QPageSize::PageSizeId(id));
-            m_ui.pageSizeCombo->addItem(pageSize.name(), id);
+            m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize.id()));
         }
     }
 

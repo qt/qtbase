@@ -245,7 +245,7 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
     }
 
     quint16 *dst = (quint16 *) destPixels;
-    quint32 *src = (quint32 *) srcPixels;
+    const quint32 *src = (const quint32 *) srcPixels;
 
     for (int y=0; y<h; ++y) {
         for (int x=0; x<w; ++x) {
@@ -282,7 +282,7 @@ static void qt_blend_argb32_on_rgb16(uchar *destPixels, int dbpl,
             }
         }
         dst = (quint16 *) (((uchar *) dst) + dbpl);
-        src = (quint32 *) (((uchar *) src) + sbpl);
+        src = (const quint32 *) (((const uchar *) src) + sbpl);
     }
 }
 

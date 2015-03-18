@@ -60,7 +60,7 @@ class QFileIconProviderPrivate
     Q_DECLARE_PUBLIC(QFileIconProvider)
 
 public:
-    QFileIconProviderPrivate();
+    QFileIconProviderPrivate(QFileIconProvider *q);
     QIcon getIcon(QStyle::StandardPixmap name) const;
     QIcon getIcon(const QFileInfo &fi) const;
 

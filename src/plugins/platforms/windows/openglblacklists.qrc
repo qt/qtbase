@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/qt-project.org/windows/openglblacklists">
+        <file alias="default.json">openglblacklists/default.json</file>
+    </qresource>
+</RCC>

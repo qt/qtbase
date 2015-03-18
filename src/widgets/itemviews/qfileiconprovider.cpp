@@ -39,6 +39,7 @@
 #include <qpixmapcache.h>
 #include <private/qfunctions_p.h>
 #include <private/qguiapplication_p.h>
+#include <private/qicon_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformtheme.h>
@@ -56,6 +57,105 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+static bool isCacheable(const QFileInfo &fi);
+
+class QFileIconEngine : public QPixmapIconEngine
+{
+public:
+    QFileIconEngine(const QFileIconProvider *fip, const QFileInfo &info)
+        : QPixmapIconEngine(), m_fileIconProvider(fip), m_fileInfo(info)
+    { }
+
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(mode);
+        Q_UNUSED(state);
+        QPixmap pixmap;
+
+        if (!size.isValid())
+            return pixmap;
+
+        const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+        if (!theme)
+            return pixmap;
+
+        const QString &keyBase = QLatin1String("qt_.") + m_fileInfo.suffix().toUpper();
+
+        bool cacheable = isCacheable(m_fileInfo);
+        if (cacheable) {
+            QPixmapCache::find(keyBase + QString::number(size.width()), pixmap);
+            if (!pixmap.isNull())
+                return pixmap;
+        }
+
+        QPlatformTheme::IconOptions iconOptions;
+        if (m_fileIconProvider->options() & QFileIconProvider::DontUseCustomDirectoryIcons)
+            iconOptions |= QPlatformTheme::DontUseCustomDirectoryIcons;
+
+        pixmap = theme->fileIconPixmap(m_fileInfo, size, iconOptions);
+        if (!pixmap.isNull()) {
+            if (cacheable)
+                QPixmapCache::insert(keyBase + QString::number(size.width()), pixmap);
+        }
+
+        return pixmap;
+    }
+
+    QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off) const Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(mode);
+        Q_UNUSED(state);
+        static QList<QSize> sizes;
+        static QPlatformTheme *theme = 0;
+        if (!theme) {
+            theme = QGuiApplicationPrivate::platformTheme();
+            if (!theme)
+                return sizes;
+
+            QList<int> themeSizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
+            if (themeSizes.isEmpty())
+                return sizes;
+
+            foreach (int size, themeSizes)
+                sizes << QSize(size, size);
+        }
+        return sizes;
+    }
+
+    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE
+    {
+        const QList<QSize> &sizes = availableSizes(mode, state);
+        const int numberSizes = sizes.length();
+        if (numberSizes == 0)
+            return QSize();
+
+        // Find the smallest available size whose area is still larger than the input
+        // size. Otherwise, use the largest area available size. (We don't assume the
+        // platform theme sizes are sorted, hence the extra logic.)
+        const int sizeArea = size.width() * size.height();
+        QSize actualSize = sizes.first();
+        int actualArea = actualSize.width() * actualSize.height();
+        for (int i = 1; i < numberSizes; ++i) {
+            const QSize &s = sizes.at(i);
+            const int a = s.width() * s.height();
+            if ((sizeArea <= a && a < actualArea) || (actualArea < sizeArea && actualArea < a)) {
+                actualSize = s;
+                actualArea = a;
+            }
+        }
+
+        if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
+            actualSize.scale(size, Qt::KeepAspectRatio);
+
+        return actualSize;
+    }
+
+private:
+    const QFileIconProvider *m_fileIconProvider;
+    QFileInfo m_fileInfo;
+};
+
 
 /*!
   \class QFileIconProvider
@@ -86,8 +186,8 @@ QT_BEGIN_NAMESPACE
     cause a big performance impact over network or removable drives.
 */
 
-QFileIconProviderPrivate::QFileIconProviderPrivate() :
-    homePath(QDir::home().absolutePath())
+QFileIconProviderPrivate::QFileIconProviderPrivate(QFileIconProvider *q) :
+    q_ptr(q), homePath(QDir::home().absolutePath())
 {
 }
 
@@ -153,7 +253,7 @@ QIcon QFileIconProviderPrivate::getIcon(QStyle::StandardPixmap name) const
 */
 
 QFileIconProvider::QFileIconProvider()
-    : d_ptr(new QFileIconProviderPrivate)
+    : d_ptr(new QFileIconProviderPrivate(this))
 {
 }
 
@@ -238,52 +338,17 @@ static bool isCacheable(const QFileInfo &fi)
 
 QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 {
-    QIcon retIcon;
     const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
     if (!theme)
-        return retIcon;
+        return QIcon();
 
     QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
     if (sizes.isEmpty())
-        return retIcon;
+        return QIcon();
 
-    const QString keyBase = QLatin1String("qt_.") + fi.suffix().toUpper();
-
-    bool cacheable = isCacheable(fi);
-    if (cacheable) {
-        QPixmap pixmap;
-        QPixmapCache::find(keyBase + QString::number(sizes.at(0)), pixmap);
-        if (!pixmap.isNull()) {
-            bool iconIsComplete = true;
-            retIcon.addPixmap(pixmap);
-            for (int i = 1; i < sizes.count(); i++)
-                if (QPixmapCache::find(keyBase + QString::number(sizes.at(i)), pixmap)) {
-                    retIcon.addPixmap(pixmap);
-                } else {
-                    iconIsComplete = false;
-                    break;
-                }
-            if (iconIsComplete)
-                return retIcon;
-        }
-    }
-
-    QPlatformTheme::IconOptions iconOptions;
-    if (options & QFileIconProvider::DontUseCustomDirectoryIcons)
-        iconOptions |= QPlatformTheme::DontUseCustomDirectoryIcons;
-
-    Q_FOREACH (int size, sizes) {
-        QPixmap pixmap = theme->fileIconPixmap(fi, QSizeF(size, size), iconOptions);
-        if (!pixmap.isNull()) {
-            retIcon.addPixmap(pixmap);
-            if (cacheable)
-                QPixmapCache::insert(keyBase + QString::number(size), pixmap);
-        }
-    }
-
-    return retIcon;
+    Q_Q(const QFileIconProvider);
+    return QIcon(new QFileIconEngine(q, fi));
 }
-
 
 /*!
   Returns an icon for the file described by \a info.

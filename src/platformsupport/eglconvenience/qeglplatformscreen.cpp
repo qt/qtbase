@@ -32,6 +32,8 @@
 ****************************************************************************/
 
 #include "qeglplatformscreen_p.h"
+#include <QtGui/qwindow.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <QtPlatformSupport/private/qopenglcompositor_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -45,13 +47,51 @@ QT_BEGIN_NAMESPACE
  */
 
 QEGLPlatformScreen::QEGLPlatformScreen(EGLDisplay dpy)
-    : m_dpy(dpy)
+    : m_dpy(dpy),
+      m_pointerWindow(0)
 {
 }
 
 QEGLPlatformScreen::~QEGLPlatformScreen()
 {
     QOpenGLCompositor::destroy();
+}
+
+void QEGLPlatformScreen::handleCursorMove(const QPoint &pos)
+{
+    const QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+
+    // Generate enter and leave events like a real windowing system would do.
+    if (windows.isEmpty())
+        return;
+
+    // First window is always fullscreen.
+    if (windows.count() == 1) {
+        QWindow *window = windows[0]->sourceWindow();
+        if (m_pointerWindow != window) {
+            m_pointerWindow = window;
+            QWindowSystemInterface::handleEnterEvent(window, window->mapFromGlobal(pos), pos);
+        }
+        return;
+    }
+
+    QWindow *enter = 0, *leave = 0;
+    for (int i = windows.count() - 1; i >= 0; --i) {
+        QWindow *window = windows[i]->sourceWindow();
+        const QRect geom = window->geometry();
+        if (geom.contains(pos)) {
+            if (m_pointerWindow != window) {
+                leave = m_pointerWindow;
+                m_pointerWindow = window;
+                enter = window;
+            }
+            break;
+        }
+    }
+
+    if (enter && leave)
+        QWindowSystemInterface::handleEnterLeaveEvent(enter, leave, enter->mapFromGlobal(pos), pos);
 }
 
 QT_END_NAMESPACE

@@ -20,6 +20,9 @@ qt5_wrap_cpp(moc_files myobject.h)
 # in the add_executable call.
 qt5_add_resources(rcc_files "test_macro_options.qrc" OPTIONS -binary)
 
+# Test if OPTIONS can handle a quoted parameter. CMake would fail immediately!
+qt5_add_resources(rcc_files_quoted_option "test_macro_options.qrc" OPTIONS -root "/")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
 add_executable(myobject myobject.cpp ${moc_files} ${rcc_files})

@@ -200,6 +200,7 @@ public:
     static Qt::MouseButtons tabletState;
     static QWindow *tabletPressTarget;
     static QWindow *currentMouseWindow;
+    static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
 
 #ifndef QT_NO_CLIPBOARD

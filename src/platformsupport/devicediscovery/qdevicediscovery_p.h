@@ -74,7 +74,8 @@ public:
         Device_DRM = 0x10,
         Device_DRM_PrimaryGPU = 0x20,
         Device_Tablet = 0x40,
-        Device_InputMask = Device_Mouse | Device_Touchpad | Device_Touchscreen | Device_Keyboard | Device_Tablet,
+        Device_Joystick = 0x80,
+        Device_InputMask = Device_Mouse | Device_Touchpad | Device_Touchscreen | Device_Keyboard | Device_Tablet | Device_Joystick,
         Device_VideoMask = Device_DRM
     };
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)

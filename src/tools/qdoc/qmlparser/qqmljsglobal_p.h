@@ -33,17 +33,6 @@
 #ifndef QQMLJSGLOBAL_P_H
 #define QQMLJSGLOBAL_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
 #include <QtCore/qglobal.h>
 
 #ifdef QT_CREATOR
@@ -65,9 +54,9 @@
      // QmlDevTools is a static library
 #    define QML_PARSER_EXPORT
 #  elif defined(QT_BUILD_QML_LIB)
-#    define QML_PARSER_EXPORT Q_AUTOTEST_EXPORT
+#    define QML_PARSER_EXPORT Q_DECL_EXPORT
 #  else
-#    define QML_PARSER_EXPORT
+#    define QML_PARSER_EXPORT Q_DECL_IMPORT
 #  endif
 #endif // QT_CREATOR
 

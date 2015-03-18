@@ -60,6 +60,8 @@ public:
     void processMotion(libinput_event_pointer *e);
     void processAxis(libinput_event_pointer *e);
 
+    void setPos(const QPoint &pos);
+
 private:
     QPoint m_pos;
     Qt::MouseButtons m_buttons;

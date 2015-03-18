@@ -269,7 +269,7 @@ function(QT5_ADD_RESOURCES outfiles )
     set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
     set(rcc_options ${_RCC_OPTIONS})
 
-    if(${rcc_options} MATCHES "-binary")
+    if("${rcc_options}" MATCHES "-binary")
         message(WARNING "Use qt5_add_binary_resources for binary option")
     endif()
 

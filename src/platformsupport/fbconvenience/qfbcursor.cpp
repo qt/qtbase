@@ -81,22 +81,34 @@ QRect QFbCursor::getCurrentRect()
 {
     QRect rect = mGraphic->image()->rect().translated(-mGraphic->hotspot().x(),
                                                      -mGraphic->hotspot().y());
-    rect.translate(QCursor::pos());
+    rect.translate(m_pos);
     QPoint mScreenOffset = mScreen->geometry().topLeft();
     rect.translate(-mScreenOffset);  // global to local translation
     return rect;
 }
 
-
-void QFbCursor::pointerEvent(const QMouseEvent & e)
+QPoint QFbCursor::pos() const
 {
-    Q_UNUSED(e);
-    QPoint mScreenOffset = mScreen->geometry().topLeft();
+    return m_pos;
+}
+
+void QFbCursor::setPos(const QPoint &pos)
+{
+    QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
+    m_pos = pos;
     mCurrentRect = getCurrentRect();
-    // global to local translation
-    if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreenOffset))) {
+    if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreen->geometry().topLeft())))
         setDirty();
-    }
+}
+
+void QFbCursor::pointerEvent(const QMouseEvent &e)
+{
+    if (e.type() != QEvent::MouseMove)
+        return;
+    m_pos = e.screenPos().toPoint();
+    mCurrentRect = getCurrentRect();
+    if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreen->geometry().topLeft())))
+        setDirty();
 }
 
 QRect QFbCursor::drawCursor(QPainter & painter)

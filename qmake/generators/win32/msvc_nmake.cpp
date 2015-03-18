@@ -388,6 +388,7 @@ void NmakeMakefileGenerator::init()
     ProString version = project->first("TARGET_VERSION_EXT");
     if(project->isActiveConfig("shared")) {
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
+        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".lib");
     }
     if (project->isActiveConfig("debug_info")) {
         QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";

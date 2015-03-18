@@ -1233,6 +1233,8 @@ void tst_QUdpSocket::setMulticastInterface_data()
     QTest::addColumn<QHostAddress>("address");
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
     foreach (const QNetworkInterface &iface, interfaces) {
+        if ((iface.flags() & QNetworkInterface::IsUp) == 0)
+            continue;
         foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
             QTest::newRow(QString("%1:%2").arg(iface.name()).arg(entry.ip().toString()).toLatin1())
                     << iface

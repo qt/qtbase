@@ -152,10 +152,7 @@ public:
        is handled in the next begin or newpage. */
     void doReinit();
 
-    inline bool resetDC() {
-        hdc = ResetDC(hdc, devMode);
-        return hdc != 0;
-    }
+    bool resetDC();
 
     void strokePath(const QPainterPath &path, const QColor &color);
     void fillPath(const QPainterPath &path, const QColor &color);

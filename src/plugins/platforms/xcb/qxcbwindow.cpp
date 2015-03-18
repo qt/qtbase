@@ -1372,6 +1372,8 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
         xcb_parent_id = qXcbParent->xcb_window();
         m_embedded = qXcbParent->window()->type() == Qt::ForeignWindow;
     } else {
+        if (!xcbScreen())
+            return;
         xcb_parent_id = xcbScreen()->root();
         m_embedded = false;
     }

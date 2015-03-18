@@ -76,11 +76,7 @@ private slots:
     void sizeHint_data();
     void sizeHint();
     void taskQTBUG_20191_shortcutWithKeypadModifer();
-/*
-    void state();
-    void group();
-    void stateChanged();
-*/
+    void emitReleasedAfterChange();
 
 protected slots:
     void resetCounters();
@@ -419,19 +415,6 @@ void tst_QPushButton::clicked()
     QCOMPARE( release_count, (uint)10 );
 }
 
-/*
-void tst_QPushButton::group()
-{
-}
-
-void tst_QPushButton::state()
-{
-}
-
-void tst_QPushButton::stateChanged()
-{
-}
-*/
 QPushButton *pb = 0;
 void tst_QPushButton::helperSlotDelete()
 {
@@ -679,6 +662,37 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QTest::qWait(300);
     QCOMPARE(spy1.count(), 0);
     QCOMPARE(spy2.count(), 1);
+}
+
+void tst_QPushButton::emitReleasedAfterChange()
+{
+    QPushButton *button1 = new QPushButton("A");
+    QPushButton *button2 = new QPushButton("B");
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(button1);
+    layout->addWidget(button2);
+    QDialog dialog;
+    dialog.setLayout(layout);
+    dialog.show();
+    QTest::qWaitForWindowExposed(&dialog);
+    QApplication::setActiveWindow(&dialog);
+    button1->setFocus();
+
+    QSignalSpy spy(button1, SIGNAL(released()));
+    QTest::mousePress(button1, Qt::LeftButton);
+    QVERIFY(button1->isDown());
+    QTest::keyClick(&dialog, Qt::Key_Tab);
+    QVERIFY(!button1->isDown());
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    QCOMPARE(spy.count(), 0);
+    button1->setFocus();
+    QTest::mousePress(button1, Qt::LeftButton);
+    QVERIFY(button1->isDown());
+    button1->setEnabled(false);
+    QVERIFY(!button1->isDown());
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QPushButton)

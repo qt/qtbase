@@ -60,7 +60,8 @@
 {
     Q_UNUSED(picker);
     NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
-    m_fileDialog->selectedFilesChanged(QList<QUrl>() << QUrl::fromNSURL(url));
+    QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString([url description]));
+    m_fileDialog->selectedFilesChanged(QList<QUrl>() << fileUrl);
     emit m_fileDialog->accept();
 }
 
@@ -94,7 +95,8 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     Q_UNUSED(windowFlags);
     Q_UNUSED(windowModality);
 
-    if (options()->initialDirectory().scheme() == QLatin1String("assets-library")) {
+    QString directory = options()->initialDirectory().toLocalFile();
+    if (directory.startsWith(QLatin1String("assets-library:"))) {
         m_viewController = [[QIOSImagePickerController alloc] initWithQIOSFileDialog:this];
         UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
             : [UIApplication sharedApplication].keyWindow;

@@ -303,4 +303,10 @@ void QEglFSKmsScreen::restoreMode()
     }
 }
 
+qreal QEglFSKmsScreen::refreshRate() const
+{
+    quint32 refresh = m_output.modes[m_output.mode].vrefresh;
+    return refresh > 0 ? refresh : 60;
+}
+
 QT_END_NAMESPACE

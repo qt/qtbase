@@ -93,6 +93,11 @@ QPlatformCursor *QEglFSScreen::cursor() const
     return m_cursor;
 }
 
+qreal QEglFSScreen::refreshRate() const
+{
+    return qt_egl_device_integration()->refreshRate();
+}
+
 void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 {
     m_surface = surface;

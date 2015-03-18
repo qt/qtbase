@@ -40,8 +40,16 @@ QT_BEGIN_NAMESPACE
 
 QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
 {
-    // Resolve EXT_direct_state_access entry points if present
-    if (!context->isOpenGLES()
+    // Resolve EXT_direct_state_access entry points if present.
+
+    // However, disable it on some systems where DSA is known to be unreliable.
+    bool allowDSA = true;
+    const char *renderer = reinterpret_cast<const char *>(context->functions()->glGetString(GL_RENDERER));
+    // QTBUG-40653, QTBUG-44988
+    if (renderer && strstr(renderer, "AMD Radeon HD"))
+        allowDSA = false;
+
+    if (allowDSA && !context->isOpenGLES()
         && context->hasExtension(QByteArrayLiteral("GL_EXT_direct_state_access"))) {
         TextureParameteriEXT = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , GLint )>(context->getProcAddress(QByteArrayLiteral("glTextureParameteriEXT")));
         TextureParameterivEXT = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , const GLint *)>(context->getProcAddress(QByteArrayLiteral("glTextureParameterivEXT")));

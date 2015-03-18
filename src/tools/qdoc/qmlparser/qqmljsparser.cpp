@@ -161,7 +161,24 @@ bool Parser::parse(int startToken)
 
     token_buffer[0].token = startToken;
     first_token = &token_buffer[0];
-    last_token = &token_buffer[1];
+    if (startToken == T_FEED_JS_PROGRAM && !lexer->qmlMode()) {
+        Directives ignoreDirectives;
+        Directives *directives = driver->directives();
+        if (!directives)
+            directives = &ignoreDirectives;
+        DiagnosticMessage error;
+        if (!lexer->scanDirectives(directives, &error)) {
+            diagnostic_messages.append(error);
+            return false;
+        }
+        token_buffer[1].token = lexer->tokenKind();
+        token_buffer[1].dval = lexer->tokenValue();
+        token_buffer[1].loc = location(lexer);
+        token_buffer[1].spell = lexer->tokenSpell();
+        last_token = &token_buffer[2];
+    } else {
+        last_token = &token_buffer[1];
+    }
 
     tos = -1;
     program = 0;

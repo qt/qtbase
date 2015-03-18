@@ -107,12 +107,12 @@ qt_qimageScaleFunc qt_qimageScaleRgb  = qt_qimageScaleAARGB;
 namespace QImageScale {
     struct QImageScaleInfo {
         int *xpoints;
-        unsigned int **ypoints;
+        const unsigned int **ypoints;
         int *xapoints, *yapoints;
         int xup_yup;
     };
 
-    unsigned int** qimageCalcYPoints(unsigned int *src, int sw, int sh,
+    const unsigned int** qimageCalcYPoints(const unsigned int *src, int sw, int sh,
                                      int dh);
     int* qimageCalcXPoints(int sw, int dw);
     int* qimageCalcApoints(int s, int d, int up);
@@ -139,10 +139,10 @@ using namespace QImageScale;
 #define INV_YAP                   (256 - yapoints[dyy + y])
 #define YAP                       (yapoints[dyy + y])
 
-unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
+const unsigned int** QImageScale::qimageCalcYPoints(const unsigned int *src,
                                               int sw, int sh, int dh)
 {
-    unsigned int **p;
+    const unsigned int **p;
     int i, j = 0, rv = 0;
     qint64 val, inc;
 
@@ -150,7 +150,7 @@ unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
         dh = -dh;
         rv = 1;
     }
-    p = new unsigned int* [dh+1];
+    p = new const unsigned int* [dh+1];
 
     int up = qAbs(dh) >= sh;
     val = up ? 0x8000 * sh / dh - 0x8000 : 0;
@@ -161,7 +161,7 @@ unsigned int** QImageScale::qimageCalcYPoints(unsigned int *src,
     }
     if(rv){
         for(i = dh / 2; --i >= 0; ){
-            unsigned int *tmp = p[i];
+            const unsigned int *tmp = p[i];
             p[i] = p[dh - i - 1];
             p[dh - i - 1] = tmp;
         }
@@ -282,7 +282,7 @@ QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     isi->xpoints = qimageCalcXPoints(img.width(), scw);
     if(!isi->xpoints)
         return(qimageFreeScaleInfo(isi));
-    isi->ypoints = qimageCalcYPoints((unsigned int *)img.scanLine(0),
+    isi->ypoints = qimageCalcYPoints((const unsigned int *)img.scanLine(0),
                                      img.bytesPerLine() / 4, img.height(), sch);
     if (!isi->ypoints)
         return(qimageFreeScaleInfo(isi));
@@ -304,9 +304,10 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
                                  int dxx, int dyy, int dx, int dy, int dw,
                                  int dh, int dow, int sow)
 {
-    unsigned int *sptr, *dptr;
+    const unsigned int *sptr;
+    unsigned int *dptr;
     int x, y, end;
-    unsigned int **ypoints = isi->ypoints;
+    const unsigned int **ypoints = isi->ypoints;
     int *xpoints = isi->xpoints;
     int *xapoints = isi->xapoints;
     int *yapoints = isi->yapoints;
@@ -323,7 +324,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
                 for(x = dxx; x < end; x++){
                     int r, g, b, a;
                     int rr, gg, bb, aa;
-                    unsigned int *pix;
+                    const unsigned int *pix;
 
                     if(XAP > 0){
                         pix = ypoints[dyy + y] + xpoints[x];
@@ -374,7 +375,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
             else{
                 for(x = dxx; x < end; x++){
                     int r, g, b, a;
-                    unsigned int *pix;
+                    const unsigned int *pix;
 
                     if(XAP > 0){
                         pix = ypoints[dyy + y] + xpoints[x];
@@ -403,7 +404,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
     else if(isi->xup_yup == 1){
         /*\ 'Correct' version, with math units prepared for MMXification \*/
         int Cy, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int r, g, b, a, rr, gg, bb, aa;
         int yap;
 
@@ -477,7 +478,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
     else if(isi->xup_yup == 2){
         /*\ 'Correct' version, with math units prepared for MMXification \*/
         int Cx, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int r, g, b, a, rr, gg, bb, aa;
         int xap;
 
@@ -555,7 +556,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
          |*|  psllw (16 - d), %mmb; pmulh %mmc, %mmb
          \*/
         int Cx, Cy, i, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int a, r, g, b, ax, rx, gx, bx;
         int xap, yap;
 
@@ -663,9 +664,10 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
                                 int dxx, int dyy, int dx, int dy, int dw,
                                 int dh, int dow, int sow)
 {
-    unsigned int *sptr, *dptr;
+    const unsigned int *sptr;
+    unsigned int *dptr;
     int x, y, end;
-    unsigned int **ypoints = isi->ypoints;
+    const unsigned int **ypoints = isi->ypoints;
     int *xpoints = isi->xpoints;
     int *xapoints = isi->xapoints;
     int *yapoints = isi->yapoints;
@@ -682,7 +684,7 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
                 for(x = dxx; x < end; x++){
                     int r = 0, g = 0, b = 0;
                     int rr = 0, gg = 0, bb = 0;
-                    unsigned int *pix;
+                    const unsigned int *pix;
 
                     if(XAP > 0){
                         pix = ypoints[dyy + y] + xpoints[x];
@@ -725,7 +727,7 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
             else{
                 for(x = dxx; x < end; x++){
                     int r = 0, g = 0, b = 0;
-                    unsigned int *pix;
+                    const unsigned int *pix;
 
                     if(XAP > 0){
                         pix = ypoints[dyy + y] + xpoints[x];
@@ -751,7 +753,7 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
     else if(isi->xup_yup == 1){
         /*\ 'Correct' version, with math units prepared for MMXification \*/
         int Cy, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int r, g, b, rr, gg, bb;
         int yap;
 
@@ -816,7 +818,7 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
     else if(isi->xup_yup == 2){
         /*\ 'Correct' version, with math units prepared for MMXification \*/
         int Cx, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int r, g, b, rr, gg, bb;
         int xap;
 
@@ -882,7 +884,7 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
     else{
         /*\ 'Correct' version, with math units prepared for MMXification \*/
         int Cx, Cy, i, j;
-        unsigned int *pix;
+        const unsigned int *pix;
         int r, g, b, rx, gx, bx;
         int xap, yap;
 

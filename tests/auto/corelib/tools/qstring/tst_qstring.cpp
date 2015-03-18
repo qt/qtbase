@@ -2033,6 +2033,8 @@ void tst_QString::simplified_data()
     QTest::newRow("chars apart posttab") << "a \tb" << "a b";
     QTest::newRow("chars apart pretab") << "a\t b" << "a b";
     QTest::newRow("many words") << "  just some    random\ttext here" << "just some random text here";
+    QTest::newRow("newlines") << "a\nb\nc" << "a b c";
+    QTest::newRow("newlines-trailing") << "a\nb\nc\n" << "a b c";
 }
 
 void tst_QString::simplified()

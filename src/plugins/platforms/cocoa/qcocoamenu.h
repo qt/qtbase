@@ -58,6 +58,7 @@ public:
     void removeMenuItem(QPlatformMenuItem *menuItem);
     void syncMenuItem(QPlatformMenuItem *menuItem);
     void setEnabled(bool enabled);
+    bool isEnabled() const;
     void setVisible(bool visible);
     void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item);
     void dismiss();

@@ -52,7 +52,7 @@ public:
     void interruptEventLoopExec();
 
 private:
-    uint m_processEventCallsAfterExec;
+    uint m_processEventLevel;
     RunLoopObserver<QIOSEventDispatcher> m_runLoopExitObserver;
 };
 

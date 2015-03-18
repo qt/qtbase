@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QHash>
 #include <QDir>
+#include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
 
 #include <linux/input.h>
@@ -56,13 +57,6 @@
 #define ABS_CNT                 (ABS_MAX+1)
 #endif
 
-
-//#define QT_QPA_DEVICE_DISCOVERY_DEBUG
-
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-#include <QtDebug>
-#endif
-
 #define LONG_BITS (sizeof(long) * 8 )
 #define LONG_FIELD_SIZE(bits) ((bits / LONG_BITS) + 1)
 
@@ -73,6 +67,8 @@ static bool testBit(long bit, const long *field)
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcDD, "qt.qpa.input")
+
 QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
     return new QDeviceDiscoveryStatic(types, parent);
@@ -81,9 +77,7 @@ QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 QDeviceDiscoveryStatic::QDeviceDiscoveryStatic(QDeviceTypes types, QObject *parent)
     : QDeviceDiscovery(types, parent)
 {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-    qWarning() << "New DeviceDiscovery created for type" << types;
-#endif
+    qCDebug(lcDD) << "static device discovery for type" << types;
 }
 
 QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
@@ -112,9 +106,7 @@ QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
         }
     }
 
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-    qWarning() << "DeviceDiscovery found matching devices" << devices;
-#endif
+    qCDebug(lcDD) << "Found matching devices" << devices;
 
     return devices;
 }
@@ -124,9 +116,7 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
     bool ret = false;
     int fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (!fd) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-        qWarning() << "DeviceDiscovery cannot open device" << device;
-#endif
+        qWarning() << "Device discovery cannot open device" << device;
         return false;
     }
 
@@ -134,9 +124,7 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
     if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(bitsKey)), bitsKey) >= 0 ) {
         if (!ret && (m_types & Device_Keyboard)) {
             if (testBit(KEY_Q, bitsKey)) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                qWarning() << "DeviceDiscovery found keyboard at" << device;
-#endif
+                qCDebug(lcDD) << "Found keyboard at" << device;
                 ret = true;
             }
         }
@@ -145,9 +133,7 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
             long bitsRel[LONG_FIELD_SIZE(REL_CNT)];
             if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(bitsRel)), bitsRel) >= 0 ) {
                 if (testBit(REL_X, bitsRel) && testBit(REL_Y, bitsRel) && testBit(BTN_MOUSE, bitsKey)) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                    qWarning() << "DeviceDiscovery found mouse at" << device;
-#endif
+                    qCDebug(lcDD) << "Found mouse at" << device;
                     ret = true;
                 }
             }
@@ -158,21 +144,26 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
             if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(bitsAbs)), bitsAbs) >= 0 ) {
                 if (testBit(ABS_X, bitsAbs) && testBit(ABS_Y, bitsAbs)) {
                     if ((m_types & Device_Touchpad) && testBit(BTN_TOOL_FINGER, bitsKey)) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                        qWarning() << "DeviceDiscovery found touchpad at" << device;
-#endif
+                        qCDebug(lcDD) << "Found touchpad at" << device;
                         ret = true;
                     } else if ((m_types & Device_Touchscreen) && testBit(BTN_TOUCH, bitsKey)) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                        qWarning() << "DeviceDiscovery found touchscreen at" << device;
-#endif
+                        qCDebug(lcDD) << "Found touchscreen at" << device;
                         ret = true;
                     } else if ((m_types & Device_Tablet) && (testBit(BTN_STYLUS, bitsKey) || testBit(BTN_TOOL_PEN, bitsKey))) {
-#ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                        qWarning() << "DeviceDiscovery found tablet at" << device;
-#endif
+                        qCDebug(lcDD) << "Found tablet at" << device;
                         ret = true;
                     }
+                }
+            }
+        }
+
+        if (!ret && (m_types & Device_Joystick)) {
+            long bitsAbs[LONG_FIELD_SIZE(ABS_CNT)];
+            if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(bitsAbs)), bitsAbs) >= 0 ) {
+                if ((m_types & Device_Joystick)
+                    && (testBit(BTN_A, bitsKey) || testBit(BTN_TRIGGER, bitsKey) || testBit(ABS_RX, bitsAbs))) {
+                    qCDebug(lcDD) << "Found joystick/gamepad at" << device;
+                    ret = true;
                 }
             }
         }

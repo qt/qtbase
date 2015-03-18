@@ -56,4 +56,4 @@ INCLUDEPATH += $$PWD
 
 CONFIG += egl qpa/genericunixfontdatabase
 
-RESOURCES += $$PWD/cursor.qrc
+!contains(DEFINES, QT_NO_CURSOR): RESOURCES += $$PWD/cursor.qrc

@@ -43,6 +43,7 @@
 
 #include "qeglplatformcursor_p.h"
 #include "qeglplatformintegration_p.h"
+#include "qeglplatformscreen_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
     : m_visible(true),
-      m_screen(screen),
+      m_screen(static_cast<QEGLPlatformScreen *>(screen)),
       m_program(0),
       m_vertexCoordEntry(0),
       m_textureCoordEntry(0),
@@ -297,9 +298,11 @@ QPoint QEGLPlatformCursor::pos() const
 
 void QEGLPlatformCursor::setPos(const QPoint &pos)
 {
+    QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = pos;
     update(oldCursorRect | cursorRect());
+    m_screen->handleCursorMove(m_cursor.pos);
 }
 
 void QEGLPlatformCursor::pointerEvent(const QMouseEvent &event)
@@ -309,6 +312,7 @@ void QEGLPlatformCursor::pointerEvent(const QMouseEvent &event)
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = event.screenPos().toPoint();
     update(oldCursorRect | cursorRect());
+    m_screen->handleCursorMove(m_cursor.pos);
 }
 
 void QEGLPlatformCursor::paintOnScreen()

@@ -225,6 +225,11 @@ QImage::Format QEGLDeviceIntegration::screenFormat() const
     return screenDepth() == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
 }
 
+qreal QEGLDeviceIntegration::refreshRate() const
+{
+    return q_refreshRateFromFb(framebuffer);
+}
+
 QSurfaceFormat QEGLDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
     QSurfaceFormat format = inputFormat;

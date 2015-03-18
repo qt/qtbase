@@ -52,25 +52,18 @@ insignificant_test:check.commands = -$${check.commands}
 
 QMAKE_EXTRA_TARGETS *= check
 
-!debug_and_release|build_pass {
+isEmpty(BUILDS)|build_pass {
     check.depends = first
 } else {
+    # For exclusive builds, only run the test once.
     check.CONFIG = recursive
-    # In debug and release mode, only run the test once.
-    # Run debug if that is the preferred config, release otherwise.
-    debug_and_release {
-        check.target = dummy_check
-        check.recurse_target = check
-        CONFIG(debug, debug|release) {
-            real_check.depends = debug-check
-            real_check.target = check
-            QMAKE_EXTRA_TARGETS += real_check
-        } else {
-            real_check.depends = release-check
-            real_check.target = check
-            QMAKE_EXTRA_TARGETS += real_check
-        }
-    }
+    check.target = check_all
+    check.recurse_target = check
+    check.commands =
+
+    check_first.depends = $$eval($$first(BUILDS).target)-check
+    check_first.target = check
+    QMAKE_EXTRA_TARGETS += check_first
 }
 
 !no_testcase_installs:!contains(INSTALLS, target) {
