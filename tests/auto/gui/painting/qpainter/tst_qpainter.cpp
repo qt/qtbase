@@ -290,6 +290,10 @@ private slots:
 
     void RasterOp_NotDestination();
     void drawTextNoHinting();
+
+    void drawPolyline_data();
+    void drawPolyline();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -4826,6 +4830,39 @@ void tst_QPainter::drawTextNoHinting()
     }
     // Testing for a crash when DirectWrite is used on Windows
     QVERIFY(true);
+}
+
+void tst_QPainter::drawPolyline_data()
+{
+    QTest::addColumn< QVector<QPointF> >("points");
+
+    QTest::newRow("basic") << (QVector<QPointF>() << QPointF(10, 10) << QPointF(20, 10) << QPointF(20, 20) << QPointF(10, 20));
+    QTest::newRow("clipped") << (QVector<QPointF>() << QPoint(-10, 100) << QPoint(-1, 100) << QPoint(-1,  -2) << QPoint(100, -2) << QPoint(100, 40)); // QTBUG-31579
+    QTest::newRow("shortsegment") << (QVector<QPointF>() << QPoint(20, 100) << QPoint(20, 99) << QPoint(21, 99) << QPoint(21, 104)); // QTBUG-42398
+}
+
+void tst_QPainter::drawPolyline()
+{
+    QFETCH(QVector<QPointF>, points);
+    QImage images[2];
+
+    for (int r = 0; r < 2; r++) {
+        images[r] = QImage(150, 150, QImage::Format_ARGB32);
+        images[r].fill(Qt::transparent);
+        QPainter p(images + r);
+        QPen pen(Qt::red, 0, Qt::SolidLine, Qt::FlatCap);
+        p.setPen(pen);
+        QVERIFY(p.pen().isCosmetic());
+        if (r) {
+            for (int i = 0; i < points.count()-1; i++) {
+                p.drawLine(points.at(i), points.at(i+1));
+            }
+        } else {
+            p.drawPolyline(points);
+        }
+    }
+
+    QCOMPARE(images[0], images[1]);
 }
 
 QTEST_MAIN(tst_QPainter)

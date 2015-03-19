@@ -601,8 +601,7 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
             if (!closed && drawCaps && points == end - 2)
                 caps |= CapEnd;
 
-            QCosmeticStroker::Point last = this->lastPixel;
-            bool unclipped = stroke(this, p.x(), p.y(), p2.x(), p2.y(), caps);
+            bool moveNextStart = stroke(this, p.x(), p.y(), p2.x(), p2.y(), caps);
 
             /* fix for gaps in polylines with fastpen and aliased in a sequence
                of points with small distances: if current point p2 has been dropped
@@ -612,14 +611,8 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
                still need to update p to avoid drawing the line after this one from
                a bad starting position.
             */
-            if (fastPenAliased && unclipped) {
-                if (last.x != lastPixel.x || last.y != lastPixel.y
-                    || points == begin + 2 || points == end - 2) {
-                    p = p2;
-                }
-            } else {
+            if (!fastPenAliased || moveNextStart || points == begin + 2 || points == end - 2)
                 p = p2;
-            }
             points += 2;
             caps = NoCaps;
         }
@@ -726,8 +719,9 @@ template<DrawPixel drawPixel, class Dasher>
 static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2, qreal ry2, int caps)
 {
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
-        return false;
+        return true;
 
+    bool didDraw = false;
     const int half = stroker->legacyRounding ? 31 : 0;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
@@ -812,6 +806,7 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 dasher.adjust();
                 x += xinc;
             } while (++y < ys);
+            didDraw = true;
         }
     } else {
         // horizontal
@@ -886,10 +881,11 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 dasher.adjust();
                 y += yinc;
             } while (++x < xs);
+            didDraw = true;
         }
     }
     stroker->lastPixel = last;
-    return true;
+    return didDraw;
 }
 
 
@@ -897,7 +893,7 @@ template<DrawPixel drawPixel, class Dasher>
 static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2, qreal ry2, int caps)
 {
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
-        return false;
+        return true;
 
     int x1 = toF26Dot6(rx1);
     int y1 = toF26Dot6(ry1);
