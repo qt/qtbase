@@ -780,6 +780,7 @@ void tst_QVarLengthArray::initializeList()
     T val3(101);
     T val4(114);
 
+    // QVarLengthArray(std::initializer_list<>)
     QVarLengthArray<T> v1 {val1, val2, val3};
     QCOMPARE(v1, QVarLengthArray<T>() << val1 << val2 << val3);
     QCOMPARE(v1, (QVarLengthArray<T> {val1, val2, val3}));
@@ -791,6 +792,25 @@ void tst_QVarLengthArray::initializeList()
 
     QVarLengthArray<T> v4({});
     QCOMPARE(v4.size(), 0);
+
+    // operator=(std::initializer_list<>)
+
+    QVarLengthArray<T> v5({val2, val1});
+    v1 = { val1, val2 }; // make array smaller
+    v4 = { val1, val2 }; // make array bigger
+    v5 = { val1, val2 }; // same size
+    QCOMPARE(v1, QVarLengthArray<T>() << val1 << val2);
+    QCOMPARE(v4, v1);
+    QCOMPARE(v5, v1);
+
+    QVarLengthArray<T, 1> v6 = { val1 };
+    v6 = { val1, val2 }; // force allocation on heap
+    QCOMPARE(v6.size(), 2);
+    QCOMPARE(v6.first(), val1);
+    QCOMPARE(v6.last(), val2);
+
+    v6 = {}; // assign empty
+    QCOMPARE(v6.size(), 0);
 #else
     QSKIP("This tests requires a compiler that supports initializer lists.");
 #endif
