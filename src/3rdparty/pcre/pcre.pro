@@ -7,7 +7,7 @@ CONFIG += \
 
 load(qt_helper_lib)
 
-DEFINES += PCRE_HAVE_CONFIG_H
+DEFINES += HAVE_CONFIG_H
 
 # platform/compiler specific definitions
 win32: DEFINES += PCRE_STATIC

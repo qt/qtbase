@@ -52,7 +52,7 @@ a local function is used.
 Also, when compiling for Virtual Pascal, things are done differently, and
 global variables are not used. */
 
-#ifdef PCRE_HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
