@@ -154,6 +154,10 @@ void QEGLDeviceIntegration::platformInit()
         qWarning("EGLFS: Failed to open %s", fbDev.constData());
         qFatal("EGLFS: Can't continue without a display");
     }
+
+#ifdef FBIOBLANK
+    ioctl(framebuffer, FBIOBLANK, VESA_NO_BLANKING);
+#endif
 }
 
 void QEGLDeviceIntegration::platformDestroy()
