@@ -392,6 +392,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MousePressAndHoldInterval);
     case TabFocusBehavior:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::TabFocusBehavior);
+    case ReplayMousePressOutsidePopup:
+        return true;
     }
 
     return 0;

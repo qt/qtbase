@@ -145,7 +145,8 @@ public:
         SetFocusOnTouchRelease,
         ShowIsMaximized,
         MousePressAndHoldInterval,
-        TabFocusBehavior
+        TabFocusBehavior,
+        ReplayMousePressOutsidePopup
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

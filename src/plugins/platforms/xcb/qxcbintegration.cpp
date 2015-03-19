@@ -374,6 +374,8 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
         // X11 always has support for windows, but the
         // window manager could prevent it (e.g. matchbox)
         return false;
+    case QPlatformIntegration::ReplayMousePressOutsidePopup:
+        return false;
     default:
         break;
     }
