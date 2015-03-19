@@ -410,7 +410,7 @@ public:
     void printChildren(const QString& title);
     void addChild(Node* child);
     void removeChild(Node* child);
-    virtual void setOutputSubdirectory(const QString& t);
+    void setOutputSubdirectory(const QString& t) Q_DECL_OVERRIDE;
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
