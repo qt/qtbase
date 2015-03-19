@@ -691,7 +691,7 @@ void QOpenGLWidgetPrivate::beginCompose()
     if (flushPending) {
         flushPending = false;
         q->makeCurrent();
-        context->functions()->glFlush();
+        static_cast<QOpenGLExtensions *>(context->functions())->flushShared();
     }
     hasBeenComposed = true;
     emit q->aboutToCompose();
@@ -768,7 +768,7 @@ void QOpenGLWidgetPrivate::resolveSamples()
         q->makeCurrent();
         QRect rect(QPoint(0, 0), fbo->size());
         QOpenGLFramebufferObject::blitFramebuffer(resolvedFbo, rect, fbo, rect);
-        QOpenGLContext::currentContext()->functions()->glFlush();
+        flushPending = true;
     }
 }
 
@@ -779,7 +779,7 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     q->paintGL();
-    f->glFlush();
+    flushPending = true;
 }
 
 void QOpenGLWidgetPrivate::render()

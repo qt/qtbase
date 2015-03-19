@@ -3538,7 +3538,8 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 }
 
 QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
-    : QOpenGLFunctionsPrivate(ctx)
+    : QOpenGLFunctionsPrivate(ctx),
+      flushVendorChecked(false)
 {
     MapBuffer = qopenglfResolveMapBuffer;
     MapBufferRange = qopenglfResolveMapBufferRange;
@@ -3552,6 +3553,35 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
 QOpenGLES3Helper *QOpenGLExtensions::gles3Helper()
 {
     return qgles3Helper();
+}
+
+void QOpenGLExtensions::flushShared()
+{
+    Q_D(QOpenGLExtensions);
+
+    if (!d->flushVendorChecked) {
+        d->flushVendorChecked = true;
+        // It is not quite clear if glFlush() is sufficient to synchronize access to
+        // resources between sharing contexts in the same thread. On most platforms this
+        // is enough (e.g. iOS explicitly documents it), while certain drivers only work
+        // properly when doing glFinish().
+        d->flushIsSufficientToSyncContexts = false; // default to false, not guaranteed by the spec
+        const char *vendor = (const char *) glGetString(GL_VENDOR);
+        if (vendor) {
+            static const char *flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
+            for (size_t i = 0; i < sizeof(flushEnough) / sizeof(const char *); ++i) {
+                if (strstr(vendor, flushEnough[i])) {
+                    d->flushIsSufficientToSyncContexts = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (d->flushIsSufficientToSyncContexts)
+        glFlush();
+    else
+        glFinish();
 }
 
 QT_END_NAMESPACE

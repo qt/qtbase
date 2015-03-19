@@ -135,6 +135,8 @@ public:
 
     QOpenGLES3Helper *gles3Helper();
 
+    void flushShared();
+
 private:
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
 };
@@ -158,6 +160,9 @@ public:
                                           GLsizei width, GLsizei height);
     void (QOPENGLF_APIENTRYP GetBufferSubData)(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
     void (QOPENGLF_APIENTRYP DiscardFramebuffer)(GLenum target, GLsizei numAttachments, const GLenum *attachments);
+
+    bool flushVendorChecked;
+    bool flushIsSufficientToSyncContexts;
 };
 
 inline GLvoid *QOpenGLExtensions::glMapBuffer(GLenum target, GLenum access)
