@@ -264,19 +264,12 @@ static bool switchToGraphicsMode(int ttyfd, int *oldMode)
             return false;
     }
 
-    // No blankin' screen, no blinkin' cursor!, no cursor!
-    const char termctl[] = "\033[9;0]\033[?33l\033[?25l\033[?1c";
-    QT_WRITE(ttyfd, termctl, sizeof(termctl));
     return true;
 }
 
 static void resetTty(int ttyfd, int oldMode)
 {
     ioctl(ttyfd, KDSETMODE, oldMode);
-
-    // Blankin' screen, blinkin' cursor!
-    const char termctl[] = "\033[9;15]\033[?33h\033[?25h\033[?0c";
-    QT_WRITE(ttyfd, termctl, sizeof(termctl));
 
     QT_CLOSE(ttyfd);
 }
