@@ -2113,7 +2113,8 @@
            regardless of whether the parent widget is embedded in a scene or
            not.
 
-    \value WindowShadeButtonHint
+    \value WindowShadeButtonHint Adds a shade button in place of the minimize
+           button if the underlying window manager supports it.
 
     \value WindowStaysOnTopHint  Informs the window system that the
            window should stay on top of all other windows. Note that
