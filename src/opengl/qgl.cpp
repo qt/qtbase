@@ -4906,6 +4906,9 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         GLdouble win_x = 0, win_y = 0, win_z = 0;
         qgluProject(x, y, z, &model[0], &proj[0], &view[0],
                     &win_x, &win_y, &win_z);
+        const int dpr = d->glcx->device()->devicePixelRatio();
+        win_x /= dpr;
+        win_y /= dpr;
         win_y = height - win_y; // y is inverted
 
         QPaintEngine *engine = paintEngine();
@@ -4934,7 +4937,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         } else if (use_scissor_testing) {
             funcs->glEnable(GL_SCISSOR_TEST);
         }
-        funcs->glViewport(0, 0, width, height);
+        funcs->glViewport(0, 0, width * dpr, height * dpr);
         gl1funcs->glAlphaFunc(GL_GREATER, 0.0);
         funcs->glEnable(GL_ALPHA_TEST);
         if (use_depth_testing)
