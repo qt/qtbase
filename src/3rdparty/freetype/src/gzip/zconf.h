@@ -5,11 +5,6 @@
 
 /* @(#) $Id$ */
 
-#if defined(__ARMCC__) || defined(__CC_ARM)
-/* Ultra ugly hack that convinces RVCT to use the systems zlib */
-#include <stdapis/zconf.h>
-#else /* defined(__ARMCC__) || defined(__CC_ARM) */
-
 #ifndef _ZCONF_H
 #define _ZCONF_H
 
@@ -287,5 +282,3 @@ typedef uLong FAR uLongf;
 #endif
 
 #endif /* _ZCONF_H */
-
-#endif /* defined(__ARMCC__) || defined(__CC_ARM) */
