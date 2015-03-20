@@ -56,11 +56,11 @@ public:
     virtual void setSourceModel(QAbstractItemModel *sourceModel);
     QAbstractItemModel *sourceModel() const;
 
-    virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const = 0;
-    virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const = 0;
+    Q_INVOKABLE virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const = 0;
+    Q_INVOKABLE virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const = 0;
 
-    virtual QItemSelection mapSelectionToSource(const QItemSelection &selection) const;
-    virtual QItemSelection mapSelectionFromSource(const QItemSelection &selection) const;
+    Q_INVOKABLE virtual QItemSelection mapSelectionToSource(const QItemSelection &selection) const;
+    Q_INVOKABLE virtual QItemSelection mapSelectionFromSource(const QItemSelection &selection) const;
 
     bool submit() Q_DECL_OVERRIDE;
     void revert() Q_DECL_OVERRIDE;
