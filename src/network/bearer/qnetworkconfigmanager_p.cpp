@@ -276,7 +276,9 @@ bool QNetworkConfigurationManagerPrivate::isOnline() const
 {
     QMutexLocker locker(&mutex);
 
-    return !onlineConfigurations.isEmpty();
+    // We need allConfigurations since onlineConfigurations is filled with queued connections
+    // and thus is not always (more importantly just after creation) up to date
+    return !allConfigurations(QNetworkConfiguration::Active).isEmpty();
 }
 
 QNetworkConfigurationManager::Capabilities QNetworkConfigurationManagerPrivate::capabilities() const
