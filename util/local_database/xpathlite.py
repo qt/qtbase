@@ -191,8 +191,12 @@ def findAlias(file):
         return False
     return alias_elt.attributes['source'].nodeValue
 
+lookup_chain_cache = {}
 parent_locales = {}
 def _fixedLookupChain(dirname, name):
+    if lookup_chain_cache.has_key(name):
+        return lookup_chain_cache[name]
+
     # see http://www.unicode.org/reports/tr35/#Parent_Locales
     if not parent_locales:
         for ns in findTagsInFile(dirname + "/../supplemental/supplementalData.xml", "parentLocales"):
@@ -218,7 +222,10 @@ def _fixedLookupChain(dirname, name):
                         items = items[:i+1]
                     else:
                         items = items[:i+1] + _fixedLookupChain(dirname, parent_locale)
+                    lookup_chain_cache[name] = items
                     return items
+
+    lookup_chain_cache[name] = items
     return items
 
 def _findEntry(base, path, draft=None, attribute=None):
