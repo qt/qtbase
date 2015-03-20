@@ -245,6 +245,7 @@
         // Status bar may be initially hidden at startup through Info.plist
         self.prefersStatusBarHidden = infoPlistValue(@"UIStatusBarHidden", false);
         self.preferredStatusBarUpdateAnimation = UIStatusBarAnimationNone;
+        self.preferredStatusBarStyle = UIStatusBarStyle(infoPlistValue(@"UIStatusBarStyle", UIStatusBarStyleDefault));
 
         m_focusWindowChangeConnection = QObject::connect(qApp, &QGuiApplication::focusWindowChanged, [self]() {
             [self updateProperties];
@@ -423,6 +424,22 @@
 
     UIApplication *uiApplication = [UIApplication sharedApplication];
 
+    // -------------- Status bar style and visbility ---------------
+
+    UIStatusBarStyle oldStatusBarStyle = self.preferredStatusBarStyle;
+    if (focusWindow->flags() & Qt::MaximizeUsingFullscreenGeometryHint)
+        self.preferredStatusBarStyle = UIStatusBarStyleDefault;
+    else
+        self.preferredStatusBarStyle = QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0 ?
+            UIStatusBarStyleLightContent : UIStatusBarStyleBlackTranslucent;
+
+    if (self.preferredStatusBarStyle != oldStatusBarStyle) {
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0)
+            [self setNeedsStatusBarAppearanceUpdate];
+        else
+            [uiApplication setStatusBarStyle:self.preferredStatusBarStyle];
+    }
+
     bool currentStatusBarVisibility = self.prefersStatusBarHidden;
     self.prefersStatusBarHidden = focusWindow->windowState() == Qt::WindowFullScreen;
 
@@ -483,19 +500,6 @@
         }
     }
 }
-
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
-- (UIStatusBarStyle)preferredStatusBarStyle
-{
-    // Since we don't place anything behind the status bare by default, we
-    // end up with a black area, so we have to enable the white text mode
-    // of the iOS7 statusbar.
-    return UIStatusBarStyleLightContent;
-
-    // FIXME: Try to detect the content underneath the statusbar and choose
-    // an appropriate style, and/or expose Qt APIs to control the style.
-}
-#endif
 
 @end
 
