@@ -155,7 +155,7 @@ public:
     virtual void create();
     virtual void destroy();
     void maybeSetScreen(QXcbScreen *screen);
-    QPlatformScreen *screenForNativeGeometry(const QRect &newGeometry) const;
+    QXcbScreen *screenForNativeGeometry(const QRect &newGeometry) const;
 
 public Q_SLOTS:
     void updateSyncRequestCounter();
@@ -164,6 +164,12 @@ protected:
     virtual void resolveFormat() { m_format = window()->requestedFormat(); }
     virtual void *createVisual() { return Q_NULLPTR; }
     virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
+
+    QPoint mapToNative(const QPoint &pos, const QXcbScreen *screen) const;
+    QPoint mapFromNative(const QPoint &pos, const QXcbScreen *screen) const;
+    QRect mapToNative(const QRect &rect, const QXcbScreen *screen) const;
+    QRect mapFromNative(const QRect &rect, const QXcbScreen *screen) const;
+    QXcbScreen *parentScreen();
 
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
     NetWmStates netWmStates();
@@ -191,6 +197,8 @@ protected:
     void doFocusOut();
 
     xcb_window_t m_window;
+
+    QXcbScreen *m_xcbScreen;
 
     uint m_depth;
     QImage::Format m_imageFormat;
