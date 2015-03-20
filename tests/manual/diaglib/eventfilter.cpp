@@ -140,6 +140,12 @@ void EventFilter::init(EventCategories eventCategories)
         m_eventTypes << QEvent::InputMethodQuery;
 #endif
     }
+#ifndef QT_NO_GESTURES
+    if (eventCategories & GestureEvents) {
+        m_eventTypes << QEvent::Gesture << QEvent::GestureOverride
+            << QEvent::NativeGesture;
+    }
+#endif
 }
 
 static inline bool matchesType(const QObject *o, EventFilter::ObjectTypes types)
