@@ -176,14 +176,10 @@ contains(QT_CONFIG,icu) {
 }
 
 !contains(QT_DISABLED_FEATURES, regularexpression) {
+    include($$PWD/../../3rdparty/pcre_dependency.pri)
+
     HEADERS += tools/qregularexpression.h
     SOURCES += tools/qregularexpression.cpp
-
-    pcre {
-        include($$PWD/../../3rdparty/pcre.pri)
-    } else {
-        LIBS_PRIVATE += -lpcre16
-    }
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
