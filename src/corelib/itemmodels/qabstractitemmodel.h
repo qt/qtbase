@@ -222,10 +222,10 @@ public:
     Q_INVOKABLE virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
     virtual QModelIndex buddy(const QModelIndex &index) const;
-    virtual QModelIndexList match(const QModelIndex &start, int role,
-                                  const QVariant &value, int hits = 1,
-                                  Qt::MatchFlags flags =
-                                  Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const;
+    Q_INVOKABLE virtual QModelIndexList match(const QModelIndex &start, int role,
+                                              const QVariant &value, int hits = 1,
+                                              Qt::MatchFlags flags =
+                                              Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const;
     virtual QSize span(const QModelIndex &index) const;
 
     virtual QHash<int,QByteArray> roleNames() const;
