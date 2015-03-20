@@ -217,7 +217,7 @@ def _fixedLookupChain(dirname, name):
                     if parent_locale == u"root":
                         items = items[:i+1]
                     else:
-                        items = items[:i+1] + parent_locale.split() + items[i+1:]
+                        items = items[:i+1] + _fixedLookupChain(dirname, parent_locale)
                     return items
     return items
 
