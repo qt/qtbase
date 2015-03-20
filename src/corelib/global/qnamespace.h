@@ -287,6 +287,7 @@ public:
         WindowTransparentForInput = 0x00080000,
         WindowOverridesSystemGestures = 0x00100000,
         WindowDoesNotAcceptFocus = 0x00200000,
+        MaximizeUsingFullscreenGeometryHint = 0x00400000,
 
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
