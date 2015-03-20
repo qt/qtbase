@@ -1137,6 +1137,12 @@ void tst_QtJson::fromVariant()
     QCOMPARE(QJsonValue::fromVariant(QVariant(stringList)), QJsonValue(jsonArray_string));
     QCOMPARE(QJsonValue::fromVariant(QVariant(variantList)), QJsonValue(jsonArray_variant));
     QCOMPARE(QJsonValue::fromVariant(QVariant(variantMap)), QJsonValue(jsonObject));
+
+    QVERIFY(QJsonValue::fromVariant(QVariant(QJsonValue(true))).isBool());
+    QVERIFY(QJsonValue::fromVariant(QVariant(jsonArray_string)).isArray());
+    QVERIFY(QJsonValue::fromVariant(QVariant(QJsonDocument(jsonArray_string))).isArray());
+    QVERIFY(QJsonValue::fromVariant(QVariant(jsonObject)).isObject());
+    QVERIFY(QJsonValue::fromVariant(QVariant(QJsonDocument(jsonObject))).isObject());
 }
 
 void tst_QtJson::fromVariantMap()
