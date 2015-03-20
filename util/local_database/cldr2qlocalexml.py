@@ -115,8 +115,6 @@ def fixOrdStrList(c):
     return str(ord(';'))
 
 def generateLocaleInfo(path):
-    (dir_name, file_name) = os.path.split(path)
-
     if not path.endswith(".xml"):
         return {}
 
@@ -126,12 +124,19 @@ def generateLocaleInfo(path):
         raise xpathlite.Error("alias to \"%s\"" % alias)
 
     language_code = findEntryInFile(path, "identity/language", attribute="type")[0]
-    if language_code == 'root':
-        # just skip it
-        return {}
     country_code = findEntryInFile(path, "identity/territory", attribute="type")[0]
     script_code = findEntryInFile(path, "identity/script", attribute="type")[0]
     variant_code = findEntryInFile(path, "identity/variant", attribute="type")[0]
+
+    return _generateLocaleInfo(path, language_code, script_code, country_code, variant_code)
+
+def _generateLocaleInfo(path, language_code, script_code, country_code, variant_code=""):
+    if not path.endswith(".xml"):
+        return {}
+
+    if language_code == 'root':
+        # just skip it
+        return {}
 
     # we do not support variants
     # ### actually there is only one locale with variant: en_US_POSIX
@@ -175,6 +180,7 @@ def generateLocaleInfo(path):
     result['script_id'] = script_id
     result['country_id'] = country_id
 
+    (dir_name, file_name) = os.path.split(path)
     supplementalPath = dir_name + "/../supplemental/supplementalData.xml"
     currencies = findTagsInFile(supplementalPath, "currencyData/region[iso3166=%s]"%country_code);
     result['currencyIsoCode'] = ''
@@ -562,6 +568,41 @@ if not os.path.isdir(cldr_dir):
 cldr_files = os.listdir(cldr_dir)
 
 locale_database = {}
+
+# see http://www.unicode.org/reports/tr35/tr35-info.html#Default_Content
+defaultContent_locales = {}
+for ns in findTagsInFile(cldr_dir + "/../supplemental/supplementalMetadata.xml", "metadata/defaultContent"):
+    for data in ns[1:][0]:
+        if data[0] == u"locales":
+            defaultContent_locales = data[1].split()
+
+for file in defaultContent_locales:
+    items = file.split("_")
+    if len(items) == 3:
+        language_code = items[0]
+        script_code = items[1]
+        country_code = items[2]
+    else:
+        if len(items) != 2:
+            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            continue
+        language_code = items[0]
+        script_code = ""
+        country_code = items[1]
+        if len(country_code) == 4:
+            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            continue
+    try:
+        l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
+        if not l:
+            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            continue
+    except xpathlite.Error as e:
+        sys.stderr.write("skipping defaultContent locale \"%s\" (%s)\n" % (file, str(e)))
+        continue
+
+    locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
+
 for file in cldr_files:
     try:
         l = generateLocaleInfo(cldr_dir + "/" + file)

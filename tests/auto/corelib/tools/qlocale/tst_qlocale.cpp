@@ -2206,6 +2206,7 @@ void tst_QLocale::textDirection_data()
         case QLocale::Kashmiri:
         case QLocale::Persian:
         case QLocale::Pashto:
+        case QLocale::Uighur:
         case QLocale::Urdu:
         case QLocale::Syriac:
         case QLocale::Divehi:
