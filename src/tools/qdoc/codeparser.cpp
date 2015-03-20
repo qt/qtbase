@@ -256,7 +256,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         qdb_->addToJsModule(arg.first, node);
     }
     else if (command == COMMAND_MAINCLASS) {
-        node->setStatus(Node::Main);
+        node->doc().location().warning(tr("'\\mainclass' is deprecated. Consider '\\ingroup mainclasses'"));
     }
     else if (command == COMMAND_OBSOLETE) {
         node->setStatus(Node::Obsolete);

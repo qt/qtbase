@@ -2109,7 +2109,6 @@
         \ingroup tools
         \ingroup misc
         \ingroup shared
-        \mainclass
 
         \keyword regular expression
 
@@ -3549,16 +3548,6 @@
     * /
     \endcode
 
-    \section2 \c mainclasses
-
-    The \c mainclasses argument tells QDoc to generate an alphabetical
-    list of the main classes. A class is marked as a main class by
-    including a \l {mainclass-command} {\\mainclass} command in the
-    \\class comment.
-
-    \note The Qt documentation no longer includes a main classes page,
-    but you can generate one for your main classes if you want it.
-
     \section2 \c overviews
 
     The \c overviews argument is used to tell QDoc to generate a list
@@ -3606,18 +3595,6 @@
     \code
         \ingroup qt-basic-concepts
     \endcode
-
-    \section2 \c service
-
-    The \c service argument tells QDoc to generate an alphabetical
-    list of the services. Each service name is a link to the service's
-    reference documentation.
-
-    A service is identified with the \l {service-command} {\\service}
-    command.
-
-    \note This command and the \l {service-command} {\\service}
-    command are not used in the Qt documentation.
 
     \target if-command
     \section1 \\if

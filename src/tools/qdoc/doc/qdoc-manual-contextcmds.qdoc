@@ -53,7 +53,6 @@
       \li \l {inherits-command}{\\inherits},
       \li \l {inmodule-command}{\\inmodule},
       \li \l {internal-command}{\\internal},
-      \li \l {mainclass-command}{\\mainclass},
       \li \l {nextpage-command}{\\nextpage},
       \li \l {nonreentrant-command}{\\nonreentrant},
       \li \l {obsolete-command}{\\obsolete},
@@ -542,7 +541,6 @@
         \reentrant
         \ingroup i18n
         \ingroup text
-        \mainclass
 
         QLocale is initialized with a language/country pair in its
         constructor and offers number-to-string and string-to-number
@@ -886,38 +884,6 @@
     Qt's structure.
 
     \section1 Commands
-
-    \target mainclass-command
-    \section2 \\mainclass
-
-    The \\mainclass command relates the documented class to
-    a group called mainclasses.
-
-    The command must stand on its own line.
-
-    \code
-    / *!
-        \class QWidget qwidget.h
-        \brief The QWidget class is the base class of
-        all user interface objects.
-
-        \mainclass
-
-        ...
-    * /
-    \endcode
-
-    This will include the QWidget class in the \e mainclasses
-    group, which means, for example, that the class will appear on the
-    list created by calling the \l {generatelist-command}
-    {\\generatelist} command with the \c mainclasses argument:
-
-    \l http://doc.qt.digia.com/4.0/mainclasses.html
-
-    \note The Qt documentation no longer includes the \e mainclasses
-    page.
-
-    See also \l {generatelist-command} {\\generatelist}.
 
     \target ingroup-command
     \section2 \\ingroup

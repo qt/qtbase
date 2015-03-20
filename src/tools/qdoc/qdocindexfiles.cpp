@@ -617,8 +617,6 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setStatus(Node::Commendable);
     else if (status == "internal")
         node->setStatus(Node::Internal);
-    else if (status == "main")
-        node->setStatus(Node::Main);
     else
         node->setStatus(Node::Commendable);
 
@@ -893,7 +891,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Internal:
         status = "internal";
         break;
-    case Node::Main:
     default:
         status = "main";
         break;

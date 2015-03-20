@@ -116,7 +116,6 @@ public:
         Deprecated,
         Preliminary,
         Commendable,
-        Main,
         Internal
     }; // don't reorder this enum
 
@@ -523,8 +522,6 @@ public:
     const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases_; }
     const QList<UsingClause>& usingClauses() const { return usingClauses_; }
 
-    QString serviceName() const { return sname; }
-    void setServiceName(const QString& value) { sname = value; }
     QmlTypeNode* qmlElement() { return qmlelement; }
     void setQmlElement(QmlTypeNode* qcn) { qmlelement = qcn; }
     virtual bool isAbstract() const Q_DECL_OVERRIDE { return abstract_; }
@@ -539,7 +536,6 @@ private:
     QList<UsingClause> usingClauses_;
     bool abstract_;
     bool wrapper_;
-    QString sname;
     QString obsoleteLink_;
     QmlTypeNode* qmlelement;
 };

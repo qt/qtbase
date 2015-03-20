@@ -151,11 +151,6 @@ QString Node::fullName(const Node* relative) const
 {
     if (isDocumentNode())
         return title();
-    else if (isClass()) {
-        const ClassNode* cn = static_cast<const ClassNode*>(this);
-        if (!cn->serviceName().isEmpty())
-            return cn->serviceName();
-    }
     return plainFullName(relative);
 }
 
