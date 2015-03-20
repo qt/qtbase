@@ -341,17 +341,16 @@ static void processQdocconfFile(const QString &fileName)
     Location outputFormatsLocation = config.lastLocation();
 
     qdb->clearSearchOrder();
-    QString p = config.getString(CONFIG_PROJECT).toLower();
     if (!Generator::singleExec()) {
         Generator::debug("  loading index files");
         loadIndexFiles(config);
         Generator::debug("  done loading index files");
-        qdb->newPrimaryTree(p);
+        qdb->newPrimaryTree(project);
     }
     else if (Generator::preparing())
-        qdb->newPrimaryTree(p);
+        qdb->newPrimaryTree(project);
     else
-        qdb->setPrimaryTree(p);
+        qdb->setPrimaryTree(project);
 
     dependModules = config.getStringList(CONFIG_DEPENDS);
     dependModules.removeDuplicates();

@@ -271,22 +271,19 @@ class QDocDatabase
     /*******************************************************************
      special collection access functions
     ********************************************************************/
-    NodeMap& getCppClasses();
-    NodeMap& getMainClasses();
-    NodeMap& getCompatibilityClasses();
-    NodeMap& getObsoleteClasses();
-    NodeMap& getClassesWithObsoleteMembers();
-    NodeMap& getObsoleteQmlTypes();
-    NodeMap& getQmlTypesWithObsoleteMembers();
-    NodeMap& getNamespaces() { resolveNamespaces(); return namespaceIndex_; }
-    NodeMap& getServiceClasses();
-    NodeMap& getQmlBasicTypes();
-    NodeMap& getQmlTypes();
+    NodeMultiMap& getCppClasses();
+    NodeMultiMap& getObsoleteClasses();
+    NodeMultiMap& getClassesWithObsoleteMembers();
+    NodeMultiMap& getObsoleteQmlTypes();
+    NodeMultiMap& getQmlTypesWithObsoleteMembers();
+    NodeMultiMap& getNamespaces() { resolveNamespaces(); return namespaceIndex_; }
+    NodeMultiMap& getQmlBasicTypes();
+    NodeMultiMap& getQmlTypes();
     NodeMapMap& getFunctionIndex();
     TextToNodeMap& getLegaleseTexts();
     const NodeMap& getClassMap(const QString& key);
     const NodeMap& getQmlTypeMap(const QString& key);
-    const NodeMultiMap& getSinceMap(const QString& key);
+    const NodeMap& getSinceMap(const QString& key);
 
     /*******************************************************************
       Many of these will be either eliminated or replaced.
@@ -438,18 +435,15 @@ class QDocDatabase
     QString                 version_;
     QDocForest              forest_;
 
-    NodeMap                 cppClasses_;
-    NodeMap                 mainClasses_; // MWS: not needed, should be delete
-    NodeMap                 compatClasses_;
-    NodeMap                 obsoleteClasses_;
-    NodeMap                 classesWithObsoleteMembers_;
-    NodeMap                 obsoleteQmlTypes_;
-    NodeMap                 qmlTypesWithObsoleteMembers_;
-    NodeMap                 namespaceIndex_;
+    NodeMultiMap            cppClasses_;
+    NodeMultiMap            obsoleteClasses_;
+    NodeMultiMap            classesWithObsoleteMembers_;
+    NodeMultiMap            obsoleteQmlTypes_;
+    NodeMultiMap            qmlTypesWithObsoleteMembers_;
+    NodeMultiMap            namespaceIndex_;
     NodeMultiMap            nmm_;
-    NodeMap                 serviceClasses_; // MWS: not needed, should be deleted
-    NodeMap                 qmlBasicTypes_;
-    NodeMap                 qmlTypes_;
+    NodeMultiMap            qmlBasicTypes_;
+    NodeMultiMap            qmlTypes_;
     NodeMapMap              newClassMaps_;
     NodeMapMap              newQmlTypeMaps_;
     NodeMultiMapMap         newSinceMaps_;

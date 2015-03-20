@@ -138,8 +138,9 @@ Tree* QDocForest::nextTree()
  */
 void QDocForest::setPrimaryTree(const QString& t)
 {
-    primaryTree_ = findTree(t);
-    forest_.remove(t);
+    QString T = t.toLower();
+    primaryTree_ = findTree(T);
+    forest_.remove(T);
     if (!primaryTree_)
         qDebug() << "ERROR: Could not set primary tree to:" << t;
 }
@@ -841,7 +842,7 @@ TextToNodeMap& QDocDatabase::getLegaleseTexts()
   have not already been constructed. Returns a reference to
   the map of C++ classes with obsolete members.
  */
-NodeMap& QDocDatabase::getClassesWithObsoleteMembers()
+NodeMultiMap& QDocDatabase::getClassesWithObsoleteMembers()
 {
     if (obsoleteClasses_.isEmpty() && obsoleteQmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllObsoleteThings);
@@ -853,7 +854,7 @@ NodeMap& QDocDatabase::getClassesWithObsoleteMembers()
   have not already been constructed. Returns a reference to
   the map of obsolete QML types.
  */
-NodeMap& QDocDatabase::getObsoleteQmlTypes()
+NodeMultiMap& QDocDatabase::getObsoleteQmlTypes()
 {
     if (obsoleteClasses_.isEmpty() && obsoleteQmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllObsoleteThings);
@@ -865,38 +866,24 @@ NodeMap& QDocDatabase::getObsoleteQmlTypes()
   have not already been constructed. Returns a reference to
   the map of QML types with obsolete members.
  */
-NodeMap& QDocDatabase::getQmlTypesWithObsoleteMembers()
+NodeMultiMap& QDocDatabase::getQmlTypesWithObsoleteMembers()
 {
     if (obsoleteClasses_.isEmpty() && obsoleteQmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllObsoleteThings);
     return qmlTypesWithObsoleteMembers_;
 }
 
-/*! \fn NodeMap& QDocDatabase::getNamespaces()
+/*! \fn NodeMultiMap& QDocDatabase::getNamespaces()
   Returns a reference to the map of all namespace nodes.
   This function must not be called in the -prepare phase.
  */
-
-/*!
-  Construct the C++ class data structures, if they have not
-  already been constructed. Returns a reference to the map
-  of C++ service clases.
-
-  \note This is currently not used.
- */
-NodeMap& QDocDatabase::getServiceClasses()
-{
-    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
-        processForest(&QDocDatabase::findAllClasses);
-    return serviceClasses_;
-}
 
 /*!
   Construct the data structures for QML basic types, if they
   have not already been constructed. Returns a reference to
   the map of QML basic types.
  */
-NodeMap& QDocDatabase::getQmlBasicTypes()
+NodeMultiMap& QDocDatabase::getQmlBasicTypes()
 {
     if (cppClasses_.isEmpty() && qmlBasicTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
@@ -906,9 +893,9 @@ NodeMap& QDocDatabase::getQmlBasicTypes()
 /*!
   Construct the data structures for obsolete things, if they
   have not already been constructed. Returns a reference to
-  the map of obsolete QML types.
+  the multimap of QML types.
  */
-NodeMap& QDocDatabase::getQmlTypes()
+NodeMultiMap& QDocDatabase::getQmlTypes()
 {
     if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
@@ -920,7 +907,7 @@ NodeMap& QDocDatabase::getQmlTypes()
   have not already been constructed. Returns a reference to
   the map of obsolete C++ clases.
  */
-NodeMap& QDocDatabase::getObsoleteClasses()
+NodeMultiMap& QDocDatabase::getObsoleteClasses()
 {
     if (obsoleteClasses_.isEmpty() && obsoleteQmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllObsoleteThings);
@@ -930,36 +917,9 @@ NodeMap& QDocDatabase::getObsoleteClasses()
 /*!
   Construct the C++ class data structures, if they have not
   already been constructed. Returns a reference to the map
-  of compatibility C++ clases.
- */
-NodeMap& QDocDatabase::getCompatibilityClasses()
-{
-    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
-        processForest(&QDocDatabase::findAllClasses);
-    return compatClasses_;
-}
-
-/*!
-  Construct the C++ class data structures, if they have not
-  already been constructed. Returns a reference to the map
-  of main C++ clases.
-
-  \note The main C++ classes data structure is currently not
-  used.
- */
-NodeMap& QDocDatabase::getMainClasses()
-{
-    if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
-        processForest(&QDocDatabase::findAllClasses);
-    return mainClasses_;
-}
-
-/*!
-  Construct the C++ class data structures, if they have not
-  already been constructed. Returns a reference to the map
   of all C++ classes.
  */
-NodeMap& QDocDatabase::getCppClasses()
+NodeMultiMap& QDocDatabase::getCppClasses()
 {
     if (cppClasses_.isEmpty() && qmlTypes_.isEmpty())
         processForest(&QDocDatabase::findAllClasses);
@@ -974,7 +934,8 @@ void QDocDatabase::findAllClasses(InnerNode* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private && (!(*c)->isInternal() || showInternal_)) {
+        if ((*c)->access() != Node::Private && (!(*c)->isInternal() || showInternal_) &&
+            (*c)->tree()->camelCaseModuleName() != QString("QDoc")) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
                 if ((*c)->parent() &&
@@ -982,19 +943,7 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                         !(*c)->parent()->name().isEmpty())
                     className = (*c)->parent()->name()+"::"+className;
 
-                if ((*c)->status() == Node::Compat) {
-                    compatClasses_.insert(className, *c);
-                }
-                else {
-                    cppClasses_.insert(className, *c);
-                    if ((*c)->status() == Node::Main)
-                        mainClasses_.insert(className, *c);
-                }
-
-                QString serviceName = (static_cast<const ClassNode *>(*c))->serviceName();
-                if (!serviceName.isEmpty()) {
-                    serviceClasses_.insert(serviceName, *c);
-                }
+                cppClasses_.insert(className, *c);
             }
             else if (((*c)->isQmlType() || (*c)->isQmlBasicType() ||
                       (*c)->isJsType() || (*c)->isJsBasicType()) && !(*c)->doc().isEmpty()) {
@@ -1299,7 +1248,7 @@ const NodeMap& QDocDatabase::getQmlTypeMap(const QString& key)
   a reference to the value, which is a NodeMultiMap. If \a key
   is not found, return a reference to an empty NodeMultiMap.
  */
-const NodeMultiMap& QDocDatabase::getSinceMap(const QString& key)
+const NodeMap& QDocDatabase::getSinceMap(const QString& key)
 {
     if (newSinceMaps_.isEmpty() && newClassMaps_.isEmpty() && newQmlTypeMaps_.isEmpty())
         processForest(&QDocDatabase::findAllSince);
