@@ -256,10 +256,12 @@ public:
         Entry,
         Exit
     };
-    TestState(QState *parent)
-        : QState(parent) {}
-    TestState(ChildMode mode)
-        : QState(mode) {}
+    TestState(QState *parent, const QString &objectName = QString())
+        : QState(parent)
+    { setObjectName(objectName); }
+    TestState(ChildMode mode, const QString &objectName = QString())
+        : QState(mode)
+    { setObjectName(objectName); }
     QList<QPair<int, Event> > events;
 protected:
     virtual void onEntry(QEvent *) {
@@ -273,9 +275,9 @@ protected:
 class TestTransition : public QAbstractTransition
 {
 public:
-    TestTransition(QAbstractState *target)
+    TestTransition(QAbstractState *target, const QString &objectName = QString())
         : QAbstractTransition()
-    { setTargetState(target); }
+    { setTargetState(target); setObjectName(objectName); }
     QList<int> triggers;
 protected:
     virtual bool eventTest(QEvent *) {
@@ -1352,15 +1354,16 @@ void tst_QStateMachine::stateEntryAndExit()
     {
         QStateMachine machine;
 
-        TestState *s1 = new TestState(&machine);
-        TestState *s11 = new TestState(s1);
-        TestState *s12 = new TestState(s1);
-        TestState *s2 = new TestState(&machine);
+        TestState *s1 = new TestState(&machine, "s1");
+        TestState *s11 = new TestState(s1, "s11");
+        TestState *s12 = new TestState(s1, "s12");
+        TestState *s2 = new TestState(&machine, "s2");
         QFinalState *s3 = new QFinalState(&machine);
+        s3->setObjectName("s3");
         s1->setInitialState(s11);
-        TestTransition *t1 = new TestTransition(s12);
+        TestTransition *t1 = new TestTransition(s12, "t1");
         s11->addTransition(t1);
-        TestTransition *t2 = new TestTransition(s2);
+        TestTransition *t2 = new TestTransition(s2, "t2");
         s12->addTransition(t2);
         s2->addTransition(s3);
 
