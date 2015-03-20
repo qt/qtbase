@@ -161,23 +161,12 @@ contains(QT_CONFIG, zlib) {
 }
 
 contains(QT_CONFIG,icu) {
+    include($$PWD/../../3rdparty/icu_dependency.pri)
+
     SOURCES += tools/qlocale_icu.cpp \
                tools/qcollator_icu.cpp \
                tools/qtimezoneprivate_icu.cpp
     DEFINES += QT_USE_ICU
-    win32 {
-        CONFIG(static, static|shared) {
-            CONFIG(debug, debug|release) {
-                LIBS_PRIVATE += -lsicuind -lsicuucd -lsicudtd
-            } else {
-                LIBS_PRIVATE += -lsicuin -lsicuuc -lsicudt
-            }
-        } else {
-            LIBS_PRIVATE += -licuin -licuuc -licudt
-        }
-    } else {
-        LIBS_PRIVATE += -licui18n -licuuc -licudata
-    }
 } else: win32 {
     SOURCES += tools/qcollator_win.cpp
 } else: macx {
