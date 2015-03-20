@@ -83,6 +83,7 @@ int Pointer::count = 0;
 
 void tst_QThreadStorage::initTestCase()
 {
+#ifndef QT_NO_PROCESS
     const QString crashOnExitDir = QFINDTESTDATA("crashonexit");
     QVERIFY2(!crashOnExitDir.isEmpty(),
              qPrintable(QString::fromLatin1("Could not find 'crashonexit' starting from '%1'")
@@ -93,6 +94,7 @@ void tst_QThreadStorage::initTestCase()
 #endif
     QVERIFY2(QFileInfo(m_crashOnExit).isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_crashOnExit) + QStringLiteral(" does not exist or is not executable.")));
+#endif
 }
 
 void tst_QThreadStorage::hasLocalData()
