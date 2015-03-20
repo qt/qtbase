@@ -483,6 +483,8 @@ function removeConflictingTransitions(enabledTransitions):
             filteredTransitions.add(t1)
 
     return filteredTransitions
+
+Note: the implementation below does not build the transitionsToRemove, but removes them in-place.
 */
 void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions)
 {
@@ -492,24 +494,36 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
 
     foreach (QAbstractTransition *t1, enabledTransitions) {
         bool t1Preempted = false;
-        QVarLengthArray<QAbstractTransition *> transitionsToRemove;
         QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(QList<QAbstractTransition*>() << t1);
-        foreach (QAbstractTransition *t2, filteredTransitions) {
+        QList<QAbstractTransition*>::iterator t2It = filteredTransitions.begin();
+        while (t2It != filteredTransitions.end()) {
+            QAbstractTransition *t2 = *t2It;
+            if (t1 == t2) {
+                // Special case: someone added the same transition object to a state twice. In this
+                // case, t2 (which is already in the list) "preempts" t1.
+                t1Preempted = true;
+                break;
+            }
+
             QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(QList<QAbstractTransition*>() << t2);
-            if (!exitSetT1.intersect(exitSetT2).isEmpty()) {
+            if (exitSetT1.intersect(exitSetT2).isEmpty()) {
+                // No conflict, no cry. Next patient please.
+                ++t2It;
+            } else {
+                // Houston, we have a conflict. Check which transition can be removed.
                 if (isDescendant(t1->sourceState(), t2->sourceState())) {
-                    transitionsToRemove.append(t2);
+                    // t1 preempts t2, so we can remove t2
+                    t2It = filteredTransitions.erase(t2It);
                 } else {
+                    // t2 preempts t1, so there's no use in looking further and we don't need to add
+                    // t1 to the list.
                     t1Preempted = true;
                     break;
                 }
             }
         }
-        if (!t1Preempted) {
-            foreach (QAbstractTransition *t3, transitionsToRemove)
-                filteredTransitions.removeAll(t3);
+        if (!t1Preempted)
             filteredTransitions.append(t1);
-        }
     }
 
     enabledTransitions = filteredTransitions;
