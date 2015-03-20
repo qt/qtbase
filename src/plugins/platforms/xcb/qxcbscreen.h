@@ -121,6 +121,11 @@ public:
 
     QXcbXSettings *xSettings() const;
 
+    QPoint mapToNative(const QPoint &pos) const;
+    QPoint mapFromNative(const QPoint &pos) const;
+    QRect mapToNative(const QRect &rect) const;
+    QRect mapFromNative(const QRect &rect) const;
+
 private:
     static bool xResource(const QByteArray &identifier,
                           const QByteArray &expectedIdentifier,

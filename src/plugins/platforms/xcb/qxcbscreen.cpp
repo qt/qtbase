@@ -254,6 +254,31 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     return 0;
 }
 
+
+QPoint QXcbScreen::mapToNative(const QPoint &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
+}
+
+QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
+}
+
+QRect QXcbScreen::mapToNative(const QRect &rect) const
+{
+    const int dpr = int(devicePixelRatio());
+    return QRect(mapToNative(rect.topLeft()), rect.size() * dpr);
+}
+
+QRect QXcbScreen::mapFromNative(const QRect &rect) const
+{
+    const int dpr = int(devicePixelRatio());
+    return QRect(mapFromNative(rect.topLeft()), rect.size() / dpr);
+}
+
 void QXcbScreen::windowShown(QXcbWindow *window)
 {
     // Freedesktop.org Startup Notification
@@ -485,9 +510,9 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qRound(dpi/96);
     const int dpr = int(devicePixelRatio());
-    m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
+    m_geometry = QRect(xGeometry.topLeft(), xGeometry.size()/dpr);
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
-    m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);
+    m_availableGeometry = QRect(mapFromNative(xAvailableGeometry.topLeft()), xAvailableGeometry.size()/dpr);
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
 }
 
