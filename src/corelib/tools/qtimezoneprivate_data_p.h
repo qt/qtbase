@@ -106,7 +106,7 @@ struct QUtcData {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2014-01-12 from the
+    This part of the file was generated on 2015-03-23 from the
     Common Locale Data Repository supplemental/windowsZones.xml file
     $Revision: 9178 $ $Date: 2013-08-08 13:59:22 -0500 (Thu, 08 Aug 2013) $
 
@@ -462,13 +462,13 @@ static const QWindowsData windowsDataTable[] = {
     {      3,    48,  2064, 10800 }, // Arab Standard Time
     {      4,    67,  4133, 14400 }, // Arabian Standard Time
     {      5,    89,  2018, 10800 }, // Arabic Standard Time
-    {      6,   110,  6918, 10800 }, // Argentina Standard Time
+    {      6,   110,  6918,-10800 }, // Argentina Standard Time
     {      7,   134,  6939,-14400 }, // Atlantic Standard Time
     {      8,   157,  3925, 34200 }, // AUS Central Standard Time
     {      9,   183,  6955, 36000 }, // AUS Eastern Standard Time
     {     10,   209,  3915, 14400 }, // Azerbaijan Standard Time
     {     11,   234,  5057, -3600 }, // Azores Standard Time
-    {     12,   255,  5264, 10800 }, // Bahia Standard Time
+    {     12,   255,  5264,-10800 }, // Bahia Standard Time
     {     13,   275,  5253, 21600 }, // Bangladesh Standard Time
     {     14,   300,  6972,-21600 }, // Canada Central Standard Time
     {     15,   329,  4472, -3600 }, // Cape Verde Standard Time
@@ -495,7 +495,7 @@ static const QWindowsData windowsDataTable[] = {
     {     36,   875,  7137,  7200 }, // FLE Standard Time
     {     37,   893,  2380, 14400 }, // Georgian Standard Time
     {     38,   916,  6374,     0 }, // GMT Standard Time
-    {     39,   934,  1847, 10800 }, // Greenland Standard Time
+    {     39,   934,  1847,-10800 }, // Greenland Standard Time
     {     40,   958,  4172,     0 }, // Greenwich Standard Time
     {     41,   982,  1023,  7200 }, // GTB Standard Time
     {     42,  1000,  2142,-36000 }, // Hawaiian Standard Time
@@ -508,7 +508,7 @@ static const QWindowsData windowsDataTable[] = {
     {     49,  1150,  7149, 43200 }, // Magadan Standard Time
     {     50,  1172,  6459, 14400 }, // Mauritius Standard Time
     {     51,  1196,  4924,  7200 }, // Middle East Standard Time
-    {     52,  1222,  1121, 10800 }, // Montevideo Standard Time
+    {     52,  1222,  1121,-10800 }, // Montevideo Standard Time
     {     53,  1247,  5643,     0 }, // Morocco Standard Time
     {     54,  1269,  7162,-25200 }, // Mountain Standard Time (Mexico)
     {     55,  1301,  7180,-25200 }, // Mountain Standard Time
@@ -527,7 +527,7 @@ static const QWindowsData windowsDataTable[] = {
     {     68,  1627,  3455,-14400 }, // Paraguay Standard Time
     {     69,  1650,  6612,  3600 }, // Romance Standard Time
     {     70,  1672,  7212, 14400 }, // Russian Standard Time
-    {     71,  1694,  3858, 10800 }, // SA Eastern Standard Time
+    {     71,  1694,  3858,-10800 }, // SA Eastern Standard Time
     {     72,  1719,   244,-18000 }, // SA Pacific Standard Time
     {     73,  1744,  1040,-14400 }, // SA Western Standard Time
     {     74,  1769,  2649, 46800 }, // Samoa Standard Time
