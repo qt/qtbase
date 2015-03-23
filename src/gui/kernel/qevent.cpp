@@ -3721,8 +3721,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
             dbg << ", " << button;
         if (buttons && button != buttons)
             dbg << ", buttons=" << buttons;
-        if (const int mods = int(me->modifiers()))
-            dbg << ", modifiers=0x" << hex << mods << dec;
+        if (me->modifiers())
+            dbg << ", " << me->modifiers();
         dbg << ", localPos=" << me->localPos() << ", screenPos=" << me->screenPos();
         if (me->source())
             dbg << ", " << me->source();
@@ -3744,9 +3744,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     {
         const QKeyEvent *ke = static_cast<const QKeyEvent *>(e);
         dbg << "QKeyEvent("  << type
-            << ", key=0x" << hex << ke->key() << dec;
-        if (const int mods = ke->modifiers())
-            dbg << ", modifiers=0x" << hex << mods << dec;
+            << ", " << static_cast<Qt::Key>(ke->key());
+        if (ke->modifiers())
+            dbg << ", " << ke->modifiers();
         if (!ke->text().isEmpty())
             dbg << ", text=" << ke->text();
         if (ke->isAutoRepeat())
