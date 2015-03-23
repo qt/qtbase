@@ -1889,8 +1889,8 @@ void tst_QLocale::ampm()
     QCOMPARE(sv.pmText(), QLatin1String("em"));
 
     QLocale nn("nl_NL");
-    QCOMPARE(nn.amText(), QLatin1String("AM"));
-    QCOMPARE(nn.pmText(), QLatin1String("PM"));
+    QCOMPARE(nn.amText(), QLatin1String("a.m."));
+    QCOMPARE(nn.pmText(), QLatin1String("p.m."));
 
     QLocale ua("uk_UA");
     QCOMPARE(ua.amText(), QString::fromUtf8("\320\264\320\277"));
@@ -1916,12 +1916,12 @@ void tst_QLocale::dateFormat()
     QCOMPARE(c.dateFormat(QLocale::NarrowFormat), c.dateFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.dateFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yy"));
-    QCOMPARE(no.dateFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yy"));
+    QCOMPARE(no.dateFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy"));
+    QCOMPARE(no.dateFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy"));
     QCOMPARE(no.dateFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy"));
 
     const QLocale ca("en_CA");
-    QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("M/d/yy"));
+    QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("yyyy-MM-dd"));
     QCOMPARE(ca.dateFormat(QLocale::LongFormat), QLatin1String("dddd, MMMM d, yyyy"));
 
     const QLocale ja("ja_JP");
@@ -1947,8 +1947,8 @@ void tst_QLocale::timeFormat()
     QCOMPARE(id.timeFormat(QLocale::LongFormat), QLatin1String("HH.mm.ss t"));
 
     const QLocale cat("ca_ES");
-    QCOMPARE(cat.timeFormat(QLocale::ShortFormat), QLatin1String("H.mm"));
-    QCOMPARE(cat.timeFormat(QLocale::LongFormat), QLatin1String("H.mm.ss t"));
+    QCOMPARE(cat.timeFormat(QLocale::ShortFormat), QLatin1String("H:mm"));
+    QCOMPARE(cat.timeFormat(QLocale::LongFormat), QLatin1String("H:mm:ss t"));
 
     const QLocale bra("pt_BR");
     QCOMPARE(bra.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
@@ -1962,8 +1962,8 @@ void tst_QLocale::dateTimeFormat()
     QCOMPARE(c.dateTimeFormat(QLocale::NarrowFormat), c.dateTimeFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yy HH.mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy HH.mm"));
     QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy HH.mm.ss t"));
 }
 
@@ -1991,10 +1991,6 @@ void tst_QLocale::monthName()
     QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
     QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
-
-    // check that our CLDR scripts handle surrogate pairs correctly
-    QLocale dsrt("en-Dsrt-US");
-    QCOMPARE(dsrt.monthName(1, QLocale::LongFormat), QString::fromUtf8("\xf0\x90\x90\x96\xf0\x90\x90\xb0\xf0\x90\x91\x8c\xf0\x90\x90\xb7\xf0\x90\x90\xad\xf0\x90\x90\xaf\xf0\x90\x91\x89\xf0\x90\x90\xa8"));
 
     QLocale ir("ga_IE");
     QCOMPARE(ir.monthName(1, QLocale::ShortFormat), QLatin1String("Ean"));
@@ -2027,9 +2023,9 @@ void tst_QLocale::standaloneMonthName()
     QCOMPARE(de.standaloneMonthName(12, QLocale::NarrowFormat), QLatin1String("D"));
 
     QLocale ru("ru_RU");
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::LongFormat), QString::fromUtf8("\320\257\320\275\320\262\320\260\321\200\321\214"));
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\320\257\320\275\320\262\56"));
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::LongFormat), QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2\xd0\xb0\xd1\x80\xd1\x8c"));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\xd0\xaf"));
 }
 
 void tst_QLocale::currency()
@@ -2073,8 +2069,8 @@ void tst_QLocale::quoteString()
     QCOMPARE(c.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\x27" "text" "\x27"));
 
     const QLocale de_CH("de_CH");
-    QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xc2\xab" "text" "\xc2\xbb"));
-    QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\xb9" "text" "\xe2\x80\xba"));
+    QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xe2\x80\x9e" "text" "\xe2\x80\x9c"));
+    QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x9a" "text" "\xe2\x80\x98"));
 
 }
 
@@ -2201,15 +2197,36 @@ void tst_QLocale::textDirection_data()
     for (int language = QLocale::C; language <= QLocale::LastLanguage; ++language) {
         bool rightToLeft = false;
         switch (language) {
+        // based on likelySubtags for RTL scripts
+        case QLocale::AncientGreek:
+        case QLocale::AncientNorthArabian:
         case QLocale::Arabic:
+        case QLocale::Aramaic:
+        case QLocale::Avestan:
+        case QLocale::CentralKurdish:
+        case QLocale::ClassicalMandaic:
+        case QLocale::Divehi:
         case QLocale::Hebrew:
         case QLocale::Kashmiri:
-        case QLocale::Persian:
+        case QLocale::Lydian:
+        case QLocale::Mandingo:
+        case QLocale::ManichaeanMiddlePersian:
+        case QLocale::Mende:
+        case QLocale::Meroitic:
+        case QLocale::Nko:
+        case QLocale::OldTurkish:
+        case QLocale::Pahlavi:
+        case QLocale::Parthian:
         case QLocale::Pashto:
+        case QLocale::Persian:
+        case QLocale::Phoenician:
+        case QLocale::PrakritLanguage:
+        case QLocale::Sabaean:
+        case QLocale::Samaritan:
+        case QLocale::Sindhi:
+        case QLocale::Syriac:
         case QLocale::Uighur:
         case QLocale::Urdu:
-        case QLocale::Syriac:
-        case QLocale::Divehi:
             rightToLeft = QLocale(QLocale::Language(language)).language() == QLocale::Language(language); // false if there is no locale data for language
             break;
         default:
