@@ -46,6 +46,7 @@
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qopenglpaintdevice_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -792,11 +793,18 @@ void QOpenGLWidgetPrivate::resolveSamples()
 void QOpenGLWidgetPrivate::invokeUserPaint()
 {
     Q_Q(QOpenGLWidget);
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    Q_ASSERT(ctx && fbo);
+
+    QOpenGLFunctions *f = ctx->functions();
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     q->paintGL();
     flushPending = true;
+
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
 }
 
 void QOpenGLWidgetPrivate::render()

@@ -204,6 +204,7 @@ public:
         , workaround_missingPrecisionQualifiers(false)
         , active_engine(0)
         , qgl_current_fbo_invalid(false)
+        , defaultFboRedirect(0)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -242,6 +243,7 @@ public:
     bool qgl_current_fbo_invalid;
 
     QVariant nativeHandle;
+    GLuint defaultFboRedirect;
 
     static QOpenGLContext *setCurrentContext(QOpenGLContext *context);
 
