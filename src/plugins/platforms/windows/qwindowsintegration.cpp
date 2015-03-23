@@ -264,10 +264,9 @@ QWindowsIntegration::~QWindowsIntegration()
 
 void QWindowsIntegration::initialize()
 {
-    if (QPlatformInputContext *pluginContext = QPlatformInputContextFactory::create())
-        d->m_inputContext.reset(pluginContext);
-    else
-        d->m_inputContext.reset(new QWindowsInputContext);
+    QString icStr = QPlatformInputContextFactory::requested();
+    icStr.isNull() ? d->m_inputContext.reset(new QWindowsInputContext)
+                   : d->m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
 }
 
 bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) const

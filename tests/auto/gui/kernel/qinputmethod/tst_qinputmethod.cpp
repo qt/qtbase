@@ -292,6 +292,9 @@ void tst_qinputmethod::inputMethodAccepted()
     if (qApp->platformName().toLower() == QLatin1String("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
 
+    if (qApp->platformName().toLower() == QLatin1String("xcb"))
+        QSKIP("XCB: depends on dedicated platform context.");
+
     InputItem disabledItem;
     disabledItem.setEnabled(false);
 

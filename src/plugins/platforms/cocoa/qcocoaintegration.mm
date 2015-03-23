@@ -47,6 +47,7 @@
 #include "qcocoamimetypes.h"
 #include "qcocoaaccessibility.h"
 
+#include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatformaccessibility.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <QtCore/qcoreapplication.h>
@@ -286,9 +287,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;
 
-    mInputContext.reset(QPlatformInputContextFactory::create());
-    if (mInputContext.isNull())
-        mInputContext.reset(new QCocoaInputContext());
+    QString icStr = QPlatformInputContextFactory::requested();
+    icStr.isNull() ? mInputContext.reset(new QCocoaInputContext)
+                   : mInputContext.reset(QPlatformInputContextFactory::create(icStr));
 
     initResources();
     QMacAutoReleasePool pool;
