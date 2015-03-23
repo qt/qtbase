@@ -119,6 +119,14 @@ void tst_QSaveFile::transactionalWrite()
     QFile reader(targetFile);
     QVERIFY(reader.open(QIODevice::ReadOnly));
     QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("Hello"));
+
+    // check that permissions are the same as for QFile
+    const QString otherFile = dir.path() + QString::fromLatin1("/otherfile");
+    QFile::remove(otherFile);
+    QFile other(otherFile);
+    other.open(QIODevice::WriteOnly);
+    other.close();
+    QCOMPARE(QFile::permissions(targetFile), QFile::permissions(otherFile));
 }
 
 void tst_QSaveFile::saveTwice()
