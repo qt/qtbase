@@ -293,6 +293,30 @@ public:
         return qba;
     }
 
+    // peek the bytes from a specified position
+    inline qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const
+    {
+        qint64 readSoFar = 0;
+
+        if (pos >= 0) {
+            pos += head;
+            for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
+                qint64 blockLength = (i == tailBuffer ? tail : buffers[i].size());
+
+                if (pos < blockLength) {
+                    blockLength = qMin(blockLength - pos, maxLength - readSoFar);
+                    memcpy(data + readSoFar, buffers[i].constData() + pos, blockLength);
+                    readSoFar += blockLength;
+                    pos = 0;
+                } else {
+                    pos -= blockLength;
+                }
+            }
+        }
+
+        return readSoFar;
+    }
+
     // append a new buffer to the end
     inline void append(const QByteArray &qba) {
         if (tail == 0) {
