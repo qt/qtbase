@@ -522,6 +522,7 @@ enum {
     VietnameseCsbBit = 8,
     SimplifiedChineseCsbBit = 18,
     TraditionalChineseCsbBit = 20,
+    ThaiCsbBit = 16,
     JapaneseCsbBit = 17,
     KoreanCsbBit = 19,
     KoreanJohabCsbBit = 21
@@ -578,6 +579,11 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
         writingSystems.setSupported(QFontDatabase::Arabic);
         hasScript = true;
         //qDebug("font %s supports Arabic", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << ThaiCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Thai);
+        hasScript = true;
+        //qDebug("font %s supports Thai", familyName.latin1());
     }
     if (codePageRange[0] & (1 << VietnameseCsbBit)) {
         writingSystems.setSupported(QFontDatabase::Vietnamese);
