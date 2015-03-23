@@ -881,16 +881,22 @@ static inline void qt_getJustificationOpportunities(const ushort *string, int le
     int spaceAs;
 
     switch (si.analysis.script) {
+    case QChar::Script_Arabic:
+    case QChar::Script_Syriac:
     case QChar::Script_Nko:
     case QChar::Script_Mandaic:
     case QChar::Script_Mongolian:
     case QChar::Script_PhagsPa:
+    case QChar::Script_Manichaean:
+    case QChar::Script_PsalterPahlavi:
         // same as default but inter character justification takes precedence
         spaceAs = Justification_Arabic_Space;
         break;
 
+    case QChar::Script_Tibetan:
     case QChar::Script_Hiragana:
     case QChar::Script_Katakana:
+    case QChar::Script_Bopomofo:
     case QChar::Script_Han:
         // same as default but inter character justification is the only option
         spaceAs = Justification_Character;
@@ -1630,10 +1636,10 @@ void QTextEngine::itemize() const
         for (int i = 0; i < length; ++i) {
             switch (analysis[i].script) {
             case QChar::Script_Latin:
-            case QChar::Script_Han:
             case QChar::Script_Hiragana:
             case QChar::Script_Katakana:
             case QChar::Script_Bopomofo:
+            case QChar::Script_Han:
                 analysis[i].script = QChar::Script_Common;
                 break;
             default:

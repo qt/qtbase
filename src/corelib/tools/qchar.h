@@ -250,6 +250,31 @@ public:
         Script_SoraSompeng,
         Script_Takri,
 
+        // Unicode 7.0 additions
+        Script_CaucasianAlbanian,
+        Script_BassaVah,
+        Script_Duployan,
+        Script_Elbasan,
+        Script_Grantha,
+        Script_PahawhHmong,
+        Script_Khojki,
+        Script_LinearA,
+        Script_Mahajani,
+        Script_Manichaean,
+        Script_MendeKikakui,
+        Script_Modi,
+        Script_Mro,
+        Script_OldNorthArabian,
+        Script_Nabataean,
+        Script_Palmyrene,
+        Script_PauCinHau,
+        Script_OldPermic,
+        Script_PsalterPahlavi,
+        Script_Siddham,
+        Script_Khudawadi,
+        Script_Tirhuta,
+        Script_WarangCiti,
+
         ScriptCount
     };
 
@@ -339,7 +364,8 @@ public:
         Unicode_6_0,
         Unicode_6_1,
         Unicode_6_2,
-        Unicode_6_3
+        Unicode_6_3,
+        Unicode_7_0
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

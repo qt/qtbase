@@ -49,7 +49,7 @@ namespace QUnicodeTools {
 // -----------------------------------------------------------------------------------------------------
 //
 // The text boundaries determination algorithm.
-// See http://www.unicode.org/reports/tr29/tr29-23.html
+// See http://www.unicode.org/reports/tr29/tr29-25.html
 //
 // -----------------------------------------------------------------------------------------------------
 
@@ -341,7 +341,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
 // -----------------------------------------------------------------------------------------------------
 //
 // The line breaking algorithm.
-// See http://www.unicode.org/reports/tr14/tr14-32.html
+// See http://www.unicode.org/reports/tr14/tr14-33.html
 //
 // -----------------------------------------------------------------------------------------------------
 
@@ -659,7 +659,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
 // ----------------------------------------------------------------------------
 //
-// The Unicode script property. See http://www.unicode.org/reports/tr24/tr24-21.html
+// The Unicode script property. See http://www.unicode.org/reports/tr24/tr24-22.html
 //
 // ----------------------------------------------------------------------------
 
