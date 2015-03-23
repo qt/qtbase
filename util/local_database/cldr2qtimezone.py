@@ -104,93 +104,98 @@ windowsIdList = {
    11 : [ u'Azores Standard Time',             -3600  ],
    12 : [ u'Bahia Standard Time',             -10800  ],
    13 : [ u'Bangladesh Standard Time',         21600  ],
-   14 : [ u'Canada Central Standard Time',    -21600  ],
-   15 : [ u'Cape Verde Standard Time',         -3600  ],
-   16 : [ u'Caucasus Standard Time',           14400  ],
-   17 : [ u'Cen. Australia Standard Time',     34200  ],
-   18 : [ u'Central America Standard Time',   -21600  ],
-   19 : [ u'Central Asia Standard Time',       21600  ],
-   20 : [ u'Central Brazilian Standard Time', -14400  ],
-   21 : [ u'Central Europe Standard Time',      3600  ],
-   22 : [ u'Central European Standard Time',    3600  ],
-   23 : [ u'Central Pacific Standard Time',    39600  ],
-   24 : [ u'Central Standard Time (Mexico)',  -21600  ],
-   25 : [ u'Central Standard Time',           -21600  ],
-   26 : [ u'China Standard Time',              28800  ],
-   27 : [ u'Dateline Standard Time',          -43200  ],
-   28 : [ u'E. Africa Standard Time',          10800  ],
-   29 : [ u'E. Australia Standard Time',       36000  ],
-   30 : [ u'E. Europe Standard Time',           7200  ],
+   14 : [ u'Belarus Standard Time',            10800  ],
+   15 : [ u'Canada Central Standard Time',    -21600  ],
+   16 : [ u'Cape Verde Standard Time',         -3600  ],
+   17 : [ u'Caucasus Standard Time',           14400  ],
+   18 : [ u'Cen. Australia Standard Time',     34200  ],
+   19 : [ u'Central America Standard Time',   -21600  ],
+   20 : [ u'Central Asia Standard Time',       21600  ],
+   21 : [ u'Central Brazilian Standard Time', -14400  ],
+   22 : [ u'Central Europe Standard Time',      3600  ],
+   23 : [ u'Central European Standard Time',    3600  ],
+   24 : [ u'Central Pacific Standard Time',    39600  ],
+   25 : [ u'Central Standard Time (Mexico)',  -21600  ],
+   26 : [ u'Central Standard Time',           -21600  ],
+   27 : [ u'China Standard Time',              28800  ],
+   28 : [ u'Dateline Standard Time',          -43200  ],
+   29 : [ u'E. Africa Standard Time',          10800  ],
+   30 : [ u'E. Australia Standard Time',       36000  ],
    31 : [ u'E. South America Standard Time',  -10800  ],
    32 : [ u'Eastern Standard Time',           -18000  ],
-   33 : [ u'Egypt Standard Time',               7200  ],
-   34 : [ u'Ekaterinburg Standard Time',       21600  ],
-   35 : [ u'Fiji Standard Time',               43200  ],
-   36 : [ u'FLE Standard Time',                 7200  ],
-   37 : [ u'Georgian Standard Time',           14400  ],
-   38 : [ u'GMT Standard Time',                    0  ],
-   39 : [ u'Greenland Standard Time',         -10800  ],
-   40 : [ u'Greenwich Standard Time',              0  ],
-   41 : [ u'GTB Standard Time',                 7200  ],
-   42 : [ u'Hawaiian Standard Time',          -36000  ],
-   43 : [ u'India Standard Time',              19800  ],
-   44 : [ u'Iran Standard Time',               12600  ],
-   45 : [ u'Israel Standard Time',              7200  ],
-   46 : [ u'Jordan Standard Time',              7200  ],
-   47 : [ u'Kaliningrad Standard Time',        10800  ],
-   48 : [ u'Korea Standard Time',              32400  ],
-   49 : [ u'Magadan Standard Time',            43200  ],
-   50 : [ u'Mauritius Standard Time',          14400  ],
-   51 : [ u'Middle East Standard Time',         7200  ],
-   52 : [ u'Montevideo Standard Time',        -10800  ],
-   53 : [ u'Morocco Standard Time',                0  ],
-   54 : [ u'Mountain Standard Time (Mexico)', -25200  ],
-   55 : [ u'Mountain Standard Time',          -25200  ],
-   56 : [ u'Myanmar Standard Time',            23400  ],
-   57 : [ u'N. Central Asia Standard Time',    23400  ],
-   58 : [ u'Namibia Standard Time',             3600  ],
-   59 : [ u'Nepal Standard Time',              20700  ],
-   60 : [ u'New Zealand Standard Time',        43200  ],
-   61 : [ u'Newfoundland Standard Time',      -12600  ],
-   62 : [ u'North Asia East Standard Time',    32400  ],
-   63 : [ u'North Asia Standard Time',         28800  ],
-   64 : [ u'Pacific SA Standard Time',        -14400  ],
-   65 : [ u'Pacific Standard Time (Mexico)',  -28800  ],
-   66 : [ u'Pacific Standard Time',           -28800  ],
-   67 : [ u'Pakistan Standard Time',           18000  ],
-   68 : [ u'Paraguay Standard Time',          -14400  ],
-   69 : [ u'Romance Standard Time',             3600  ],
-   70 : [ u'Russian Standard Time',            14400  ],
-   71 : [ u'SA Eastern Standard Time',        -10800  ],
-   72 : [ u'SA Pacific Standard Time',        -18000  ],
-   73 : [ u'SA Western Standard Time',        -14400  ],
-   74 : [ u'Samoa Standard Time',              46800  ],
-   75 : [ u'SE Asia Standard Time',            23400  ],
-   76 : [ u'Singapore Standard Time',          28800  ],
-   77 : [ u'South Africa Standard Time',        7200  ],
-   78 : [ u'Sri Lanka Standard Time',          19800  ],
-   79 : [ u'Syria Standard Time',               7200  ],
-   80 : [ u'Taipei Standard Time',             28800  ],
-   81 : [ u'Tasmania Standard Time',           36000  ],
-   82 : [ u'Tokyo Standard Time',              32400  ],
-   83 : [ u'Tonga Standard Time',              46800  ],
-   84 : [ u'Turkey Standard Time',              7200  ],
-   85 : [ u'Ulaanbaatar Standard Time',        28800  ],
-   86 : [ u'US Eastern Standard Time',        -18000  ],
-   87 : [ u'US Mountain Standard Time',       -25200  ],
-   88 : [ u'UTC-02',                           -7200  ],
-   89 : [ u'UTC-11',                          -39600  ],
-   90 : [ u'UTC',                                  0  ],
-   91 : [ u'UTC+12',                           43200  ],
-   92 : [ u'Venezuela Standard Time',         -16200  ],
-   93 : [ u'Vladivostok Standard Time',        39600  ],
-   94 : [ u'W. Australia Standard Time',       28800  ],
-   95 : [ u'W. Central Africa Standard Time',   3600  ],
-   96 : [ u'W. Europe Standard Time',           3600  ],
-   97 : [ u'West Asia Standard Time',          18000  ],
-   98 : [ u'West Pacific Standard Time',       36000  ],
-   99 : [ u'Yakutsk Standard Time',            36000  ],
-   100: [ u'Libya Standard Time',              3600   ]
+   33 : [ u'Eastern Standard Time (Mexico)',  -18000  ],
+   34 : [ u'Egypt Standard Time',               7200  ],
+   35 : [ u'Ekaterinburg Standard Time',       18000  ],
+   36 : [ u'Fiji Standard Time',               43200  ],
+   37 : [ u'FLE Standard Time',                 7200  ],
+   38 : [ u'Georgian Standard Time',           14400  ],
+   39 : [ u'GMT Standard Time',                    0  ],
+   40 : [ u'Greenland Standard Time',         -10800  ],
+   41 : [ u'Greenwich Standard Time',              0  ],
+   42 : [ u'GTB Standard Time',                 7200  ],
+   43 : [ u'Hawaiian Standard Time',          -36000  ],
+   44 : [ u'India Standard Time',              19800  ],
+   45 : [ u'Iran Standard Time',               12600  ],
+   46 : [ u'Israel Standard Time',              7200  ],
+   47 : [ u'Jordan Standard Time',              7200  ],
+   48 : [ u'Kaliningrad Standard Time',         7200  ],
+   49 : [ u'Korea Standard Time',              32400  ],
+   50 : [ u'Libya Standard Time',               7200  ],
+   51 : [ u'Line Islands Standard Time',       50400  ],
+   52 : [ u'Magadan Standard Time',            36000  ],
+   53 : [ u'Mauritius Standard Time',          14400  ],
+   54 : [ u'Middle East Standard Time',         7200  ],
+   55 : [ u'Montevideo Standard Time',        -10800  ],
+   56 : [ u'Morocco Standard Time',                0  ],
+   57 : [ u'Mountain Standard Time (Mexico)', -25200  ],
+   58 : [ u'Mountain Standard Time',          -25200  ],
+   59 : [ u'Myanmar Standard Time',            23400  ],
+   60 : [ u'N. Central Asia Standard Time',    21600  ],
+   61 : [ u'Namibia Standard Time',             3600  ],
+   62 : [ u'Nepal Standard Time',              20700  ],
+   63 : [ u'New Zealand Standard Time',        43200  ],
+   64 : [ u'Newfoundland Standard Time',      -12600  ],
+   65 : [ u'North Asia East Standard Time',    28800  ],
+   66 : [ u'North Asia Standard Time',         25200  ],
+   67 : [ u'Pacific SA Standard Time',        -10800  ],
+   68 : [ u'Pacific Standard Time (Mexico)',  -28800  ],
+   69 : [ u'Pacific Standard Time',           -28800  ],
+   70 : [ u'Pakistan Standard Time',           18000  ],
+   71 : [ u'Paraguay Standard Time',          -14400  ],
+   72 : [ u'Romance Standard Time',             3600  ],
+   73 : [ u'Russia Time Zone 3',               14400  ],
+   74 : [ u'Russia Time Zone 10',              39600  ],
+   75 : [ u'Russia Time Zone 11',              43200  ],
+   76 : [ u'Russian Standard Time',            10800  ],
+   77 : [ u'SA Eastern Standard Time',        -10800  ],
+   78 : [ u'SA Pacific Standard Time',        -18000  ],
+   79 : [ u'SA Western Standard Time',        -14400  ],
+   80 : [ u'Samoa Standard Time',              46800  ],
+   81 : [ u'SE Asia Standard Time',            25200  ],
+   82 : [ u'Singapore Standard Time',          28800  ],
+   83 : [ u'South Africa Standard Time',        7200  ],
+   84 : [ u'Sri Lanka Standard Time',          19800  ],
+   85 : [ u'Syria Standard Time',               7200  ],
+   86 : [ u'Taipei Standard Time',             28800  ],
+   87 : [ u'Tasmania Standard Time',           36000  ],
+   88 : [ u'Tokyo Standard Time',              32400  ],
+   89 : [ u'Tonga Standard Time',              46800  ],
+   90 : [ u'Turkey Standard Time',              7200  ],
+   91 : [ u'Ulaanbaatar Standard Time',        28800  ],
+   92 : [ u'US Eastern Standard Time',        -18000  ],
+   93 : [ u'US Mountain Standard Time',       -25200  ],
+   94 : [ u'UTC-02',                           -7200  ],
+   95 : [ u'UTC-11',                          -39600  ],
+   96 : [ u'UTC',                                  0  ],
+   97 : [ u'UTC+12',                           43200  ],
+   98 : [ u'Venezuela Standard Time',         -16200  ],
+   99 : [ u'Vladivostok Standard Time',        36000  ],
+   100: [ u'W. Australia Standard Time',       28800  ],
+   101: [ u'W. Central Africa Standard Time',   3600  ],
+   102: [ u'W. Europe Standard Time',           3600  ],
+   103: [ u'West Asia Standard Time',          18000  ],
+   104: [ u'West Pacific Standard Time',       36000  ],
+   105: [ u'Yakutsk Standard Time',            32400  ]
 }
 
 def windowsIdToKey(windowsId):
@@ -258,7 +263,7 @@ if not os.path.isdir(cldrPath) or not os.path.isdir(qtPath):
     usage()
 
 windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
-tempFileDir = qtPath + "/src/corelib/tools"
+tempFileDir = qtPath
 dataFilePath = qtPath + "/src/corelib/tools/qtimezoneprivate_data_p.h"
 
 if not os.path.isfile(windowsZonesPath):
@@ -266,6 +271,12 @@ if not os.path.isfile(windowsZonesPath):
 
 if not os.path.isfile(dataFilePath):
     usage()
+
+cldr_version = 'unknown'
+ldml = open(cldrPath + "/dtd/ldml.dtd", "r")
+for line in ldml:
+    if 'version cldrVersion CDATA #FIXED' in line:
+        cldr_version = line.split('"')[1]
 
 # [[u'version', [(u'number', u'$Revision: 7825 $')]]]
 versionNumber = findTagsInFile(windowsZonesPath, "version")[0][1][0][1]
@@ -326,13 +337,13 @@ newTempFile.write(GENERATED_BLOCK_START)
 newTempFile.write("\n\
 /*\n\
     This part of the file was generated on %s from the\n\
-    Common Locale Data Repository supplemental/windowsZones.xml file\n\
+    Common Locale Data Repository v%s supplemental/windowsZones.xml file\n\
     %s %s\n\
 \n\
     http://www.unicode.org/cldr/\n\
 \n\
     Do not change this data, only generate it using cldr2qtimezone.py.\n\
-*/\n\n" % (str(datetime.date.today()), versionNumber, generationDate) )
+*/\n\n" % (str(datetime.date.today()), cldr_version, versionNumber, generationDate) )
 
 windowsIdData = ByteArrayData()
 ianaIdData = ByteArrayData()
