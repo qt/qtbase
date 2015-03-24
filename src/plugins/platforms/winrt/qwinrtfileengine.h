@@ -71,6 +71,7 @@ public:
 
     bool open(QIODevice::OpenMode openMode) Q_DECL_OVERRIDE;
     bool close() Q_DECL_OVERRIDE;
+    bool flush() Q_DECL_OVERRIDE;
     qint64 size() const Q_DECL_OVERRIDE;
     qint64 pos() const Q_DECL_OVERRIDE;
     bool seek(qint64 pos) Q_DECL_OVERRIDE;
