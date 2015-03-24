@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -91,9 +91,7 @@ private slots:
     void floatProperty();
     void qrealProperty();
     void property();
-#ifndef QT_NO_PROCESS
     void recursiveSignalEmission();
-#endif
     void signalBlocking();
     void blockingQueuedConnection();
     void childEvents();
@@ -129,6 +127,7 @@ private slots:
     void connectConvert();
     void connectWithReference();
     void connectManyArguments();
+    void connectForwardDeclare();
     void returnValue_data();
     void returnValue();
     void returnValue2_data();
@@ -2981,9 +2980,11 @@ void tst_QObject::dynamicProperties()
     QVERIFY(obj.dynamicPropertyNames().isEmpty());
 }
 
-#ifndef QT_NO_PROCESS
 void tst_QObject::recursiveSignalEmission()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess proc;
     // signalbug helper app should always be next to this test binary
     const QString path = QStringLiteral("signalbug/signalbug");
@@ -2992,8 +2993,8 @@ void tst_QObject::recursiveSignalEmission()
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
-}
 #endif
+}
 
 void tst_QObject::signalBlocking()
 {
@@ -5206,6 +5207,24 @@ void tst_QObject::connectManyArguments()
     emit ob2.signal6("a", "b", "c", "d", "e", "f");
     QCOMPARE(ob2.count, 6);
     QCOMPARE(ManyArgumentNamespace::count, 12);
+}
+
+class ForwardDeclared;
+
+class ForwardDeclareArguments : public QObject
+{
+    Q_OBJECT
+signals:
+    void mySignal(const ForwardDeclared&);
+public slots:
+    void mySlot(const ForwardDeclared&) {}
+};
+
+void tst_QObject::connectForwardDeclare()
+{
+    ForwardDeclareArguments ob;
+    // it should compile
+    QVERIFY(connect(&ob, &ForwardDeclareArguments::mySignal, &ob, &ForwardDeclareArguments::mySlot, Qt::QueuedConnection));
 }
 
 class ReturnValue : public QObject {

@@ -100,6 +100,17 @@
     \l{default-constructed value}.
 */
 
+
+/*! \fn QVarLengthArray::QVarLengthArray(std::initializer_list<T> args)
+    \since 5.5
+
+    Constructs an array from the std::initializer_list given by \a args.
+
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
+*/
+
+
 /*! \fn QVarLengthArray::~QVarLengthArray()
 
     Destroys the array.

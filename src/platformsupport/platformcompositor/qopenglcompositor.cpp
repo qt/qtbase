@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QWindow>
 #include <QtGui/QMatrix4x4>
 #include <qpa/qplatformbackingstore.h>
@@ -76,7 +77,7 @@ QOpenGLCompositor::QOpenGLCompositor()
     Q_ASSERT(!compositor);
     m_updateTimer.setSingleShot(true);
     m_updateTimer.setInterval(0);
-    connect(&m_updateTimer, SIGNAL(timeout()), SLOT(renderAll()));
+    connect(&m_updateTimer, SIGNAL(timeout()), SLOT(handleRenderAllRequest()));
 }
 
 QOpenGLCompositor::~QOpenGLCompositor()
@@ -98,10 +99,26 @@ void QOpenGLCompositor::update()
         m_updateTimer.start();
 }
 
-void QOpenGLCompositor::renderAll()
+QImage QOpenGLCompositor::grab()
 {
     Q_ASSERT(m_context && m_targetWindow);
     m_context->makeCurrent(m_targetWindow);
+    QScopedPointer<QOpenGLFramebufferObject> fbo(new QOpenGLFramebufferObject(m_targetWindow->geometry().size()));
+    renderAll(fbo.data());
+    return fbo->toImage();
+}
+
+void QOpenGLCompositor::handleRenderAllRequest()
+{
+    Q_ASSERT(m_context && m_targetWindow);
+    m_context->makeCurrent(m_targetWindow);
+    renderAll(0);
+}
+
+void QOpenGLCompositor::renderAll(QOpenGLFramebufferObject *fbo)
+{
+    if (fbo)
+        fbo->bind();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -120,7 +137,10 @@ void QOpenGLCompositor::renderAll()
         render(m_windows.at(i));
 
     m_blitter.release();
-    m_context->swapBuffers(m_targetWindow);
+    if (!fbo)
+        m_context->swapBuffers(m_targetWindow);
+    else
+        fbo->release();
 
     for (int i = 0; i < m_windows.size(); ++i)
         m_windows.at(i)->endCompositing();

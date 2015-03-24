@@ -166,8 +166,9 @@
     m_inSelectionChange = NO;
     m_inputContext = inputContext;
 
-    QVariantMap platformData = [self imValue:Qt::ImPlatformData].toMap();
-    Qt::InputMethodHints hints = Qt::InputMethodHints([self imValue:Qt::ImHints].toUInt());
+    m_configuredImeState = new QInputMethodQueryEvent(m_inputContext->imeState().currentState);
+    QVariantMap platformData = m_configuredImeState->value(Qt::ImPlatformData).toMap();
+    Qt::InputMethodHints hints = Qt::InputMethodHints(m_configuredImeState->value(Qt::ImHints).toUInt());
 
     self.returnKeyType = platformData.value(kImePlatformDataReturnKeyType).isValid() ?
         UIReturnKeyType(platformData.value(kImePlatformDataReturnKeyType).toInt()) :
@@ -211,7 +212,40 @@
 {
     self.inputView = 0;
     self.inputAccessoryView = 0;
+    delete m_configuredImeState;
+
     [super dealloc];
+}
+
+- (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties
+{
+    if ((updatedProperties & Qt::ImEnabled)) {
+        Q_ASSERT([self currentImeState:Qt::ImEnabled].toBool());
+
+        // When switching on input-methods we need to consider hints and platform data
+        // as well, as the IM state that we were based on may have been invalidated when
+        // IM was switched off.
+
+        qImDebug() << "IM was turned on, we need to check hints and platform data as well";
+        updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
+    }
+
+    // Based on what we set up in initWithInputContext above
+    updatedProperties &= (Qt::ImHints | Qt::ImPlatformData);
+
+    if (!updatedProperties)
+        return NO;
+
+    for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
+        if (Qt::InputMethodQuery property = Qt::InputMethodQuery(int(updatedProperties & (1 << i)))) {
+            if ([self currentImeState:property] != m_configuredImeState->value(property)) {
+                qImDebug() << property << "has changed since text responder was configured, need reconfigure";
+                return YES;
+            }
+        }
+    }
+
+    return NO;
 }
 
 - (BOOL)canBecomeFirstResponder
@@ -258,7 +292,7 @@
     if ([UIResponder currentFirstResponder] == [self nextResponder]) {
         // We have resigned the keyboard, and transferred first responder back to the parent view
         Q_ASSERT(!FirstResponderCandidate::currentCandidate());
-        if ([self imValue:Qt::ImEnabled].toBool()) {
+        if ([self currentImeState:Qt::ImEnabled].toBool()) {
             // The current focus object expects text input, but there
             // is no keyboard to get input from. So we clear focus.
             qImDebug() << "no keyboard available, clearing focus object";
@@ -320,7 +354,7 @@
     QCoreApplication::sendEvent(focusObject, &e);
 }
 
-- (QVariant)imValue:(Qt::InputMethodQuery)query
+- (QVariant)currentImeState:(Qt::InputMethodQuery)query
 {
     return m_inputContext->imeState().currentState.value(query);
 }
@@ -337,7 +371,7 @@
 
 -(UITextPosition *)endOfDocument
 {
-    int endPosition = [self imValue:Qt::ImSurroundingText].toString().length();
+    int endPosition = [self currentImeState:Qt::ImSurroundingText].toString().length();
     return [QUITextPosition positionWithIndex:endPosition];
 }
 
@@ -361,8 +395,8 @@
 
 - (UITextRange *)selectedTextRange
 {
-    int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
-    int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
+    int cursorPos = [self currentImeState:Qt::ImCursorPosition].toInt();
+    int anchorPos = [self currentImeState:Qt::ImAnchorPosition].toInt();
     return [QUITextRange rangeWithNSRange:NSMakeRange(qMin(cursorPos, anchorPos), qAbs(anchorPos - cursorPos))];
 }
 
@@ -370,7 +404,7 @@
 {
     int s = static_cast<QUITextPosition *>([range start]).index;
     int e = static_cast<QUITextPosition *>([range end]).index;
-    return [self imValue:Qt::ImSurroundingText].toString().mid(s, e - s).toNSString();
+    return [self currentImeState:Qt::ImSurroundingText].toString().mid(s, e - s).toNSString();
 }
 
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange
@@ -482,8 +516,8 @@
     if (!m_markedText.isEmpty())
         return CGRectZero;
 
-    int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
-    int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
+    int cursorPos = [self currentImeState:Qt::ImCursorPosition].toInt();
+    int anchorPos = [self currentImeState:Qt::ImAnchorPosition].toInt();
 
     NSRange r = static_cast<QUITextRange*>(range).range;
     QList<QInputMethodEvent::Attribute> attrs;
@@ -547,7 +581,7 @@
     int p = static_cast<QUITextPosition *>(position).index;
     if (direction == UITextLayoutDirectionLeft)
         return [QUITextRange rangeWithNSRange:NSMakeRange(0, p)];
-    int l = [self imValue:Qt::ImSurroundingText].toString().length();
+    int l = [self currentImeState:Qt::ImSurroundingText].toString().length();
     return [QUITextRange rangeWithNSRange:NSMakeRange(p, l - p)];
 }
 
@@ -555,7 +589,7 @@
 {
     // No API in Qt for determining this. Use sensible default instead:
     Q_UNUSED(point);
-    return [QUITextPosition positionWithIndex:[self imValue:Qt::ImCursorPosition].toInt()];
+    return [QUITextPosition positionWithIndex:[self currentImeState:Qt::ImCursorPosition].toInt()];
 }
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range
@@ -563,14 +597,14 @@
     // No API in Qt for determining this. Use sensible default instead:
     Q_UNUSED(point);
     Q_UNUSED(range);
-    return [QUITextPosition positionWithIndex:[self imValue:Qt::ImCursorPosition].toInt()];
+    return [QUITextPosition positionWithIndex:[self currentImeState:Qt::ImCursorPosition].toInt()];
 }
 
 - (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
     // No API in Qt for determining this. Use sensible default instead:
     Q_UNUSED(point);
-    return [QUITextRange rangeWithNSRange:NSMakeRange([self imValue:Qt::ImCursorPosition].toInt(), 0)];
+    return [QUITextRange rangeWithNSRange:NSMakeRange([self currentImeState:Qt::ImCursorPosition].toInt(), 0)];
 }
 
 - (void)setMarkedTextStyle:(NSDictionary *)style

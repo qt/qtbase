@@ -40,6 +40,7 @@
 #include "qlatincodec_p.h"
 #include "qtsciicodec_p.h"
 #include "qisciicodec_p.h"
+#include "qsimplecodec_p.h"
 #include "private/qcoreglobaldata_p.h"
 #include "qdebug.h"
 
@@ -364,6 +365,8 @@ static QTextCodec *loadQtCodec(const char *name)
         return new QUtf32BECodec;
     if (!strcmp(name, "UTF-32LE"))
         return new QUtf32LECodec;
+    if (!strcmp(name, "ISO-8859-16") || !strcmp(name, "latin10") || !strcmp(name, "iso-ir-226"))
+        return new QSimpleTextCodec(13 /* == 8859-16*/);
 #ifndef QT_NO_CODECS
     if (!strcmp(name, "TSCII"))
         return new QTsciiCodec;

@@ -35,6 +35,8 @@
 #include <QtGui/qaccessible.h>
 #include <private/qcore_mac_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QCocoaAccessibility::QCocoaAccessibility()
 {
 
@@ -371,3 +373,6 @@ id getValueAttribute(QAccessibleInterface *interface)
 }
 
 } // namespace QCocoaAccessible
+
+QT_END_NAMESPACE
+

@@ -59,6 +59,7 @@ public:
         InputMethodEvents  = 0x00400,
         TimerEvents        = 0x00800,
         ObjectEvents       = 0x01000,
+        GestureEvents      = 0x02000,
         AllEvents          = 0xFFFFF
     };
     Q_DECLARE_FLAGS(EventCategories, EventCategory)

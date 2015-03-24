@@ -37,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const int dragImageMaxChars = 26;
+
 QCocoaDrag::QCocoaDrag() :
     m_drag(0)
 {
@@ -116,10 +118,8 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
 
-    QPixmap pm = m_drag->pixmap();
-    if (pm.isNull())
-        pm = defaultPixmap();
-
+    QPoint hotSpot = m_drag->hotSpot();
+    QPixmap pm = dragPixmap(m_drag, hotSpot);
     NSImage *nsimage = qt_mac_create_nsimage(pm);
 
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacInternalPasteboardMime::MIME_DND);
@@ -128,8 +128,8 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 
     NSPoint event_location = [m_lastEvent locationInWindow];
     NSPoint local_point = [m_lastView convertPoint:event_location fromView:nil];
-    local_point.x -= m_drag->hotSpot().x();
-    CGFloat flippedY = m_drag->pixmap().height() - m_drag->hotSpot().y();
+    local_point.x -= hotSpot.x();
+    CGFloat flippedY = pm.height() - hotSpot.y();
     local_point.y += flippedY;
     NSSize mouseOffset = NSMakeSize(0.0, 0.0);
     NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
@@ -151,6 +151,50 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 void QCocoaDrag::setAcceptedAction(Qt::DropAction act)
 {
     m_executed_drop_action = act;
+}
+
+QPixmap QCocoaDrag::dragPixmap(QDrag *drag, QPoint &hotSpot) const
+{
+    const QMimeData* data = drag->mimeData();
+    QPixmap pm = drag->pixmap();
+
+    if (pm.isNull()) {
+        QFont f(qApp->font());
+        f.setPointSize(12);
+        QFontMetrics fm(f);
+
+        if (data->hasImage()) {
+            const QImage img = data->imageData().value<QImage>();
+            if (!img.isNull()) {
+                pm = QPixmap::fromImage(img).scaledToWidth(dragImageMaxChars *fm.averageCharWidth());
+            }
+        }
+
+        if (pm.isNull() && (data->hasText() || data->hasUrls()) ) {
+            QString s = data->hasText() ? data->text() : data->urls().first().toString();
+            if (s.length() > dragImageMaxChars)
+                s = s.left(dragImageMaxChars -3) + QChar(0x2026);
+            if (!s.isEmpty()) {
+                const int width = fm.width(s);
+                const int height = fm.height();
+                if (width > 0 && height > 0) {
+                    pm = QPixmap(width, height);
+                    QPainter p(&pm);
+                    p.fillRect(0, 0, pm.width(), pm.height(), Qt::color0);
+                    p.setPen(Qt::color1);
+                    p.setFont(f);
+                    p.drawText(0, fm.ascent(), s);
+                    p.end();
+                    hotSpot = QPoint(pm.width() / 2, pm.height() / 2);
+                }
+            }
+        }
+    }
+
+    if (pm.isNull())
+        pm = defaultPixmap();
+
+    return pm;
 }
 
 QCocoaDropData::QCocoaDropData(NSPasteboard *pasteboard)

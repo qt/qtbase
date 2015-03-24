@@ -78,8 +78,7 @@ int QCollator::compare(const QString &s1, const QString &s2) const
     QVarLengthArray<wchar_t> array1, array2;
     stringToWCharArray(array1, s1);
     stringToWCharArray(array2, s2);
-    int result = std::wcscoll(array1.constData(), array2.constData());
-    return result > 0 ? 1 : (result == 0 ? 0 : -1);
+    return std::wcscoll(array1.constData(), array2.constData());
 }
 
 int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const

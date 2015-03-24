@@ -4285,7 +4285,7 @@ QPoint QWidget::mapFromParent(const QPoint &pos) const
 
 QWidget *QWidget::window() const
 {
-    QWidget *w = (QWidget *)this;
+    QWidget *w = const_cast<QWidget *>(this);
     QWidget *p = w->parentWidget();
     while (!w->isWindow() && p) {
         w = p;
@@ -5353,7 +5353,10 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
         if (size.isNull())
             return;
 
-        QPixmap pixmap(size);
+        const qreal pixmapDevicePixelRatio = qreal(painter->device()->devicePixelRatio());
+        QPixmap pixmap(size * pixmapDevicePixelRatio);
+        pixmap.setDevicePixelRatio(pixmapDevicePixelRatio);
+
         if (!(renderFlags & QWidget::DrawWindowBackground) || !isOpaque)
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);

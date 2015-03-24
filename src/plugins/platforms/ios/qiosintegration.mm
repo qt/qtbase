@@ -67,6 +67,7 @@ QIOSIntegration::QIOSIntegration()
     , m_inputContext(0)
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
+    , m_debugWindowManagement(false)
 {
     if (![UIApplication sharedApplication]) {
         qFatal("Error: You are creating QApplication before calling UIApplicationMain.\n" \
@@ -247,6 +248,16 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
         return reinterpret_cast<void *>(platformWindow->winId());
 
     return 0;
+}
+
+void QIOSIntegration::setDebugWindowManagement(bool enabled)
+{
+    m_debugWindowManagement = enabled;
+}
+
+bool QIOSIntegration::debugWindowManagement() const
+{
+    return m_debugWindowManagement;
 }
 
 // ---------------------------------------------------------

@@ -41,7 +41,7 @@ POSSIBILITY OF SUCH DAMAGE.
 pattern matching using an NFA algorithm, trying to mimic Perl as closely as
 possible. There are also some static supporting functions. */
 
-#ifdef PCRE_HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 

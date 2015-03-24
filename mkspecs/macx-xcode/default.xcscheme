@@ -25,7 +25,7 @@
    <TestAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldUseLaunchSchemeArgsEnv = "NO"
       buildConfiguration = "Debug">
       <Testables>
          <TestableReference
@@ -48,6 +48,12 @@
             ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "$(TESTARGS)"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"

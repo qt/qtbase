@@ -40,6 +40,7 @@
 
 #import <AppKit/NSAccessibility.h>
 
+QT_USE_NAMESPACE
 
 static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &offset, NSUInteger *start = 0, NSUInteger *end = 0)
 {

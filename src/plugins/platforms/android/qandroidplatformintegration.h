@@ -117,10 +117,8 @@ public:
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
     static void setDefaultApplicationState(Qt::ApplicationState applicationState) { m_defaultApplicationState = applicationState; }
 
-    EGLDisplay m_eglDisplay;
 private:
-    static bool needsBasicRenderloopWorkaround();
-
+    EGLDisplay m_eglDisplay;
     QTouchDevice *m_touchDevice;
 
     QAndroidPlatformScreen *m_primaryScreen;
@@ -140,8 +138,6 @@ private:
     static Qt::ApplicationState m_defaultApplicationState;
 
     QPlatformFontDatabase *m_androidFDB;
-    QImage *m_FbScreenImage;
-    QPainter *m_compositePainter;
     QAndroidPlatformNativeInterface *m_androidPlatformNativeInterface;
     QAndroidPlatformServices *m_androidPlatformServices;
 

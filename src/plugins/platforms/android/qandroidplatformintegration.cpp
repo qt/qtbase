@@ -88,19 +88,19 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
             return &m_androidStyle->m_styleData;
         }
         else
-            return Q_NULLPTR;
+            return nullptr;
     }
     if (resource == "AndroidStandardPalette") {
         if (m_androidStyle)
             return &m_androidStyle->m_standardPalette;
         else
-            return Q_NULLPTR;
+            return nullptr;
     }
     if (resource == "AndroidQWidgetFonts") {
         if (m_androidStyle)
             return &m_androidStyle->m_QWidgetsFonts;
         else
-            return Q_NULLPTR;
+            return nullptr;
     }
     if (resource == "AndroidDeviceName") {
         static QString deviceName = QtAndroid::deviceName();
@@ -110,9 +110,9 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
 }
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
-    : m_touchDevice(0)
+    : m_touchDevice(nullptr)
 #ifndef QT_NO_ACCESSIBILITY
-    , m_accessibility(0)
+    , m_accessibility(nullptr)
 #endif
 {
     Q_UNUSED(paramList);
@@ -183,7 +183,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     QGuiApplicationPrivate::instance()->setApplicationState(m_defaultApplicationState);
 }
 
-bool QAndroidPlatformIntegration::needsBasicRenderloopWorkaround()
+static bool needsBasicRenderloopWorkaround()
 {
     static bool needsWorkaround =
             QtAndroid::deviceName().compare(QLatin1String("samsung SM-T211"), Qt::CaseInsensitive) == 0
@@ -200,11 +200,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case NativeWidgets: return true;
         case OpenGL: return true;
         case ForeignWindows: return true;
-        case ThreadedOpenGL:
-            if (needsBasicRenderloopWorkaround())
-                return false;
-            else
-                return true;
+        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround();
         case RasterGLSurface: return true;
         default:
             return QPlatformIntegration::hasCapability(cap);

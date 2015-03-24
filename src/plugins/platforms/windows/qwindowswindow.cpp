@@ -1074,7 +1074,8 @@ QWindowsWindowData
 
 void QWindowsWindow::setVisible(bool visible)
 {
-    qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << m_data.hwnd << visible;
+    const QWindow *win = window();
+    qCDebug(lcQpaWindows) << __FUNCTION__ << this << win << m_data.hwnd << visible;
     if (m_data.hwnd) {
         if (visible) {
             show_sys();
@@ -1082,11 +1083,13 @@ void QWindowsWindow::setVisible(bool visible)
             // When the window is layered, we won't get WM_PAINT, and "we" are in control
             // over the rendering of the window
             // There is nobody waiting for this, so we don't need to flush afterwards.
-            if (isLayered()) {
-                QWindow *w = window();
-                fireExpose(QRect(0, 0, w->width(), w->height()));
-            }
+            if (isLayered())
+                fireExpose(QRect(0, 0, win->width(), win->height()));
+            // QTBUG-44928, QTBUG-7386: This is to resolve the problem where popups are
+            // opened from the system tray and not being implicitly activated
 
+            if (win->type() == Qt::Popup && !win->parent() && !QGuiApplication::focusWindow())
+                SetForegroundWindow(m_data.hwnd);
         } else {
             if (hasMouseCapture())
                 setMouseGrabEnabled(false);
@@ -2298,7 +2301,7 @@ void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTou
         const bool ret = QWindowsContext::user32dll.isTouchWindow(m_data.hwnd, &touchFlags);
         // Return if it is not a touch window or the flags are already set by a hook
         // such as HCBT_CREATEWND
-        if (!ret || touchFlags != 0)
+        if (ret || touchFlags != 0)
             return;
         if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, (ULONG)touchTypes))
             setFlag(TouchRegistered);

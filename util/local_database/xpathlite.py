@@ -36,8 +36,6 @@ import sys
 import os
 import xml.dom.minidom
 
-doc_cache = {}
-
 class DraftResolution:
     # See http://www.unicode.org/cldr/process.html for description
     unconfirmed = 'unconfirmed'
@@ -55,6 +53,12 @@ class Error:
         self.msg = msg
     def __str__(self):
         return self.msg
+
+doc_cache = {}
+def parseDoc(file):
+    if not doc_cache.has_key(file):
+        doc_cache[file] = xml.dom.minidom.parse(file)
+    return doc_cache[file]
 
 def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
     for node in parent.childNodes:
@@ -80,12 +84,7 @@ def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
     return False
 
 def findTagsInFile(file, path):
-    doc = False
-    if doc_cache.has_key(file):
-        doc = doc_cache[file]
-    else:
-        doc = xml.dom.minidom.parse(file)
-        doc_cache[file] = doc
+    doc = parseDoc(file)
 
     elt = doc.documentElement
     tag_spec_list = path.split("/")
@@ -122,12 +121,7 @@ def findTagsInFile(file, path):
     return ret
 
 def _findEntryInFile(file, path, draft=None, attribute=None):
-    doc = False
-    if doc_cache.has_key(file):
-        doc = doc_cache[file]
-    else:
-        doc = xml.dom.minidom.parse(file)
-        doc_cache[file] = doc
+    doc = parseDoc(file)
 
     elt = doc.documentElement
     tag_spec_list = path.split("/")
@@ -177,12 +171,7 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
     return (None, None)
 
 def findAlias(file):
-    doc = False
-    if doc_cache.has_key(file):
-        doc = doc_cache[file]
-    else:
-        doc = xml.dom.minidom.parse(file)
-        doc_cache[file] = doc
+    doc = parseDoc(file)
 
     alias_elt = findChild(doc.documentElement, "alias")
     if not alias_elt:
@@ -191,8 +180,12 @@ def findAlias(file):
         return False
     return alias_elt.attributes['source'].nodeValue
 
+lookup_chain_cache = {}
 parent_locales = {}
 def _fixedLookupChain(dirname, name):
+    if lookup_chain_cache.has_key(name):
+        return lookup_chain_cache[name]
+
     # see http://www.unicode.org/reports/tr35/#Parent_Locales
     if not parent_locales:
         for ns in findTagsInFile(dirname + "/../supplemental/supplementalData.xml", "parentLocales"):
@@ -217,8 +210,11 @@ def _fixedLookupChain(dirname, name):
                     if parent_locale == u"root":
                         items = items[:i+1]
                     else:
-                        items = items[:i+1] + parent_locale.split() + items[i+1:]
+                        items = items[:i+1] + _fixedLookupChain(dirname, parent_locale)
+                    lookup_chain_cache[name] = items
                     return items
+
+    lookup_chain_cache[name] = items
     return items
 
 def _findEntry(base, path, draft=None, attribute=None):

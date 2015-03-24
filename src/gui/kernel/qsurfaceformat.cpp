@@ -185,7 +185,7 @@ public:
     in the set OpenGL version you can use the QSurfaceFormat format option
     QSurfaceFormat::DeprecatedFunctions.
 
-    \value NoProfile            OpenGL version is lower than 3.2.
+    \value NoProfile            OpenGL version is lower than 3.2. For 3.2 and newer this is same as CoreProfile.
     \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
     \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
 */

@@ -41,7 +41,11 @@
 
 void tst_QMimeDatabase::init()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     const QString mimeDirName = m_globalXdgDir + QStringLiteral("/mime");
     runUpdateMimeDatabase(mimeDirName);
     QVERIFY(QFile::exists(mimeDirName + QStringLiteral("/mime.cache")));
+#endif
 }

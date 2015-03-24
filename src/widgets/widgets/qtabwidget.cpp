@@ -826,7 +826,7 @@ QSize QTabWidget::sizeHint() const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
-        QTabWidget *that = (QTabWidget*)this;
+        QTabWidget *that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize s(d->stack->sizeHint());
@@ -858,7 +858,7 @@ QSize QTabWidget::minimumSizeHint() const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->minimumSizeHint();
     if (!d->dirty) {
-        QTabWidget *that = (QTabWidget*)this;
+        QTabWidget *that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize s(d->stack->minimumSizeHint());
@@ -894,7 +894,7 @@ int QTabWidget::heightForWidth(int width) const
     if(d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
-        QTabWidget *that = (QTabWidget*)this;
+        QTabWidget *that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
     QSize t(d->tabs->sizeHint());

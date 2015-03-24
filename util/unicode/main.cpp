@@ -43,8 +43,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "6.2"
-#define DATA_VERSION_STR "QChar::Unicode_6_2"
+#define DATA_VERSION_S "6.3"
+#define DATA_VERSION_STR "QChar::Unicode_6_3"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;

@@ -42,6 +42,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <algorithm>
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +64,14 @@ public:
     {
         append(other.constData(), other.size());
     }
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QVarLengthArray(std::initializer_list<T> args)
+        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
+    {
+        append(args.begin(), args.size());
+    }
+#endif
 
     inline ~QVarLengthArray() {
         if (QTypeInfo<T>::isComplex) {
@@ -457,11 +468,10 @@ bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T,
 {
     if (l.size() != r.size())
         return false;
-    for (int i = 0; i < l.size(); i++) {
-        if (l.at(i) != r.at(i))
-            return false;
-    }
-    return true;
+    const T *rb = r.begin();
+    const T *b  = l.begin();
+    const T *e  = l.end();
+    return std::equal(b, e, rb);
 }
 
 template <typename T, int Prealloc1, int Prealloc2>

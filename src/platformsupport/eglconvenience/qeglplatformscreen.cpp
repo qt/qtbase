@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qeglplatformscreen_p.h"
+#include "qeglplatformwindow_p.h"
 #include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtPlatformSupport/private/qopenglcompositor_p.h>
@@ -92,6 +93,54 @@ void QEGLPlatformScreen::handleCursorMove(const QPoint &pos)
 
     if (enter && leave)
         QWindowSystemInterface::handleEnterLeaveEvent(enter, leave, enter->mapFromGlobal(pos), pos);
+}
+
+QPixmap QEGLPlatformScreen::grabWindow(WId wid, int x, int y, int width, int height) const
+{
+    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
+    const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    Q_ASSERT(!windows.isEmpty());
+
+    QImage img;
+
+    if (static_cast<QEGLPlatformWindow *>(windows.first()->sourceWindow()->handle())->isRaster()) {
+        // Request the compositor to render everything into an FBO and read it back. This
+        // is of course slow, but it's safe and reliable. It will not include the mouse
+        // cursor, which is a plus.
+        img = compositor->grab();
+    } else {
+        // Just a single OpenGL window without compositing. Do not support this case for now. Doing
+        // glReadPixels is not an option since it would read from the back buffer which may have
+        // undefined content when calling right after a swapBuffers (unless preserved swap is
+        // available and enabled, but we have no support for that).
+        qWarning("grabWindow: Not supported for non-composited OpenGL content. Use QQuickWindow::grabWindow() instead.");
+        return QPixmap();
+    }
+
+    if (!wid) {
+        const QSize screenSize = geometry().size();
+        if (width < 0)
+            width = screenSize.width() - x;
+        if (height < 0)
+            height = screenSize.height() - y;
+        return QPixmap::fromImage(img).copy(x, y, width, height);
+    }
+
+    foreach (QOpenGLCompositorWindow *w, windows) {
+        const QWindow *window = w->sourceWindow();
+        if (window->winId() == wid) {
+            const QRect geom = window->geometry();
+            if (width < 0)
+                width = geom.width() - x;
+            if (height < 0)
+                height = geom.height() - y;
+            QRect rect(geom.topLeft() + QPoint(x, y), QSize(width, height));
+            rect &= window->geometry();
+            return QPixmap::fromImage(img).copy(rect);
+        }
+    }
+
+    return QPixmap();
 }
 
 QT_END_NAMESPACE

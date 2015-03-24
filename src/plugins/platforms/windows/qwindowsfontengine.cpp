@@ -264,12 +264,12 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
 */
 
 QWindowsFontEngine::QWindowsFontEngine(const QString &name,
-                                       HFONT _hfont, LOGFONT lf,
+                                       LOGFONT lf,
                                const QSharedPointer<QWindowsFontEngineData> &fontEngineData)
     : QFontEngine(Win),
     m_fontEngineData(fontEngineData),
     _name(name),
-    hfont(_hfont),
+    hfont(0),
     m_logfont(lf),
     ttf(0),
     hasOutline(0),
@@ -286,6 +286,12 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     designAdvancesSize(0)
 {
     qCDebug(lcQpaFonts) << __FUNCTION__ << name << lf.lfHeight;
+    hfont = CreateFontIndirect(&m_logfont);
+    if (!hfont) {
+        qErrnoWarning("%s: CreateFontIndirect failed for family '%s'", __FUNCTION__, qPrintable(name));
+        hfont = QWindowsFontDatabase::systemFont();
+    }
+
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
     const BOOL res = GetTextMetrics(hdc, &tm);
@@ -1361,11 +1367,8 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
 
     // Get here if original font is not DirectWrite or DirectWrite creation failed for some
     // reason
-    HFONT hfont = CreateFontIndirect(&lf);
-    if (hfont == 0)
-        hfont = QWindowsFontDatabase::systemFont();
 
-    return new QWindowsFontEngine(fam, hfont, lf, data);
+    return new QWindowsFontEngine(fam, lf, data);
 }
 
 bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const

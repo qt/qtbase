@@ -67,9 +67,7 @@ private slots:
     void sessionClosing_data();
     void sessionClosing();
 
-#ifndef QT_NO_PROCESS
     void outOfProcessSession();
-#endif
     void invalidSession();
 
     void repeatedOpenClose_data();
@@ -899,9 +897,11 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
 
 // Note: outOfProcessSession requires that at least one configuration is
 // at Discovered -state.
-#ifndef QT_NO_PROCESS
 void tst_QNetworkSession::outOfProcessSession()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     updateConfigurations();
     QTest::qWait(2000);
 
@@ -996,8 +996,8 @@ void tst_QNetworkSession::outOfProcessSession()
     default:
         QSKIP("Lackey failed");
     }
-}
 #endif
+}
 
 // A convenience / helper function for testcases. Return the first matching configuration.
 // Ignores configurations in other than 'discovered' -state. Returns invalid (QNetworkConfiguration())

@@ -67,6 +67,8 @@ public:
 
     void handleCursorMove(const QPoint &pos);
 
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+
 private:
     EGLDisplay m_dpy;
     QWindow *m_pointerWindow;

@@ -1055,7 +1055,7 @@ void QAbstractItemView::setCurrentIndex(const QModelIndex &index)
         d->selectionModel->setCurrentIndex(index, command);
         d->currentIndexSet = true;
         if ((command & QItemSelectionModel::Current) == 0)
-            d->pressedPosition = visualRect(currentIndex()).center() + d->offset();
+            d->currentSelectionStartIndex = index;
     }
 }
 
@@ -1707,10 +1707,12 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
     d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
-    if ((command & QItemSelectionModel::Current) == 0)
+    if ((command & QItemSelectionModel::Current) == 0) {
         d->pressedPosition = pos + offset;
-    else if (!indexAt(d->pressedPosition - offset).isValid())
-        d->pressedPosition = visualRect(currentIndex()).center() + offset;
+        d->currentSelectionStartIndex = index;
+    }
+    else if (!d->currentSelectionStartIndex.isValid())
+        d->currentSelectionStartIndex = currentIndex();
 
     if (edit(index, NoEditTriggers, event))
         return;
@@ -1722,7 +1724,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         d->autoScroll = false;
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
-        QRect rect(d->pressedPosition - offset, pos);
+        QRect rect(visualRect(d->currentSelectionStartIndex).center(), pos);
         if (command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             d->ctrlDragSelectionFlag = d->selectionModel->isSelected(index) ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
@@ -2319,16 +2321,16 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (!indexAt(d->pressedPosition - d->offset()).isValid())
-                    d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
-                QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
+                if (!d->currentSelectionStartIndex.isValid())
+                    d->currentSelectionStartIndex = oldCurrent;
+                QRect rect(visualRect(d->currentSelectionStartIndex).center(), visualRect(newCurrent).center());
                 setSelection(rect, command);
             } else {
                 d->selectionModel->setCurrentIndex(newCurrent, command);
-                d->pressedPosition = visualRect(newCurrent).center() + d->offset();
+                d->currentSelectionStartIndex = newCurrent;
                 if (newCurrent.isValid()) {
                     // We copy the same behaviour as for mousePressEvent().
-                    QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
+                    QRect rect(visualRect(newCurrent).center(), QSize(1, 1));
                     setSelection(rect, command);
                 }
             }

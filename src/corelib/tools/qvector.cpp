@@ -229,7 +229,7 @@
 /*! \fn QVector::QVector(std::initializer_list<T> args)
     \since 4.8
 
-    Construct a vector from the std::initilizer_list given by \a args.
+    Constructs a vector from the std::initializer_list given by \a args.
 
     This constructor is only enabled if the compiler supports C++11 initializer
     lists.

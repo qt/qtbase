@@ -145,6 +145,8 @@ private Q_SLOTS:
 
     void unicodeKeys();
     void garbageAtEnd();
+
+    void removeNonLatinKey();
 private:
     QString testDataDir;
 };
@@ -2774,6 +2776,25 @@ void tst_QtJson::garbageAtEnd()
     doc = QJsonDocument::fromJson("{}    ", &error);
     QVERIFY(error.error == QJsonParseError::NoError);
     QVERIFY(!doc.isEmpty());
+}
+
+void tst_QtJson::removeNonLatinKey()
+{
+    const QString nonLatinKeyName = QString::fromUtf8("Атрибут100500");
+
+    QJsonObject sourceObject;
+
+    sourceObject.insert("code", 1);
+    sourceObject.remove("code");
+
+    sourceObject.insert(nonLatinKeyName, 1);
+
+    const QByteArray json = QJsonDocument(sourceObject).toJson();
+    const QJsonObject restoredObject = QJsonDocument::fromJson(json).object();
+
+    QCOMPARE(sourceObject.keys(), restoredObject.keys());
+    QVERIFY(sourceObject.contains(nonLatinKeyName));
+    QVERIFY(restoredObject.contains(nonLatinKeyName));
 }
 
 QTEST_MAIN(tst_QtJson)

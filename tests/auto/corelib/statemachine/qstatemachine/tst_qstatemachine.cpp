@@ -1898,7 +1898,7 @@ class DelayedEventPosterThread : public QThread
 public:
     DelayedEventPosterThread(QStateMachine *machine, QObject *parent = 0)
         : QThread(parent), firstEventWasCancelled(false),
-          m_machine(machine), m_count(0)
+          m_machine(machine)
     {
         moveToThread(this);
         QObject::connect(m_machine, SIGNAL(started()),
@@ -1919,7 +1919,6 @@ private Q_SLOTS:
     }
 private:
     QStateMachine *m_machine;
-    int m_count;
 };
 
 void tst_QStateMachine::postDelayedEventFromThread()
@@ -2744,7 +2743,7 @@ void tst_QStateMachine::eventTransitions()
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
 
-        QEventTransition *trans;
+        QEventTransition *trans = 0;
         if (x == 0) {
             trans = new QEventTransition();
             QCOMPARE(trans->eventSource(), (QObject*)0);
@@ -4276,26 +4275,34 @@ void tst_QStateMachine::parallelStateTransition()
     QStateMachine machine;
 
     QState *parallelState = new QState(QState::ParallelStates, &machine);
+    parallelState->setObjectName("parallelState");
     DEFINE_ACTIVE_SPY(parallelState);
     machine.setInitialState(parallelState);
 
     QState *s1 = new QState(parallelState);
+    s1->setObjectName("s1");
     DEFINE_ACTIVE_SPY(s1);
     QState *s2 = new QState(parallelState);
+    s2->setObjectName("s2");
     DEFINE_ACTIVE_SPY(s2);
 
     QState *s1InitialChild = new QState(s1);
+    s1InitialChild->setObjectName("s1InitialChild");
     DEFINE_ACTIVE_SPY(s1InitialChild);
     s1->setInitialState(s1InitialChild);
 
     QState *s2InitialChild = new QState(s2);
+    s2InitialChild->setObjectName("s2InitialChild");
     DEFINE_ACTIVE_SPY(s2InitialChild);
     s2->setInitialState(s2InitialChild);
 
     QState *s1OtherChild = new QState(s1);
+    s1OtherChild->setObjectName("s1OtherChild");
     DEFINE_ACTIVE_SPY(s1OtherChild);
 
-    s1->addTransition(new EventTransition(QEvent::User, s1OtherChild));
+    EventTransition *et = new EventTransition(QEvent::User, s1OtherChild);
+    et->setObjectName("s1->s1OtherChild");
+    s1->addTransition(et);
 
     machine.start();
     QCoreApplication::processEvents();

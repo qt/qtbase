@@ -45,6 +45,8 @@
 #include "qcocoawindow.h"
 #import "qnsview.h"
 
+QT_BEGIN_NAMESPACE
+
 NSString *qt_mac_removePrivateUnicode(NSString* string)
 {
     int len = [string length];
@@ -70,6 +72,8 @@ static inline QCocoaMenuLoader *getMenuLoader()
 {
     return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
 }
+
+QT_END_NAMESPACE
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) : NSObject <NSMenuDelegate> {
     QCocoaMenu *m_menu;

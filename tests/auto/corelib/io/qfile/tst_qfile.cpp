@@ -139,7 +139,7 @@ private slots:
     void readAll_data();
     void readAll();
     void readAllBuffer();
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WINCE)
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
@@ -868,9 +868,12 @@ void tst_QFile::readAllBuffer()
     QFile::remove(fileName);
 }
 
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WINCE)
 void tst_QFile::readAllStdin()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
@@ -887,11 +890,14 @@ void tst_QFile::readAllStdin()
     process.closeWriteChannel();
     process.waitForFinished();
     QCOMPARE(process.readAll().size(), lotsOfData.size() * 5);
+#endif
 }
 
 void tst_QFile::readLineStdin()
 {
-
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QByteArray lotsOfData(1024, '@'); // 10 megs
     for (int i = 0; i < lotsOfData.size(); ++i) {
         if ((i % 32) == 31)
@@ -926,10 +932,14 @@ void tst_QFile::readLineStdin()
                 QCOMPARE(char(array[i]), char('0' + i % 32));
         }
     }
+#endif
 }
 
 void tst_QFile::readLineStdin_lineByLine()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
@@ -949,6 +959,7 @@ void tst_QFile::readLineStdin_lineByLine()
         process.closeWriteChannel();
         QVERIFY(process.waitForFinished(5000));
     }
+#endif
 }
 #endif
 

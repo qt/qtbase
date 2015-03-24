@@ -3829,7 +3829,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     QVariant::Type intType = QVariant::Int;
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL)
         intType = QVariant::LongLong;
     else if (dbType == QSqlDriver::Oracle)
         intType = QVariant::Double;
@@ -3875,7 +3875,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -3918,7 +3918,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());

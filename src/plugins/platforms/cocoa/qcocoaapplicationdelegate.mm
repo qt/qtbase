@@ -80,12 +80,14 @@
 
 QT_USE_NAMESPACE
 
+QT_BEGIN_NAMESPACE
 static QCocoaApplicationDelegate *sharedCocoaApplicationDelegate = nil;
 
 static void cleanupCocoaApplicationDelegate()
 {
     [sharedCocoaApplicationDelegate release];
 }
+QT_END_NAMESPACE
 
 @implementation QCocoaApplicationDelegate
 

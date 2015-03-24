@@ -53,6 +53,8 @@
 #include <qscreen.h>
 #include <qscopedpointer.h>
 #include <qstyleditemdelegate.h>
+#include <qstringlistmodel.h>
+#include <qsortfilterproxymodel.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -252,6 +254,7 @@ private slots:
     void QTBUG31411_noSelection();
     void QTBUG39324_settingSameInstanceOfIndexWidget();
     void sizeHintChangeTriggersLayout();
+    void shiftSelectionAfterChangingModelContents();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1882,6 +1885,122 @@ void tst_QAbstractItemView::QTBUG39324_settingSameInstanceOfIndexWidget()
     table->setIndexWidget(index, lineEdit);
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     table->show();
+}
+
+void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
+{
+    QStringList list;
+    list << "A" << "B" << "C" << "D" << "E" << "F";
+    QStringListModel model(list);
+    QSortFilterProxyModel proxyModel;
+    proxyModel.setSourceModel(&model);
+    proxyModel.sort(0, Qt::AscendingOrder);
+    proxyModel.setDynamicSortFilter(true);
+
+    QPersistentModelIndex indexA(proxyModel.index(0, 0));
+    QPersistentModelIndex indexB(proxyModel.index(1, 0));
+    QPersistentModelIndex indexC(proxyModel.index(2, 0));
+    QPersistentModelIndex indexD(proxyModel.index(3, 0));
+    QPersistentModelIndex indexE(proxyModel.index(4, 0));
+    QPersistentModelIndex indexF(proxyModel.index(5, 0));
+
+    QListView view;
+    view.setModel(&proxyModel);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+
+    // Click "C"
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexC).center());
+    QModelIndexList selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(indexC));
+
+    // Insert new item "B1"
+    model.insertRow(0);
+    model.setData(model.index(0, 0), "B1");
+
+    // Shift-click "D" -> we expect that "C" and "D" are selected
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexD).center());
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(indexC));
+    QVERIFY(selected.contains(indexD));
+
+    // Click "D"
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexD).center());
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(indexD));
+
+    // Remove items "B" and "C"
+    model.removeRows(proxyModel.mapToSource(indexB).row(), 1);
+    model.removeRows(proxyModel.mapToSource(indexC).row(), 1);
+    QVERIFY(!indexB.isValid());
+    QVERIFY(!indexC.isValid());
+
+    // Shift-click "F" -> we expect that "D", "E", and "F" are selected
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexF).center());
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 3);
+    QVERIFY(selected.contains(indexD));
+    QVERIFY(selected.contains(indexE));
+    QVERIFY(selected.contains(indexF));
+
+    // Move to "A" by pressing "Up" repeatedly
+    while (view.currentIndex() != indexA) {
+        QTest::keyClick(&view, Qt::Key_Up);
+    }
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(indexA));
+
+    // Change the sort order
+    proxyModel.sort(0, Qt::DescendingOrder);
+
+    // Shift-click "F" -> All items should be selected
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexF).center());
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), model.rowCount());
+
+    // Restore the old sort order
+    proxyModel.sort(0, Qt::AscendingOrder);
+
+    // Click "D"
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexD).center());
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(indexD));
+
+    // Insert new item "B2"
+    model.insertRow(0);
+    model.setData(model.index(0, 0), "B2");
+
+    // Press Shift+Down -> "D" and "E" should be selected.
+    QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(indexD));
+    QVERIFY(selected.contains(indexE));
+
+    // Click "A" to reset the current selection starting point;
+    //then select "D" via QAbstractItemView::setCurrentIndex(const QModelIndex&).
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexA).center());
+    view.setCurrentIndex(indexD);
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(indexD));
+
+    // Insert new item "B3"
+    model.insertRow(0);
+    model.setData(model.index(0, 0), "B3");
+
+    // Press Shift+Down -> "D" and "E" should be selected.
+    QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(indexD));
+    QVERIFY(selected.contains(indexE));
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

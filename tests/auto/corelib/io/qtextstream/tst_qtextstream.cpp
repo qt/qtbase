@@ -187,7 +187,7 @@ private slots:
     void pos();
     void pos2();
     void pos3LargeFile();
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WINCE)
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
@@ -1484,9 +1484,12 @@ void tst_QTextStream::pos3LargeFile()
 
 // ------------------------------------------------------------------------------
 // Qt/CE has no stdin/out support for processes
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+#if !defined(Q_OS_WINCE)
 void tst_QTextStream::readStdin()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess stdinProcess;
     stdinProcess.start("stdinProcess/stdinProcess");
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1505,12 +1508,16 @@ void tst_QTextStream::readStdin()
     QCOMPARE(a, 1);
     QCOMPARE(b, 2);
     QCOMPARE(c, 3);
+#endif
 }
 
 // ------------------------------------------------------------------------------
 // Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readAllFromStdin()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess stdinProcess;
     stdinProcess.start("readAllStdinProcess/readAllStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1523,12 +1530,16 @@ void tst_QTextStream::readAllFromStdin()
 
     QVERIFY(stdinProcess.waitForFinished(5000));
     QCOMPARE(stream.readAll(), QString::fromLatin1("hello world\n"));
+#endif
 }
 
 // ------------------------------------------------------------------------------
 // Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readLineFromStdin()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess stdinProcess;
     stdinProcess.start("readLineStdinProcess/readLineStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1544,6 +1555,7 @@ void tst_QTextStream::readLineFromStdin()
     stdinProcess.closeWriteChannel();
 
     QVERIFY(stdinProcess.waitForFinished(5000));
+#endif
 }
 #endif
 

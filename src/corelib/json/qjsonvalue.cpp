@@ -704,6 +704,11 @@ QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
     return *this;
 }
 
+QVariant QJsonValueRef::toVariant() const
+{
+    return toValue().toVariant();
+}
+
 QJsonArray QJsonValueRef::toArray() const
 {
     return toValue().toArray();

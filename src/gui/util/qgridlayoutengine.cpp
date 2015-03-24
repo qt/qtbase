@@ -33,8 +33,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgridlayoutengine_p.h"
 #include "qvarlengtharray.h"
 
@@ -1648,5 +1646,3 @@ void QGridLayoutEngine::ensureGeometries(const QSizeF &size,
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

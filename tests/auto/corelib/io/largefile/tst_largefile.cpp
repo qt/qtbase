@@ -407,11 +407,11 @@ void tst_LargeFile::fdPositioning()
 
     file.close();
 
-    QCOMPARE( QT_LSEEK(fd_, QT_OFF_T(0), SEEK_SET), QT_OFF_T(0) );
-    QCOMPARE( QT_LSEEK(fd_, QT_OFF_T(position), SEEK_SET), QT_OFF_T(position) );
+    QCOMPARE( QT_OFF_T(QT_LSEEK(fd_, QT_OFF_T(0), SEEK_SET)), QT_OFF_T(0) );
+    QCOMPARE( QT_OFF_T(QT_LSEEK(fd_, QT_OFF_T(position), SEEK_SET)), QT_OFF_T(position) );
 
     QVERIFY( file.open(fd_, QIODevice::ReadOnly) );
-    QCOMPARE( QT_LSEEK(fd_, QT_OFF_T(0), SEEK_CUR), QT_OFF_T(position) );
+    QCOMPARE( QT_OFF_T(QT_LSEEK(fd_, QT_OFF_T(0), SEEK_CUR)), QT_OFF_T(position) );
     QCOMPARE( file.pos(), position );
     QVERIFY( file.seek(0) );
     QCOMPARE( file.pos(), (qint64)0 );
@@ -438,12 +438,12 @@ void tst_LargeFile::streamPositioning()
     file.close();
 
     QVERIFY( !QT_FSEEK(stream_, QT_OFF_T(0), SEEK_SET) );
-    QCOMPARE( QT_FTELL(stream_), QT_OFF_T(0) );
+    QCOMPARE( QT_OFF_T(QT_FTELL(stream_)), QT_OFF_T(0) );
     QVERIFY( !QT_FSEEK(stream_, QT_OFF_T(position), SEEK_SET) );
-    QCOMPARE( QT_FTELL(stream_), QT_OFF_T(position) );
+    QCOMPARE( QT_OFF_T(QT_FTELL(stream_)), QT_OFF_T(position) );
 
     QVERIFY( file.open(stream_, QIODevice::ReadOnly) );
-    QCOMPARE( QT_FTELL(stream_), QT_OFF_T(position) );
+    QCOMPARE( QT_OFF_T(QT_FTELL(stream_)), QT_OFF_T(position) );
     QCOMPARE( file.pos(), position );
     QVERIFY( file.seek(0) );
     QCOMPARE( file.pos(), (qint64)0 );

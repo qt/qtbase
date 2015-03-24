@@ -41,6 +41,7 @@
 
 #include <QtGui/private/qwindow_p.h>
 
+#include "qiosintegration.h"
 #include "qiosscreen.h"
 #include "qiosglobal.h"
 #include "qioswindow.h"
@@ -63,6 +64,56 @@
 @end
 
 @implementation QIOSDesktopManagerView
+
+- (id)init
+{
+    if (!(self = [super init]))
+        return nil;
+
+    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
+    if (iosIntegration && iosIntegration->debugWindowManagement()) {
+        static UIImage *gridPattern = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            CGFloat dimension = 100.f;
+
+            UIGraphicsBeginImageContextWithOptions(CGSizeMake(dimension, dimension), YES, 0.0f);
+            CGContextRef context = UIGraphicsGetCurrentContext();
+
+            CGContextTranslateCTM(context, -0.5, -0.5);
+
+            #define gridColorWithBrightness(br) \
+                [UIColor colorWithHue:0.6 saturation:0.0 brightness:br alpha:1.0].CGColor
+
+            CGContextSetFillColorWithColor(context, gridColorWithBrightness(0.05));
+            CGContextFillRect(context, CGRectMake(0, 0, dimension, dimension));
+
+            CGFloat gridLines[][2] = { { 10, 0.1 }, { 20, 0.2 }, { 100, 0.3 } };
+            for (size_t l = 0; l < sizeof(gridLines) / sizeof(gridLines[0]); ++l) {
+                CGFloat step = gridLines[l][0];
+                for (int c = step; c <= dimension; c += step) {
+                    CGContextMoveToPoint(context, c, 0);
+                    CGContextAddLineToPoint(context, c, dimension);
+                    CGContextMoveToPoint(context, 0, c);
+                    CGContextAddLineToPoint(context, dimension, c);
+                }
+
+                CGFloat brightness = gridLines[l][1];
+                CGContextSetStrokeColorWithColor(context, gridColorWithBrightness(brightness));
+                CGContextStrokePath(context);
+            }
+
+            gridPattern = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+
+            [gridPattern retain];
+        });
+
+        self.backgroundColor = [UIColor colorWithPatternImage:gridPattern];
+    }
+
+    return self;
+}
 
 - (void)didAddSubview:(UIView *)subview
 {

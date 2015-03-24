@@ -3707,12 +3707,12 @@ QPixmap QFusionStyle::standardPixmap(StandardPixmap standardPixmap, const QStyle
 #ifndef QT_NO_IMAGEFORMAT_XPM
     switch (standardPixmap) {
     case SP_TitleBarNormalButton:
-        return QPixmap((const char **)dock_widget_restore_xpm);
+        return QPixmap(dock_widget_restore_xpm);
     case SP_TitleBarMinButton:
-        return QPixmap((const char **)workspace_minimize);
+        return QPixmap(workspace_minimize);
     case SP_TitleBarCloseButton:
     case SP_DockWidgetCloseButton:
-        return QPixmap((const char **)dock_widget_close_xpm);
+        return QPixmap(dock_widget_close_xpm);
 
     default:
         break;

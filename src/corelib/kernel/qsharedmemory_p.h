@@ -133,7 +133,7 @@ public:
     bool attach(QSharedMemory::AccessMode mode);
     bool detach();
 
-    void setErrorString(const QString &function);
+    void setErrorString(QLatin1String function);
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
     bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {

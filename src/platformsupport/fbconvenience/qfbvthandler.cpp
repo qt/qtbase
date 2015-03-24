@@ -38,9 +38,11 @@
 
 #define VTH_ENABLED
 
+#include <private/qcore_unix_p.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/signalfd.h>
 #include <sys/ioctl.h>
 #include <linux/kd.h>
@@ -59,6 +61,24 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef VTH_ENABLED
+static void setTTYCursor(bool enable)
+{
+    const char * const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
+    int fd = -1;
+    for (const char * const *dev = devs; *dev; ++dev) {
+        fd = QT_OPEN(*dev, O_RDWR);
+        if (fd != -1) {
+            // Enable/disable screen blanking and the blinking cursor.
+            const char *termctl = enable ? "\033[9;15]\033[?33h\033[?25h\033[?0c" : "\033[9;0]\033[?33l\033[?25l\033[?1c";
+            QT_WRITE(fd, termctl, strlen(termctl) + 1);
+            QT_CLOSE(fd);
+            return;
+        }
+    }
+}
+#endif
+
 QFbVtHandler::QFbVtHandler(QObject *parent)
     : QObject(parent),
       m_tty(-1),
@@ -66,6 +86,8 @@ QFbVtHandler::QFbVtHandler(QObject *parent)
       m_signalNotifier(0)
 {
 #ifdef VTH_ENABLED
+    setTTYCursor(false);
+
     if (isatty(0)) {
         m_tty = 0;
         ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
@@ -114,6 +136,7 @@ QFbVtHandler::~QFbVtHandler()
 {
 #ifdef VTH_ENABLED
     restoreKeyboard();
+    setTTYCursor(true);
 
     if (m_signalFd != -1)
         close(m_signalFd);
@@ -172,6 +195,7 @@ void QFbVtHandler::handleInt()
 #ifdef VTH_ENABLED
     emit interrupted();
     restoreKeyboard();
+    setTTYCursor(true);
     _exit(1);
 #endif
 }

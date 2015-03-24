@@ -235,7 +235,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         firstModified.setTimeSpec(Qt::UTC);
         secondModified.setTimeSpec(Qt::UTC);
 
-        r = firstModified.secsTo(secondModified);
+        r = firstModified.msecsTo(secondModified);
         break;
       }
       case QDir::Size:

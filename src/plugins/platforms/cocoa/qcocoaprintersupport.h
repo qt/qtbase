@@ -39,6 +39,8 @@
 
 #include "qt_mac_p.h"
 
+QT_BEGIN_NAMESPACE
+
 class QCocoaPrinterSupport : public QPlatformPrinterSupport
 {
 public:
@@ -52,6 +54,8 @@ public:
     QStringList availablePrintDeviceIds() const Q_DECL_OVERRIDE;
     QString defaultPrintDeviceId() const Q_DECL_OVERRIDE;
 };
+
+QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTER
 #endif // QCOCOAPRINTERSUPPORT_H

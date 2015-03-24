@@ -341,6 +341,8 @@ QSpacerItem * QSpacerItem::spacerItem()
 }
 
 /*!
+    \since 5.5
+
     Returns the size policy of this item.
 */
 QSizePolicy QSpacerItem::sizePolicy() const

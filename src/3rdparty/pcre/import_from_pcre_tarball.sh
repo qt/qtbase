@@ -35,8 +35,6 @@
 # This is a small script to copy the required files from a PCRE tarball
 # into 3rdparty/pcre/ , following the instructions found in the NON-UNIX-USE
 # file. Documentation, tests, demos etc. are not imported.
-# Also, a global s/HAVE_CONFIG_H/PCRE_HAVE_CONFIG_H/g is performed, to avoid
-# tampering QtCore compilation with a -DHAVE_CONFIG_H.
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 pcre_tarball_dir/ \$QTDIR/src/3rdparty/pcre/"
@@ -54,10 +52,9 @@ fi
 
 # with 1 argument, copies PCRE_DIR/$1 to TARGET_DIR/$1
 # with 2 arguments, copies PCRE_DIR/$1 to TARGET_DIR/$2
-# every file copied gets a s/HAVE_CONFIG_H/PCRE_HAVE_CONFIG_H/g
-copy_and_convert_file() {
+copy_file() {
     if [ $# -lt 1 -o $# -gt 2  ]; then
-        echo "Wrong number of arguments to copy_and_convert_file"
+        echo "Wrong number of arguments to copy_file"
         exit 3
     fi
 
@@ -69,11 +66,11 @@ copy_and_convert_file() {
     fi
 
     mkdir -p "$TARGET_DIR/$(dirname "$SOURCE_FILE")"
-    sed 's/HAVE_CONFIG_H/PCRE_HAVE_CONFIG_H/g' < "$PCRE_DIR/$SOURCE_FILE" > "$TARGET_DIR/$DEST_FILE"
+    cp "$PCRE_DIR/$SOURCE_FILE" "$TARGET_DIR/$DEST_FILE"
 }
 
-copy_and_convert_file "pcre.h.generic" "pcre.h"
-copy_and_convert_file "pcre_chartables.c.dist" "pcre_chartables.c"
+copy_file "pcre.h.generic" "pcre.h"
+copy_file "pcre_chartables.c.dist" "pcre_chartables.c"
 
 FILES="
     AUTHORS
@@ -148,5 +145,5 @@ FILES="
 "
 
 for i in $FILES; do
-    copy_and_convert_file "$i"
+    copy_file "$i"
 done

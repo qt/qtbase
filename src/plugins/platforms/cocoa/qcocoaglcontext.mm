@@ -42,6 +42,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+QT_BEGIN_NAMESPACE
+
 static inline QByteArray getGlString(GLenum param)
 {
     if (const GLubyte *s = glGetString(param))
@@ -351,3 +353,6 @@ bool QCocoaGLContext::isSharing() const
 {
     return m_shareContext != nil;
 }
+
+QT_END_NAMESPACE
+

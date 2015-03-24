@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
+load(qfeatures)
+
 src_tools_bootstrap.subdir = tools/bootstrap
 src_tools_bootstrap.target = sub-bootstrap
 src_tools_bootstrap.CONFIG = host_build
@@ -81,6 +83,9 @@ src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
 src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
 
+src_3rdparty_pcre.subdir = $$PWD/3rdparty/pcre
+src_3rdparty_pcre.target = sub-3rdparty-pcre
+
 src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
 src_3rdparty_harfbuzzng.depends = src_corelib   # for the Qt atomics
@@ -123,7 +128,12 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
-SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_corelib src_tools_qlalr
+SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
+!contains(QT_DISABLED_FEATURES, regularexpression):pcre {
+    SUBDIRS += src_3rdparty_pcre
+    src_corelib.depends += src_3rdparty_pcre
+}
+SUBDIRS += src_corelib src_tools_qlalr
 TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
@@ -172,7 +182,7 @@ android:!android-no-sdk: SUBDIRS += src_android
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
     src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml \
-    src_3rdparty_harfbuzzng
+    src_3rdparty_pcre src_3rdparty_harfbuzzng
 
 sub-tools.depends = $$TOOLS
 QMAKE_EXTRA_TARGETS = sub-tools

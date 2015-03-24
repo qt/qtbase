@@ -40,6 +40,8 @@
 
 #include <private/qprinterinfo_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QCocoaPrinterSupport::QCocoaPrinterSupport()
 { }
 
@@ -93,5 +95,7 @@ QString QCocoaPrinterSupport::defaultPrintDeviceId() const
     }
     return QString();
 }
+
+QT_END_NAMESPACE
 
 #endif  //QT_NO_PRINTER

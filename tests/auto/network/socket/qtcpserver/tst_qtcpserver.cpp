@@ -96,9 +96,7 @@ private slots:
     void setSocketDescriptor();
 #endif
     void listenWhileListening();
-#ifndef QT_NO_PROCESS
     void addressReusable();
-#endif
     void setNewSocketDescriptorBlocking();
 #ifndef QT_NO_NETWORKPROXY
     void invalidProxy_data();
@@ -565,9 +563,11 @@ protected:
 #endif // !Q_OS_WINRT
 };
 
-#ifndef QT_NO_PROCESS
 void tst_QTcpServer::addressReusable()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
 #ifdef Q_OS_LINUX
     QSKIP("The addressReusable test is unstable on Linux. See QTBUG-39985.");
 #endif
@@ -616,8 +616,8 @@ void tst_QTcpServer::addressReusable()
 
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost, 49199));
-}
 #endif
+}
 
 void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {

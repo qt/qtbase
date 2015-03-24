@@ -38,6 +38,8 @@
 #include <QtGui>
 #include <qpa/qplatformaccessibility.h>
 
+QT_BEGIN_NAMESPACE
+
 class QCocoaAccessibility : public QPlatformAccessibility
 {
 public:
@@ -80,5 +82,7 @@ bool hasValueAttribute(QAccessibleInterface *interface);
 id getValueAttribute(QAccessibleInterface *interface);
 
 }
+
+QT_END_NAMESPACE
 
 #endif

@@ -128,7 +128,8 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         if (m_selectedRow == -1)
             m_selectedRow = 0;
 
-        self.toolbar = [[[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 44)] autorelease];
+        self.toolbar = [[[UIToolbar alloc] init] autorelease];
+        self.toolbar.frame.size = [self.toolbar sizeThatFits:self.bounds.size];
         self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
         UIBarButtonItem *spaceButton = [[[UIBarButtonItem alloc]
@@ -201,7 +202,6 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)closeMenu
 {
-    [self listenForKeyboardWillHideNotification:NO];
     if (!m_visibleMenuItems.isEmpty())
         QIOSMenu::currentMenu()->handleItemSelected(m_visibleMenuItems.at(m_selectedRow));
     else
@@ -210,7 +210,6 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 - (void)cancelMenu
 {
-    [self listenForKeyboardWillHideNotification:NO];
     QIOSMenu::currentMenu()->dismiss();
 }
 
@@ -466,12 +465,14 @@ void QIOSMenu::toggleShowUsingUIPickerView(bool show)
     } else {
         Q_ASSERT(focusObjectWithPickerView);
         focusObjectWithPickerView->removeEventFilter(this);
-        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
         focusObjectWithPickerView = 0;
 
         Q_ASSERT(m_pickerView);
+        [m_pickerView listenForKeyboardWillHideNotification:NO];
         [m_pickerView release];
         m_pickerView = 0;
+
+        qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
     }
 }
 

@@ -848,10 +848,15 @@ QSize QAbstractSpinBox::sizeHint() const
         int w = 0;
         QString s;
         QString fixedContent =  d->prefix + d->suffix + QLatin1Char(' ');
-        s = d->textFromValue(d->minimum) + fixedContent;
+        s = d->textFromValue(d->minimum);
+        s.truncate(18);
+        s += fixedContent;
         w = qMax(w, fm.width(s));
-        s = d->textFromValue(d->maximum) + fixedContent;
+        s = d->textFromValue(d->maximum);
+        s.truncate(18);
+        s += fixedContent;
         w = qMax(w, fm.width(s));
+
         if (d->specialValueText.size()) {
             s = d->specialValueText;
             w = qMax(w, fm.width(s));
@@ -884,9 +889,13 @@ QSize QAbstractSpinBox::minimumSizeHint() const
 
         QString s;
         QString fixedContent =  d->prefix + QLatin1Char(' ');
-        s = d->textFromValue(d->minimum) + fixedContent;
+        s = d->textFromValue(d->minimum);
+        s.truncate(18);
+        s += fixedContent;
         w = qMax(w, fm.width(s));
-        s = d->textFromValue(d->maximum) + fixedContent;
+        s = d->textFromValue(d->maximum);
+        s.truncate(18);
+        s += fixedContent;
         w = qMax(w, fm.width(s));
 
         if (d->specialValueText.size()) {

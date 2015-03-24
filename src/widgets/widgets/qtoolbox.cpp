@@ -111,7 +111,7 @@ public:
     void _q_buttonClicked();
     void _q_widgetDestroyed(QObject*);
 
-    Page *page(QWidget *widget) const;
+    const Page *page(QWidget *widget) const;
     const Page *page(int index) const;
     Page *page(int index);
 
@@ -123,14 +123,14 @@ public:
     Page *currentPage;
 };
 
-QToolBoxPrivate::Page *QToolBoxPrivate::page(QWidget *widget) const
+const QToolBoxPrivate::Page *QToolBoxPrivate::page(QWidget *widget) const
 {
     if (!widget)
         return 0;
 
     for (PageList::ConstIterator i = pageList.constBegin(); i != pageList.constEnd(); ++i)
         if ((*i).widget == widget)
-            return (Page*) &(*i);
+            return (const Page*) &(*i);
     return 0;
 }
 
@@ -448,7 +448,7 @@ void QToolBoxPrivate::_q_widgetDestroyed(QObject *object)
     // no verification - vtbl corrupted already
     QWidget *p = (QWidget*)object;
 
-    QToolBoxPrivate::Page *c = page(p);
+    const QToolBoxPrivate::Page *c = page(p);
     if (!p || !c)
         return;
 
@@ -550,7 +550,7 @@ QWidget *QToolBox::widget(int index) const
 int QToolBox::indexOf(QWidget *widget) const
 {
     Q_D(const QToolBox);
-    QToolBoxPrivate::Page *c = (widget ? d->page(widget) : 0);
+    const QToolBoxPrivate::Page *c = (widget ? d->page(widget) : 0);
     return c ? d->pageList.indexOf(*c) : -1;
 }
 

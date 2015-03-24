@@ -5078,9 +5078,6 @@ void tst_QWidget::showAndMoveChild()
 {
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
-#if defined(UBUNTU_ONEIRIC)
-    QSKIP("QTBUG-30566 - Unstable auto-test");
-#endif
     QWidget parent(0, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
     parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
@@ -7871,9 +7868,6 @@ void tst_QWidget::doubleRepaint()
 #if defined(Q_OS_MAC)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
-#endif
-#if defined(UBUNTU_ONEIRIC)
-    QSKIP("QTBUG-30566 - Unstable auto-test");
 #endif
    UpdateWidget widget;
    centerOnScreen(&widget);

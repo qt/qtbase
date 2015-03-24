@@ -65,6 +65,7 @@ private slots:
     void aliasForUTF16() const;
     void mibForTSCII() const;
     void codecForTSCII() const;
+    void iso8859_16() const;
 
     void utf8Codec_data();
     void utf8Codec();
@@ -84,7 +85,7 @@ private slots:
     void codecForUtfText_data();
     void codecForUtfText();
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
+#if defined(Q_OS_UNIX)
     void toLocal8Bit();
 #endif
 
@@ -512,6 +513,13 @@ void tst_QTextCodec::codecForTSCII() const
     QTextCodec *codec = QTextCodec::codecForMib(2107);
     QVERIFY(codec);
     QCOMPARE(codec->mibEnum(), 2107);
+}
+
+void tst_QTextCodec::iso8859_16() const
+{
+    QTextCodec *codec = QTextCodec::codecForName("ISO8859-16");
+    QVERIFY(codec);
+    QCOMPARE(codec->name(), QByteArray("ISO-8859-16"));
 }
 
 static QString fromInvalidUtf8Sequence(const QByteArray &ba)
@@ -2070,9 +2078,12 @@ void tst_QTextCodec::codecForUtfText()
         QVERIFY(codec == 0);
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
+#if defined(Q_OS_UNIX)
 void tst_QTextCodec::toLocal8Bit()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("No qprocess support", SkipAll);
+#else
     QProcess process;
     process.start("echo/echo");
     QString string(QChar(0x410));
@@ -2082,6 +2093,7 @@ void tst_QTextCodec::toLocal8Bit()
     process.waitForFinished();
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
+#endif
 }
 #endif
 

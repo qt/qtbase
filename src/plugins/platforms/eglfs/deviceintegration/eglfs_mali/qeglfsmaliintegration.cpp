@@ -66,7 +66,9 @@ void QEglFSMaliIntegration::platformInit()
     vinfo.green.offset     = 8;
     vinfo.red.offset       = 16;
     vinfo.transp.offset    = 24;
+#if 0
     vinfo.yres_virtual     = 2 * vinfo.yres;
+#endif
 
     if (ioctl(fd, FBIOPUT_VSCREENINFO, &vinfo) == -1)
         qErrnoWarning(errno, "Unable to set double buffer mode!");
@@ -90,7 +92,7 @@ EGLNativeWindowType QEglFSMaliIntegration::createNativeWindow(QPlatformWindow *w
 
 void QEglFSMaliIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
-    free(window);
+    free((void*)window);
 }
 
 QT_END_NAMESPACE

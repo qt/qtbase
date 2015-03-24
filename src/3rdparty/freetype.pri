@@ -61,6 +61,8 @@ contains(QT_CONFIG, system-zlib) {
     include($$PWD/zlib_dependency.pri)
 }
 
+DEFINES += TT_CONFIG_OPTION_SUBPIXEL_HINTING
+
 # disable warnings about "unsafe" methods in C code
 msvc:QMAKE_CFLAGS_WARN_ON += -wd"4996"
 

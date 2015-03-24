@@ -370,7 +370,7 @@ Q_WIDGETS_EXPORT QSize qSmartMinSize(const QSize &sizeHint, const QSize &minSize
 
 Q_WIDGETS_EXPORT QSize qSmartMinSize(const QWidgetItem *i)
 {
-    QWidget *w = ((QWidgetItem *)i)->widget();
+    QWidget *w = const_cast<QWidgetItem *>(i)->widget();
     return qSmartMinSize(w->sizeHint(), w->minimumSizeHint(),
                             w->minimumSize(), w->maximumSize(),
                             w->sizePolicy());
@@ -408,7 +408,7 @@ Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QSize &sizeHint,
 
 Q_WIDGETS_EXPORT QSize qSmartMaxSize(const QWidgetItem *i, Qt::Alignment align)
 {
-    QWidget *w = ((QWidgetItem*)i)->widget();
+    QWidget *w = const_cast<QWidgetItem*>(i)->widget();
 
     return qSmartMaxSize(w->sizeHint().expandedTo(w->minimumSizeHint()), w->minimumSize(), w->maximumSize(),
                             w->sizePolicy(), align);

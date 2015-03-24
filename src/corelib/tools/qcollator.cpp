@@ -275,8 +275,8 @@ bool QCollator::ignorePunctuation() const
 /*!
     \fn int QCollator::compare(const QString &s1, const QString &s2) const
 
-    Compares \a s1 with \a s2. Returns -1, 0 or 1 depending on whether \a s1 is
-    smaller, equal or larger than \a s2.
+    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
+    depending on whether \a s1 is smaller, equal or larger than \a s2.
  */
 
 /*!
@@ -288,8 +288,8 @@ bool QCollator::ignorePunctuation() const
     \fn int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
     \overload
 
-    Compares \a s1 with \a s2. Returns -1, 0 or 1 depending on whether \a s1 is
-    smaller, equal or larger than \a s2.
+    Compares \a s1 with \a s2. Returns an integer less than, equal to, or greater than zero
+    depending on whether \a s1 is smaller, equal or larger than \a s2.
  */
 
 /*!
@@ -299,8 +299,9 @@ bool QCollator::ignorePunctuation() const
     Compares \a s1 with \a s2. \a len1 and \a len2 specify the length of the
     QChar arrays pointer to by \a s1 and \a s2.
 
-    Returns -1, 0 or 1 depending on whether \a s1 is smaller, equal or larger than \a s2.
- */
+    Returns an integer less than, equal to, or greater than zero
+    depending on whether \a s1 is smaller, equal or larger than \a s2.
+*/
 
 /*!
     \fn QCollatorSortKey QCollator::sortKey(const QString &string) const

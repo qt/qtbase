@@ -587,6 +587,9 @@ void QSpinBox::fixup(QString &input) const
     choice in addition to the range of numeric values. See
     setSpecialValueText() for how to do this with QDoubleSpinBox.
 
+    \note The displayed value of the QDoubleSpinBox is limited to 18 characters
+    in addition to eventual prefix and suffix content. This limitation is used
+    to keep the double spin box usable even with extremely large values.
     \sa QSpinBox, QDateTimeEdit, QSlider, {Spin Boxes Example}
 */
 

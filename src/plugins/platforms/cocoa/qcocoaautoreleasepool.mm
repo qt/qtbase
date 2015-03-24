@@ -33,6 +33,8 @@
 
 #include "qcocoaautoreleasepool.h"
 
+QT_BEGIN_NAMESPACE
+
 QCocoaAutoReleasePool::QCocoaAutoReleasePool()
 {
     pool = [[NSAutoreleasePool alloc] init];
@@ -42,3 +44,5 @@ QCocoaAutoReleasePool::~QCocoaAutoReleasePool()
 {
     [pool release];
 }
+
+QT_END_NAMESPACE
