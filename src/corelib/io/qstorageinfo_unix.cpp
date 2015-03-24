@@ -49,7 +49,7 @@
 #  include <sys/mount.h>
 #  include <sys/vfs.h>
 #  include <mntent.h>
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
 #  include <mntent.h>
 #  include <sys/statvfs.h>
 #elif defined(Q_OS_SOLARIS)
@@ -133,7 +133,7 @@ private:
     QByteArray m_rootPath;
     QByteArray m_fileSystemType;
     QByteArray m_device;
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
     FILE *fp;
     mntent mnt;
     QByteArray buffer;
@@ -275,10 +275,11 @@ inline QByteArray QStorageIterator::device() const
     return m_device;
 }
 
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
 
 static const char pathMounted[] = "/etc/mtab";
-static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
+static const int bufferSize = 1024; // 2 paths (mount point+device) and metainfo;
+                                    // should be enough
 
 inline QStorageIterator::QStorageIterator() :
     buffer(QByteArray(bufferSize, 0))
