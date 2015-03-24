@@ -113,6 +113,9 @@ QT_BEGIN_NAMESPACE
     \value GenericCacheLocation Returns a directory location where user-specific non-essential
            (cached) data, shared across applications, should be written. This is a generic value.
            Note that the returned path may be empty if the system has no concept of shared cache.
+    \value GenericDataLocation Returns a directory location where persistent
+           data shared across applications can be stored. This is a generic value. The returned
+           path is never empty.
     \value RuntimeLocation Returns a directory location where runtime communication
            files should be written, like Unix local sockets. This is a generic value.
            The returned path may be empty on some systems.
