@@ -1937,7 +1937,6 @@ void Generator::terminate()
     imageFiles.clear();
     imageDirs.clear();
     outDir_.clear();
-    QmlTypeNode::terminate();
 }
 
 void Generator::terminateGenerator()

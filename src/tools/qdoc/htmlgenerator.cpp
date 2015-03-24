@@ -2247,9 +2247,9 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
     QString logicalModuleVersion;
     CollectionNode* collection = 0;
     if (qcn->isJsNode())
-        qdb_->findJsModule(qcn->logicalModuleName());
+        collection = qdb_->findJsModule(qcn->logicalModuleName());
     else
-        qdb_->findQmlModule(qcn->logicalModuleName());
+        collection = qdb_->findQmlModule(qcn->logicalModuleName());
     if (collection)
         logicalModuleVersion = collection->logicalModuleVersion();
     else

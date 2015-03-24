@@ -2124,9 +2124,10 @@ void QmlTypeNode::terminate()
  */
 void QmlTypeNode::addInheritedBy(const QString& base, Node* sub)
 {
-    if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd()) {
+    if (sub->isInternal())
+        return;
+    if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd())
         inheritedBy.insert(base,sub);
-    }
 }
 
 /*!

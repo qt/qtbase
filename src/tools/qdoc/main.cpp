@@ -775,6 +775,7 @@ int main(int argc, char **argv)
     }
     translators.clear();
 #endif
+    QmlTypeNode::terminate();
 
 #ifdef DEBUG_SHUTDOWN_CRASH
     qDebug() << "main(): Delete qdoc database";
