@@ -170,12 +170,13 @@
 
     \value AA_UseDesktopOpenGL Forces the usage of desktop OpenGL (for example,
            \e opengl32.dll or \e libGL.so) on platforms that use dynamic loading
-           of the OpenGL implementation.
-           This value has been added in Qt 5.3.
+           of the OpenGL implementation. This value has been added in Qt 5.3.
+           This attribute must be set before Q(Gui)Application is constructed.
 
     \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 or higher on
            platforms that use dynamic loading of the OpenGL implementation.
-           This value has been added in Qt 5.3.
+           This value has been added in Qt 5.3. This attribute must be set
+           before Q(Gui)Application is constructed.
 
     \value AA_UseSoftwareOpenGL Forces the usage of a software based OpenGL
            implementation on platforms that use dynamic loading of the OpenGL
@@ -186,13 +187,15 @@
            \c opengl32sw.dll and can be overridden by setting the environment
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
-           been added in Qt 5.4.
+           been added in Qt 5.4. This attribute must be set before
+           Q(Gui)Application is constructed.
 
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
            instances that belong to different top-level windows. This value has
-           been added in Qt 5.4.
+           been added in Qt 5.4. This attribute must be set before
+           Q(Gui)Application is constructed.
 
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QApplication/QGuiApplication. This value has been added in Qt 5.5.
