@@ -525,7 +525,8 @@ enum {
     ThaiCsbBit = 16,
     JapaneseCsbBit = 17,
     KoreanCsbBit = 19,
-    KoreanJohabCsbBit = 21
+    KoreanJohabCsbBit = 21,
+    SymbolCsbBit = 31
 };
 
 /*!
@@ -610,6 +611,11 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
         hasScript = true;
         //qDebug("font %s supports Korean", familyName.latin1());
     }
+    if (codePageRange[0] & (1 << SymbolCsbBit)) {
+        writingSystems = QSupportedWritingSystems();
+        hasScript = false;
+    }
+
     if (!hasScript)
         writingSystems.setSupported(QFontDatabase::Symbol);
 
