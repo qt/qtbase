@@ -221,17 +221,18 @@ QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
     : jniEnv(0)
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
-    if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
+    const jint ret = vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6);
+    if (ret == JNI_OK) // Already attached
+        return;
+
+    if (ret == JNI_EDETACHED) { // We need to (re-)attach
         JavaVMAttachArgs args = { JNI_VERSION_1_6, qJniThreadName, Q_NULLPTR };
         if (vm->AttachCurrentThread(&jniEnv, &args) != JNI_OK)
             return;
+
+        if (!jniEnvTLS->hasLocalData()) // If we attached the thread we own it.
+            jniEnvTLS->setLocalData(new QJNIEnvironmentPrivateTLS);
     }
-
-    if (!jniEnv)
-        return;
-
-    if (!jniEnvTLS->hasLocalData())
-        jniEnvTLS->setLocalData(new QJNIEnvironmentPrivateTLS);
 }
 
 JNIEnv *QJNIEnvironmentPrivate::operator->()
