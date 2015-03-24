@@ -1219,6 +1219,19 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                 case QChar::ParagraphSeparator:
                     g.attributes[i].dontPrint = true;
                     break;
+                case QChar::SoftHyphen:
+                    if (!actualFontEngine->symbol) {
+                        // U+00AD [SOFT HYPHEN] is a default ignorable codepoint,
+                        // so we replace its glyph and metrics with ones for
+                        // U+002D [HYPHEN-MINUS] and make it visible if it appears at line-break
+                        g.glyphs[i] = actualFontEngine->glyphIndex('-');
+                        if (Q_LIKELY(g.glyphs[i] != 0)) {
+                            QGlyphLayout tmp = g.mid(i, 1);
+                            actualFontEngine->recalcAdvances(&tmp, 0);
+                        }
+                        g.attributes[i].dontPrint = true;
+                    }
+                    break;
                 default:
                     break;
                 }
