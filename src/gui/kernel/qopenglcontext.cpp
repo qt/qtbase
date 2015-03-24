@@ -636,12 +636,21 @@ void QOpenGLContext::destroy()
     d->platformGLContext = 0;
     delete d->functions;
     d->functions = 0;
+
+    foreach (QAbstractOpenGLFunctions *func, d->externalVersionFunctions) {
+        QAbstractOpenGLFunctionsPrivate *func_d = QAbstractOpenGLFunctionsPrivate::get(func);
+        func_d->owningContext = 0;
+        func_d->initialized = false;
+    }
+    d->externalVersionFunctions.clear();
     qDeleteAll(d->versionFunctions);
     d->versionFunctions.clear();
     qDeleteAll(d->versionFunctionsBackend);
     d->versionFunctionsBackend.clear();
+
     delete d->textureFunctions;
     d->textureFunctions = 0;
+
     d->nativeHandle = QVariant();
 }
 
@@ -719,7 +728,7 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
     is current. It is also possible to call this function when the context is not
     current, but in that case it is the caller's responsibility to ensure proper
-    intiialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    initialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
     afterwards.
 
     Usually one would use the template version of this function to automatically
@@ -1255,6 +1264,24 @@ void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
 {
     Q_D(QOpenGLContext);
     d->versionFunctionsBackend.remove(v);
+}
+
+/*!
+    \internal
+ */
+void QOpenGLContext::insertExternalFunctions(QAbstractOpenGLFunctions *f)
+{
+    Q_D(QOpenGLContext);
+    d->externalVersionFunctions.insert(f);
+}
+
+/*!
+    \internal
+ */
+void QOpenGLContext::removeExternalFunctions(QAbstractOpenGLFunctions *f)
+{
+    Q_D(QOpenGLContext);
+    d->externalVersionFunctions.remove(f);
 }
 
 /*!

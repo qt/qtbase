@@ -216,6 +216,7 @@ public:
 
     mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
     mutable QHash<QOpenGLVersionStatus, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
+    mutable QSet<QAbstractOpenGLFunctions *> externalVersionFunctions;
 
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
