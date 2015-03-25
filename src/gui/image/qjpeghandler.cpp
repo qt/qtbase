@@ -72,8 +72,6 @@ QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dst, const uchar *src, int len);
 typedef void (QT_FASTCALL *Rgb888ToRgb32Converter)(quint32 *dst, const uchar *src, int len);
 
-static Rgb888ToRgb32Converter rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32;
-
 struct my_error_mgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
 };
@@ -242,7 +240,9 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 
 static bool read_jpeg_image(QImage *outImage,
                             QSize scaledSize, QRect scaledClipRect,
-                            QRect clipRect, volatile int inQuality, j_decompress_ptr info, struct my_error_mgr* err  )
+                            QRect clipRect, volatile int inQuality,
+                            Rgb888ToRgb32Converter converter,
+                            j_decompress_ptr info, struct my_error_mgr* err  )
 {
     if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
@@ -383,7 +383,7 @@ static bool read_jpeg_image(QImage *outImage,
                 if (info->output_components == 3) {
                     uchar *in = rows[0] + clip.x() * 3;
                     QRgb *out = (QRgb*)outImage->scanLine(y);
-                    rgb888ToRgb32ConverterPtr(out, in, clip.width());
+                    converter(out, in, clip.width());
                 } else if (info->out_color_space == JCS_CMYK) {
                     // Convert CMYK->RGB.
                     uchar *in = rows[0] + clip.x() * 4;
@@ -714,7 +714,8 @@ public:
     };
 
     QJpegHandlerPrivate(QJpegHandler *qq)
-        : quality(75), exifOrientation(1), iod_src(0), state(Ready), optimize(false), progressive(false), q(qq)
+        : quality(75), exifOrientation(1), iod_src(0),
+          rgb888ToRgb32ConverterPtr(qt_convert_rgb888_to_rgb32), state(Ready), optimize(false), progressive(false), q(qq)
     {}
 
     ~QJpegHandlerPrivate()
@@ -744,6 +745,8 @@ public:
     struct jpeg_decompress_struct info;
     struct my_jpeg_source_mgr * iod_src;
     struct my_error_mgr err;
+
+    Rgb888ToRgb32Converter rgb888ToRgb32ConverterPtr;
 
     State state;
 
@@ -968,7 +971,7 @@ bool QJpegHandlerPrivate::read(QImage *image)
 
     if(state == ReadHeader)
     {
-        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, &info, &err);
+        bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, rgb888ToRgb32ConverterPtr, &info, &err);
         if (success) {
             for (int i = 0; i < readTexts.size()-1; i+=2)
                 image->setText(readTexts.at(i), readTexts.at(i+1));
@@ -996,18 +999,18 @@ QJpegHandler::QJpegHandler()
     // from qimage_neon.cpp
 
     if (qCpuHasFeature(NEON))
-        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
+        d->rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
 #endif
 
 #if defined(QT_COMPILER_SUPPORTS_SSSE3)
     // from qimage_ssse3.cpps
     if (qCpuHasFeature(SSSE3)) {
-        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
+        d->rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
     }
 #endif // QT_COMPILER_SUPPORTS_SSSE3
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
     if (qCpuHasFeature(DSPR2)) {
-        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_mips_dspr2_asm;
+        d->rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_mips_dspr2_asm;
     }
 #endif // QT_COMPILER_SUPPORTS_DSPR2
 }
