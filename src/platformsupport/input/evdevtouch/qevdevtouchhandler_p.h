@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVTOUCH_P_H
-#define QEVDEVTOUCH_P_H
+#ifndef QEVDEVTOUCHHANDLER_P_H
+#define QEVDEVTOUCHHANDLER_P_H
 
 //
 //  W A R N I N G
@@ -65,7 +65,7 @@ class QEvdevTouchScreenHandler : public QObject
     Q_OBJECT
 
 public:
-    explicit QEvdevTouchScreenHandler(const QString &specification = QString(), QObject *parent = 0);
+    explicit QEvdevTouchScreenHandler(const QString &device, const QString &spec = QString(), QObject *parent = 0);
     ~QEvdevTouchScreenHandler();
 
 private slots:
@@ -83,12 +83,13 @@ private:
 class QEvdevTouchScreenHandlerThread : public QThread
 {
 public:
-    explicit QEvdevTouchScreenHandlerThread(const QString &spec, QObject *parent = 0);
+    explicit QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent = 0);
     ~QEvdevTouchScreenHandlerThread();
     void run() Q_DECL_OVERRIDE;
     QEvdevTouchScreenHandler *handler() { return m_handler; }
 
 private:
+    QString m_device;
     QString m_spec;
     QEvdevTouchScreenHandler *m_handler;
 };

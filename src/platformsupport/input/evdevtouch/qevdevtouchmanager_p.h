@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,35 +31,46 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
+#ifndef QEVDEVTOUCHMANAGER_P_H
+#define QEVDEVTOUCHMANAGER_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QObject>
+#include <QHash>
+#include <QSocketNotifier>
 
 QT_BEGIN_NAMESPACE
 
-class QEvdevTouchScreenPlugin : public QGenericPlugin
+class QDeviceDiscovery;
+class QEvdevTouchScreenHandlerThread;
+
+class QEvdevTouchManager : public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevtouch.json")
-
 public:
-    QEvdevTouchScreenPlugin();
+    QEvdevTouchManager(const QString &key, const QString &spec, QObject *parent = 0);
+    ~QEvdevTouchManager();
 
-    QObject* create(const QString &key, const QString &specification) Q_DECL_OVERRIDE;
+private slots:
+    void addDevice(const QString &deviceNode);
+    void removeDevice(const QString &deviceNode);
+
+private:
+    QString m_spec;
+    QDeviceDiscovery *m_deviceDiscovery;
+    QHash<QString, QEvdevTouchScreenHandlerThread *> m_activeDevices;
 };
-
-QEvdevTouchScreenPlugin::QEvdevTouchScreenPlugin()
-{
-}
-
-QObject* QEvdevTouchScreenPlugin::create(const QString &key,
-                                         const QString &spec)
-{
-    if (!key.compare(QLatin1String("EvdevTouch"), Qt::CaseInsensitive))
-        return new QEvdevTouchManager(key, spec);
-
-    return 0;
-}
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#endif // QEVDEVTOUCHMANAGER_P_H
