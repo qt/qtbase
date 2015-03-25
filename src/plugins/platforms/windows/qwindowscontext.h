@@ -41,6 +41,10 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
 
+#define STRICT_TYPED_ITEMIDS
+#include <shlobj.h>
+#include <shlwapi.h>
+
 struct IBindCtx;
 struct _SHSTOCKICONINFO;
 
@@ -120,12 +124,16 @@ struct QWindowsShell32DLL
     inline void init();
 
     typedef HRESULT (WINAPI *SHCreateItemFromParsingName)(PCWSTR, IBindCtx *, const GUID&, void **);
+    typedef HRESULT (WINAPI *SHGetKnownFolderIDList)(const GUID &, DWORD, HANDLE, PIDLIST_ABSOLUTE *);
     typedef HRESULT (WINAPI *SHGetStockIconInfo)(int , int , _SHSTOCKICONINFO *);
     typedef HRESULT (WINAPI *SHGetImageList)(int, REFIID , void **);
+    typedef HRESULT (WINAPI *SHCreateItemFromIDList)(PCIDLIST_ABSOLUTE, REFIID, void **);
 
     SHCreateItemFromParsingName sHCreateItemFromParsingName;
+    SHGetKnownFolderIDList sHGetKnownFolderIDList;
     SHGetStockIconInfo sHGetStockIconInfo;
     SHGetImageList sHGetImageList;
+    SHCreateItemFromIDList sHCreateItemFromIDList;
 };
 
 // Shell scaling library (Windows 8.1 onwards)
