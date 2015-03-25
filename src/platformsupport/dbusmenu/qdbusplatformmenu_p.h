@@ -133,6 +133,8 @@ public:
     void setFont(const QFont &font) Q_DECL_OVERRIDE { Q_UNUSED(font); }
     void setMenuType(MenuType type) Q_DECL_OVERRIDE { Q_UNUSED(type); }
 
+    int dbusID() const { return m_dbusID; }
+
     void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE
     {
         Q_UNUSED(parentWindow);
@@ -152,9 +154,9 @@ public:
     bool operator==(const QDBusPlatformMenu& other) { return m_tag == other.m_tag; }
 
     static QDBusPlatformMenu* byId(int id);
-    static QList<QDBusPlatformMenu *> topLevelMenus();
+    static QList<QDBusPlatformMenu *> topLevelMenus() { return m_topLevelMenus; }
 
-    uint revision() { return m_revision; }
+    uint revision() const { return m_revision; }
 
     void emitUpdated();
 
@@ -173,6 +175,7 @@ private:
     uint m_revision;
     QHash<quintptr, QDBusPlatformMenuItem *> m_itemsByTag;
     QList<QDBusPlatformMenuItem *> m_items;
+    static QList<QDBusPlatformMenu *> m_topLevelMenus;
 };
 
 QT_END_NAMESPACE

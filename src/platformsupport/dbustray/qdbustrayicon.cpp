@@ -191,9 +191,10 @@ void QDBusTrayIcon::updateToolTip(const QString &tooltip)
 QPlatformMenu *QDBusTrayIcon::createMenu() const
 {
     qCDebug(qLcTray);
+    QDBusPlatformMenu *ret = new QDBusPlatformMenu();
     if (!m_menu)
-        const_cast<QDBusTrayIcon *>(this)->m_menu = new QDBusPlatformMenu();
-    return m_menu;
+        const_cast<QDBusTrayIcon *>(this)->m_menu = ret;
+    return ret;
 }
 
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)

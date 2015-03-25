@@ -82,6 +82,7 @@ class QDBusMenuLayoutItem
 {
 public:
     uint populate(int id, int depth, const QStringList &propertyNames);
+    void populate(const QDBusPlatformMenu *menu, int depth, const QStringList &propertyNames);
     void populate(const QDBusPlatformMenuItem *item, int depth, const QStringList &propertyNames);
 
     int m_id;
