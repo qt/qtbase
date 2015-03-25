@@ -3305,7 +3305,10 @@ CodeMarker *Doc::quoteFromFile(const Location &location,
                                         DocParser::exampleDirs,
                                         fileName, userFriendlyFilePath);
     if (filePath.isEmpty()) {
-        location.warning(tr("Cannot find file to quote from: '%1'").arg(fileName));
+        QString details = QLatin1String("Example directories: ") + DocParser::exampleDirs.join(QLatin1Char(' '));
+        if (!DocParser::exampleFiles.isEmpty())
+            details += QLatin1String(", example files: ") + DocParser::exampleFiles.join(QLatin1Char(' '));
+        location.warning(tr("Cannot find file to quote from: '%1'").arg(fileName), details);
     }
     else {
         QFile inFile(filePath);
