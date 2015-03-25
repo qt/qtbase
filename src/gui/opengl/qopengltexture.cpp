@@ -3650,7 +3650,7 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
 }
 
 /*!
-    \enum ComparisonFunction
+    \enum QOpenGLTexture::ComparisonFunction
     \since 5.5
     This enum specifies which comparison operator is used when texture comparison
     is enabled on this texture.
