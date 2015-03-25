@@ -1032,6 +1032,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             return true;
         }
 #endif
+    case QtWindows::ScrollEvent:
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
+#else
+        return d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
+#endif
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:

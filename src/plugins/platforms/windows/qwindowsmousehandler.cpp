@@ -42,6 +42,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
+#include <QtGui/QCursor>
 
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
@@ -375,6 +376,31 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
+static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int delta,
+                               Qt::Orientation orientation, Qt::KeyboardModifiers mods)
+{
+    // Redirect wheel event to one of the following, in order of preference:
+    // 1) The window under mouse
+    // 2) The window receiving the event
+    // If a window is blocked by modality, it can't get the event.
+
+    QWindow *receiver = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE);
+    bool handleEvent = true;
+    if (!isValidWheelReceiver(receiver)) {
+        receiver = window;
+        if (!isValidWheelReceiver(receiver))
+            handleEvent = false;
+    }
+
+    if (handleEvent) {
+        const QPoint posDip = QWindowsGeometryHint::mapFromGlobal(receiver, globalPos) / QWindowsScaling::factor();
+        QWindowSystemInterface::handleWheelEvent(receiver,
+                                                 posDip, globalPos / QWindowsScaling::factor(),
+                                                 delta / QWindowsScaling::factor(),
+                                                 orientation, mods);
+    }
+}
+
 bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
                                                     MSG msg, LRESULT *)
 {
@@ -397,26 +423,39 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
     if (msg.message == WM_MOUSEHWHEEL)
         delta = -delta;
 
-    // Redirect wheel event to one of the following, in order of preference:
-    // 1) The window under mouse
-    // 2) The window receiving the event
-    // If a window is blocked by modality, it can't get the event.
     const QPoint globalPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    QWindow *receiver = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE);
-    bool handleEvent = true;
-    if (!isValidWheelReceiver(receiver)) {
-        receiver = window;
-        if (!isValidWheelReceiver(receiver))
-            handleEvent = false;
+    redirectWheelEvent(window, globalPos, delta, orientation, mods);
+
+    return true;
+}
+
+bool QWindowsMouseHandler::translateScrollEvent(QWindow *window, HWND,
+                                                MSG msg, LRESULT *)
+{
+    // This is a workaround against some touchpads that send WM_HSCROLL instead of WM_MOUSEHWHEEL.
+    // We could also handle vertical scroll here but there's no reason to, there's no bug for vertical
+    // (broken vertical scroll would have been noticed long time ago), so lets keep the change small
+    // and minimize the chance for regressions.
+
+    int delta = 0;
+    switch (LOWORD(msg.wParam)) {
+    case SB_LINELEFT:
+        delta = 120;
+        break;
+    case SB_LINERIGHT:
+        delta = -120;
+        break;
+    case SB_PAGELEFT:
+        delta = 240;
+        break;
+    case SB_PAGERIGHT:
+        delta = -240;
+        break;
+    default:
+        return false;
     }
 
-    if (handleEvent) {
-        const QPoint posDip = QWindowsGeometryHint::mapFromGlobal(receiver, globalPos) / QWindowsScaling::factor();
-        QWindowSystemInterface::handleWheelEvent(receiver,
-                                                 posDip, globalPos / QWindowsScaling::factor(),
-                                                 delta / QWindowsScaling::factor(),
-                                                 orientation, mods);
-    }
+    redirectWheelEvent(window, QCursor::pos(), delta, Qt::Horizontal, Qt::NoModifier);
 
     return true;
 }
