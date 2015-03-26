@@ -65,9 +65,12 @@ public:
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
 
     void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
 private:
     QXcbShmImage *m_image;
+    QRegion m_paintRegion;
+    QImage m_rgbImage;
 };
 
 QT_END_NAMESPACE

@@ -113,6 +113,7 @@ public:
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format imageFormat() const { return m_imageFormat; }
+    bool imageNeedsRgbSwap() const { return m_imageRgbSwap; }
 
     bool handleGenericEvent(xcb_generic_event_t *event, long *result)  Q_DECL_OVERRIDE;
 
@@ -193,6 +194,7 @@ protected:
 
     uint m_depth;
     QImage::Format m_imageFormat;
+    bool m_imageRgbSwap;
 
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter;
