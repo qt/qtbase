@@ -291,8 +291,8 @@ void QPlatformScreen::resizeMaximizedWindows()
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
     const QRect oldGeometry = screen()->geometry();
     const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = geometry();
-    const QRect newAvailableGeometry = availableGeometry();
+    const QRect newGeometry = qHighDpiToDeviceIndependentPixels(geometry());
+    const QRect newAvailableGeometry = qHighDpiToDeviceIndependentPixels(availableGeometry());
 
     // make sure maximized and fullscreen windows are updated
     for (int i = 0; i < windows.size(); ++i) {
