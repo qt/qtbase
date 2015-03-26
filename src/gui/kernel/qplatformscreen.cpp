@@ -40,6 +40,7 @@
 #include <qpa/qplatformintegration.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -391,6 +392,16 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     }
 
     return rect;
+}
+
+QRect QPlatformScreen::screenGeometry() const
+{
+    return qHighDpiToDevicePixels(screen()->geometry());
+}
+
+QRect QPlatformScreen::screenAvailableGeometry() const
+{
+    return qHighDpiToDevicePixels(screen()->availableGeometry());
 }
 
 /*!
