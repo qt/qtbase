@@ -1137,7 +1137,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         }
     }
 
-    if (!handled)
+    if (!handled && m_glIntegration)
         handled = m_glIntegration->handleXcbEvent(event, response_type);
 
     if (handled)

@@ -186,9 +186,9 @@ QXcbIntegration::~QXcbIntegration()
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
+    QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
+    QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
     if (window->type() != Qt::Desktop) {
-        QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
-        QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
         if (glIntegration) {
             QXcbWindow *xcbWindow = glIntegration->createWindow(window);
             xcbWindow->create();
@@ -196,7 +196,8 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
         }
     }
 
-    Q_ASSERT(window->type() == Qt::Desktop || !window->supportsOpenGL());
+    Q_ASSERT(window->type() == Qt::Desktop || !window->supportsOpenGL()
+             || (!glIntegration && window->surfaceType() == QSurface::RasterGLSurface)); // for VNC
     QXcbWindow *xcbWindow = new QXcbWindow(window);
     xcbWindow->create();
     return xcbWindow;
