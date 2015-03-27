@@ -1696,6 +1696,7 @@ public:
     QT_Q_ENUM(TimerType)
     QT_Q_ENUM(ScrollPhase)
     QT_Q_ENUM(MouseEventSource)
+    QT_Q_FLAG(MouseEventFlag)
     QT_Q_ENUM(TabFocusBehavior)
 #endif // Q_DOC
 
