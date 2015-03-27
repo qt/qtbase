@@ -59,6 +59,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     bool m_shouldInvalidateWindowShadow;
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;
+    NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_frameStrutButtons;
     QString m_composingText;

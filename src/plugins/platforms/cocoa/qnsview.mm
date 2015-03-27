@@ -167,6 +167,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 - (void)dealloc
 {
     CGImageRelease(m_maskImage);
+    [m_trackingArea release];
     m_maskImage = 0;
     m_window = 0;
     m_subscribesForGlobalFrameNotifications = false;
@@ -188,6 +189,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     m_window = window;
     m_platformWindow = platformWindow;
     m_sendKeyEvent = false;
+    m_trackingArea = nil;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
     // prevent rift in space-time continuum, disable
@@ -841,19 +843,11 @@ QT_WARNING_POP
 {
     [super updateTrackingAreas];
 
-    // [NSView addTrackingArea] is slow, so bail out early if we can:
-    if (NSIsEmptyRect([self visibleRect]))
-        return;
-
-    // Remove current trakcing areas:
     QCocoaAutoReleasePool pool;
-    if (NSArray *trackingArray = [self trackingAreas]) {
-        NSUInteger size = [trackingArray count];
-        for (NSUInteger i = 0; i < size; ++i) {
-            NSTrackingArea *t = [trackingArray objectAtIndex:i];
-            [self removeTrackingArea:t];
-        }
-    }
+
+    // NSTrackingInVisibleRect keeps care of updating once the tracking is set up, so bail out early
+    if (m_trackingArea && [[self trackingAreas] containsObject:m_trackingArea])
+        return;
 
     // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
     // only be turned on if mouseTracking, hover is on or a tool tip is set.
@@ -863,12 +857,12 @@ QT_WARNING_POP
     // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
                                  | NSTrackingInVisibleRect | NSTrackingMouseMoved | NSTrackingCursorUpdate;
-    NSTrackingArea *ta = [[[NSTrackingArea alloc] initWithRect:[self frame]
-                                                      options:trackingOptions
-                                                        owner:m_mouseMoveHelper
-                                                     userInfo:nil]
-                                                                autorelease];
-    [self addTrackingArea:ta];
+    [m_trackingArea release];
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame]
+                                                  options:trackingOptions
+                                                    owner:m_mouseMoveHelper
+                                                 userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
 }
 
 -(void)cursorUpdateImpl:(NSEvent *)theEvent
