@@ -123,6 +123,13 @@ struct Custom {
         return i == other.i;
     }
 
+    bool operator<(const Custom &other) const
+    {
+        check(&other);
+        check(this);
+        return i < other.i;
+    }
+
     Custom &operator=(const Custom &other)
     {
         check(&other);
@@ -2075,6 +2082,19 @@ void tst_QVector::testOperators() const
 
     // ==
     QVERIFY(myvec == combined);
+
+    // <, >, <=, >=
+    QVERIFY(!(myvec <  combined));
+    QVERIFY(!(myvec >  combined));
+    QVERIFY(  myvec <= combined);
+    QVERIFY(  myvec >= combined);
+    combined.push_back("G");
+    QVERIFY(  myvec <  combined);
+    QVERIFY(!(myvec >  combined));
+    QVERIFY(  myvec <= combined);
+    QVERIFY(!(myvec >= combined));
+    QVERIFY(combined >  myvec);
+    QVERIFY(combined >= myvec);
 
     // []
     QCOMPARE(myvec[0], QLatin1String("A"));

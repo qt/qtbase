@@ -865,6 +865,36 @@ QList<T> QList<T>::fromVector(const QVector<T> &vector)
 Q_DECLARE_SEQUENTIAL_ITERATOR(Vector)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(Vector)
 
+template <typename T>
+bool operator<(const QVector<T> &lhs, const QVector<T> &rhs)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
+                                                               rhs.begin(), rhs.end())))
+{
+    return std::lexicographical_compare(lhs.begin(), lhs.end(),
+                                        rhs.begin(), rhs.end());
+}
+
+template <typename T>
+inline bool operator>(const QVector<T> &lhs, const QVector<T> &rhs)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+{
+    return rhs < lhs;
+}
+
+template <typename T>
+inline bool operator<=(const QVector<T> &lhs, const QVector<T> &rhs)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+{
+    return !(lhs > rhs);
+}
+
+template <typename T>
+inline bool operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(lhs < rhs))
+{
+    return !(lhs < rhs);
+}
+
 /*
    ### Qt 5:
    ### This needs to be removed for next releases of Qt. It is a workaround for vc++ because

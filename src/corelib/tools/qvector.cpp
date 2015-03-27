@@ -290,6 +290,54 @@
     \sa operator==()
 */
 
+/*! \fn bool operator<(const QVector<T> &lhs, const QVector<T> &rhs)
+    \since 5.6
+    \relates QVector
+
+    Returns \c true if vector \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator<=(const QVector<T> &lhs, const QVector<T> &rhs)
+    \since 5.6
+    \relates QVector
+
+    Returns \c true if vector \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>(const QVector<T> &lhs, const QVector<T> &rhs)
+    \since 5.6
+    \relates QVector
+
+    Returns \c true if vector \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
+    \since 5.6
+    \relates QVector
+
+    Returns \c true if vector \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
 /*! \fn int QVector::size() const
 
     Returns the number of items in the vector.
