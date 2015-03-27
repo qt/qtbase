@@ -2031,10 +2031,12 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 #ifndef QT_NO_WHEELEVENT
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
+#ifndef Q_OS_MAC
     Q_D(QTabBar);
     int offset = event->delta() > 0 ? -1 : 1;
     d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
+#endif
 }
 #endif //QT_NO_WHEELEVENT
 
