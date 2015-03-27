@@ -51,6 +51,7 @@ private slots:
     void first();
     void last();
     void squeeze();
+    void operators();
     void indexOf();
     void lastIndexOf();
     void contains();
@@ -688,6 +689,49 @@ void tst_QVarLengthArray::squeeze()
     list.resize(sizeOnHeap);
     list.squeeze();
     QCOMPARE(list.capacity(), sizeOnHeap);
+}
+
+void tst_QVarLengthArray::operators()
+{
+    QVarLengthArray<QString> myvla;
+    myvla << "A" << "B" << "C";
+    QVarLengthArray<QString> myvlatwo;
+    myvlatwo << "D" << "E" << "F";
+    QVarLengthArray<QString> combined;
+    combined << "A" << "B" << "C" << "D" << "E" << "F";
+
+    // !=
+    QVERIFY(myvla != myvlatwo);
+
+    // +=: not provided, emulate
+    //myvla += myvlatwo;
+    Q_FOREACH (const QString &s, myvlatwo)
+        myvla.push_back(s);
+    QCOMPARE(myvla, combined);
+
+    // ==
+    QVERIFY(myvla == combined);
+
+    // <, >, <=, >=
+    QVERIFY(!(myvla <  combined));
+    QVERIFY(!(myvla >  combined));
+    QVERIFY(  myvla <= combined);
+    QVERIFY(  myvla >= combined);
+    combined.push_back("G");
+    QVERIFY(  myvla <  combined);
+    QVERIFY(!(myvla >  combined));
+    QVERIFY(  myvla <= combined);
+    QVERIFY(!(myvla >= combined));
+    QVERIFY(combined >  myvla);
+    QVERIFY(combined >= myvla);
+
+    // []
+    QCOMPARE(myvla[0], QLatin1String("A"));
+    QCOMPARE(myvla[1], QLatin1String("B"));
+    QCOMPARE(myvla[2], QLatin1String("C"));
+    QCOMPARE(myvla[3], QLatin1String("D"));
+    QCOMPARE(myvla[4], QLatin1String("E"));
+    QCOMPARE(myvla[5], QLatin1String("F"));
 }
 
 void tst_QVarLengthArray::indexOf()
