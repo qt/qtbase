@@ -69,7 +69,8 @@
 #endif
 #endif
 struct XInput2TouchDeviceData;
-#endif
+#endif // XCB_USE_XINPUT2
+
 struct xcb_randr_get_output_info_reply_t;
 
 //#define Q_XCB_DEBUG
@@ -347,6 +348,7 @@ public:
     virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
+    virtual void handleXIMouseEvent(xcb_ge_event_t *) {}
 
     virtual QXcbWindow *toWindow() { return 0; }
 };
@@ -413,14 +415,14 @@ public:
     void xi2Select(xcb_window_t window);
 #endif
 #ifdef XCB_USE_XINPUT21
-    bool isUsingXInput21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
+    bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
 #else
-    bool isUsingXInput21() const { return false; }
+    bool isAtLeastXI21() const { return false; }
 #endif
 #ifdef XCB_USE_XINPUT22
-    bool isUsingXInput22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
+    bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
 #else
-    bool isUsingXInput22() const { return false; }
+    bool isAtLeastXI22() const { return false; }
 #endif
 
     void sync();
@@ -457,7 +459,9 @@ public:
 
     xcb_timestamp_t getTimestamp();
 
+    void setButton(Qt::MouseButton button, bool down) { if (down) m_buttons |= button; else m_buttons &= ~button; }
     Qt::MouseButtons buttons() const { return m_buttons; }
+    Qt::MouseButton translateMouseButton(xcb_button_t s);
 
     QXcbWindow *focusWindow() const { return m_focusWindow; }
     void setFocusWindow(QXcbWindow *);
@@ -477,11 +481,19 @@ public:
     void handleEnterEvent(const xcb_enter_notify_event_t *);
 #endif
 
+#ifdef XCB_USE_XINPUT22
+    bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
+#endif
+    Qt::MouseButton xiToQtMouseButton(uint32_t b);
+
     QXcbEventReader *eventReader() const { return m_reader; }
 
     bool canGrab() const { return m_canGrabServer; }
 
     QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
+
+    bool xi2MouseEvents() const;
+
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 
@@ -509,9 +521,6 @@ private:
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void initializeScreens();
     void updateScreens(const xcb_randr_notify_event_t *event);
-    void handleButtonPress(xcb_generic_event_t *event);
-    void handleButtonRelease(xcb_generic_event_t *event);
-    void handleMotionNotify(xcb_generic_event_t *event);
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -524,6 +533,9 @@ private:
     void xi2HandleHierachyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
+#ifdef XCB_USE_XINPUT22
+    void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
+#endif // XCB_USE_XINPUT22
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {
         TabletData() : deviceId(0), pointerType(QTabletEvent::UnknownPointer),
@@ -543,10 +555,10 @@ private:
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
-    bool xi2HandleTabletEvent(void *event, TabletData *tabletData);
+    bool xi2HandleTabletEvent(void *event, TabletData *tabletData, QXcbWindowEventListener *eventListener);
     void xi2ReportTabletEvent(TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;
-#endif
+#endif // !QT_NO_TABLETEVENT
     struct ScrollingDevice {
         ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0), legacyOrientations(0) { }
         int deviceId;
@@ -559,9 +571,7 @@ private:
     void updateScrollingDevice(ScrollingDevice& scrollingDevice, int num_classes, void *classes);
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     QHash<int, ScrollingDevice> m_scrollingDevices;
-#endif // XCB_USE_XINPUT2
 
-#if defined(XCB_USE_XINPUT2)
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
     static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
 #endif
@@ -633,6 +643,7 @@ private:
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker;
     QXcbGlIntegration *m_glIntegration;
+    bool m_xiGrab;
 
     friend class QXcbEventReader;
 };

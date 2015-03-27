@@ -5358,6 +5358,14 @@ fi
 # auto-detect XInput2 support
 if [ "$CFG_XINPUT2" != "no" ]; then
     if compileTest x11/xinput2 "XInput2"; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xi 2>/dev/null; then
+            QMAKE_LIBXI_VERSION_MAJOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 1`
+            QMAKE_LIBXI_VERSION_MINOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 2`
+            QMAKE_LIBXI_VERSION_PATCH=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 3`
+            QMakeVar set QMAKE_LIBXI_VERSION_MAJOR "$QMAKE_LIBXI_VERSION_MAJOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_MINOR "$QMAKE_LIBXI_VERSION_MINOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_PATCH "$QMAKE_LIBXI_VERSION_PATCH"
+        fi
         CFG_XINPUT2=yes
         CFG_XINPUT=no
     else
