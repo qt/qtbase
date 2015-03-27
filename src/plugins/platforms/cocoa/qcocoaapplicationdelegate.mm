@@ -284,6 +284,11 @@ QT_END_NAMESPACE
     [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
+- (bool) inLaunch
+{
+    return inLaunch;
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     Q_UNUSED(aNotification);
