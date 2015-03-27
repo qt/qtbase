@@ -76,6 +76,13 @@ struct Movable {
         return i == other.i;
     }
 
+    bool operator<(const Movable &other) const
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        return i < other.i;
+    }
+
     Movable &operator=(const Movable &other)
     {
         check(state, Constructed);
@@ -142,6 +149,13 @@ struct Optimal
         check(state, Constructed);
         check(other.state, Constructed);
         return i == other.i;
+    }
+
+    bool operator<(const Optimal &other) const
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        return i < other.i;
     }
 
     Optimal &operator=(const Optimal &other)
@@ -218,6 +232,12 @@ struct Complex
     {
         check(); other.check();
         return value == other.value;
+    }
+
+    bool operator<(Complex const &other) const
+    {
+        check(); other.check();
+        return value < other.value;
     }
 
     void check() const
@@ -1576,6 +1596,19 @@ void tst_QList::testOperators() const
     // []
     QCOMPARE(list[0], T_FOO);
     QCOMPARE(list[list.size() - 1], T_CAT);
+
+    // <, >, <=, >=
+    QVERIFY(!(list <  listtwo));
+    QVERIFY(!(list >  listtwo));
+    QVERIFY(  list <= listtwo);
+    QVERIFY(  list >= listtwo);
+    listtwo.push_back(T_CAT);
+    QVERIFY(  list <  listtwo);
+    QVERIFY(!(list >  listtwo));
+    QVERIFY(  list <= listtwo);
+    QVERIFY(!(list >= listtwo));
+    QVERIFY(listtwo >  list);
+    QVERIFY(listtwo >= list);
 }
 
 void tst_QList::testOperatorsOptimal() const

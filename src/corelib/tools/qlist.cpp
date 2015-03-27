@@ -584,6 +584,54 @@ void **QListData::erase(void **xi)
     \sa operator==()
 */
 
+/*! \fn bool operator<(const QList<T> &lhs, const QList<T> &rhs)
+    \since 5.6
+    \relates QList
+
+    Returns \c true if list \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator<=(const QList<T> &lhs, const QList<T> &rhs)
+    \since 5.6
+    \relates QList
+
+    Returns \c true if list \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>(const QList<T> &lhs, const QList<T> &rhs)
+    \since 5.6
+    \relates QList
+
+    Returns \c true if list \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>=(const QList<T> &lhs, const QList<T> &rhs)
+    \since 5.6
+    \relates QList
+
+    Returns \c true if list \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
 /*!
     \fn int QList::size() const
 
