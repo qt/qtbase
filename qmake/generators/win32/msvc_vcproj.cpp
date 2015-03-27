@@ -1418,9 +1418,29 @@ void VcprojGenerator::initWinDeployQtTool()
     conf.windeployqt.ExcludedFromBuild = true;
     if (project->isActiveConfig("windeployqt")) {
         conf.windeployqt.Record = QStringLiteral("$(TargetName).windeployqt.$(Platform).$(Configuration)");
-        conf.windeployqt.CommandLine =
-                MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
-                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '))
+        const QString commandLine = MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
+                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '));
+
+        //  Visual Studio copies all files to be deployed into the MSIL directory
+        //  and then invokes MDILXapCompile on it, which checks for managed code and
+        //  translates it into native code. The problem is that all entries of the
+        //  package will be copied into the MSIL directly, losing the subdirectory
+        //  structure (for instance for plugins). However, the MDILXapCompile call
+        //  itself contains the original subdirectories as parameters and hence the
+        //  call fails.
+        //  Neither there is a way to disable this behavior for Windows Phone, nor
+        //  to influence the parameters. Hence the only way to get a release build
+        //  done is to recreate the directory structure manually by invoking
+        //  windeployqt a second time, so that the MDILXapCompile call succeeds and
+        //  deployment continues.
+        if (conf.WinPhone && conf.Name == QStringLiteral("Release|ARM")) {
+            conf.windeployqt.CommandLine = commandLine
+                    + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\\")
+                    + var("OBJECTS_DIR")
+                    + QStringLiteral("MSIL\" \"$(OutDir)\\$(TargetName).exe\" ")
+                    + QLatin1String(" && ");
+        }
+        conf.windeployqt.CommandLine += commandLine
                 + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
                 + MakefileGenerator::shellQuote(conf.windeployqt.Record);
         conf.windeployqt.config = &vcProject.Configuration;
