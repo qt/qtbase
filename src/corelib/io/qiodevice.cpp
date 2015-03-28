@@ -989,8 +989,8 @@ QByteArray QIODevice::readAll()
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
-            result.resize(result.size() + QIODEVICE_BUFFERSIZE);
-            readResult = read(result.data() + readBytes, result.size() - readBytes);
+            result.resize(readBytes + QIODEVICE_BUFFERSIZE);
+            readResult = read(result.data() + readBytes, QIODEVICE_BUFFERSIZE);
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult > 0);
