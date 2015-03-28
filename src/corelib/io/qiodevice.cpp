@@ -972,6 +972,7 @@ QByteArray QIODevice::readAll()
 
     QByteArray result;
     qint64 readBytes = 0;
+    const bool sequential = d->isSequential();
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
@@ -979,11 +980,12 @@ QByteArray QIODevice::readAll()
             return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
-        d->pos += readBytes;
+        if (!sequential)
+            d->pos += readBytes;
     }
 
     qint64 theSize;
-    if (d->isSequential() || (theSize = size()) == 0) {
+    if (sequential || (theSize = size()) == 0) {
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
