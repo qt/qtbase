@@ -1508,6 +1508,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
             QApplicationPrivate::set_pal = new QPalette(palette);
         else
             *QApplicationPrivate::set_pal = palette;
+        QCoreApplication::setAttribute(Qt::AA_SetPalette);
     }
 }
 

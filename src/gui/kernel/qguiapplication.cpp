@@ -2757,6 +2757,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
+    QCoreApplication::setAttribute(Qt::AA_SetPalette);
     emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 

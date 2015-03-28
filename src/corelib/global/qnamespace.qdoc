@@ -194,6 +194,9 @@
            instances that belong to different top-level windows. This value has
            been added in Qt 5.4.
 
+    \value AA_SetPalette Indicates whether a palette was explicitly set on the
+           QApplication/QGuiApplication. This value has been added in Qt 5.5.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully
