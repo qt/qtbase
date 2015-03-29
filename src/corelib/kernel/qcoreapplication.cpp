@@ -326,6 +326,7 @@ struct QCoreApplicationData {
 #ifndef QT_NO_LIBRARY
         app_libpaths = 0;
 #endif
+        applicationNameSet = false;
     }
     ~QCoreApplicationData() {
 #ifndef QT_NO_LIBRARY
@@ -370,8 +371,8 @@ struct QCoreApplicationData {
 
     QString orgName, orgDomain;
     QString application; // application name, initially from argv[0], can then be modified.
-    QString applicationNameCompat; // for QDesktopServices. Only set explicitly.
     QString applicationVersion;
+    bool applicationNameSet; // true if setApplicationName was called
 
 #ifndef QT_NO_LIBRARY
     QStringList *app_libpaths;
@@ -753,7 +754,8 @@ void QCoreApplication::init()
     QCoreApplication::self = this;
 
     // Store app name (so it's still available after QCoreApplication is destroyed)
-    coreappdata()->application = d_func()->appName();
+    if (!coreappdata()->applicationNameSet)
+        coreappdata()->application = d_func()->appName();
 
     QLoggingRegistry::instance()->init();
 
@@ -2350,13 +2352,13 @@ QString QCoreApplication::organizationDomain()
 */
 void QCoreApplication::setApplicationName(const QString &application)
 {
+    coreappdata()->applicationNameSet = !application.isEmpty();
     QString newAppName = application;
     if (newAppName.isEmpty() && QCoreApplication::self)
         newAppName = QCoreApplication::self->d_func()->appName();
     if (coreappdata()->application == newAppName)
         return;
     coreappdata()->application = newAppName;
-    coreappdata()->applicationNameCompat = newAppName;
 #ifndef QT_NO_QOBJECT
     if (QCoreApplication::self)
         emit QCoreApplication::self->applicationNameChanged();
@@ -2374,7 +2376,7 @@ QString QCoreApplication::applicationName()
 // Exported for QDesktopServices (Qt4 behavior compatibility)
 Q_CORE_EXPORT QString qt_applicationName_noFallback()
 {
-    return coreappdata()->applicationNameCompat;
+    return coreappdata()->applicationNameSet ? coreappdata()->application : QString();
 }
 
 /*!
