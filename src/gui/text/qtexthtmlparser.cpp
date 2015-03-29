@@ -1796,7 +1796,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
                     && !node.attributes.at(i + 1).isEmpty()) {
                     needsUnderline = true;
                     decl.d->property = QLatin1String("color");
-                    decl.d->propertyId = QCss::Property::Color;
+                    decl.d->propertyId = QCss::Color;
                     val.type = QCss::Value::Color;
                     val.variant = QVariant(QGuiApplication::palette().link());
                     decl.d->values = QVector<QCss::Value>() << val;
@@ -1809,7 +1809,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         if (needsUnderline) {
             decl = QCss::Declaration();
             decl.d->property = QLatin1String("text-decoration");
-            decl.d->propertyId = QCss::Property::TextDecoration;
+            decl.d->propertyId = QCss::TextDecoration;
             val.type = QCss::Value::KnownIdentifier;
             val.variant = QVariant(QCss::Value_Underline);
             decl.d->values = QVector<QCss::Value>() << val;
@@ -1828,7 +1828,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_th:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("font-weight");
-        decl.d->propertyId = QCss::Property::FontWeight;
+        decl.d->propertyId = QCss::FontWeight;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_Bold);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1842,7 +1842,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         if (node.id != Html_th) {
             decl = QCss::Declaration();
             decl.d->property = QLatin1String("font-size");
-            decl.d->propertyId = QCss::Property::FontSize;
+            decl.d->propertyId = QCss::FontSize;
             decl.d->inheritable = false;
             val.type = QCss::Value::KnownIdentifier;
             switch (node.id) {
@@ -1862,7 +1862,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_td:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("text-align");
-        decl.d->propertyId = QCss::Property::TextAlignment;
+        decl.d->propertyId = QCss::TextAlignment;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_td) ? QVariant(QCss::Value_Left) : QVariant(QCss::Value_Center);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1872,7 +1872,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_s:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("text-decoration");
-        decl.d->propertyId = QCss::Property::TextDecoration;
+        decl.d->propertyId = QCss::TextDecoration;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_LineThrough);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1887,7 +1887,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_dfn:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("font-style");
-        decl.d->propertyId = QCss::Property::FontStyle;
+        decl.d->propertyId = QCss::FontStyle;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = QVariant(QCss::Value_Italic);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1898,7 +1898,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_sup:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("vertical-align");
-        decl.d->propertyId = QCss::Property::VerticalAlignment;
+        decl.d->propertyId = QCss::VerticalAlignment;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_sub) ? QVariant(QCss::Value_Sub) : QVariant(QCss::Value_Super);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1909,7 +1909,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_ol:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("list-style");
-        decl.d->propertyId = QCss::Property::ListStyle;
+        decl.d->propertyId = QCss::ListStyle;
         val.type = QCss::Value::KnownIdentifier;
         val.variant = (node.id == Html_ul) ? QVariant(QCss::Value_Disc) : QVariant(QCss::Value_Decimal);
         decl.d->values = QVector<QCss::Value>() << val;
@@ -1923,7 +1923,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_pre: {
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("font-family");
-        decl.d->propertyId = QCss::Property::FontFamily;
+        decl.d->propertyId = QCss::FontFamily;
         QVector<QCss::Value> values;
         val.type = QCss::Value::String;
         val.variant = QLatin1String("Courier New");
@@ -1945,7 +1945,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
     case Html_nobr:
         decl = QCss::Declaration();
         decl.d->property = QLatin1String("whitespace");
-        decl.d->propertyId = QCss::Property::Whitespace;
+        decl.d->propertyId = QCss::Whitespace;
         val.type = QCss::Value::KnownIdentifier;
         switch (node.id) {
         case Html_br: val.variant = QVariant(QCss::Value_PreWrap); break;
