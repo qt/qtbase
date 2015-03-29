@@ -55,6 +55,8 @@
 #define qFilePickerDebug QT_NO_QDEBUG_MACRO
 #endif
 
+QT_BEGIN_NAMESPACE
+
 static const char s_filePickerTarget[] = "sys.filepicker.target";
 
 QQnxFilePicker::QQnxFilePicker(QObject *parent)
@@ -322,3 +324,5 @@ QString QQnxFilePicker::modeToString(QQnxFilePicker::Mode mode) const
 
     return QStringLiteral("Picker");
 }
+
+QT_END_NAMESPACE

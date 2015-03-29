@@ -38,6 +38,8 @@
 #include <QObject>
 #include <QStringList>
 
+QT_BEGIN_NAMESPACE
+
 struct navigator_invoke_invocation_t;
 
 class QQnxFilePicker : public QObject, public QAbstractNativeEventFilter
@@ -99,5 +101,7 @@ private:
 
     QString m_title;
 };
+
+QT_END_NAMESPACE
 
 #endif // QQNXFILEPICKER_H

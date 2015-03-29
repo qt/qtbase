@@ -37,9 +37,9 @@
 #include <QtCore/qhash.h>
 #include <qpa/qplatformtheme.h>
 
-class QPlatformFontDatabase;
-
 QT_BEGIN_NAMESPACE
+
+class QPlatformFontDatabase;
 
 QHash<QPlatformTheme::Font, QFont *> qt_qnx_createRoleFonts(QPlatformFontDatabase *fontDatabase);
 

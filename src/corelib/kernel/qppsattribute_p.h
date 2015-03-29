@@ -57,8 +57,6 @@ class QPpsAttribute;
 
 typedef QList<QPpsAttribute> QPpsAttributeList;
 typedef QMap<QString, QPpsAttribute> QPpsAttributeMap;
-Q_DECLARE_METATYPE(QPpsAttributeList)
-Q_DECLARE_METATYPE(QPpsAttributeMap)
 
 class Q_CORE_EXPORT QPpsAttribute
 {
@@ -127,5 +125,8 @@ inline bool QPpsAttribute::operator!=(const QPpsAttribute &other) const
 Q_CORE_EXPORT QDebug operator<<(QDebug dbg, const QPpsAttribute &attribute);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QPpsAttributeList)
+Q_DECLARE_METATYPE(QPpsAttributeMap)
 
 #endif // QPPSATTRIBUTE_P_H
