@@ -97,9 +97,9 @@ class QString;
 #ifndef QT_NO_TRANSLATION
 // full set of tr functions
 #  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0, int n = -1) \
+    static inline QString tr(const char *s, const char *c = Q_NULLPTR, int n = -1) \
         { return staticMetaObject.tr(s, c, n); } \
-    QT_DEPRECATED static inline QString trUtf8(const char *s, const char *c = 0, int n = -1) \
+    QT_DEPRECATED static inline QString trUtf8(const char *s, const char *c = Q_NULLPTR, int n = -1) \
         { return staticMetaObject.tr(s, c, n); }
 #else
 // inherit the ones from QObject
