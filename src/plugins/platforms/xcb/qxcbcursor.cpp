@@ -53,6 +53,12 @@ typedef int (*PtrXcursorLibrarySetTheme)(void *, const char *);
 typedef int (*PtrXcursorLibraryGetDefaultSize)(void *);
 
 #ifdef XCB_USE_XLIB
+#include <X11/Xlib.h>
+enum {
+    XCursorShape = CursorShape
+};
+#undef CursorShape
+
 static PtrXcursorLibraryLoadCursor ptrXcursorLibraryLoadCursor = 0;
 static PtrXcursorLibraryGetTheme ptrXcursorLibraryGetTheme = 0;
 static PtrXcursorLibrarySetTheme ptrXcursorLibrarySetTheme = 0;
@@ -552,6 +558,12 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     }
     if (cursor)
         return cursor;
+    if (!cursor && cursorId) {
+        cursor = XCreateFontCursor(DISPLAY_FROM_XCB(this), cursorId);
+        if (cursor)
+            return cursor;
+    }
+
 #endif
 
     // Non-standard X11 cursors are created from bitmaps
