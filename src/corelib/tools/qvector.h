@@ -175,6 +175,8 @@ public:
     // STL-style
     typedef typename Data::iterator iterator;
     typedef typename Data::const_iterator const_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 #if !defined(QT_STRICT_ITERATORS) || defined(Q_QDOC)
     inline iterator begin() { detach(); return d->begin(); }
     inline const_iterator begin() const { return d->constBegin(); }
@@ -194,6 +196,12 @@ public:
     inline const_iterator cend(const_iterator = const_iterator()) const { return d->constEnd(); }
     inline const_iterator constEnd(const_iterator = const_iterator()) const { return d->constEnd(); }
 #endif
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
     iterator insert(iterator before, int n, const T &x);
     inline iterator insert(iterator before, const T &x) { return insert(before, 1, x); }
     iterator erase(iterator begin, iterator end);

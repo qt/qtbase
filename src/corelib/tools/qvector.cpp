@@ -871,6 +871,52 @@
     \sa constBegin(), end()
 */
 
+/*! \fn QVector::reverse_iterator QVector::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the vector, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QVector::const_reverse_iterator QVector::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVector::const_reverse_iterator QVector::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the vector, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QVector::reverse_iterator QVector::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last item in the vector, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QVector::const_reverse_iterator QVector::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVector::const_reverse_iterator QVector::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last item in the vector, in reverse order.
+
+    \sa end(), rend(), rbegin()
+*/
+
 /*! \fn QVector::iterator QVector::erase(iterator pos)
 
     Removes the item pointed to by the iterator \a pos from the
@@ -1059,6 +1105,38 @@
     read \l{Implicit sharing iterator problem}.
 
     \sa QVector::constBegin(), QVector::constEnd(), QVector::iterator, QVectorIterator
+*/
+
+/*! \typedef QVector::reverse_iterator
+    \since 5.6
+
+    The QVector::reverse_iterator typedef provides an STL-style non-const
+    reverse iterator for QVector.
+
+    It is simply a typedef for \c{std::reverse_iterator<T*>}.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
+    \sa QVector::rbegin(), QVector::rend(), QVector::const_reverse_iterator, QVector::iterator
+*/
+
+/*! \typedef QVector::const_reverse_iterator
+    \since 5.6
+
+    The QVector::const_reverse_iterator typedef provides an STL-style const
+    reverse iterator for QVector.
+
+    It is simply a typedef for \c{std::reverse_iterator<const T*>}.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
+    \sa QVector::rbegin(), QVector::rend(), QVector::reverse_iterator, QVector::const_iterator
 */
 
 /*! \typedef QVector::Iterator

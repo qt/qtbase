@@ -248,6 +248,7 @@ private slots:
     void resizeComplex_data() const;
     void resizeComplex() const;
     void resizeCtorAndDtor() const;
+    void reverseIterators() const;
     void sizeInt() const;
     void sizeMovable() const;
     void sizeCustom() const;
@@ -1912,6 +1913,21 @@ void tst_QVector::resizeCtorAndDtor() const
         nonEmptyReserved.resize(2);
     }
     QCOMPARE(Custom::counter.loadAcquire(), items);
+}
+
+void tst_QVector::reverseIterators() const
+{
+    QVector<int> v;
+    v << 1 << 2 << 3 << 4;
+    QVector<int> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QVector<int> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
 }
 
 template<typename T>
