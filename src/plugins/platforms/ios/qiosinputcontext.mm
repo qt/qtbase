@@ -579,7 +579,7 @@ void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
 {
     // Mask for properties that we are interested in and see if any of them changed
-    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImPlatformData);
+    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImReturnKeyType | Qt::ImPlatformData);
 
     qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
 
