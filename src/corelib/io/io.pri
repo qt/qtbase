@@ -7,6 +7,7 @@ HEADERS +=  \
         io/qdatastream_p.h \
         io/qdataurl_p.h \
         io/qdebug.h \
+        io/qdebug_p.h \
         io/qdir.h \
         io/qdir_p.h \
         io/qdiriterator.h \

@@ -33,7 +33,8 @@
 
 #include "qpoint.h"
 #include "qdatastream.h"
-#include "qdebug.h"
+
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -447,14 +448,20 @@ QDataStream &operator>>(QDataStream &s, QPoint &p)
 QDebug operator<<(QDebug dbg, const QPoint &p)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QPoint(" << p.x() << ',' << p.y() << ')';
+    dbg.nospace();
+    dbg << "QPoint" << '(';
+    QtDebugUtils::formatQPoint(dbg, p);
+    dbg << ')';
     return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QPointF &p)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QPointF(" << p.x() << ',' << p.y() << ')';
+    dbg.nospace();
+    dbg << "QPointF" << '(';
+    QtDebugUtils::formatQPoint(dbg, p);
+    dbg << ')';
     return dbg;
 }
 #endif
