@@ -183,14 +183,25 @@ public:
     friend class const_iterator;
 
     // stl style
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
     inline iterator begin() { detach(); return e->n; }
-    inline const_iterator begin() const { return e->n; }
-    inline const_iterator cbegin() const { return e->n; }
-    inline const_iterator constBegin() const { return e->n; }
+    inline const_iterator begin() const Q_DECL_NOTHROW { return e->n; }
+    inline const_iterator cbegin() const Q_DECL_NOTHROW { return e->n; }
+    inline const_iterator constBegin() const Q_DECL_NOTHROW { return e->n; }
     inline iterator end() { detach(); return e; }
-    inline const_iterator end() const { return e; }
-    inline const_iterator cend() const { return e; }
-    inline const_iterator constEnd() const { return e; }
+    inline const_iterator end() const Q_DECL_NOTHROW { return e; }
+    inline const_iterator cend() const Q_DECL_NOTHROW { return e; }
+    inline const_iterator constEnd() const Q_DECL_NOTHROW { return e; }
+
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);
     iterator erase(iterator first, iterator last);

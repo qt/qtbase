@@ -204,6 +204,7 @@ private slots:
     void removeOneInt() const;
     void removeOneMovable() const;
     void removeOneComplex() const;
+    void reverseIterators() const;
     void startsWithInt() const;
     void startsWithMovable() const;
     void startsWithComplex() const;
@@ -752,6 +753,21 @@ void tst_QLinkedList::removeOneComplex() const
     const int liveCount = Complex::getLiveCount();
     removeOne<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
+}
+
+void tst_QLinkedList::reverseIterators() const
+{
+    QLinkedList<int> l;
+    l << 1 << 2 << 3 << 4;
+    QLinkedList<int> lr = l;
+    std::reverse(lr.begin(), lr.end());
+    const QLinkedList<int> &clr = lr;
+    QVERIFY(std::equal(l.begin(), l.end(), lr.rbegin()));
+    QVERIFY(std::equal(l.begin(), l.end(), lr.crbegin()));
+    QVERIFY(std::equal(l.begin(), l.end(), clr.rbegin()));
+    QVERIFY(std::equal(lr.rbegin(), lr.rend(), l.begin()));
+    QVERIFY(std::equal(lr.crbegin(), lr.crend(), l.begin()));
+    QVERIFY(std::equal(clr.rbegin(), clr.rend(), l.begin()));
 }
 
 template<typename T>
