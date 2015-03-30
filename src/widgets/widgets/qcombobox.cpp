@@ -226,6 +226,7 @@ void QComboBoxPrivate::_q_modelReset()
     }
     if (currentIndex.row() != indexBeforeChange)
         _q_emitCurrentIndexChanged(currentIndex);
+    modelChanged();
     q->update();
 }
 

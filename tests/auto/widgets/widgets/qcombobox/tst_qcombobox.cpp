@@ -531,6 +531,23 @@ void tst_QComboBox::sizeAdjustPolicy()
     QCOMPARE(testWidget->sizeHint(), content);
     testWidget->setMinimumContentsLength(0);
     QVERIFY(testWidget->sizeHint().width() < content.width());
+
+    // check AdjustToContents changes when model changes
+    content = testWidget->sizeHint();
+    QStandardItemModel *model = new QStandardItemModel(2, 1, testWidget);
+    testWidget->setModel(model);
+    QVERIFY(testWidget->sizeHint().width() < content.width());
+
+    // check AdjustToContents changes when a row is inserted into the model
+    content = testWidget->sizeHint();
+    QStandardItem *item = new QStandardItem(QStringLiteral("This is an item"));
+    model->appendRow(item);
+    QVERIFY(testWidget->sizeHint().width() > content.width());
+
+    // check AdjustToContents changes when model is reset
+    content = testWidget->sizeHint();
+    model->clear();
+    QVERIFY(testWidget->sizeHint().width() < content.width());
 }
 
 void tst_QComboBox::clear()
