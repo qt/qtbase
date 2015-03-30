@@ -1,4 +1,4 @@
-equals(TEMPLATE, app):macx-xcode {
+equals(TEMPLATE, app) {
     load(sdk)
     # Make the XCTest framework available. This is normally handled automatically
     # by Xcode based on heuristics, but we need to explicitly link to XCTest.
