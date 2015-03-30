@@ -115,12 +115,6 @@ void QDBusTrayIcon::cleanup()
     m_registered = false;
 }
 
-void QDBusTrayIcon::activate(int x, int y)
-{
-    qCDebug(qLcTray) << x << y;
-    emit activated(Trigger);
-}
-
 void QDBusTrayIcon::attentionTimerExpired()
 {
     m_messageTitle = QString();
@@ -211,11 +205,6 @@ void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
     }
     m_menu->emitUpdated();
-}
-
-void QDBusTrayIcon::contextMenu(int x, int y)
-{
-    qCDebug(qLcTray) << x << y;
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,

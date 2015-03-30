@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
+Q_DECLARE_LOGGING_CATEGORY(qLcTray)
 
 QStatusNotifierItemAdaptor::QStatusNotifierItemAdaptor(QDBusTrayIcon *parent)
     : QDBusAbstractAdaptor(parent), m_trayIcon(parent)
@@ -151,22 +152,26 @@ QXdgDBusToolTipStruct QStatusNotifierItemAdaptor::toolTip() const
 
 void QStatusNotifierItemAdaptor::Activate(int x, int y)
 {
-    m_trayIcon->activate(x, y);
+    qCDebug(qLcTray) << x << y;
+    emit m_trayIcon->activated(QPlatformSystemTrayIcon::Trigger);
 }
 
 void QStatusNotifierItemAdaptor::ContextMenu(int x, int y)
 {
-    m_trayIcon->contextMenu(x, y);
+    qCDebug(qLcTray) << x << y;
+    emit m_trayIcon->activated(QPlatformSystemTrayIcon::Context);
 }
 
-void QStatusNotifierItemAdaptor::Scroll(int, const QString &)
+void QStatusNotifierItemAdaptor::Scroll(int w, const QString &s)
 {
+    qCDebug(qLcTray) << w << s;
     // unsupported
 }
 
-void QStatusNotifierItemAdaptor::SecondaryActivate(int, int)
+void QStatusNotifierItemAdaptor::SecondaryActivate(int x, int y)
 {
-    // unsupported
+    qCDebug(qLcTray) << x << y;
+    emit m_trayIcon->activated(QPlatformSystemTrayIcon::MiddleClick);
 }
 
 QT_END_NAMESPACE
