@@ -765,7 +765,6 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
         return false;
     }
 
-    QDBusWriteLocker locker(ConnectAction, d);
     return d->connectSignal(service, path, interface, name, argumentMatch, signature, receiver, slot);
 }
 
@@ -821,7 +820,6 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
     if (interface.isEmpty() && name.isEmpty())
         return false;
 
-    QDBusWriteLocker locker(DisconnectAction, d);
     return d->disconnectSignal(service, path, interface, name, argumentMatch, signature, receiver, slot);
 }
 

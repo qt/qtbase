@@ -213,8 +213,6 @@ public:
     bool connectSignal(const QString &service, const QString &path, const QString& interface,
                        const QString &name, const QStringList &argumentMatch, const QString &signature,
                        QObject *receiver, const char *slot);
-    void connectSignal(const QString &key, const SignalHook &hook);
-    SignalHookHash::Iterator disconnectSignal(SignalHookHash::Iterator &it);
     bool disconnectSignal(const QString &service, const QString &path, const QString& interface,
                           const QString &name, const QStringList &argumentMatch, const QString &signature,
                           QObject *receiver, const char *slot);
@@ -254,6 +252,8 @@ private:
     void deliverCall(QObject *object, int flags, const QDBusMessage &msg,
                      const QVector<int> &metaTypes, int slotIdx);
 
+    SignalHookHash::Iterator removeSignalHookNoLock(SignalHookHash::Iterator it);
+
     bool isServiceRegisteredByThread(const QString &serviceName);
 
     QString getNameOwnerNoCache(const QString &service);
@@ -270,6 +270,8 @@ public slots:
     void socketWrite(int);
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
+    void addSignalHook(const QString &key, const SignalHook &hook);
+    bool removeSignalHook(const QString &key, const SignalHook &hook);
 
 private slots:
     void serviceOwnerChangedNoLock(const QString &name, const QString &oldOwner, const QString &newOwner);
@@ -279,6 +281,8 @@ private slots:
 signals:
     void dispatchStatusChanged();
     void messageNeedsSending(QDBusPendingCallPrivate *pcall, void *msg, int timeout = -1);
+    void signalNeedsConnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);
+    bool signalNeedsDisconnecting(const QString &key, const QDBusConnectionPrivate::SignalHook &hook);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void callWithCallbackFailed(const QDBusError &error, const QDBusMessage &message);
     void newServerConnection(QDBusConnectionPrivate *newConnection);

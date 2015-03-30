@@ -968,6 +968,10 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
             this, &QDBusConnectionPrivate::doDispatch, Qt::QueuedConnection);
     connect(this, &QDBusConnectionPrivate::messageNeedsSending,
             this, &QDBusConnectionPrivate::sendInternal);
+    connect(this, &QDBusConnectionPrivate::signalNeedsConnecting,
+            this, &QDBusConnectionPrivate::addSignalHook, Qt::BlockingQueuedConnection);
+    connect(this, &QDBusConnectionPrivate::signalNeedsDisconnecting,
+            this, &QDBusConnectionPrivate::removeSignalHook, Qt::BlockingQueuedConnection);
 
     rootNode.flags = 0;
 
@@ -1108,7 +1112,7 @@ void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
     SignalHookHash::iterator sit = signalHooks.begin();
     while (sit != signalHooks.end()) {
         if (static_cast<QObject *>(sit.value().obj) == obj)
-            sit = disconnectSignal(sit);
+            sit = removeSignalHookNoLock(sit);
         else
             ++sit;
     }
@@ -2053,6 +2057,15 @@ bool QDBusConnectionPrivate::connectSignal(const QString &service,
     if (!prepareHook(hook, key, service, path, interface, name, argumentMatch, receiver, slot, 0, false))
         return false;           // don't connect
 
+    Q_ASSERT(thread() != QThread::currentThread());
+    emit signalNeedsConnecting(key, hook);
+    return true;
+}
+
+void QDBusConnectionPrivate::addSignalHook(const QString &key, const SignalHook &hook)
+{
+    QDBusWriteLocker locker(ConnectAction, this);
+
     // avoid duplicating:
     QDBusConnectionPrivate::SignalHookHash::ConstIterator it = signalHooks.constFind(key);
     QDBusConnectionPrivate::SignalHookHash::ConstIterator end = signalHooks.constEnd();
@@ -2065,24 +2078,18 @@ bool QDBusConnectionPrivate::connectSignal(const QString &service,
             entry.midx == hook.midx &&
             entry.argumentMatch == hook.argumentMatch) {
             // no need to compare the parameters if it's the same slot
-            return true;        // already there
+            return;        // already there
         }
     }
 
-    connectSignal(key, hook);
-    return true;
-}
-
-void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook &hook)
-{
     signalHooks.insertMulti(key, hook);
     connect(hook.obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
-            Qt::ConnectionType(Qt::DirectConnection | Qt::UniqueConnection));
+            Qt::ConnectionType(Qt::BlockingQueuedConnection | Qt::UniqueConnection));
 
-    MatchRefCountHash::iterator it = matchRefCounts.find(hook.matchRule);
+    MatchRefCountHash::iterator mit = matchRefCounts.find(hook.matchRule);
 
-    if (it != matchRefCounts.end()) { // Match already present
-        it.value() = it.value() + 1;
+    if (mit != matchRefCounts.end()) { // Match already present
+        mit.value() = mit.value() + 1;
         return;
     }
 
@@ -2128,7 +2135,14 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
     if (!prepareHook(hook, key, service, path, interface, name, argumentMatch, receiver, slot, 0, false))
         return false;           // don't disconnect
 
-    // avoid duplicating:
+    Q_ASSERT(thread() != QThread::currentThread());
+    return emit signalNeedsDisconnecting(key, hook);
+}
+
+bool QDBusConnectionPrivate::removeSignalHook(const QString &key, const SignalHook &hook)
+{
+    // remove it from our list:
+    QDBusWriteLocker locker(ConnectAction, this);
     QDBusConnectionPrivate::SignalHookHash::Iterator it = signalHooks.find(key);
     QDBusConnectionPrivate::SignalHookHash::Iterator end = signalHooks.end();
     for ( ; it != end && it.key() == key; ++it) {
@@ -2140,7 +2154,7 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
             entry.midx == hook.midx &&
             entry.argumentMatch == hook.argumentMatch) {
             // no need to compare the parameters if it's the same slot
-            disconnectSignal(it);
+            removeSignalHookNoLock(it);
             return true;        // it was there
         }
     }
@@ -2150,7 +2164,7 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
 }
 
 QDBusConnectionPrivate::SignalHookHash::Iterator
-QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
+QDBusConnectionPrivate::removeSignalHookNoLock(SignalHookHash::Iterator it)
 {
     const SignalHook &hook = it.value();
 
@@ -2196,7 +2210,7 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 {
     connect(node->obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
-            Qt::DirectConnection);
+            Qt::ConnectionType(Qt::BlockingQueuedConnection | Qt::UniqueConnection));
 
     if (node->flags & (QDBusConnection::ExportAdaptors
                        | QDBusConnection::ExportScriptableSignals
@@ -2250,21 +2264,8 @@ void QDBusConnectionPrivate::connectRelay(const QString &service,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 
-    // add it to our list:
-    QDBusWriteLocker locker(ConnectRelayAction, this);
-    SignalHookHash::ConstIterator it = signalHooks.constFind(key);
-    SignalHookHash::ConstIterator end = signalHooks.constEnd();
-    for ( ; it != end && it.key() == key; ++it) {
-        const SignalHook &entry = it.value();
-        if (entry.service == hook.service &&
-            entry.path == hook.path &&
-            entry.signature == hook.signature &&
-            entry.obj == hook.obj &&
-            entry.midx == hook.midx)
-            return;             // already there, no need to re-add
-    }
-
-    connectSignal(key, hook);
+    Q_ASSERT(thread() != QThread::currentThread());
+    emit signalNeedsConnecting(key, hook);
 }
 
 void QDBusConnectionPrivate::disconnectRelay(const QString &service,
@@ -2284,22 +2285,8 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 
-    // remove it from our list:
-    QDBusWriteLocker locker(DisconnectRelayAction, this);
-    SignalHookHash::Iterator it = signalHooks.find(key);
-    SignalHookHash::Iterator end = signalHooks.end();
-    for ( ; it != end && it.key() == key; ++it) {
-        const SignalHook &entry = it.value();
-        if (entry.service == hook.service &&
-            entry.path == hook.path &&
-            entry.signature == hook.signature &&
-            entry.obj == hook.obj &&
-            entry.midx == hook.midx) {
-            // found it
-            disconnectSignal(it);
-            return;
-        }
-    }
+    Q_ASSERT(thread() != QThread::currentThread());
+    emit signalNeedsDisconnecting(key, hook);
 }
 
 bool QDBusConnectionPrivate::shouldWatchService(const QString &service)
