@@ -118,7 +118,7 @@ void QDBusTrayIcon::cleanup()
 void QDBusTrayIcon::activate(int x, int y)
 {
     qCDebug(qLcTray) << x << y;
-    setStatus(QStringLiteral("Active"));
+    emit activated(Trigger);
 }
 
 void QDBusTrayIcon::attentionTimerExpired()
