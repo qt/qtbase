@@ -32,7 +32,7 @@ cross_compile:                              SUBDIRS -= tools
 
 # Disable the QtDBus tests if we can't connect to the session bus
 qtHaveModule(dbus) {
-    !system("dbus-send --type=signal / local.AutotestCheck.Hello"): {
+    !system("dbus-send --session --type=signal / local.AutotestCheck.Hello"): {
         warning("QtDBus is enabled but session bus is not available. Please check the installation.")
         SUBDIRS -= dbus
     }
