@@ -349,6 +349,9 @@ private slots:
     void replaceOptimal() const;
     void replaceMovable() const;
     void replaceComplex() const;
+    void reverseIteratorsOptimal() const;
+    void reverseIteratorsMovable() const;
+    void reverseIteratorsComplex() const;
     void startsWithOptimal() const;
     void startsWithMovable() const;
     void startsWithComplex() const;
@@ -416,6 +419,7 @@ private:
     template<typename T> void removeAt() const;
     template<typename T> void removeOne() const;
     template<typename T> void replace() const;
+    template<typename T> void reverseIterators() const;
     template<typename T> void startsWith() const;
     template<typename T> void swap() const;
     template<typename T> void takeAt() const;
@@ -1236,6 +1240,43 @@ void tst_QList::replaceComplex() const
 {
     const int liveCount = Complex::getLiveCount();
     replace<Complex>();
+    QCOMPARE(liveCount, Complex::getLiveCount());
+}
+
+template<typename T>
+void tst_QList::reverseIterators() const
+{
+    QList<T> v;
+    v << T_CAT << T_DOG << T_BLAH << T_BAZ;
+    QList<T> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QList<T> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
+}
+
+void tst_QList::reverseIteratorsOptimal() const
+{
+    const int liveCount = Optimal::getLiveCount();
+    reverseIterators<Optimal>();
+    QCOMPARE(liveCount, Optimal::getLiveCount());
+}
+
+void tst_QList::reverseIteratorsMovable() const
+{
+    const int liveCount = Movable::getLiveCount();
+    reverseIterators<Movable>();
+    QCOMPARE(liveCount, Movable::getLiveCount());
+}
+
+void tst_QList::reverseIteratorsComplex() const
+{
+    const int liveCount = Complex::getLiveCount();
+    reverseIterators<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
