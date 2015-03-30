@@ -188,6 +188,8 @@ public:
     void processEvents(EventProcessingMode processingMode);
     void cancelAllDelayedEvents();
 
+    virtual void emitStateFinished(QState *forState, QFinalState *guiltyState);
+
 #ifndef QT_NO_PROPERTIES
     class RestorableId {
         QPointer<QObject> guard;

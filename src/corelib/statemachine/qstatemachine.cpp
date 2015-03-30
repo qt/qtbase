@@ -610,10 +610,9 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
             QState *parent = s->parentState();
             if (parent) {
                 if (parent != rootState()) {
-#ifdef QSTATEMACHINE_DEBUG
-                    qDebug() << q << ": emitting finished signal for" << parent;
-#endif
-                    QStatePrivate::get(parent)->emitFinished();
+                    QFinalState *finalState = qobject_cast<QFinalState *>(s);
+                    Q_ASSERT(finalState);
+                    emitStateFinished(parent, finalState);
                 }
                 QState *grandparent = parent->parentState();
                 if (grandparent && isParallel(grandparent)) {
@@ -627,10 +626,9 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
                         }
                     }
                     if (allChildStatesFinal && (grandparent != rootState())) {
-#ifdef QSTATEMACHINE_DEBUG
-                        qDebug() << q << ": emitting finished signal for" << grandparent;
-#endif
-                        QStatePrivate::get(grandparent)->emitFinished();
+                        QFinalState *finalState = qobject_cast<QFinalState *>(s);
+                        Q_ASSERT(finalState);
+                        emitStateFinished(grandparent, finalState);
                     }
                 }
             }
@@ -1617,6 +1615,18 @@ void QStateMachinePrivate::cancelAllDelayedEvents()
         delete e.event;
     }
     delayedEvents.clear();
+}
+
+void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guiltyState)
+{
+    Q_UNUSED(guiltyState);
+    Q_ASSERT(guiltyState);
+
+#ifdef QSTATEMACHINE_DEBUG
+    qDebug() << q << ": emitting finished signal for" << forState;
+#endif
+
+    QStatePrivate::get(forState)->emitFinished();
 }
 
 namespace _QStateMachine_Internal{
