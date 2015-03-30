@@ -119,9 +119,10 @@ QDataStream &operator>>(QDataStream &stream, QLayoutPolicy &policy)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLayoutPolicy &p)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QLayoutPolicy(horizontalPolicy = " << p.horizontalPolicy()
                   << ", verticalPolicy = " << p.verticalPolicy() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

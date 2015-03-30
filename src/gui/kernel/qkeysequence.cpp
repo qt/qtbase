@@ -1601,8 +1601,9 @@ QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QKeySequence &p)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QKeySequence(" << p.toString() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

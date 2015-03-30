@@ -341,6 +341,7 @@ typedef QGenericMatrix<4, 3, float> QMatrix4x3;
 template <int N, int M, typename T>
 QDebug operator<<(QDebug dbg, const QGenericMatrix<N, M, T> &m)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QGenericMatrix<" << N << ", " << M
         << ", " << QTypeInfo<T>::name()
         << ">(" << endl << qSetFieldWidth(10);
@@ -350,7 +351,7 @@ QDebug operator<<(QDebug dbg, const QGenericMatrix<N, M, T> &m)
         dbg << endl;
     }
     dbg << qSetFieldWidth(0) << ')';
-    return dbg.space();
+    return dbg;
 }
 
 #endif

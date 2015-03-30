@@ -1615,6 +1615,7 @@ QDebug operator<<(QDebug dbg, const QGLFormat &f)
 {
     const QGLFormatPrivate * const d = f.d;
 
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QGLFormat("
                   << "options " << d->opts
                   << ", plane " << d->pln
@@ -1632,7 +1633,7 @@ QDebug operator<<(QDebug dbg, const QGLFormat &f)
                   << ", profile " << d->profile
                   << ')';
 
-    return dbg.space();
+    return dbg;
 }
 #endif
 

@@ -2391,6 +2391,7 @@ void QColor::invalidate()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QColor &c)
 {
+    QDebugStateSaver saver(dbg);
     if (!c.isValid())
         dbg.nospace() << "QColor(Invalid)";
     else if (c.spec() == QColor::Rgb)
@@ -2403,7 +2404,7 @@ QDebug operator<<(QDebug dbg, const QColor &c)
     else if (c.spec() == QColor::Hsl)
         dbg.nospace() << "QColor(AHSL " << c.alphaF() << ", " << c.hslHueF() << ", " << c.hslSaturationF() << ", " << c.lightnessF() << ')';
 
-    return dbg.space();
+    return dbg;
 }
 #endif
 

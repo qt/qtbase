@@ -91,18 +91,20 @@ static inline QString dbusInterfaceString()
 
 static inline QDebug operator<<(QDebug dbg, const QThread *th)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QThread(ptr=" << (const void*)th;
     if (th && !th->objectName().isEmpty())
         dbg.nospace() << ", name=" << th->objectName();
     else if (th)
         dbg.nospace() << ", name=" << th->metaObject()->className();
     dbg.nospace() << ')';
-    return dbg.space();
+    return dbg;
 }
 
 #if QDBUS_THREAD_DEBUG
 static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDBusConnection("
                   << "ptr=" << (const void*)conn
                   << ", name=" << conn->name
@@ -113,7 +115,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
     else
         dbg.nospace() << conn->thread();
     dbg.nospace() << ')';
-    return dbg.space();
+    return dbg;
 }
 
 void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)

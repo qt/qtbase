@@ -499,8 +499,9 @@ QVector2D::operator QVariant() const
 
 QDebug operator<<(QDebug dbg, const QVector2D &vector)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QVector2D(" << vector.x() << ", " << vector.y() << ')';
-    return dbg.space();
+    return dbg;
 }
 
 #endif
