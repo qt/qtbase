@@ -1200,6 +1200,22 @@ const QString::Null QString::null = { };
     \sa QString::const_iterator
 */
 
+/*! \typedef QString::const_reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style const reverse iterator for QString.
+
+    \sa QString::reverse_iterator, QString::const_iterator
+*/
+
+/*! \typedef QString::reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style non-const reverse iterator for QString.
+
+    \sa QString::const_reverse_iterator, QString::iterator
+*/
+
 /*!
     \typedef QString::size_type
 
@@ -1301,6 +1317,52 @@ const QString::Null QString::null = { };
     character after the last character in the list.
 
     \sa constBegin(), end()
+*/
+
+/*! \fn QString::reverse_iterator QString::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QString::const_reverse_iterator QString::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QString::const_reverse_iterator QString::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QString::reverse_iterator QString::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last character in the string, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QString::const_reverse_iterator QString::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QString::const_reverse_iterator QString::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last character in the string, in reverse order.
+
+    \sa end(), rend(), rbegin()
 */
 
 /*!
