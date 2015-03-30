@@ -47,6 +47,7 @@ private slots:
     void appendCausingRealloc();
     void resize();
     void realloc();
+    void reverseIterators();
     void count();
     void first();
     void last();
@@ -561,6 +562,21 @@ void tst_QVarLengthArray::realloc()
 
     reallocTest<MyComplex>();
     QVERIFY(reallocTestProceed);
+}
+
+void tst_QVarLengthArray::reverseIterators()
+{
+    QVarLengthArray<int> v;
+    v << 1 << 2 << 3 << 4;
+    QVarLengthArray<int> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QVarLengthArray<int> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
 }
 
 void tst_QVarLengthArray::count()

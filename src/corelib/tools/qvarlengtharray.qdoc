@@ -459,6 +459,20 @@
     Typedef for T *. Provided for STL compatibility.
 */
 
+/*!
+    \typedef QVarLengthArray::const_reverse_iterator
+    \since 5.6
+
+    Typedef for \c{std::reverse_iterator<const T*>}. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QVarLengthArray::reverse_iterator
+    \since 5.6
+
+    Typedef for \c{std::reverse_iterator<T*>}. Provided for STL compatibility.
+*/
+
 /*! \fn void QVarLengthArray::prepend(const T &value)
 
     \since 4.8
@@ -571,6 +585,52 @@
     item after the last item in the array.
 
     \sa constBegin(), end()
+*/
+
+/*! \fn QVarLengthArray::reverse_iterator QVarLengthArray::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the variable length array, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the variable length array, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QVarLengthArray::reverse_iterator QVarLengthArray::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last item in the variable length array, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last item in the variable length array, in reverse order.
+
+    \sa end(), rend(), rbegin()
 */
 
 /*! \fn QVarLengthArray::iterator QVarLengthArray::erase(const_iterator pos)
