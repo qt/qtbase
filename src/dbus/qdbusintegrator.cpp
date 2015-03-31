@@ -445,10 +445,26 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
     return 0;
 }
 
-static bool shouldWatchService(const QString &service)
+static QStringList matchArgsForService(const QString &service, QDBusServiceWatcher::WatchMode mode)
 {
-    return !service.isEmpty() && !service.startsWith(QLatin1Char(':'));
+    QStringList matchArgs;
+    matchArgs << service;
+
+    switch (mode) {
+    case QDBusServiceWatcher::WatchForOwnerChange:
+        break;
+
+    case QDBusServiceWatcher::WatchForRegistration:
+        matchArgs << QString::fromLatin1("", 0);
+        break;
+
+    case QDBusServiceWatcher::WatchForUnregistration:
+        matchArgs << QString() << QString::fromLatin1("", 0);
+        break;
+    }
+    return matchArgs;
 }
+
 
 extern Q_DBUS_EXPORT void qDBusAddSpyHook(QDBusSpyHook);
 void qDBusAddSpyHook(QDBusSpyHook hook)
@@ -1473,10 +1489,7 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
     for ( ; it != end && it.key() == key; ++it) {
         const SignalHook &hook = it.value();
         if (!hook.service.isEmpty()) {
-            const QString owner =
-                    shouldWatchService(hook.service) ?
-                    watchedServices.value(hook.service).owner :
-                    hook.service;
+            QString owner = watchedServices.value(hook.service, WatchedServiceData(hook.service)).owner;
             if (owner != msg.service())
                 continue;
         }
@@ -2276,6 +2289,51 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
             return;
         }
     }
+}
+
+bool QDBusConnectionPrivate::shouldWatchService(const QString &service)
+{
+    // we don't have to watch anything in peer mode
+    if (mode != ClientMode)
+        return false;
+    // we don't have to watch wildcard services (empty strings)
+    if (service.isEmpty())
+        return false;
+    // we don't have to watch the bus driver
+    if (service == QDBusUtil::dbusService())
+        return false;
+    return true;
+}
+
+/*!
+    Sets up a watch rule for service \a service for the change described by
+    mode \a mode. When the change happens, slot \a member in object \a obj will
+    be called.
+
+    The caller should call QDBusConnectionPrivate::shouldWatchService() before
+    calling this function to check whether the service needs to be watched at
+    all. Failing to do so may add rules that are never activated.
+*/
+void QDBusConnectionPrivate::watchService(const QString &service, QDBusServiceWatcher::WatchMode mode, QObject *obj, const char *member)
+{
+    QStringList matchArgs = matchArgsForService(service, mode);
+    connectSignal(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
+                  matchArgs, QString(), obj, member);
+}
+
+/*!
+    Removes a watch rule set up by QDBusConnectionPrivate::watchService(). The
+    arguments to this function must be the same as the ones for that function.
+
+    Sets up a watch rule for service \a service for the change described by
+    mode \a mode. When the change happens, slot \a member in object \a obj will
+    be called.
+*/
+void QDBusConnectionPrivate::unwatchService(const QString &service, QDBusServiceWatcher::WatchMode mode, QObject *obj, const char *member)
+{
+    QStringList matchArgs = matchArgsForService(service, mode);
+    disconnectSignal(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
+                     matchArgs, QString(), obj, member);
 }
 
 QString QDBusConnectionPrivate::getNameOwner(const QString& serviceName)

@@ -37,7 +37,7 @@
 #include <QtCore/qobject.h>
 #include <QtDBus/qdbusmacros.h>
 
-#ifndef QT_NO_DBUS
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_QOBJECT)
 
 QT_BEGIN_NAMESPACE
 
@@ -89,5 +89,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusServiceWatcher::WatchMode)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_DBUS
+#endif // QT_NO_DBUS || QT_NO_QOBJECT
 #endif // QDBUSSERVICEWATCHER_H

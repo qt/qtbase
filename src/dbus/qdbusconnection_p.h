@@ -63,6 +63,7 @@
 #include "qdbus_symbols_p.h"
 
 #include <qdbusmessage.h>
+#include <qdbusservicewatcher.h>    // for the WatchMode enum
 
 #ifndef QT_NO_DBUS
 
@@ -197,6 +198,12 @@ public:
     void closeConnection();
 
     QString getNameOwner(const QString &service);
+
+    bool shouldWatchService(const QString &service);
+    void watchService(const QString &service, QDBusServiceWatcher::WatchMode mode,
+                      QObject *obj, const char *member);
+    void unwatchService(const QString &service, QDBusServiceWatcher::WatchMode mode,
+                        QObject *obj, const char *member);
 
     bool send(const QDBusMessage &message);
     QDBusMessage sendWithReply(const QDBusMessage &message, int mode, int timeout = -1);
