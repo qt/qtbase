@@ -83,6 +83,12 @@ Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
 Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 
+// this event type was added in libxcb 1.10,
+// but we support also older version
+#ifndef XCB_GE_GENERIC
+#define XCB_GE_GENERIC 35
+#endif
+
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {
     "No error", /* Error 0 */
@@ -666,6 +672,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_KEYMAP_NOTIFY);
     PRINT_XCB_EVENT(XCB_EXPOSE);
     PRINT_XCB_EVENT(XCB_GRAPHICS_EXPOSURE);
+    PRINT_XCB_EVENT(XCB_NO_EXPOSURE);
     PRINT_XCB_EVENT(XCB_VISIBILITY_NOTIFY);
     PRINT_XCB_EVENT(XCB_CREATE_NOTIFY);
     PRINT_XCB_EVENT(XCB_DESTROY_NOTIFY);
@@ -685,6 +692,8 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_SELECTION_NOTIFY);
     PRINT_XCB_EVENT(XCB_COLORMAP_NOTIFY);
     PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
+    PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
+    PRINT_XCB_EVENT(XCB_GE_GENERIC);
     default:
         qDebug("QXcbConnection: %s: unknown event - response_type: %d - sequence: %d", message, int(event->response_type & ~0x80), int(event->sequence));
     }
@@ -1080,7 +1089,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
             break;
 #if defined(XCB_USE_XINPUT2)
-        case GenericEvent:
+        case XCB_GE_GENERIC:
             if (m_xi2Enabled)
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
             break;
