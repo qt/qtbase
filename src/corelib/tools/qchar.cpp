@@ -377,6 +377,29 @@ QT_BEGIN_NAMESPACE
     \value Script_Sharada
     \value Script_SoraSompeng
     \value Script_Takri
+    \value Script_CaucasianAlbanian
+    \value Script_BassaVah
+    \value Script_Duployan
+    \value Script_Elbasan
+    \value Script_Grantha
+    \value Script_PahawhHmong
+    \value Script_Khojki
+    \value Script_LinearA
+    \value Script_Mahajani
+    \value Script_Manichaean
+    \value Script_MendeKikakui
+    \value Script_Modi
+    \value Script_Mro
+    \value Script_OldNorthArabian
+    \value Script_Nabataean
+    \value Script_Palmyrene
+    \value Script_PauCinHau
+    \value Script_OldPermic
+    \value Script_PsalterPahlavi
+    \value Script_Siddham
+    \value Script_Khudawadi
+    \value Script_Tirhuta
+    \value Script_WarangCiti
 
     \omitvalue ScriptCount
 

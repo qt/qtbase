@@ -705,11 +705,6 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         else if (atom->string() == "classhierarchy") {
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
-        else if (atom->string() == "compatclasses") {
-            // "compatclasses" is no longer used. Delete this at some point.
-            // mws 03/10/2013
-            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false, QStringLiteral("Q"));
-        }
         else if (atom->string() == "obsoleteclasses") {
             generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false, QStringLiteral("Q"));
         }
@@ -727,16 +722,6 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         }
         else if (atom->string() == "legalese") {
             generateLegaleseList(relative, marker);
-        }
-        else if (atom->string() == "mainclasses") {
-            // "mainclasses" is no longer used. Delete this at some point.
-            // mws 03/10/2013
-            generateCompactList(Generic, relative, qdb_->getMainClasses(), true, QStringLiteral("Q"));
-        }
-        else if (atom->string() == "services") {
-            // "services" is no longer used. Delete this at some point.
-            // mws 03/10/2013
-            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "overviews") {
             generateList(relative, marker, "overviews");
@@ -1772,23 +1757,23 @@ void HtmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marke
         generateStatus(cn, marker);
         generateSince(cn, marker);
 
-        NodeMap nm;
-        cn->getMemberNamespaces(nm);
-        if (!nm.isEmpty()) {
+        NodeMultiMap nmm;
+        cn->getMemberNamespaces(nmm);
+        if (!nmm.isEmpty()) {
             ref = registerRef("namespaces");
             out() << "<a name=\"" << ref << "\"></a>" << divNavTop << '\n';
             out() << "<h2 id=\"" << ref << "\">Namespaces</h2>\n";
-            generateAnnotatedList(cn, marker, nm);
+            generateAnnotatedList(cn, marker, nmm);
         }
-        nm.clear();
-        cn->getMemberClasses(nm);
-        if (!nm.isEmpty()) {
+        nmm.clear();
+        cn->getMemberClasses(nmm);
+        if (!nmm.isEmpty()) {
             ref = registerRef("classes");
             out() << "<a name=\"" << ref << "\"></a>" << divNavTop << '\n';
             out() << "<h2 id=\"" << ref << "\">Classes</h2>\n";
-            generateAnnotatedList(cn, marker, nm);
+            generateAnnotatedList(cn, marker, nmm);
         }
-        nm.clear();
+        nmm.clear();
     }
 
     sections = marker->sections(cn, CodeMarker::Summary, CodeMarker::Okay);
@@ -2262,9 +2247,9 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
     QString logicalModuleVersion;
     CollectionNode* collection = 0;
     if (qcn->isJsNode())
-        qdb_->findJsModule(qcn->logicalModuleName());
+        collection = qdb_->findJsModule(qcn->logicalModuleName());
     else
-        qdb_->findQmlModule(qcn->logicalModuleName());
+        collection = qdb_->findQmlModule(qcn->logicalModuleName());
     if (collection)
         logicalModuleVersion = collection->logicalModuleVersion();
     else
@@ -2837,11 +2822,11 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative, NodeMap& classM
  */
 void HtmlGenerator::generateAnnotatedList(const Node* relative,
                                           CodeMarker* marker,
-                                          const NodeMap& nodeMap)
+                                          const NodeMultiMap& nmm)
 {
-    if (nodeMap.isEmpty())
+    if (nmm.isEmpty())
         return;
-    generateAnnotatedList(relative, marker, nodeMap.values());
+    generateAnnotatedList(relative, marker, nmm.values());
 }
 
 /*!
@@ -2850,19 +2835,19 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
                                           CodeMarker *marker,
                                           const NodeList& unsortedNodes)
 {
-    NodeMap nm;
+    NodeMultiMap nmm;
     bool allInternal = true;
     foreach (Node* node, unsortedNodes) {
         if (!node->isInternal() && !node->isObsolete()) {
             allInternal = false;
-            nm.insert(node->fullName(relative), node);
+            nmm.insert(node->fullName(relative), node);
         }
     }
     if (allInternal)
         return;
     out() << "<div class=\"table\"><table class=\"annotated\">\n";
     int row = 0;
-    NodeList nodes = nm.values();
+    NodeList nodes = nmm.values();
     foreach (const Node* node, nodes) {
         if (++row % 2 == 1)
             out() << "<tr class=\"odd topAlign\">";
@@ -2901,20 +2886,21 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
 
 /*!
   This function finds the common prefix of the names of all
-  the classes in \a classMap and then generates a compact
-  list of the class names alphabetized on the part of the
-  name not including the common prefix. You can tell the
-  function to use \a comonPrefix as the common prefix, but
-  normally you let it figure it out itself by looking at
-  the name of the first and last classes in \a classMap.
+  the classes in the class map \a nmm and then generates a
+  compact list of the class names alphabetized on the part
+  of the name not including the common prefix. You can tell
+  the function to use \a comonPrefix as the common prefix,
+  but normally you let it figure it out itself by looking at
+  the name of the first and last classes in the class map
+  \a nmm.
  */
 void HtmlGenerator::generateCompactList(ListType listType,
                                         const Node *relative,
-                                        const NodeMap &classMap,
+                                        const NodeMultiMap &nmm,
                                         bool includeAlphabet,
                                         QString commonPrefix)
 {
-    if (classMap.isEmpty())
+    if (nmm.isEmpty())
         return;
 
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
@@ -2924,14 +2910,14 @@ void HtmlGenerator::generateCompactList(ListType listType,
       Divide the data into 37 paragraphs: 0, ..., 9, A, ..., Z,
       underscore (_). QAccel will fall in paragraph 10 (A) and
       QXtWidget in paragraph 33 (X). This is the only place where we
-      assume that NumParagraphs is 37. Each paragraph is a NodeMap.
+      assume that NumParagraphs is 37. Each paragraph is a NodeMultiMap.
     */
-    NodeMap paragraph[NumParagraphs+1];
+    NodeMultiMap paragraph[NumParagraphs+1];
     QString paragraphName[NumParagraphs+1];
     QSet<char> usedParagraphNames;
 
-    NodeMap::ConstIterator c = classMap.constBegin();
-    while (c != classMap.constEnd()) {
+    NodeMultiMap::ConstIterator c = nmm.constBegin();
+    while (c != nmm.constEnd()) {
         QStringList pieces = c.key().split("::");
         QString key;
         int idx = commonPrefixLen;
@@ -2991,8 +2977,10 @@ void HtmlGenerator::generateCompactList(ListType listType,
 
     int curParNr = 0;
     int curParOffset = 0;
+    QString previousName;
+    bool multipleOccurrences = false;
 
-    for (int i=0; i<classMap.count(); i++) {
+    for (int i=0; i<nmm.count(); i++) {
         while ((curParNr < NumParagraphs) &&
                (curParOffset == paragraph[curParNr].count())) {
             ++curParNr;
@@ -3026,7 +3014,8 @@ void HtmlGenerator::generateCompactList(ListType listType,
         out() << "<dd>";
         if ((curParNr < NumParagraphs) &&
                 !paragraphName[curParNr].isEmpty()) {
-            NodeMap::Iterator it;
+            NodeMultiMap::Iterator it;
+            NodeMultiMap::Iterator next;
             it = paragraph[curParNr].begin();
             for (int i=0; i<curParOffset; i++)
                 ++it;
@@ -3049,8 +3038,20 @@ void HtmlGenerator::generateCompactList(ListType listType,
             }
 
             QStringList pieces;
-            if (it.value()->isQmlType() || it.value()->isJsType())
-                pieces << it.value()->name();
+            if (it.value()->isQmlType() || it.value()->isJsType()) {
+                QString name = it.value()->name();
+                next = it;
+                ++next;
+                if (name != previousName)
+                    multipleOccurrences = false;
+                if ((next != paragraph[curParNr].end()) && (name == next.value()->name())) {
+                    multipleOccurrences = true;
+                    previousName = name;
+                }
+                if (multipleOccurrences)
+                    name += ": " + it.value()->tree()->camelCaseModuleName();
+                pieces << name;
+            }
             else
                 pieces = it.value()->fullName(relative).split("::");
             out() << protectEnc(pieces.last());
@@ -3064,7 +3065,7 @@ void HtmlGenerator::generateCompactList(ListType listType,
         out() << "</dd>\n";
         curParOffset++;
     }
-    if (classMap.count() > 0)
+    if (nmm.count() > 0)
         out() << "</dl>\n";
 
     out() << "</div>\n";

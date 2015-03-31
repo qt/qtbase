@@ -225,8 +225,10 @@ bool QWindowsUser32DLL::initTouch()
 
 QWindowsShell32DLL::QWindowsShell32DLL()
     : sHCreateItemFromParsingName(0)
+    , sHGetKnownFolderIDList(0)
     , sHGetStockIconInfo(0)
     , sHGetImageList(0)
+    , sHCreateItemFromIDList(0)
 {
 }
 
@@ -234,8 +236,10 @@ void QWindowsShell32DLL::init()
 {
     QSystemLibrary library(QStringLiteral("shell32"));
     sHCreateItemFromParsingName = (SHCreateItemFromParsingName)(library.resolve("SHCreateItemFromParsingName"));
+    sHGetKnownFolderIDList = (SHGetKnownFolderIDList)(library.resolve("SHGetKnownFolderIDList"));
     sHGetStockIconInfo = (SHGetStockIconInfo)library.resolve("SHGetStockIconInfo");
     sHGetImageList = (SHGetImageList)library.resolve("SHGetImageList");
+    sHCreateItemFromIDList = (SHCreateItemFromIDList)library.resolve("SHCreateItemFromIDList");
 }
 
 QWindowsShcoreDLL::QWindowsShcoreDLL()

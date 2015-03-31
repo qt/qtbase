@@ -135,6 +135,8 @@ void tst_QChar::toUpper()
     QVERIFY(QChar(0x1c7).toUpper().unicode() == 0x1c7);
     QVERIFY(QChar(0x1c8).toUpper().unicode() == 0x1c7);
     QVERIFY(QChar(0x1c9).toUpper().unicode() == 0x1c7);
+    QVERIFY(QChar(0x25c).toUpper().unicode() == 0xa7ab);
+    QVERIFY(QChar(0x29e).toUpper().unicode() == 0xa7b0);
     QVERIFY(QChar(0x1d79).toUpper().unicode() == 0xa77d);
     QVERIFY(QChar(0x0265).toUpper().unicode() == 0xa78d);
 
@@ -144,6 +146,8 @@ void tst_QChar::toUpper()
     QVERIFY(QChar::toUpper(0x1c7) == 0x1c7);
     QVERIFY(QChar::toUpper(0x1c8) == 0x1c7);
     QVERIFY(QChar::toUpper(0x1c9) == 0x1c7);
+    QVERIFY(QChar::toUpper(0x25c) == 0xa7ab);
+    QVERIFY(QChar::toUpper(0x29e) == 0xa7b0);
     QVERIFY(QChar::toUpper(0x1d79) == 0xa77d);
     QVERIFY(QChar::toUpper(0x0265) == 0xa78d);
 
@@ -160,6 +164,8 @@ void tst_QChar::toLower()
     QVERIFY(QChar(0x1c9).toLower().unicode() == 0x1c9);
     QVERIFY(QChar(0xa77d).toLower().unicode() == 0x1d79);
     QVERIFY(QChar(0xa78d).toLower().unicode() == 0x0265);
+    QVERIFY(QChar(0xa7ab).toLower().unicode() == 0x25c);
+    QVERIFY(QChar(0xa7b1).toLower().unicode() == 0x287);
 
     QVERIFY(QChar::toLower('a') == 'a');
     QVERIFY(QChar::toLower('A') == 'a');
@@ -168,6 +174,8 @@ void tst_QChar::toLower()
     QVERIFY(QChar::toLower(0x1c9) == 0x1c9);
     QVERIFY(QChar::toLower(0xa77d) == 0x1d79);
     QVERIFY(QChar::toLower(0xa78d) == 0x0265);
+    QVERIFY(QChar::toLower(0xa7ab) == 0x25c);
+    QVERIFY(QChar::toLower(0xa7b1) == 0x287);
 
     QVERIFY(QChar::toLower(0x10400) == 0x10428);
     QVERIFY(QChar::toLower(0x10428) == 0x10428);
@@ -205,6 +213,8 @@ void tst_QChar::toCaseFolded()
     QVERIFY(QChar(0x1c9).toCaseFolded().unicode() == 0x1c9);
     QVERIFY(QChar(0xa77d).toCaseFolded().unicode() == 0x1d79);
     QVERIFY(QChar(0xa78d).toCaseFolded().unicode() == 0x0265);
+    QVERIFY(QChar(0xa7ab).toCaseFolded().unicode() == 0x25c);
+    QVERIFY(QChar(0xa7b1).toCaseFolded().unicode() == 0x287);
 
     QVERIFY(QChar::toCaseFolded('a') == 'a');
     QVERIFY(QChar::toCaseFolded('A') == 'a');
@@ -213,6 +223,8 @@ void tst_QChar::toCaseFolded()
     QVERIFY(QChar::toCaseFolded(0x1c9) == 0x1c9);
     QVERIFY(QChar::toCaseFolded(0xa77d) == 0x1d79);
     QVERIFY(QChar::toCaseFolded(0xa78d) == 0x0265);
+    QVERIFY(QChar::toCaseFolded(0xa7ab) == 0x25c);
+    QVERIFY(QChar::toCaseFolded(0xa7b1) == 0x287);
 
     QVERIFY(QChar::toCaseFolded(0x10400) == 0x10428);
     QVERIFY(QChar::toCaseFolded(0x10428) == 0x10428);
@@ -341,6 +353,7 @@ void tst_QChar::isPrint()
     QVERIFY(QChar(0x1e9e).isPrint()); // assigned in 5.1
     QVERIFY(QChar::isPrint(0x1b000)); // assigned in 6.0
     QVERIFY(QChar::isPrint(0x110d0)); // assigned in 5.1
+    QVERIFY(!QChar::isPrint(0x1bca0)); // assigned in 7.0
 }
 
 void tst_QChar::isUpper()
@@ -471,6 +484,7 @@ void tst_QChar::joiningType()
     QVERIFY(QChar(0x0627).joiningType() == QChar::Joining_Right);
     QVERIFY(QChar(0x05d0).joiningType() == QChar::Joining_None);
     QVERIFY(QChar(0x00ad).joiningType() == QChar::Joining_Transparent);
+    QVERIFY(QChar(0xA872).joiningType() == QChar::Joining_Left);
 
     QVERIFY(QChar::joiningType('a') == QChar::Joining_None);
     QVERIFY(QChar::joiningType('0') == QChar::Joining_None);
@@ -484,6 +498,8 @@ void tst_QChar::joiningType()
     QVERIFY(QChar::joiningType(0x2FA17) == QChar::Joining_None);
 
     QVERIFY(QChar::joiningType(0xA872) == QChar::Joining_Left);
+    QVERIFY(QChar::joiningType(0x10ACD) == QChar::Joining_Left);
+    QVERIFY(QChar::joiningType(0x10AD7) == QChar::Joining_Left);
 }
 
 void tst_QChar::combiningClass()
@@ -573,6 +589,10 @@ void tst_QChar::unicodeVersion()
 
     QVERIFY(QChar(0x061c).unicodeVersion() == QChar::Unicode_6_3);
     QVERIFY(QChar::unicodeVersion(0x061c) == QChar::Unicode_6_3);
+
+    QVERIFY(QChar(0x20bd).unicodeVersion() == QChar::Unicode_7_0);
+    QVERIFY(QChar::unicodeVersion(0x20bd) == QChar::Unicode_7_0);
+    QVERIFY(QChar::unicodeVersion(0x16b00) == QChar::Unicode_7_0);
 
     QVERIFY(QChar(0x09ff).unicodeVersion() == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion(0x09ff) == QChar::Unicode_Unassigned);

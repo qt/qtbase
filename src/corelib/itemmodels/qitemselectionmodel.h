@@ -147,6 +147,7 @@ class Q_CORE_EXPORT QItemSelectionModel : public QObject
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false DESIGNABLE false)
     Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
     Q_PROPERTY(QItemSelection selection READ selection NOTIFY selectionChanged STORED false DESIGNABLE false)
+    Q_PROPERTY(QModelIndexList selectedIndexes READ selectedIndexes NOTIFY selectionChanged STORED false DESIGNABLE false)
 
     Q_DECLARE_PRIVATE(QItemSelectionModel)
 
@@ -184,7 +185,7 @@ public:
 
     bool hasSelection() const;
 
-    Q_INVOKABLE QModelIndexList selectedIndexes() const;
+    QModelIndexList selectedIndexes() const;
     Q_INVOKABLE QModelIndexList selectedRows(int column = 0) const;
     Q_INVOKABLE QModelIndexList selectedColumns(int row = 0) const;
     const QItemSelection selection() const;

@@ -341,17 +341,16 @@ static void processQdocconfFile(const QString &fileName)
     Location outputFormatsLocation = config.lastLocation();
 
     qdb->clearSearchOrder();
-    QString p = config.getString(CONFIG_PROJECT).toLower();
     if (!Generator::singleExec()) {
         Generator::debug("  loading index files");
         loadIndexFiles(config);
         Generator::debug("  done loading index files");
-        qdb->newPrimaryTree(p);
+        qdb->newPrimaryTree(project);
     }
     else if (Generator::preparing())
-        qdb->newPrimaryTree(p);
+        qdb->newPrimaryTree(project);
     else
-        qdb->setPrimaryTree(p);
+        qdb->setPrimaryTree(project);
 
     dependModules = config.getStringList(CONFIG_DEPENDS);
     dependModules.removeDuplicates();
@@ -776,6 +775,7 @@ int main(int argc, char **argv)
     }
     translators.clear();
 #endif
+    QmlTypeNode::terminate();
 
 #ifdef DEBUG_SHUTDOWN_CRASH
     qDebug() << "main(): Delete qdoc database";

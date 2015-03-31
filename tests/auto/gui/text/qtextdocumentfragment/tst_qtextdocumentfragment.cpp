@@ -841,13 +841,13 @@ void tst_QTextDocumentFragment::unorderedListEnumeration()
     setHtml(QString::fromLatin1(html));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
 
-    const char html2[] = "<ul><ul><ul type=disc><li>Blah</li></ul></ul>";
+    const char html2[] = "<ul><ul><ul type=circle><li>Blah</li></ul></ul>";
     setHtml(QString::fromLatin1(html2));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
 
 }
 

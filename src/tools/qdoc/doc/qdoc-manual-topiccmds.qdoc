@@ -1054,28 +1054,6 @@
         \l{QWidget::height} {height}, and \l{QWidget::size} {size}.
     \endquotation
 
-    \target service-command
-    \section1 \\service
-
-    The \\service command tells QDoc that a class is a service class
-    and names the service. The command takes two arguments, the name
-    of the class and the name of the service. Currently, this command
-    is not used in the Qt documentation.
-
-     \code
-         / *!
-             \service TimeService Time
-             ...
-         * /
-         class TimeService : public QCopObjectService
-         {
-             ...
-         }
-     \endcode
-
-     See also \l {class-command} {\\class} and \l
-     {generatelist-command} {\\generatelist}.
-
     \target qmlattachedproperty-command
     \section1 \\qmlattachedproperty
 

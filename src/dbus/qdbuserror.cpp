@@ -395,8 +395,9 @@ QString QDBusError::errorString(ErrorType error)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QDBusError &msg)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDBusError(" << msg.name() << ", " << msg.message() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

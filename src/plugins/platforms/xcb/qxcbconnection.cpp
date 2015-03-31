@@ -306,71 +306,88 @@ void QXcbConnection::initializeScreens()
         int connectedOutputCount = 0;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
-            xcb_randr_get_output_primary_cookie_t primaryCookie =
-                xcb_randr_get_output_primary(xcb_connection(), xcbScreen->root);
-            // TODO: RRGetScreenResources has to be called on each X display at least once before
-            // RRGetScreenResourcesCurrent can be used - we can't know if we are the first application
-            // to do so or not, so we always call the slower version here. Ideally we should share some
-            // global flag (an atom on root window maybe) that at least other Qt apps would understand
-            // and could call RRGetScreenResourcesCurrent here, speeding up start.
-            xcb_randr_get_screen_resources_cookie_t resourcesCookie =
-                xcb_randr_get_screen_resources(xcb_connection(), xcbScreen->root);
-            QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary(
-                    xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
-            if (!primary || error) {
-                qWarning("failed to get the primary output of the screen");
+            // RRGetScreenResourcesCurrent is fast but it may return nothing if the
+            // configuration is not initialized wrt to the hardware. We should call
+            // RRGetScreenResources in this case.
+            QScopedPointer<xcb_randr_get_screen_resources_reply_t, QScopedPointerPodDeleter> resources;
+            xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
+                xcb_randr_get_screen_resources_current(xcb_connection(), xcbScreen->root);
+            QScopedPointer<xcb_randr_get_screen_resources_current_reply_t, QScopedPointerPodDeleter> resources_current(
+                    xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, &error));
+            if (!resources_current || error) {
+                qWarning("failed to get the current screen resources");
                 free(error);
             } else {
-                QScopedPointer<xcb_randr_get_screen_resources_reply_t, QScopedPointerPodDeleter> resources(
-                        xcb_randr_get_screen_resources_reply(xcb_connection(), resourcesCookie, &error));
-                if (!resources || error) {
-                    qWarning("failed to get the screen resources");
-                    free(error);
+                xcb_timestamp_t timestamp;
+                xcb_randr_output_t *outputs = Q_NULLPTR;
+                outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.data());
+                if (outputCount) {
+                    timestamp = resources_current->config_timestamp;
+                    outputs = xcb_randr_get_screen_resources_current_outputs(resources_current.data());
                 } else {
-                    xcb_timestamp_t timestamp = resources->config_timestamp;
-                    outputCount = xcb_randr_get_screen_resources_outputs_length(resources.data());
-                    xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_outputs(resources.data());
+                    xcb_randr_get_screen_resources_cookie_t resourcesCookie =
+                        xcb_randr_get_screen_resources(xcb_connection(), xcbScreen->root);
+                    resources.reset(xcb_randr_get_screen_resources_reply(xcb_connection(), resourcesCookie, &error));
+                    if (!resources || error) {
+                        qWarning("failed to get the screen resources");
+                        free(error);
+                    } else {
+                        timestamp = resources->config_timestamp;
+                        outputCount = xcb_randr_get_screen_resources_outputs_length(resources.data());
+                        outputs = xcb_randr_get_screen_resources_outputs(resources.data());
+                    }
+                }
 
-                    for (int i = 0; i < outputCount; i++) {
-                        QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> output(
-                                xcb_randr_get_output_info_reply(xcb_connection(),
-                                    xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL));
+                if (outputCount) {
+                    xcb_randr_get_output_primary_cookie_t primaryCookie =
+                        xcb_randr_get_output_primary(xcb_connection(), xcbScreen->root);
+                    QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary(
+                            xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
+                    if (!primary || error) {
+                        qWarning("failed to get the primary output of the screen");
+                        free(error);
+                    } else {
+                        for (int i = 0; i < outputCount; i++) {
+                            QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> output(
+                                    xcb_randr_get_output_info_reply(xcb_connection(),
+                                        xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL));
 
-                        // Invalid, disconnected or disabled output
-                        if (output == NULL)
-                            continue;
+                            // Invalid, disconnected or disabled output
+                            if (output == NULL)
+                                continue;
 
-                        if (output->connection != XCB_RANDR_CONNECTION_CONNECTED) {
-                            qCDebug(lcQpaScreen, "Output %s is not connected", qPrintable(
-                                        QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
-                                                          xcb_randr_get_output_info_name_length(output.data()))));
-                            continue;
-                        }
+                            if (output->connection != XCB_RANDR_CONNECTION_CONNECTED) {
+                                qCDebug(lcQpaScreen, "Output %s is not connected", qPrintable(
+                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
+                                                              xcb_randr_get_output_info_name_length(output.data()))));
+                                continue;
+                            }
 
-                        if (output->crtc == XCB_NONE) {
-                            qCDebug(lcQpaScreen, "Output %s is not enabled", qPrintable(
-                                        QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
-                                                          xcb_randr_get_output_info_name_length(output.data()))));
-                            continue;
-                        }
+                            if (output->crtc == XCB_NONE) {
+                                qCDebug(lcQpaScreen, "Output %s is not enabled", qPrintable(
+                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
+                                                              xcb_randr_get_output_info_name_length(output.data()))));
+                                continue;
+                            }
 
-                        QXcbScreen *screen = createScreen(xcbScreenNumber, xcbScreen, outputs[i], output.data());
-                        siblings << screen;
-                        ++connectedOutputCount;
-                        hasOutputs = true;
-                        m_screens << screen;
+                            QXcbScreen *screen = createScreen(xcbScreenNumber, xcbScreen, outputs[i], output.data());
+                            siblings << screen;
+                            ++connectedOutputCount;
+                            hasOutputs = true;
+                            m_screens << screen;
 
-                        // There can be multiple outputs per screen, use either
-                        // the first or an exact match.  An exact match isn't
-                        // always available if primary->output is XCB_NONE
-                        // or currently disconnected output.
-                        if (m_primaryScreenNumber == xcbScreenNumber) {
-                            if (!primaryScreen || (primary && outputs[i] == primary->output)) {
-                                if (primaryScreen)
-                                    primaryScreen->setPrimary(false);
-                                primaryScreen = screen;
-                                primaryScreen->setPrimary(true);
-                                siblings.prepend(siblings.takeLast());
+                            // There can be multiple outputs per screen, use either
+                            // the first or an exact match.  An exact match isn't
+                            // always available if primary->output is XCB_NONE
+                            // or currently disconnected output.
+                            if (m_primaryScreenNumber == xcbScreenNumber) {
+                                if (!primaryScreen || (primary && outputs[i] == primary->output)) {
+                                    if (primaryScreen)
+                                        primaryScreen->setPrimary(false);
+                                    primaryScreen = screen;
+                                    primaryScreen->setPrimary(true);
+                                    siblings.prepend(siblings.takeLast());
+                                }
                             }
                         }
                     }
@@ -1120,7 +1137,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         }
     }
 
-    if (!handled)
+    if (!handled && m_glIntegration)
         handled = m_glIntegration->handleXcbEvent(event, response_type);
 
     if (handled)
@@ -1463,6 +1480,7 @@ static const char * xcb_atomnames = {
     "WM_STATE\0"
     "WM_CHANGE_STATE\0"
     "WM_CLASS\0"
+    "WM_NAME\0"
 
     // Session management
     "WM_CLIENT_LEADER\0"

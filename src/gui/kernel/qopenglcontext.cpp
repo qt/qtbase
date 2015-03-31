@@ -636,12 +636,21 @@ void QOpenGLContext::destroy()
     d->platformGLContext = 0;
     delete d->functions;
     d->functions = 0;
+
+    foreach (QAbstractOpenGLFunctions *func, d->externalVersionFunctions) {
+        QAbstractOpenGLFunctionsPrivate *func_d = QAbstractOpenGLFunctionsPrivate::get(func);
+        func_d->owningContext = 0;
+        func_d->initialized = false;
+    }
+    d->externalVersionFunctions.clear();
     qDeleteAll(d->versionFunctions);
     d->versionFunctions.clear();
     qDeleteAll(d->versionFunctionsBackend);
     d->versionFunctionsBackend.clear();
+
     delete d->textureFunctions;
     d->textureFunctions = 0;
+
     d->nativeHandle = QVariant();
 }
 
@@ -719,7 +728,7 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
     is current. It is also possible to call this function when the context is not
     current, but in that case it is the caller's responsibility to ensure proper
-    intiialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    initialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
     afterwards.
 
     Usually one would use the template version of this function to automatically
@@ -851,15 +860,26 @@ bool QOpenGLContext::hasExtension(const QByteArray &extension) const
 /*!
     Call this to get the default framebuffer object for the current surface.
 
-    On some platforms the default framebuffer object depends on the surface
-    being rendered to, and might be different from 0. Thus, instead of calling
-    glBindFramebuffer(0), you should call
+    On some platforms (for instance, iOS) the default framebuffer object depends
+    on the surface being rendered to, and might be different from 0. Thus,
+    instead of calling glBindFramebuffer(0), you should call
     glBindFramebuffer(ctx->defaultFramebufferObject()) if you want your
     application to work across different Qt platforms.
 
     If you use the glBindFramebuffer() in QOpenGLFunctions you do not have to
     worry about this, as it automatically binds the current context's
     defaultFramebufferObject() when 0 is passed.
+
+    \note Widgets that render via framebuffer objects, like QOpenGLWidget and
+    QQuickWidget, will override the value returned from this function when
+    painting is active, because at that time the correct "default" framebuffer
+    is the widget's associated backing framebuffer, not the platform-specific
+    one belonging to the top-level window's surface. This ensures the expected
+    behavior for this function and other classes relying on it (for example,
+    QOpenGLFramebufferObject::bindDefault() or
+    QOpenGLFramebufferObject::release()).
+
+    \sa QOpenGLFramebufferObject
 */
 GLuint QOpenGLContext::defaultFramebufferObject() const
 {
@@ -869,6 +889,9 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
     Q_D(const QOpenGLContext);
     if (!d->surface || !d->surface->surfaceHandle())
         return 0;
+
+    if (d->defaultFboRedirect)
+        return d->defaultFboRedirect;
 
     return d->platformGLContext->defaultFramebufferObject(d->surface->surfaceHandle());
 }
@@ -1255,6 +1278,24 @@ void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
 {
     Q_D(QOpenGLContext);
     d->versionFunctionsBackend.remove(v);
+}
+
+/*!
+    \internal
+ */
+void QOpenGLContext::insertExternalFunctions(QAbstractOpenGLFunctions *f)
+{
+    Q_D(QOpenGLContext);
+    d->externalVersionFunctions.insert(f);
+}
+
+/*!
+    \internal
+ */
+void QOpenGLContext::removeExternalFunctions(QAbstractOpenGLFunctions *f)
+{
+    Q_D(QOpenGLContext);
+    d->externalVersionFunctions.remove(f);
 }
 
 /*!

@@ -159,11 +159,11 @@ private:
                                   CodeMarker *marker,
                                   CodeMarker::Status status);
     void generateClassHierarchy(const Node *relative, NodeMap &classMap);
-    void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMap& nodeMap);
+    void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMultiMap& nodeMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeList& nodes);
     void generateCompactList(ListType listType,
                              const Node *relative,
-                             const NodeMap &classMap,
+                             const NodeMultiMap &classMap,
                              bool includeAlphabet,
                              QString commonPrefix);
     void generateFunctionIndex(const Node *relative);

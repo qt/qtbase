@@ -2376,15 +2376,21 @@ Qt::LayoutDirection QLocale::textDirection() const
     case QLocale::KharoshthiScript:
     case QLocale::LydianScript:
     case QLocale::MandaeanScript:
+    case QLocale::ManichaeanScript:
+    case QLocale::MendeKikakuiScript:
     case QLocale::MeroiticCursiveScript:
     case QLocale::MeroiticScript:
+    case QLocale::NabataeanScript:
+    case QLocale::NkoScript:
+    case QLocale::OldNorthArabianScript:
+    case QLocale::OldSouthArabianScript:
+    case QLocale::OrkhonScript:
+    case QLocale::PalmyreneScript:
+    case QLocale::PhoenicianScript:
+    case QLocale::PsalterPahlaviScript:
     case QLocale::SamaritanScript:
     case QLocale::SyriacScript:
     case QLocale::ThaanaScript:
-    case QLocale::NkoScript:
-    case QLocale::OldSouthArabianScript:
-    case QLocale::OrkhonScript:
-    case QLocale::PhoenicianScript:
         return Qt::RightToLeft;
     default:
         break;

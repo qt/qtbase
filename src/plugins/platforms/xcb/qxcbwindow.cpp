@@ -87,6 +87,7 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QTextCodec>
 #include <stdio.h>
 
 #ifdef XCB_USE_XLIB
@@ -156,6 +157,11 @@ static inline QPoint dpr_ceil(const QPoint &p, int dpr)
     return QPoint((p.x() + dpr - 1) / dpr, (p.y() + dpr - 1) / dpr);
 }
 
+static inline QSize dpr_ceil(const QSize &s, int dpr)
+{
+    return QSize((s.width() + dpr - 1) / dpr, (s.height() + dpr - 1) / dpr);
+}
+
 static inline QRect mapExposeFromNative(const QRect &xRect, int dpr)
 {
     return QRect(dpr_floor(xRect.topLeft(), dpr), dpr_ceil(xRect.bottomRight(), dpr));
@@ -163,7 +169,7 @@ static inline QRect mapExposeFromNative(const QRect &xRect, int dpr)
 
 static inline QRect mapGeometryFromNative(const QRect &xRect, int dpr)
 {
-    return QRect(xRect.topLeft() / dpr, xRect.bottomRight() / dpr);
+    return QRect(xRect.topLeft() / dpr, dpr_ceil(xRect.size(), dpr));
 }
 
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
@@ -178,8 +184,10 @@ static inline bool isTransient(const QWindow *w)
            || w->type() == Qt::Popup;
 }
 
-static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, quint32 blue_mask)
+static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, quint32 blue_mask, bool *rgbSwap)
 {
+    if (rgbSwap)
+        *rgbSwap = false;
     switch (depth) {
     case 32:
         if (blue_mask == 0xff)
@@ -188,6 +196,11 @@ static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, q
             return QImage::Format_A2BGR30_Premultiplied;
         if (blue_mask == 0x3ff)
             return QImage::Format_A2RGB30_Premultiplied;
+        if (red_mask == 0xff) {
+            if (rgbSwap)
+                *rgbSwap = true;
+            return QImage::Format_ARGB32_Premultiplied;
+        }
         break;
     case 30:
         if (red_mask == 0x3ff)
@@ -198,6 +211,11 @@ static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, q
     case 24:
         if (blue_mask == 0xff)
             return QImage::Format_RGB32;
+        if (red_mask == 0xff) {
+            if (rgbSwap)
+                *rgbSwap = true;
+            return QImage::Format_RGB32;
+        }
         break;
     case 16:
         if (blue_mask == 0x1f)
@@ -226,6 +244,48 @@ static inline bool positionIncludesFrame(QWindow *w)
 {
     return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 }
+
+#ifdef XCB_USE_XLIB
+static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
+{
+    #include <X11/Xatom.h>
+
+    static XTextProperty tp = { 0, 0, 0, 0 };
+    static bool free_prop = true; // we can't free tp.value in case it references
+                                  // the data of the static QByteArray below.
+    if (tp.value) {
+        if (free_prop)
+            XFree(tp.value);
+        tp.value = 0;
+        free_prop = true;
+    }
+
+    static const QTextCodec* mapper = QTextCodec::codecForLocale();
+    int errCode = 0;
+    if (mapper) {
+        QByteArray mapped = mapper->fromUnicode(s);
+        char* tl[2];
+        tl[0] = mapped.data();
+        tl[1] = 0;
+        errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
+        if (errCode < 0)
+            qDebug("XmbTextListToTextProperty result code %d", errCode);
+    }
+    if (!mapper || errCode < 0) {
+        mapper = QTextCodec::codecForName("latin1");
+        if (!mapper || !mapper->canEncode(s))
+            return Q_NULLPTR;
+        static QByteArray qcs;
+        qcs = s.toLatin1();
+        tp.value = (uchar*)qcs.data();
+        tp.encoding = XA_STRING;
+        tp.format = 8;
+        tp.nitems = qcs.length();
+        free_prop = false;
+    }
+    return &tp;
+}
+#endif // XCB_USE_XLIB
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
 
@@ -292,7 +352,7 @@ void QXcbWindow::create()
         m_depth = platformScreen->screen()->root_depth;
         m_visualId = platformScreen->screen()->root_visual;
         const xcb_visualtype_t *visual = platformScreen->visualForId(m_visualId);
-        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask);
+        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
         connection()->addWindowEventListener(m_window, this);
         return;
     }
@@ -364,7 +424,7 @@ void QXcbWindow::create()
 
         if (visualInfo) {
             m_depth = visualInfo->depth;
-            m_imageFormat = imageFormatForVisual(visualInfo->depth, visualInfo->red_mask, visualInfo->blue_mask);
+            m_imageFormat = imageFormatForVisual(visualInfo->depth, visualInfo->red_mask, visualInfo->blue_mask, &m_imageRgbSwap);
             Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
@@ -417,7 +477,7 @@ void QXcbWindow::create()
         }
 
         const xcb_visualtype_t *visual = platformScreen->visualForId(m_visualId);
-        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask);
+        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      m_depth,
@@ -1407,6 +1467,12 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    8,
                                    ba.length(),
                                    ba.constData()));
+
+#ifdef XCB_USE_XLIB
+    XTextProperty *text = qstringToXTP(DISPLAY_FROM_XCB(this), title);
+    if (text)
+        XSetWMName(DISPLAY_FROM_XCB(this), m_window, text);
+#endif
     xcb_flush(xcb_connection());
 }
 

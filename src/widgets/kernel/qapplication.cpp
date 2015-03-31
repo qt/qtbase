@@ -978,8 +978,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
           || event->type() == QEvent::LayoutRequest
           || event->type() == QEvent::Resize
           || event->type() == QEvent::Move
-          || event->type() == QEvent::LanguageChange
-          || event->type() == QEvent::InputMethod)) {
+          || event->type() == QEvent::LanguageChange)) {
         for (QPostEventList::const_iterator it = postedEvents->constBegin(); it != postedEvents->constEnd(); ++it) {
             const QPostEvent &cur = *it;
             if (cur.receiver != receiver || cur.event == 0 || cur.event->type() != event->type())
@@ -993,8 +992,6 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
                 ((QMoveEvent *)(cur.event))->p = ((QMoveEvent *)event)->p;
             } else if (cur.event->type() == QEvent::LanguageChange) {
                 ;
-            } else if ( cur.event->type() == QEvent::InputMethod ) {
-                *(QInputMethodEvent *)(cur.event) = *(QInputMethodEvent *)event;
             } else {
                 continue;
             }

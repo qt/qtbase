@@ -1010,6 +1010,7 @@ public:
     VCFilter                FormFiles;
     VCFilter                ResourceFiles;
     VCFilter                DeploymentFiles;
+    VCFilter                DistributionFiles;
     VCFilterList            ExtraCompilersFiles;
 
     bool                    flat_files;

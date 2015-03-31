@@ -942,6 +942,7 @@ QRect QPageLayout::paintRectPixels(int resolution) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPageLayout &layout)
 {
+    QDebugStateSaver saver(dbg);
     if (layout.isValid()) {
         QString output = QStringLiteral("QPageLayout(%1, %2, l:%3 r:%4 t:%5 b:%6 %7)");
         QString units;
@@ -976,7 +977,7 @@ QDebug operator<<(QDebug dbg, const QPageLayout &layout)
     } else {
         dbg.nospace() << "QPageLayout()";
     }
-    return dbg.space();
+    return dbg;
 }
 #endif
 

@@ -36,6 +36,7 @@
 
 #ifndef QOBJECTDEFS_H
 #error Do not include qobjectdefs_impl.h directly
+#include <QtCore/qnamespace.h>
 #endif
 
 #if 0

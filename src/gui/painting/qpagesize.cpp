@@ -1854,6 +1854,7 @@ QSize QPageSize::sizePixels(PageSizeId pageSizeId, int resolution)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPageSize &pageSize)
 {
+    QDebugStateSaver saver(dbg);
     if (pageSize.isValid()) {
         QString output = QStringLiteral("QPageSize(\"%1\", \"%2\", %3x%4pt, %5)");
         output = output.arg(pageSize.name())
@@ -1865,7 +1866,7 @@ QDebug operator<<(QDebug dbg, const QPageSize &pageSize)
     } else {
         dbg.nospace() << "QPageSize()";
     }
-    return dbg.space();
+    return dbg;
 }
 #endif
 

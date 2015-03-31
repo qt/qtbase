@@ -87,26 +87,32 @@ uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propert
         m_properties.insert(QLatin1String("children-display"), QLatin1String("submenu"));
         Q_FOREACH (const QDBusPlatformMenu *menu, QDBusPlatformMenu::topLevelMenus()) {
             if (menu)
-                Q_FOREACH (const QDBusPlatformMenuItem *item, menu->items()) {
-                    QDBusMenuLayoutItem child;
-                    child.populate(item, depth - 1, propertyNames);
-                    m_children << child;
-                }
+                populate(menu, depth, propertyNames);
         }
-    } else {
-        // TODO insert menu properties (name-value pairs)
+        return 1; // revision
     }
-    QDBusPlatformMenu *menu = QDBusPlatformMenu::byId(id);
-    if (depth != 0 && menu) {
-        Q_FOREACH (QDBusPlatformMenuItem *item, menu->items()) {
-            QDBusMenuLayoutItem child;
-            child.populate(item, depth - 1, propertyNames);
-            m_children << child;
-        }
+
+    const QDBusPlatformMenu *menu = QDBusPlatformMenu::byId(id);
+    if (!menu) {
+        QDBusPlatformMenuItem *item = QDBusPlatformMenuItem::byId(id);
+        if (item)
+            menu = static_cast<const QDBusPlatformMenu *>(item->menu());
     }
+    if (depth != 0 && menu)
+        populate(menu, depth, propertyNames);
     if (menu)
         return menu->revision();
-    return 1;
+
+    return 1; // revision
+}
+
+void QDBusMenuLayoutItem::populate(const QDBusPlatformMenu *menu, int depth, const QStringList &propertyNames)
+{
+    Q_FOREACH (QDBusPlatformMenuItem *item, menu->items()) {
+        QDBusMenuLayoutItem child;
+        child.populate(item, depth - 1, propertyNames);
+        m_children << child;
+    }
 }
 
 void QDBusMenuLayoutItem::populate(const QDBusPlatformMenuItem *item, int depth, const QStringList &propertyNames)
@@ -116,7 +122,6 @@ void QDBusMenuLayoutItem::populate(const QDBusPlatformMenuItem *item, int depth,
     m_id = item->dbusID();
     QDBusMenuItem proxy(item);
     m_properties = proxy.m_properties;
-    // TODO populate m_children
 }
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &item)

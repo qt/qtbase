@@ -49,11 +49,11 @@
     \title Qt Quarterly: Plural Form in Translation
 */
 /*!
-    \externalpage http://qt.gitorious.org
+    \externalpage https://code.qt.io/
     \title Public Qt Repository
 */
 /*!
-    \externalpage http://qt.gitorious.org/qt-labs/qtestlib-tools
+    \externalpage https://code.qt.io/cgit/%7bnon-gerrit%7d/qt-labs/qtestlib-tools.git/
     \title qtestlib-tools
 */
 

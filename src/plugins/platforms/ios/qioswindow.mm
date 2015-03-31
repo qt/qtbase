@@ -244,7 +244,8 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         applyGeometry(m_normalGeometry);
         break;
     case Qt::WindowMaximized:
-        applyGeometry(screen()->availableGeometry());
+        applyGeometry(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
+            screen()->geometry() : screen()->availableGeometry());
         break;
     case Qt::WindowFullScreen:
         applyGeometry(screen()->geometry());

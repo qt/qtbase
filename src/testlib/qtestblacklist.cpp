@@ -39,6 +39,7 @@
 #include <QtCore/qset.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/QSysInfo>
 
 #include <set>
 
@@ -127,6 +128,14 @@ static bool checkCondition(const QByteArray &condition)
 {
     static QSet<QByteArray> matchedConditions = keywords();
     QList<QByteArray> conds = condition.split(' ');
+
+    QByteArray distributionName = QSysInfo::productType().toLower().toUtf8();
+    QByteArray distributionRelease = QSysInfo::productVersion().toLower().toUtf8();
+    if (!distributionName.isEmpty()) {
+        if (matchedConditions.find(distributionName) == matchedConditions.end())
+            matchedConditions.insert(distributionName);
+        matchedConditions.insert(distributionName + "-" + distributionRelease);
+    }
 
     for (int i = 0; i < conds.size(); ++i) {
         QByteArray c = conds.at(i);

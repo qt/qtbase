@@ -90,6 +90,9 @@ src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
 src_3rdparty_harfbuzzng.depends = src_corelib   # for the Qt atomics
 
+src_3rdparty_freetype.subdir = $$PWD/3rdparty/freetype
+src_3rdparty_freetype.target = sub-3rdparty-freetype
+
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
 
@@ -156,6 +159,10 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
+    contains(QT_CONFIG, freetype) {
+        SUBDIRS += src_3rdparty_freetype
+        src_platformsupport.depends += src_3rdparty_freetype
+    }
     SUBDIRS += src_gui src_platformsupport src_platformheaders
     contains(QT_CONFIG, opengl(es2)?):SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
@@ -182,7 +189,7 @@ android:!android-no-sdk: SUBDIRS += src_android
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
     src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml \
-    src_3rdparty_pcre src_3rdparty_harfbuzzng
+    src_3rdparty_pcre src_3rdparty_harfbuzzng src_3rdparty_freetype
 
 sub-tools.depends = $$TOOLS
 QMAKE_EXTRA_TARGETS = sub-tools

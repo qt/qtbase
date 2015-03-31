@@ -426,12 +426,13 @@ struct Q_GUI_EXPORT Declaration
 {
     struct DeclarationData : public QSharedData
     {
-        inline DeclarationData() : propertyId(UnknownProperty), important(false) {}
+        inline DeclarationData() : propertyId(UnknownProperty), important(false), inheritable(false) {}
         QString property;
         Property propertyId;
         QVector<Value> values;
         QVariant parsed;
-        bool important;
+        bool important:1;
+        bool inheritable:1;
     };
     QExplicitlySharedDataPointer<DeclarationData> d;
     inline Declaration() : d(new DeclarationData()) {}

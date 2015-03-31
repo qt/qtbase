@@ -56,6 +56,7 @@ private slots:
     void reparentToNotYetCreated();
     void asViewport();
     void requestUpdate();
+    void fboRedirect();
 };
 
 void tst_QOpenGLWidget::create()
@@ -327,6 +328,31 @@ void tst_QOpenGLWidget::requestUpdate()
 
     w.windowHandle()->requestUpdate();
     QTRY_VERIFY(w.m_count > 0);
+}
+
+class FboCheckWidget : public QOpenGLWidget
+{
+public:
+    void paintGL() Q_DECL_OVERRIDE {
+        GLuint reportedDefaultFbo = QOpenGLContext::currentContext()->defaultFramebufferObject();
+        GLuint expectedDefaultFbo = defaultFramebufferObject();
+        QCOMPARE(reportedDefaultFbo, expectedDefaultFbo);
+    }
+};
+
+void tst_QOpenGLWidget::fboRedirect()
+{
+    FboCheckWidget w;
+    w.resize(640, 480);
+    w.show();
+    QTest::qWaitForWindowExposed(&w);
+
+    // Unlike in paintGL(), the default fbo reported by the context is not affected by the widget,
+    // so we get the real default fbo: either 0 or (on iOS) the fbo associated with the window.
+    w.makeCurrent();
+    GLuint reportedDefaultFbo = QOpenGLContext::currentContext()->defaultFramebufferObject();
+    GLuint widgetFbo = w.defaultFramebufferObject();
+    QVERIFY(reportedDefaultFbo != widgetFbo);
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)

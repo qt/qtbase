@@ -356,7 +356,11 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$@" -o conftest-out.o conftest.cpp
+    if [ "$OPT_VERBOSE" = "yes" ]; then
+        "$@" -o conftest-out.o conftest.cpp
+    else
+        "$@" -o conftest-out.o conftest.cpp >/dev/null 2>&1
+    fi
     ret=$?
     rm -f conftest.cpp conftest-out.o
     return $ret
@@ -372,7 +376,7 @@ linkerSupportsFlag()
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
-    compilerSupportsFlag $compiler $lflags >/dev/null 2>&1
+    compilerSupportsFlag $compiler $lflags
 }
 
 # $1: newline-separated list of default paths
@@ -4010,8 +4014,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         (cd "$outpath/qmake"; "$MAKE") || exit 2
     else
         # Hide the output of make
-        # Use bash to print dots, if we have it
-        if $WHICH bash > /dev/null 2>/dev/null; then
+        # Use bash to print dots, if we have it, and stdout is a tty.
+        if test -t 1 && $WHICH bash > /dev/null 2>/dev/null; then
             bash -c 'set -o pipefail
                 cd "$0/qmake"; "$1" | while read line; do
                     builtin echo -n .

@@ -64,12 +64,17 @@ QT_BEGIN_NAMESPACE
   Constructs a Tree. \a qdb is the pointer to the singleton
   qdoc database that is constructing the tree. This might not
   be necessary, and it might be removed later.
+
+  \a camelCaseModuleName is the project name for this tree,
+  which was obtained from the qdocconf file via the Config
+  singleton.
  */
-Tree::Tree(const QString& physicalModuleName, QDocDatabase* qdb)
+Tree::Tree(const QString& camelCaseModuleName, QDocDatabase* qdb)
     : treeHasBeenAnalyzed_(false),
       docsHaveBeenGenerated_(false),
       linkCount_(0),
-      physicalModuleName_(physicalModuleName),
+      camelCaseModuleName_(camelCaseModuleName),
+      physicalModuleName_(camelCaseModuleName.toLower()),
       qdb_(qdb),
       root_(0, QString()),
       targetListMap_(0)

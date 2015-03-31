@@ -465,7 +465,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         }
 
         if (qApp->activePopupWidget() != activePopupWidget
-            && qt_replay_popup_mouse_event) {
+            && qt_replay_popup_mouse_event
+            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
             if (m_widget->windowType() != Qt::Popup)
                 qt_button_down = 0;
             if (event->type() == QEvent::MouseButtonPress) {

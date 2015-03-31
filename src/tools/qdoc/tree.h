@@ -95,7 +95,7 @@ class Tree
     typedef QMap<PropertyNode::FunctionRole, QString> RoleMap;
     typedef QMap<PropertyNode*, RoleMap> PropertyMap;
 
-    Tree(const QString& module, QDocDatabase* qdb);
+    Tree(const QString& camelCaseModuleName, QDocDatabase* qdb);
     ~Tree();
 
     Node* findNodeForInclude(const QStringList& path) const;
@@ -212,6 +212,7 @@ class Tree
     QStringList getTargetListKeys() { return targetListMap_->keys(); }
 
  public:
+    const QString& camelCaseModuleName() const { return camelCaseModuleName_; }
     const QString& physicalModuleName() const { return physicalModuleName_; }
     const QString& indexFileName() const { return indexFileName_; }
     long incrementLinkCount() { return --linkCount_; }
@@ -222,6 +223,7 @@ private:
     bool treeHasBeenAnalyzed_;
     bool docsHaveBeenGenerated_;
     long linkCount_;
+    QString camelCaseModuleName_;
     QString physicalModuleName_;
     QString indexFileName_;
     QDocDatabase* qdb_;

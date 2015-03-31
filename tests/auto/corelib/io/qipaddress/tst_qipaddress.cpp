@@ -209,6 +209,12 @@ void tst_QIpAddress::invalidParseIp4_data()
     // bad hex
     QTest::newRow("0x1g") << "0x1g";
 
+    // negative numbers
+    QTest::newRow("-1") << "-1";
+    QTest::newRow("-1.1") << "-1.1";
+    QTest::newRow("1.-1") << "1.-1";
+    QTest::newRow("1.1.1.-1") << "1.1.1.-1";
+
     // letters
     QTest::newRow("abc") << "abc";
     QTest::newRow("1.2.3a.4") << "1.2.3a.4";

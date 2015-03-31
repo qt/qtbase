@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v24.
+    QLocale's data is based on Common Locale Data Repository v27.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -456,6 +456,33 @@
     \value TaiDam
     \value TaiNua
     \value Ugaritic
+    \value Mapuche Since Qt 5.5
+    \value CentralKurdish Since Qt 5.5
+    \value LowerSorbian Since Qt 5.5
+    \value UpperSorbian Since Qt 5.5
+    \value Kenyang Since Qt 5.5
+    \value Mohawk Since Qt 5.5
+    \value Nko Since Qt 5.5
+    \value Prussian Since Qt 5.5
+    \value Kiche Since Qt 5.5
+    \value SouthernSami Since Qt 5.5
+    \value LuleSami Since Qt 5.5
+    \value InariSami Since Qt 5.5
+    \value SkoltSami Since Qt 5.5
+    \value Warlpiri Since Qt 5.5
+    \value ManichaeanMiddlePersian Since Qt 5.5
+    \value Mende Since Qt 5.5
+    \value AncientNorthArabian Since Qt 5.5
+    \value LinearA Since Qt 5.5
+    \value HmongNjua Since Qt 5.5
+    \value Ho Since Qt 5.5
+    \value Lezghian Since Qt 5.5
+    \value Bassa Since Qt 5.5
+    \value Mono Since Qt 5.5
+    \value TedimChin Since Qt 5.5
+    \value Maithili Since Qt 5.5
+    \value LowerSorbian Since Qt 5.5
+    \value UpperSorbian Since Qt 5.5
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
@@ -746,6 +773,7 @@
     \value AvestanScript
     \value BalineseScript
     \value BamumScript
+    \value BassaVahScript Since Qt 5.5
     \value BatakScript
     \value BengaliScript
     \value BopomofoScript
@@ -755,6 +783,7 @@
     \value BuhidScript
     \value CanadianAboriginalScript
     \value CarianScript
+    \value CaucasianAlbanianScript Since Qt 5.5
     \value ChakmaScript
     \value ChamScript
     \value CherokeeScript
@@ -763,12 +792,15 @@
     \value CyrillicScript
     \value DeseretScript
     \value DevanagariScript
+    \value DuployanScript Since Qt 5.5
     \value EgyptianHieroglyphsScript
+    \value ElbasanScript Since Qt 5.5
     \value EthiopicScript
     \value FraserScript
     \value GeorgianScript
     \value GlagoliticScript
     \value GothicScript
+    \value GranthaScript Since Qt 5.5
     \value GreekScript
     \value GujaratiScript
     \value GurmukhiScript
@@ -788,41 +820,57 @@
     \value KayahLiScript
     \value KharoshthiScript
     \value KhmerScript
+    \value KhojkiScript Since Qt 5.5
+    \value KhudawadiScript Since Qt 5.5
     \value KoreanScript
     \value LannaScript
     \value LaoScript
     \value LatinScript
     \value LepchaScript
     \value LimbuScript
+    \value LinearAScript Since Qt 5.5
     \value LinearBScript
     \value LycianScript
     \value LydianScript
+    \value MahajaniScript Since Qt 5.5
     \value MalayalamScript
     \value MandaeanScript
+    \value ManichaeanScript Since Qt 5.5
     \value MeiteiMayekScript
+    \value MendeKikakuiScript Since Qt 5.5
     \value MeroiticScript
     \value MeroiticCursiveScript
+    \value ModiScript Since Qt 5.5
     \value MongolianScript
+    \value MroScript Since Qt 5.5
     \value MyanmarScript
+    \value NabataeanScript Since Qt 5.5
     \value NkoScript
     \value NewTaiLueScript
     \value OghamScript
     \value OlChikiScript
     \value OldItalicScript
+    \value OldNorthArabianScript Since Qt 5.5
+    \value OldPermicScript Since Qt 5.5
     \value OldPersianScript
     \value OldSouthArabianScript
     \value OriyaScript
     \value OrkhonScript
     \value OsmanyaScript
+    \value PahawhHmongScript Since Qt 5.5
+    \value PalmyreneScript Since Qt 5.5
+    \value PauCinHauScript Since Qt 5.5
     \value PhagsPaScript
     \value PhoenicianScript
     \value PollardPhoneticScript
+    \value PsalterPahlaviScript Since Qt 5.5
     \value RejangScript
     \value RunicScript
     \value SamaritanScript
     \value SaurashtraScript
     \value SharadaScript
     \value ShavianScript
+    \value SiddhamScript Since Qt 5.5
     \value SimplifiedHanScript same as SimplifiedChineseScript
     \value SimplifiedChineseScript same as SimplifiedHanScript
     \value SinhalaScript
@@ -842,10 +890,12 @@
     \value ThaiScript
     \value TibetanScript
     \value TifinaghScript
+    \value TirhutaScript Since Qt 5.5
     \value TraditionalHanScript same as TraditionalChineseScript
     \value TraditionalChineseScript same as TraditionalHanScript
     \value UgariticScript
     \value VaiScript
+    \value VarangKshitiScript Since Qt 5.5
     \value YiScript
     \omitvalue LastScript
 

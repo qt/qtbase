@@ -67,6 +67,17 @@ void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *con
     context->removeFunctionsBackend(v);
 }
 
+void QAbstractOpenGLFunctionsPrivate::insertExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f)
+{
+    Q_ASSERT(context);
+    context->insertExternalFunctions(f);
+}
+
+void QAbstractOpenGLFunctionsPrivate::removeExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f)
+{
+    Q_ASSERT(context);
+    context->removeExternalFunctions(f);
+}
 
 /*!
     \class QAbstractOpenGLFunctions
@@ -182,6 +193,9 @@ QAbstractOpenGLFunctions::QAbstractOpenGLFunctions()
 
 QAbstractOpenGLFunctions::~QAbstractOpenGLFunctions()
 {
+    Q_D(QAbstractOpenGLFunctions);
+    if (d->owningContext)
+        d->removeExternalFunctions(d->owningContext, this);
     delete d_ptr;
 }
 
@@ -191,6 +205,18 @@ bool QAbstractOpenGLFunctions::initializeOpenGLFunctions()
 {
     Q_D(QAbstractOpenGLFunctions);
     d->initialized = true;
+
+    // For a subclass whose instance is not created via
+    // QOpenGLContext::versionFunctions() owningContext is not set. Set it now
+    // and register such instances to the context as external ones. These are
+    // not owned by the context but still need certain cleanup when the context
+    // is destroyed.
+    if (!d->owningContext) {
+        d->owningContext = QOpenGLContext::currentContext();
+        if (d->owningContext)
+            d->insertExternalFunctions(d->owningContext, this);
+    }
+
     return true;
 }
 

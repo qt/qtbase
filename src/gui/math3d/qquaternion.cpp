@@ -950,10 +950,11 @@ QQuaternion::operator QVariant() const
 
 QDebug operator<<(QDebug dbg, const QQuaternion &q)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QQuaternion(scalar:" << q.scalar()
         << ", vector:(" << q.x() << ", "
         << q.y() << ", " << q.z() << "))";
-    return dbg.space();
+    return dbg;
 }
 
 #endif

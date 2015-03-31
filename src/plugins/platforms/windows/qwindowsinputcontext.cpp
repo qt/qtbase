@@ -189,7 +189,7 @@ void QWindowsInputContext::reset()
     if (!m_compositionContext.hwnd)
         return;
     qCDebug(lcQpaInputMethods) << __FUNCTION__;
-    if (m_compositionContext.isComposing && m_compositionContext.focusObject.isNull()) {
+    if (m_compositionContext.isComposing && !m_compositionContext.focusObject.isNull()) {
         QInputMethodEvent event;
         if (!m_compositionContext.composition.isEmpty())
             event.setCommitString(m_compositionContext.composition);

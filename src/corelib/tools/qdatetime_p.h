@@ -48,6 +48,7 @@
 #include "qplatformdefs.h"
 #include "QtCore/qatomic.h"
 #include "QtCore/qdatetime.h"
+#include "QtCore/qpair.h"
 
 #include "qtimezone.h"
 
@@ -113,7 +114,7 @@ public:
 
     void setTimeSpec(Qt::TimeSpec spec, int offsetSeconds);
     void setDateTime(const QDate &date, const QTime &time);
-    void getDateTime(QDate *date, QTime *time) const;
+    QPair<QDate, QTime> getDateTime() const;
 
     void setDaylightStatus(DaylightStatus status);
     DaylightStatus daylightStatus() const;

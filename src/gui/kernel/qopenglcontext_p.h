@@ -204,6 +204,7 @@ public:
         , workaround_missingPrecisionQualifiers(false)
         , active_engine(0)
         , qgl_current_fbo_invalid(false)
+        , defaultFboRedirect(0)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -216,6 +217,7 @@ public:
 
     mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
     mutable QHash<QOpenGLVersionStatus, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
+    mutable QSet<QAbstractOpenGLFunctions *> externalVersionFunctions;
 
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
@@ -241,6 +243,7 @@ public:
     bool qgl_current_fbo_invalid;
 
     QVariant nativeHandle;
+    GLuint defaultFboRedirect;
 
     static QOpenGLContext *setCurrentContext(QOpenGLContext *context);
 

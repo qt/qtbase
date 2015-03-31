@@ -351,6 +351,8 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     int pos2 = display.indexOf('.', pos);
     if (pos2 > 0)
         displayNumber = display.mid(pos, pos2 - pos);
+    else
+        displayNumber = display.right(pos);
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 

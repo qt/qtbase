@@ -305,6 +305,14 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LTCG" ]            = "no";
     dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
+
+    if (dictionary["QMAKESPEC"] == QString("win32-g++")) {
+        const QString zero = QStringLiteral("0");
+        const QStringList parts = Environment::gccVersion().split(QLatin1Char('.'));
+        dictionary["QT_GCC_MAJOR_VERSION"] = parts.value(0, zero);
+        dictionary["QT_GCC_MINOR_VERSION"] = parts.value(1, zero);
+        dictionary["QT_GCC_PATCH_VERSION"] = parts.value(2, zero);
+    }
 }
 
 Configure::~Configure()
@@ -2029,16 +2037,18 @@ bool Configure::displayHelp()
 // Locate a file and return its containing directory.
 QString Configure::locateFile(const QString &fileName) const
 {
+    const QString mkspec = dictionary.contains(QStringLiteral("XQMAKESPEC"))
+        ? dictionary[QStringLiteral("XQMAKESPEC")] : dictionary[QStringLiteral("QMAKESPEC")];
     const QString file = fileName.toLower();
     QStringList pathList;
     if (file.endsWith(".h")) {
         static const QStringList headerPaths =
-            Environment::headerPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+            Environment::headerPaths(Environment::compilerFromQMakeSpec(mkspec));
         pathList = qmakeIncludes;
         pathList += headerPaths;
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
         static const QStringList libPaths =
-            Environment::libraryPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+            Environment::libraryPaths(Environment::compilerFromQMakeSpec(mkspec));
         pathList = libPaths;
     } else {
          // Fallback for .exe and .dll (latter are not covered by QStandardPaths).
@@ -3466,6 +3476,12 @@ void Configure::generateQConfigPri()
         if (dictionary[ "SHARED" ] == "no")
             configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
 
+        if (!dictionary["QT_GCC_MAJOR_VERSION"].isEmpty()) {
+            configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
+                         << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
+                         << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
+        }
+
         if (!configStream.flush())
             dictionary[ "DONE" ] = "error";
     }
@@ -3607,7 +3623,11 @@ void Configure::generateConfigfiles()
         if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
-        if (dictionary["POSIX_IPC"] == "yes")        qconfigList += "QT_POSIX_IPC";
+        if (dictionary["POSIX_IPC"] == "yes")
+            qconfigList += "QT_POSIX_IPC";
+        else if ((platform() != ANDROID) && (platform() != WINDOWS) && (platform() != WINDOWS_CE)
+                    && (platform() != WINDOWS_RT))
+            qconfigList << "QT_NO_SYSTEMSEMAPHORE" << "QT_NO_SHAREDMEMORY";
 
         if (dictionary["FONT_CONFIG"] == "no")       qconfigList += "QT_NO_FONTCONFIG";
 

@@ -88,7 +88,7 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
 
     if (!connection.isConnected()) {
         lastError = QDBusError(QDBusError::Disconnected,
-                               QLatin1String("Not connected to D-Bus server"));
+                               QDBusUtil::disconnectedErrorMessage());
     } else if (!service.isEmpty()) {
         currentOwner = connectionPrivate()->getNameOwner(service); // verify the name owner
         if (currentOwner.isEmpty()) {
@@ -131,8 +131,8 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
 
     // try to read this property
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
-                                                      QLatin1String(DBUS_INTERFACE_PROPERTIES),
-                                                      QLatin1String("Get"));
+                                                      QDBusUtil::dbusInterfaceProperties(),
+                                                      QStringLiteral("Get"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name());
     QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
@@ -144,7 +144,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     if (reply.signature() != QLatin1String("v")) {
         QString errmsg = QLatin1String("Invalid signature `%1' in return from call to "
                                        DBUS_INTERFACE_PROPERTIES);
-        lastError = QDBusError(QDBusError::InvalidSignature, errmsg.arg(reply.signature()));
+        lastError = QDBusError(QDBusError::InvalidSignature, qMove(errmsg).arg(reply.signature()));
         return false;
     }
 
@@ -198,8 +198,8 @@ bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
 
     // send the value
     QDBusMessage msg = QDBusMessage::createMethodCall(service, path,
-                                                QLatin1String(DBUS_INTERFACE_PROPERTIES),
-                                                QLatin1String("Set"));
+                                                      QDBusUtil::dbusInterfaceProperties(),
+                                                      QStringLiteral("Set"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name()) << QVariant::fromValue(QDBusVariant(value));
     QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
@@ -290,10 +290,10 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
         && !d.service.isEmpty()
         && !d.service.startsWith(QLatin1Char(':'))
         && d.connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
+        d_func()->connection.connect(QDBusUtil::dbusService(), // service
                                      QString(), // path
-                                     QLatin1String(DBUS_INTERFACE_DBUS), // interface
-                                     QLatin1String("NameOwnerChanged"),
+                                     QDBusUtil::dbusInterface(), // interface
+                                     QDBusUtil::nameOwnerChanged(),
                                      QStringList() << d.service,
                                      QString(), // signature
                                      this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
@@ -316,10 +316,10 @@ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QSt
         && !service.isEmpty()
         && !service.startsWith(QLatin1Char(':'))
         && d_func()->connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
-        d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
+        d_func()->connection.connect(QDBusUtil::dbusService(), // service
                                      QString(), // path
-                                     QLatin1String(DBUS_INTERFACE_DBUS), // interface
-                                     QLatin1String("NameOwnerChanged"),
+                                     QDBusUtil::dbusInterface(), // interface
+                                     QDBusUtil::nameOwnerChanged(),
                                      QStringList() << service,
                                      QString(), //signature
                                      this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));

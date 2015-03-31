@@ -37,6 +37,7 @@
 #include "qcocoaautoreleasepool.h"
 
 #include <QtCore/QtDebug>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include "qcocoaapplication.h"
@@ -124,7 +125,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
     QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
     QScopedLoopLevelCounter loopLevelCounter(QGuiApplicationPrivate::instance()->threadData);
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
-    cocoaItem->activated();
+    static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
+    activatedSignal.invoke(cocoaItem, Qt::QueuedConnection);
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem

@@ -56,6 +56,7 @@ const char _GUIDTranslationFiles[]     = "{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}
 const char _GUIDFormFiles[]            = "{99349809-55BA-4b9d-BF79-8FDBB0286EB3}";
 const char _GUIDExtraCompilerFiles[]   = "{E0D8C965-CC5F-43d7-AD63-FAEF0BBC0F85}";
 const char _GUIDDeploymentFiles[]      = "{D9D6E243-F8AF-46E4-B9FD-80ECBC20BA3E}";
+const char _GUIDDistributionFiles[]    = "{B83CAF91-C7BF-462F-B76C-EA11631F866C}";
 QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN32
@@ -943,6 +944,7 @@ void VcprojGenerator::initProject()
     initTranslationFiles();
     initFormFiles();
     initResourceFiles();
+    initDistributionFiles();
     initExtraCompilerOutputs();
 
     // Own elements -----------------------------
@@ -1563,6 +1565,17 @@ void VcprojGenerator::initResourceFiles()
 
     vcProject.ResourceFiles.Project = this;
     vcProject.ResourceFiles.Config = &(vcProject.Configuration);
+}
+
+void VcprojGenerator::initDistributionFiles()
+{
+    vcProject.DistributionFiles.Name = "Distribution Files";
+    vcProject.DistributionFiles.ParseFiles = _False;
+    vcProject.DistributionFiles.Filter = "*";
+    vcProject.DistributionFiles.Guid = _GUIDDistributionFiles;
+    vcProject.DistributionFiles.addFiles(project->values("DISTFILES"));
+    vcProject.DistributionFiles.Project = this;
+    vcProject.DistributionFiles.Config = &(vcProject.Configuration);
 }
 
 void VcprojGenerator::initExtraCompilerOutputs()

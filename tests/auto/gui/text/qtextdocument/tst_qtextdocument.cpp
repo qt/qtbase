@@ -187,7 +187,7 @@ private slots:
     void QTBUG28998_linkColor();
 
     void textCursorUsageWithinContentsChange();
-
+    void cssInheritance();
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3006,6 +3006,37 @@ void tst_QTextDocument::QTBUG27354_spaceAndSoftSpace()
         QPainter p(&image);
         document.drawContents(&p, image.rect());
     }
+    {
+        // If no p tag is specified it should not be inheriting it
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">p { line-height: 200% }</style></head><body>Foo<ul><li>First</li></ul></body></html>");
+        QTextBlock block = td.begin();
+        while (block.isValid()) {
+            QTextBlockFormat fmt = block.blockFormat();
+            QVERIFY(fmt.lineHeightType() == QTextBlockFormat::SingleHeight);
+            QVERIFY(fmt.lineHeight() == 0);
+            block = block.next();
+        }
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head></head><body><p>Foo</p><ul><li>First</li></ul></body></html>");
+        QList<double> originalMargins;
+        QTextBlock block = td.begin();
+        while (block.isValid()) {
+            originalMargins << block.blockFormat().topMargin();
+            block = block.next();
+        }
+        originalMargins[0] = 85;
+        td.setHtml("<html><head><style type=\"text/css\">body { margin-top: 85px; }</style></head><body><p>Foo</p><ul><li>First</li></ul></body></html>");
+        block = td.begin();
+        int count = 0;
+        while (block.isValid()) {
+            QTextBlockFormat fmt = block.blockFormat();
+            QCOMPARE(fmt.topMargin(), originalMargins.at(count++));
+            block = block.next();
+        }
+    }
 }
 
 class BaseDocument : public QTextDocument
@@ -3122,6 +3153,111 @@ void tst_QTextDocument::textCursorUsageWithinContentsChange()
 
     QCOMPARE(handler.text, QString("new text"));
     QCOMPARE(handler.verticalMovementX, -1);
+}
+
+void tst_QTextDocument::cssInheritance()
+{
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 200% }</style></head><body>"
+            "<p>Foo</p><p>Bar</p><p>Baz</p></body></html>");
+        QTextBlock block = td.begin();
+        while (block.isValid()) {
+            QTextBlockFormat fmt = block.blockFormat();
+            QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
+            QVERIFY(fmt.lineHeight() == 200);
+            block = block.next();
+        }
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 200% } p { line-height: 300% }</style></head><body>"
+                   "<p style=\"line-height: 40px\">Foo</p><p>Bar</p><p>Baz</p></body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat fmt = block.blockFormat();
+        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::FixedHeight);
+        QVERIFY(fmt.lineHeight() == 40);
+        block = block.next();
+        fmt = block.blockFormat();
+        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
+        QVERIFY(fmt.lineHeight() == 300);
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { font-weight: bold; background-color: #ff0000 }</style></head><body>"
+            "<p>Foo</p><p>Bar</p><p>Baz</p></body></html>");
+        QTextBlock block = td.begin();
+        while (block.isValid()) {
+            QVERIFY(block.blockFormat().background() == QBrush());
+            QVERIFY(block.charFormat().font().bold());
+            block = block.next();
+        }
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { font-style: italic; font-weight: normal; }</style></head><body>"
+            "<table><tr><th>Foo</th></tr><tr><td>Bar</td></tr></table></body></html>");
+        QTextBlock block = td.begin();
+        // First is the table
+        QTextCharFormat fmt = block.charFormat();
+        QVERIFY(!fmt.font().bold());
+        QVERIFY(fmt.font().italic());
+        // Then the th
+        block = block.next();
+        fmt = block.charFormat();
+        QVERIFY(fmt.font().bold());
+        QVERIFY(fmt.font().italic());
+        // Then the td
+        block = block.next();
+        fmt = block.charFormat();
+        QVERIFY(!fmt.font().bold());
+        QVERIFY(fmt.font().italic());
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">b { font-style: italic; font-weight: normal; }</style></head><body>"
+            "<p>This should be <b>bold</b></p></body></html>");
+        QTextBlock block = td.begin();
+        // First is the p
+        QTextCharFormat fmt = block.charFormat();
+        QVERIFY(!fmt.font().bold());
+        QTextBlock::iterator it = block.begin();
+        // The non bold text is first
+        QTextFragment currentFragment = it.fragment();
+        QVERIFY(currentFragment.isValid());
+        fmt = currentFragment.charFormat();
+        QVERIFY(!fmt.font().bold());
+        ++it;
+        QVERIFY(!it.atEnd());
+        // Now check the "bold" text
+        currentFragment = it.fragment();
+        QVERIFY(currentFragment.isValid());
+        fmt = currentFragment.charFormat();
+        QVERIFY(!fmt.font().bold());
+        QVERIFY(fmt.font().italic());
+    }
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"test.css\"></head><body>"
+            "<p>This should be <b>bold</b></p></body></html>");
+        QTextBlock block = td.begin();
+        // First is the p
+        QTextCharFormat fmt = block.charFormat();
+        QVERIFY(!fmt.font().bold());
+        QTextBlock::iterator it = block.begin();
+        // The non bold text is first
+        QTextFragment currentFragment = it.fragment();
+        QVERIFY(currentFragment.isValid());
+        fmt = currentFragment.charFormat();
+        QVERIFY(!fmt.font().bold());
+        ++it;
+        QVERIFY(!it.atEnd());
+        // Now check the bold text
+        currentFragment = it.fragment();
+        QVERIFY(currentFragment.isValid());
+        fmt = currentFragment.charFormat();
+        QVERIFY(fmt.font().bold());
+    }
 }
 
 QTEST_MAIN(tst_QTextDocument)

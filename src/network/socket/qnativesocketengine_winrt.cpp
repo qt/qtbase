@@ -163,6 +163,29 @@ static AsyncStatus opStatus(const ComPtr<T> &op)
     return status;
 }
 
+static qint64 writeIOStream(ComPtr<IOutputStream> stream, const char *data, qint64 len)
+{
+    ComPtr<IBuffer> buffer;
+    HRESULT hr = g->bufferFactory->Create(len, &buffer);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = buffer->put_Length(len);
+    Q_ASSERT_SUCCEEDED(hr);
+    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
+    hr = buffer.As(&byteArrayAccess);
+    Q_ASSERT_SUCCEEDED(hr);
+    byte *bytes;
+    hr = byteArrayAccess->Buffer(&bytes);
+    Q_ASSERT_SUCCEEDED(hr);
+    memcpy(bytes, data, len);
+    ComPtr<IAsyncOperationWithProgress<UINT32, UINT32>> op;
+    hr = stream->WriteAsync(buffer.Get(), &op);
+    RETURN_IF_FAILED("Failed to write to stream", return -1);
+    UINT32 bytesWritten;
+    hr = QWinRTFunctions::await(op, &bytesWritten);
+    RETURN_IF_FAILED("Failed to write to stream", return -1);
+    return bytesWritten;
+}
+
 QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
     : QAbstractSocketEngine(*new QNativeSocketEnginePrivate(), parent)
 {
@@ -492,35 +515,12 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
         hr = d->tcpSocket()->get_OutputStream(&stream);
     else if (d->socketType == QAbstractSocket::UdpSocket)
         hr = d->udpSocket()->get_OutputStream(&stream);
-    if (FAILED(hr)) {
-        qErrnoWarning(hr, "Failed to get output stream to socket.");
-        return -1;
-    }
+    RETURN_IF_FAILED("Failed to get output stream to socket", return -1);
 
-    ComPtr<IBuffer> buffer;
-    hr = g->bufferFactory->Create(len, &buffer);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = buffer->put_Length(len);
-    Q_ASSERT_SUCCEEDED(hr);
-    ComPtr<Windows::Storage::Streams::IBufferByteAccess> byteArrayAccess;
-    hr = buffer.As(&byteArrayAccess);
-    Q_ASSERT_SUCCEEDED(hr);
-    byte *bytes;
-    hr = byteArrayAccess->Buffer(&bytes);
-    Q_ASSERT_SUCCEEDED(hr);
-    memcpy(bytes, data, len);
-    ComPtr<IAsyncOperationWithProgress<UINT32, UINT32>> op;
-    hr = stream->WriteAsync(buffer.Get(), &op);
-    RETURN_IF_FAILED("Failed to write to stream", return -1);
-
-    UINT32 bytesWritten;
-    hr = QWinRTFunctions::await(op, &bytesWritten);
-    if (FAILED(hr)) {
+    qint64 bytesWritten = writeIOStream(stream, data, len);
+    if (bytesWritten < 0)
         d->setError(QAbstractSocket::SocketAccessError, QNativeSocketEnginePrivate::AccessErrorString);
-        return -1;
-    }
-
-    if (bytesWritten && d->notifyOnWrite)
+    else if (bytesWritten > 0 && d->notifyOnWrite)
         emit writeReady();
 
     return bytesWritten;
@@ -560,11 +560,10 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QH
 
     ComPtr<IHostName> remoteHost;
     ComPtr<IHostNameFactory> hostNameFactory;
-    if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
-                                    &hostNameFactory))) {
-        qWarning("QNativeSocketEnginePrivate::nativeSendDatagram: could not obtain hostname factory");
-        return -1;
-    }
+
+    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
+                                    &hostNameFactory);
+    RETURN_IF_FAILED("Could not obtain hostname factory", return -1);
     const QString addressString = addr.toString();
     HStringReference hostNameRef(reinterpret_cast<LPCWSTR>(addressString.utf16()));
     hostNameFactory->CreateHostName(hostNameRef.Get(), &remoteHost);
@@ -573,17 +572,13 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QH
     ComPtr<IOutputStream> stream;
     const QString portString = QString::number(port);
     HStringReference portRef(reinterpret_cast<LPCWSTR>(portString.utf16()));
-    if (FAILED(d->udpSocket()->GetOutputStreamAsync(remoteHost.Get(), portRef.Get(), &streamOperation)))
-        return -1;
-    HRESULT hr;
-    while (hr = streamOperation->GetResults(&stream) == E_ILLEGAL_METHOD_CALL)
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    ComPtr<IDataWriterFactory> dataWriterFactory;
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_DataWriter).Get(), &dataWriterFactory);
-    ComPtr<IDataWriter> writer;
-    dataWriterFactory->CreateDataWriter(stream.Get(), &writer);
-    writer->WriteBytes(len, (unsigned char *)data);
-    return len;
+    hr = d->udpSocket()->GetOutputStreamAsync(remoteHost.Get(), portRef.Get(), &streamOperation);
+    RETURN_IF_FAILED("Failed to get output stream to socket", return -1);
+
+    hr = QWinRTFunctions::await(streamOperation, stream.GetAddressOf());
+    RETURN_IF_FAILED("Failed to get output stream to socket", return -1);
+
+    return writeIOStream(stream, data, len);
 }
 
 bool QNativeSocketEngine::hasPendingDatagrams() const

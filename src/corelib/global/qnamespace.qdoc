@@ -2159,6 +2159,15 @@
     \value WindowDoesNotAcceptFocus Informs the window system that this window should
            not receive the input focus.
 
+    \value MaximizeUsingFullscreenGeometryHint Informs the window system that when
+           maximizing the window it should use as much of the available screen geometry
+           as possible, including areas that may be covered by system UI such as status
+           bars or application launchers. This may result in the window being placed
+           under these system UIs, but does not guarantee it, depending on whether or
+           not the platform supports it. When the flag is enabled the user is responsible
+           for taking QScreen::availableGeometry() into account, so that any UI elements
+           in the application that require user interaction are not covered by system UI.
+
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
 

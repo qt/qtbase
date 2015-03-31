@@ -70,7 +70,7 @@ class QWinRTFileEnginePrivate
 {
 public:
     QWinRTFileEnginePrivate(const QString &fileName, IStorageItem *file)
-        : fileName(fileName), file(file)
+        : fileName(fileName), file(file), openMode(QIODevice::NotOpen)
     {
         HRESULT hr;
         hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_Streams_Buffer).Get(),
@@ -101,6 +101,7 @@ public:
     int firstDot;
     ComPtr<IStorageItem> file;
     ComPtr<IRandomAccessStream> stream;
+    QIODevice::OpenMode openMode;
 
     qint64 pos;
 
@@ -203,6 +204,8 @@ bool QWinRTFileEngine::open(QIODevice::OpenMode openMode)
     hr = QWinRTFunctions::await(op, d->stream.GetAddressOf());
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::OpenError, false);
 
+    d->openMode = openMode;
+
     return SUCCEEDED(hr);
 }
 
@@ -220,7 +223,31 @@ bool QWinRTFileEngine::close()
     hr = closable->Close();
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::UnspecifiedError, false);
     d->stream.Reset();
+    d->openMode = QIODevice::NotOpen;
     return SUCCEEDED(hr);
+}
+
+bool QWinRTFileEngine::flush()
+{
+    Q_D(QWinRTFileEngine);
+
+    if (!d->stream)
+        return false;
+
+    if (!(d->openMode & QIODevice::WriteOnly))
+        return true;
+
+    ComPtr<IOutputStream> stream;
+    HRESULT hr = d->stream.As(&stream);
+    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, false);
+    ComPtr<IAsyncOperation<bool>> flushOp;
+    hr = stream->FlushAsync(&flushOp);
+    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, false);
+    boolean flushed;
+    hr = QWinRTFunctions::await(flushOp, &flushed);
+    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, false);
+
+    return true;
 }
 
 qint64 QWinRTFileEngine::size() const
@@ -482,13 +509,6 @@ qint64 QWinRTFileEngine::write(const char *data, qint64 maxlen)
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, -1);
 
     hr = QWinRTFunctions::await(op, &length);
-    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, -1);
-
-    ComPtr<IAsyncOperation<bool>> flushOp;
-    hr = stream->FlushAsync(&flushOp);
-    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, -1);
-    boolean flushed;
-    hr = QWinRTFunctions::await(flushOp, &flushed);
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::WriteError, -1);
 
     return qint64(length);

@@ -936,7 +936,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
             delete [] m_maskData;
             m_maskData = 0;
             m_maxLength = 32767;
-            internalSetText(QString());
+            internalSetText(QString(), -1, false);
         }
         return;
     }
@@ -1022,7 +1022,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
             }
         }
     }
-    internalSetText(m_text);
+    internalSetText(m_text, -1, false);
 }
 
 

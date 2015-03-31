@@ -601,8 +601,9 @@ QCursor::operator QVariant() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QCursor &c)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QCursor(Qt::CursorShape(" << c.shape() << "))";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

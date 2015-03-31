@@ -1022,8 +1022,9 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
      "TexturePattern" // 24
     };
 
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QBrush(" << b.color() << ',' << BRUSH_STYLES[b.style()] << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

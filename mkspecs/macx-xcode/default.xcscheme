@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "@TARGET_PBX_KEY@"
-               BuildableName = "@QMAKE_ORIG_TARGET@"
-               BlueprintName = "@QMAKE_ORIG_TARGET@"
+               BlueprintIdentifier = "@TEST_BUNDLE_PBX_KEY@"
+               BuildableName = "Qt Test"
+               BlueprintName = "Qt Test"
                ReferencedContainer = "container:@QMAKE_ORIG_TARGET@.xcodeproj">
             </BuildableReference>
          </TestableReference>

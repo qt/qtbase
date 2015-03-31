@@ -1006,7 +1006,8 @@ void Generator::generateInnerNode(InnerNode* node)
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
-        if (node->isNamespace() || node->isClass()) {
+        if ((node->isNamespace() && node->status() != Node::Intermediate)
+            || node->isClass()) {
             beginSubPage(node, fileName(node));
             generateClassLikeNode(node, marker);
             endSubPage();
@@ -1197,7 +1198,6 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
 
     switch (node->status()) {
     case Node::Commendable:
-    case Node::Main:
         break;
     case Node::Preliminary:
         text << Atom::ParaLeft
@@ -1937,7 +1937,6 @@ void Generator::terminate()
     imageFiles.clear();
     imageDirs.clear();
     outDir_.clear();
-    QmlTypeNode::terminate();
 }
 
 void Generator::terminateGenerator()

@@ -76,6 +76,25 @@ wince*::LIBS += libcmt.lib \
 mac {
     LIBS += -framework Security
     osx: LIBS += -framework ApplicationServices -framework IOKit
+
+    # XCTest support
+    !lessThan(QMAKE_XCODE_VERSION, "6.0") {
+        OBJECTIVE_SOURCES += qxctestlogger.mm
+        HEADERS += qxctestlogger_p.h
+
+        DEFINES += HAVE_XCTEST
+        LIBS += -framework Foundation
+
+        load(sdk)
+        platform_dev_frameworks_path = $${QMAKE_MAC_SDK_PLATFORM_PATH}/Developer/Library/Frameworks
+
+        # We can't put this path into LIBS (so that it propagates to the prl file), as we
+        # don't know yet if the target that links to testlib will build under Xcode or not.
+        # The corresponding flags for the target lives in xctest.prf, where we do know.
+        QMAKE_LFLAGS += -F$${platform_dev_frameworks_path} -weak_framework XCTest
+        QMAKE_OBJECTIVE_CFLAGS += -F$${platform_dev_frameworks_path}
+        MODULE_CONFIG += xctest
+    }
 }
 
 load(qt_module)

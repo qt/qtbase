@@ -10,9 +10,4 @@ SOURCES += \
 
 CONFIG += opentype
 
-contains(QT_CONFIG, freetype) {
-    include($$QT_SOURCE_TREE/src/3rdparty/freetype.pri)
-} else:contains(QT_CONFIG, system-freetype) {
-    # pull in the proper freetype2 include directory
-    include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
-}
+include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)

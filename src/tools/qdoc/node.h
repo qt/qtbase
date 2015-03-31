@@ -116,8 +116,8 @@ public:
         Deprecated,
         Preliminary,
         Commendable,
-        Main,
-        Internal
+        Internal,
+        Intermediate
     }; // don't reorder this enum
 
     enum ThreadSafeness {
@@ -459,10 +459,13 @@ public:
     void markSeen() { seen_ = true; }
     void markNotSeen() { seen_ = false; }
     void setTree(Tree* t) { tree_ = t; }
+    const NodeList& orphans() const { return orphans_; }
+    void addOrphan(Node* child) { orphans_.append(child); }
 
  private:
     bool        seen_;
     Tree*       tree_;
+    NodeList    orphans_;
 };
 
 struct RelatedClass
@@ -523,8 +526,6 @@ public:
     const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases_; }
     const QList<UsingClause>& usingClauses() const { return usingClauses_; }
 
-    QString serviceName() const { return sname; }
-    void setServiceName(const QString& value) { sname = value; }
     QmlTypeNode* qmlElement() { return qmlelement; }
     void setQmlElement(QmlTypeNode* qcn) { qmlelement = qcn; }
     virtual bool isAbstract() const Q_DECL_OVERRIDE { return abstract_; }
@@ -539,7 +540,6 @@ private:
     QList<UsingClause> usingClauses_;
     bool abstract_;
     bool wrapper_;
-    QString sname;
     QString obsoleteLink_;
     QmlTypeNode* qmlelement;
 };
