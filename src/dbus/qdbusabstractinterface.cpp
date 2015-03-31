@@ -101,9 +101,7 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
 
 void QDBusAbstractInterfacePrivate::initOwnerTracking()
 {
-    if (!isValid || !connection.isConnected() || connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode)
-        return;
-    if (service.isEmpty() || service.startsWith(QLatin1Char(':')))
+    if (!isValid || !connection.isConnected() || !connectionPrivate()->shouldWatchService(service))
         return;
     QObject::connect(new QDBusServiceWatcher(service, connection, QDBusServiceWatcher::WatchForOwnerChange, q_func()),
                      SIGNAL(serviceOwnerChanged(QString,QString,QString)),
