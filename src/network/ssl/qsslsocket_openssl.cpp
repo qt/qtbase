@@ -1281,7 +1281,7 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
     if (plainSocket)
         plainSocket->resume();
     paused = false;
-    if (checkSslErrors())
+    if (checkSslErrors() && ssl)
         continueHandshake();
 }
 
