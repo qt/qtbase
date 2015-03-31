@@ -982,3 +982,7 @@ QMAKE_SONAME_PREFIX = @executable_path/../Frameworks
 QMAKE_SONAME_PREFIX = @loader_path/Frameworks
 QMAKE_SONAME_PREFIX = /Library/Frameworks
 #! [184]
+
+#! [185]
+VERSION_PE_HEADER = 1.2
+#! [185]

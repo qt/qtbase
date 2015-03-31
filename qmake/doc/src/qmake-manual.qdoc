@@ -2484,6 +2484,16 @@
 
     \snippet code/doc_src_qmake-manual.pro 57
 
+    \section1 VERSION_PE_HEADER
+
+    Windows only. Specifies the version number, that the Windows linker
+    puts into the header of the .exe or .dll file via the /VERSION option.
+    Only a major and minor version may be specified.
+    If VERSION_PE_HEADER is not set, it falls back to
+    the major and minor version from \l{VERSION} (if set).
+
+    \snippet code/doc_src_qmake-manual.pro 185
+
     \section1 VER_MAJ
 
     Specifies the major version number of the library if the

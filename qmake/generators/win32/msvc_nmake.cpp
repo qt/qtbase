@@ -354,14 +354,18 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(defFileName));
     }
 
-    if(!project->values("VERSION").isEmpty()) {
-        ProString version = project->values("VERSION")[0];
-        int firstDot = version.indexOf(".");
-        QString major = version.left(firstDot).toQString();
-        QString minor = version.right(version.length() - firstDot - 1).toQString();
-        minor.replace(".", "");
-        project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
+    // set /VERSION for EXE/DLL header
+    ProString major_minor = project->first("VERSION_PE_HEADER");
+    if (major_minor.isEmpty()) {
+        ProString version = project->first("VERSION");
+        if (!version.isEmpty()) {
+            int firstDot = version.indexOf(".");
+            int secondDot = version.indexOf(".", firstDot + 1);
+            major_minor = version.left(secondDot);
+        }
     }
+    if (!major_minor.isEmpty())
+        project->values("QMAKE_LFLAGS").append("/VERSION:" + major_minor);
 
     if (project->isEmpty("QMAKE_LINK_O_FLAG"))
         project->values("QMAKE_LINK_O_FLAG").append("/OUT:");
