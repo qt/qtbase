@@ -60,22 +60,29 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 - (id)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems
 {
     if (self = [super init]) {
-        m_visibleMenuItems = visibleMenuItems;
-        NSMutableArray *menuItemArray = [NSMutableArray arrayWithCapacity:m_visibleMenuItems.size()];
-        // Create an array of UIMenuItems, one for each visible QIOSMenuItem. Each
-        // UIMenuItem needs a callback assigned, so we assign one of the placeholder methods
-        // added to UIWindow (QIOSMenuActionTargets) below. Each method knows its own index, which
-        // corresponds to the index of the corresponding QIOSMenuItem in m_visibleMenuItems. When
-        // triggered, menuItemActionCallback will end up being called.
-        for (int i = 0; i < m_visibleMenuItems.count(); ++i) {
-            QIOSMenuItem *item = m_visibleMenuItems.at(i);
-            SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@%i:", kSelectorPrefix, i]);
-            [menuItemArray addObject:[[[UIMenuItem alloc] initWithTitle:item->m_text.toNSString() action:sel] autorelease]];
-        }
-        [UIMenuController sharedMenuController].menuItems = menuItemArray;
+        [self setVisibleMenuItems:visibleMenuItems];
     }
 
     return self;
+}
+
+- (void)setVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems
+{
+    m_visibleMenuItems = visibleMenuItems;
+    NSMutableArray *menuItemArray = [NSMutableArray arrayWithCapacity:m_visibleMenuItems.size()];
+    // Create an array of UIMenuItems, one for each visible QIOSMenuItem. Each
+    // UIMenuItem needs a callback assigned, so we assign one of the placeholder methods
+    // added to UIWindow (QIOSMenuActionTargets) below. Each method knows its own index, which
+    // corresponds to the index of the corresponding QIOSMenuItem in m_visibleMenuItems. When
+    // triggered, menuItemActionCallback will end up being called.
+    for (int i = 0; i < m_visibleMenuItems.count(); ++i) {
+        QIOSMenuItem *item = m_visibleMenuItems.at(i);
+        SEL sel = NSSelectorFromString([NSString stringWithFormat:@"%@%i:", kSelectorPrefix, i]);
+        [menuItemArray addObject:[[[UIMenuItem alloc] initWithTitle:item->m_text.toNSString() action:sel] autorelease]];
+    }
+    [UIMenuController sharedMenuController].menuItems = menuItemArray;
+    if ([UIMenuController sharedMenuController].menuVisible)
+        [[UIMenuController sharedMenuController] setMenuVisible:YES animated:NO];
 }
 
 - (id)targetForAction:(SEL)action withSender:(id)sender
@@ -122,12 +129,9 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 - (id)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems selectItem:(const QIOSMenuItem *)selectItem
 {
     if (self = [super init]) {
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        m_visibleMenuItems = visibleMenuItems;
-        m_selectedRow = visibleMenuItems.indexOf(const_cast<QIOSMenuItem *>(selectItem));
-        if (m_selectedRow == -1)
-            m_selectedRow = 0;
+        [self setVisibleMenuItems:visibleMenuItems selectItem:selectItem];
 
+        self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         self.toolbar = [[[UIToolbar alloc] init] autorelease];
         self.toolbar.frame.size = [self.toolbar sizeThatFits:self.bounds.size];
         self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -150,6 +154,15 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     }
 
     return self;
+}
+
+- (void)setVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems selectItem:(const QIOSMenuItem *)selectItem
+{
+    m_visibleMenuItems = visibleMenuItems;
+    m_selectedRow = visibleMenuItems.indexOf(const_cast<QIOSMenuItem *>(selectItem));
+    if (m_selectedRow == -1)
+        m_selectedRow = 0;
+    [self reloadAllComponents];
 }
 
 -(void)listenForKeyboardWillHideNotification:(BOOL)listen
@@ -333,11 +346,30 @@ void QIOSMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *be
         int index = m_menuItems.indexOf(static_cast<QIOSMenuItem *>(before)) + 1;
         m_menuItems.insert(index, static_cast<QIOSMenuItem *>(menuItem));
     }
+    if (m_currentMenu == this)
+        syncMenuItem(menuItem);
 }
 
 void QIOSMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     m_menuItems.removeOne(static_cast<QIOSMenuItem *>(menuItem));
+    if (m_currentMenu == this)
+        syncMenuItem(menuItem);
+}
+
+void QIOSMenu::syncMenuItem(QPlatformMenuItem *)
+{
+    if (m_currentMenu != this)
+        return;
+
+    switch (m_effectiveMenuType) {
+    case EditMenu:
+        [m_menuController setVisibleMenuItems:visibleMenuItems()];
+        break;
+    default:
+        [m_pickerView setVisibleMenuItems:visibleMenuItems() selectItem:m_targetItem];
+        break;
+    }
 }
 
 void QIOSMenu::setTag(quintptr tag)
