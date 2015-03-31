@@ -2362,9 +2362,21 @@ QString QDBusConnectionPrivate::getNameOwnerNoCache(const QString &serviceName)
             QStringLiteral("GetNameOwner"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << serviceName;
-    QDBusMessage reply = sendWithReply(msg, QDBus::Block);
-    if (reply.type() == QDBusMessage::ReplyMessage)
-        return reply.arguments().at(0).toString();
+
+    QDBusPendingCallPrivate *pcall = sendWithReplyAsync(msg, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
+    if (thread() == QThread::currentThread()) {
+        // this function may be called in our own thread and
+        // QDBusPendingCallPrivate::waitForFinished() would deadlock there
+        q_dbus_pending_call_block(pcall->pending);
+    }
+    pcall->waitForFinished();
+    msg = pcall->replyMessage;
+
+    if (!pcall->ref.deref())
+        delete pcall;
+
+    if (msg.type() == QDBusMessage::ReplyMessage)
+        return msg.arguments().at(0).toString();
     return QString();
 }
 
