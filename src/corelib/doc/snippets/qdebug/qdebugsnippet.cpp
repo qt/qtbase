@@ -51,11 +51,12 @@ public:
 };
 
 //! [0]
-QDebug operator<<(QDebug dbg, const Coordinate &c)
+QDebug operator<<(QDebug debug, const Coordinate &c)
 {
-    dbg.nospace() << "(" << c.x() << ", " << c.y() << ")";
+    QDebugStateSaver saver(debug);
+    debug.nospace() << '(' << c.x() << ", " << c.y() << ')';
 
-    return dbg.space();
+    return debug;
 }
 //! [0]
 
