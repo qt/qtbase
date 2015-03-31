@@ -8036,26 +8036,11 @@ void QWidget::setVisible(bool visible)
             && !parentWidget()->testAttribute(Qt::WA_WState_Created))
             parentWidget()->window()->d_func()->createRecursively();
 
-        //we have to at least create toplevels before applyX11SpecificCommandLineArguments
-        //but not children of non-visible parents
+        //create toplevels but not children of non-visible parents
         QWidget *pw = parentWidget();
         if (!testAttribute(Qt::WA_WState_Created)
             && (isWindow() || pw->testAttribute(Qt::WA_WState_Created))) {
             create();
-        }
-
-        // Handling of the -qwindowgeometry, -geometry command line arguments
-        if (windowType() == Qt::Window && windowHandle()) {
-            static bool done = false;
-            if (!done) {
-                done = true;
-                const QRect oldGeometry = frameGeometry();
-                const QRect geometry = QGuiApplicationPrivate::applyWindowGeometrySpecification(oldGeometry, windowHandle());
-                if (oldGeometry.size() != geometry.size())
-                    resize(geometry.size());
-                if (geometry.topLeft() != oldGeometry.topLeft())
-                    move(geometry.topLeft());
-            } // done
         }
 
         bool wasResized = testAttribute(Qt::WA_Resized);

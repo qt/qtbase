@@ -13,7 +13,7 @@ http://qt-project.org
 
 Be sure to check out the release notes, which will list any known
 problems or limitations of this version:
-https://wiki.qt.io/?title=Category:Release
+https://wiki.qt.io/Category:Release
 
 
 Overview
@@ -101,7 +101,7 @@ Building Qt 5 from Source
 -------------------------
 
 See <install_dir>/<version>/src/README and
-http://wiki.qt.io/?title=Building_Qt_5_from_Git
+http://wiki.qt.io/Building_Qt_5_from_Git
 for instructions on building Qt from source.
 
 

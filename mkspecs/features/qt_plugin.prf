@@ -82,7 +82,7 @@ CONFIG(static, static|shared)|prefix_build {
 target.path = $$[QT_INSTALL_PLUGINS]/$$PLUGIN_TYPE
 INSTALLS += target
 
-TARGET = $$qtLibraryTarget($$TARGET)
+TARGET = $$qt5LibraryTarget($$TARGET)
 
 CONFIG += create_cmake
 

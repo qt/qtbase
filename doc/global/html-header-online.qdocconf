@@ -7,7 +7,9 @@ HTML.stylesheets = template/style/online.css \
                    template/style/icomoon.svg \
                    template/style/icomoon.ttf \
                    template/style/icomoon.woff \
-                   template/style/doc_search.png
+                   template/style/cookiebar-x.png \
+                   template/style/doc_search.png \
+                   template/style/theqtcompany.png
 
 #for including files into the qch file. Relative to the outputdir of a QDoc build.
 qhp.extraFiles += style/online.css \
@@ -16,7 +18,10 @@ qhp.extraFiles += style/online.css \
                   style/icomoon.eot \
                   style/icomoon.svg \
                   style/icomoon.ttf \
-                  style/icomoon.woff
+                  style/icomoon.woff \
+                  style/cookiebar-x.png \
+                  style/doc_search.png \
+                  style/theqtcompany.png
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n" \
@@ -116,7 +121,7 @@ HTML.postheader = \
     "    <ul class=\"sub-navigation\">\n" \
     "        <li><a href=\"http://wiki.qt.io/\">Wiki</a></li>\n" \
     "        <li><a href=\"http://doc.qt.io/\" class=\"active\">Documentation</a></li>\n" \
-    "        <li><a href=\"http://qt-project.org/forums\">Forum</a></li>\n" \
+    "        <li><a href=\"http://forum.qt.io/\">Forum</a></li>\n" \
     "        <li><a href=\"https://bugreports.qt.io/\">Bug Reports</a></li>\n" \
     "        <li><a href=\"https://codereview.qt-project.org/\">Code Review</a></li>\n" \
     "    </ul>\n" \

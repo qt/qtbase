@@ -2644,7 +2644,7 @@
     WINRT_MANIFEST.publisher = MyCompany
     WINRT_MANIFEST.logo_store = someImage.png
     WINRT_MANIFEST.capabilities += internetClient
-    WINRT_MANIFEST.device_capabilities += location
+    WINRT_MANIFEST.capabilities_device += location
     \endcode
 
     Additionally, an input manifest file can be specified by using WINRT_MANIFEST.

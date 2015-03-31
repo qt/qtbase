@@ -42,6 +42,7 @@
 #include "androidjniinput.h"
 #include "androidjniclipboard.h"
 #include "androidjnimenu.h"
+#include "androiddeadlockprotector.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
 #include "qandroidassetsfileenginehandler.h"
@@ -595,11 +596,22 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
     }
 
     if (state <= Qt::ApplicationInactive) {
+        // NOTE: sometimes we will receive two consecutive suspended notifications,
+        // In the second suspended notification, QWindowSystemInterface::flushWindowSystemEvents()
+        // will deadlock since the dispatcher has been stopped in the first suspended notification.
+        // To avoid the deadlock we simply return if we found the event dispatcher has been stopped.
+        if (QAndroidEventDispatcherStopper::instance()->stopped())
+            return;
+
         // Don't send timers and sockets events anymore if we are going to hide all windows
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);
         QCoreApplication::processEvents();
         QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
-        QWindowSystemInterface::flushWindowSystemEvents();
+        {
+            AndroidDeadlockProtector protector;
+            if (protector.acquire())
+                QWindowSystemInterface::flushWindowSystemEvents();
+        }
         if (state == Qt::ApplicationSuspended)
             QAndroidEventDispatcherStopper::instance()->stopAll();
     } else {

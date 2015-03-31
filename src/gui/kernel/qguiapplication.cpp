@@ -236,9 +236,7 @@ struct QWindowGeometrySpecification
 {
     QWindowGeometrySpecification() : corner(Qt::TopLeftCorner), xOffset(-1), yOffset(-1), width(-1), height(-1) {}
     static QWindowGeometrySpecification fromArgument(const QByteArray &a);
-    QRect apply(const QRect &windowGeometry, const QSize &windowMinimumSize, const QSize &windowMaximumSize, const QRect &availableGeometry) const;
-    inline QRect apply(const QRect &windowGeometry, const QWindow *window) const
-    { return apply(windowGeometry, window->minimumSize(), window->maximumSize(), window->screen()->virtualGeometry()); }
+    void applyTo(QWindow *window) const;
 
     Qt::Corner corner;
     int xOffset;
@@ -300,32 +298,34 @@ QWindowGeometrySpecification QWindowGeometrySpecification::fromArgument(const QB
     return result;
 }
 
-QRect QWindowGeometrySpecification::apply(const QRect &windowGeometry, const QSize &windowMinimumSize, const QSize &windowMaximumSize, const QRect &availableGeometry) const
+void QWindowGeometrySpecification::applyTo(QWindow *window) const
 {
-    QRect result = windowGeometry;
+    QRect windowGeometry = window->frameGeometry();
+    QSize size = windowGeometry.size();
     if (width >= 0 || height >= 0) {
-        QSize size = windowGeometry.size();
+        const QSize windowMinimumSize = window->minimumSize();
+        const QSize windowMaximumSize = window->maximumSize();
         if (width >= 0)
             size.setWidth(qBound(windowMinimumSize.width(), width, windowMaximumSize.width()));
         if (height >= 0)
             size.setHeight(qBound(windowMinimumSize.height(), height, windowMaximumSize.height()));
-        result.setSize(size);
+        window->resize(size);
     }
     if (xOffset >= 0 || yOffset >= 0) {
+        const QRect availableGeometry = window->screen()->virtualGeometry();
         QPoint topLeft = windowGeometry.topLeft();
         if (xOffset >= 0) {
             topLeft.setX(corner == Qt::TopLeftCorner || corner == Qt::BottomLeftCorner ?
                          xOffset :
-                         qMax(availableGeometry.right() - result.width() - xOffset, availableGeometry.left()));
+                         qMax(availableGeometry.right() - size.width() - xOffset, availableGeometry.left()));
         }
         if (yOffset >= 0) {
             topLeft.setY(corner == Qt::TopLeftCorner || corner == Qt::TopRightCorner ?
                          yOffset :
-                         qMax(availableGeometry.bottom() - result.height() - yOffset, availableGeometry.top()));
+                         qMax(availableGeometry.bottom() - size.height() - yOffset, availableGeometry.top()));
         }
-        result.moveTopLeft(topLeft);
+        window->setFramePosition(topLeft);
     }
-    return result;
 }
 
 static QWindowGeometrySpecification windowGeometrySpecification;
@@ -2757,9 +2757,9 @@ void QGuiApplication::setPalette(const QPalette &pal)
     emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 
-QRect QGuiApplicationPrivate::applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window)
+void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 {
-    return windowGeometrySpecification.apply(windowGeometry, window);
+    windowGeometrySpecification.applyTo(window);
 }
 
 /*!

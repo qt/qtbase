@@ -2480,6 +2480,7 @@ void tst_QImage::inplaceConversion_data()
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<QImage::Format>("dest_format");
 
+    QTest::newRow("Format_RGB32 -> RGB16") << QImage::Format_RGB32 << QImage::Format_RGB16;
     QTest::newRow("Format_ARGB32 -> Format_RGBA8888") << QImage::Format_ARGB32 << QImage::Format_RGBA8888;
     QTest::newRow("Format_RGB888 -> Format_ARGB6666_Premultiplied") << QImage::Format_RGB888 << QImage::Format_ARGB6666_Premultiplied;
     QTest::newRow("Format_RGB16 -> Format_RGB555") << QImage::Format_RGB16 << QImage::Format_RGB555;
@@ -2518,16 +2519,21 @@ void tst_QImage::inplaceConversion()
         QCOMPARE(imageConverted.constScanLine(0), originalPtr);
 
     {
-        // Test attempted inplace conversion of images created on existing, readonly buffer
+        // Test attempted inplace conversion of images created on existing buffer
         static const quint32 readOnlyData[] = { 0x00010203U, 0x04050607U, 0x08091011U, 0x12131415U };
+        quint32 readWriteData[] = { 0x00010203U, 0x04050607U, 0x08091011U, 0x12131415U };
 
         QImage roImage((const uchar *)readOnlyData, 2, 2, format);
-        QImage inplaceConverted = std::move(roImage).convertToFormat(dest_format);
+        QImage roInplaceConverted = std::move(roImage).convertToFormat(dest_format);
+
+        QImage rwImage((uchar *)readWriteData, 2, 2, format);
+        QImage rwInplaceConverted = std::move(rwImage).convertToFormat(dest_format);
 
         QImage roImage2((const uchar *)readOnlyData, 2, 2, format);
         QImage normalConverted = roImage2.convertToFormat(dest_format);
 
-        QCOMPARE(normalConverted, inplaceConverted);
+        QCOMPARE(normalConverted, roInplaceConverted);
+        QCOMPARE(normalConverted, rwInplaceConverted);
     }
 #endif
 }
