@@ -597,6 +597,14 @@ static int choosePixelFormat(HDC hdc,
             break;
         if (iAttributes[samplesValuePosition] > 1) {
             iAttributes[samplesValuePosition] /= 2;
+        } else if (iAttributes[samplesValuePosition] == 1) {
+            // Fallback in case it is unable to initialize with any
+            // samples to avoid falling back to the GDI path
+            // NB: The sample attributes needs to be at the end for this
+            // to work correctly
+            iAttributes[samplesValuePosition - 1] = FALSE;
+            iAttributes[samplesValuePosition] = 0;
+            iAttributes[samplesValuePosition + 1] = 0;
         } else {
             break;
         }
