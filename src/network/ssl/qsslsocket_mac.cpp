@@ -383,25 +383,14 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted) {
         QVarLengthArray<char, 4096> data;
-        while (plainSocket->bytesAvailable() > 0) {
+        while (true) {
             size_t readBytes = 0;
             data.resize(4096);
-            if (shutdown) {
-                // SSLRead(context, data.data(), data.size(), &readBytes) fails with errSSLClosedGraceful
-                // if the session was closed (see disconnectFromHost).
-                // SSLClose SSLRead fails and we'll stay in this loop forever.
-                // At the moment we're never here (see the test '!context || shutdown' above) -
-                // we read nothing from the socket as soon as SSL session closed.
-                qCritical() << Q_FUNC_INFO << "read attempt after SSL session closed";
-                size_t nBytes = plainSocket->bytesAvailable();
-                _q_SSLRead(plainSocket, data.data(), &nBytes);
-            } else {
-                const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
-                if (err != noErr && err != errSSLWouldBlock) {
-                    qWarning() << Q_FUNC_INFO << "SSLRead failed with:" << int(err);
-                    setError("SSL read failed", QAbstractSocket::SslInternalError);
-                    break;
-                }
+            const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
+            if (err != noErr && err != errSSLWouldBlock) {
+                qWarning() << Q_FUNC_INFO << "SSLRead failed with:" << int(err);
+                setError("SSL read failed", QAbstractSocket::SslInternalError);
+                break;
             }
 
             if (readBytes) {
@@ -411,6 +400,9 @@ void QSslSocketBackendPrivate::transmit()
                     *readyReadEmittedPointer = true;
                 emit q->readyRead();
             }
+
+            if (err == errSSLWouldBlock)
+                break;
         }
     }
 }
