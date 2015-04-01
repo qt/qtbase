@@ -892,16 +892,10 @@ void Generator::generateFileList(const DocumentNode* dn,
                                                        exampleImgExts,
                                                        userFriendlyFilePath);
                     userFriendlyFilePath.truncate(userFriendlyFilePath.lastIndexOf('/'));
-
                     QString imgOutDir = outDir_ + "/images/used-in-examples/" + userFriendlyFilePath;
                     if (!dirInfo.mkpath(imgOutDir))
-                        dn->location().fatal(tr("Cannot create output directory '%1'")
-                                               .arg(imgOutDir));
-
-                    QString imgOutName = Config::copyFile(dn->location(),
-                                                          srcPath,
-                                                          file,
-                                                          imgOutDir);
+                        dn->location().fatal(tr("Cannot create output directory '%1'").arg(imgOutDir));
+                    Config::copyFile(dn->location(), srcPath, file, imgOutDir);
                 }
 
             }
@@ -1556,12 +1550,6 @@ void Generator::initialize(const Config &config)
 
         if (!dirInfo.exists(outDir_ + "/images") && !dirInfo.mkdir(outDir_ + "/images"))
             config.lastLocation().fatal(tr("Cannot create images directory '%1'").arg(outDir_ + "/images"));
-        if (!dirInfo.exists(outDir_ + "/images/used-in-examples") && !dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
-            config.lastLocation().fatal(tr("Cannot create images used in examples directory '%1'").arg(outDir_ + "/images/used-in-examples"));
-        if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts"))
-            config.lastLocation().fatal(tr("Cannot create scripts directory '%1'").arg(outDir_ + "/scripts"));
-        if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style"))
-            config.lastLocation().fatal(tr("Cannot create style directory '%1'").arg(outDir_ + "/style"));
     }
 
     imageFiles = config.getCanonicalPathList(CONFIG_IMAGES);
@@ -1600,23 +1588,41 @@ void Generator::initialize(const Config &config)
 
             // Documentation template handling
             QStringList scripts = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS, true);
-            e = scripts.constBegin();
-            while (e != scripts.constEnd()) {
-                QString filePath = *e;
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(), filePath, filePath,
-                                     (*g)->outputDir() + "/scripts");
-                ++e;
+            if (!scripts.isEmpty()) {
+                QDir dirInfo;
+                if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts")) {
+                    config.lastLocation().fatal(tr("Cannot create scripts directory '%1'")
+                                                .arg(outDir_ + "/scripts"));
+                }
+                else {
+                    e = scripts.constBegin();
+                    while (e != scripts.constEnd()) {
+                        QString filePath = *e;
+                        if (!filePath.isEmpty())
+                            Config::copyFile(config.lastLocation(), filePath, filePath,
+                                             (*g)->outputDir() + "/scripts");
+                        ++e;
+                    }
+                }
             }
 
             QStringList styles = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS, true);
-            e = styles.constBegin();
-            while (e != styles.constEnd()) {
-                QString filePath = *e;
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(), filePath, filePath,
-                                     (*g)->outputDir() + "/style");
-                ++e;
+            if (!styles.isEmpty()) {
+                QDir dirInfo;
+                if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style")) {
+                    config.lastLocation().fatal(tr("Cannot create style directory '%1'")
+                                                .arg(outDir_ + "/style"));
+                }
+                else {
+                    e = styles.constBegin();
+                    while (e != styles.constEnd()) {
+                        QString filePath = *e;
+                        if (!filePath.isEmpty())
+                            Config::copyFile(config.lastLocation(), filePath, filePath,
+                                             (*g)->outputDir() + "/style");
+                        ++e;
+                    }
+                }
             }
         }
         ++g;
