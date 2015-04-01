@@ -949,7 +949,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
         info.height = slot->bitmap.rows / vfactor;
         info.width = hsubpixel ? slot->bitmap.width / 3 : slot->bitmap.width;
-        info.x = -slot->bitmap_left;
+        info.x = slot->bitmap_left;
         info.y = slot->bitmap_top;
 
         glyph_buffer_size = info.width * info.height * 4;
@@ -1014,11 +1014,11 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         hpixels = hpixels*3 + 8;
     info.width = hpixels;
     info.height = TRUNC(top - bottom);
-    info.x = -TRUNC(left);
+    info.x = TRUNC(left);
     info.y = TRUNC(top);
     if (hsubpixel) {
         info.width /= 3;
-        info.x += 1;
+        info.x -= 1;
     }
 
     bool large_glyph = (((short)(slot->linearHoriAdvance>>10) != slot->linearHoriAdvance>>10)
@@ -1146,7 +1146,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     g->linearAdvance = slot->linearHoriAdvance >> 10;
     g->width = info.width;
     g->height = info.height;
-    g->x = -info.x;
+    g->x = info.x;
     g->y = info.y;
     g->advance = info.xOff;
     g->format = format;
