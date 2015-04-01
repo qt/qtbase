@@ -801,6 +801,17 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     return load_flags;
 }
 
+static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
+{
+    // false if exceeds QFontEngineFT::Glyph metrics
+    return (short)(info.linearAdvance) == info.linearAdvance
+            && (signed char)(info.xOff) == info.xOff
+            && (uchar)(info.width) == info.width
+            && (uchar)(info.height) == info.height
+            && (signed char)(info.x) == info.x
+            && (signed char)(info.y) == info.y;
+}
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                QFixed subPixelPosition,
                                                GlyphFormat format,
@@ -885,6 +896,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     }
 
     GlyphInfo info;
+    info.linearAdvance = slot->linearHoriAdvance >> 10;
     info.xOff = TRUNC(ROUND(slot->advance.x));
     info.yOff = 0;
 
@@ -893,27 +905,23 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
         int top    = CEIL(slot->metrics.horiBearingY);
         int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
-        int width = right-left;
-        int height = top-bottom;
+        info.x = TRUNC(left);
+        info.y = TRUNC(top);
+        info.width = TRUNC(right - left);
+        info.height = TRUNC(top - bottom);
 
         // If any of the metrics are too large to fit, don't cache them
-        if (qAbs(info.xOff) >= 128
-                || qAbs(TRUNC(top)) >= 128
-                || TRUNC(width) >= 256
-                || TRUNC(height) >= 256
-                || qAbs(TRUNC(left)) >= 128
-                || qAbs(TRUNC(ROUND(slot->advance.x))) >= 128) {
+        if (areMetricsTooLarge(info))
             return 0;
-        }
 
         g = new Glyph;
         g->data = 0;
-        g->linearAdvance = slot->linearHoriAdvance >> 10;
-        g->width = TRUNC(width);
-        g->height = TRUNC(height);
-        g->x = TRUNC(left);
-        g->y = TRUNC(top);
-        g->advance = TRUNC(ROUND(slot->advance.x));
+        g->linearAdvance = info.linearAdvance;
+        g->width = info.width;
+        g->height = info.height;
+        g->x = info.x;
+        g->y = info.y;
+        g->advance = info.xOff;
         g->format = format;
 
         if (set)
@@ -1014,16 +1022,9 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         info.x -= 1;
     }
 
-    bool large_glyph = (((short)(slot->linearHoriAdvance>>10) != slot->linearHoriAdvance>>10)
-                        || ((uchar)(info.width) != info.width)
-                        || ((uchar)(info.height) != info.height)
-                        || ((signed char)(info.x) != info.x)
-                        || ((signed char)(info.y) != info.y)
-                        || ((signed char)(info.xOff) != info.xOff));
-
-    if (large_glyph) {
+    // If any of the metrics are too large to fit, don't cache them
+    if (areMetricsTooLarge(info))
         return 0;
-    }
 
     int pitch = (format == Format_Mono ? ((info.width + 31) & ~31) >> 3 :
                  (format == Format_A8 ? (info.width + 3) & ~3 : info.width * 4));
@@ -1136,7 +1137,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         g->data = 0;
     }
 
-    g->linearAdvance = slot->linearHoriAdvance >> 10;
+    g->linearAdvance = info.linearAdvance;
     g->width = info.width;
     g->height = info.height;
     g->x = info.x;
