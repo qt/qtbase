@@ -93,7 +93,7 @@ protected:
     virtual QRegion doRedraw();
 
     void initializeCompositor();
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     QFbWindow *windowForId(WId wid) const;
 
