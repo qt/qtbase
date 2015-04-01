@@ -51,10 +51,10 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
                qPrintable(fontpath));
     }
 
-    QDir dir(fontpath, QLatin1String("*.ttf"));
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-
+    QDir dir(fontpath);
+    QList<QFileInfo> entries = dir.entryInfoList(QStringList() << QStringLiteral("*.ttf") << QStringLiteral("*.otf"), QDir::Files);
+    for (int i = 0; i < int(entries.count()); ++i) {
+        const QByteArray file = QFile::encodeName(entries.at(i).absoluteFilePath());
         QSupportedWritingSystems supportedWritingSystems;
         QStringList families = addTTFile(QByteArray(), file, &supportedWritingSystems);
 

@@ -681,6 +681,8 @@ static bool convert_BGR30_to_RGB30_inplace(QImageData *data, Qt::ImageConversion
 static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
+    if (!data->own_data)
+        return false;
     const int depth = 32;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -733,6 +735,8 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
 static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
+    if (!data->own_data)
+        return false;
     const int depth = 32;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -782,6 +786,8 @@ static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversio
 static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Indexed8);
+    if (!data->own_data)
+        return false;
     const int depth = 16;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
@@ -837,6 +843,8 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
 static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_RGB32);
+    if (!data->own_data)
+        return false;
     const int depth = 16;
 
     const int dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;

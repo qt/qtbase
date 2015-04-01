@@ -74,31 +74,6 @@ static bool isMouseEvent(NSEvent *ev)
     }
 }
 
-static void selectNextKeyWindow(NSWindow *currentKeyWindow)
-{
-    if (!currentKeyWindow)
-        return;
-
-    const QCocoaAutoReleasePool pool;
-
-    if ([[NSApplication sharedApplication] keyWindow] != currentKeyWindow)
-        return;//currentKeyWindow is not a key window actually.
-
-    NSArray *const windows = [[NSApplication sharedApplication] windows];
-    bool startLookup = false;
-    for (NSWindow *candidate in [windows reverseObjectEnumerator]) {
-        if (!startLookup) {
-            if (candidate == currentKeyWindow)
-                startLookup = true;
-        } else {
-            if ([candidate isVisible] && [candidate canBecomeKeyWindow]) {
-                [candidate makeKeyWindow];
-                break;
-            }
-        }
-    }
-}
-
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
@@ -606,9 +581,6 @@ void QCocoaWindow::hide(bool becauseOfAncestor)
 
     foreach (QCocoaWindow *childWindow, m_childWindows)
         childWindow->hide(true);
-
-    if (window()->transientParent() && m_nsWindow == [[NSApplication sharedApplication] keyWindow])
-        selectNextKeyWindow(m_nsWindow); // Otherwise, Cocoa can do it wrong.
 
     [m_nsWindow orderOut:nil];
 }

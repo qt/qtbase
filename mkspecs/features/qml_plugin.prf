@@ -50,7 +50,7 @@ INSTALLS += target
 
 # Some final setup
 
-TARGET = $$qtLibraryTarget($$TARGET)
+TARGET = $$qt5LibraryTarget($$TARGET)
 
 load(qt_targets)
 load(qt_common)

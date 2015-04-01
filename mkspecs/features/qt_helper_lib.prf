@@ -24,4 +24,4 @@ DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 # as in this case they are not linked to the final library/plugin.
 installed|contains(QT_CONFIG, static): load(qt_installs)
 
-TARGET = $$qtLibraryTarget($$TARGET)
+TARGET = $$qt5LibraryTarget($$TARGET)

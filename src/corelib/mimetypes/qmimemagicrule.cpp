@@ -217,6 +217,8 @@ static inline QByteArray makePattern(const QByteArray &value)
                 *data++ = '\n';
             } else if (*p == 'r') {
                 *data++ = '\r';
+            } else if (*p == 't') {
+                *data++ = '\t';
             } else { // escaped
                 *data++ = *p;
             }

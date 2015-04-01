@@ -228,4 +228,4 @@ win32 {
     DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x050000
 }
 
-TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
+TARGET = $$qt5LibraryTarget($$TARGET$$QT_LIBINFIX)  # Do this towards the end

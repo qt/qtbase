@@ -2088,8 +2088,11 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
         const QString newText = itemText(normalized);
-        if (lineEdit->text() != newText)
+        if (lineEdit->text() != newText) {
             lineEdit->setText(newText);
+            if (lineEdit->completer())
+                lineEdit->completer()->setCompletionPrefix(newText);
+        }
         updateLineEditGeometry();
     }
     if (indexChanged) {

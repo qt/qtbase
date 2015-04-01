@@ -166,6 +166,11 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     Unicode-aware, the user may have configured their client without these features.
     Also, certain e-mail clients (e.g., Lotus Notes) have problems with long URLs.
 
+    \warning A return value of \c true indicates that the application has successfully requested
+    the operating system to open the URL in an external application. The external application may
+    still fail to launch or fail to open the requested URL. This result will not be reported back
+    to the application.
+
     \sa setUrlHandler()
 */
 bool QDesktopServices::openUrl(const QUrl &url)
@@ -185,7 +190,12 @@ bool QDesktopServices::openUrl(const QUrl &url)
     }
     if (!url.isValid())
         return false;
-    QPlatformServices *platformServices = QGuiApplicationPrivate::platformIntegration()->services();
+
+    QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!platformIntegration)
+        return false;
+
+    QPlatformServices *platformServices = platformIntegration->services();
     if (!platformServices) {
         qWarning("%s: The platform plugin does not support services.", Q_FUNC_INFO);
         return false;
