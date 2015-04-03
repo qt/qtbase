@@ -54,12 +54,32 @@ class QXcbXSettings;
 class QDebug;
 #endif
 
+class QXcbVirtualDesktop : public QXcbObject
+{
+public:
+    QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t *screen, int number);
+    ~QXcbVirtualDesktop();
+
+    xcb_screen_t *screen() const { return m_screen; }
+    int number() const { return m_number; }
+    QSize size() const { return QSize(m_screen->width_in_pixels, m_screen->height_in_pixels); }
+    QSize physicalSize() const { return QSize(m_screen->width_in_millimeters, m_screen->height_in_millimeters); }
+
+    QXcbXSettings *xSettings() const;
+
+private:
+    xcb_screen_t *m_screen;
+    int m_number;
+
+    QXcbXSettings *m_xSettings;
+};
+
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
-    QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen,
+    QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
                xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
-               QString outputName, int number);
+               QString outputName);
     ~QXcbScreen();
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
@@ -69,7 +89,7 @@ public:
     QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
     QRect nativeGeometry() const { return m_nativeGeometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE {return m_availableGeometry;}
-    int depth() const Q_DECL_OVERRIDE { return m_screen->root_depth; }
+    int depth() const Q_DECL_OVERRIDE { return screen()->root_depth; }
     QImage::Format format() const Q_DECL_OVERRIDE;
     QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_sizeMillimeters; }
     QSize virtualSize() const { return m_virtualSize; }
@@ -87,10 +107,10 @@ public:
     void setPrimary(bool primary) { m_primary = primary; }
     bool isPrimary() const { return m_primary; }
 
-    int screenNumber() const { return m_number; }
+    int screenNumber() const { return m_virtualDesktop->number(); }
 
-    xcb_screen_t *screen() const { return m_screen; }
-    xcb_window_t root() const { return m_screen->root; }
+    xcb_screen_t *screen() const { return m_virtualDesktop->screen(); }
+    xcb_window_t root() const { return screen()->root; }
     xcb_randr_output_t output() const { return m_output; }
     xcb_randr_crtc_t crtc() const { return m_crtc; }
     xcb_randr_mode_t mode() const { return m_mode; }
@@ -126,7 +146,7 @@ private:
                           QByteArray &stringValue);
     void sendStartupMessage(const QByteArray &message) const;
 
-    xcb_screen_t *m_screen;
+    QXcbVirtualDesktop *m_virtualDesktop;
     xcb_randr_output_t m_output;
     xcb_randr_crtc_t m_crtc;
     xcb_randr_mode_t m_mode;
@@ -143,7 +163,6 @@ private:
     QSizeF m_virtualSizeMillimeters;
     QList<QPlatformScreen *> m_siblings;
     Qt::ScreenOrientation m_orientation;
-    int m_number;
     QString m_windowManagerName;
     bool m_syncRequestSupported;
     xcb_window_t m_clientLeader;
@@ -157,7 +176,6 @@ private:
     bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;
     int m_antialiasingEnabled;
-    QXcbXSettings *m_xSettings;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

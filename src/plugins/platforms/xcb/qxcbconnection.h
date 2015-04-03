@@ -80,6 +80,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 
+class QXcbVirtualDesktop;
 class QXcbScreen;
 class QXcbWindow;
 class QXcbDrag;
@@ -494,12 +495,12 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* createScreen(int screenNumber, xcb_screen_t* xcbScreen,
+    QXcbScreen* createScreen(QXcbVirtualDesktop *virtualDesktop,
                              xcb_randr_output_t outputId = XCB_NONE,
                              xcb_randr_get_output_info_reply_t *output = 0);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
-    xcb_screen_t* xcbScreenForRootWindow(xcb_window_t rootWindow, int *xcbScreenNumber = 0);
+    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow);
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void initializeScreens();
     void updateScreens(const xcb_randr_notify_event_t *event);
@@ -564,6 +565,7 @@ private:
     const xcb_setup_t *m_setup;
     bool m_canGrabServer;
 
+    QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
     int m_primaryScreenNumber;
 

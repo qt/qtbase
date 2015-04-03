@@ -143,7 +143,7 @@ QXcbScreen* QXcbConnection::findScreenForOutput(xcb_window_t rootWindow, xcb_ran
     return 0;
 }
 
-QXcbScreen* QXcbConnection::createScreen(int screenNumber, xcb_screen_t* xcbScreen,
+QXcbScreen* QXcbConnection::createScreen(QXcbVirtualDesktop* virtualDesktop,
                                          xcb_randr_output_t outputId,
                                          xcb_randr_get_output_info_reply_t *output)
 {
@@ -156,10 +156,10 @@ QXcbScreen* QXcbConnection::createScreen(int screenNumber, xcb_screen_t* xcbScre
         int dotPos = displayName.lastIndexOf('.');
         if (dotPos != -1)
             displayName.truncate(dotPos);
-        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.') + QString::number(screenNumber);
+        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.') + QString::number(virtualDesktop->number());
     }
 
-    return new QXcbScreen(this, xcbScreen, outputId, output, name, screenNumber);
+    return new QXcbScreen(this, virtualDesktop, outputId, output, name);
 }
 
 bool QXcbConnection::checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output)
@@ -179,15 +179,11 @@ bool QXcbConnection::checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_out
     return isPrimary;
 }
 
-xcb_screen_t* QXcbConnection::xcbScreenForRootWindow(xcb_window_t rootWindow, int *xcbScreenNumber)
+QXcbVirtualDesktop* QXcbConnection::virtualDesktopForRootWindow(xcb_window_t rootWindow)
 {
-    xcb_screen_iterator_t xcbScreenIter = xcb_setup_roots_iterator(m_setup);
-    for (; xcbScreenIter.rem; xcb_screen_next(&xcbScreenIter)) {
-        if (xcbScreenIter.data->root == rootWindow) {
-            if (xcbScreenNumber)
-                *xcbScreenNumber = xcb_setup_roots_length(m_setup) - xcbScreenIter.rem;
-            return xcbScreenIter.data;
-        }
+    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops) {
+        if (virtualDesktop->screen()->root == rootWindow)
+            return virtualDesktop;
     }
 
     return 0;
@@ -200,8 +196,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
 {
     if (event->subCode == XCB_RANDR_NOTIFY_CRTC_CHANGE) {
         xcb_randr_crtc_change_t crtc = event->u.cc;
-        xcb_screen_t *xcbScreen = xcbScreenForRootWindow(crtc.window);
-        if (!xcbScreen)
+        QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(crtc.window);
+        if (!virtualDesktop)
             // Not for us
             return;
 
@@ -218,9 +214,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
 
     } else if (event->subCode == XCB_RANDR_NOTIFY_OUTPUT_CHANGE) {
         xcb_randr_output_change_t output = event->u.oc;
-        int xcbScreenNumber = 0;
-        xcb_screen_t *xcbScreen = xcbScreenForRootWindow(output.window, &xcbScreenNumber);
-        if (!xcbScreen)
+        QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(output.window);
+        if (!virtualDesktop)
             // Not for us
             return;
 
@@ -248,7 +243,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
                     xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
 
-                screen = createScreen(xcbScreenNumber, xcbScreen, output.output, outputInfo.data());
+                screen = createScreen(virtualDesktop, output.output, outputInfo.data());
                 qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
 
                 screen->setPrimary(checkOutputIsPrimary(output.window, output.output));
@@ -299,14 +294,15 @@ void QXcbConnection::initializeScreens()
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
     int xcbScreenNumber = 0;    // screen number in the xcb sense
     QXcbScreen* primaryScreen = Q_NULLPTR;
-    xcb_screen_t *xcbScreen = Q_NULLPTR;
     bool hasOutputs = false;
     while (it.rem) {
         // Each "screen" in xcb terminology is a virtual desktop,
         // potentially a collection of separate juxtaposed monitors.
         // But we want a separate QScreen for each output (e.g. DVI-I-1, VGA-1, etc.)
         // which will become virtual siblings.
-        xcbScreen = it.data;
+        xcb_screen_t *xcbScreen = it.data;
+        QXcbVirtualDesktop *virtualDesktop = new QXcbVirtualDesktop(this, xcbScreen, xcbScreenNumber);
+        m_virtualDesktops.append(virtualDesktop);
         QList<QPlatformScreen *> siblings;
         int outputCount = 0;
         int connectedOutputCount = 0;
@@ -376,7 +372,7 @@ void QXcbConnection::initializeScreens()
                                 continue;
                             }
 
-                            QXcbScreen *screen = createScreen(xcbScreenNumber, xcbScreen, outputs[i], output.data());
+                            QXcbScreen *screen = createScreen(virtualDesktop, outputs[i], output.data());
                             siblings << screen;
                             ++connectedOutputCount;
                             hasOutputs = true;
@@ -411,8 +407,9 @@ void QXcbConnection::initializeScreens()
     // but the dimensions are known anyway, and we don't already have any lingering
     // (possibly disconnected) screens, then showing windows should be possible,
     // so create one screen. (QTBUG-31389)
-    if (xcbScreen && !hasOutputs && xcbScreen->width_in_pixels > 0 && xcbScreen->height_in_pixels > 0 && m_screens.isEmpty()) {
-        QXcbScreen *screen = createScreen(0, xcbScreen, 0, Q_NULLPTR);
+    QXcbVirtualDesktop *virtualDesktop = m_virtualDesktops.value(0);
+    if (virtualDesktop && !hasOutputs && !virtualDesktop->size().isEmpty() && m_screens.isEmpty()) {
+        QXcbScreen *screen = createScreen(virtualDesktop, 0, Q_NULLPTR);
         screen->setVirtualSiblings(QList<QPlatformScreen *>() << screen);
         m_screens << screen;
         primaryScreen = screen;
@@ -582,6 +579,9 @@ QXcbConnection::~QXcbConnection()
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!m_screens.isEmpty())
         integration->destroyScreen(m_screens.takeLast());
+
+    while (!m_virtualDesktops.isEmpty())
+        delete m_virtualDesktops.takeLast();
 
     delete m_glIntegration;
 
