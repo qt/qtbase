@@ -840,19 +840,9 @@ bool QUuid::operator<(const QUuid &other) const
 
     \sa variant()
 */
-#define ISMORE(f1, f2) if (f1!=f2) return (f1>f2);
 bool QUuid::operator>(const QUuid &other) const
 {
-    if (variant() != other.variant())
-        return variant() > other.variant();
-
-    ISMORE(data1, other.data1);
-    ISMORE(data2, other.data2);
-    ISMORE(data3, other.data3);
-    for (int n = 0; n < 8; n++) {
-        ISMORE(data4[n], other.data4[n]);
-    }
-    return false;
+    return other < *this;
 }
 
 /*!
