@@ -721,7 +721,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     Returns \c true if this is the null UUID
     {00000000-0000-0000-0000-000000000000}; otherwise returns \c false.
 */
-bool QUuid::isNull() const
+bool QUuid::isNull() const Q_DECL_NOTHROW
 {
     return data4[0] == 0 && data4[1] == 0 && data4[2] == 0 && data4[3] == 0 &&
            data4[4] == 0 && data4[5] == 0 && data4[6] == 0 && data4[7] == 0 &&
@@ -770,7 +770,7 @@ bool QUuid::isNull() const
 
     \sa version()
 */
-QUuid::Variant QUuid::variant() const
+QUuid::Variant QUuid::variant() const Q_DECL_NOTHROW
 {
     if (isNull())
         return VarUnknown;
@@ -791,7 +791,7 @@ QUuid::Variant QUuid::variant() const
 
     \sa variant()
 */
-QUuid::Version QUuid::version() const
+QUuid::Version QUuid::version() const Q_DECL_NOTHROW
 {
     // Check the 4 MSB of data3
     Version ver = (Version)(data3>>12);
@@ -814,7 +814,7 @@ QUuid::Version QUuid::version() const
 
     \sa variant()
 */
-bool QUuid::operator<(const QUuid &other) const
+bool QUuid::operator<(const QUuid &other) const Q_DECL_NOTHROW
 {
     if (variant() != other.variant())
         return variant() < other.variant();
@@ -841,7 +841,7 @@ bool QUuid::operator<(const QUuid &other) const
 
     \sa variant()
 */
-bool QUuid::operator>(const QUuid &other) const
+bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 {
     return other < *this;
 }
