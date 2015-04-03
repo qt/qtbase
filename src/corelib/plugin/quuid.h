@@ -214,6 +214,11 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 
 Q_CORE_EXPORT uint qHash(const QUuid &uuid, uint seed = 0) Q_DECL_NOTHROW;
 
+inline bool operator<=(const QUuid &lhs, const QUuid &rhs) Q_DECL_NOTHROW
+{ return !(rhs < lhs); }
+inline bool operator>=(const QUuid &lhs, const QUuid &rhs) Q_DECL_NOTHROW
+{ return !(lhs < rhs); }
+
 QT_END_NAMESPACE
 
 #endif // QUUID_H

@@ -847,6 +847,34 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 }
 
 /*!
+    \fn bool operator<=(const QUuid &lhs, const QUuid &rhs)
+    \relates QUuid
+    \since 5.5
+
+    Returns \c true if \a lhs has the same \l{Variant field}
+    {variant field} as \a rhs and is lexicographically
+    \e{not after} \a rhs. If \a rhs has a
+    different variant field, the return value is determined by
+    comparing the two \l{QUuid::Variant} {variants}.
+
+    \sa variant()
+*/
+
+/*!
+    \fn bool operator>=(const QUuid &lhs, const QUuid &rhs)
+    \relates QUuid
+    \since 5.5
+
+    Returns \c true if \a lhs has the same \l{Variant field}
+    {variant field} as \a rhs and is lexicographically
+    \e{not before} \a rhs. If \a rhs has a
+    different variant field, the return value is determined by
+    comparing the two \l{QUuid::Variant} {variants}.
+
+    \sa variant()
+*/
+
+/*!
     \fn QUuid QUuid::createUuid()
 
     On any platform other than Windows, this function returns a new
