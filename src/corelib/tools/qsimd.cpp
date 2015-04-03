@@ -36,6 +36,10 @@
 #include <QByteArray>
 #include <stdio.h>
 
+#ifdef Q_OS_LINUX
+#  include "../testlib/3rdparty/valgrind_p.h"
+#endif
+
 #if defined(Q_OS_WIN)
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
@@ -552,7 +556,12 @@ void qDetectCpuFeatures()
         }
     }
 
-    if (minFeature != 0 && (f & minFeature) != minFeature) {
+#ifdef RUNNING_ON_VALGRIND
+    bool runningOnValgrind = RUNNING_ON_VALGRIND;
+#else
+    bool runningOnValgrind = false;
+#endif
+    if (!runningOnValgrind && (minFeature != 0 && (f & minFeature) != minFeature)) {
         uint missing = minFeature & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (int i = 0; i < features_count; ++i) {
