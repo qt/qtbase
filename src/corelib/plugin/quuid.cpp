@@ -814,18 +814,19 @@ QUuid::Version QUuid::version() const
 
     \sa variant()
 */
-#define ISLESS(f1, f2) if (f1!=f2) return (f1<f2);
 bool QUuid::operator<(const QUuid &other) const
 {
     if (variant() != other.variant())
         return variant() < other.variant();
 
+#define ISLESS(f1, f2) if (f1!=f2) return (f1<f2);
     ISLESS(data1, other.data1);
     ISLESS(data2, other.data2);
     ISLESS(data3, other.data3);
     for (int n = 0; n < 8; n++) {
         ISLESS(data4[n], other.data4[n]);
     }
+#undef ISLESS
     return false;
 }
 
