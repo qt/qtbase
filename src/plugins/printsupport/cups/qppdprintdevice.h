@@ -49,6 +49,10 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qmargins.h>
+
 #include <cups/cups.h>
 #include <cups/ppd.h>
 
