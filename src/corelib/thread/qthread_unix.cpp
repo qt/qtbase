@@ -313,14 +313,15 @@ void *QThreadPrivate::start(void *arg)
         createEventDispatcher(data);
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
-    // sets the name of the current thread.
-    QString objectName = thr->objectName();
+    {
+        // sets the name of the current thread.
+        QString objectName = thr->objectName();
 
-    if (Q_LIKELY(objectName.isEmpty()))
-        setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
-    else
-        setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
-
+        if (Q_LIKELY(objectName.isEmpty()))
+            setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
+        else
+            setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
+    }
 #endif
 
     emit thr->started(QThread::QPrivateSignal());
