@@ -303,8 +303,10 @@ public:
     // the dispatch lock protects everything related to the DBusConnection or DBusServer
     // including the timeouts and watches
     QMutex dispatchLock;
-    DBusConnection *connection;
-    DBusServer *server;
+    union {
+        DBusConnection *connection;
+        DBusServer *server;
+    };
     WatcherHash watchers;
     TimeoutHash timeouts;
     PendingTimeoutList timeoutsPendingAdd;

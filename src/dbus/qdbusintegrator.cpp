@@ -949,7 +949,7 @@ extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     : QObject(p), ref(1), capabilities(0), mode(InvalidMode), busService(0),
-      dispatchLock(QMutex::Recursive), connection(0), server(0),
+      dispatchLock(QMutex::Recursive), connection(0),
       rootNode(QString(QLatin1Char('/'))),
       anonymousAuthenticationAllowed(false)
 {
@@ -995,22 +995,23 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
     rootNode.children.clear();  // free resources
     qDeleteAll(cachedMetaObjects);
 
-    if (mode == ClientMode) {
+    if (mode == ClientMode || mode == PeerMode) {
         // the bus service object holds a reference back to us;
         // we need to destroy it before we finish destroying ourselves
         Q_ASSERT(ref.load() == 0);
         QObject *obj = (QObject *)busService;
-        disconnect(obj, Q_NULLPTR, this, Q_NULLPTR);
-        delete obj;
+        if (obj) {
+            disconnect(obj, Q_NULLPTR, this, Q_NULLPTR);
+            delete obj;
+        }
+        if (connection)
+            q_dbus_connection_unref(connection);
+        connection = 0;
+    } else if (mode == ServerMode) {
+        if (server)
+            q_dbus_server_unref(server);
+        server = 0;
     }
-
-    if (server)
-        q_dbus_server_unref(server);
-    if (connection)
-        q_dbus_connection_unref(connection);
-
-    connection = 0;
-    server = 0;
 }
 
 void QDBusConnectionPrivate::closeConnection()
@@ -1020,7 +1021,7 @@ void QDBusConnectionPrivate::closeConnection()
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
 
-    if (server) {
+    if (oldMode == ServerMode && server) {
         q_dbus_server_disconnect(server);
         q_dbus_server_free_data_slot(&server_slot);
     }
