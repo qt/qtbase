@@ -76,6 +76,24 @@ struct QDBusConnectionManager::ConnectionRequestData
     QDBusConnectionPrivate *result;
 };
 
+QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::BusType type)
+{
+    Q_STATIC_ASSERT(int(QDBusConnection::SessionBus) + int(QDBusConnection::SystemBus) == 1);
+    Q_ASSERT(type == QDBusConnection::SessionBus || type == QDBusConnection::SystemBus);
+
+    if (!qdbus_loadLibDBus())
+        return 0;
+
+    QMutexLocker lock(&defaultBusMutex);
+    if (defaultBuses[type])
+        return defaultBuses[type];
+
+    QString name = QStringLiteral("qt_default_session_bus");
+    if (type == QDBusConnection::SystemBus)
+        name = QStringLiteral("qt_default_system_bus");
+    return defaultBuses[type] = connectToBus(type, name);
+}
+
 QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) const
 {
     return connectionHash.value(name, 0);
@@ -102,6 +120,8 @@ QDBusConnectionManager::QDBusConnectionManager()
     connect(this, &QDBusConnectionManager::serverRequested,
             this, &QDBusConnectionManager::createServer, Qt::BlockingQueuedConnection);
     moveToThread(this);         // ugly, don't do this in other projects
+
+    defaultBuses[0] = defaultBuses[1] = Q_NULLPTR;
     start();
 }
 
@@ -1109,26 +1129,6 @@ bool QDBusConnection::unregisterService(const QString &serviceName)
     return false;
 }
 
-static const char _q_sessionBusName[] = "qt_default_session_bus";
-static const char _q_systemBusName[] = "qt_default_system_bus";
-
-class QDBusDefaultConnection: public QDBusConnection
-{
-    const char *ownName;
-public:
-    inline QDBusDefaultConnection(BusType type, const char *name)
-        : QDBusConnection(connectToBus(type, QString::fromLatin1(name))), ownName(name)
-    { }
-
-    inline ~QDBusDefaultConnection()
-    { disconnectFromBus(QString::fromLatin1(ownName)); }
-};
-
-Q_GLOBAL_STATIC_WITH_ARGS(QDBusDefaultConnection, _q_sessionBus,
-                          (QDBusConnection::SessionBus, _q_sessionBusName))
-Q_GLOBAL_STATIC_WITH_ARGS(QDBusDefaultConnection, _q_systemBus,
-                          (QDBusConnection::SystemBus, _q_systemBusName))
-
 /*!
     \fn QDBusConnection QDBusConnection::sessionBus()
 
@@ -1138,7 +1138,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QDBusDefaultConnection, _q_systemBus,
 */
 QDBusConnection QDBusConnection::sessionBus()
 {
-    return *_q_sessionBus();
+    return QDBusConnection(_q_manager()->busConnection(SessionBus));
 }
 
 /*!
@@ -1150,7 +1150,7 @@ QDBusConnection QDBusConnection::sessionBus()
 */
 QDBusConnection QDBusConnection::systemBus()
 {
-    return *_q_systemBus();
+    return QDBusConnection(_q_manager()->busConnection(SystemBus));
 }
 
 #if QT_DEPRECATED_SINCE(5,5)

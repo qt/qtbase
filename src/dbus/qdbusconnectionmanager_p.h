@@ -63,6 +63,7 @@ public:
     ~QDBusConnectionManager();
     static QDBusConnectionManager* instance();
 
+    QDBusConnectionPrivate *busConnection(QDBusConnection::BusType type);
     QDBusConnectionPrivate *connection(const QString &name) const;
     void removeConnection(const QString &name);
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
@@ -84,6 +85,9 @@ private:
     void createServer(const QString &address, void *server);
 
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
+
+    QMutex defaultBusMutex;
+    QDBusConnectionPrivate *defaultBuses[2];
 
     mutable QMutex senderMutex;
     QString senderName; // internal; will probably change
