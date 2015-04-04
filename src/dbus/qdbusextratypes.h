@@ -39,7 +39,10 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 #include <QtDBus/qdbusmacros.h>
+#if QT_DEPRECATED_SINCE(5, 5)
 #include <QtCore/qhash.h>
+#endif
+#include <QtCore/qhashfunctions.h>
 
 #ifndef QT_NO_DBUS
 

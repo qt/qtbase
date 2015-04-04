@@ -38,7 +38,7 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qmap.h>
-#include <qhash.h>
+#include <qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
 

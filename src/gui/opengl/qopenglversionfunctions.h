@@ -47,7 +47,10 @@
 
 #ifndef QT_NO_OPENGL
 
+#if QT_DEPRECATED_SINCE(5, 5)
 #include <QtCore/qhash.h>
+#endif
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qpair.h>
 #include <QtGui/qopengl.h>
 
