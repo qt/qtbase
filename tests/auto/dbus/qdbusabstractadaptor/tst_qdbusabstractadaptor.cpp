@@ -346,7 +346,7 @@ void syncPeer()
     // wait for the sync signal with the right ID
     QEventLoop loop;
     QDBusConnection con("peer");
-    con.connect(serviceName, objectPath, interfaceName, "syncReceived",
+    con.connect(QString(), objectPath, interfaceName, "syncReceived",
                 QStringList() << reqId, QString(), &loop, SLOT(quit()));
 
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "requestSync");
