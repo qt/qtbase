@@ -50,7 +50,6 @@
 #include "qstringmatcher.h"
 #include "qvarlengtharray.h"
 #include "qtools_p.h"
-#include "qhash.h"
 #include "qdebug.h"
 #include "qendian.h"
 #include "qcollator.h"

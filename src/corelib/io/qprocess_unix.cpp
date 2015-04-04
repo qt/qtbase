@@ -93,7 +93,6 @@ QT_END_NAMESPACE
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qhash.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>

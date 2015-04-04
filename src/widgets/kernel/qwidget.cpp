@@ -37,7 +37,6 @@
 #include "qcursor.h"
 #include "qdesktopwidget_p.h"
 #include "qevent.h"
-#include "qhash.h"
 #include "qlayout.h"
 #include "qmenu.h"
 #include "qmetaobject.h"

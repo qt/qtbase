@@ -50,7 +50,6 @@
 
 #include "qcoreevent.h"
 #include "qeventloop.h"
-#include "qhash.h"
 #include "qobject.h"
 #include "private/qobject_p.h"
 #include "qlist.h"

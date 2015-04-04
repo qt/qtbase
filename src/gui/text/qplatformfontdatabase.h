@@ -47,7 +47,9 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QList>
+#if QT_DEPRECATED_SINCE(5, 5)
 #include <QtCore/QHash>
+#endif
 #include <QtGui/QFontDatabase>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfont_p.h>

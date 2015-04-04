@@ -43,7 +43,6 @@
 #include <qstringlist.h>
 #include <qthread.h>
 #include <qvariant.h>
-#include <qhash.h>
 #include <qdebug.h>
 #include <qsemaphore.h>
 

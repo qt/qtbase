@@ -47,7 +47,6 @@
 #include <qthread.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
-#include <qhash.h>
 #include <qpair.h>
 #include <qvarlengtharray.h>
 #include <qset.h>

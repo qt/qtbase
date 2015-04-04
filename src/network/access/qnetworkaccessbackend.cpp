@@ -37,7 +37,6 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
-#include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qstringlist.h"
 #include "QtNetwork/private/qnetworksession_p.h"

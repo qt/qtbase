@@ -50,7 +50,6 @@
 
 #ifndef QT_NO_STYLE_WINDOWS
 #include <qlist.h>
-#include <qhash.h>
 
 QT_BEGIN_NAMESPACE
 

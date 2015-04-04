@@ -42,7 +42,6 @@
 #include "qscreen.h"
 #include "qpainter.h"
 #include "qtimer.h"
-#include "qhash.h"
 #include "qaction.h"
 #include "qcursor.h"
 #include "qbitmap.h"

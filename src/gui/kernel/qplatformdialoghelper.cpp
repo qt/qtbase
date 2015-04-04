@@ -36,7 +36,6 @@
 #include <QtCore/QVariant>
 #include <QtCore/QSharedData>
 #include <QtCore/QSettings>
-#include <QtCore/QHash>
 #include <QtCore/QUrl>
 #include <QtGui/QColor>
 

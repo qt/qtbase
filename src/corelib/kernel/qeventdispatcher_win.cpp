@@ -34,7 +34,6 @@
 #include "qeventdispatcher_win_p.h"
 
 #include "qcoreapplication.h"
-#include "qhash.h"
 #include <private/qsystemlibrary_p.h>
 #include "qpair.h"
 #include "qset.h"

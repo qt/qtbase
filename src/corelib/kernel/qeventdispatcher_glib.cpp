@@ -39,7 +39,6 @@
 #include "qcoreapplication.h"
 #include "qsocketnotifier.h"
 
-#include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 

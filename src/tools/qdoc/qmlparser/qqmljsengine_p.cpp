@@ -35,7 +35,6 @@
 #include "qqmljsglobal_p.h"
 
 #include <QtCore/qnumeric.h>
-#include <QtCore/qhash.h>
 #include <QtCore/qdebug.h>
 
 QT_QML_BEGIN_NAMESPACE

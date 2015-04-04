@@ -35,7 +35,6 @@
 
 #include <qdir.h>
 #include <qfileinfo.h>
-#include <qhash.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include <qobject.h>

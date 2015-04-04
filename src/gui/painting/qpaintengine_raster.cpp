@@ -42,7 +42,6 @@
 
 #include <qpainterpath.h>
 #include <qdebug.h>
-#include <qhash.h>
 #include <qbitmap.h>
 #include <qmath.h>
 

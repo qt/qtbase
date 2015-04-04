@@ -36,7 +36,6 @@
 #include "qprintdialog.h"
 #include "qabstractprintdialog_p.h"
 
-#include <QtCore/qhash.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtPrintSupport/qprinter.h>

@@ -46,7 +46,6 @@
 #include "qregexp.h"
 #include "qtimer.h"
 #include "qfileinfo.h"
-#include "qhash.h"
 #include "qtcpserver.h"
 #include "qlocale.h"
 

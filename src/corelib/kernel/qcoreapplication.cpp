@@ -45,7 +45,6 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qhash.h>
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
 #include <qstandardpaths.h>
