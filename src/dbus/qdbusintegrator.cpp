@@ -94,12 +94,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
                   << "ptr=" << (const void*)conn
                   << ", name=" << conn->name
                   << ", baseService=" << conn->baseService
-                  << ", thread=";
-    if (conn->thread() == QThread::currentThread())
-        dbg.nospace() << "same thread";
-    else
-        dbg.nospace() << conn->thread();
-    dbg.nospace() << ')';
+                  << ')';
     return dbg;
 }
 
@@ -1017,6 +1012,7 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
 void QDBusConnectionPrivate::closeConnection()
 {
     QDBusWriteLocker locker(CloseConnectionAction, this);
+    qDBusDebug() << this << "Disconnected";
     ConnectionMode oldMode = mode;
     mode = InvalidMode; // prevent reentrancy
     baseService.clear();
@@ -1036,8 +1032,6 @@ void QDBusConnectionPrivate::closeConnection()
     }
 
     qDeleteAll(pendingCalls);
-
-    qDBusDebug() << this << "Disconnected";
 }
 
 void QDBusConnectionPrivate::checkThread()
@@ -2098,7 +2092,7 @@ void QDBusConnectionPrivate::addSignalHook(const QString &key, const SignalHook 
 
     if (connection) {
         if (mode != QDBusConnectionPrivate::PeerMode) {
-            qDBusDebug("Adding rule: %s", hook.matchRule.constData());
+            qDBusDebug() << this << "Adding rule:" << hook.matchRule;
             q_dbus_bus_add_match(connection, hook.matchRule, NULL);
 
             // Successfully connected the signal
@@ -2186,7 +2180,7 @@ QDBusConnectionPrivate::removeSignalHookNoLock(SignalHookHash::Iterator it)
     // we don't care about errors here
     if (connection && erase) {
         if (mode != QDBusConnectionPrivate::PeerMode) {
-            qDBusDebug("Removing rule: %s", hook.matchRule.constData());
+            qDBusDebug() << this << "Removing rule:" << hook.matchRule;
             q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
 
             // Successfully disconnected the signal
