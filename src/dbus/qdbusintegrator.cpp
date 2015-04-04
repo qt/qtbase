@@ -1038,6 +1038,15 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
                  "Timer and socket errors will follow and the program will probably crash",
                  qPrintable(name));
 
+    if (mode == ClientMode) {
+        // the bus service object holds a reference back to us;
+        // we need to destroy it before we finish destroying ourselves
+        Q_ASSERT(ref.load() == 0);
+        QObject *obj = (QObject *)busService;
+        disconnect(obj, Q_NULLPTR, this, Q_NULLPTR);
+        delete obj;
+    }
+
     closeConnection();
     rootNode.children.clear();  // free resources
     qDeleteAll(cachedMetaObjects);
