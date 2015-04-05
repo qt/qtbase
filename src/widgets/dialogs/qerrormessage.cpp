@@ -269,11 +269,13 @@ QErrorMessage::~QErrorMessage()
 void QErrorMessage::done(int a)
 {
     Q_D(QErrorMessage);
-    if (!d->again->isChecked() && !d->currentMessage.isEmpty() && d->currentType.isEmpty()) {
-        d->doNotShow.insert(d->currentMessage);
-    }
-    if (!d->again->isChecked() && !d->currentType.isEmpty()) {
-        d->doNotShowType.insert(d->currentType);
+    if (!d->again->isChecked()) {
+        if (d->currentType.isEmpty()) {
+            if (!d->currentMessage.isEmpty())
+                d->doNotShow.insert(d->currentMessage);
+        } else {
+            d->doNotShowType.insert(d->currentType);
+        }
     }
     d->currentMessage.clear();
     d->currentType.clear();
