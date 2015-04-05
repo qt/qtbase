@@ -78,6 +78,7 @@ public:
     void retranslateStrings();
 };
 
+namespace {
 class QErrorMessageTextView : public QTextEdit
 {
 public:
@@ -87,6 +88,7 @@ public:
     virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;
 };
+} // unnamed namespace
 
 QSize QErrorMessageTextView::minimumSizeHint() const
 {
