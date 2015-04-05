@@ -47,8 +47,9 @@
 #include "qpixmap.h"
 #include "qmetaobject.h"
 #include "qthread.h"
-#include "qqueue.h"
 #include "qset.h"
+
+#include <queue>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +69,7 @@ public:
     QCheckBox * again;
     QTextEdit * errors;
     QLabel * icon;
-    QQueue<QPair<QString, QString> > pending;
+    std::queue<QPair<QString, QString> > pending;
     QSet<QString> doNotShow;
     QSet<QString> doNotShowType;
     QString currentMessage;
@@ -305,10 +306,11 @@ QErrorMessage * QErrorMessage::qtHandler()
 
 bool QErrorMessagePrivate::nextPending()
 {
-    while (!pending.isEmpty()) {
-        QPair<QString,QString> pendingMessage = pending.dequeue();
+    while (!pending.empty()) {
+        const QPair<QString,QString> &pendingMessage = pending.front();
         QString message = pendingMessage.first;
         QString type = pendingMessage.second;
+        pending.pop();
         if (!message.isEmpty() && ((type.isEmpty() && !doNotShow.contains(message)) || (!type.isEmpty() && !doNotShowType.contains(type)))) {
 #ifndef QT_NO_TEXTHTMLPARSER
             errors->setHtml(message);
@@ -338,7 +340,7 @@ void QErrorMessage::showMessage(const QString &message)
     Q_D(QErrorMessage);
     if (d->doNotShow.contains(message))
         return;
-    d->pending.enqueue(qMakePair(message,QString()));
+    d->pending.push(qMakePair(message,QString()));
     if (!isVisible() && d->nextPending())
         show();
 }
@@ -362,7 +364,7 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
     Q_D(QErrorMessage);
     if (d->doNotShow.contains(message) && d->doNotShowType.contains(type))
         return;
-     d->pending.push_back(qMakePair(message,type));
+    d->pending.push(qMakePair(message,type));
     if (!isVisible() && d->nextPending())
         show();
 }
