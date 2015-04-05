@@ -75,6 +75,7 @@ public:
     QString currentMessage;
     QString currentType;
 
+    bool isMessageToBeShown(const QString &message, const QString &type) const;
     bool nextPending();
     void retranslateStrings();
 };
@@ -304,6 +305,12 @@ QErrorMessage * QErrorMessage::qtHandler()
 
 /*! \internal */
 
+bool QErrorMessagePrivate::isMessageToBeShown(const QString &message, const QString &type) const
+{
+    return !message.isEmpty()
+        && (type.isEmpty() ? !doNotShow.contains(message) : !doNotShowType.contains(type));
+}
+
 bool QErrorMessagePrivate::nextPending()
 {
     while (!pending.empty()) {
@@ -311,7 +318,7 @@ bool QErrorMessagePrivate::nextPending()
         QString message = qMove(pendingMessage.first);
         QString type = qMove(pendingMessage.second);
         pending.pop();
-        if (!message.isEmpty() && ((type.isEmpty() && !doNotShow.contains(message)) || (!type.isEmpty() && !doNotShowType.contains(type)))) {
+        if (isMessageToBeShown(message, type)) {
 #ifndef QT_NO_TEXTHTMLPARSER
             errors->setHtml(message);
 #else
@@ -337,12 +344,7 @@ bool QErrorMessagePrivate::nextPending()
 
 void QErrorMessage::showMessage(const QString &message)
 {
-    Q_D(QErrorMessage);
-    if (d->doNotShow.contains(message))
-        return;
-    d->pending.push(qMakePair(message,QString()));
-    if (!isVisible() && d->nextPending())
-        show();
+    showMessage(message, QString());
 }
 
 /*!
@@ -362,9 +364,9 @@ void QErrorMessage::showMessage(const QString &message)
 void QErrorMessage::showMessage(const QString &message, const QString &type)
 {
     Q_D(QErrorMessage);
-    if (d->doNotShow.contains(message) && d->doNotShowType.contains(type))
+    if (!d->isMessageToBeShown(message, type))
         return;
-    d->pending.push(qMakePair(message,type));
+    d->pending.push(qMakePair(message, type));
     if (!isVisible() && d->nextPending())
         show();
 }
