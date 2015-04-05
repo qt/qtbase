@@ -307,9 +307,9 @@ QErrorMessage * QErrorMessage::qtHandler()
 bool QErrorMessagePrivate::nextPending()
 {
     while (!pending.empty()) {
-        const QPair<QString,QString> &pendingMessage = pending.front();
-        QString message = pendingMessage.first;
-        QString type = pendingMessage.second;
+        QPair<QString,QString> &pendingMessage = pending.front();
+        QString message = qMove(pendingMessage.first);
+        QString type = qMove(pendingMessage.second);
         pending.pop();
         if (!message.isEmpty() && ((type.isEmpty() && !doNotShow.contains(message)) || (!type.isEmpty() && !doNotShowType.contains(type)))) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -317,8 +317,8 @@ bool QErrorMessagePrivate::nextPending()
 #else
             errors->setPlainText(message);
 #endif
-            currentMessage = message;
-            currentType = type;
+            currentMessage = qMove(message);
+            currentType = qMove(type);
             return true;
         }
     }
