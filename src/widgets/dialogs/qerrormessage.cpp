@@ -221,29 +221,32 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     : QDialog(*new QErrorMessagePrivate, parent)
 {
     Q_D(QErrorMessage);
-    QGridLayout * grid = new QGridLayout(this);
+
     d->icon = new QLabel(this);
+    d->errors = new QErrorMessageTextView(this);
+    d->again = new QCheckBox(this);
+    d->ok = new QPushButton(this);
+    QGridLayout * grid = new QGridLayout(this);
+
+    connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
+
+    grid->addWidget(d->icon,   0, 0, Qt::AlignTop);
+    grid->addWidget(d->errors, 0, 1);
+    grid->addWidget(d->again,  1, 1, Qt::AlignTop);
+    grid->addWidget(d->ok,     2, 0, 1, 2, Qt::AlignCenter);
+    grid->setColumnStretch(1, 42);
+    grid->setRowStretch(0, 42);
+
 #ifndef QT_NO_MESSAGEBOX
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 #endif
-    grid->addWidget(d->icon, 0, 0, Qt::AlignTop);
-    d->errors = new QErrorMessageTextView(this);
-    grid->addWidget(d->errors, 0, 1);
-    d->again = new QCheckBox(this);
     d->again->setChecked(true);
-    grid->addWidget(d->again, 1, 1, Qt::AlignTop);
-    d->ok = new QPushButton(this);
-
-
 #if defined(Q_OS_WINCE)
     d->ok->setFixedSize(0,0);
 #endif
-    connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
     d->ok->setFocus();
-    grid->addWidget(d->ok, 2, 0, 1, 2, Qt::AlignCenter);
-    grid->setColumnStretch(1, 42);
-    grid->setRowStretch(0, 42);
+
     d->retranslateStrings();
 }
 
