@@ -370,6 +370,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
                                       const QStyleOptionViewItem &option,
                                       const QModelIndex &index)
 {
+    Q_D(QAbstractItemDelegate);
     Q_UNUSED(option);
 
     if (!event || !view)
@@ -378,9 +379,10 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
-        QVariant tooltip = index.data(Qt::ToolTipRole);
-        if (tooltip.canConvert<QString>()) {
-            QToolTip::showText(he->globalPos(), tooltip.toString(), view);
+        const int precision = inherits("QItemDelegate") ? 10 : 6; // keep in sync with DBL_DIG in qitemdelegate.cpp
+        const QString tooltip = d->textForRole(Qt::ToolTipRole, index.data(Qt::ToolTipRole), option.locale, precision);
+        if (!tooltip.isEmpty()) {
+            QToolTip::showText(he->globalPos(), tooltip, view);
             return true;
         }
         break;}
@@ -392,9 +394,10 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         break; }
     case QEvent::WhatsThis: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
-        QVariant whatsthis = index.data(Qt::WhatsThisRole);
-        if (whatsthis.canConvert<QString>()) {
-            QWhatsThis::showText(he->globalPos(), whatsthis.toString(), view);
+        const int precision = inherits("QItemDelegate") ? 10 : 6; // keep in sync with DBL_DIG in qitemdelegate.cpp
+        const QString whatsthis = d->textForRole(Qt::WhatsThisRole, index.data(Qt::WhatsThisRole), option.locale, precision);
+        if (!whatsthis.isEmpty()) {
+            QWhatsThis::showText(he->globalPos(), whatsthis, view);
             return true;
         }
         break ; }
@@ -535,6 +538,46 @@ bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
 #endif // QT_NO_LINEEDIT
 
     return true;
+}
+
+QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale, int precision) const
+{
+    const QLocale::FormatType formatType = (role == Qt::DisplayRole) ? QLocale::ShortFormat : QLocale::LongFormat;
+    QString text;
+    switch (value.userType()) {
+    case QMetaType::Float:
+        text = locale.toString(value.toFloat());
+        break;
+    case QVariant::Double:
+        text = locale.toString(value.toDouble(), 'g', precision);
+        break;
+    case QVariant::Int:
+    case QVariant::LongLong:
+        text = locale.toString(value.toLongLong());
+        break;
+    case QVariant::UInt:
+    case QVariant::ULongLong:
+        text = locale.toString(value.toULongLong());
+        break;
+    case QVariant::Date:
+        text = locale.toString(value.toDate(), formatType);
+        break;
+    case QVariant::Time:
+        text = locale.toString(value.toTime(), formatType);
+        break;
+    case QVariant::DateTime: {
+        const QDateTime dateTime = value.toDateTime();
+        text = locale.toString(dateTime.date(), formatType)
+             + QLatin1Char(' ')
+             + locale.toString(dateTime.time(), formatType);
+        break; }
+    default:
+        text = value.toString();
+        if (role == Qt::DisplayRole)
+            text.replace(QLatin1Char('\n'), QChar::LineSeparator);
+        break;
+    }
+    return text;
 }
 
 void QAbstractItemDelegatePrivate::_q_commitDataAndCloseEditor(QWidget *editor)

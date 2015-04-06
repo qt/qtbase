@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractItemDelegatePrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QAbstractItemDelegatePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractItemDelegate)
 public:
@@ -60,6 +60,7 @@ public:
 
     bool editorEventFilter(QObject *object, QEvent *event);
     bool tryFixup(QWidget *editor);
+    QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale, int precision = 6) const;
     void _q_commitDataAndCloseEditor(QWidget *editor);
 };
 

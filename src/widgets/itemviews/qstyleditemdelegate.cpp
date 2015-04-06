@@ -255,41 +255,7 @@ QStyledItemDelegate::~QStyledItemDelegate()
 */
 QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& locale) const
 {
-    QString text;
-    switch (value.userType()) {
-    case QMetaType::Float:
-    case QVariant::Double:
-        text = locale.toString(value.toReal());
-        break;
-    case QVariant::Int:
-    case QVariant::LongLong:
-        text = locale.toString(value.toLongLong());
-        break;
-    case QVariant::UInt:
-    case QVariant::ULongLong:
-        text = locale.toString(value.toULongLong());
-        break;
-    case QVariant::Date:
-        text = locale.toString(value.toDate(), QLocale::ShortFormat);
-        break;
-    case QVariant::Time:
-        text = locale.toString(value.toTime(), QLocale::ShortFormat);
-        break;
-    case QVariant::DateTime:
-        text = locale.toString(value.toDateTime().date(), QLocale::ShortFormat);
-        text += QLatin1Char(' ');
-        text += locale.toString(value.toDateTime().time(), QLocale::ShortFormat);
-        break;
-    default:
-        // convert new lines into line separators
-        text = value.toString();
-        for (int i = 0; i < text.count(); ++i) {
-            if (text.at(i) == QLatin1Char('\n'))
-                text[i] = QChar::LineSeparator;
-        }
-        break;
-    }
-    return text;
+    return d_func()->textForRole(Qt::DisplayRole, value, locale);
 }
 
 /*!

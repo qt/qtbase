@@ -56,6 +56,8 @@
 #include <QPlainTextEdit>
 #include <QDialog>
 
+#include <QtWidgets/private/qabstractitemdelegate_p.h>
+
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
 #if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
@@ -229,6 +231,8 @@ private slots:
 
     void task257859_finalizeEdit();
     void QTBUG4435_keepSelectionOnCheck();
+
+    void QTBUG16469_textForRole();
 };
 
 
@@ -1558,6 +1562,64 @@ void tst_QItemDelegate::testLineEditValidation()
         QCOMPARE(item->data(Qt::DisplayRole).toString(), QStringLiteral("abc,def"));
 }
 
+void tst_QItemDelegate::QTBUG16469_textForRole()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build");
+#else
+    struct TestDelegate : public QItemDelegate
+    {
+        QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale)
+        {
+            QAbstractItemDelegatePrivate *d = reinterpret_cast<QAbstractItemDelegatePrivate *>(qGetPtrHelper(d_ptr));
+            return d->textForRole(role, value, locale);
+        }
+    } delegate;
+    QLocale locale;
+
+    const float f = 123.456f;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, f, locale), locale.toString(f));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, f, locale), locale.toString(f));
+    const double d = 123.456;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, d, locale), locale.toString(d, 'g', 6));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, d, locale), locale.toString(d, 'g', 6));
+    const int i = 1234567;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, i, locale), locale.toString(i));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, i, locale), locale.toString(i));
+    const qlonglong ll = 1234567;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, ll, locale), locale.toString(ll));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, ll, locale), locale.toString(ll));
+    const uint ui = 1234567;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, ui, locale), locale.toString(ui));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, ui, locale), locale.toString(ui));
+    const qulonglong ull = 1234567;
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, ull, locale), locale.toString(ull));
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, ull, locale), locale.toString(ull));
+
+    const QDateTime dateTime = QDateTime::currentDateTime();
+    const QDate date = dateTime.date();
+    const QTime time = dateTime.time();
+    const QString shortDate = locale.toString(date, QLocale::ShortFormat);
+    const QString longDate = locale.toString(date, QLocale::LongFormat);
+    const QString shortTime = locale.toString(time, QLocale::ShortFormat);
+    const QString longTime = locale.toString(time, QLocale::LongFormat);
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, date, locale), shortDate);
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, date, locale), longDate);
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, time, locale), shortTime);
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, time, locale), longTime);
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, dateTime, locale), shortDate + QLatin1Char(' ') + shortTime);
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, dateTime, locale), longDate + QLatin1Char(' ') + longTime);
+
+    const QString text("text");
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, text, locale), text);
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, text, locale), text);
+    const QString multipleLines("multiple\nlines");
+    QString multipleLines2 = multipleLines;
+    multipleLines2.replace(QLatin1Char('\n'), QChar::LineSeparator);
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, multipleLines, locale), multipleLines2);
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, multipleLines, locale), multipleLines);
+#endif
+}
 
 // ### _not_ covered:
 
