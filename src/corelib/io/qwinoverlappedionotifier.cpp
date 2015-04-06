@@ -41,6 +41,7 @@
 #include <qthread.h>
 #include <qt_windows.h>
 #include <private/qobject_p.h>
+#include <private/qiodevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -332,11 +333,9 @@ bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped
             return false;
         if (triggeredOverlapped == overlapped)
             return true;
-        if (msecs != -1) {
-            t = msecs - stopWatch.elapsed();
-            if (t < 0)
-                return false;
-        }
+        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
+        if (t == 0)
+            return false;
     }
 }
 

@@ -30,9 +30,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifdef Q_OS_WINRT
 
 #include "qfunctions_winrt.h"
+
+#ifdef Q_OS_WINRT
+
 #include "qstring.h"
 #include "qbytearray.h"
 #include "qhash.h"

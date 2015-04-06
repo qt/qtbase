@@ -59,6 +59,8 @@ public:
     bool translateTouchEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
                              LRESULT *result);
+    bool translateScrollEvent(QWindow *window, HWND hwnd,
+                              MSG msg, LRESULT *result);
 
     static inline Qt::MouseButtons keyStateToMouseButtons(int);
     static inline Qt::KeyboardModifiers keyStateToModifiers(int);

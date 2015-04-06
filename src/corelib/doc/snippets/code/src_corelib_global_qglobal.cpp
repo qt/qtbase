@@ -61,7 +61,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::Options)
 //! [1]
 
 //! [meta-object flags]
-Q_FLAGS(Options)
+Q_FLAG(Options)
 //! [meta-object flags]
 
 //! [2]

@@ -253,6 +253,7 @@ private:
     QElapsedTimer popupTimer;
 
     friend class QComboBox;
+    friend class QComboBoxPrivate;
 };
 
 class Q_AUTOTEST_EXPORT QComboMenuDelegate : public QAbstractItemDelegate
@@ -372,6 +373,7 @@ public:
     void modelChanged();
     void updateViewContainerPaletteAndOpacity();
     void updateFocusPolicy();
+    void showPopupFromMouseEvent(QMouseEvent *e);
 
 #ifdef Q_OS_MAC
     void cleanupNativePopup();

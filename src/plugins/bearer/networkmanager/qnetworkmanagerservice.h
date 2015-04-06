@@ -497,7 +497,6 @@ public:
                             QObject *parent = 0)
         : QDBusAbstractInterface(service, path, interface.toLatin1().data(), connection, parent)
     {}
-    ~PropertiesDBusInterface() = default;
 };
 
 QT_END_NAMESPACE

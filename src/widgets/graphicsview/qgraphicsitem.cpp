@@ -736,7 +736,6 @@
 #include "qgraphicsproxywidget.h"
 #include "qgraphicsscenebsptreeindex_p.h"
 #include <QtCore/qbitarray.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qtimer.h>
@@ -761,6 +760,7 @@
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
 #include <private/qgesturemanager_p.h>
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -11283,8 +11283,24 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
 #endif //QT_NO_GRAPHICSEFFECT
 
 #ifndef QT_NO_DEBUG_STREAM
+static void formatGraphicsItemHelper(QDebug debug, const QGraphicsItem *item)
+{
+    if (const QGraphicsItem *parent = item->parentItem())
+          debug << ", parent=" << static_cast<const void *>(parent);
+    debug << ", pos=";
+    QtDebugUtils::formatQPoint(debug, item->pos());
+    if (const qreal z = item->zValue())
+        debug << ", z=" << item->zValue();
+    if (item->flags())
+        debug <<  ", flags=" << item->flags();
+}
+
+// FIXME: Qt 6: Make this QDebug operator<<(QDebug debug, const QGraphicsItem *item)
 QDebug operator<<(QDebug debug, QGraphicsItem *item)
 {
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+
     if (!item) {
         debug << "QGraphicsItem(0)";
         return debug;
@@ -11294,29 +11310,40 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         debug << o->metaObject()->className();
     else
         debug << "QGraphicsItem";
-    debug << "(this =" << (void*)item
-          << ", parent =" << (void*)item->parentItem()
-          << ", pos =" << item->pos()
-          << ", z =" << item->zValue() << ", flags = "
-          << item->flags() << ")";
+    debug << '(' << static_cast<const void *>(item);
+    if (const QGraphicsProxyWidget *pw = qgraphicsitem_cast<const QGraphicsProxyWidget *>(item)) {
+        debug << ", widget=";
+        if (const QWidget *w = pw->widget()) {
+            debug << w->metaObject()->className() << '(' << static_cast<const void *>(w);
+            if (!w->objectName().isEmpty())
+                debug << ", name=" << w->objectName();
+            debug << ')';
+        } else {
+            debug << "QWidget(0)";
+        }
+    }
+    formatGraphicsItemHelper(debug, item);
+    debug << ')';
     return debug;
 }
 
+// FIXME: Qt 6: Make this QDebug operator<<(QDebug debug, const QGraphicsObject *item)
 QDebug operator<<(QDebug debug, QGraphicsObject *item)
 {
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+
     if (!item) {
         debug << "QGraphicsObject(0)";
         return debug;
     }
 
-    debug.nospace() << item->metaObject()->className() << '(' << (void*)item;
+    debug << item->metaObject()->className() << '(' << static_cast<const void *>(item);
     if (!item->objectName().isEmpty())
-        debug << ", name = " << item->objectName();
-    debug.nospace() << ", parent = " << ((void*)item->parentItem())
-          << ", pos = " << item->pos()
-          << ", z = " << item->zValue() << ", flags = "
-          << item->flags() << ')';
-    return debug.space();
+        debug << ", name=" << item->objectName();
+    formatGraphicsItemHelper(debug, item);
+    debug << ')';
+    return debug;
 }
 
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)

@@ -437,6 +437,9 @@ void QIOSInputContext::scrollToCursor()
     if (!rootView)
         return;
 
+    if (!focusView())
+        return;
+
     if (rootView.window != focusView().window)
         return;
 

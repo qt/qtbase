@@ -8507,12 +8507,6 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
 
 QDataStream &operator>>(QDataStream &in, QString &str)
 {
-#ifdef QT_QSTRING_UCS_4
-#if defined(Q_CC_GNU)
-#warning "operator>> not working properly"
-#endif
-#endif
-
     if (in.version() == 1) {
         QByteArray l;
         in >> l;

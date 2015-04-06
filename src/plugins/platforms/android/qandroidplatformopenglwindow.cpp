@@ -156,7 +156,7 @@ bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
 {
     QAndroidPlatformWindow::applicationStateChanged(state);
-    if (state <=  Qt::ApplicationHidden && QtAndroid::blockEventLoopsWhenSuspended()) {
+    if (state <=  Qt::ApplicationHidden) {
         lockSurface();
         if (m_nativeSurfaceId != -1) {
             QtAndroid::destroySurface(m_nativeSurfaceId);

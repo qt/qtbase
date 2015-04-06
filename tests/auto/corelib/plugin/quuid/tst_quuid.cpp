@@ -260,19 +260,33 @@ void tst_QUuid::generate()
 
 void tst_QUuid::less()
 {
-    QVERIFY( !(uuidA < uuidB) );
+    QVERIFY(  uuidB <  uuidA);
+    QVERIFY(  uuidB <= uuidA);
+    QVERIFY(!(uuidA <  uuidB) );
+    QVERIFY(!(uuidA <= uuidB));
 
     QUuid null_uuid;
     QVERIFY(null_uuid < uuidA); // Null uuid is always less than a valid one
+    QVERIFY(null_uuid <= uuidA);
+
+    QVERIFY(null_uuid <= null_uuid);
+    QVERIFY(uuidA <= uuidA);
 }
 
 
 void tst_QUuid::more()
 {
-    QVERIFY( uuidA > uuidB );
+    QVERIFY(  uuidA >  uuidB);
+    QVERIFY(  uuidA >= uuidB);
+    QVERIFY(!(uuidB >  uuidA));
+    QVERIFY(!(uuidB >= uuidA));
 
     QUuid null_uuid;
-    QVERIFY( !(null_uuid > uuidA) ); // Null uuid is always less than a valid one
+    QVERIFY(!(null_uuid >  uuidA)); // Null uuid is always less than a valid one
+    QVERIFY(!(null_uuid >= uuidA));
+
+    QVERIFY(null_uuid >= null_uuid);
+    QVERIFY(uuidA >= uuidA);
 }
 
 

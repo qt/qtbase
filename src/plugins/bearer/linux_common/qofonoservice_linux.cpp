@@ -67,23 +67,23 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, ObjectPathPropert
 QT_BEGIN_NAMESPACE
 
 QOfonoManagerInterface::QOfonoManagerInterface( QObject *parent)
-        : QDBusAbstractInterface(QStringLiteral(OFONO_SERVICE),
-                                 QStringLiteral(OFONO_MANAGER_PATH),
+        : QDBusAbstractInterface(QLatin1String(OFONO_SERVICE),
+                                 QLatin1String(OFONO_MANAGER_PATH),
                                  OFONO_MANAGER_INTERFACE,
                                  QDBusConnection::systemBus(), parent)
 {
     qDBusRegisterMetaType<ObjectPathProperties>();
     qDBusRegisterMetaType<PathPropertiesList>();
 
-    QDBusConnection::systemBus().connect(QStringLiteral(OFONO_SERVICE),
-                           QStringLiteral(OFONO_MANAGER_PATH),
-                           QStringLiteral(OFONO_MANAGER_INTERFACE),
-                           QStringLiteral("ModemAdded"),
+    QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+                           QLatin1String(OFONO_MANAGER_PATH),
+                           QLatin1String(OFONO_MANAGER_INTERFACE),
+                           QLatin1String("ModemAdded"),
                            this,SLOT(modemAdded(QDBusObjectPath, QVariantMap)));
-    QDBusConnection::systemBus().connect(QStringLiteral(OFONO_SERVICE),
-                           QStringLiteral(OFONO_MANAGER_PATH),
-                           QStringLiteral(OFONO_MANAGER_INTERFACE),
-                           QStringLiteral("ModemRemoved"),
+    QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
+                           QLatin1String(OFONO_MANAGER_PATH),
+                           QLatin1String(OFONO_MANAGER_INTERFACE),
+                           QLatin1String("ModemRemoved"),
                            this,SLOT(modemRemoved(QDBusObjectPath)));
 }
 
@@ -137,15 +137,15 @@ void QOfonoManagerInterface::modemRemoved(const QDBusObjectPath &path)
 
 
 QOfonoModemInterface::QOfonoModemInterface(const QString &dbusPathName, QObject *parent)
-    : QDBusAbstractInterface(QStringLiteral(OFONO_SERVICE),
+    : QDBusAbstractInterface(QLatin1String(OFONO_SERVICE),
                              dbusPathName,
                              OFONO_MODEM_INTERFACE,
                              QDBusConnection::systemBus(), parent)
 {
-    QDBusConnection::systemBus().connect(QStringLiteral(OFONO_SERVICE),
+    QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
                                          path(),
                                          OFONO_MODEM_INTERFACE,
-                                         QStringLiteral("PropertyChanged"),
+                                         QLatin1String("PropertyChanged"),
                                          this,SLOT(propertyChanged(QString,QDBusVariant)));
 }
 
@@ -199,7 +199,7 @@ QVariant QOfonoModemInterface::getProperty(const QString &property)
 
 
 QOfonoNetworkRegistrationInterface::QOfonoNetworkRegistrationInterface(const QString &dbusPathName, QObject *parent)
-    : QDBusAbstractInterface(QStringLiteral(OFONO_SERVICE),
+    : QDBusAbstractInterface(QLatin1String(OFONO_SERVICE),
                              dbusPathName,
                              OFONO_NETWORK_REGISTRATION_INTERFACE,
                              QDBusConnection::systemBus(), parent)

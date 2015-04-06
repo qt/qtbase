@@ -18,12 +18,18 @@ defineReplace(qtLibraryTarget) {
    mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
-   } else {
-       # insert the major version of Qt in the library name
-       # unless it's a framework build
-       LIBRARY_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
    }
    return($$LIBRARY_NAME$$qtPlatformTargetSuffix())
+}
+
+defineReplace(qt5LibraryTarget) {
+   LIBRARY_NAME = $$qtLibraryTarget($$1)
+   isEmpty(QMAKE_FRAMEWORK_BUNDLE_NAME) {
+       # Insert the major version of Qt in the library name
+       # unless it's a framework build.
+       LIBRARY_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
+   }
+   return($$LIBRARY_NAME)
 }
 
 defineTest(qtAddLibrary) {
@@ -100,7 +106,7 @@ defineTest(qtAddModule) {
     # to give access to sources or include files, and not for linking.
     !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link) {
 
-        # Re-insert the major version in the library name (cf qtLibraryTarget above)
+        # Re-insert the major version in the library name (cf qt5LibraryTarget above)
         # unless it's a framework build
         !mac|!contains(MODULE_CONFIG, lib_bundle): \
             MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,

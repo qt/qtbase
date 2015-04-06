@@ -374,6 +374,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         // calles, which Qt and Qt applications do not excpect.
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
+        else
+            m_backingStore = QImage();
     }
 }
 
@@ -962,6 +964,7 @@ QT_WARNING_POP
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super rightMouseDown:theEvent];
     m_buttons |= Qt::RightButton;
+    m_sendUpAsRightButton = true;
     [self handleMouseEvent:theEvent];
 }
 
@@ -979,6 +982,7 @@ QT_WARNING_POP
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super rightMouseUp:theEvent];
     m_buttons &= ~Qt::RightButton;
+    m_sendUpAsRightButton = false;
     [self handleMouseEvent:theEvent];
 }
 

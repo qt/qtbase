@@ -721,7 +721,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     Returns \c true if this is the null UUID
     {00000000-0000-0000-0000-000000000000}; otherwise returns \c false.
 */
-bool QUuid::isNull() const
+bool QUuid::isNull() const Q_DECL_NOTHROW
 {
     return data4[0] == 0 && data4[1] == 0 && data4[2] == 0 && data4[3] == 0 &&
            data4[4] == 0 && data4[5] == 0 && data4[6] == 0 && data4[7] == 0 &&
@@ -770,7 +770,7 @@ bool QUuid::isNull() const
 
     \sa version()
 */
-QUuid::Variant QUuid::variant() const
+QUuid::Variant QUuid::variant() const Q_DECL_NOTHROW
 {
     if (isNull())
         return VarUnknown;
@@ -791,7 +791,7 @@ QUuid::Variant QUuid::variant() const
 
     \sa variant()
 */
-QUuid::Version QUuid::version() const
+QUuid::Version QUuid::version() const Q_DECL_NOTHROW
 {
     // Check the 4 MSB of data3
     Version ver = (Version)(data3>>12);
@@ -814,18 +814,19 @@ QUuid::Version QUuid::version() const
 
     \sa variant()
 */
-#define ISLESS(f1, f2) if (f1!=f2) return (f1<f2);
-bool QUuid::operator<(const QUuid &other) const
+bool QUuid::operator<(const QUuid &other) const Q_DECL_NOTHROW
 {
     if (variant() != other.variant())
         return variant() < other.variant();
 
+#define ISLESS(f1, f2) if (f1!=f2) return (f1<f2);
     ISLESS(data1, other.data1);
     ISLESS(data2, other.data2);
     ISLESS(data3, other.data3);
     for (int n = 0; n < 8; n++) {
         ISLESS(data4[n], other.data4[n]);
     }
+#undef ISLESS
     return false;
 }
 
@@ -840,20 +841,38 @@ bool QUuid::operator<(const QUuid &other) const
 
     \sa variant()
 */
-#define ISMORE(f1, f2) if (f1!=f2) return (f1>f2);
-bool QUuid::operator>(const QUuid &other) const
+bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 {
-    if (variant() != other.variant())
-        return variant() > other.variant();
-
-    ISMORE(data1, other.data1);
-    ISMORE(data2, other.data2);
-    ISMORE(data3, other.data3);
-    for (int n = 0; n < 8; n++) {
-        ISMORE(data4[n], other.data4[n]);
-    }
-    return false;
+    return other < *this;
 }
+
+/*!
+    \fn bool operator<=(const QUuid &lhs, const QUuid &rhs)
+    \relates QUuid
+    \since 5.5
+
+    Returns \c true if \a lhs has the same \l{Variant field}
+    {variant field} as \a rhs and is lexicographically
+    \e{not after} \a rhs. If \a rhs has a
+    different variant field, the return value is determined by
+    comparing the two \l{QUuid::Variant} {variants}.
+
+    \sa variant()
+*/
+
+/*!
+    \fn bool operator>=(const QUuid &lhs, const QUuid &rhs)
+    \relates QUuid
+    \since 5.5
+
+    Returns \c true if \a lhs has the same \l{Variant field}
+    {variant field} as \a rhs and is lexicographically
+    \e{not before} \a rhs. If \a rhs has a
+    different variant field, the return value is determined by
+    comparing the two \l{QUuid::Variant} {variants}.
+
+    \sa variant()
+*/
 
 /*!
     \fn QUuid QUuid::createUuid()

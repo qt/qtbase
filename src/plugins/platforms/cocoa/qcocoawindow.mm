@@ -74,31 +74,6 @@ static bool isMouseEvent(NSEvent *ev)
     }
 }
 
-static void selectNextKeyWindow(NSWindow *currentKeyWindow)
-{
-    if (!currentKeyWindow)
-        return;
-
-    const QCocoaAutoReleasePool pool;
-
-    if ([[NSApplication sharedApplication] keyWindow] != currentKeyWindow)
-        return;//currentKeyWindow is not a key window actually.
-
-    NSArray *const windows = [[NSApplication sharedApplication] windows];
-    bool startLookup = false;
-    for (NSWindow *candidate in [windows reverseObjectEnumerator]) {
-        if (!startLookup) {
-            if (candidate == currentKeyWindow)
-                startLookup = true;
-        } else {
-            if ([candidate isVisible] && [candidate canBecomeKeyWindow]) {
-                [candidate makeKeyWindow];
-                break;
-            }
-        }
-    }
-}
-
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
@@ -608,9 +583,6 @@ void QCocoaWindow::hide(bool becauseOfAncestor)
     foreach (QCocoaWindow *childWindow, m_childWindows)
         childWindow->hide(true);
 
-    if (window()->transientParent() && m_nsWindow == [[NSApplication sharedApplication] keyWindow])
-        selectNextKeyWindow(m_nsWindow); // Otherwise, Cocoa can do it wrong.
-
     [m_nsWindow orderOut:nil];
 }
 
@@ -816,7 +788,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     NSInteger styleMask = NSBorderlessWindowMask;
     if (flags & Qt::FramelessWindowHint)
-        return styleMask | NSResizableWindowMask;
+        return styleMask;
     if ((type & Qt::Popup) == Qt::Popup) {
         if (!windowIsPopupType(type))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
@@ -1521,10 +1493,20 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     }
 
     Qt::WindowState predictedState = newState;
+    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
+        const int styleMask = [m_nsWindow styleMask];
+        const bool usePerform = styleMask & NSResizableWindowMask;
+        [m_nsWindow setStyleMask:styleMask | NSResizableWindowMask];
+        if (usePerform)
+            [m_nsWindow performZoom : m_nsWindow]; // toggles
+        else
+            [m_nsWindow zoom : m_nsWindow]; // toggles
+        [m_nsWindow setStyleMask:styleMask];
+    }
 
     if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
         if (newState & Qt::WindowMinimized) {
-            if (m_nsWindow.styleMask & NSMiniaturizableWindowMask)
+            if ([m_nsWindow styleMask] & NSMiniaturizableWindowMask)
                 [m_nsWindow performMiniaturize : m_nsWindow];
             else
                 [m_nsWindow miniaturize : m_nsWindow];

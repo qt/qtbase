@@ -1713,6 +1713,7 @@ bool operator==(const QAccessible::State &first, const QAccessible::State &secon
 /*! \internal */
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
 {
+    QDebugStateSaver saver(d);
     if (!iface) {
         d << "QAccessibleInterface(null)";
         return d;
@@ -1720,10 +1721,10 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     d.nospace();
     d << "QAccessibleInterface(" << hex << (const void *) iface << dec;
     if (iface->isValid()) {
-        d << " name=" << iface->text(QAccessible::Name) << " ";
-        d << "role=" << qAccessibleRoleString(iface->role()) << " ";
+        d << " name=" << iface->text(QAccessible::Name) << ' ';
+        d << "role=" << qAccessibleRoleString(iface->role()) << ' ';
         if (iface->childCount())
-            d << "childc=" << iface->childCount() << " ";
+            d << "childc=" << iface->childCount() << ' ';
         if (iface->object()) {
             d << "obj=" << iface->object();
         }
@@ -1747,13 +1748,14 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     } else {
         d << " invalid";
     }
-    d << ")";
-    return d.space();
+    d << ')';
+    return d;
 }
 
 /*! \internal */
 QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 {
+    QDebugStateSaver saver(d);
     d.nospace() << "QAccessibleEvent(";
     if (ev.object()) {
         d.nospace() << "object=" << hex << ev.object() << dec;
@@ -1806,8 +1808,8 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
         if (changed.supportsAutoCompletion) d << "supportsAutoCompletion";
 
     }
-    d.nospace() << ")";
-    return d.space();
+    d << ')';
+    return d;
 }
 #endif // QT_NO_DEBUGSTREAM
 

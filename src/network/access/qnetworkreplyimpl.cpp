@@ -404,19 +404,11 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     } else {
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
-#ifndef QT_NO_HTTP
-        if (backend && backend->isSynchronous()) {
-            _q_startOperation();
-        } else {
-            QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-        }
-#else
         if (backend && backend->isSynchronous())
             _q_startOperation();
         else
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-#endif // QT_NO_HTTP
-        }
+    }
 }
 
 void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)
@@ -1115,11 +1107,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         backend->setResumeOffset(bytesDownloaded);
     }
 
-#ifndef QT_NO_HTTP
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-#else
-    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-#endif // QT_NO_HTTP
 
     return true;
 }
