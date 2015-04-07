@@ -4248,11 +4248,15 @@ int QImage::bitPlaneCount() const
 
 static QImage smoothScaled(const QImage &source, int w, int h) {
     QImage src = source;
-    bool canSkipConversion = (src.format() == QImage::Format_RGB32 || src.format() == QImage::Format_ARGB32_Premultiplied);
+    switch (src.format()) {
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32_Premultiplied:
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    canSkipConversion = canSkipConversion || (src.format() == QImage::Format_RGBX8888 || src.format() == QImage::Format_RGBA8888_Premultiplied);
+    case QImage::Format_RGBX8888:
 #endif
-    if (!canSkipConversion) {
+    case QImage::Format_RGBA8888_Premultiplied:
+        break;
+    default:
         if (src.hasAlphaChannel())
             src = src.convertToFormat(QImage::Format_ARGB32_Premultiplied);
         else

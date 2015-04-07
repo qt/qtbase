@@ -605,6 +605,42 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
 }
 #endif
 
+#ifdef __SSE2__
+static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
+{
+    // First interpolate right and left pixels in parallel.
+    __m128i vl = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tl), _mm_cvtsi32_si128(bl));
+    __m128i vr = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tr), _mm_cvtsi32_si128(br));
+    vl = _mm_unpacklo_epi8(vl, _mm_setzero_si128());
+    vr = _mm_unpacklo_epi8(vr, _mm_setzero_si128());
+    vl = _mm_mullo_epi16(vl, _mm_set1_epi16(256 - distx));
+    vr = _mm_mullo_epi16(vr, _mm_set1_epi16(distx));
+    __m128i vtb = _mm_add_epi16(vl, vr);
+    vtb = _mm_srli_epi16(vtb, 8);
+    // vtb now contains the result of the first two interpolate calls vtb = unpacked((xbot << 64) | xtop)
+
+    // Now the last interpolate between top and bottom interpolations.
+    const __m128i vidisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(256 - disty), _MM_SHUFFLE(0, 0, 0, 0));
+    const __m128i vdisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(disty), _MM_SHUFFLE(0, 0, 0, 0));
+    const __m128i vmuly = _mm_unpacklo_epi16(vidisty, vdisty);
+    vtb = _mm_unpacklo_epi16(vtb, _mm_srli_si128(vtb, 8));
+    // vtb now contains the colors of top and bottom interleaved { ta, ba, tr, br, tg, bg, tb, bb }
+    vtb = _mm_madd_epi16(vtb, vmuly); // Multiply and horizontal add.
+    vtb = _mm_srli_epi32(vtb, 8);
+    vtb = _mm_packs_epi32(vtb, _mm_setzero_si128());
+    vtb = _mm_packus_epi16(vtb, _mm_setzero_si128());
+    return _mm_cvtsi128_si32(vtb);
+}
+#else
+static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
+{
+    uint idistx = 256 - distx;
+    uint idisty = 256 - disty;
+    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
+    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
+    return INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
+}
+#endif
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
