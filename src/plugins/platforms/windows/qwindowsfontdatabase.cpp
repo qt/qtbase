@@ -303,8 +303,7 @@ namespace {
             , m_referenceCount(0)
         {
         }
-
-        ~DirectWriteFontFileStream()
+        virtual ~DirectWriteFontFileStream()
         {
         }
 
@@ -355,7 +354,7 @@ namespace {
         OUT void **fragmentContext)
     {
         *fragmentContext = NULL;
-        if (fragmentSize + fileOffset <= m_fontData.size()) {
+        if (fileOffset + fragmentSize <= quint64(m_fontData.size())) {
             *fragmentStart = m_fontData.data() + fileOffset;
             return S_OK;
         } else {
@@ -384,8 +383,7 @@ namespace {
     {
     public:
         DirectWriteFontFileLoader() : m_referenceCount(0) {}
-
-        ~DirectWriteFontFileLoader()
+        virtual ~DirectWriteFontFileLoader()
         {
         }
 
