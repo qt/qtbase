@@ -49,10 +49,6 @@
 #include <QtGui/qguiapplication.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qwindow.h>
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qgraphicsitem.h>
-#include <QtWidgets/qgraphicsview.h>
-#include <QtWidgets/qmessagebox.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId

@@ -38,7 +38,7 @@
 #include <QtPlatformSupport/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qclipboard.h>
-#include <QtWidgets/qapplication.h>
+#include <QtGui/qguiapplication.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
