@@ -1437,11 +1437,9 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     Q_UNUSED(data);
     int mode = 0;
 
-    if (permissions & QFile::ReadOwner || permissions & QFile::ReadUser
-        || permissions & QFile::ReadGroup || permissions & QFile::ReadOther)
+    if (permissions & (QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther))
         mode |= _S_IREAD;
-    if (permissions & QFile::WriteOwner || permissions & QFile::WriteUser
-        || permissions & QFile::WriteGroup || permissions & QFile::WriteOther)
+    if (permissions & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup | QFile::WriteOther))
         mode |= _S_IWRITE;
 
     if (mode == 0) // not supported

@@ -162,17 +162,11 @@ static void writeMSDosDate(uchar *dest, const QDateTime& dt)
 static quint32 permissionsToMode(QFile::Permissions perms)
 {
     quint32 mode = 0;
-    if (perms & QFile::ReadOwner)
+    if (perms & (QFile::ReadOwner | QFile::ReadUser))
         mode |= S_IRUSR;
-    if (perms & QFile::WriteOwner)
+    if (perms & (QFile::WriteOwner | QFile::WriteUser))
         mode |= S_IWUSR;
-    if (perms & QFile::ExeOwner)
-        mode |= S_IXUSR;
-    if (perms & QFile::ReadUser)
-        mode |= S_IRUSR;
-    if (perms & QFile::WriteUser)
-        mode |= S_IWUSR;
-    if (perms & QFile::ExeUser)
+    if (perms & (QFile::ExeOwner | QFile::ExeUser))
         mode |= S_IXUSR;
     if (perms & QFile::ReadGroup)
         mode |= S_IRGRP;
@@ -257,17 +251,11 @@ static QFile::Permissions modeToPermissions(quint32 mode)
 {
     QFile::Permissions ret;
     if (mode & S_IRUSR)
-        ret |= QFile::ReadOwner;
+        ret |= QFile::ReadOwner | QFile::ReadUser;
     if (mode & S_IWUSR)
-        ret |= QFile::WriteOwner;
+        ret |= QFile::WriteOwner | QFile::WriteUser;
     if (mode & S_IXUSR)
-        ret |= QFile::ExeOwner;
-    if (mode & S_IRUSR)
-        ret |= QFile::ReadUser;
-    if (mode & S_IWUSR)
-        ret |= QFile::WriteUser;
-    if (mode & S_IXUSR)
-        ret |= QFile::ExeUser;
+        ret |= QFile::ExeOwner | QFile::ExeUser;
     if (mode & S_IRGRP)
         ret |= QFile::ReadGroup;
     if (mode & S_IWGRP)
