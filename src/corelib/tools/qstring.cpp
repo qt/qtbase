@@ -1291,7 +1291,7 @@ const QString::Null QString::null = { };
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    character after the last character in the list.
 
     \sa cbegin(), end()
 */
@@ -1299,7 +1299,7 @@ const QString::Null QString::null = { };
 /*! \fn QString::const_iterator QString::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    character after the last character in the list.
 
     \sa constBegin(), end()
 */
