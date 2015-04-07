@@ -36,7 +36,7 @@ function load_sdk(s, id, src) {
     fjs.parentNode.insertBefore(js, fjs);
 }
 $(document).ready(function($) {
-    if (document.documentElement.clientWidth < 1220) {
+    if (document.documentElement.clientWidth < 1280) {
         oneQt.extraLinksToMain();
     }
 
@@ -76,7 +76,7 @@ $(document).ready(function($) {
     $(window).resize(function() {
         oneQt.stickySidebar();
         oneQt.footerPosition();
-        if (document.documentElement.clientWidth < 1220) {
+        if (document.documentElement.clientWidth < 1280) {
             oneQt.extraLinksToMain();
         } else {
             oneQt.mainLinkstoExtra();
@@ -216,7 +216,7 @@ var oneQt = {
         var extramenuLinks = $('#menuextras').find('li');
         var mainmenu = $('#mainmenu');
         var count = 0;
-        if ($(extramenuLinks).length > 3) {
+        if ($(extramenuLinks).length > 2) {
             $(extramenuLinks).each(function() {
                 if (count < 3) {
                     var newLink = $(this);
