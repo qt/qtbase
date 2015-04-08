@@ -44,11 +44,6 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::ViewManagement;
 using namespace ABI::Windows::UI::Core;
 
-#if defined(Q_OS_WINPHONE) && _MSC_VER==1700
-#include <windows.phone.ui.core.h>
-using namespace ABI::Windows::Phone::UI::Core;
-#endif
-
 typedef ITypedEventHandler<InputPane*, InputPaneVisibilityEventArgs*> InputPaneVisibilityHandler;
 
 QT_BEGIN_NAMESPACE
@@ -140,7 +135,6 @@ void QWinRTInputContext::setKeyboardRect(const QRectF rect)
 
 #ifdef Q_OS_WINPHONE
 
-#if _MSC_VER>1700 // Windows Phone 8.1+
 static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 {
     ComPtr<IInputPaneStatics> factory;
@@ -165,17 +159,9 @@ static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
     }
     return hr;
 }
-#endif // _MSC_VER>1700
 
 void QWinRTInputContext::showInputPanel()
 {
-#if _MSC_VER<=1700 // Windows Phone 8.0
-    ICoreWindowKeyboardInput *input;
-    if (SUCCEEDED(m_window->QueryInterface(IID_PPV_ARGS(&input)))) {
-        input->put_IsKeyboardInputEnabled(true);
-        input->Release();
-    }
-#else // _MSC_VER<=1700
     ComPtr<IInputPane2> inputPane;
     HRESULT hr = getInputPane(&inputPane);
     if (FAILED(hr))
@@ -185,18 +171,10 @@ void QWinRTInputContext::showInputPanel()
     hr = inputPane->TryShow(&success);
     if (FAILED(hr))
         qErrnoWarning(hr, "Failed to show input panel.");
-#endif // _MSC_VER>1700
 }
 
 void QWinRTInputContext::hideInputPanel()
 {
-#if _MSC_VER<=1700 // Windows Phone 8.0
-    ICoreWindowKeyboardInput *input;
-    if (SUCCEEDED(m_window->QueryInterface(IID_PPV_ARGS(&input)))) {
-        input->put_IsKeyboardInputEnabled(false);
-        input->Release();
-    }
-#else // _MSC_VER<=1700
     ComPtr<IInputPane2> inputPane;
     HRESULT hr = getInputPane(&inputPane);
     if (FAILED(hr))
@@ -206,7 +184,6 @@ void QWinRTInputContext::hideInputPanel()
     hr = inputPane->TryHide(&success);
     if (FAILED(hr))
         qErrnoWarning(hr, "Failed to hide input panel.");
-#endif // _MSC_VER>1700
 }
 
 #else // Q_OS_WINPHONE
