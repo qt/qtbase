@@ -9,8 +9,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "compiler/translator/glslang.h"
 #include "compiler/preprocessor/SourceLocation.h"
+#include "compiler/translator/glslang.h"
+#include "compiler/translator/ValidateSwitch.h"
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -796,9 +797,24 @@ bool TParseContext::arrayErrorCheck(const TSourceLoc& line, const TString& ident
     bool sameScope = false;
     TSymbol* symbol = symbolTable.find(identifier, 0, &builtIn, &sameScope);
     if (symbol == 0 || !sameScope) {
-        if (reservedErrorCheck(line, identifier))
-            return true;
-        
+        bool needsReservedErrorCheck = true;
+
+        // gl_LastFragData may be redeclared with a new precision qualifier
+        if (identifier.compare(0, 15, "gl_LastFragData") == 0) {
+            if (type.arraySize == static_cast<const TVariable*>(symbolTable.findBuiltIn("gl_MaxDrawBuffers", shaderVersion))->getConstPointer()->getIConst()) {
+                if (TSymbol* builtInSymbol = symbolTable.findBuiltIn(identifier, shaderVersion)) {
+                    needsReservedErrorCheck = extensionErrorCheck(line, builtInSymbol->getExtension());
+                }
+            } else {
+                error(line, "redeclaration of array with size != gl_MaxDrawBuffers", identifier.c_str());
+                return true;
+            }
+        }
+
+        if (needsReservedErrorCheck)
+            if (reservedErrorCheck(line, identifier))
+                return true;
+
         variable = new TVariable(&identifier, TType(type));
 
         if (type.arraySize)
@@ -976,6 +992,26 @@ bool TParseContext::layoutLocationErrorCheck(const TSourceLoc& location, const T
     return false;
 }
 
+bool TParseContext::functionCallLValueErrorCheck(const TFunction *fnCandidate, TIntermAggregate *aggregate)
+{
+    for (size_t i = 0; i < fnCandidate->getParamCount(); ++i)
+    {
+        TQualifier qual = fnCandidate->getParam(i).type->getQualifier();
+        if (qual == EvqOut || qual == EvqInOut)
+        {
+            TIntermTyped *node = (*(aggregate->getSequence()))[i]->getAsTyped();
+            if (lValueErrorCheck(node->getLine(), "assign", node))
+            {
+                error(node->getLine(),
+                    "Constant value cannot be passed for 'out' or 'inout' parameters.", "Error");
+                recover();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool TParseContext::supportsExtension(const char* extension)
 {
     const TExtensionBehavior& extbehavior = extensionBehavior();
@@ -1062,14 +1098,14 @@ const TVariable *TParseContext::getNamedVariable(const TSourceLoc &location,
 //
 // Return the function symbol if found, otherwise 0.
 //
-const TFunction* TParseContext::findFunction(const TSourceLoc& line, TFunction* call, int shaderVersion, bool *builtIn)
+const TFunction* TParseContext::findFunction(const TSourceLoc& line, TFunction* call, int inputShaderVersion, bool *builtIn)
 {
     // First find by unmangled name to check whether the function name has been
     // hidden by a variable name or struct typename.
     // If a function is found, check for one with a matching argument list.
-    const TSymbol* symbol = symbolTable.find(call->getName(), shaderVersion, builtIn);
+    const TSymbol* symbol = symbolTable.find(call->getName(), inputShaderVersion, builtIn);
     if (symbol == 0 || symbol->isFunction()) {
-        symbol = symbolTable.find(call->getMangledName(), shaderVersion, builtIn);
+        symbol = symbolTable.find(call->getMangledName(), inputShaderVersion, builtIn);
     }
 
     if (symbol == 0) {
@@ -1162,7 +1198,7 @@ bool TParseContext::executeInitializer(const TSourceLoc& line, const TString& id
  
     if (qualifier != EvqConst) {
         TIntermSymbol* intermSymbol = intermediate.addSymbol(variable->getUniqueId(), variable->getName(), variable->getType(), line);
-        intermNode = intermediate.addAssign(EOpInitialize, intermSymbol, initializer, line);
+        intermNode = createAssign(EOpInitialize, intermSymbol, initializer, line);
         if (intermNode == 0) {
             assignError(line, "=", intermSymbol->getCompleteString(), initializer->getCompleteString());
             return true;
@@ -1375,7 +1411,7 @@ TIntermAggregate* TParseContext::parseInvariantDeclaration(const TSourceLoc &inv
             recover();
             return NULL;
         }
-        symbolTable.addInvariantVarying(*identifier);
+        symbolTable.addInvariantVarying(std::string(identifier->c_str()));
         const TVariable *variable = getNamedVariable(identifierLoc, identifier, symbol);
         ASSERT(variable);
         const TType &type = variable->getType();
@@ -1605,7 +1641,7 @@ TFunction *TParseContext::addConstructorFunc(TPublicType publicType)
 //
 // Returns 0 for an error or the constructed node (aggregate or typed) for no error.
 //
-TIntermTyped *TParseContext::addConstructor(TIntermNode *arguments, const TType *type, TOperator op, TFunction *fnCall, const TSourceLoc &line)
+TIntermTyped *TParseContext::addConstructor(TIntermNode *arguments, TType *type, TOperator op, TFunction *fnCall, const TSourceLoc &line)
 {
     TIntermAggregate *aggregateArguments = arguments->getAsAggregate();
 
@@ -1633,11 +1669,19 @@ TIntermTyped *TParseContext::addConstructor(TIntermNode *arguments, const TType 
     }
 
     // Turn the argument list itself into a constructor
-    TIntermTyped *constructor = intermediate.setAggregateOperator(aggregateArguments, op, line);
-    TIntermTyped *constConstructor = foldConstConstructor(constructor->getAsAggregate(), *type);
+    TIntermAggregate *constructor = intermediate.setAggregateOperator(aggregateArguments, op, line);
+    TIntermTyped *constConstructor = foldConstConstructor(constructor, *type);
     if (constConstructor)
     {
         return constConstructor;
+    }
+
+    // Structs should not be precision qualified, the individual members may be.
+    // Built-in types on the other hand should be precision qualified.
+    if (op != EOpConstructStruct)
+    {
+        constructor->setPrecisionFromChildren();
+        type->setPrecision(constructor->getPrecision());
     }
 
     return constructor;
@@ -2028,9 +2072,11 @@ TIntermTyped* TParseContext::addIndexExpression(TIntermTyped *baseExpression, co
         recover();
     }
 
-    if (indexExpression->getQualifier() == EvqConst)
+    TIntermConstantUnion *indexConstantUnion = indexExpression->getAsConstantUnion();
+
+    if (indexExpression->getQualifier() == EvqConst && indexConstantUnion)
     {
-        int index = indexExpression->getAsConstantUnion()->getIConst(0);
+        int index = indexConstantUnion->getIConst(0);
         if (index < 0)
         {
             std::stringstream infoStream;
@@ -2091,7 +2137,7 @@ TIntermTyped* TParseContext::addIndexExpression(TIntermTyped *baseExpression, co
                 index = baseExpression->getType().getNominalSize() - 1;
             }
 
-            indexExpression->getAsConstantUnion()->getUnionArrayPointer()->setIConst(index);
+            indexConstantUnion->getUnionArrayPointer()->setIConst(index);
             indexedExpression = intermediate.addIndex(EOpIndexDirect, baseExpression, indexExpression, location);
         }
     }
@@ -2520,7 +2566,10 @@ TPublicType TParseContext::addStructure(const TSourceLoc& structLine, const TSou
     TStructure* structure = new TStructure(structName, fieldList);
     TType* structureType = new TType(structure);
 
+    // Store a bool in the struct if we're at global scope, to allow us to
+    // skip the local struct scoping workaround in HLSL.
     structure->setUniqueId(TSymbolTable::nextUniqueId());
+    structure->setAtGlobalScope(symbolTable.atGlobalLevel());
 
     if (!structName->empty())
     {
@@ -2559,6 +2608,553 @@ TPublicType TParseContext::addStructure(const TSourceLoc& structLine, const TSou
 
     return publicType;
 }
+
+TIntermSwitch *TParseContext::addSwitch(TIntermTyped *init, TIntermAggregate *statementList, const TSourceLoc &loc)
+{
+    TBasicType switchType = init->getBasicType();
+    if ((switchType != EbtInt && switchType != EbtUInt) ||
+        init->isMatrix() ||
+        init->isArray() ||
+        init->isVector())
+    {
+        error(init->getLine(), "init-expression in a switch statement must be a scalar integer", "switch");
+        recover();
+        return nullptr;
+    }
+
+    if (statementList)
+    {
+        if (!ValidateSwitch::validate(switchType, this, statementList, loc))
+        {
+            recover();
+            return nullptr;
+        }
+    }
+
+    TIntermSwitch *node = intermediate.addSwitch(init, statementList, loc);
+    if (node == nullptr)
+    {
+        error(loc, "erroneous switch statement", "switch");
+        recover();
+        return nullptr;
+    }
+    return node;
+}
+
+TIntermCase *TParseContext::addCase(TIntermTyped *condition, const TSourceLoc &loc)
+{
+    if (mSwitchNestingLevel == 0)
+    {
+        error(loc, "case labels need to be inside switch statements", "case");
+        recover();
+        return nullptr;
+    }
+    if (condition == nullptr)
+    {
+        error(loc, "case label must have a condition", "case");
+        recover();
+        return nullptr;
+    }
+    if ((condition->getBasicType() != EbtInt && condition->getBasicType() != EbtUInt) ||
+        condition->isMatrix() ||
+        condition->isArray() ||
+        condition->isVector())
+    {
+        error(condition->getLine(), "case label must be a scalar integer", "case");
+        recover();
+    }
+    TIntermConstantUnion *conditionConst = condition->getAsConstantUnion();
+    if (conditionConst == nullptr)
+    {
+        error(condition->getLine(), "case label must be constant", "case");
+        recover();
+    }
+    TIntermCase *node = intermediate.addCase(condition, loc);
+    if (node == nullptr)
+    {
+        error(loc, "erroneous case statement", "case");
+        recover();
+        return nullptr;
+    }
+    return node;
+}
+
+TIntermCase *TParseContext::addDefault(const TSourceLoc &loc)
+{
+    if (mSwitchNestingLevel == 0)
+    {
+        error(loc, "default labels need to be inside switch statements", "default");
+        recover();
+        return nullptr;
+    }
+    TIntermCase *node = intermediate.addCase(nullptr, loc);
+    if (node == nullptr)
+    {
+        error(loc, "erroneous default statement", "default");
+        recover();
+        return nullptr;
+    }
+    return node;
+}
+
+TIntermTyped *TParseContext::createUnaryMath(TOperator op, TIntermTyped *child, const TSourceLoc &loc,
+    const TType *funcReturnType)
+{
+    if (child == nullptr)
+    {
+        return nullptr;
+    }
+
+    switch (op)
+    {
+      case EOpLogicalNot:
+        if (child->getBasicType() != EbtBool ||
+            child->isMatrix() ||
+            child->isArray() ||
+            child->isVector())
+        {
+            return nullptr;
+        }
+        break;
+      case EOpBitwiseNot:
+        if ((child->getBasicType() != EbtInt && child->getBasicType() != EbtUInt) ||
+            child->isMatrix() ||
+            child->isArray())
+        {
+            return nullptr;
+        }
+        break;
+      case EOpPostIncrement:
+      case EOpPreIncrement:
+      case EOpPostDecrement:
+      case EOpPreDecrement:
+      case EOpNegative:
+      case EOpPositive:
+        if (child->getBasicType() == EbtStruct ||
+            child->getBasicType() == EbtBool ||
+            child->isArray())
+        {
+            return nullptr;
+        }
+      // Operators for built-ins are already type checked against their prototype.
+      default:
+        break;
+    }
+
+    return intermediate.addUnaryMath(op, child, loc, funcReturnType);
+}
+
+TIntermTyped *TParseContext::addUnaryMath(TOperator op, TIntermTyped *child, const TSourceLoc &loc)
+{
+    TIntermTyped *node = createUnaryMath(op, child, loc, nullptr);
+    if (node == nullptr)
+    {
+        unaryOpError(loc, GetOperatorString(op), child->getCompleteString());
+        recover();
+        return child;
+    }
+    return node;
+}
+
+TIntermTyped *TParseContext::addUnaryMathLValue(TOperator op, TIntermTyped *child, const TSourceLoc &loc)
+{
+    if (lValueErrorCheck(loc, GetOperatorString(op), child))
+        recover();
+    return addUnaryMath(op, child, loc);
+}
+
+bool TParseContext::binaryOpCommonCheck(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    if (left->isArray() || right->isArray())
+    {
+        if (shaderVersion < 300)
+        {
+            error(loc, "Invalid operation for arrays", GetOperatorString(op));
+            return false;
+        }
+
+        if (left->isArray() != right->isArray())
+        {
+            error(loc, "array / non-array mismatch", GetOperatorString(op));
+            return false;
+        }
+
+        switch (op)
+        {
+          case EOpEqual:
+          case EOpNotEqual:
+          case EOpAssign:
+          case EOpInitialize:
+            break;
+          default:
+            error(loc, "Invalid operation for arrays", GetOperatorString(op));
+            return false;
+        }
+        if (left->getArraySize() != right->getArraySize())
+        {
+            error(loc, "array size mismatch", GetOperatorString(op));
+            return false;
+        }
+    }
+
+    // Check ops which require integer / ivec parameters
+    bool isBitShift = false;
+    switch (op)
+    {
+      case EOpBitShiftLeft:
+      case EOpBitShiftRight:
+      case EOpBitShiftLeftAssign:
+      case EOpBitShiftRightAssign:
+        // Unsigned can be bit-shifted by signed and vice versa, but we need to
+        // check that the basic type is an integer type.
+        isBitShift = true;
+        if (!IsInteger(left->getBasicType()) || !IsInteger(right->getBasicType()))
+        {
+            return false;
+        }
+        break;
+      case EOpBitwiseAnd:
+      case EOpBitwiseXor:
+      case EOpBitwiseOr:
+      case EOpBitwiseAndAssign:
+      case EOpBitwiseXorAssign:
+      case EOpBitwiseOrAssign:
+        // It is enough to check the type of only one operand, since later it
+        // is checked that the operand types match.
+        if (!IsInteger(left->getBasicType()))
+        {
+            return false;
+        }
+        break;
+      default:
+        break;
+    }
+
+    // GLSL ES 1.00 and 3.00 do not support implicit type casting.
+    // So the basic type should usually match.
+    if (!isBitShift && left->getBasicType() != right->getBasicType())
+    {
+        return false;
+    }
+
+    // Check that type sizes match exactly on ops that require that.
+    // Also check restrictions for structs that contain arrays or samplers.
+    switch(op)
+    {
+      case EOpAssign:
+      case EOpInitialize:
+      case EOpEqual:
+      case EOpNotEqual:
+        // ESSL 1.00 sections 5.7, 5.8, 5.9
+        if (shaderVersion < 300 && left->getType().isStructureContainingArrays())
+        {
+            error(loc, "undefined operation for structs containing arrays", GetOperatorString(op));
+            return false;
+        }
+        // Samplers as l-values are disallowed also in ESSL 3.00, see section 4.1.7,
+        // we interpret the spec so that this extends to structs containing samplers,
+        // similarly to ESSL 1.00 spec.
+        if ((shaderVersion < 300 || op == EOpAssign || op == EOpInitialize) &&
+            left->getType().isStructureContainingSamplers())
+        {
+            error(loc, "undefined operation for structs containing samplers", GetOperatorString(op));
+            return false;
+        }
+      case EOpLessThan:
+      case EOpGreaterThan:
+      case EOpLessThanEqual:
+      case EOpGreaterThanEqual:
+        if ((left->getNominalSize() != right->getNominalSize()) ||
+            (left->getSecondarySize() != right->getSecondarySize()))
+        {
+            return false;
+        }
+      default:
+        break;
+    }
+
+    return true;
+}
+
+TIntermTyped *TParseContext::addBinaryMathInternal(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    if (!binaryOpCommonCheck(op, left, right, loc))
+        return nullptr;
+
+    switch (op)
+    {
+      case EOpEqual:
+      case EOpNotEqual:
+        break;
+      case EOpLessThan:
+      case EOpGreaterThan:
+      case EOpLessThanEqual:
+      case EOpGreaterThanEqual:
+        ASSERT(!left->isArray() && !right->isArray());
+        if (left->isMatrix() || left->isVector() ||
+            left->getBasicType() == EbtStruct)
+        {
+            return nullptr;
+        }
+        break;
+      case EOpLogicalOr:
+      case EOpLogicalXor:
+      case EOpLogicalAnd:
+        ASSERT(!left->isArray() && !right->isArray());
+        if (left->getBasicType() != EbtBool ||
+            left->isMatrix() || left->isVector())
+        {
+            return nullptr;
+        }
+        break;
+      case EOpAdd:
+      case EOpSub:
+      case EOpDiv:
+      case EOpMul:
+        ASSERT(!left->isArray() && !right->isArray());
+        if (left->getBasicType() == EbtStruct || left->getBasicType() == EbtBool)
+        {
+            return nullptr;
+        }
+        break;
+      case EOpIMod:
+        ASSERT(!left->isArray() && !right->isArray());
+        // Note that this is only for the % operator, not for mod()
+        if (left->getBasicType() == EbtStruct || left->getBasicType() == EbtBool || left->getBasicType() == EbtFloat)
+        {
+            return nullptr;
+        }
+        break;
+      // Note that for bitwise ops, type checking is done in promote() to
+      // share code between ops and compound assignment
+      default:
+        break;
+    }
+
+    return intermediate.addBinaryMath(op, left, right, loc);
+}
+
+TIntermTyped *TParseContext::addBinaryMath(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    TIntermTyped *node = addBinaryMathInternal(op, left, right, loc);
+    if (node == 0)
+    {
+        binaryOpError(loc, GetOperatorString(op), left->getCompleteString(), right->getCompleteString());
+        recover();
+        return left;
+    }
+    return node;
+}
+
+TIntermTyped *TParseContext::addBinaryMathBooleanResult(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    TIntermTyped *node = addBinaryMathInternal(op, left, right, loc);
+    if (node == 0)
+    {
+        binaryOpError(loc, GetOperatorString(op), left->getCompleteString(), right->getCompleteString());
+        recover();
+        ConstantUnion *unionArray = new ConstantUnion[1];
+        unionArray->setBConst(false);
+        return intermediate.addConstantUnion(unionArray, TType(EbtBool, EbpUndefined, EvqConst), loc);
+    }
+    return node;
+}
+
+TIntermTyped *TParseContext::createAssign(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    if (binaryOpCommonCheck(op, left, right, loc))
+    {
+        return intermediate.addAssign(op, left, right, loc);
+    }
+    return nullptr;
+}
+
+TIntermTyped *TParseContext::addAssign(TOperator op, TIntermTyped *left, TIntermTyped *right,
+    const TSourceLoc &loc)
+{
+    TIntermTyped *node = createAssign(op, left, right, loc);
+    if (node == nullptr)
+    {
+        assignError(loc, "assign", left->getCompleteString(), right->getCompleteString());
+        recover();
+        return left;
+    }
+    return node;
+}
+
+TIntermBranch *TParseContext::addBranch(TOperator op, const TSourceLoc &loc)
+{
+    switch (op)
+    {
+      case EOpContinue:
+        if (mLoopNestingLevel <= 0)
+        {
+            error(loc, "continue statement only allowed in loops", "");
+            recover();
+        }
+        break;
+      case EOpBreak:
+        if (mLoopNestingLevel <= 0 && mSwitchNestingLevel <= 0)
+        {
+            error(loc, "break statement only allowed in loops and switch statements", "");
+            recover();
+        }
+        break;
+      case EOpReturn:
+        if (currentFunctionType->getBasicType() != EbtVoid)
+        {
+            error(loc, "non-void function must return a value", "return");
+            recover();
+        }
+        break;
+      default:
+        // No checks for discard
+        break;
+    }
+    return intermediate.addBranch(op, loc);
+}
+
+TIntermBranch *TParseContext::addBranch(TOperator op, TIntermTyped *returnValue, const TSourceLoc &loc)
+{
+    ASSERT(op == EOpReturn);
+    mFunctionReturnsValue = true;
+    if (currentFunctionType->getBasicType() == EbtVoid)
+    {
+        error(loc, "void function cannot return a value", "return");
+        recover();
+    }
+    else if (*currentFunctionType != returnValue->getType())
+    {
+        error(loc, "function return is not matching type:", "return");
+        recover();
+    }
+    return intermediate.addBranch(op, returnValue, loc);
+}
+
+TIntermTyped *TParseContext::addFunctionCallOrMethod(TFunction *fnCall, TIntermNode *node,
+    const TSourceLoc &loc, bool *fatalError)
+{
+    *fatalError = false;
+    TOperator op = fnCall->getBuiltInOp();
+    TIntermTyped *callNode = nullptr;
+
+    if (op != EOpNull)
+    {
+        //
+        // Then this should be a constructor.
+        // Don't go through the symbol table for constructors.
+        // Their parameters will be verified algorithmically.
+        //
+        TType type(EbtVoid, EbpUndefined);  // use this to get the type back
+        if (!constructorErrorCheck(loc, node, *fnCall, op, &type))
+        {
+            //
+            // It's a constructor, of type 'type'.
+            //
+            callNode = addConstructor(node, &type, op, fnCall, loc);
+        }
+
+        if (callNode == nullptr)
+        {
+            recover();
+            callNode = intermediate.setAggregateOperator(nullptr, op, loc);
+        }
+        callNode->setType(type);
+    }
+    else
+    {
+        //
+        // Not a constructor.  Find it in the symbol table.
+        //
+        const TFunction* fnCandidate;
+        bool builtIn;
+        fnCandidate = findFunction(loc, fnCall, shaderVersion, &builtIn);
+        if (fnCandidate)
+        {
+            //
+            // A declared function.
+            //
+            if (builtIn && !fnCandidate->getExtension().empty() &&
+                extensionErrorCheck(loc, fnCandidate->getExtension()))
+            {
+                recover();
+            }
+            op = fnCandidate->getBuiltInOp();
+            if (builtIn && op != EOpNull)
+            {
+                //
+                // A function call mapped to a built-in operation.
+                //
+                if (fnCandidate->getParamCount() == 1)
+                {
+                    //
+                    // Treat it like a built-in unary operator.
+                    //
+                    callNode = createUnaryMath(op, node->getAsTyped(), loc, &fnCandidate->getReturnType());
+                    if (callNode == nullptr)
+                    {
+                        std::stringstream extraInfoStream;
+                        extraInfoStream << "built in unary operator function.  Type: "
+                            << static_cast<TIntermTyped*>(node)->getCompleteString();
+                        std::string extraInfo = extraInfoStream.str();
+                        error(node->getLine(), " wrong operand type", "Internal Error", extraInfo.c_str());
+                        *fatalError = true;
+                        return nullptr;
+                    }
+                }
+                else
+                {
+                    TIntermAggregate *aggregate = intermediate.setAggregateOperator(node, op, loc);
+                    aggregate->setType(fnCandidate->getReturnType());
+                    aggregate->setPrecisionFromChildren();
+                    callNode = aggregate;
+
+                    // Some built-in functions have out parameters too.
+                    functionCallLValueErrorCheck(fnCandidate, aggregate);
+                }
+            }
+            else
+            {
+                // This is a real function call
+
+                TIntermAggregate *aggregate = intermediate.setAggregateOperator(node, EOpFunctionCall, loc);
+                aggregate->setType(fnCandidate->getReturnType());
+
+                // this is how we know whether the given function is a builtIn function or a user defined function
+                // if builtIn == false, it's a userDefined -> could be an overloaded builtIn function also
+                // if builtIn == true, it's definitely a builtIn function with EOpNull
+                if (!builtIn)
+                    aggregate->setUserDefined();
+                aggregate->setName(fnCandidate->getMangledName());
+
+                // This needs to happen after the name is set
+                if (builtIn)
+                    aggregate->setBuiltInFunctionPrecision();
+
+                callNode = aggregate;
+
+                functionCallLValueErrorCheck(fnCandidate, aggregate);
+            }
+        }
+        else
+        {
+            // error message was put out by findFunction()
+            // Put on a dummy node for error recovery
+            ConstantUnion *unionArray = new ConstantUnion[1];
+            unionArray->setFConst(0.0f);
+            callNode = intermediate.addConstantUnion(unionArray, TType(EbtFloat, EbpUndefined, EvqConst), loc);
+            recover();
+        }
+    }
+    delete fnCall;
+    return callNode;
+}
+
 
 //
 // Parse an array of strings using yyparse.

@@ -1,0 +1,363 @@
+From 11304df7f66d0d8bc5dfdc960b86b5cac0f18313 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Wed, 8 Apr 2015 17:09:47 +0300
+Subject: [PATCH 3/5] ANGLE: Fix compilation on MSVC2010/2012
+
+Allow the D3D11 renderer to build with the June 2010 DirectX SDK.
+This mainly addresses C++11 language incompatibilities, such as replacing
+range-based for loops with iterators.
+
+Change-Id: I2343acedab16845d6a0d4a53cf3145f583efc4a7
+---
+ src/3rdparty/angle/src/common/angleutils.h         |  2 ++
+ src/3rdparty/angle/src/common/platform.h           |  9 +++++++
+ .../angle/src/compiler/translator/OutputHLSL.cpp   | 31 +++++++++++++---------
+ src/3rdparty/angle/src/libANGLE/Context.cpp        |  4 +--
+ src/3rdparty/angle/src/libANGLE/Error.h            |  1 +
+ src/3rdparty/angle/src/libANGLE/Framebuffer.cpp    | 23 ++++++++--------
+ src/3rdparty/angle/src/libANGLE/State.cpp          |  3 ++-
+ src/3rdparty/angle/src/libANGLE/Texture.cpp        |  2 +-
+ .../angle/src/libANGLE/renderer/d3d/DisplayD3D.cpp |  6 +++--
+ .../src/libANGLE/renderer/d3d/RendererD3D.cpp      |  4 +--
+ .../libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp  |  3 ++-
+ 11 files changed, 55 insertions(+), 33 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/common/angleutils.h b/src/3rdparty/angle/src/common/angleutils.h
+index f3d2019..4cf84a3 100644
+--- a/src/3rdparty/angle/src/common/angleutils.h
++++ b/src/3rdparty/angle/src/common/angleutils.h
+@@ -25,12 +25,14 @@ namespace angle
+ 
+ class NonCopyable
+ {
++#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+   public:
+     NonCopyable() = default;
+     ~NonCopyable() = default;
+   protected:
+     NonCopyable(const NonCopyable&) = delete;
+     void operator=(const NonCopyable&) = delete;
++#endif
+ };
+ 
+ }
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index be4cb94..3a2aa91 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -53,7 +53,9 @@
+ 
+ #   if defined(ANGLE_ENABLE_D3D9)
+ #       include <d3d9.h>
++#      if !defined(ANGLE_TRANSLATOR_IMPLEMENTATION)
+ #       include <d3dcompiler.h>
++#      endif
+ #   endif
+ 
+ #   if defined(ANGLE_ENABLE_D3D11)
+@@ -70,7 +72,9 @@
+ #       include <d3d11_1.h>
+ #       include <dxgi1_2.h>
+ #      endif
++#      if !defined(ANGLE_TRANSLATOR_IMPLEMENTATION)
+ #       include <d3dcompiler.h>
++#      endif
+ #   endif
+ 
+ #   if defined(ANGLE_ENABLE_WINDOWS_STORE)
+@@ -83,6 +87,11 @@
+ #       endif
+ #   endif
+ 
++#   if defined(_MSC_VER) && (_MSC_VER <= 1600)
++#       define final
++#       define override
++#   endif
++
+ #   undef near
+ #   undef far
+ #endif
+diff --git a/src/3rdparty/angle/src/compiler/translator/OutputHLSL.cpp b/src/3rdparty/angle/src/compiler/translator/OutputHLSL.cpp
+index c3240f5..94225b8 100644
+--- a/src/3rdparty/angle/src/compiler/translator/OutputHLSL.cpp
++++ b/src/3rdparty/angle/src/compiler/translator/OutputHLSL.cpp
+@@ -158,13 +158,13 @@ OutputHLSL::~OutputHLSL()
+     SafeDelete(mUnfoldShortCircuit);
+     SafeDelete(mStructureHLSL);
+     SafeDelete(mUniformHLSL);
+-    for (auto &eqFunction : mStructEqualityFunctions)
++    for (auto it = mStructEqualityFunctions.begin(); it != mStructEqualityFunctions.end(); ++it)
+     {
+-        SafeDelete(eqFunction);
++        SafeDelete(*it);
+     }
+-    for (auto &eqFunction : mArrayEqualityFunctions)
++    for (auto it = mArrayEqualityFunctions.begin(); it != mArrayEqualityFunctions.end(); ++it)
+     {
+-        SafeDelete(eqFunction);
++        SafeDelete(*it);
+     }
+ }
+ 
+@@ -340,17 +340,17 @@ void OutputHLSL::header(const BuiltInFunctionEmulator *builtInFunctionEmulator)
+     if (!mEqualityFunctions.empty())
+     {
+         out << "\n// Equality functions\n\n";
+-        for (const auto &eqFunction : mEqualityFunctions)
++        for (auto it = mEqualityFunctions.cbegin(); it != mEqualityFunctions.cend(); ++it)
+         {
+-            out << eqFunction->functionDefinition << "\n";
++            out << (*it)->functionDefinition << "\n";
+         }
+     }
+     if (!mArrayAssignmentFunctions.empty())
+     {
+         out << "\n// Assignment functions\n\n";
+-        for (const auto &assignmentFunction : mArrayAssignmentFunctions)
++        for (auto it = mArrayAssignmentFunctions.cbegin(); it != mArrayAssignmentFunctions.cend(); ++it)
+         {
+-            out << assignmentFunction.functionDefinition << "\n";
++            out << it->functionDefinition << "\n";
+         }
+     }
+ 
+@@ -1858,8 +1858,9 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
+ 
+                 if (!variable->getAsSymbolNode() || variable->getAsSymbolNode()->getSymbol() != "")   // Variable declaration
+                 {
+-                    for (const auto &seqElement : *sequence)
++                    for (auto it = sequence->cbegin(); it != sequence->cend(); ++it)
+                     {
++                        const auto &seqElement = *it;
+                         if (isSingleStatement(seqElement))
+                         {
+                             mUnfoldShortCircuit->traverse(seqElement);
+@@ -2941,8 +2942,9 @@ void OutputHLSL::writeDeferredGlobalInitializers(TInfoSinkBase &out)
+         << "void initializeDeferredGlobals()\n"
+         << "{\n";
+ 
+-    for (const auto &deferredGlobal : mDeferredGlobalInitializers)
++    for (auto it = mDeferredGlobalInitializers.cbegin(); it != mDeferredGlobalInitializers.cend(); ++it)
+     {
++        const auto &deferredGlobal = *it;
+         TIntermSymbol *symbol = deferredGlobal.first;
+         TIntermTyped *expression = deferredGlobal.second;
+         ASSERT(symbol);
+@@ -2967,8 +2969,9 @@ TString OutputHLSL::addStructEqualityFunction(const TStructure &structure)
+ {
+     const TFieldList &fields = structure.fields();
+ 
+-    for (const auto &eqFunction : mStructEqualityFunctions)
++    for (auto it = mStructEqualityFunctions.cbegin(); it != mStructEqualityFunctions.cend(); ++it)
+     {
++        auto *eqFunction = *it;
+         if (eqFunction->structure == &structure)
+         {
+             return eqFunction->functionName;
+@@ -3021,8 +3024,9 @@ TString OutputHLSL::addStructEqualityFunction(const TStructure &structure)
+ 
+ TString OutputHLSL::addArrayEqualityFunction(const TType& type)
+ {
+-    for (const auto &eqFunction : mArrayEqualityFunctions)
++    for (auto it = mArrayEqualityFunctions.cbegin(); it != mArrayEqualityFunctions.cend(); ++it)
+     {
++        const auto &eqFunction = *it;
+         if (eqFunction->type == type)
+         {
+             return eqFunction->functionName;
+@@ -3072,8 +3076,9 @@ TString OutputHLSL::addArrayEqualityFunction(const TType& type)
+ 
+ TString OutputHLSL::addArrayAssignmentFunction(const TType& type)
+ {
+-    for (const auto &assignFunction : mArrayAssignmentFunctions)
++    for (auto it = mArrayAssignmentFunctions.cbegin(); it != mArrayAssignmentFunctions.cend(); ++it)
+     {
++        const auto &assignFunction = *it;
+         if (assignFunction.type == type)
+         {
+             return assignFunction.functionName;
+diff --git a/src/3rdparty/angle/src/libANGLE/Context.cpp b/src/3rdparty/angle/src/libANGLE/Context.cpp
+index 5ea039f..1da5fda 100644
+--- a/src/3rdparty/angle/src/libANGLE/Context.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Context.cpp
+@@ -158,9 +158,9 @@ Context::~Context()
+         deleteTransformFeedback(mTransformFeedbackMap.begin()->first);
+     }
+ 
+-    for (auto &zeroTexture : mZeroTextures)
++    for (auto it = mZeroTextures.begin(); it != mZeroTextures.end(); ++it)
+     {
+-        zeroTexture.second.set(NULL);
++        it->second.set(NULL);
+     }
+     mZeroTextures.clear();
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/Error.h b/src/3rdparty/angle/src/libANGLE/Error.h
+index 5812943..896b777 100644
+--- a/src/3rdparty/angle/src/libANGLE/Error.h
++++ b/src/3rdparty/angle/src/libANGLE/Error.h
+@@ -10,6 +10,7 @@
+ #define LIBANGLE_ERROR_H_
+ 
+ #include "angle_gl.h"
++#include "common/platform.h"
+ #include <EGL/egl.h>
+ 
+ #include <string>
+diff --git a/src/3rdparty/angle/src/libANGLE/Framebuffer.cpp b/src/3rdparty/angle/src/libANGLE/Framebuffer.cpp
+index 5fa7513..b1dd4a1 100644
+--- a/src/3rdparty/angle/src/libANGLE/Framebuffer.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Framebuffer.cpp
+@@ -48,9 +48,9 @@ Framebuffer::Data::Data(const Caps &caps)
+ 
+ Framebuffer::Data::~Data()
+ {
+-    for (auto &colorAttachment : mColorAttachments)
++    for (auto it = mColorAttachments.begin(); it != mColorAttachments.end(); ++it)
+     {
+-        SafeDelete(colorAttachment);
++        SafeDelete(*it);
+     }
+     SafeDelete(mDepthAttachment);
+     SafeDelete(mStencilAttachment);
+@@ -66,11 +66,11 @@ FramebufferAttachment *Framebuffer::Data::getReadAttachment() const
+ 
+ FramebufferAttachment *Framebuffer::Data::getFirstColorAttachment() const
+ {
+-    for (FramebufferAttachment *colorAttachment : mColorAttachments)
++    for (auto it = mColorAttachments.cbegin(); it != mColorAttachments.cend(); ++it)
+     {
+-        if (colorAttachment != nullptr)
++        if (*it != nullptr)
+         {
+-            return colorAttachment;
++            return *it;
+         }
+     }
+ 
+@@ -115,9 +115,9 @@ void Framebuffer::detachRenderbuffer(GLuint renderbufferId)
+ 
+ void Framebuffer::detachResourceById(GLenum resourceType, GLuint resourceId)
+ {
+-    for (auto &colorAttachment : mData.mColorAttachments)
++    for (auto it = mData.mColorAttachments.begin(); it != mData.mColorAttachments.end(); ++it)
+     {
+-        DeleteMatchingAttachment(colorAttachment, resourceType, resourceId);
++        DeleteMatchingAttachment(*it, resourceType, resourceId);
+     }
+ 
+     DeleteMatchingAttachment(mData.mDepthAttachment, resourceType, resourceId);
+@@ -278,8 +278,9 @@ GLenum Framebuffer::checkStatus(const gl::Data &data) const
+     int samples = -1;
+     bool missingAttachment = true;
+ 
+-    for (const FramebufferAttachment *colorAttachment : mData.mColorAttachments)
++    for (auto it = mData.mColorAttachments.cbegin(); it != mData.mColorAttachments.cend(); ++it)
+     {
++        const auto &colorAttachment = *it;
+         if (colorAttachment != nullptr)
+         {
+             if (colorAttachment->getWidth() == 0 || colorAttachment->getHeight() == 0)
+@@ -533,11 +534,11 @@ int Framebuffer::getSamples(const gl::Data &data) const
+     {
+         // for a complete framebuffer, all attachments must have the same sample count
+         // in this case return the first nonzero sample size
+-        for (const FramebufferAttachment *colorAttachment : mData.mColorAttachments)
++        for (auto it = mData.mColorAttachments.cbegin(); it != mData.mColorAttachments.cend(); ++it)
+         {
+-            if (colorAttachment != nullptr)
++            if (*it != nullptr)
+             {
+-                return colorAttachment->getSamples();
++                return (*it)->getSamples();
+             }
+         }
+     }
+diff --git a/src/3rdparty/angle/src/libANGLE/State.cpp b/src/3rdparty/angle/src/libANGLE/State.cpp
+index 15274c6..4c044d2 100644
+--- a/src/3rdparty/angle/src/libANGLE/State.cpp
++++ b/src/3rdparty/angle/src/libANGLE/State.cpp
+@@ -633,8 +633,9 @@ void State::detachTexture(const TextureMap &zeroTextures, GLuint texture)
+ 
+ void State::initializeZeroTextures(const TextureMap &zeroTextures)
+ {
+-    for (const auto &zeroTexture : zeroTextures)
++    for (auto it = zeroTextures.cbegin(); it != zeroTextures.cend(); ++it)
+     {
++        const auto &zeroTexture = *it;
+         auto &samplerTextureArray = mSamplerTextures[zeroTexture.first];
+ 
+         for (size_t textureUnit = 0; textureUnit < samplerTextureArray.size(); ++textureUnit)
+diff --git a/src/3rdparty/angle/src/libANGLE/Texture.cpp b/src/3rdparty/angle/src/libANGLE/Texture.cpp
+index 2d68bec..cd4584f 100644
+--- a/src/3rdparty/angle/src/libANGLE/Texture.cpp
++++ b/src/3rdparty/angle/src/libANGLE/Texture.cpp
+@@ -316,7 +316,7 @@ void Texture::setImageDescChain(size_t levels, Extents baseSize, GLenum sizedInt
+ }
+ 
+ Texture::ImageDesc::ImageDesc()
+-    : ImageDesc(Extents(0, 0, 0), GL_NONE)
++    : size(0, 0, 0), internalFormat(GL_NONE)
+ {
+ }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/DisplayD3D.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/DisplayD3D.cpp
+index db5f445..add5d62 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/DisplayD3D.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/DisplayD3D.cpp
+@@ -276,8 +276,9 @@ bool DisplayD3D::testDeviceLost()
+ egl::Error DisplayD3D::restoreLostDevice()
+ {
+     // Release surface resources to make the Reset() succeed
+-    for (auto &surface : mSurfaceSet)
++    for (auto it = mSurfaceSet.cbegin(); it != mSurfaceSet.cend(); ++it)
+     {
++        const auto &surface = *it;
+         if (surface->getBoundTexture())
+         {
+             surface->releaseTexImage(EGL_BACK_BUFFER);
+@@ -292,8 +293,9 @@ egl::Error DisplayD3D::restoreLostDevice()
+     }
+ 
+     // Restore any surfaces that may have been lost
+-    for (const auto &surface : mSurfaceSet)
++    for (auto it = mSurfaceSet.cbegin(); it != mSurfaceSet.cend(); ++it)
+     {
++        const auto &surface = *it;
+         SurfaceD3D *surfaceD3D = GetImplAs<SurfaceD3D>(surface);
+ 
+         egl::Error error = surfaceD3D->resetSwapChain();
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/RendererD3D.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/RendererD3D.cpp
+index ff9600e..2ce0ce5 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/RendererD3D.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/RendererD3D.cpp
+@@ -47,9 +47,9 @@ RendererD3D::~RendererD3D()
+ void RendererD3D::cleanup()
+ {
+     mScratchMemoryBuffer.resize(0);
+-    for (auto &incompleteTexture : mIncompleteTextures)
++    for (auto it = mIncompleteTextures.begin(); it != mIncompleteTextures.end(); ++it)
+     {
+-        incompleteTexture.second.set(NULL);
++        it->second.set(NULL);
+     }
+     mIncompleteTextures.clear();
+ }
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp
+index ab2a902..da01f32 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Framebuffer11.cpp
+@@ -64,8 +64,9 @@ static gl::Error InvalidateAttachmentSwizzles(const gl::FramebufferAttachment *a
+ 
+ gl::Error Framebuffer11::invalidateSwizzles() const
+ {
+-    for (gl::FramebufferAttachment *colorAttachment : mData.mColorAttachments)
++    for (auto it = mData.mColorAttachments.cbegin(); it != mData.mColorAttachments.cend(); ++it)
+     {
++        gl::FramebufferAttachment *colorAttachment = *it;
+         gl::Error error = InvalidateAttachmentSwizzles(colorAttachment);
+         if (error.isError())
+         {
+-- 
+2.1.4
+

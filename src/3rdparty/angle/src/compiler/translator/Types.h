@@ -4,8 +4,8 @@
 // found in the LICENSE file.
 //
 
-#ifndef _TYPES_INCLUDED
-#define _TYPES_INCLUDED
+#ifndef COMPILER_TRANSLATOR_TYPES_H_
+#define COMPILER_TRANSLATOR_TYPES_H_
 
 #include "common/angleutils.h"
 
@@ -17,7 +17,7 @@ struct TPublicType;
 class TType;
 class TSymbol;
 
-class TField
+class TField : angle::NonCopyable
 {
   public:
     POOL_ALLOCATOR_NEW_DELETE();
@@ -49,7 +49,6 @@ class TField
     }
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(TField);
     TType *mType;
     TString *mName;
     TSourceLoc mLine;
@@ -62,7 +61,7 @@ inline TFieldList *NewPoolTFieldList()
     return new(memory) TFieldList;
 }
 
-class TFieldListCollection
+class TFieldListCollection : angle::NonCopyable
 {
   public:
     const TString &name() const
@@ -113,7 +112,8 @@ class TStructure : public TFieldListCollection
     TStructure(const TString *name, TFieldList *fields)
         : TFieldListCollection(name, fields),
           mDeepestNesting(0),
-          mUniqueId(0)
+          mUniqueId(0),
+          mAtGlobalScope(false)
     {
     }
 
@@ -124,6 +124,7 @@ class TStructure : public TFieldListCollection
         return mDeepestNesting;
     }
     bool containsArrays() const;
+    bool containsSamplers() const;
 
     bool equals(const TStructure &other) const;
 
@@ -138,9 +139,17 @@ class TStructure : public TFieldListCollection
         return mUniqueId;
     }
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(TStructure);
+    void setAtGlobalScope(bool atGlobalScope)
+    {
+        mAtGlobalScope = atGlobalScope;
+    }
 
+    bool atGlobalScope() const
+    {
+        return mAtGlobalScope;
+    }
+
+  private:
     // TODO(zmo): Find a way to get rid of the const_cast in function
     // setName().  At the moment keep this function private so only
     // friend class RegenerateStructNames may call it.
@@ -159,6 +168,7 @@ class TStructure : public TFieldListCollection
 
     mutable int mDeepestNesting;
     int mUniqueId;
+    bool mAtGlobalScope;
 };
 
 class TInterfaceBlock : public TFieldListCollection
@@ -201,7 +211,6 @@ class TInterfaceBlock : public TFieldListCollection
     }
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(TInterfaceBlock);
     virtual TString mangledNamePrefix() const
     {
         return "iblock-";
@@ -324,6 +333,10 @@ class TType
     bool isMatrix() const
     {
         return primarySize > 1 && secondarySize > 1;
+    }
+    bool isNonSquareMatrix() const
+    {
+        return isMatrix() && primarySize != secondarySize;
     }
     bool isArray() const
     {
@@ -464,6 +477,11 @@ class TType
         return structure ? structure->containsArrays() : false;
     }
 
+    bool isStructureContainingSamplers() const
+    {
+        return structure ? structure->containsSamplers() : false;
+    }
+
   protected:
     TString buildMangledName() const;
     size_t getStructSize() const;
@@ -584,4 +602,4 @@ struct TPublicType
     }
 };
 
-#endif // _TYPES_INCLUDED_
+#endif // COMPILER_TRANSLATOR_TYPES_H_

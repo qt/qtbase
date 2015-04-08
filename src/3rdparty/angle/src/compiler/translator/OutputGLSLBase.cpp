@@ -36,8 +36,17 @@ bool isSingleStatement(TIntermNode *node)
     {
         return false;
     }
+    else if (node->getAsSwitchNode())
+    {
+        return false;
+    }
+    else if (node->getAsCaseNode())
+    {
+        return false;
+    }
     return true;
 }
+
 }  // namespace
 
 TOutputGLSLBase::TOutputGLSLBase(TInfoSinkBase &objSink,
@@ -45,7 +54,8 @@ TOutputGLSLBase::TOutputGLSLBase(TInfoSinkBase &objSink,
                                  ShHashFunction64 hashFunction,
                                  NameMap &nameMap,
                                  TSymbolTable &symbolTable,
-                                 int shaderVersion)
+                                 int shaderVersion,
+                                 ShShaderOutput output)
     : TIntermTraverser(true, true, true),
       mObjSink(objSink),
       mDeclaringVariables(false),
@@ -53,7 +63,8 @@ TOutputGLSLBase::TOutputGLSLBase(TInfoSinkBase &objSink,
       mHashFunction(hashFunction),
       mNameMap(nameMap),
       mSymbolTable(symbolTable),
-      mShaderVersion(shaderVersion)
+      mShaderVersion(shaderVersion),
+      mOutput(output)
 {
 }
 
@@ -83,7 +94,34 @@ void TOutputGLSLBase::writeVariableType(const TType &type)
     TQualifier qualifier = type.getQualifier();
     if (qualifier != EvqTemporary && qualifier != EvqGlobal)
     {
-        out << type.getQualifierString() << " ";
+        if (mOutput == SH_GLSL_CORE_OUTPUT)
+        {
+            switch (qualifier)
+            {
+              case EvqAttribute:
+                out << "in" << " ";
+                break;
+              case EvqVaryingIn:
+                out << "in" << " ";
+                break;
+              case EvqVaryingOut:
+                out << "out" << " ";
+                break;
+              case EvqInvariantVaryingIn:
+                out << "invariant in" << " ";
+                break;
+              case EvqInvariantVaryingOut:
+                out << "invariant out" << " ";
+                break;
+              default:
+                out << type.getQualifierString() << " ";
+                break;
+            }
+        }
+        else
+        {
+            out << type.getQualifierString() << " ";
+        }
     }
     // Declare the struct if we have not done so already.
     if (type.getBasicType() == EbtStruct && !structDeclared(type.getStruct()))
@@ -166,6 +204,9 @@ const ConstantUnion *TOutputGLSLBase::writeConstantUnion(
               case EbtInt:
                 out << pConstUnion->getIConst();
                 break;
+              case EbtUInt:
+                out << pConstUnion->getUConst() << "u";
+                break;
               case EbtBool:
                 out << pConstUnion->getBConst();
                 break;
@@ -223,6 +264,9 @@ bool TOutputGLSLBase::visitBinary(Visit visit, TIntermBinary *node)
       case EOpDivAssign:
         writeTriplet(visit, "(", " /= ", ")");
         break;
+      case EOpIModAssign:
+        writeTriplet(visit, "(", " %= ", ")");
+        break;
       // Notice the fall-through.
       case EOpMulAssign:
       case EOpVectorTimesMatrixAssign:
@@ -230,6 +274,21 @@ bool TOutputGLSLBase::visitBinary(Visit visit, TIntermBinary *node)
       case EOpMatrixTimesScalarAssign:
       case EOpMatrixTimesMatrixAssign:
         writeTriplet(visit, "(", " *= ", ")");
+        break;
+      case EOpBitShiftLeftAssign:
+        writeTriplet(visit, "(", " <<= ", ")");
+        break;
+      case EOpBitShiftRightAssign:
+        writeTriplet(visit, "(", " >>= ", ")");
+        break;
+      case EOpBitwiseAndAssign:
+        writeTriplet(visit, "(", " &= ", ")");
+        break;
+      case EOpBitwiseXorAssign:
+        writeTriplet(visit, "(", " ^= ", ")");
+        break;
+      case EOpBitwiseOrAssign:
+        writeTriplet(visit, "(", " |= ", ")");
         break;
 
       case EOpIndexDirect:
@@ -340,9 +399,25 @@ bool TOutputGLSLBase::visitBinary(Visit visit, TIntermBinary *node)
       case EOpDiv:
         writeTriplet(visit, "(", " / ", ")");
         break;
-      case EOpMod:
-        UNIMPLEMENTED();
+      case EOpIMod:
+        writeTriplet(visit, "(", " % ", ")");
         break;
+      case EOpBitShiftLeft:
+        writeTriplet(visit, "(", " << ", ")");
+        break;
+      case EOpBitShiftRight:
+        writeTriplet(visit, "(", " >> ", ")");
+        break;
+      case EOpBitwiseAnd:
+        writeTriplet(visit, "(", " & ", ")");
+        break;
+      case EOpBitwiseXor:
+        writeTriplet(visit, "(", " ^ ", ")");
+        break;
+      case EOpBitwiseOr:
+        writeTriplet(visit, "(", " | ", ")");
+        break;
+
       case EOpEqual:
         writeTriplet(visit, "(", " == ", ")");
         break;
@@ -398,6 +473,7 @@ bool TOutputGLSLBase::visitUnary(Visit visit, TIntermUnary *node)
       case EOpPositive: preString = "(+"; break;
       case EOpVectorLogicalNot: preString = "not("; break;
       case EOpLogicalNot: preString = "(!"; break;
+      case EOpBitwiseNot: preString = "(~"; break;
 
       case EOpPostIncrement: preString = "("; postString = "++)"; break;
       case EOpPostDecrement: preString = "("; postString = "--)"; break;
@@ -429,6 +505,25 @@ bool TOutputGLSLBase::visitUnary(Visit visit, TIntermUnary *node)
         preString = "atan(";
         break;
 
+      case EOpSinh:
+        preString = "sinh(";
+        break;
+      case EOpCosh:
+        preString = "cosh(";
+        break;
+      case EOpTanh:
+        preString = "tanh(";
+        break;
+      case EOpAsinh:
+        preString = "asinh(";
+        break;
+      case EOpAcosh:
+        preString = "acosh(";
+        break;
+      case EOpAtanh:
+        preString = "atanh(";
+        break;
+
       case EOpExp:
         preString = "exp(";
         break;
@@ -457,11 +552,58 @@ bool TOutputGLSLBase::visitUnary(Visit visit, TIntermUnary *node)
       case EOpFloor:
         preString = "floor(";
         break;
+      case EOpTrunc:
+        preString = "trunc(";
+        break;
+      case EOpRound:
+        preString = "round(";
+        break;
+      case EOpRoundEven:
+        preString = "roundEven(";
+        break;
       case EOpCeil:
         preString = "ceil(";
         break;
       case EOpFract:
         preString = "fract(";
+        break;
+      case EOpIsNan:
+        preString = "isnan(";
+        break;
+      case EOpIsInf:
+        preString = "isinf(";
+        break;
+
+      case EOpFloatBitsToInt:
+        preString = "floatBitsToInt(";
+        break;
+      case EOpFloatBitsToUint:
+        preString = "floatBitsToUint(";
+        break;
+      case EOpIntBitsToFloat:
+        preString = "intBitsToFloat(";
+        break;
+      case EOpUintBitsToFloat:
+        preString = "uintBitsToFloat(";
+        break;
+
+      case EOpPackSnorm2x16:
+        preString = "packSnorm2x16(";
+        break;
+      case EOpPackUnorm2x16:
+        preString = "packUnorm2x16(";
+        break;
+      case EOpPackHalf2x16:
+        preString = "packHalf2x16(";
+        break;
+      case EOpUnpackSnorm2x16:
+        preString = "unpackSnorm2x16(";
+        break;
+      case EOpUnpackUnorm2x16:
+        preString = "unpackUnorm2x16(";
+        break;
+      case EOpUnpackHalf2x16:
+        preString = "unpackHalf2x16(";
         break;
 
       case EOpLength:
@@ -479,6 +621,16 @@ bool TOutputGLSLBase::visitUnary(Visit visit, TIntermUnary *node)
         break;
       case EOpFwidth:
         preString = "fwidth(";
+        break;
+
+      case EOpTranspose:
+        preString = "transpose(";
+        break;
+      case EOpDeterminant:
+        preString = "determinant(";
+        break;
+      case EOpInverse:
+        preString = "inverse(";
         break;
 
       case EOpAny:
@@ -536,6 +688,36 @@ bool TOutputGLSLBase::visitSelection(Visit visit, TIntermSelection *node)
     return false;
 }
 
+bool TOutputGLSLBase::visitSwitch(Visit visit, TIntermSwitch *node)
+{
+    if (node->getStatementList())
+    {
+        writeTriplet(visit, "switch (", ") ", nullptr);
+        // The curly braces get written when visiting the statementList aggregate
+    }
+    else
+    {
+        // No statementList, so it won't output curly braces
+        writeTriplet(visit, "switch (", ") {", "}\n");
+    }
+    return true;
+}
+
+bool TOutputGLSLBase::visitCase(Visit visit, TIntermCase *node)
+{
+    if (node->hasCondition())
+    {
+        writeTriplet(visit, "case (", nullptr, "):\n");
+        return true;
+    }
+    else
+    {
+        TInfoSinkBase &out = objSink();
+        out << "default:\n";
+        return false;
+    }
+}
+
 bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
 {
     bool visitChildren = true;
@@ -555,11 +737,11 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
         for (TIntermSequence::const_iterator iter = node->getSequence()->begin();
              iter != node->getSequence()->end(); ++iter)
         {
-            TIntermNode *node = *iter;
-            ASSERT(node != NULL);
-            node->traverse(this);
+            TIntermNode *curNode = *iter;
+            ASSERT(curNode != NULL);
+            curNode->traverse(this);
 
-            if (isSingleStatement(node))
+            if (isSingleStatement(curNode))
                 out << ";\n";
         }
         decrementDepth();
@@ -617,6 +799,15 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
         // Function call.
         if (visit == PreVisit)
             out << hashFunctionName(node->getName()) << "(";
+        else if (visit == InVisit)
+            out << ", ";
+        else
+            out << ")";
+        break;
+      case EOpInternalFunctionCall:
+        // Function call to an internal helper function.
+        if (visit == PreVisit)
+            out << node->getName() << "(";
         else if (visit == InVisit)
             out << ", ";
         else
@@ -724,6 +915,10 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
         }
         break;
 
+      case EOpOuterProduct:
+        writeBuiltInFunctionTriplet(visit, "outerProduct(", useEmulatedFunction);
+        break;
+
       case EOpLessThan:
         writeBuiltInFunctionTriplet(visit, "lessThan(", useEmulatedFunction);
         break;
@@ -748,6 +943,9 @@ bool TOutputGLSLBase::visitAggregate(Visit visit, TIntermAggregate *node)
 
       case EOpMod:
         writeBuiltInFunctionTriplet(visit, "mod(", useEmulatedFunction);
+        break;
+      case EOpModf:
+        writeBuiltInFunctionTriplet(visit, "modf(", useEmulatedFunction);
         break;
       case EOpPow:
         writeBuiltInFunctionTriplet(visit, "pow(", useEmulatedFunction);

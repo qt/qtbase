@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef _PARSER_HELPER_INCLUDED_
-#define _PARSER_HELPER_INCLUDED_
+#ifndef COMPILER_TRANSLATOR_PARSECONTEXT_H_
+#define COMPILER_TRANSLATOR_PARSECONTEXT_H_
 
 #include "compiler/translator/Compiler.h"
 #include "compiler/translator/Diagnostics.h"
@@ -25,24 +25,25 @@ struct TMatrixFields {
 // they can be passed to the parser without needing a global.
 //
 struct TParseContext {
-    TParseContext(TSymbolTable& symt, TExtensionBehavior& ext, TIntermediate& interm, sh::GLenum type, ShShaderSpec spec, int options, bool checksPrecErrors, const char* sourcePath, TInfoSink& is) :
+    TParseContext(TSymbolTable& symt, TExtensionBehavior& ext, TIntermediate& interm, sh::GLenum type, ShShaderSpec spec, int options, bool checksPrecErrors, TInfoSink& is, bool debugShaderPrecisionSupported) :
             intermediate(interm),
             symbolTable(symt),
             shaderType(type),
             shaderSpec(spec),
             compileOptions(options),
-            sourcePath(sourcePath),
             treeRoot(0),
-            loopNestingLevel(0),
+            mLoopNestingLevel(0),
             structNestingLevel(0),
+            mSwitchNestingLevel(0),
             currentFunctionType(NULL),
-            functionReturnsValue(false),
+            mFunctionReturnsValue(false),
             checksPrecisionErrors(checksPrecErrors),
+            fragmentPrecisionHigh(false),
             defaultMatrixPacking(EmpColumnMajor),
             defaultBlockStorage(EbsShared),
             diagnostics(is),
             shaderVersion(100),
-            directiveHandler(ext, diagnostics, shaderVersion),
+            directiveHandler(ext, diagnostics, shaderVersion, debugShaderPrecisionSupported),
             preprocessor(&diagnostics, &directiveHandler),
             scanner(NULL) {  }
     TIntermediate& intermediate; // to hold and build a parse tree
@@ -51,12 +52,12 @@ struct TParseContext {
     ShShaderSpec shaderSpec;              // The language specification compiler conforms to - GLES2 or WebGL.
     int shaderVersion;
     int compileOptions;
-    const char* sourcePath;      // Path of source file or NULL.
     TIntermNode* treeRoot;       // root of parse tree being created
-    int loopNestingLevel;        // 0 if outside all loops
+    int mLoopNestingLevel;       // 0 if outside all loops
     int structNestingLevel;      // incremented while parsing a struct declaration
+    int mSwitchNestingLevel;     // 0 if outside all switch statements
     const TType* currentFunctionType;  // the return type of the function that's currently being parsed
-    bool functionReturnsValue;   // true if a non-void function has a return
+    bool mFunctionReturnsValue;  // true if a non-void function has a return
     bool checksPrecisionErrors;  // true if an error will be generated when a variable is declared without precision, explicit or implicit.
     bool fragmentPrecisionHigh;  // true if highp precision is supported in the fragment language.
     TLayoutMatrixPacking defaultMatrixPacking;
@@ -110,6 +111,7 @@ struct TParseContext {
     bool extensionErrorCheck(const TSourceLoc& line, const TString&);
     bool singleDeclarationErrorCheck(TPublicType &publicType, const TSourceLoc& identifierLocation, const TString &identifier);
     bool layoutLocationErrorCheck(const TSourceLoc& location, const TLayoutQualifier &layoutQualifier);
+    bool functionCallLValueErrorCheck(const TFunction *fnCandidate, TIntermAggregate *);
 
     const TPragma& pragma() const { return directiveHandler.pragma(); }
     const TExtensionBehavior& extensionBehavior() const { return directiveHandler.extensionBehavior(); }
@@ -120,7 +122,7 @@ struct TParseContext {
 
     bool containsSampler(TType& type);
     bool areAllChildConst(TIntermAggregate* aggrNode);
-    const TFunction* findFunction(const TSourceLoc& line, TFunction* pfnCall, int shaderVersion, bool *builtIn = 0);
+    const TFunction* findFunction(const TSourceLoc& line, TFunction* pfnCall, int inputShaderVersion, bool *builtIn = 0);
     bool executeInitializer(const TSourceLoc& line, const TString& identifier, TPublicType& pType,
                             TIntermTyped* initializer, TIntermNode*& intermNode, TVariable* variable = 0);
 
@@ -136,7 +138,7 @@ struct TParseContext {
     TIntermAggregate* parseInitDeclarator(TPublicType &publicType, TIntermAggregate *declaratorList, const TSourceLoc& identifierLocation, const TString &identifier, const TSourceLoc& initLocation, TIntermTyped *initializer);
     void parseGlobalLayoutQualifier(const TPublicType &typeQualifier);
     TFunction *addConstructorFunc(TPublicType publicType);
-    TIntermTyped* addConstructor(TIntermNode*, const TType*, TOperator, TFunction*, const TSourceLoc&);
+    TIntermTyped* addConstructor(TIntermNode*, TType*, TOperator, TFunction*, const TSourceLoc&);
     TIntermTyped* foldConstConstructor(TIntermAggregate* aggrNode, const TType& type);
     TIntermTyped* addConstVectorNode(TVectorFields&, TIntermTyped*, const TSourceLoc&);
     TIntermTyped* addConstMatrixNode(int , TIntermTyped*, const TSourceLoc&);
@@ -164,9 +166,42 @@ struct TParseContext {
     void exitStructDeclaration();
 
     bool structNestingErrorCheck(const TSourceLoc& line, const TField& field);
+
+    TIntermSwitch *addSwitch(TIntermTyped *init, TIntermAggregate *statementList, const TSourceLoc &loc);
+    TIntermCase *addCase(TIntermTyped *condition, const TSourceLoc &loc);
+    TIntermCase *addDefault(const TSourceLoc &loc);
+
+    TIntermTyped *addUnaryMath(TOperator op, TIntermTyped *child, const TSourceLoc &);
+    TIntermTyped *addUnaryMathLValue(TOperator op, TIntermTyped *child, const TSourceLoc &);
+    TIntermTyped *addBinaryMath(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &);
+    TIntermTyped *addBinaryMathBooleanResult(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &);
+    TIntermTyped *addAssign(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &loc);
+
+    TIntermBranch *addBranch(TOperator op, const TSourceLoc &loc);
+    TIntermBranch *addBranch(TOperator op, TIntermTyped *returnValue, const TSourceLoc &loc);
+
+    TIntermTyped *addFunctionCallOrMethod(TFunction *fnCall, TIntermNode *node,
+        const TSourceLoc &loc, bool *fatalError);
+
+  private:
+    TIntermTyped *addBinaryMathInternal(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &loc);
+    TIntermTyped *createAssign(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &loc);
+    // The funcReturnType parameter is expected to be non-null when the operation is a built-in function.
+    // It is expected to be null for other unary operators.
+    TIntermTyped *createUnaryMath(TOperator op, TIntermTyped *child, const TSourceLoc &loc,
+        const TType *funcReturnType);
+
+    // Return true if the checks pass
+    bool binaryOpCommonCheck(TOperator op, TIntermTyped *left, TIntermTyped *right,
+        const TSourceLoc &loc);
 };
 
 int PaParseStrings(size_t count, const char* const string[], const int length[],
                    TParseContext* context);
 
-#endif // _PARSER_HELPER_INCLUDED_
+#endif // COMPILER_TRANSLATOR_PARSECONTEXT_H_
