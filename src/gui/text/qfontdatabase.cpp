@@ -356,7 +356,6 @@ struct  QtFontFamily
         populated(false),
         fixedPitch(false),
         name(n), count(0), foundries(0)
-        , bogusWritingSystems(false)
         , askedForFallback(false)
     {
         memset(writingSystems, 0, sizeof(writingSystems));
@@ -375,7 +374,6 @@ struct  QtFontFamily
     int count;
     QtFontFoundry **foundries;
 
-    bool bogusWritingSystems;
     QStringList fallbackFamilies;
     bool askedForFallback;
     unsigned char writingSystems[QFontDatabase::WritingSystemsCount];
