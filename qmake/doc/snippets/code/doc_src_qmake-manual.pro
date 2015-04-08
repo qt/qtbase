@@ -333,7 +333,8 @@ win32:UI_DIR = c:/myproject/ui
 
 
 #! [57]
-VERSION = 1.2.3
+win32:VERSION = 1.2.3.4 # major.minor.patch.build
+else:VERSION = 1.2.3    # major.minor.patch
 #! [57]
 
 
