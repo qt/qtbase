@@ -1424,6 +1424,7 @@ static void verifyEquality(const QRegularExpression &re1, const QRegularExpressi
 {
     QVERIFY(re1 == re2);
     QVERIFY(re2 == re1);
+    QCOMPARE(qHash(re1), qHash(re2));
     QVERIFY(!(re1 != re2));
     QVERIFY(!(re2 != re1));
 
@@ -1431,22 +1432,26 @@ static void verifyEquality(const QRegularExpression &re1, const QRegularExpressi
 
     QVERIFY(re1 == re3);
     QVERIFY(re3 == re1);
+    QCOMPARE(qHash(re1), qHash(re3));
     QVERIFY(!(re1 != re3));
     QVERIFY(!(re3 != re1));
 
     QVERIFY(re2 == re3);
     QVERIFY(re3 == re2);
+    QCOMPARE(qHash(re2), qHash(re3));
     QVERIFY(!(re2 != re3));
     QVERIFY(!(re3 != re2));
 
     re3 = re2;
     QVERIFY(re1 == re3);
     QVERIFY(re3 == re1);
+    QCOMPARE(qHash(re1), qHash(re3));
     QVERIFY(!(re1 != re3));
     QVERIFY(!(re3 != re1));
 
     QVERIFY(re2 == re3);
     QVERIFY(re3 == re2);
+    QCOMPARE(qHash(re2), qHash(re3));
     QVERIFY(!(re2 != re3));
     QVERIFY(!(re3 != re2));
 }

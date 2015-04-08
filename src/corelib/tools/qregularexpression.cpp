@@ -38,6 +38,7 @@
 #ifndef QT_NO_REGULAREXPRESSION
 
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
@@ -1836,6 +1837,21 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 
     \sa operator==()
 */
+
+/*!
+    \since 5.6
+    \relates QRegularExpression
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QRegularExpression &key, uint seed) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.d->pattern);
+    seed = hash(seed, key.d->patternOptions);
+    return seed;
+}
 
 /*!
     Escapes all characters of \a str so that they no longer have any special
