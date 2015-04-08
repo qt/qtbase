@@ -451,7 +451,13 @@ QCocoaWindow::~QCocoaWindow()
 
 QSurfaceFormat QCocoaWindow::format() const
 {
-    return window()->requestedFormat();
+    QSurfaceFormat format = window()->requestedFormat();
+
+    // Upgrade the default surface format to include an alpha channel. The default RGB format
+    // causes Cocoa to spend an unreasonable amount of time converting it to RGBA internally.
+    if (format == QSurfaceFormat())
+        format.setAlphaBufferSize(8);
+    return format;
 }
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
