@@ -2432,7 +2432,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             ++it;
         } else {
             QTextFrame::Iterator lastIt;
-            if (!previousIt.atEnd())
+            if (!previousIt.atEnd() && previousIt != it)
                 lastIt = previousIt;
             previousIt = it;
             QTextBlock block = it.currentBlock();

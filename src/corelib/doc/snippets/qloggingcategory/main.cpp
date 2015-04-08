@@ -59,10 +59,11 @@ struct UsbEntry {
     int classtype;
 };
 
-QDebug operator<<(QDebug &dbg, const UsbEntry &entry)
+QDebug operator<<(QDebug &debug, const UsbEntry &entry)
 {
-    dbg.nospace() << "" << entry.id << " (" << entry.classtype << ")";
-    return dbg.space();
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "" << entry.id << " (" << entry.classtype << ')';
+    return debug;
 }
 
 QList<UsbEntry> usbEntries() {

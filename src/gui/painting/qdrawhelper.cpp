@@ -1539,40 +1539,29 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
                     const __m128i v_256 = _mm_set1_epi16(256);
                     const __m128i v_disty = _mm_set1_epi16(disty);
-                    __m128i v_fdx = _mm_set1_epi32(fdx*4);
-
-                    ptrdiff_t secondLine = reinterpret_cast<const uint *>(s2) - reinterpret_cast<const uint *>(s1);
-
-                    union Vect_buffer { __m128i vect; quint32 i[4]; };
-                    Vect_buffer v_fx;
-
-                    for (int i = 0; i < 4; i++) {
-                        v_fx.i[i] = fx;
-                        fx += fdx;
-                    }
+                    const __m128i v_fdx = _mm_set1_epi32(fdx*4);
+                    __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
 
                     while (b < boundedEnd) {
+                        __m128i offset = _mm_srli_epi32(v_fx, 16);
+                        const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset3 = _mm_cvtsi128_si32(offset);
+                        const __m128i tl = _mm_setr_epi32(s1[offset0], s1[offset1], s1[offset2], s1[offset3]);
+                        const __m128i tr = _mm_setr_epi32(s1[offset0 + 1], s1[offset1 + 1], s1[offset2 + 1], s1[offset3 + 1]);
+                        const __m128i bl = _mm_setr_epi32(s2[offset0], s2[offset1], s2[offset2], s2[offset3]);
+                        const __m128i br = _mm_setr_epi32(s2[offset0 + 1], s2[offset1 + 1], s2[offset2 + 1], s2[offset3 + 1]);
 
-                        Vect_buffer tl, tr, bl, br;
-
-                        for (int i = 0; i < 4; i++) {
-                            int x1 = v_fx.i[i] >> 16;
-                            const uint *addr_tl = reinterpret_cast<const uint *>(s1) + x1;
-                            const uint *addr_tr = addr_tl + 1;
-                            tl.i[i] = *addr_tl;
-                            tr.i[i] = *addr_tr;
-                            bl.i[i] = *(addr_tl+secondLine);
-                            br.i[i] = *(addr_tr+secondLine);
-                        }
-                        __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);
+                        __m128i v_distx = _mm_srli_epi16(v_fx, 12);
                         v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
                         v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
 
-                        interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
-                        b+=4;
-                        v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
+                        interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
+                        b += 4;
+                        v_fx = _mm_add_epi32(v_fx, v_fdx);
                     }
-                    fx = v_fx.i[0];
+                    fx = _mm_cvtsi128_si32(v_fx);
 #elif defined(__ARM_NEON__)
                     BILINEAR_DOWNSCALE_BOUNDS_PROLOG
 
@@ -1687,9 +1676,9 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         uint tr = s1[x2]; \
                         uint bl = s2[x1]; \
                         uint br = s2[x2]; \
-                        int distx = (fx & 0x0000ffff) >> 12; \
-                        int disty = (fy & 0x0000ffff) >> 12; \
-                        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty); \
+                        int distx = (fx & 0x0000ffff) >> 8; \
+                        int disty = (fy & 0x0000ffff) >> 8; \
+                        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty); \
                         fx += fdx; \
                         fy += fdy; \
                         ++b; \
@@ -1702,62 +1691,54 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
                     const __m128i v_256 = _mm_set1_epi16(256);
-                    __m128i v_fdx = _mm_set1_epi32(fdx*4);
-                    __m128i v_fdy = _mm_set1_epi32(fdy*4);
+                    const __m128i v_fdx = _mm_set1_epi32(fdx*4);
+                    const __m128i v_fdy = _mm_set1_epi32(fdy*4);
+                    __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
+                    __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
 
                     const uchar *textureData = data->texture.imageData;
                     const int bytesPerLine = data->texture.bytesPerLine;
-
-                    union Vect_buffer { __m128i vect; qint32 i[4]; };
-                    Vect_buffer v_fx, v_fy;
-
-                    for (int i = 0; i < 4; i++) {
-                        v_fx.i[i] = fx;
-                        v_fy.i[i] = fy;
-                        fx += fdx;
-                        fy += fdy;
-                    }
+                    const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
 
                     while (b < boundedEnd) {
-                        if (fdx > 0 && (v_fx.i[3] >> 16) >= image_x2)
+                        if (fdx > 0 && (short)_mm_extract_epi16(v_fx, 7) >= image_x2)
                             break;
-                        if (fdx < 0 && (v_fx.i[3] >> 16) < image_x1)
+                        if (fdx < 0 && (short)_mm_extract_epi16(v_fx, 7) < image_x1)
                             break;
-                        if (fdy > 0 && (v_fy.i[3] >> 16) >= image_y2)
+                        if (fdy > 0 && (short)_mm_extract_epi16(v_fy, 7) >= image_y2)
                             break;
-                        if (fdy < 0 && (v_fy.i[3] >> 16) < image_y1)
+                        if (fdy < 0 && (short)_mm_extract_epi16(v_fy, 7) < image_y1)
                             break;
 
-                        Vect_buffer tl, tr, bl, br;
-                        Vect_buffer v_fx_shifted, v_fy_shifted;
-                        v_fx_shifted.vect = _mm_srli_epi32(v_fx.vect, 16);
-                        v_fy_shifted.vect = _mm_srli_epi32(v_fy.vect, 16);
+                        const __m128i vy = _mm_packs_epi32(_mm_srli_epi32(v_fy, 16), _mm_setzero_si128());
+                        // 4x16bit * 4x16bit -> 4x32bit
+                        __m128i offset = _mm_unpacklo_epi16(_mm_mullo_epi16(vy, vbpl), _mm_mulhi_epi16(vy, vbpl));
+                        offset = _mm_add_epi32(offset, _mm_srli_epi32(v_fx, 16));
+                        const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+                        const int offset3 = _mm_cvtsi128_si32(offset);
+                        const uint *topData = (const uint *)(textureData);
+                        const __m128i tl = _mm_setr_epi32(topData[offset0], topData[offset1], topData[offset2], topData[offset3]);
+                        const __m128i tr = _mm_setr_epi32(topData[offset0 + 1], topData[offset1 + 1], topData[offset2 + 1], topData[offset3 + 1]);
+                        const uint *bottomData = (const uint *)(textureData + bytesPerLine);
+                        const __m128i bl = _mm_setr_epi32(bottomData[offset0], bottomData[offset1], bottomData[offset2], bottomData[offset3]);
+                        const __m128i br = _mm_setr_epi32(bottomData[offset0 + 1], bottomData[offset1 + 1], bottomData[offset2 + 1], bottomData[offset3 + 1]);
 
-                        for (int i = 0; i < 4; i++) {
-                            const int x1 = v_fx_shifted.i[i];
-                            const int y1 = v_fy_shifted.i[i];
-                            const uchar *sl = textureData + bytesPerLine * y1;
-                            const uint *s1 = (const uint *)sl;
-                            const uint *s2 = (const uint *)(sl + bytesPerLine);
-                            tl.i[i] = s1[x1];
-                            tr.i[i] = s1[x1+1];
-                            bl.i[i] = s2[x1];
-                            br.i[i] = s2[x1+1];
-                        }
-                        __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);
-                        __m128i v_disty = _mm_srli_epi16(v_fy.vect, 12);
+                        __m128i v_distx = _mm_srli_epi16(v_fx, 12);
+                        __m128i v_disty = _mm_srli_epi16(v_fy, 12);
                         v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
                         v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
                         v_disty = _mm_shufflehi_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
                         v_disty = _mm_shufflelo_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
 
-                        interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
-                        b+=4;
-                        v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
-                        v_fy.vect = _mm_add_epi32(v_fy.vect, v_fdy);
+                        interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
+                        b += 4;
+                        v_fx = _mm_add_epi32(v_fx, v_fdx);
+                        v_fy = _mm_add_epi32(v_fy, v_fdy);
                     }
-                    fx = v_fx.i[0];
-                    fy = v_fy.i[0];
+                    fx = _mm_cvtsi128_si32(v_fx);
+                    fy = _mm_cvtsi128_si32(v_fy);
 #endif
                 }
 
@@ -1778,10 +1759,16 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     uint bl = s2[x1];
                     uint br = s2[x2];
 
+#if defined(__SSE2__)
+                    // The SSE2 optimized interpolate_4_pixels is faster than interpolate_4_pixels_16.
+                    int distx = (fx & 0x0000ffff) >> 8;
+                    int disty = (fy & 0x0000ffff) >> 8;
+                    *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+#else
                     int distx = (fx & 0x0000ffff) >> 12;
                     int disty = (fy & 0x0000ffff) >> 12;
-
                     *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+#endif
 
                     fx += fdx;
                     fy += fdy;

@@ -73,6 +73,7 @@ public:
     bool startComposition(HWND hwnd);
     bool composition(HWND hwnd, LPARAM lParam);
     bool endComposition(HWND hwnd);
+    inline bool isComposing() const { return m_compositionContext.isComposing; }
 
     int reconvertString(RECONVERTSTRING *reconv);
 

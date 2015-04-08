@@ -97,16 +97,31 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
-    for (int i = QPlatformDialogHelper::FirstButton; i < QPlatformDialogHelper::LastButton; i<<=1) {
-        if ( opt->standardButtons() & i ) {
-            const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(i);
-            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i, QJNIObjectPrivate::fromString(text).object());
-        }
+    // http://developer.android.com/design/building-blocks/dialogs.html
+    // dismissive action on the left, affirmative on the right
+    // There don't seem to be more fine-grained rules, but the OS X layout
+    // at least conforms to this one rule and makes the rest deterministic.
+    const int * currentLayout = buttonLayout(Qt::Horizontal, MacLayout);
+    while (*currentLayout != QPlatformDialogHelper::EOL) {
+        int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
+        addButtons(opt, static_cast<ButtonRole>(role));
+        ++currentLayout;
     }
 
     m_javaMessageDialog.callMethod<void>("show", "(J)V", jlong(static_cast<QObject*>(this)));
     m_shown = true;
     return true;
+}
+
+void QAndroidPlatformMessageDialogHelper::addButtons(QSharedPointer<QMessageDialogOptions> opt, ButtonRole role)
+{
+    for (int i = QPlatformDialogHelper::FirstButton; i < QPlatformDialogHelper::LastButton; i<<=1) {
+        StandardButton b = static_cast<StandardButton>(i);
+        if (buttonRole(b) == role && (opt->standardButtons() & i)) {
+            const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(b);
+            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i, QJNIObjectPrivate::fromString(text).object());
+        }
+    }
 }
 
 void QAndroidPlatformMessageDialogHelper::hide()

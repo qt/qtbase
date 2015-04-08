@@ -92,6 +92,15 @@ public:
         return *this;
     }
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
+    {
+        resize(list.size());
+        std::copy(list.begin(), list.end(), this->begin());
+        return *this;
+    }
+#endif
+
     inline void removeLast() {
         Q_ASSERT(s > 0);
         realloc(s - 1, a);

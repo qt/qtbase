@@ -972,6 +972,7 @@ QByteArray QIODevice::readAll()
 
     QByteArray result;
     qint64 readBytes = 0;
+    const bool sequential = d->isSequential();
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
@@ -979,11 +980,12 @@ QByteArray QIODevice::readAll()
             return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
-        d->pos += readBytes;
+        if (!sequential)
+            d->pos += readBytes;
     }
 
     qint64 theSize;
-    if (d->isSequential() || (theSize = size()) == 0) {
+    if (sequential || (theSize = size()) == 0) {
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
@@ -1628,6 +1630,23 @@ QString QIODevice::errorString() const
 
     \sa read(), write()
 */
+
+/*!
+  \internal
+  \fn int qt_subtract_from_timeout(int timeout, int elapsed)
+
+  Reduces the \a timeout by \a elapsed, taking into account that -1 is a
+  special value for timeouts.
+*/
+
+int qt_subtract_from_timeout(int timeout, int elapsed)
+{
+    if (timeout == -1)
+        return -1;
+
+    timeout = timeout - elapsed;
+    return timeout < 0 ? 0 : timeout;
+}
 
 
 #if !defined(QT_NO_DEBUG_STREAM)

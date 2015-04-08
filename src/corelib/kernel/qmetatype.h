@@ -1364,6 +1364,11 @@ namespace QtPrivate
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(void*)  };
     };
 
+
+QT_WARNING_PUSH
+// In C++03 mode, clang consider local or unnamed type and throw a warning instead of ignoring them
+QT_WARNING_DISABLE_CLANG("-Wunnamed-type-template-args")
+QT_WARNING_DISABLE_CLANG("-Wlocal-type-template-args")
     template<typename T> char qt_getEnumMetaObject(const T&);
 
     template<typename T>
@@ -1375,6 +1380,7 @@ namespace QtPrivate
         // qt_getEnumMetaObject(T) which returns 'char'
         enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
     };
+QT_WARNING_POP
 
     template<typename T, typename Enable = void>
     struct MetaObjectForType

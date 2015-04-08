@@ -58,6 +58,7 @@ private slots:
     void readLine2();
 
     void peekBug();
+    void readAllKeepPosition();
 };
 
 void tst_QIODevice::initTestCase()
@@ -582,6 +583,49 @@ void tst_QIODevice::peekBug()
     QCOMPARE(onetwo[0], 'e');
     QCOMPARE(onetwo[1], 'f');
 
+}
+
+class SequentialReadBuffer : public QIODevice
+{
+public:
+    SequentialReadBuffer(const char *data) : QIODevice(), buf(data), offset(0) { }
+
+    bool isSequential() const Q_DECL_OVERRIDE { return true; }
+    const QByteArray &buffer() const { return buf; }
+
+protected:
+    qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    {
+        maxSize = qMin(maxSize, qint64(buf.size() - offset));
+        memcpy(data, buf.constData() + offset, maxSize);
+        offset += maxSize;
+        return maxSize;
+    }
+    qint64 writeData(const char * /* data */, qint64 /* maxSize */) Q_DECL_OVERRIDE
+    {
+        return -1;
+    }
+
+private:
+    QByteArray buf;
+    int offset;
+};
+
+// Test readAll() on position change for sequential device
+void tst_QIODevice::readAllKeepPosition()
+{
+    SequentialReadBuffer buffer("Hello world!");
+    buffer.open(QIODevice::ReadOnly);
+    char c;
+
+    QVERIFY(buffer.getChar(&c));
+    QCOMPARE(buffer.pos(), qint64(0));
+    buffer.ungetChar(c);
+    QCOMPARE(buffer.pos(), qint64(0));
+
+    QByteArray resultArray = buffer.readAll();
+    QCOMPARE(buffer.pos(), qint64(0));
+    QCOMPARE(resultArray, buffer.buffer());
 }
 
 QTEST_MAIN(tst_QIODevice)

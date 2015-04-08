@@ -850,9 +850,10 @@ int QWidgetItemV2::heightForWidth(int width) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSizePolicy &p)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QSizePolicy(horizontalPolicy = " << p.horizontalPolicy()
                   << ", verticalPolicy = " << p.verticalPolicy() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

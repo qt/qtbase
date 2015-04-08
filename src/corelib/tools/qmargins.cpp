@@ -33,7 +33,8 @@
 
 #include "qmargins.h"
 #include "qdatastream.h"
-#include "qdebug.h"
+
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -431,10 +432,13 @@ QDataStream &operator>>(QDataStream &s, QMargins &m)
 #endif // QT_NO_DATASTREAM
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QMargins &m) {
+QDebug operator<<(QDebug dbg, const QMargins &m)
+{
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QMargins(" << m.left() << ", "
-            << m.top() << ", " << m.right() << ", " << m.bottom() << ')';
+    dbg.nospace();
+    dbg << "QMargins" << '(';
+    QtDebugUtils::formatQMargins(dbg, m);
+    dbg << ')';
     return dbg;
 }
 #endif
@@ -764,10 +768,13 @@ QDataStream &operator>>(QDataStream &s, QMarginsF &m)
 #endif // QT_NO_DATASTREAM
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QMarginsF &m) {
+QDebug operator<<(QDebug dbg, const QMarginsF &m)
+{
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QMarginsF(" << m.left() << ", "
-            << m.top() << ", " << m.right() << ", " << m.bottom() << ')';
+    dbg.nospace();
+    dbg << "QMarginsF" << '(';
+    QtDebugUtils::formatQMargins(dbg, m);
+    dbg << ')';
     return dbg;
 }
 #endif

@@ -362,6 +362,15 @@
     Assigns \a other to this array and returns a reference to this array.
  */
 
+/*! \fn QVarLengthArray<T, Prealloc> &QVarLengthArray::operator=(std::initializer_list<T> list)
+    \since 5.5
+
+    Assigns the values of \a list to this array, and returns a reference to this array.
+
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
+*/
+
 /*! \fn QVarLengthArray::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
     Constructs a copy of \a other.
  */

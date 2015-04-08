@@ -41,9 +41,13 @@
 #include <unistd.h>
 
 #ifdef __linux__
-#  define HAVE_PIPE2    1
-#  define HAVE_EVENTFD  1
-#  include <sys/eventfd.h>
+#  if (defined(__GLIBC__) && (__GLIBC__ << 16) + __GLIBC_MINOR__ >= 0x207) || defined(__BIONIC__)
+#    include <sys/eventfd.h>
+#    define HAVE_EVENTFD  1
+#  endif
+#  if (defined(__GLIBC__) && (__GLIBC__ << 16) + __GLIBC_MINOR__ >= 0x209) || defined(__BIONIC__)
+#    define HAVE_PIPE2    1
+#  endif
 #endif
 
 #if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500

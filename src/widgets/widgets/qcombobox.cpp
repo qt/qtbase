@@ -53,6 +53,7 @@
 #include <qmath.h>
 #include <qmetaobject.h>
 #include <qabstractproxymodel.h>
+#include <qstylehints.h>
 #include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
@@ -225,6 +226,7 @@ void QComboBoxPrivate::_q_modelReset()
     }
     if (currentIndex.row() != indexBeforeChange)
         _q_emitCurrentIndexChanged(currentIndex);
+    modelChanged();
     q->update();
 }
 
@@ -2088,8 +2090,11 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
         const QString newText = itemText(normalized);
-        if (lineEdit->text() != newText)
+        if (lineEdit->text() != newText) {
             lineEdit->setText(newText);
+            if (lineEdit->completer())
+                lineEdit->completer()->setCompletionPrefix(newText);
+        }
         updateLineEditGeometry();
     }
     if (indexChanged) {
@@ -3014,39 +3019,51 @@ bool QComboBox::event(QEvent *event)
 void QComboBox::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QComboBox);
+    if (!QGuiApplication::styleHints()->setFocusOnTouchRelease())
+        d->showPopupFromMouseEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
+{
+    Q_Q(QComboBox);
     QStyleOptionComboBox opt;
-    initStyleOption(&opt);
-    QStyle::SubControl sc = style()->hitTestComplexControl(QStyle::CC_ComboBox, &opt, e->pos(),
-                                                           this);
-    if (e->button() == Qt::LeftButton && (sc == QStyle::SC_ComboBoxArrow || !isEditable())
-        && !d->viewContainer()->isVisible()) {
+    q->initStyleOption(&opt);
+    QStyle::SubControl sc = q->style()->hitTestComplexControl(QStyle::CC_ComboBox, &opt, e->pos(), q);
+
+    if (e->button() == Qt::LeftButton
+            && sc != QStyle::SC_None
+            && (sc == QStyle::SC_ComboBoxArrow || !q->isEditable())
+            && !viewContainer()->isVisible()) {
         if (sc == QStyle::SC_ComboBoxArrow)
-            d->updateArrow(QStyle::State_Sunken);
+            updateArrow(QStyle::State_Sunken);
 #ifdef QT_KEYPAD_NAVIGATION
         //if the container already exists, then d->viewContainer() is safe to call
-        if (d->container) {
+        if (container) {
 #endif
             // We've restricted the next couple of lines, because by not calling
             // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
-            d->viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
-            d->viewContainer()->initialClickPosition = mapToGlobal(e->pos());
+            viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
+            viewContainer()->initialClickPosition = q->mapToGlobal(e->pos());
 #ifdef QT_KEYPAD_NAVIGATION
         }
 #endif
-        showPopup();
+        q->showPopup();
         // The code below ensures that regular mousepress and pick item still works
         // If it was not called the viewContainer would ignore event since it didn't have
         // a mousePressEvent first.
-        if (d->viewContainer())
-            d->viewContainer()->maybeIgnoreMouseButtonRelease = false;
+        if (viewContainer())
+            viewContainer()->maybeIgnoreMouseButtonRelease = false;
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && d->lineEdit) {
-            d->lineEdit->event(e);  //so lineedit can move cursor, etc
+        if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {
+            lineEdit->event(e);  //so lineedit can move cursor, etc
             return;
         }
 #endif
-        QWidget::mousePressEvent(e);
+        e->ignore();
     }
 }
 
@@ -3056,8 +3073,9 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
 void QComboBox::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QComboBox);
-    Q_UNUSED(e);
     d->updateArrow(QStyle::State_None);
+    if (QGuiApplication::styleHints()->setFocusOnTouchRelease() && hasFocus())
+        d->showPopupFromMouseEvent(e);
 }
 
 /*!
