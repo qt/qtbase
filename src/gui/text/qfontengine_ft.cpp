@@ -804,12 +804,12 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
 static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
 {
     // false if exceeds QFontEngineFT::Glyph metrics
-    return (short)(info.linearAdvance) == info.linearAdvance
-            && (signed char)(info.xOff) == info.xOff
-            && (uchar)(info.width) == info.width
-            && (uchar)(info.height) == info.height
-            && (signed char)(info.x) == info.x
-            && (signed char)(info.y) == info.y;
+    return (short)(info.linearAdvance) != info.linearAdvance
+            || (signed char)(info.xOff) != info.xOff
+            || (uchar)(info.width) != info.width
+            || (uchar)(info.height) != info.height
+            || (signed char)(info.x) != info.x
+            || (signed char)(info.y) != info.y;
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
