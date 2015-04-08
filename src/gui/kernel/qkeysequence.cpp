@@ -39,6 +39,7 @@
 #ifndef QT_NO_SHORTCUT
 
 #include "qdebug.h"
+#include <QtCore/qhashfunctions.h>
 #ifndef QT_NO_REGEXP
 # include "qregexp.h"
 #endif
@@ -1409,6 +1410,16 @@ bool QKeySequence::operator==(const QKeySequence &other) const
             d->key[3] == other.d->key[3]);
 }
 
+/*!
+    \since 5.6
+
+    Calculates the hash value of \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QKeySequence &key, uint seed) Q_DECL_NOTHROW
+{
+    return qHashRange(key.d->key, key.d->key + QKeySequencePrivate::MaxKeyCount, seed);
+}
 
 /*!
     Provides an arbitrary comparison of this key sequence and
