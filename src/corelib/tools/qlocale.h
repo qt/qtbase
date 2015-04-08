@@ -45,12 +45,15 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QDate;
 class QDateTime;
+class QLocale;
 class QTime;
 class QVariant;
 class QTextStream;
 class QTextStreamPrivate;
 
 class QLocalePrivate;
+
+Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_CORE_EXPORT QLocale
 {
@@ -979,6 +982,8 @@ public:
 private:
     QLocale(QLocalePrivate &dd);
     friend class QLocalePrivate;
+    friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW;
+
     QSharedDataPointer<QLocalePrivate> d;
 };
 Q_DECLARE_TYPEINFO(QLocale, Q_MOVABLE_TYPE);

@@ -42,6 +42,7 @@
 
 #include "qdatastream.h"
 #include "qdebug.h"
+#include "qhashfunctions.h"
 #include "qstring.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
@@ -863,6 +864,21 @@ bool QLocale::operator==(const QLocale &other) const
 bool QLocale::operator!=(const QLocale &other) const
 {
     return d->m_data != other.d->m_data || d->m_numberOptions != other.d->m_numberOptions;
+}
+
+/*!
+    \since 5.6
+    \relates QLocale
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.d->m_data);
+    seed = hash(seed, key.d->m_numberOptions);
+    return seed;
 }
 
 /*!

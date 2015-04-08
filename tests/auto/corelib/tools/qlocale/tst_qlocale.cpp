@@ -371,6 +371,8 @@ void tst_QLocale::ctor()
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                 + QLocale::languageToString(l.language()) \
                 + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+        QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
+        QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
     }
 
     QLocale::setDefault(QLocale(QLocale::C));
