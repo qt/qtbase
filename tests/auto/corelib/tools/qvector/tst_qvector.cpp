@@ -86,6 +86,8 @@ private:
     }
 };
 
+inline uint qHash(const Movable &key, uint seed = 0) { return qHash(key.i, seed); }
+
 QAtomicInt Movable::counter = 0;
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(Movable, Q_MOVABLE_TYPE);
@@ -154,6 +156,8 @@ private:
     }
 };
 QAtomicInt Custom::counter = 0;
+
+inline uint qHash(const Custom &key, uint seed = 0) { return qHash(key.i, seed); }
 
 Q_DECLARE_METATYPE(Custom);
 
@@ -237,6 +241,9 @@ private slots:
     void prependInt() const;
     void prependMovable() const;
     void prependCustom() const;
+    void qhashInt() const { qhash<int>(); }
+    void qhashMovable() const { qhash<Movable>(); }
+    void qhashCustom() const { qhash<Custom>(); }
     void removeInt() const;
     void removeMovable() const;
     void removeCustom() const;
@@ -302,6 +309,7 @@ private:
     template<typename T> void fill() const;
     template<typename T> void fromList() const;
     template<typename T> void insert() const;
+    template<typename T> void qhash() const;
     template<typename T> void prepend() const;
     template<typename T> void remove() const;
     template<typename T> void size() const;
@@ -1443,6 +1451,16 @@ void tst_QVector::mid() const
     QCOMPARE(list.mid(6, 10), QVector<QString>() << "kitty");
     QCOMPARE(list.mid(-1, 20), list);
     QCOMPARE(list.mid(4), QVector<QString>() << "buck" << "hello" << "kitty");
+}
+
+template <typename T>
+void tst_QVector::qhash() const
+{
+    QVector<T> l1, l2;
+    QCOMPARE(qHash(l1), qHash(l2));
+    l1 << SimpleValue<T>::at(0);
+    l2 << SimpleValue<T>::at(0);
+    QCOMPARE(qHash(l1), qHash(l2));
 }
 
 template<typename T>
