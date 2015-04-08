@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -72,6 +72,10 @@
 #ifdef Q_OS_WINRT
 #include <Ws2tcpip.h>
 #endif // Q_OS_WINRT
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
 
 #if defined(Q_OS_VXWORKS) && defined(_WRS_KERNEL)
 #  include <envLib.h>
@@ -2818,10 +2822,11 @@ QString QSysInfo::prettyProductName()
 
     This function returns the same as QHostInfo::localHostName().
 
-    \sa QHostInfo::localDomainName
+    \sa QHostInfo::localDomainName, machineUniqueId()
  */
 QString QSysInfo::machineHostName()
 {
+    // the hostname can change, so we can't cache it
 #if defined(Q_OS_LINUX)
     // gethostname(3) on Linux just calls uname(2), so do it ourselves
     // and avoid a memcpy
@@ -2843,6 +2848,87 @@ QString QSysInfo::machineHostName()
     return QString();
 }
 #endif // QT_BOOTSTRAPPED
+
+enum {
+    UuidStringLen = sizeof("00000000-0000-0000-0000-000000000000") - 1
+};
+
+/*!
+    \since 5.10
+
+    Returns a unique ID for this machine, if one can be determined. If no
+    unique ID could be determined, this function returns an empty byte array.
+    Unlike machineHostName(), the value returned by this function is likely
+    globally unique.
+
+    A unique ID is useful in network operations to identify this machine for an
+    extended period of time, when the IP address could change or if this
+    machine could have more than one IP address. For example, the ID could be
+    used when communicating with a server or when storing device-specific data
+    in shared network storage.
+
+    Note that on some systems, this value will persist across reboots and on
+    some it will not. Applications should not blindly depend on this fact
+    without verifying the OS capabilities. In particular, on Linux systems,
+    this ID is usually permanent and it matches the D-Bus machine ID, except
+    for nodes without their own storage (replicated nodes).
+
+    \sa machineHostName()
+*/
+QByteArray QSysInfo::machineUniqueId()
+{
+    // the machine unique ID cannot change
+    static const QByteArray cache = []() {
+#ifdef Q_OS_BSD4
+        char uuid[UuidStringLen];
+        size_t uuidlen = sizeof(uuid);
+#  ifdef KERN_HOSTUUID
+        int name[] = { CTL_KERN, KERN_HOSTUUID };
+        if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
+                && uuidlen == sizeof(uuid))
+            return QByteArray(uuid, uuidlen);
+
+#  else
+        // Darwin: no fixed value, we need to search by name
+        if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
+                return QByteArray(uuid, uuidlen);
+#  endif
+#elif defined(Q_OS_UNIX)
+        // the modern name on Linux is /etc/machine-id, but that path is
+        // unlikely to exist on non-Linux (non-systemd) systems. The old
+        // path is more than enough.
+        static const char fullfilename[] = "/usr/local/var/lib/dbus/machine-id";
+        const char *firstfilename = fullfilename + sizeof("/usr/local") - 1;
+        int fd = qt_safe_open(firstfilename, O_RDONLY);
+        if (fd == -1 && errno == ENOENT)
+            fd = qt_safe_open(fullfilename, O_RDONLY);
+
+        if (fd != -1) {
+            char buffer[32];    // 128 bits, hex-encoded
+            qint64 len = qt_safe_read(fd, buffer, sizeof(buffer));
+            qt_safe_close(fd);
+
+            if (len != -1)
+                return QByteArray(buffer, len);
+        }
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+        // Let's poke at the registry
+        HKEY key = NULL;
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+                == ERROR_SUCCESS) {
+            wchar_t buffer[UuidStringLen + 1];
+            DWORD size = sizeof(buffer);
+            bool ok = (RegQueryValueEx(key, L"MachineGuid", NULL, NULL, (LPBYTE)buffer, &size) ==
+                       ERROR_SUCCESS);
+            RegCloseKey(key);
+            if (ok)
+                return QStringView(buffer, (size - 1) / 2).toLatin1();
+        }
+#endif
+        return QByteArray();
+    }();
+    return cache;
+}
 
 /*!
     \macro void Q_ASSERT(bool test)

@@ -240,6 +240,7 @@ QT_WARNING_POP
     static QString prettyProductName();
 
     static QString machineHostName();
+    static QByteArray machineUniqueId();
 };
 
 #undef QT_SYSINFO_DEPRECATED_X
