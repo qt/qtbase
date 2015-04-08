@@ -40,6 +40,9 @@ QT_BEGIN_NAMESPACE
 
 
 class QVariant;
+class QSizePolicy;
+
+Q_DECL_CONST_FUNCTION inline uint qHash(QSizePolicy key, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_WIDGETS_EXPORT QSizePolicy
 {
@@ -112,6 +115,9 @@ public:
 
     bool operator==(const QSizePolicy& s) const { return data == s.data; }
     bool operator!=(const QSizePolicy& s) const { return data != s.data; }
+
+    friend Q_DECL_CONST_FUNCTION uint qHash(QSizePolicy key, uint seed) Q_DECL_NOTHROW { return qHash(key.data, seed); }
+
     operator QVariant() const;
 
     int horizontalStretch() const { return static_cast<int>(bits.horStretch); }

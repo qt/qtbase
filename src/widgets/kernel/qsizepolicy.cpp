@@ -332,6 +332,15 @@ void QSizePolicy::setControlType(ControlType type)
 */
 
 /*!
+    \fn uint qHash(QSizePolicy key, uint seed = 0)
+    \since 5.6
+    \relates QSizePolicy
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+
+/*!
     \fn int QSizePolicy::horizontalStretch() const
 
     Returns the horizontal stretch factor of the size policy.
