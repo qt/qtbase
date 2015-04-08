@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qwinrtinputcontext.h"
+#include "qwinrtscreen.h"
 #include <QtGui/QWindow>
 
 #include <wrl.h>
@@ -61,8 +62,8 @@ QT_BEGIN_NAMESPACE
     Windows Phone, however, supports direct hiding/showing of the keyboard.
 */
 
-QWinRTInputContext::QWinRTInputContext(ICoreWindow *window)
-    : m_window(window)
+QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
+    : m_screen(screen)
 {
     IInputPaneStatics *statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
@@ -81,9 +82,7 @@ QWinRTInputContext::QWinRTInputContext(ICoreWindow *window)
         inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
                                   this, &QWinRTInputContext::onHiding).Get(), &hideToken);
 
-        Rect rect;
-        inputPane->get_OccludedRect(&rect);
-        m_keyboardRect = QRectF(rect.X, rect.Y, rect.Width, rect.Height);
+        handleVisibilityChange(inputPane);
         m_isInputPanelVisible = !m_keyboardRect.isEmpty();
     } else {
         qWarning(Q_FUNC_INFO ": failed to retrieve InputPane.");
@@ -104,33 +103,27 @@ HRESULT QWinRTInputContext::onShowing(IInputPane *pane, IInputPaneVisibilityEven
 {
     m_isInputPanelVisible = true;
     emitInputPanelVisibleChanged();
-
-    Rect rect;
-    pane->get_OccludedRect(&rect);
-    setKeyboardRect(QRectF(rect.X, rect.Y, rect.Width, rect.Height));
-
-    return S_OK;
+    return handleVisibilityChange(pane);
 }
 
 HRESULT QWinRTInputContext::onHiding(IInputPane *pane, IInputPaneVisibilityEventArgs *)
 {
     m_isInputPanelVisible = false;
     emitInputPanelVisibleChanged();
-
-    Rect rect;
-    pane->get_OccludedRect(&rect);
-    setKeyboardRect(QRectF(rect.X, rect.Y, rect.Width, rect.Height));
-
-    return S_OK;
+    return handleVisibilityChange(pane);
 }
 
-void QWinRTInputContext::setKeyboardRect(const QRectF rect)
+HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
 {
-    if (m_keyboardRect == rect)
-        return;
-
-    m_keyboardRect = rect;
-    emitKeyboardRectChanged();
+    Rect rect;
+    pane->get_OccludedRect(&rect);
+    const QRectF keyboardRect = QRectF(qRound(rect.X * m_screen->scaleFactor()), qRound(rect.Y * m_screen->scaleFactor()),
+                                       qRound(rect.Width * m_screen->scaleFactor()), qRound(rect.Height * m_screen->scaleFactor()));
+    if (m_keyboardRect != keyboardRect) {
+        m_keyboardRect = keyboardRect;
+        emitKeyboardRectChanged();
+    }
+    return S_OK;
 }
 
 #ifdef Q_OS_WINPHONE
@@ -234,7 +227,7 @@ HRESULT QWinRTInputContext::GetPropertyValue(PROPERTYID idProp, VARIANT *retVal)
         break;
     case 30020: //UIA_NativeWindowHandlePropertyId
         retVal->vt = VT_PTR;
-        retVal->punkVal = m_window;
+        retVal->punkVal = m_screen->coreWindow();
         break;
     }
     return S_OK;
@@ -244,7 +237,7 @@ HRESULT QWinRTInputContext::get_HostRawElementProvider(IRawElementProviderSimple
 {
     // Return the window's element provider
     IInspectable *hostProvider;
-    HRESULT hr = m_window->get_AutomationHostProvider(&hostProvider);
+    HRESULT hr = m_screen->coreWindow()->get_AutomationHostProvider(&hostProvider);
     if (SUCCEEDED(hr)) {
         hr = hostProvider->QueryInterface(IID_PPV_ARGS(retVal));
         hostProvider->Release();

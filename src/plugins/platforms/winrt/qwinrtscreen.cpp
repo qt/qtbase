@@ -497,9 +497,9 @@ QWinRTScreen::QWinRTScreen()
     Q_ASSERT_SUCCEEDED(hr);
 
 #ifdef Q_OS_WINPHONE
-    d->inputContext.reset(new QWinRTInputContext(d->coreWindow.Get()));
+    d->inputContext.reset(new QWinRTInputContext(this));
 #else
-    d->inputContext = Make<QWinRTInputContext>(d->coreWindow.Get());
+    d->inputContext = Make<QWinRTInputContext>(this);
 #endif
 
     Rect rect;
@@ -678,6 +678,12 @@ QDpi QWinRTScreen::logicalDpi() const
 {
     Q_D(const QWinRTScreen);
     return QDpi(d->logicalDpi, d->logicalDpi);
+}
+
+qreal QWinRTScreen::scaleFactor() const
+{
+    Q_D(const QWinRTScreen);
+    return d->scaleFactor;
 }
 
 QWinRTInputContext *QWinRTScreen::inputContext() const
