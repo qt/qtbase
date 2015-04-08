@@ -3237,7 +3237,6 @@ bool QDateTime::isDaylightTime() const
 
 void QDateTime::setDate(const QDate &date)
 {
-    detach();
     d->setDateTime(date, time());
 }
 
@@ -3256,7 +3255,6 @@ void QDateTime::setDate(const QDate &date)
 
 void QDateTime::setTime(const QTime &time)
 {
-    detach();
     d->setDateTime(date(), time);
 }
 
@@ -3278,7 +3276,7 @@ void QDateTime::setTime(const QTime &time)
 
 void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 {
-    detach();
+    QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
     d->setTimeSpec(spec, 0);
     d->checkValidDateTime();
 }
@@ -3300,7 +3298,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
 void QDateTime::setOffsetFromUtc(int offsetSeconds)
 {
-    detach();
+    QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
     d->setTimeSpec(Qt::OffsetFromUTC, offsetSeconds);
     d->checkValidDateTime();
 }
@@ -3319,7 +3317,7 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 
 void QDateTime::setTimeZone(const QTimeZone &toZone)
 {
-    detach();
+    QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
     d->m_spec = Qt::TimeZone;
     d->m_offsetFromUtc = 0;
     d->m_timeZone = toZone;
@@ -3395,7 +3393,7 @@ uint QDateTime::toTime_t() const
 */
 void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
-    detach();
+    QDateTimePrivate *d = this->d.data(); // detaches (and shadows d)
 
     d->m_status = 0;
     switch (d->m_spec) {
@@ -3669,7 +3667,6 @@ QString QDateTime::toString(const QString& format) const
 QDateTime QDateTime::addDays(qint64 ndays) const
 {
     QDateTime dt(*this);
-    dt.detach();
     QPair<QDate, QTime> p = d->getDateTime();
     QDate &date = p.first;
     QTime &time = p.second;
@@ -3705,7 +3702,6 @@ QDateTime QDateTime::addDays(qint64 ndays) const
 QDateTime QDateTime::addMonths(int nmonths) const
 {
     QDateTime dt(*this);
-    dt.detach();
     QPair<QDate, QTime> p = d->getDateTime();
     QDate &date = p.first;
     QTime &time = p.second;
@@ -3741,7 +3737,6 @@ QDateTime QDateTime::addMonths(int nmonths) const
 QDateTime QDateTime::addYears(int nyears) const
 {
     QDateTime dt(*this);
-    dt.detach();
     QPair<QDate, QTime> p = d->getDateTime();
     QDate &date = p.first;
     QTime &time = p.second;
@@ -3790,7 +3785,6 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         return QDateTime();
 
     QDateTime dt(*this);
-    dt.detach();
     if (d->m_spec == Qt::LocalTime || d->m_spec == Qt::TimeZone)
         // Convert to real UTC first in case crosses daylight transition
         dt.setMSecsSinceEpoch(d->toMSecsSinceEpoch() + msecs);
@@ -4267,7 +4261,6 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetSeconds)
 {
     QDateTime dt;
-    dt.detach();
     dt.d->setTimeSpec(spec, offsetSeconds);
     dt.setMSecsSinceEpoch(msecs);
     return dt;
@@ -4687,14 +4680,6 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     \sa toTimeSpec()
 */
 
-/*!
-    \internal
- */
-void QDateTime::detach()
-{
-    d.detach();
-}
-
 /*****************************************************************************
   Date/time stream functions
  *****************************************************************************/
@@ -4846,8 +4831,6 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 
 QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 {
-    dateTime.detach();
-
     QDate dt;
     QTime tm;
     qint8 ts = 0;

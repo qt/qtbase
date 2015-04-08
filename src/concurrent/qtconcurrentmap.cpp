@@ -229,6 +229,8 @@
     Calls \a function once for each item in \a sequence. The \a function is
     passed a reference to the item, so that any modifications done to the item
     will appear in \a sequence.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -237,6 +239,8 @@
     Calls \a function once for each item from \a begin to \a end. The
     \a function is passed a reference to the item, so that any modifications
     done to the item will appear in the sequence which the iterators belong to.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -245,6 +249,8 @@
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. You can use QFuture::const_iterator or
     QFutureIterator to iterate through the results.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -253,6 +259,8 @@
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. You can use
     QFuture::const_iterator or QFutureIterator to iterate through the results.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -266,6 +274,8 @@
     Note that while \a mapFunction is called concurrently, only one thread at a
     time will call \a reduceFunction. The order in which \a reduceFunction is
     called is determined by \a reduceOptions.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -281,6 +291,8 @@
     \a reduceFunction is called is undefined.
 
     \note QtConcurrent::OrderedReduce results in the ordered reduction.
+
+    \sa {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -292,7 +304,7 @@
 
   \note This function will block until all items in the sequence have been processed.
 
-  \sa map()
+  \sa map(), {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -305,7 +317,7 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
-  \sa map()
+  \sa map(), {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -316,7 +328,7 @@
 
   \note This function will block until all items in the sequence have been processed.
 
-  \sa mapped()
+  \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -333,7 +345,7 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
-  \sa mapped()
+  \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -348,7 +360,7 @@
 
   \note This function will block until all items in the sequence have been processed.
 
-  \sa mapped()
+  \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
 /*!
@@ -364,5 +376,5 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
-  \sa blockingMappedReduced()
+  \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
 */

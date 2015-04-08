@@ -58,8 +58,9 @@
 - (NSString *)nameForLegacyLogging;
 @end
 
-#pragma GCC diagnostic push // Ignore XCTestProbe deprecation
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+QT_WARNING_PUSH
+// Ignore XCTestProbe deprecation
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 
 // ---------------------------------------------------------
 
@@ -498,4 +499,4 @@ bool QXcodeTestLogger::isActive()
     return s_currentTestLogger;
 }
 
-#pragma GCC diagnostic pop
+QT_WARNING_POP

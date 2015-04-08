@@ -77,8 +77,13 @@ class QTemporaryFileEngine : public QFSFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
-    QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
-        : QFSFileEngine(), filePathIsTemplate(fileIsTemplate),
+
+    QTemporaryFileEngine(const QString &file,
+                         quint32 fileMode,
+                         bool fileIsTemplate = true) :
+        QFSFileEngine(),
+        fileMode(fileMode),
+        filePathIsTemplate(fileIsTemplate),
         filePathWasTemplate(fileIsTemplate)
     {
         Q_D(QFSFileEngine);
@@ -100,6 +105,7 @@ public:
     bool renameOverwrite(const QString &newName);
     bool close();
 
+    quint32 fileMode;
     bool filePathIsTemplate;
     bool filePathWasTemplate;
 };

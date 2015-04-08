@@ -561,21 +561,28 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
+SYSTEM_VARIABLES="AR RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
 for varname in $SYSTEM_VARIABLES; do
     qmakevarname="${varname}"
+    qmakecmdargs=""
     # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
     if [ "${varname}" = "LDFLAGS" ]; then
         qmakevarname="LFLAGS"
     elif [ "${varname}" = "LD" ]; then
         qmakevarname="LINK"
+    elif [ "${varname}" = "AR" ]; then
+        # QMAKE_AR needs to be set to "/path/to/ar cqs" but the
+        # environment variable will be set to the command only so we
+        # need to append " cqs" for autoconf compatibility
+        qmakecmdargs=" cqs"
     fi
     cmd=`echo \
 'if [ -n "\$'${varname}'" ]; then
-    QMakeVar set QMAKE_'${qmakevarname}' "\$'${varname}'"
+    QMakeVar set QMAKE_'${qmakevarname}' "\$'${varname}${qmakecmdargs}'"
 fi'`
     eval "$cmd"
 done
+
 # Use CC/CXX to run config.tests
 mkdir -p "$outpath/config.tests"
 rm -f "$outpath/config.tests/.qmake.cache"

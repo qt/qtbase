@@ -179,6 +179,8 @@
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true, the item is kept in \a sequence;
     otherwise, the item is removed from \a sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -188,6 +190,8 @@
     new Sequence of kept items. If \a filterFunction returns \c true, a copy of
     the item is put in the new Sequence. Otherwise, the item will \e not
     appear in the new Sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -197,6 +201,8 @@
     returns a new Sequence of kept items. If \a filterFunction returns \c true, a
     copy of the item is put in the new Sequence. Otherwise, the item will
     \e not appear in the new Sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -213,6 +219,8 @@
     QtConcurrent::UnorderedReduce. If \a reduceOptions is
     QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
     the original sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -229,6 +237,8 @@
     QtConcurrent::UnorderedReduce. If \a reduceOptions is
     QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
     of the original sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -239,6 +249,8 @@
   otherwise, the item is removed from \a sequence.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -251,7 +263,7 @@
 
   \note This function will block until all items in the sequence have been processed.
 
-  \sa filtered()
+  \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -265,7 +277,7 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
-  \sa filtered()
+  \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -285,7 +297,7 @@
 
   \note This function will block until all items in the sequence have been processed.
 
-  \sa filteredReduced()
+  \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
@@ -306,5 +318,5 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
-  \sa filteredReduced()
+  \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */

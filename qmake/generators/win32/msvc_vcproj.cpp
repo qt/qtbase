@@ -1267,31 +1267,43 @@ void VcprojGenerator::initDeploymentTool()
         if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
             targetPath.chop(1);
     }
-
+    ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build
-    if (!project->values("QMAKE_QT_DLL").isEmpty()) {
+    if (!dllPaths.isEmpty()) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
-        const QString &qtdir = project->propertyValue(ProKey("QT_INSTALL_LIBS/get")).toQString();
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
-            if (it->contains(qtdir)) {
-                QString dllName = (*it).toQString();
+            QString dllName = (*it).toQString();
+            dllName.replace(QLatin1Char('\\'), QLatin1Char('/'));
+            // LIBPATH isn't relevant for deployment
+            if (dllName.startsWith(QLatin1String("/LIBPATH:")))
+                continue;
+            // We want to deploy .dlls not .libs
+            if (dllName.endsWith(QLatin1String(".lib")))
+                dllName.replace(dllName.length() - 3, 3, QLatin1String("dll"));
+            // Use only the file name and check in Qt's install path and LIBPATHs to check for existence
+            dllName.remove(0, dllName.lastIndexOf(QLatin1Char('/')) + 1);
+            QFileInfo info;
+            foreach (const ProString &dllPath, dllPaths) {
+                QString absoluteDllFilePath = dllPath.toQString();
+                if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
+                    absoluteDllFilePath += QLatin1Char('/');
+                absoluteDllFilePath += dllName;
+                info = QFileInfo(absoluteDllFilePath);
+                if (info.exists())
+                    break;
+            }
 
-                if (dllName.contains(QLatin1String("QAxContainer"))
-                    || dllName.contains(QLatin1String("qtmain"))
-                    || dllName.contains(QLatin1String("QtUiTools")))
-                    continue;
-                dllName.replace(QLatin1String(".lib") , QLatin1String(".dll"));
-                QFileInfo info(dllName);
-                if (conf.WinRT) {
-                    QString absoluteFilePath(QDir::toNativeSeparators(info.absoluteFilePath()));
-                    vcProject.DeploymentFiles.addFile(absoluteFilePath);
-                } else {
-                    conf.deployment.AdditionalFiles += info.fileName()
-                                                    + "|" + QDir::toNativeSeparators(info.absolutePath())
-                                                    + "|" + targetPath
-                                                    + "|0;";
-                }
+            if (!info.exists())
+                continue;
+            if (conf.WinRT) {
+                QString absoluteFilePath(QDir::toNativeSeparators(info.absoluteFilePath()));
+                vcProject.DeploymentFiles.addFile(absoluteFilePath);
+            } else {
+                conf.deployment.AdditionalFiles += info.fileName()
+                        + "|" + QDir::toNativeSeparators(info.absolutePath())
+                        + "|" + targetPath
+                        + "|0;";
             }
         }
     }

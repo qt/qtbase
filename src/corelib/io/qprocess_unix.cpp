@@ -299,18 +299,6 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
     if (environment.isEmpty())
         return 0;
 
-    // if LD_LIBRARY_PATH exists in the current environment, but
-    // not in the environment list passed by the programmer, then
-    // copy it over.
-#if defined(Q_OS_MAC)
-    static const char libraryPath[] = "DYLD_LIBRARY_PATH";
-#else
-    static const char libraryPath[] = "LD_LIBRARY_PATH";
-#endif
-    const QByteArray envLibraryPath = qgetenv(libraryPath);
-    bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
-
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
@@ -327,9 +315,6 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
         envp[(*envc)++] = ::strdup(key.constData());
     }
 
-    if (needToAddLibraryPath)
-        envp[(*envc)++] = ::strdup(QByteArray(QByteArray(libraryPath) + '=' +
-                                 envLibraryPath).constData());
     return envp;
 }
 
