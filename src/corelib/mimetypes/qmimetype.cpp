@@ -43,6 +43,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
+#include <QtCore/QHashFunctions>
 
 #include <memory>
 
@@ -178,6 +179,18 @@ QMimeType::~QMimeType()
 bool QMimeType::operator==(const QMimeType &other) const
 {
     return d == other.d || d->name == other.d->name;
+}
+
+/*!
+    \since 5.6
+    \relates QMimeType
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+ */
+uint qHash(const QMimeType &key, uint seed) Q_DECL_NOTHROW
+{
+    return qHash(key.d->name, seed);
 }
 
 /*!
