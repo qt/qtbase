@@ -173,16 +173,6 @@ private:
     Q_DISABLE_COPY(QNativeSocketEngine)
 };
 
-#ifdef Q_OS_WIN
-class QWindowsSockInit
-{
-public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
-    int version;
-};
-#endif
-
 class QSocketNotifier;
 
 class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
@@ -195,10 +185,6 @@ public:
     qintptr socketDescriptor;
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
-
-#ifdef Q_OS_WIN
-    QWindowsSockInit winSock;
-#endif
 
     enum ErrorString {
         NonBlockingInitFailedErrorString,

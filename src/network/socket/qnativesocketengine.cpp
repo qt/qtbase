@@ -152,10 +152,6 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
     Constructs the private class and initializes all data members.
-
-    On Windows, WSAStartup is called "recursively" for every
-    concurrent QNativeSocketEngine. This is safe, because WSAStartup and
-    WSACleanup are reference counted.
 */
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     socketDescriptor(-1),
@@ -163,6 +159,9 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     writeNotifier(0),
     exceptNotifier(0)
 {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    QSysInfo::machineHostName();        // this initializes ws2_32.dll
+#endif
 }
 
 /*! \internal

@@ -320,25 +320,6 @@ static inline int qt_socket_getMaxMsgSize(qintptr socketDescriptor)
     return value;
 }
 
-QWindowsSockInit::QWindowsSockInit()
-:   version(0)
-{
-    //### should we try for 2.2 on all platforms ??
-    WSAData wsadata;
-
-    // IPv6 requires Winsock v2.0 or better.
-    if (WSAStartup(MAKEWORD(2,0), &wsadata) != 0) {
-        qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
-    } else {
-        version = 0x20;
-    }
-}
-
-QWindowsSockInit::~QWindowsSockInit()
-{
-    WSACleanup();
-}
-
 // MS Transport Provider IOCTL to control
 // reporting PORT_UNREACHABLE messages
 // on UDP sockets via recv/WSARecv/etc.

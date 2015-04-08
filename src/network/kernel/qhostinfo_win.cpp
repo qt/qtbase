@@ -111,7 +111,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QMutexLocker locker(&qPrivCEMutex);
 #endif
 
-    QWindowsSockInit winSock;
+    QSysInfo::machineHostName();        // this initializes ws2_32.dll
 
     // Load res_init on demand.
     static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
@@ -254,17 +254,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     }
 #endif
     return results;
-}
-
-QString QHostInfo::localHostName()
-{
-    QWindowsSockInit winSock;
-
-    char hostName[512];
-    if (gethostname(hostName, sizeof(hostName)) == -1)
-        return QString();
-    hostName[sizeof(hostName) - 1] = '\0';
-    return QString::fromLocal8Bit(hostName);
 }
 
 // QString QHostInfo::localDomainName() defined in qnetworkinterface_win.cpp

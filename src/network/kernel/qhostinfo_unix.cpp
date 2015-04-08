@@ -315,15 +315,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     return results;
 }
 
-QString QHostInfo::localHostName()
-{
-    char hostName[512];
-    if (gethostname(hostName, sizeof(hostName)) == -1)
-        return QString();
-    hostName[sizeof(hostName) - 1] = '\0';
-    return QString::fromLocal8Bit(hostName);
-}
-
 QString QHostInfo::localDomainName()
 {
 #if !defined(Q_OS_VXWORKS) && !defined(Q_OS_ANDROID)

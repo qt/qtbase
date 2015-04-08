@@ -65,6 +65,20 @@
 #  endif
 #endif
 
+#ifdef Q_OS_WINRT
+#include <wrl.h>
+#include <windows.networking.h>
+#include <windows.networking.sockets.h>
+#include <windows.networking.connectivity.h>
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Foundation::Collections;
+using namespace ABI::Windows::Networking;
+using namespace ABI::Windows::Networking::Connectivity;
+using namespace ABI::Windows::Networking::Sockets;
+#endif
+
 #if defined(Q_OS_VXWORKS) && defined(_WRS_KERNEL)
 #  include <envLib.h>
 #endif
@@ -88,6 +102,10 @@
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
+#endif
+
+#ifdef Q_OS_BSD4
+#include <sys/sysctl.h>
 #endif
 
 #include "archdetect.cpp"
@@ -1887,6 +1905,36 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifndef Q_OS_WINRT
 
+#  ifndef QT_BOOTSTRAPPED
+class QWindowsSockInit
+{
+public:
+    QWindowsSockInit();
+    ~QWindowsSockInit();
+    int version;
+};
+
+QWindowsSockInit::QWindowsSockInit()
+:   version(0)
+{
+    //### should we try for 2.2 on all platforms ??
+    WSAData wsadata;
+
+    // IPv6 requires Winsock v2.0 or better.
+    if (WSAStartup(MAKEWORD(2,0), &wsadata) != 0) {
+        qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
+    } else {
+        version = 0x20;
+    }
+}
+
+QWindowsSockInit::~QWindowsSockInit()
+{
+    WSACleanup();
+}
+Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
+#  endif // QT_BOOTSTRAPPED
+
 #  ifndef Q_OS_WINCE
 
 // Determine Windows versions >= 8 by querying the version of kernel32.dll.
@@ -2774,6 +2822,82 @@ QString QSysInfo::prettyProductName()
 #endif
     return unknownText();
 }
+
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \since 5.6
+
+    Returns this machine's host name, if one is configured. Note that hostnames
+    are not guaranteed to be globally unique, especially if they were
+    configured automatically.
+
+    This function does not guarantee the returned host name is a Fully
+    Qualified Domain Name (FQDN). For that, use QHostInfo to resolve the
+    returned name to an FQDN.
+
+    This function returns the same as QHostInfo::localHostName().
+
+    \sa QHostInfo::localDomainName
+ */
+QString QSysInfo::machineHostName()
+{
+#if defined(Q_OS_LINUX)
+    // gethostname(3) on Linux just calls uname(2), so do it ourselves
+    // and avoid a memcpy
+    struct utsname u;
+    if (uname(&u) == 0)
+        return QString::fromLocal8Bit(u.nodename);
+#elif defined(Q_OS_WINRT)
+    ComPtr<INetworkInformationStatics> statics;
+    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &statics);
+
+    ComPtr<IVectorView<HostName *>> hostNames;
+    statics->GetHostNames(&hostNames);
+    if (!hostNames)
+        return QString();
+
+    unsigned int size;
+    hostNames->get_Size(&size);
+    if (size == 0)
+        return QString();
+
+    for (unsigned int i = 0; i < size; ++i) {
+        ComPtr<IHostName> hostName;
+        hostNames->GetAt(i, &hostName);
+        HostNameType type;
+        hostName->get_Type(&type);
+        if (type != HostNameType_DomainName)
+            continue;
+
+        HString name;
+        hostName->get_CanonicalName(name.GetAddressOf());
+        UINT32 length;
+        PCWSTR rawString = name.GetRawBuffer(&length);
+        return QString::fromWCharArray(rawString, length);
+    }
+    ComPtr<IHostName> firstHost;
+    hostNames->GetAt(0, &firstHost);
+
+    HString name;
+    firstHost->get_CanonicalName(name.GetAddressOf());
+    UINT32 length;
+    PCWSTR rawString = name.GetRawBuffer(&length);
+    return QString::fromWCharArray(rawString, length);
+#else
+#  ifdef Q_OS_WIN
+    // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll
+    winsockInit();
+#  endif
+
+    char hostName[512];
+    if (gethostname(hostName, sizeof(hostName)) == -1)
+        return QString();
+    hostName[sizeof(hostName) - 1] = '\0';
+    return QString::fromLocal8Bit(hostName);
+#endif
+    return QString();
+}
+#endif // QT_BOOTSTRAPPED
 
 /*!
     \macro void Q_ASSERT(bool test)
