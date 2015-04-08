@@ -421,7 +421,7 @@ void Tree::resolveInheritanceHelper(int pass, ClassNode* cn)
                 FunctionNode* from = findVirtualFunctionInBaseClasses(cn, func);
                 if (from != 0) {
                     if (func->virtualness() == FunctionNode::NonVirtual)
-                        func->setVirtualness(FunctionNode::ImpureVirtual);
+                        func->setVirtualness(FunctionNode::NormalVirtual);
                     func->setReimplementedFrom(from);
                 }
             }

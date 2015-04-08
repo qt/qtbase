@@ -155,7 +155,7 @@ protected:
     Tokenizer *tokenizer;
     int tok;
     Node::Access access;
-    FunctionNode::Metaness metaness;
+    FunctionNode::Metaness metaness_;
     QString physicalModuleName;
     QStringList lastPath_;
     QRegExp varComment;

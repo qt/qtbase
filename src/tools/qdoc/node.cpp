@@ -205,7 +205,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
       access_((unsigned char) Public),
       safeness_((unsigned char) UnspecifiedSafeness),
       pageType_((unsigned char) NoPageType),
-      status_((unsigned char) Commendable),
+      status_((unsigned char) Active),
       indexNodeFlag_(false),
       parent_(parent),
       relatesTo_(0),
@@ -558,7 +558,7 @@ QString RelatedClass::accessString() const
  */
 Node::Status Node::inheritedStatus() const
 {
-    Status parentStatus = Commendable;
+    Status parentStatus = Active;
     if (parent_)
         parentStatus = parent_->inheritedStatus();
     return (Status)qMin((int)status_, (int)parentStatus);
@@ -852,14 +852,14 @@ QStringList InnerNode::secondaryKeys()
 
 /*!
  */
-void InnerNode::setOverload(FunctionNode *func, bool overlode)
+void InnerNode::setOverload(FunctionNode *func, bool b)
 {
     Node *node = (Node *) func;
     Node *&primary = primaryFunctionMap[func->name()];
 
     if (secondaryFunctionMap.contains(func->name())) {
         NodeList& secs = secondaryFunctionMap[func->name()];
-        if (overlode) {
+        if (b) {
             if (primary == node) {
                 primary = secs.first();
                 secs.erase(secs.begin());
@@ -905,8 +905,7 @@ void InnerNode::normalizeOverloads()
     while (p1 != primaryFunctionMap.end()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p1;
         if (secondaryFunctionMap.contains(primaryFunc->name()) &&
-                (primaryFunc->status() != Commendable ||
-                 primaryFunc->access() == Private)) {
+                (primaryFunc->status() != Active || primaryFunc->access() == Private)) {
 
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
             NodeList::ConstIterator s = secs.constBegin();
@@ -917,8 +916,7 @@ void InnerNode::normalizeOverloads()
                 // (i.e, visible functions) are preferable to the primary
                 // function.
 
-                if (secondaryFunc->status() == Commendable &&
-                        secondaryFunc->access() != Private) {
+                if (secondaryFunc->status() == Active && secondaryFunc->access() != Private) {
 
                     *p1 = secondaryFunc;
                     int index = secondaryFunctionMap[primaryFunc->name()].indexOf(secondaryFunc);
@@ -935,14 +933,14 @@ void InnerNode::normalizeOverloads()
     while (p != primaryFunctionMap.constEnd()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p;
         if (primaryFunc->isOverload())
-            primaryFunc->ove = false;
+            primaryFunc->overload_ = false;
         if (secondaryFunctionMap.contains(primaryFunc->name())) {
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
             NodeList::ConstIterator s = secs.constBegin();
             while (s != secs.constEnd()) {
                 FunctionNode *secondaryFunc = (FunctionNode *) *s;
                 if (!secondaryFunc->isOverload())
-                    secondaryFunc->ove = true;
+                    secondaryFunc->overload_ = true;
                 ++s;
             }
         }
@@ -1670,7 +1668,7 @@ QString DocumentNode::subTitle() const
   has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
-    : LeafNode(Enum, parent, name), ft(0)
+    : LeafNode(Enum, parent, name), flagsType_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1680,8 +1678,8 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
  */
 void EnumNode::addItem(const EnumItem& item)
 {
-    itms.append(item);
-    names.insert(item.name());
+    items_.append(item);
+    names_.insert(item.name());
 }
 
 /*!
@@ -1701,7 +1699,7 @@ Node::Access EnumNode::itemAccess(const QString &name) const
  */
 QString EnumNode::itemValue(const QString &name) const
 {
-    foreach (const EnumItem &item, itms) {
+    foreach (const EnumItem &item, items_) {
         if (item.name() == name)
             return item.value();
     }
@@ -1715,7 +1713,7 @@ QString EnumNode::itemValue(const QString &name) const
 /*!
  */
 TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
-    : LeafNode(Typedef, parent, name), ae(0)
+    : LeafNode(Typedef, parent, name), associatedEnum_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1724,7 +1722,7 @@ TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
  */
 void TypedefNode::setAssociatedEnum(const EnumNode *enume)
 {
-    ae = enume;
+    associatedEnum_ = enume;
 }
 
 /*!
@@ -1745,7 +1743,7 @@ Parameter::Parameter(const QString& leftType,
                      const QString& rightType,
                      const QString& name,
                      const QString& defaultValue)
-    : lef(leftType), rig(rightType), nam(name), def(defaultValue)
+    : leftType_(leftType), rightType_(rightType), name_(name), defaultValue_(defaultValue)
 {
 }
 
@@ -1753,7 +1751,7 @@ Parameter::Parameter(const QString& leftType,
   The standard copy constructor copies the strings from \a p.
  */
 Parameter::Parameter(const Parameter& p)
-    : lef(p.lef), rig(p.rig), nam(p.nam), def(p.def)
+    : leftType_(p.leftType_), rightType_(p.rightType_), name_(p.name_), defaultValue_(p.defaultValue_)
 {
 }
 
@@ -1763,10 +1761,10 @@ Parameter::Parameter(const Parameter& p)
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
-    lef = p.lef;
-    rig = p.rig;
-    nam = p.nam;
-    def = p.def;
+    leftType_ = p.leftType_;
+    rightType_ = p.rightType_;
+    name_ = p.name_;
+    defaultValue_ = p.defaultValue_;
     return *this;
 }
 
@@ -1777,12 +1775,12 @@ Parameter& Parameter::operator=(const Parameter& p)
  */
 QString Parameter::reconstruct(bool value) const
 {
-    QString p = lef + rig;
+    QString p = leftType_ + rightType_;
     if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
         p += QLatin1Char(' ');
-    p += nam;
-    if (value && !def.isEmpty())
-        p += " = " + def;
+    p += name_;
+    if (value && !defaultValue_.isEmpty())
+        p += " = " + defaultValue_;
     return p;
 }
 
@@ -1797,15 +1795,15 @@ QString Parameter::reconstruct(bool value) const
  */
 FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
     : LeafNode(Function, parent, name),
-      met(Plain),
-      vir(NonVirtual),
-      con(false),
-      sta(false),
-      ove(false),
-      reimp(false),
+      metaness_(Plain),
+      virtualness_(NonVirtual),
+      const_(false),
+      static_(false),
+      overload_(false),
+      reimplemented_(false),
       attached_(false),
-      rf(0),
-      ap(0)
+      reimplementedFrom_(0),
+      associatedProperty_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1817,15 +1815,15 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
  */
 FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bool attached)
     : LeafNode(type, parent, name),
-      met(Plain),
-      vir(NonVirtual),
-      con(false),
-      sta(false),
-      ove(false),
-      reimp(false),
+      metaness_(Plain),
+      virtualness_(NonVirtual),
+      const_(false),
+      static_(false),
+      overload_(false),
+      reimplemented_(false),
       attached_(attached),
-      rf(0),
-      ap(0)
+      reimplementedFrom_(0),
+      associatedProperty_(0)
 {
     setGenus(Node::QML);
     if (type == QmlMethod || type == QmlSignal) {
@@ -1841,32 +1839,31 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
   is PureVirtual, and if the parent() is a ClassNode, set the parent's
   \e abstract flag to true.
  */
-void FunctionNode::setVirtualness(Virtualness virtualness)
+void FunctionNode::setVirtualness(Virtualness v)
 {
-    vir = virtualness;
-    if ((virtualness == PureVirtual) && parent() &&
-            (parent()->type() == Node::Class))
+    virtualness_ = v;
+    if ((v == PureVirtual) && parent() && (parent()->type() == Node::Class))
         parent()->setAbstract(true);
 }
 
 /*!
  */
-void FunctionNode::setOverload(bool overlode)
+void FunctionNode::setOverload(bool b)
 {
-    parent()->setOverload(this, overlode);
-    ove = overlode;
+    parent()->setOverload(this, b);
+    overload_ = b;
 }
 
 /*!
-  Sets the function node's reimplementation flag to \a r.
-  When \a r is true, it is supposed to mean that this function
+  Sets the function node's reimplementation flag to \a b.
+  When \a b is true, it is supposed to mean that this function
   is a reimplementation of a virtual function in a base class,
-  but it really just means the \e reimp command was seen in the
-  qdoc comment.
+  but it really just means the \e {\\reimp} command was seen in
+  the qdoc comment.
  */
-void FunctionNode::setReimp(bool r)
+void FunctionNode::setReimplemented(bool b)
 {
-    reimp = r;
+    reimplemented_ = b;
 }
 
 /*!
@@ -1874,16 +1871,16 @@ void FunctionNode::setReimp(bool r)
  */
 void FunctionNode::addParameter(const Parameter& parameter)
 {
-    params.append(parameter);
+    parameters_.append(parameter);
 }
 
 /*!
  */
 void FunctionNode::borrowParameterNames(const FunctionNode *source)
 {
-    QList<Parameter>::Iterator t = params.begin();
-    QList<Parameter>::ConstIterator s = source->params.constBegin();
-    while (s != source->params.constEnd() && t != params.end()) {
+    QList<Parameter>::Iterator t = parameters_.begin();
+    QList<Parameter>::ConstIterator s = source->parameters_.constBegin();
+    while (s != source->parameters_.constEnd() && t != parameters_.end()) {
         if (!(*s).name().isEmpty())
             (*t).setName((*s).name());
         ++s;
@@ -1895,19 +1892,19 @@ void FunctionNode::borrowParameterNames(const FunctionNode *source)
   If this function is a reimplementation, \a from points
   to the FunctionNode of the function being reimplemented.
  */
-void FunctionNode::setReimplementedFrom(FunctionNode *from)
+void FunctionNode::setReimplementedFrom(FunctionNode *f)
 {
-    rf = from;
-    from->rb.append(this);
+    reimplementedFrom_ = f;
+    f->reimplementedBy_.append(this);
 }
 
 /*!
   Sets the "associated" property to \a property. The function
   might be the setter or getter for a property, for example.
  */
-void FunctionNode::setAssociatedProperty(PropertyNode *property)
+void FunctionNode::setAssociatedProperty(PropertyNode *p)
 {
-    ap = property;
+    associatedProperty_ = p;
 }
 
 /*!
@@ -1955,15 +1952,15 @@ QString FunctionNode::rawParameters(bool names, bool values) const
   Returns the list of reconstructed parameters. If \a values
   is true, the default values are included, if any are present.
  */
-QStringList FunctionNode::reconstructParams(bool values) const
+QStringList FunctionNode::reconstructParameters(bool values) const
 {
-    QStringList params;
+    QStringList reconstructedParameters;
     QList<Parameter>::ConstIterator p = parameters().constBegin();
     while (p != parameters().constEnd()) {
-        params << (*p).reconstruct(values);
+        reconstructedParameters << (*p).reconstruct(values);
         ++p;
     }
-    return params;
+    return reconstructedParameters;
 }
 
 /*!
@@ -1977,11 +1974,11 @@ QString FunctionNode::signature(bool values) const
     if (!returnType().isEmpty())
         s = returnType() + QLatin1Char(' ');
     s += name() + QLatin1Char('(');
-    QStringList params = reconstructParams(values);
-    int p = params.size();
+    QStringList reconstructedParameters = reconstructParameters(values);
+    int p = reconstructedParameters.size();
     if (p > 0) {
         for (int i=0; i<p; i++) {
-            s += params[i];
+            s += reconstructedParameters[i];
             if (i < (p-1))
                 s += ", ";
         }
@@ -1995,8 +1992,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug("QML METHOD %s rt %s pp %s",
-           qPrintable(name()), qPrintable(rt), qPrintable(pp.join(' ')));
+    qDebug("QML METHOD %s returnType_ %s parentPath_ %s",
+           qPrintable(name()), qPrintable(returnType_), qPrintable(parentPath_.join(' ')));
 }
 
 /*!
@@ -2016,10 +2013,10 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
       scriptable_(FlagValueDefault),
       writable_(FlagValueDefault),
       user_(FlagValueDefault),
-      cst(false),
-      fnl(false),
-      rev(-1),
-      overrides(0)
+      const_(false),
+      final_(false),
+      revision_(-1),
+      overrides_(0)
 {
     setGenus(Node::CPP);
 }
@@ -2037,8 +2034,8 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
 void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
 {
     for (int i = 0; i < NumFunctionRoles; ++i) {
-        if (funcs[i].isEmpty())
-            funcs[i] = baseProperty->funcs[i];
+        if (functions_[i].isEmpty())
+            functions_[i] = baseProperty->functions_[i];
     }
     if (stored_ == FlagValueDefault)
         stored_ = baseProperty->stored_;
@@ -2050,7 +2047,7 @@ void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
         writable_ = baseProperty->writable_;
     if (user_ == FlagValueDefault)
         user_ = baseProperty->user_;
-    overrides = baseProperty;
+    overrides_ = baseProperty;
 }
 
 /*!

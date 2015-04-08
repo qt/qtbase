@@ -702,7 +702,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
     }
     if (node->doc().isEmpty()) {
-        if (!node->isWrapper() && !quiet && !node->isReimp()) { // ### might be unnecessary
+        if (!node->isWrapper() && !quiet && !node->isReimplemented()) { // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'").arg(node->plainFullName()));
         }
     }
@@ -714,7 +714,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
 
         if (!generateText(node->doc().body(), node, marker)) {
-            if (node->isReimp())
+            if (node->isReimplemented())
                 return;
         }
 
@@ -800,7 +800,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                                 }
                             }
                         }
-                        if (needWarning && !func->isReimp())
+                        if (needWarning && !func->isReimplemented())
                             node->doc().location().warning(
                                         tr("Undocumented parameter '%1' in %2")
                                         .arg(*a).arg(node->plainFullName()));
@@ -1191,7 +1191,8 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
     Text text;
 
     switch (node->status()) {
-    case Node::Commendable:
+    case Node::Active:
+        // Do nothing.
         break;
     case Node::Preliminary:
         text << Atom::ParaLeft

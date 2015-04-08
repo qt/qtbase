@@ -486,8 +486,8 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QString t = element.attribute("virtual");
         if (t == "non")
             virt = FunctionNode::NonVirtual;
-        else if (t == "impure")
-            virt = FunctionNode::ImpureVirtual;
+        else if (t == "virtual")
+            virt = FunctionNode::NormalVirtual;
         else if (t == "pure")
             virt = FunctionNode::PureVirtual;
         else
@@ -613,12 +613,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setStatus(Node::Obsolete);
     else if (status == "preliminary")
         node->setStatus(Node::Preliminary);
-    else if (status == "commendable")
-        node->setStatus(Node::Commendable);
+    else if (status == "active")
+        node->setStatus(Node::Active);
     else if (status == "internal")
         node->setStatus(Node::Internal);
     else
-        node->setStatus(Node::Commendable);
+        node->setStatus(Node::Active);
 
     QString physicalModuleName = element.attribute("module");
     if (!physicalModuleName.isEmpty())
@@ -885,8 +885,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Preliminary:
         status = "preliminary";
         break;
-    case Node::Commendable:
-        status = "commendable";
+    case Node::Active:
+        status = "active";
         break;
     case Node::Internal:
         status = "internal";
@@ -1139,8 +1139,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             case FunctionNode::NonVirtual:
                 writer.writeAttribute("virtual", "non");
                 break;
-            case FunctionNode::ImpureVirtual:
-                writer.writeAttribute("virtual", "impure");
+            case FunctionNode::NormalVirtual:
+                writer.writeAttribute("virtual", "virtual");
                 break;
             case FunctionNode::PureVirtual:
                 writer.writeAttribute("virtual", "pure");

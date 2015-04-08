@@ -115,7 +115,7 @@ public:
         Obsolete,
         Deprecated,
         Preliminary,
-        Commendable,
+        Active,
         Internal,
         Intermediate
     }; // don't reorder this enum
@@ -132,13 +132,7 @@ public:
         NextLink,
         PreviousLink,
         ContentsLink,
-        IndexLink /*,
-        GlossaryLink,
-        CopyrightLink,
-        ChapterLink,
-        SectionLink,
-        SubsectionLink,
-        AppendixLink */
+        IndexLink
     };
 
     enum PageType {
@@ -172,20 +166,20 @@ public:
     Node::Genus genus() const { return (Genus) genus_; }
     void setGenus(Genus t) { genus_ = (unsigned char) t; }
 
-    void setAccess(Access access) { access_ = (unsigned char) access; }
+    void setAccess(Access t) { access_ = (unsigned char) t; }
     void setLocation(const Location& location) { loc_ = location; }
     void setDoc(const Doc& doc, bool replace = false);
-    void setStatus(Status status) {
-        if (status_ == (unsigned char) Obsolete && status == Deprecated)
+    void setStatus(Status t) {
+        if (status_ == (unsigned char) Obsolete && t == Deprecated)
             return;
-        status_ = (unsigned char) status;
+        status_ = (unsigned char) t;
     }
-    void setThreadSafeness(ThreadSafeness safeness) { safeness_ = (unsigned char) safeness; }
+    void setThreadSafeness(ThreadSafeness t) { safeness_ = (unsigned char) t; }
     void setSince(const QString &since);
     void setRelates(InnerNode* pseudoParent);
     void setPhysicalModuleName(const QString &name) { physicalModuleName_ = name; }
     void setUrl(const QString& url) { url_ = url; }
-    void setTemplateStuff(const QString &templateStuff) { templateStuff_ = templateStuff; }
+    void setTemplateStuff(const QString &t) { templateStuff_ = t; }
     void setReconstitutedBrief(const QString &t) { reconstitutedBrief_ = t; }
     void setPageType(PageType t) { pageType_ = (unsigned char) t; }
     void setPageType(const QString& t);
@@ -212,7 +206,7 @@ public:
     virtual bool isExampleFile() const { return false; }
     virtual bool isHeaderFile() const { return false; }
     virtual bool isLeaf() const { return false; }
-    virtual bool isReimp() const { return false; }
+    virtual bool isReimplemented() const { return false; }
     virtual bool isFunction() const { return false; }
     virtual bool isNamespace() const { return false; }
     virtual bool isClass() const { return false; }
@@ -760,14 +754,14 @@ class EnumItem
 public:
     EnumItem() { }
     EnumItem(const QString& name, const QString& value)
-        : nam(name), val(value) { }
+        : name_(name), value_(value) { }
 
-    const QString& name() const { return nam; }
-    const QString& value() const { return val; }
+    const QString& name() const { return name_; }
+    const QString& value() const { return value_; }
 
 private:
-    QString nam;
-    QString val;
+    QString name_;
+    QString value_;
 };
 
 class EnumNode : public LeafNode
@@ -778,17 +772,17 @@ public:
 
     void addItem(const EnumItem& item);
     void setFlagsType(TypedefNode* typedeff);
-    bool hasItem(const QString &name) const { return names.contains(name); }
+    bool hasItem(const QString &name) const { return names_.contains(name); }
 
-    const QList<EnumItem>& items() const { return itms; }
+    const QList<EnumItem>& items() const { return items_; }
     Access itemAccess(const QString& name) const;
-    const TypedefNode* flagsType() const { return ft; }
+    const TypedefNode* flagsType() const { return flagsType_; }
     QString itemValue(const QString &name) const;
 
 private:
-    QList<EnumItem> itms;
-    QSet<QString> names;
-    const TypedefNode* ft;
+    QList<EnumItem> items_;
+    QSet<QString> names_;
+    const TypedefNode* flagsType_;
 };
 
 class TypedefNode : public LeafNode
@@ -797,20 +791,20 @@ public:
     TypedefNode(InnerNode* parent, const QString& name);
     virtual ~TypedefNode() { }
 
-    const EnumNode* associatedEnum() const { return ae; }
+    const EnumNode* associatedEnum() const { return associatedEnum_; }
 
 private:
-    void setAssociatedEnum(const EnumNode* enume);
+    void setAssociatedEnum(const EnumNode* t);
 
     friend class EnumNode;
 
-    const EnumNode* ae;
+    const EnumNode* associatedEnum_;
 };
 
-inline void EnumNode::setFlagsType(TypedefNode* typedeff)
+inline void EnumNode::setFlagsType(TypedefNode* t)
 {
-    ft = typedeff;
-    typedeff->setAssociatedEnum(this);
+    flagsType_ = t;
+    t->setAssociatedEnum(this);
 }
 
 
@@ -826,21 +820,21 @@ public:
 
     Parameter& operator=(const Parameter& p);
 
-    void setName(const QString& name) { nam = name; }
+    void setName(const QString& name) { name_ = name; }
 
-    bool hasType() const { return lef.length() + rig.length() > 0; }
-    const QString& leftType() const { return lef; }
-    const QString& rightType() const { return rig; }
-    const QString& name() const { return nam; }
-    const QString& defaultValue() const { return def; }
+    bool hasType() const { return leftType_.length() + rightType_.length() > 0; }
+    const QString& leftType() const { return leftType_; }
+    const QString& rightType() const { return rightType_; }
+    const QString& name() const { return name_; }
+    const QString& defaultValue() const { return defaultValue_; }
 
     QString reconstruct(bool value = false) const;
 
 private:
-    QString lef;
-    QString rig;
-    QString nam;
-    QString def;
+    QString leftType_;
+    QString rightType_;
+    QString name_;
+    QString defaultValue_;
 };
 
 class FunctionNode : public LeafNode
@@ -855,35 +849,35 @@ public:
         MacroWithParams,
         MacroWithoutParams,
         Native };
-    enum Virtualness { NonVirtual, ImpureVirtual, PureVirtual };
+    enum Virtualness { NonVirtual, NormalVirtual, PureVirtual };
 
     FunctionNode(InnerNode* parent, const QString &name);
     FunctionNode(Type type, InnerNode* parent, const QString &name, bool attached);
     virtual ~FunctionNode() { }
 
-    void setReturnType(const QString& returnType) { rt = returnType; }
-    void setParentPath(const QStringList& parentPath) { pp = parentPath; }
-    void setMetaness(Metaness metaness) { met = metaness; }
-    void setVirtualness(Virtualness virtualness);
-    void setConst(bool conste) { con = conste; }
-    void setStatic(bool statique) { sta = statique; }
-    void setOverload(bool overlode);
-    void setReimp(bool r);
+    void setReturnType(const QString& t) { returnType_ = t; }
+    void setParentPath(const QStringList& p) { parentPath_ = p; }
+    void setMetaness(Metaness t) { metaness_ = t; }
+    void setVirtualness(Virtualness v);
+    void setConst(bool b) { const_ = b; }
+    void setStatic(bool b) { static_ = b; }
+    void setOverload(bool b);
+    void setReimplemented(bool b);
     void addParameter(const Parameter& parameter);
     inline void setParameters(const QList<Parameter>& parameters);
     void borrowParameterNames(const FunctionNode* source);
     void setReimplementedFrom(FunctionNode* from);
 
-    const QString& returnType() const { return rt; }
-    Metaness metaness() const { return met; }
+    const QString& returnType() const { return returnType_; }
+    Metaness metaness() const { return metaness_; }
     bool isMacro() const {
-        return met == MacroWithParams || met == MacroWithoutParams;
+        return metaness_ == MacroWithParams || metaness_ == MacroWithoutParams;
     }
-    Virtualness virtualness() const { return vir; }
-    bool isConst() const { return con; }
-    bool isStatic() const { return sta; }
-    bool isOverload() const { return ove; }
-    bool isReimp() const Q_DECL_OVERRIDE { return reimp; }
+    Virtualness virtualness() const { return virtualness_; }
+    bool isConst() const { return const_; }
+    bool isStatic() const { return static_; }
+    bool isOverload() const { return overload_; }
+    bool isReimplemented() const Q_DECL_OVERRIDE { return reimplemented_; }
     bool isFunction() const Q_DECL_OVERRIDE { return true; }
     virtual bool isQmlSignal() const Q_DECL_OVERRIDE {
         return (type() == Node::QmlSignal) && (genus() == Node::QML);
@@ -904,16 +898,16 @@ public:
         return (type() == Node::QmlMethod) && (genus() == Node::JS);
     }
     int overloadNumber() const;
-    const QList<Parameter>& parameters() const { return params; }
-    void clearParams() { params.clear(); }
+    const QList<Parameter>& parameters() const { return parameters_; }
+    void clearParams() { parameters_.clear(); }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;
-    const FunctionNode* reimplementedFrom() const { return rf; }
-    const QList<FunctionNode*> &reimplementedBy() const { return rb; }
-    const PropertyNode* associatedProperty() const { return ap; }
-    const QStringList& parentPath() const { return pp; }
+    const FunctionNode* reimplementedFrom() const { return reimplementedFrom_; }
+    const QList<FunctionNode*> &reimplementedBy() const { return reimplementedBy_; }
+    const PropertyNode* associatedProperty() const { return associatedProperty_; }
+    const QStringList& parentPath() const { return parentPath_; }
 
-    QStringList reconstructParams(bool values = false) const;
+    QStringList reconstructParameters(bool values = false) const;
     QString signature(bool values = false) const;
     virtual QString element() const Q_DECL_OVERRIDE { return parent()->name(); }
     virtual bool isAttached() const Q_DECL_OVERRIDE { return attached_; }
@@ -937,19 +931,19 @@ private:
     friend class InnerNode;
     friend class PropertyNode;
 
-    QString     rt;
-    QStringList pp;
-    Metaness    met;
-    Virtualness vir;
-    bool con : 1;
-    bool sta : 1;
-    bool ove : 1;
-    bool reimp: 1;
+    QString     returnType_;
+    QStringList parentPath_;
+    Metaness    metaness_;
+    Virtualness virtualness_;
+    bool const_ : 1;
+    bool static_ : 1;
+    bool overload_ : 1;
+    bool reimplemented_: 1;
     bool attached_: 1;
-    QList<Parameter> params;
-    const FunctionNode* rf;
-    const PropertyNode* ap;
-    QList<FunctionNode*> rb;
+    QList<Parameter> parameters_;
+    const FunctionNode* reimplementedFrom_;
+    const PropertyNode* associatedProperty_;
+    QList<FunctionNode*> reimplementedBy_;
 };
 
 class PropertyNode : public LeafNode
@@ -971,16 +965,16 @@ public:
     void setWritable(bool writable) { writable_ = toFlagValue(writable); }
     void setUser(bool user) { user_ = toFlagValue(user); }
     void setOverriddenFrom(const PropertyNode* baseProperty);
-    void setRuntimeDesFunc(const QString& rdf) { runtimeDesFunc = rdf; }
-    void setRuntimeScrFunc(const QString& scrf) { runtimeScrFunc = scrf; }
-    void setConstant() { cst = true; }
-    void setFinal() { fnl = true; }
-    void setRevision(int revision) { rev = revision; }
+    void setRuntimeDesFunc(const QString& rdf) { runtimeDesFunc_ = rdf; }
+    void setRuntimeScrFunc(const QString& scrf) { runtimeScrFunc_ = scrf; }
+    void setConstant() { const_ = true; }
+    void setFinal() { final_ = true; }
+    void setRevision(int revision) { revision_ = revision; }
 
     const QString &dataType() const { return type_; }
     QString qualifiedDataType() const;
     NodeList functions() const;
-    NodeList functions(FunctionRole role) const { return funcs[(int)role]; }
+    NodeList functions(FunctionRole role) const { return functions_[(int)role]; }
     NodeList getters() const { return functions(Getter); }
     NodeList setters() const { return functions(Setter); }
     NodeList resetters() const { return functions(Resetter); }
@@ -988,13 +982,13 @@ public:
     bool isStored() const { return fromFlagValue(stored_, storedDefault()); }
     bool isDesignable() const { return fromFlagValue(designable_, designableDefault()); }
     bool isScriptable() const { return fromFlagValue(scriptable_, scriptableDefault()); }
-    const QString& runtimeDesignabilityFunction() const { return runtimeDesFunc; }
-    const QString& runtimeScriptabilityFunction() const { return runtimeScrFunc; }
+    const QString& runtimeDesignabilityFunction() const { return runtimeDesFunc_; }
+    const QString& runtimeScriptabilityFunction() const { return runtimeScrFunc_; }
     bool isWritable() const { return fromFlagValue(writable_, writableDefault()); }
     bool isUser() const { return fromFlagValue(user_, userDefault()); }
-    bool isConstant() const { return cst; }
-    bool isFinal() const { return fnl; }
-    const PropertyNode* overriddenFrom() const { return overrides; }
+    bool isConstant() const { return const_; }
+    bool isFinal() const { return final_; }
+    const PropertyNode* overriddenFrom() const { return overrides_; }
 
     bool storedDefault() const { return true; }
     bool userDefault() const { return false; }
@@ -1004,34 +998,34 @@ public:
 
 private:
     QString type_;
-    QString runtimeDesFunc;
-    QString runtimeScrFunc;
-    NodeList funcs[NumFunctionRoles];
+    QString runtimeDesFunc_;
+    QString runtimeScrFunc_;
+    NodeList functions_[NumFunctionRoles];
     FlagValue stored_;
     FlagValue designable_;
     FlagValue scriptable_;
     FlagValue writable_;
     FlagValue user_;
-    bool cst;
-    bool fnl;
-    int rev;
-    const PropertyNode* overrides;
+    bool const_;
+    bool final_;
+    int revision_;
+    const PropertyNode* overrides_;
 };
 
-inline void FunctionNode::setParameters(const QList<Parameter> &parameters)
+inline void FunctionNode::setParameters(const QList<Parameter> &p)
 {
-    params = parameters;
+    parameters_ = p;
 }
 
 inline void PropertyNode::addFunction(FunctionNode* function, FunctionRole role)
 {
-    funcs[(int)role].append(function);
+    functions_[(int)role].append(function);
     function->setAssociatedProperty(this);
 }
 
 inline void PropertyNode::addSignal(FunctionNode* function, FunctionRole role)
 {
-    funcs[(int)role].append(function);
+    functions_[(int)role].append(function);
     function->setAssociatedProperty(this);
 }
 
@@ -1039,7 +1033,7 @@ inline NodeList PropertyNode::functions() const
 {
     NodeList list;
     for (int i = 0; i < NumFunctionRoles; ++i)
-        list += funcs[i];
+        list += functions_[i];
     return list;
 }
 
@@ -1049,23 +1043,23 @@ public:
     VariableNode(InnerNode* parent, const QString &name);
     virtual ~VariableNode() { }
 
-    void setLeftType(const QString &leftType) { lt = leftType; }
-    void setRightType(const QString &rightType) { rt = rightType; }
-    void setStatic(bool statique) { sta = statique; }
+    void setLeftType(const QString &leftType) { lrftType_ = leftType; }
+    void setRightType(const QString &rightType) { rightType_ = rightType; }
+    void setStatic(bool b) { static_ = b; }
 
-    const QString &leftType() const { return lt; }
-    const QString &rightType() const { return rt; }
-    QString dataType() const { return lt + rt; }
-    bool isStatic() const { return sta; }
+    const QString &leftType() const { return lrftType_; }
+    const QString &rightType() const { return rightType_; }
+    QString dataType() const { return lrftType_ + rightType_; }
+    bool isStatic() const { return static_; }
 
 private:
-    QString lt;
-    QString rt;
-    bool sta;
+    QString lrftType_;
+    QString rightType_;
+    bool static_;
 };
 
 inline VariableNode::VariableNode(InnerNode* parent, const QString &name)
-    : LeafNode(Variable, parent, name), sta(false)
+    : LeafNode(Variable, parent, name), static_(false)
 {
     setGenus(Node::CPP);
 }
