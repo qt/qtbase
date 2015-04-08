@@ -38,6 +38,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qhashfunctions.h>
 
 #include <iterator>
 #include <list>
@@ -1020,6 +1021,13 @@ inline int QList<T>::count_impl(const T &t, QListData::ArrayCompatibleLayout) co
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(List)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(List)
+
+template <typename T>
+uint qHash(const QList<T> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+{
+    return qHashRange(key.cbegin(), key.cend(), seed);
+}
 
 template <typename T>
 bool operator<(const QList<T> &lhs, const QList<T> &rhs)

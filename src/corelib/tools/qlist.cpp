@@ -633,6 +633,17 @@ void **QListData::erase(void **xi)
 */
 
 /*!
+    \fn uint qHash(const QList<T> &key, uint seed = 0)
+    \since 5.6
+    \relates QList
+
+    Returns the hash value for \a key,
+    using \a seed to seed the calculation.
+
+    This function requires qHash() to be overloaded for the value type \c T.
+*/
+
+/*!
     \fn int QList::size() const
 
     Returns the number of items in the list.
