@@ -2840,6 +2840,9 @@ void QGuiApplication::setWindowIcon(const QIcon &icon)
     if (!QGuiApplicationPrivate::app_icon)
         QGuiApplicationPrivate::app_icon = new QIcon();
     *QGuiApplicationPrivate::app_icon = icon;
+    if (QGuiApplicationPrivate::platform_integration
+            && QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::ApplicationIcon))
+        QGuiApplicationPrivate::platform_integration->setApplicationIcon(icon);
     if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::self->notifyWindowIconChanged();
 }

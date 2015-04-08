@@ -420,6 +420,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case ForeignWindows:
     case RasterGLSurface:
     case ApplicationState:
+    case ApplicationIcon:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
@@ -567,6 +568,18 @@ QCocoaWindow *QCocoaIntegration::activePopupWindow() const
 QList<QCocoaWindow *> *QCocoaIntegration::popupWindowStack()
 {
     return &m_popupWindowStack;
+}
+
+void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
+{
+    NSImage *image = nil;
+    if (!icon.isNull()) {
+        NSSize size = [[[NSApplication sharedApplication] dockTile] size];
+        QPixmap pixmap = icon.pixmap(size.width, size.height);
+        image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
+    }
+    [[NSApplication sharedApplication] setApplicationIconImage:image];
+    [image release];
 }
 
 QT_END_NAMESPACE
