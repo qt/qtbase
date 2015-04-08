@@ -171,7 +171,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     GetTexParameteriv = ::glGetTexParameteriv;
     GetTexParameterfv = ::glGetTexParameterfv;
     GetTexImage = 0;
-    TexImage2D = ::glTexImage2D;
+    TexImage2D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(::glTexImage2D);
     TexImage1D = 0;
     TexParameteriv = ::glTexParameteriv;
     TexParameteri = ::glTexParameteri;
