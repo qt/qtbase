@@ -1,4 +1,5 @@
 DEFINES *= QT_USE_BUNDLED_LIBPNG
+DEFINES += PNG_ARM_NEON_OPT=0
 INCLUDEPATH += $$PWD/libpng
 SOURCES += $$PWD/libpng/png.c \
   $$PWD/libpng/pngerror.c \

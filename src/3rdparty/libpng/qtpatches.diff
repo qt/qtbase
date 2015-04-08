@@ -1,0 +1,77 @@
+diff --git a/src/3rdparty/libpng/pnglibconf.h b/src/3rdparty/libpng/pnglibconf.h
+index b4ec3c3..f0fdcf8 100644
+--- a/src/3rdparty/libpng/pnglibconf.h
++++ b/src/3rdparty/libpng/pnglibconf.h
+@@ -27,7 +27,9 @@
+ #define PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
+ #define PNG_COLORSPACE_SUPPORTED
+ #define PNG_CONSOLE_IO_SUPPORTED
++#ifndef _WIN32_WCE
+ #define PNG_CONVERT_tIME_SUPPORTED
++#endif
+ #define PNG_EASY_ACCESS_SUPPORTED
+ /*#undef PNG_ERROR_NUMBERS_SUPPORTED*/
+ #define PNG_ERROR_TEXT_SUPPORTED
+@@ -106,12 +108,14 @@
+ #define PNG_SET_OPTION_SUPPORTED
+ #define PNG_SET_UNKNOWN_CHUNKS_SUPPORTED
+ #define PNG_SET_USER_LIMITS_SUPPORTED
++#ifndef _WIN32_WCE
+ #define PNG_SIMPLIFIED_READ_AFIRST_SUPPORTED
+ #define PNG_SIMPLIFIED_READ_BGR_SUPPORTED
+ #define PNG_SIMPLIFIED_READ_SUPPORTED
+ #define PNG_SIMPLIFIED_WRITE_AFIRST_SUPPORTED
+ #define PNG_SIMPLIFIED_WRITE_BGR_SUPPORTED
+ #define PNG_SIMPLIFIED_WRITE_SUPPORTED
++#endif
+ #define PNG_STDIO_SUPPORTED
+ #define PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
+ #define PNG_TEXT_SUPPORTED
+diff --git a/src/3rdparty/libpng/pngpriv.h b/src/3rdparty/libpng/pngpriv.h
+index 5980a3f..7185444 100644
+--- a/src/3rdparty/libpng/pngpriv.h
++++ b/src/3rdparty/libpng/pngpriv.h
+@@ -23,6 +23,12 @@
+ #ifndef PNGPRIV_H
+ #define PNGPRIV_H
+ 
++#ifdef _MSC_VER
++#  ifndef _CRT_SECURE_NO_DEPRECATE
++#    define _CRT_SECURE_NO_DEPRECATE
++#  endif
++#endif
++
+ /* Feature Test Macros.  The following are defined here to ensure that correctly
+  * implemented libraries reveal the APIs libpng needs to build and hide those
+  * that are not needed and potentially damaging to the compilation.
+@@ -215,6 +221,11 @@
+ #  endif
+ #endif /* Setting PNG_BUILD_DLL if required */
+ 
++/* Modfied for usage in Qt: Do not export the libpng APIs */
++#ifdef PNG_BUILD_DLL
++#undef PNG_BUILD_DLL
++#endif
++
+ /* See pngconf.h for more details: the builder of the library may set this on
+  * the command line to the right thing for the specific compilation system or it
+  * may be automagically set above (at present we know of no system where it does
+@@ -426,6 +437,9 @@
+ #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
+     defined(_WIN32) || defined(__WIN32__)
+ #  include <windows.h>  /* defines _WINDOWS_ macro */
++#  if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
++#    define _WINRT_ /* Define a macro for Windows Runtime builds */
++#  endif
+ #endif
+ #endif /* PNG_VERSION_INFO_ONLY */
+ 
+@@ -436,7 +450,7 @@
+ 
+ /* Memory model/platform independent fns */
+ #ifndef PNG_ABORT
+-#  ifdef _WINDOWS_
++#  if (defined(_WINDOWS_) || defined(_WIN32_WCE)) && !defined(_WINRT_)
+ #    define PNG_ABORT() ExitProcess(0)
+ #  else
+ #    define PNG_ABORT() abort()
