@@ -50,9 +50,45 @@ typedef void (*QAppInitFunction)(int argc, char **argv);
 typedef void (*QAppExitFunction)();
 typedef int (*QAppBlockingFunction)(int argc, char **argv);
 
-int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv, 
+int Q_CORE_EXPORT qCoreMainWithAppFunctions(int argc, char **argv,
                                             QAppInitFunction appInitFunction,
                                             QAppExitFunction appExitFunction);
+
+int Q_CORE_EXPORT qCoreMainWithBlockingFunction(int argc, char **argv,
+                                                QAppBlockingFunction appBlockingFunction);
+
+
+#ifdef Q_OS_NACL
+
+#define Q_CORE_MAIN(qAppInitFunction, qAppExitFunction) \
+\
+namespace pp { class Module; } \
+extern pp::Module *qtCoreCreatePepperModule(); \
+namespace pp {  \
+    pp::Module* CreateModule() { \
+        return qtCoreCreatePepperModule(); \
+    } \
+\
+int main(int argc, char **argv) { \
+    return qCoreMainWithAppFunctions( \
+        argc, argv, qAppInitFunction, qAppExitFunction); \
+}
+
+#define Q_CORE_BLOCKING_MAIN(appBlockingFunction) \
+\
+namespace pp { class Module; } \
+extern pp::Module *qtCoreCreatePepperModule(); \
+namespace pp { \
+    pp::Module* CreateModule() { \
+        return qtCoreCreatePepperModule(); \
+    } \
+} \
+\
+int main(int argc, char **argv) { \
+    return qCoreMainWithBlockingFunction(argc, argv, appBlockingFunction); \
+}
+
+#else
 
 #define Q_CORE_MAIN(qAppInitFunction, qAppExitFunction) \
 int main(int argc, char **argv) { \
@@ -60,13 +96,13 @@ int main(int argc, char **argv) { \
         argc, argv, qAppInitFunction, qAppExitFunction); \
 }
 
-int Q_CORE_EXPORT qCoreMainWithBlockingFunction(int argc, char **argv,
-                                                QAppBlockingFunction appBlockingFunction);
-
 #define Q_CORE_BLOCKING_MAIN(appBlockingFunction) \
+
 int main(int argc, char **argv) { \
     return qCoreMainWithBlockingFunction(argc, argv, appBlockingFunction); \
 }
+
+#endif
 
 QT_END_NAMESPACE
 
