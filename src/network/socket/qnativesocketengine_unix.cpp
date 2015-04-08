@@ -745,14 +745,23 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 {
     int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
-    qint64 available = 0;
-    if (qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) nbytes;
+    qint64 available = -1;
+
+#if defined (SO_NREAD)
+    if (socketType == QAbstractSocket::UdpSocket) {
+        socklen_t sz = sizeof nbytes;
+        if (!::getsockopt(socketDescriptor, SOL_SOCKET, SO_NREAD, &nbytes, &sz))
+            available = nbytes;
+    }
+#endif
+
+    if (available == -1 && qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
+        available = nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeBytesAvailable() == %lli", available);
 #endif
-    return available;
+    return available > 0 ? available : 0;
 }
 
 bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
