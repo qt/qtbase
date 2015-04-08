@@ -57,6 +57,7 @@ private slots:
     void mapRect();
     void assignments();
     void mapToPolygon();
+    void qhash();
     void translate();
     void scale();
     void matrix();
@@ -359,6 +360,22 @@ void tst_QTransform::mapToPolygon()
     }
 
     QVERIFY(equal);
+}
+
+void tst_QTransform::qhash()
+{
+    QMatrix m1;
+    m1.shear(3.0, 2.0);
+    m1.rotate(44);
+
+    QMatrix m2 = m1;
+
+    QTransform t1(m1);
+    QTransform t2(m2);
+
+    // not really much to test here, so just the bare minimum:
+    QCOMPARE(qHash(m1), qHash(m2));
+    QCOMPARE(qHash(t1), qHash(t2));
 }
 
 

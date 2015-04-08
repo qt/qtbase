@@ -31,9 +31,11 @@
 **
 ****************************************************************************/
 
+#include "qmatrix.h"
+
 #include "qdatastream.h"
 #include "qdebug.h"
-#include "qmatrix.h"
+#include "qhashfunctions.h"
 #include "qregion.h"
 #include "qpainterpath.h"
 #include "qpainterpath_p.h"
@@ -970,6 +972,26 @@ bool QMatrix::operator==(const QMatrix &m) const
            _m22 == m._m22 &&
            _dx == m._dx &&
            _dy == m._dy;
+}
+
+
+/*!
+    \since 5.6
+    \relates QMatrix
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QMatrix &key, uint seed) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(key.m11(), seed);
+    seed = hash(key.m12(), seed);
+    seed = hash(key.m21(), seed);
+    seed = hash(key.m22(), seed);
+    seed = hash(key.dx(),  seed);
+    seed = hash(key.dy(),  seed);
+    return seed;
 }
 
 /*!
