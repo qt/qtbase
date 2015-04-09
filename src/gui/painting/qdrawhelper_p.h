@@ -1139,6 +1139,8 @@ void QT_FASTCALL rasterop_solid_NotDestination(uint *dest, int length, uint colo
 struct QPixelLayout;
 typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, int count,
                                                const QPixelLayout *layout, const QRgb *clut);
+typedef const QRgba64 *(QT_FASTCALL *ConvertFunc64)(QRgba64 *buffer, const uint *src, int count,
+                                                    const QPixelLayout *layout, const QRgb *clut);
 
 struct QPixelLayout
 {
@@ -1168,6 +1170,7 @@ struct QPixelLayout
     ConvertFunc convertToARGB32PM;
     ConvertFunc convertFromARGB32PM;
     ConvertFunc convertFromRGB32;
+    ConvertFunc64 convertToARGB64PM;
 };
 
 typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *src, int index, int count);

@@ -36,6 +36,7 @@
 
 #include <QtGui/qrgba64.h>
 #include <QtGui/private/qdrawhelper_p.h>
+#include <private/qsimd_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,20 +53,36 @@ inline QRgba64 multiplyAlpha256(QRgba64 rgba64, uint alpha256)
                                (rgba64.alpha() * alpha256) >> 8);
 }
 
-inline QRgba64 multiplyAlpha255(QRgba64 rgba64, uint alpha255)
-{
-    return QRgba64::fromRgba64(qt_div_255(rgba64.red()   * alpha255),
-                               qt_div_255(rgba64.green() * alpha255),
-                               qt_div_255(rgba64.blue()  * alpha255),
-                               qt_div_255(rgba64.alpha() * alpha255));
-}
-
 inline QRgba64 multiplyAlpha65535(QRgba64 rgba64, uint alpha65535)
 {
+#ifdef __SSE2__
+    const __m128i va = _mm_shufflelo_epi16(_mm_cvtsi32_si128(alpha65535), _MM_SHUFFLE(0, 0, 0, 0));
+    __m128i vs = _mm_loadl_epi64((__m128i*)&rgba64);
+    vs = _mm_unpacklo_epi16(_mm_mullo_epi16(vs, va), _mm_mulhi_epu16(vs, va));
+    vs = _mm_add_epi32(vs, _mm_srli_epi32(vs, 16));
+    vs = _mm_add_epi32(vs, _mm_set1_epi32(0x8000));
+    vs = _mm_srai_epi32(vs, 16);
+    vs = _mm_packs_epi32(vs, _mm_setzero_si128());
+    _mm_storel_epi64((__m128i*)&rgba64, vs);
+    return rgba64;
+#else
     return QRgba64::fromRgba64(qt_div_65535(rgba64.red()   * alpha65535),
                                qt_div_65535(rgba64.green() * alpha65535),
                                qt_div_65535(rgba64.blue()  * alpha65535),
                                qt_div_65535(rgba64.alpha() * alpha65535));
+#endif
+}
+
+inline QRgba64 multiplyAlpha255(QRgba64 rgba64, uint alpha255)
+{
+#ifdef __SSE2__
+    return multiplyAlpha65535(rgba64, alpha255 * 257);
+#else
+    return QRgba64::fromRgba64(qt_div_255(rgba64.red()   * alpha255),
+                               qt_div_255(rgba64.green() * alpha255),
+                               qt_div_255(rgba64.blue()  * alpha255),
+                               qt_div_255(rgba64.alpha() * alpha255));
+#endif
 }
 
 inline QRgba64 interpolate256(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
