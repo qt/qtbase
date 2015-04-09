@@ -38,6 +38,7 @@
 #include "qpepperhelpers.h"
 #include "qpepperinstance_p.h"
 
+#include <QtGui/QPainter>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <ppapi/cpp/graphics_2d.h>

@@ -35,6 +35,8 @@
 
 #include "qpepperfontdatabase.h"
 
+#include <QtCore/QFile>
+
 #ifdef QT_PEPPER_USE_PEPPER_FONT_ENGINE
 #include <QtGui/private/qfontengine_nacl_p.h>
 #endif

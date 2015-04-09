@@ -38,6 +38,7 @@
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
+#include <QtCore/QPoint>
 
 #include <ppapi/c/pp_input_event.h>
 #include <ppapi/cpp/input_event.h>
