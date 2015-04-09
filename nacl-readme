@@ -8,22 +8,31 @@ of writing is pepper_39.
 
 1) Building Qt
 
+1.0) Branches
+Verify that all Qt modules are on the right branches. At the time of writing the nacl
+branch is "nacl-5.4", the other Qt modules should then have 5.4 checked out.
+
 1.1) Configure Qt
 
 The Native Client SDK provides several toolchains. Qt provides a script for
 configuring to use one of them:
-    nacl-configure <toolchain> <release|debug> [32|64]
+
+    qtbase/nacl-configure <toolchain> <release|debug> [32|64]
+
+The script expects a standard Qt module checkout. Example nacl-configure usage:
+
+    /path/to/qt/qtbase/nacl-configure mac_x86_newlib release 64
 
 Available toolchains include:
     mac_pnacl
-    mac_x86_glibc
+    mac_x86_glibc [not supported]
     mac_x86_newlib
     mac_arm_newlib
 
 Linux systems have corresponding "linux_"-prefixed toolchains. Windows is not
 supported as a host platform.
 
-The glibc toolchain(s) and shared library builds are not currently supported
+The glibc toolchain(s) and shared library builds are not currently supported.
 
 Which toolchain should I use?
 * pnacl is the "deployment" toolchain which produces .pexes which runs in  most 
@@ -49,7 +58,7 @@ build time.
 
 2) Building applications with Qt for NaCl:
 
-A sample known-good application can be found at: qtdeclarative/examples/nacl 
+A sample known-good application can be found at: qtdeclarative/examples/nacl
 
 2.1) Porting
 
@@ -64,7 +73,7 @@ Standard qmake + make. This will produce a .nexe or .nc file.
 
 Application are deployed using nacldeployqt, which is found at /path/to/qt-nacl-build/qtbase/bin/nacldeployqt
 
-Lanch application in chrome: nacldeployqt myapp.nexe --run
+Launch application in chrome: nacldeployqt myapp.nexe --run
 
 (Due to a quirk in the current implementation, always run nacldeployqt with a
 complete path: ../../bin/nacldeployqt.)
