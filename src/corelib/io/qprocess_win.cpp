@@ -41,7 +41,6 @@
 #include <qelapsedtimer.h>
 #include <qfileinfo.h>
 #include <qregexp.h>
-#include <qtimer.h>
 #include <qwineventnotifier.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
@@ -57,8 +56,6 @@
 QT_BEGIN_NAMESPACE
 
 //#define QPROCESS_DEBUG
-
-#define NOTIFYTIMEOUT 100
 
 static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
 {
@@ -543,9 +540,6 @@ void QProcessPrivate::startProcess()
         processFinishedNotifier = new QWinEventNotifier(pid->hProcess, q);
         QObject::connect(processFinishedNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_processDied()));
         processFinishedNotifier->setEnabled(true);
-        notifier = new QTimer(q);
-        QObject::connect(notifier, SIGNAL(timeout()), q, SLOT(_q_notified()));
-        notifier->start(NOTIFYTIMEOUT);
     }
 
     _q_startupNotification();
@@ -810,6 +804,8 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 
     if (!stdinChannel.writer) {
         stdinChannel.writer = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
+        QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::canWrite,
+                                this, &QProcessPrivate::_q_canWrite);
         stdinChannel.writer->start();
     }
 
@@ -826,17 +822,6 @@ bool QProcessPrivate::waitForWrite(int msecs)
     processError = QProcess::Timedout;
     q->setErrorString(QProcess::tr("Process operation timed out"));
     return false;
-}
-
-void QProcessPrivate::_q_notified()
-{
-    notifier->stop();
-
-    if (!stdinChannel.buffer.isEmpty() && (!stdinChannel.writer || stdinChannel.writer->waitForWrite(0)))
-        _q_canWrite();
-
-    if (processState != QProcess::NotRunning)
-        notifier->start(NOTIFYTIMEOUT);
 }
 
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)

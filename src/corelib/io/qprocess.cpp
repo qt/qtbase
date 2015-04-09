@@ -36,6 +36,9 @@
 
 #include <qdebug.h>
 #include <qdir.h>
+#if defined(Q_OS_WIN)
+#include <qtimer.h>
+#endif
 #if defined QPROCESS_DEBUG
 #include <qstring.h>
 #include <ctype.h>
@@ -819,7 +822,7 @@ QProcessPrivate::QProcessPrivate()
     emittedReadyRead = false;
     emittedBytesWritten = false;
 #ifdef Q_OS_WIN
-    notifier = 0;
+    stdinWriteTrigger = 0;
     processFinishedNotifier = 0;
 #endif // Q_OS_WIN
 }
@@ -847,6 +850,10 @@ void QProcessPrivate::cleanup()
         CloseHandle(pid->hProcess);
         delete pid;
         pid = 0;
+    }
+    if (stdinWriteTrigger) {
+        delete stdinWriteTrigger;
+        stdinWriteTrigger = 0;
     }
     if (processFinishedNotifier) {
         delete processFinishedNotifier;
@@ -878,12 +885,6 @@ void QProcessPrivate::cleanup()
         delete deathNotifier;
         deathNotifier = 0;
     }
-#ifdef Q_OS_WIN
-    if (notifier) {
-        delete notifier;
-        notifier = 0;
-    }
-#endif
     closeChannel(&stdoutChannel);
     closeChannel(&stderrChannel);
     closeChannel(&stdinChannel);
@@ -1953,10 +1954,24 @@ qint64 QProcess::writeData(const char *data, qint64 len)
         return 0;
     }
 
+#if defined(Q_OS_WIN)
+    if (!d->stdinWriteTrigger) {
+        d->stdinWriteTrigger = new QTimer;
+        d->stdinWriteTrigger->setSingleShot(true);
+        QObjectPrivate::connect(d->stdinWriteTrigger, &QTimer::timeout,
+                                d, &QProcessPrivate::_q_canWrite);
+    }
+#endif
+
     if (len == 1) {
         d->stdinChannel.buffer.putChar(*data);
+#ifdef Q_OS_WIN
+        if (!d->stdinWriteTrigger->isActive())
+            d->stdinWriteTrigger->start();
+#else
         if (d->stdinChannel.notifier)
             d->stdinChannel.notifier->setEnabled(true);
+#endif
 #if defined QPROCESS_DEBUG
     qDebug("QProcess::writeData(%p \"%s\", %lld) == 1 (written to buffer)",
            data, qt_prettyDebug(data, len, 16).constData(), len);
@@ -1966,8 +1981,13 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 
     char *dest = d->stdinChannel.buffer.reserve(len);
     memcpy(dest, data, len);
+#ifdef Q_OS_WIN
+    if (!d->stdinWriteTrigger->isActive())
+        d->stdinWriteTrigger->start();
+#else
     if (d->stdinChannel.notifier)
         d->stdinChannel.notifier->setEnabled(true);
+#endif
 #if defined QPROCESS_DEBUG
     qDebug("QProcess::writeData(%p \"%s\", %lld) == %lld (written to buffer)",
            data, qt_prettyDebug(data, len, 16).constData(), len, len);
