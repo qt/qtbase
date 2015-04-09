@@ -171,7 +171,7 @@ public:
     pp::ImageData *m_imageData2D;
     QImage *m_frameBuffer;
     bool m_inFlush;
-    QHash<QByteArray, QPair<QPointer<QObject>, const char *>> m_messageHandlers;
+    QHash<QByteArray, QPair<QPointer<QObject>, const char *> > m_messageHandlers;
 
     pp::CompletionCallbackFactory<QPepperInstancePrivate> m_callbackFactory;
 };
