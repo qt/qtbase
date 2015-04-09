@@ -217,6 +217,11 @@ void tst_QOpenGlConfig::testGlConfiguration()
     context.doneCurrent();
 
     qDebug().noquote() << '\n' << result;
+
+    // fromContext either uses the current context or creates a temporary dummy one.
+    QOpenGLConfig::Gpu gpu = QOpenGLConfig::Gpu::fromContext();
+    qDebug().noquote() << '\n' << "GL_VENDOR queried by QOpenGLConfig::Gpu:" << gpu.glVendor;
+    QVERIFY(!gpu.glVendor.isEmpty());
 }
 
 static inline QByteArray msgSetMismatch(const QSet<QString> &expected,
@@ -235,21 +240,28 @@ void tst_QOpenGlConfig::testBugList()
     const QString fileName = QFINDTESTDATA("buglist.json");
     QVERIFY(!fileName.isEmpty());
 
-     QSet<QString> expectedFeatures;
-     expectedFeatures << "feature1";
+    QSet<QString> expectedFeatures;
+    expectedFeatures << "feature1";
 
-    QOpenGLConfig::Gpu gpu;
-    gpu.vendorId = 0x10DE;
-    gpu.deviceId = 0x0DE9;
+    QVersionNumber driverVersion(QVector<int>() << 9 << 18 << 13 << 4460);
+    QOpenGLConfig::Gpu gpu = QOpenGLConfig::Gpu::fromDevice(0x10DE, 0x0DE9, driverVersion);
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS
-    gpu.driverVersion = QVersionNumber({9, 18, 13, 4460});
-#else
-    gpu.driverVersion = QVersionNumber(QVector<int>() << 9 << 18 << 13 << 4460);
-#endif
-    const QSet<QString> actualFeatures =
-        QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),
-                                   QVersionNumber(6, 3), fileName);
+    QSet<QString> actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),
+                                                              QVersionNumber(6, 3), fileName);
+    QVERIFY2(expectedFeatures == actualFeatures,
+             msgSetMismatch(expectedFeatures, actualFeatures));
+
+    gpu = QOpenGLConfig::Gpu::fromGLVendor(QByteArrayLiteral("Somebody Else"));
+    expectedFeatures.clear();
+    actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("linux"),
+                                                QVersionNumber(1, 0), fileName);
+    QVERIFY2(expectedFeatures == actualFeatures,
+             msgSetMismatch(expectedFeatures, actualFeatures));
+
+    gpu = QOpenGLConfig::Gpu::fromGLVendor(QByteArrayLiteral("The Qt Company"));
+    expectedFeatures = QSet<QString>() << "cool_feature";
+    actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("linux"),
+                                                QVersionNumber(1, 0), fileName);
     QVERIFY2(expectedFeatures == actualFeatures,
              msgSetMismatch(expectedFeatures, actualFeatures));
 }
