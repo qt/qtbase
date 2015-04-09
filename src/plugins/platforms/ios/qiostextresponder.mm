@@ -196,7 +196,7 @@
     else if (hints & Qt::ImhFormattedNumbersOnly)
         self.keyboardType = UIKeyboardTypeDecimalPad;
     else if (hints & Qt::ImhDialableCharactersOnly)
-        self.keyboardType = UIKeyboardTypeNumberPad;
+        self.keyboardType = UIKeyboardTypePhonePad;
     else
         self.keyboardType = UIKeyboardTypeDefault;
 
