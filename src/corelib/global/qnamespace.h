@@ -1536,9 +1536,16 @@ public:
         TitleBarArea    // For move
     };
 
+#if defined(Q_COMPILER_CLASS_ENUM) && defined(Q_COMPILER_CONSTEXPR)
+    enum class Initialization {
+        Uninitialized
+    };
+    static constexpr Q_DECL_UNUSED Initialization Uninitialized = Initialization::Uninitialized;
+#else
     enum Initialization {
         Uninitialized
     };
+#endif
 
     enum CoordinateSystem {
         DeviceCoordinates,
