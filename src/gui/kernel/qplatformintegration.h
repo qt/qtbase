@@ -147,7 +147,8 @@ public:
         ShowIsMaximized,
         MousePressAndHoldInterval,
         TabFocusBehavior,
-        ReplayMousePressOutsidePopup
+        ReplayMousePressOutsidePopup,
+        ItemViewActivateItemOnSingleClick
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

@@ -434,6 +434,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::PasswordMaskCharacter);
     case QPlatformTheme::MousePressAndHoldInterval:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::MousePressAndHoldInterval);
+    case QPlatformTheme::ItemViewActivateItemOnSingleClick:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ItemViewActivateItemOnSingleClick);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }

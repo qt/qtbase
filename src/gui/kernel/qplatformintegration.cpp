@@ -396,6 +396,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::TabFocusBehavior);
     case ReplayMousePressOutsidePopup:
         return true;
+    case ItemViewActivateItemOnSingleClick:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::ItemViewActivateItemOnSingleClick);
     }
 
     return 0;
