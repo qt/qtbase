@@ -33,6 +33,10 @@
 
 #ifndef QT_NO_DIRECTWRITE
 
+#if WINVER < 0x0600
+#  undef WINVER
+#  define WINVER 0x0600
+#endif
 #if _WIN32_WINNT < 0x0600
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
@@ -61,9 +65,13 @@ namespace {
     class GeometrySink: public IDWriteGeometrySink
     {
     public:
-        GeometrySink(QPainterPath *path) : m_path(path), m_refCount(0)
+        GeometrySink(QPainterPath *path)
+            : m_refCount(0), m_path(path)
         {
             Q_ASSERT(m_path != 0);
+        }
+        virtual ~GeometrySink()
+        {
         }
 
         IFACEMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT *beziers, UINT bezierCount);

@@ -123,17 +123,6 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
 
-        // This is a rather crude hack, but it works.
-        // The FreeType font engine is not capable of getting precise metrics for the alphamap
-        // without first rasterizing the glyph. If we force the glyph to be rasterized before
-        // we ask for the alphaMapBoundingBox(), the glyph will be loaded, rasterized and its
-        // proper metrics will be cached and used later.
-        if (fontEngine->hasInternalCaching()) {
-            QImage *locked = fontEngine->lockedAlphaMapForGlyph(glyph, subPixelPosition, m_format);
-            if (locked && !locked->isNull())
-                fontEngine->unlockAlphaMapForGlyph();
-        }
-
         glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, m_format);
 
 #ifdef CACHE_DEBUG

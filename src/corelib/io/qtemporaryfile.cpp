@@ -103,13 +103,14 @@ typedef int NativeFileHandle;
     \a path is used as a template when generating unique paths, \a pos
     identifies the position of the first character that will be replaced in the
     template and \a length the number of characters that may be substituted.
+    \a mode specifies the file mode bits (not used on Windows).
 
     Returns an open handle to the newly created file if successful, an invalid
     handle otherwise. In both cases, the string in \a path will be changed and
     contain the generated path name.
 */
 static bool createFileFromTemplate(NativeFileHandle &file,
-        QFileSystemEntry::NativePath &path, size_t pos, size_t length,
+        QFileSystemEntry::NativePath &path, size_t pos, size_t length, quint32 mode,
         QSystemError &error)
 {
     Q_ASSERT(length != 0);
@@ -143,6 +144,8 @@ static bool createFileFromTemplate(NativeFileHandle &file,
     for (;;) {
         // Atomically create file and obtain handle
 #if defined(Q_OS_WIN)
+        Q_UNUSED(mode);
+
 #  ifndef Q_OS_WINRT
         file = CreateFile((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
@@ -175,7 +178,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 #else // POSIX
         file = QT_OPEN(path.constData(),
                 QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
-                0600);
+                static_cast<mode_t>(mode));
 
         if (file != -1)
             return true;
@@ -333,7 +336,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     NativeFileHandle &file = d->fd;
 #endif
 
-    if (!createFileFromTemplate(file, filename, phPos, phLength, error)) {
+    if (!createFileFromTemplate(file, filename, phPos, phLength, fileMode, error)) {
         setError(QFile::OpenError, error.toString());
         return false;
     }
@@ -407,9 +410,9 @@ QAbstractFileEngine *QTemporaryFilePrivate::engine() const
 {
     if (!fileEngine) {
         if (fileName.isEmpty())
-            fileEngine = new QTemporaryFileEngine(templateName);
+            fileEngine = new QTemporaryFileEngine(templateName, 0600);
         else
-            fileEngine = new QTemporaryFileEngine(fileName, false);
+            fileEngine = new QTemporaryFileEngine(fileName, 0600, false);
     }
     return fileEngine;
 }

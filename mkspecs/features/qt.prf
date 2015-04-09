@@ -4,10 +4,8 @@ CONFIG *= thread
 win32 {
    contains(QT_CONFIG, shared) {
       # this variable is read by qmake in qmake/generators/win32/msvc_vcproj.cpp
-      # function VcprojGenerator::initDeploymentTool(), which contains some hardcoded
-      # library names (the ones that were static in Qt 4)
-      # it probably doesn't work anymore and should not be in this file
-      QMAKE_QT_DLL = 1
+      # function VcprojGenerator::initDeploymentTool()
+      QMAKE_DLL_PATHS += $$[QT_INSTALL_BINS/get]
    }
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG

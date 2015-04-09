@@ -149,7 +149,7 @@ QString Node::plainFullName(const Node* relative) const
  */
 QString Node::fullName(const Node* relative) const
 {
-    if (isDocumentNode())
+    if ((isDocumentNode() || isGroup()) && !title().isEmpty())
         return title();
     return plainFullName(relative);
 }

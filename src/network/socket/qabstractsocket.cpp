@@ -1265,8 +1265,8 @@ bool QAbstractSocketPrivate::readFromSocket()
         bytesToRead = readBufferMaxSize - buffer.size();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() about to read %d bytes",
-           int(bytesToRead));
+    qDebug("QAbstractSocketPrivate::readFromSocket() about to read %lld bytes",
+           bytesToRead);
 #endif
 
     // Read from the socket, store data in the read buffer.
@@ -1277,10 +1277,10 @@ bool QAbstractSocketPrivate::readFromSocket()
         buffer.chop(bytesToRead);
         return true;
     }
-    buffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
+    buffer.chop(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes));
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() got %d bytes, buffer size = %d",
-           int(readBytes), buffer.size());
+    qDebug("QAbstractSocketPrivate::readFromSocket() got %lld bytes, buffer size = %lld",
+           readBytes, buffer.size());
 #endif
 
     if (!socketEngine->isValid()) {
@@ -1726,7 +1726,7 @@ qint64 QAbstractSocket::bytesAvailable() const
         available += d->socketEngine->bytesAvailable();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::bytesAvailable() == %llu", available);
+    qDebug("QAbstractSocket::bytesAvailable() == %lld", available);
 #endif
     return available;
 }
@@ -1805,8 +1805,8 @@ bool QAbstractSocket::canReadLine() const
 {
     bool hasLine = d_func()->buffer.canReadLine();
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %d, size = %d", hasLine ? "true" : "false",
-           d_func()->buffer.size(), d_func()->buffer.size());
+    qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %lld, size = %lld",
+           hasLine ? "true" : "false", d_func()->buffer.size(), d_func()->buffer.size());
 #endif
     return hasLine || QIODevice::canReadLine();
 }

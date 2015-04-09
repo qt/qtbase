@@ -141,6 +141,9 @@ private slots:
     void rotationTo_data();
     void rotationTo();
 
+    void fromDirection_data();
+    void fromDirection();
+
     void fromEulerAngles_data();
     void fromEulerAngles();
 
@@ -987,6 +990,97 @@ void tst_QQuaternion::rotationTo()
     QVector3D vec2(q2 * to);
     vec2 *= (from.length() / to.length()); // discard rotated length
     QVERIFY(myFuzzyCompare(vec2, from));
+}
+
+static QByteArray testnameForAxis(const QVector3D &axis)
+{
+    QByteArray testname;
+    if (axis == QVector3D()) {
+        testname = "null";
+    } else {
+        if (axis.x()) {
+            testname += axis.x() < 0 ? "-" : "+";
+            testname += "X";
+        }
+        if (axis.y()) {
+            testname += axis.y() < 0 ? "-" : "+";
+            testname += "Y";
+        }
+        if (axis.z()) {
+            testname += axis.z() < 0 ? "-" : "+";
+            testname += "Z";
+        }
+    }
+    return testname;
+}
+
+// Test quaternion convertion to and from orthonormal axes.
+void tst_QQuaternion::fromDirection_data()
+{
+    QTest::addColumn<QVector3D>("direction");
+    QTest::addColumn<QVector3D>("up");
+
+    QList<QQuaternion> orientations;
+    orientations << QQuaternion();
+    for (int angle = 45; angle <= 360; angle += 45) {
+        orientations << QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), angle)
+                     << QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), angle)
+                     << QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), angle)
+                     << QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), angle)
+                        * QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), angle)
+                        * QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), angle);
+    }
+
+    // othonormal up and dir
+    foreach (const QQuaternion &q, orientations) {
+        QVector3D xAxis, yAxis, zAxis;
+        q.getAxes(&xAxis, &yAxis, &zAxis);
+
+        QTest::newRow("dir: " + testnameForAxis(zAxis) + ", up: " + testnameForAxis(yAxis))
+            << zAxis * 10.0f << yAxis * 10.0f;
+    }
+
+    // collinear up and dir
+    QTest::newRow("dir: +X, up: +X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(10.0f, 0.0f, 0.0f);
+    QTest::newRow("dir: +X, up: -X") << QVector3D(10.0f, 0.0f, 0.0f) << QVector3D(-10.0f, 0.0f, 0.0f);
+    QTest::newRow("dir: +Y, up: +Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, 10.0f, 0.0f);
+    QTest::newRow("dir: +Y, up: -Y") << QVector3D(0.0f, 10.0f, 0.0f) << QVector3D(0.0f, -10.0f, 0.0f);
+    QTest::newRow("dir: +Z, up: +Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, 10.0f);
+    QTest::newRow("dir: +Z, up: -Z") << QVector3D(0.0f, 0.0f, 10.0f) << QVector3D(0.0f, 0.0f, -10.0f);
+    QTest::newRow("dir: +X+Y+Z, up: +X+Y+Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(10.0f, 10.0f, 10.0f);
+    QTest::newRow("dir: +X+Y+Z, up: -X-Y-Z") << QVector3D(10.0f, 10.0f, 10.0f) << QVector3D(-10.0f, -10.0f, -10.0f);
+
+    // invalid up
+    foreach (const QQuaternion &q, orientations) {
+        QVector3D xAxis, yAxis, zAxis;
+        q.getAxes(&xAxis, &yAxis, &zAxis);
+
+        QTest::newRow("dir: " + testnameForAxis(zAxis) + ", up: null")
+            << zAxis * 10.0f << QVector3D();
+    }
+}
+void tst_QQuaternion::fromDirection()
+{
+    QFETCH(QVector3D, direction);
+    QFETCH(QVector3D, up);
+
+    QVector3D expextedZ(direction != QVector3D() ? direction.normalized() : QVector3D(0, 0, 1));
+    QVector3D expextedY(up.normalized());
+
+    QQuaternion result = QQuaternion::fromDirection(direction, up);
+    QVERIFY(myFuzzyCompare(result, result.normalized()));
+
+    QVector3D xAxis, yAxis, zAxis;
+    result.getAxes(&xAxis, &yAxis, &zAxis);
+
+    QVERIFY(myFuzzyCompare(zAxis, expextedZ));
+
+    if (!qFuzzyIsNull(QVector3D::crossProduct(expextedZ, expextedY).lengthSquared())) {
+        QVector3D expextedX(QVector3D::crossProduct(expextedY, expextedZ));
+
+        QVERIFY(myFuzzyCompare(yAxis, expextedY));
+        QVERIFY(myFuzzyCompare(xAxis, expextedX));
+    }
 }
 
 // Test quaternion creation from an axis and an angle.
