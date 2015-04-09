@@ -23,19 +23,25 @@ QMAKE_H_MOD_MOC         = moc_
 QMAKE_MOD_LEX           = _lex
 QMAKE_MOD_YACC          = _yacc
 
+defineTest(ensurePathEnv) {
+    isEmpty(QMAKE_PATH_ENV) {
+        QMAKE_PATH_ENV = $$(PATH)
+        QMAKE_PATH_ENV = $$split(QMAKE_PATH_ENV, $$QMAKE_DIRLIST_SEP)
+        export(QMAKE_PATH_ENV)
+    }
+}
+
 equals(QMAKE_HOST.os, Windows) {
     QMAKE_EXT_OBJ       = .obj
     QMAKE_EXT_RES       = .res
     QMAKE_SH            =
-    PATH = $$(PATH)
-    PATH = $$split(PATH, ;)
-    for(dir, PATH) {
+    ensurePathEnv()
+    for(dir, QMAKE_PATH_ENV) {
         exists($$dir/sh.exe) {
             QMAKE_SH = $$dir/sh.exe
             break()
         }
     }
-    unset(PATH)
 } else {
     QMAKE_EXT_CPP      += .C
     QMAKE_EXT_H        += .H
