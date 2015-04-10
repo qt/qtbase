@@ -55,9 +55,6 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     QString location;
 
     switch (type) {
-    case DesktopLocation:
-        location = pathForDirectory(NSDesktopDirectory);
-        break;
     case DocumentsLocation:
         location = pathForDirectory(NSDocumentDirectory);
         break;
@@ -82,6 +79,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case TempLocation:
         location = QString::fromNSString(NSTemporaryDirectory());
         break;
+    case DesktopLocation:
     case HomeLocation:
         location = bundlePath();
         break;
