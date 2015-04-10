@@ -70,6 +70,7 @@ private:
     QVector<QComposeTableElement> m_composeTable;
     uint m_composeBuffer[QT_KEYSEQUENCE_MAX_LEN + 1];
     TableGenerator::TableState m_tableState;
+    bool m_compositionTableInitialized;
 };
 
 QT_END_NAMESPACE
