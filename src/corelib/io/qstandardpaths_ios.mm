@@ -62,19 +62,22 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         location = pathForDirectory(NSDocumentDirectory);
         break;
     case FontsLocation:
-        location = bundlePath() + QLatin1String("/.fonts");
+        location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/.fonts");
         break;
     case ApplicationsLocation:
         location = pathForDirectory(NSApplicationDirectory);
         break;
     case MusicLocation:
-        location = pathForDirectory(NSMusicDirectory);
+        // NSMusicDirectory points to a non-existing write-protected path. Use sensible fallback.
+        location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/Music");
         break;
     case MoviesLocation:
-        location = pathForDirectory(NSMoviesDirectory);
+        // NSMoviesDirectory points to a non-existing write-protected path. Use sensible fallback.
+        location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/Movies");
         break;
     case PicturesLocation:
-        location = pathForDirectory(NSPicturesDirectory);
+        // NSPicturesDirectory points to a non-existing write-protected path. Use sensible fallback.
+        location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/Pictures");
         break;
     case TempLocation:
         location = QString::fromNSString(NSTemporaryDirectory());
@@ -99,7 +102,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         location = pathForDirectory(NSDocumentDirectory);
         break;
     case DownloadLocation:
-        location = pathForDirectory(NSDownloadsDirectory);
+        // NSDownloadsDirectory points to a non-existing write-protected path.
+        location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/Download");
         break;
     default:
         break;
