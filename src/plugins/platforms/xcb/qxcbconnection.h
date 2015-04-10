@@ -370,7 +370,7 @@ class Q_XCB_EXPORT QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = 0);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -400,8 +400,13 @@ public:
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
     xcb_window_t rootWindow();
+
+    bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
+    xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
+
 #ifdef XCB_USE_XLIB
     void *xlib_display() const;
+    void *createVisualInfoForDefaultVisualId() const;
 #endif
 
 #if defined(XCB_USE_XINPUT2)
@@ -564,6 +569,7 @@ private:
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
     bool m_canGrabServer;
+    xcb_visualid_t m_defaultVisualId;
 
     QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
@@ -632,6 +638,7 @@ private:
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+#define CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(object) ((XVisualInfo *)(object->connection()->createVisualInfoForDefaultVisualId()))
 
 template<typename T>
 xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)

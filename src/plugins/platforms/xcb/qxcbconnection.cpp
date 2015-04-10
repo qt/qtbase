@@ -66,6 +66,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #endif
 
 #if defined(XCB_USE_XINPUT2)
@@ -437,9 +438,10 @@ void QXcbConnection::initializeScreens()
         qCDebug(lcQpaScreen) << "primary output is" << m_screens.first()->name();
 }
 
-QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
+QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
     : m_connection(0)
     , m_canGrabServer(canGrabServer)
+    , m_defaultVisualId(defaultVisualId)
     , m_primaryScreenNumber(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
@@ -1351,6 +1353,21 @@ void *QXcbConnection::xlib_display() const
 {
     return m_xlib_display;
 }
+
+void *QXcbConnection::createVisualInfoForDefaultVisualId() const
+{
+    if (m_defaultVisualId == UINT_MAX)
+        return 0;
+    XVisualInfo info;
+    memset(&info, 0, sizeof info);
+    info.visualid = m_defaultVisualId;
+
+    int count = 0;
+    XVisualInfo *retVisual = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &info, &count);
+    Q_ASSERT(count < 2);
+    return retVisual;
+}
+
 #endif
 
 void QXcbConnection::processXcbEvents()

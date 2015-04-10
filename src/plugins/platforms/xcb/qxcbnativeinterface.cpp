@@ -392,6 +392,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier()) {
         return QFunctionPointer(QXcbWindow::setWmWindowTypeStatic);
     }
+    if (function == QXcbWindowFunctions::visualIdIdentifier()) {
+        return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
+    }
     return Q_NULLPTR;
 }
 

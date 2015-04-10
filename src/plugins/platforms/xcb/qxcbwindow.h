@@ -139,9 +139,12 @@ public:
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
     static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
+    static uint visualIdStatic(QWindow *window);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
+
+    uint visualId() const;
 
     bool needsSync() const;
 

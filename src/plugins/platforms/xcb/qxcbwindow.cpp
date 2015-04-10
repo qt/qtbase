@@ -388,7 +388,16 @@ void QXcbWindow::create()
         m_window = platformScreen->root();
         m_depth = platformScreen->screen()->root_depth;
         m_visualId = platformScreen->screen()->root_visual;
-        const xcb_visualtype_t *visual = platformScreen->visualForId(m_visualId);
+        const xcb_visualtype_t *visual = 0;
+        if (connection()->hasDefaultVisualId()) {
+            visual = platformScreen->visualForId(connection()->defaultVisualId());
+            if (visual)
+                m_visualId = connection()->defaultVisualId();
+            if (!visual)
+                qWarning() << "Could not use default visual id. Falling back to root_visual for screen.";
+        }
+        if (!visual)
+            visual = platformScreen->visualForId(m_visualId);
         m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
         connection()->addWindowEventListener(m_window, this);
         return;
@@ -442,7 +451,12 @@ void QXcbWindow::create()
 
 #ifdef XCB_USE_XLIB
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
-        XVisualInfo *visualInfo = static_cast<XVisualInfo *>(createVisual());
+        XVisualInfo *visualInfo = Q_NULLPTR;
+        if (connection()->hasDefaultVisualId())
+            visualInfo = CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(this);
+        if (!visualInfo)
+            visualInfo = static_cast<XVisualInfo *>(createVisual());
+
         if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
             qFatal("Could not initialize OpenGL");
 
@@ -477,35 +491,49 @@ void QXcbWindow::create()
     if (!m_window)
     {
         m_window = xcb_generate_id(xcb_connection());
-        m_visualId = platformScreen->screen()->root_visual;
+        m_visualId = UINT_MAX;
+        const xcb_visualtype_t *visual = Q_NULLPTR;
         m_depth = platformScreen->screen()->root_depth;
 
         uint32_t mask = 0;
         uint32_t values[3];
 
-        if (m_format.alphaBufferSize() == 8) {
-            xcb_depth_iterator_t depthIter = xcb_screen_allowed_depths_iterator(platformScreen->screen());
-            while (depthIter.rem) {
-                if (depthIter.data->depth == 32) {
-                    xcb_visualtype_iterator_t visualIter = xcb_depth_visuals_iterator(depthIter.data);
-                    if (visualIter.rem) {
-                        m_visualId = visualIter.data->visual_id;
-                        m_depth = 32;
-                        uint32_t colormap = xcb_generate_id(xcb_connection());
-                        xcb_create_colormap(xcb_connection(), XCB_COLORMAP_ALLOC_NONE, colormap,
-                                            xcb_parent_id, m_visualId);
-                        mask |= XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP;
-                        values[0] = platformScreen->screen()->white_pixel;
-                        values[1] = platformScreen->screen()->black_pixel;
-                        values[2] = colormap;
-                        break;
-                    }
-                }
-                xcb_depth_next(&depthIter);
-            }
+        if (connection()->hasDefaultVisualId()) {
+            m_visualId = connection()->defaultVisualId();
+            visual = platformScreen->visualForId(m_visualId);
         }
 
-        const xcb_visualtype_t *visual = platformScreen->visualForId(m_visualId);
+        if (!visual) {
+            if (connection()->hasDefaultVisualId())
+                qWarning("Failed to use default visual id. Falling back to using screens root_visual");
+
+            m_visualId = platformScreen->screen()->root_visual;
+
+            if (m_format.alphaBufferSize() == 8) {
+                xcb_depth_iterator_t depthIter = xcb_screen_allowed_depths_iterator(platformScreen->screen());
+                while (depthIter.rem) {
+                    if (depthIter.data->depth == 32) {
+                        xcb_visualtype_iterator_t visualIter = xcb_depth_visuals_iterator(depthIter.data);
+                        if (visualIter.rem) {
+                            m_visualId = visualIter.data->visual_id;
+                            m_depth = 32;
+                            uint32_t colormap = xcb_generate_id(xcb_connection());
+                            xcb_create_colormap(xcb_connection(), XCB_COLORMAP_ALLOC_NONE, colormap,
+                                                xcb_parent_id, m_visualId);
+                            mask |= XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP;
+                            values[0] = platformScreen->screen()->white_pixel;
+                            values[1] = platformScreen->screen()->black_pixel;
+                            values[2] = colormap;
+                            break;
+                        }
+                    }
+                    xcb_depth_next(&depthIter);
+                }
+            }
+
+            visual = platformScreen->visualForId(m_visualId);
+        }
+
         m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
         const QRect xRect = mapToNative(rect, platformScreen);
 
@@ -1680,6 +1708,13 @@ void QXcbWindow::setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmW
         window->setProperty(wm_window_type_property_id, QVariant::fromValue(static_cast<int>(windowTypes)));
 }
 
+uint QXcbWindow::visualIdStatic(QWindow *window)
+{
+    if (window && window->handle())
+        return static_cast<QXcbWindow *>(window->handle())->visualId();
+    return UINT_MAX;
+}
+
 QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
 {
     QXcbWindowFunctions::WmWindowTypes result(0);
@@ -2529,6 +2564,11 @@ void QXcbWindow::setAlertState(bool enabled)
     m_alertState = enabled;
 
     changeNetWmState(enabled, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION));
+}
+
+uint QXcbWindow::visualId() const
+{
+    return m_visualId;
 }
 
 bool QXcbWindow::needsSync() const
