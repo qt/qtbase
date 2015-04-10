@@ -78,6 +78,26 @@ inline QRgba64 interpolate255(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
     return QRgba64::fromRgba64(multiplyAlpha255(x, alpha1) + multiplyAlpha255(y, alpha2));
 }
 
+inline QRgba64 interpolate65535(QRgba64 x, uint alpha1, QRgba64 y, uint alpha2)
+{
+    return QRgba64::fromRgba64(multiplyAlpha65535(x, alpha1) + multiplyAlpha65535(y, alpha2));
+}
+
+inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
+{
+#if defined(__SSE2__) && defined(Q_PROCESSOR_X86_64)
+    __m128i va = _mm_cvtsi64_si128((quint64)a);
+    __m128i vb = _mm_cvtsi64_si128((quint64)b);
+    va = _mm_adds_epu16(va, vb);
+    return QRgba64::fromRgba64(_mm_cvtsi128_si64(va));
+#else
+    return QRgba64::fromRgba64(qMin(a.red() + b.red(), 65535),
+                               qMin(a.green() + b.green(), 65535),
+                               qMin(a.blue() + b.blue(), 65535),
+                               qMin(a.alpha() + b.alpha(), 65535));
+#endif
+}
+
 QT_END_NAMESPACE
 
 #endif // QRGBA64_P_H

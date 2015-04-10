@@ -3029,6 +3029,23 @@ void QT_FASTCALL comp_func_solid_SourceIn(uint *dest, int length, uint color, ui
     }
 }
 
+void QT_FASTCALL comp_func_solid_SourceIn_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] =  multiplyAlpha65535(color, dest[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        color = multiplyAlpha65535(color, ca);
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            dest[i] = interpolate65535(color, d.alpha(), d, cia);
+        }
+    }
+}
+
 void QT_FASTCALL comp_func_SourceIn(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3044,6 +3061,23 @@ void QT_FASTCALL comp_func_SourceIn(uint *Q_DECL_RESTRICT dest, const uint *Q_DE
             uint d = dest[i];
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, cia);
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_SourceIn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = multiplyAlpha65535(src[i], dest[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            QRgba64 s = multiplyAlpha65535(src[i], ca);
+            dest[i] = interpolate65535(s, d.alpha(), d, cia);
         }
     }
 }
@@ -3066,6 +3100,17 @@ void QT_FASTCALL comp_func_solid_DestinationIn(uint *dest, int length, uint colo
     }
 }
 
+void QT_FASTCALL comp_func_solid_DestinationIn_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    uint a = color.alpha();
+    uint ca64k = const_alpha * 257;
+    if (const_alpha != 255)
+        a = qt_div_65535(a * ca64k) + 65535 - ca64k;
+    for (int i = 0; i < length; ++i) {
+        dest[i] = multiplyAlpha65535(dest[i], a);
+    }
+}
+
 void QT_FASTCALL comp_func_DestinationIn(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3080,6 +3125,22 @@ void QT_FASTCALL comp_func_DestinationIn(uint *Q_DECL_RESTRICT dest, const uint 
             PRELOAD_COND2(dest, src)
             uint a = BYTE_MUL(qAlpha(src[i]), const_alpha) + cia;
             dest[i] = BYTE_MUL(dest[i], a);
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_DestinationIn_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = multiplyAlpha65535(dest[i], src[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        for (int i = 0; i < length; ++i) {
+            uint a = qt_div_65535(src[i].alpha() * ca) + cia;
+            dest[i] = multiplyAlpha65535(dest[i], a);
         }
     }
 }
@@ -3108,6 +3169,23 @@ void QT_FASTCALL comp_func_solid_SourceOut(uint *dest, int length, uint color, u
     }
 }
 
+void QT_FASTCALL comp_func_solid_SourceOut_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] =  multiplyAlpha65535(color, 65535 - dest[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        color = multiplyAlpha65535(color, ca);
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            dest[i] = interpolate65535(color, 65535 - d.alpha(), d, cia);
+        }
+    }
+}
+
 void QT_FASTCALL comp_func_SourceOut(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3123,6 +3201,23 @@ void QT_FASTCALL comp_func_SourceOut(uint *Q_DECL_RESTRICT dest, const uint *Q_D
             uint s = BYTE_MUL(src[i], const_alpha);
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, cia);
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_SourceOut_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = multiplyAlpha65535(src[i], 65535 - dest[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            QRgba64 s = multiplyAlpha65535(src[i], ca);
+            dest[i] = interpolate65535(s, 65535 - d.alpha(), d, cia);
         }
     }
 }
@@ -3144,6 +3239,17 @@ void QT_FASTCALL comp_func_solid_DestinationOut(uint *dest, int length, uint col
     }
 }
 
+void QT_FASTCALL comp_func_solid_DestinationOut_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    uint a = 65535 - color.alpha();
+    uint ca64k = const_alpha * 257;
+    if (const_alpha != 255)
+        a = qt_div_65535(a * ca64k) + 65535 - ca64k;
+    for (int i = 0; i < length; ++i) {
+        dest[i] = multiplyAlpha65535(dest[i], a);
+    }
+}
+
 void QT_FASTCALL comp_func_DestinationOut(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3158,6 +3264,22 @@ void QT_FASTCALL comp_func_DestinationOut(uint *Q_DECL_RESTRICT dest, const uint
             PRELOAD_COND2(dest, src)
             uint sia = BYTE_MUL(qAlpha(~src[i]), const_alpha) + cia;
             dest[i] = BYTE_MUL(dest[i], sia);
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_DestinationOut_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = multiplyAlpha65535(dest[i], 65535 - src[i].alpha());
+        }
+    } else {
+        uint ca = const_alpha * 257;
+        uint cia = 65535 - ca;
+        for (int i = 0; i < length; ++i) {
+            uint a = qt_div_65535((65535 - src[i].alpha()) * ca) + cia;
+            dest[i] = multiplyAlpha65535(dest[i], a);
         }
     }
 }
@@ -3181,6 +3303,16 @@ void QT_FASTCALL comp_func_solid_SourceAtop(uint *dest, int length, uint color, 
     }
 }
 
+void QT_FASTCALL comp_func_solid_SourceAtop_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha != 255)
+        color = multiplyAlpha255(color, const_alpha);
+    uint sia = 65535 - color.alpha();
+    for (int i = 0; i < length; ++i) {
+        dest[i] = interpolate65535(color, dest[i].alpha(), dest[i], sia);
+    }
+}
+
 void QT_FASTCALL comp_func_SourceAtop(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3197,6 +3329,23 @@ void QT_FASTCALL comp_func_SourceAtop(uint *Q_DECL_RESTRICT dest, const uint *Q_
             uint s = BYTE_MUL(src[i], const_alpha);
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, qAlpha(~s));
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_SourceAtop_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 s = src[i];
+            QRgba64 d = dest[i];
+            dest[i] = interpolate65535(s, d.alpha(), d, 65535 - s.alpha());
+        }
+    } else {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 s = multiplyAlpha255(src[i], const_alpha);
+            QRgba64 d = dest[i];
+            dest[i] = interpolate65535(s, d.alpha(), d, 65535 - s.alpha());
         }
     }
 }
@@ -3218,6 +3367,19 @@ void QT_FASTCALL comp_func_solid_DestinationAtop(uint *dest, int length, uint co
         PRELOAD_COND(dest)
         uint d = dest[i];
         dest[i] = INTERPOLATE_PIXEL_255(d, a, color, qAlpha(~d));
+    }
+}
+
+void QT_FASTCALL comp_func_solid_DestinationAtop_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    uint a = color.alpha();
+    if (const_alpha != 255) {
+        color = multiplyAlpha255(color, const_alpha);
+        a = color.alpha() + 65535 - (const_alpha * 257);
+    }
+    for (int i = 0; i < length; ++i) {
+        QRgba64 d = dest[i];
+        dest[i] = interpolate65535(d, a, color, 65535 - d.alpha());
     }
 }
 
@@ -3243,6 +3405,26 @@ void QT_FASTCALL comp_func_DestinationAtop(uint *Q_DECL_RESTRICT dest, const uin
     }
 }
 
+void QT_FASTCALL comp_func_DestinationAtop_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 s = src[i];
+            QRgba64 d = dest[i];
+            dest[i] = interpolate65535(d, s.alpha(), s, 65535 - d.alpha());
+        }
+    } else {
+        int ca = const_alpha * 257;
+        int cia = 65535 - ca;
+        for (int i = 0; i < length; ++i) {
+            QRgba64 s = multiplyAlpha65535(src[i], ca);
+            QRgba64 d = dest[i];
+            uint a = s.alpha() + cia;
+            dest[i] = interpolate65535(d, a, s, 65535 - d.alpha());
+        }
+    }
+}
+
 /*
   result = d*sia + s*dia
   dest = d*sia*ca + s*dia*ca + d *cia
@@ -3263,6 +3445,17 @@ void QT_FASTCALL comp_func_solid_XOR(uint *dest, int length, uint color, uint co
     }
 }
 
+void QT_FASTCALL comp_func_solid_XOR_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha != 255)
+        color = multiplyAlpha255(color, const_alpha);
+    uint sia = 65535 - color.alpha();
+    for (int i = 0; i < length; ++i) {
+        QRgba64 d = dest[i];
+        dest[i] = interpolate65535(color, 65535 - d.alpha(), d, sia);
+    }
+}
+
 void QT_FASTCALL comp_func_XOR(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha)
 {
     PRELOAD_INIT2(dest, src)
@@ -3279,6 +3472,23 @@ void QT_FASTCALL comp_func_XOR(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RE
             uint d = dest[i];
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, qAlpha(~s));
+        }
+    }
+}
+
+void QT_FASTCALL comp_func_XOR_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            QRgba64 s = src[i];
+            dest[i] = interpolate65535(s, 65535 - d.alpha(), d, 65535 - s.alpha());
+        }
+    } else {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = dest[i];
+            QRgba64 s = multiplyAlpha255(src[i], const_alpha);
+            dest[i] = interpolate65535(s, 65535 - d.alpha(), d, 65535 - s.alpha());
         }
     }
 }
@@ -3330,12 +3540,37 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl(uint *dest, int
     }
 }
 
+template <typename T>
+Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl_rgb64(QRgba64 *dest, int length, QRgba64 color, const T &coverage)
+{
+    QRgba64 s = color;
+    for (int i = 0; i < length; ++i) {
+        QRgba64 d = dest[i];
+        d = comp_func_Plus_one_pixel(d, s);
+        coverage.store(&dest[i], d);
+    }
+}
+
 void QT_FASTCALL comp_func_solid_Plus(uint *dest, int length, uint color, uint const_alpha)
 {
     if (const_alpha == 255)
         comp_func_solid_Plus_impl(dest, length, color, QFullCoverage());
     else
         comp_func_solid_Plus_impl(dest, length, color, QPartialCoverage(const_alpha));
+}
+
+void QT_FASTCALL comp_func_solid_Plus_rgb64(QRgba64 *dest, int length, QRgba64 color, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = addWithSaturation(dest[i], color);
+        }
+    } else {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = addWithSaturation(dest[i], color);
+            dest[i] = interpolate255(d, const_alpha, dest[i], 255 - const_alpha);
+        }
+    }
 }
 
 template <typename T>
@@ -3359,6 +3594,20 @@ void QT_FASTCALL comp_func_Plus(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_R
         comp_func_Plus_impl(dest, src, length, QFullCoverage());
     else
         comp_func_Plus_impl(dest, src, length, QPartialCoverage(const_alpha));
+}
+
+void QT_FASTCALL comp_func_Plus_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        for (int i = 0; i < length; ++i) {
+            dest[i] = addWithSaturation(dest[i], src[i]);
+        }
+    } else {
+        for (int i = 0; i < length; ++i) {
+            QRgba64 d = addWithSaturation(dest[i], src[i]);
+            dest[i] = interpolate255(d, const_alpha, dest[i], 255 - const_alpha);
+        }
+    }
 }
 
 /*
@@ -4552,8 +4801,15 @@ static CompositionFunctionSolid64 functionForModeSolid64_C[] = {
         comp_func_solid_Clear_rgb64,
         comp_func_solid_Source_rgb64,
         comp_func_solid_Destination_rgb64,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
+        comp_func_solid_SourceIn_rgb64,
+        comp_func_solid_DestinationIn_rgb64,
+        comp_func_solid_SourceOut_rgb64,
+        comp_func_solid_DestinationOut_rgb64,
+        comp_func_solid_SourceAtop_rgb64,
+        comp_func_solid_DestinationAtop_rgb64,
+        comp_func_solid_XOR_rgb64,
+        comp_func_solid_Plus_rgb64,
+        0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0
@@ -4609,8 +4865,15 @@ static CompositionFunction64 functionForMode64_C[] = {
         comp_func_Clear_rgb64,
         comp_func_Source_rgb64,
         comp_func_Destination_rgb64,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
+        comp_func_SourceIn_rgb64,
+        comp_func_DestinationIn_rgb64,
+        comp_func_SourceOut_rgb64,
+        comp_func_DestinationOut_rgb64,
+        comp_func_SourceAtop_rgb64,
+        comp_func_DestinationAtop_rgb64,
+        comp_func_XOR_rgb64,
+        comp_func_Plus_rgb64,
+        0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0
