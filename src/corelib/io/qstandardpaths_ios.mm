@@ -62,7 +62,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/.fonts");
         break;
     case ApplicationsLocation:
-        location = pathForDirectory(NSApplicationDirectory);
+        // NSApplicationDirectory points to a non-existing write-protected path.
         break;
     case MusicLocation:
         // NSMusicDirectory points to a non-existing write-protected path. Use sensible fallback.
