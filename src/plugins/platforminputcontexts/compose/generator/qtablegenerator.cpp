@@ -399,7 +399,7 @@ void TableGenerator::parseKeySequence(char *line)
         // handle direct text encoded in the locale
         if (*composeValue == '\\')
             ++composeValue;
-        elem.value = QString::fromLocal8Bit(composeValue).at(0).unicode();
+        elem.value = QString::fromLocal8Bit(composeValue, composeValueEnd - composeValue).at(0).unicode();
         ++composeValue;
     }
 
