@@ -83,6 +83,8 @@ typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 class QHttpNetworkConnectionChannel : public QObject {
     Q_OBJECT
 public:
+    // TODO: Refactor this to add an EncryptingState (and remove pendingEncrypt).
+    // Also add an Unconnected state so IdleState does not have double meaning.
     enum ChannelState {
         IdleState = 0,          // ready to send request
         ConnectingState = 1,    // connecting to host

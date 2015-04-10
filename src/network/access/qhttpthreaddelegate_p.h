@@ -187,6 +187,7 @@ protected:
     QByteArray m_dataArray;
     bool m_atEnd;
     qint64 m_size;
+    qint64 m_pos; // to match calls of haveDataSlot with the expected position
 public:
     QNonContiguousByteDeviceThreadForwardImpl(bool aE, qint64 s)
         : QNonContiguousByteDevice(),
@@ -194,12 +195,18 @@ public:
           m_amount(0),
           m_data(0),
           m_atEnd(aE),
-          m_size(s)
+          m_size(s),
+          m_pos(0)
     {
     }
 
     ~QNonContiguousByteDeviceThreadForwardImpl()
     {
+    }
+
+    qint64 pos() Q_DECL_OVERRIDE
+    {
+        return m_pos;
     }
 
     const char* readPointer(qint64 maximumLength, qint64 &len)
@@ -229,11 +236,10 @@ public:
 
         m_amount -= a;
         m_data += a;
+        m_pos += a;
 
-        // To main thread to inform about our state
-        emit processedData(a);
-
-        // FIXME possible optimization, already ask user thread for some data
+        // To main thread to inform about our state. The m_pos will be sent as a sanity check.
+        emit processedData(m_pos, a);
 
         return true;
     }
@@ -250,10 +256,21 @@ public:
     {
         m_amount = 0;
         m_data = 0;
+        m_dataArray.clear();
+
+        if (wantDataPending) {
+            // had requested the user thread to send some data (only 1 in-flight at any moment)
+            wantDataPending = false;
+        }
 
         // Communicate as BlockingQueuedConnection
         bool b = false;
         emit resetData(&b);
+        if (b) {
+            // the reset succeeded, we're at pos 0 again
+            m_pos = 0;
+            // the HTTP code will anyway abort the request if !b.
+        }
         return b;
     }
 
@@ -264,8 +281,13 @@ public:
 
 public slots:
     // From user thread:
-    void haveDataSlot(QByteArray dataArray, bool dataAtEnd, qint64 dataSize)
+    void haveDataSlot(qint64 pos, QByteArray dataArray, bool dataAtEnd, qint64 dataSize)
     {
+        if (pos != m_pos) {
+            // Sometimes when re-sending a request in the qhttpnetwork* layer there is a pending haveData from the
+            // user thread on the way to us. We need to ignore it since it is the data for the wrong(later) chunk.
+            return;
+        }
         wantDataPending = false;
 
         m_dataArray = dataArray;
@@ -285,7 +307,7 @@ signals:
 
     // to main thread:
     void wantData(qint64);
-    void processedData(qint64);
+    void processedData(qint64 pos, qint64 amount);
     void resetData(bool *b);
 };
 
