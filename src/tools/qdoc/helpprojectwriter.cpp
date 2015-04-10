@@ -122,7 +122,7 @@ void HelpProjectWriter::reset(const Config &config,
 
 void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList &selectors)
 {
-    QHash<QString, Node::Type> typeHash;
+    QHash<QString, Node::NodeType> typeHash;
     typeHash["namespace"] = Node::Namespace;
     typeHash["class"] = Node::Class;
     typeHash["fake"] = Node::Document;
@@ -142,14 +142,14 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["qmlclass"] = Node::QmlType;
     typeHash["qmlbasictype"] = Node::QmlBasicType;
 
-    QHash<QString, Node::SubType> subTypeHash;
-    subTypeHash["example"] = Node::Example;
-    subTypeHash["headerfile"] = Node::HeaderFile;
-    subTypeHash["file"] = Node::File;
-    subTypeHash["page"] = Node::Page;
-    subTypeHash["externalpage"] = Node::ExternalPage;
+    QHash<QString, Node::DocSubtype> docSubtypeHash;
+    docSubtypeHash["example"] = Node::Example;
+    docSubtypeHash["headerfile"] = Node::HeaderFile;
+    docSubtypeHash["file"] = Node::File;
+    docSubtypeHash["page"] = Node::Page;
+    docSubtypeHash["externalpage"] = Node::ExternalPage;
 
-    QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
+    QSet<Node::DocSubtype> allSubTypes = QSet<Node::DocSubtype>::fromList(docSubtypeHash.values());
 
     foreach (const QString &selector, selectors) {
         QStringList pieces = selector.split(QLatin1Char(':'));
@@ -161,13 +161,13 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
             QString lower = pieces[0].toLower();
             pieces = pieces[1].split(QLatin1Char(','));
             if (typeHash.contains(lower)) {
-                QSet<Node::SubType> subTypes;
+                QSet<Node::DocSubtype> docSubtypes;
                 for (int i = 0; i < pieces.size(); ++i) {
                     QString lower = pieces[i].toLower();
-                    if (subTypeHash.contains(lower))
-                        subTypes.insert(subTypeHash[lower]);
+                    if (docSubtypeHash.contains(lower))
+                        docSubtypes.insert(docSubtypeHash[lower]);
                 }
-                subproject.selectors[typeHash[lower]] = subTypes;
+                subproject.selectors[typeHash[lower]] = docSubtypes;
             }
         }
     }
@@ -274,8 +274,8 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 // Accept only fake nodes with subtypes contained in the selector's
                 // mask.
                 const DocumentNode *docNode = static_cast<const DocumentNode *>(node);
-                if (subproject.selectors[node->type()].contains(docNode->subType()) &&
-                        docNode->subType() != Node::ExternalPage &&
+                if (subproject.selectors[node->type()].contains(docNode->docSubtype()) &&
+                        docNode->docSubtype() != Node::ExternalPage &&
                         !docNode->fullTitle().isEmpty()) {
 
                     project.subprojects[i].nodes[objName] = node;
@@ -417,11 +417,11 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         // attributes.
     case Node::Document: {
         const DocumentNode *docNode = static_cast<const DocumentNode*>(node);
-        if (docNode->subType() != Node::ExternalPage &&
-                docNode->subType() != Node::Image &&
+        if (docNode->docSubtype() != Node::ExternalPage &&
+                docNode->docSubtype() != Node::Image &&
                 !docNode->fullTitle().isEmpty()) {
 
-            if (docNode->subType() != Node::File) {
+            if (docNode->docSubtype() != Node::File) {
                 if (docNode->doc().hasKeywords()) {
                     foreach (const Atom *keyword, docNode->doc().keywords()) {
                         if (!keyword->string().isEmpty()) {
@@ -467,7 +467,7 @@ void HelpProjectWriter::generateSections(HelpProject &project,
     /*
       Don't include index nodes in the help file. Or DITA map nodes.
      */
-    if (node->isIndexNode() || node->subType() == Node::DitaMap)
+    if (node->isIndexNode() || node->docSubtype() == Node::DitaMap)
         return;
     if (!generateSection(project, writer, node))
         return;
@@ -626,7 +626,7 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
         writer.writeAttribute("ref", href);
         writer.writeAttribute("title", docNode->fullTitle());
 
-        if (docNode->subType() == Node::HeaderFile)
+        if (docNode->docSubtype() == Node::HeaderFile)
             addMembers(project, writer, node);
 
         writer.writeEndElement(); // section

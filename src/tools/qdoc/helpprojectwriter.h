@@ -50,7 +50,7 @@ struct SubProject
 {
     QString title;
     QString indexTitle;
-    QHash<Node::Type, QSet<DocumentNode::SubType> > selectors;
+    QHash<Node::NodeType, QSet<DocumentNode::DocSubtype> > selectors;
     bool sortPages;
     QString type;
     QHash<QString, const Node *> nodes;

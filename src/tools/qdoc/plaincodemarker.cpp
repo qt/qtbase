@@ -58,7 +58,7 @@ bool PlainCodeMarker::recognizeLanguage( const QString& /* lang */ )
     return false;
 }
 
-Atom::Type PlainCodeMarker::atomType() const
+Atom::AtomType PlainCodeMarker::atomType() const
 {
     return Atom::Code;
 }

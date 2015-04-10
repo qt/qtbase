@@ -51,7 +51,7 @@ public:
     bool recognizeCode( const QString& code ) Q_DECL_OVERRIDE;
     bool recognizeExtension( const QString& ext ) Q_DECL_OVERRIDE;
     bool recognizeLanguage( const QString& lang ) Q_DECL_OVERRIDE;
-    Atom::Type atomType() const Q_DECL_OVERRIDE;
+    Atom::AtomType atomType() const Q_DECL_OVERRIDE;
     QString markedUpCode( const QString& code, const Node *relative, const Location &location ) Q_DECL_OVERRIDE;
     QString markedUpSynopsis( const Node *node, const Node *relative,
                               SynopsisStyle style ) Q_DECL_OVERRIDE;

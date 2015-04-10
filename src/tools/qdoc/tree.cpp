@@ -301,8 +301,8 @@ static const NodeTypeList& relatesTypes()
 {
     if (t.isEmpty()) {
         t.reserve(3);
-        t.append(NodeTypePair(Node::Class, Node::NoSubType));
-        t.append(NodeTypePair(Node::Namespace, Node::NoSubType));
+        t.append(NodeTypePair(Node::Class, Node::NoSubtype));
+        t.append(NodeTypePair(Node::Namespace, Node::NoSubtype));
         t.append(NodeTypePair(Node::Document, Node::HeaderFile));
     }
     return t;
@@ -586,7 +586,7 @@ NodeList Tree::allBaseClasses(const ClassNode* classNode) const
   search at the tree root. \a subtype is not used unless
   \a type is \c{Document}.
  */
-Node* Tree::findNodeByNameAndType(const QStringList& path, Node::Type type) const
+Node* Tree::findNodeByNameAndType(const QStringList& path, Node::NodeType type) const
 {
     return findNodeRecursive(path, 0, root(), type);
 }
@@ -610,7 +610,7 @@ Node* Tree::findNodeByNameAndType(const QStringList& path, Node::Type type) cons
 Node* Tree::findNodeRecursive(const QStringList& path,
                               int pathIndex,
                               const Node* start,
-                              Node::Type type) const
+                              Node::NodeType type) const
 {
     if (!start || path.isEmpty())
         return 0; // no place to start, or nothing to search for.
@@ -979,7 +979,7 @@ QString Tree::getRef(const QString& target, const Node* node) const
  */
 void Tree::insertTarget(const QString& name,
                         const QString& title,
-                        TargetRec::Type type,
+                        TargetRec::TargetType type,
                         Node* node,
                         int priority)
 {
@@ -1004,7 +1004,7 @@ void Tree::resolveTargets(InnerNode* root)
                 bool alreadyThere = false;
                 if (!nodes.empty()) {
                     for (int i=0; i< nodes.size(); ++i) {
-                        if (nodes[i]->subType() == Node::ExternalPage) {
+                        if (nodes[i]->docSubtype() == Node::ExternalPage) {
                             if (node->name() == nodes[i]->name()) {
                                 alreadyThere = true;
                                 break;
@@ -1251,7 +1251,7 @@ CollectionNode* Tree::findCollection(const QString& name, Node::Genus genus)
     CNMap::const_iterator i = m->find(name);
     if (i != m->end())
         return i.value();
-    Node::Type t = Node::NoType;
+    Node::NodeType t = Node::NoType;
     switch (genus) {
     case Node::DOC:
         t = Node::Group;

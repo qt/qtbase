@@ -71,7 +71,7 @@ class Node
     Q_DECLARE_TR_FUNCTIONS(QDoc::Node)
 
 public:
-    enum Type {
+    enum NodeType {
         NoType,
         Namespace,
         Class,
@@ -94,8 +94,8 @@ public:
         LastType
     };
 
-    enum SubType {
-        NoSubType,
+    enum DocSubtype {
+        NoSubtype,
         Example,
         HeaderFile,
         File,
@@ -247,15 +247,15 @@ public:
     virtual bool isInternal() const;
     virtual void setDataType(const QString& ) { }
     virtual void setReadOnly(bool ) { }
-    virtual Node* disambiguate(Type , SubType ) { return this; }
+    virtual Node* disambiguate(NodeType , DocSubtype ) { return this; }
     virtual bool wasSeen() const { return false; }
     virtual void appendGroupName(const QString& ) { }
     virtual QString element() const { return QString(); }
     virtual Tree* tree() const;
     virtual void findChildren(const QString& , NodeList& nodes) const { nodes.clear(); }
     bool isIndexNode() const { return indexNodeFlag_; }
-    Type type() const { return (Type) nodeType_; }
-    virtual SubType subType() const { return NoSubType; }
+    NodeType type() const { return (NodeType) nodeType_; }
+    virtual DocSubtype docSubtype() const { return NoSubtype; }
     bool match(const NodeTypeList& types) const;
     InnerNode* parent() const { return parent_; }
     const Node* root() const;
@@ -327,10 +327,10 @@ public:
     static int incPropertyGroupCount();
     static void clearPropertyGroupCount();
     static void initialize();
-    static Type goal(const QString& t) { return goals_.value(t); }
+    static NodeType goal(const QString& t) { return goals_.value(t); }
 
 protected:
-    Node(Type type, InnerNode* parent, const QString& name);
+    Node(NodeType type, InnerNode* parent, const QString& name);
 
 private:
 
@@ -358,7 +358,7 @@ private:
     QString outSubDir_;
     static QStringMap operators_;
     static int propertyGroupCount_;
-    static QMap<QString,Node::Type> goals_;
+    static QMap<QString,Node::NodeType> goals_;
 };
 
 class InnerNode : public Node
@@ -367,7 +367,7 @@ public:
     virtual ~InnerNode();
 
     Node* findChildNode(const QString& name, Node::Genus genus) const;
-    Node* findChildNode(const QString& name, Type type);
+    Node* findChildNode(const QString& name, NodeType type);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
     FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone) const;
@@ -407,7 +407,7 @@ public:
     virtual void setOutputSubdirectory(const QString& t);
 
 protected:
-    InnerNode(Type type, InnerNode* parent, const QString& name);
+    InnerNode(NodeType type, InnerNode* parent, const QString& name);
 
 private:
     friend class Node;
@@ -437,8 +437,8 @@ public:
     virtual bool isLeaf() const Q_DECL_OVERRIDE { return true; }
 
 protected:
-    LeafNode(Type type, InnerNode* parent, const QString& name);
-    LeafNode(InnerNode* parent, Type type, const QString& name);
+    LeafNode(NodeType type, InnerNode* parent, const QString& name);
+    LeafNode(InnerNode* parent, NodeType type, const QString& name);
 };
 
 class NamespaceNode : public InnerNode
@@ -544,7 +544,7 @@ public:
 
     DocumentNode(InnerNode* parent,
              const QString& name,
-             SubType subType,
+             DocSubtype docSubtype,
              PageType ptype);
     virtual ~DocumentNode() { }
 
@@ -552,7 +552,7 @@ public:
     virtual void setTitle(const QString &title) Q_DECL_OVERRIDE;
     virtual void setSubTitle(const QString &subTitle) Q_DECL_OVERRIDE { subtitle_ = subTitle; }
 
-    SubType subType() const Q_DECL_OVERRIDE { return nodeSubtype_; }
+    DocSubtype docSubtype() const Q_DECL_OVERRIDE { return nodeSubtype_; }
     virtual QString title() const Q_DECL_OVERRIDE { return title_; }
     virtual QString fullTitle() const Q_DECL_OVERRIDE;
     virtual QString subTitle() const Q_DECL_OVERRIDE;
@@ -560,13 +560,13 @@ public:
     virtual QString nameForLists() const Q_DECL_OVERRIDE { return title(); }
     virtual void setImageFileName(const QString& ) { }
 
-    virtual bool isHeaderFile() const Q_DECL_OVERRIDE { return (subType() == Node::HeaderFile); }
-    virtual bool isExample() const Q_DECL_OVERRIDE { return (subType() == Node::Example); }
+    virtual bool isHeaderFile() const Q_DECL_OVERRIDE { return (docSubtype() == Node::HeaderFile); }
+    virtual bool isExample() const Q_DECL_OVERRIDE { return (docSubtype() == Node::Example); }
     virtual bool isExampleFile() const Q_DECL_OVERRIDE { return (parent() && parent()->isExample()); }
     virtual bool isExternalPage() const Q_DECL_OVERRIDE { return nodeSubtype_ == ExternalPage; }
 
 protected:
-    SubType nodeSubtype_;
+    DocSubtype nodeSubtype_;
     QString title_;
     QString subtitle_;
 };
@@ -852,7 +852,7 @@ public:
     enum Virtualness { NonVirtual, NormalVirtual, PureVirtual };
 
     FunctionNode(InnerNode* parent, const QString &name);
-    FunctionNode(Type type, InnerNode* parent, const QString &name, bool attached);
+    FunctionNode(NodeType type, InnerNode* parent, const QString &name, bool attached);
     virtual ~FunctionNode() { }
 
     void setReturnType(const QString& t) { returnType_ = t; }
@@ -1077,7 +1077,7 @@ public:
 class CollectionNode : public InnerNode
 {
  public:
- CollectionNode(Type type,
+ CollectionNode(NodeType type,
                 InnerNode* parent,
                 const QString& name,
                 Genus genus) : InnerNode(type, parent, name), seen_(false)

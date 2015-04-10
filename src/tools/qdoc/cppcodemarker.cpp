@@ -103,7 +103,7 @@ bool CppCodeMarker::recognizeLanguage(const QString &lang)
 /*!
   Returns the type of atom used to represent C++ code in the documentation.
 */
-Atom::Type CppCodeMarker::atomType() const
+Atom::AtomType CppCodeMarker::atomType() const
 {
     return Atom::Code;
 }

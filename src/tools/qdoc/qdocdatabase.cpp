@@ -1515,7 +1515,7 @@ FunctionNode* QDocDatabase::findNodeInOpenNamespace(const QStringList& parentPat
 
   This function only searches in the current primary tree.
  */
-Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path, Node::Type type)
+Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path, Node::NodeType type)
 {
     if (path.isEmpty())
         return 0;
@@ -1626,7 +1626,7 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     Tree* domain = 0;
     Node::Genus genus = Node::DontCare;
     // Reserved for future use
-    //Node::Type goal = Node::NoType;
+    //Node::NodeType goal = Node::NoType;
 
     if (atom->isLinkAtom()) {
         domain = atom->domain();

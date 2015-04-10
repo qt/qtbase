@@ -408,7 +408,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           this way to allow the writer to refer to the entity
           without including the namespace qualifier.
          */
-        Node::Type type =  nodeTypeMap[command];
+        Node::NodeType type =  nodeTypeMap[command];
         QStringList paths = arg.first.split(QLatin1Char(' '));
         QStringList path = paths[0].split("::");
         Node *node = 0;
@@ -572,7 +572,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             QmlTypeNode* qmlType = qdb_->findQmlType(module, qmlTypeName);
             if (qmlType) {
                 bool attached = false;
-                Node::Type nodeType = Node::QmlMethod;
+                Node::NodeType nodeType = Node::QmlMethod;
                 if ((command == COMMAND_QMLSIGNAL) ||
                     (command == COMMAND_JSSIGNAL))
                     nodeType = Node::QmlSignal;
@@ -2342,7 +2342,7 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
 FunctionNode* CppCodeParser::makeFunctionNode(const Doc& doc,
                                               const QString& sig,
                                               InnerNode* parent,
-                                              Node::Type type,
+                                              Node::NodeType type,
                                               bool attached,
                                               QString qdoctag)
 {

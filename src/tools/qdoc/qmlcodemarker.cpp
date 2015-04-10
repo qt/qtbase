@@ -96,7 +96,7 @@ bool QmlCodeMarker::recognizeLanguage(const QString &language)
 /*!
   Returns the type of atom used to represent QML code in the documentation.
 */
-Atom::Type QmlCodeMarker::atomType() const
+Atom::AtomType QmlCodeMarker::atomType() const
 {
     return Atom::Qml;
 }

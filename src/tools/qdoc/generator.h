@@ -130,10 +130,10 @@ protected:
                                  const QString& qmlName);
     virtual bool generateText(const Text& text, const Node *relative, CodeMarker *marker);
     virtual QString imageFileName(const Node *relative, const QString& fileBase);
-    virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
+    virtual int skipAtoms(const Atom *atom, Atom::AtomType type) const;
     virtual QString typeString(const Node *node);
 
-    static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
+    static bool matchAhead(const Atom *atom, Atom::AtomType expectedAtomType);
     static QString outputPrefix(const QString &nodeType);
     static void singularPlural(Text& text, const NodeList& nodes);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
@@ -152,7 +152,7 @@ protected:
     void generateExampleFiles(const DocumentNode *dn, CodeMarker *marker);
     void generateFileList(const DocumentNode* dn,
                           CodeMarker* marker,
-                          Node::SubType subtype,
+                          Node::DocSubtype subtype,
                           const QString& tag);
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);

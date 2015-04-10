@@ -1644,7 +1644,7 @@ void HtmlGenerator::generateDocumentNode(DocumentNode* dn, CodeMarker* marker)
       is DITA map page, write the node's contents as a dita
       map and return without doing anything else.
      */
-    if (dn->subType() == Node::Page && dn->pageType() == Node::DitaMapPage) {
+    if (dn->docSubtype() == Node::Page && dn->pageType() == Node::DitaMapPage) {
         const DitaMapNode* dmn = static_cast<const DitaMapNode*>(dn);
         writeDitaMap(dmn);
         return;
@@ -1670,7 +1670,7 @@ void HtmlGenerator::generateDocumentNode(DocumentNode* dn, CodeMarker* marker)
                   dn,
                   marker);
 
-    if (dn->subType() == Node::HeaderFile) {
+    if (dn->docSubtype() == Node::HeaderFile) {
         // Generate brief text and status for modules.
         generateBrief(dn, marker);
         generateStatus(dn, marker);
@@ -3744,9 +3744,9 @@ QString HtmlGenerator::fileBase(const Node *node) const
 QString HtmlGenerator::fileName(const Node *node)
 {
     if (node->type() == Node::Document) {
-        if (static_cast<const DocumentNode *>(node)->subType() == Node::ExternalPage)
+        if (static_cast<const DocumentNode *>(node)->docSubtype() == Node::ExternalPage)
             return node->name();
-        if (static_cast<const DocumentNode *>(node)->subType() == Node::Image)
+        if (static_cast<const DocumentNode *>(node)->docSubtype() == Node::Image)
             return node->name();
     }
     return Generator::fileName(node);
@@ -3871,7 +3871,7 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
     QString link = (*node)->url();
     if (link.isEmpty()) {
         link = linkForNode(*node, relative);
-        if ((*node)->subType() == Node::Image)
+        if ((*node)->docSubtype() == Node::Image)
             link = "images/used-in-examples/" + link;
         if (!ref.isEmpty())
             link += QLatin1Char('#') + ref;
@@ -4511,7 +4511,7 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
         writer.writeAttribute("docUrl", docUrl);
         QStringList proFiles;
         foreach (const Node* child, en->childNodes()) {
-            if (child->subType() == Node::File) {
+            if (child->docSubtype() == Node::File) {
                 QString file = child->name();
                 if (file.endsWith(".pro") || file.endsWith(".qmlproject")) {
                     proFiles << file;
@@ -4617,7 +4617,7 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
         QString ename = en->name().mid(en->name().lastIndexOf('/')+1);
         QMap<int, const Node*> filesToOpen;
         foreach (const Node* child, en->childNodes()) {
-            if (child->subType() == Node::File) {
+            if (child->docSubtype() == Node::File) {
                 QFileInfo fileInfo(child->name());
                 QString fileName = fileInfo.fileName().toLower();
                 // open .qml, .cpp and .h files with a
@@ -4738,7 +4738,7 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
         case Node::QmlModule:
             break;
         case Node::Document:
-            switch (child->subType()) {
+            switch (child->docSubtype()) {
             case Node::Example:
                 break;
             case Node::HeaderFile:

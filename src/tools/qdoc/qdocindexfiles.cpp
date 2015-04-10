@@ -342,7 +342,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if ((element.nodeName() == "qmlmethod") ||
              (element.nodeName() == "qmlsignal") ||
              (element.nodeName() == "qmlsignalhandler")) {
-        Node::Type t = Node::QmlMethod;
+        Node::NodeType t = Node::QmlMethod;
         if (element.nodeName() == "qmlsignal")
             t = Node::QmlSignal;
         else if (element.nodeName() == "qmlsignalhandler")
@@ -354,7 +354,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if ((element.nodeName() == "jsmethod") ||
              (element.nodeName() == "jssignal") ||
              (element.nodeName() == "jssignalhandler")) {
-        Node::Type t = Node::QmlMethod;
+        Node::NodeType t = Node::QmlMethod;
         if (element.nodeName() == "jssignal")
             t = Node::QmlSignal;
         else if (element.nodeName() == "jssignalhandler")
@@ -405,7 +405,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node = cn;
     }
     else if (element.nodeName() == "page") {
-        Node::SubType subtype;
+        Node::DocSubtype subtype;
         Node::PageType ptype = Node::NoPageType;
         QString attr = element.attribute("subtype");
         if (attr == "example") {
@@ -726,7 +726,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     /*
       Don't include index nodes in a new index file. Or DITA map nodes.
      */
-    if (node->isIndexNode() || node->subType() == Node::DitaMap)
+    if (node->isIndexNode() || node->docSubtype() == Node::DitaMap)
         return false;
 
     QString nodeName;
@@ -1019,7 +1019,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             */
             bool writeModuleName = false;
             const DocumentNode* docNode = static_cast<const DocumentNode*>(node);
-            switch (docNode->subType()) {
+            switch (docNode->docSubtype()) {
             case Node::Example:
                 writer.writeAttribute("subtype", "example");
                 writeModuleName = true;
@@ -1316,7 +1316,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         bool external = false;
         if (node->type() == Node::Document) {
             const DocumentNode* docNode = static_cast<const DocumentNode*>(node);
-            if (docNode->subType() == Node::ExternalPage)
+            if (docNode->docSubtype() == Node::ExternalPage)
                 external = true;
         }
         foreach (const Atom* target, node->doc().targets()) {

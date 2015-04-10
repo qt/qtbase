@@ -103,7 +103,7 @@ class QDocForest
         return 0;
     }
 
-    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
+    Node* findNodeByNameAndType(const QStringList& path, Node::NodeType type) {
         foreach (Tree* t, searchOrder()) {
             Node* n = t->findNodeByNameAndType(path, type);
             if (n)
@@ -297,7 +297,7 @@ class QDocDatabase
 
     void insertTarget(const QString& name,
                       const QString& title,
-                      TargetRec::Type type,
+                      TargetRec::TargetType type,
                       Node* node,
                       int priority) {
         primaryTree()->insertTarget(name, title, type, node, priority);
@@ -310,7 +310,7 @@ class QDocDatabase
         return primaryTree()->findFunctionNode(parentPath, clone);
     }
     FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
-    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type);
+    Node* findNodeInOpenNamespace(QStringList& path, Node::NodeType type);
     const Node* checkForCollision(const QString& name) {
         return primaryTree()->checkForCollision(name);
     }
@@ -336,7 +336,7 @@ class QDocDatabase
     const DocumentNode* findDocumentNodeByTitle(const QString& title) {
         return forest_.findDocumentNodeByTitle(title);
     }
-    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
+    Node* findNodeByNameAndType(const QStringList& path, Node::NodeType type) {
         return forest_.findNodeByNameAndType(path, type);
     }
 

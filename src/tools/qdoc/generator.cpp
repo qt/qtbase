@@ -697,7 +697,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 
     if (node->type() == Node::Document) {
         const DocumentNode *dn = static_cast<const DocumentNode *>(node);
-        if ((dn->subType() == Node::File) || (dn->subType() == Node::Image)) {
+        if ((dn->docSubtype() == Node::File) || (dn->docSubtype() == Node::Image)) {
             quiet = true;
         }
     }
@@ -826,7 +826,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         if (dn->isExample()) {
             generateExampleFiles(dn, marker);
         }
-        else if (dn->subType() == Node::File) {
+        else if (dn->docSubtype() == Node::File) {
             Text text;
             Quoter quoter;
             Doc::quoteFromFile(dn->doc().location(), quoter, dn->name());
@@ -867,7 +867,7 @@ void Generator::generateCollectionNode(CollectionNode* , CodeMarker* )
  */
 void Generator::generateFileList(const DocumentNode* dn,
                                  CodeMarker* marker,
-                                 Node::SubType subtype,
+                                 Node::DocSubtype subtype,
                                  const QString& tag)
 {
     int count = 0;
@@ -878,7 +878,7 @@ void Generator::generateFileList(const DocumentNode* dn,
          << Atom(Atom::ListLeft, openedList.styleString());
 
     foreach (const Node* child, dn->childNodes()) {
-        if (child->subType() == subtype) {
+        if (child->docSubtype() == subtype) {
             ++count;
             QString file = child->name();
             if (subtype == Node::Image) {
@@ -982,11 +982,11 @@ void Generator::generateInnerNode(InnerNode* node)
 
     if (node->isDocumentNode()) {
         DocumentNode* docNode = static_cast<DocumentNode*>(node);
-        if (docNode->subType() == Node::ExternalPage)
+        if (docNode->docSubtype() == Node::ExternalPage)
             return;
-        if (docNode->subType() == Node::Image)
+        if (docNode->docSubtype() == Node::Image)
             return;
-        if (docNode->subType() == Node::Page) {
+        if (docNode->docSubtype() == Node::Page) {
             if (node->count() > 0)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
@@ -1705,7 +1705,7 @@ void Generator::initializeGenerator(const Config& config)
     singleExec_ = config.getBool(CONFIG_SINGLEEXEC);
 }
 
-bool Generator::matchAhead(const Atom *atom, Atom::Type expectedAtomType)
+bool Generator::matchAhead(const Atom *atom, Atom::AtomType expectedAtomType)
 {
     return atom->next() != 0 && atom->next()->type() == expectedAtomType;
 }
@@ -1852,7 +1852,7 @@ void Generator::singularPlural(Text& text, const NodeList& nodes)
         text << " are";
 }
 
-int Generator::skipAtoms(const Atom *atom, Atom::Type type) const
+int Generator::skipAtoms(const Atom *atom, Atom::AtomType type) const
 {
     int skipAhead = 0;
     atom = atom->next();

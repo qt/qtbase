@@ -44,16 +44,16 @@ QT_BEGIN_NAMESPACE
 
 int Node::propertyGroupCount_ = 0;
 QStringMap Node::operators_;
-QMap<QString,Node::Type> Node::goals_;
+QMap<QString,Node::NodeType> Node::goals_;
 
 /*!
   Initialize the map of search goals. This is called once
   by QDocDatabase::initializeDB(). The map key is a string
-  representing a value in the enum Node::Type. The map value
+  representing a value in the enum Node::NodeType. The map value
   is the enum value.
 
   There should be an entry in the map for each value in the
-  Type enum.
+  NodeType enum.
  */
 void Node::initialize()
 {
@@ -160,8 +160,8 @@ QString Node::fullName(const Node* relative) const
   match is found, return false.
 
   \a types is a list of type/subtype pairs, where the first
-  value in the pair is a Node::Type, and the second value is
-  a Node::SubType. The second value is used in the match if
+  value in the pair is a Node::NodeType, and the second value is
+  a Node::DocSubtype. The second value is used in the match if
   this node's type is Node::Document.
  */
 bool Node::match(const NodeTypeList& types) const
@@ -169,7 +169,7 @@ bool Node::match(const NodeTypeList& types) const
     for (int i=0; i<types.size(); ++i) {
         if (type() == types.at(i).first) {
             if (type() == Node::Document) {
-                if (subType() == types.at(i).second)
+                if (docSubtype() == types.at(i).second)
                     return true;
             }
             else
@@ -200,7 +200,7 @@ void Node::setDoc(const Doc& doc, bool replace)
   given \a parent and \a name. The new node is added to the
   parent's child list.
  */
-Node::Node(Type type, InnerNode *parent, const QString& name)
+Node::Node(NodeType type, InnerNode *parent, const QString& name)
     : nodeType_((unsigned char) type),
       access_((unsigned char) Public),
       safeness_((unsigned char) UnspecifiedSafeness),
@@ -320,7 +320,7 @@ QString Node::nodeTypeString() const
  */
 QString Node::nodeTypeString(unsigned char t)
 {
-    switch ((Type)t) {
+    switch ((NodeType)t) {
     case Namespace:
         return "namespace";
     case Class:
@@ -370,7 +370,7 @@ QString Node::nodeTypeString(unsigned char t)
  */
 QString Node::nodeSubtypeString() const
 {
-    return nodeSubtypeString(subType());
+    return nodeSubtypeString(docSubtype());
 }
 
 /*!
@@ -380,7 +380,7 @@ QString Node::nodeSubtypeString() const
  */
 QString Node::nodeSubtypeString(unsigned char t)
 {
-    switch ((SubType)t) {
+    switch ((DocSubtype)t) {
     case Example:
         return "example";
     case HeaderFile:
@@ -395,7 +395,7 @@ QString Node::nodeSubtypeString(unsigned char t)
         return "external page";
     case DitaMap:
         return "ditamap";
-    case NoSubType:
+    case NoSubtype:
     default:
         break;
     }
@@ -773,7 +773,7 @@ void InnerNode::findChildren(const QString& name, NodeList& nodes) const
   with the specified \a name is found but it is not of the
   specified \a type, 0 is returned.
  */
-Node* InnerNode::findChildNode(const QString& name, Type type)
+Node* InnerNode::findChildNode(const QString& name, NodeType type)
 {
     if (type == Function)
         return primaryFunctionMap.value(name);
@@ -1040,7 +1040,7 @@ NodeList InnerNode::overloads(const QString &funcName) const
   Construct an inner node (i.e., not a leaf node) of the
   given \a type and having the given \a parent and \a name.
  */
-InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
+InnerNode::InnerNode(NodeType type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1317,7 +1317,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) cons
   Constructs a leaf node named \a name of the specified
   \a type. The new leaf node becomes a child of \a parent.
  */
-LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
+LeafNode::LeafNode(NodeType type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1344,7 +1344,7 @@ LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
   documentation case where a \e{qmlproperty} command is used
   to override the QML definition of a QML property.
  */
-LeafNode::LeafNode(InnerNode* parent, Type type, const QString& name)
+LeafNode::LeafNode(InnerNode* parent, NodeType type, const QString& name)
     : Node(type, 0, name)
 {
     setParent(parent);
@@ -1582,7 +1582,7 @@ QmlTypeNode* ClassNode::findQmlBaseNode()
   which specifies the type of DocumentNode. The page type for
   the page index is set here.
  */
-DocumentNode::DocumentNode(InnerNode* parent, const QString& name, SubType subtype, Node::PageType ptype)
+DocumentNode::DocumentNode(InnerNode* parent, const QString& name, DocSubtype subtype, Node::PageType ptype)
     : InnerNode(Document, parent, name), nodeSubtype_(subtype)
 {
     setGenus(Node::DOC);
@@ -1616,7 +1616,7 @@ void DocumentNode::setTitle(const QString &title)
 
 /*!
   Returns the document node's full title, which is usually
-  just title(), but for some SubType values is different
+  just title(), but for some DocSubtype values is different
   from title()
  */
 QString DocumentNode::fullTitle() const
@@ -1813,7 +1813,7 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
   by \a type. It's parent is \a parent, and it's name is \a name.
   If \a attached is true, it is an attached method or signal.
  */
-FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bool attached)
+FunctionNode::FunctionNode(NodeType type, InnerNode *parent, const QString& name, bool attached)
     : LeafNode(type, parent, name),
       metaness_(Plain),
       virtualness_(NonVirtual),
@@ -2569,7 +2569,7 @@ QString Node::idForNode() const
                     str = "js-method-" + parent_->name().toLower() + "-" + func->name();
                 else if (parent_->type() == Document) {
                     qDebug() << "qdoc internal error: Node subtype not handled:"
-                             << parent_->subType() << func->name();
+                             << parent_->docSubtype() << func->name();
                 }
                 else
                     qDebug() << "qdoc internal error: Node type not handled:"
@@ -2594,7 +2594,7 @@ QString Node::idForNode() const
         break;
     case Node::Document:
         {
-            switch (subType()) {
+            switch (docSubtype()) {
             case Node::Page:
             case Node::HeaderFile:
                 str = title();
@@ -2615,7 +2615,7 @@ QString Node::idForNode() const
                 break;
             default:
                 qDebug() << "ERROR: A case was not handled in Node::idForNode():"
-                         << "subType():" << subType() << "type():" << type();
+                         << "docSubtype():" << docSubtype() << "type():" << type();
                 break;
             }
         }
@@ -2685,12 +2685,12 @@ QString Node::idForNode() const
         break;
     default:
         qDebug() << "ERROR: A case was not handled in Node::idForNode():"
-                 << "type():" << type() << "subType():" << subType();
+                 << "type():" << type() << "docSubtype():" << docSubtype();
         break;
     }
     if (str.isEmpty()) {
         qDebug() << "ERROR: A link text was empty in Node::idForNode():"
-                 << "type():" << type() << "subType():" << subType()
+                 << "type():" << type() << "docSubtype():" << docSubtype()
                  << "name():" << name()
                  << "title():" << title();
     }

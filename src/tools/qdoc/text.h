@@ -54,7 +54,7 @@ public:
 
     Atom *firstAtom() { return first; }
     Atom *lastAtom() { return last; }
-    Text& operator<<(Atom::Type atomType);
+    Text& operator<<(Atom::AtomType atomType);
     Text& operator<<(const QString& string);
     Text& operator<<(const Atom& atom);
     Text& operator<<(const LinkAtom& atom);
@@ -66,7 +66,7 @@ public:
     QString toString() const;
     const Atom *firstAtom() const { return first; }
     const Atom *lastAtom() const { return last; }
-    Text subText(Atom::Type left, Atom::Type right, const Atom *from = 0, bool inclusive = false) const;
+    Text subText(Atom::AtomType left, Atom::AtomType right, const Atom *from = 0, bool inclusive = false) const;
     void dump() const;
     void clear();
 
