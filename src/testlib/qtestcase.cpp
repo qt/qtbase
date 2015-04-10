@@ -2074,7 +2074,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
 
-                    QTestPrivate::checkBlackList(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+                    QTestPrivate::checkBlackLists(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
 
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
@@ -2583,6 +2583,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
     QTestPrivate::parseBlackList();
+    QTestPrivate::parseGpuBlackList();
 
     QTestResult::reset();
 

@@ -51,7 +51,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {
     void parseBlackList();
-    void checkBlackList(const char *slot, const char *data);
+    void parseGpuBlackList();
+    void checkBlackLists(const char *slot, const char *data);
 }
 
 QT_END_NAMESPACE
