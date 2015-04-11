@@ -416,9 +416,9 @@ void QStorageInfoPrivate::retreiveVolumeInfo()
         valid = true;
         ready = true;
 
-        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
-        bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
-        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
+        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
+        bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
+        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
 #if defined(Q_OS_ANDROID)
 #if defined(_STATFS_F_FLAGS)
         readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
