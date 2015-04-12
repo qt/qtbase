@@ -33,7 +33,7 @@
 
 #include <math.h>
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
     float c = ceilf(1.3f);
     float f = floorf(1.7f);
