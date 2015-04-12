@@ -435,6 +435,12 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_compiler(struct sljit_compiler *compile
 	SLJIT_FREE(compiler, allocator_data);
 }
 
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_compiler_memory_error(struct sljit_compiler *compiler)
+{
+	if (compiler->error == SLJIT_SUCCESS)
+		compiler->error = SLJIT_ERR_ALLOC_FAILED;
+}
+
 #if (defined SLJIT_CONFIG_ARM_THUMB2 && SLJIT_CONFIG_ARM_THUMB2)
 SLJIT_API_FUNC_ATTRIBUTE void sljit_free_code(void* code)
 {
