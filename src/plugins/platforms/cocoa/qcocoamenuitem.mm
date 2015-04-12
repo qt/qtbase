@@ -308,7 +308,6 @@ NSMenuItem *QCocoaMenuItem::sync()
     }
 
     [m_native setHidden: !m_isVisible];
-    [m_native setEnabled: m_enabled];
     [m_native setView:m_itemView];
 
     QString text = mergeText();
@@ -410,7 +409,7 @@ void QCocoaMenuItem::syncModalState(bool modal)
     if (modal)
         [m_native setEnabled:NO];
     else
-        [m_native setEnabled:m_enabled];
+        [m_native setEnabled:YES];
 }
 
 QPlatformMenuItem::MenuRole QCocoaMenuItem::effectiveRole() const
