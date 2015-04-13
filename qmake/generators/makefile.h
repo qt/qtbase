@@ -60,7 +60,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     bool no_io;
     QHash<QString, bool> init_compiler_already;
     QString makedir, chkexists;
-    QString build_args(const QString &outdir=QString());
+    QString build_args();
 
     //internal caches
     mutable QHash<QString, QMakeLocalFileName> depHeuristicsCache;

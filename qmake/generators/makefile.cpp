@@ -2243,7 +2243,7 @@ QString MakefileGenerator::buildArgs()
 
 //could get stored argv, but then it would have more options than are
 //probably necesary this will try to guess the bare minimum..
-QString MakefileGenerator::build_args(const QString &outdir)
+QString MakefileGenerator::build_args()
 {
     QString ret = "$(QMAKE)";
 
@@ -2256,7 +2256,7 @@ QString MakefileGenerator::build_args(const QString &outdir)
         ret += " -o " + escapeFilePath(ofile);
 
     //inputs
-    ret += " " + escapeFilePath(fileFixify(project->projectFile(), outdir));
+    ret += " " + escapeFilePath(fileFixify(project->projectFile()));
 
     return ret;
 }
