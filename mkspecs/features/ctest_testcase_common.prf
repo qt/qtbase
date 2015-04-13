@@ -61,7 +61,12 @@ BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
 dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
 dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
-dependentmodules = $$cmakeModuleList($$dependentmodules)
+
+mod_deps =
+for (dep, dependentmodules): \
+    !contains(QT.$${dep}.module_config, no_link): \
+        mod_deps += $$cmakeModuleName($$dep)
+dependentmodules = $$join(mod_deps, ";")
 
 contains(QT_CONFIG, angle): CMAKE_GL_DEFINES = -DQT_WITH_ANGLE=True
 !contains(QT_CONFIG, egl): CMAKE_GL_DEFINES += -DNO_EGL=True
