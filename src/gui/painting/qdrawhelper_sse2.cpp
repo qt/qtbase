@@ -550,7 +550,7 @@ public:
 const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
                                                        int y, int x, int length)
 {
-    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2> >(buffer, op, data, y, x, length);
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2>,uint>(buffer, op, data, y, x, length);
 }
 
 void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,

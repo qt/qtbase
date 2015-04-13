@@ -395,24 +395,24 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
-template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
-const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
-                                                           int y, int x, int length)
+template <class RadialFetchFunc, typename BlendType> static
+const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffer, const Operator *op,
+                                                                const QSpanData *data, int y, int x, int length)
 {
     // avoid division by zero
     if (qFuzzyIsNull(op->radial.a)) {
-        qt_memfill32(buffer, 0, length);
+        RadialFetchFunc::memfill(buffer, RadialFetchFunc::null(), length);
         return buffer;
     }
 
-    const uint *b = buffer;
+    const BlendType *b = buffer;
     qreal rx = data->m21 * (y + qreal(0.5))
                + data->dx + data->m11 * (x + qreal(0.5));
     qreal ry = data->m22 * (y + qreal(0.5))
                + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
 
-    uint *end = buffer + length;
+    BlendType *end = buffer + length;
     if (affine) {
         rx -= data->gradient.radial.focal.x;
         ry -= data->gradient.radial.focal.y;
@@ -459,7 +459,7 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const O
                 qreal b  = 2*(op->radial.dr*data->gradient.radial.focal.radius + gx*op->radial.dx + gy*op->radial.dy);
                 qreal det = qRadialDeterminant(op->radial.a, b, op->radial.sqrfr - (gx*gx + gy*gy));
 
-                quint32 result = 0;
+                BlendType result = RadialFetchFunc::null();
                 if (det >= 0) {
                     qreal detSqrt = qSqrt(det);
 
@@ -469,7 +469,7 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const O
                     qreal s = qMax(s0, s1);
 
                     if (data->gradient.radial.focal.radius + op->radial.dr * s >= 0)
-                        result = qt_gradient_pixel(&data->gradient, s);
+                        result = RadialFetchFunc::fetchSingle(data->gradient, s);
                 }
 
                 *buffer = result;
@@ -490,6 +490,15 @@ template <class Simd>
 class QRadialFetchSimd
 {
 public:
+    static uint null() { return 0; }
+    static uint fetchSingle(const QGradientData& gradient, qreal v)
+    {
+        return qt_gradient_pixel(&gradient, v);
+    }
+    static void memfill(uint *buffer, uint fill, int length)
+    {
+        qt_memfill32(buffer, fill, length);
+    }
     static void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
                       qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
     {

@@ -3441,10 +3441,50 @@ static void QT_FASTCALL getLinearGradientValues(LinearGradientValues *v, const Q
     }
 }
 
-static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Operator *op, const QSpanData *data,
-                                                         int y, int x, int length)
+class GradientBase32
 {
-    const uint *b = buffer;
+public:
+    typedef uint Type;
+    static Type null() { return 0; }
+    static Type fetchSingle(const QGradientData& gradient, qreal v)
+    {
+        return qt_gradient_pixel(&gradient, v);
+    }
+    static Type fetchSingle(const QGradientData& gradient, int v)
+    {
+        return qt_gradient_pixel_fixed(&gradient, v);
+    }
+    static void memfill(Type *buffer, Type fill, int length)
+    {
+        qt_memfill32(buffer, fill, length);
+    }
+};
+
+class GradientBase64
+{
+public:
+    typedef QRgba64 Type;
+    static Type null() { return QRgba64::fromRgba64(0); }
+    static Type fetchSingle(const QGradientData& gradient, qreal v)
+    {
+        return qt_gradient_pixel64(&gradient, v);
+    }
+    static Type fetchSingle(const QGradientData& gradient, int v)
+    {
+        return qt_gradient_pixel64_fixed(&gradient, v);
+    }
+    static void memfill(Type *buffer, Type fill, int length)
+    {
+        qt_memfill64((quint64*)buffer, fill, length);
+    }
+};
+
+template<class GradientBase, typename BlendType>
+static inline const BlendType * QT_FASTCALL qt_fetch_linear_gradient_template(
+        BlendType *buffer, const Operator *op, const QSpanData *data,
+        int y, int x, int length)
+{
+    const BlendType *b = buffer;
     qreal t, inc;
 
     bool affine = true;
@@ -3464,10 +3504,10 @@ static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Ope
         }
     }
 
-    const uint *end = buffer + length;
+    const BlendType *end = buffer + length;
     if (affine) {
         if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
-            QT_MEMFILL_UINT(buffer, length, qt_gradient_pixel_fixed(&data->gradient, int(t * FIXPT_SIZE)));
+            GradientBase::memfill(buffer, GradientBase::fetchSingle(data->gradient, int(t * FIXPT_SIZE)), length);
         } else {
             if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
                 t+inc*length > qreal(INT_MIN >> (FIXPT_BITS + 1))) {
@@ -3475,14 +3515,14 @@ static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Ope
                 int t_fixed = int(t * FIXPT_SIZE);
                 int inc_fixed = int(inc * FIXPT_SIZE);
                 while (buffer < end) {
-                    *buffer = qt_gradient_pixel_fixed(&data->gradient, t_fixed);
+                    *buffer = GradientBase::fetchSingle(data->gradient, t_fixed);
                     t_fixed += inc_fixed;
                     ++buffer;
                 }
             } else {
                 // we have to fall back to float math
                 while (buffer < end) {
-                    *buffer = qt_gradient_pixel(&data->gradient, t/GRADIENT_STOPTABLE_SIZE);
+                    *buffer = GradientBase::fetchSingle(data->gradient, t/GRADIENT_STOPTABLE_SIZE);
                     t += inc;
                     ++buffer;
                 }
@@ -3495,7 +3535,7 @@ static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Ope
             qreal y = ry/rw;
             t = (op->linear.dx*x + op->linear.dy *y) + op->linear.off;
 
-            *buffer = qt_gradient_pixel(&data->gradient, t);
+            *buffer = GradientBase::fetchSingle(data->gradient, t);
             rx += data->m11;
             ry += data->m12;
             rw += data->m13;
@@ -3509,73 +3549,16 @@ static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Ope
     return b;
 }
 
+static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Operator *op, const QSpanData *data,
+                                                         int y, int x, int length)
+{
+    return qt_fetch_linear_gradient_template<GradientBase32, uint>(buffer, op, data, y, x, length);
+}
+
 static const QRgba64 * QT_FASTCALL qt_fetch_linear_gradient_rgb64(QRgba64 *buffer, const Operator *op, const QSpanData *data,
                                                                  int y, int x, int length)
 {
-    const QRgba64 *b = buffer;
-    qreal t, inc;
-
-    bool affine = true;
-    qreal rx=0, ry=0;
-    if (op->linear.l == 0) {
-        t = inc = 0;
-    } else {
-        rx = data->m21 * (y + qreal(0.5)) + data->m11 * (x + qreal(0.5)) + data->dx;
-        ry = data->m22 * (y + qreal(0.5)) + data->m12 * (x + qreal(0.5)) + data->dy;
-        t = op->linear.dx*rx + op->linear.dy*ry + op->linear.off;
-        inc = op->linear.dx * data->m11 + op->linear.dy * data->m12;
-        affine = !data->m13 && !data->m23;
-
-        if (affine) {
-            t *= (GRADIENT_STOPTABLE_SIZE - 1);
-            inc *= (GRADIENT_STOPTABLE_SIZE - 1);
-        }
-    }
-
-    const QRgba64 *end = buffer + length;
-    if (affine) {
-        if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
-            QRgba64 color = qt_gradient_pixel64_fixed(&data->gradient, int(t * FIXPT_SIZE));
-            qt_memfill64((quint64*)buffer, color, length);
-        } else {
-            if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
-                t+inc*length > qreal(INT_MIN >> (FIXPT_BITS + 1))) {
-                // we can use fixed point math
-                int t_fixed = int(t * FIXPT_SIZE);
-                int inc_fixed = int(inc * FIXPT_SIZE);
-                while (buffer < end) {
-                    *buffer = qt_gradient_pixel64_fixed(&data->gradient, t_fixed);
-                    t_fixed += inc_fixed;
-                    ++buffer;
-                }
-            } else {
-                // we have to fall back to float math
-                while (buffer < end) {
-                    *buffer = qt_gradient_pixel64(&data->gradient, t/GRADIENT_STOPTABLE_SIZE);
-                    t += inc;
-                    ++buffer;
-                }
-            }
-        }
-    } else { // fall back to float math here as well
-        qreal rw = data->m23 * (y + qreal(0.5)) + data->m13 * (x + qreal(0.5)) + data->m33;
-        while (buffer < end) {
-            qreal x = rx/rw;
-            qreal y = ry/rw;
-            t = (op->linear.dx*x + op->linear.dy *y) + op->linear.off;
-
-            *buffer = qt_gradient_pixel64(&data->gradient, t);
-            rx += data->m11;
-            ry += data->m12;
-            rw += data->m13;
-            if (!rw) {
-                rw += data->m13;
-            }
-            ++buffer;
-        }
-    }
-
-    return b;
+    return qt_fetch_linear_gradient_template<GradientBase64, QRgba64>(buffer, op, data, y, x, length);
 }
 
 static void QT_FASTCALL getRadialGradientValues(RadialGradientValues *v, const QSpanData *data)
@@ -3592,19 +3575,22 @@ static void QT_FASTCALL getRadialGradientValues(RadialGradientValues *v, const Q
     v->extended = !qFuzzyIsNull(data->gradient.radial.focal.radius) || v->a <= 0;
 }
 
-class RadialFetchPlain
+template <class GradientBase>
+class RadialFetchPlain : public GradientBase
 {
 public:
-    static inline void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
-                             qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
+    typedef typename GradientBase::Type BlendType;
+    static void fetch(BlendType *buffer, BlendType *end,
+                      const Operator *op, const QSpanData *data, qreal det,
+                      qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
     {
         if (op->radial.extended) {
             while (buffer < end) {
-                quint32 result = 0;
+                BlendType result = GradientBase::null();
                 if (det >= 0) {
                     qreal w = qSqrt(det) - b;
                     if (data->gradient.radial.focal.radius + op->radial.dr * w >= 0)
-                        result = qt_gradient_pixel(&data->gradient, w);
+                        result = GradientBase::fetchSingle(data->gradient, w);
                 }
 
                 *buffer = result;
@@ -3617,7 +3603,7 @@ public:
             }
         } else {
             while (buffer < end) {
-                *buffer++ = qt_gradient_pixel(&data->gradient, qSqrt(det) - b);
+                *buffer++ = GradientBase::fetchSingle(data->gradient, qSqrt(det) - b);
 
                 det += delta_det;
                 delta_det += delta_delta_det;
@@ -3630,15 +3616,23 @@ public:
 const uint * QT_FASTCALL qt_fetch_radial_gradient_plain(uint *buffer, const Operator *op, const QSpanData *data,
                                                         int y, int x, int length)
 {
-    return qt_fetch_radial_gradient_template<RadialFetchPlain>(buffer, op, data, y, x, length);
+    return qt_fetch_radial_gradient_template<RadialFetchPlain<GradientBase32>, uint>(buffer, op, data, y, x, length);
 }
 
 static SourceFetchProc qt_fetch_radial_gradient = qt_fetch_radial_gradient_plain;
 
-static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Operator *, const QSpanData *data,
-                                                          int y, int x, int length)
+const QRgba64 * QT_FASTCALL qt_fetch_radial_gradient_rgb64(QRgba64 *buffer, const Operator *op, const QSpanData *data,
+                                                        int y, int x, int length)
 {
-    const uint *b = buffer;
+    return qt_fetch_radial_gradient_template<RadialFetchPlain<GradientBase64>, QRgba64>(buffer, op, data, y, x, length);
+}
+
+template <class GradientBase, typename BlendType>
+static inline const BlendType * QT_FASTCALL qt_fetch_conical_gradient_template(
+        BlendType *buffer, const QSpanData *data,
+        int y, int x, int length)
+{
+    const BlendType *b = buffer;
     qreal rx = data->m21 * (y + qreal(0.5))
                + data->dx + data->m11 * (x + qreal(0.5));
     qreal ry = data->m22 * (y + qreal(0.5))
@@ -3647,14 +3641,14 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
 
     const qreal inv2pi = M_1_PI / 2.0;
 
-    const uint *end = buffer + length;
+    const BlendType *end = buffer + length;
     if (affine) {
         rx -= data->gradient.conical.center.x;
         ry -= data->gradient.conical.center.y;
         while (buffer < end) {
             qreal angle = qAtan2(ry, rx) + data->gradient.conical.angle;
 
-            *buffer = qt_gradient_pixel(&data->gradient, 1 - angle * inv2pi);
+            *buffer = GradientBase::fetchSingle(data->gradient, 1 - angle * inv2pi);
 
             rx += data->m11;
             ry += data->m12;
@@ -3670,7 +3664,7 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
                                 rx/rw - data->gradient.conical.center.y)
                           + data->gradient.conical.angle;
 
-            *buffer = qt_gradient_pixel(&data->gradient, 1 - angle * inv2pi);
+            *buffer = GradientBase::fetchSingle(data->gradient, 1 - angle * inv2pi);
 
             rx += data->m11;
             ry += data->m12;
@@ -3682,6 +3676,18 @@ static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Op
         }
     }
     return b;
+}
+
+static const uint * QT_FASTCALL qt_fetch_conical_gradient(uint *buffer, const Operator *, const QSpanData *data,
+                                                          int y, int x, int length)
+{
+    return qt_fetch_conical_gradient_template<GradientBase32, uint>(buffer, data, y, x, length);
+}
+
+static const QRgba64 * QT_FASTCALL qt_fetch_conical_gradient_rgb64(QRgba64 *buffer, const Operator *, const QSpanData *data,
+                                                                   int y, int x, int length)
+{
+    return qt_fetch_conical_gradient_template<GradientBase64, QRgba64>(buffer, data, y, x, length);
 }
 
 #    define PRELOAD_INIT(x)
@@ -5876,6 +5882,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
     switch(data->type) {
     case QSpanData::Solid:
         solidSource = data->solid.color.isOpaque();
+        op.srcFetch = 0;
+        op.srcFetch64 = 0;
         break;
     case QSpanData::LinearGradient:
         solidSource = !data->gradient.alphaColor;
@@ -5887,18 +5895,20 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
         solidSource = !data->gradient.alphaColor;
         getRadialGradientValues(&op.radial, data);
         op.srcFetch = qt_fetch_radial_gradient;
-        op.srcFetch64 = 0; //qt_fetch_radial_gradient_rgb64;
+        op.srcFetch64 = qt_fetch_radial_gradient_rgb64;
         break;
     case QSpanData::ConicalGradient:
         solidSource = !data->gradient.alphaColor;
         op.srcFetch = qt_fetch_conical_gradient;
-        op.srcFetch64 = 0; //qt_fetch_conical_gradient_rgb64;
+        op.srcFetch64 = qt_fetch_conical_gradient_rgb64;
         break;
     case QSpanData::Texture:
+        solidSource = !data->texture.hasAlpha;
         op.srcFetch = sourceFetch[getBlendType(data)][data->texture.format];
         op.srcFetch64 = sourceFetch64[getBlendType(data)][data->texture.format];
-        solidSource = !data->texture.hasAlpha;
+        break;
     default:
+        Q_UNREACHABLE();
         break;
     }
 
@@ -6212,7 +6222,7 @@ public:
 
     bool isSupported() const
     {
-        return op.srcFetch64 && op.func64 && op.destFetch64 && op.destStore64;
+        return op.func64 && op.destFetch64 && op.destStore64;
     }
 
     const QRgba64 *fetch(int x, int y, int len)
@@ -6303,7 +6313,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     Operator op = getOperator(data, spans, count);
-    if (!op.srcFetch64 || !op.func64) {
+    if (!op.func64) {
         qWarning() << Q_FUNC_INFO << "Unsupported blend";
         return blend_untransformed_generic(count, spans, userData);
     }
@@ -6544,7 +6554,7 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     Operator op = getOperator(data, spans, count);
-    if (!op.srcFetch64 || !op.func64) {
+    if (!op.func64) {
         qDebug("unsupported rgb64 blend");
         return blend_tiled_generic(count, spans, userData);
     }

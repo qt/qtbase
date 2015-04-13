@@ -986,7 +986,7 @@ public:
 const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
                                                        int y, int x, int length)
 {
-    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdNeon> >(buffer, op, data, y, x, length);
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdNeon>,uint>(buffer, op, data, y, x, length);
 }
 
 QT_END_NAMESPACE

@@ -203,8 +203,10 @@ private slots:
     void gradientPixelFormat_data();
     void gradientPixelFormat();
 
-    void gradientRgb30_data();
-    void gradientRgb30();
+    void linearGradientRgb30_data();
+    void linearGradientRgb30();
+    void radialGradientRgb30_data();
+    void radialGradientRgb30();
 
     void fpe_pixmapTransform();
     void fpe_zeroLengthLines();
@@ -3952,7 +3954,7 @@ void tst_QPainter::gradientInterpolation()
     }
 }
 
-void tst_QPainter::gradientRgb30_data()
+void tst_QPainter::linearGradientRgb30_data()
 {
     QTest::addColumn<QColor>("stop0");
     QTest::addColumn<QColor>("stop1");
@@ -3962,21 +3964,48 @@ void tst_QPainter::gradientRgb30_data()
     QTest::newRow("white->red") << QColor(Qt::white) << QColor(Qt::red);
 }
 
-void tst_QPainter::gradientRgb30()
+void tst_QPainter::linearGradientRgb30()
 {
     QFETCH(QColor, stop0);
     QFETCH(QColor, stop1);
 
-    QLinearGradient gradient(0, 0, 512, 1);
+    QLinearGradient gradient(0, 0, 1000, 1);
     gradient.setColorAt(0.0, stop0);
     gradient.setColorAt(1.0, stop1);
 
-    QImage image(512, 1, QImage::Format_RGB30);
+    QImage image(1000, 1, QImage::Format_RGB30);
     QPainter painter(&image);
     painter.fillRect(image.rect(), gradient);
     painter.end();
 
-    for (int i = 0; i < 511; ++i) {
+    for (int i = 0; i < 1000; ++i) {
+        QColor p1 = image.pixelColor(i, 0);
+        QColor p2 = image.pixelColor(i + 1, 0);
+        QVERIFY(p1 != p2);
+        QVERIFY(qGray(p1.rgb()) >= qGray(p2.rgb()));
+    }
+}
+
+void tst_QPainter::radialGradientRgb30_data()
+{
+    linearGradientRgb30_data();
+}
+
+void tst_QPainter::radialGradientRgb30()
+{
+    QFETCH(QColor, stop0);
+    QFETCH(QColor, stop1);
+
+    QRadialGradient gradient(0, 0, 1000);
+    gradient.setColorAt(0.0, stop0);
+    gradient.setColorAt(1.0, stop1);
+
+    QImage image(1000, 1, QImage::Format_A2BGR30_Premultiplied);
+    QPainter painter(&image);
+    painter.fillRect(image.rect(), gradient);
+    painter.end();
+
+    for (int i = 0; i < 1000; ++i) {
         QColor p1 = image.pixelColor(i, 0);
         QColor p2 = image.pixelColor(i + 1, 0);
         QVERIFY(p1 != p2);
