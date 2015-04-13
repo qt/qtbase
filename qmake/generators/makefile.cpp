@@ -2865,9 +2865,6 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
                 qfileinfo.setFile(ret);
             }
             ret = Option::fixPathToTargetOS(ret, false, canon);
-            if(canon && qfileinfo.exists() &&
-               file == Option::fixPathToTargetOS(ret, true, canon))
-                ret = Option::fixPathToTargetOS(qfileinfo.canonicalFilePath());
             QString match_dir = Option::fixPathToTargetOS(out_dir, false, canon);
             if(ret == match_dir) {
                 ret = "";
