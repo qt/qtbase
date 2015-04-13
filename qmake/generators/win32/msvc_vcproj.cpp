@@ -1588,7 +1588,7 @@ void VcprojGenerator::initResourceFiles()
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty())
                             deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '),
-                                               QString(), Option::output_dir);
+                                               FileFixifyFromOutdir);
                     }
                 }
             }

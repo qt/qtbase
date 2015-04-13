@@ -105,7 +105,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
 {
     if(project->isActiveConfig("generate_pbxbuild_makefile")) {
         QString mkwrap = fileFixify(pbx_dir + Option::dir_sep + ".." + Option::dir_sep + project->first("MAKEFILE"),
-                                    qmake_getpwd());
+                                    FileFixifyToIndir);
         QFile mkwrapf(mkwrap);
         if(mkwrapf.open(QIODevice::WriteOnly | QIODevice::Text)) {
             debug_msg(1, "pbuilder: Creating file: %s", mkwrap.toLatin1().constData());
@@ -184,13 +184,13 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                             bool in_root = true;
                             QString name = qmake_getpwd();
                             if(project->isActiveConfig("flat")) {
-                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, FileFixifyBackwards | FileFixifyRelative);
                                 if(flat_file.indexOf(Option::dir_sep) != -1) {
                                     QStringList dirs = flat_file.split(Option::dir_sep);
                                     name = dirs.back();
                                 }
                             } else {
-                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, FileFixifyBackwards | FileFixifyRelative);
                                 if(QDir::isRelativePath(flat_file) && flat_file.indexOf(Option::dir_sep) != -1) {
                                     QString last_grp("QMAKE_SUBDIR_PBX_HEIR_GROUP");
                                     QStringList dirs = flat_file.split(Option::dir_sep);
@@ -560,7 +560,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     // Since we can't fileFixify inside ProjectBuilderSources::files(), we resolve the absolute paths here
     project->values("QMAKE_INTERNAL_INCLUDED_FILES") = ProStringList(
                 fileFixify(project->values("QMAKE_INTERNAL_INCLUDED_FILES").toQStringList(),
-                           QString(), Option::output_dir, FileFixifyAbsolute));
+                           FileFixifyFromOutdir | FileFixifyAbsolute));
 
     //DUMP SOURCES
     QMap<QString, ProStringList> groups;
@@ -618,7 +618,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         ProStringList &root_group_list = project->values("QMAKE_PBX_GROUPS");
 
         const QStringList &files = fileFixify(sources.at(source).files(project),
-                                              QString(), Option::output_dir, FileFixifyAbsolute);
+                                              FileFixifyFromOutdir | FileFixifyAbsolute);
         for(int f = 0; f < files.count(); ++f) {
             QString file = files[f];
             if(!sources.at(source).compilerName().isNull() &&
@@ -634,7 +634,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
             if (!project->isActiveConfig("flat")) {
                 // Build group hierarchy for file references that match the source our build dir
-                QString relativePath = fileFixify(file, qmake_getpwd(), QString(), FileFixifyRelative);
+                QString relativePath = fileFixify(file, FileFixifyToIndir | FileFixifyRelative);
                 if (QDir::isRelativePath(relativePath) && relativePath.startsWith(QLatin1String("../")))
                     relativePath = fileFixify(file, FileFixifyRelative); // Try build dir
 
@@ -764,7 +764,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             if(added && !(added % 3))
                                 mkt << "\\\n\t";
                             ++added;
-                            const QString file_name = fileFixify(fn, Option::output_dir, Option::output_dir);
+                            const QString file_name = fileFixify(fn, FileFixifyFromOutdir);
                             mkt << ' ' << escapeDependencyPath(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(tmp_out.first().toQString(), file_name, QString(), NoShell)));
                         }
@@ -921,7 +921,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         if(!path.isEmpty() && !libdirs.contains(path))
                             libdirs += path;
                     }
-                    library = fileFixify(library, Option::output_dir, Option::output_dir);
+                    library = fileFixify(library, FileFixifyFromOutdir);
                     QString key = keyFor(library);
                     if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
                         bool is_frmwrk = (library.endsWith(".framework"));
@@ -1076,7 +1076,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if (!project->isEmpty("DESTDIR")) {
         QString phase_key = keyFor("QMAKE_PBX_TARGET_COPY_PHASE");
         QString destDir = fileFixify(project->first("DESTDIR").toQString(),
-                                     QString(), Option::output_dir, FileFixifyAbsolute);
+                                     FileFixifyFromOutdir | FileFixifyAbsolute);
         project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
         t << "\t\t" << phase_key << " = {\n"
           << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
@@ -1470,7 +1470,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 if ((project->first("TEMPLATE") == "app" && project->isActiveConfig("app_bundle")) ||
                    (project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib") &&
                     project->isActiveConfig("lib_bundle"))) {
-                    QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), qmake_getpwd());
+                    QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), FileFixifyToIndir);
                     if (!plist.isEmpty()) {
                         if (exists(plist))
                             t << "\t\t\t\t" << writeSettings("INFOPLIST_FILE", fileFixify(plist)) << ";\n";

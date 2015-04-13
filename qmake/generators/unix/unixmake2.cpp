@@ -107,7 +107,7 @@ UnixMakefileGenerator::writeDefaultVariables(QTextStream &t)
         project->values("QMAKE_DISTDIR") = project->first("QMAKE_DISTNAME");
     t << "DISTDIR = " << escapeFilePath(fileFixify(
             (project->isEmpty("OBJECTS_DIR") ? ProString(".tmp/") : project->first("OBJECTS_DIR")) + project->first("QMAKE_DISTDIR"),
-            Option::output_dir, Option::output_dir, FileFixifyAbsolute)) << endl;
+            FileFixifyFromOutdir | FileFixifyAbsolute)) << endl;
 }
 
 void
@@ -377,7 +377,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
 
                         if(!d_file.isEmpty()) {
-                            d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
+                            d_file = odir + ".deps/" + fileFixify(d_file, FileFixifyBackwards) + ".d";
                             QString d_file_d = escapeDependencyPath(d_file);
                             QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
@@ -1396,7 +1396,7 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
     if(fixify) {
         if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
             ret.prepend(project->first("DESTDIR").toQString());
-        ret = fileFixify(ret, qmake_getpwd(), Option::output_dir);
+        ret = fileFixify(ret, FileFixifyBackwards);
     }
     return ret;
 }
