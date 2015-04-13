@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include <private/qdrawhelper_p.h>
-#include <private/qdrawingprimitive_sse2_p.h>
 
 #if defined(QT_COMPILER_SUPPORTS_SSE4_1)
 
@@ -54,7 +53,7 @@ const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint 
                                                        const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = qUnpremultiply_sse4(src[i]);
+        buffer[i] = qUnpremultiply(src[i]);
     return buffer;
 }
 
@@ -62,7 +61,7 @@ const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uin
                                                          const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
+        buffer[i] = ARGB2RGBA(qUnpremultiply(src[i]));
     return buffer;
 }
 
@@ -70,7 +69,7 @@ const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *s
                                                      const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
+        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply(src[i]));
     return buffer;
 }
 
