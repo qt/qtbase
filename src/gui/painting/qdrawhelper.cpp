@@ -1931,10 +1931,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                         int x2;
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
 
-                        buf1[i * 2 + 0] = fetch(s1, x1);
-                        buf1[i * 2 + 1] = fetch(s1, x2);
-                        buf2[i * 2 + 0] = fetch(s2, x1);
-                        buf2[i * 2 + 1] = fetch(s2, x2);
+                        if (layout->bpp == QPixelLayout::BPP32) {
+                            buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                            buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                            buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                            buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                        } else {
+                            buf1[i * 2 + 0] = fetch(s1, x1);
+                            buf1[i * 2 + 1] = fetch(s1, x2);
+                            buf2[i * 2 + 0] = fetch(s2, x1);
+                            buf2[i * 2 + 1] = fetch(s2, x2);
+                        }
 
                         fx += fdx;
                     }
@@ -1989,10 +1996,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     const uchar *s1 = data->texture.scanLine(y1);
                     const uchar *s2 = data->texture.scanLine(y2);
 
-                    buf1[i * 2 + 0] = fetch(s1, x1);
-                    buf1[i * 2 + 1] = fetch(s1, x2);
-                    buf2[i * 2 + 0] = fetch(s2, x1);
-                    buf2[i * 2 + 1] = fetch(s2, x2);
+                    if (layout->bpp == QPixelLayout::BPP32) {
+                        buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                        buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                        buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                        buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                    } else {
+                        buf1[i * 2 + 0] = fetch(s1, x1);
+                        buf1[i * 2 + 1] = fetch(s1, x2);
+                        buf2[i * 2 + 0] = fetch(s2, x1);
+                        buf2[i * 2 + 1] = fetch(s2, x2);
+                    }
 
                     fx += fdx;
                     fy += fdy;
@@ -2074,10 +2088,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 const uchar *s1 = data->texture.scanLine(y1);
                 const uchar *s2 = data->texture.scanLine(y2);
 
-                buf1[i * 2 + 0] = fetch(s1, x1);
-                buf1[i * 2 + 1] = fetch(s1, x2);
-                buf2[i * 2 + 0] = fetch(s2, x1);
-                buf2[i * 2 + 1] = fetch(s2, x2);
+                if (layout->bpp == QPixelLayout::BPP32) {
+                    buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                    buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                    buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                    buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                } else {
+                    buf1[i * 2 + 0] = fetch(s1, x1);
+                    buf1[i * 2 + 1] = fetch(s1, x2);
+                    buf2[i * 2 + 0] = fetch(s2, x1);
+                    buf2[i * 2 + 1] = fetch(s2, x2);
+                }
 
                 fx += fdx;
                 fy += fdy;
