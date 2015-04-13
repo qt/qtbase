@@ -436,7 +436,7 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
     return "^\\}$";
 }
 
-QList<Section> CppCodeMarker::sections(const InnerNode *inner,
+QList<Section> CppCodeMarker::sections(const Aggregate *inner,
                                        SynopsisStyle style,
                                        Status status)
 {
@@ -522,10 +522,10 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 ++r;
             }
 
-            QStack<const InnerNode *> stack;
+            QStack<const Aggregate *> stack;
             stack.push(inner);
             while (!stack.isEmpty()) {
-                const InnerNode* ancestor = stack.pop();
+                const Aggregate* ancestor = stack.pop();
 
                 NodeList::ConstIterator c = ancestor->childNodes().constBegin();
                 while (c != ancestor->childNodes().constEnd()) {
@@ -701,11 +701,11 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
         else {
             FastSection all(inner,QString(),QString(),"member","members");
 
-            QStack<const InnerNode*> stack;
+            QStack<const Aggregate*> stack;
             stack.push(inner);
 
             while (!stack.isEmpty()) {
-                const InnerNode* ancestor = stack.pop();
+                const Aggregate* ancestor = stack.pop();
                 NodeList::ConstIterator c = ancestor->childNodes().constBegin();
                 while (c != ancestor->childNodes().constEnd()) {
                     if ((*c)->access() != Node::Private && (*c)->type() != Node::Property)
@@ -812,8 +812,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 if (!ns->orphans().isEmpty()) {
                     foreach (Node* n, ns->orphans()) {
                         // Use inner as a temporary parent when inserting orphans
-                        InnerNode* p = n->parent();
-                        n->setParent(const_cast<InnerNode*>(inner));
+                        Aggregate* p = n->parent();
+                        n->setParent(const_cast<Aggregate*>(inner));
                         if (n->isClass())
                             insert(classes, n, style, status);
                         else if (n->isNamespace())

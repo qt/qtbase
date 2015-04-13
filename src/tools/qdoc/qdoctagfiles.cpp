@@ -100,7 +100,7 @@ void QDocTagFiles::destroyQDocTagFiles()
   specified, returning true if an element was written; otherwise returns
   false.
  */
-void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const InnerNode* inner)
+void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Aggregate* inner)
 {
     foreach (const Node* node, inner->childNodes()) {
         if (!node->url().isEmpty())
@@ -161,22 +161,22 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
             }
 
             // Recurse to write all members.
-            generateTagFileMembers(writer, static_cast<const InnerNode*>(node));
+            generateTagFileMembers(writer, static_cast<const Aggregate*>(node));
             writer.writeEndElement();
 
             // Recurse to write all compounds.
-            generateTagFileCompounds(writer, static_cast<const InnerNode*>(node));
+            generateTagFileCompounds(writer, static_cast<const Aggregate*>(node));
         }
         else {
             writer.writeTextElement("name", node->fullDocumentName());
             writer.writeTextElement("filename", gen_->fullDocumentLocation(node, false));
 
             // Recurse to write all members.
-            generateTagFileMembers(writer, static_cast<const InnerNode*>(node));
+            generateTagFileMembers(writer, static_cast<const Aggregate*>(node));
             writer.writeEndElement();
 
             // Recurse to write all compounds.
-            generateTagFileCompounds(writer, static_cast<const InnerNode*>(node));
+            generateTagFileCompounds(writer, static_cast<const Aggregate*>(node));
         }
     }
 }
@@ -185,7 +185,7 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
   Writes all the members of the \a inner node with the \a writer.
   The node represents a C++ class, namespace, etc.
  */
-void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inner)
+void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const Aggregate* inner)
 {
     foreach (const Node* node, inner->childNodes()) {
         if (!node->url().isEmpty())

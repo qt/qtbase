@@ -95,7 +95,7 @@ protected:
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker) Q_DECL_OVERRIDE;
-    virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker) Q_DECL_OVERRIDE;
+    virtual void generateClassLikeNode(Aggregate* inner, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateQmlTypePage(QmlTypeNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker) Q_DECL_OVERRIDE;
     virtual void generateDocumentNode(DocumentNode* dn, CodeMarker* marker) Q_DECL_OVERRIDE;
@@ -137,22 +137,22 @@ private:
                        const Node *relative,
                        CodeMarker *marker);
     void generateFooter(const Node *node = 0);
-    void generateRequisites(InnerNode *inner,
+    void generateRequisites(Aggregate *inner,
                             CodeMarker *marker);
     void generateQmlRequisites(QmlTypeNode *qcn,
                             CodeMarker *marker);
     void generateBrief(const Node *node,
                        CodeMarker *marker,
                        const Node *relative = 0);
-    void generateIncludes(const InnerNode *inner, CodeMarker *marker);
+    void generateIncludes(const Aggregate *inner, CodeMarker *marker);
     void generateTableOfContents(const Node *node,
                                  CodeMarker *marker,
                                  QList<Section>* sections = 0);
     void generateSidebar();
-    QString generateListOfAllMemberFile(const InnerNode *inner,
+    QString generateListOfAllMemberFile(const Aggregate *inner,
                                         CodeMarker *marker);
     QString generateAllQmlMembersFile(QmlTypeNode* qml_cn, CodeMarker* marker);
-    QString generateLowStatusMemberFile(InnerNode *inner,
+    QString generateLowStatusMemberFile(Aggregate *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
     QString generateQmlMemberFile(QmlTypeNode* qcn,
@@ -181,7 +181,7 @@ private:
                          CodeMarker *marker,
                          bool summary);
     void generateDetailedQmlMember(Node *node,
-                                   const InnerNode *relative,
+                                   const Aggregate *relative,
                                    CodeMarker *marker);
     void generateQmlInherits(QmlTypeNode* qcn, CodeMarker* marker) Q_DECL_OVERRIDE;
     void generateQmlInstantiates(QmlTypeNode* qcn, CodeMarker* marker);
@@ -205,7 +205,7 @@ private:
 
     void generateFullName(const Node *apparentNode, const Node *relative, const Node *actualNode = 0);
     void generateDetailedMember(const Node *node,
-                                const InnerNode *relative,
+                                const Aggregate *relative,
                                 CodeMarker *marker);
     void generateLink(const Atom *atom, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
@@ -224,9 +224,9 @@ private:
     void beginLink(const QString &link, const Node *node, const Node *relative);
     void endLink();
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
-    void reportOrphans(const InnerNode* parent);
+    void reportOrphans(const Aggregate* parent);
 
-    void beginDitamapPage(const InnerNode* node, const QString& fileName);
+    void beginDitamapPage(const Aggregate* node, const QString& fileName);
     void endDitamapPage();
     void writeDitaMap(const DitaMapNode* node);
     void writeDitaRefs(const DitaRefList& ditarefs);

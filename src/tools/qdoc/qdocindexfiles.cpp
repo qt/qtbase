@@ -172,9 +172,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     QString href = element.attribute("href");
     Node* node;
     Location location;
-    InnerNode* parent = 0;
-    if (current->isInnerNode())
-        parent = static_cast<InnerNode*>(current);
+    Aggregate* parent = 0;
+    if (current->isAggregate())
+        parent = static_cast<Aggregate*>(current);
 
     QString filePath;
     int lineNo = 0;
@@ -937,7 +937,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     else
         href = node->name();
     if (node->isQmlNode() || node->isJsNode()) {
-        InnerNode* p = node->parent();
+        Aggregate* p = node->parent();
         if (p) {
             if (p->isQmlPropertyGroup() || p->isJsPropertyGroup())
                 p = p->parent();
@@ -1349,8 +1349,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     // opening tag, create child elements, then add a closing tag for the
     // element. Elements for all other nodes are closed in the opening tag.
 
-    if (node->isInnerNode()) {
-        const InnerNode* inner = static_cast<const InnerNode*>(node);
+    if (node->isAggregate()) {
+        const Aggregate* inner = static_cast<const Aggregate*>(node);
 
         if (inner->doc().hasTableOfContents()) {
             for (int i = 0; i < inner->doc().tableOfContents().size(); ++i) {
@@ -1453,8 +1453,8 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
         return;
 
     if (generateIndexSection(writer, node, generateInternalNodes)) {
-        if (node->isInnerNode()) {
-            const InnerNode* inner = static_cast<const InnerNode*>(node);
+        if (node->isAggregate()) {
+            const Aggregate* inner = static_cast<const Aggregate*>(node);
 
             NodeList cnodes = inner->childNodes();
             std::sort(cnodes.begin(), cnodes.end(), compareNodes);

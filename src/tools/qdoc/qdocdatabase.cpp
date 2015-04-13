@@ -815,7 +815,7 @@ void QDocDatabase::processForest()
   mode, each tree is analyzed in turn, and its classes and
   types are added to the appropriate node maps.
  */
-void QDocDatabase::processForest(void (QDocDatabase::*func) (InnerNode*))
+void QDocDatabase::processForest(void (QDocDatabase::*func) (Aggregate*))
 {
     Tree* t = forest_.firstTree();
     while (t) {
@@ -930,7 +930,7 @@ NodeMultiMap& QDocDatabase::getCppClasses()
   Finds all the C++ class nodes and QML type nodes and
   sorts them into maps.
  */
-void QDocDatabase::findAllClasses(InnerNode* node)
+void QDocDatabase::findAllClasses(Aggregate* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
@@ -957,8 +957,8 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                 if ((*c)->isQmlBasicType() || (*c)->isJsType())
                     qmlBasicTypes_.insert(qmlTypeName,*c);
             }
-            else if ((*c)->isInnerNode()) {
-                findAllClasses(static_cast<InnerNode*>(*c));
+            else if ((*c)->isAggregate()) {
+                findAllClasses(static_cast<Aggregate*>(*c));
             }
         }
         ++c;
@@ -978,13 +978,13 @@ NodeMapMap& QDocDatabase::getFunctionIndex()
 /*!
   Finds all the function nodes
  */
-void QDocDatabase::findAllFunctions(InnerNode* node)
+void QDocDatabase::findAllFunctions(Aggregate* node)
 {
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode()) {
-                findAllFunctions(static_cast<InnerNode*>(*c));
+            if ((*c)->isAggregate()) {
+                findAllFunctions(static_cast<Aggregate*>(*c));
             }
             else if ((*c)->type() == Node::Function) {
                 const FunctionNode* func = static_cast<const FunctionNode*>(*c);
@@ -1004,15 +1004,15 @@ void QDocDatabase::findAllFunctions(InnerNode* node)
   Finds all the nodes containing legalese text and puts them
   in a map.
  */
-void QDocDatabase::findAllLegaleseTexts(InnerNode* node)
+void QDocDatabase::findAllLegaleseTexts(Aggregate* node)
 {
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
             if (!(*c)->doc().legaleseText().isEmpty())
                 legaleseTexts_.insertMulti((*c)->doc().legaleseText(), *c);
-            if ((*c)->isInnerNode())
-                findAllLegaleseTexts(static_cast<InnerNode *>(*c));
+            if ((*c)->isAggregate())
+                findAllLegaleseTexts(static_cast<Aggregate *>(*c));
         }
         ++c;
     }
@@ -1021,13 +1021,13 @@ void QDocDatabase::findAllLegaleseTexts(InnerNode* node)
 /*!
   Finds all the namespace nodes and puts them in an index.
  */
-void QDocDatabase::findAllNamespaces(InnerNode* node)
+void QDocDatabase::findAllNamespaces(Aggregate* node)
 {
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private || (*c)->isNamespace()) {
-            if ((*c)->isInnerNode()) {
-                findAllNamespaces(static_cast<InnerNode *>(*c));
+            if ((*c)->isAggregate()) {
+                findAllNamespaces(static_cast<Aggregate *>(*c));
                 if ((*c)->isNamespace()) {
                     // Ensure that the namespace's name is not empty (the root
                     // namespace has no name).
@@ -1046,7 +1046,7 @@ void QDocDatabase::findAllNamespaces(InnerNode* node)
   maps. They can be C++ classes, QML types, or they can be
   functions, enum types, typedefs, methods, etc.
  */
-void QDocDatabase::findAllObsoleteThings(InnerNode* node)
+void QDocDatabase::findAllObsoleteThings(Aggregate* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
@@ -1067,7 +1067,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                 }
             }
             else if ((*c)->type() == Node::Class) {
-                InnerNode* n = static_cast<InnerNode*>(*c);
+                Aggregate* n = static_cast<Aggregate*>(*c);
                 bool inserted = false;
                 NodeList::const_iterator p = n->childNodes().constBegin();
                 while (p != n->childNodes().constEnd()) {
@@ -1096,7 +1096,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                 }
             }
             else if ((*c)->isQmlType() || (*c)->isJsType()) {
-                InnerNode* n = static_cast<InnerNode*>(*c);
+                Aggregate* n = static_cast<Aggregate*>(*c);
                 bool inserted = false;
                 NodeList::const_iterator p = n->childNodes().constBegin();
                 while (p != n->childNodes().constEnd()) {
@@ -1127,8 +1127,8 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                     ++p;
                 }
             }
-            else if ((*c)->isInnerNode()) {
-                findAllObsoleteThings(static_cast<InnerNode*>(*c));
+            else if ((*c)->isAggregate()) {
+                findAllObsoleteThings(static_cast<Aggregate*>(*c));
             }
         }
         ++c;
@@ -1143,7 +1143,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
   This function is used for generating the "New Classes... in x.y"
   section on the \e{What's New in Qt x.y} page.
  */
-void QDocDatabase::findAllSince(InnerNode* node)
+void QDocDatabase::findAllSince(Aggregate* node)
 {
     NodeList::const_iterator child = node->childNodes().constBegin();
     while (child != node->childNodes().constEnd()) {
@@ -1206,8 +1206,8 @@ void QDocDatabase::findAllSince(InnerNode* node)
             }
         }
         // Recursively find child nodes with since commands.
-        if ((*child)->isInnerNode())
-            findAllSince(static_cast<InnerNode *>(*child));
+        if ((*child)->isAggregate())
+            findAllSince(static_cast<Aggregate *>(*child));
 
         ++child;
     }
@@ -1394,7 +1394,7 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
   base type node. If the node is found in the tree, set the
   node's QML base type node pointer.
  */
-void QDocDatabase::resolveQmlInheritance(InnerNode* root)
+void QDocDatabase::resolveQmlInheritance(Aggregate* root)
 {
     NodeMap previousSearches;
     // Do we need recursion?

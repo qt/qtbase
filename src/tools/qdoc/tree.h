@@ -135,21 +135,21 @@ class Tree
     QmlTypeNode* findQmlTypeNode(const QStringList& path);
 
     Node* findNodeByNameAndType(const QStringList& path, Node::NodeType type) const;
-    InnerNode* findRelatesNode(const QStringList& path);
+    Aggregate* findRelatesNode(const QStringList& path);
     QString getRef(const QString& target, const Node* node) const;
     void insertTarget(const QString& name,
                       const QString& title,
                       TargetRec::TargetType type,
                       Node* node,
                       int priority);
-    void resolveTargets(InnerNode* root);
+    void resolveTargets(Aggregate* root);
     const Node* findUnambiguousTarget(const QString& target, QString& ref) const;
     const DocumentNode* findDocumentNodeByTitle(const QString& title) const;
 
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
                              PropertyNode::FunctionRole funcRole);
-    void resolveInheritance(InnerNode* n = 0);
+    void resolveInheritance(Aggregate* n = 0);
     void resolveInheritanceHelper(int pass, ClassNode* cn);
     void resolveProperties();
     void resolveCppToQmlLinks();

@@ -111,7 +111,7 @@ private:
     QSet<QString> commands_;
     QSet<QString> topics_;
     QSet<quint32> usedComments;
-    InnerNode *current;
+    Aggregate *current;
 };
 
 QT_END_NAMESPACE

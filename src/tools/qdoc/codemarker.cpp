@@ -390,7 +390,7 @@ void CodeMarker::insert(FastSection &fastSection,
     bool irrelevant = false;
     bool inheritedMember = false;
     if (!node->relates()) {
-        InnerNode* p = node->parent();
+        Aggregate* p = node->parent();
         if (p->isQmlPropertyGroup())
             p = p->parent();
         if (p != fastSection.parent_) {
@@ -440,7 +440,7 @@ void CodeMarker::insert(FastSection &fastSection,
             if (node->parent()->isClass() || node->parent()->isNamespace()) {
                 if (fastSection.inherited.isEmpty()
                         || fastSection.inherited.last().first != node->parent()) {
-                    QPair<InnerNode *, int> p(node->parent(), 0);
+                    QPair<Aggregate *, int> p(node->parent(), 0);
                     fastSection.inherited.append(p);
                 }
                 fastSection.inherited.last().second++;

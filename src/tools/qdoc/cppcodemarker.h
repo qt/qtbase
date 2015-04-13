@@ -67,7 +67,7 @@ public:
     virtual QString markedUpIncludes(const QStringList& includes) Q_DECL_OVERRIDE;
     virtual QString functionBeginRegExp(const QString& funcName) Q_DECL_OVERRIDE;
     virtual QString functionEndRegExp(const QString& funcName) Q_DECL_OVERRIDE;
-    virtual QList<Section> sections(const InnerNode *innerNode,
+    virtual QList<Section> sections(const Aggregate *innerNode,
                                     SynopsisStyle style,
                                     Status status) Q_DECL_OVERRIDE;
     virtual QList<Section> qmlSections(QmlTypeNode* qmlTypeNode,

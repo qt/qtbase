@@ -1336,7 +1336,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
 /*!
   Generate a reference page for a C++ class or a C++ namespace.
  */
-void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
+void HtmlGenerator::generateClassLikeNode(Aggregate* inner, CodeMarker* marker)
 {
     QList<Section> sections;
     QList<Section>::ConstIterator s;
@@ -2086,7 +2086,7 @@ void HtmlGenerator::generateFooter(const Node *node)
 Lists the required imports and includes in a table.
 The number of rows is known, so this path is simpler than the generateSection() path.
 */
-void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
+void HtmlGenerator::generateRequisites(Aggregate *inner, CodeMarker *marker)
 {
     QMap<QString, Text> requisites;
     Text text;
@@ -2358,7 +2358,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
     }
 }
 
-void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
+void HtmlGenerator::generateIncludes(const Aggregate *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
         out() << "<pre class=\"cpp\">"
@@ -2517,7 +2517,7 @@ void HtmlGenerator::generateSidebar() {
     out() << "</div>\n";
 }
 
-QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
+QString HtmlGenerator::generateListOfAllMemberFile(const Aggregate *inner,
                                                    CodeMarker *marker)
 {
     QList<Section> sections;
@@ -2612,7 +2612,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlTypeNode* qml_cn, CodeMarker
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
+QString HtmlGenerator::generateLowStatusMemberFile(Aggregate *inner,
                                                    CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
@@ -3332,7 +3332,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
 
 void HtmlGenerator::generateSectionInheritedList(const Section& section, const Node *relative)
 {
-    QList<QPair<InnerNode *, int> >::ConstIterator p = section.inherited.constBegin();
+    QList<QPair<Aggregate *, int> >::ConstIterator p = section.inherited.constBegin();
     while (p != section.inherited.constEnd()) {
         out() << "<li class=\"fn\">";
         out() << (*p).second << ' ';
@@ -3726,7 +3726,7 @@ QString HtmlGenerator::fileBase(const Node *node) const
 
     result = Generator::fileBase(node);
 
-    if (!node->isInnerNode()) {
+    if (!node->isAggregate()) {
         switch (node->status()) {
         case Node::Compat:
             result += "-compat";
@@ -3912,7 +3912,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     }
     QString link = fn;
 
-    if (!node->isInnerNode() || node->isQmlPropertyGroup() || node->isJsPropertyGroup()) {
+    if (!node->isAggregate() || node->isQmlPropertyGroup() || node->isJsPropertyGroup()) {
         QString ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
@@ -3963,7 +3963,7 @@ void HtmlGenerator::generateFullName(const Node *apparentNode, const Node *relat
 }
 
 void HtmlGenerator::generateDetailedMember(const Node *node,
-                                           const InnerNode *relative,
+                                           const Aggregate *relative,
                                            CodeMarker *marker)
 {
     const EnumNode *enume;
@@ -4088,7 +4088,7 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
 
     switch (node->status()) {
     case Node::Obsolete:
-        if (node->isInnerNode())
+        if (node->isAggregate())
             Generator::generateStatus(node, marker);
         break;
     case Node::Compat:
@@ -4201,7 +4201,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
   on a QML element reference page.
  */
 void HtmlGenerator::generateDetailedQmlMember(Node *node,
-                                              const InnerNode *relative,
+                                              const Aggregate *relative,
                                               CodeMarker *marker)
 {
     QmlPropertyNode* qpn = 0;
@@ -4702,7 +4702,7 @@ void HtmlGenerator::readManifestMetaContent(const Config &config)
   subtype: QML class
   subtype: QML module
  */
-void HtmlGenerator::reportOrphans(const InnerNode* parent)
+void HtmlGenerator::reportOrphans(const Aggregate* parent)
 {
     const NodeList& children = parent->childNodes();
     if (children.size() == 0)
@@ -4828,7 +4828,7 @@ QXmlStreamWriter& HtmlGenerator::xmlWriter()
 
   It also ensures that a GUID map is created for the output file.
  */
-void HtmlGenerator::beginDitamapPage(const InnerNode* node, const QString& fileName)
+void HtmlGenerator::beginDitamapPage(const Aggregate* node, const QString& fileName)
 {
     Generator::beginSubPage(node,fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());

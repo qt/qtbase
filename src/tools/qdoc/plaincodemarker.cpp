@@ -109,7 +109,7 @@ QString PlainCodeMarker::functionEndRegExp( const QString& /* funcName */ )
     return QString();
 }
 
-QList<Section> PlainCodeMarker::sections(const InnerNode * /* innerNode */,
+QList<Section> PlainCodeMarker::sections(const Aggregate * /* innerNode */,
                                          SynopsisStyle /* style */,
                                          Status /* status */)
 {

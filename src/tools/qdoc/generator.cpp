@@ -259,7 +259,7 @@ void Generator::writeOutFileNames()
   Attaches a QTextStream to the created file, which is written
   to all over the place using out().
  */
-void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
+void Generator::beginSubPage(const Aggregate* node, const QString& fileName)
 {
     QString path = outputDir() + QLatin1Char('/');
     if (Generator::useOutputSubdirs() && !node->outputSubdirectory().isEmpty() &&
@@ -281,7 +281,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
         out->setCodec(outputCodec);
 #endif
     outStreamStack.push(out);
-    const_cast<InnerNode*>(node)->setOutputFileName(fileName);
+    const_cast<Aggregate*>(node)->setOutputFileName(fileName);
 }
 
 /*!
@@ -300,7 +300,7 @@ QString Generator::fileBase(const Node *node) const
 {
     if (node->relates())
         node = node->relates();
-    else if (!node->isInnerNode())
+    else if (!node->isAggregate())
         node = node->parent();
     if (node->type() == Node::QmlPropertyGroup) {
         node = node->parent();
@@ -838,7 +838,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 }
 
-void Generator::generateClassLikeNode(InnerNode* /* classe */, CodeMarker* /* marker */)
+void Generator::generateClassLikeNode(Aggregate* /* classe */, CodeMarker* /* marker */)
 {
 }
 
@@ -971,7 +971,7 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 /*!
   Recursive writing of HTML files from the root \a node.
  */
-void Generator::generateInnerNode(InnerNode* node)
+void Generator::generateAggregate(Aggregate* node)
 {
     if (!node->url().isNull())
         return;
@@ -1056,8 +1056,8 @@ void Generator::generateInnerNode(InnerNode* node)
     int i = 0;
     while (i < node->childNodes().count()) {
         Node *c = node->childNodes().at(i);
-        if (c->isInnerNode() && c->access() != Node::Private) {
-            generateInnerNode((InnerNode*)c);
+        if (c->isAggregate() && c->access() != Node::Private) {
+            generateAggregate((Aggregate*)c);
         }
         ++i;
     }
@@ -1066,7 +1066,7 @@ void Generator::generateInnerNode(InnerNode* node)
 /*!
   Generate a list of maintainers in the output
  */
-void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker)
+void Generator::generateMaintainerList(const Aggregate* node, CodeMarker* marker)
 {
     QStringList sl = getMetadataElements(node,"maintainer");
 
@@ -1205,19 +1205,19 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
         break;
     case Node::Deprecated:
         text << Atom::ParaLeft;
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD);
         text << "This " << typeString(node) << " is deprecated.";
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD);
         text << Atom::ParaRight;
         break;
     case Node::Obsolete:
         text << Atom::ParaLeft;
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD);
         text << "This " << typeString(node) << " is obsolete.";
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD);
         text << " It is provided to keep old source code working. "
              << "We strongly advise against "
@@ -1225,7 +1225,7 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
         break;
     case Node::Compat:
         // reimplemented in HtmlGenerator subclass
-        if (node->isInnerNode()) {
+        if (node->isAggregate()) {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "This "
@@ -1307,8 +1307,8 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
              << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
              << " ";
 
-        if (node->isInnerNode()) {
-            const InnerNode* innerNode = static_cast<const InnerNode*>(node);
+        if (node->isAggregate()) {
+            const Aggregate* innerNode = static_cast<const Aggregate*>(node);
             text << "All functions in this "
                  << typeString(node)
                  << " are ";
@@ -1412,7 +1412,7 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
  */
 void Generator::generateDocs()
 {
-    generateInnerNode(qdb_->primaryTreeRoot());
+    generateAggregate(qdb_->primaryTreeRoot());
 }
 
 Generator *Generator::generatorForFormat(const QString& format)
@@ -1435,7 +1435,7 @@ Generator *Generator::generatorForFormat(const QString& format)
   i.e. Once you call this function for a particular \a t,
   you consume \a t.
  */
-QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
+QString Generator::getMetadataElement(const Aggregate* inner, const QString& t)
 {
     QString s;
     QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
@@ -1456,7 +1456,7 @@ QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
   having the key \a t are erased. i.e. Once you call this
   function for a particular \a t, you consume \a t.
  */
-QStringList Generator::getMetadataElements(const InnerNode* inner, const QString& t)
+QStringList Generator::getMetadataElements(const Aggregate* inner, const QString& t)
 {
     QStringList s;
     QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());

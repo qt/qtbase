@@ -422,7 +422,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             lastPath_ = path;
 
         }
-        else if (node->isInnerNode()) {
+        else if (node->isAggregate()) {
             if (type == Node::Namespace) {
                 NamespaceNode* ns = static_cast<NamespaceNode*>(node);
                 ns->markSeen();
@@ -887,8 +887,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
 {
     QString arg = argLocPair.first;
     if (command == COMMAND_INHEADERFILE) {
-        if (node != 0 && node->isInnerNode()) {
-            ((InnerNode *) node)->addInclude(arg);
+        if (node != 0 && node->isAggregate()) {
+            ((Aggregate *) node)->addInclude(arg);
         }
         else {
             doc.location().warning(tr("Ignored '\\%1'")
@@ -943,7 +943,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         if (!n)
             doc.location().warning(tr("Cannot find '%1' in '\\%2'").arg(arg).arg(COMMAND_RELATES));
         else
-            node->setRelates(static_cast<InnerNode*>(n));
+            node->setRelates(static_cast<Aggregate*>(n));
     }
     else if (command == COMMAND_CONTENTSPAGE) {
         setLink(node, Node::ContentsLink, arg);
@@ -1348,7 +1348,7 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
     return true;
 }
 
-bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
+bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
                                       QStringList *parentPathPtr,
                                       FunctionNode **funcPtr,
                                       const QString &templateStuff,
@@ -1611,7 +1611,7 @@ bool CppCodeParser::matchBaseList(ClassNode *classe, bool isClass)
   sufficient for Qt because there are no cases of class nesting more
   than one level deep.
  */
-bool CppCodeParser::matchClassDecl(InnerNode *parent,
+bool CppCodeParser::matchClassDecl(Aggregate *parent,
                                    const QString &templateStuff)
 {
     bool isClass = (tok == Tok_class);
@@ -1626,7 +1626,7 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
     if (tok == Tok_Gulbrandsen) {
         Node* n = parent->findChildNode(previousLexeme(),Node::Class);
         if (n) {
-            parent = static_cast<InnerNode*>(n);
+            parent = static_cast<Aggregate*>(n);
             if (parent) {
                 readToken();
                 if (tok != Tok_Ident)
@@ -1668,7 +1668,7 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
     return matches;
 }
 
-bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
+bool CppCodeParser::matchNamespaceDecl(Aggregate *parent)
 {
     readToken(); // skip 'namespace'
     if (tok != Tok_Ident)
@@ -1707,7 +1707,7 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
   member function is added to \a parent as an unresolved
   \c using clause.
  */
-bool CppCodeParser::matchUsingDecl(InnerNode* parent)
+bool CppCodeParser::matchUsingDecl(Aggregate* parent)
 {
     bool usingNamespace = false;
     readToken(); // skip 'using'
@@ -1769,7 +1769,7 @@ bool CppCodeParser::matchUsingDecl(InnerNode* parent)
     return true;
 }
 
-bool CppCodeParser::matchEnumItem(InnerNode *parent, EnumNode *enume)
+bool CppCodeParser::matchEnumItem(Aggregate *parent, EnumNode *enume)
 {
     if (!match(Tok_Ident))
         return false;
@@ -1820,7 +1820,7 @@ bool CppCodeParser::matchEnumItem(InnerNode *parent, EnumNode *enume)
     return true;
 }
 
-bool CppCodeParser::matchEnumDecl(InnerNode *parent)
+bool CppCodeParser::matchEnumDecl(Aggregate *parent)
 {
     QString name;
 
@@ -1851,7 +1851,7 @@ bool CppCodeParser::matchEnumDecl(InnerNode *parent)
     return match(Tok_RightBrace) && match(Tok_Semicolon);
 }
 
-bool CppCodeParser::matchTypedefDecl(InnerNode *parent)
+bool CppCodeParser::matchTypedefDecl(Aggregate *parent)
 {
     CodeChunk dataType;
     QString name;
@@ -1871,7 +1871,7 @@ bool CppCodeParser::matchTypedefDecl(InnerNode *parent)
     return true;
 }
 
-bool CppCodeParser::matchProperty(InnerNode *parent)
+bool CppCodeParser::matchProperty(Aggregate *parent)
 {
     int expected_tok = Tok_LeftParen;
     if (match(Tok_Q_PRIVATE_PROPERTY)) {
@@ -1984,7 +1984,7 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
 /*!
   Parse a C++ declaration.
  */
-bool CppCodeParser::matchDeclList(InnerNode *parent)
+bool CppCodeParser::matchDeclList(Aggregate *parent)
 {
     ExtraFuncData extra;
     QString templateStuff;
@@ -2251,15 +2251,15 @@ bool CppCodeParser::matchDocsAndStuff()
                 processOtherMetaCommands(*d, *n);
                 (*n)->setDoc(*d);
                 checkModuleInclusion(*n);
-                if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
-                    InnerNode *m = static_cast<InnerNode *>(*n);
+                if ((*n)->isAggregate() && ((Aggregate *)*n)->includes().isEmpty()) {
+                    Aggregate *m = static_cast<Aggregate *>(*n);
                     while (m->parent() && m->physicalModuleName().isEmpty()) {
                         m = m->parent();
                     }
                     if (m == *n)
-                        ((InnerNode *)*n)->addInclude((*n)->name());
+                        ((Aggregate *)*n)->addInclude((*n)->name());
                     else
-                        ((InnerNode *)*n)->setIncludes(m->includes());
+                        ((Aggregate *)*n)->setIncludes(m->includes());
                 }
                 ++d;
                 ++n;
@@ -2341,7 +2341,7 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
  */
 FunctionNode* CppCodeParser::makeFunctionNode(const Doc& doc,
                                               const QString& sig,
-                                              InnerNode* parent,
+                                              Aggregate* parent,
                                               Node::NodeType type,
                                               bool attached,
                                               QString qdoctag)

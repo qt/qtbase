@@ -181,9 +181,9 @@ FunctionNode* Tree::findFunctionNode(const QStringList& parentPath, const Functi
         parent = findClassNode(parentPath, 0);
     if (parent == 0)
         parent = findNode(parentPath, 0, 0, Node::DontCare);
-    if (parent == 0 || !parent->isInnerNode())
+    if (parent == 0 || !parent->isAggregate())
         return 0;
-    return ((const InnerNode*)parent)->findFunctionNode(clone);
+    return ((const Aggregate*)parent)->findFunctionNode(clone);
 }
 
 
@@ -249,22 +249,22 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
         int i;
 
         for (i = 0; i < path.size(); ++i) {
-            if (node == 0 || !node->isInnerNode())
+            if (node == 0 || !node->isAggregate())
                 break;
 
             const Node* next;
             if (i == path.size() - 1)
-                next = ((const InnerNode*) node)->findFunctionNode(path.at(i));
+                next = ((const Aggregate*) node)->findFunctionNode(path.at(i));
             else
-                next = ((const InnerNode*) node)->findChildNode(path.at(i), genus);
+                next = ((const Aggregate*) node)->findChildNode(path.at(i), genus);
 
             if (!next && node->isClass() && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
                     if (i == path.size() - 1)
-                        next = static_cast<const InnerNode*>(baseClass)->findFunctionNode(path.at(i));
+                        next = static_cast<const Aggregate*>(baseClass)->findFunctionNode(path.at(i));
                     else
-                        next = static_cast<const InnerNode*>(baseClass)->findChildNode(path.at(i), genus);
+                        next = static_cast<const Aggregate*>(baseClass)->findChildNode(path.at(i), genus);
 
                     if (next)
                         break;
@@ -320,10 +320,10 @@ static const NodeTypeList& relatesTypes()
   If a matching node is found, a pointer to it is returned.
   Otherwise 0 is returned.
  */
-InnerNode* Tree::findRelatesNode(const QStringList& path)
+Aggregate* Tree::findRelatesNode(const QStringList& path)
 {
     Node* n = findNodeRecursive(path, 0, root(), relatesTypes());
-    return ((n && n->isInnerNode()) ? static_cast<InnerNode*>(n) : 0);
+    return ((n && n->isAggregate()) ? static_cast<Aggregate*>(n) : 0);
 }
 
 /*!
@@ -344,7 +344,7 @@ void Tree::addPropertyFunction(PropertyNode* property,
 
   This function does not resolve QML inheritance.
  */
-void Tree::resolveInheritance(InnerNode* n)
+void Tree::resolveInheritance(Aggregate* n)
 {
     if (!n)
         n = root();
@@ -400,7 +400,7 @@ void Tree::resolveInheritanceHelper(int pass, ClassNode* cn)
                   node) using the unqualified base class name.
                  */
                 if (!n) {
-                    InnerNode* parent = cn->parent();
+                    Aggregate* parent = cn->parent();
                     n = findClassNode((*b).path_, parent);
                 }
 #endif
@@ -441,7 +441,7 @@ void Tree::resolveProperties()
     propEntry = unresolvedPropertyMap.constBegin();
     while (propEntry != unresolvedPropertyMap.constEnd()) {
         PropertyNode* property = propEntry.key();
-        InnerNode* parent = property->parent();
+        Aggregate* parent = property->parent();
         QString getterName = (*propEntry)[PropertyNode::Getter];
         QString setterName = (*propEntry)[PropertyNode::Setter];
         QString resetterName = (*propEntry)[PropertyNode::Resetter];
@@ -621,7 +621,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
         return 0; // premature leaf
     }
 
-    InnerNode* current = static_cast<InnerNode*>(node);
+    Aggregate* current = static_cast<Aggregate*>(node);
     const NodeList& children = current->childNodes();
     const QString& name = path.at(pathIndex);
     for (int i=0; i<children.size(); ++i) {
@@ -677,7 +677,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
     if (pathIndex >= path.size())
         return 0;
 
-    InnerNode* current = static_cast<InnerNode*>(start);
+    Aggregate* current = static_cast<Aggregate*>(start);
     const NodeList& children = current->childNodes();
     for (int i=0; i<children.size(); ++i) {
         Node* n = children.at(i);
@@ -777,7 +777,7 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
     }
 
     while (current) {
-        if (current->isInnerNode()) {
+        if (current->isAggregate()) {
             const Node* node = matchPathAndTarget(path, path_idx, target, current, flags, genus, ref);
             if (node)
                 return node;
@@ -847,8 +847,8 @@ const Node* Tree::matchPathAndTarget(const QStringList& path,
             return t;
     }
     if (target.isEmpty()) {
-        if ((idx) == (path.size()-1) && node->isInnerNode() && (flags & SearchEnumValues)) {
-            t = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(idx));
+        if ((idx) == (path.size()-1) && node->isAggregate() && (flags & SearchEnumValues)) {
+            t = static_cast<const Aggregate*>(node)->findEnumNodeForValue(path.at(idx));
             if (t)
                 return t;
         }
@@ -862,7 +862,7 @@ const Node* Tree::matchPathAndTarget(const QStringList& path,
                 return t;
             if (target.isEmpty()) {
                 if ((idx) == (path.size()-1) && (flags & SearchEnumValues)) {
-                    t = static_cast<const InnerNode*>(bc)->findEnumNodeForValue(path.at(idx));
+                    t = static_cast<const Aggregate*>(bc)->findEnumNodeForValue(path.at(idx));
                     if (t)
                         return t;
                 }
@@ -914,20 +914,20 @@ const Node* Tree::findNode(const QStringList& path,
         }
 
         for (i = start_idx; i < path.size(); ++i) {
-            if (node == 0 || !node->isInnerNode())
+            if (node == 0 || !node->isAggregate())
                 break;
 
-            const Node* next = static_cast<const InnerNode*>(node)->findChildNode(path.at(i), genus);
+            const Node* next = static_cast<const Aggregate*>(node)->findChildNode(path.at(i), genus);
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1) {
-                next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
+                next = static_cast<const Aggregate*>(node)->findEnumNodeForValue(path.at(i));
             }
             if (!next && ((genus == Node::CPP) || (genus == Node::DontCare)) &&
                 node->isClass() && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
-                    next = static_cast<const InnerNode*>(baseClass)->findChildNode(path.at(i), genus);
+                    next = static_cast<const Aggregate*>(baseClass)->findChildNode(path.at(i), genus);
                     if (!next && (findFlags & SearchEnumValues) && i == path.size() - 1)
-                        next = static_cast<const InnerNode*>(baseClass)->findEnumNodeForValue(path.at(i));
+                        next = static_cast<const Aggregate*>(baseClass)->findEnumNodeForValue(path.at(i));
                     if (next) {
                         break;
                     }
@@ -990,7 +990,7 @@ void Tree::insertTarget(const QString& name,
 
 /*!
  */
-void Tree::resolveTargets(InnerNode* root)
+void Tree::resolveTargets(Aggregate* root)
 {
     // need recursion
     foreach (Node* child, root->childNodes()) {
