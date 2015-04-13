@@ -87,6 +87,9 @@ protected:
     bool canDrop() const { return m_can_drop; }
     void setCanDrop(bool c) { m_can_drop = c; }
 
+    bool useCompositing() const { return m_useCompositing; }
+    void setUseCompositing(bool on) { m_useCompositing = on; }
+
     Qt::DropAction executedDropAction() const { return m_executed_drop_action; }
     void  setExecutedDropAction(Qt::DropAction da) { m_executed_drop_action = da; }
 
@@ -104,6 +107,7 @@ private:
     bool m_can_drop;
     QDrag *m_drag;
     QShapedPixmapWindow *m_drag_icon_window;
+    bool m_useCompositing;
 };
 
 class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag

@@ -191,6 +191,8 @@ void QXcbDrag::startDrag()
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->clipboard()->owner(),
                             atom(QXcbAtom::XdndTypelist),
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
+
+    setUseCompositing(current_virtual_desktop->compositingActive());
     QBasicDrag::startDrag();
 }
 
@@ -316,6 +318,7 @@ void QXcbDrag::move(const QPoint &globalPos)
     QPoint deviceIndependentPos = QHighDpiScaling::mapPositionFromNative(globalPos, screen);
 
     if (virtualDesktop != current_virtual_desktop) {
+        setUseCompositing(virtualDesktop->compositingActive());
         recreateShapedPixmapWindow(static_cast<QPlatformScreen*>(screen)->screen(), deviceIndependentPos);
         current_virtual_desktop = virtualDesktop;
     } else {
