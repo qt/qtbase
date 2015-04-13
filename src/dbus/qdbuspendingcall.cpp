@@ -36,6 +36,7 @@
 
 #include "qdbusconnection_p.h"
 #include "qdbusmetatype_p.h"
+#include "qdbusutil_p.h"
 #include "qcoreapplication.h"
 #include "qcoreevent.h"
 #include <private/qobject_p.h>
@@ -383,7 +384,7 @@ QDBusError QDBusPendingCall::error() const
 
     // not connected, return an error
     QDBusError err = QDBusError(QDBusError::Disconnected,
-                                QLatin1String("Not connected to D-Bus server"));
+                                QDBusUtil::disconnectedErrorMessage());
     return err;
 }
 

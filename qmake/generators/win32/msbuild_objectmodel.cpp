@@ -571,6 +571,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     addFilters(tempProj, xmlFilter, "Source Files");
     addFilters(tempProj, xmlFilter, "Translation Files");
     addFilters(tempProj, xmlFilter, "Deployment Files");
+    addFilters(tempProj, xmlFilter, "Distribution Files");
 
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x)
         addFilters(tempProj, xmlFilter, tempProj.ExtraCompilers.at(x));
@@ -585,6 +586,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, xmlFilter, "Form Files");
     outputFilter(tempProj, xml, xmlFilter, "Resource Files");
     outputFilter(tempProj, xml, xmlFilter, "Deployment Files");
+    outputFilter(tempProj, xml, xmlFilter, "Distribution Files");
 
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
         outputFilter(tempProj, xml, xmlFilter, tempProj.ExtraCompilers.at(x));
@@ -804,6 +806,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     addFilters(tool, xmlFilter, "Source Files");
     addFilters(tool, xmlFilter, "Translation Files");
     addFilters(tool, xmlFilter, "Deployment Files");
+    addFilters(tool, xmlFilter, "Distribution Files");
 
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x)
         addFilters(tool, xmlFilter, tool.ExtraCompilers.at(x));
@@ -818,6 +821,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, xmlFilter, "Form Files");
     outputFilter(tool, xml, xmlFilter, "Resource Files");
     outputFilter(tool, xml, xmlFilter, "Deployment Files");
+    outputFilter(tool, xml, xmlFilter, "Distribution Files");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
         outputFilter(tool, xml, xmlFilter, tool.ExtraCompilers.at(x));
     }

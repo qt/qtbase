@@ -38,6 +38,7 @@
 #include "qcocoamenuloader.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoaautoreleasepool.h"
+#include "qcocoaapplicationdelegate.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
@@ -265,8 +266,21 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     QCocoaWindow *cw = findWindowForMenubar();
 
     QWindow *win = cw ? cw->window() : 0;
-    if (win && (win->flags() & Qt::Popup) == Qt::Popup)
-        return; // context menus, comboboxes, etc. don't need to update the menubar
+    if (win && (win->flags() & Qt::Popup) == Qt::Popup) {
+        // context menus, comboboxes, etc. don't need to update the menubar,
+        // but if an application has only Qt::Tool window(s) on start,
+        // we still have to update the menubar.
+        if ((win->flags() & Qt::WindowType_Mask) != Qt::Tool)
+            return;
+        typedef QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) AppDelegate;
+        NSApplication *app = [NSApplication sharedApplication];
+        if (![app.delegate isKindOfClass:[AppDelegate class]])
+            return;
+        // We apply this logic _only_ during the startup.
+        AppDelegate *appDelegate = app.delegate;
+        if (!appDelegate.inLaunch)
+            return;
+    }
 
     if (cw && cw->menubar())
         mb = cw->menubar();

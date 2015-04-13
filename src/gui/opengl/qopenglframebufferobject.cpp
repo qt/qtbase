@@ -1484,8 +1484,10 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     const int ty0 = targetRect.top();
     const int ty1 = targetRect.top() + targetRect.height();
 
-    extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : 0);
-    extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : 0);
+    const GLuint defaultFboId = ctx->defaultFramebufferObject();
+
+    extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : defaultFboId);
+    extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : defaultFboId);
 
     extensions.glBlitFramebuffer(sx0, sy0, sx1, sy1,
                                  tx0, ty0, tx1, ty1,

@@ -52,6 +52,7 @@ private slots:
     void ungetChar();
     void indexOf();
     void appendAndRead();
+    void peek();
     void readLine();
 };
 
@@ -278,6 +279,31 @@ void tst_QRingBuffer::appendAndRead()
     QVERIFY(ringBuffer.read() == ba1);
     QVERIFY(ringBuffer.read() == ba2);
     QVERIFY(ringBuffer.read() == ba3);
+}
+
+void tst_QRingBuffer::peek()
+{
+    QRingBuffer ringBuffer;
+    QByteArray testBuffer;
+    // fill buffer with an arithmetic progression
+    for (int i = 1; i < 256; ++i) {
+        char *ringPos = ringBuffer.reserve(i);
+        QVERIFY(ringPos);
+        memset(ringPos, i, i);
+        testBuffer.append(ringPos, i);
+    }
+
+    // check stored data
+    QByteArray resultBuffer;
+    int peekPosition = testBuffer.size();
+    for (int i = 1; i < 256; ++i) {
+        QByteArray ba(i, 0);
+        peekPosition -= i;
+        qint64 thisPeek = ringBuffer.peek(ba.data(), i, peekPosition);
+        QCOMPARE(thisPeek, qint64(i));
+        resultBuffer.prepend(ba);
+    }
+    QCOMPARE(testBuffer, resultBuffer);
 }
 
 void tst_QRingBuffer::readLine()

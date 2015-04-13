@@ -72,7 +72,7 @@ Text& Text::operator=(const Text& text)
     return *this;
 }
 
-Text& Text::operator<<(Atom::Type atomType)
+Text& Text::operator<<(Atom::AtomType atomType)
 {
     return operator<<(Atom(atomType));
 }
@@ -177,7 +177,7 @@ QString Text::toString() const
     return str;
 }
 
-Text Text::subText(Atom::Type left, Atom::Type right, const Atom* from, bool inclusive) const
+Text Text::subText(Atom::AtomType left, Atom::AtomType right, const Atom* from, bool inclusive) const
 {
     const Atom* begin = from ? from : firstAtom();
     const Atom* end;

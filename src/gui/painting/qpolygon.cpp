@@ -461,11 +461,12 @@ QRect QPolygon::boundingRect() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPolygon &a)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygon(";
     for (int i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 
@@ -802,11 +803,12 @@ QDataStream &operator>>(QDataStream &s, QPolygonF &a)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPolygonF &a)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygonF(";
     for (int i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

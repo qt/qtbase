@@ -408,7 +408,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           this way to allow the writer to refer to the entity
           without including the namespace qualifier.
          */
-        Node::Type type =  nodeTypeMap[command];
+        Node::NodeType type =  nodeTypeMap[command];
         QStringList paths = arg.first.split(QLatin1Char(' '));
         QStringList path = paths[0].split("::");
         Node *node = 0;
@@ -572,7 +572,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             QmlTypeNode* qmlType = qdb_->findQmlType(module, qmlTypeName);
             if (qmlType) {
                 bool attached = false;
-                Node::Type nodeType = Node::QmlMethod;
+                Node::NodeType nodeType = Node::QmlMethod;
                 if ((command == COMMAND_QMLSIGNAL) ||
                     (command == COMMAND_JSSIGNAL))
                     nodeType = Node::QmlSignal;
@@ -928,7 +928,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                                               "because its base function is private "
                                               "or internal").arg(COMMAND_REIMP).arg(node->name()));
                 }
-                func->setReimp(true);
+                func->setReimplemented(true);
             }
             else {
                 doc.location().warning(tr("Ignored '\\%1' in %2")
@@ -1051,7 +1051,7 @@ void CppCodeParser::reset()
     tokenizer = 0;
     tok = 0;
     access = Node::Public;
-    metaness = FunctionNode::Plain;
+    metaness_ = FunctionNode::Plain;
     lastPath_.clear();
     physicalModuleName.clear();
 }
@@ -1373,7 +1373,7 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
     }
     FunctionNode::Virtualness vir = FunctionNode::NonVirtual;
     if (match(Tok_virtual)) {
-        vir = FunctionNode::ImpureVirtual;
+        vir = FunctionNode::NormalVirtual;
         if (matchCompat())
             compat = true;
     }
@@ -1511,7 +1511,7 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
     if (compat)
         func->setStatus(Node::Compat);
 
-    func->setMetaness(metaness);
+    func->setMetaness(metaness_);
     if (parent) {
         if (name == parent->name()) {
             func->setMetaness(FunctionNode::Ctor);
@@ -1658,13 +1658,13 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
 
     Node::Access outerAccess = access;
     access = isClass ? Node::Private : Node::Public;
-    FunctionNode::Metaness outerMetaness = metaness;
-    metaness = FunctionNode::Plain;
+    FunctionNode::Metaness outerMetaness = metaness_;
+    metaness_ = FunctionNode::Plain;
 
     bool matches = (matchDeclList(classe) && match(Tok_RightBrace) &&
                     match(Tok_Semicolon));
     access = outerAccess;
-    metaness = outerMetaness;
+    metaness_ = outerMetaness;
     return matches;
 }
 
@@ -2025,28 +2025,28 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
         case Tok_private:
             readToken();
             access = Node::Private;
-            metaness = FunctionNode::Plain;
+            metaness_ = FunctionNode::Plain;
             break;
         case Tok_protected:
             readToken();
             access = Node::Protected;
-            metaness = FunctionNode::Plain;
+            metaness_ = FunctionNode::Plain;
             break;
         case Tok_public:
             readToken();
             access = Node::Public;
-            metaness = FunctionNode::Plain;
+            metaness_ = FunctionNode::Plain;
             break;
         case Tok_signals:
         case Tok_Q_SIGNALS:
             readToken();
             access = Node::Public;
-            metaness = FunctionNode::Signal;
+            metaness_ = FunctionNode::Signal;
             break;
         case Tok_slots:
         case Tok_Q_SLOTS:
             readToken();
-            metaness = FunctionNode::Slot;
+            metaness_ = FunctionNode::Slot;
             break;
         case Tok_Q_OBJECT:
             readToken();
@@ -2342,7 +2342,7 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
 FunctionNode* CppCodeParser::makeFunctionNode(const Doc& doc,
                                               const QString& sig,
                                               InnerNode* parent,
-                                              Node::Type type,
+                                              Node::NodeType type,
                                               bool attached,
                                               QString qdoctag)
 {
@@ -2425,8 +2425,11 @@ void CppCodeParser::createExampleFileNodes(DocumentNode *dn)
                                         proFileName,
                                         userFriendlyFilePath);
             if (fullPath.isEmpty()) {
-                dn->location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
-                dn->location().warning(tr("  EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath));
+                QString details = QLatin1String("Example directories: ") + exampleDirs.join(QLatin1Char(' '));
+                if (!exampleFiles.isEmpty())
+                    details += QLatin1String(", example files: ") + exampleFiles.join(QLatin1Char(' '));
+                dn->location().warning(tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName), details);
+                dn->location().warning(tr("  EXAMPLE PATH DOES NOT EXIST: %1").arg(examplePath), details);
                 return;
             }
         }

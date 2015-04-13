@@ -813,6 +813,7 @@ static void debugVariantList(QDebug dbg, const QVariantList &list)
 
 QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDBusMessage(type=" << msg.type()
                   << ", service=" << msg.service();
     if (msg.type() == QDBusMessage::MethodCallMessage ||
@@ -827,7 +828,7 @@ QDebug operator<<(QDebug dbg, const QDBusMessage &msg)
                   << ", contents=(";
     debugVariantList(dbg, msg.arguments());
     dbg.nospace() << ") )";
-    return dbg.space();
+    return dbg;
 }
 #endif
 

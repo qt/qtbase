@@ -35,6 +35,7 @@
 #define QPOINTER_H
 
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qtypeinfo.h>
 
 #ifndef QT_NO_QOBJECT
 
@@ -45,6 +46,8 @@ class QVariant;
 template <class T>
 class QPointer
 {
+    Q_STATIC_ASSERT_X(!QtPrivate::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
+
     template<typename U>
     struct TypeSelector
     {

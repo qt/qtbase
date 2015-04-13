@@ -256,7 +256,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         qdb_->addToJsModule(arg.first, node);
     }
     else if (command == COMMAND_MAINCLASS) {
-        node->setStatus(Node::Main);
+        node->doc().location().warning(tr("'\\mainclass' is deprecated. Consider '\\ingroup mainclasses'"));
     }
     else if (command == COMMAND_OBSOLETE) {
         node->setStatus(Node::Obsolete);
@@ -426,21 +426,21 @@ void CodeParser::checkModuleInclusion(Node* n)
 #if 0
         case Node::Document:
             if (n->access() != Node::Private && !n->doc().isEmpty()) {
-                if (n->subType() == Node::HeaderFile) {
+                if (n->docSubtype() == Node::HeaderFile) {
 #if 0
                     n->doc().location().warning(tr("Header file with title \"%1\" has no \\inmodule command; "
                                                    "using project name by default: %2")
                                                 .arg(n->title()).arg(Generator::defaultModuleName()));
 #endif
                 }
-                else if (n->subType() == Node::Page) {
+                else if (n->docSubtype() == Node::Page) {
 #if 0
                     n->doc().location().warning(tr("Page with title \"%1\" has no \\inmodule command; "
                                                    "using project name by default: %2")
                                                 .arg(n->title()).arg(Generator::defaultModuleName()));
 #endif
                 }
-                else if (n->subType() == Node::Example) {
+                else if (n->docSubtype() == Node::Example) {
 #if 0
                     n->doc().location().warning(tr("Example with title \"%1\" has no \\inmodule command; "
                                                    "using project name by default: %2")

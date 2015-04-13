@@ -1217,7 +1217,7 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, i
                                                 GLenum primitive)
 {
     // Now setup the pointer to the vertex array:
-    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)data);
+    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, data);
 
     int previousStop = 0;
     for (int i=0; i<stopCount; ++i) {

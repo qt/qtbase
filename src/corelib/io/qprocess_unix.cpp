@@ -299,18 +299,6 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
     if (environment.isEmpty())
         return 0;
 
-    // if LD_LIBRARY_PATH exists in the current environment, but
-    // not in the environment list passed by the programmer, then
-    // copy it over.
-#if defined(Q_OS_MAC)
-    static const char libraryPath[] = "DYLD_LIBRARY_PATH";
-#else
-    static const char libraryPath[] = "LD_LIBRARY_PATH";
-#endif
-    const QByteArray envLibraryPath = qgetenv(libraryPath);
-    bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
-
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
@@ -327,9 +315,6 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
         envp[(*envc)++] = ::strdup(key.constData());
     }
 
-    if (needToAddLibraryPath)
-        envp[(*envc)++] = ::strdup(QByteArray(QByteArray(libraryPath) + '=' +
-                                 envLibraryPath).constData());
     return envp;
 }
 
@@ -822,19 +807,6 @@ void QProcessPrivate::killProcess()
         ::kill(pid_t(pid), SIGKILL);
 }
 
-/*
-   Returns the difference between msecs and elapsed. If msecs is -1,
-   however, -1 is returned.
-*/
-static int qt_timeout_value(int msecs, int elapsed)
-{
-    if (msecs == -1)
-        return -1;
-
-    int timeout = msecs - elapsed;
-    return timeout < 0 ? 0 : timeout;
-}
-
 bool QProcessPrivate::waitForStarted(int msecs)
 {
     Q_Q(QProcess);
@@ -909,7 +881,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
-        int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
+        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
 #ifdef Q_OS_BLACKBERRY
         int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
 #else
@@ -990,7 +962,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
         if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
-        int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
+        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
 #ifdef Q_OS_BLACKBERRY
         int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
 #else
@@ -1065,7 +1037,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
         if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
-        int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
+        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
 #ifdef Q_OS_BLACKBERRY
         int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
 #else

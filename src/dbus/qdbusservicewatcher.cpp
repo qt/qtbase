@@ -33,7 +33,7 @@
 
 #include "qdbusservicewatcher.h"
 #include "qdbusconnection.h"
-#include "qdbus_symbols_p.h"
+#include "qdbusutil_p.h"
 
 #include <QStringList>
 
@@ -42,10 +42,6 @@
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
-
-Q_GLOBAL_STATIC_WITH_ARGS(QString, busService, (QLatin1String(DBUS_SERVICE_DBUS)))
-Q_GLOBAL_STATIC_WITH_ARGS(QString, busInterface, (QLatin1String(DBUS_INTERFACE_DBUS)))
-Q_GLOBAL_STATIC_WITH_ARGS(QString, signalName, (QLatin1String("NameOwnerChanged")))
 
 class QDBusServiceWatcherPrivate: public QObjectPrivate
 {
@@ -120,7 +116,7 @@ QStringList QDBusServiceWatcherPrivate::matchArgsForService(const QString &servi
 void QDBusServiceWatcherPrivate::addService(const QString &service)
 {
     QStringList matchArgs = matchArgsForService(service);
-    connection.connect(*busService(), QString(), *busInterface(), *signalName(),
+    connection.connect(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
                        matchArgs, QString(), q_func(),
                        SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
@@ -128,7 +124,7 @@ void QDBusServiceWatcherPrivate::addService(const QString &service)
 void QDBusServiceWatcherPrivate::removeService(const QString &service)
 {
     QStringList matchArgs = matchArgsForService(service);
-    connection.disconnect(*busService(), QString(), *busInterface(), *signalName(),
+    connection.disconnect(QDBusUtil::dbusService(), QString(), QDBusUtil::dbusInterface(), QDBusUtil::nameOwnerChanged(),
                           matchArgs, QString(), q_func(),
                           SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }

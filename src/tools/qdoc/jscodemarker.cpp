@@ -95,7 +95,7 @@ bool JsCodeMarker::recognizeLanguage(const QString &language)
 /*!
   Returns the type of atom used to represent JavaScript code in the documentation.
 */
-Atom::Type JsCodeMarker::atomType() const
+Atom::AtomType JsCodeMarker::atomType() const
 {
     return Atom::JavaScript;
 }

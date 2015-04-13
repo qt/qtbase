@@ -308,6 +308,7 @@ private slots:
 
     void shouldShowPlaceholderText_data();
     void shouldShowPlaceholderText();
+    void QTBUG1266_setInputMaskEmittingTextEdited();
 
 protected slots:
     void editingFinished();
@@ -4360,6 +4361,16 @@ void tst_QLineEdit::shouldShowPlaceholderText()
     QCOMPARE(priv->shouldShowPlaceholderText(), shouldShowPlaceholderText);
 #endif
 
+}
+
+void tst_QLineEdit::QTBUG1266_setInputMaskEmittingTextEdited()
+{
+    QLineEdit lineEdit;
+    lineEdit.setText("test");
+    QSignalSpy spy(&lineEdit, SIGNAL(textEdited(QString)));
+    lineEdit.setInputMask("AAAA");
+    lineEdit.setInputMask(QString());
+    QVERIFY(spy.count() == 0);
 }
 
 QTEST_MAIN(tst_QLineEdit)

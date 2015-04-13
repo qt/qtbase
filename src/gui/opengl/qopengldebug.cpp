@@ -1039,10 +1039,11 @@ bool QOpenGLDebugMessage::operator==(const QOpenGLDebugMessage &debugMessage) co
 */
 QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Source source)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QOpenGLDebugMessage::Source("
                     << qt_messageSourceToString(source)
-                    << ")";
-    return debug.space();
+                    << ')';
+    return debug;
 }
 
 /*!
@@ -1053,10 +1054,11 @@ QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Source source)
 */
 QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Type type)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QOpenGLDebugMessage::Type("
                     << qt_messageTypeToString(type)
-                    << ")";
-    return debug.space();
+                    << ')';
+    return debug;
 }
 
 /*!
@@ -1067,10 +1069,11 @@ QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Type type)
 */
 QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Severity severity)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QOpenGLDebugMessage::Severity("
                     << qt_messageSeverityToString(severity)
-                    << ")";
-    return debug.space();
+                    << ')';
+    return debug;
 }
 
 /*!
@@ -1081,13 +1084,14 @@ QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Severity severity)
 */
 QDebug operator<<(QDebug debug, const QOpenGLDebugMessage &message)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "QOpenGLDebugMessage("
                     << qt_messageSourceToString(message.source()) << ", "
                     << message.id() << ", "
                     << message.message() << ", "
                     << qt_messageSeverityToString(message.severity()) << ", "
-                    << qt_messageTypeToString(message.type()) << ")";
-    return debug.space();
+                    << qt_messageTypeToString(message.type()) << ')';
+    return debug;
 
 }
 #endif // QT_NO_DEBUG_STREAM

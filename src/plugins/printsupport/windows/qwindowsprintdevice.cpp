@@ -39,13 +39,11 @@
 #  define DC_COLLATE 22
 #endif
 
-#if defined (Q_CC_MINGW)
-# pragma GCC diagnostic ignored "-Wsign-compare"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
+
+QT_WARNING_DISABLE_GCC("-Wsign-compare")
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
@@ -248,8 +246,20 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
     if (GetPrinter(m_hPrinter, 2, buffer.data(), needed, &needed)) {
         PPRINTER_INFO_2 info = reinterpret_cast<PPRINTER_INFO_2>(buffer.data());
         DEVMODE *devMode = info->pDevMode;
-        if (!devMode)
-            return margins;
+        bool separateDevMode = false;
+        if (!devMode) {
+            // GetPrinter() didn't include the DEVMODE. Get it a different way.
+            LONG result = DocumentProperties(NULL, m_hPrinter, (LPWSTR)m_id.utf16(),
+                                             NULL, NULL, 0);
+            devMode = (DEVMODE *)malloc(result);
+            separateDevMode = true;
+            result = DocumentProperties(NULL, m_hPrinter, (LPWSTR)m_id.utf16(),
+                                        devMode, NULL, DM_OUT_BUFFER);
+            if (result != IDOK) {
+                free(devMode);
+                return margins;
+            }
+        }
 
         HDC pDC = CreateDC(NULL, (LPWSTR)m_id.utf16(), NULL, devMode);
         if (pageSize.id() == QPageSize::Custom || pageSize.windowsId() <= 0 || pageSize.windowsId() > DMPAPER_LAST) {
@@ -275,6 +285,8 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
         const qreal rightMargin = physicalWidth - leftMargin - printableWidth;
         const qreal bottomMargin = physicalHeight - topMargin - printableHeight;
         margins = QMarginsF(leftMargin, topMargin, rightMargin, bottomMargin);
+        if (separateDevMode)
+            free(devMode);
         DeleteDC(pDC);
     }
     return margins;

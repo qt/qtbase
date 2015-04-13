@@ -40,7 +40,7 @@
     \li \l {a-command} {\\a}
     \li \l {abstract-command} {\\abstract}
     \li \l {annotatedlist-command} {\\annotatedlist}
-    \li \l {b-command} {\\b} \span {class="newStuff"}
+    \li \l {b-command} {\\b}
     \li \l {b-command} {\\bold} \span {class="newStuff"} {(deprecated, use \\b)}
     \li \l {brief-command} {\\brief}
     \li \l {c-command} {\\c}
@@ -52,10 +52,9 @@
     \li \l {compat-command} {\\compat}
     \li \l {contentspage-command} {\\contentspage}
     \li \l {default-command} {\\default}
-    \li \l {ditamap-command} {\\ditamap} \span {class="newStuff"}
     \li \l {div-command} {\\div}
     \li \l {dots-command} {\\dots}
-    \li \l {e-command} {\\e} \span {class="newStuff"}
+    \li \l {e-command} {\\e}
     \li \l {else-command} {\\else}
     \li \l {endif-command} {\\endif}
     \li \l {enum-command} {\\enum}
@@ -77,16 +76,14 @@
     \li \l {inlineimage-command} {\\inlineimage}
     \li \l {inmodule-command} {\\inmodule}
     \li \l {inqmlmodule-command} {\\inqmlmodule}
-    \li \l {instantiates-command} {\\instantiates} \span {class="newStuff"} {(new 27/7/2012)}
+    \li \l {instantiates-command} {\\instantiates}
     \li \l {internal-command} {\\internal}
     \li \l {keyword-command} {\\keyword}
     \li \l {l-command} {\\l}
     \li \l {legalese-command} {\\legalese}
-    \li \l {li-command} {\\li} \span {class="newStuff"}
+    \li \l {li-command} {\\li}
     \li \l {list-command} {\\list}
     \li \l {macro-command} {\\macro}
-    \li \l {mainclass-command} {\\mainclass}
-    \li \l {mapref-command} {\\mapref} \span {class="newStuff"}
     \li \l {meta-command} {\\meta}
     \li \l {module-command} {\\module}
     \li \l {namespace-command} {\\namespace}
@@ -113,7 +110,7 @@
     \li \l {qmlattachedsignal-command} {\\qmlattachedsignal}
     \li \l {qmlbasictype-command} {\\qmlbasictype}
     \li \l {qmlclass-command} {\\qmlclass} \span {class="newStuff"} {(deprecated, use \\qmltype)}
-    \li \l {qmltype-command} {\\qmltype}  \span {class="newStuff"}
+    \li \l {qmltype-command} {\\qmltype}
     \li \l {qmlmethod-command} {\\qmlmethod}
     \li \l {qmlproperty-command} {\\qmlproperty}
     \li \l {qmlsignal-command} {\\qmlsignal}
@@ -121,7 +118,7 @@
     \li \l {quotation-command} {\\quotation}
     \li \l {quotefile-command} {\\quotefile}
     \li \l {quotefromfile-command} {\\quotefromfile}
-    \li \l {raw-command} {\\raw} \span {class="newStuff"} {(avoid)}
+    \li \l {raw-command} {\\raw}
     \li \l {reentrant-command} {\\reentrant}
     \li \l {reimp-command} {\\reimp}
     \li \l {relates-command} {\\relates}
@@ -131,7 +128,6 @@
     \li \l {sectionTwo-command} {\\section2}
     \li \l {sectionThree-command} {\\section3}
     \li \l {sectionFour-command} {\\section4}
-    \li \l {service-command} {\\service}
     \li \l {since-command} {\\since}
     \li \l {skipline-command} {\\skipline}
     \li \l {skipto-command} {\\skipto}
@@ -147,7 +143,6 @@
     \li \l {target-command} {\\target}
     \li \l {threadsafe-command} {\\threadsafe}
     \li \l {title-command} {\\title}
-    \li \l {topicref-command} {\\topicref} \span {class="newStuff"}
     \li \l {tt-command} {\\tt}
     \li \l {typedef-command} {\\typedef}
     \li \l {uicontrol-command} {\\uicontrol}

@@ -57,6 +57,9 @@ public slots:
     void dialogResult(int buttonID);
 
 private:
+    void addButtons(QSharedPointer<QMessageDialogOptions> opt, ButtonRole role);
+
+private:
     int m_buttonId;
     QEventLoop m_loop;
     QJNIObjectPrivate m_javaMessageDialog;

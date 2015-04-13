@@ -208,6 +208,9 @@ public:
     QSize tabBarSizeHint() const;
 
     QSet<QTabBar*> usedTabBars() const;
+
+    int tabIndexToListIndex(int) const;
+    void moveTab(int from, int to);
 #endif // QT_NO_TABBAR
 };
 

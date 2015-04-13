@@ -749,7 +749,8 @@ void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_eve
             m_xClipboard[mode]->reset();
         }
         emitChanged(mode);
-    } else if (event->subtype == XCB_XFIXES_SELECTION_EVENT_SELECTION_CLIENT_CLOSE)
+    } else if (event->subtype == XCB_XFIXES_SELECTION_EVENT_SELECTION_CLIENT_CLOSE ||
+               event->subtype == XCB_XFIXES_SELECTION_EVENT_SELECTION_WINDOW_DESTROY)
         emitChanged(mode);
 }
 

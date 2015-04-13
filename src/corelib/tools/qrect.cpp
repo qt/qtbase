@@ -33,8 +33,9 @@
 
 #include "qrect.h"
 #include "qdatastream.h"
-#include "qdebug.h"
 #include "qmath.h"
+
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1279,8 +1280,10 @@ QDataStream &operator>>(QDataStream &s, QRect &r)
 QDebug operator<<(QDebug dbg, const QRect &r)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRect(" << r.x() << ',' << r.y() << ' '
-                  << r.width() << 'x' << r.height() << ')';
+    dbg.nospace();
+    dbg << "QRect" << '(';
+    QtDebugUtils::formatQRect(dbg, r);
+    dbg << ')';
     return dbg;
 }
 #endif
@@ -2488,8 +2491,10 @@ QDataStream &operator>>(QDataStream &s, QRectF &r)
 QDebug operator<<(QDebug dbg, const QRectF &r)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRectF(" << r.x() << ',' << r.y() << ' '
-                  << r.width() << 'x' << r.height() << ')';
+    dbg.nospace();
+    dbg << "QRectF" << '(';
+    QtDebugUtils::formatQRect(dbg, r);
+    dbg << ')';
     return dbg;
 }
 #endif

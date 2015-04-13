@@ -2449,6 +2449,8 @@ const VCFilter &VCProjectSingleConfig::filterByName(const QString &name) const
         return ResourceFiles;
     if (name == "Deployment Files")
         return DeploymentFiles;
+    if (name == "Distribution Files")
+        return DistributionFiles;
     return filterForExtraCompiler(name);
 }
 
@@ -2531,6 +2533,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, "Form Files");
     outputFilter(tempProj, xml, "Resource Files");
     outputFilter(tempProj, xml, "Deployment Files");
+    outputFilter(tempProj, xml, "Distribution Files");
 
     QSet<QString> extraCompilersInProject;
     for (int i = 0; i < tool.ExtraCompilersFiles.count(); ++i) {
@@ -2584,6 +2587,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, "Form Files");
     outputFilter(tool, xml, "Resource Files");
     outputFilter(tool, xml, "Deployment Files");
+    outputFilter(tool, xml, "Distribution Files");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
         outputFilter(tool, xml, tool.ExtraCompilers.at(x));
     }

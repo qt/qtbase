@@ -76,6 +76,13 @@ struct Movable {
         return i == other.i;
     }
 
+    bool operator<(const Movable &other) const
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        return i < other.i;
+    }
+
     Movable &operator=(const Movable &other)
     {
         check(state, Constructed);
@@ -142,6 +149,13 @@ struct Optimal
         check(state, Constructed);
         check(other.state, Constructed);
         return i == other.i;
+    }
+
+    bool operator<(const Optimal &other) const
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        return i < other.i;
     }
 
     Optimal &operator=(const Optimal &other)
@@ -218,6 +232,12 @@ struct Complex
     {
         check(); other.check();
         return value == other.value;
+    }
+
+    bool operator<(Complex const &other) const
+    {
+        check(); other.check();
+        return value < other.value;
     }
 
     void check() const
@@ -329,6 +349,9 @@ private slots:
     void replaceOptimal() const;
     void replaceMovable() const;
     void replaceComplex() const;
+    void reverseIteratorsOptimal() const;
+    void reverseIteratorsMovable() const;
+    void reverseIteratorsComplex() const;
     void startsWithOptimal() const;
     void startsWithMovable() const;
     void startsWithComplex() const;
@@ -396,6 +419,7 @@ private:
     template<typename T> void removeAt() const;
     template<typename T> void removeOne() const;
     template<typename T> void replace() const;
+    template<typename T> void reverseIterators() const;
     template<typename T> void startsWith() const;
     template<typename T> void swap() const;
     template<typename T> void takeAt() const;
@@ -1220,6 +1244,43 @@ void tst_QList::replaceComplex() const
 }
 
 template<typename T>
+void tst_QList::reverseIterators() const
+{
+    QList<T> v;
+    v << T_CAT << T_DOG << T_BLAH << T_BAZ;
+    QList<T> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QList<T> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
+}
+
+void tst_QList::reverseIteratorsOptimal() const
+{
+    const int liveCount = Optimal::getLiveCount();
+    reverseIterators<Optimal>();
+    QCOMPARE(liveCount, Optimal::getLiveCount());
+}
+
+void tst_QList::reverseIteratorsMovable() const
+{
+    const int liveCount = Movable::getLiveCount();
+    reverseIterators<Movable>();
+    QCOMPARE(liveCount, Movable::getLiveCount());
+}
+
+void tst_QList::reverseIteratorsComplex() const
+{
+    const int liveCount = Complex::getLiveCount();
+    reverseIterators<Complex>();
+    QCOMPARE(liveCount, Complex::getLiveCount());
+}
+
+template<typename T>
 void tst_QList::startsWith() const
 {
     QList<T> list;
@@ -1576,6 +1637,19 @@ void tst_QList::testOperators() const
     // []
     QCOMPARE(list[0], T_FOO);
     QCOMPARE(list[list.size() - 1], T_CAT);
+
+    // <, >, <=, >=
+    QVERIFY(!(list <  listtwo));
+    QVERIFY(!(list >  listtwo));
+    QVERIFY(  list <= listtwo);
+    QVERIFY(  list >= listtwo);
+    listtwo.push_back(T_CAT);
+    QVERIFY(  list <  listtwo);
+    QVERIFY(!(list >  listtwo));
+    QVERIFY(  list <= listtwo);
+    QVERIFY(!(list >= listtwo));
+    QVERIFY(listtwo >  list);
+    QVERIFY(listtwo >= list);
 }
 
 void tst_QList::testOperatorsOptimal() const

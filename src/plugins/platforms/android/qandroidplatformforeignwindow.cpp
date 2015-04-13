@@ -106,7 +106,6 @@ void QAndroidPlatformForeignWindow::setVisible(bool visible)
 void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState state)
 {
     if (state <= Qt::ApplicationHidden
-            && QtAndroid::blockEventLoopsWhenSuspended()
             && m_surfaceId != -1) {
         QtAndroid::destroySurface(m_surfaceId);
         m_surfaceId = -1;

@@ -53,6 +53,7 @@
 #include <qmath.h>
 #include <qmetaobject.h>
 #include <qabstractproxymodel.h>
+#include <qstylehints.h>
 #include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
@@ -93,10 +94,20 @@ QComboBoxPrivate::QComboBoxPrivate()
       hoverControl(QStyle::SC_None),
       autoCompletionCaseSensitivity(Qt::CaseInsensitive),
       indexBeforeChange(-1)
+#ifdef Q_OS_MAC
+      , m_platformMenu(0)
+#endif
 #ifndef QT_NO_COMPLETER
       , completer(0)
 #endif
 {
+}
+
+QComboBoxPrivate::~QComboBoxPrivate()
+{
+#ifdef Q_OS_MAC
+    cleanupNativePopup();
+#endif
 }
 
 QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewItem &option,
@@ -215,6 +226,7 @@ void QComboBoxPrivate::_q_modelReset()
     }
     if (currentIndex.row() != indexBeforeChange)
         _q_emitCurrentIndexChanged(currentIndex);
+    modelChanged();
     q->update();
 }
 
@@ -2078,8 +2090,11 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
         const QString newText = itemText(normalized);
-        if (lineEdit->text() != newText)
+        if (lineEdit->text() != newText) {
             lineEdit->setText(newText);
+            if (lineEdit->completer())
+                lineEdit->completer()->setCompletionPrefix(newText);
+        }
         updateLineEditGeometry();
     }
     if (indexChanged) {
@@ -2398,7 +2413,7 @@ QSize QComboBox::sizeHint() const
     return d->recomputeSizeHint(d->sizeHint);
 }
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
 
 namespace {
 struct IndexSetter {
@@ -2407,6 +2422,19 @@ struct IndexSetter {
 
     void operator()(void) { cb->setCurrentIndex(index); }
 };
+}
+
+void QComboBoxPrivate::cleanupNativePopup()
+{
+    if (!m_platformMenu)
+        return;
+
+    int count = int(m_platformMenu->tag());
+    for (int i = 0; i < count; ++i)
+        m_platformMenu->menuItemAt(i)->deleteLater();
+
+    delete m_platformMenu;
+    m_platformMenu = 0;
 }
 
 /*!
@@ -2419,60 +2447,62 @@ bool QComboBoxPrivate::showNativePopup()
 {
     Q_Q(QComboBox);
 
+    cleanupNativePopup();
+
     QPlatformTheme *theme = QGuiApplicationPrivate::instance()->platformTheme();
-    if (QPlatformMenu *menu = theme->createPlatformMenu()) {
-        int itemsCount = q->count();
+    m_platformMenu = theme->createPlatformMenu();
+    if (!m_platformMenu)
+        return false;
 
-        QList<QPlatformMenuItem *> items;
-        items.reserve(itemsCount);
-        QPlatformMenuItem *currentItem = 0;
-        int currentIndex = q->currentIndex();
+    int itemsCount = q->count();
+    m_platformMenu->setTag(quintptr(itemsCount));
 
-        for (int i = 0; i < itemsCount; ++i) {
-            QPlatformMenuItem *item = theme->createPlatformMenuItem();
-            QModelIndex rowIndex = model->index(i, modelColumn, root);
-            QVariant textVariant = model->data(rowIndex, Qt::EditRole);
-            item->setText(textVariant.toString());
-            QVariant iconVariant = model->data(rowIndex, Qt::DecorationRole);
-            if (iconVariant.canConvert<QIcon>())
-                item->setIcon(iconVariant.value<QIcon>());
-            item->setCheckable(true);
-            item->setChecked(i == currentIndex);
-            if (!currentItem || i == currentIndex)
-                currentItem = item;
+    QPlatformMenuItem *currentItem = 0;
+    int currentIndex = q->currentIndex();
 
-            IndexSetter setter = { i, q };
-            QObject::connect(item, &QPlatformMenuItem::activated, setter);
+    for (int i = 0; i < itemsCount; ++i) {
+        QPlatformMenuItem *item = theme->createPlatformMenuItem();
+        QModelIndex rowIndex = model->index(i, modelColumn, root);
+        QVariant textVariant = model->data(rowIndex, Qt::EditRole);
+        item->setText(textVariant.toString());
+        QVariant iconVariant = model->data(rowIndex, Qt::DecorationRole);
+        if (iconVariant.canConvert<QIcon>())
+            item->setIcon(iconVariant.value<QIcon>());
+        item->setCheckable(true);
+        item->setChecked(i == currentIndex);
+        if (!currentItem || i == currentIndex)
+            currentItem = item;
 
-            menu->insertMenuItem(item, 0);
-            menu->syncMenuItem(item);
-        }
+        IndexSetter setter = { i, q };
+        QObject::connect(item, &QPlatformMenuItem::activated, setter);
 
-        QWindow *tlw = q->window()->windowHandle();
-        menu->setFont(q->font());
-        menu->setMinimumWidth(q->rect().width());
-        QPoint offset = QPoint(0, 7);
-        if (q->testAttribute(Qt::WA_MacSmallSize))
-            offset = QPoint(-1, 7);
-        else if (q->testAttribute(Qt::WA_MacMiniSize))
-            offset = QPoint(-2, 6);
-        menu->showPopup(tlw, QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize()), currentItem);
-        menu->deleteLater();
-        Q_FOREACH (QPlatformMenuItem *item, items)
-            item->deleteLater();
-
-        // The Cocoa popup will swallow any mouse release event.
-        // We need to fake one here to un-press the button.
-        QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,
-                                  Qt::MouseButtons(Qt::LeftButton), Qt::KeyboardModifiers());
-        qApp->sendEvent(q, &mouseReleased);
-
-        return true;
+        m_platformMenu->insertMenuItem(item, 0);
+        m_platformMenu->syncMenuItem(item);
     }
 
-    return false;
+    QWindow *tlw = q->window()->windowHandle();
+    m_platformMenu->setFont(q->font());
+    m_platformMenu->setMinimumWidth(q->rect().width());
+    QPoint offset = QPoint(0, 7);
+    if (q->testAttribute(Qt::WA_MacSmallSize))
+        offset = QPoint(-1, 7);
+    else if (q->testAttribute(Qt::WA_MacMiniSize))
+        offset = QPoint(-2, 6);
+
+    m_platformMenu->showPopup(tlw, QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize()), currentItem);
+
+#ifdef Q_OS_OSX
+    // The Cocoa popup will swallow any mouse release event.
+    // We need to fake one here to un-press the button.
+    QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,
+                              Qt::MouseButtons(Qt::LeftButton), Qt::KeyboardModifiers());
+    qApp->sendEvent(q, &mouseReleased);
+#endif
+
+    return true;
 }
-#endif // Q_OS_OSX
+
+#endif // Q_OS_MAC
 
 /*!
     Displays the list of items in the combobox. If the list is empty
@@ -2494,7 +2524,7 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
     if (usePopup
         && (!d->container
             || (view()->metaObject()->className() == QByteArray("QComboBoxListView")
@@ -2502,7 +2532,7 @@ void QComboBox::showPopup()
         && style->styleHint(QStyle::SH_ComboBox_UseNativePopup, &opt, this)
         && d->showNativePopup())
         return;
-#endif // Q_OS_OSX
+#endif // Q_OS_MAC
 
 #ifdef QT_KEYPAD_NAVIGATION
 #ifndef QT_NO_COMPLETER
@@ -2989,39 +3019,51 @@ bool QComboBox::event(QEvent *event)
 void QComboBox::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QComboBox);
+    if (!QGuiApplication::styleHints()->setFocusOnTouchRelease())
+        d->showPopupFromMouseEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
+{
+    Q_Q(QComboBox);
     QStyleOptionComboBox opt;
-    initStyleOption(&opt);
-    QStyle::SubControl sc = style()->hitTestComplexControl(QStyle::CC_ComboBox, &opt, e->pos(),
-                                                           this);
-    if (e->button() == Qt::LeftButton && (sc == QStyle::SC_ComboBoxArrow || !isEditable())
-        && !d->viewContainer()->isVisible()) {
+    q->initStyleOption(&opt);
+    QStyle::SubControl sc = q->style()->hitTestComplexControl(QStyle::CC_ComboBox, &opt, e->pos(), q);
+
+    if (e->button() == Qt::LeftButton
+            && sc != QStyle::SC_None
+            && (sc == QStyle::SC_ComboBoxArrow || !q->isEditable())
+            && !viewContainer()->isVisible()) {
         if (sc == QStyle::SC_ComboBoxArrow)
-            d->updateArrow(QStyle::State_Sunken);
+            updateArrow(QStyle::State_Sunken);
 #ifdef QT_KEYPAD_NAVIGATION
         //if the container already exists, then d->viewContainer() is safe to call
-        if (d->container) {
+        if (container) {
 #endif
             // We've restricted the next couple of lines, because by not calling
             // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
-            d->viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
-            d->viewContainer()->initialClickPosition = mapToGlobal(e->pos());
+            viewContainer()->blockMouseReleaseTimer.start(QApplication::doubleClickInterval());
+            viewContainer()->initialClickPosition = q->mapToGlobal(e->pos());
 #ifdef QT_KEYPAD_NAVIGATION
         }
 #endif
-        showPopup();
+        q->showPopup();
         // The code below ensures that regular mousepress and pick item still works
         // If it was not called the viewContainer would ignore event since it didn't have
         // a mousePressEvent first.
-        if (d->viewContainer())
-            d->viewContainer()->maybeIgnoreMouseButtonRelease = false;
+        if (viewContainer())
+            viewContainer()->maybeIgnoreMouseButtonRelease = false;
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && d->lineEdit) {
-            d->lineEdit->event(e);  //so lineedit can move cursor, etc
+        if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {
+            lineEdit->event(e);  //so lineedit can move cursor, etc
             return;
         }
 #endif
-        QWidget::mousePressEvent(e);
+        e->ignore();
     }
 }
 
@@ -3031,8 +3073,9 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
 void QComboBox::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QComboBox);
-    Q_UNUSED(e);
     d->updateArrow(QStyle::State_None);
+    if (QGuiApplication::styleHints()->setFocusOnTouchRelease() && hasFocus())
+        d->showPopupFromMouseEvent(e);
 }
 
 /*!

@@ -123,6 +123,13 @@ struct Custom {
         return i == other.i;
     }
 
+    bool operator<(const Custom &other) const
+    {
+        check(&other);
+        check(this);
+        return i < other.i;
+    }
+
     Custom &operator=(const Custom &other)
     {
         check(&other);
@@ -241,6 +248,7 @@ private slots:
     void resizeComplex_data() const;
     void resizeComplex() const;
     void resizeCtorAndDtor() const;
+    void reverseIterators() const;
     void sizeInt() const;
     void sizeMovable() const;
     void sizeCustom() const;
@@ -1907,6 +1915,21 @@ void tst_QVector::resizeCtorAndDtor() const
     QCOMPARE(Custom::counter.loadAcquire(), items);
 }
 
+void tst_QVector::reverseIterators() const
+{
+    QVector<int> v;
+    v << 1 << 2 << 3 << 4;
+    QVector<int> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QVector<int> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
+}
+
 template<typename T>
 void tst_QVector::size() const
 {
@@ -2075,6 +2098,19 @@ void tst_QVector::testOperators() const
 
     // ==
     QVERIFY(myvec == combined);
+
+    // <, >, <=, >=
+    QVERIFY(!(myvec <  combined));
+    QVERIFY(!(myvec >  combined));
+    QVERIFY(  myvec <= combined);
+    QVERIFY(  myvec >= combined);
+    combined.push_back("G");
+    QVERIFY(  myvec <  combined);
+    QVERIFY(!(myvec >  combined));
+    QVERIFY(  myvec <= combined);
+    QVERIFY(!(myvec >= combined));
+    QVERIFY(combined >  myvec);
+    QVERIFY(combined >= myvec);
 
     // []
     QCOMPARE(myvec[0], QLatin1String("A"));

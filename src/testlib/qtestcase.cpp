@@ -59,6 +59,9 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/cycle_p.h>
 #include <QtTest/private/qtestblacklist_p.h>
+#if defined(HAVE_XCTEST)
+#include <QtTest/private/qxctestlogger_p.h>
+#endif
 
 #include <numeric>
 #include <algorithm>
@@ -1530,6 +1533,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
     QTestLog::LogMode logFormat = QTestLog::Plain;
     const char *logFilename = 0;
 
+#if defined(Q_OS_MAC) && defined(HAVE_XCTEST)
+    if (QXcodeTestLogger::canLogTestProgress())
+        logFormat = QTestLog::XCTest;
+#endif
+
     const char *testOptions =
          " New-style logging options:\n"
          " -o filename,format  : Output results to file in the specified format\n"
@@ -1782,9 +1790,13 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#ifdef Q_OS_WINRT
+#if defined(Q_OS_WINRT)
         } else if (strncmp(argv[i], "-ServerName:", 12) == 0 ||
                    strncmp(argv[i], "-qdevel", 7) == 0) {
+            continue;
+#elif defined(Q_OS_MAC) && defined(HAVE_XCTEST)
+        } else if (int skip = QXcodeTestLogger::parseCommandLineArgument(argv[i])) {
+            i += (skip - 1); // Eating argv[i] with a continue counts towards skips
             continue;
 #endif
         } else if (argv[i][0] == '-') {

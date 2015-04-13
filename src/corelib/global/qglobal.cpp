@@ -205,7 +205,7 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 
     The Q_DECLARE_FLAGS() macro does not expose the flags to the meta-object
     system, so they cannot be used by Qt Script or edited in Qt Designer.
-    To make the flags available for these purposes, the Q_FLAGS() macro must
+    To make the flags available for these purposes, the Q_FLAG() macro must
     be used:
 
     \snippet code/src_corelib_global_qglobal.cpp meta-object flags
@@ -2991,7 +2991,7 @@ QString qt_error_string(int errorCode)
         // Retrieve the system error message for the last-error code.
 #  ifndef Q_OS_WINRT
         wchar_t *string = 0;
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
                       NULL,
                       errorCode,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -3130,11 +3130,14 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
         return 0;
     }
 #endif
-    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, ok);
+    bool ok_ = true;
+    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, &ok_);
     if (int(value) != value) { // this is the check in QByteArray::toInt(), keep it in sync
         if (ok)
             *ok = false;
         return 0;
+    } else if (ok) {
+        *ok = ok_;
     }
     return int(value);
 }

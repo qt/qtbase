@@ -97,6 +97,8 @@ private slots:
 
     void tst_resize_count();
     void tst_move_count();
+
+    void tst_eventfilter_on_toplevel();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -760,6 +762,49 @@ void tst_QWidget_window::tst_move_count()
 
     move.move(220,250);
     QTRY_VERIFY(move.moveCount >= 1);
+}
+
+class EventFilter : public QObject
+{
+public:
+    int eventCount;
+
+    EventFilter()
+        : QObject(),
+          eventCount(0)
+    {
+    }
+
+    static QEvent::Type filterEventType()
+    {
+        static int type = QEvent::registerEventType();
+        return static_cast<QEvent::Type>(type);
+    }
+
+protected:
+    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE
+    {
+        if (e->type() == filterEventType())
+            ++eventCount;
+
+        return QObject::eventFilter(o, e);
+    }
+};
+
+void tst_QWidget_window::tst_eventfilter_on_toplevel()
+{
+    QWidget w;
+    EventFilter filter;
+    w.installEventFilter(&filter);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(w.isWindow());
+    QCOMPARE(filter.eventCount, 0);
+
+    // send an event not handled in a special way by QWidgetWindow::event,
+    // and check that it's received by the event filter
+    QCoreApplication::postEvent(w.windowHandle(), new QEvent(EventFilter::filterEventType()));
+    QTRY_COMPARE(filter.eventCount, 1);
 }
 
 QTEST_MAIN(tst_QWidget_window)

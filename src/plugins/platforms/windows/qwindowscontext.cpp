@@ -225,8 +225,10 @@ bool QWindowsUser32DLL::initTouch()
 
 QWindowsShell32DLL::QWindowsShell32DLL()
     : sHCreateItemFromParsingName(0)
+    , sHGetKnownFolderIDList(0)
     , sHGetStockIconInfo(0)
     , sHGetImageList(0)
+    , sHCreateItemFromIDList(0)
 {
 }
 
@@ -234,8 +236,10 @@ void QWindowsShell32DLL::init()
 {
     QSystemLibrary library(QStringLiteral("shell32"));
     sHCreateItemFromParsingName = (SHCreateItemFromParsingName)(library.resolve("SHCreateItemFromParsingName"));
+    sHGetKnownFolderIDList = (SHGetKnownFolderIDList)(library.resolve("SHGetKnownFolderIDList"));
     sHGetStockIconInfo = (SHGetStockIconInfo)library.resolve("SHGetStockIconInfo");
     sHGetImageList = (SHGetImageList)library.resolve("SHGetImageList");
+    sHCreateItemFromIDList = (SHCreateItemFromIDList)library.resolve("SHCreateItemFromIDList");
 }
 
 QWindowsShcoreDLL::QWindowsShcoreDLL()
@@ -1032,6 +1036,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             QWindowsWindow::baseWindowOf(platformWindow->window())->applyCursor();
             return true;
         }
+#endif
+    case QtWindows::ScrollEvent:
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
+#else
+        return d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
 #endif
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
   \also Text
 */
 
-/*! \enum Atom::Type
+/*! \enum Atom::AtomType
 
   \value AbstractLeft
   \value AbstractRight
@@ -237,27 +237,27 @@ static const struct {
     { 0, 0 }
 };
 
-/*! \fn Atom::Atom(Type type, const QString& string)
+/*! \fn Atom::Atom(AtomType type, const QString& string)
 
   Constructs an atom of the specified \a type with the single
   parameter \a string and does not put the new atom in a list.
 */
 
-/*! \fn Atom::Atom(Type type, const QString& p1, const QString& p2)
+/*! \fn Atom::Atom(AtomType type, const QString& p1, const QString& p2)
 
   Constructs an atom of the specified \a type with the two
   parameters \a p1 and \a p2 and does not put the new atom
   in a list.
 */
 
-/*! \fn Atom(Atom *previous, Type type, const QString& string)
+/*! \fn Atom(Atom *previous, AtomType type, const QString& string)
 
   Constructs an atom of the specified \a type with the single
   parameter \a string and inserts the new atom into the list
   after the \a previous atom.
 */
 
-/*! \fn Atom::Atom(Atom* previous, Type type, const QString& p1, const QString& p2)
+/*! \fn Atom::Atom(Atom* previous, AtomType type, const QString& p1, const QString& p2)
 
   Constructs an atom of the specified \a type with the two
   parameters \a p1 and \a p2 and inserts the new atom into
@@ -289,19 +289,19 @@ static const struct {
 */
 
 /*!
-  Return the next Atom in the list if it is of Type \a t.
+  Return the next Atom in the list if it is of AtomType \a t.
   Otherwise return 0.
  */
-const Atom* Atom::next(Type t) const
+const Atom* Atom::next(AtomType t) const
 {
     return (next_ && (next_->type() == t)) ? next_ : 0;
 }
 
 /*!
-  Return the next Atom in the list if it is of Type \a t
+  Return the next Atom in the list if it is of AtomType \a t
   and its string part is \a s. Otherwise return 0.
  */
-const Atom* Atom::next(Type t, const QString& s) const
+const Atom* Atom::next(AtomType t, const QString& s) const
 {
     return (next_ && (next_->type() == t) && (next_->string() == s)) ? next_ : 0;
 }
@@ -311,7 +311,7 @@ const Atom* Atom::next(Type t, const QString& s) const
   \also type(), string()
 */
 
-/*! \fn Type Atom::type() const
+/*! \fn AtomType Atom::type() const
   Return the type of this atom.
   \also string(), next()
 */

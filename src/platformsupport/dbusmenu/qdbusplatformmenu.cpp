@@ -43,6 +43,7 @@ Q_LOGGING_CATEGORY(qLcMenu, "qt.qpa.menu")
 static int nextDBusID = 1;
 QHash<int, QDBusPlatformMenu *> menusByID;
 QHash<int, QDBusPlatformMenuItem *> menuItemsByID;
+QList<QDBusPlatformMenu *> QDBusPlatformMenu::m_topLevelMenus;
 
 QDBusPlatformMenuItem::QDBusPlatformMenuItem(quintptr tag)
     : m_tag(tag ? tag : reinterpret_cast<quintptr>(this)) // QMenu will overwrite this later
@@ -144,6 +145,8 @@ QDBusPlatformMenu::QDBusPlatformMenu(quintptr tag)
     , m_revision(0)
 {
     menusByID.insert(m_dbusID, this);
+    // Assume it's top-level until we find out otherwise
+    m_topLevelMenus << this;
 }
 
 QDBusPlatformMenu::~QDBusPlatformMenu()
@@ -162,6 +165,9 @@ void QDBusPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMen
     else
         m_items.insert(idx, item);
     m_itemsByTag.insert(item->tag(), item);
+    // If a menu is found as a submenu under an item, we know that it's not a top-level menu.
+    if (item->menu())
+        m_topLevelMenus.removeOne(const_cast<QDBusPlatformMenu *>(static_cast<const QDBusPlatformMenu *>(item->menu())));
 }
 
 void QDBusPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
@@ -186,12 +192,6 @@ void QDBusPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 QDBusPlatformMenu *QDBusPlatformMenu::byId(int id)
 {
     return menusByID[id];
-}
-
-QList<QDBusPlatformMenu *> QDBusPlatformMenu::topLevelMenus()
-{
-    // TODO just the top-level menus, not all menus
-    return menusByID.values();
 }
 
 void QDBusPlatformMenu::emitUpdated()

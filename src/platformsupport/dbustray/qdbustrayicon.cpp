@@ -115,12 +115,6 @@ void QDBusTrayIcon::cleanup()
     m_registered = false;
 }
 
-void QDBusTrayIcon::activate(int x, int y)
-{
-    qCDebug(qLcTray) << x << y;
-    setStatus(QStringLiteral("Active"));
-}
-
 void QDBusTrayIcon::attentionTimerExpired()
 {
     m_messageTitle = QString();
@@ -191,9 +185,10 @@ void QDBusTrayIcon::updateToolTip(const QString &tooltip)
 QPlatformMenu *QDBusTrayIcon::createMenu() const
 {
     qCDebug(qLcTray);
+    QDBusPlatformMenu *ret = new QDBusPlatformMenu();
     if (!m_menu)
-        const_cast<QDBusTrayIcon *>(this)->m_menu = new QDBusPlatformMenu();
-    return m_menu;
+        const_cast<QDBusTrayIcon *>(this)->m_menu = ret;
+    return ret;
 }
 
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
@@ -210,11 +205,6 @@ void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
     }
     m_menu->emitUpdated();
-}
-
-void QDBusTrayIcon::contextMenu(int x, int y)
-{
-    qCDebug(qLcTray) << x << y;
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,

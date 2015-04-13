@@ -910,6 +910,9 @@
 #    undef Q_COMPILER_UNICODE_STRINGS
 #    undef Q_COMPILER_NOEXCEPT
 #  endif
+#  if defined(_HAS_DINKUM_CLIB) && !defined(_HAS_NULLPTR_T)
+#    undef Q_COMPILER_NULLPTR
+#  endif
 #  if defined(_HAS_DINKUM_CLIB) && !defined(_HAS_CONSTEXPR)
 // The libcpp is missing constexpr keywords on important functions like std::numeric_limits<>::min()
 // Disable constexpr support on QNX even if the compiler supports it

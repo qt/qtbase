@@ -490,6 +490,13 @@ void QWindow::setVisible(bool visible)
             }
             if (!app_priv->forcedWindowIcon.isNull())
                 setIcon(app_priv->forcedWindowIcon);
+
+            // Handling of the -qwindowgeometry, -geometry command line arguments
+            static bool geometryApplied = false;
+            if (!geometryApplied) {
+                geometryApplied = true;
+                QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(this);
+            }
         }
 
         QShowEvent showEvent;
@@ -1503,10 +1510,10 @@ void QWindow::setFramePosition(const QPoint &point)
 {
     Q_D(QWindow);
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
+    d->positionAutomatic = false;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(qHighDpiToDevicePixels(QRect(point, size()), this));
     } else {
-        d->positionAutomatic = false;
         d->geometry.moveTopLeft(point);
     }
 }

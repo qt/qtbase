@@ -33,7 +33,8 @@
 
 #include "qsize.h"
 #include "qdatastream.h"
-#include "qdebug.h"
+
+#include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -440,7 +441,10 @@ QDataStream &operator>>(QDataStream &s, QSize &sz)
 QDebug operator<<(QDebug dbg, const QSize &s)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QSize(" << s.width() << ", " << s.height() << ')';
+    dbg.nospace();
+    dbg << "QSize(";
+    QtDebugUtils::formatQSize(dbg, s);
+    dbg << ')';
     return dbg;
 }
 #endif
@@ -867,7 +871,10 @@ QDataStream &operator>>(QDataStream &s, QSizeF &sz)
 QDebug operator<<(QDebug dbg, const QSizeF &s)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QSizeF(" << s.width() << ", " << s.height() << ')';
+    dbg.nospace();
+    dbg << "QSizeF(";
+    QtDebugUtils::formatQSize(dbg, s);
+    dbg << ')';
     return dbg;
 }
 #endif

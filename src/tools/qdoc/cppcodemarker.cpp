@@ -103,7 +103,7 @@ bool CppCodeMarker::recognizeLanguage(const QString &lang)
 /*!
   Returns the type of atom used to represent C++ code in the documentation.
 */
-Atom::Type CppCodeMarker::atomType() const
+Atom::AtomType CppCodeMarker::atomType() const
 {
     return Atom::Code;
 }
@@ -806,6 +806,21 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                     break;
                 }
                 ++n;
+            }
+            if (inner->isNamespace()) {
+                const NamespaceNode* ns = static_cast<const NamespaceNode*>(inner);
+                if (!ns->orphans().isEmpty()) {
+                    foreach (Node* n, ns->orphans()) {
+                        // Use inner as a temporary parent when inserting orphans
+                        InnerNode* p = n->parent();
+                        n->setParent(const_cast<InnerNode*>(inner));
+                        if (n->isClass())
+                            insert(classes, n, style, status);
+                        else if (n->isNamespace())
+                            insert(namespaces, n, style, status);
+                        n->setParent(p);
+                    }
+                }
             }
             append(sections, namespaces);
             append(sections, classes);

@@ -147,18 +147,22 @@ void QLibInputTouch::processTouchCancel(libinput_event_touch *e)
 void QLibInputTouch::processTouchFrame(libinput_event_touch *e)
 {
     DeviceState *state = deviceState(e);
-    if (state->m_touchDevice && !state->m_points.isEmpty()) {
-        QWindowSystemInterface::handleTouchEvent(Q_NULLPTR, state->m_touchDevice, state->m_points,
-                                                 QGuiApplication::keyboardModifiers());
-        for (int i = 0; i < state->m_points.count(); ++i) {
-            QWindowSystemInterface::TouchPoint &tp(state->m_points[i]);
-            if (tp.state == Qt::TouchPointReleased)
-                state->m_points.removeAt(i--);
-            else if (tp.state == Qt::TouchPointPressed)
-                tp.state = Qt::TouchPointStationary;
-        }
-    } else {
+    if (!state->m_touchDevice) {
         qWarning("TouchFrame without registered device");
+        return;
+    }
+    if (state->m_points.isEmpty())
+        return;
+
+    QWindowSystemInterface::handleTouchEvent(Q_NULLPTR, state->m_touchDevice, state->m_points,
+                                             QGuiApplication::keyboardModifiers());
+
+    for (int i = 0; i < state->m_points.count(); ++i) {
+        QWindowSystemInterface::TouchPoint &tp(state->m_points[i]);
+        if (tp.state == Qt::TouchPointReleased)
+            state->m_points.removeAt(i--);
+        else if (tp.state == Qt::TouchPointPressed)
+            tp.state = Qt::TouchPointStationary;
     }
 }
 

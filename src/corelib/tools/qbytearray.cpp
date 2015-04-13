@@ -869,44 +869,62 @@ static inline char qToLower(char c)
 
 /*! \fn QByteArray::iterator QByteArray::begin()
 
-    \internal
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first character in
+    the byte-array.
+
+    \sa constBegin(), end()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::begin() const
 
-    \internal
+    \overload begin()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::cbegin() const
     \since 5.0
 
-    \internal
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
+    in the byte-array.
+
+    \sa begin(), cend()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::constBegin() const
 
-    \internal
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
+    in the byte-array.
+
+    \sa begin(), constEnd()
 */
 
 /*! \fn QByteArray::iterator QByteArray::end()
 
-    \internal
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary character
+    after the last character in the byte-array.
+
+    \sa begin(), constEnd()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::end() const
 
-    \internal
+    \overload end()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::cend() const
     \since 5.0
 
-    \internal
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    character after the last character in the list.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::constEnd() const
 
-    \internal
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    character after the last character in the list.
+
+    \sa constBegin(), end()
 */
 
 /*! \fn void QByteArray::push_back(const QByteArray &other)

@@ -49,16 +49,16 @@
     \title Qt Quarterly: Plural Form in Translation
 */
 /*!
-    \externalpage http://qt.gitorious.org
+    \externalpage https://code.qt.io/
     \title Public Qt Repository
 */
 /*!
-    \externalpage http://qt.gitorious.org/qt-labs/qtestlib-tools
+    \externalpage https://code.qt.io/cgit/%7bnon-gerrit%7d/qt-labs/qtestlib-tools.git/
     \title qtestlib-tools
 */
 
 /*!
-    \externalpage http://wiki.qt.io/?title=Qt_Coding_Style
+    \externalpage http://wiki.qt.io/Qt_Coding_Style
     \title Qt Coding Style
 */
 /*!
@@ -78,16 +78,16 @@
     \title Pimp my video
 */
 /*!
-    \externalpage http://wiki.qt.io/?title=QtMediaHub
+    \externalpage http://wiki.qt.io/QtMediaHub
     \title QtMediaHub
 */
 /*!
-    \externalpage http://wiki.qt.io/?title=Qt_RaspberryPi
+    \externalpage http://wiki.qt.io/Qt_RaspberryPi
     \title QtonPi
 */
 
 /*!
-    \externalpage http://wiki.qt.io/?title=jom
+    \externalpage http://wiki.qt.io/jom
     \title jom
 */
 
@@ -102,11 +102,11 @@
 */
 
 /*!
-    \externalpage http://wiki.qt.io/?title=Qt_Localization
+    \externalpage http://wiki.qt.io/Qt_Localization
     \title external: Translating Qt Into Other Languages
 */
 
 /*!
-    \externalpage http://wiki.qt.io/?title=BlackBerry
+    \externalpage http://wiki.qt.io/BlackBerry
     \title Qt for BlackBerry
 */

@@ -127,7 +127,7 @@ public:
     virtual bool recognizeCode(const QString& code) = 0;
     virtual bool recognizeExtension(const QString& ext) = 0;
     virtual bool recognizeLanguage(const QString& lang) = 0;
-    virtual Atom::Type atomType() const = 0;
+    virtual Atom::AtomType atomType() const = 0;
     virtual QString markedUpCode(const QString& code,
                                  const Node *relative,
                                  const Location &location) = 0;

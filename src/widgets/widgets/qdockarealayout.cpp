@@ -2244,6 +2244,22 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
 
     return result;
 }
+
+int QDockAreaLayoutInfo::tabIndexToListIndex(int tabIndex) const
+{
+    Q_ASSERT(tabbed && tabBar);
+    quintptr data = qvariant_cast<quintptr>(tabBar->tabData(tabIndex));
+    for (int i = 0; i < item_list.count(); ++i) {
+        if (tabId(item_list.at(i)) == data)
+            return i;
+    }
+    return -1;
+}
+
+void QDockAreaLayoutInfo::moveTab(int from, int to)
+{
+    item_list.move(tabIndexToListIndex(from), tabIndexToListIndex(to));
+}
 #endif // QT_NO_TABBAR
 
 /******************************************************************************
@@ -2681,6 +2697,8 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
             ver_struct_list[i].sizeHint
                 = qMax(ver_struct_list[i].sizeHint, ver_struct_list[i].minimumSize);
         }
+        if (have_central && ver_struct_list[0].empty && ver_struct_list[2].empty)
+            ver_struct_list[1].maximumSize = QWIDGETSIZE_MAX;
     }
 
     if (_hor_struct_list != 0) {
@@ -2740,6 +2758,9 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
             hor_struct_list[i].sizeHint
                 = qMax(hor_struct_list[i].sizeHint, hor_struct_list[i].minimumSize);
         }
+        if (have_central && hor_struct_list[0].empty && hor_struct_list[2].empty)
+            hor_struct_list[1].maximumSize = QWIDGETSIZE_MAX;
+
     }
 }
 

@@ -5,7 +5,7 @@ PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QComposePlatformInputContextPlugin
 load(qt_plugin)
 
-QT += gui-private
+QT += core-private gui-private
 
 DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
 

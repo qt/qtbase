@@ -1026,12 +1026,13 @@ QDebug operator<<(QDebug dbg, const QPen &p)
         "CustomDashLine"
     };
 
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPen(" << p.width() << ',' << p.brush()
                   << ',' << PEN_STYLES[p.style()] << ',' << int(p.capStyle())
                   << ',' << int(p.joinStyle()) << ',' << p.dashPattern()
                   << ',' << p.dashOffset()
                   << ',' << p.miterLimit() << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

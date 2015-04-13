@@ -209,7 +209,10 @@ static QPixmap colorizedImage(const QString &fileName, const QColor &color, int 
                 unsigned char green = gray + qt_div_255(sourceGreen * colorDiff);
                 unsigned char blue = gray + qt_div_255(sourceBlue * colorDiff);
                 unsigned char alpha = qt_div_255(qAlpha(col) * qAlpha(source));
-                data[x] = qRgba(red, green, blue, alpha);
+                data[x] = qRgba(std::min(alpha, red),
+                                std::min(alpha, green),
+                                std::min(alpha, blue),
+                                alpha);
             }
         }
         if (rotation != 0) {
@@ -3607,6 +3610,11 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_Menu_MouseTracking:
     case SH_Menu_SupportsSections:
         return 1;
+
+#if defined(Q_OS_IOS)
+    case SH_ComboBox_UseNativePopup:
+        return 1;
+#endif
 
     case SH_ToolBox_SelectedPageTitleBold:
     case SH_ScrollView_FrameOnlyAroundContents:

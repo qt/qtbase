@@ -161,7 +161,7 @@ bool QWidgetWindow::event(QEvent *event)
     if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
         // \a event is uninteresting for QWidgetWindow, the event was probably
         // generated before WA_DontShowOnScreen was set
-        return m_widget->event(event);
+        return QCoreApplication::sendEvent(m_widget, event);
     }
 
     switch (event->type()) {
@@ -303,7 +303,7 @@ bool QWidgetWindow::event(QEvent *event)
         break;
     }
 
-    if (m_widget->event(event) && event->type() != QEvent::Timer)
+    if (QCoreApplication::sendEvent(m_widget, event) && event->type() != QEvent::Timer)
         return true;
 
     return QWindow::event(event);
@@ -465,7 +465,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         }
 
         if (qApp->activePopupWidget() != activePopupWidget
-            && qt_replay_popup_mouse_event) {
+            && qt_replay_popup_mouse_event
+            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
             if (m_widget->windowType() != Qt::Popup)
                 qt_button_down = 0;
             if (event->type() == QEvent::MouseButtonPress) {

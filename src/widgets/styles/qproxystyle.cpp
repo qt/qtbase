@@ -101,8 +101,8 @@ void QProxyStylePrivate::ensureBaseStyle() const
 
 /*!
   Constructs a QProxyStyle object for overriding behavior in the
-  specified base \a style, or in the current \l{QApplication::style()}
-  {application style} if base \a style is not specified.
+  specified \a style, or in the default native \l{QApplication::style()}
+  {style} if \a style is not specified.
 
   Ownership of \a style is transferred to QProxyStyle.
 */

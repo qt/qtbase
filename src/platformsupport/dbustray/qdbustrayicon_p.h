@@ -113,10 +113,6 @@ public:
 
     QDBusPlatformMenu *menu() { return m_menu; }
 
-public Q_SLOTS:
-    void activate(int x, int y);
-    void contextMenu(int x, int y);
-
 signals:
     void categoryChanged();
     void statusChanged(QString arg);

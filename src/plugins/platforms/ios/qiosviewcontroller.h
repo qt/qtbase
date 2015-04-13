@@ -45,6 +45,7 @@ class QIOSScreen;
 // UIViewController
 @property (nonatomic, assign) BOOL prefersStatusBarHidden;
 @property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;
+@property (nonatomic, assign) UIStatusBarStyle preferredStatusBarStyle;
 
 @end
 

@@ -143,6 +143,8 @@
     canceling, pausing, or progress reporting. The QFuture returned can only
     be used to query for the running/finished status and the return value of
     the function.
+
+    \sa {Concurrent Run}
 */
 
 /*!
@@ -160,4 +162,6 @@
     canceling, pausing, or progress reporting. The QFuture returned can only
     be used to query for the running/finished status and the return value of
     the function.
+
+    \sa {Concurrent Run}
 */

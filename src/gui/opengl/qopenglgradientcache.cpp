@@ -34,8 +34,18 @@
 #include "qopenglgradientcache_p.h"
 #include <private/qdrawhelper_p.h>
 #include <private/qopenglcontext_p.h>
+#include <private/qrgba64_p.h>
 #include <QtCore/qmutex.h>
-#include <QtGui/qopenglfunctions.h>
+#include "qopenglfunctions.h"
+#include "qopenglextensions_p.h"
+
+#ifndef GL_RGBA8
+#define GL_RGBA8    0x8058
+#endif
+
+#ifndef GL_RGBA16
+#define GL_RGBA16   0x805B
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -137,33 +147,40 @@ GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient 
     }
 
     CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
-    uint buffer[1024];
+    QRgba64 buffer[1024];
     generateGradientColorTable(gradient, buffer, paletteSize(), opacity);
     funcs->glGenTextures(1, &cache_entry.texId);
     funcs->glBindTexture(GL_TEXTURE_2D, cache_entry.texId);
-    funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, paletteSize(), 1,
-                        0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    GLenum internalFormat = GL_RGBA16;
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
+        if (static_cast<QOpenGLExtensions*>(funcs)->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats))
+            internalFormat = GL_RGBA8;
+        else
+            internalFormat = GL_RGBA; // Let OpenGLES use whatever it prefers.
+    }
+    funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, paletteSize(), 1,
+                        0, GL_RGBA, GL_UNSIGNED_SHORT, buffer);
     return cache.insert(hash_val, cache_entry).value().texId;
 }
 
 
 //TODO: Let GL generate the texture using an FBO
-void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
+void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, QRgba64 *colorTable, int size, qreal opacity) const
 {
     int pos = 0;
     QGradientStops s = gradient.stops();
-    QVector<uint> colors(s.size());
+    QVector<QRgba64> colors(s.size());
 
     for (int i = 0; i < s.size(); ++i)
-        colors[i] = s[i].second.rgba(); // Qt LIES! It returns ARGB (on little-endian AND on big-endian)
+        colors[i] = s[i].second.rgba64();
 
     bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);
 
     uint alpha = qRound(opacity * 256);
-    uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
+    QRgba64 current_color = combineAlpha256(colors[0], alpha);
     qreal incr = 1.0 / qreal(size);
     qreal fpos = 1.5 * incr;
-    colorTable[pos++] = ARGB2RGBA(qPremultiply(current_color));
+    colorTable[pos++] = qPremultiply(current_color);
 
     while (fpos <= s.first().first) {
         colorTable[pos] = colorTable[pos - 1];
@@ -176,7 +193,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
     for (int i = 0; i < s.size() - 1; ++i) {
         qreal delta = 1/(s[i+1].first - s[i].first);
-        uint next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
+        QRgba64 next_color = combineAlpha256(colors[i+1], alpha);
         if (colorInterpolation)
             next_color = qPremultiply(next_color);
 
@@ -184,9 +201,9 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
             int dist = int(256 * ((fpos - s[i].first) * delta));
             int idist = 256 - dist;
             if (colorInterpolation)
-                colorTable[pos] = ARGB2RGBA(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
+                colorTable[pos] = interpolate256(current_color, idist, next_color, dist);
             else
-                colorTable[pos] = ARGB2RGBA(qPremultiply(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
+                colorTable[pos] = qPremultiply(interpolate256(current_color, idist, next_color, dist));
             ++pos;
             fpos += incr;
         }
@@ -195,7 +212,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
     Q_ASSERT(s.size() > 0);
 
-    uint last_color = ARGB2RGBA(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
+    QRgba64 last_color = qPremultiply(combineAlpha256(colors[s.size() - 1], alpha));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 

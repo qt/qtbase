@@ -287,6 +287,7 @@ public:
         WindowTransparentForInput = 0x00080000,
         WindowOverridesSystemGestures = 0x00100000,
         WindowDoesNotAcceptFocus = 0x00200000,
+        MaximizeUsingFullscreenGeometryHint = 0x00400000,
 
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
@@ -1321,6 +1322,7 @@ public:
         ImAbsolutePosition = 0x400,
         ImTextBeforeCursor = 0x800,
         ImTextAfterCursor = 0x1000,
+        ImReturnKeyType = 0x2000,
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
@@ -1359,6 +1361,17 @@ public:
         ImhExclusiveInputMask = 0xffff0000
     };
     Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
+
+    enum ReturnKeyType {
+        ReturnKeyDefault,
+        ReturnKeyEnter,
+        ReturnKeyDone,
+        ReturnKeyGo,
+        ReturnKeySend,
+        ReturnKeySearch,
+        ReturnKeyNext,
+        ReturnKeyPrevious
+    };
 
     enum ToolButtonStyle {
         ToolButtonIconOnly,
@@ -1680,6 +1693,7 @@ public:
     QT_Q_ENUM(InputMethodHint)
     QT_Q_ENUM(InputMethodQuery)
     QT_Q_FLAG(InputMethodHints)
+    QT_Q_ENUM(ReturnKeyType)
     QT_Q_FLAG(InputMethodQueries)
     QT_Q_FLAG(TouchPointStates)
     QT_Q_ENUM(ScreenOrientation)
@@ -1695,6 +1709,7 @@ public:
     QT_Q_ENUM(TimerType)
     QT_Q_ENUM(ScrollPhase)
     QT_Q_ENUM(MouseEventSource)
+    QT_Q_FLAG(MouseEventFlag)
     QT_Q_ENUM(TabFocusBehavior)
 #endif // Q_DOC
 

@@ -46,7 +46,7 @@ class LinkAtom;
 class Atom
 {
 public:
-    enum Type {
+    enum AtomType {
         AbstractLeft,
         AbstractRight,
         AnnotatedList,
@@ -143,13 +143,13 @@ public:
         strs << string;
     }
 
-    Atom(Type type, const QString& string = "")
+    Atom(AtomType type, const QString& string = "")
         : next_(0), type_(type)
     {
         strs << string;
     }
 
-    Atom(Type type, const QString& p1, const QString& p2)
+    Atom(AtomType type, const QString& p1, const QString& p2)
         : next_(0), type_(type)
     {
         strs << p1;
@@ -157,14 +157,14 @@ public:
             strs << p2;
     }
 
-    Atom(Atom* previous, Type type, const QString& string = "")
+    Atom(Atom* previous, AtomType type, const QString& string = "")
         : next_(previous->next_), type_(type)
     {
         strs << string;
         previous->next_ = this;
     }
 
-    Atom(Atom* previous, Type type, const QString& p1, const QString& p2)
+    Atom(Atom* previous, AtomType type, const QString& p1, const QString& p2)
         : next_(previous->next_), type_(type)
     {
         strs << p1;
@@ -183,9 +183,9 @@ public:
     void setNext(Atom* newNext) { next_ = newNext; }
 
     const Atom* next() const { return next_; }
-    const Atom* next(Type t) const;
-    const Atom* next(Type t, const QString& s) const;
-    Type type() const { return type_; }
+    const Atom* next(AtomType t) const;
+    const Atom* next(AtomType t, const QString& s) const;
+    AtomType type() const { return type_; }
     QString typeString() const;
     const QString& string() const { return strs[0]; }
     const QString& string(int i) const { return strs[i]; }
@@ -197,14 +197,14 @@ public:
     virtual Node::Genus genus() { return Node::DontCare; }
     virtual bool specifiesDomain() { return false; }
     virtual Tree* domain() { return 0; }
-    virtual Node::Type goal() { return Node::NoType; }
+    virtual Node::NodeType goal() { return Node::NoType; }
     virtual const QString& error() { return noError_; }
     virtual void resolveSquareBracketParams() { }
 
  protected:
     static QString noError_;
     Atom* next_;
-    Type type_;
+    AtomType type_;
     QStringList strs;
 };
 
@@ -220,14 +220,14 @@ class LinkAtom : public Atom
     virtual Node::Genus genus() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return genus_; }
     virtual bool specifiesDomain() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return (domain_ != 0); }
     virtual Tree* domain() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return domain_; }
-    virtual Node::Type goal() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return goal_; }
+    virtual Node::NodeType goal() Q_DECL_OVERRIDE { resolveSquareBracketParams(); return goal_; }
     virtual const QString& error() Q_DECL_OVERRIDE { return error_; }
     virtual void resolveSquareBracketParams() Q_DECL_OVERRIDE;
 
  protected:
     bool        resolved_;
     Node::Genus genus_;
-    Node::Type  goal_;
+    Node::NodeType  goal_;
     Tree*       domain_;
     QString     error_;
     QString     squareBracketParams_;

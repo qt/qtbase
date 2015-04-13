@@ -1091,6 +1091,7 @@ QDebug operator<<(QDebug dbg, const QTransform &m)
         "TxProject"
     };
 
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTransform(type=" << typeStr[m.type()] << ','
                   << " 11=" << m.m11()
                   << " 12=" << m.m12()
@@ -1103,7 +1104,7 @@ QDebug operator<<(QDebug dbg, const QTransform &m)
                   << " 33=" << m.m33()
                   << ')';
 
-    return dbg.space();
+    return dbg;
 }
 #endif
 

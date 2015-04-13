@@ -48,6 +48,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QApplication>
+#include <QUrl>
 
 #include <QTimer>
 #include <QDebug>

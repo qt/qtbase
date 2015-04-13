@@ -6116,8 +6116,15 @@ QIcon QWidget::windowIcon() const
 
 void QWidgetPrivate::setWindowIcon_helper()
 {
+    Q_Q(QWidget);
     QEvent e(QEvent::WindowIconChange);
-    QApplication::sendEvent(q_func(), &e);
+
+    // Do not send the event if the widget is a top level.
+    // In that case, setWindowIcon_sys does it, and event propagation from
+    // QWidgetWindow to the top level QWidget ensures that the event reaches
+    // the top level anyhow
+    if (!q->windowHandle())
+        QApplication::sendEvent(q, &e);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(children.at(i));
         if (w && !w->isWindow())
@@ -8049,26 +8056,11 @@ void QWidget::setVisible(bool visible)
             && !parentWidget()->testAttribute(Qt::WA_WState_Created))
             parentWidget()->window()->d_func()->createRecursively();
 
-        //we have to at least create toplevels before applyX11SpecificCommandLineArguments
-        //but not children of non-visible parents
+        //create toplevels but not children of non-visible parents
         QWidget *pw = parentWidget();
         if (!testAttribute(Qt::WA_WState_Created)
             && (isWindow() || pw->testAttribute(Qt::WA_WState_Created))) {
             create();
-        }
-
-        // Handling of the -qwindowgeometry, -geometry command line arguments
-        if (windowType() == Qt::Window && windowHandle()) {
-            static bool done = false;
-            if (!done) {
-                done = true;
-                const QRect oldGeometry = frameGeometry();
-                const QRect geometry = QGuiApplicationPrivate::applyWindowGeometrySpecification(oldGeometry, windowHandle());
-                if (oldGeometry.size() != geometry.size())
-                    resize(geometry.size());
-                if (geometry.topLeft() != oldGeometry.topLeft())
-                    move(geometry.topLeft());
-            } // done
         }
 
         bool wasResized = testAttribute(Qt::WA_Resized);

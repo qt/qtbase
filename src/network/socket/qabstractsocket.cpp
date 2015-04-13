@@ -1265,8 +1265,8 @@ bool QAbstractSocketPrivate::readFromSocket()
         bytesToRead = readBufferMaxSize - buffer.size();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() about to read %d bytes",
-           int(bytesToRead));
+    qDebug("QAbstractSocketPrivate::readFromSocket() about to read %lld bytes",
+           bytesToRead);
 #endif
 
     // Read from the socket, store data in the read buffer.
@@ -1277,10 +1277,10 @@ bool QAbstractSocketPrivate::readFromSocket()
         buffer.chop(bytesToRead);
         return true;
     }
-    buffer.chop(int(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes)));
+    buffer.chop(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes));
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::readFromSocket() got %d bytes, buffer size = %d",
-           int(readBytes), buffer.size());
+    qDebug("QAbstractSocketPrivate::readFromSocket() got %lld bytes, buffer size = %lld",
+           readBytes, buffer.size());
 #endif
 
     if (!socketEngine->isValid()) {
@@ -1726,7 +1726,7 @@ qint64 QAbstractSocket::bytesAvailable() const
         available += d->socketEngine->bytesAvailable();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::bytesAvailable() == %llu", available);
+    qDebug("QAbstractSocket::bytesAvailable() == %lld", available);
 #endif
     return available;
 }
@@ -1805,8 +1805,8 @@ bool QAbstractSocket::canReadLine() const
 {
     bool hasLine = d_func()->buffer.canReadLine();
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %d, size = %d", hasLine ? "true" : "false",
-           d_func()->buffer.size(), d_func()->buffer.size());
+    qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %lld, size = %lld",
+           hasLine ? "true" : "false", d_func()->buffer.size(), d_func()->buffer.size());
 #endif
     return hasLine || QIODevice::canReadLine();
 }
@@ -1979,20 +1979,6 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
         return QVariant(ret);
 }
 
-
-/*
-   Returns the difference between msecs and elapsed. If msecs is -1,
-   however, -1 is returned.
-*/
-static int qt_timeout_value(int msecs, int elapsed)
-{
-    if (msecs == -1)
-        return -1;
-
-    int timeout = msecs - elapsed;
-    return timeout < 0 ? 0 : timeout;
-}
-
 /*!
     Waits until the socket is connected, up to \a msecs
     milliseconds. If the connection has been established, this
@@ -2070,7 +2056,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
     int attempt = 1;
 #endif
     while (state() == ConnectingState && (msecs == -1 || stopWatch.elapsed() < msecs)) {
-        int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
+        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
         if (msecs != -1 && timeout > QT_CONNECT_TIMEOUT)
             timeout = QT_CONNECT_TIMEOUT;
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -2149,7 +2135,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
         bool readyToRead = false;
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
-                                               qt_timeout_value(msecs, stopWatch.elapsed()))) {
+                                               qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
             d->socketError = d->socketEngine->error();
             setErrorString(d->socketEngine->errorString());
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -2172,7 +2158,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
         if (state() != ConnectedState)
             return false;
-    } while (msecs == -1 || qt_timeout_value(msecs, stopWatch.elapsed()) > 0);
+    } while (msecs == -1 || qt_subtract_from_timeout(msecs, stopWatch.elapsed()) > 0);
     return false;
 }
 
@@ -2221,7 +2207,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
         bool readyToRead = false;
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
-                                               qt_timeout_value(msecs, stopWatch.elapsed()))) {
+                                               qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
             d->socketError = d->socketEngine->error();
             setErrorString(d->socketEngine->errorString());
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -2303,7 +2289,7 @@ bool QAbstractSocket::waitForDisconnected(int msecs)
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, state() == ConnectedState,
                                                !d->writeBuffer.isEmpty(),
-                                               qt_timeout_value(msecs, stopWatch.elapsed()))) {
+                                               qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
             d->socketError = d->socketEngine->error();
             setErrorString(d->socketEngine->errorString());
 #if defined (QABSTRACTSOCKET_DEBUG)

@@ -11,7 +11,7 @@ dumpcpp_decl.CONFIG += no_link
 QMAKE_EXTRA_COMPILERS += dumpcpp_decl
 
 
-dumpcpp_impl.commands = $$QMAKE_DUMPCPP -donothing
+dumpcpp_impl.commands = $$escape_expand(\\n)    # dummy command
 dumpcpp_impl.output = ${QMAKE_FILE_BASE}.cpp
 dumpcpp_impl.input = TYPELIBS
 dumpcpp_impl.variable_out = SOURCES

@@ -143,6 +143,7 @@ public:
     };
 
     struct GlyphInfo {
+        int             linearAdvance;
         unsigned short  width;
         unsigned short  height;
         short           x;

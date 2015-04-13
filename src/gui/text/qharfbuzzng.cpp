@@ -94,6 +94,8 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_BUHID,
     HB_SCRIPT_TAGBANWA,
     HB_SCRIPT_COPTIC,
+
+    // Unicode 4.0 additions
     HB_SCRIPT_LIMBU,
     HB_SCRIPT_TAI_LE,
     HB_SCRIPT_LINEAR_B,
@@ -102,6 +104,8 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_OSMANYA,
     HB_SCRIPT_CYPRIOT,
     HB_SCRIPT_BRAILLE,
+
+    // Unicode 4.1 additions
     HB_SCRIPT_BUGINESE,
     HB_SCRIPT_NEW_TAI_LUE,
     HB_SCRIPT_GLAGOLITIC,
@@ -109,11 +113,15 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_SYLOTI_NAGRI,
     HB_SCRIPT_OLD_PERSIAN,
     HB_SCRIPT_KHAROSHTHI,
+
+    // Unicode 5.0 additions
     HB_SCRIPT_BALINESE,
     HB_SCRIPT_CUNEIFORM,
     HB_SCRIPT_PHOENICIAN,
     HB_SCRIPT_PHAGS_PA,
     HB_SCRIPT_NKO,
+
+    // Unicode 5.1 additions
     HB_SCRIPT_SUNDANESE,
     HB_SCRIPT_LEPCHA,
     HB_SCRIPT_OL_CHIKI,
@@ -125,6 +133,8 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_CARIAN,
     HB_SCRIPT_LYDIAN,
     HB_SCRIPT_CHAM,
+
+    // Unicode 5.2 additions
     HB_SCRIPT_TAI_THAM,
     HB_SCRIPT_TAI_VIET,
     HB_SCRIPT_AVESTAN,
@@ -140,16 +150,45 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_INSCRIPTIONAL_PAHLAVI,
     HB_SCRIPT_OLD_TURKIC,
     HB_SCRIPT_KAITHI,
+
+    // Unicode 6.0 additions
     HB_SCRIPT_BATAK,
     HB_SCRIPT_BRAHMI,
     HB_SCRIPT_MANDAIC,
+
+    // Unicode 6.1 additions
     HB_SCRIPT_CHAKMA,
     HB_SCRIPT_MEROITIC_CURSIVE,
     HB_SCRIPT_MEROITIC_HIEROGLYPHS,
     HB_SCRIPT_MIAO,
     HB_SCRIPT_SHARADA,
     HB_SCRIPT_SORA_SOMPENG,
-    HB_SCRIPT_TAKRI
+    HB_SCRIPT_TAKRI,
+
+    // Unicode 7.0 additions
+    HB_SCRIPT_CAUCASIAN_ALBANIAN,
+    HB_SCRIPT_BASSA_VAH,
+    HB_SCRIPT_DUPLOYAN,
+    HB_SCRIPT_ELBASAN,
+    HB_SCRIPT_GRANTHA,
+    HB_SCRIPT_PAHAWH_HMONG,
+    HB_SCRIPT_KHOJKI,
+    HB_SCRIPT_LINEAR_A,
+    HB_SCRIPT_MAHAJANI,
+    HB_SCRIPT_MANICHAEAN,
+    HB_SCRIPT_MENDE_KIKAKUI,
+    HB_SCRIPT_MODI,
+    HB_SCRIPT_MRO,
+    HB_SCRIPT_OLD_NORTH_ARABIAN,
+    HB_SCRIPT_NABATAEAN,
+    HB_SCRIPT_PALMYRENE,
+    HB_SCRIPT_PAU_CIN_HAU,
+    HB_SCRIPT_OLD_PERMIC,
+    HB_SCRIPT_PSALTER_PAHLAVI,
+    HB_SCRIPT_SIDDHAM,
+    HB_SCRIPT_KHUDAWADI,
+    HB_SCRIPT_TIRHUTA,
+    HB_SCRIPT_WARANG_CITI
 };
 Q_STATIC_ASSERT(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 

@@ -976,6 +976,16 @@ QDir QFileDialog::directory() const
 
     \note The non-native QFileDialog supports only local files.
 
+    \note On Windows, it is possible to pass URLs representing
+    one of the \e {virtual folders}, such as "Computer" or "Network".
+    This is done by passing a QUrl using the scheme \c clsid followed
+    by the CLSID value with the curly braces removed. For example the URL
+    \c clsid:374DE290-123F-4565-9164-39C4925E467B denotes the download
+    location. For a complete list of possible values, see the MSDN documentation on
+    \l{https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457.aspx}{KNOWNFOLDERID}.
+    This feature was added in Qt 5.5.
+
+    \sa QUuid
     \since 5.2
 */
 void QFileDialog::setDirectoryUrl(const QUrl &directory)

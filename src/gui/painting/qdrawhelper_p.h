@@ -50,6 +50,7 @@
 #include "QtGui/qcolor.h"
 #include "QtGui/qpainter.h"
 #include "QtGui/qimage.h"
+#include "QtGui/qrgba64.h"
 #ifndef QT_FT_BEGIN_HEADER
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
@@ -99,25 +100,25 @@ class QRasterPaintEngineState;
 
 typedef QT_FT_SpanFunc ProcessSpans;
 typedef void (*BitmapBlitFunc)(QRasterBuffer *rasterBuffer,
-                               int x, int y, quint32 color,
+                               int x, int y, const QRgba64 &color,
                                const uchar *bitmap,
                                int mapWidth, int mapHeight, int mapStride);
 
 typedef void (*AlphamapBlitFunc)(QRasterBuffer *rasterBuffer,
-                                 int x, int y, quint32 color,
+                                 int x, int y, const QRgba64 &color,
                                  const uchar *bitmap,
                                  int mapWidth, int mapHeight, int mapStride,
                                  const QClipData *clip);
 
 typedef void (*AlphaRGBBlitFunc)(QRasterBuffer *rasterBuffer,
-                                 int x, int y, quint32 color,
+                                 int x, int y, const QRgba64 &color,
                                  const uint *rgbmask,
                                  int mapWidth, int mapHeight, int mapStride,
                                  const QClipData *clip);
 
 typedef void (*RectFillFunc)(QRasterBuffer *rasterBuffer,
                              int x, int y, int width, int height,
-                             quint32 color);
+                             const QRgba64 &color);
 
 typedef void (*SrcOverBlendFunc)(uchar *destPixels, int dbpl,
                                  const uchar *src, int spbl,
@@ -158,11 +159,14 @@ extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
+extern void qt_memfill64(quint64 *dest, quint64 value, int count);
 extern void qt_memfill32(quint32 *dest, quint32 value, int count);
 extern void qt_memfill16(quint16 *dest, quint16 value, int count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunctionSolid64)(QRgba64 *dest, int length, QRgba64 color, uint const_alpha);
 
 struct LinearGradientValues
 {
@@ -185,17 +189,27 @@ struct RadialGradientValues
 
 struct Operator;
 typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
+typedef QRgba64* (QT_FASTCALL *DestFetchProc64)(QRgba64 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
 typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
+typedef void (QT_FASTCALL *DestStoreProc64)(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
 typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
+typedef const QRgba64* (QT_FASTCALL *SourceFetchProc64)(QRgba64 *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
 
 struct Operator
 {
     QPainter::CompositionMode mode;
-    DestFetchProc dest_fetch;
-    DestStoreProc dest_store;
-    SourceFetchProc src_fetch;
+    DestFetchProc destFetch;
+    DestStoreProc destStore;
+    SourceFetchProc srcFetch;
     CompositionFunctionSolid funcSolid;
     CompositionFunction func;
+
+    DestFetchProc64 destFetch64;
+    DestStoreProc64 destStore64;
+    SourceFetchProc64 srcFetch64;
+    CompositionFunctionSolid64 funcSolid64;
+    CompositionFunction64 func64;
+
     union {
         LinearGradientValues linear;
         RadialGradientValues radial;
@@ -208,7 +222,7 @@ class QRasterPaintEngine;
 
 struct QSolidData
 {
-    uint color;
+    QRgba64 color;
 };
 
 struct QLinearGradientData
@@ -259,7 +273,7 @@ struct QGradientData
 #define GRADIENT_STOPTABLE_SIZE 1024
 #define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 
-    uint* colorTable; //[GRADIENT_STOPTABLE_SIZE];
+    QRgba64* colorTable; //[GRADIENT_STOPTABLE_SIZE];
 
     uint alphaColor : 1;
 };
@@ -365,6 +379,12 @@ static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
 }
 
 static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
+{
+    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
+    return data->colorTable[qt_gradient_clamp(data, ipos)].toArgb32();
+}
+
+static inline const QRgba64& qt_gradient_pixel64(const QGradientData *data, qreal pos)
 {
     int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
     return data->colorTable[qt_gradient_clamp(data, ipos)];
@@ -526,7 +546,7 @@ public:
             delta_det4_vec.v = Simd::v_add(delta_det4_vec.v, v_delta_delta_det16); \
             b_vec.v = Simd::v_add(b_vec.v, v_delta_b4); \
             for (int i = 0; i < 4; ++i) \
-                *buffer++ = (extended_mask | v_buffer_mask.i[i]) & data->gradient.colorTable[index_vec.i[i]]; \
+                *buffer++ = (extended_mask | v_buffer_mask.i[i]) & data->gradient.colorTable[index_vec.i[i]].toArgb32(); \
         }
 
 #define FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP) \
@@ -644,7 +664,8 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     return t;
 }
 
-static Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
 
 static Q_ALWAYS_INLINE uint BYTE_MUL_RGB30(uint x, uint a) {
     uint xa = x >> 30;
@@ -686,6 +707,11 @@ inline quint24::operator uint() const
 
 template <class T> Q_STATIC_TEMPLATE_FUNCTION
 void qt_memfill(T *dest, T value, int count);
+
+template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
+{
+    qt_memfill64(dest, color, count);
+}
 
 template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
 {
@@ -869,6 +895,64 @@ inline QRgb qConvertA2rgb30ToArgb32<PixelOrderRGB>(uint c)
         | ((c >> 6) & 0x00ff0000)
         | ((c >> 4) & 0x0000ff00)
         | ((c >> 2) & 0x000000ff);
+}
+
+template<enum QtPixelOrder> inline QRgba64 qConvertA2rgb30ToRgb64(uint rgb);
+
+template<>
+inline QRgba64 qConvertA2rgb30ToRgb64<PixelOrderBGR>(uint rgb)
+{
+    quint16 alpha = rgb >> 30;
+    quint16 blue  = (rgb >> 20) & 0x3ff;
+    quint16 green = (rgb >> 10) & 0x3ff;
+    quint16 red   = rgb & 0x3ff;
+    // Expand the range.
+    alpha |= (alpha << 2);
+    alpha |= (alpha << 4);
+    alpha |= (alpha << 8);
+    red   = (red   << 6) | (red   >> 4);
+    green = (green << 6) | (green >> 4);
+    blue  = (blue  << 6) | (blue  >> 4);
+    return qRgba64(red, green, blue, alpha);
+}
+
+template<>
+inline QRgba64 qConvertA2rgb30ToRgb64<PixelOrderRGB>(uint rgb)
+{
+    quint16 alpha = rgb >> 30;
+    quint16 red   = (rgb >> 20) & 0x3ff;
+    quint16 green = (rgb >> 10) & 0x3ff;
+    quint16 blue  = rgb & 0x3ff;
+    // Expand the range.
+    alpha |= (alpha << 2);
+    alpha |= (alpha << 4);
+    alpha |= (alpha << 8);
+    red   = (red   << 6) | (red   >> 4);
+    green = (green << 6) | (green >> 4);
+    blue  = (blue  << 6) | (blue  >> 4);
+    return qRgba64(red, green, blue, alpha);
+}
+
+template<enum QtPixelOrder> inline unsigned int qConvertRgb64ToRgb30(QRgba64);
+
+template<>
+inline unsigned int qConvertRgb64ToRgb30<PixelOrderBGR>(QRgba64 c)
+{
+    const uint a = c.alpha() >> 14;
+    const uint r = c.red() >> 6;
+    const uint g = c.green() >> 6;
+    const uint b = c.blue() >> 6;
+    return (a << 30) | (b << 20) | (g << 10) | r;
+}
+
+template<>
+inline unsigned int qConvertRgb64ToRgb30<PixelOrderRGB>(QRgba64 c)
+{
+    const uint a = c.alpha() >> 14;
+    const uint r = c.red() >> 6;
+    const uint g = c.green() >> 6;
+    const uint b = c.blue() >> 6;
+    return (a << 30) | (r << 20) | (g << 10) | b;
 }
 
 inline uint qRgbSwapRgb30(uint c)

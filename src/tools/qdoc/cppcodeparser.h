@@ -53,11 +53,11 @@ class CppCodeParser : public CodeParser
 
     struct ExtraFuncData {
         InnerNode* root; // Used as the parent.
-        Node::Type type; // The node type: Function, etc.
+        Node::NodeType type; // The node type: Function, etc.
         bool isAttached; // If true, the method is attached.
         bool isMacro;    // If true, we are parsing a macro signature.
         ExtraFuncData() : root(0), type(Node::Function), isAttached(false), isMacro(false) { }
-        ExtraFuncData(InnerNode* r, Node::Type t, bool a)
+        ExtraFuncData(InnerNode* r, Node::NodeType t, bool a)
           : root(r), type(t), isAttached(a), isMacro(false) { }
     };
 
@@ -141,7 +141,7 @@ protected:
     FunctionNode* makeFunctionNode(const Doc& doc,
                                    const QString& sig,
                                    InnerNode* parent,
-                                   Node::Type type,
+                                   Node::NodeType type,
                                    bool attached,
                                    QString qdoctag);
     void parseQiteratorDotH(const Location &location, const QString &filePath);
@@ -151,11 +151,11 @@ protected:
     void createExampleFileNodes(DocumentNode *dn);
 
  protected:
-    QMap<QString, Node::Type> nodeTypeMap;
+    QMap<QString, Node::NodeType> nodeTypeMap;
     Tokenizer *tokenizer;
     int tok;
     Node::Access access;
-    FunctionNode::Metaness metaness;
+    FunctionNode::Metaness metaness_;
     QString physicalModuleName;
     QStringList lastPath_;
     QRegExp varComment;

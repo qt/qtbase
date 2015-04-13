@@ -1152,6 +1152,7 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
          "BrightText", "ButtonText", "Base", "Window", "Shadow", "Highlight",
          "HighlightedText", "Link", "LinkVisited", "AlternateBase", "NoRole",
          "ToolTipBase","ToolTipText" };
+    QDebugStateSaver saver(dbg);
     QDebug nospace = dbg.nospace();
     const uint mask = p.resolve();
     nospace << "QPalette(resolve=" << hex << showbase << mask << ',';
@@ -1171,7 +1172,7 @@ QDebug operator<<(QDebug dbg, const QPalette &p)
         }
     }
     nospace << ')' << noshowbase << dec;
-    return dbg.space();
+    return dbg;
 }
 #endif
 

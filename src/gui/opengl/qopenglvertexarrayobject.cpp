@@ -189,10 +189,15 @@ bool QOpenGLVertexArrayObjectPrivate::create()
 
 void QOpenGLVertexArrayObjectPrivate::destroy()
 {
+    Q_Q(QOpenGLVertexArrayObject);
+
+    if (context) {
+        QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
+        context = 0;
+    }
+
     if (!vao)
         return;
-
-    Q_Q(QOpenGLVertexArrayObject);
 
     switch (vaoFuncsType) {
 #ifndef QT_OPENGL_ES_2
@@ -211,10 +216,6 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     default:
         break;
     }
-
-    Q_ASSERT(context);
-    QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
-    context = 0;
 
     vao = 0;
 }

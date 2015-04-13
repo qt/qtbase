@@ -218,7 +218,30 @@ static const char *specialLanguages[] = {
     "hmd", // Miao
     "sa", // Sharada
     "srb", // SoraSompeng
-    "doi"  // Takri
+    "doi", // Takri
+    "lez", // CaucasianAlbanian
+    "bsq", // BassaVah
+    "fr", // Duployan
+    "sq", // Elbasan
+    "sa", // Grantha
+    "hnj", // PahawhHmong
+    "sd", // Khojki
+    "lab", // LinearA
+    "hi", // Mahajani
+    "xmn", // Manichaean
+    "men", // MendeKikakui
+    "mr", // Modi
+    "mru", // Mro
+    "xna", // OldNorthArabian
+    "arc", // Nabataean
+    "arc", // Palmyrene
+    "ctd", // PauCinHau
+    "kv", // OldPermic
+    "pal", // PsalterPahlavi
+    "sa", // Siddham
+    "sd", // Khudawadi
+    "mai", // Tirhuta
+    "hoc"  // WarangCiti
 };
 Q_STATIC_ASSERT(sizeof(specialLanguages) / sizeof(const char *) == QChar::ScriptCount);
 

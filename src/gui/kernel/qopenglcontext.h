@@ -229,6 +229,8 @@ private:
     void insertFunctionsBackend(const QOpenGLVersionStatus &v,
                                 QOpenGLVersionFunctionsBackend *backend);
     void removeFunctionsBackend(const QOpenGLVersionStatus &v);
+    void insertExternalFunctions(QAbstractOpenGLFunctions *f);
+    void removeExternalFunctions(QAbstractOpenGLFunctions *f);
 
     QOpenGLTextureHelper* textureFunctions() const;
     void setTextureFunctions(QOpenGLTextureHelper* textureFuncs);

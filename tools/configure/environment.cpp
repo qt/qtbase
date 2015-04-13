@@ -163,6 +163,18 @@ Compiler Environment::compilerFromQMakeSpec(const QString &qmakeSpec)
     return CC_UNKNOWN;
 }
 
+QString Environment::gccVersion()
+{
+    CompilerInfo *info = compilerInfo(CC_MINGW);
+    int returnValue = 0;
+    QString version = execute(QStringLiteral("%1 -dumpversion").arg(info->executable), &returnValue);
+    if (returnValue != 0) {
+        cout << "Could not get mingw version" << returnValue << qPrintable(version);
+        version.resize(0);
+    }
+    return version;
+}
+
 /*!
     Returns the enum of the compiler which was detected on the system.
     The compilers are detected in the order as entered into the

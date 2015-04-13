@@ -3458,14 +3458,16 @@ void QTextFormatCollection::setDefaultFont(const QFont &f)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTextLength &l)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTextLength(QTextLength::Type(" << l.type() << "))";
-    return dbg.space();
+    return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QTextFormat &f)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTextFormat(QTextFormat::FormatType(" << f.type() << "))";
-    return dbg.space();
+    return dbg;
 }
 
 #endif

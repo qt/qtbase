@@ -46,6 +46,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 
+#include <qoffscreensurface.h>
 #include <qpa/qplatformoffscreensurface.h>
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
@@ -158,9 +159,22 @@ QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLCont
     return new QIOSContext(context);
 }
 
+class QIOSOffscreenSurface : public QPlatformOffscreenSurface
+{
+public:
+    QIOSOffscreenSurface(QOffscreenSurface *offscreenSurface) : QPlatformOffscreenSurface(offscreenSurface) {}
+
+    QSurfaceFormat format() const Q_DECL_OVERRIDE
+    {
+        Q_ASSERT(offscreenSurface());
+        return offscreenSurface()->requestedFormat();
+    }
+    bool isValid() const Q_DECL_OVERRIDE { return true; }
+};
+
 QPlatformOffscreenSurface *QIOSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    return new QPlatformOffscreenSurface(surface);
+    return new QIOSOffscreenSurface(surface);
 }
 
 QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const

@@ -44,16 +44,16 @@ QT_BEGIN_NAMESPACE
 
 int Node::propertyGroupCount_ = 0;
 QStringMap Node::operators_;
-QMap<QString,Node::Type> Node::goals_;
+QMap<QString,Node::NodeType> Node::goals_;
 
 /*!
   Initialize the map of search goals. This is called once
   by QDocDatabase::initializeDB(). The map key is a string
-  representing a value in the enum Node::Type. The map value
+  representing a value in the enum Node::NodeType. The map value
   is the enum value.
 
   There should be an entry in the map for each value in the
-  Type enum.
+  NodeType enum.
  */
 void Node::initialize()
 {
@@ -149,13 +149,8 @@ QString Node::plainFullName(const Node* relative) const
  */
 QString Node::fullName(const Node* relative) const
 {
-    if (isDocumentNode())
+    if ((isDocumentNode() || isGroup()) && !title().isEmpty())
         return title();
-    else if (isClass()) {
-        const ClassNode* cn = static_cast<const ClassNode*>(this);
-        if (!cn->serviceName().isEmpty())
-            return cn->serviceName();
-    }
     return plainFullName(relative);
 }
 
@@ -165,8 +160,8 @@ QString Node::fullName(const Node* relative) const
   match is found, return false.
 
   \a types is a list of type/subtype pairs, where the first
-  value in the pair is a Node::Type, and the second value is
-  a Node::SubType. The second value is used in the match if
+  value in the pair is a Node::NodeType, and the second value is
+  a Node::DocSubtype. The second value is used in the match if
   this node's type is Node::Document.
  */
 bool Node::match(const NodeTypeList& types) const
@@ -174,7 +169,7 @@ bool Node::match(const NodeTypeList& types) const
     for (int i=0; i<types.size(); ++i) {
         if (type() == types.at(i).first) {
             if (type() == Node::Document) {
-                if (subType() == types.at(i).second)
+                if (docSubtype() == types.at(i).second)
                     return true;
             }
             else
@@ -205,12 +200,12 @@ void Node::setDoc(const Doc& doc, bool replace)
   given \a parent and \a name. The new node is added to the
   parent's child list.
  */
-Node::Node(Type type, InnerNode *parent, const QString& name)
+Node::Node(NodeType type, InnerNode *parent, const QString& name)
     : nodeType_((unsigned char) type),
       access_((unsigned char) Public),
       safeness_((unsigned char) UnspecifiedSafeness),
       pageType_((unsigned char) NoPageType),
-      status_((unsigned char) Commendable),
+      status_((unsigned char) Active),
       indexNodeFlag_(false),
       parent_(parent),
       relatesTo_(0),
@@ -325,7 +320,7 @@ QString Node::nodeTypeString() const
  */
 QString Node::nodeTypeString(unsigned char t)
 {
-    switch ((Type)t) {
+    switch ((NodeType)t) {
     case Namespace:
         return "namespace";
     case Class:
@@ -375,7 +370,7 @@ QString Node::nodeTypeString(unsigned char t)
  */
 QString Node::nodeSubtypeString() const
 {
-    return nodeSubtypeString(subType());
+    return nodeSubtypeString(docSubtype());
 }
 
 /*!
@@ -385,7 +380,7 @@ QString Node::nodeSubtypeString() const
  */
 QString Node::nodeSubtypeString(unsigned char t)
 {
-    switch ((SubType)t) {
+    switch ((DocSubtype)t) {
     case Example:
         return "example";
     case HeaderFile:
@@ -400,7 +395,7 @@ QString Node::nodeSubtypeString(unsigned char t)
         return "external page";
     case DitaMap:
         return "ditamap";
-    case NoSubType:
+    case NoSubtype:
     default:
         break;
     }
@@ -563,7 +558,7 @@ QString RelatedClass::accessString() const
  */
 Node::Status Node::inheritedStatus() const
 {
-    Status parentStatus = Commendable;
+    Status parentStatus = Active;
     if (parent_)
         parentStatus = parent_->inheritedStatus();
     return (Status)qMin((int)status_, (int)parentStatus);
@@ -778,7 +773,7 @@ void InnerNode::findChildren(const QString& name, NodeList& nodes) const
   with the specified \a name is found but it is not of the
   specified \a type, 0 is returned.
  */
-Node* InnerNode::findChildNode(const QString& name, Type type)
+Node* InnerNode::findChildNode(const QString& name, NodeType type)
 {
     if (type == Function)
         return primaryFunctionMap.value(name);
@@ -857,14 +852,14 @@ QStringList InnerNode::secondaryKeys()
 
 /*!
  */
-void InnerNode::setOverload(FunctionNode *func, bool overlode)
+void InnerNode::setOverload(FunctionNode *func, bool b)
 {
     Node *node = (Node *) func;
     Node *&primary = primaryFunctionMap[func->name()];
 
     if (secondaryFunctionMap.contains(func->name())) {
         NodeList& secs = secondaryFunctionMap[func->name()];
-        if (overlode) {
+        if (b) {
             if (primary == node) {
                 primary = secs.first();
                 secs.erase(secs.begin());
@@ -888,12 +883,14 @@ void InnerNode::setOverload(FunctionNode *func, bool overlode)
 /*!
   Mark all child nodes that have no documentation as having
   private access and internal status. qdoc will then ignore
-  them for documentation purposes.
+  them for documentation purposes. Some nodes have an
+  Intermediate status, meaning that they should be ignored,
+  but not their children.
  */
 void InnerNode::makeUndocumentedChildrenInternal()
 {
     foreach (Node *child, childNodes()) {
-        if (child->doc().isEmpty()) {
+        if (child->doc().isEmpty() && child->status() != Node::Intermediate) {
             child->setAccess(Node::Private);
             child->setStatus(Node::Internal);
         }
@@ -908,8 +905,7 @@ void InnerNode::normalizeOverloads()
     while (p1 != primaryFunctionMap.end()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p1;
         if (secondaryFunctionMap.contains(primaryFunc->name()) &&
-                (primaryFunc->status() != Commendable ||
-                 primaryFunc->access() == Private)) {
+                (primaryFunc->status() != Active || primaryFunc->access() == Private)) {
 
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
             NodeList::ConstIterator s = secs.constBegin();
@@ -920,8 +916,7 @@ void InnerNode::normalizeOverloads()
                 // (i.e, visible functions) are preferable to the primary
                 // function.
 
-                if (secondaryFunc->status() == Commendable &&
-                        secondaryFunc->access() != Private) {
+                if (secondaryFunc->status() == Active && secondaryFunc->access() != Private) {
 
                     *p1 = secondaryFunc;
                     int index = secondaryFunctionMap[primaryFunc->name()].indexOf(secondaryFunc);
@@ -938,14 +933,14 @@ void InnerNode::normalizeOverloads()
     while (p != primaryFunctionMap.constEnd()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p;
         if (primaryFunc->isOverload())
-            primaryFunc->ove = false;
+            primaryFunc->overload_ = false;
         if (secondaryFunctionMap.contains(primaryFunc->name())) {
             NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
             NodeList::ConstIterator s = secs.constBegin();
             while (s != secs.constEnd()) {
                 FunctionNode *secondaryFunc = (FunctionNode *) *s;
                 if (!secondaryFunc->isOverload())
-                    secondaryFunc->ove = true;
+                    secondaryFunc->overload_ = true;
                 ++s;
             }
         }
@@ -1045,7 +1040,7 @@ NodeList InnerNode::overloads(const QString &funcName) const
   Construct an inner node (i.e., not a leaf node) of the
   given \a type and having the given \a parent and \a name.
  */
-InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
+InnerNode::InnerNode(NodeType type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1322,7 +1317,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) cons
   Constructs a leaf node named \a name of the specified
   \a type. The new leaf node becomes a child of \a parent.
  */
-LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
+LeafNode::LeafNode(NodeType type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1349,7 +1344,7 @@ LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
   documentation case where a \e{qmlproperty} command is used
   to override the QML definition of a QML property.
  */
-LeafNode::LeafNode(InnerNode* parent, Type type, const QString& name)
+LeafNode::LeafNode(InnerNode* parent, NodeType type, const QString& name)
     : Node(type, 0, name)
 {
     setParent(parent);
@@ -1587,7 +1582,7 @@ QmlTypeNode* ClassNode::findQmlBaseNode()
   which specifies the type of DocumentNode. The page type for
   the page index is set here.
  */
-DocumentNode::DocumentNode(InnerNode* parent, const QString& name, SubType subtype, Node::PageType ptype)
+DocumentNode::DocumentNode(InnerNode* parent, const QString& name, DocSubtype subtype, Node::PageType ptype)
     : InnerNode(Document, parent, name), nodeSubtype_(subtype)
 {
     setGenus(Node::DOC);
@@ -1621,7 +1616,7 @@ void DocumentNode::setTitle(const QString &title)
 
 /*!
   Returns the document node's full title, which is usually
-  just title(), but for some SubType values is different
+  just title(), but for some DocSubtype values is different
   from title()
  */
 QString DocumentNode::fullTitle() const
@@ -1673,7 +1668,7 @@ QString DocumentNode::subTitle() const
   has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
-    : LeafNode(Enum, parent, name), ft(0)
+    : LeafNode(Enum, parent, name), flagsType_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1683,8 +1678,8 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
  */
 void EnumNode::addItem(const EnumItem& item)
 {
-    itms.append(item);
-    names.insert(item.name());
+    items_.append(item);
+    names_.insert(item.name());
 }
 
 /*!
@@ -1704,7 +1699,7 @@ Node::Access EnumNode::itemAccess(const QString &name) const
  */
 QString EnumNode::itemValue(const QString &name) const
 {
-    foreach (const EnumItem &item, itms) {
+    foreach (const EnumItem &item, items_) {
         if (item.name() == name)
             return item.value();
     }
@@ -1718,7 +1713,7 @@ QString EnumNode::itemValue(const QString &name) const
 /*!
  */
 TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
-    : LeafNode(Typedef, parent, name), ae(0)
+    : LeafNode(Typedef, parent, name), associatedEnum_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1727,7 +1722,7 @@ TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
  */
 void TypedefNode::setAssociatedEnum(const EnumNode *enume)
 {
-    ae = enume;
+    associatedEnum_ = enume;
 }
 
 /*!
@@ -1748,7 +1743,7 @@ Parameter::Parameter(const QString& leftType,
                      const QString& rightType,
                      const QString& name,
                      const QString& defaultValue)
-    : lef(leftType), rig(rightType), nam(name), def(defaultValue)
+    : leftType_(leftType), rightType_(rightType), name_(name), defaultValue_(defaultValue)
 {
 }
 
@@ -1756,7 +1751,7 @@ Parameter::Parameter(const QString& leftType,
   The standard copy constructor copies the strings from \a p.
  */
 Parameter::Parameter(const Parameter& p)
-    : lef(p.lef), rig(p.rig), nam(p.nam), def(p.def)
+    : leftType_(p.leftType_), rightType_(p.rightType_), name_(p.name_), defaultValue_(p.defaultValue_)
 {
 }
 
@@ -1766,10 +1761,10 @@ Parameter::Parameter(const Parameter& p)
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
-    lef = p.lef;
-    rig = p.rig;
-    nam = p.nam;
-    def = p.def;
+    leftType_ = p.leftType_;
+    rightType_ = p.rightType_;
+    name_ = p.name_;
+    defaultValue_ = p.defaultValue_;
     return *this;
 }
 
@@ -1780,12 +1775,12 @@ Parameter& Parameter::operator=(const Parameter& p)
  */
 QString Parameter::reconstruct(bool value) const
 {
-    QString p = lef + rig;
+    QString p = leftType_ + rightType_;
     if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
         p += QLatin1Char(' ');
-    p += nam;
-    if (value && !def.isEmpty())
-        p += " = " + def;
+    p += name_;
+    if (value && !defaultValue_.isEmpty())
+        p += " = " + defaultValue_;
     return p;
 }
 
@@ -1800,15 +1795,15 @@ QString Parameter::reconstruct(bool value) const
  */
 FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
     : LeafNode(Function, parent, name),
-      met(Plain),
-      vir(NonVirtual),
-      con(false),
-      sta(false),
-      ove(false),
-      reimp(false),
+      metaness_(Plain),
+      virtualness_(NonVirtual),
+      const_(false),
+      static_(false),
+      overload_(false),
+      reimplemented_(false),
       attached_(false),
-      rf(0),
-      ap(0)
+      reimplementedFrom_(0),
+      associatedProperty_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1818,17 +1813,17 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
   by \a type. It's parent is \a parent, and it's name is \a name.
   If \a attached is true, it is an attached method or signal.
  */
-FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bool attached)
+FunctionNode::FunctionNode(NodeType type, InnerNode *parent, const QString& name, bool attached)
     : LeafNode(type, parent, name),
-      met(Plain),
-      vir(NonVirtual),
-      con(false),
-      sta(false),
-      ove(false),
-      reimp(false),
+      metaness_(Plain),
+      virtualness_(NonVirtual),
+      const_(false),
+      static_(false),
+      overload_(false),
+      reimplemented_(false),
       attached_(attached),
-      rf(0),
-      ap(0)
+      reimplementedFrom_(0),
+      associatedProperty_(0)
 {
     setGenus(Node::QML);
     if (type == QmlMethod || type == QmlSignal) {
@@ -1844,32 +1839,31 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
   is PureVirtual, and if the parent() is a ClassNode, set the parent's
   \e abstract flag to true.
  */
-void FunctionNode::setVirtualness(Virtualness virtualness)
+void FunctionNode::setVirtualness(Virtualness v)
 {
-    vir = virtualness;
-    if ((virtualness == PureVirtual) && parent() &&
-            (parent()->type() == Node::Class))
+    virtualness_ = v;
+    if ((v == PureVirtual) && parent() && (parent()->type() == Node::Class))
         parent()->setAbstract(true);
 }
 
 /*!
  */
-void FunctionNode::setOverload(bool overlode)
+void FunctionNode::setOverload(bool b)
 {
-    parent()->setOverload(this, overlode);
-    ove = overlode;
+    parent()->setOverload(this, b);
+    overload_ = b;
 }
 
 /*!
-  Sets the function node's reimplementation flag to \a r.
-  When \a r is true, it is supposed to mean that this function
+  Sets the function node's reimplementation flag to \a b.
+  When \a b is true, it is supposed to mean that this function
   is a reimplementation of a virtual function in a base class,
-  but it really just means the \e reimp command was seen in the
-  qdoc comment.
+  but it really just means the \e {\\reimp} command was seen in
+  the qdoc comment.
  */
-void FunctionNode::setReimp(bool r)
+void FunctionNode::setReimplemented(bool b)
 {
-    reimp = r;
+    reimplemented_ = b;
 }
 
 /*!
@@ -1877,16 +1871,16 @@ void FunctionNode::setReimp(bool r)
  */
 void FunctionNode::addParameter(const Parameter& parameter)
 {
-    params.append(parameter);
+    parameters_.append(parameter);
 }
 
 /*!
  */
 void FunctionNode::borrowParameterNames(const FunctionNode *source)
 {
-    QList<Parameter>::Iterator t = params.begin();
-    QList<Parameter>::ConstIterator s = source->params.constBegin();
-    while (s != source->params.constEnd() && t != params.end()) {
+    QList<Parameter>::Iterator t = parameters_.begin();
+    QList<Parameter>::ConstIterator s = source->parameters_.constBegin();
+    while (s != source->parameters_.constEnd() && t != parameters_.end()) {
         if (!(*s).name().isEmpty())
             (*t).setName((*s).name());
         ++s;
@@ -1898,19 +1892,19 @@ void FunctionNode::borrowParameterNames(const FunctionNode *source)
   If this function is a reimplementation, \a from points
   to the FunctionNode of the function being reimplemented.
  */
-void FunctionNode::setReimplementedFrom(FunctionNode *from)
+void FunctionNode::setReimplementedFrom(FunctionNode *f)
 {
-    rf = from;
-    from->rb.append(this);
+    reimplementedFrom_ = f;
+    f->reimplementedBy_.append(this);
 }
 
 /*!
   Sets the "associated" property to \a property. The function
   might be the setter or getter for a property, for example.
  */
-void FunctionNode::setAssociatedProperty(PropertyNode *property)
+void FunctionNode::setAssociatedProperty(PropertyNode *p)
 {
-    ap = property;
+    associatedProperty_ = p;
 }
 
 /*!
@@ -1958,15 +1952,15 @@ QString FunctionNode::rawParameters(bool names, bool values) const
   Returns the list of reconstructed parameters. If \a values
   is true, the default values are included, if any are present.
  */
-QStringList FunctionNode::reconstructParams(bool values) const
+QStringList FunctionNode::reconstructParameters(bool values) const
 {
-    QStringList params;
+    QStringList reconstructedParameters;
     QList<Parameter>::ConstIterator p = parameters().constBegin();
     while (p != parameters().constEnd()) {
-        params << (*p).reconstruct(values);
+        reconstructedParameters << (*p).reconstruct(values);
         ++p;
     }
-    return params;
+    return reconstructedParameters;
 }
 
 /*!
@@ -1980,11 +1974,11 @@ QString FunctionNode::signature(bool values) const
     if (!returnType().isEmpty())
         s = returnType() + QLatin1Char(' ');
     s += name() + QLatin1Char('(');
-    QStringList params = reconstructParams(values);
-    int p = params.size();
+    QStringList reconstructedParameters = reconstructParameters(values);
+    int p = reconstructedParameters.size();
     if (p > 0) {
         for (int i=0; i<p; i++) {
-            s += params[i];
+            s += reconstructedParameters[i];
             if (i < (p-1))
                 s += ", ";
         }
@@ -1998,8 +1992,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug("QML METHOD %s rt %s pp %s",
-           qPrintable(name()), qPrintable(rt), qPrintable(pp.join(' ')));
+    qDebug("QML METHOD %s returnType_ %s parentPath_ %s",
+           qPrintable(name()), qPrintable(returnType_), qPrintable(parentPath_.join(' ')));
 }
 
 /*!
@@ -2019,10 +2013,10 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
       scriptable_(FlagValueDefault),
       writable_(FlagValueDefault),
       user_(FlagValueDefault),
-      cst(false),
-      fnl(false),
-      rev(-1),
-      overrides(0)
+      const_(false),
+      final_(false),
+      revision_(-1),
+      overrides_(0)
 {
     setGenus(Node::CPP);
 }
@@ -2040,8 +2034,8 @@ PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
 void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
 {
     for (int i = 0; i < NumFunctionRoles; ++i) {
-        if (funcs[i].isEmpty())
-            funcs[i] = baseProperty->funcs[i];
+        if (functions_[i].isEmpty())
+            functions_[i] = baseProperty->functions_[i];
     }
     if (stored_ == FlagValueDefault)
         stored_ = baseProperty->stored_;
@@ -2053,7 +2047,7 @@ void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
         writable_ = baseProperty->writable_;
     if (user_ == FlagValueDefault)
         user_ = baseProperty->user_;
-    overrides = baseProperty;
+    overrides_ = baseProperty;
 }
 
 /*!
@@ -2127,9 +2121,10 @@ void QmlTypeNode::terminate()
  */
 void QmlTypeNode::addInheritedBy(const QString& base, Node* sub)
 {
-    if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd()) {
+    if (sub->isInternal())
+        return;
+    if (inheritedBy.constFind(base,sub) == inheritedBy.constEnd())
         inheritedBy.insert(base,sub);
-    }
 }
 
 /*!
@@ -2574,7 +2569,7 @@ QString Node::idForNode() const
                     str = "js-method-" + parent_->name().toLower() + "-" + func->name();
                 else if (parent_->type() == Document) {
                     qDebug() << "qdoc internal error: Node subtype not handled:"
-                             << parent_->subType() << func->name();
+                             << parent_->docSubtype() << func->name();
                 }
                 else
                     qDebug() << "qdoc internal error: Node type not handled:"
@@ -2599,7 +2594,7 @@ QString Node::idForNode() const
         break;
     case Node::Document:
         {
-            switch (subType()) {
+            switch (docSubtype()) {
             case Node::Page:
             case Node::HeaderFile:
                 str = title();
@@ -2620,7 +2615,7 @@ QString Node::idForNode() const
                 break;
             default:
                 qDebug() << "ERROR: A case was not handled in Node::idForNode():"
-                         << "subType():" << subType() << "type():" << type();
+                         << "docSubtype():" << docSubtype() << "type():" << type();
                 break;
             }
         }
@@ -2690,12 +2685,12 @@ QString Node::idForNode() const
         break;
     default:
         qDebug() << "ERROR: A case was not handled in Node::idForNode():"
-                 << "type():" << type() << "subType():" << subType();
+                 << "type():" << type() << "docSubtype():" << docSubtype();
         break;
     }
     if (str.isEmpty()) {
         qDebug() << "ERROR: A link text was empty in Node::idForNode():"
-                 << "type():" << type() << "subType():" << subType()
+                 << "type():" << type() << "docSubtype():" << docSubtype()
                  << "name():" << name()
                  << "title():" << title();
     }

@@ -462,7 +462,7 @@ bool QDBusConnection::send(const QDBusMessage &message) const
 {
     if (!d || !d->connection) {
         QDBusError err = QDBusError(QDBusError::Disconnected,
-                                    QLatin1String("Not connected to D-BUS server"));
+                                    QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
         return false;
@@ -495,7 +495,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
 {
     if (!d || !d->connection) {
         QDBusError err = QDBusError(QDBusError::Disconnected,
-                                    QLatin1String("Not connected to D-BUS server"));
+                                    QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
         return false;
@@ -553,7 +553,7 @@ QDBusMessage QDBusConnection::call(const QDBusMessage &message, QDBus::CallMode 
 {
     if (!d || !d->connection) {
         QDBusError err = QDBusError(QDBusError::Disconnected,
-                                    QLatin1String("Not connected to D-Bus server"));
+                                    QDBusUtil::disconnectedErrorMessage());
         if (d)
             d->lastError = err;
 
@@ -968,7 +968,7 @@ bool QDBusConnection::isConnected() const
 */
 QDBusError QDBusConnection::lastError() const
 {
-    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QStringLiteral("Not connected."));
+    return d ? d->lastError : QDBusError(QDBusError::Disconnected, QDBusUtil::disconnectedErrorMessage());
 }
 
 /*!

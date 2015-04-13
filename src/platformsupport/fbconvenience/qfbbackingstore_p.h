@@ -70,8 +70,8 @@ public:
     void lock();
     void unlock();
 
-    void beginPaint(const QRegion &);
-    void endPaint();
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
 protected:
     friend class QFbWindow;

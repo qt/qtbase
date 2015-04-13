@@ -841,13 +841,13 @@ void tst_QTextDocumentFragment::unorderedListEnumeration()
     setHtml(QString::fromLatin1(html));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
 
-    const char html2[] = "<ul><ul><ul type=disc><li>Blah</li></ul></ul>";
+    const char html2[] = "<ul><ul><ul type=circle><li>Blah</li></ul></ul>";
     setHtml(QString::fromLatin1(html2));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
+    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
 
 }
 
@@ -1378,8 +1378,8 @@ void tst_QTextDocumentFragment::html_listStart1()
 {
     // don't create a block for the <ul> element, even if there's some whitespace between
     // it and the <li>
-    const char html[] = "<ul>        <li>list item</li><ul>";
-    cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
+    const QString html = QStringLiteral("<ul>        <li>list item</li><ul>");
+    cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
 
     QCOMPARE(doc->blockCount(), 1);
 }
@@ -1387,8 +1387,8 @@ void tst_QTextDocumentFragment::html_listStart1()
 void tst_QTextDocumentFragment::html_listStart2()
 {
     // unlike with html_listStart1 we want a block showing the 'buggy' text here
-    const char html[] = "<ul>buggy, but text should appear<li>list item</li><ul>";
-    cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
+    const QString html = QStringLiteral("<ul>buggy, but text should appear<li>list item</li><ul>");
+    cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
 
     QCOMPARE(doc->blockCount(), 2);
 }

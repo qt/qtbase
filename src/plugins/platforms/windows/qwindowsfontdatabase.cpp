@@ -303,8 +303,7 @@ namespace {
             , m_referenceCount(0)
         {
         }
-
-        ~DirectWriteFontFileStream()
+        virtual ~DirectWriteFontFileStream()
         {
         }
 
@@ -355,7 +354,7 @@ namespace {
         OUT void **fragmentContext)
     {
         *fragmentContext = NULL;
-        if (fragmentSize + fileOffset <= m_fontData.size()) {
+        if (fileOffset + fragmentSize <= quint64(m_fontData.size())) {
             *fragmentStart = m_fontData.data() + fileOffset;
             return S_OK;
         } else {
@@ -384,8 +383,7 @@ namespace {
     {
     public:
         DirectWriteFontFileLoader() : m_referenceCount(0) {}
-
-        ~DirectWriteFontFileLoader()
+        virtual ~DirectWriteFontFileLoader()
         {
         }
 
@@ -1104,18 +1102,14 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
         GUID guid;
         CoCreateGuid(&guid);
 
-#ifdef Q_CC_GNU
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
         QString uniqueFamilyName = QLatin1Char('f')
                 + QString::number(guid.Data1, 36) + QLatin1Char('-')
                 + QString::number(guid.Data2, 36) + QLatin1Char('-')
                 + QString::number(guid.Data3, 36) + QLatin1Char('-')
                 + QString::number(*reinterpret_cast<quint64 *>(guid.Data4), 36);
-#ifdef Q_CC_GNU
-#  pragma GCC diagnostic pop
-#endif
+QT_WARNING_POP
 
         QString actualFontName = font.changeFamilyName(uniqueFamilyName);
         if (actualFontName.isEmpty()) {

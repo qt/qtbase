@@ -812,6 +812,7 @@ bool operator!=(const QSurfaceFormat& a, const QSurfaceFormat& b)
 QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
 {
     const QSurfaceFormatPrivate * const d = f.d;
+    QDebugStateSaver saver(dbg);
 
     dbg.nospace() << "QSurfaceFormat("
                   << "version " << d->major << '.' << d->minor
@@ -828,7 +829,7 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
                   << ", profile  " << d->profile
                   << ')';
 
-    return dbg.space();
+    return dbg;
 }
 #endif
 

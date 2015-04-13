@@ -80,6 +80,8 @@ public:
     QNetworkProxy resolveProxy(const QHostAddress &address, quint16 port);
 #endif
 
+    virtual void configureCreatedSocket();
+
     // from QAbstractSocketEngineReceiver
     void readNotification() Q_DECL_OVERRIDE;
     void closeNotification() Q_DECL_OVERRIDE { readNotification(); }

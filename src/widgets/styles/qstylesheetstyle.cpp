@@ -2393,6 +2393,13 @@ static bool unstylable(const QWidget *w)
             return true;
     }
 #endif
+
+#ifndef QT_NO_TABBAR
+    if (w->metaObject() == &QWidget::staticMetaObject
+            && qobject_cast<const QTabBar*>(w->parentWidget()))
+        return true; // The moving tab of a QTabBar
+#endif
+
     return false;
 }
 

@@ -2126,7 +2126,8 @@
            regardless of whether the parent widget is embedded in a scene or
            not.
 
-    \value WindowShadeButtonHint
+    \value WindowShadeButtonHint Adds a shade button in place of the minimize
+           button if the underlying window manager supports it.
 
     \value WindowStaysOnTopHint  Informs the window system that the
            window should stay on top of all other windows. Note that
@@ -2158,6 +2159,15 @@
 
     \value WindowDoesNotAcceptFocus Informs the window system that this window should
            not receive the input focus.
+
+    \value MaximizeUsingFullscreenGeometryHint Informs the window system that when
+           maximizing the window it should use as much of the available screen geometry
+           as possible, including areas that may be covered by system UI such as status
+           bars or application launchers. This may result in the window being placed
+           under these system UIs, but does not guarantee it, depending on whether or
+           not the platform supports it. When the flag is enabled the user is responsible
+           for taking QScreen::availableGeometry() into account, so that any UI elements
+           in the application that require user interaction are not covered by system UI.
 
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
@@ -2439,8 +2449,9 @@
 
     Flags that alter the behavior:
 
-    \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
+    \value ImhHiddenText             The input method should not show the characters while typing.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
+                                     Note that setting \c ImhHiddenText does not change the echo mode.
     \value ImhSensitiveData          Typed text should not be stored by the active input method
                                      in any persistent storage like predictive user dictionary.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
@@ -2502,6 +2513,7 @@
                                 but \b{must} not return an empty string unless the cursor is at the start of the document.
     \value ImTextAfterCursor    The plain text after the cursor. The widget can decide how much text to return,
                                 but \b{must} not return an empty string unless the cursor is at the end of the document.
+    \value ImReturnKeyType      The return key type.
 
     Masks:
 
@@ -2509,6 +2521,36 @@
     \value ImQueryAll           Query for all input method properties.
 
     \sa QInputMethodQueryEvent
+*/
+
+/*!
+    \enum Qt::ReturnKeyType
+
+    This can be used to alter the appearance of the Return key on an on screen keyboard.
+
+    Note that not all of these values are supported on all platforms.
+
+    \value ReturnKeyDefault     The default return key.
+                                This can either be a button closing the keyboard, or a Return button
+                                causing a new line in case of a multi-line input field.
+    \value ReturnKeyEnter       Show a Return button that inserts a new line.
+                                The keyboard will not close when this button is pressed.
+    \value ReturnKeyDone        Show a "Done" button.
+                                The keyboard will close when this button is pressed.
+    \value ReturnKeyGo          Show a "Go" button.
+                                Typically used in an address bar when entering an URL; the keyboard
+                                will close when this button is pressed.
+    \value ReturnKeySend        Show a "Send" button.
+                                The keyboard will close when this button is pressed.
+    \value ReturnKeySearch      Show a "Search" button.
+                                The keyboard will close when this button is pressed.
+    \value ReturnKeyNext        Show a "Next" button.
+                                Typically used in a form to allow navigating to the next input field;
+                                the keyboard will not close when this button is pressed.
+    \value ReturnKeyPrevious    Show a "Previous" button.
+                                The keyboard will not close when this button is pressed.
+
+    \since 5.6
 */
 
 /*!

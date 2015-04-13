@@ -1734,6 +1734,11 @@ const QItemSelection QItemSelectionModel::selection() const
 /*!
     \since 5.5
 
+    \property QItemSelectionModel::selectedIndexes
+*/
+/*!
+    \since 5.5
+
     \property QItemSelectionModel::model
     \internal
 */

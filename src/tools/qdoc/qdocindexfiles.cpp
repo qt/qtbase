@@ -342,7 +342,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if ((element.nodeName() == "qmlmethod") ||
              (element.nodeName() == "qmlsignal") ||
              (element.nodeName() == "qmlsignalhandler")) {
-        Node::Type t = Node::QmlMethod;
+        Node::NodeType t = Node::QmlMethod;
         if (element.nodeName() == "qmlsignal")
             t = Node::QmlSignal;
         else if (element.nodeName() == "qmlsignalhandler")
@@ -354,7 +354,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if ((element.nodeName() == "jsmethod") ||
              (element.nodeName() == "jssignal") ||
              (element.nodeName() == "jssignalhandler")) {
-        Node::Type t = Node::QmlMethod;
+        Node::NodeType t = Node::QmlMethod;
         if (element.nodeName() == "jssignal")
             t = Node::QmlSignal;
         else if (element.nodeName() == "jssignalhandler")
@@ -405,7 +405,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node = cn;
     }
     else if (element.nodeName() == "page") {
-        Node::SubType subtype;
+        Node::DocSubtype subtype;
         Node::PageType ptype = Node::NoPageType;
         QString attr = element.attribute("subtype");
         if (attr == "example") {
@@ -486,8 +486,8 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QString t = element.attribute("virtual");
         if (t == "non")
             virt = FunctionNode::NonVirtual;
-        else if (t == "impure")
-            virt = FunctionNode::ImpureVirtual;
+        else if (t == "virtual")
+            virt = FunctionNode::NormalVirtual;
         else if (t == "pure")
             virt = FunctionNode::PureVirtual;
         else
@@ -613,14 +613,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setStatus(Node::Obsolete);
     else if (status == "preliminary")
         node->setStatus(Node::Preliminary);
-    else if (status == "commendable")
-        node->setStatus(Node::Commendable);
+    else if (status == "active")
+        node->setStatus(Node::Active);
     else if (status == "internal")
         node->setStatus(Node::Internal);
-    else if (status == "main")
-        node->setStatus(Node::Main);
     else
-        node->setStatus(Node::Commendable);
+        node->setStatus(Node::Active);
 
     QString physicalModuleName = element.attribute("module");
     if (!physicalModuleName.isEmpty())
@@ -728,7 +726,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     /*
       Don't include index nodes in a new index file. Or DITA map nodes.
      */
-    if (node->isIndexNode() || node->subType() == Node::DitaMap)
+    if (node->isIndexNode() || node->docSubtype() == Node::DitaMap)
         return false;
 
     QString nodeName;
@@ -887,13 +885,12 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Preliminary:
         status = "preliminary";
         break;
-    case Node::Commendable:
-        status = "commendable";
+    case Node::Active:
+        status = "active";
         break;
     case Node::Internal:
         status = "internal";
         break;
-    case Node::Main:
     default:
         status = "main";
         break;
@@ -1022,7 +1019,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             */
             bool writeModuleName = false;
             const DocumentNode* docNode = static_cast<const DocumentNode*>(node);
-            switch (docNode->subType()) {
+            switch (docNode->docSubtype()) {
             case Node::Example:
                 writer.writeAttribute("subtype", "example");
                 writeModuleName = true;
@@ -1142,8 +1139,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             case FunctionNode::NonVirtual:
                 writer.writeAttribute("virtual", "non");
                 break;
-            case FunctionNode::ImpureVirtual:
-                writer.writeAttribute("virtual", "impure");
+            case FunctionNode::NormalVirtual:
+                writer.writeAttribute("virtual", "virtual");
                 break;
             case FunctionNode::PureVirtual:
                 writer.writeAttribute("virtual", "pure");
@@ -1319,7 +1316,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         bool external = false;
         if (node->type() == Node::Document) {
             const DocumentNode* docNode = static_cast<const DocumentNode*>(node);
-            if (docNode->subType() == Node::ExternalPage)
+            if (docNode->docSubtype() == Node::ExternalPage)
                 external = true;
         }
         foreach (const Atom* target, node->doc().targets()) {

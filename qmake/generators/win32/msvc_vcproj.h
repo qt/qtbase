@@ -108,6 +108,7 @@ protected:
     void initFormFiles();
     void initResourceFiles();
     void initDeploymentFiles();
+    void initDistributionFiles();
     void initLexYaccFiles();
     void initExtraCompilerOutputs();
 

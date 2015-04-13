@@ -720,8 +720,38 @@ QQuaternion QQuaternion::fromAxes(const QVector3D &xAxis, const QVector3D &yAxis
 /*!
     \since 5.5
 
+    Constructs the quaternion using specified forward direction \a direction
+    and upward direction \a up.
+    If the upward direction was not specified or the forward and upward
+    vectors are collinear, a new orthonormal upward direction will be generated.
+
+    \sa fromAxes(), rotationTo()
+*/
+QQuaternion QQuaternion::fromDirection(const QVector3D &direction, const QVector3D &up)
+{
+    if (qFuzzyIsNull(direction.x()) && qFuzzyIsNull(direction.y()) && qFuzzyIsNull(direction.z()))
+        return QQuaternion();
+
+    const QVector3D zAxis(direction.normalized());
+    QVector3D xAxis(QVector3D::crossProduct(up, zAxis));
+    if (qFuzzyIsNull(xAxis.lengthSquared())) {
+        // collinear or invalid up vector; derive shortest arc to new direction
+        return QQuaternion::rotationTo(QVector3D(0.0f, 0.0f, 1.0f), zAxis);
+    }
+
+    xAxis.normalize();
+    const QVector3D yAxis(QVector3D::crossProduct(zAxis, xAxis));
+
+    return QQuaternion::fromAxes(xAxis, yAxis, zAxis);
+}
+
+/*!
+    \since 5.5
+
     Returns the shortest arc quaternion to rotate from the direction described by the vector \a from
     to the direction described by the vector \a to.
+
+    \sa fromDirection()
 */
 QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 {
@@ -950,10 +980,11 @@ QQuaternion::operator QVariant() const
 
 QDebug operator<<(QDebug dbg, const QQuaternion &q)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QQuaternion(scalar:" << q.scalar()
         << ", vector:(" << q.x() << ", "
         << q.y() << ", " << q.z() << "))";
-    return dbg.space();
+    return dbg;
 }
 
 #endif

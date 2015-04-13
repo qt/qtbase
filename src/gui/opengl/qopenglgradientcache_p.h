@@ -50,6 +50,7 @@
 #include <private/qopenglcontext_p.h>
 #include <QtCore/qmutex.h>
 #include <QGradient>
+#include <qrgba64.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +84,7 @@ public:
 private:
     inline int maxCacheSize() const { return 60; }
     inline void generateGradientColorTable(const QGradient& gradient,
-                                           uint *colorTable,
+                                           QRgba64 *colorTable,
                                            int size, qreal opacity) const;
     GLuint addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity);
     void cleanCache();

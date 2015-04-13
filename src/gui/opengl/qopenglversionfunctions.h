@@ -114,6 +114,8 @@ public:
     QAtomicInt refs;
 };
 
+class QAbstractOpenGLFunctions;
+
 class QAbstractOpenGLFunctionsPrivate
 {
 public:
@@ -128,12 +130,16 @@ public:
                                        const QOpenGLVersionStatus &v,
                                        QOpenGLVersionFunctionsBackend *backend);
     static void removeFunctionsBackend(QOpenGLContext *context, const QOpenGLVersionStatus &v);
+    static void insertExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f);
+    static void removeExternalFunctions(QOpenGLContext *context, QAbstractOpenGLFunctions *f);
+
+    static QAbstractOpenGLFunctionsPrivate *get(QAbstractOpenGLFunctions *q);
 
     QOpenGLContext *owningContext;
     bool initialized;
 };
 
-class QAbstractOpenGLFunctions
+class Q_GUI_EXPORT QAbstractOpenGLFunctions
 {
 public:
     virtual ~QAbstractOpenGLFunctions();
@@ -153,6 +159,11 @@ protected:
 
     friend class QOpenGLContext;
 };
+
+inline QAbstractOpenGLFunctionsPrivate *QAbstractOpenGLFunctionsPrivate::get(QAbstractOpenGLFunctions *q)
+{
+    return q->d_func();
+}
 
 #if !defined(QT_OPENGL_ES_2)
 

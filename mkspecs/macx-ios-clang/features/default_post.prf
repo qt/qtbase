@@ -43,9 +43,6 @@ equals(TEMPLATE, app) {
             QMAKE_EXTRA_COMPILERS =
 
             !build_pass {
-                # Prefer debug and simulator as default test target
-                testcase: CONFIG += debug iphonesimulator
-
                 CONFIG += debug_and_release
                 load(resolve_config)
 

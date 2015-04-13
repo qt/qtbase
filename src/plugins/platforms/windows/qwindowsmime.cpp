@@ -166,11 +166,6 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
     if (s.status() != QDataStream::Ok)
         return false;
 
-    DWORD colorSpace[3] = {0x00ff0000,0x0000ff00,0x000000ff};
-    d->write(reinterpret_cast<const char*>(colorSpace), sizeof(colorSpace));
-    if (s.status() != QDataStream::Ok)
-        return false;
-
     if (image.format() != QImage::Format_ARGB32)
         image = image.convertToFormat(QImage::Format_ARGB32);
 
@@ -255,10 +250,6 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
     }
     image.setDotsPerMeterX(bi.bV5XPelsPerMeter);
     image.setDotsPerMeterY(bi.bV5YPelsPerMeter);
-    // read color table
-    DWORD colorSpace[3];
-    if (d->read((char *)colorSpace, sizeof(colorSpace)) != sizeof(colorSpace))
-        return false;
 
     red_shift = calc_shift(red_mask);
     green_shift = calc_shift(green_mask);

@@ -31,6 +31,7 @@
 **
 ****************************************************************************/
 
+#include "../../../../../src/corelib/tools/qalgorithms.h"
 #include <QtTest/QtTest>
 
 #include <iostream>
@@ -80,6 +81,24 @@ private slots:
     void popCount32()      { popCount_impl<quint32>(); }
     void popCount64()      { popCount_impl<quint64>(); }
 
+    void countTrailing08_data() { countTrailing_data_impl(sizeof(quint8 )); }
+    void countTrailing16_data() { countTrailing_data_impl(sizeof(quint16)); }
+    void countTrailing32_data() { countTrailing_data_impl(sizeof(quint32)); }
+    void countTrailing64_data() { countTrailing_data_impl(sizeof(quint64)); }
+    void countTrailing08()      { countTrailing_impl<quint8 >(); }
+    void countTrailing16()      { countTrailing_impl<quint16>(); }
+    void countTrailing32()      { countTrailing_impl<quint32>(); }
+    void countTrailing64()      { countTrailing_impl<quint64>(); }
+
+    void countLeading08_data() { countLeading_data_impl(sizeof(quint8 )); }
+    void countLeading16_data() { countLeading_data_impl(sizeof(quint16)); }
+    void countLeading32_data() { countLeading_data_impl(sizeof(quint32)); }
+    void countLeading64_data() { countLeading_data_impl(sizeof(quint64)); }
+    void countLeading08()      { countLeading_impl<quint8 >(); }
+    void countLeading16()      { countLeading_impl<quint16>(); }
+    void countLeading32()      { countLeading_impl<quint32>(); }
+    void countLeading64()      { countLeading_impl<quint64>(); }
+
 private:
 #if Q_TEST_PERFORMANCE
     void performance();
@@ -87,6 +106,14 @@ private:
     void popCount_data_impl(size_t sizeof_T_Int);
     template <typename T_Int>
     void popCount_impl();
+
+    void countTrailing_data_impl(size_t sizeof_T_Int);
+    template <typename T_Int>
+    void countTrailing_impl();
+
+    void countLeading_data_impl(size_t sizeof_T_Int);
+    template <typename T_Int>
+    void countLeading_impl();
 };
 
 class TestInt
@@ -1082,6 +1109,86 @@ void tst_QAlgorithms::popCount_impl()
     const T_Int value = static_cast<T_Int>(input);
 
     QCOMPARE(qPopulationCount(value), expected);
+}
+
+void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
+{
+    using namespace QTest;
+    addColumn<quint64>("input");
+    addColumn<uint>("expected");
+
+    int nibs = sizeof_T_Int*2;
+
+    newRow(("0x"+QByteArray::number(0,16).rightJustified(nibs,'0')).constData()) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    for (uint i = 0; i < sizeof_T_Int*8; ++i) {
+        const quint64 input = Q_UINT64_C(1) << i;
+        newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << i;
+    }
+
+    quint64 type_mask;
+    if (sizeof_T_Int>=8)
+        type_mask = ~Q_UINT64_C(0);
+    else
+        type_mask = (Q_UINT64_C(1) << (sizeof_T_Int*8))-1;
+
+    // and some random ones:
+    for (uint i = 0; i < sizeof_T_Int*8; ++i) {
+        for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
+            const quint64 r = quint64(qrand()) << 32 | quint32(qrand());
+            const quint64 b = Q_UINT64_C(1) << i;
+            const quint64 mask = ((~(b-1)) ^ b) & type_mask;
+            const quint64 input = (r&mask) | b;
+            newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << i;
+        }
+    }
+}
+
+template <typename T_Int>
+void tst_QAlgorithms::countTrailing_impl()
+{
+    QFETCH(quint64, input);
+    QFETCH(uint, expected);
+
+    const T_Int value = static_cast<T_Int>(input);
+
+    QCOMPARE(qCountTrailingZeroBits(value), expected);
+}
+
+void tst_QAlgorithms::countLeading_data_impl(size_t sizeof_T_Int)
+{
+    using namespace QTest;
+    addColumn<quint64>("input");
+    addColumn<uint>("expected");
+
+    int nibs = sizeof_T_Int*2;
+
+    newRow(("0x"+QByteArray::number(0,16).rightJustified(nibs,'0')).constData()) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    for (uint i = 0; i < sizeof_T_Int*8; ++i) {
+        const quint64 input = Q_UINT64_C(1) << i;
+        newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << uint(sizeof_T_Int*8-i-1);
+    }
+
+    // and some random ones:
+    for (uint i = 0; i < sizeof_T_Int*8; ++i) {
+        for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
+            const quint64 r = quint64(qrand()) << 32 | quint32(qrand());
+            const quint64 b = Q_UINT64_C(1) << i;
+            const quint64 mask = b-1;
+            const quint64 input = (r&mask) | b;
+            newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << uint(sizeof_T_Int*8-i-1);
+        }
+    }
+}
+
+template <typename T_Int>
+void tst_QAlgorithms::countLeading_impl()
+{
+    QFETCH(quint64, input);
+    QFETCH(uint, expected);
+
+    const T_Int value = static_cast<T_Int>(input);
+
+    QCOMPARE(qCountLeadingZeroBits(value), expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QAlgorithms)

@@ -158,7 +158,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     xcb_generic_error_t *error = NULL;
     if (shm_present)
         error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
-    if (!shm_present || error) {
+    if (!shm_present || error || id == -1) {
         free(error);
 
         shmdt(m_shm_info.shmaddr);
@@ -304,25 +304,52 @@ QXcbBackingStore::~QXcbBackingStore()
 
 QPaintDevice *QXcbBackingStore::paintDevice()
 {
-    return m_image ? m_image->image() : 0;
+    if (!m_image)
+        return 0;
+    return m_rgbImage.isNull() ? m_image->image() : &m_rgbImage;
 }
 
 void QXcbBackingStore::beginPaint(const QRegion &region)
 {
     if (!m_image)
         return;
-    const int dpr = int(m_image->image()->devicePixelRatio());
-    QRegion xRegion =  dpr == 1 ? region : QTransform::fromScale(dpr,dpr).map(region);
-    m_image->preparePaint(xRegion);
+
+    int dpr = int(m_image->image()->devicePixelRatio());
+    const int windowDpr = int(window()->devicePixelRatio());
+    if (windowDpr != dpr) {
+        resize(window()->size(), QRegion());
+        dpr = int(m_image->image()->devicePixelRatio());
+    }
+
+    m_paintRegion = dpr == 1 ? region : QTransform::fromScale(dpr,dpr).map(region);
+    m_image->preparePaint(m_paintRegion);
 
     if (m_image->image()->hasAlphaChannel()) {
-        QPainter p(m_image->image());
+        QPainter p(paintDevice());
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        const QVector<QRect> rects = xRegion.rects();
+        const QVector<QRect> rects = m_paintRegion.rects();
         const QColor blank = Qt::transparent;
         for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
             p.fillRect(*it, blank);
         }
+    }
+}
+
+void QXcbBackingStore::endPaint()
+{
+    QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window()->handle());
+    if (!platformWindow || !platformWindow->imageNeedsRgbSwap())
+        return;
+
+    // Slow path: the paint device was m_rgbImage. Now copy with swapping red
+    // and blue into m_image.
+    const QVector<QRect> rects = m_paintRegion.rects();
+    if (rects.isEmpty())
+        return;
+    QPainter p(m_image->image());
+    for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+        const QRect rect = *it;
+        p.drawImage(rect.topLeft(), m_rgbImage.copy(rect).rgbSwapped());
     }
 }
 
@@ -343,7 +370,19 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     if (!m_image || m_image->size().isEmpty())
         return;
 
-    QSize imageSize = m_image->size();
+    // Note on the qHighDpiToDeviceIndependentPixels call below: When scaling
+    // in QtGui is active this prevents xcb plugin from scalìng in addition
+    // by keeping "dpr" below at 1.
+    const int dpr = int(qHighDpiToDeviceIndependentPixels(window->devicePixelRatio(), window));
+
+
+#ifndef QT_NO_DEBUG
+    const int imageDpr = int(m_image->image()->devicePixelRatio());
+    if (dpr != imageDpr)
+        qWarning() <<  "QXcbBackingStore::flush() wrong devicePixelRatio for backingstore image" << dpr << imageDpr;
+#endif
+
+    QSize imageSize = m_image->size() / dpr; //because we multiply with the DPR later
 
     QRegion clipped = region;
     clipped &= qHighDpiToDevicePixels(QRect(0, 0, window->width(), window->height()));
@@ -361,11 +400,6 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         qWarning("QXcbBackingStore::flush: QWindow has no platform window (QTBUG-32681)");
         return;
     }
-
-    // Note on the qHighDpiToDeviceIndependentPixels call below: When scaling
-    // in QtGui is active this prevents xcb plugin from scalìng in addition
-    // by keeping "dpr" below at 1.
-    const int dpr = int(qHighDpiToDeviceIndependentPixels(window->devicePixelRatio(), window));
 
     QVector<QRect> rects = clipped.rects();
     for (int i = 0; i < rects.size(); ++i) {
@@ -403,8 +437,7 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
     const int dpr = int(qHighDpiToDeviceIndependentPixels(window()->devicePixelRatio(), window()));
     const QSize xSize = size * dpr;
-
-    if (m_image && xSize == m_image->size())
+    if (m_image && xSize == m_image->size() && dpr == m_image->image()->devicePixelRatio())
         return;
     Q_XCB_NOOP(connection());
 
@@ -419,6 +452,12 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     delete m_image;
     m_image = new QXcbShmImage(screen, xSize, win->depth(), win->imageFormat());
     m_image->image()->setDevicePixelRatio(dpr);
+    // Slow path for bgr888 VNC: Create an additional image, paint into that and
+    // swap R and B while copying to m_image after each paint.
+    if (win->imageNeedsRgbSwap()) {
+        m_rgbImage = QImage(xSize, win->imageFormat());
+        m_rgbImage.setDevicePixelRatio(dpr);
+    }
     Q_XCB_NOOP(connection());
 }
 

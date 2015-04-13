@@ -364,6 +364,29 @@ static quint64 findKnownValue(const QString &name, const QCssKnownValue *start, 
     return prop->id;
 }
 
+static inline bool isInheritable(Property propertyId)
+{
+    switch (propertyId) {
+    case Font:
+    case FontFamily:
+    case FontSize:
+    case FontStyle:
+    case FontWeight:
+    case TextIndent:
+    case Whitespace:
+    case ListStyleType:
+    case ListStyle:
+    case TextAlignment:
+    case FontVariant:
+    case TextTransform:
+    case LineHeight:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Value Extractor
 ValueExtractor::ValueExtractor(const QVector<Declaration> &decls, const QPalette &pal)
@@ -2317,6 +2340,7 @@ bool Parser::parseProperty(Declaration *decl)
 {
     decl->d->property = lexem();
     decl->d->propertyId = static_cast<Property>(findKnownValue(decl->d->property, properties, NumProperties));
+    decl->d->inheritable = isInheritable(decl->d->propertyId);
     skipSpace();
     return true;
 }

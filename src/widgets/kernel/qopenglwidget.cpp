@@ -46,6 +46,7 @@
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qopenglpaintdevice_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -435,6 +436,23 @@ QT_BEGIN_NAMESPACE
   each frame. To restore the preserved behavior, call setUpdateBehavior() with
   \c PartialUpdate.
 
+  \section1 Alternatives
+
+  Adding a QOpenGLWidget into a window turns on OpenGL-based
+  compositing for the entire window.  In some special cases this may
+  not be ideal, and the old QGLWidget-style behavior with a separate,
+  native child window is desired. Desktop applications that understand
+  the limitations of this approach (for example when it comes to
+  overlaps, transparency, scroll views and MDI areas), can use
+  QOpenGLWindow with QWidget::createWindowContainer(). This is a
+  modern alternative to QGLWidget and is faster than QOpenGLWidget due
+  to the lack of the additional composition step. It is strongly
+  recommended to limit the usage of this approach to cases where there
+  is no other choice. Note that this option is not suitable for most
+  embedded and mobile platforms, and it is known to have issues on
+  certain desktop platforms (e.g. OS X) too. The stable,
+  cross-platform solution is always QOpenGLWidget.
+
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
@@ -775,11 +793,18 @@ void QOpenGLWidgetPrivate::resolveSamples()
 void QOpenGLWidgetPrivate::invokeUserPaint()
 {
     Q_Q(QOpenGLWidget);
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    Q_ASSERT(ctx && fbo);
+
+    QOpenGLFunctions *f = ctx->functions();
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     q->paintGL();
     flushPending = true;
+
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
 }
 
 void QOpenGLWidgetPrivate::render()

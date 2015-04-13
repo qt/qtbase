@@ -786,10 +786,12 @@ void QWindowSystemInterface::handleEnterWhatsThisEvent()
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p) {
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p)
+{
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "TouchPoint(" << p.id << " @" << p.area << " normalized " << p.normalPosition
                   << " press " << p.pressure << " vel " << p.velocity << " state " << (int)p.state;
-    return dbg.space();
+    return dbg;
 }
 #endif
 

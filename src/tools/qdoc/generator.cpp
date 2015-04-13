@@ -697,12 +697,12 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 
     if (node->type() == Node::Document) {
         const DocumentNode *dn = static_cast<const DocumentNode *>(node);
-        if ((dn->subType() == Node::File) || (dn->subType() == Node::Image)) {
+        if ((dn->docSubtype() == Node::File) || (dn->docSubtype() == Node::Image)) {
             quiet = true;
         }
     }
     if (node->doc().isEmpty()) {
-        if (!node->isWrapper() && !quiet && !node->isReimp()) { // ### might be unnecessary
+        if (!node->isWrapper() && !quiet && !node->isReimplemented()) { // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'").arg(node->plainFullName()));
         }
     }
@@ -714,7 +714,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
 
         if (!generateText(node->doc().body(), node, marker)) {
-            if (node->isReimp())
+            if (node->isReimplemented())
                 return;
         }
 
@@ -800,7 +800,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                                 }
                             }
                         }
-                        if (needWarning && !func->isReimp())
+                        if (needWarning && !func->isReimplemented())
                             node->doc().location().warning(
                                         tr("Undocumented parameter '%1' in %2")
                                         .arg(*a).arg(node->plainFullName()));
@@ -826,7 +826,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         if (dn->isExample()) {
             generateExampleFiles(dn, marker);
         }
-        else if (dn->subType() == Node::File) {
+        else if (dn->docSubtype() == Node::File) {
             Text text;
             Quoter quoter;
             Doc::quoteFromFile(dn->doc().location(), quoter, dn->name());
@@ -867,7 +867,7 @@ void Generator::generateCollectionNode(CollectionNode* , CodeMarker* )
  */
 void Generator::generateFileList(const DocumentNode* dn,
                                  CodeMarker* marker,
-                                 Node::SubType subtype,
+                                 Node::DocSubtype subtype,
                                  const QString& tag)
 {
     int count = 0;
@@ -878,7 +878,7 @@ void Generator::generateFileList(const DocumentNode* dn,
          << Atom(Atom::ListLeft, openedList.styleString());
 
     foreach (const Node* child, dn->childNodes()) {
-        if (child->subType() == subtype) {
+        if (child->docSubtype() == subtype) {
             ++count;
             QString file = child->name();
             if (subtype == Node::Image) {
@@ -892,16 +892,10 @@ void Generator::generateFileList(const DocumentNode* dn,
                                                        exampleImgExts,
                                                        userFriendlyFilePath);
                     userFriendlyFilePath.truncate(userFriendlyFilePath.lastIndexOf('/'));
-
                     QString imgOutDir = outDir_ + "/images/used-in-examples/" + userFriendlyFilePath;
                     if (!dirInfo.mkpath(imgOutDir))
-                        dn->location().fatal(tr("Cannot create output directory '%1'")
-                                               .arg(imgOutDir));
-
-                    QString imgOutName = Config::copyFile(dn->location(),
-                                                          srcPath,
-                                                          file,
-                                                          imgOutDir);
+                        dn->location().fatal(tr("Cannot create output directory '%1'").arg(imgOutDir));
+                    Config::copyFile(dn->location(), srcPath, file, imgOutDir);
                 }
 
             }
@@ -988,11 +982,11 @@ void Generator::generateInnerNode(InnerNode* node)
 
     if (node->isDocumentNode()) {
         DocumentNode* docNode = static_cast<DocumentNode*>(node);
-        if (docNode->subType() == Node::ExternalPage)
+        if (docNode->docSubtype() == Node::ExternalPage)
             return;
-        if (docNode->subType() == Node::Image)
+        if (docNode->docSubtype() == Node::Image)
             return;
-        if (docNode->subType() == Node::Page) {
+        if (docNode->docSubtype() == Node::Page) {
             if (node->count() > 0)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
@@ -1006,7 +1000,8 @@ void Generator::generateInnerNode(InnerNode* node)
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
-        if (node->isNamespace() || node->isClass()) {
+        if ((node->isNamespace() && node->status() != Node::Intermediate)
+            || node->isClass()) {
             beginSubPage(node, fileName(node));
             generateClassLikeNode(node, marker);
             endSubPage();
@@ -1196,8 +1191,8 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
     Text text;
 
     switch (node->status()) {
-    case Node::Commendable:
-    case Node::Main:
+    case Node::Active:
+        // Do nothing.
         break;
     case Node::Preliminary:
         text << Atom::ParaLeft
@@ -1556,12 +1551,6 @@ void Generator::initialize(const Config &config)
 
         if (!dirInfo.exists(outDir_ + "/images") && !dirInfo.mkdir(outDir_ + "/images"))
             config.lastLocation().fatal(tr("Cannot create images directory '%1'").arg(outDir_ + "/images"));
-        if (!dirInfo.exists(outDir_ + "/images/used-in-examples") && !dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
-            config.lastLocation().fatal(tr("Cannot create images used in examples directory '%1'").arg(outDir_ + "/images/used-in-examples"));
-        if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts"))
-            config.lastLocation().fatal(tr("Cannot create scripts directory '%1'").arg(outDir_ + "/scripts"));
-        if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style"))
-            config.lastLocation().fatal(tr("Cannot create style directory '%1'").arg(outDir_ + "/style"));
     }
 
     imageFiles = config.getCanonicalPathList(CONFIG_IMAGES);
@@ -1600,23 +1589,41 @@ void Generator::initialize(const Config &config)
 
             // Documentation template handling
             QStringList scripts = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS, true);
-            e = scripts.constBegin();
-            while (e != scripts.constEnd()) {
-                QString filePath = *e;
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(), filePath, filePath,
-                                     (*g)->outputDir() + "/scripts");
-                ++e;
+            if (!scripts.isEmpty()) {
+                QDir dirInfo;
+                if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts")) {
+                    config.lastLocation().fatal(tr("Cannot create scripts directory '%1'")
+                                                .arg(outDir_ + "/scripts"));
+                }
+                else {
+                    e = scripts.constBegin();
+                    while (e != scripts.constEnd()) {
+                        QString filePath = *e;
+                        if (!filePath.isEmpty())
+                            Config::copyFile(config.lastLocation(), filePath, filePath,
+                                             (*g)->outputDir() + "/scripts");
+                        ++e;
+                    }
+                }
             }
 
             QStringList styles = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS, true);
-            e = styles.constBegin();
-            while (e != styles.constEnd()) {
-                QString filePath = *e;
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(), filePath, filePath,
-                                     (*g)->outputDir() + "/style");
-                ++e;
+            if (!styles.isEmpty()) {
+                QDir dirInfo;
+                if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style")) {
+                    config.lastLocation().fatal(tr("Cannot create style directory '%1'")
+                                                .arg(outDir_ + "/style"));
+                }
+                else {
+                    e = styles.constBegin();
+                    while (e != styles.constEnd()) {
+                        QString filePath = *e;
+                        if (!filePath.isEmpty())
+                            Config::copyFile(config.lastLocation(), filePath, filePath,
+                                             (*g)->outputDir() + "/style");
+                        ++e;
+                    }
+                }
             }
         }
         ++g;
@@ -1698,7 +1705,7 @@ void Generator::initializeGenerator(const Config& config)
     singleExec_ = config.getBool(CONFIG_SINGLEEXEC);
 }
 
-bool Generator::matchAhead(const Atom *atom, Atom::Type expectedAtomType)
+bool Generator::matchAhead(const Atom *atom, Atom::AtomType expectedAtomType)
 {
     return atom->next() != 0 && atom->next()->type() == expectedAtomType;
 }
@@ -1845,7 +1852,7 @@ void Generator::singularPlural(Text& text, const NodeList& nodes)
         text << " are";
 }
 
-int Generator::skipAtoms(const Atom *atom, Atom::Type type) const
+int Generator::skipAtoms(const Atom *atom, Atom::AtomType type) const
 {
     int skipAhead = 0;
     atom = atom->next();
@@ -1937,7 +1944,6 @@ void Generator::terminate()
     imageFiles.clear();
     imageDirs.clear();
     outDir_.clear();
-    QmlTypeNode::terminate();
 }
 
 void Generator::terminateGenerator()

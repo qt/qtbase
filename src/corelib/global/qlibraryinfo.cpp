@@ -447,7 +447,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     if (!QLibraryInfoPrivate::configuration())
 #endif
     {
-        const char *path = 0;
+        const char * volatile path = 0;
         if (loc == PrefixPath) {
             path =
 #ifdef QT_BUILD_QMAKE

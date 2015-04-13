@@ -1,0 +1,48 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example tools/regularexpression
+    \title QRegularExpression Example
+    \ingroup examples-widgets-tools
+
+    \brief The QRegularExpression example shows how regular expressions in Qt are
+    applied to text by providing an environment in which new regular expressions can be
+    created and tested on custom text strings.
+
+    The example makes usage of the QRegularExpression class, which has been
+    introduced in Qt 5.0. QRegularExpression implements Perl-compatible regular
+    expressions, supporting a number of advanced matching features, such as
+    case insensitive matching, multiline matching, Unicode properties selectors
+    and partial/incremental matching.
+
+    QRegularExpression is a big improvement over QRegExp in terms of features
+    and performance and should be used in all new code.
+
+    \image regularexpression-example.png
+*/
+

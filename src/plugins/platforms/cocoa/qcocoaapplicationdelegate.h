@@ -100,6 +100,7 @@
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 - (void) removeAppleEventHandlers;
+- (bool) inLaunch;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);

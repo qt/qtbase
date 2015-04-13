@@ -47,10 +47,12 @@ private slots:
     void appendCausingRealloc();
     void resize();
     void realloc();
+    void reverseIterators();
     void count();
     void first();
     void last();
     void squeeze();
+    void operators();
     void indexOf();
     void lastIndexOf();
     void contains();
@@ -562,6 +564,21 @@ void tst_QVarLengthArray::realloc()
     QVERIFY(reallocTestProceed);
 }
 
+void tst_QVarLengthArray::reverseIterators()
+{
+    QVarLengthArray<int> v;
+    v << 1 << 2 << 3 << 4;
+    QVarLengthArray<int> vr = v;
+    std::reverse(vr.begin(), vr.end());
+    const QVarLengthArray<int> &cvr = vr;
+    QVERIFY(std::equal(v.begin(), v.end(), vr.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), vr.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cvr.rbegin()));
+    QVERIFY(std::equal(vr.rbegin(), vr.rend(), v.begin()));
+    QVERIFY(std::equal(vr.crbegin(), vr.crend(), v.begin()));
+    QVERIFY(std::equal(cvr.rbegin(), cvr.rend(), v.begin()));
+}
+
 void tst_QVarLengthArray::count()
 {
     // tests size(), count() and length(), since they're the same thing
@@ -690,6 +707,49 @@ void tst_QVarLengthArray::squeeze()
     QCOMPARE(list.capacity(), sizeOnHeap);
 }
 
+void tst_QVarLengthArray::operators()
+{
+    QVarLengthArray<QString> myvla;
+    myvla << "A" << "B" << "C";
+    QVarLengthArray<QString> myvlatwo;
+    myvlatwo << "D" << "E" << "F";
+    QVarLengthArray<QString> combined;
+    combined << "A" << "B" << "C" << "D" << "E" << "F";
+
+    // !=
+    QVERIFY(myvla != myvlatwo);
+
+    // +=: not provided, emulate
+    //myvla += myvlatwo;
+    Q_FOREACH (const QString &s, myvlatwo)
+        myvla.push_back(s);
+    QCOMPARE(myvla, combined);
+
+    // ==
+    QVERIFY(myvla == combined);
+
+    // <, >, <=, >=
+    QVERIFY(!(myvla <  combined));
+    QVERIFY(!(myvla >  combined));
+    QVERIFY(  myvla <= combined);
+    QVERIFY(  myvla >= combined);
+    combined.push_back("G");
+    QVERIFY(  myvla <  combined);
+    QVERIFY(!(myvla >  combined));
+    QVERIFY(  myvla <= combined);
+    QVERIFY(!(myvla >= combined));
+    QVERIFY(combined >  myvla);
+    QVERIFY(combined >= myvla);
+
+    // []
+    QCOMPARE(myvla[0], QLatin1String("A"));
+    QCOMPARE(myvla[1], QLatin1String("B"));
+    QCOMPARE(myvla[2], QLatin1String("C"));
+    QCOMPARE(myvla[3], QLatin1String("D"));
+    QCOMPARE(myvla[4], QLatin1String("E"));
+    QCOMPARE(myvla[5], QLatin1String("F"));
+}
+
 void tst_QVarLengthArray::indexOf()
 {
     QVarLengthArray<QString> myvec;
@@ -780,6 +840,7 @@ void tst_QVarLengthArray::initializeList()
     T val3(101);
     T val4(114);
 
+    // QVarLengthArray(std::initializer_list<>)
     QVarLengthArray<T> v1 {val1, val2, val3};
     QCOMPARE(v1, QVarLengthArray<T>() << val1 << val2 << val3);
     QCOMPARE(v1, (QVarLengthArray<T> {val1, val2, val3}));
@@ -791,6 +852,25 @@ void tst_QVarLengthArray::initializeList()
 
     QVarLengthArray<T> v4({});
     QCOMPARE(v4.size(), 0);
+
+    // operator=(std::initializer_list<>)
+
+    QVarLengthArray<T> v5({val2, val1});
+    v1 = { val1, val2 }; // make array smaller
+    v4 = { val1, val2 }; // make array bigger
+    v5 = { val1, val2 }; // same size
+    QCOMPARE(v1, QVarLengthArray<T>() << val1 << val2);
+    QCOMPARE(v4, v1);
+    QCOMPARE(v5, v1);
+
+    QVarLengthArray<T, 1> v6 = { val1 };
+    v6 = { val1, val2 }; // force allocation on heap
+    QCOMPARE(v6.size(), 2);
+    QCOMPARE(v6.first(), val1);
+    QCOMPARE(v6.last(), val2);
+
+    v6 = {}; // assign empty
+    QCOMPARE(v6.size(), 0);
 #else
     QSKIP("This tests requires a compiler that supports initializer lists.");
 #endif

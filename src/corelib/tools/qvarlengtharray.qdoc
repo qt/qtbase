@@ -362,6 +362,15 @@
     Assigns \a other to this array and returns a reference to this array.
  */
 
+/*! \fn QVarLengthArray<T, Prealloc> &QVarLengthArray::operator=(std::initializer_list<T> list)
+    \since 5.5
+
+    Assigns the values of \a list to this array, and returns a reference to this array.
+
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
+*/
+
 /*! \fn QVarLengthArray::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
     Constructs a copy of \a other.
  */
@@ -457,6 +466,20 @@
     \since 4.7
 
     Typedef for T *. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QVarLengthArray::const_reverse_iterator
+    \since 5.6
+
+    Typedef for \c{std::reverse_iterator<const T*>}. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QVarLengthArray::reverse_iterator
+    \since 5.6
+
+    Typedef for \c{std::reverse_iterator<T*>}. Provided for STL compatibility.
 */
 
 /*! \fn void QVarLengthArray::prepend(const T &value)
@@ -573,6 +596,52 @@
     \sa constBegin(), end()
 */
 
+/*! \fn QVarLengthArray::reverse_iterator QVarLengthArray::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the variable length array, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the variable length array, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QVarLengthArray::reverse_iterator QVarLengthArray::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last item in the variable length array, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QVarLengthArray::const_reverse_iterator QVarLengthArray::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last item in the variable length array, in reverse order.
+
+    \sa end(), rend(), rbegin()
+*/
+
 /*! \fn QVarLengthArray::iterator QVarLengthArray::erase(const_iterator pos)
     \since 4.8
 
@@ -665,6 +734,54 @@
     of \c operator==().
 
     \sa operator==()
+*/
+
+/*! \fn bool operator<(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+    \since 5.6
+    \relates QVarLengthArray
+
+    Returns \c true if variable length array \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator<=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+    \since 5.6
+    \relates QVarLengthArray
+
+    Returns \c true if variable length array \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically less than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+    \since 5.6
+    \relates QVarLengthArray
+
+    Returns \c true if variable length array \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
+*/
+
+/*! \fn bool operator>=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+    \since 5.6
+    \relates QVarLengthArray
+
+    Returns \c true if variable length array \a lhs is
+    \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
+    {lexicographically greater than or equal to} \a rhs; otherwise returns \c false.
+
+    This function requires the value type to have an implementation
+    of \c operator<().
 */
 
 /*! \fn QVarLengthArray &QVarLengthArray::operator<<(const T &value)

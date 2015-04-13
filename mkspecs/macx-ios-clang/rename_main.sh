@@ -38,9 +38,11 @@ if [ $# -ne 2 ]; then
 else
     arch_paths=""
     for a in $2; do
-        arch_paths="$arch_paths $1/$a"
+        arch_paths="$arch_paths
+$1/$a"
     done
-    for f in $(find $arch_paths -name '*.o'); do
+    for f in $(IFS="
+"; find $arch_paths -name '*.o'); do
         # Skip object files without the _main symbol
         nm $f 2>/dev/null | grep -q 'T _main$' || continue
 

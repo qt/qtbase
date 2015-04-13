@@ -1291,7 +1291,7 @@ const QString::Null QString::null = { };
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    character after the last character in the list.
 
     \sa cbegin(), end()
 */
@@ -1299,7 +1299,7 @@ const QString::Null QString::null = { };
 /*! \fn QString::const_iterator QString::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    character after the last character in the list.
 
     \sa constBegin(), end()
 */
@@ -1828,6 +1828,51 @@ QString &QString::operator=(QChar ch)
 
 
 /*!
+    \fn QString& QString::insert(int position, const QStringRef &str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the string reference \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+*/
+
+
+/*!
+    \fn QString& QString::insert(int position, const char *str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the C string \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+
+    This function is not available when QT_NO_CAST_FROM_ASCII is
+    defined.
+*/
+
+
+/*!
+    \fn QString& QString::insert(int position, const QByteArray &str)
+    \since 5.5
+    \overload insert()
+
+    Inserts the byte array \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+
+    This function is not available when QT_NO_CAST_FROM_ASCII is
+    defined.
+*/
+
+
+/*!
     \fn QString &QString::insert(int position, QLatin1String str)
     \overload insert()
 
@@ -2025,6 +2070,22 @@ QString &QString::append(QChar ch)
     \overload prepend()
 
     Prepends the Latin-1 string \a str to this string.
+*/
+
+/*! \fn QString &QString::prepend(const QChar *str, int len)
+    \since 5.5
+    \overload prepend()
+
+    Prepends \a len characters from the QChar array \a str to this string and
+    returns a reference to this string.
+*/
+
+/*! \fn QString &QString::prepend(const QStringRef &str)
+    \since 5.5
+    \overload prepend()
+
+    Prepends the string reference \a str to the beginning of this string and
+    returns a reference to this string.
 */
 
 /*! \fn QString &QString::prepend(const QByteArray &ba)
@@ -3936,10 +3997,9 @@ int QString::count(const QRegularExpression &re) const
 
 QString QString::section(const QString &sep, int start, int end, SectionFlags flags) const
 {
-    QStringList sections = split(sep, KeepEmptyParts,
-                                 (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
+    const QVector<QStringRef> sections = splitRef(sep, KeepEmptyParts,
+                                                  (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
     const int sectionsSize = sections.size();
-
     if (!(flags & SectionSkipEmpty)) {
         if (start < 0)
             start += sectionsSize;
@@ -3959,11 +4019,10 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
     if (start >= sectionsSize || end < 0 || start > end)
         return QString();
 
-    int x = 0;
     QString ret;
     int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sectionsSize; ++i) {
-        QString section = sections.at(i);
+    for (int x = 0, i = 0; x <= end && i < sectionsSize; ++i) {
+        const QStringRef &section = sections.at(i);
         const bool empty = section.isEmpty();
         if (x >= start) {
             if(x == start)
@@ -3988,9 +4047,9 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
 class qt_section_chunk {
 public:
     qt_section_chunk() {}
-    qt_section_chunk(int l, QString s) : length(l), string(qMove(s)) {}
+    qt_section_chunk(int l, QStringRef s) : length(l), string(qMove(s)) {}
     int length;
-    QString string;
+    QStringRef string;
 };
 Q_DECLARE_TYPEINFO(qt_section_chunk, Q_MOVABLE_TYPE);
 
@@ -4083,12 +4142,12 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     QVector<qt_section_chunk> sections;
     int n = length(), m = 0, last_m = 0, last_len = 0;
     while ((m = sep.indexIn(*this, m)) != -1) {
-        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, m - last_m)));
         last_m = m;
         last_len = sep.matchedLength();
         m += qMax(sep.matchedLength(), 1);
     }
-    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+    sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, n - last_m)));
 
     return extractSections(sections, start, end, flags);
 }
@@ -4131,11 +4190,11 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         m = match.capturedStart();
-        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, m - last_m)));
         last_m = m;
         last_len = match.capturedLength();
     }
-    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+    sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, n - last_m)));
 
     return extractSections(sections, start, end, flags);
 }
@@ -8448,12 +8507,6 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
 
 QDataStream &operator>>(QDataStream &in, QString &str)
 {
-#ifdef QT_QSTRING_UCS_4
-#if defined(Q_CC_GNU)
-#warning "operator>> not working properly"
-#endif
-#endif
-
     if (in.version() == 1) {
         QByteArray l;
         in >> l;

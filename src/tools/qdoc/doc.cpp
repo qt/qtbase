@@ -469,16 +469,16 @@ private:
     void endSection(int unit, int endCmd);
     void parseAlso();
     void append(const QString &string);
-    void append(Atom::Type type, const QString& string = QString());
-    void append(Atom::Type type, const QString& p1, const QString& p2);
+    void append(Atom::AtomType type, const QString& string = QString());
+    void append(Atom::AtomType type, const QString& p1, const QString& p2);
     void append(const QString& p1, const QString& p2);
     void appendChar(QChar ch);
     void appendWord(const QString &word);
     void appendToCode(const QString &code);
-    void appendToCode(const QString &code, Atom::Type defaultType);
+    void appendToCode(const QString &code, Atom::AtomType defaultType);
     void startNewPara();
-    void enterPara(Atom::Type leftType = Atom::ParaLeft,
-                   Atom::Type rightType = Atom::ParaRight,
+    void enterPara(Atom::AtomType leftType = Atom::ParaLeft,
+                   Atom::AtomType rightType = Atom::ParaRight,
                    const QString& string = QString());
     void leavePara();
     void leaveValue();
@@ -525,8 +525,8 @@ private:
     bool inTableRow;
     bool inTableItem;
     bool indexStartedPara; // ### rename
-    Atom::Type pendingParaLeftType;
-    Atom::Type pendingParaRightType;
+    Atom::AtomType pendingParaLeftType;
+    Atom::AtomType pendingParaRightType;
     QString pendingParaString;
 
     int braceDepth;
@@ -1984,9 +1984,9 @@ void DocParser::parseAlso()
     }
 }
 
-void DocParser::append(Atom::Type type, const QString &string)
+void DocParser::append(Atom::AtomType type, const QString &string)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
     priv->text << Atom(type, string);
@@ -1994,15 +1994,15 @@ void DocParser::append(Atom::Type type, const QString &string)
 
 void DocParser::append(const QString &string)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
     priv->text << Atom(string); // The Atom type is Link.
 }
 
-void DocParser::append(Atom::Type type, const QString& p1, const QString& p2)
+void DocParser::append(Atom::AtomType type, const QString& p1, const QString& p2)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
     priv->text << Atom(type, p1, p2);
@@ -2010,7 +2010,7 @@ void DocParser::append(Atom::Type type, const QString& p1, const QString& p2)
 
 void DocParser::append(const QString& p1, const QString& p2)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
         priv->text.lastAtom()->chopString();
     if (p2.isEmpty())
@@ -2043,15 +2043,15 @@ void DocParser::appendWord(const QString &word)
 
 void DocParser::appendToCode(const QString& markedCode)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
         append(Atom::Qml);
     priv->text.lastAtom()->appendString(markedCode);
 }
 
-void DocParser::appendToCode(const QString &markedCode, Atom::Type defaultType)
+void DocParser::appendToCode(const QString &markedCode, Atom::AtomType defaultType)
 {
-    Atom::Type lastType = priv->text.lastAtom()->type();
+    Atom::AtomType lastType = priv->text.lastAtom()->type();
     if (lastType != Atom::Qml && lastType != Atom::Code && lastType != Atom::JavaScript)
         append(defaultType, markedCode);
     else
@@ -2064,8 +2064,8 @@ void DocParser::startNewPara()
     enterPara();
 }
 
-void DocParser::enterPara(Atom::Type leftType,
-                          Atom::Type rightType,
+void DocParser::enterPara(Atom::AtomType leftType,
+                          Atom::AtomType rightType,
                           const QString& string)
 {
     if (paraState == OutsideParagraph) {
@@ -3305,7 +3305,10 @@ CodeMarker *Doc::quoteFromFile(const Location &location,
                                         DocParser::exampleDirs,
                                         fileName, userFriendlyFilePath);
     if (filePath.isEmpty()) {
-        location.warning(tr("Cannot find file to quote from: '%1'").arg(fileName));
+        QString details = QLatin1String("Example directories: ") + DocParser::exampleDirs.join(QLatin1Char(' '));
+        if (!DocParser::exampleFiles.isEmpty())
+            details += QLatin1String(", example files: ") + DocParser::exampleFiles.join(QLatin1Char(' '));
+        location.warning(tr("Cannot find file to quote from: '%1'").arg(fileName), details);
     }
     else {
         QFile inFile(filePath);

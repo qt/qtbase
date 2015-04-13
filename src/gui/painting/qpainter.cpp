@@ -7462,6 +7462,7 @@ start_lengthVariant:
                     range.format.setFontUnderline(true);
                     underlineFormats.append(range);
                 }
+#ifdef Q_OS_MAC
             } else if (hidemnmemonic && *cin == QLatin1Char('(') && l >= 4 &&
                        cin[1] == QLatin1Char('&') && cin[2] != QLatin1Char('&') &&
                        cin[3] == QLatin1Char(')')) {
@@ -7473,6 +7474,7 @@ start_lengthVariant:
                 length -= n + 4;
                 l -= 4;
                 continue;
+#endif //Q_OS_MAC
             }
             *cout = *cin;
             ++cout;

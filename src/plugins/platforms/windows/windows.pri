@@ -122,7 +122,7 @@ contains(QT_CONFIG,dynamicgl) {
 
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
-    include($$QT_SOURCE_TREE/src/3rdparty/freetype.pri)
+    include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
     HEADERS += \
                $$PWD/qwindowsfontdatabase_ft.h
     SOURCES += \

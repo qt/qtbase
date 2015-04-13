@@ -88,7 +88,7 @@ public:
 
     void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
     void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
-    void syncMenuItem(QPlatformMenuItem *) Q_DECL_OVERRIDE {}
+    void syncMenuItem(QPlatformMenuItem *) Q_DECL_OVERRIDE;
     void syncSeparatorsCollapsible(bool) Q_DECL_OVERRIDE {}
 
     void setTag(quintptr tag) Q_DECL_OVERRIDE;

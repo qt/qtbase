@@ -47,8 +47,9 @@
 #include "qpixmap.h"
 #include "qmetaobject.h"
 #include "qthread.h"
-#include "qqueue.h"
 #include "qset.h"
+
+#include <queue>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,16 +69,18 @@ public:
     QCheckBox * again;
     QTextEdit * errors;
     QLabel * icon;
-    QQueue<QPair<QString, QString> > pending;
+    std::queue<QPair<QString, QString> > pending;
     QSet<QString> doNotShow;
     QSet<QString> doNotShowType;
     QString currentMessage;
     QString currentType;
 
+    bool isMessageToBeShown(const QString &message, const QString &type) const;
     bool nextPending();
     void retranslateStrings();
 };
 
+namespace {
 class QErrorMessageTextView : public QTextEdit
 {
 public:
@@ -87,6 +90,7 @@ public:
     virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;
 };
+} // unnamed namespace
 
 QSize QErrorMessageTextView::minimumSizeHint() const
 {
@@ -217,29 +221,32 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     : QDialog(*new QErrorMessagePrivate, parent)
 {
     Q_D(QErrorMessage);
-    QGridLayout * grid = new QGridLayout(this);
+
     d->icon = new QLabel(this);
+    d->errors = new QErrorMessageTextView(this);
+    d->again = new QCheckBox(this);
+    d->ok = new QPushButton(this);
+    QGridLayout * grid = new QGridLayout(this);
+
+    connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
+
+    grid->addWidget(d->icon,   0, 0, Qt::AlignTop);
+    grid->addWidget(d->errors, 0, 1);
+    grid->addWidget(d->again,  1, 1, Qt::AlignTop);
+    grid->addWidget(d->ok,     2, 0, 1, 2, Qt::AlignCenter);
+    grid->setColumnStretch(1, 42);
+    grid->setRowStretch(0, 42);
+
 #ifndef QT_NO_MESSAGEBOX
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 #endif
-    grid->addWidget(d->icon, 0, 0, Qt::AlignTop);
-    d->errors = new QErrorMessageTextView(this);
-    grid->addWidget(d->errors, 0, 1);
-    d->again = new QCheckBox(this);
     d->again->setChecked(true);
-    grid->addWidget(d->again, 1, 1, Qt::AlignTop);
-    d->ok = new QPushButton(this);
-
-
 #if defined(Q_OS_WINCE)
     d->ok->setFixedSize(0,0);
 #endif
-    connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
     d->ok->setFocus();
-    grid->addWidget(d->ok, 2, 0, 1, 2, Qt::AlignCenter);
-    grid->setColumnStretch(1, 42);
-    grid->setRowStretch(0, 42);
+
     d->retranslateStrings();
 }
 
@@ -265,11 +272,13 @@ QErrorMessage::~QErrorMessage()
 void QErrorMessage::done(int a)
 {
     Q_D(QErrorMessage);
-    if (!d->again->isChecked() && !d->currentMessage.isEmpty() && d->currentType.isEmpty()) {
-        d->doNotShow.insert(d->currentMessage);
-    }
-    if (!d->again->isChecked() && !d->currentType.isEmpty()) {
-        d->doNotShowType.insert(d->currentType);
+    if (!d->again->isChecked()) {
+        if (d->currentType.isEmpty()) {
+            if (!d->currentMessage.isEmpty())
+                d->doNotShow.insert(d->currentMessage);
+        } else {
+            d->doNotShowType.insert(d->currentType);
+        }
     }
     d->currentMessage.clear();
     d->currentType.clear();
@@ -301,20 +310,27 @@ QErrorMessage * QErrorMessage::qtHandler()
 
 /*! \internal */
 
+bool QErrorMessagePrivate::isMessageToBeShown(const QString &message, const QString &type) const
+{
+    return !message.isEmpty()
+        && (type.isEmpty() ? !doNotShow.contains(message) : !doNotShowType.contains(type));
+}
+
 bool QErrorMessagePrivate::nextPending()
 {
-    while (!pending.isEmpty()) {
-        QPair<QString,QString> pendingMessage = pending.dequeue();
-        QString message = pendingMessage.first;
-        QString type = pendingMessage.second;
-        if (!message.isEmpty() && ((type.isEmpty() && !doNotShow.contains(message)) || (!type.isEmpty() && !doNotShowType.contains(type)))) {
+    while (!pending.empty()) {
+        QPair<QString,QString> &pendingMessage = pending.front();
+        QString message = qMove(pendingMessage.first);
+        QString type = qMove(pendingMessage.second);
+        pending.pop();
+        if (isMessageToBeShown(message, type)) {
 #ifndef QT_NO_TEXTHTMLPARSER
             errors->setHtml(message);
 #else
             errors->setPlainText(message);
 #endif
-            currentMessage = message;
-            currentType = type;
+            currentMessage = qMove(message);
+            currentType = qMove(type);
             return true;
         }
     }
@@ -333,12 +349,7 @@ bool QErrorMessagePrivate::nextPending()
 
 void QErrorMessage::showMessage(const QString &message)
 {
-    Q_D(QErrorMessage);
-    if (d->doNotShow.contains(message))
-        return;
-    d->pending.enqueue(qMakePair(message,QString()));
-    if (!isVisible() && d->nextPending())
-        show();
+    showMessage(message, QString());
 }
 
 /*!
@@ -358,9 +369,9 @@ void QErrorMessage::showMessage(const QString &message)
 void QErrorMessage::showMessage(const QString &message, const QString &type)
 {
     Q_D(QErrorMessage);
-    if (d->doNotShow.contains(message) && d->doNotShowType.contains(type))
+    if (!d->isMessageToBeShown(message, type))
         return;
-     d->pending.push_back(qMakePair(message,type));
+    d->pending.push(qMakePair(message, type));
     if (!isVisible() && d->nextPending())
         show();
 }

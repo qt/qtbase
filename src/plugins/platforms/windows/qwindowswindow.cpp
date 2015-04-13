@@ -918,7 +918,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
             setFlag(OpenGL_ES2);
     }
 #endif // QT_NO_OPENGL
-    updateDropSite();
+    updateDropSite(window()->isTopLevel());
 
     registerTouchWindow();
     setWindowState(aWindow->windowState());
@@ -996,10 +996,10 @@ void QWindowsWindow::destroyWindow()
     }
 }
 
-void QWindowsWindow::updateDropSite()
+void QWindowsWindow::updateDropSite(bool topLevel)
 {
     bool enabled = false;
-    if (window()->isTopLevel()) {
+    if (topLevel) {
         switch (window()->type()) {
         case Qt::Window:
         case Qt::Dialog:
@@ -1285,7 +1285,7 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
         if (wasTopLevel != isTopLevel) {
             setDropSiteEnabled(false);
             setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
-            updateDropSite();
+            updateDropSite(isTopLevel);
         }
     }
 }
@@ -1539,7 +1539,7 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         m_data.flags = flags;
         if (m_data.hwnd) {
             m_data = setWindowFlags_sys(flags);
-            updateDropSite();
+            updateDropSite(window()->isTopLevel());
         }
     }
     // When switching to a frameless window, geometry
@@ -2265,6 +2265,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
 #ifdef QT_NO_OPENGL
+    Q_UNUSED(nativeConfig)
     return 0;
 #else
     if (!m_surface) {
@@ -2278,11 +2279,13 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
 
 void QWindowsWindow::invalidateSurface()
 {
+#ifndef QT_NO_OPENGL
     if (m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
             staticOpenGLContext->destroyWindowSurface(m_surface);
         m_surface = 0;
     }
+#endif // QT_NO_OPENGL
 }
 
 void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)

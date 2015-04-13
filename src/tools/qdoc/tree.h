@@ -49,11 +49,11 @@ class QDocDatabase;
 struct TargetRec
 {
   public:
-    enum Type { Unknown, Target, Keyword, Contents, Class, Function, Page, Subtitle };
+    enum TargetType { Unknown, Target, Keyword, Contents, Class, Function, Page, Subtitle };
 
     TargetRec(const QString& name,
               const QString& title,
-              TargetRec::Type type,
+              TargetRec::TargetType type,
               Node* node,
               int priority)
     : node_(node), ref_(name), title_(title), priority_(priority), type_(type) { }
@@ -64,7 +64,7 @@ struct TargetRec
     QString ref_;
     QString title_;
     int priority_;
-    Type type_;
+    TargetType type_;
 };
 
 struct TargetLoc
@@ -95,7 +95,7 @@ class Tree
     typedef QMap<PropertyNode::FunctionRole, QString> RoleMap;
     typedef QMap<PropertyNode*, RoleMap> PropertyMap;
 
-    Tree(const QString& module, QDocDatabase* qdb);
+    Tree(const QString& camelCaseModuleName, QDocDatabase* qdb);
     ~Tree();
 
     Node* findNodeForInclude(const QStringList& path) const;
@@ -107,7 +107,7 @@ class Tree
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
                             const Node* start,
-                            Node::Type type) const;
+                            Node::NodeType type) const;
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
                             Node* start,
@@ -134,12 +134,12 @@ class Tree
 
     QmlTypeNode* findQmlTypeNode(const QStringList& path);
 
-    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) const;
+    Node* findNodeByNameAndType(const QStringList& path, Node::NodeType type) const;
     InnerNode* findRelatesNode(const QStringList& path);
     QString getRef(const QString& target, const Node* node) const;
     void insertTarget(const QString& name,
                       const QString& title,
-                      TargetRec::Type type,
+                      TargetRec::TargetType type,
                       Node* node,
                       int priority);
     void resolveTargets(InnerNode* root);
@@ -212,6 +212,7 @@ class Tree
     QStringList getTargetListKeys() { return targetListMap_->keys(); }
 
  public:
+    const QString& camelCaseModuleName() const { return camelCaseModuleName_; }
     const QString& physicalModuleName() const { return physicalModuleName_; }
     const QString& indexFileName() const { return indexFileName_; }
     long incrementLinkCount() { return --linkCount_; }
@@ -222,6 +223,7 @@ private:
     bool treeHasBeenAnalyzed_;
     bool docsHaveBeenGenerated_;
     long linkCount_;
+    QString camelCaseModuleName_;
     QString physicalModuleName_;
     QString indexFileName_;
     QDocDatabase* qdb_;

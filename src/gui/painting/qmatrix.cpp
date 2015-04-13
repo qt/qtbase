@@ -1130,6 +1130,7 @@ QDataStream &operator>>(QDataStream &s, QMatrix &m)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QMatrix &m)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QMatrix("
                   << "11=" << m.m11()
                   << " 12=" << m.m12()
@@ -1138,7 +1139,7 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
                   << " dx=" << m.dx()
                   << " dy=" << m.dy()
                   << ')';
-    return dbg.space();
+    return dbg;
 }
 #endif
 

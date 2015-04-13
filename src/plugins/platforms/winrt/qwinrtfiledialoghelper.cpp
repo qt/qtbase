@@ -298,42 +298,48 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
             return false;
         }
 
-        ComPtr<IMap<HSTRING, IVector<HSTRING> *>> choices;
-        hr = picker->get_FileTypeChoices(&choices);
-        RETURN_FALSE_IF_FAILED("Failed to get file extension choices");
-        foreach (const QString &namedFilter, dialogOptions->nameFilters()) {
-            ComPtr<IVector<HSTRING>> entry = Make<WindowsStringVector>();
-            foreach (const QString &filter, QPlatformFileDialogHelper::cleanFilterList(namedFilter)) {
-                // Remove leading star
-                const int offset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
-                HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + offset),
-                                           filter.length() - offset);
-                hr = entry->Append(filterRef.Get());
-                if (FAILED(hr)) {
-                    qWarning("Failed to add named file filter \"%s\": %s",
-                             qPrintable(filter), qPrintable(qt_error_string(hr)));
+        if (!dialogOptions->nameFilters().isEmpty()) {
+            ComPtr<IMap<HSTRING, IVector<HSTRING> *>> choices;
+            hr = picker->get_FileTypeChoices(&choices);
+            RETURN_FALSE_IF_FAILED("Failed to get file extension choices");
+            foreach (const QString &namedFilter, dialogOptions->nameFilters()) {
+                ComPtr<IVector<HSTRING>> entry = Make<WindowsStringVector>();
+                foreach (const QString &filter, QPlatformFileDialogHelper::cleanFilterList(namedFilter)) {
+                    // Remove leading star
+                    const int offset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
+                    HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + offset),
+                                               filter.length() - offset);
+                    hr = entry->Append(filterRef.Get());
+                    if (FAILED(hr)) {
+                        qWarning("Failed to add named file filter \"%s\": %s",
+                                 qPrintable(filter), qPrintable(qt_error_string(hr)));
+                    }
                 }
+                const int offset = namedFilter.indexOf(QLatin1String(" ("));
+                const QString filterTitle = namedFilter.mid(0, offset);
+                HStringReference namedFilterRef(reinterpret_cast<const wchar_t *>(filterTitle.utf16()),
+                                                filterTitle.length());
+                boolean replaced;
+                hr = choices->Insert(namedFilterRef.Get(), entry.Get(), &replaced);
+                RETURN_FALSE_IF_FAILED("Failed to insert file extension choice entry");
             }
-            const int offset = namedFilter.indexOf(QLatin1String(" ("));
-            const QString filterTitle = offset > 0 ? namedFilter.left(offset) : filterTitle;
-            HStringReference namedFilterRef(reinterpret_cast<const wchar_t *>(filterTitle.utf16()),
-                                            filterTitle.length());
-            boolean replaced;
-            hr = choices->Insert(namedFilterRef.Get(), entry.Get(), &replaced);
-            RETURN_FALSE_IF_FAILED("Failed to insert file extension choice entry");
         }
 
         const QString suffix = dialogOptions->defaultSuffix();
-        HStringReference nativeSuffix(reinterpret_cast<const wchar_t *>(suffix.utf16()),
-                                      suffix.length());
-        hr = picker->put_DefaultFileExtension(nativeSuffix.Get());
-        RETURN_FALSE_IF_FAILED("Failed to set default file extension");
+        if (!suffix.isEmpty()) {
+            HStringReference nativeSuffix(reinterpret_cast<const wchar_t *>(suffix.utf16()),
+                                          suffix.length());
+            hr = picker->put_DefaultFileExtension(nativeSuffix.Get());
+            RETURN_FALSE_IF_FAILED("Failed to set default file extension");
+        }
 
         const QString suggestedName = QFileInfo(d->saveFileName.toLocalFile()).fileName();
-        HStringReference nativeSuggestedName(reinterpret_cast<const wchar_t *>(suggestedName.utf16()),
-                                             suggestedName.length());
-        hr = picker->put_SuggestedFileName(nativeSuggestedName.Get());
-        RETURN_FALSE_IF_FAILED("Failed to set suggested file name");
+        if (!suggestedName.isEmpty()) {
+            HStringReference nativeSuggestedName(reinterpret_cast<const wchar_t *>(suggestedName.utf16()),
+                                                 suggestedName.length());
+            hr = picker->put_SuggestedFileName(nativeSuggestedName.Get());
+            RETURN_FALSE_IF_FAILED("Failed to set suggested file name");
+        }
 
         ComPtr<IAsyncOperation<StorageFile *>> op;
         hr = picker->PickSaveFileAsync(&op);
