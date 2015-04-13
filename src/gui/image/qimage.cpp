@@ -476,6 +476,10 @@ bool QImageData::checkForAlphaPixels() const
     \snippet code/src_gui_image_qimage.cpp 1
     \endtable
 
+    For images with more than 8-bit per color-channel. The methods
+    setPixelColor() and pixelColor() can be used to set and get
+    with QColor values.
+
     QImage also provide the scanLine() function which returns a
     pointer to the pixel data at the scanline with the given index,
     and the bits() function which returns a pointer to the first pixel
@@ -2187,9 +2191,10 @@ int QImage::pixelIndex(int x, int y) const
     If the \a position is not valid, the results are undefined.
 
     \warning This function is expensive when used for massive pixel
-    manipulations.
+    manipulations. Use constBits() or constScanLine() when many
+    pixels needs to be read.
 
-    \sa setPixel(), valid(), {QImage#Pixel Manipulation}{Pixel
+    \sa setPixel(), valid(), constBits(), constScanLine(), {QImage#Pixel Manipulation}{Pixel
     Manipulation}
 */
 
@@ -2239,25 +2244,23 @@ QRgb QImage::pixel(int x, int y) const
     return *layout->convertToARGB32PM(&result, ptr, 1, layout, 0);
 }
 
-
 /*!
     \fn void QImage::setPixel(const QPoint &position, uint index_or_rgb)
 
     Sets the pixel index or color at the given \a position to \a
     index_or_rgb.
 
-    If the image's format is either monochrome or 8-bit, the given \a
+    If the image's format is either monochrome or paletted, the given \a
     index_or_rgb value must be an index in the image's color table,
     otherwise the parameter must be a QRgb value.
 
     If \a position is not a valid coordinate pair in the image, or if
     \a index_or_rgb >= colorCount() in the case of monochrome and
-    8-bit images, the result is undefined.
+    paletted images, the result is undefined.
 
     \warning This function is expensive due to the call of the internal
     \c{detach()} function called within; if performance is a concern, we
-    recommend the use of \l{QImage::}{scanLine()} to access pixel data
-    directly.
+    recommend the use of scanLine() or bits() to access pixel data directly.
 
     \sa pixel(), {QImage#Pixel Manipulation}{Pixel Manipulation}
 */
@@ -2342,6 +2345,102 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     uint result;
     const uint *ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, layout, 0);
     qStorePixels[layout->bpp](s, ptr, x, 1);
+}
+
+/*!
+    \fn QColor QImage::pixelColor(const QPoint &position) const
+    \since 5.6
+
+    Returns the color of the pixel at the given \a position as a QColor.
+
+    If the \a position is not valid, an invalid QColor is returned.
+
+    \warning This function is expensive when used for massive pixel
+    manipulations. Use constBits() or constScanLine() when many
+    pixels needs to be read.
+
+    \sa setPixel(), valid(), constBits(), constScanLine(), {QImage#Pixel Manipulation}{Pixel
+    Manipulation}
+*/
+
+/*!
+    \overload
+    \since 5.6
+
+    Returns the color of the pixel at coordinates (\a x, \a y) as a QColor.
+*/
+QColor QImage::pixelColor(int x, int y) const
+{
+    if (!d || x < 0 || x >= d->width || y < 0 || y >= height()) {
+        qWarning("QImage::pixelColor: coordinate (%d,%d) out of range", x, y);
+        return QColor();
+    }
+
+    const uchar * s = constScanLine(y);
+    switch (d->format) {
+    case Format_BGR30:
+    case Format_A2BGR30_Premultiplied:
+        return QColor(qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]));
+    case Format_RGB30:
+    case Format_A2RGB30_Premultiplied:
+        return QColor(qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]));
+    default:
+        return QColor(pixel(x, y));
+    }
+}
+
+/*!
+    \fn void QImage::setPixelColor(const QPoint &position, const QColor &color)
+    \since 5.6
+
+    Sets the color at the given \a position to \a color.
+
+    If \a position is not a valid coordinate pair in the image, or
+    the image's format is either monochrome or paletted, the result is undefined.
+
+    \warning This function is expensive due to the call of the internal
+    \c{detach()} function called within; if performance is a concern, we
+    recommend the use of scanLine() or bits() to access pixel data directly.
+
+    \sa pixel(), bits(), scanLine(), {QImage#Pixel Manipulation}{Pixel Manipulation}
+*/
+
+/*!
+    \overload
+    \since 5.6
+
+    Sets the pixel color at (\a x, \a y) to \a color.
+*/
+void QImage::setPixelColor(int x, int y, const QColor &color)
+{
+    if (!d || x < 0 || x >= width() || y < 0 || y >= height() || !color.isValid()) {
+        qWarning("QImage::setPixelColor: coordinate (%d,%d) out of range", x, y);
+        return;
+    }
+    // detach is called from within scanLine
+    uchar * s = scanLine(y);
+    switch (d->format) {
+    case Format_Mono:
+    case Format_MonoLSB:
+    case Format_Indexed8:
+        qWarning("QImage::setPixelColor: called on monochrome or indexed format");
+        return;
+    case Format_BGR30:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()) | 0xc0000000;
+        return;
+    case Format_A2BGR30_Premultiplied:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64());
+        return;
+    case Format_RGB30:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()) | 0xc0000000;
+        return;
+    case Format_A2RGB30_Premultiplied:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64());
+        return;
+    default:
+        setPixel(x, y, color.rgba());
+        return;
+    }
 }
 
 /*!

@@ -4698,10 +4698,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
                 }
                 ++spans;
             }
-            if (!alphaSpans) {
+            if (!alphaSpans)
                 op.destFetch = 0;
-                op.destFetch64 = 0;
-            }
         }
         }
     }
@@ -4795,10 +4793,9 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
         int length = spans->len;
         while (length) {
             int l = qMin(buffer_size, length);
-            QRgba64 *dest = op.destFetch64 ? op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
+            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
             op.funcSolid64(dest, l, color, spans->coverage);
-            if (op.destStore64)
-                op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
+            op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
             length -= l;
             x += l;
         }
@@ -4987,7 +4984,7 @@ public:
 
     bool isSupported() const
     {
-        return op.srcFetch64 && op.func64;
+        return op.srcFetch64 && op.func64 && op.destFetch64 && op.destStore64;
     }
 
     const QRgba64 *fetch(int x, int y, int len)
@@ -5108,10 +5105,9 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 while (length) {
                     int l = qMin(buffer_size, length);
                     const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
-                    QRgba64 *dest = op.destFetch64 ? op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
+                    QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
                     op.func64(dest, src, l, coverage);
-                    if (op.destStore64)
-                        op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
+                    op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
                     x += l;
                     sx += l;
                     length -= l;
@@ -5353,10 +5349,9 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
             if (buffer_size < l)
                 l = buffer_size;
             const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
-            QRgba64 *dest = op.destFetch64 ? op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
+            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
             op.func64(dest, src, l, coverage);
-            if (op.destStore64)
-                op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
+            op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
             x += l;
             sx += l;
             length -= l;

@@ -34,10 +34,11 @@
 #ifndef QIMAGE_H
 #define QIMAGE_H
 
-#include <QtGui/qtransform.h>
-#include <QtGui/qpaintdevice.h>
+#include <QtGui/qcolor.h>
 #include <QtGui/qrgb.h>
+#include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixelformat.h>
+#include <QtGui/qtransform.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
@@ -219,6 +220,12 @@ public:
     void setPixel(int x, int y, uint index_or_rgb);
     void setPixel(const QPoint &pt, uint index_or_rgb);
 
+    QColor pixelColor(int x, int y) const;
+    QColor pixelColor(const QPoint &pt) const;
+
+    void setPixelColor(int x, int y, const QColor &c);
+    void setPixelColor(const QPoint &pt, const QColor &c);
+
     QVector<QRgb> colorTable() const;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void setColorTable(const QVector<QRgb> &colors);
@@ -350,6 +357,8 @@ inline bool QImage::valid(const QPoint &pt) const { return valid(pt.x(), pt.y())
 inline int QImage::pixelIndex(const QPoint &pt) const { return pixelIndex(pt.x(), pt.y());}
 inline QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y()); }
 inline void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
+inline QColor QImage::pixelColor(const QPoint &pt) const { return pixelColor(pt.x(), pt.y()); }
+inline void QImage::setPixelColor(const QPoint &pt, const QColor &c) { setPixelColor(pt.x(), pt.y(), c); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
 
