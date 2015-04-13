@@ -247,6 +247,7 @@ private slots:
 
     void qtbug_44963();
     void qtbug_44783();
+    void internalTransition();
 };
 
 class TestState : public QState
@@ -6336,6 +6337,49 @@ void tst_QStateMachine::qtbug_44783()
     }
 
     QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::internalTransition()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState *s = new QState(&machine);
+        QState *s1 = new QState(s);
+            QState *s11 = new QState(s1);
+
+    DEFINE_ACTIVE_SPY(s);
+    DEFINE_ACTIVE_SPY(s1);
+    DEFINE_ACTIVE_SPY(s11);
+
+    machine.setInitialState(s);
+    s->setInitialState(s1);
+    s1->setInitialState(s11);
+    QSignalTransition *t = s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s11);
+    t->setObjectName("s1->s11");
+    t->setTransitionType(QAbstractTransition::InternalTransition);
+
+    s->setObjectName("s");
+    s1->setObjectName("s1");
+    s11->setObjectName("s11");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(s), true);
+    QTRY_COMPARE(machine.configuration().contains(s1), true);
+    QTRY_COMPARE(machine.configuration().contains(s11), true);
+    TEST_ACTIVE_CHANGED(s, 1);
+    TEST_ACTIVE_CHANGED(s1, 1);
+    TEST_ACTIVE_CHANGED(s11, 1);
+
+    emitter.emitSignalWithNoArg();
+
+    QTRY_COMPARE(machine.configuration().contains(s), true);
+    QTRY_COMPARE(machine.configuration().contains(s1), true);
+    QTRY_COMPARE(machine.configuration().contains(s11), true);
+    TEST_ACTIVE_CHANGED(s11, 3);
+    TEST_ACTIVE_CHANGED(s1, 1); // external transitions will return 3, internal transitions should return 1.
+    TEST_ACTIVE_CHANGED(s, 1);
 }
 
 QTEST_MAIN(tst_QStateMachine)

@@ -889,23 +889,22 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
     if (cache->transitionDomain(t, &domain))
         return domain;
 
-#if 0
-    // Qt only has external transitions, so skip the special case for the internal transitions
-    if (QState *tSource = t->sourceState()) {
-        if (isCompound(tSource)) {
-            bool allDescendants = true;
-            foreach (QAbstractState *s, effectiveTargetStates) {
-                if (!isDescendant(s, tSource)) {
-                    allDescendants = false;
-                    break;
+    if (t->transitionType() == QAbstractTransition::InternalTransition) {
+        if (QState *tSource = t->sourceState()) {
+            if (isCompound(tSource)) {
+                bool allDescendants = true;
+                foreach (QAbstractState *s, effectiveTargetStates) {
+                    if (!isDescendant(s, tSource)) {
+                        allDescendants = false;
+                        break;
+                    }
                 }
-            }
 
-            if (allDescendants)
-                return tSource;
+                if (allDescendants)
+                    return tSource;
+            }
         }
     }
-#endif
 
     QList<QAbstractState *> states(effectiveTargetStates);
     if (QAbstractState *src = t->sourceState())

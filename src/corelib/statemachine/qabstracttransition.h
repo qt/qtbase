@@ -59,7 +59,14 @@ class Q_CORE_EXPORT QAbstractTransition : public QObject
     Q_PROPERTY(QState* sourceState READ sourceState)
     Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState NOTIFY targetStateChanged)
     Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates NOTIFY targetStatesChanged)
+    Q_PROPERTY(TransitionType transitionType READ transitionType WRITE setTransitionType)
 public:
+    enum TransitionType {
+        ExternalTransition,
+        InternalTransition
+    };
+    Q_ENUM(TransitionType)
+
     QAbstractTransition(QState *sourceState = 0);
     virtual ~QAbstractTransition();
 
@@ -68,6 +75,9 @@ public:
     void setTargetState(QAbstractState* target);
     QList<QAbstractState*> targetStates() const;
     void setTargetStates(const QList<QAbstractState*> &targets);
+
+    TransitionType transitionType() const;
+    void setTransitionType(TransitionType type);
 
     QStateMachine *machine() const;
 
