@@ -315,7 +315,7 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
         return;
 
     int dpr = int(m_image->image()->devicePixelRatio());
-    const int windowDpr = int(window()->devicePixelRatio());
+    const int windowDpr = int(qHighDpiToDeviceIndependentPixels(window()->devicePixelRatio()));
     if (windowDpr != dpr) {
         resize(window()->size(), QRegion());
         dpr = int(m_image->image()->devicePixelRatio());
