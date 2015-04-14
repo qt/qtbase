@@ -31,50 +31,13 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINEGLYPHCACHE_P_H
-#define QFONTENGINEGLYPHCACHE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-
-#include "QtCore/qglobal.h"
-#include "QtCore/qatomic.h"
-#include <QtCore/qvarlengtharray.h>
-#include "private/qfont_p.h"
-#include "private/qfontengine_p.h"
-
-
+#include <private/qfontengineglyphcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QFontEngineGlyphCache: public QSharedData
+// out-of-line to avoid vtable duplication, breaking e.g. RTTI
+QFontEngineGlyphCache::~QFontEngineGlyphCache()
 {
-public:
-    QFontEngineGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix) : m_format(format), m_transform(matrix)
-    {
-        Q_ASSERT(m_format != QFontEngine::Format_None);
-    }
-
-    virtual ~QFontEngineGlyphCache();
-
-    QFontEngine::GlyphFormat glyphFormat() const { return m_format; }
-    const QTransform &transform() const { return m_transform; }
-
-    QFontEngine::GlyphFormat m_format;
-    QTransform m_transform;
-};
-typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
-typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;
+}
 
 QT_END_NAMESPACE
-
-#endif

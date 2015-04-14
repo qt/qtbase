@@ -47,6 +47,7 @@ HEADERS += \
 SOURCES += \
     text/qfont.cpp \
     text/qfontengine.cpp \
+    text/qfontengineglyphcache.cpp \
     text/qfontsubset.cpp \
     text/qfontmetrics.cpp \
     text/qfontdatabase.cpp \
