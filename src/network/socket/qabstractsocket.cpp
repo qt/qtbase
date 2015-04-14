@@ -723,14 +723,7 @@ bool QAbstractSocketPrivate::canReadNotification()
     }
 
     // Only emit readyRead() if there is data available.
-    bool hasData = newBytes > 0
-#ifndef QT_NO_UDPSOCKET
-        || (!isBuffered && socketType != QAbstractSocket::TcpSocket && socketEngine && socketEngine->hasPendingDatagrams())
-#endif
-        || (!isBuffered && socketType == QAbstractSocket::TcpSocket && socketEngine)
-        ;
-
-    if (hasData)
+    if (newBytes > 0 || !isBuffered)
         emitReadyRead();
 
     // If we were closed as a result of the readyRead() signal,
