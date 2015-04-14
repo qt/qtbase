@@ -40,6 +40,9 @@
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qset.h>
+#include <QtCore/qthreadstorage.h>
+
+static QThreadStorage<QString> g_iteratorCurrentUrl;
 
 static const int kBufferSize = 10;
 static ALAsset *kNoAsset = 0;
@@ -265,6 +268,58 @@ QPointer<QIOSAssetData> QIOSAssetData::g_currentAssetData = 0;
 
 // -------------------------------------------------------------------------
 
+#ifndef QT_NO_FILESYSTEMITERATOR
+
+class QIOSFileEngineIteratorAssetsLibrary : public QAbstractFileEngineIterator
+{
+public:
+    QIOSAssetEnumerator *m_enumerator;
+
+    QIOSFileEngineIteratorAssetsLibrary(
+            QDir::Filters filters, const QStringList &nameFilters)
+        : QAbstractFileEngineIterator(filters, nameFilters)
+        , m_enumerator(new QIOSAssetEnumerator([[[ALAssetsLibrary alloc] init] autorelease], ALAssetsGroupAll))
+    {
+    }
+
+    ~QIOSFileEngineIteratorAssetsLibrary()
+    {
+        delete m_enumerator;
+        g_iteratorCurrentUrl.setLocalData(QString());
+    }
+
+    QString next() Q_DECL_OVERRIDE
+    {
+        // Cache the URL that we are about to return, since QDir will immediately create a
+        // new file engine on the file and ask if it exists. Unless we do this, we end up
+        // creating a new ALAsset just to verify its existence, which will be especially
+        // costly for assets belonging to ALAssetsGroupPhotoStream.
+        ALAsset *asset = m_enumerator->next();
+        QString url = QUrl::fromNSURL([asset valueForProperty:ALAssetPropertyAssetURL]).toString();
+        g_iteratorCurrentUrl.setLocalData(url);
+        return url;
+    }
+
+    bool hasNext() const Q_DECL_OVERRIDE
+    {
+        return m_enumerator->hasNext();
+    }
+
+    QString currentFileName() const Q_DECL_OVERRIDE
+    {
+        return g_iteratorCurrentUrl.localData();
+    }
+
+    QFileInfo currentFileInfo() const
+    {
+        return QFileInfo(currentFileName());
+    }
+};
+
+#endif
+
+// -------------------------------------------------------------------------
+
 QIOSFileEngineAssetsLibrary::QIOSFileEngineAssetsLibrary(const QString &fileName)
     : m_offset(0)
     , m_data(0)
@@ -306,7 +361,7 @@ QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractF
 {
     QAbstractFileEngine::FileFlags flags = 0;
     const bool isDir = (m_assetUrl == QLatin1String("assets-library://"));
-    const bool exists = isDir || loadAsset();
+    const bool exists = isDir || m_assetUrl == g_iteratorCurrentUrl.localData() || loadAsset();
 
     if (!exists)
         return flags;
@@ -389,7 +444,20 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
 
 QStringList QIOSFileEngineAssetsLibrary::entryList(QDir::Filters filters, const QStringList &filterNames) const
 {
-    Q_UNUSED(filters);
-    Q_UNUSED(filterNames);
-    return QStringList();
+    return QAbstractFileEngine::entryList(filters, filterNames);
 }
+
+#ifndef QT_NO_FILESYSTEMITERATOR
+
+QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::beginEntryList(
+        QDir::Filters filters, const QStringList &filterNames)
+{
+    return new QIOSFileEngineIteratorAssetsLibrary(filters, filterNames);
+}
+
+QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::endEntryList()
+{
+    return 0;
+}
+
+#endif
