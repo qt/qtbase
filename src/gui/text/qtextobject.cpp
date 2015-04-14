@@ -1561,7 +1561,7 @@ QTextBlock QTextBlock::next() const
     Returns the text block in the document before this block, or an empty text
     block if this is the first one.
 
-    Note that the next block may be in a different frame or table to this block.
+    Note that the previous block may be in a different frame or table to this block.
 
     \sa next(), begin(), end()
 */
