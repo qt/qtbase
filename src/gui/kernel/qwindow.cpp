@@ -1088,7 +1088,7 @@ qreal QWindow::devicePixelRatio() const
     // correct for single-display systems (a very common case).
     if (!d->platformWindow)
         return qApp->devicePixelRatio();
-    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor();
+    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
 /*!

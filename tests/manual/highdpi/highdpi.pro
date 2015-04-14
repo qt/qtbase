@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = highdpi
 INCLUDEPATH += .
-QT += widgets
+QT += widgets gui-private
 CONFIG+=console
 CONFIG -= app_bundle
 # Input

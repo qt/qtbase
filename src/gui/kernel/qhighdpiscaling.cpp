@@ -98,13 +98,14 @@ static const char *scaleFactorProperty = "_q_scaleFactor";
 
 void QHighDpiScaling::setWindowFactor(QWindow *window, qreal factor)
 {
+    m_active = true;
     m_perWindowActive = true;
     window->setProperty(scaleFactorProperty, QVariant(factor));
 }
 
 qreal QHighDpiScaling::factor(const QWindow *window)
 {
-    if (m_perWindowActive || window == 0)
+    if (!m_perWindowActive || window == 0)
         return m_factor;
 
     QVariant windowFactor = window->property(scaleFactorProperty);

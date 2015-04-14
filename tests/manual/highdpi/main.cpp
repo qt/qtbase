@@ -53,7 +53,74 @@
 #include <QTemporaryDir>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QDebug>
+#include <private/qhighdpiscaling_p.h>
 
+class ScaleFactorSetter : public QWidget
+{
+Q_OBJECT
+public:
+    ScaleFactorSetter();
+    QLabel *label;
+    QSlider *slider;
+    QLabel *scaleFactorLabel;
+    QHBoxLayout *layout;
+private Q_SLOTS:
+    void scaleFactorChanged(int scaleFactor);
+};
+
+// Shows a slider which sets the scale factor for all windows.
+ScaleFactorSetter::ScaleFactorSetter()
+{
+    label = new QLabel("Scale Factor");
+    slider = new QSlider();
+    slider->setOrientation(Qt::Horizontal);
+    slider->setMinimum(1);
+    slider->setMaximum(40);
+    slider->setValue(10);
+    slider->setTracking(true);
+    slider->setTickInterval(5);
+    slider->setTickPosition(QSlider::TicksBelow);
+    scaleFactorLabel = new QLabel("1.0");
+
+    layout = new QHBoxLayout();
+    layout->addWidget(label);
+    layout->addWidget(slider);
+    layout->addWidget(scaleFactorLabel);
+    setLayout(layout);
+
+    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(scaleFactorChanged(int)));
+}
+
+void ScaleFactorSetter::scaleFactorChanged(int scaleFactor)
+{
+    // slider value is scale factor times ten;
+    qreal scalefactorF = qreal(scaleFactor) / 10.0;
+
+    // update label, add ".0" if needed.
+    QString number = QString::number(scalefactorF);
+    if (!number.contains("."))
+        number.append(".0");
+    scaleFactorLabel->setText(number);
+
+    // set scale factor on all top-level windows
+    QWindowList windows = QGuiApplication::topLevelWindows();
+    foreach (QWindow *window, windows) {
+
+        // skip this controller window
+        if (window == this->windowHandle())
+            continue;
+
+        qDebug() << "set scale factor on" << window;
+        qreal oldFactor = QHighDpiScaling::factor(window);
+        QHighDpiScaling::setWindowFactor(window, scalefactorF);
+        qreal newFactor = QHighDpiScaling::factor(window);
+        qDebug() << "factor was / is" << oldFactor << newFactor;
+
+        // resize window to keep showing the same amount of content.
+        window->resize(window->size() / oldFactor * newFactor);
+    }
+}
 
 class PixmapPainter : public QWidget
 {
@@ -69,7 +136,6 @@ public:
     QImage imageLarge;
     QIcon qtIcon;
 };
-
 
 PixmapPainter::PixmapPainter()
 {
@@ -544,6 +610,8 @@ int main(int argc, char **argv)
     parser.setApplicationDescription("High DPI tester");
     parser.addHelpOption();
     parser.addVersionOption();
+    QCommandLineOption scaleFactorOption("window-scale-factor", "Show Scale Factor Slider");
+    parser.addOption(scaleFactorOption);
     QCommandLineOption pixmapPainterOption("pixmap", "Test pixmap painter");
     parser.addOption(pixmapPainterOption);
     QCommandLineOption labelOption("label", "Test Labels");
@@ -567,6 +635,12 @@ int main(int argc, char **argv)
 
 
     parser.process(app);
+
+    QScopedPointer<ScaleFactorSetter> scaleFactorSetter;
+    if (parser.isSet(scaleFactorOption)) {
+        scaleFactorSetter.reset(new ScaleFactorSetter);
+        scaleFactorSetter->show();
+    }
 
     QScopedPointer<PixmapPainter> pixmapPainter;
     if (parser.isSet(pixmapPainterOption)) {
@@ -636,3 +710,5 @@ int main(int argc, char **argv)
 
     return app.exec();
 }
+
+#include "main.moc"
