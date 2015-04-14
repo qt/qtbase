@@ -385,6 +385,10 @@ void TableGenerator::parseKeySequence(char *line)
     if (!composeValueEnd)
         return;
 
+    // if composed value is a quotation mark adjust the end pointer
+    if (composeValueEnd[1] == '"')
+        ++composeValueEnd;
+
     if (*composeValue == '\\' && composeValue[1] >= '0' && composeValue[1] <= '9') {
         // handle octal and hex code values
         char detectBase = composeValue[2];
