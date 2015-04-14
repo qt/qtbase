@@ -81,8 +81,8 @@ public:
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
-    // ### Classes that are not QPaintDevice subclasses are implementing metric()
-    // ### There needs to be some kind of (semi)-public API.
+    // ### Classes that are not QPaintDevice subclasses are implementing metric(),
+    // ### and need to access this constant. Add it here as a static constant for now
     static qreal devicePixelRatioFScale;
 protected:
     QPaintDevice();

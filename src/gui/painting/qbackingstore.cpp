@@ -131,7 +131,7 @@ QPaintDevice *QBackingStore::paintDevice()
             || source->size() != d_ptr->highDpiBackingstore->size()
             || source->devicePixelRatio() != d_ptr->highDpiBackingstore->devicePixelRatio();
         if (needsNewImage) {
-            qCDebug(lcScaling) << "QBackingStore::paintDevice new backingstore:";
+            qCDebug(lcScaling) << "QBackingStore::paintDevice new backingstore for" << d_ptr->window;
             qCDebug(lcScaling) << "  source size" << source->size() << "dpr" << source->devicePixelRatio();
             d_ptr->highDpiBackingstore.reset(
                 new QImage(source->bits(), source->width(), source->height(), source->format()));

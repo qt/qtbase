@@ -770,8 +770,8 @@ void QOpenGLWidgetPrivate::initialize()
     }
 
     paintDevice = new QOpenGLWidgetPaintDevice(q);
-    paintDevice->setSize(q->size() * q->devicePixelRatio());
-    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
+    paintDevice->setSize(q->size() * q->devicePixelRatioF());
+    paintDevice->setDevicePixelRatio(q->devicePixelRatioF());
 
     context = ctx.take();
     initialized = true;
@@ -800,7 +800,7 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     QOpenGLFunctions *f = ctx->functions();
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
-    f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
+    f->glViewport(0, 0, q->width() * q->devicePixelRatioF(), q->height() * q->devicePixelRatioF());
     q->paintGL();
     flushPending = true;
 
@@ -851,8 +851,8 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     render();
     resolveSamples();
     q->makeCurrent();
-    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatio(), false, false);
-    res.setDevicePixelRatio(q->devicePixelRatio());
+    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
+    res.setDevicePixelRatio(q->devicePixelRatioF());
 
     return res;
 }
@@ -871,7 +871,7 @@ void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
     if (!initialized)
         return;
 
-    if (!fbo || q->size() * q->devicePixelRatio() != fbo->size())
+    if (!fbo || q->size() * q->devicePixelRatioF() != fbo->size())
         recreateFbo();
 }
 
@@ -1188,6 +1188,7 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
         return QWidget::metric(metric);
 
     QWidget *tlw = window();
+    QWindow *window = tlw ? tlw->windowHandle() : 0;
     QScreen *screen = tlw && tlw->windowHandle() ? tlw->windowHandle()->screen() : 0;
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
@@ -1235,8 +1236,13 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
         else
             return qRound(dpmy * 0.0254);
     case PdmDevicePixelRatio:
-        if (screen)
-            return screen->devicePixelRatio();
+        if (window)
+            return int(window->devicePixelRatio());
+        else
+            return 1.0;
+    case PdmDevicePixelRatioScaled:
+        if (window)
+            return int(window->devicePixelRatio() * devicePixelRatioFScale);
         else
             return 1.0;
     default:
@@ -1296,7 +1302,7 @@ bool QOpenGLWidget::event(QEvent *e)
         }
         break;
     case QEvent::ScreenChangeInternal:
-        if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
+        if (d->initialized && d->paintDevice->devicePixelRatioF() != devicePixelRatioF())
             d->recreateFbo();
         break;
     default:

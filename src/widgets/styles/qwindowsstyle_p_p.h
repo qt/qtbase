@@ -66,7 +66,7 @@ public:
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static int devicePixelRatio(const QWidget *widget = 0)
-        { return widget ? widget->devicePixelRatio() : QWindowsStylePrivate::appDevicePixelRatio(); }
+        { return widget ? int(widget->devicePixelRatioF()) : QWindowsStylePrivate::appDevicePixelRatio(); }
 
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }

@@ -212,6 +212,9 @@ int QMacPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
     case QPaintDevice::PdmDevicePixelRatio:
         val = 1;
         break;
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        val = 1 * QPaintDevice::devicePixelRatioFScale;
+        break;
     default:
         val = 0;
         qWarning("QPrinter::metric: Invalid metric command");

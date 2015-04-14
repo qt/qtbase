@@ -54,6 +54,7 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
     // Receate the backing store buffer if the effective buffer size has changed,
     // either due to a window resize or devicePixelRatio change.
     QSize effectiveBufferSize = m_requestedSize * windowDevicePixelRatio;
+
     if (m_qImage.size() != effectiveBufferSize) {
         QImage::Format format = (window()->format().hasAlpha() || cocoaWindow->m_drawContentBorderGradient)
                 ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;

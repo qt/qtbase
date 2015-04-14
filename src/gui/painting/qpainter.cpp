@@ -223,14 +223,14 @@ qreal QPainterPrivate::effectiveDevicePixelRatio() const
 {
     // Special cases for devices that does not support PdmDevicePixelRatio go here:
     if (device->devType() == QInternal::Printer)
-        return 1;
+        return qreal(1);
 
-    return qMax(1, device->metric(QPaintDevice::PdmDevicePixelRatio));
+    return qMax(qreal(1), device->devicePixelRatioF());
 }
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
 {
-    int devicePixelRatio = effectiveDevicePixelRatio();
+    const qreal devicePixelRatio = effectiveDevicePixelRatio();
     return QTransform::fromScale(devicePixelRatio, devicePixelRatio);
 }
 
@@ -5110,7 +5110,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
             x += d->state->matrix.dx();
             y += d->state->matrix.dy();
         }
-        int scale = pm.devicePixelRatio();
+        qreal scale = pm.devicePixelRatio();
         d->engine->drawPixmap(QRectF(x, y, w / scale, h / scale), pm, QRectF(0, 0, w, h));
     }
 }
