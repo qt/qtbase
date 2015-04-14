@@ -384,6 +384,9 @@ int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
     case QPaintDevice::PdmDepth:
         val = GetDeviceCaps(d->hdc, PLANES);
         break;
+    case QPaintDevice::PdmDevicePixelRatio:
+        val = 1;
+        break;
     default:
         qWarning("QPrinter::metric: Invalid metric command");
         return 0;
