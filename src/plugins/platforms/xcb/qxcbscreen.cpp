@@ -66,7 +66,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_number(number)
     , m_refreshRate(60)
     , m_forcedDpi(-1)
-    , m_devicePixelRatio(1)
+    , m_pixelDensity(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
     , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
@@ -331,8 +331,13 @@ qreal QXcbScreen::devicePixelRatio() const
     if (override_dpr > 0)
         return override_dpr;
     if (auto_dpr)
-        return m_devicePixelRatio;
+        return m_pixelDensity;
     return 1.0;
+}
+
+qreal QXcbScreen::pixelDensity() const
+{
+    return m_pixelDensity;
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -478,8 +483,8 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     free(workArea);
 
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
-    m_devicePixelRatio = qRound(dpi/96);
-    const int dpr = int(devicePixelRatio()); // we may override m_devicePixelRatio
+    m_pixelDensity = qRound(dpi/96);
+    const int dpr = int(devicePixelRatio());
     m_geometry = QRect(xGeometry.topLeft()/dpr, xGeometry.size()/dpr);
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = QRect(xAvailableGeometry.topLeft()/dpr, xAvailableGeometry.size()/dpr);

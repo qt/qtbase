@@ -157,13 +157,23 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
-    Reimplement this function in subclass to return the device pixel
-    ratio for the screen. This is the ratio between physical pixels
-    and device-independent pixels.
+    Reimplement this function in subclass to return the device pixel ratio
+    for the screen. This is the ratio between physical pixels and the
+    device-independent pixels of the windowing system.
 
     \sa QPlatformWindow::devicePixelRatio();
 */
 qreal QPlatformScreen::devicePixelRatio() const
+{
+    return 1.0;
+}
+
+/*!
+    Reimplement this function in subclass to return the pixel density of the
+    screen. This is the scale factor needed to make a low-dpi application
+    usable on this screen. The default implementation returns 1.0.
+*/
+qreal QPlatformScreen::pixelDensity()  const
 {
     return 1.0;
 }

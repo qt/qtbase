@@ -76,6 +76,7 @@ public:
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    qreal pixelDensity() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
@@ -152,7 +153,7 @@ private:
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
-    int m_devicePixelRatio;
+    int m_pixelDensity;
     QFontEngine::HintStyle m_hintStyle;
     bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;
