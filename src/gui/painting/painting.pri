@@ -60,6 +60,7 @@ SOURCES += \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
         painting/qcolor_p.cpp \
+        painting/qcompositionfunctions.cpp \
         painting/qcosmeticstroker.cpp \
         painting/qcssutil.cpp \
         painting/qdrawhelper.cpp \
