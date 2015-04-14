@@ -554,7 +554,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
 bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 {
     const QDBusSpyHookList *list = qDBusSpyHookList();
-    for (int i = 0; i < list->size(); ++i) {
+    for (int i = 0; list && i < list->size(); ++i) {
         qDBusDebug() << "calling the message spy hook";
         (*(*list)[i])(amsg);
     }
