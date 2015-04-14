@@ -648,10 +648,10 @@ int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
             while (oldPos < len && d->atWordSeparator(oldPos))
                 oldPos++;
         } else {
-            while (oldPos < len && !d->atSpace(oldPos) && !d->atWordSeparator(oldPos))
+            while (oldPos < len && !attributes[oldPos].whiteSpace && !d->atWordSeparator(oldPos))
                 oldPos++;
         }
-        while (oldPos < len && d->atSpace(oldPos))
+        while (oldPos < len && attributes[oldPos].whiteSpace)
             oldPos++;
     }
 
@@ -679,7 +679,7 @@ int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
         while (oldPos && !attributes[oldPos].graphemeBoundary)
             oldPos--;
     } else {
-        while (oldPos && d->atSpace(oldPos-1))
+        while (oldPos > 0 && attributes[oldPos - 1].whiteSpace)
             oldPos--;
 
         if (oldPos && d->atWordSeparator(oldPos-1)) {
@@ -687,7 +687,7 @@ int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
             while (oldPos && d->atWordSeparator(oldPos-1))
                 oldPos--;
         } else {
-            while (oldPos && !d->atSpace(oldPos-1) && !d->atWordSeparator(oldPos-1))
+            while (oldPos > 0 && !attributes[oldPos - 1].whiteSpace && !d->atWordSeparator(oldPos-1))
                 oldPos--;
         }
     }
