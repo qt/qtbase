@@ -2839,7 +2839,12 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     }
     if(fix == FileFixifyAbsolute || (fix == FileFixifyDefault && project->isActiveConfig("no_fixpath"))) {
         if(fix == FileFixifyAbsolute && QDir::isRelativePath(ret)) { //already absolute
-            QString pwd = qmake_getpwd();
+            QString pwd = QDir(qmake_getpwd()).absoluteFilePath(in_d);
+            {
+                QFileInfo in_fi(fileInfo(pwd));
+                if (in_fi.exists())
+                    pwd = in_fi.canonicalFilePath();
+            }
             if (!pwd.endsWith(QLatin1Char('/')))
                 pwd += QLatin1Char('/');
             ret.prepend(pwd);
