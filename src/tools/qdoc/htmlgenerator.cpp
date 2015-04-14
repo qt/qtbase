@@ -3265,6 +3265,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
 {
     bool alignNames = true;
     if (!section.members.isEmpty()) {
+        bool hasPrivateSignals = false;
         bool twoColumn = false;
         if (style == CodeMarker::Subpage) {
             alignNames = false;
@@ -3307,6 +3308,14 @@ void HtmlGenerator::generateSectionList(const Section& section,
                 prefix = prefix.left(section.keys.at(i).indexOf("::")+1);
             }
             generateSynopsis(*m, relative, marker, style, alignNames, &prefix);
+            if ((*m)->isFunction()) {
+                const FunctionNode* fn = static_cast<const FunctionNode*>(*m);
+                if (fn->isPrivateSignal()) {
+                    hasPrivateSignals = true;
+                    if (alignNames)
+                        out() << "</td><td class=\"memItemRight bottomAlign\">[see note below]";
+                }
+            }
             if (alignNames)
                 out() << "</td></tr>\n";
             else
@@ -3320,6 +3329,9 @@ void HtmlGenerator::generateSectionList(const Section& section,
             out() << "</ul>\n";
             if (twoColumn)
                 out() << "</td></tr>\n</table></div>\n";
+        }
+        if (hasPrivateSignals && alignNames) {
+            generatePrivateSignalNote(relative, marker);
         }
     }
 
@@ -4022,6 +4034,11 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
             //out() << "<p>This signal is emitted when the property value is changed.</p>\n";
             generateSectionList(notifiers, node, marker, CodeMarker::Accessors);
         }
+    }
+    else if (node->isFunction()) {
+        const FunctionNode* fn = static_cast<const FunctionNode*>(node);
+        if (fn->isPrivateSignal())
+            generatePrivateSignalNote(node, marker);
     }
     else if (node->type() == Node::Enum) {
         const EnumNode *enume = static_cast<const EnumNode *>(node);

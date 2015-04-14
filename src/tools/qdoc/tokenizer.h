@@ -74,8 +74,8 @@ enum { Tok_Eoi, Tok_Ampersand, Tok_Aster, Tok_Caret, Tok_LeftParen,
        Tok_Q_DECLARE_FLAGS, Tok_Q_SIGNALS, Tok_Q_SLOTS, Tok_QT_COMPAT,
        Tok_QT_COMPAT_CONSTRUCTOR, Tok_QT_DEPRECATED, Tok_QT_MOC_COMPAT,
        Tok_QT_MODULE, Tok_QT3_SUPPORT, Tok_QT3_SUPPORT_CONSTRUCTOR,
-       Tok_QT3_MOC_SUPPORT, Tok_QDOC_PROPERTY,
-       Tok_FirstKeyword = Tok_char, Tok_LastKeyword = Tok_QDOC_PROPERTY };
+       Tok_QT3_MOC_SUPPORT, Tok_QDOC_PROPERTY, Tok_QPrivateSignal,
+       Tok_FirstKeyword = Tok_char, Tok_LastKeyword = Tok_QPrivateSignal };
 
 /*
   The Tokenizer class implements lexical analysis of C++ source

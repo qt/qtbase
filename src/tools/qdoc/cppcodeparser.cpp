@@ -1329,6 +1329,11 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
     QString name;
     CodeChunk defaultValue;
 
+    if (match(Tok_QPrivateSignal)) {
+        func->setPrivateSignal();
+        return true;
+    }
+
     if (!matchDataType(&dataType, &name)) {
         return false;
     }

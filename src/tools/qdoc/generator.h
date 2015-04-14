@@ -156,6 +156,7 @@ protected:
                           const QString& tag);
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
+    void generatePrivateSignalNote(const Node* node, CodeMarker* marker);
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);

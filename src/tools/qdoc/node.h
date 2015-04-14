@@ -928,6 +928,8 @@ public:
     virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
         return parent()->logicalModuleIdentifier();
     }
+    bool isPrivateSignal() const { return privateSignal_; }
+    void setPrivateSignal() { privateSignal_ = true; }
 
     void debug() const;
 
@@ -946,6 +948,7 @@ private:
     bool ove : 1;
     bool reimp: 1;
     bool attached_: 1;
+    bool privateSignal_: 1;
     QList<Parameter> params;
     const FunctionNode* rf;
     const PropertyNode* ap;

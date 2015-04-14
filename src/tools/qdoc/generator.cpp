@@ -1250,6 +1250,23 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
 }
 
 /*!
+  Generates a bold line that says:
+  "The signal is private, not emitted by the user.
+  The function is public so the user can pass it to connect()."
+ */
+void Generator::generatePrivateSignalNote(const Node* node, CodeMarker* marker)
+{
+    Text text;
+    text << Atom::ParaLeft
+         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
+         << "Note: "
+         << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
+         << "This is a private signal. It can be used in signal connections but cannot be emitted by the user."
+         << Atom::ParaRight;
+    generateText(text, node, marker);
+}
+
+/*!
   Generate the documentation for \a relative. i.e. \a relative
   is the node that reporesentas the entity where a qdoc comment
   was found, and \a text represents the qdoc comment.
