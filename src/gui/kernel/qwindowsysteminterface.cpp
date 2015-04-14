@@ -139,7 +139,7 @@ void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState 
  */
 void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect, const QRect &oldRect)
 {
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw, qHighDpiToDeviceIndependentPixels(newRect, tlw), qHighDpiToDeviceIndependentPixels(oldRect, tlw));
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw, QHighDpi::fromDevicePixels(newRect, tlw), QHighDpi::fromDevicePixels(oldRect, tlw));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -168,7 +168,7 @@ void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-        new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, qHighDpiToDeviceIndependentPixels(local, w), qHighDpiToDeviceIndependentPixels(global, w), b, mods, source);
+        new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, QHighDpi::fromDevicePixels(local, w), QHighDpi::fromDevicePixels(global, w), b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -185,7 +185,7 @@ void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timest
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp,
                                                           QWindowSystemInterfacePrivate::FrameStrutMouse,
-                                                          qHighDpiToDeviceIndependentPixels(local, w), qHighDpiToDeviceIndependentPixels(global, w), b, mods, source);
+                                                          QHighDpi::fromDevicePixels(local, w), QHighDpi::fromDevicePixels(global, w), b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -366,14 +366,14 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
 
     // Simple case: vertical deltas only:
     if (angleDelta.y() != 0 && angleDelta.x() == 0) {
-        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, qHighDpiToDeviceIndependentPixels(local, tlw), qHighDpiToDeviceIndependentPixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source);
+        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromDevicePixels(local, tlw), QHighDpi::fromDevicePixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
         return;
     }
 
     // Simple case: horizontal deltas only:
     if (angleDelta.y() == 0 && angleDelta.x() != 0) {
-        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, qHighDpiToDeviceIndependentPixels(local, tlw), qHighDpiToDeviceIndependentPixels(global, tlw), pixelDelta, angleDelta, angleDelta.x(), Qt::Horizontal, mods, phase, source);
+        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromDevicePixels(local, tlw), QHighDpi::fromDevicePixels(global, tlw), pixelDelta, angleDelta, angleDelta.x(), Qt::Horizontal, mods, phase, source);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
         return;
     }
@@ -381,12 +381,12 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     // Both horizontal and vertical deltas: Send two wheel events.
     // The first event contains the Qt 5 pixel and angle delta as points,
     // and in addition the Qt 4 compatibility vertical angle delta.
-    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, qHighDpiToDeviceIndependentPixels(local, tlw), qHighDpiToDeviceIndependentPixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source);
+    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromDevicePixels(local, tlw), QHighDpi::fromDevicePixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 
     // The second event contains null pixel and angle points and the
     // Qt 4 compatibility horizontal angle delta.
-    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, qHighDpiToDeviceIndependentPixels(local, tlw), qHighDpiToDeviceIndependentPixels(global, tlw), QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods, phase, source);
+    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromDevicePixels(local, tlw), QHighDpi::fromDevicePixels(global, tlw), QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods, phase, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -464,16 +464,16 @@ QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints
         p.setState(point->state);
 
         const QPointF screenPos = point->area.center();
-        p.setScreenPos(qHighDpiToDeviceIndependentPixels(screenPos));
-        p.setScreenRect(qHighDpiToDeviceIndependentPixels(point->area));
+        p.setScreenPos(QHighDpi::fromDevicePixels(screenPos));
+        p.setScreenRect(QHighDpi::fromDevicePixels(point->area));
 
         // The local pos and rect are not set, they will be calculated
         // when the event gets processed by QGuiApplication.
 
-        p.setNormalizedPos(qHighDpiToDeviceIndependentPixels(point->normalPosition));
-        p.setVelocity(qHighDpiToDeviceIndependentPixels(point->velocity));
+        p.setNormalizedPos(QHighDpi::fromDevicePixels(point->normalPosition));
+        p.setVelocity(QHighDpi::fromDevicePixels(point->velocity));
         p.setFlags(point->flags);
-        p.setRawScreenPositions(qHighDpiToDeviceIndependentPixels(point->rawPositions));
+        p.setRawScreenPositions(QHighDpi::fromDevicePixels(point->rawPositions));
 
         touchPoints.append(p);
         ++point;
@@ -534,7 +534,7 @@ void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::
 void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const QRect &geometry, const QRect &availableGeometry)
 {
     QWindowSystemInterfacePrivate::ScreenGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, qHighDpiToDeviceIndependentPixels(geometry), qHighDpiToDeviceIndependentPixels(availableGeometry));
+            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, QHighDpi::fromDevicePixels(geometry), QHighDpi::fromDevicePixels(availableGeometry));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -560,7 +560,7 @@ void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
 
 void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, qHighDpiToDeviceIndependentPixels(region, tlw));
+    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromDevicePixels(region, tlw));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -627,12 +627,12 @@ int QWindowSystemInterface::windowSystemEventsQueued()
 #ifndef QT_NO_DRAGANDDROP
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrag(w, dropData, qHighDpiToDeviceIndependentPixels(p, w),supportedActions);
+    return QGuiApplicationPrivate::processDrag(w, dropData, QHighDpi::fromDevicePixels(p, w),supportedActions);
 }
 
 QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrop(w, dropData, qHighDpiToDeviceIndependentPixels(p, w),supportedActions);
+    return QGuiApplicationPrivate::processDrop(w, dropData, QHighDpi::fromDevicePixels(p, w),supportedActions);
 }
 #endif // QT_NO_DRAGANDDROP
 
@@ -667,8 +667,8 @@ void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, cons
 {
     QWindowSystemInterfacePrivate::TabletEvent *e =
         new QWindowSystemInterfacePrivate::TabletEvent(w,timestamp,
-                                                       qHighDpiToDeviceIndependentPixels(local, w),
-                                                       qHighDpiToDeviceIndependentPixels(global, w),
+                                                       QHighDpi::fromDevicePixels(local, w),
+                                                       QHighDpi::fromDevicePixels(global, w),
                                                        device, pointerType, buttons, pressure,
                                                        xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
@@ -797,7 +797,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
 
-    QWindowSystemInterface::handleMouseEvent(w, qHighDpiToDevicePixels(local, w), qHighDpiToDevicePixels(global, w),  b,  mods);
+    QWindowSystemInterface::handleMouseEvent(w, QHighDpi::toDevicePixels(local, w), QHighDpi::toDevicePixels(global, w),  b,  mods);
 }
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)

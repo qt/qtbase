@@ -106,7 +106,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     }
 #endif
 
-    d_ptr->platformBackingStore->flush(win, qHighDpiToDevicePixels(region, d_ptr->window), offset);
+    d_ptr->platformBackingStore->flush(win, QHighDpi::toDevicePixels(region, d_ptr->window), offset);
 }
 
 /*!
@@ -182,7 +182,7 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
-    d_ptr->platformBackingStore->beginPaint(qHighDpiToDevicePixels(region, d_ptr->window));
+    d_ptr->platformBackingStore->beginPaint(QHighDpi::toDevicePixels(region, d_ptr->window));
 }
 
 /*!
@@ -203,7 +203,7 @@ void QBackingStore::endPaint()
 void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size;
-    d_ptr->platformBackingStore->resize(qHighDpiToDevicePixels(size, d_ptr->window), d_ptr->staticContents);
+    d_ptr->platformBackingStore->resize(QHighDpi::toDevicePixels(size, d_ptr->window), d_ptr->staticContents);
 }
 
 /*!
@@ -226,7 +226,7 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     Q_UNUSED(dx);
     Q_UNUSED(dy);
 
-    return d_ptr->platformBackingStore->scroll(qHighDpiToDevicePixels(area, d_ptr->window), qHighDpiToDevicePixels(dx, d_ptr->window), qHighDpiToDevicePixels(dy, d_ptr->window));
+    return d_ptr->platformBackingStore->scroll(QHighDpi::toDevicePixels(area, d_ptr->window), QHighDpi::toDevicePixels(dx, d_ptr->window), QHighDpi::toDevicePixels(dy, d_ptr->window));
 }
 
 void QBackingStore::setStaticContents(const QRegion &region)

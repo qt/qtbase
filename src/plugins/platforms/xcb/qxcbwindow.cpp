@@ -390,8 +390,8 @@ void QXcbWindow::create()
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
     } else {
-        rect.setWidth(qHighDpiToDevicePixels(int(defaultWindowWidth)));
-        rect.setHeight(qHighDpiToDevicePixels(int(defaultWindowHeight)));
+        rect.setWidth(QHighDpi::toDevicePixels(int(defaultWindowWidth)));
+        rect.setHeight(QHighDpi::toDevicePixels(int(defaultWindowHeight)));
     }
 
     xcb_window_t xcb_parent_id = platformScreen->root();

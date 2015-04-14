@@ -112,14 +112,14 @@ qreal QHighDpiScaling::factor(const QWindow *window)
     return m_factor * (windowFactor.isValid() ? windowFactor.toReal() : 1);
 }
 
-Q_GUI_EXPORT QSize qHighDpiToDevicePixelsConstrained(const QSize &size, const QWindow *window)
+Q_GUI_EXPORT QSize QHighDpi::toDevicePixelsConstrained(const QSize &size, const QWindow *window)
 {
     const int width = size.width();
     const int height = size.height();
     return QSize(width > 0 && width < QWINDOWSIZE_MAX ?
-                 qHighDpiToDevicePixels(width, window) : width,
+                 QHighDpi::toDevicePixels(width, window) : width,
                  height > 0 && height < QWINDOWSIZE_MAX ?
-                 qHighDpiToDevicePixels(height, window) : height);
+                 QHighDpi::toDevicePixels(height, window) : height);
 }
 
 QT_END_NAMESPACE
