@@ -29,7 +29,7 @@ HTML.headerstyles = \
 
 HTML.headerscripts = \
     "  <script type=\"text/javascript\"> wpThemeFolder = \'http://qt.io/wp-content/themes/oneqt\'; </script>\n" \
-    "  <script type=\"text/javascript\" src=\"http://d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
+    "  <script type=\"text/javascript\" src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/js/combo.js.gzip\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/main.js\"></script>\n" \
     "  <script type=\"text/javascript\" src=\"scripts/extras.js\"></script>\n" \
     "  <script type=\"text/javascript\">\n" \
@@ -62,7 +62,7 @@ HTML.postheader = \
     "<header id=\"navbar\" class=\"\">\n" \
     "        <div class=\"cookies_yum\">\n" \
     "            <div>\n" \
-    "                <img src=\"http://qt.io/wp-content/themes/oneqt/assets/images/cookie_small.png\" align=\"left\">\n" \
+    "                <img src=\"//d3hp9ud7yvwzy0.cloudfront.net/wp-content/themes/oneqt/assets/images/cookie_small.png\" align=\"left\">\n" \
     "                <p class=\"close_button\">\n" \
     "                    We bake cookies in your browser for a better experience.  Using this site means that you consent. <a href=\"//qt.io/terms-conditions/\">Read More</a>\n" \
     "                </p>\n" \
@@ -95,12 +95,11 @@ HTML.postheader = \
     "                    <a href=\"http://qt.io/\" class=\"navbar-oneQt retina\" data-icon=\"\">\n" \
     "                    </a>\n" \
     "                    <nav class=\"navbar-menu clearfix\" role=\"navigation\">\n" \
-    "                        <ul id=\"mainmenu\" class=\"menu\"><li id=\"menu-item-21\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-21\"><a href=\"http://qt.io/product/\">Product</a></li>\n" \
-    "<li id=\"menu-item-1381\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1381\"><a href=\"http://qt.io/services/\">Services</a></li>\n" \
-    "<li id=\"menu-item-22\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-22\"><a href=\"http://qt.io/qt-in-use/\">Qt in Use</a></li>\n" \
-    "<li id=\"menu-item-20\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-20\"><a href=\"http://qt.io/developers/\">Developers</a></li>\n" \
-    "<li id=\"menu-item-4466\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-4466\"><a href=\"http://qt.io/licensing/\">Licensing</a></li>\n" \
-    "<li id=\"menu-item-18\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-18\"><a href=\"http://qt.io/download/\">Download</a></li>\n" \
+    "                        <ul id=\"mainmenu\" class=\"menu\"><li id=\"menu-item-18\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-18\"><a href=\"http://qt.io/download/\">Download</a></li>\n" \
+    "<li id=\"menu-item-12207\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-12207\"><a href=\"http://www.qt.io/qt-for-device-creation/\">Device Creation</a></li>\n" \
+    "<li id=\"menu-item-12208\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-12208\"><a href=\"http://www.qt.io/application-development/\">Application Development</a></li>\n" \
+    "<li id=\"menu-item-1381\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1381\"><a href=\"http://www.qt.io/services/\">Services</a></li>\n" \
+    "<li id=\"menu-item-20\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-20\"><a href=\"http://www.qt.io/developers/\">Developers</a></li>\n" \
     "</ul>                        <ul class=\"menuextraslanguages\">\n" \
     "                            <li class=\"active dark\"><a class=\"dark\" href=\"http://qt.io/support/\">EN</a></li><li class=\"dark\"><a class=\"dark\" href=\"http://qt.io/ru/\">RU</a></li><li class=\"dark\"><a class=\"dark\" href=\"http://qt.io/zh-hans/\">ZH</a></li></ul>\n" \
     "                    </nav>\n" \

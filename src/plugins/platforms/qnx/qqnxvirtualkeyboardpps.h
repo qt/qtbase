@@ -86,4 +86,6 @@ private:
     static const size_t ms_bufferSize;
 };
 
+QT_END_NAMESPACE
+
 #endif // VIRTUALKEYBOARDPPS_H

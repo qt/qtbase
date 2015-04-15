@@ -2108,7 +2108,7 @@ sljit_uw *result;
 if (SLJIT_UNLIKELY(sljit_get_compiler_error(compiler)))
   return NULL;
 
-result = (sljit_uw *)SLJIT_MALLOC(size + sizeof(sljit_uw), common->allocator_data);
+result = (sljit_uw *)SLJIT_MALLOC(size + sizeof(sljit_uw), compiler->allocator_data);
 if (SLJIT_UNLIKELY(result == NULL))
   {
   sljit_set_compiler_memory_error(compiler);
@@ -6997,7 +6997,7 @@ cc += GET(cc, 1);
 
 has_alternatives = *cc == OP_ALT;
 if (SLJIT_UNLIKELY(opcode == OP_COND || opcode == OP_SCOND))
-  has_alternatives = (*matchingpath == OP_RREF || *matchingpath == OP_DNRREF) ? FALSE : TRUE;
+  has_alternatives = (*matchingpath == OP_RREF || *matchingpath == OP_DNRREF || *matchingpath == OP_FAIL) ? FALSE : TRUE;
 
 if (SLJIT_UNLIKELY(opcode == OP_COND) && (*cc == OP_KETRMAX || *cc == OP_KETRMIN))
   opcode = OP_SCOND;
@@ -7255,12 +7255,14 @@ if (opcode == OP_COND || opcode == OP_SCOND)
     add_jump(compiler, &(BACKTRACK_AS(bracket_backtrack)->u.condfailed), JUMP(SLJIT_ZERO));
     matchingpath += 1 + 2 * IMM2_SIZE;
     }
-  else if (*matchingpath == OP_RREF || *matchingpath == OP_DNRREF)
+  else if (*matchingpath == OP_RREF || *matchingpath == OP_DNRREF || *matchingpath == OP_FAIL)
     {
     /* Never has other case. */
     BACKTRACK_AS(bracket_backtrack)->u.condfailed = NULL;
     SLJIT_ASSERT(!has_alternatives);
 
+    if (*matchingpath == OP_FAIL)
+      stacksize = 0;
     if (*matchingpath == OP_RREF)
       {
       stacksize = GET2(matchingpath, 1);
