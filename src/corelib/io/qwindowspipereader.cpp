@@ -119,7 +119,7 @@ qint64 QWindowsPipeReader::bytesAvailable() const
 }
 
 /*!
-    Stops the asynchronous read sequence.
+    Copies at most \c{maxlen} bytes from the internal read buffer to \c{data}.
  */
 qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
 {
