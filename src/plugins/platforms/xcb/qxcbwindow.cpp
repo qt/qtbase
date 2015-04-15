@@ -2005,6 +2005,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     const QRect nativeRect = QRect(pos, QSize(event->width, event->height));
     QXcbScreen *newScreen = parent() ? parentScreen() : screenForNativeGeometry(nativeRect);
 
+    QXcbScreen *currentScreen = m_xcbScreen;
     m_xcbScreen = newScreen;
     if (!newScreen)
         return;
@@ -2012,7 +2013,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
-    if (newScreen != screen())
+    if (newScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->QPlatformScreen::screen());
 
     m_configureNotifyPending = false;
