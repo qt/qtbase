@@ -97,6 +97,7 @@ private:
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     int actualReadBufferSize;
+    bool stopped;
     bool readSequenceStarted;
     bool pipeBroken;
     bool readyReadEmitted;

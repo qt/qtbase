@@ -44,6 +44,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       handle(INVALID_HANDLE_VALUE),
       readBufferMaxSize(0),
       actualReadBufferSize(0),
+      stopped(true),
       readSequenceStarted(false),
       pipeBroken(false),
       readyReadEmitted(false)
@@ -69,12 +70,7 @@ static bool qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
 
 QWindowsPipeReader::~QWindowsPipeReader()
 {
-    if (readSequenceStarted) {
-        if (qt_cancelIo(handle, &overlapped))
-            dataReadNotifier->waitForNotified(-1, &overlapped);
-        else
-            qErrnoWarning("QWindowsPipeReader: qt_cancelIo on handle %x failed.", handle);
-    }
+    stop();
 }
 
 /*!
@@ -87,6 +83,7 @@ void QWindowsPipeReader::setHandle(HANDLE hPipeReadEnd)
     handle = hPipeReadEnd;
     pipeBroken = false;
     readyReadEmitted = false;
+    stopped = false;
     if (hPipeReadEnd != INVALID_HANDLE_VALUE) {
         dataReadNotifier->setHandle(hPipeReadEnd);
         dataReadNotifier->setEnabled(true);
@@ -95,13 +92,24 @@ void QWindowsPipeReader::setHandle(HANDLE hPipeReadEnd)
 
 /*!
     Stops the asynchronous read sequence.
-    This function assumes that the file already has been closed.
-    It does not cancel any I/O operation.
+    If the read sequence is running then the I/O operation is canceled.
  */
 void QWindowsPipeReader::stop()
 {
-    dataReadNotifier->setEnabled(false);
+    stopped = true;
+    if (readSequenceStarted) {
+        if (qt_cancelIo(handle, &overlapped)) {
+            dataReadNotifier->waitForNotified(-1, &overlapped);
+        } else {
+            const DWORD dwError = GetLastError();
+            if (dwError != ERROR_NOT_FOUND) {
+                qErrnoWarning(dwError, "QWindowsPipeReader: qt_cancelIo on handle %x failed.",
+                              handle);
+            }
+        }
+    }
     readSequenceStarted = false;
+    dataReadNotifier->setEnabled(false);
     handle = INVALID_HANDLE_VALUE;
 }
 
@@ -142,7 +150,7 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
     }
 
     if (!pipeBroken) {
-        if (!readSequenceStarted)
+        if (!readSequenceStarted && !stopped)
             startAsyncRead();
         if (readSoFar == 0)
             return -2;      // signal EWOULDBLOCK
@@ -185,6 +193,13 @@ void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
     }
 
     readSequenceStarted = false;
+
+    // After the reader was stopped, the only reason why this function can be called is the
+    // completion of a cancellation. No signals should be emitted, and no new read sequence should
+    // be started in this case.
+    if (stopped)
+        return;
+
     if (pipeBroken) {
         emit pipeClosed();
         return;
