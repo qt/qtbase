@@ -2176,7 +2176,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
                     else if ((*r).access_ == Node::Private) {
                         text << " (private)";
                     }
-                    text << separator(index++, classe->baseClasses().count());
+                    text << comma(index++, classe->baseClasses().count());
                 }
                 ++r;
             }

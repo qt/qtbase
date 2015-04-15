@@ -213,7 +213,7 @@ void Generator::appendSortedNames(Text& text, const ClassNode* cn, const QList<R
 
     foreach (const QString &className, classNames) {
         text << classMap[className];
-        text << separator(index++, classNames.count());
+        text << comma(index++, classNames.count());
     }
 }
 
@@ -236,7 +236,7 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
 
     foreach (const QString &name, names) {
         text << classMap[name];
-        text << separator(index++, names.count());
+        text << comma(index++, names.count());
     }
 }
 
