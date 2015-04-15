@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
 ** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,48 +30,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QDBUSSERVER_H
-#define QDBUSSERVER_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtDBus/qdbusmacros.h>
+// Ugly hack, look away
+#include "../qdbusconnection/tst_qdbusconnection.cpp"
 
-#ifndef QT_NO_DBUS
-
-QT_BEGIN_NAMESPACE
-
-
-class QDBusConnectionPrivate;
-class QDBusError;
-class QDBusConnection;
-
-class Q_DBUS_EXPORT QDBusServer: public QObject
-{
-    Q_OBJECT
-public:
-    explicit QDBusServer(const QString &address, QObject *parent = Q_NULLPTR);
-    explicit QDBusServer(QObject *parent = Q_NULLPTR);
-    virtual ~QDBusServer();
-
-    bool isConnected() const;
-    QDBusError lastError() const;
-    QString address() const;
-
-    void setAnonymousAuthenticationAllowed(bool value);
-    bool isAnonymousAuthenticationAllowed() const;
-
-Q_SIGNALS:
-    void newConnection(const QDBusConnection &connection);
-
-private:
-    Q_DISABLE_COPY(QDBusServer)
-    Q_PRIVATE_SLOT(d, void _q_newConnection(QDBusConnectionPrivate*))
-    QDBusConnectionPrivate *d;
-    friend class QDBusConnectionPrivate;
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_DBUS
-#endif
+QTEST_APPLESS_MAIN(tst_QDBusConnection_NoApplication)

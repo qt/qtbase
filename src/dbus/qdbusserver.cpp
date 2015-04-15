@@ -63,14 +63,10 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
         d = 0;
         return;
     }
-    d = new QDBusConnectionPrivate;
 
+    emit QDBusConnectionManager::instance()->serverRequested(address, this);
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
-
-    QDBusErrorInternal error;
-    d->setServer(this, q_dbus_server_listen(address.toUtf8().constData(), error), error);
-    d->moveToThread(QDBusConnectionManager::instance());
 }
 
 /*!
@@ -83,23 +79,19 @@ QDBusServer::QDBusServer(QObject *parent)
 {
 #ifdef Q_OS_UNIX
     // Use Unix sockets on Unix systems only
-    static const char address[] = "unix:tmpdir=/tmp";
+    const QString address = QStringLiteral("unix:tmpdir=/tmp");
 #else
-    static const char address[] = "tcp:";
+    const QString address = QStringLiteral("tcp:");
 #endif
 
     if (!qdbus_loadLibDBus()) {
         d = 0;
         return;
     }
-    d = new QDBusConnectionPrivate;
 
+    emit QDBusConnectionManager::instance()->serverRequested(address, this);
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
-
-    QDBusErrorInternal error;
-    d->setServer(this, q_dbus_server_listen(address, error), error);
-    d->moveToThread(QDBusConnectionManager::instance());
 }
 
 /*!

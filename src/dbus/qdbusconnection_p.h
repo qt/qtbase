@@ -190,7 +190,7 @@ public:
     explicit QDBusConnectionPrivate(QObject *parent = 0);
     ~QDBusConnectionPrivate();
 
-    void setBusService(const QDBusConnection &connection);
+    void createBusService();
     void setPeer(DBusConnection *connection, const QDBusErrorInternal &error);
     void setConnection(DBusConnection *connection, const QDBusErrorInternal &error);
     void setServer(QDBusServer *object, DBusServer *server, const QDBusErrorInternal &error);

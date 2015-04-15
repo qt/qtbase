@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 class QDBusConnectionManager : public QDaemonThread
 {
     Q_OBJECT
+    struct ConnectionRequestData;
 public:
     QDBusConnectionManager();
     ~QDBusConnectionManager();
@@ -65,13 +66,23 @@ public:
     QDBusConnectionPrivate *connection(const QString &name) const;
     void removeConnection(const QString &name);
     void setConnection(const QString &name, QDBusConnectionPrivate *c);
+    QDBusConnectionPrivate *connectToBus(QDBusConnection::BusType type, const QString &name);
+    QDBusConnectionPrivate *connectToBus(const QString &address, const QString &name);
+    QDBusConnectionPrivate *connectToPeer(const QString &address, const QString &name);
 
     mutable QMutex mutex;
+
+signals:
+    void connectionRequested(ConnectionRequestData *);
+    void serverRequested(const QString &address, void *server);
 
 protected:
     void run() Q_DECL_OVERRIDE;
 
 private:
+    void executeConnectionRequest(ConnectionRequestData *data);
+    void createServer(const QString &address, void *server);
+
     QHash<QString, QDBusConnectionPrivate *> connectionHash;
 
     mutable QMutex senderMutex;

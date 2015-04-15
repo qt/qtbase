@@ -1644,6 +1644,7 @@ void QDBusConnectionPrivate::setServer(QDBusServer *object, DBusServer *s, const
 {
     mode = ServerMode;
     serverObject = object;
+    object->d = this;
     if (!s) {
         handleError(error);
         return;
