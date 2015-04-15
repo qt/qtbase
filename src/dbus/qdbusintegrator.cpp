@@ -1065,20 +1065,6 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
     server = 0;
 }
 
-void QDBusConnectionPrivate::deleteYourself()
-{
-    if (thread() && thread() != QThread::currentThread()) {
-        // last reference dropped while not in the correct thread
-        // ask the correct thread to delete
-
-        // note: since we're posting an event to another thread, we
-        // must consider deleteLater() to take effect immediately
-        deleteLater();
-    } else {
-        delete this;
-    }
-}
-
 void QDBusConnectionPrivate::closeConnection()
 {
     QDBusWriteLocker locker(CloseConnectionAction, this);

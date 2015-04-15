@@ -187,7 +187,6 @@ public:
     // public methods are entry points from other objects
     explicit QDBusConnectionPrivate(QObject *parent = 0);
     ~QDBusConnectionPrivate();
-    void deleteYourself();
 
     void setBusService(const QDBusConnection &connection);
     void setPeer(DBusConnection *connection, const QDBusErrorInternal &error);
