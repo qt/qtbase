@@ -91,117 +91,117 @@ private:
 };
 
 // Coordinate system conversion functions:
-// QHighDpi::fromDevicePixels   : from physical(screen/backing) to logical pixels
-// QHighDpi::toDevicePixels              : from logical to physical pixels
+// QHighDpi::fromNativePixels   : from physical(screen/backing) to logical pixels
+// QHighDpi::toNativePixels              : from logical to physical pixels
 
 namespace QHighDpi {
 
-inline QRect fromDevicePixels(const QRect &pixelRect, const QWindow *window = 0)
+inline QRect fromNativePixels(const QRect &pixelRect, const QWindow *window = 0)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRect(pixelRect.topLeft() / scaleFactor, pixelRect.size() / scaleFactor);
 }
 
-inline QRect toDevicePixels(const QRect &pointRect, const QWindow *window = 0)
+inline QRect toNativePixels(const QRect &pointRect, const QWindow *window = 0)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRect(pointRect.topLeft() * scaleFactor, pointRect.size() * scaleFactor);
 }
 
-inline QRectF fromDevicePixels(const QRectF &pixelRect, const QWindow *window = 0)
+inline QRectF fromNativePixels(const QRectF &pixelRect, const QWindow *window = 0)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QRectF(pixelRect.topLeft() / scaleFactor, pixelRect.size() / scaleFactor);
 }
 
-inline QRectF toDevicePixels(const QRectF &pointRect, const QWindow *window = 0)
+inline QRectF toNativePixels(const QRectF &pointRect, const QWindow *window = 0)
 {
    const qreal scaleFactor = QHighDpiScaling::factor(window);
    return QRectF(pointRect.topLeft() * scaleFactor, pointRect.size() * scaleFactor);
 }
 
-inline QSize fromDevicePixels(const QSize &pixelSize, const QWindow *window = 0)
+inline QSize fromNativePixels(const QSize &pixelSize, const QWindow *window = 0)
 {
     return pixelSize / QHighDpiScaling::factor(window);
 }
 
 // For converting minimum/maximum sizes of QWindow, limits to 0..QWINDOWSIZE_MAX
-Q_GUI_EXPORT QSize toDevicePixelsConstrained(const QSize &size, const QWindow *window = 0);
+Q_GUI_EXPORT QSize toNativePixelsConstrained(const QSize &size, const QWindow *window = 0);
 
-inline QSize toDevicePixels(const QSize &pointSize, const QWindow *window = 0)
+inline QSize toNativePixels(const QSize &pointSize, const QWindow *window = 0)
 {
     return pointSize * QHighDpiScaling::factor(window);
 }
 
-inline QSizeF fromDevicePixels(const QSizeF &pixelSize, const QWindow *window = 0)
+inline QSizeF fromNativePixels(const QSizeF &pixelSize, const QWindow *window = 0)
 {
     return pixelSize / QHighDpiScaling::factor(window);
 }
 
-inline QSizeF toDevicePixels(const QSizeF &pointSize, const QWindow *window = 0)
+inline QSizeF toNativePixels(const QSizeF &pointSize, const QWindow *window = 0)
 {
     return pointSize * QHighDpiScaling::factor(window);
 }
 
-inline QPoint fromDevicePixels(const QPoint &pixelPoint, const QWindow *window = 0)
+inline QPoint fromNativePixels(const QPoint &pixelPoint, const QWindow *window = 0)
 {
     return pixelPoint / QHighDpiScaling::factor(window);
 }
 
-inline QPoint toDevicePixels(const QPoint &pointPoint, const QWindow *window = 0)
+inline QPoint toNativePixels(const QPoint &pointPoint, const QWindow *window = 0)
 {
     return pointPoint * QHighDpiScaling::factor(window);
 }
 
-inline QPointF fromDevicePixels(const QPointF &pixelPoint, const QWindow *window = 0)
+inline QPointF fromNativePixels(const QPointF &pixelPoint, const QWindow *window = 0)
 {
     return pixelPoint / QHighDpiScaling::factor(window);
 }
 
-inline QPointF toDevicePixels(const QPointF &pointPoint, const QWindow *window = 0)
+inline QPointF toNativePixels(const QPointF &pointPoint, const QWindow *window = 0)
 {
     return pointPoint * QHighDpiScaling::factor(window);
 }
 
-inline QMargins fromDevicePixels(const QMargins &pixelMargins, const QWindow *window = 0)
+inline QMargins fromNativePixels(const QMargins &pixelMargins, const QWindow *window = 0)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QMargins(pixelMargins.left() / scaleFactor, pixelMargins.top() / scaleFactor,
                     pixelMargins.right() / scaleFactor, pixelMargins.bottom() / scaleFactor);
 }
 
-inline QMargins toDevicePixels(const QMargins &pointMargins, const QWindow *window = 0)
+inline QMargins toNativePixels(const QMargins &pointMargins, const QWindow *window = 0)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);
     return QMargins(pointMargins.left() * scaleFactor, pointMargins.top() * scaleFactor,
                     pointMargins.right() * scaleFactor, pointMargins.bottom() * scaleFactor);
 }
 
-inline QRegion fromDevicePixels(const QRegion &pixelRegion, const QWindow *window = 0)
+inline QRegion fromNativePixels(const QRegion &pixelRegion, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelRegion;
 
     QRegion pointRegion;
     foreach (const QRect &rect, pixelRegion.rects())
-        pointRegion += fromDevicePixels(rect, window);
+        pointRegion += fromNativePixels(rect, window);
     return pointRegion;
 }
 
-inline QRegion toDevicePixels(const QRegion &pointRegion, const QWindow *window = 0)
+inline QRegion toNativePixels(const QRegion &pointRegion, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointRegion;
 
     QRegion pixelRegon;
     foreach (const QRect &rect, pointRegion.rects())
-        pixelRegon += toDevicePixels(rect, window);
+        pixelRegon += toNativePixels(rect, window);
     return pixelRegon;
 }
 
 // Any T that has operator/()
 template <typename T>
-T fromDevicePixels(const T &pixelValue, const QWindow *window = 0)
+T fromNativePixels(const T &pixelValue, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelValue;
@@ -212,7 +212,7 @@ T fromDevicePixels(const T &pixelValue, const QWindow *window = 0)
 
 // Any T that has operator*()
 template <typename T>
-T toDevicePixels(const T &pointValue, const QWindow *window = 0)
+T toNativePixels(const T &pointValue, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointValue;
@@ -222,7 +222,7 @@ T toDevicePixels(const T &pointValue, const QWindow *window = 0)
 
 // Any QVector<T> where T has operator/()
 template <typename T>
-QVector<T> fromDevicePixels(const QVector<T> &pixelValues, const QWindow *window = 0)
+QVector<T> fromNativePixels(const QVector<T> &pixelValues, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pixelValues;
@@ -235,7 +235,7 @@ QVector<T> fromDevicePixels(const QVector<T> &pixelValues, const QWindow *window
 
 // Any QVector<T> where T has operator*()
 template <typename T>
-QVector<T> toDevicePixels(const QVector<T> &pointValues, const QWindow *window = 0)
+QVector<T> toNativePixels(const QVector<T> &pointValues, const QWindow *window = 0)
 {
     if (!QHighDpiScaling::isActive())
         return pointValues;
@@ -249,18 +249,18 @@ QVector<T> toDevicePixels(const QVector<T> &pointValues, const QWindow *window =
 
 // Any QPair<T, U> where T and U has operator/()
 template <typename T, typename U>
-QPair<T, U> fromDevicePixels(const QPair<T, U> &pixelPair, const QWindow *window = 0)
+QPair<T, U> fromNativePixels(const QPair<T, U> &pixelPair, const QWindow *window = 0)
 {
-    return qMakePair(fromDevicePixels(pixelPair.first, window),
-                     fromDevicePixels(pixelPair.second, window));
+    return qMakePair(fromNativePixels(pixelPair.first, window),
+                     fromNativePixels(pixelPair.second, window));
 }
 
 // Any QPair<T, U> where T and U has operator*()
 template <typename T, typename U>
-QPair<T, U> toDevicePixels(const QPair<T, U> &pointPair, const QWindow *window = 0)
+QPair<T, U> toNativePixels(const QPair<T, U> &pointPair, const QWindow *window = 0)
 {
-    return qMakePair(QHighDpi::toDevicePixels(pointPair.first, window),
-                     QHighDpi::toDevicePixels(pointPair.second, window));
+    return qMakePair(QHighDpi::toNativePixels(pointPair.first, window),
+                     QHighDpi::toNativePixels(pointPair.second, window));
 }
 }
 

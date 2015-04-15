@@ -180,7 +180,7 @@ QPoint QCursor::pos(const QScreen *screen)
 {
     if (screen)
         if (const QPlatformCursor *cursor = screen->handle()->cursor())
-            return QHighDpi::fromDevicePixels(cursor->pos());
+            return QHighDpi::fromNativePixels(cursor->pos());
     return QGuiApplicationPrivate::lastCursorPosition.toPoint();
 }
 
@@ -232,7 +232,7 @@ void QCursor::setPos(QScreen *screen, int x, int y)
 {
     if (screen) {
         if (QPlatformCursor *cursor = screen->handle()->cursor()) {
-            const QPoint devicePos = QHighDpi::toDevicePixels(QPoint(x, y));
+            const QPoint devicePos = QHighDpi::toNativePixels(QPoint(x, y));
             // Need to check, since some X servers generate null mouse move
             // events, causing looping in applications which call setPos() on
             // every mouse move event.

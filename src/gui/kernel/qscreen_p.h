@@ -61,8 +61,8 @@ public:
         , orientationUpdateMask(0)
     {
         orientation = platformScreen->orientation();
-        geometry = QHighDpi::fromDevicePixels(platformScreen->geometry());
-        availableGeometry = QHighDpi::fromDevicePixels(platformScreen->availableGeometry());
+        geometry = QHighDpi::fromNativePixels(platformScreen->geometry());
+        availableGeometry = QHighDpi::fromNativePixels(platformScreen->availableGeometry());
         logicalDpi = platformScreen->logicalDpi();
         refreshRate = platformScreen->refreshRate();
         // safeguard ourselves against buggy platform behavior...
@@ -80,8 +80,8 @@ public:
 
     void updateHighDpi()
     {
-        geometry = QHighDpi::fromDevicePixels(platformScreen->geometry());
-        availableGeometry = QHighDpi::fromDevicePixels(platformScreen->availableGeometry());
+        geometry = QHighDpi::fromNativePixels(platformScreen->geometry());
+        availableGeometry = QHighDpi::fromNativePixels(platformScreen->availableGeometry());
     }
 
     void updatePrimaryOrientation();

@@ -315,7 +315,7 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
         return;
 
     int dpr = int(m_image->image()->devicePixelRatio());
-    const int windowDpr = int(QHighDpi::fromDevicePixels(window()->devicePixelRatio()));
+    const int windowDpr = int(QHighDpi::fromNativePixels(window()->devicePixelRatio()));
     if (windowDpr != dpr) {
         resize(window()->size(), QRegion());
         dpr = int(m_image->image()->devicePixelRatio());
@@ -370,10 +370,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     if (!m_image || m_image->size().isEmpty())
         return;
 
-    // Note on the QHighDpi::fromDevicePixels call below: When scaling
+    // Note on the QHighDpi::fromNativePixels call below: When scaling
     // in QtGui is active this prevents xcb plugin from scalìng in addition
     // by keeping "dpr" below at 1.
-    const int dpr = int(QHighDpi::fromDevicePixels(window->devicePixelRatio(), window));
+    const int dpr = int(QHighDpi::fromNativePixels(window->devicePixelRatio(), window));
 
 
 #ifndef QT_NO_DEBUG
@@ -385,7 +385,7 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     QSize imageSize = m_image->size() / dpr; //because we multiply with the DPR later
 
     QRegion clipped = region;
-    clipped &= QHighDpi::toDevicePixels(QRect(0, 0, window->width(), window->height()));
+    clipped &= QHighDpi::toNativePixels(QRect(0, 0, window->width(), window->height()));
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
     QRect bounds = clipped.boundingRect();
@@ -435,7 +435,7 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 
 void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
-    const int dpr = int(QHighDpi::fromDevicePixels(window()->devicePixelRatio(), window()));
+    const int dpr = int(QHighDpi::fromNativePixels(window()->devicePixelRatio(), window()));
     const QSize xSize = size * dpr;
     if (m_image && xSize == m_image->size() && dpr == m_image->image()->devicePixelRatio())
         return;

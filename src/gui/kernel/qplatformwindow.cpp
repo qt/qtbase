@@ -633,7 +633,7 @@ void QPlatformWindow::requestUpdate()
 */
 QSize QPlatformWindow::windowMinimumSize() const
 {
-    return QHighDpi::toDevicePixelsConstrained(window()->minimumSize(), window());
+    return QHighDpi::toNativePixelsConstrained(window()->minimumSize(), window());
 }
 
 /*!
@@ -641,7 +641,7 @@ QSize QPlatformWindow::windowMinimumSize() const
 */
 QSize QPlatformWindow::windowMaximumSize() const
 {
-    return QHighDpi::toDevicePixelsConstrained(window()->maximumSize(), window());
+    return QHighDpi::toNativePixelsConstrained(window()->maximumSize(), window());
 }
 
 /*!
@@ -649,7 +649,7 @@ QSize QPlatformWindow::windowMaximumSize() const
 */
 QSize QPlatformWindow::windowBaseSize() const
 {
-    return QHighDpi::toDevicePixels(window()->baseSize(), window());
+    return QHighDpi::toNativePixels(window()->baseSize(), window());
 }
 
 /*!
@@ -666,7 +666,7 @@ QSize QPlatformWindow::windowSizeIncrement() const
     if (increment.isEmpty())
         increment = QSize(1, 1);
 
-    return QHighDpi::toDevicePixels(increment, window());
+    return QHighDpi::toNativePixels(increment, window());
 }
 
 /*!
@@ -674,7 +674,7 @@ QSize QPlatformWindow::windowSizeIncrement() const
 */
 QRect QPlatformWindow::windowGeometry() const
 {
-    return QHighDpi::toDevicePixels(window()->geometry(), window());
+    return QHighDpi::toNativePixels(window()->geometry(), window());
 }
 
 /*!
