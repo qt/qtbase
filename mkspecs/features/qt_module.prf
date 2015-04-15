@@ -62,8 +62,8 @@ load(qt_module_pris)
 
 #other
 TEMPLATE         = lib
-DESTDIR          = $$eval(QT.$${MODULE_ID}.libs)
-win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE_ID}.bins)
+DESTDIR          = $$MODULE_BASE_OUTDIR/lib
+win32:!wince*:!prefix_build: DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 CONFIG          += qmake_cache target_qt
 
