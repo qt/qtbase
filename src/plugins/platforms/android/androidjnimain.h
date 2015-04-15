@@ -72,6 +72,7 @@ namespace QtAndroid
     int desktopHeightPixels();
     double scaledDensity();
     double density();
+    bool highDpiScalingEnabled();
     JavaVM *javaVM();
     AAssetManager *assetManager();
     jclass applicationClass();

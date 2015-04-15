@@ -111,6 +111,7 @@ static int m_desktopWidthPixels  = 0;
 static int m_desktopHeightPixels = 0;
 static double m_scaledDensity = 0;
 static double m_density = 1.0;
+static bool m_highDpiScalingEnabled = true;
 
 static volatile bool m_pauseApplication;
 
@@ -162,6 +163,11 @@ namespace QtAndroid
     double density()
     {
         return m_density;
+    }
+
+    bool highDpiScalingEnabled()
+    {
+        return m_highDpiScalingEnabled;
     }
 
     JavaVM *javaVM()
@@ -562,7 +568,9 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_scaledDensity = scaledDensity;
     m_density = density;
 
-    QHighDpiScaling::setFactor(density);
+    if (m_highDpiScalingEnabled)
+        QHighDpiScaling::setFactor(density);
+
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
                                                               desktopHeightPixels,

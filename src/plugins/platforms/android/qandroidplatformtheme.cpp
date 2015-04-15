@@ -31,6 +31,7 @@
 **
 ****************************************************************************/
 
+#include "androidjnimain.h"
 #include "androidjnimenu.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidplatformmenubar.h"
@@ -244,8 +245,12 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
 
             // Font size (in pixels)
             attributeIterator = item.find(QLatin1String("TextAppearance_textSize"));
-            if (attributeIterator != item.constEnd())
-                font.setPixelSize(int(attributeIterator.value().toDouble()));
+            if (attributeIterator != item.constEnd()) {
+                int pixelSize = int(attributeIterator.value().toDouble());
+                if (QtAndroid::highDpiScalingEnabled())
+                    pixelSize /= QtAndroid::density();
+                font.setPixelSize(pixelSize);
+            }
 
             // Font style
             attributeIterator = item.find(QLatin1String("TextAppearance_textStyle"));
