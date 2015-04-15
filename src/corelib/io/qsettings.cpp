@@ -104,6 +104,10 @@ using namespace ABI::Windows::Storage;
 #define Q_XDG_PLATFORM
 #endif
 
+#if !defined(QT_NO_STANDARDPATHS) && (defined(Q_XDG_PLATFORM) || defined(Q_OS_IOS))
+#define QSETTINGS_USE_QSTANDARDPATHS
+#endif
+
 // ************************************************************************
 // QConfFile
 
@@ -1044,7 +1048,7 @@ static void initDefaultPaths(QMutexLocker *locker)
                          windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator());
 #else
 
-#if defined(QT_NO_STANDARDPATHS) || !defined(Q_XDG_PLATFORM)
+#ifndef QSETTINGS_USE_QSTANDARDPATHS
         // Non XDG platforms (OS X, iOS, Blackberry, Android...) have used this code path erroneously
         // for some time now. Moving away from that would require migrating existing settings.
         QString userPath;
