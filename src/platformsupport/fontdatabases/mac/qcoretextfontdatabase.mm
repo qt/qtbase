@@ -276,7 +276,7 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
         uint length = 128;
         QVarLengthArray<uchar, 128> os2Table(length);
         if (QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length) && length >= 86) {
-            if (length > os2Table.length()) {
+            if (length > uint(os2Table.length())) {
                 os2Table.resize(length);
                 if (!QCoreTextFontEngine::ct_getSfntTable(userData, tag, os2Table.data(), &length))
                     Q_UNREACHABLE();
