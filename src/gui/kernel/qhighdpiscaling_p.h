@@ -48,6 +48,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qregion.h>
+#include <QtGui/qscreen.h>
 
 // This file implmements utility functions for high-dpi scaling on operating
 // systems that do not provide native scaling support.
