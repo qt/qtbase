@@ -136,7 +136,7 @@
     \image resources.png Building resources into an application
 
     Currently, Qt always stores the data directly in the executable,
-    even on Windows and Mac OS X, where the operating system provides
+    even on Windows, OS X, and iOS, where the operating system provides
     native support for resources. This might change in a future Qt
     release.
 

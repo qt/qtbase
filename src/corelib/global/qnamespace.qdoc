@@ -111,7 +111,7 @@
            shown in any menus unless specifically set by the
            QAction::iconVisibleInMenu property.
            Menus that are currently open or menus already created in the native
-           Mac OS X menubar \e{may not} pick up a change in this attribute. Changes
+           OS X menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
@@ -129,9 +129,9 @@
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
            set to true won't be used as a native menubar (e.g, the menubar at
-           the top of the main screen on Mac OS X or at the bottom in Windows CE).
+           the top of the main screen on OS X or at the bottom in Windows CE).
 
-    \value AA_MacDontSwapCtrlAndMeta On Mac OS X by default, Qt swaps the
+    \value AA_MacDontSwapCtrlAndMeta On OS X by default, Qt swaps the
            Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
            sends Meta, and whenever Meta is pressed Control is sent). When this
            attribute is true, Qt will not do the flip. \l QKeySequence::StandardKey
@@ -294,7 +294,7 @@
 
     \omitvalue KeyboardModifierMask
 
-    \note On Mac OS X, the \c ControlModifier value corresponds to
+    \note On OS X, the \c ControlModifier value corresponds to
     the Command keys on the Macintosh keyboard, and the \c MetaModifier value
     corresponds to the Control keys. The \c KeypadModifier value will also be set
     when an arrow key is pressed as the arrow keys are considered part of the
@@ -312,7 +312,7 @@
     This enum provides shorter names for the keyboard modifier keys
     supported by Qt.
 
-    \note On Mac OS X, the \c CTRL value corresponds to
+    \note On OS X, the \c CTRL value corresponds to
     the Command keys on the Macintosh keyboard, and the \c META value
     corresponds to the Control keys.
 
@@ -913,34 +913,34 @@
 
     \value WA_MacOpaqueSizeGrip Indicates that the native Carbon size grip
     should be opaque instead of transparent (the default). This attribute
-    is only applicable to Mac OS X and is set by the widget's author.
+    is only applicable to OS X and is set by the widget's author.
 
     \value WA_MacShowFocusRect Indicates that this widget should get a
     QFocusFrame around it. Some widgets draw their own focus halo
     regardless of this attribute. Not that the QWidget::focusPolicy
     also plays the main role in whether something is given focus or
     not, this only controls whether or not this gets the focus
-    frame. This attribute is only applicable to Mac OS X.
+    frame. This attribute is only applicable to OS X.
 
     \value WA_MacNormalSize Indicates the widget should have the
-    normal size for widgets in Mac OS X. This attribute is only
-    applicable to Mac OS X.
+    normal size for widgets in OS X. This attribute is only
+    applicable to OS X.
 
     \value WA_MacSmallSize Indicates the widget should have the small
-    size for widgets in Mac OS X. This attribute is only applicable to
-    Mac OS X.
+    size for widgets in OS X. This attribute is only applicable to
+    OS X.
 
     \value WA_MacMiniSize Indicates the widget should have the mini
-    size for widgets in Mac OS X. This attribute is only applicable to
-    Mac OS X.
+    size for widgets in OS X. This attribute is only applicable to
+    OS X.
 
     \value WA_MacVariableSize Indicates the widget can choose between
     alternative sizes for widgets to avoid clipping.
-    This attribute is only applicable to Mac OS X.
+    This attribute is only applicable to OS X.
 
     \value WA_MacBrushedMetal Indicates the widget should be drawn in
     the brushed metal style as supported by the windowing system. This
-    attribute is only applicable to Mac OS X.
+    attribute is only applicable to OS X.
 
     \omitvalue WA_MacMetalStyle
 
@@ -1090,14 +1090,14 @@
     \b Warning: This flag must \e never be set or cleared by the widget's author.
 
     \value WA_WindowModified Indicates that the window is marked as modified.
-    On some platforms this flag will do nothing, on others (including Mac OS X
+    On some platforms this flag will do nothing, on others (including OS X
     and Windows) the window will take a modified appearance. This flag is set
     or cleared by QWidget::setWindowModified().
 
     \value WA_WindowPropagation Makes a toplevel window inherit font and
     palette from its parent.
 
-    \value WA_MacAlwaysShowToolWindow On Mac OS X, show the tool window even
+    \value WA_MacAlwaysShowToolWindow On OS X, show the tool window even
     when the application is not active.  By default, all tool windows are
     hidden when the application is inactive.
 
@@ -1280,8 +1280,8 @@
     \value Key_PageUp
     \value Key_PageDown
     \value Key_Shift
-    \value Key_Control    On Mac OS X, this corresponds to the Command keys.
-    \value Key_Meta       On Mac OS X, this corresponds to the Control keys.
+    \value Key_Control    On OS X, this corresponds to the Command keys.
+    \value Key_Meta       On OS X, this corresponds to the Control keys.
                           On Windows keyboards, this key is mapped to the
                           Windows key.
     \value Key_Alt
@@ -1919,7 +1919,7 @@
     \value TabFocus  the widget accepts focus by tabbing.
     \value ClickFocus  the widget accepts focus by clicking.
     \value StrongFocus  the widget accepts focus by both tabbing
-                    and clicking. On Mac OS X this will also
+                    and clicking. On OS X this will also
                     be indicate that the widget accepts tab focus
                     when in 'Text/List focus mode'.
     \value WheelFocus  like Qt::StrongFocus plus the widget accepts
@@ -2025,7 +2025,7 @@
                    system supports it, a tool window can be decorated
                    with a somewhat lighter frame. It can also be
                    combined with Qt::FramelessWindowHint.
-                   On Mac OS X, tool windows correspond to the
+                   On OS X, tool windows correspond to the
                    \l{http://developer.apple.com/documentation/Carbon/Conceptual/HandlingWindowsControls/hitb-wind_cont_concept/chapter_2_section_2.html}{Floating}
                    class of windows. This means that the window lives on a
                    level above normal windows; it impossible to put a normal
@@ -2114,10 +2114,10 @@
     \value WindowContextHelpButtonHint  Adds a context help button to dialogs.
            On some platforms this implies Qt::WindowSystemMenuHint for it to work.
 
-    \value MacWindowToolBarButtonHint On Mac OS X adds a tool bar button (i.e.,
+    \value MacWindowToolBarButtonHint On OS X adds a tool bar button (i.e.,
            the oblong button that is on the top right of windows that have toolbars).
 
-    \value WindowFullscreenButtonHint On Mac OS X adds a fullscreen button.
+    \value WindowFullscreenButtonHint On OS X adds a fullscreen button.
 
     \value BypassGraphicsProxyWidget Prevents the window and its children from
            automatically embedding themselves into a QGraphicsProxyWidget if the
@@ -2141,7 +2141,7 @@
            that support _NET_WM_STATE_BELOW atom. If a window always
            on the bottom has a parent, the parent will also be left on
            the bottom.  This window hint is currently not implemented
-           for Mac OS X.
+           for OS X.
 
     \value WindowOkButtonHint Adds an OK button to the window decoration of a dialog.
            Only supported for Windows CE.
@@ -2954,7 +2954,7 @@
     \value CoarseTimer Coarse timers try to keep accuracy within 5% of the desired interval
     \value VeryCoarseTimer Very coarse timers only keep full second accuracy
 
-    On UNIX (including Linux and Mac OS X), Qt will keep millisecond accuracy
+    On UNIX (including Linux, OS X, and iOS), Qt will keep millisecond accuracy
     for Qt::PreciseTimer. For Qt::CoarseTimer, the interval will be adjusted up
     to 5% to align the timer with other timers that are expected to fire at or
     around the same time. The objective is to make most timers wake up at the

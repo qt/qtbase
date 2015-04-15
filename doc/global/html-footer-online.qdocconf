@@ -13,12 +13,12 @@ HTML.footer += \
     "                <nav class=\"footer-nav clearfix\">\n" \
     "                    <div class=\"menu-footer-menu-container\"><ul id=\"menu-footer-menu\" class=\"menu\"><li id=\"menu-item-1350\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1350\"><a href=\"http://qt.io/about-us/\">About us</a>\n" \
     "<ul class=\"sub-menu\">\n" \
-    "    <li id=\"menu-item-1353\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1353\"><a href=\"http://qt.io/events/\">Events</a></li>\n" \
+    "    <li id=\"menu-item-1353\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1353\"><a href=\"http://qt.io/events/\">Training &amp; Events</a></li>\n" \
     "    <li id=\"menu-item-1596\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1596\"><a href=\"http://qt.io/news/\">News</a></li>\n" \
     "    <li id=\"menu-item-1354\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1354\"><a href=\"http://qt.io/resource-center/\">Resource Center</a></li>\n" \
     "    <li id=\"menu-item-1352\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1352\"><a href=\"http://qt.io/partners/\">Partners</a></li>\n" \
     "    <li id=\"menu-item-1349\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1349\"><a href=\"http://qt.io/careers/\">Careers</a></li>\n" \
-    "    <li id=\"menu-item-1415\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1415\"><a href=\"http://qt.io/terms-conditions/\">Terms &amp; Conditions</a></li>\n" \
+    "    <li id=\"menu-item-11676\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-11676\"><a href=\"http://qt.io/locations/\">Locations</a></li>\n" \
     "</ul>\n" \
     "</li>\n" \
     "<li id=\"menu-item-1355\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1355\"><a href=\"http://qt.io/product/\">Product</a>\n" \
@@ -28,7 +28,7 @@ HTML.footer += \
     "    <li id=\"menu-item-1359\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1359\"><a href=\"http://qt.io/qt-quick/\">Qt Quick</a></li>\n" \
     "    <li id=\"menu-item-1357\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1357\"><a href=\"http://qt.io/qt-for-device-creation/\">Qt for Device Creation</a></li>\n" \
     "    <li id=\"menu-item-10159\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-10159\"><a href=\"http://qt.io/mobile-app-development/\">Qt for Mobile Apps</a></li>\n" \
-    "    <li id=\"menu-item-1366\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1366\"><a href=\"http://showroom.qt-project.org/\">Showroom</a></li>\n" \
+    "    <li id=\"menu-item-12576\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-12576\"><a href=\"http://qt.io/qt-in-use/\">Qt in Use</a></li>\n" \
     "</ul>\n" \
     "</li>\n" \
     "<li id=\"menu-item-33\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-33\"><a href=\"http://qt.io/developers/\">Developers</a>\n" \
@@ -53,18 +53,19 @@ HTML.footer += \
     "</li>\n" \
     "<li id=\"menu-item-1403\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-1403\"><a href=\"http://qt.io/download/\">Download</a>\n" \
     "<ul class=\"sub-menu\">\n" \
-    "    <li id=\"menu-item-1985\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1985\"><a title=\"Professional\" href=\"http://qt.io/buy/\">Professional</a></li>\n" \
-    "    <li id=\"menu-item-3346\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3346\"><a title=\"Indie Mobile\" href=\"http://qt.io/download-mobile/\">Indie Mobile</a></li>\n" \
-    "    <li id=\"menu-item-1982\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1982\"><a title=\"Enterprise\" href=\"http://qt.io/download-enterprise-step-2/\">Enterprise</a></li>\n" \
-    "    <li id=\"menu-item-3013\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3013\"><a title=\"Evaluation\" href=\"http://qt.io/download-eval-step-2/\">Evaluation</a></li>\n" \
+    "    <li id=\"menu-item-11677\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-11677\"><a href=\"http://qt.io/download/\">Free 30-Day Trial</a></li>\n" \
+    "    <li id=\"menu-item-1982\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1982\"><a href=\"http://qt.io/buy-enterprise-step-2/\">Enterprise</a></li>\n" \
+    "    <li id=\"menu-item-1985\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1985\"><a href=\"http://qt.io/buy-professional-step-2/\">Professional</a></li>\n" \
+    "    <li id=\"menu-item-3346\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3346\"><a href=\"http://qt.io/buy-indiemobile-step-2/\">Indie Mobile</a></li>\n" \
     "    <li id=\"menu-item-3343\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3343\"><a href=\"http://qt.io/download-open-source/\">Community</a></li>\n" \
+    "    <li id=\"menu-item-1415\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1415\"><a href=\"http://qt.io/terms-conditions/\">Legal | Terms &amp; Conditions</a></li>\n" \
     "</ul>\n" \
     "</li>\n" \
     "</ul></div></nav>\n" \
     "<a href=\"http://qt.io/about-us/\" target=\"_blank\" class=\"theqtcompany\"></a>\n" \
     "    <div class=\"footer-social clearfix\">\n" \
     "        <div class=\"facebook\">\n" \
-    "            <iframe scrolling=\"no\" frameborder=\"0\" allowTransparency=\"true\" src=\"//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fqtbydigia&amp;width&amp;layout=button_count&amp;action=like&amp;show_faces=true&amp;share=false&amp;height=21\" style=\"border:none;overflow:hidden;height:21px;\"></iframe>\n" \
+    "            <iframe scrolling=\"no\" frameborder=\"0\" allowTransparency=\"true\" src=\"//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fqt&amp;width&amp;layout=button_count&amp;action=like&amp;show_faces=true&amp;share=false&amp;height=21\" style=\"border:none;overflow:hidden;height:21px;\"></iframe>\n" \
     "        </div>\n" \
     "        <div class=\"twitter\">\n" \
     "            <iframe id=\"twitter-widget-0\" scrolling=\"no\" frameborder=\"0\" allowtransparency=\"true\" src=\"http://platform.twitter.com/widgets/follow_button.33b190ea0cba008796487b65df7f6d8e.en.html#_=1414403615717&amp;id=twitter-widget-0&amp;lang=en&amp;screen_name=qtproject&amp;show_count=true&amp;show_screen_name=false&amp;size=m\" class=\"twitter-follow-button twitter-follow-button\" title=\"Twitter Follow Button\" data-twttr-rendered=\"true\" style=\"width: 160px; height: 20px;\"></iframe>\n" \
