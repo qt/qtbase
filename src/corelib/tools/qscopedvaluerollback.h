@@ -50,12 +50,12 @@ public:
     explicit QScopedValueRollback(T &var, T value) :
         varRef(var), oldValue(var)
     {
-        varRef = value;
+        varRef = qMove(value);
     }
 
     ~QScopedValueRollback()
     {
-        varRef = oldValue;
+        varRef = qMove(oldValue);
     }
 
     void commit()
