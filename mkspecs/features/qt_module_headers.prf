@@ -71,7 +71,7 @@ SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 # Automatically enable precompiled headers for Qt modules,
 # except for Gcc/Windows: Larger precompiled headers crash cc1plus.exe
 # (e.g. with i686-4.8.2-release-posix-dwarf-rt_v3-rev3)
-!gcc|!equals(QMAKE_HOST.os, Windows) {
+!if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
     isEmpty(PRECOMPILED_HEADER): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
 }
 
