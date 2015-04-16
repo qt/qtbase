@@ -89,7 +89,6 @@ void QWindowsPipeReader::setHandle(HANDLE hPipeReadEnd)
     readBuffer.clear();
     actualReadBufferSize = 0;
     handle = hPipeReadEnd;
-    ZeroMemory(&overlapped, sizeof(overlapped));
     pipeBroken = false;
     readyReadEmitted = false;
     if (hPipeReadEnd != INVALID_HANDLE_VALUE) {
@@ -206,6 +205,7 @@ void QWindowsPipeReader::startAsyncRead()
     char *ptr = readBuffer.reserve(bytesToRead);
 
     readSequenceStarted = true;
+    ZeroMemory(&overlapped, sizeof(overlapped));
     if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
         // We get notified by the QWinOverlappedIoNotifier - even in the synchronous case.
         return;
