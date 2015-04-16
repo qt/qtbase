@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,6 +59,8 @@ private slots:
     void customEventDispatcher();
     void testQuitLock();
     void QTBUG31606_QEventDestructorDeadLock();
+    void applicationEventFilters_mainThread();
+    void applicationEventFilters_auxThread();
 };
 
 #endif // TST_QCOREAPPLICATION_H

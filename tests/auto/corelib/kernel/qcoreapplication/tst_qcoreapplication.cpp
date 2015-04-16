@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -57,6 +58,23 @@ public:
     {
         recordedEvents.append(event->type());
         return false;
+    }
+};
+
+class ThreadedEventReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    QList<int> recordedEvents;
+    bool event(QEvent *event) Q_DECL_OVERRIDE
+    {
+        if (event->type() != QEvent::Type(QEvent::User + 1))
+            return QObject::event(event);
+        recordedEvents.append(event->type());
+        QThread::currentThread()->quit();
+        QCoreApplication::quit();
+        moveToThread(0);
+        return true;
     }
 };
 
@@ -797,6 +815,43 @@ void tst_QCoreApplication::QTBUG31606_QEventDestructorDeadLock()
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 2));
 }
 
+// this is almost identical to sendEventsOnProcessEvents
+void tst_QCoreApplication::applicationEventFilters_mainThread()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QTimer::singleShot(10, &app, SLOT(quit()));
+    app.exec();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
+}
+
+void tst_QCoreApplication::applicationEventFilters_auxThread()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    TestApplication app(argc, argv);
+    QThread thread;
+    ThreadedEventReceiver receiver;
+    receiver.moveToThread(&thread);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    // this is very similar to sendEventsOnProcessEvents
+    QCoreApplication::postEvent(&receiver,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QTimer::singleShot(1000, &app, SLOT(quit()));
+    thread.start();
+    app.exec();
+    QVERIFY(thread.wait(1000));
+    QVERIFY(receiver.recordedEvents.contains(QEvent::User + 1));
+    QVERIFY(!spy.recordedEvents.contains(QEvent::User + 1));
+}
 
 static void createQObjectOnDestruction()
 {
