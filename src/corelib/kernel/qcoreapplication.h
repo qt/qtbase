@@ -194,7 +194,10 @@ protected:
 private:
 #ifndef QT_NO_QOBJECT
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
-    bool notifyInternal(QObject *receiver, QEvent *event);
+#  if QT_DEPRECATED_SINCE(5,6)
+    QT_DEPRECATED bool notifyInternal(QObject *receiver, QEvent *event); // ### Qt6 BIC: remove me
+#  endif
+    static bool notifyInternal2(QObject *receiver, QEvent *);
 #endif
 
     void init();
@@ -221,10 +224,10 @@ private:
 
 #ifndef QT_NO_QOBJECT
 inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
-{  if (event) event->spont = false; return self ? self->notifyInternal(receiver, event) : false; }
+{  if (event) event->spont = false; return notifyInternal2(receiver, event); }
 
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
-{ if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
+{ if (event) event->spont = true; return notifyInternal2(receiver, event); }
 #endif
 
 #ifdef QT_NO_DEPRECATED

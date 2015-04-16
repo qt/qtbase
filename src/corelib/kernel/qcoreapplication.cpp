@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -940,12 +941,28 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 
 /*!
   \internal
+  \deprecated
 
   This function is here to make it possible for Qt extensions to
   hook into event notification without subclassing QApplication
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
+    return notifyInternal2(receiver, event);
+}
+
+/*!
+  \internal
+  \since 5.6
+
+  This function is here to make it possible for Qt extensions to
+  hook into event notification without subclassing QApplication.
+*/
+bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
+{
+    if (!self)
+        return false;
+
     // Make it possible for Qt Script to hook into events even
     // though QApplication is subclassed...
     bool result = false;
@@ -961,9 +978,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
     QScopedLoopLevelCounter loopLevelCounter(threadData);
-    return notify(receiver, event);
+    return self->notify(receiver, event);
 }
-
 
 /*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
@@ -1020,7 +1036,6 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 
 bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 {
-    Q_D(QCoreApplication);
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
         return true;
@@ -1031,10 +1046,10 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
     }
 
 #ifndef QT_NO_DEBUG
-    d->checkReceiverThread(receiver);
+    QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
 
-    return receiver->isWidgetType() ? false : d->notify_helper(receiver, event);
+    return receiver->isWidgetType() ? false : QCoreApplicationPrivate::notify_helper(receiver, event);
 }
 
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
@@ -1058,8 +1073,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
 
 bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, QEvent *event)
 {
-    Q_Q(QCoreApplication);
-    if (receiver != q && receiver->d_func()->extraData) {
+    if (receiver != QCoreApplication::instance() && receiver->d_func()->extraData) {
         for (int i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
             QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
@@ -1078,12 +1092,12 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
 /*!
   \internal
 
-  Helper function called by notify()
+  Helper function called by QCoreApplicationPrivate::notify() and qapplication.cpp
  */
 bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
-    // send to all application event filters
-    if (sendThroughApplicationEventFilters(receiver, event))
+    // send to all application event filters (only does anything in the main thread)
+    if (QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event))
         return true;
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event))
