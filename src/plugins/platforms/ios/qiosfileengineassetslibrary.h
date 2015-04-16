@@ -59,6 +59,7 @@ public:
 
 private:
     QString m_fileName;
+    QString m_assetUrl;
     qint64 m_offset;
     mutable QIOSAssetData *m_data;
 

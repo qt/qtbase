@@ -130,10 +130,10 @@ QPointer<QIOSAssetData> QIOSAssetData::g_currentAssetData = 0;
 // -------------------------------------------------------------------------
 
 QIOSFileEngineAssetsLibrary::QIOSFileEngineAssetsLibrary(const QString &fileName)
-    : m_fileName(fileName)
-    , m_offset(0)
+    : m_offset(0)
     , m_data(0)
 {
+    setFileName(fileName);
 }
 
 QIOSFileEngineAssetsLibrary::~QIOSFileEngineAssetsLibrary()
@@ -143,18 +143,8 @@ QIOSFileEngineAssetsLibrary::~QIOSFileEngineAssetsLibrary()
 
 ALAsset *QIOSFileEngineAssetsLibrary::loadAsset() const
 {
-    if (!m_data) {
-        // QUrl::fromLocalFile() will remove double slashes. Since the asset url is passed around as a file
-        // name in the app (and converted to/from a file url, e.g in QFileDialog), we need to check if we still
-        // have two leading slashes after the scheme, and restore the second slash if not.
-        QString assetUrl = m_fileName;
-        const int index = 16; // "assets-library://"
-        if (assetUrl[index] != QLatin1Char('/'))
-            assetUrl.insert(index, '/');
-
-        m_data = new QIOSAssetData(assetUrl, const_cast<QIOSFileEngineAssetsLibrary *>(this));
-    }
-
+    if (!m_data)
+        m_data = new QIOSAssetData(m_assetUrl, const_cast<QIOSFileEngineAssetsLibrary *>(this));
     return m_data->m_asset;
 }
 
@@ -245,6 +235,14 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
     if (m_data)
         close();
     m_fileName = file;
+    // QUrl::fromLocalFile() will remove double slashes. Since the asset url is
+    // passed around as a file name in the app (and converted to/from a file url, e.g
+    // in QFileDialog), we need to ensure that m_assetUrl ends up being valid.
+    int index = file.indexOf(QLatin1String("asset.JPG?"));
+    if (index == -1)
+        m_assetUrl = QLatin1String("assets-library://");
+    else
+        m_assetUrl = QLatin1String("assets-library://asset/") + file.mid(index);
 }
 
 QStringList QIOSFileEngineAssetsLibrary::entryList(QDir::Filters filters, const QStringList &filterNames) const
