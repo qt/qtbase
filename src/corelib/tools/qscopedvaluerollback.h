@@ -43,15 +43,13 @@ class QScopedValueRollback
 {
 public:
     explicit QScopedValueRollback(T &var) :
-        varRef(var)
+        varRef(var), oldValue(var)
     {
-        oldValue = varRef;
     }
 
     explicit QScopedValueRollback(T &var, T value) :
-        varRef(var)
+        varRef(var), oldValue(var)
     {
-        oldValue = varRef;
         varRef = value;
     }
 
