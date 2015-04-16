@@ -47,7 +47,6 @@
 
 #include <qbytearray.h>
 #include <qobject.h>
-#include <qtimer.h>
 #include <private/qringbuffer_p.h>
 
 #include <qt_windows.h>
@@ -100,7 +99,6 @@ private:
     QRingBuffer readBuffer;
     int actualReadBufferSize;
     bool readSequenceStarted;
-    QTimer *emitReadyReadTimer;
     bool pipeBroken;
     bool readyReadEmitted;
 };

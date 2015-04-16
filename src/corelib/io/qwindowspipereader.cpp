@@ -36,7 +36,6 @@
 #include <qdebug.h>
 #include <qelapsedtimer.h>
 #include <qeventloop.h>
-#include <qtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,12 +45,9 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       readBufferMaxSize(0),
       actualReadBufferSize(0),
       readSequenceStarted(false),
-      emitReadyReadTimer(new QTimer(this)),
       pipeBroken(false),
       readyReadEmitted(false)
 {
-    emitReadyReadTimer->setSingleShot(true);
-    connect(emitReadyReadTimer, SIGNAL(timeout()), SIGNAL(readyRead()));
     dataReadNotifier = new QWinOverlappedIoNotifier(this);
     connect(dataReadNotifier, &QWinOverlappedIoNotifier::notified, this, &QWindowsPipeReader::notified);
 }
@@ -146,8 +142,6 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
     }
 
     if (!pipeBroken) {
-        if (!actualReadBufferSize)
-            emitReadyReadTimer->stop();
         if (!readSequenceStarted)
             startAsyncRead();
         if (readSoFar == 0)
@@ -177,7 +171,6 @@ void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
         return;
     }
     startAsyncRead();
-    emitReadyReadTimer->stop();
     readyReadEmitted = true;
     emit readyRead();
 }
@@ -266,8 +259,6 @@ bool QWindowsPipeReader::completeAsyncRead(DWORD bytesRead, DWORD errorCode)
 
     actualReadBufferSize += bytesRead;
     readBuffer.truncate(actualReadBufferSize);
-    if (!emitReadyReadTimer->isActive())
-        emitReadyReadTimer->start();
     return true;
 }
 
