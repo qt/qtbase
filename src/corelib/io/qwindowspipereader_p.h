@@ -88,7 +88,6 @@ private Q_SLOTS:
     void notified(quint32 numberOfBytesRead, quint32 errorCode, OVERLAPPED *notifiedOverlapped);
 
 private:
-    bool completeAsyncRead(DWORD bytesRead, DWORD errorCode);
     DWORD checkPipeState();
 
 private:

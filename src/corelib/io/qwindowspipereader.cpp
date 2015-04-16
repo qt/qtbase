@@ -165,11 +165,33 @@ void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
 {
     if (&overlapped != notifiedOverlapped)
         return;
-    if (!completeAsyncRead(numberOfBytesRead, errorCode)) {
+
+    switch (errorCode) {
+    case ERROR_SUCCESS:
+        break;
+    case ERROR_MORE_DATA:
+        // This is not an error. We're connected to a message mode
+        // pipe and the message didn't fit into the pipe's system
+        // buffer. We will read the remaining data in the next call.
+        break;
+    case ERROR_BROKEN_PIPE:
+    case ERROR_PIPE_NOT_CONNECTED:
         pipeBroken = true;
+        break;
+    default:
+        emit winError(errorCode, QLatin1String("QWindowsPipeReader::completeAsyncRead"));
+        pipeBroken = true;
+        break;
+    }
+
+    readSequenceStarted = false;
+    if (pipeBroken) {
         emit pipeClosed();
         return;
     }
+
+    actualReadBufferSize += numberOfBytesRead;
+    readBuffer.truncate(actualReadBufferSize);
     startAsyncRead();
     readyReadEmitted = true;
     emit readyRead();
@@ -230,36 +252,6 @@ void QWindowsPipeReader::startAsyncRead()
             return;
         }
     }
-}
-
-/*!
-    \internal
-    Sets the correct size of the read buffer after a read operation.
-    Returns \c false, if an error occurred or the connection dropped.
- */
-bool QWindowsPipeReader::completeAsyncRead(DWORD bytesRead, DWORD errorCode)
-{
-    readSequenceStarted = false;
-
-    switch (errorCode) {
-    case ERROR_SUCCESS:
-        break;
-    case ERROR_MORE_DATA:
-        // This is not an error. We're connected to a message mode
-        // pipe and the message didn't fit into the pipe's system
-        // buffer. We will read the remaining data in the next call.
-        break;
-    case ERROR_BROKEN_PIPE:
-    case ERROR_PIPE_NOT_CONNECTED:
-        return false;
-    default:
-        emit winError(errorCode, QLatin1String("QWindowsPipeReader::completeAsyncRead"));
-        return false;
-    }
-
-    actualReadBufferSize += bytesRead;
-    readBuffer.truncate(actualReadBufferSize);
-    return true;
 }
 
 /*!
