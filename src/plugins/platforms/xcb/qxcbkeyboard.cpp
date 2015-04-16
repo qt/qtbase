@@ -1518,8 +1518,8 @@ QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) 
     QByteArray chars;
     chars.resize(1 + xkb_state_key_get_utf8(state, code, 0, 0));
     // equivalent of XLookupString
-    xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
-    return QString::fromUtf8(chars);
+    const int size = xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    return QString::fromUtf8(chars.constData(), size);
 }
 
 void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *event)
