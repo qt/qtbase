@@ -1218,7 +1218,7 @@ QString QFileSystemEngine::rootPath()
     ret = QDir::fromNativeSeparators(QString::fromWCharArray(finalWinPath.GetRawBuffer(nullptr)));
 
 #else
-    QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
+    QString ret = QString::fromLatin1(qgetenv("SystemDrive"));
     if (ret.isEmpty())
         ret = QLatin1String("c:");
     ret.append(QLatin1Char('/'));
@@ -1253,12 +1253,12 @@ QString QFileSystemEngine::homePath()
     }
 #endif
     if (ret.isEmpty() || !QFile::exists(ret)) {
-        ret = QString::fromLocal8Bit(qgetenv("USERPROFILE").constData());
+        ret = QString::fromLocal8Bit(qgetenv("USERPROFILE"));
         if (ret.isEmpty() || !QFile::exists(ret)) {
-            ret = QString::fromLocal8Bit(qgetenv("HOMEDRIVE").constData())
-                  + QString::fromLocal8Bit(qgetenv("HOMEPATH").constData());
+            ret = QString::fromLocal8Bit(qgetenv("HOMEDRIVE"))
+                  + QString::fromLocal8Bit(qgetenv("HOMEPATH"));
             if (ret.isEmpty() || !QFile::exists(ret)) {
-                ret = QString::fromLocal8Bit(qgetenv("HOME").constData());
+                ret = QString::fromLocal8Bit(qgetenv("HOME"));
                 if (ret.isEmpty() || !QFile::exists(ret)) {
 #if defined(Q_OS_WINCE)
                     ret = QLatin1String("\\My Documents");
