@@ -170,6 +170,11 @@ namespace QtAndroid
         return m_highDpiScalingEnabled;
     }
 
+    double pixelDensity()
+    {
+        return QtAndroid::highDpiScalingEnabled() ? m_density : 1.0;
+    }
+
     JavaVM *javaVM()
     {
         return m_javaVM;

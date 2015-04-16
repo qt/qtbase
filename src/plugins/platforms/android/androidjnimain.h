@@ -73,6 +73,7 @@ namespace QtAndroid
     double scaledDensity();
     double density();
     bool highDpiScalingEnabled();
+    double pixelDensity();
     JavaVM *javaVM();
     AAssetManager *assetManager();
     jclass applicationClass();
