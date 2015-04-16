@@ -437,6 +437,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioPrev,           Qt::Key_MediaPrevious,
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
+    XF86XK_AudioPause,          Qt::Key_MediaPause,
     XF86XK_Mail,                Qt::Key_LaunchMail,
     XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 6: remap properly
     XF86XK_Calculator,          Qt::Key_Launch1,
