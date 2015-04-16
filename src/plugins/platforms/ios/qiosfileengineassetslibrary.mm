@@ -206,6 +206,26 @@ public:
             NSURL *url = [NSURL URLWithString:assetUrl.toNSString()];
             m_assetLibrary = [[ALAssetsLibrary alloc] init];
             [m_assetLibrary assetForURL:url resultBlock:^(ALAsset *asset) {
+
+                if (!asset) {
+                    // When an asset couldn't be loaded, chances are that it belongs to ALAssetsGroupPhotoStream.
+                    // Such assets can be stored in the cloud and might need to be downloaded first. Unfortunately,
+                    // forcing that to happen is hidden behind private APIs ([ALAsset requestDefaultRepresentation]).
+                    // As a work-around, we search for it instead, since that will give us a pointer to the asset.
+                    QIOSAssetEnumerator e(m_assetLibrary, ALAssetsGroupPhotoStream);
+                    while (e.hasNext()) {
+                        ALAsset *a = e.next();
+                        QString url = QUrl::fromNSURL([a valueForProperty:ALAssetPropertyAssetURL]).toString();
+                        if (url == assetUrl) {
+                            asset = a;
+                            break;
+                        }
+                    }
+                }
+
+                if (!asset)
+                    engine->setError(QFile::OpenError, QLatin1String("could not open image"));
+
                 m_asset = [asset retain];
                 dispatch_semaphore_signal(semaphore);
             } failureBlock:^(NSError *error) {
