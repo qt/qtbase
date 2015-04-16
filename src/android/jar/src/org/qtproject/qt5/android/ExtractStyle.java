@@ -265,6 +265,25 @@ public class ExtractStyle {
     final int defaultBackgroundColor;
     final int defaultTextColor;
 
+    // wrapper for accessing a TypedArray with style values and
+    // retrieving either device-indpendent pixel values or device
+    // pixel valies, depending on if useDevicePixels below is set
+    Boolean m_useDevicePixels;
+    // ### should possibly return float
+    int getTypedArraDimensionSize(TypedArray a, int index, int defValue)
+    {
+        if (m_useDevicePixels)
+            return a.getDimensionPixelSize(index, defValue);
+        return (int) a.getDimension(index, (float)defValue);
+    }
+
+    int getTypedArraDimensionOffset(TypedArray a, int index, int defValue)
+    {
+        if (m_useDevicePixels)
+            return a.getDimensionPixelOffset(index, defValue);
+        return (int) a.getDimension(index, (float)defValue);
+    }
+
     class SimpleJsonWriter
     {
         private OutputStreamWriter m_writer;
@@ -1178,19 +1197,19 @@ public class ExtractStyle {
                 if (attr == View_background)
                     json.put("View_background", getDrawable(a.getDrawable(attr), styleName + "_View_background", null));
                 else if (attr == View_padding)
-                    json.put("View_padding", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_padding", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_paddingLeft)
-                    json.put("View_paddingLeft", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_paddingLeft", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_paddingTop)
-                    json.put("View_paddingTop", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_paddingTop", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_paddingRight)
-                    json.put("View_paddingRight", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_paddingRight", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_paddingBottom)
-                    json.put("View_paddingBottom", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_paddingBottom", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_scrollX)
-                    json.put("View_paddingBottom", a.getDimensionPixelOffset(attr, 0));
+                    json.put("View_paddingBottom", getTypedArraDimensionOffset(a, attr, 0));
                 else if (attr == View_scrollY)
-                    json.put("View_scrollY", a.getDimensionPixelOffset(attr, 0));
+                    json.put("View_scrollY", getTypedArraDimensionOffset(a, attr, 0));
                 else if (attr == View_id)
                     json.put("View_id", a.getResourceId(attr, -1));
                 else if (attr == View_tag)
@@ -1230,7 +1249,7 @@ public class ExtractStyle {
                 else if (attr == View_scrollbarDefaultDelayBeforeFade)
                     json.put("View_scrollbarDefaultDelayBeforeFade", a.getInt(attr, 0));
                 else if (attr == View_scrollbarSize)
-                    json.put("View_scrollbarSize", a.getDimensionPixelSize(attr, -1));
+                    json.put("View_scrollbarSize", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == View_scrollbarThumbHorizontal)
                     json.put("View_scrollbarThumbHorizontal", getDrawable(a.getDrawable(attr), styleName + "_View_scrollbarThumbHorizontal", null));
                 else if (attr == View_scrollbarThumbVertical)
@@ -1254,17 +1273,17 @@ public class ExtractStyle {
                 else if (attr == View_nextFocusDown)
                     json.put("View_nextFocusDown", a.getResourceId(attr, -1));
                 else if (attr == View_minWidth)
-                    json.put("View_minWidth", a.getDimensionPixelSize(attr, 0));
+                    json.put("View_minWidth", getTypedArraDimensionSize(a, attr, 0));
                 else if (attr == View_minHeight)
-                    json.put("View_minHeight", a.getDimensionPixelSize(attr, 0));
+                    json.put("View_minHeight", getTypedArraDimensionSize(a, attr, 0));
                 else if (attr == View_onClick)
                     json.put("View_onClick", a.getString(attr));
                 else if (attr == View_overScrollMode)
                     json.put("View_overScrollMode", a.getInt(attr, 1));
                 else if (attr == View_paddingStart)
-                    json.put("View_paddingStart", a.getDimensionPixelSize(attr, 0));
+                    json.put("View_paddingStart", getTypedArraDimensionSize(a, attr, 0));
                 else if (attr == View_paddingEnd)
-                    json.put("View_paddingEnd", a.getDimensionPixelSize(attr, 0));
+                    json.put("View_paddingEnd", getTypedArraDimensionSize(a, attr, 0));
             }
             a.recycle();
         } catch (Exception e) {
@@ -1291,7 +1310,7 @@ public class ExtractStyle {
                 else if (attr == TextAppearance_textColorLink)
                     json.put("TextAppearance_textColorLink", getColorStateList(a.getColorStateList(attr)));
                 else if (attr == TextAppearance_textSize)
-                    json.put("TextAppearance_textSize", a.getDimensionPixelSize(attr, 15));
+                    json.put("TextAppearance_textSize", getTypedArraDimensionSize(a, attr, 15));
                 else if (attr == TextAppearance_typeface)
                     json.put("TextAppearance_typeface", a.getInt(attr, -1));
                 else if (attr == TextAppearance_textStyle)
@@ -1352,7 +1371,7 @@ public class ExtractStyle {
                     else if (attr == TextAppearance_textColorLink)
                         textColorLink = appearance.getColorStateList(attr);
                     else if (attr == TextAppearance_textSize)
-                        textSize = appearance.getDimensionPixelSize(attr, textSize);
+                        textSize = getTypedArraDimensionSize(appearance, attr, textSize);
                     else if (attr == TextAppearance_typeface)
                         typefaceIndex = appearance.getInt(attr, -1);
                     else if (attr == TextAppearance_textStyle)
@@ -1405,7 +1424,7 @@ public class ExtractStyle {
                 else if (attr == TextView_drawableEnd)
                     json.put("TextView_drawableEnd", getDrawable(a.getDrawable(attr), styleName + "_TextView_drawableEnd", null));
                 else if (attr == TextView_drawablePadding)
-                    json.put("TextView_drawablePadding", a.getDimensionPixelSize(attr, 0));
+                    json.put("TextView_drawablePadding", getTypedArraDimensionSize(a, attr, 0));
                 else if (attr == TextView_textCursorDrawable) {
                     try {
                         json.put("TextView_textCursorDrawable", getDrawable(a.getDrawable(attr), styleName + "_TextView_textCursorDrawable", null));
@@ -1419,27 +1438,27 @@ public class ExtractStyle {
                 }else if (attr == TextView_maxLines)
                     json.put("TextView_maxLines", a.getInt(attr, -1));
                 else if (attr == TextView_maxHeight)
-                    json.put("TextView_maxHeight", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_maxHeight", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_lines)
                     json.put("TextView_lines", a.getInt(attr, -1));
                 else if (attr == TextView_height)
-                    json.put("TextView_height", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_height", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_minLines)
                     json.put("TextView_minLines", a.getInt(attr, -1));
                 else if (attr == TextView_minHeight)
-                    json.put("TextView_minHeight", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_minHeight", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_maxEms)
                     json.put("TextView_maxEms", a.getInt(attr, -1));
                 else if (attr == TextView_maxWidth)
-                    json.put("TextView_maxWidth", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_maxWidth", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_ems)
                     json.put("TextView_ems", a.getInt(attr, -1));
                 else if (attr == TextView_width)
-                    json.put("TextView_width", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_width", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_minEms)
                     json.put("TextView_minEms", a.getInt(attr, -1));
                 else if (attr == TextView_minWidth)
-                    json.put("TextView_minWidth", a.getDimensionPixelSize(attr, -1));
+                    json.put("TextView_minWidth", getTypedArraDimensionSize(a, attr, -1));
                 else if (attr == TextView_gravity)
                     json.put("TextView_gravity", a.getInt(attr, -1));
                 else if (attr == TextView_hint)
@@ -1483,7 +1502,7 @@ public class ExtractStyle {
                 else if (attr == TextView_textColorLink)
                     textColorLink = a.getColorStateList(attr);
                 else if (attr == TextView_textSize)
-                    textSize = a.getDimensionPixelSize(attr, textSize);
+                    textSize = getTypedArraDimensionSize(a, attr, textSize);
                 else if (attr == TextView_typeface)
                     typefaceIndex = a.getInt(attr, typefaceIndex);
                 else if (attr == TextView_textStyle)
@@ -1491,7 +1510,7 @@ public class ExtractStyle {
                 else if (attr == TextView_password)
                     json.put("TextView_password", a.getBoolean(attr,false));
                 else if (attr == TextView_lineSpacingExtra)
-                    json.put("TextView_lineSpacingExtra", a.getDimensionPixelSize(attr, 0));
+                    json.put("TextView_lineSpacingExtra", getTypedArraDimensionSize(a, attr, 0));
                 else if (attr == TextView_lineSpacingMultiplier)
                     json.put("TextView_lineSpacingMultiplier", a.getFloat(attr, 1.0f));
                 else if (attr == TextView_inputType)
@@ -1586,8 +1605,8 @@ public class ExtractStyle {
 
             json.put("ImageView_baselineAlignBottom", a.getBoolean(ImageView_baselineAlignBottom, false));
             json.put("ImageView_adjustViewBounds", a.getBoolean(ImageView_adjustViewBounds, false));
-            json.put("ImageView_maxWidth", a.getDimensionPixelSize(ImageView_maxWidth, Integer.MAX_VALUE));
-            json.put("ImageView_maxHeight", a.getDimensionPixelSize(ImageView_maxHeight, Integer.MAX_VALUE));
+            json.put("ImageView_maxWidth", getTypedArraDimensionSize(a, ImageView_maxWidth, Integer.MAX_VALUE));
+            json.put("ImageView_maxHeight", getTypedArraDimensionSize(a, ImageView_maxHeight, Integer.MAX_VALUE));
             int index = a.getInt(ImageView_scaleType, -1);
             if (index >= 0)
                 json.put("ImageView_scaleType", sScaleTypeArray[index]);
@@ -1644,10 +1663,10 @@ public class ExtractStyle {
             int mMaxWidth = 48;
             int mMinHeight = 24;
             int mMaxHeight = 48;
-            mMinWidth = a.getDimensionPixelSize(getField(styleableClass, "ProgressBar_minWidth"), mMinWidth);
-            mMaxWidth = a.getDimensionPixelSize(getField(styleableClass, "ProgressBar_maxWidth"), mMaxWidth);
-            mMinHeight = a.getDimensionPixelSize(getField(styleableClass, "ProgressBar_minHeight"), mMinHeight);
-            mMaxHeight = a.getDimensionPixelSize(getField(styleableClass, "ProgressBar_maxHeight"), mMaxHeight);
+            mMinWidth = getTypedArraDimensionSize(a, getField(styleableClass, "ProgressBar_minWidth"), mMinWidth);
+            mMaxWidth = getTypedArraDimensionSize(a, getField(styleableClass, "ProgressBar_maxWidth"), mMaxWidth);
+            mMinHeight = getTypedArraDimensionSize(a, getField(styleableClass, "ProgressBar_minHeight"), mMinHeight);
+            mMaxHeight = getTypedArraDimensionSize(a, getField(styleableClass, "ProgressBar_maxHeight"), mMaxHeight);
 
             json.put("ProgressBar_indeterminateDuration", a.getInt(getField(styleableClass, "ProgressBar_indeterminateDuration"), 4000));
             json.put("ProgressBar_minWidth", mMinWidth);
@@ -1735,9 +1754,9 @@ public class ExtractStyle {
 
             json.put("Switch_textOn", a.getText(getField(styleableClass, "Switch_textOn")));
             json.put("Switch_textOff", a.getText(getField(styleableClass, "Switch_textOff")));
-            json.put("Switch_switchMinWidth", a.getDimensionPixelSize(getField(styleableClass, "Switch_switchMinWidth"), 0));
-            json.put("Switch_switchPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_switchPadding"), 0));
-            json.put("Switch_thumbTextPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_thumbTextPadding"), 0));
+            json.put("Switch_switchMinWidth", getTypedArraDimensionSize(a, getField(styleableClass, "Switch_switchMinWidth"), 0));
+            json.put("Switch_switchPadding", getTypedArraDimensionSize(a, getField(styleableClass, "Switch_switchPadding"), 0));
+            json.put("Switch_thumbTextPadding", getTypedArraDimensionSize(a, getField(styleableClass, "Switch_thumbTextPadding"), 0));
 
             if (Build.VERSION.SDK_INT >= 21) {
                 json.put("Switch_showText", a.getBoolean(getField(styleableClass, "Switch_showText"), true));
@@ -1832,7 +1851,7 @@ public class ExtractStyle {
             if (divider != null)
                 json.put("ListView_divider", getDrawable(divider, styleName + "_ListView_divider", null));
 
-            json.put("ListView_dividerHeight", a.getDimensionPixelSize(getField(styleableClass, "ListView_dividerHeight"), 0));
+            json.put("ListView_dividerHeight", getTypedArraDimensionSize(a, getField(styleableClass, "ListView_dividerHeight"), 0));
 
             a.recycle();
             writer.name(styleName).value(json);
@@ -1903,7 +1922,7 @@ public class ExtractStyle {
             if (d != null)
                 json.put("ActionBar_divider", getDrawable(d, styleName + "_ActionBar_divider", null));
 
-            json.put("ActionBar_itemPadding", a.getDimensionPixelSize(getField(styleableClass, "ActionBar_itemPadding"), 0));
+            json.put("ActionBar_itemPadding", getTypedArraDimensionSize(a, getField(styleableClass, "ActionBar_itemPadding"), 0));
 
             a.recycle();
             writer.name(styleName).value(json);
@@ -1926,7 +1945,7 @@ public class ExtractStyle {
             if (d != null)
                 json.put("LinearLayout_divider", getDrawable(d, styleName + "_LinearLayout_divider", null));
             json.put("LinearLayout_showDividers", a.getInt(getField(styleableClass, "LinearLayout_showDividers"), 0));
-            json.put("LinearLayout_dividerPadding", a.getDimensionPixelSize(getField(styleableClass, "LinearLayout_dividerPadding"), 0));
+            json.put("LinearLayout_dividerPadding", getTypedArraDimensionSize(a, getField(styleableClass, "LinearLayout_dividerPadding"), 0));
 
             a.recycle();
             writer.name(styleName).value(json);
@@ -1979,29 +1998,11 @@ public class ExtractStyle {
         return json;
     }
 
-    public ExtractStyle(Context context, String extractPath)
+    public void extractStyleToJson(String path)
     {
-//        Log.i(MinistroService.TAG, "Extract " + extractPath);
-        m_extractPath = extractPath + "/";
-        new File(m_extractPath).mkdirs();
-//        MinistroActivity.nativeChmode(m_extractPath, 0755);
-        m_context = context;
-        m_theme = context.getTheme();
-        TypedArray array = m_theme.obtainStyledAttributes(new int[]{
-                android.R.attr.colorBackground,
-                android.R.attr.textColorPrimary,
-                android.R.attr.textColor
-        });
-        defaultBackgroundColor = array.getColor(0, 0);
-        int textColor = array.getColor(1, 0xFFFFFF);
-        if (textColor == 0xFFFFFF)
-            textColor = array.getColor(2, 0xFFFFFF);
-        defaultTextColor = textColor;
-        array.recycle();
-
         try
         {
-          SimpleJsonWriter jsonWriter = new SimpleJsonWriter(m_extractPath+"style.json");
+          SimpleJsonWriter jsonWriter = new SimpleJsonWriter(path);
           jsonWriter.beginObject();
           try {
               jsonWriter.name("defaultStyle").value(extractDefaultPalette());
@@ -2044,5 +2045,34 @@ public class ExtractStyle {
         catch (Exception e) {
           e.printStackTrace();
         }
+    }
+
+    public ExtractStyle(Context context, String extractPath)
+    {
+//        Log.i(MinistroService.TAG, "Extract " + extractPath);
+        m_extractPath = extractPath + "/";
+        new File(m_extractPath).mkdirs();
+//        MinistroActivity.nativeChmode(m_extractPath, 0755);
+        m_context = context;
+        m_theme = context.getTheme();
+        TypedArray array = m_theme.obtainStyledAttributes(new int[]{
+                android.R.attr.colorBackground,
+                android.R.attr.textColorPrimary,
+                android.R.attr.textColor
+        });
+        defaultBackgroundColor = array.getColor(0, 0);
+        int textColor = array.getColor(1, 0xFFFFFF);
+        if (textColor == 0xFFFFFF)
+            textColor = array.getColor(2, 0xFFFFFF);
+        defaultTextColor = textColor;
+        array.recycle();
+
+        // Write two versions of the style file
+        // style.json with values in device pixels
+        // style_dip.json with values in device independent pixels
+        m_useDevicePixels = false; // ### write device-independent pixels only for now
+        extractStyleToJson(m_extractPath + "style.json");
+        m_useDevicePixels = false;
+        extractStyleToJson(m_extractPath + "style_dip.json");
     }
 }
