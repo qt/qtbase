@@ -335,8 +335,8 @@ void QPrintPreviewWidgetPrivate::populateScene()
     pages.clear();
 
     int numPages = pictures.count();
-    QSize paperSize = printer->paperRect().size();
-    QRect pageRect = printer->pageRect();
+    QSize paperSize = printer->pageLayout().fullRectPixels(printer->resolution()).size();
+    QRect pageRect = printer->pageLayout().paintRectPixels(printer->resolution());
 
     for (int i = 0; i < numPages; i++) {
         PageItem* item = new PageItem(i+1, pictures.at(i), paperSize, pageRect);
