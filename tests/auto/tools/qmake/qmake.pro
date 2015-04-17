@@ -8,5 +8,11 @@ SOURCES += tst_qmake.cpp testcompiler.cpp
 QT = core testlib
 
 cross_compile: DEFINES += QMAKE_CROSS_COMPILED
+debug_and_release {
+    CONFIG(debug, debug|release): \
+        DEFINES += DEBUG_BUILD
+    else: \
+        DEFINES += RELEASE_BUILD
+}
 
 TESTDATA += testdata/*

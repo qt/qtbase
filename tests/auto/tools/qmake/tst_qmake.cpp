@@ -39,6 +39,14 @@
 #include <QStandardPaths>
 #include <QDir>
 
+#if defined(DEBUG_BUILD)
+#  define DIR_INFIX "debug/"
+#elif defined(RELEASE_BUILD)
+#  define DIR_INFIX "release/"
+#else
+#  define DIR_INFIX ""
+#endif
+
 class tst_qmake : public QObject
 {
     Q_OBJECT
@@ -85,6 +93,7 @@ private slots:
     void project();
     void proFileCache();
     void json();
+    void resources();
 
 private:
     TestCompiler test_compiler;
@@ -581,6 +590,39 @@ void tst_qmake::json()
     // functional booleans
     QVERIFY(output.contains("json.true is true"));
     QVERIFY(output.contains("json.false is false"));
+}
+
+void tst_qmake::resources()
+{
+    QString workDir = base_path + "/testdata/resources";
+    QVERIFY(test_compiler.qmake(workDir, "resources"));
+
+    {
+        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_pro_file.qrc");
+        QVERIFY(qrcFile.exists());
+        QVERIFY(qrcFile.open(QFile::ReadOnly));
+        QByteArray qrcXml = qrcFile.readAll();
+        QVERIFY(qrcXml.contains("alias=\"resources.pro\""));
+        QVERIFY(qrcXml.contains("prefix=\"/prefix\""));
+    }
+
+    {
+        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_subdir.qrc");
+        QVERIFY(qrcFile.exists());
+        QVERIFY(qrcFile.open(QFile::ReadOnly));
+        QByteArray qrcXml = qrcFile.readAll();
+        QVERIFY(qrcXml.contains("alias=\"file.txt\""));
+    }
+
+    {
+        QFile qrcFile(workDir + "/.rcc/" DIR_INFIX "qmake_qmake_immediate.qrc");
+        QVERIFY(qrcFile.exists());
+        QVERIFY(qrcFile.open(QFile::ReadOnly));
+        QByteArray qrcXml = qrcFile.readAll();
+        QVERIFY(qrcXml.contains("alias=\"main.cpp\""));
+    }
+
+    QVERIFY(test_compiler.make(workDir));
 }
 
 QTEST_MAIN(tst_qmake)
