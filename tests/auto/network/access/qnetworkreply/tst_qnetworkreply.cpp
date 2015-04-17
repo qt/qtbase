@@ -199,6 +199,7 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
     void nestedEventLoops_slot();
+    void notEnoughData();
 
 private Q_SLOTS:
     void init();
@@ -487,6 +488,7 @@ private Q_SLOTS:
     void parentingRepliesToTheApp();
 private:
     QString testDataDir;
+    bool notEnoughDataForFastSender;
 };
 
 bool tst_QNetworkReply::seedCreated = false;
@@ -991,11 +993,13 @@ public:
     }
 
     // a server that sends the data provided at construction time, useful for HTTP
-    FastSender(const QByteArray& data, bool https, bool fillBuffer)
+    FastSender(const QByteArray& data, bool https, bool fillBuffer, tst_QNetworkReply *listener = 0)
         : wantedSize(data.size()), port(-1), protocol(ProvidedData),
           doSsl(https), fillKernelBuffer(fillBuffer), transferRate(-1),
           dataToTransmit(data), dataIndex(0)
     {
+        if (listener)
+            connect(this, SIGNAL(notEnoughData()), listener, SLOT(notEnoughData()));
         start();
         ready.acquire();
     }
@@ -1058,6 +1062,7 @@ protected:
             do {
                 if (writeNextData(client, BlockSize) < BlockSize) {
                     qDebug() << "ERROR: FastSender: not enough data to write in order to fill buffers; or client is reading too fast";
+                    emit notEnoughData();
                     return;
                 }
                 while (client->bytesToWrite() > 0) {
@@ -1118,6 +1123,7 @@ protected:
     }
 signals:
     void dataReady();
+    void notEnoughData();
 };
 
 class RateControlledReader: public QObject
@@ -4901,7 +4907,8 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
              << testData.size() << "bytes of data";
 
     const bool fillKernelBuffer = bufferSize > 0;
-    FastSender server(httpResponse, https, fillKernelBuffer);
+    notEnoughDataForFastSender = false;
+    FastSender server(httpResponse, https, fillKernelBuffer, this);
 
     QUrl url(QString("%1://127.0.0.1:%2/qtest/rfc3252.txt")
              .arg(https?"https":"http")
@@ -4916,7 +4923,13 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     QTime loopTime;
     loopTime.start();
 
-    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    const int result = waitForFinish(reply);
+    if (notEnoughDataForFastSender) {
+        server.wait();
+        QSKIP("kernel socket buffers are too big for this test to work");
+    }
+
+    QVERIFY2(result == Success, msgWaitForFinished(reply));
 
     const int elapsedTime = loopTime.elapsed();
     server.wait();
@@ -5587,6 +5600,11 @@ void tst_QNetworkReply::nestedEventLoops_slot()
     subloop.exec();
 
     QTestEventLoop::instance().exitLoop();
+}
+
+void tst_QNetworkReply::notEnoughData()
+{
+    notEnoughDataForFastSender = true;
 }
 
 void tst_QNetworkReply::nestedEventLoops()
