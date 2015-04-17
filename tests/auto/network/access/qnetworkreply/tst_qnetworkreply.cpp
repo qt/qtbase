@@ -1078,7 +1078,11 @@ protected:
         // clean up QAbstractSocket's residue:
         while (client->bytesToWrite() > 0) {
             qDebug() << "Still having" << client->bytesToWrite() << "bytes to write, doing that now";
+#ifdef Q_OS_OSX
+            if (!client->waitForBytesWritten(4000)) {
+#else
             if (!client->waitForBytesWritten(2000)) {
+#endif
                 qDebug() << "ERROR: FastSender:" << client->error() << "cleaning up residue";
                 return;
             }
@@ -1098,7 +1102,11 @@ protected:
             measuredSentBytes += writeNextData(client, bytesToWrite);
 
             while (client->bytesToWrite() > 0) {
+#ifdef Q_OS_OSX
+                if (!client->waitForBytesWritten(4000)) {
+#else
                 if (!client->waitForBytesWritten(2000)) {
+#endif
                     qDebug() << "ERROR: FastSender:" << client->error() << "during blocking write";
                     return;
                 }
