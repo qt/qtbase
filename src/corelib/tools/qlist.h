@@ -215,7 +215,6 @@ public:
 
         inline iterator() : i(0) {}
         inline iterator(Node *n) : i(n) {}
-        inline iterator(const iterator &o): i(o.i){}
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
         inline T &operator[](difference_type j) const { return i[j].t(); }
@@ -263,7 +262,6 @@ public:
 
         inline const_iterator() : i(0) {}
         inline const_iterator(Node *n) : i(n) {}
-        inline const_iterator(const const_iterator &o): i(o.i) {}
 #ifdef QT_STRICT_ITERATORS
         inline explicit const_iterator(const iterator &o): i(o.i) {}
 #else
