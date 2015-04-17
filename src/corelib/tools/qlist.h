@@ -103,11 +103,11 @@ struct Q_CORE_EXPORT QListData {
     void remove(int i);
     void remove(int i, int n);
     void move(int from, int to);
-    inline int size() const { return d->end - d->begin; }
-    inline bool isEmpty() const { return d->end  == d->begin; }
-    inline void **at(int i) const { return d->array + d->begin + i; }
-    inline void **begin() const { return d->array + d->begin; }
-    inline void **end() const { return d->array + d->end; }
+    inline int size() const Q_DECL_NOTHROW { return d->end - d->begin; }
+    inline bool isEmpty() const Q_DECL_NOTHROW { return d->end  == d->begin; }
+    inline void **at(int i) const Q_DECL_NOTHROW { return d->array + d->begin + i; }
+    inline void **begin() const Q_DECL_NOTHROW { return d->array + d->begin; }
+    inline void **end() const Q_DECL_NOTHROW { return d->array + d->end; }
 };
 
 template <typename T>
@@ -155,7 +155,7 @@ public:
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
-    inline int size() const { return p.size(); }
+    inline int size() const Q_DECL_NOTHROW { return p.size(); }
 
     inline void detach() { if (d->ref.isShared()) detach_helper(); }
 
@@ -178,9 +178,9 @@ public:
             d->ref.setSharable(sharable);
     }
 #endif
-    inline bool isSharedWith(const QList<T> &other) const { return d == other.d; }
+    inline bool isSharedWith(const QList<T> &other) const Q_DECL_NOTHROW { return d == other.d; }
 
-    inline bool isEmpty() const { return p.isEmpty(); }
+    inline bool isEmpty() const Q_DECL_NOTHROW { return p.isEmpty(); }
 
     void clear();
 
@@ -219,34 +219,34 @@ public:
         typedef T *pointer;
         typedef T &reference;
 
-        inline iterator() : i(0) {}
-        inline iterator(Node *n) : i(n) {}
+        inline iterator() Q_DECL_NOTHROW : i(Q_NULLPTR) {}
+        inline iterator(Node *n) Q_DECL_NOTHROW : i(n) {}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
-        inline iterator(const iterator &o): i(o.i){}
+        inline iterator(const iterator &o) Q_DECL_NOTHROW : i(o.i){}
 #endif
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
         inline T &operator[](difference_type j) const { return i[j].t(); }
-        inline bool operator==(const iterator &o) const { return i == o.i; }
-        inline bool operator!=(const iterator &o) const { return i != o.i; }
-        inline bool operator<(const iterator& other) const { return i < other.i; }
-        inline bool operator<=(const iterator& other) const { return i <= other.i; }
-        inline bool operator>(const iterator& other) const { return i > other.i; }
-        inline bool operator>=(const iterator& other) const { return i >= other.i; }
+        inline bool operator==(const iterator &o) const Q_DECL_NOTHROW { return i == o.i; }
+        inline bool operator!=(const iterator &o) const Q_DECL_NOTHROW { return i != o.i; }
+        inline bool operator<(const iterator& other) const Q_DECL_NOTHROW { return i < other.i; }
+        inline bool operator<=(const iterator& other) const Q_DECL_NOTHROW { return i <= other.i; }
+        inline bool operator>(const iterator& other) const Q_DECL_NOTHROW { return i > other.i; }
+        inline bool operator>=(const iterator& other) const Q_DECL_NOTHROW { return i >= other.i; }
 #ifndef QT_STRICT_ITERATORS
-        inline bool operator==(const const_iterator &o) const
+        inline bool operator==(const const_iterator &o) const Q_DECL_NOTHROW
             { return i == o.i; }
-        inline bool operator!=(const const_iterator &o) const
+        inline bool operator!=(const const_iterator &o) const Q_DECL_NOTHROW
             { return i != o.i; }
-        inline bool operator<(const const_iterator& other) const
+        inline bool operator<(const const_iterator& other) const Q_DECL_NOTHROW
             { return i < other.i; }
-        inline bool operator<=(const const_iterator& other) const
+        inline bool operator<=(const const_iterator& other) const Q_DECL_NOTHROW
             { return i <= other.i; }
-        inline bool operator>(const const_iterator& other) const
+        inline bool operator>(const const_iterator& other) const Q_DECL_NOTHROW
             { return i > other.i; }
-        inline bool operator>=(const const_iterator& other) const
+        inline bool operator>=(const const_iterator& other) const Q_DECL_NOTHROW
             { return i >= other.i; }
 #endif
         inline iterator &operator++() { ++i; return *this; }
@@ -271,27 +271,27 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() : i(0) {}
-        inline const_iterator(Node *n) : i(n) {}
+        inline const_iterator() Q_DECL_NOTHROW : i(Q_NULLPTR) {}
+        inline const_iterator(Node *n) Q_DECL_NOTHROW : i(n) {}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         // can't remove it in Qt 5, since doing so would make the type trivial,
         // which changes the way it's passed to functions by value.
-        inline const_iterator(const const_iterator &o): i(o.i) {}
+        inline const_iterator(const const_iterator &o) Q_DECL_NOTHROW : i(o.i) {}
 #endif
 #ifdef QT_STRICT_ITERATORS
-        inline explicit const_iterator(const iterator &o): i(o.i) {}
+        inline explicit const_iterator(const iterator &o) Q_DECL_NOTHROW : i(o.i) {}
 #else
-        inline const_iterator(const iterator &o): i(o.i) {}
+        inline const_iterator(const iterator &o) Q_DECL_NOTHROW : i(o.i) {}
 #endif
         inline const T &operator*() const { return i->t(); }
         inline const T *operator->() const { return &i->t(); }
         inline const T &operator[](difference_type j) const { return i[j].t(); }
-        inline bool operator==(const const_iterator &o) const { return i == o.i; }
-        inline bool operator!=(const const_iterator &o) const { return i != o.i; }
-        inline bool operator<(const const_iterator& other) const { return i < other.i; }
-        inline bool operator<=(const const_iterator& other) const { return i <= other.i; }
-        inline bool operator>(const const_iterator& other) const { return i > other.i; }
-        inline bool operator>=(const const_iterator& other) const { return i >= other.i; }
+        inline bool operator==(const const_iterator &o) const Q_DECL_NOTHROW { return i == o.i; }
+        inline bool operator!=(const const_iterator &o) const Q_DECL_NOTHROW { return i != o.i; }
+        inline bool operator<(const const_iterator& other) const Q_DECL_NOTHROW { return i < other.i; }
+        inline bool operator<=(const const_iterator& other) const Q_DECL_NOTHROW { return i <= other.i; }
+        inline bool operator>(const const_iterator& other) const Q_DECL_NOTHROW { return i > other.i; }
+        inline bool operator>=(const const_iterator& other) const Q_DECL_NOTHROW { return i >= other.i; }
         inline const_iterator &operator++() { ++i; return *this; }
         inline const_iterator operator++(int) { Node *n = i; ++i; return n; }
         inline const_iterator &operator--() { i--; return *this; }
@@ -308,19 +308,19 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
     inline iterator begin() { detach(); return reinterpret_cast<Node *>(p.begin()); }
-    inline const_iterator begin() const { return reinterpret_cast<Node *>(p.begin()); }
-    inline const_iterator cbegin() const { return reinterpret_cast<Node *>(p.begin()); }
-    inline const_iterator constBegin() const { return reinterpret_cast<Node *>(p.begin()); }
+    inline const_iterator begin() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.begin()); }
+    inline const_iterator cbegin() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.begin()); }
+    inline const_iterator constBegin() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.begin()); }
     inline iterator end() { detach(); return reinterpret_cast<Node *>(p.end()); }
-    inline const_iterator end() const { return reinterpret_cast<Node *>(p.end()); }
-    inline const_iterator cend() const { return reinterpret_cast<Node *>(p.end()); }
-    inline const_iterator constEnd() const { return reinterpret_cast<Node *>(p.end()); }
+    inline const_iterator end() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.end()); }
+    inline const_iterator cend() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.end()); }
+    inline const_iterator constEnd() const Q_DECL_NOTHROW { return reinterpret_cast<Node *>(p.end()); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);
     iterator erase(iterator first, iterator last);
@@ -397,7 +397,7 @@ private:
     void node_copy(Node *from, Node *to, Node *src);
     void node_destruct(Node *from, Node *to);
 
-    bool isValidIterator(const iterator &i) const
+    bool isValidIterator(const iterator &i) const Q_DECL_NOTHROW
     {
         return (constBegin().i <= i.i) && (i.i <= constEnd().i);
     }
