@@ -413,11 +413,7 @@ public:
 
 Q_SIGNALS:
     void destroyed(QObject * = 0);
-    void objectNameChanged(const QString &objectName
-#if !defined(Q_QDOC)
-    , QPrivateSignal
-#endif
-    );
+    void objectNameChanged(const QString &objectName, QPrivateSignal);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }
