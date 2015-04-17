@@ -566,7 +566,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 #endif
 
     QProcess proc;
-    static const QProcessEnvironment environment = processEnvironment();
+    QProcessEnvironment environment = processEnvironment();
+    if (crashes)
+        environment.insert("QTEST_DISABLE_STACK_DUMP", "1");
     proc.setProcessEnvironment(environment);
     const QString path = subdir + QLatin1Char('/') + subdir;
     proc.start(path, arguments);
