@@ -1515,10 +1515,12 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
 
 QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) const
 {
-    QByteArray chars;
-    chars.resize(1 + xkb_state_key_get_utf8(state, code, 0, 0));
-    // equivalent of XLookupString
+    QVarLengthArray<char, 32> chars(32);
     const int size = xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    if (Q_UNLIKELY(size + 1 > chars.size())) { // +1 for NUL
+        chars.resize(size + 1);
+        xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    }
     return QString::fromUtf8(chars.constData(), size);
 }
 
