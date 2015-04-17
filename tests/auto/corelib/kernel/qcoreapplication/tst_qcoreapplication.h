@@ -61,6 +61,8 @@ private slots:
     void QTBUG31606_QEventDestructorDeadLock();
     void applicationEventFilters_mainThread();
     void applicationEventFilters_auxThread();
+    void threadedEventDelivery_data();
+    void threadedEventDelivery();
 };
 
 #endif // TST_QCOREAPPLICATION_H

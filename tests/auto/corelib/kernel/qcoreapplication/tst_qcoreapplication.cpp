@@ -78,6 +78,21 @@ public:
     }
 };
 
+class Thread : public QDaemonThread
+{
+    void run() Q_DECL_OVERRIDE
+    {
+        QThreadData *data = QThreadData::current();
+        QVERIFY(!data->requiresCoreApplication);        // daemon thread
+        data->requiresCoreApplication = requiresCoreApplication;
+        QThread::run();
+    }
+
+public:
+    Thread() : requiresCoreApplication(true) {}
+    bool requiresCoreApplication;
+};
+
 void tst_QCoreApplication::sendEventsOnProcessEvents()
 {
     int argc = 1;
@@ -851,6 +866,41 @@ void tst_QCoreApplication::applicationEventFilters_auxThread()
     QVERIFY(thread.wait(1000));
     QVERIFY(receiver.recordedEvents.contains(QEvent::User + 1));
     QVERIFY(!spy.recordedEvents.contains(QEvent::User + 1));
+}
+
+void tst_QCoreApplication::threadedEventDelivery_data()
+{
+    QTest::addColumn<bool>("requiresCoreApplication");
+    QTest::addColumn<bool>("createCoreApplication");
+    QTest::addColumn<bool>("eventsReceived");
+
+    // invalid combination:
+    //QTest::newRow("default-without-coreapp") << true << false << false;
+    QTest::newRow("default") << true << true << true;
+    QTest::newRow("independent-without-coreapp") << false << false << true;
+    QTest::newRow("independent-with-coreapp") << false << true << true;
+}
+
+// posts the event before the QCoreApplication is destroyed, starts thread after
+void tst_QCoreApplication::threadedEventDelivery()
+{
+    QFETCH(bool, requiresCoreApplication);
+    QFETCH(bool, createCoreApplication);
+    QFETCH(bool, eventsReceived);
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QScopedPointer<TestApplication> app(createCoreApplication ? new TestApplication(argc, argv) : 0);
+
+    Thread thread;
+    thread.requiresCoreApplication = requiresCoreApplication;
+    ThreadedEventReceiver receiver;
+    receiver.moveToThread(&thread);
+    QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+    thread.start();
+    QVERIFY(thread.wait(1000));
+    QCOMPARE(receiver.recordedEvents.contains(QEvent::User + 1), eventsReceived);
 }
 
 static void createQObjectOnDestruction()

@@ -538,6 +538,14 @@ QThread *QCoreApplicationPrivate::mainThread()
     return theMainThread;
 }
 
+bool QCoreApplicationPrivate::threadRequiresCoreApplication()
+{
+    QThreadData *data = QThreadData::current(false);
+    if (!data)
+        return true;    // default setting
+    return data->requiresCoreApplication;
+}
+
 void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 {
     QThread *currentThread = QThread::currentThread();
@@ -926,6 +934,8 @@ bool QCoreApplication::isQuitLockEnabled()
     return quitLockRefEnabled;
 }
 
+static bool doNotify(QObject *, QEvent *);
+
 /*!
     Enables the ability of the QEventLoopLocker feature to quit
     the application.
@@ -960,7 +970,8 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 */
 bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 {
-    if (!self)
+    bool selfRequired = QCoreApplicationPrivate::threadRequiresCoreApplication();
+    if (!self && selfRequired)
         return false;
 
     // Make it possible for Qt Script to hook into events even
@@ -978,6 +989,8 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
     QScopedLoopLevelCounter loopLevelCounter(threadData);
+    if (!selfRequired)
+        return doNotify(receiver, event);
     return self->notify(receiver, event);
 }
 
@@ -1039,7 +1052,11 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
         return true;
+    return doNotify(receiver, event);
+}
 
+static bool doNotify(QObject *receiver, QEvent *event)
+{
     if (receiver == 0) {                        // serious error
         qWarning("QCoreApplication::notify: Unexpected null receiver");
         return true;
@@ -1054,7 +1071,10 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 
 bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiver, QEvent *event)
 {
-    if (receiver->d_func()->threadData == this->threadData && extraData) {
+    // We can't access the application event filters outside of the main thread (race conditions)
+    Q_ASSERT(receiver->d_func()->threadData->thread == mainThread());
+
+    if (extraData) {
         // application event filters are only called for objects in the GUI thread
         for (int i = 0; i < extraData->eventFilters.size(); ++i) {
             QObject *obj = extraData->eventFilters.at(i);
@@ -1097,7 +1117,9 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
 bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
 {
     // send to all application event filters (only does anything in the main thread)
-    if (QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event))
+    if (QCoreApplication::self
+            && receiver->d_func()->threadData->thread == mainThread()
+            && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event))
         return true;
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event))

@@ -50,7 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QThreadData::QThreadData(int initialRefCount)
     : _ref(initialRefCount), loopLevel(0), thread(0), threadId(0),
-      eventDispatcher(0), quitNow(false), canWait(true), isAdopted(false)
+      eventDispatcher(0),
+      quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
 {
     // fprintf(stderr, "QThreadData %p created\n", this);
 }
@@ -865,6 +866,30 @@ bool QThread::isInterruptionRequested() const
     if (!d->running || d->finished || d->isInFinish)
         return false;
     return d->interruptionRequested;
+}
+
+/*!
+    \class QDaemonThread
+    \since 5.5
+    \brief The QDaemonThread provides a class to manage threads that outlive QCoreApplication
+    \internal
+
+    Note: don't try to deliver events from the started() signal.
+*/
+static void setThreadDoesNotRequireCoreApplication()
+{
+    QThreadData::current()->requiresCoreApplication = false;
+}
+
+QDaemonThread::QDaemonThread(QObject *parent)
+    : QThread(parent)
+{
+    // QThread::started() is emitted from the thread we start
+    connect(this, &QThread::started, setThreadDoesNotRequireCoreApplication);
+}
+
+QDaemonThread::~QDaemonThread()
+{
 }
 
 QT_END_NAMESPACE

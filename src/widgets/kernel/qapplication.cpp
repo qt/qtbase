@@ -3688,7 +3688,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 {
     // send to all application event filters
-    if (sendThroughApplicationEventFilters(receiver, e))
+    if (threadRequiresCoreApplication()
+        && receiver->d_func()->threadData->thread == mainThread()
+        && sendThroughApplicationEventFilters(receiver, e))
         return true;
 
     if (receiver->isWidgetType()) {
