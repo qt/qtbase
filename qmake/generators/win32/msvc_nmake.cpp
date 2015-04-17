@@ -176,11 +176,34 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 const QString vcInstallDir = "/fake/vc_install_dir";
                 const QString kitDir = "/fake/sdk_install_dir";
 #endif // Q_OS_WIN
-
                 QStringList incDirs;
                 QStringList libDirs;
                 QStringList binDirs;
-                if (isPhone) {
+                if (msvcVer == QStringLiteral("14.0")) {
+                    binDirs << vcInstallDir + QStringLiteral("bin/") + compiler;
+                    binDirs << vcInstallDir + QStringLiteral("bin/"); // Maybe remove for x86 again?
+                    binDirs << kitDir + QStringLiteral("bin/") + (arch == QStringLiteral("arm") ? QStringLiteral("x86") : arch);
+                    binDirs << vcInstallDir + QStringLiteral("../Common7/Tools/bin");
+                    binDirs << vcInstallDir + QStringLiteral("../Common7/Tools");
+                    binDirs << vcInstallDir + QStringLiteral("../Common7/ide");
+                    binDirs << kitDir + QStringLiteral("Windows Performance Toolkit/");
+
+                    incDirs << vcInstallDir + QStringLiteral("include");
+                    incDirs << vcInstallDir + QStringLiteral("atlmfc/include");
+                    // ### Investigate why VS uses 10056 first
+                    incDirs << kitDir + QStringLiteral("Include/10.0.10056.0/ucrt");
+                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/ucrt");
+                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/um");
+                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/shared");
+                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/winrt");
+
+                    libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
+                    libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
+                    // ### Investigate why VS uses 10056 first
+                    libDirs << kitDir + QStringLiteral("lib/10.0.10056.0/ucrt/") + arch;
+                    libDirs << kitDir + QStringLiteral("lib/10.0.10069.0/ucrt/") + arch;
+                    libDirs << kitDir + QStringLiteral("lib/10.0.10069.0/um/") + arch;
+                } else if (isPhone) {
                     QString sdkDir = vcInstallDir;
                     if (!QDir(sdkDir).exists()) {
                         fprintf(stderr, "Failed to find the Windows Phone SDK in %s.\n"
@@ -208,7 +231,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                             << kitDir + QStringLiteral("/include/shared")
                             << kitDir + QStringLiteral("/include/winrt");
                 }
-
                 // Inherit PATH
                 binDirs << QString::fromLocal8Bit(qgetenv("PATH")).split(QLatin1Char(';'));
 
