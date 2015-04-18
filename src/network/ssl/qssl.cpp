@@ -166,6 +166,10 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     in ASN.1 format as returned by QSslConfiguration::sessionTicket(). Enabling
     this feature adds memory overhead of approximately 1K per used session
     ticket.
+    \value SslOptionDisableServerCipherPreference Disables selecting the cipher
+    chosen based on the servers preferences rather than the order ciphers were
+    sent by the client. This option is only relevant to server sockets, and is
+    only honored by the OpenSSL backend.
 
     By default, SslOptionDisableEmptyFragments is turned on since this causes
     problems with a large number of servers. SslOptionDisableLegacyRenegotiation
