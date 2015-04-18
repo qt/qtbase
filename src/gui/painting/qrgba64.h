@@ -40,13 +40,15 @@
 QT_BEGIN_NAMESPACE
 
 class QRgba64 {
+    struct qrgba_t {
+        quint16 red;
+        quint16 green;
+        quint16 blue;
+        quint16 alpha;
+    };
+
     union {
-        struct {
-            quint16 red;
-            quint16 green;
-            quint16 blue;
-            quint16 alpha;
-        } c;
+        struct qrgba_t c;
         quint64 rgba;
     };
 public:
