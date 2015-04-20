@@ -38,6 +38,122 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qset.h>
+
+static const int kBufferSize = 10;
+static ALAsset *kNoAsset = 0;
+
+class QIOSAssetEnumerator
+{
+public:
+    QIOSAssetEnumerator(ALAssetsLibrary *assetsLibrary, ALAssetsGroupType type)
+        : m_semWriteAsset(dispatch_semaphore_create(kBufferSize))
+        , m_semReadAsset(dispatch_semaphore_create(0))
+        , m_stop(false)
+        , m_assetsLibrary([assetsLibrary retain])
+        , m_type(type)
+        , m_buffer(QVector<ALAsset *>(kBufferSize))
+        , m_readIndex(0)
+        , m_writeIndex(0)
+        , m_nextAssetReady(false)
+    {
+        startEnumerate();
+    }
+
+    ~QIOSAssetEnumerator()
+    {
+        m_stop = true;
+
+        // Flush and autorelease remaining assets in the buffer
+        while (hasNext())
+            next();
+
+        // Documentation states that we need to balance out calls to 'wait'
+        // and 'signal'. Since the enumeration function always will be one 'wait'
+        // ahead, we need to signal m_semProceedToNextAsset one last time.
+        dispatch_semaphore_signal(m_semWriteAsset);
+        dispatch_release(m_semReadAsset);
+        dispatch_release(m_semWriteAsset);
+
+        [m_assetsLibrary autorelease];
+    }
+
+    bool hasNext()
+    {
+        if (!m_nextAssetReady) {
+            dispatch_semaphore_wait(m_semReadAsset, DISPATCH_TIME_FOREVER);
+            m_nextAssetReady = true;
+        }
+        return m_buffer[m_readIndex] != kNoAsset;
+    }
+
+    ALAsset *next()
+    {
+        Q_ASSERT(m_nextAssetReady);
+        Q_ASSERT(m_buffer[m_readIndex]);
+
+        ALAsset *asset = [m_buffer[m_readIndex] autorelease];
+        dispatch_semaphore_signal(m_semWriteAsset);
+
+        m_readIndex = (m_readIndex + 1) % kBufferSize;
+        m_nextAssetReady = false;
+        return asset;
+    }
+
+private:
+    dispatch_semaphore_t m_semWriteAsset;
+    dispatch_semaphore_t m_semReadAsset;
+    std::atomic_bool m_stop;
+
+    ALAssetsLibrary *m_assetsLibrary;
+    ALAssetsGroupType m_type;
+    QVector<ALAsset *> m_buffer;
+    int m_readIndex;
+    int m_writeIndex;
+    bool m_nextAssetReady;
+
+    void writeAsset(ALAsset *asset)
+    {
+        dispatch_semaphore_wait(m_semWriteAsset, DISPATCH_TIME_FOREVER);
+        m_buffer[m_writeIndex] = [asset retain];
+        dispatch_semaphore_signal(m_semReadAsset);
+        m_writeIndex = (m_writeIndex + 1) % kBufferSize;
+    }
+
+    void startEnumerate()
+    {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [m_assetsLibrary enumerateGroupsWithTypes:m_type usingBlock:^(ALAssetsGroup *group, BOOL *stopEnumerate) {
+
+                if (!group) {
+                    writeAsset(kNoAsset);
+                    return;
+                }
+
+                if (m_stop) {
+                    *stopEnumerate = true;
+                    return;
+                }
+
+                [group enumerateAssetsUsingBlock:^(ALAsset *asset, NSUInteger index, BOOL *stopEnumerate) {
+                    Q_UNUSED(index);
+                    if (!asset || ![[asset valueForProperty:ALAssetPropertyType] isEqual:ALAssetTypePhoto])
+                       return;
+
+                    writeAsset(asset);
+                    *stopEnumerate = m_stop;
+                }];
+            } failureBlock:^(NSError *error) {
+                NSLog(@"QIOSFileEngine: %@", error);
+                writeAsset(kNoAsset);
+            }];
+        });
+    }
+
+};
+
+// -------------------------------------------------------------------------
 
 class QIOSAssetData : public QObject
 {
