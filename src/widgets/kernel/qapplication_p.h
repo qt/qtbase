@@ -280,7 +280,7 @@ public:
     void initializeMultitouch_sys();
     void cleanupMultitouch();
     void cleanupMultitouch_sys();
-    QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos);
+    QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     static bool translateRawTouchEvent(QWidget *widget,

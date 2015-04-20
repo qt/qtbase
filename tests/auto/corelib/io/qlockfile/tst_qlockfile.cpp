@@ -58,6 +58,7 @@ private slots:
     void staleLongLockFromBusyProcess();
     void staleLockRace();
     void noPermissions();
+    void corruptedLockFile();
 
 public:
     QString m_helperApp;
@@ -413,6 +414,22 @@ void tst_QLockFile::noPermissions()
     QLockFile lockFile(fileName);
     QVERIFY(!lockFile.lock());
     QCOMPARE(int(lockFile.error()), int(QLockFile::PermissionError));
+}
+
+void tst_QLockFile::corruptedLockFile()
+{
+    const QString fileName = dir.path() + "/corruptedLockFile";
+
+    {
+        // Create a empty file. Typically the result of a computer crash or hard disk full.
+        QFile file(fileName);
+        QVERIFY(file.open(QFile::WriteOnly));
+    }
+
+    QLockFile secondLock(fileName);
+    secondLock.setStaleLockTime(100);
+    QVERIFY(secondLock.tryLock(10000));
+    QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
 }
 
 QTEST_MAIN(tst_QLockFile)

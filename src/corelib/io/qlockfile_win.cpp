@@ -115,21 +115,21 @@ bool QLockFilePrivate::isApparentlyStale() const
 {
     qint64 pid;
     QString hostname, appname;
-    if (!getLockInfo(&pid, &hostname, &appname))
-        return false;
 
     // On WinRT there seems to be no way of obtaining information about other
     // processes due to sandboxing
 #ifndef Q_OS_WINRT
-    if (hostname == QString::fromLocal8Bit(localHostName())) {
-        HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-        if (!procHandle)
-            return true;
-        // We got a handle but check if process is still alive
-        DWORD dwR = ::WaitForSingleObject(procHandle, 0);
-        ::CloseHandle(procHandle);
-        if (dwR == WAIT_TIMEOUT)
-            return true;
+    if (getLockInfo(&pid, &hostname, &appname)) {
+        if (hostname == QString::fromLocal8Bit(localHostName())) {
+            HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+            if (!procHandle)
+                return true;
+            // We got a handle but check if process is still alive
+            DWORD dwR = ::WaitForSingleObject(procHandle, 0);
+            ::CloseHandle(procHandle);
+            if (dwR == WAIT_TIMEOUT)
+                return true;
+        }
     }
 #endif // !Q_OS_WINRT
     const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
