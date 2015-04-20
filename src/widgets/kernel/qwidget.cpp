@@ -4859,7 +4859,7 @@ void QWidget::unsetLayoutDirection()
     \fn QFontMetrics QWidget::fontMetrics() const
 
     Returns the font metrics for the widget's current font.
-    Equivalent to QFontMetrics(widget->font()).
+    Equivalent to \c QFontMetrics(widget->font()).
 
     \sa font(), fontInfo(), setFont()
 */
@@ -4868,7 +4868,7 @@ void QWidget::unsetLayoutDirection()
     \fn QFontInfo QWidget::fontInfo() const
 
     Returns the font info for the widget's current font.
-    Equivalent to QFontInto(widget->font()).
+    Equivalent to \c QFontInfo(widget->font()).
 
     \sa font(), fontMetrics(), setFont()
 */
