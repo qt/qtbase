@@ -164,12 +164,12 @@ inline QQuaternion::QQuaternion(float aScalar, float xpos, float ypos, float zpo
 
 inline bool QQuaternion::isNull() const
 {
-    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 0.0f;
+    return wp == 0.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;
 }
 
 inline bool QQuaternion::isIdentity() const
 {
-    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 1.0f;
+    return wp == 1.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;
 }
 
 inline float QQuaternion::x() const { return xp; }
@@ -184,16 +184,16 @@ inline void QQuaternion::setScalar(float aScalar) { wp = aScalar; }
 
 Q_DECL_CONSTEXPR inline float QQuaternion::dotProduct(const QQuaternion &q1, const QQuaternion &q2)
 {
-    return q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp + q1.wp * q2.wp;
+    return q1.wp * q2.wp + q1.xp * q2.xp + q1.yp * q2.yp + q1.zp * q2.zp;
 }
 
 inline QQuaternion QQuaternion::inverted() const
 {
     // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
+    double len = double(wp) * double(wp) +
+                 double(xp) * double(xp) +
                  double(yp) * double(yp) +
-                 double(zp) * double(zp) +
-                 double(wp) * double(wp);
+                 double(zp) * double(zp);
     if (!qFuzzyIsNull(len))
         return QQuaternion(wp / len, -xp / len, -yp / len, -zp / len);
     return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
@@ -213,28 +213,28 @@ inline QQuaternion QQuaternion::conjugate() const
 
 inline QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion)
 {
+    wp += quaternion.wp;
     xp += quaternion.xp;
     yp += quaternion.yp;
     zp += quaternion.zp;
-    wp += quaternion.wp;
     return *this;
 }
 
 inline QQuaternion &QQuaternion::operator-=(const QQuaternion &quaternion)
 {
+    wp -= quaternion.wp;
     xp -= quaternion.xp;
     yp -= quaternion.yp;
     zp -= quaternion.zp;
-    wp -= quaternion.wp;
     return *this;
 }
 
 inline QQuaternion &QQuaternion::operator*=(float factor)
 {
+    wp *= factor;
     xp *= factor;
     yp *= factor;
     zp *= factor;
-    wp *= factor;
     return *this;
 }
 
@@ -262,16 +262,16 @@ inline QQuaternion &QQuaternion::operator*=(const QQuaternion &quaternion)
 
 inline QQuaternion &QQuaternion::operator/=(float divisor)
 {
+    wp /= divisor;
     xp /= divisor;
     yp /= divisor;
     zp /= divisor;
-    wp /= divisor;
     return *this;
 }
 
 inline bool operator==(const QQuaternion &q1, const QQuaternion &q2)
 {
-    return q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp && q1.wp == q2.wp;
+    return q1.wp == q2.wp && q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp;
 }
 
 inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
@@ -311,10 +311,10 @@ inline const QQuaternion operator/(const QQuaternion &quaternion, float divisor)
 
 inline bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
 {
-    return qFuzzyCompare(q1.xp, q2.xp) &&
+    return qFuzzyCompare(q1.wp, q2.wp) &&
+           qFuzzyCompare(q1.xp, q2.xp) &&
            qFuzzyCompare(q1.yp, q2.yp) &&
-           qFuzzyCompare(q1.zp, q2.zp) &&
-           qFuzzyCompare(q1.wp, q2.wp);
+           qFuzzyCompare(q1.zp, q2.zp);
 }
 
 #ifndef QT_NO_VECTOR3D
