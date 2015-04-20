@@ -3978,9 +3978,9 @@ void tst_QPainter::linearGradientRgb30()
     painter.fillRect(image.rect(), gradient);
     painter.end();
 
-    for (int i = 0; i < 1000; ++i) {
-        QColor p1 = image.pixelColor(i, 0);
-        QColor p2 = image.pixelColor(i + 1, 0);
+    for (int i = 1; i < 1000; ++i) {
+        QColor p1 = image.pixelColor(i - 1, 0);
+        QColor p2 = image.pixelColor(i, 0);
         QVERIFY(p1 != p2);
         QVERIFY(qGray(p1.rgb()) >= qGray(p2.rgb()));
     }
@@ -4005,9 +4005,9 @@ void tst_QPainter::radialGradientRgb30()
     painter.fillRect(image.rect(), gradient);
     painter.end();
 
-    for (int i = 0; i < 1000; ++i) {
-        QColor p1 = image.pixelColor(i, 0);
-        QColor p2 = image.pixelColor(i + 1, 0);
+    for (int i = 1; i < 1000; ++i) {
+        QColor p1 = image.pixelColor(i - 1, 0);
+        QColor p2 = image.pixelColor(i, 0);
         QVERIFY(p1 != p2);
         QVERIFY(qGray(p1.rgb()) >= qGray(p2.rgb()));
     }
