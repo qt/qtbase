@@ -235,13 +235,16 @@ void tst_QFiledialog::directoryEnteredSignal()
 {
     QNonNativeFileDialog fd(0, "", QDir::root().path());
     fd.setOptions(QFileDialog::DontUseNativeDialog);
+    QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");
+    QVERIFY(sidebar);
+    if (sidebar->model()->rowCount() < 2)
+        QSKIP("This test requires at least 2 side bar entries.");
+
     fd.show();
     QTRY_COMPARE(fd.isVisible(), true);
     QSignalSpy spyDirectoryEntered(&fd, SIGNAL(directoryEntered(QString)));
 
     // sidebar
-    QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");
-    QVERIFY(sidebar->model()->rowCount() >= 2);
     QModelIndex secondItem = sidebar->model()->index(1, 0);
     QVERIFY(secondItem.isValid());
     sidebar->setCurrentIndex(secondItem);
