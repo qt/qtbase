@@ -34,6 +34,8 @@
 #include "qprintdevice_p.h"
 #include "qplatformprintdevice.h"
 
+#include <private/qdebug_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
@@ -244,6 +246,59 @@ QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 }
 #endif // QT_NO_MIMETYPE
 
+#  ifndef QT_NO_DEBUG_STREAM
+void QPrintDevice::format(QDebug debug) const
+{
+    QDebugStateSaver saver(debug);
+    debug.noquote();
+    debug.nospace();
+    if (isValid()) {
+        const QString deviceId = id();
+        const QString deviceName = name();
+        debug << "id=\"" << deviceId << "\", state=" << state();
+        if (!deviceName.isEmpty() && deviceName != deviceId)
+            debug << ", name=\"" << deviceName << '"';
+        if (!location().isEmpty())
+            debug << ", location=\"" << location() << '"';
+        debug << ", makeAndModel=\"" << makeAndModel() << '"';
+        if (isDefault())
+            debug << ", default";
+        if (isRemote())
+            debug << ", remote";
+        debug << ", defaultPageSize=" << defaultPageSize();
+        if (supportsCustomPageSizes())
+            debug << ", supportsCustomPageSizes";
+        debug << ", physicalPageSize=(";
+        QtDebugUtils::formatQSize(debug, minimumPhysicalPageSize());
+        debug << ")..(";
+        QtDebugUtils::formatQSize(debug, maximumPhysicalPageSize());
+        debug << "), defaultResolution=" << defaultResolution()
+              << ", defaultDuplexMode=" << defaultDuplexMode()
+              << ", defaultColorMode="<< defaultColorMode();
+#    ifndef QT_NO_MIMETYPE
+        const QList<QMimeType> mimeTypes = supportedMimeTypes();
+        if (const int mimeTypeCount = mimeTypes.size()) {
+            debug << ", supportedMimeTypes=(";
+            for (int i = 0; i < mimeTypeCount; ++i)
+                debug << " \"" << mimeTypes.at(i).name() << '"';
+            debug << ')';
+        }
+#    endif // !QT_NO_MIMETYPE
+    } else {
+        debug << "null";
+    }
+}
+
+QDebug operator<<(QDebug debug, const QPrintDevice &p)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QPrintDevice(";
+    p.format(debug);
+    debug << ')';
+    return debug;
+}
+#  endif // QT_NO_DEBUG_STREAM
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

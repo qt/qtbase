@@ -31,6 +31,8 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <QtCore/qdebug.h>
+
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
 
@@ -468,6 +470,21 @@ QPrinterInfo QPrinterInfo::printerInfo(const QString &printerName)
 {
     return QPrinterInfo(printerName);
 }
+
+#  ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QPrinterInfo &p)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QPrinterInfo(";
+    if (p.isNull())
+        debug << "null";
+    else
+        p.d_ptr->m_printDevice.format(debug);
+    debug << ')';
+    return debug;
+}
+#  endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 

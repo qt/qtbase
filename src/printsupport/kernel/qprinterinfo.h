@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_PRINTER
 class QPrinterInfoPrivate;
 class QPrinterInfoPrivateDeleter;
+class QDebug;
 class Q_PRINTSUPPORT_EXPORT QPrinterInfo
 {
 public:
@@ -98,6 +99,9 @@ private:
 
 private:
     friend class QPlatformPrinterSupport;
+#  ifndef QT_NO_DEBUG_STREAM
+    friend Q_PRINTSUPPORT_EXPORT QDebug operator<<(QDebug debug, const QPrinterInfo &);
+#  endif
     Q_DECLARE_PRIVATE(QPrinterInfo)
     QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
 };
