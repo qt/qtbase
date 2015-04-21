@@ -481,7 +481,7 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         success = glXMakeContextCurrent(m_display, glxDrawable, glxDrawable, m_context);
     }
 
-    if (success) {
+    if (success && surfaceClass == QSurface::Window) {
         int interval = surface->format().swapInterval();
         QXcbScreen *screen = screenForPlatformSurface(surface);
         if (interval >= 0 && m_swapInterval != interval && screen) {
