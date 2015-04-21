@@ -97,7 +97,6 @@ public:
 
         browseTorrents = new QPushButton(groupBox);
         browseTorrents->setObjectName(QStringLiteral("browseTorrents"));
-        browseTorrents->setDefault(true);
 
         gridLayout->addWidget(browseTorrents, 0, 3, 1, 1);
 
@@ -204,6 +203,9 @@ public:
         retranslateUi(AddTorrentFile);
         QObject::connect(okButton, SIGNAL(clicked()), AddTorrentFile, SLOT(accept()));
         QObject::connect(cancelButton, SIGNAL(clicked()), AddTorrentFile, SLOT(reject()));
+
+        browseTorrents->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(AddTorrentFile);
     } // setupUi

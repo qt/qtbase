@@ -77,7 +77,6 @@ public:
         buttonDisplay = new QPushButton(Layout16);
         buttonDisplay->setObjectName(QStringLiteral("buttonDisplay"));
         buttonDisplay->setAutoDefault(true);
-        buttonDisplay->setDefault(true);
 
         hboxLayout->addWidget(buttonDisplay);
 
@@ -95,6 +94,9 @@ public:
 #endif // QT_NO_SHORTCUT
 
         retranslateUi(TopicChooser);
+
+        buttonDisplay->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(TopicChooser);
     } // setupUi
