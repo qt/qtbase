@@ -468,6 +468,9 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 {
+    if (!connection()->hasXRandr())
+        return;
+
     xcb_randr_get_crtc_info_cookie_t crtcCookie =
         xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp);
     xcb_randr_get_crtc_info_reply_t *crtc =
