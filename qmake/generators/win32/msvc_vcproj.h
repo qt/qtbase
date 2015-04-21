@@ -135,6 +135,8 @@ private:
     QUuid increaseUUID(const QUuid &id);
     QString retrievePlatformToolSet() const;
     bool isStandardSuffix(const QString &suffix) const;
+    ProString firstInputFileName(const ProString &extraCompilerName) const;
+    QString firstExpandedOutputFileName(const ProString &extraCompilerName);
     friend class VCFilter;
 };
 
