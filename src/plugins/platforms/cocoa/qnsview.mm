@@ -698,8 +698,10 @@ QT_WARNING_POP
     }
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
-        targetView = popup->contentView();
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        if (QNSView *popupView = popup->qtView())
+            targetView = popupView;
+    }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
