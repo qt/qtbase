@@ -804,10 +804,7 @@ QT_WARNING_POP
     }
 
     if ([self hasMarkedText]) {
-        NSInputManager* inputManager = [NSInputManager currentInputManager];
-        if ([inputManager wantsToHandleMouseEvents]) {
-            [inputManager handleMouseEvent:theEvent];
-        }
+        [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
         if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
