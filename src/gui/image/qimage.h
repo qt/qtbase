@@ -121,7 +121,7 @@ public:
 #endif
     };
 
-    QImage();
+    QImage() Q_DECL_NOEXCEPT;
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
     QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
@@ -136,7 +136,7 @@ public:
 
     QImage(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage(QImage &&other)
+    inline QImage(QImage &&other) Q_DECL_NOEXCEPT
         : QPaintDevice(), d(0)
     { qSwap(d, other.d); }
 #endif
@@ -144,10 +144,11 @@ public:
 
     QImage &operator=(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QImage &operator=(QImage &&other)
+    inline QImage &operator=(QImage &&other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QImage &other) { qSwap(d, other.d); }
+    inline void swap(QImage &other) Q_DECL_NOEXCEPT
+    { qSwap(d, other.d); }
 
     bool isNull() const;
 

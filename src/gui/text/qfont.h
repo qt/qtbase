@@ -237,7 +237,7 @@ public:
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QFont &operator=(QFont &&other)
+    inline QFont &operator=(QFont &&other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
 #endif
 

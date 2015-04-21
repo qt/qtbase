@@ -734,7 +734,7 @@ bool QImageData::checkForAlphaPixels() const
     \sa isNull()
 */
 
-QImage::QImage()
+QImage::QImage() Q_DECL_NOEXCEPT
     : QPaintDevice()
 {
     d = 0;

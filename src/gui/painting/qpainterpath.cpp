@@ -521,7 +521,7 @@ void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
 /*!
     Constructs an empty QPainterPath object.
 */
-QPainterPath::QPainterPath()
+QPainterPath::QPainterPath() Q_DECL_NOEXCEPT
     : d_ptr(0)
 {
 }
