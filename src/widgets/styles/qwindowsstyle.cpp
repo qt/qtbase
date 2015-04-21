@@ -1795,7 +1795,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 QColor left, right;
 
                 //Titlebar gradient
-                if (widget && widget->isWindow()) {
+                if (opt->state & QStyle::State_Window) {
                     floating = true;
                     if (active) {
                         left = d->activeCaptionColor;
