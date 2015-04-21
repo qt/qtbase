@@ -600,16 +600,23 @@ Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i, const T &defaultValue) const
 template <typename T>
 void QVector<T>::append(const T &t)
 {
-    const T copy(t);
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
+        const T copy(t);
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+
+        if (QTypeInfo<T>::isComplex)
+            new (d->end()) T(copy);
+        else
+            *d->end() = copy;
+
+    } else {
+        if (QTypeInfo<T>::isComplex)
+            new (d->end()) T(t);
+        else
+            *d->end() = t;
     }
-    if (QTypeInfo<T>::isComplex)
-        new (d->end()) T(copy);
-    else
-        *d->end() = copy;
     ++d->size;
 }
 
