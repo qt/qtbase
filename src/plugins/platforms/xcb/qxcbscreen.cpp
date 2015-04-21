@@ -108,10 +108,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     }
 
     const int dpr = int(devicePixelRatio());
-    // On VNC, it can be that physical size is unknown while
-    // virtual size is known (probably back-calculated from DPI and resolution)
-    if (m_sizeMillimeters.isEmpty())
-        m_sizeMillimeters = m_virtualSizeMillimeters;
     if (m_geometry.isEmpty()) {
         m_geometry = QRect(QPoint(), m_virtualSize/dpr);
         m_nativeGeometry = QRect(QPoint(), m_virtualSize);
@@ -353,6 +349,12 @@ QImage::Format QXcbScreen::format() const
     return QImage::Format_RGB32;
 }
 
+QDpi QXcbScreen::virtualDpi() const
+{
+    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+}
+
 QDpi QXcbScreen::logicalDpi() const
 {
     static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
@@ -363,8 +365,7 @@ QDpi QXcbScreen::logicalDpi() const
         int primaryDpr = int(connection()->screens().at(0)->devicePixelRatio());
         return QDpi(m_forcedDpi/primaryDpr, m_forcedDpi/primaryDpr);
     }
-    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+    return virtualDpi();
 }
 
 
@@ -415,7 +416,6 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
         return;
 
     m_rotation = change_event->rotation;
-    updateGeometry(change_event->timestamp);
     switch (m_rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
@@ -450,6 +450,8 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
     case XCB_RANDR_ROTATION_REFLECT_X: break;
     case XCB_RANDR_ROTATION_REFLECT_Y: break;
     }
+
+    updateGeometry(change_event->timestamp);
 
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
@@ -502,6 +504,15 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
         m_orientation = Qt::InvertedPortraitOrientation;
         m_sizeMillimeters = m_outputSizeMillimeters.transposed();
         break;
+    }
+
+    // It can be that physical size is unknown while virtual size
+    // is known (probably back-calculated from DPI and resolution),
+    // e.g. on VNC or with some hardware.
+    if (m_sizeMillimeters.isEmpty()) {
+        QDpi dpi = virtualDpi();
+        m_sizeMillimeters = QSizeF(Q_MM_PER_INCH * xGeometry.width() / dpi.first,
+                                   Q_MM_PER_INCH * xGeometry.width() / dpi.second);
     }
 
     xcb_get_property_reply_t * workArea =

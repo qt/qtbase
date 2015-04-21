@@ -94,6 +94,7 @@ public:
     QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_sizeMillimeters; }
     QSize virtualSize() const { return m_virtualSize; }
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
+    QDpi virtualDpi() const;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
