@@ -346,7 +346,6 @@ struct  QtFontFamily
         populated(false),
         fixedPitch(false),
         name(n), count(0), foundries(0)
-        , askedForFallback(false)
     {
         memset(writingSystems, 0, sizeof(writingSystems));
     }
@@ -364,8 +363,6 @@ struct  QtFontFamily
     int count;
     QtFontFoundry **foundries;
 
-    QStringList fallbackFamilies;
-    bool askedForFallback;
     unsigned char writingSystems[QFontDatabase::WritingSystemsCount];
 
     bool matchesFamilyName(const QString &familyName) const;
@@ -759,6 +756,7 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
 
 static QStringList fallbackFamilies(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
+    // make sure that the db has all fallback families
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
     QFontDatabasePrivate *db = privateDb();
 
@@ -884,20 +882,13 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
     Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
-        // make sure that the db has all fallback families
-        if (family && !family->askedForFallback) {
-            QFont::Style fontStyle = QFont::Style(style->key.style);
-            QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
-            if (styleHint == QFont::AnyStyle && request.fixedPitch)
-                styleHint = QFont::TypeWriter;
-            family->fallbackFamilies = fallbackFamilies(family->name, fontStyle, styleHint, QChar::Script(script));
-
-            family->askedForFallback = true;
-        }
-
         QStringList fallbacks = request.fallBackFamilies;
-        if (family)
-            fallbacks += family->fallbackFamilies;
+
+        QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
+        if (styleHint == QFont::AnyStyle && request.fixedPitch)
+            styleHint = QFont::TypeWriter;
+
+        fallbacks += fallbackFamilies(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
 
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
