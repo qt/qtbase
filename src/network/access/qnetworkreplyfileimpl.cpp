@@ -36,7 +36,6 @@
 #include "QtCore/qdatetime.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
-#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +135,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
     QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
+
 void QNetworkReplyFileImpl::close()
 {
     Q_D(QNetworkReplyFileImpl);
@@ -182,8 +182,11 @@ qint64 QNetworkReplyFileImpl::readData(char *data, qint64 maxlen)
         d->realFile.close();
     if (ret == 0 && bytesAvailable() == 0)
         return -1;
-    else
+    else {
+        setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 200);
+        setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, QLatin1String("OK"));
         return ret;
+    }
 }
 
 

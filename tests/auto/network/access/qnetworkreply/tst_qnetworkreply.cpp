@@ -426,6 +426,8 @@ private Q_SLOTS:
 
     void qtbug28035browserDoesNotLoadQtProjectOrgCorrectly();
 
+    void qtbug45581WrongReplyStatusCode();
+
     void synchronousRequest_data();
     void synchronousRequest();
 #ifndef QT_NO_SSL
@@ -7254,6 +7256,34 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
+}
+
+void tst_QNetworkReply::qtbug45581WrongReplyStatusCode()
+{
+    const QUrl url("file:" + testDataDir + "/element.xml");
+    QNetworkRequest request(url);
+
+    QNetworkReplyPtr reply;
+    QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
+    QSignalSpy sslErrorsSpy(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::GetOperation, request, reply, 0));
+    QVERIFY(reply->isFinished());
+
+    const QByteArray expectedContent =
+            "<root attr=\"value\" attr2=\"value2\">"
+            "<person /><fruit /></root>\n";
+
+    QCOMPARE(reply->readAll(), expectedContent);
+
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(sslErrorsSpy.count(), 0);
+
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), expectedContent.size());
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), QLatin1String("OK"));
+
+    reply->deleteLater();
 }
 
 void tst_QNetworkReply::synchronousRequest_data()
