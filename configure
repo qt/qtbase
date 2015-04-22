@@ -376,6 +376,9 @@ linkerSupportsFlag()
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
+    if [ $CFG_USE_GOLD_LINKER = yes ]; then
+        lflags="-fuse-ld=gold $lflags"
+    fi
     compilerSupportsFlag $compiler $lflags
 }
 
