@@ -1160,10 +1160,9 @@ void UnixMakefileGenerator::init2()
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
-    if (project->first("TEMPLATE") == "aux")
-        return;
-
-    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+    if (project->first("TEMPLATE") == "aux") {
+        // nothing
+    } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
@@ -1335,7 +1334,7 @@ void UnixMakefileGenerator::init2()
             project->values("QMAKE_LINK_SHLIB_CMD").append(
                 "$(LINK) $(LFLAGS) " + project->first("QMAKE_LINK_O_FLAG") + "$(TARGET) $(OBJECTS) $(LIBS) $(OBJCOMP)");
     }
-    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+    if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
         project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
         project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_APP");
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_APP");
