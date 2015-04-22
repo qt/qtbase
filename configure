@@ -728,6 +728,7 @@ CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_USE_GOLD_LINKER=auto
+CFG_ENABLE_NEW_DTAGS=auto
 DEFINES=
 INCLUDES=
 D_FLAGS=
@@ -3442,6 +3443,13 @@ if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
     fi
 fi
 
+# auto-detect --enable-new-dtags support
+if linkerSupportsFlag $TEST_COMPILER --enable-new-dtags; then
+    CFG_ENABLE_NEW_DTAGS=yes
+else
+    CFG_ENABLE_NEW_DTAGS=no
+fi
+
 # auto-detect -fstack-protector-strong support (for QNX only currently)
 if [ "$XPLATFORM_QNX" = "yes" ]; then
     if compilerSupportsFlag $TEST_COMPILER -fstack-protector-strong; then
@@ -6067,6 +6075,7 @@ fi
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
 [ "$CFG_USE_GOLD_LINKER" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG use_gold_linker"
+[ "$CFG_ENABLE_NEW_DTAGS" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG enable_new_dtags"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG separate_debug_info"
 fi
@@ -6980,6 +6989,7 @@ unset build_mode release
 echo "  Using sanitizer(s)...... $CFG_SANITIZERS"
 echo "  Using C++11 ............ $CFG_CXX11"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
+echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then

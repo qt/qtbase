@@ -244,6 +244,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "USE_GOLD_LINKER" ] = "no";
 
+    dictionary[ "ENABLE_NEW_DTAGS" ] = "no";
+
     dictionary[ "SHARED" ]          = "yes";
 
     dictionary[ "STATIC_RUNTIME" ]  = "no";
@@ -471,6 +473,10 @@ void Configure::parseCmdLine()
             dictionary[ "USE_GOLD_LINKER" ] = "yes";
         else if (configCmdLine.at(i) == "-no-use-gold-linker")
             dictionary[ "USE_GOLD_LINKER" ] = "no";
+        else if (configCmdLine.at(i) == "-enable-new-dtags")
+            dictionary[ "ENABLE_NEW_DTAGS" ] = "yes";
+        else if (configCmdLine.at(i) == "-disable-new-dtags")
+            dictionary[ "ENABLE_NEW_DTAGS" ] = "no";
         else if (configCmdLine.at(i) == "-shared")
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
@@ -1793,6 +1799,9 @@ bool Configure::displayHelp()
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
         desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
 
+        desc("ENABLE_NEW_DTAGS", "yes", "-enable-new-dtags", "Use new DTAGS for RPATH (Linux only).");
+        desc("ENABLE_NEW_DTAGS", "no", "-disable-new-dtags", "Do not use new DTAGS for RPATH.\n");
+
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
@@ -2674,6 +2683,9 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";
+
+    if (dictionary[ "ENABLE_NEW_DTAGS" ] == "yes")
+        qmakeConfig += "enable_new_dtags";
 
     if (dictionary[ "SHARED" ] == "no")
         qtConfig += "static";
