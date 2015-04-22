@@ -182,7 +182,9 @@ int QStackedWidget::insertWidget(int index, QWidget *widget)
     not deleted but simply removed from the stacked layout, causing it
     to be hidden.
 
-    \b{Note:} Ownership of \a widget reverts to the application.
+    \note Parent object and parent widget of \a widget will remain the
+    QStackedWidget. If the application wants to reuse the removed
+    \a widget, then it is recommended to re-parent it.
 
     \sa addWidget(), insertWidget(), currentWidget()
 */
