@@ -62,16 +62,8 @@ public:
     QStringList directories() const;
 
 Q_SIGNALS:
-    void fileChanged(const QString &path
-#if !defined(Q_QDOC)
-        , QPrivateSignal
-#endif
-    );
-    void directoryChanged(const QString &path
-#if !defined(Q_QDOC)
-        , QPrivateSignal
-#endif
-    );
+    void fileChanged(const QString &path, QPrivateSignal);
+    void directoryChanged(const QString &path, QPrivateSignal);
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_fileChanged(const QString &path, bool removed))

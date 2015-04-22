@@ -39,7 +39,6 @@
 #include <qcolor.h>
 #include <qdebug.h>
 #include <qrgba64.h>
-#include <private/qdrawingprimitive_sse2_p.h>
 
 class tst_QColor : public QObject
 {
@@ -105,7 +104,6 @@ private slots:
     void achromaticHslHue();
 
     void premultiply();
-    void unpremultiply_sse4();
     void qrgba64();
     void qrgba64Premultiply();
     void qrgba64Equivalence();
@@ -1449,23 +1447,6 @@ void tst_QColor::premultiply()
             QCOMPARE(p, qPremultiply(qUnpremultiply(p)));
         }
     }
-}
-
-void tst_QColor::unpremultiply_sse4()
-{
-    // Tests that qUnpremultiply_sse4 returns the same as qUnpremultiply.
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_1)
-    if (qCpuHasFeature(SSE4_1)) {
-        for (uint a = 0; a < 256; a++) {
-            for (uint c = 0; c <= a; c++) {
-                QRgb p = qRgba(c, a-c, c, a);
-                QCOMPARE(qUnpremultiply_sse4(p), qUnpremultiply(p));
-            }
-        }
-        return;
-    }
-#endif
-    QSKIP("SSE4 not supported on this CPU.");
 }
 
 void tst_QColor::qrgba64()

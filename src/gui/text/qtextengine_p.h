@@ -592,7 +592,6 @@ private:
 
 public:
     bool atWordSeparator(int position) const;
-    bool atSpace(int position) const;
 
     QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0, int from = 0, int count = -1) const;
 

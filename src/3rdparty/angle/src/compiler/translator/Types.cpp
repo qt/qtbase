@@ -178,11 +178,12 @@ size_t TType::getObjectSize() const
 
     if (isArray())
     {
-        size_t arraySize = getArraySize();
-        if (arraySize > INT_MAX / totalSize)
+        // TODO: getArraySize() returns an int, not a size_t
+        size_t currentArraySize = getArraySize();
+        if (currentArraySize > INT_MAX / totalSize)
             totalSize = INT_MAX;
         else
-            totalSize *= arraySize;
+            totalSize *= currentArraySize;
     }
 
     return totalSize;
@@ -194,6 +195,17 @@ bool TStructure::containsArrays() const
     {
         const TType *fieldType = (*mFields)[i]->type();
         if (fieldType->isArray() || fieldType->isStructureContainingArrays())
+            return true;
+    }
+    return false;
+}
+
+bool TStructure::containsSamplers() const
+{
+    for (size_t i = 0; i < mFields->size(); ++i)
+    {
+        const TType *fieldType = (*mFields)[i]->type();
+        if (IsSampler(fieldType->getBasicType()) || fieldType->isStructureContainingSamplers())
             return true;
     }
     return false;

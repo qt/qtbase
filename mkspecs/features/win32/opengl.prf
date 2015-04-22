@@ -21,7 +21,7 @@ wince* {
             QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
         }
         DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
-        contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC
+        contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
         QT_CONFIG -= opengl
     } else {
         !contains(QT_CONFIG, dynamicgl) {

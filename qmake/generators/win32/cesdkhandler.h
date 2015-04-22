@@ -73,10 +73,18 @@ class CeSdkHandler
 {
 public:
     CeSdkHandler();
-    bool parse();
+    bool retrieveAvailableSDKs();
     inline QList<CeSdkInfo> listAll() const { return m_list; }
 private:
-    inline QString fixPaths(QString path) const;
+    void retrieveWEC6n7SDKs();
+    void retrieveWEC2013SDKs();
+    inline QString fixPaths(const QString &path) const;
+    QStringList getMsBuildToolPaths() const;
+    QStringList filterMsBuildToolPaths(const QStringList &paths) const;
+    bool parseMsBuildFile(QFile *file, CeSdkInfo *info);
+    bool retrieveEnvironment(const QStringList &relativePaths,
+                             const QStringList &toolPaths,
+                             CeSdkInfo *info);
     QList<CeSdkInfo> m_list;
     QString m_vcInstallDir;
 };

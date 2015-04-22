@@ -2,8 +2,6 @@ SOURCES = eglfs-brcm.cpp
 
 CONFIG -= qt
 
-INCLUDEPATH += $$[QT_SYSROOT]/opt/vc/include \
-               $$[QT_SYSROOT]/opt/vc/include/interface/vcos/pthreads \
-               $$[QT_SYSROOT]/opt/vc/include/interface/vmcs_host/linux
+INCLUDEPATH += $$QMAKE_INCDIR_EGL
 
-LIBS += -L$$[QT_SYSROOT]/opt/vc/lib -lEGL -lGLESv2 -lbcm_host
+LIBS += -L$$QMAKE_LIBDIR_EGL -lEGL -lGLESv2 -lbcm_host

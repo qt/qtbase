@@ -50,6 +50,8 @@
 
 #include <sys/pps.h>
 
+QT_BEGIN_NAMESPACE
+
 ///////////////////////////////////////////////////////////////////////////////
 static inline void safeAssign(bool *pointer, bool value)
 {
@@ -954,3 +956,5 @@ int QPpsObject::sendMessage(const QString &path, const QByteArray &ppsData)
 
     return EOK;
 }
+
+QT_END_NAMESPACE

@@ -1110,10 +1110,6 @@ bool QProcessPrivate::waitForDeadChild()
     return true;
 }
 
-void QProcessPrivate::_q_notified()
-{
-}
-
 #if defined(QPROCESS_USE_SPAWN)
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
 {

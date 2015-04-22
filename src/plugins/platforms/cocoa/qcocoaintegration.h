@@ -138,6 +138,8 @@ public:
     QCocoaWindow *popPopupWindow();
     QCocoaWindow *activePopupWindow() const;
     QList<QCocoaWindow *> *popupWindowStack();
+
+    void setApplicationIcon(const QIcon &icon) const;
 private:
     static QCocoaIntegration *mInstance;
 

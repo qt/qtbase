@@ -584,6 +584,6 @@ void QClipboard::emitChanged(Mode mode)
     emit changed(mode);
 }
 
-#endif // QT_NO_CLIPBOARD
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_CLIPBOARD

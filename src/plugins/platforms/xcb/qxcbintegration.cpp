@@ -116,6 +116,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
     , m_canGrab(true)
+    , m_defaultVisualId(UINT_MAX)
 {
     m_instance = this;
 
@@ -143,6 +144,12 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
                 noGrabArg = true;
             else if (arg == "-dograb")
                 doGrabArg = true;
+            else if (arg == "-visual" && i < argc - 1) {
+                bool ok = false;
+                m_defaultVisualId = QByteArray(argv[++i]).toUInt(&ok, 0);
+                if (!ok)
+                    m_defaultVisualId = UINT_MAX;
+            }
             else
                 argv[j++] = argv[i];
         }
@@ -167,12 +174,12 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     if (canNotGrabEnv)
         m_canGrab = false;
 
-    m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, displayName);
+    m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, displayName);
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
         qCDebug(lcQpaScreen) << "connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + QLatin1Char(':') + parameters.at(i+1);
-        m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, display.toLatin1().constData());
+        m_connections << new QXcbConnection(m_nativeInterface.data(), m_canGrab, m_defaultVisualId, display.toLatin1().constData());
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());

@@ -190,8 +190,9 @@ sub shouldMasterInclude {
 }
 
 ######################################################################
-# Syntax:  classNames(iheader)
+# Syntax:  classNames(iheader, clean)
 # Params:  iheader, string, filename to parse for classname "symlinks"
+#          (out) clean, boolean, will be set to false if the header isn't clean
 #
 # Purpose: Scans through iheader to find all classnames that should be
 #          synced into library's include structure.
@@ -199,7 +200,8 @@ sub shouldMasterInclude {
 ######################################################################
 sub classNames {
     my @ret;
-    my ($iheader) = @_;
+    my ($iheader, $clean) = @_;
+    $$clean = 1;
 
     my $ihdrbase = basename($iheader);
     my $classname = $classnames{$ihdrbase};
@@ -212,6 +214,7 @@ sub classNames {
             chomp $line;
                         chop $line if ($line =~ /\r$/);
             if($line =~ /^\#/) {
+                $$clean = 0 if ($line =~ m/^#pragma qt_sync_skip_header_check/);
                 return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
                 push(@ret, $1) if($line =~ m/^#pragma qt_class\(([^)]*)\)[\r\n]*$/);
                 $line = 0;
@@ -828,6 +831,7 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
     my $pri_injections = "";
+    my $pri_clean_files = "";
 
     my $libcapitals = uc($lib);
     my $master_contents =
@@ -929,9 +933,10 @@ foreach my $lib (@modules_to_sync) {
                             }
                         }
 
+                        my $clean_header;
                         my $iheader = $subdir . "/" . $header;
                         $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
-                        my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader) : ();
+                        my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader, \$clean_header) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
                             foreach(@classes) {
@@ -980,6 +985,7 @@ foreach my $lib (@modules_to_sync) {
                                     $injection .= ":$class";
                                 }
                                 $pri_install_files.= "$pri_install_iheader ";;
+                                $pri_clean_files .= "$pri_install_iheader " if ($clean_header);
                             }
                             elsif ($qpa_header) {
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
@@ -1120,6 +1126,7 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
+        $headers_pri_contents .= "SYNCQT.CLEAN_HEADER_FILES = $pri_clean_files\n";
         $headers_pri_contents .= "SYNCQT.INJECTIONS = $pri_injections\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
         writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");

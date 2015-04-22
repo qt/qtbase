@@ -90,7 +90,8 @@ public:
         WindowManagement,
         SyncState,
         RasterGLSurface,
-        AllGLFunctionsQueryable
+        AllGLFunctionsQueryable,
+        ApplicationIcon
     };
 
     virtual ~QPlatformIntegration() { }
@@ -146,7 +147,8 @@ public:
         ShowIsMaximized,
         MousePressAndHoldInterval,
         TabFocusBehavior,
-        ReplayMousePressOutsidePopup
+        ReplayMousePressOutsidePopup,
+        ItemViewActivateItemOnSingleClick
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
@@ -169,7 +171,7 @@ public:
 #ifndef QT_NO_OPENGL
     virtual QOpenGLContext::OpenGLModuleType openGLModuleType();
 #endif
-
+    virtual void setApplicationIcon(const QIcon &icon) const;
 protected:
     void screenAdded(QPlatformScreen *screen, bool isPrimary = false);
     void destroyScreen(QPlatformScreen *screen);

@@ -2608,6 +2608,8 @@ QString QWidget::styleSheet() const
 void QWidget::setStyleSheet(const QString& styleSheet)
 {
     Q_D(QWidget);
+    if (data->in_destructor)
+        return;
     d->createExtra();
 
     QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(d->extra->style);

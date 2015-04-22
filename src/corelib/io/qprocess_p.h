@@ -303,7 +303,6 @@ public:
     bool _q_canWrite();
     bool _q_startupNotification();
     bool _q_processDied();
-    void _q_notified();
 
     QProcess::ProcessChannel processChannel;
     QProcess::ProcessChannelMode processChannelMode;
@@ -342,8 +341,7 @@ public:
     int forkfd;
 
 #ifdef Q_OS_WIN
-    // the wonderful windows notifier
-    QTimer *notifier;
+    QTimer *stdinWriteTrigger;
     QWinEventNotifier *processFinishedNotifier;
 #endif
 

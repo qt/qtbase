@@ -53,6 +53,15 @@ QT_BEGIN_NAMESPACE
 */
 QImage qSmoothScaleImage(const QImage &img, int w, int h);
 
+namespace QImageScale {
+    struct QImageScaleInfo {
+        int *xpoints;
+        const unsigned int **ypoints;
+        int *xapoints, *yapoints;
+        int xup_yup;
+    };
+}
+
 QT_END_NAMESPACE
 
 #endif

@@ -141,11 +141,7 @@ public Q_SLOTS:
     void stop();
 
 Q_SIGNALS:
-    void timeout(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void timeout(QPrivateSignal);
 
 protected:
     void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;

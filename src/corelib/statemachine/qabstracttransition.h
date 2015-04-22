@@ -78,21 +78,9 @@ public:
 #endif
 
 Q_SIGNALS:
-    void triggered(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void targetStateChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void targetStatesChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void triggered(QPrivateSignal);
+    void targetStateChanged(QPrivateSignal);
+    void targetStatesChanged(QPrivateSignal);
 
 protected:
     virtual bool eventTest(QEvent *event) = 0;

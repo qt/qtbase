@@ -71,8 +71,94 @@ SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 # Automatically enable precompiled headers for Qt modules,
 # except for Gcc/Windows: Larger precompiled headers crash cc1plus.exe
 # (e.g. with i686-4.8.2-release-posix-dwarf-rt_v3-rev3)
-!gcc|!equals(QMAKE_HOST.os, Windows) {
+!if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
     isEmpty(PRECOMPILED_HEADER): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
 }
 
 CONFIG += qt_install_headers
+
+headersclean:!internal_module {
+    # Make sure that the header compiles with our strict options
+    hcleanDEFS = -DQT_NO_CAST_TO_ASCII=1 \
+                 -DQT_NO_CAST_FROM_ASCII=1 \
+                 -DQT_STRICT_ITERATORS \
+                 -DQT_NO_URL_CAST_FROM_STRING=1 \
+                 -DQT_NO_CAST_FROM_BYTEARRAY=1 \
+                 -DQT_NO_KEYWORDS=1 \
+                 -DQT_USE_FAST_CONCATENATION \
+                 -DQT_USE_FAST_OPERATOR_PLUS \
+                 -Dsignals=int \
+                 -Dslots=int \
+                 -Demit=public: \
+                 -Dforeach=public: \
+                 -Dforever=public:
+
+    gcc {
+        # Turn on some extra warnings not found in -Wall -Wextra.
+        # Common to GCC, Clang and ICC (and other compilers that masquerade as GCC):
+        hcleanFLAGS = -Wall -Wextra -Werror \
+                      -Woverloaded-virtual -Wshadow -Wundef \
+                      -Wnon-virtual-dtor -Wpointer-arith -Wformat-security \
+                      -Wno-long-long -Wno-variadic-macros -pedantic-errors
+
+        intel_icc {
+            # these warnings are disabled because explicit constructors with zero or
+            # multiple arguments are permitted in C++11:
+            # 2304: non-explicit constructor with single argument may cause implicit type conversion
+            # 2305: declaration of 'explicit' constructor without a single argument is redundant
+            hcleanFLAGS += -wd2304,2305
+            greaterThan(QT_ICC_MAJOR_VERSION, 13) {
+                # ICC 14+ has a bug with -Wshadow, emitting it for cases where there's no shadowing
+                # (issue ID 0000698329, task DPD200245740)
+                hcleanFLAGS -= -Wshadow
+            }
+        } else {
+            hcleanFLAGS += -Wchar-subscripts
+
+            !contains(QT_ARCH, arm):!contains(QT_ARCH, mips): \
+                hcleanFLAGS += -Wcast-align
+        }
+
+        # Use strict mode C++11 or C++98, with no GNU extensions (see -pedantic-errors above).
+        # The module might set CONFIG += c++11, but it might also change QMAKE_CXXFLAGS_CXX11
+        # or the module (or the mkspec) can set the C++11 flag on QMAKE_CXXFLAGS
+        # (or QMAKE_CXXFLAGS_{RELEASE,DEBUG} but that's unlikely).
+        c++11:contains(QMAKE_CXXFLAGS_CXX11, -std=gnu++11) {
+            hcleanFLAGS += -std=c++11
+        } else: contains(QMAKE_CXXFLAGS, -std=gnu++11) {
+            hcleanFLAGS += -std=c++11
+        } else: c++11:contains(QMAKE_CXXFLAGS_CXX11, -std=gnu++0x) {
+            hcleanFLAGS += -std=c++0x
+        } else: contains(QMAKE_CXXFLAGS, -std=gnu++0x) {
+            hcleanFLAGS += -std=c++0x
+        } else: !c++11:!contains(QMAKE_CXXFLAGS, -std=c++0x):!contains(QMAKE_CXXFLAGS, -std=c++11) {
+            hcleanFLAGS += -std=c++98
+        }
+
+        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+    } else: win32-msvc2013 {
+        # 4180: qualifier applied to function type has no meaning; ignored
+        # 4458: declaration of 'identifier' hides class member
+        # -Za enables strict standards behavior, but we can't add it because
+        # <windows.h> and <GL.h> violate the standards.
+        hcleanFLAGS = -WX -W3 -wd4180 -wd4458
+        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
+                        $$[QT_INSTALL_DATA/src]/mkspecs/features/data/dummy.cpp
+    }
+
+    !isEmpty(hcleanCOMMAND):if(!contains(QT_CONFIG, debug_and_release)|CONFIG(release, debug|release)) {
+        header_check.dependency_type = TYPE_C
+        header_check.CONFIG += no_link
+        header_check.output = ${QMAKE_VAR_OBJECTS_DIR}header_${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+        header_check.input = SYNCQT.CLEAN_HEADER_FILES
+        header_check.variable_out = PRE_TARGETDEPS
+        header_check.name = headercheck ${QMAKE_FILE_IN}
+        header_check.commands = $$hcleanCOMMAND
+        silent:header_check.commands = @echo compiling[header] ${QMAKE_FILE_IN} && $$hcleanCOMMAND
+        QMAKE_EXTRA_COMPILERS += header_check
+        SYNCQT.CLEAN_HEADER_FILES -= $$HEADERSCLEAN_EXCLUDE
+    }
+    unset(hcleanCOMMAND)
+    unset(hcleanFLAGS)
+    unset(hcleanDEFS)
+}

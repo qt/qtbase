@@ -63,8 +63,13 @@ QT_BEGIN_NAMESPACE
 template <typename T> class QVector;
 template <typename T> class QSet;
 
-template <typename T> struct QListSpecialMethods { };
+template <typename T> struct QListSpecialMethods
+{
+protected:
+    ~QListSpecialMethods() {}
+};
 template <> struct QListSpecialMethods<QByteArray>;
+template <> struct QListSpecialMethods<QString>;
 
 struct Q_CORE_EXPORT QListData {
     // tags for tag-dispatching of QList implementations,

@@ -55,6 +55,10 @@ class QByteArrayList : public QList<QByteArray>
 template <> struct QListSpecialMethods<QByteArray>
 #endif
 {
+#ifndef Q_QDOC
+protected:
+    ~QListSpecialMethods() {}
+#endif
 public:
     inline QByteArray join() const
     { return QtPrivate::QByteArrayList_join(self(), 0, 0); }

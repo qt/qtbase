@@ -183,7 +183,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     given moment then you should use a Qt::TimeSpec of Qt::LocalTime.
 
     The method systemTimeZoneId() returns the current system IANA time zone
-    ID which on OSX and Linux will always be correct.  On Windows this ID is
+    ID which on Unix-like systems will always be correct.  On Windows this ID is
     translated from the Windows system ID using an internal translation
     table and the user's selected country.  As a consequence there is a small
     chance any Windows install may have IDs not known by Qt, in which case

@@ -74,16 +74,34 @@ private:
 class Q_GUI_EXPORT QOpenGLConfig
 {
 public:
-    struct Gpu {
+    struct Q_GUI_EXPORT Gpu {
         Gpu() : vendorId(0), deviceId(0) {}
-        bool isValid() const { return deviceId; }
+        bool isValid() const { return deviceId || !glVendor.isEmpty(); }
         bool equals(const Gpu &other) const {
-            return vendorId == other.vendorId && deviceId == other.deviceId && driverVersion == other.driverVersion;
+            return vendorId == other.vendorId && deviceId == other.deviceId && driverVersion == other.driverVersion
+                && glVendor == other.glVendor;
         }
 
         uint vendorId;
         uint deviceId;
         QVersionNumber driverVersion;
+        QByteArray glVendor;
+
+        static Gpu fromDevice(uint vendorId, uint deviceId, QVersionNumber driverVersion) {
+            Gpu gpu;
+            gpu.vendorId = vendorId;
+            gpu.deviceId = deviceId;
+            gpu.driverVersion = driverVersion;
+            return gpu;
+        }
+
+        static Gpu fromGLVendor(const QByteArray &glVendor) {
+            Gpu gpu;
+            gpu.glVendor = glVendor;
+            return gpu;
+        }
+
+        static Gpu fromContext();
     };
 
     static QSet<QString> gpuFeatures(const Gpu &gpu,

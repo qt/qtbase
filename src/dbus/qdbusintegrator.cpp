@@ -554,7 +554,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
 bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
 {
     const QDBusSpyHookList *list = qDBusSpyHookList();
-    for (int i = 0; i < list->size(); ++i) {
+    for (int i = 0; list && i < list->size(); ++i) {
         qDBusDebug() << "calling the message spy hook";
         (*(*list)[i])(amsg);
     }
@@ -1037,6 +1037,15 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
         qWarning("QDBusConnection(name=\"%s\")'s last reference in not in its creation thread! "
                  "Timer and socket errors will follow and the program will probably crash",
                  qPrintable(name));
+
+    if (mode == ClientMode) {
+        // the bus service object holds a reference back to us;
+        // we need to destroy it before we finish destroying ourselves
+        Q_ASSERT(ref.load() == 0);
+        QObject *obj = (QObject *)busService;
+        disconnect(obj, Q_NULLPTR, this, Q_NULLPTR);
+        delete obj;
+    }
 
     closeConnection();
     rootNode.children.clear();  // free resources

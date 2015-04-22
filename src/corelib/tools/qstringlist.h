@@ -57,6 +57,10 @@ class QStringList : public QList<QString>
 template <> struct QListSpecialMethods<QString>
 #endif
 {
+#ifndef Q_QDOC
+protected:
+    ~QListSpecialMethods() {}
+#endif
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
     inline int removeDuplicates();

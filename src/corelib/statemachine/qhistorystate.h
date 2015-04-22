@@ -65,16 +65,8 @@ public:
     void setHistoryType(HistoryType type);
 
 Q_SIGNALS:
-    void defaultStateChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void historyTypeChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void defaultStateChanged(QPrivateSignal);
+    void historyTypeChanged(QPrivateSignal);
 
 protected:
     void onEntry(QEvent *event) Q_DECL_OVERRIDE;

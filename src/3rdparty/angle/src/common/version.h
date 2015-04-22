@@ -1,4 +1,13 @@
-#include "../commit.h"
+//
+// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+
+#ifndef COMMON_VERSION_H_
+#define COMMON_VERSION_H_
+
+#include "id/commit.h"
 
 #define ANGLE_MAJOR_VERSION 2
 #define ANGLE_MINOR_VERSION 1
@@ -10,3 +19,5 @@
     ANGLE_MACRO_STRINGIFY(ANGLE_MAJOR_VERSION) "." \
     ANGLE_MACRO_STRINGIFY(ANGLE_MINOR_VERSION) "." \
     ANGLE_COMMIT_HASH
+
+#endif // COMMON_VERSION_H_

@@ -106,16 +106,8 @@ public:
     static void usleep(unsigned long);
 
 Q_SIGNALS:
-    void started(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void finished(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void started(QPrivateSignal);
+    void finished(QPrivateSignal);
 
 protected:
     virtual void run();

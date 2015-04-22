@@ -115,26 +115,10 @@ public Q_SLOTS:
     void toggleDirection();
 
 Q_SIGNALS:
-    void valueChanged(qreal x
-#if !defined(Q_QDOC)
-      , QPrivateSignal
-#endif
-    );
-    void frameChanged(int
-#if !defined(Q_QDOC)
-      , QPrivateSignal
-#endif
-    );
-    void stateChanged(QTimeLine::State newState
-#if !defined(Q_QDOC)
-      , QPrivateSignal
-#endif
-    );
-    void finished(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void valueChanged(qreal x, QPrivateSignal);
+    void frameChanged(int, QPrivateSignal);
+    void stateChanged(QTimeLine::State newState, QPrivateSignal);
+    void finished(QPrivateSignal);
 
 protected:
     void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;

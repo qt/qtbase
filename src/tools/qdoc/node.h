@@ -404,7 +404,7 @@ public:
     void printChildren(const QString& title);
     void addChild(Node* child);
     void removeChild(Node* child);
-    virtual void setOutputSubdirectory(const QString& t);
+    void setOutputSubdirectory(const QString& t) Q_DECL_OVERRIDE;
 
 protected:
     Aggregate(NodeType type, Aggregate* parent, const QString& name);
@@ -922,6 +922,8 @@ public:
     virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
         return parent()->logicalModuleIdentifier();
     }
+    bool isPrivateSignal() const { return privateSignal_; }
+    void setPrivateSignal() { privateSignal_ = true; }
 
     void debug() const;
 
@@ -940,6 +942,7 @@ private:
     bool overload_ : 1;
     bool reimplemented_: 1;
     bool attached_: 1;
+    bool privateSignal_: 1;
     QList<Parameter> parameters_;
     const FunctionNode* reimplementedFrom_;
     const PropertyNode* associatedProperty_;

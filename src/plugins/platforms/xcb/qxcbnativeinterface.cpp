@@ -361,6 +361,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannelIdentifier())
         return QFunctionPointer(QXcbIntegrationFunctions::XEmbedSystemTrayVisualHasAlphaChannel(QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel));
 
+    if (function == QXcbWindowFunctions::visualIdIdentifier()) {
+        return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
+    }
     return Q_NULLPTR;
 }
 

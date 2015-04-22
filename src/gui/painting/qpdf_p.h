@@ -58,8 +58,6 @@
 #include "private/qfontsubset_p.h"
 #include "qpagelayout.h"
 
-// #define USE_NATIVE_GRADIENTS
-
 QT_BEGIN_NAMESPACE
 
 const char *qt_real_to_string(qreal val, char *buf);
@@ -116,9 +114,6 @@ namespace QPdf {
     QByteArray generateMatrix(const QTransform &matrix);
     QByteArray generateDashes(const QPen &pen);
     QByteArray patternForBrush(const QBrush &b);
-#ifdef USE_NATIVE_GRADIENTS
-    QByteArray generateLinearGradientShader(const QLinearGradient *lg, const QPointF *page_rect, bool alpha = false);
-#endif
 
     struct Stroker {
         Stroker();
@@ -276,9 +271,11 @@ public:
     QPageLayout m_pageLayout;
 
 private:
-#ifdef USE_NATIVE_GRADIENTS
-    int gradientBrush(const QBrush &b, const QMatrix &matrix, int *gStateObject);
-#endif
+    int gradientBrush(const QBrush &b, const QTransform &matrix, int *gStateObject);
+    int generateGradientShader(const QGradient *gradient, const QTransform &matrix, bool alpha = false);
+    int generateLinearGradientShader(const QLinearGradient *lg, const QTransform &matrix, bool alpha);
+    int generateRadialGradientShader(const QRadialGradient *gradient, const QTransform &matrix, bool alpha);
+    int createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha);
 
     void writeInfo();
     void writePageRoot();

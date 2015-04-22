@@ -1142,6 +1142,9 @@ void QTextDocument::setMetaInformation(MetaInformation info, const QString &stri
     Returns the plain text contained in the document. If you want
     formatting information use a QTextCursor instead.
 
+    \note Embedded objects, such as images, are represented by a
+    Unicode value U+FFFC (OBJECT REPLACEMENT CHARACTER).
+
     \sa toHtml()
 */
 QString QTextDocument::toPlainText() const

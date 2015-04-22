@@ -37,6 +37,8 @@
 #include <QDebug>
 #include <QVariant>
 
+QT_BEGIN_NAMESPACE
+
 ///////////////////////////
 //
 // QPpsAttributePrivate
@@ -298,3 +300,5 @@ QDebug operator<<(QDebug dbg, const QPpsAttribute &attribute)
 
     return dbg;
 }
+
+QT_END_NAMESPACE

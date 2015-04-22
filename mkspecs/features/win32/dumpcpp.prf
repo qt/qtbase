@@ -19,3 +19,17 @@ dumpcpp_impl.name = CPP
 dumpcpp_impl.depends = ${QMAKE_FILE_BASE}.h
 
 QMAKE_EXTRA_COMPILERS += dumpcpp_impl
+
+
+# Create dependencies from every object file to our generated header files.
+if(isEmpty(BUILDS)|build_pass):have_target:!contains(TEMPLATE, vc.*) {
+    for(tlb, TYPELIBS) {
+        hdr = $$basename(tlb)
+        hdr = $$section(hdr, ., 0, -2).h
+        TYPELIB_HEADERS += $$hdr
+    }
+
+    objtgt.target = $(OBJECTS)
+    objtgt.depends = $$TYPELIB_HEADERS
+    QMAKE_EXTRA_TARGETS += objtgt
+}

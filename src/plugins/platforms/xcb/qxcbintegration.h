@@ -39,6 +39,8 @@
 
 #include "qxcbexport.h"
 
+#include <xcb/xcb.h>
+
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
@@ -123,6 +125,7 @@ private:
     mutable QByteArray m_wmClass;
     const char *m_instanceName;
     bool m_canGrab;
+    xcb_visualid_t m_defaultVisualId;
 
     static QXcbIntegration *m_instance;
 };

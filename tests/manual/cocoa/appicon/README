@@ -1,0 +1,3 @@
+Test for checking that the dock icon is changed when
+QGuiApplication::setWindowIcon() is called. Clicking the
+buttong should change the entry in the dock to a red icon.

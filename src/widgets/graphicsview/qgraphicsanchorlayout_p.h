@@ -251,9 +251,7 @@ struct AnchorVertexPair : public AnchorVertex {
 #ifdef QT_DEBUG
 inline QString AnchorVertex::toString() const
 {
-    if (!this) {
-        return QLatin1String("NULL");
-    } else if (m_type == Pair) {
+    if (m_type == Pair) {
         const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
         return QString::fromLatin1("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
     } else if (!m_item) {

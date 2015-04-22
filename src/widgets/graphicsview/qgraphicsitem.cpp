@@ -11290,7 +11290,7 @@ static void formatGraphicsItemHelper(QDebug debug, const QGraphicsItem *item)
     debug << ", pos=";
     QtDebugUtils::formatQPoint(debug, item->pos());
     if (const qreal z = item->zValue())
-        debug << ", z=" << item->zValue();
+        debug << ", z=" << z;
     if (item->flags())
         debug <<  ", flags=" << item->flags();
 }

@@ -429,11 +429,13 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_compiler(struct sljit_compiler *compile
    these checks increases the performance of the compiling process. */
 static SLJIT_INLINE sljit_si sljit_get_compiler_error(struct sljit_compiler *compiler) { return compiler->error; }
 
-/* Sets the compiler error code to SLJIT_ERR_ALLOC_FAILED. After
-   the error code is set, the compiler behaves as if itself detected
-   an allocation failure. This can greatly simplify error management,
-   since only the compiler needs to be checked after compilation. */
-static SLJIT_INLINE void sljit_set_compiler_memory_error(struct sljit_compiler *compiler) { compiler->error = SLJIT_ERR_ALLOC_FAILED; }
+/* Sets the compiler error code to SLJIT_ERR_ALLOC_FAILED except
+   if an error was detected before. After the error code is set
+   the compiler behaves as if the allocation failure happened
+   during an sljit function call. This can greatly simplify error
+   checking, since only the compiler status needs to be checked
+   after the compilation. */
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_compiler_memory_error(struct sljit_compiler *compiler);
 
 /*
    Allocate a small amount of memory. The size must be <= 64 bytes on 32 bit,

@@ -49,6 +49,8 @@
 #define qEventDispatcherDebug QT_NO_QDEBUG_MACRO()
 #endif
 
+QT_BEGIN_NAMESPACE
+
 class BpsChannelScopeSwitcher
 {
 public:

@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include "compiler/translator/Intermediate.h"
-#include "compiler/translator/RemoveTree.h"
 #include "compiler/translator/SymbolTable.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -46,47 +45,6 @@ TIntermSymbol *TIntermediate::addSymbol(
 TIntermTyped *TIntermediate::addBinaryMath(
     TOperator op, TIntermTyped *left, TIntermTyped *right, const TSourceLoc &line)
 {
-    switch (op)
-    {
-      case EOpEqual:
-      case EOpNotEqual:
-        if (left->isArray())
-            return NULL;
-        break;
-      case EOpLessThan:
-      case EOpGreaterThan:
-      case EOpLessThanEqual:
-      case EOpGreaterThanEqual:
-        if (left->isMatrix() || left->isArray() || left->isVector() ||
-            left->getBasicType() == EbtStruct)
-        {
-            return NULL;
-        }
-        break;
-      case EOpLogicalOr:
-      case EOpLogicalXor:
-      case EOpLogicalAnd:
-        if (left->getBasicType() != EbtBool ||
-            left->isMatrix() || left->isArray() || left->isVector())
-        {
-            return NULL;
-        }
-        break;
-      case EOpAdd:
-      case EOpSub:
-      case EOpDiv:
-      case EOpMul:
-        if (left->getBasicType() == EbtStruct || left->getBasicType() == EbtBool)
-            return NULL;
-      default:
-        break;
-    }
-
-    if (left->getBasicType() != right->getBasicType())
-    {
-        return NULL;
-    }
-
     //
     // Need a new node holding things together then.  Make
     // one and promote it to the right type.
@@ -169,45 +127,8 @@ TIntermTyped *TIntermediate::addIndex(
 // Returns the added node.
 //
 TIntermTyped *TIntermediate::addUnaryMath(
-    TOperator op, TIntermNode *childNode, const TSourceLoc &line)
+    TOperator op, TIntermTyped *child, const TSourceLoc &line, const TType *funcReturnType)
 {
-    TIntermUnary *node;
-    TIntermTyped *child = childNode->getAsTyped();
-
-    if (child == NULL)
-    {
-        mInfoSink.info.message(EPrefixInternalError, line,
-                               "Bad type in AddUnaryMath");
-        return NULL;
-    }
-
-    switch (op)
-    {
-      case EOpLogicalNot:
-        if (child->getType().getBasicType() != EbtBool ||
-            child->getType().isMatrix() ||
-            child->getType().isArray() ||
-            child->getType().isVector())
-        {
-            return NULL;
-        }
-        break;
-
-      case EOpPostIncrement:
-      case EOpPreIncrement:
-      case EOpPostDecrement:
-      case EOpPreDecrement:
-      case EOpNegative:
-      case EOpPositive:
-        if (child->getType().getBasicType() == EbtStruct ||
-            child->getType().isArray())
-        {
-            return NULL;
-        }
-      default:
-        break;
-    }
-
     TIntermConstantUnion *childTempConstant = 0;
     if (child->getAsConstantUnion())
         childTempConstant = child->getAsConstantUnion();
@@ -215,12 +136,10 @@ TIntermTyped *TIntermediate::addUnaryMath(
     //
     // Make a new node for the operator.
     //
-    node = new TIntermUnary(op);
+    TIntermUnary *node = new TIntermUnary(op);
     node->setLine(line);
     node->setOperand(child);
-
-    if (!node->promote(mInfoSink))
-        return 0;
+    node->promote(funcReturnType);
 
     if (childTempConstant)
     {
@@ -423,6 +342,24 @@ TIntermTyped *TIntermediate::addSelection(
     return node;
 }
 
+TIntermSwitch *TIntermediate::addSwitch(
+    TIntermTyped *init, TIntermAggregate *statementList, const TSourceLoc &line)
+{
+    TIntermSwitch *node = new TIntermSwitch(init, statementList);
+    node->setLine(line);
+
+    return node;
+}
+
+TIntermCase *TIntermediate::addCase(
+    TIntermTyped *condition, const TSourceLoc &line)
+{
+    TIntermCase *node = new TIntermCase(condition);
+    node->setLine(line);
+
+    return node;
+}
+
 //
 // Constant terminal nodes.  Has a union that contains bool, float or int constants
 //
@@ -509,13 +446,4 @@ bool TIntermediate::postProcess(TIntermNode *root)
         aggRoot->setOp(EOpSequence);
 
     return true;
-}
-
-//
-// This deletes the tree.
-//
-void TIntermediate::remove(TIntermNode *root)
-{
-    if (root)
-        RemoveAllTreeNodes(root);
 }

@@ -70,6 +70,7 @@ bool QMakeProject::read(const QString &project, LoadFlags what)
     QString absproj = (project == QLatin1String("-"))
             ? QLatin1String("(stdin)")
             : QDir::cleanPath(QDir(qmake_getpwd()).absoluteFilePath(project));
+    m_projectDir = QFileInfo(absproj).path();
     return boolRet(evaluateFile(absproj, QMakeHandler::EvalProjectFile, what));
 }
 

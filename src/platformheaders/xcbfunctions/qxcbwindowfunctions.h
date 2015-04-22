@@ -96,6 +96,17 @@ public:
     {
         return QXcbFunctionsHelper::callPlatformFunction<QRect, SystemTrayWindowGlobalGeometry, const QWindow *>(systemTrayWindowGlobalGeometryIdentifier(), window);
     }
+
+    typedef uint (*VisualId)(QWindow *window);
+    static const QByteArray visualIdIdentifier() { return QByteArrayLiteral("XcbVisualId"); }
+
+    static uint visualId(QWindow *window)
+    {
+        QXcbWindowFunctions::VisualId func = reinterpret_cast<VisualId>(QGuiApplication::platformFunction(visualIdIdentifier()));
+        if (func)
+            return func(window);
+        return UINT_MAX;
+    }
 };
 
 

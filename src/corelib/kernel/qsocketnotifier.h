@@ -59,11 +59,7 @@ public Q_SLOTS:
     void setEnabled(bool);
 
 Q_SIGNALS:
-    void activated(int socket
-#if !defined(Q_QDOC)
-    , QPrivateSignal
-#endif
-    );
+    void activated(int socket, QPrivateSignal);
 
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;

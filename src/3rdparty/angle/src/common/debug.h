@@ -9,8 +9,9 @@
 #ifndef COMMON_DEBUG_H_
 #define COMMON_DEBUG_H_
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string>
 
 #include "common/angleutils.h"
 
@@ -20,50 +21,71 @@
 
 namespace gl
 {
-    // Outputs text to the debugging log, or the debugging window
-    void trace(bool traceInDebugOnly, const char *format, ...);
 
-    // Returns whether D3DPERF is active.
-    bool perfActive();
+enum MessageType
+{
+    MESSAGE_TRACE,
+    MESSAGE_FIXME,
+    MESSAGE_ERR,
+    MESSAGE_EVENT,
+};
 
-    // Pairs a D3D begin event with an end event.
-    class ScopedPerfEventHelper
-    {
-      public:
-        ScopedPerfEventHelper(const char* format, ...);
-        ~ScopedPerfEventHelper();
+// Outputs text to the debugging log, or the debugging window
+void trace(bool traceInDebugOnly, MessageType messageType, const char *format, ...);
 
-      private:
-        DISALLOW_COPY_AND_ASSIGN(ScopedPerfEventHelper);
-    };
+// Pairs a D3D begin event with an end event.
+class ScopedPerfEventHelper : angle::NonCopyable
+{
+  public:
+    ScopedPerfEventHelper(const char* format, ...);
+    ~ScopedPerfEventHelper();
+};
 
-    void InitializeDebugAnnotations();
-    void UninitializeDebugAnnotations();
+// Wraps the D3D9/D3D11 debug annotation functions.
+class DebugAnnotator : angle::NonCopyable
+{
+  public:
+    DebugAnnotator() { };
+    virtual ~DebugAnnotator() { };
+    virtual void beginEvent(const std::wstring &eventName) = 0;
+    virtual void endEvent() = 0;
+    virtual void setMarker(const std::wstring &markerName) = 0;
+    virtual bool getStatus() = 0;
+};
+
+void InitializeDebugAnnotations(DebugAnnotator *debugAnnotator);
+void UninitializeDebugAnnotations();
+bool DebugAnnotationsActive();
+
 }
 
-// A macro to output a trace of a function call and its arguments to the debugging log
 #if defined(ANGLE_ENABLE_DEBUG_TRACE) || defined(ANGLE_ENABLE_DEBUG_ANNOTATIONS)
-#define TRACE(message, ...) gl::trace(true, "trace: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define ANGLE_TRACE_ENABLED
+#endif
+
+// A macro to output a trace of a function call and its arguments to the debugging log
+#if defined(ANGLE_TRACE_ENABLED)
+#define TRACE(message, ...) gl::trace(true, gl::MESSAGE_TRACE, "trace: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
 #define TRACE(message, ...) (void(0))
 #endif
 
 // A macro to output a function call and its arguments to the debugging log, to denote an item in need of fixing.
-#if defined(ANGLE_ENABLE_DEBUG_TRACE) || defined(ANGLE_ENABLE_DEBUG_ANNOTATIONS)
-#define FIXME(message, ...) gl::trace(false, "fixme: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#if defined(ANGLE_TRACE_ENABLED)
+#define FIXME(message, ...) gl::trace(false, gl::MESSAGE_FIXME, "fixme: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
 #define FIXME(message, ...) (void(0))
 #endif
 
 // A macro to output a function call and its arguments to the debugging log, in case of error.
-#if defined(ANGLE_ENABLE_DEBUG_TRACE) || defined(ANGLE_ENABLE_DEBUG_ANNOTATIONS)
-#define ERR(message, ...) gl::trace(false, "err: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#if defined(ANGLE_TRACE_ENABLED)
+#define ERR(message, ...) gl::trace(false, gl::MESSAGE_ERR, "err: %s(%d): " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #else
 #define ERR(message, ...) (void(0))
 #endif
 
 // A macro to log a performance event around a scope.
-#if defined(ANGLE_ENABLE_DEBUG_TRACE) || defined(ANGLE_ENABLE_DEBUG_ANNOTATIONS)
+#if defined(ANGLE_TRACE_ENABLED)
 #if defined(_MSC_VER)
 #define EVENT(message, ...) gl::ScopedPerfEventHelper scopedPerfEventHelper ## __LINE__("%s" message "\n", __FUNCTION__, __VA_ARGS__);
 #else
@@ -71,6 +93,10 @@ namespace gl
 #endif // _MSC_VER
 #else
 #define EVENT(message, ...) (void(0))
+#endif
+
+#if defined(ANGLE_TRACE_ENABLED)
+#undef ANGLE_TRACE_ENABLED
 #endif
 
 // A macro asserting a condition and outputting failures to the debug log
@@ -129,15 +155,5 @@ namespace gl
 #else
 #define HAS_DYNAMIC_TYPE(type, obj) true
 #endif
-
-// A macro functioning as a compile-time assert to validate constant conditions
-#if (defined(_MSC_VER) && _MSC_VER >= 1600) || (defined(__GNUC__) && (__GNUC__ > 4 || __GNUC_MINOR__ >= 3))
-#define META_ASSERT_MSG(condition, msg) static_assert(condition, msg)
-#else
-#define META_ASSERT_CONCAT(a, b) a ## b
-#define META_ASSERT_CONCAT2(a, b) META_ASSERT_CONCAT(a, b)
-#define META_ASSERT_MSG(condition, msg) typedef int META_ASSERT_CONCAT2(COMPILE_TIME_ASSERT_, __LINE__)[static_cast<bool>(condition)?1:-1]
-#endif
-#define META_ASSERT(condition) META_ASSERT_MSG(condition, "compile time assertion failed.")
 
 #endif   // COMMON_DEBUG_H_

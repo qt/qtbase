@@ -213,7 +213,7 @@ void Generator::appendSortedNames(Text& text, const ClassNode* cn, const QList<R
 
     foreach (const QString &className, classNames) {
         text << classMap[className];
-        text << separator(index++, classNames.count());
+        text << comma(index++, classNames.count());
     }
 }
 
@@ -236,7 +236,7 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
 
     foreach (const QString &name, names) {
         text << classMap[name];
-        text << separator(index++, names.count());
+        text << comma(index++, names.count());
     }
 }
 
@@ -1241,6 +1241,23 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
     default:
         break;
     }
+    generateText(text, node, marker);
+}
+
+/*!
+  Generates a bold line that says:
+  "The signal is private, not emitted by the user.
+  The function is public so the user can pass it to connect()."
+ */
+void Generator::generatePrivateSignalNote(const Node* node, CodeMarker* marker)
+{
+    Text text;
+    text << Atom::ParaLeft
+         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
+         << "Note: "
+         << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
+         << "This is a private signal. It can be used in signal connections but cannot be emitted by the user."
+         << Atom::ParaRight;
     generateText(text, node, marker);
 }
 
