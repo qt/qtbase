@@ -248,6 +248,7 @@ private slots:
     void qtbug_44963();
     void qtbug_44783();
     void internalTransition();
+    void conflictingTransition();
 };
 
 class TestState : public QState
@@ -6380,6 +6381,69 @@ void tst_QStateMachine::internalTransition()
     TEST_ACTIVE_CHANGED(s11, 3);
     TEST_ACTIVE_CHANGED(s1, 1); // external transitions will return 3, internal transitions should return 1.
     TEST_ACTIVE_CHANGED(s, 1);
+}
+
+void tst_QStateMachine::conflictingTransition()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState b(QState::ParallelStates, &machine);
+        QState c(&b);
+        QState d(QState::ParallelStates, &b);
+            QState e(&d);
+                QState e1(&e);
+                QState e2(&e);
+            QState f(&d);
+                QState f1(&f);
+                QState f2(&f);
+    QState a1(&machine);
+
+    machine.setInitialState(&b);
+    e.setInitialState(&e1);
+    f.setInitialState(&f1);
+    c.addTransition(&emitter, SIGNAL(signalWithNoArg()), &a1)->setObjectName("c->a1");
+    e1.addTransition(&emitter, SIGNAL(signalWithNoArg()), &e2)->setObjectName("e1->e2");
+    f1.addTransition(&emitter, SIGNAL(signalWithNoArg()), &f2)->setObjectName("f1->f2");
+
+    b.setObjectName("b");
+    c.setObjectName("c");
+    d.setObjectName("d");
+    e.setObjectName("e");
+    e1.setObjectName("e1");
+    e2.setObjectName("e2");
+    f.setObjectName("f");
+    f1.setObjectName("f1");
+    f2.setObjectName("f2");
+    a1.setObjectName("a1");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&b), true);
+    QTRY_COMPARE(machine.configuration().contains(&c), true);
+    QTRY_COMPARE(machine.configuration().contains(&d), true);
+    QTRY_COMPARE(machine.configuration().contains(&e), true);
+    QTRY_COMPARE(machine.configuration().contains(&e1), true);
+    QTRY_COMPARE(machine.configuration().contains(&e2), false);
+    QTRY_COMPARE(machine.configuration().contains(&f), true);
+    QTRY_COMPARE(machine.configuration().contains(&f1), true);
+    QTRY_COMPARE(machine.configuration().contains(&f2), false);
+    QTRY_COMPARE(machine.configuration().contains(&a1), false);
+
+    emitter.emitSignalWithNoArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&b), true);
+    QTRY_COMPARE(machine.configuration().contains(&c), true);
+    QTRY_COMPARE(machine.configuration().contains(&d), true);
+    QTRY_COMPARE(machine.configuration().contains(&e), true);
+    QTRY_COMPARE(machine.configuration().contains(&e1), false);
+    QTRY_COMPARE(machine.configuration().contains(&e2), true);
+    QTRY_COMPARE(machine.configuration().contains(&f), true);
+    QTRY_COMPARE(machine.configuration().contains(&f1), false);
+    QTRY_COMPARE(machine.configuration().contains(&f2), true);
+    QTRY_COMPARE(machine.configuration().contains(&a1), false);
+
+    QVERIFY(machine.isRunning());
 }
 
 QTEST_MAIN(tst_QStateMachine)

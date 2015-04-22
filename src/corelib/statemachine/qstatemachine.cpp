@@ -299,6 +299,17 @@ static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbs
     return false;
 }
 
+static int descendantDepth(const QAbstractState *state, const QAbstractState *ancestor)
+{
+    int depth = 0;
+    for (const QAbstractState *it = state; it != 0; it = it->parentState()) {
+        if (it == ancestor)
+            break;
+        ++depth;
+    }
+    return depth;
+}
+
 /* The function as described in http://www.w3.org/TR/2014/WD-scxml-20140529/ :
 
 function getProperAncestors(state1, state2)
@@ -451,10 +462,25 @@ static int indexOfDescendant(QState *s, QAbstractState *desc)
 bool QStateMachinePrivate::transitionStateEntryLessThan(QAbstractTransition *t1, QAbstractTransition *t2)
 {
     QState *s1 = t1->sourceState(), *s2 = t2->sourceState();
-    if (s1 == s2)
-        return QStatePrivate::get(s1)->transitions().indexOf(t1) < QStatePrivate::get(s2)->transitions().indexOf(t2);
-    else
-        return stateEntryLessThan(t1->sourceState(), t2->sourceState());
+    if (s1 == s2) {
+        QList<QAbstractTransition*> transitions = QStatePrivate::get(s1)->transitions();
+        return transitions.indexOf(t1) < transitions.indexOf(t2);
+    } else if (isDescendant(s1, s2)) {
+        return true;
+    } else if (isDescendant(s2, s1)) {
+        return false;
+    } else {
+        Q_ASSERT(s1->machine() != 0);
+        QStateMachinePrivate *mach = QStateMachinePrivate::get(s1->machine());
+        QState *lca = mach->findLCA(QList<QAbstractState*>() << s1 << s2);
+        Q_ASSERT(lca != 0);
+        int s1Depth = descendantDepth(s1, lca);
+        int s2Depth = descendantDepth(s2, lca);
+        if (s1Depth == s2Depth)
+            return (indexOfDescendant(lca, s1) < indexOfDescendant(lca, s2));
+        else
+            return s1Depth > s2Depth;
+    }
 }
 
 bool QStateMachinePrivate::stateEntryLessThan(QAbstractState *s1, QAbstractState *s2)
@@ -594,7 +620,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
 {
     Q_ASSERT(cache);
 
-    if (enabledTransitions.size() == 1)
+    if (enabledTransitions.size() < 2)
         return; // There is no transition to conflict with.
 
     QList<QAbstractTransition*> filteredTransitions;
@@ -2081,6 +2107,7 @@ void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guil
     Q_ASSERT(guiltyState);
 
 #ifdef QSTATEMACHINE_DEBUG
+    Q_Q(QStateMachine);
     qDebug() << q << ": emitting finished signal for" << forState;
 #endif
 
