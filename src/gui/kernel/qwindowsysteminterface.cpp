@@ -48,6 +48,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
+QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 
 //------------------------------------------------------------
 //
@@ -605,12 +606,30 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
                 QWindowSystemInterfacePrivate::getWindowSystemEvent();
         if (!event)
             break;
-        nevents++;
-        QGuiApplicationPrivate::processWindowSystemEvent(event);
+
+        if (QWindowSystemInterfacePrivate::eventHandler) {
+            if (QWindowSystemInterfacePrivate::eventHandler->sendEvent(event))
+                nevents++;
+        } else {
+            nevents++;
+            QGuiApplicationPrivate::processWindowSystemEvent(event);
+        }
         delete event;
     }
 
     return (nevents > 0);
+}
+
+void QWindowSystemInterfacePrivate::installWindowSystemEventHandler(QWindowSystemEventHandler *handler)
+{
+    if (!eventHandler)
+        eventHandler = handler;
+}
+
+void QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(QWindowSystemEventHandler *handler)
+{
+    if (eventHandler == handler)
+        eventHandler = 0;
 }
 
 void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
@@ -834,6 +853,17 @@ Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
     QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+}
+
+QWindowSystemEventHandler::~QWindowSystemEventHandler()
+{
+    QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(this);
+}
+
+bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
+{
+    QGuiApplicationPrivate::processWindowSystemEvent(e);
+    return true;
 }
 
 QT_END_NAMESPACE
