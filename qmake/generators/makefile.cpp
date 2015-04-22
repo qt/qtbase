@@ -2569,11 +2569,11 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             t << " " << targetRule;
         }
         if(suffix == "all" || suffix == "make_first")
-            t << depVar("ALL_DEPS");
+            t << ' ' << depVar("ALL_DEPS");
         if(suffix == "clean")
-            t << depVar("CLEAN_DEPS");
+            t << ' ' << depVar("CLEAN_DEPS");
         else if (suffix == "distclean")
-            t << depVar("DISTCLEAN_DEPS");
+            t << ' ' << depVar("DISTCLEAN_DEPS");
         t << " FORCE\n";
         if(suffix == "clean") {
             t << fixFileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");
