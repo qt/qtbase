@@ -118,7 +118,8 @@ static void stackTrace()
                          "quit\n"
                          "EOF\n",
                          (int)getpid());
-    system(cmd);
+    if (system(cmd) == -1)
+        fprintf(stderr, "calling gdb failed\n");
     fprintf(stderr, "========= End of stack trace ==============\n");
 #endif
 }
