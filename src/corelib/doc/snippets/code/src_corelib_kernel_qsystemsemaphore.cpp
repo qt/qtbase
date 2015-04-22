@@ -51,8 +51,9 @@ sem.release(2);              // resources available == 3
 
 //! [1]
 QSystemSemaphore sem("market", 5, QSystemSemaphore::Create);
-sem.acquire(5);           // acquire all 5 resources
-sem.release(5);           // release the 5 resources
+for (int i = 0; i < 5; ++i)  // acquire all 5 resources
+    sem.acquire();
+sem.release(5);              // release the 5 resources
 //! [1]
 
 
