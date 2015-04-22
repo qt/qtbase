@@ -1850,7 +1850,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         t << endl;
 
         if (config.indexOf("no_clean") == -1) {
-            const ProStringList &raw_clean = project->values(ProKey(*it + ".clean"));
+            QStringList raw_clean = project->values(ProKey(*it + ".clean")).toQStringList();
+            if (raw_clean.isEmpty())
+                raw_clean << tmp_out;
             QString tmp_clean = escapeFilePaths(raw_clean).join(' ');
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
@@ -1863,14 +1865,11 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 t << "\n\t" << tmp_clean_cmds;
                 wrote_clean_cmds = true;
             }
-            if(tmp_clean.isEmpty())
-                tmp_clean = escapeFilePath(tmp_out);
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t-$(DEL_FILE) " << tmp_clean;
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
-                QStringList q_raw_clean = raw_clean.toQStringList();
                 QStringList cleans;
                 const QString del_statement("-$(DEL_FILE)");
                 if(!wrote_clean) {
@@ -1878,7 +1877,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         QString tinp = (*input).toQString();
                         QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
-                        foreach (const QString &rc, q_raw_clean) {
+                        foreach (const QString &rc, raw_clean) {
                             dels << ' ' + escapeFilePath(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(rc, tinp, out, NoShell), false));
                         }
