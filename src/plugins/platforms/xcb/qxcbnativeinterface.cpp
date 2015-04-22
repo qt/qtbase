@@ -248,6 +248,9 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
     case NoFontHinting:
         result = xcbScreen->noFontHinting() ? this : 0; //qboolptr...
         break;
+    case RootWindow:
+        result = reinterpret_cast<void *>(xcbScreen->root());
+        break;
     default:
         break;
     }
