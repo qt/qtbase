@@ -1853,7 +1853,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             QStringList raw_clean = project->values(ProKey(*it + ".clean")).toQStringList();
             if (raw_clean.isEmpty())
                 raw_clean << tmp_out;
-            QString tmp_clean = escapeFilePaths(raw_clean).join(' ');
+            QString tmp_clean;
+            foreach (const QString &rc, raw_clean)
+                tmp_clean += ' ' + escapeFilePath(Option::fixPathToTargetOS(rc));
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
                 clean_targets += QString("compiler_" + (*it) + "_clean ");
@@ -1866,7 +1868,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 wrote_clean_cmds = true;
             }
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
-                t << "\n\t-$(DEL_FILE) " << tmp_clean;
+                t << "\n\t-$(DEL_FILE)" << tmp_clean;
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
