@@ -96,24 +96,6 @@ QCocoaPrintDevice::QCocoaPrintDevice(const QString &id)
     }
 }
 
-QCocoaPrintDevice::QCocoaPrintDevice(const QCocoaPrintDevice &other)
-    : QPlatformPrintDevice(other),
-      m_printer(0),
-      m_session(0),
-      m_ppd(0)
-{
-    m_printer = other.m_printer;
-    PMRetain(m_printer);
-    m_session = other.m_session;
-    PMRetain(m_session);
-    m_macPapers = other.m_macPapers;
-    foreach (PMPaper paper, m_macPapers.values())
-        PMRetain(paper);
-    openPpdFile();
-    m_customMargins = other.m_customMargins;
-    m_printableMargins = other.m_printableMargins;
-}
-
 QCocoaPrintDevice::~QCocoaPrintDevice()
 {
     if (m_ppd)
@@ -125,16 +107,6 @@ QCocoaPrintDevice::~QCocoaPrintDevice()
         PMRelease(m_session);
     else if (m_printer)
         PMRelease(m_printer);
-}
-
-QCocoaPrintDevice *QCocoaPrintDevice::clone()
-{
-    return new QCocoaPrintDevice(*this);
-}
-
-bool QCocoaPrintDevice::operator==(const QCocoaPrintDevice &other) const
-{
-    return (m_id == other.m_id);
 }
 
 bool QCocoaPrintDevice::isValid() const

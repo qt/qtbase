@@ -60,12 +60,7 @@ class QCocoaPrintDevice : public QPlatformPrintDevice
 public:
     QCocoaPrintDevice();
     explicit QCocoaPrintDevice(const QString &id);
-    QCocoaPrintDevice(const QCocoaPrintDevice &other);
     virtual ~QCocoaPrintDevice();
-
-    QCocoaPrintDevice *clone();
-
-    bool operator==(const QCocoaPrintDevice &other) const;
 
     bool isValid() const Q_DECL_OVERRIDE;
     bool isDefault() const Q_DECL_OVERRIDE;

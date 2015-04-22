@@ -75,11 +75,6 @@ QPlatformPrintDevice::~QPlatformPrintDevice()
 {
 }
 
-bool QPlatformPrintDevice::operator==(const QPlatformPrintDevice &other) const
-{
-    return m_id == other.m_id;
-}
-
 QString QPlatformPrintDevice::id() const
 {
     return m_id;

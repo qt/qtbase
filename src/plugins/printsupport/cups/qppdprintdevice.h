@@ -59,14 +59,7 @@ class QPpdPrintDevice : public QPlatformPrintDevice
 public:
     QPpdPrintDevice();
     explicit QPpdPrintDevice(const QString &id);
-    QPpdPrintDevice(const QPpdPrintDevice &other);
     virtual ~QPpdPrintDevice();
-
-    QPpdPrintDevice &operator=(const QPpdPrintDevice &other);
-
-    QPpdPrintDevice *clone();
-
-    bool operator==(const QPpdPrintDevice &other) const;
 
     bool isValid() const Q_DECL_OVERRIDE;
     bool isDefault() const Q_DECL_OVERRIDE;

@@ -136,7 +136,7 @@ private:
     friend class QPlatformPrinterSupport;
     friend class QPlatformPrintDevice;
     QPrintDevice(QPlatformPrintDevice *dd);
-    QSharedDataPointer<QPlatformPrintDevice> d;
+    QSharedPointer<QPlatformPrintDevice> d;
 };
 
 Q_DECLARE_SHARED(QPrintDevice)
