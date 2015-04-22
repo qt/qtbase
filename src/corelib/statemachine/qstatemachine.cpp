@@ -1845,6 +1845,8 @@ void QStateMachinePrivate::_q_start()
 
     registerMultiThreadedSignalTransitions();
 
+    startupHook();
+
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": starting";
 #endif
@@ -2112,6 +2114,10 @@ void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guil
 #endif
 
     QStatePrivate::get(forState)->emitFinished();
+}
+
+void QStateMachinePrivate::startupHook()
+{
 }
 
 /*
@@ -2726,14 +2732,18 @@ void QStateMachine::setRunning(bool running)
   event queue. Events are processed in the order posted. The state machine
   takes ownership of the event and deletes it once it has been processed.
 
-  You can only post events when the state machine is running.
+  You can only post events when the state machine is running or when it is starting up.
 
   \sa postDelayedEvent()
 */
 void QStateMachine::postEvent(QEvent *event, EventPriority priority)
 {
     Q_D(QStateMachine);
-    if (d->state != QStateMachinePrivate::Running) {
+    switch (d->state) {
+    case QStateMachinePrivate::Running:
+    case QStateMachinePrivate::Starting:
+        break;
+    default:
         qWarning("QStateMachine::postEvent: cannot post event when the state machine is not running");
         return;
     }

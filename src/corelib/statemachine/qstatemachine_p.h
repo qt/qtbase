@@ -202,6 +202,7 @@ public:
     void cancelAllDelayedEvents();
 
     virtual void emitStateFinished(QState *forState, QFinalState *guiltyState);
+    virtual void startupHook();
 
 #ifndef QT_NO_PROPERTIES
     class RestorableId {
