@@ -36,11 +36,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qprocessordetection.h>
-#if defined(__SSE4_1__)
-#include <smmintrin.h>
-#elif defined(__SSE2__)
-#include <emmintrin.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -92,45 +87,19 @@ inline Q_DECL_RELAXED_CONSTEXPR QRgb qPremultiply(QRgb x)
 
 Q_GUI_EXPORT extern const uint qt_inv_premul_factor[];
 
-#if defined(__SSE2__)
-inline QRgb qUnpremultiply(QRgb p)
-{
-    const uint alpha = qAlpha(p);
-    if (alpha == 255 || alpha == 0)
-        return p;
-    const uint invAlpha = qt_inv_premul_factor[alpha];
-    const __m128i via = _mm_set1_epi32(invAlpha);
-    const __m128i vr = _mm_set1_epi32(0x8000);
-#ifdef __SSE4_1__
-    __m128i vl = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(p));
-    vl = _mm_mullo_epi32(vl, via);
-#else
-    __m128i vl = _mm_unpacklo_epi8(_mm_cvtsi32_si128(p), _mm_setzero_si128());
-    vl = _mm_unpacklo_epi16(vl, vl);
-    __m128i vll = _mm_mullo_epi16(vl, via);
-    __m128i vlh = _mm_mulhi_epu16(vl, via);
-    vl = _mm_add_epi32(vll, _mm_slli_epi32(vlh, 16));
-#endif
-    vl = _mm_add_epi32(vl, vr);
-    vl = _mm_srli_epi32(vl, 16);
-    vl = _mm_packs_epi32(vl, _mm_setzero_si128());
-    vl = _mm_insert_epi16(vl, alpha, 3);
-    vl = _mm_packus_epi16(vl, _mm_setzero_si128());
-    return _mm_cvtsi128_si32(vl);
-}
-#else
 inline QRgb qUnpremultiply(QRgb p)
 {
     const uint alpha = qAlpha(p);
     // Alpha 255 and 0 are the two most common values, which makes them beneficial to short-cut.
-    if (alpha == 255 || alpha == 0)
+    if (alpha == 255)
         return p;
+    if (alpha == 0)
+        return 0;
     // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
     const uint invAlpha = qt_inv_premul_factor[alpha];
     // We add 0x8000 to get even rounding. The rounding also ensures that qPremultiply(qUnpremultiply(p)) == p for all p.
     return qRgba((qRed(p)*invAlpha + 0x8000)>>16, (qGreen(p)*invAlpha + 0x8000)>>16, (qBlue(p)*invAlpha + 0x8000)>>16, alpha);
 }
-#endif
 
 QT_END_NAMESPACE
 
