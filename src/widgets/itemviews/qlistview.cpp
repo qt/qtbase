@@ -1846,8 +1846,17 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    if (bothScrollBarsAuto && contentsSize.width() - qq->verticalScrollBar()->width() <= viewport()->width()
-                           && contentsSize.height() - qq->horizontalScrollBar()->height() <= viewport()->height()) {
+    const QSize viewportSize(viewport()->width() + (qq->verticalScrollBar()->maximum() > 0 ? qq->verticalScrollBar()->width() : 0),
+                             viewport()->height() + (qq->horizontalScrollBar()->maximum() > 0 ? qq->horizontalScrollBar()->height() : 0));
+
+    bool verticalWantsToShow = contentsSize.height() > viewportSize.height();
+    bool horizontalWantsToShow;
+    if (verticalWantsToShow)
+        horizontalWantsToShow = contentsSize.width() > viewportSize.width() - qq->verticalScrollBar()->width();
+    else
+        horizontalWantsToShow = contentsSize.width() > viewportSize.width();
+
+    if (bothScrollBarsAuto && !horizontalWantsToShow) {
         // break the infinite loop described above by setting the range to 0, 0.
         // QAbstractScrollArea will then hide the scroll bar for us
         horizontalScrollBar()->setRange(0, 0);
@@ -1868,8 +1877,17 @@ void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    if (bothScrollBarsAuto && contentsSize.width() - qq->verticalScrollBar()->width() <= viewport()->width()
-                           && contentsSize.height() - qq->horizontalScrollBar()->height() <= viewport()->height()) {
+    const QSize viewportSize(viewport()->width() + (qq->verticalScrollBar()->maximum() > 0 ? qq->verticalScrollBar()->width() : 0),
+                             viewport()->height() + (qq->horizontalScrollBar()->maximum() > 0 ? qq->horizontalScrollBar()->height() : 0));
+
+    bool horizontalWantsToShow = contentsSize.width() > viewportSize.width();
+    bool verticalWantsToShow;
+    if (horizontalWantsToShow)
+        verticalWantsToShow = contentsSize.height() > viewportSize.height() - qq->horizontalScrollBar()->height();
+    else
+        verticalWantsToShow = contentsSize.height() > viewportSize.height();
+
+    if (bothScrollBarsAuto && !verticalWantsToShow) {
         // break the infinite loop described above by setting the range to 0, 0.
         // QAbstractScrollArea will then hide the scroll bar for us
         verticalScrollBar()->setRange(0, 0);
