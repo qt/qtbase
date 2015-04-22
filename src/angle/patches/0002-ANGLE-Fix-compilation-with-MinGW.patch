@@ -1,0 +1,927 @@
+From 6f98a957829fd37106fb1f1c9f43a5bad626cdfc Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Wed, 25 Mar 2015 20:21:33 +0200
+Subject: [PATCH 2/5] ANGLE: Fix compilation with MinGW
+
+This adds definition guards for Direct3D 11 and DirectX SDK layers, which
+are only available in very recent versions (4.9.2 rev 4) of MinGW builds.
+It additionally adds a few missing includes needed for compilation.
+
+Change-Id: I254c208209c0071fae5efb6727f2b3cfd5542da6
+---
+ src/3rdparty/angle/src/common/mathutil.h           |   4 +
+ src/3rdparty/angle/src/common/platform.h           |  10 +-
+ src/3rdparty/angle/src/libANGLE/angletypes.h       |   1 +
+ .../src/libANGLE/renderer/d3d/HLSLCompiler.cpp     |   9 ++
+ .../src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp   |   6 +
+ .../src/libANGLE/renderer/d3d/d3d11/Clear11.cpp    |   4 +
+ .../renderer/d3d/d3d11/DebugAnnotator11.cpp        |  10 ++
+ .../libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h |   2 +
+ .../src/libANGLE/renderer/d3d/d3d11/Query11.cpp    |   7 +
+ .../src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp |  83 +++++++++--
+ .../src/libANGLE/renderer/d3d/d3d11/Renderer11.h   |   3 +-
+ .../renderer/d3d/d3d11/renderer11_utils.cpp        | 152 +++++++++++++++++++++
+ .../src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp   |   4 +-
+ 13 files changed, 283 insertions(+), 12 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/common/mathutil.h b/src/3rdparty/angle/src/common/mathutil.h
+index e096b1a..1015bd2 100644
+--- a/src/3rdparty/angle/src/common/mathutil.h
++++ b/src/3rdparty/angle/src/common/mathutil.h
+@@ -119,6 +119,9 @@ inline bool supportsSSE2()
+         return supports;
+     }
+ 
++#if defined(__GNUC__)
++    supports = __builtin_cpu_supports("sse2");
++#else
+     int info[4];
+     __cpuid(info, 0);
+ 
+@@ -128,6 +131,7 @@ inline bool supportsSSE2()
+ 
+         supports = (info[3] >> 26) & 1;
+     }
++#endif
+ 
+     checked = true;
+ 
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index 4e3851c..be4cb94 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -59,9 +59,17 @@
+ #   if defined(ANGLE_ENABLE_D3D11)
+ #       include <d3d10_1.h>
+ #       include <d3d11.h>
+-#       include <d3d11_1.h>
+ #       include <dxgi.h>
++#      if defined(__MINGW32__) && !defined(__d3d11sdklayers_h__)
++#          define ANGLE_MINGW32_COMPAT
++#      endif
++#      if defined(_MSC_VER) && _MSC_VER >= 1800
++#          define ANGLE_ENABLE_D3D11_1
++#      endif
++#      if defined(ANGLE_ENABLE_D3D11_1)
++#       include <d3d11_1.h>
+ #       include <dxgi1_2.h>
++#      endif
+ #       include <d3dcompiler.h>
+ #   endif
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/angletypes.h b/src/3rdparty/angle/src/libANGLE/angletypes.h
+index a5f471d..e4e08b5 100644
+--- a/src/3rdparty/angle/src/libANGLE/angletypes.h
++++ b/src/3rdparty/angle/src/libANGLE/angletypes.h
+@@ -13,6 +13,7 @@
+ #include "libANGLE/RefCountObject.h"
+ 
+ #include <stdint.h>
++#include <float.h>
+ 
+ namespace gl
+ {
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/HLSLCompiler.cpp
+index d709dca..9c72d6f 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/HLSLCompiler.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/HLSLCompiler.cpp
+@@ -22,6 +22,15 @@ namespace
+ 
+ #define CREATE_COMPILER_FLAG_INFO(flag) { flag, #flag }
+ 
++#if defined(ANGLE_MINGW32_COMPAT)
++#ifndef D3DCOMPILE_RESERVED16
++#define D3DCOMPILE_RESERVED16 0x10000
++#endif
++#ifndef D3DCOMPILE_RESERVED17
++#define D3DCOMPILE_RESERVED17 0x20000
++#endif
++#endif
++
+ struct CompilerFlagInfo
+ {
+     UINT mFlag;
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
+index 3b36c64..d56b0ea 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
+@@ -12,6 +12,12 @@
+ #include "libANGLE/renderer/d3d/d3d11/Renderer11.h"
+ #include "libANGLE/renderer/d3d/d3d11/formatutils11.h"
+ 
++#if defined(ANGLE_MINGW32_COMPAT)
++typedef enum D3D11_MAP_FLAG {
++    D3D11_MAP_FLAG_DO_NOT_WAIT = 0x100000
++} D3D11_MAP_FLAG;
++#endif
++
+ namespace rx
+ {
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Clear11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Clear11.cpp
+index ae373f5..057c3be 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Clear11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Clear11.cpp
+@@ -133,12 +133,14 @@ Clear11::Clear11(Renderer11 *renderer)
+         mIntClearShader   = CreateClearShader(device, DXGI_FORMAT_R32G32B32A32_SINT,  g_VS_ClearSint,  g_PS_ClearSint );
+     }
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     if (renderer->getDeviceContext1IfSupported())
+     {
+         D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11Options;
+         device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &d3d11Options, sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS));
+         mSupportsClearView = (d3d11Options.ClearView != FALSE);
+     }
++#endif
+ }
+ 
+ Clear11::~Clear11()
+@@ -321,6 +323,7 @@ gl::Error Clear11::clearFramebuffer(const ClearParameters &clearParams, const gl
+ 
+                 if (needScissoredClear)
+                 {
++#if defined(ANGLE_ENABLE_D3D11_1)
+                     // We shouldn't reach here if deviceContext1 is unavailable.
+                     ASSERT(deviceContext1);
+ 
+@@ -331,6 +334,7 @@ gl::Error Clear11::clearFramebuffer(const ClearParameters &clearParams, const gl
+                     rect.bottom = clearParams.scissor.y + clearParams.scissor.height;
+ 
+                     deviceContext1->ClearView(framebufferRTV, clearValues, &rect, 1);
++#endif
+                 }
+                 else
+                 {
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+index fcca904..f1fe2bb 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+@@ -27,7 +27,9 @@ DebugAnnotator11::~DebugAnnotator11()
+ {
+     if (mInitialized)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+         SafeRelease(mUserDefinedAnnotation);
++#endif
+ 
+ #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+         FreeLibrary(mD3d11Module);
+@@ -39,21 +41,27 @@ void DebugAnnotator11::beginEvent(const std::wstring &eventName)
+ {
+     initializeDevice();
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     mUserDefinedAnnotation->BeginEvent(eventName.c_str());
++#endif
+ }
+ 
+ void DebugAnnotator11::endEvent()
+ {
+     initializeDevice();
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     mUserDefinedAnnotation->EndEvent();
++#endif
+ }
+ 
+ void DebugAnnotator11::setMarker(const std::wstring &markerName)
+ {
+     initializeDevice();
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     mUserDefinedAnnotation->SetMarker(markerName.c_str());
++#endif
+ }
+ 
+ bool DebugAnnotator11::getStatus()
+@@ -96,8 +104,10 @@ void DebugAnnotator11::initializeDevice()
+         hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_NULL, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &device, nullptr, &context);
+         ASSERT(SUCCEEDED(hr));
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+         mUserDefinedAnnotation = d3d11::DynamicCastComObject<ID3DUserDefinedAnnotation>(context);
+         ASSERT(mUserDefinedAnnotation != nullptr);
++#endif
+ 
+         SafeRelease(device);
+         SafeRelease(context);
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h
+index 0638364..3df62b0 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h
+@@ -11,6 +11,8 @@
+ 
+ #include "common/debug.h"
+ 
++struct ID3DUserDefinedAnnotation;
++
+ namespace rx
+ {
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
+index e010190..4979ff5 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
+@@ -13,6 +13,13 @@
+ 
+ #include <GLES2/gl2ext.h>
+ 
++#if defined(ANGLE_MINGW32_COMPAT)
++typedef struct D3D11_QUERY_DATA_SO_STATISTICS {
++  UINT64 NumPrimitivesWritten;
++  UINT64 PrimitivesStorageNeeded;
++} D3D11_QUERY_DATA_SO_STATISTICS;
++#endif
++
+ namespace rx
+ {
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+index dbed23f..5291a3a 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+@@ -62,6 +62,67 @@
+ #define ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS 1
+ #endif
+ 
++#ifndef __d3d11sdklayers_h__
++#define D3D11_MESSAGE_CATEGORY UINT
++#define D3D11_MESSAGE_SEVERITY UINT
++#define D3D11_MESSAGE_ID UINT
++struct D3D11_MESSAGE;
++typedef struct D3D11_INFO_QUEUE_FILTER_DESC
++{
++    UINT NumCategories;
++    D3D11_MESSAGE_CATEGORY *pCategoryList;
++    UINT NumSeverities;
++    D3D11_MESSAGE_SEVERITY *pSeverityList;
++    UINT NumIDs;
++    D3D11_MESSAGE_ID *pIDList;
++} D3D11_INFO_QUEUE_FILTER_DESC;
++typedef struct D3D11_INFO_QUEUE_FILTER
++{
++    D3D11_INFO_QUEUE_FILTER_DESC AllowList;
++    D3D11_INFO_QUEUE_FILTER_DESC DenyList;
++} D3D11_INFO_QUEUE_FILTER;
++static const IID IID_ID3D11InfoQueue = { 0x6543dbb6, 0x1b48, 0x42f5, 0xab, 0x82, 0xe9, 0x7e, 0xc7, 0x43, 0x26, 0xf6 };
++MIDL_INTERFACE("6543dbb6-1b48-42f5-ab82-e97ec74326f6") ID3D11InfoQueue : public IUnknown
++{
++public:
++    virtual HRESULT __stdcall SetMessageCountLimit(UINT64) = 0;
++    virtual void __stdcall ClearStoredMessages() = 0;
++    virtual HRESULT __stdcall GetMessage(UINT64, D3D11_MESSAGE *, SIZE_T *) = 0;
++    virtual UINT64 __stdcall GetNumMessagesAllowedByStorageFilter() = 0;
++    virtual UINT64 __stdcall GetNumMessagesDeniedByStorageFilter() = 0;
++    virtual UINT64 __stdcall GetNumStoredMessages() = 0;
++    virtual UINT64 __stdcall GetNumStoredMessagesAllowedByRetrievalFilter() = 0;
++    virtual UINT64 __stdcall GetNumMessagesDiscardedByMessageCountLimit() = 0;
++    virtual UINT64 __stdcall GetMessageCountLimit() = 0;
++    virtual HRESULT __stdcall AddStorageFilterEntries(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual HRESULT __stdcall GetStorageFilter(D3D11_INFO_QUEUE_FILTER *, SIZE_T *) = 0;
++    virtual void __stdcall ClearStorageFilter() = 0;
++    virtual HRESULT __stdcall PushEmptyStorageFilter() = 0;
++    virtual HRESULT __stdcall PushCopyOfStorageFilter() = 0;
++    virtual HRESULT __stdcall PushStorageFilter(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual void __stdcall PopStorageFilter() = 0;
++    virtual UINT __stdcall GetStorageFilterStackSize() = 0;
++    virtual HRESULT __stdcall AddRetrievalFilterEntries(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual HRESULT __stdcall GetRetrievalFilter(D3D11_INFO_QUEUE_FILTER *, SIZE_T *) = 0;
++    virtual void __stdcall ClearRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushEmptyRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushCopyOfRetrievalFilter() = 0;
++    virtual HRESULT __stdcall PushRetrievalFilter(D3D11_INFO_QUEUE_FILTER *) = 0;
++    virtual void __stdcall PopRetrievalFilter() = 0;
++    virtual UINT __stdcall GetRetrievalFilterStackSize() = 0;
++    virtual HRESULT __stdcall AddMessage(D3D11_MESSAGE_CATEGORY, D3D11_MESSAGE_SEVERITY, D3D11_MESSAGE_ID, LPCSTR) = 0;
++    virtual HRESULT __stdcall AddApplicationMessage(D3D11_MESSAGE_SEVERITY, LPCSTR) = 0;
++    virtual HRESULT __stdcall SetBreakOnCategory(D3D11_MESSAGE_CATEGORY, BOOL) = 0;
++    virtual HRESULT __stdcall SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY, BOOL) = 0;
++    virtual HRESULT __stdcall SetBreakOnID(D3D11_MESSAGE_ID, BOOL) = 0;
++    virtual BOOL __stdcall GetBreakOnCategory(D3D11_MESSAGE_CATEGORY) = 0;
++    virtual BOOL __stdcall GetBreakOnSeverity(D3D11_MESSAGE_SEVERITY) = 0;
++    virtual BOOL __stdcall GetBreakOnID(D3D11_MESSAGE_ID) = 0;
++    virtual void __stdcall SetMuteDebugOutput(BOOL) = 0;
++    virtual BOOL __stdcall GetMuteDebugOutput() = 0;
++};
++#endif
++
+ namespace rx
+ {
+ 
+@@ -164,8 +225,7 @@ void CalculateConstantBufferParams(GLintptr offset, GLsizeiptr size, UINT *outFi
+ 
+ Renderer11::Renderer11(egl::Display *display)
+     : RendererD3D(display),
+-      mStateCache(this),
+-      mDebug(nullptr)
++      mStateCache(this)
+ {
+     // Initialize global annotator
+     gl::InitializeDebugAnnotations(&mAnnotator);
+@@ -398,7 +458,9 @@ egl::Error Renderer11::initialize()
+     // Cast the DeviceContext to a DeviceContext1.
+     // This could fail on Windows 7 without the Platform Update.
+     // Don't error in this case- just don't use mDeviceContext1.
++#if defined(ANGLE_ENABLE_D3D11_1)
+     mDeviceContext1 = d3d11::DynamicCastComObject<ID3D11DeviceContext1>(mDeviceContext);
++#endif
+ 
+     IDXGIDevice *dxgiDevice = NULL;
+     result = mDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
+@@ -421,6 +483,7 @@ egl::Error Renderer11::initialize()
+ 
+     SafeRelease(dxgiDevice);
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     IDXGIAdapter2 *dxgiAdapter2 = d3d11::DynamicCastComObject<IDXGIAdapter2>(mDxgiAdapter);
+ 
+     // On D3D_FEATURE_LEVEL_9_*, IDXGIAdapter::GetDesc returns "Software Adapter" for the description string.
+@@ -447,6 +510,7 @@ egl::Error Renderer11::initialize()
+     }
+ 
+     SafeRelease(dxgiAdapter2);
++#endif
+ 
+     memset(mDescription, 0, sizeof(mDescription));
+     wcstombs(mDescription, mAdapterDescription.Description, sizeof(mDescription) - 1);
+@@ -463,7 +527,7 @@ egl::Error Renderer11::initialize()
+     // Disable some spurious D3D11 debug warnings to prevent them from flooding the output log
+ #if defined(ANGLE_SUPPRESS_D3D11_HAZARD_WARNINGS) && defined(_DEBUG)
+     ID3D11InfoQueue *infoQueue;
+-    result = mDevice->QueryInterface(__uuidof(ID3D11InfoQueue),  (void **)&infoQueue);
++    result = mDevice->QueryInterface(IID_ID3D11InfoQueue,  (void **)&infoQueue);
+ 
+     if (SUCCEEDED(result))
+     {
+@@ -481,10 +545,6 @@ egl::Error Renderer11::initialize()
+     }
+ #endif
+ 
+-#if !defined(NDEBUG)
+-    mDebug = d3d11::DynamicCastComObject<ID3D11Debug>(mDevice);
+-#endif
+-
+     initializeDevice();
+ 
+     return egl::Error(EGL_SUCCESS);
+@@ -525,12 +585,14 @@ void Renderer11::initializeDevice()
+ 
+     const gl::Caps &rendererCaps = getRendererCaps();
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     if (getDeviceContext1IfSupported())
+     {
+         D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11Options;
+         mDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &d3d11Options, sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS));
+         mSupportsConstantBufferOffsets = (d3d11Options.ConstantBufferOffsetting != FALSE);
+     }
++#endif
+ 
+     mForceSetVertexSamplerStates.resize(rendererCaps.maxVertexTextureImageUnits);
+     mCurVertexSamplerStates.resize(rendererCaps.maxVertexTextureImageUnits);
+@@ -853,6 +915,7 @@ gl::Error Renderer11::setUniformBuffers(const gl::Data &data,
+                 mCurrentConstantBufferVSOffset[uniformBufferIndex] != uniformBufferOffset ||
+                 mCurrentConstantBufferVSSize[uniformBufferIndex] != uniformBufferSize)
+             {
++#if defined(ANGLE_ENABLE_D3D11_1)
+                 if (mSupportsConstantBufferOffsets && uniformBufferSize != 0)
+                 {
+                     UINT firstConstant = 0, numConstants = 0;
+@@ -861,6 +924,7 @@ gl::Error Renderer11::setUniformBuffers(const gl::Data &data,
+                                                            1, &constantBuffer, &firstConstant, &numConstants);
+                 }
+                 else
++#endif
+                 {
+                     ASSERT(uniformBufferOffset == 0);
+                     mDeviceContext->VSSetConstantBuffers(getReservedVertexUniformBuffers() + uniformBufferIndex,
+@@ -901,6 +965,7 @@ gl::Error Renderer11::setUniformBuffers(const gl::Data &data,
+                 mCurrentConstantBufferPSOffset[uniformBufferIndex] != uniformBufferOffset ||
+                 mCurrentConstantBufferPSSize[uniformBufferIndex] != uniformBufferSize)
+             {
++#if defined(ANGLE_ENABLE_D3D11_1)
+                 if (mSupportsConstantBufferOffsets && uniformBufferSize != 0)
+                 {
+                     UINT firstConstant = 0, numConstants = 0;
+@@ -909,6 +974,7 @@ gl::Error Renderer11::setUniformBuffers(const gl::Data &data,
+                                                            1, &constantBuffer, &firstConstant, &numConstants);
+                 }
+                 else
++#endif
+                 {
+                     ASSERT(uniformBufferOffset == 0);
+                     mDeviceContext->PSSetConstantBuffers(getReservedFragmentUniformBuffers() + uniformBufferIndex,
+@@ -2194,7 +2260,9 @@ void Renderer11::release()
+     SafeRelease(mDxgiFactory);
+     SafeRelease(mDxgiAdapter);
+ 
++#if defined(ANGLE_ENABLE_D3D11_1)
+     SafeRelease(mDeviceContext1);
++#endif
+ 
+     if (mDeviceContext)
+     {
+@@ -2204,7 +2272,6 @@ void Renderer11::release()
+     }
+ 
+     SafeRelease(mDevice);
+-    SafeRelease(mDebug);
+ 
+     if (mD3d11Module)
+     {
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h
+index d1fec55..cc7d6c2 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h
+@@ -20,6 +20,8 @@
+ #include "libANGLE/renderer/d3d/d3d11/InputLayoutCache.h"
+ #include "libANGLE/renderer/d3d/d3d11/RenderStateCache.h"
+ 
++struct ID3D11DeviceContext1;
++
+ namespace gl
+ {
+ class FramebufferAttachment;
+@@ -390,7 +392,6 @@ class Renderer11 : public RendererD3D
+     DXGI_ADAPTER_DESC mAdapterDescription;
+     char mDescription[128];
+     DXGIFactory *mDxgiFactory;
+-    ID3D11Debug *mDebug;
+ 
+     DebugAnnotator11 mAnnotator;
+ };
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp
+index 70b2b79..63085f4 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.cpp
+@@ -20,6 +20,88 @@
+ 
+ #include <algorithm>
+ 
++#ifndef D3D_FL9_1_DEFAULT_MAX_ANISOTROPY
++#  define D3D_FL9_1_DEFAULT_MAX_ANISOTROPY 2
++#endif
++#ifndef D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT
++#  define D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT 1
++#endif
++#ifndef D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT
++#  define D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT 4
++#endif
++#ifndef D3D_FL9_1_IA_PRIMITIVE_MAX_COUNT
++#  define D3D_FL9_1_IA_PRIMITIVE_MAX_COUNT 65535
++#endif
++#ifndef D3D_FL9_2_IA_PRIMITIVE_MAX_COUNT
++#  define D3D_FL9_2_IA_PRIMITIVE_MAX_COUNT 1048575
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION 512
++#endif
++#ifndef D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION
++#  define D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION 4096
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION 2048
++#endif
++#ifndef D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
++#  define D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 256
++#endif
++#ifndef D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION
++#  define D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION 4096
++#endif
++#ifndef D3D11_REQ_TEXTURECUBE_DIMENSION
++#  define D3D11_REQ_TEXTURECUBE_DIMENSION 16384
++#endif
++#ifndef D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION
++#  define D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION 2048
++#endif
++#ifndef D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
++#  define D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION 2048
++#endif
++#ifndef D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP
++#  define D3D11_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP 32
++#endif
++#ifndef D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP
++#  define D3D11_REQ_DRAW_VERTEX_COUNT_2_TO_EXP 32
++#endif
++#ifndef D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT
++#  define D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT 32
++#endif
++#ifndef D3D11_STANDARD_VERTEX_ELEMENT_COUNT
++#  define D3D11_STANDARD_VERTEX_ELEMENT_COUNT 32
++#endif
++#ifndef D3D10_1_SO_BUFFER_SLOT_COUNT
++#  define D3D10_1_SO_BUFFER_SLOT_COUNT 4
++#endif
++#ifndef D3D11_SO_BUFFER_SLOT_COUNT
++#  define D3D11_SO_BUFFER_SLOT_COUNT 4
++#endif
++#ifndef D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT
++#  define D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT 14
++#endif
++#ifndef D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT
++#  define D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT 16
++#endif
++#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE
++#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE -8
++#endif
++#ifndef D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE
++#  define D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE 7
++#endif
++#ifndef D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT
++#  define D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
++#endif
++#ifndef D3D11_PS_INPUT_REGISTER_COUNT
++#  define D3D11_PS_INPUT_REGISTER_COUNT 32
++#endif
++#ifndef D3D10_1_VS_OUTPUT_REGISTER_COUNT
++#  define D3D10_1_VS_OUTPUT_REGISTER_COUNT 32
++#endif
++#if defined(ANGLE_MINGW32_COMPAT)
++static const IID WKPDID_D3DDebugObjectName = { 0x429b8c22, 0x9188, 0x4b0c, 0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00 };
++#endif
++
+ namespace rx
+ {
+ 
+@@ -232,7 +314,9 @@ GLint GetMaximumClientVersion(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return 3;
+@@ -298,7 +382,9 @@ static bool GetNPOTTextureSupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -316,7 +402,9 @@ static float GetMaximumAnisotropy(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_MAX_MAXANISOTROPY;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -336,7 +424,9 @@ static bool GetOcclusionQuerySupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -356,7 +446,9 @@ static bool GetEventQuerySupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+@@ -374,7 +466,9 @@ static bool GetInstancingSupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -397,7 +491,9 @@ static bool GetFramebufferMultisampleSupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -414,7 +510,9 @@ static bool GetFramebufferBlitSupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -437,7 +535,9 @@ static bool GetDerivativeInstructionSupport(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+@@ -453,7 +553,9 @@ static bool GetShaderTextureLODSupport(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return true;
+@@ -472,7 +574,9 @@ static size_t GetMaximumSimultaneousRenderTargets(D3D_FEATURE_LEVEL featureLevel
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -490,7 +594,9 @@ static size_t GetMaximum2DTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -508,7 +614,9 @@ static size_t GetMaximumCubeMapTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURECUBE_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -526,7 +634,9 @@ static size_t GetMaximum2DTextureArraySize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -544,7 +654,9 @@ static size_t GetMaximum3DTextureSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -562,7 +674,9 @@ static size_t GetMaximumViewportSize(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_VIEWPORT_BOUNDS_MAX;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -586,7 +700,9 @@ static size_t GetMaximumDrawIndexedIndexCount(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return std::numeric_limits<GLint>::max();
+@@ -608,7 +724,9 @@ static size_t GetMaximumDrawVertexCount(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return std::numeric_limits<GLint>::max();
+@@ -625,7 +743,9 @@ static size_t GetMaximumVertexInputSlots(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_STANDARD_VERTEX_ELEMENT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1: return D3D10_1_STANDARD_VERTEX_ELEMENT_COUNT;
+@@ -645,7 +765,9 @@ static size_t GetMaximumVertexUniformVectors(D3D_FEATURE_LEVEL featureLevel)
+     // TODO(geofflang): Remove hard-coded limit once the gl-uniform-arrays test can pass
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return 1024; // D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -670,7 +792,9 @@ static size_t GetMaximumVertexUniformBlocks(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - GetReservedVertexUniformBuffers();
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -698,7 +822,9 @@ static size_t GetReservedVertexOutputVectors(D3D_FEATURE_LEVEL featureLevel)
+       // We must reserve one output vector for dx_Position.
+       // We also reserve one for gl_Position, which we unconditionally output on Feature Levels 10_0+,
+       // even if it's unused in the shader (e.g. for transform feedback). TODO: This could be improved.
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return 2;
+@@ -720,7 +846,9 @@ static size_t GetMaximumVertexOutputVectors(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_VS_OUTPUT_REGISTER_COUNT - GetReservedVertexOutputVectors(featureLevel);
+ 
+       case D3D_FEATURE_LEVEL_10_1: return D3D10_1_VS_OUTPUT_REGISTER_COUNT - GetReservedVertexOutputVectors(featureLevel);
+@@ -739,7 +867,9 @@ static size_t GetMaximumVertexTextureUnits(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -761,7 +891,9 @@ static size_t GetMaximumPixelUniformVectors(D3D_FEATURE_LEVEL featureLevel)
+     // TODO(geofflang): Remove hard-coded limit once the gl-uniform-arrays test can pass
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return 1024; // D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -786,7 +918,9 @@ static size_t GetMaximumPixelUniformBlocks(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT - GetReservedPixelUniformBuffers();
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -805,7 +939,9 @@ static size_t GetMaximumPixelInputVectors(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_PS_INPUT_REGISTER_COUNT - GetReservedVertexOutputVectors(featureLevel);
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -824,7 +960,9 @@ static size_t GetMaximumPixelTextureUnits(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -843,7 +981,9 @@ static int GetMinimumTexelOffset(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_NEGATIVE;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -862,7 +1002,9 @@ static int GetMaximumTexelOffset(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE;
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return D3D11_COMMONSHADER_TEXEL_OFFSET_MAX_POSITIVE;
+@@ -885,7 +1027,9 @@ static size_t GetMaximumConstantBufferSize(D3D_FEATURE_LEVEL featureLevel)
+ 
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * bytesPerComponent;
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -904,7 +1048,9 @@ static size_t GetMaximumStreamOutputBuffers(D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_SO_BUFFER_SLOT_COUNT;
+ 
+       case D3D_FEATURE_LEVEL_10_1: return D3D10_1_SO_BUFFER_SLOT_COUNT;
+@@ -922,7 +1068,9 @@ static size_t GetMaximumStreamOutputInterleavedComponents(D3D_FEATURE_LEVEL feat
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0:
+ 
+       case D3D_FEATURE_LEVEL_10_1:
+@@ -940,7 +1088,9 @@ static size_t GetMaximumStreamOutputSeparateComponents(D3D_FEATURE_LEVEL feature
+ {
+     switch (featureLevel)
+     {
++#if defined(ANGLE_ENABLE_D3D11_1)
+       case D3D_FEATURE_LEVEL_11_1:
++#endif
+       case D3D_FEATURE_LEVEL_11_0: return GetMaximumStreamOutputInterleavedComponents(featureLevel) /
+                                           GetMaximumStreamOutputBuffers(featureLevel);
+ 
+@@ -1054,6 +1204,7 @@ void GenerateCaps(ID3D11Device *device, ID3D11DeviceContext *deviceContext, gl::
+ 
+     // Setting a large alignment forces uniform buffers to bind with zero offset
+     caps->uniformBufferOffsetAlignment = static_cast<GLuint>(std::numeric_limits<GLint>::max());
++#if defined(ANGLE_ENABLE_D3D11_1)
+     ID3D11DeviceContext1 *deviceContext1 = d3d11::DynamicCastComObject<ID3D11DeviceContext1>(deviceContext);
+ 
+     if (deviceContext1)
+@@ -1070,6 +1221,7 @@ void GenerateCaps(ID3D11Device *device, ID3D11DeviceContext *deviceContext, gl::
+ 
+         SafeRelease(deviceContext1);
+     }
++#endif
+ 
+     caps->maxCombinedUniformBlocks = caps->maxVertexUniformBlocks + caps->maxFragmentUniformBlocks;
+     caps->maxCombinedVertexUniformComponents = (static_cast<GLint64>(caps->maxVertexUniformBlocks) * static_cast<GLint64>(caps->maxUniformBlockSize / 4)) +
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
+index c59808d..bf1c367 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d9/Renderer9.cpp
+@@ -206,7 +206,7 @@ egl::Error Renderer9::initialize()
+     {
+         TRACE_EVENT0("gpu", "D3d9Ex_QueryInterface");
+         ASSERT(mD3d9Ex);
+-        mD3d9Ex->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&mD3d9));
++        mD3d9Ex->QueryInterface(IID_IDirect3D9, reinterpret_cast<void**>(&mD3d9));
+         ASSERT(mD3d9);
+     }
+     else
+@@ -314,7 +314,7 @@ egl::Error Renderer9::initialize()
+     if (mD3d9Ex)
+     {
+         TRACE_EVENT0("gpu", "mDevice_QueryInterface");
+-        result = mDevice->QueryInterface(__uuidof(IDirect3DDevice9Ex), (void**)&mDeviceEx);
++        result = mDevice->QueryInterface(IID_IDirect3DDevice9Ex, (void**)&mDeviceEx);
+         ASSERT(SUCCEEDED(result));
+     }
+ 
+-- 
+2.1.4
+

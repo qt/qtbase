@@ -1,0 +1,439 @@
+From ed09eff731b5d286e0bf6a5958b937a50ecc2362 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Tue, 7 Apr 2015 13:24:59 +0300
+Subject: [PATCH 1/5] ANGLE: Improve Windows Phone Support
+
+This contains compile fixes for Windows Phone as well as improved
+orientation handling.
+
+Change-Id: Ia312b5318b977838a2953f1f530487cbf24974bc
+---
+ src/3rdparty/angle/src/common/platform.h           |  2 ++
+ .../renderer/d3d/d3d11/DebugAnnotator11.cpp        |  2 +-
+ .../src/libANGLE/renderer/d3d/d3d11/NativeWindow.h |  4 +++
+ .../src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp |  8 +++--
+ .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 40 ++++++++++++++++++++++
+ .../d3d/d3d11/winrt/CoreWindowNativeWindow.cpp     | 31 +++++++++++++++--
+ .../d3d/d3d11/winrt/CoreWindowNativeWindow.h       | 34 +++++++++++++++++-
+ .../d3d/d3d11/winrt/InspectableNativeWindow.cpp    | 12 +++++++
+ .../d3d/d3d11/winrt/InspectableNativeWindow.h      | 14 +++++++-
+ src/3rdparty/angle/src/libANGLE/validationEGL.cpp  |  4 ++-
+ 10 files changed, 142 insertions(+), 9 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index 56db297..4e3851c 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -68,7 +68,9 @@
+ #   if defined(ANGLE_ENABLE_WINDOWS_STORE)
+ #       include <dxgi1_3.h>
+ #       if defined(_DEBUG)
++#          if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+ #           include <DXProgrammableCapture.h>
++#          endif
+ #           include <dxgidebug.h>
+ #       endif
+ #   endif
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+index bc7cdcc..fcca904 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+@@ -60,7 +60,7 @@ bool DebugAnnotator11::getStatus()
+ {
+     // ID3DUserDefinedAnnotation::GetStatus doesn't work with the Graphics Diagnostics tools in Visual Studio 2013.
+ 
+-#if defined(_DEBUG) && defined(ANGLE_ENABLE_WINDOWS_STORE)
++#if defined(_DEBUG) && defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+     // In the Windows Store, we can use IDXGraphicsAnalysis. The call to GetDebugInterface1 only succeeds if the app is under capture.
+     // This should only be called in DEBUG mode.
+     // If an app links against DXGIGetDebugInterface1 in release mode then it will fail Windows Store ingestion checks.
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/NativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/NativeWindow.h
+index ce50c32..81b9ea7 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/NativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/NativeWindow.h
+@@ -49,11 +49,15 @@ namespace rx
+ class NativeWindow
+ {
+   public:
++    enum RotationFlags { RotateNone = 0, RotateLeft = 1, RotateRight = 2 };
+     explicit NativeWindow(EGLNativeWindowType window);
+ 
+     bool initialize();
+     bool getClientRect(LPRECT rect);
+     bool isIconic();
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++    RotationFlags rotationFlags() const;
++#endif
+     static bool isValidNativeWindow(EGLNativeWindowType window);
+ 
+     HRESULT createSwapChain(ID3D11Device* device, DXGIFactory* factory,
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+index eba40a4..dbed23f 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+@@ -230,7 +230,11 @@ Renderer11::Renderer11(egl::Display *display)
+         }
+     }
+ 
++#if defined(ANGLE_ENABLE_WINDOWS_STORE)
++    if (requestedMajorVersion == EGL_DONT_CARE || requestedMajorVersion >= 9)
++#else
+     if (requestedMajorVersion == 9 && requestedMinorVersion == 3)
++#endif
+     {
+         mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
+     }
+@@ -587,10 +591,10 @@ egl::ConfigSet Renderer11::generateConfigs() const
+                     config.bindToTextureRGB = (colorBufferFormatInfo.format == GL_RGB);
+                     config.bindToTextureRGBA = (colorBufferFormatInfo.format == GL_RGBA || colorBufferFormatInfo.format == GL_BGRA_EXT);
+                     config.colorBufferType = EGL_RGB_BUFFER;
+-                    config.configCaveat = EGL_NONE;
+                     config.configID = static_cast<EGLint>(configs.size() + 1);
+                     // Can only support a conformant ES2 with feature level greater than 10.0.
+                     config.conformant = (mFeatureLevel >= D3D_FEATURE_LEVEL_10_0) ? (EGL_OPENGL_ES2_BIT | EGL_OPENGL_ES3_BIT_KHR) : EGL_NONE;
++                    config.configCaveat = config.conformant == EGL_NONE ? EGL_NON_CONFORMANT_CONFIG : EGL_NONE;
+                     config.depthSize = depthStencilBufferFormatInfo.depthBits;
+                     config.level = 0;
+                     config.matchNativePixmap = EGL_NONE;
+@@ -2290,7 +2294,7 @@ bool Renderer11::getShareHandleSupport() const
+     // chrome needs BGRA. Once chrome fixes this, we should always support them.
+     // PIX doesn't seem to support using share handles, so disable them.
+     // Also disable share handles on Feature Level 9_3, since it doesn't support share handles on RGBA8 textures/swapchains.
+-    return getRendererExtensions().textureFormatBGRA8888 && !gl::DebugAnnotationsActive() && !(mFeatureLevel <= D3D_FEATURE_LEVEL_9_3);
++    return getRendererExtensions().textureFormatBGRA8888 && !gl::DebugAnnotationsActive();// && !(mFeatureLevel <= D3D_FEATURE_LEVEL_9_3); Qt: we don't care about the 9_3 limitation
+ }
+ 
+ bool Renderer11::getPostSubBufferSupport() const
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index 2558528..bcb2505 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -154,8 +154,14 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+         const bool useSharedResource = !mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport();
+ 
+         D3D11_TEXTURE2D_DESC offscreenTextureDesc = {0};
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++        const int textureLength = std::max(backbufferWidth, backbufferHeight);
++        offscreenTextureDesc.Width = textureLength;
++        offscreenTextureDesc.Height = textureLength;
++#else
+         offscreenTextureDesc.Width = backbufferWidth;
+         offscreenTextureDesc.Height = backbufferHeight;
++#endif
+         offscreenTextureDesc.Format = backbufferFormatInfo.texFormat;
+         offscreenTextureDesc.MipLevels = 1;
+         offscreenTextureDesc.ArraySize = 1;
+@@ -235,8 +241,14 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+     if (mDepthBufferFormat != GL_NONE)
+     {
+         D3D11_TEXTURE2D_DESC depthStencilTextureDesc;
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++        const int textureLength = std::max(backbufferWidth, backbufferHeight);
++        depthStencilTextureDesc.Width = textureLength;
++        depthStencilTextureDesc.Height = textureLength;
++#else
+         depthStencilTextureDesc.Width = backbufferWidth;
+         depthStencilTextureDesc.Height = backbufferHeight;
++#endif
+         depthStencilTextureDesc.Format = depthBufferFormatInfo.texFormat;
+         depthStencilTextureDesc.MipLevels = 1;
+         depthStencilTextureDesc.ArraySize = 1;
+@@ -337,6 +349,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+         return EGL_SUCCESS;
+     }
+ 
++#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+     // Can only call resize if we have already created our swap buffer and resources
+     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
+ 
+@@ -379,6 +392,12 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+     }
+ 
+     return resetOffscreenTexture(backbufferWidth, backbufferHeight);
++#else
++    // Do nothing on Windows Phone apart from updating the internal buffer/width height
++    mWidth = backbufferWidth;
++    mHeight = backbufferHeight;
++    return EGL_SUCCESS;
++#endif
+ }
+ 
+ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swapInterval)
+@@ -539,6 +558,21 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
+     float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
+ 
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++    const float dim = std::max(mWidth, mHeight);
++    float u1 = x / dim;
++    float v1 = y / dim;
++    float u2 = (x + width) / dim;
++    float v2 = (y + height) / dim;
++
++    const NativeWindow::RotationFlags flags = mNativeWindow.rotationFlags();
++    const bool rotateL = flags == NativeWindow::RotateLeft;
++    const bool rotateR = flags == NativeWindow::RotateRight;
++    d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, rotateL ? u2 : u1, rotateR ? v2 : v1);
++    d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, rotateR ? u2 : u1, rotateL ? v1 : v2);
++    d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
++    d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
++#else
+     float u1 = x / float(mWidth);
+     float v1 = y / float(mHeight);
+     float u2 = (x + width) / float(mWidth);
+@@ -548,6 +582,7 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, u1, v2);
+     d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, u2, v1);
+     d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, u2, v2);
++#endif
+ 
+     deviceContext->Unmap(mQuadVB, 0);
+ 
+@@ -577,8 +612,13 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     D3D11_VIEWPORT viewport;
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++    viewport.Width = (rotateL || rotateR) ? mHeight : mWidth;
++    viewport.Height = (rotateL || rotateR) ? mWidth : mHeight;
++#else
+     viewport.Width = mWidth;
+     viewport.Height = mHeight;
++#endif
+     viewport.MinDepth = 0.0f;
+     viewport.MaxDepth = 1.0f;
+     deviceContext->RSSetViewports(1, &viewport);
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+index 8cfaa84..350526c 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+@@ -8,8 +8,6 @@
+ 
+ #include "libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h"
+ 
+-#include <windows.graphics.display.h>
+-
+ using namespace ABI::Windows::Foundation::Collections;
+ 
+ namespace rx
+@@ -21,6 +19,7 @@ CoreWindowNativeWindow::~CoreWindowNativeWindow()
+ 
+ bool CoreWindowNativeWindow::initialize(EGLNativeWindowType window, IPropertySet *propertySet)
+ {
++    mOrientationChangedEventToken.value = 0;
+     ComPtr<IPropertySet> props = propertySet;
+     ComPtr<IInspectable> win = window;
+     SIZE swapChainSize = {};
+@@ -68,6 +67,16 @@ bool CoreWindowNativeWindow::initialize(EGLNativeWindowType window, IPropertySet
+ 
+     if (SUCCEEDED(result))
+     {
++        ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInformation;
++        result = GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &displayInformation);
++        if (SUCCEEDED(result))
++        {
++            result = displayInformation->GetForCurrentView(&mDisplayInformation);
++        }
++    }
++
++    if (SUCCEEDED(result))
++    {
+         mNewClientRect = mClientRect;
+         mClientRectChanged = false;
+         return registerForSizeChangeEvents();
+@@ -85,6 +94,15 @@ bool CoreWindowNativeWindow::registerForSizeChangeEvents()
+         result = mCoreWindow->add_SizeChanged(sizeChangedHandler.Get(), &mSizeChangedEventToken);
+     }
+ 
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++    ComPtr<IDisplayOrientationEventHandler> orientationChangedHandler;
++    result = sizeChangedHandler.As(&orientationChangedHandler);
++    if (SUCCEEDED(result))
++    {
++        result = mDisplayInformation->add_OrientationChanged(orientationChangedHandler.Get(), &mOrientationChangedEventToken);
++    }
++#endif
++
+     if (SUCCEEDED(result))
+     {
+         return true;
+@@ -99,7 +117,14 @@ void CoreWindowNativeWindow::unregisterForSizeChangeEvents()
+     {
+         (void)mCoreWindow->remove_SizeChanged(mSizeChangedEventToken);
+     }
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++    if (mDisplayInformation)
++    {
++        (void)mDisplayInformation->remove_OrientationChanged(mOrientationChangedEventToken);
++    }
++#endif
+     mSizeChangedEventToken.value = 0;
++    mOrientationChangedEventToken.value = 0;
+ }
+ 
+ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device, DXGIFactory *factory, DXGI_FORMAT format, unsigned int width, unsigned int height, DXGISwapChain **swapChain)
+@@ -128,7 +153,7 @@ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device, DXGIFactor
+     if (SUCCEEDED(result))
+     {
+ 
+-#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++#if 0 //(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) // Qt: allow Windows Phone to resize, but don't modify the backing texture in the swap chain.
+         // Test if swapchain supports resize.  On Windows Phone devices, this will return DXGI_ERROR_UNSUPPORTED.  On
+         // other devices DXGI_ERROR_INVALID_CALL should be returned because the combination of flags passed
+         // (DXGI_SWAP_CHAIN_FLAG_NONPREROTATED | DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE) are invalid flag combinations.
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
+index c230c84..59df9d5 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
+@@ -12,8 +12,10 @@
+ #include "libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h"
+ 
+ #include <memory>
++#include <windows.graphics.display.h>
+ 
+ typedef ABI::Windows::Foundation::__FITypedEventHandler_2_Windows__CUI__CCore__CCoreWindow_Windows__CUI__CCore__CWindowSizeChangedEventArgs_t IWindowSizeChangedEventHandler;
++typedef ABI::Windows::Foundation::__FITypedEventHandler_2_Windows__CGraphics__CDisplay__CDisplayInformation_IInspectable_t IDisplayOrientationEventHandler;
+ 
+ namespace rx
+ {
+@@ -32,11 +34,13 @@ class CoreWindowNativeWindow : public InspectableNativeWindow, public std::enabl
+   private:
+     ComPtr<ABI::Windows::UI::Core::ICoreWindow> mCoreWindow;
+     ComPtr<IMap<HSTRING, IInspectable*>> mPropertyMap;
++    ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation> mDisplayInformation;
++    EventRegistrationToken mOrientationChangedEventToken;
+ };
+ 
+ [uuid(7F924F66-EBAE-40E5-A10B-B8F35E245190)]
+ class CoreWindowSizeChangedHandler :
+-    public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IWindowSizeChangedEventHandler>
++    public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IWindowSizeChangedEventHandler, IDisplayOrientationEventHandler>
+ {
+   public:
+     CoreWindowSizeChangedHandler() { }
+@@ -68,6 +72,34 @@ class CoreWindowSizeChangedHandler :
+         return S_OK;
+     }
+ 
++    IFACEMETHOD(Invoke)(ABI::Windows::Graphics::Display::IDisplayInformation *displayInformation, IInspectable *)
++    {
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++        NativeWindow::RotationFlags flags = NativeWindow::RotateNone;
++        ABI::Windows::Graphics::Display::DisplayOrientations orientation;
++        if (SUCCEEDED(displayInformation->get_CurrentOrientation(&orientation)))
++        {
++            switch (orientation)
++            {
++              case ABI::Windows::Graphics::Display::DisplayOrientations_Landscape:
++                flags = NativeWindow::RotateLeft;
++                break;
++              case ABI::Windows::Graphics::Display::DisplayOrientations_LandscapeFlipped:
++                flags = NativeWindow::RotateRight;
++                break;
++              default:
++                break;
++            }
++        }
++        std::shared_ptr<InspectableNativeWindow> host = mHost.lock();
++        if (host)
++        {
++            host->setRotationFlags(flags);
++        }
++#endif
++        return S_OK;
++    }
++
+   private:
+     std::weak_ptr<InspectableNativeWindow> mHost;
+ };
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+index 7ac53c7..2bf48c5 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+@@ -69,6 +69,18 @@ bool NativeWindow::getClientRect(RECT *rect)
+     return false;
+ }
+ 
++#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
++NativeWindow::RotationFlags NativeWindow::rotationFlags() const
++{
++    if (mImpl)
++    {
++        return mImpl->rotationFlags();
++    }
++
++    return NativeWindow::RotateNone;
++}
++#endif
++
+ bool NativeWindow::isIconic()
+ {
+     return false;
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
+index e89c900..575bdf8 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
+@@ -34,7 +34,8 @@ class InspectableNativeWindow
+         mRequiresSwapChainScaling(false),
+         mClientRectChanged(false),
+         mClientRect({0,0,0,0}),
+-        mNewClientRect({0,0,0,0})
++        mNewClientRect({0,0,0,0}),
++        mRotationFlags(NativeWindow::RotateNone)
+     {
+         mSizeChangedEventToken.value = 0;
+     }
+@@ -72,12 +73,23 @@ class InspectableNativeWindow
+         }
+     }
+ 
++    NativeWindow::RotationFlags rotationFlags() const
++    {
++        return mRotationFlags;
++    }
++
++    void setRotationFlags(NativeWindow::RotationFlags flags)
++    {
++        mRotationFlags = flags;
++    }
++
+ protected:
+     bool mSupportsSwapChainResize;
+     bool mRequiresSwapChainScaling;
+     RECT mClientRect;
+     RECT mNewClientRect;
+     bool mClientRectChanged;
++    NativeWindow::RotationFlags mRotationFlags;
+ 
+     EventRegistrationToken mSizeChangedEventToken;
+ };
+diff --git a/src/3rdparty/angle/src/libANGLE/validationEGL.cpp b/src/3rdparty/angle/src/libANGLE/validationEGL.cpp
+index 4e3b44b..12ee6a2 100644
+--- a/src/3rdparty/angle/src/libANGLE/validationEGL.cpp
++++ b/src/3rdparty/angle/src/libANGLE/validationEGL.cpp
+@@ -160,7 +160,7 @@ Error ValidateCreateContext(Display *display, Config *configuration, gl::Context
+         return Error(EGL_BAD_CONFIG);
+     }
+ 
+-    if (clientMajorVersion == 3 && !(configuration->conformant & EGL_OPENGL_ES3_BIT_KHR))
++    if (clientMajorVersion == 3 && !(configuration->conformant & EGL_OPENGL_ES3_BIT_KHR) && !(configuration->configCaveat & EGL_NON_CONFORMANT_CONFIG))
+     {
+         return Error(EGL_BAD_CONFIG);
+     }
+@@ -488,11 +488,13 @@ Error ValidateCreatePbufferFromClientBuffer(Display *display, EGLenum buftype, E
+             return Error(EGL_BAD_ATTRIBUTE);
+         }
+ 
++#if !defined(ANGLE_ENABLE_WINDOWS_STORE) // On Windows Store, we know the originating texture came from D3D11, so bypass this check
+         const Caps &caps = display->getCaps();
+         if (textureFormat != EGL_NO_TEXTURE && !caps.textureNPOT && (!gl::isPow2(width) || !gl::isPow2(height)))
+         {
+             return Error(EGL_BAD_MATCH);
+         }
++#endif
+     }
+ 
+     return Error(EGL_SUCCESS);
+-- 
+2.1.4
+

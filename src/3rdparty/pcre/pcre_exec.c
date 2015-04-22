@@ -1376,6 +1376,7 @@ for (;;)
       break;
 
       case OP_DEF:     /* DEFINE - always false */
+      case OP_FAIL:    /* From optimized (?!) condition */
       break;
 
       /* The condition is an assertion. Call match() to evaluate it - setting
@@ -3482,7 +3483,7 @@ for (;;)
           if (possessive) continue;    /* No backtracking */
           for(;;)
             {
-            if (eptr == pp) goto TAIL_RECURSE;
+            if (eptr <= pp) goto TAIL_RECURSE;
             RMATCH(eptr, ecode, offset_top, md, eptrb, RM23);
             if (rrc != MATCH_NOMATCH) RRETURN(rrc);
 #ifdef SUPPORT_UCP
@@ -3903,7 +3904,7 @@ for (;;)
           if (possessive) continue;    /* No backtracking */
           for(;;)
             {
-            if (eptr == pp) goto TAIL_RECURSE;
+            if (eptr <= pp) goto TAIL_RECURSE;
             RMATCH(eptr, ecode, offset_top, md, eptrb, RM30);
             if (rrc != MATCH_NOMATCH) RRETURN(rrc);
             eptr--;
@@ -4038,7 +4039,7 @@ for (;;)
           if (possessive) continue;    /* No backtracking */
           for(;;)
             {
-            if (eptr == pp) goto TAIL_RECURSE;
+            if (eptr <= pp) goto TAIL_RECURSE;
             RMATCH(eptr, ecode, offset_top, md, eptrb, RM34);
             if (rrc != MATCH_NOMATCH) RRETURN(rrc);
             eptr--;
@@ -5609,7 +5610,7 @@ for (;;)
         if (possessive) continue;    /* No backtracking */
         for(;;)
           {
-          if (eptr == pp) goto TAIL_RECURSE;
+          if (eptr <= pp) goto TAIL_RECURSE;
           RMATCH(eptr, ecode, offset_top, md, eptrb, RM44);
           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
           eptr--;
@@ -5651,12 +5652,17 @@ for (;;)
 
         if (possessive) continue;    /* No backtracking */
 
+        /* We use <= pp rather than == pp to detect the start of the run while
+        backtracking because the use of \C in UTF mode can cause BACKCHAR to
+        move back past pp. This is just palliative; the use of \C in UTF mode
+        is fraught with danger. */
+
         for(;;)
           {
           int lgb, rgb;
           PCRE_PUCHAR fptr;
 
-          if (eptr == pp) goto TAIL_RECURSE;   /* At start of char run */
+          if (eptr <= pp) goto TAIL_RECURSE;   /* At start of char run */
           RMATCH(eptr, ecode, offset_top, md, eptrb, RM45);
           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
 
@@ -5674,7 +5680,7 @@ for (;;)
 
           for (;;)
             {
-            if (eptr == pp) goto TAIL_RECURSE;   /* At start of char run */
+            if (eptr <= pp) goto TAIL_RECURSE;   /* At start of char run */
             fptr = eptr - 1;
             if (!utf) c = *fptr; else
               {
@@ -5924,7 +5930,7 @@ for (;;)
         if (possessive) continue;    /* No backtracking */
         for(;;)
           {
-          if (eptr == pp) goto TAIL_RECURSE;
+          if (eptr <= pp) goto TAIL_RECURSE;
           RMATCH(eptr, ecode, offset_top, md, eptrb, RM46);
           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
           eptr--;

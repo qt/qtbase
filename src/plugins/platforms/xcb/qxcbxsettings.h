@@ -44,13 +44,13 @@ class QXcbXSettings : public QXcbWindowEventListener
 {
     Q_DECLARE_PRIVATE(QXcbXSettings)
 public:
-    QXcbXSettings(QXcbScreen *screen);
+    QXcbXSettings(QXcbVirtualDesktop *screen);
     ~QXcbXSettings();
     bool initialized() const;
 
     QVariant setting(const QByteArray &property) const;
 
-    typedef void (*PropertyChangeFunc)(QXcbScreen *screen, const QByteArray &name, const QVariant &property, void *handle);
+    typedef void (*PropertyChangeFunc)(QXcbVirtualDesktop *screen, const QByteArray &name, const QVariant &property, void *handle);
     void registerCallbackForProperty(const QByteArray &property, PropertyChangeFunc func, void *handle);
     void removeCallbackForHandle(const QByteArray &property, void *handle);
     void removeCallbackForHandle(void *handle);

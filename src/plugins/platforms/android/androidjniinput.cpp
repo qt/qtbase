@@ -663,24 +663,24 @@ namespace QtAndroidInput
         return unicode ? QString(QChar(unicode)) : QString();
     }
 
-    static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
+    static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier, jboolean autoRepeat)
     {
         QWindowSystemInterface::handleKeyEvent(0,
                                                QEvent::KeyPress,
                                                mapAndroidKey(key),
                                                mapAndroidModifiers(modifier),
                                                toString(unicode),
-                                               false);
+                                               autoRepeat);
     }
 
-    static void keyUp(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
+    static void keyUp(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier, jboolean autoRepeat)
     {
         QWindowSystemInterface::handleKeyEvent(0,
                                                QEvent::KeyRelease,
                                                mapAndroidKey(key),
                                                mapAndroidModifiers(modifier),
                                                toString(unicode),
-                                               false);
+                                               autoRepeat);
     }
 
     static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean visibility)
@@ -702,8 +702,8 @@ namespace QtAndroidInput
         {"mouseUp", "(III)V", (void *)mouseUp},
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"longPress", "(III)V", (void *)longPress},
-        {"keyDown", "(III)V", (void *)keyDown},
-        {"keyUp", "(III)V", (void *)keyUp},
+        {"keyDown", "(IIIZ)V", (void *)keyDown},
+        {"keyUp", "(IIIZ)V", (void *)keyUp},
         {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged}
     };
 

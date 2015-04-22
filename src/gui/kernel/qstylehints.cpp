@@ -377,4 +377,16 @@ Qt::TabFocusBehavior QStyleHints::tabFocusBehavior() const
     return Qt::TabFocusBehavior(themeableHint(QPlatformTheme::TabFocusBehavior, QPlatformIntegration::TabFocusBehavior).toInt());
 }
 
+/*!
+    \property QStyleHints::singleClickActivation
+    \brief \c true if items should be activated by single click, \b false
+    if they should be activated by double click instead.
+
+    \since 5.5
+*/
+bool QStyleHints::singleClickActivation() const
+{
+    return themeableHint(QPlatformTheme::ItemViewActivateItemOnSingleClick, QPlatformIntegration::ItemViewActivateItemOnSingleClick).toBool();
+}
+
 QT_END_NAMESPACE

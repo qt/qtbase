@@ -140,6 +140,7 @@ public:
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
     static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
+    static uint visualIdStatic(QWindow *window);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
@@ -154,6 +155,7 @@ public:
 
     static QRect systemTrayWindowGlobalGeometryStatic(const QWindow *window);
     QRect systemTrayWindowGlobalGeometry() const;
+    uint visualId() const;
 
     bool needsSync() const;
 
@@ -167,7 +169,7 @@ public:
     virtual void create();
     virtual void destroy();
     void maybeSetScreen(QXcbScreen *screen);
-    QPlatformScreen *screenForNativeGeometry(const QRect &newGeometry) const;
+    QXcbScreen *screenForNativeGeometry(const QRect &newGeometry) const;
 
 public Q_SLOTS:
     void updateSyncRequestCounter();
@@ -176,6 +178,12 @@ protected:
     virtual void resolveFormat() { m_format = window()->requestedFormat(); }
     virtual void *createVisual() { return Q_NULLPTR; }
     virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
+
+    QPoint mapToNative(const QPoint &pos, const QXcbScreen *screen) const;
+    QPoint mapFromNative(const QPoint &pos, const QXcbScreen *screen) const;
+    QRect mapToNative(const QRect &rect, const QXcbScreen *screen) const;
+    QRect mapFromNative(const QRect &rect, const QXcbScreen *screen) const;
+    QXcbScreen *parentScreen();
 
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
     NetWmStates netWmStates();
@@ -203,6 +211,8 @@ protected:
     void doFocusOut();
 
     xcb_window_t m_window;
+
+    QXcbScreen *m_xcbScreen;
 
     uint m_depth;
     QImage::Format m_imageFormat;

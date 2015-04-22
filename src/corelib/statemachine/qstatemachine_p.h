@@ -100,8 +100,10 @@ public:
 
     static QStateMachinePrivate *get(QStateMachine *q);
 
-    QState *findLCA(const QList<QAbstractState*> &states) const;
+    QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
+    QState *findLCCA(const QList<QAbstractState*> &states) const;
 
+    static bool transitionStateEntryLessThan(QAbstractTransition *t1, QAbstractTransition *t2);
     static bool stateEntryLessThan(QAbstractState *s1, QAbstractState *s2);
     static bool stateExitLessThan(QAbstractState *s1, QAbstractState *s2);
 
@@ -122,16 +124,17 @@ public:
     void clearHistory();
     QAbstractTransition *createInitialTransition() const;
 
+    void removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions);
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     virtual void noMicrostep();
     virtual void processedPendingEvents(bool didChange);
     virtual void beginMacrostep();
     virtual void endMacrostep(bool didChange);
-    bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
-    QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
+    QList<QAbstractTransition *> selectTransitions(QEvent *event);
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
                     const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
-    QList<QAbstractState*> computeStatesToExit(const QList<QAbstractTransition*> &enabledTransitions);
+    QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions);
+    QSet<QAbstractState*> computeExitSet_Unordered(const QList<QAbstractTransition*> &enabledTransitions);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
                      const QList<QAbstractState*> &statesToEnter_sorted,
@@ -141,12 +144,17 @@ public:
                      , const QList<QAbstractAnimation*> &selectedAnimations
 #endif
                      );
-    QList<QAbstractState*> computeStatesToEnter(const QList<QAbstractTransition*> &enabledTransitions,
-                                                QSet<QAbstractState*> &statesForDefaultEntry);
+    QList<QAbstractState*> computeEntrySet(const QList<QAbstractTransition*> &enabledTransitions,
+                                           QSet<QAbstractState*> &statesForDefaultEntry);
+    QAbstractState *getTransitionDomain(QAbstractTransition *t,
+                                        const QList<QAbstractState *> &effectiveTargetStates) const;
+    void addDescendantStatesToEnter(QAbstractState *state,
+                                    QSet<QAbstractState*> &statesToEnter,
+                                    QSet<QAbstractState*> &statesForDefaultEntry);
     void addStatesToEnter(QAbstractState *s, QState *root,
                           QSet<QAbstractState*> &statesToEnter,
                           QSet<QAbstractState*> &statesForDefaultEntry);
-    void addAncestorStatesToEnter(QAbstractState *s, QState *root,
+    void addAncestorStatesToEnter(QAbstractState *s, QAbstractState *ancestor,
                                   QSet<QAbstractState*> &statesToEnter,
                                   QSet<QAbstractState*> &statesForDefaultEntry);
 
@@ -160,8 +168,6 @@ public:
     static bool isParallel(const QAbstractState *s);
     bool isCompound(const QAbstractState *s) const;
     bool isAtomic(const QAbstractState *s) const;
-    static bool isDescendantOf(const QAbstractState *s, const QAbstractState *other);
-    static QList<QState*> properAncestors(const QAbstractState *s, const QState *upperBound);
 
     void goToState(QAbstractState *targetState);
 
@@ -191,6 +197,8 @@ public:
     bool isExternalEventQueueEmpty();
     void processEvents(EventProcessingMode processingMode);
     void cancelAllDelayedEvents();
+
+    virtual void emitStateFinished(QState *forState, QFinalState *guiltyState);
 
 #ifndef QT_NO_PROPERTIES
     class RestorableId {

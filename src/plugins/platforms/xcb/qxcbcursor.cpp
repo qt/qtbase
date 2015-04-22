@@ -502,7 +502,7 @@ bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     return setTheme;
 }
 
- void QXcbCursor::cursorThemePropertyChanged(QXcbScreen *screen, const QByteArray &name, const QVariant &property, void *handle)
+ void QXcbCursor::cursorThemePropertyChanged(QXcbVirtualDesktop *screen, const QByteArray &name, const QVariant &property, void *handle)
 {
     Q_UNUSED(screen);
     Q_UNUSED(name);
@@ -633,18 +633,17 @@ void QXcbCursor::queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *
 
 QPoint QXcbCursor::pos() const
 {
-    const int dpr = int(m_screen->devicePixelRatio());
     QPoint p;
     queryPointer(connection(), 0, &p);
-    return p / dpr;
+    return m_screen->mapFromNative(p);
 }
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    const int dpr = int(m_screen->devicePixelRatio());
+    const QPoint xPos = m_screen->mapToNative(pos);
     xcb_window_t root = 0;
     queryPointer(connection(), &root, 0);
-    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x()*dpr, pos.y()*dpr);
+    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, xPos.x(), xPos.y());
     xcb_flush(xcb_connection());
 }
 

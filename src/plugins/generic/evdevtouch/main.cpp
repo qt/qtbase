@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +55,7 @@ QObject* QEvdevTouchScreenPlugin::create(const QString &key,
                                          const QString &spec)
 {
     if (!key.compare(QLatin1String("EvdevTouch"), Qt::CaseInsensitive))
-        return new QEvdevTouchScreenHandlerThread(spec);
+        return new QEvdevTouchManager(key, spec);
 
     return 0;
 }

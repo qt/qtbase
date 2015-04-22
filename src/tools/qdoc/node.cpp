@@ -1802,6 +1802,7 @@ FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
       overload_(false),
       reimplemented_(false),
       attached_(false),
+      privateSignal_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {
@@ -1822,6 +1823,7 @@ FunctionNode::FunctionNode(NodeType type, Aggregate *parent, const QString& name
       overload_(false),
       reimplemented_(false),
       attached_(attached),
+      privateSignal_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {

@@ -76,6 +76,7 @@ private slots:
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
     void globalShareContext();
+    void testSetPaletteAttribute();
 
     void staticFunctions();
 
@@ -966,6 +967,22 @@ void tst_QGuiApplication::globalShareContext()
 #else
     QSKIP("No OpenGL support");
 #endif
+}
+
+void tst_QGuiApplication::testSetPaletteAttribute()
+{
+    QCoreApplication::setAttribute(Qt::AA_SetPalette, false);
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+
+    QGuiApplication app(argc, argv);
+
+    QVERIFY(!QCoreApplication::testAttribute(Qt::AA_SetPalette));
+    QPalette palette;
+    palette.setColor(QPalette::Foreground, Qt::red);
+    QGuiApplication::setPalette(palette);
+
+    QVERIFY(QCoreApplication::testAttribute(Qt::AA_SetPalette));
 }
 
 // Test that static functions do not crash if there is no application instance.

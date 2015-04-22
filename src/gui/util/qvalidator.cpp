@@ -448,6 +448,8 @@ void QIntValidator::fixup(QString &input) const
         input = locale().toString(entered);
 }
 
+// FIXME: Qt 6: Make QIntValidator::setRange() non-virtual
+
 /*!
     Sets the range of the validator to only accept integers between \a
     bottom and \a top inclusive.
@@ -696,6 +698,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
     return QValidator::Intermediate;
 }
 
+// FIXME: Qt 6: Make QDoubleValidator::setRange() non-virtual
 
 /*!
     Sets the validator to accept doubles from \a minimum to \a maximum

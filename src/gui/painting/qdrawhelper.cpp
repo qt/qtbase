@@ -1798,43 +1798,6 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, i
 #endif
 
 #if defined(__SSE2__)
-static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
-{
-    // First interpolate right and left pixels in parallel.
-    __m128i vl = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tl), _mm_cvtsi32_si128(bl));
-    __m128i vr = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tr), _mm_cvtsi32_si128(br));
-    vl = _mm_unpacklo_epi8(vl, _mm_setzero_si128());
-    vr = _mm_unpacklo_epi8(vr, _mm_setzero_si128());
-    vl = _mm_mullo_epi16(vl, _mm_set1_epi16(256 - distx));
-    vr = _mm_mullo_epi16(vr, _mm_set1_epi16(distx));
-    __m128i vtb = _mm_add_epi16(vl, vr);
-    vtb = _mm_srli_epi16(vtb, 8);
-    // vtb now contains the result of the first two interpolate calls vtb = unpacked((xbot << 64) | xtop)
-
-    // Now the last interpolate between top and bottom interpolations.
-    const __m128i vidisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(256 - disty), _MM_SHUFFLE(0, 0, 0, 0));
-    const __m128i vdisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(disty), _MM_SHUFFLE(0, 0, 0, 0));
-    const __m128i vmuly = _mm_unpacklo_epi16(vidisty, vdisty);
-    vtb = _mm_unpacklo_epi16(vtb, _mm_srli_si128(vtb, 8));
-    // vtb now contains the colors of top and bottom interleaved { ta, ba, tr, br, tg, bg, tb, bb }
-    vtb = _mm_madd_epi16(vtb, vmuly); // Multiply and horizontal add.
-    vtb = _mm_srli_epi32(vtb, 8);
-    vtb = _mm_packs_epi32(vtb, _mm_setzero_si128());
-    vtb = _mm_packus_epi16(vtb, _mm_setzero_si128());
-    return _mm_cvtsi128_si32(vtb);
-}
-#else
-static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
-{
-    uint idistx = 256 - distx;
-    uint idisty = 256 - disty;
-    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-    return INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-}
-#endif
-
-#if defined(__SSE2__)
 static inline QRgba64 interpolate_4_pixels_rgb64(QRgba64 t[], QRgba64 b[], uint distx, uint disty)
 {
     const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
@@ -2556,10 +2519,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                         int x2;
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
 
-                        buf1[i * 2 + 0] = fetch(s1, x1);
-                        buf1[i * 2 + 1] = fetch(s1, x2);
-                        buf2[i * 2 + 0] = fetch(s2, x1);
-                        buf2[i * 2 + 1] = fetch(s2, x2);
+                        if (layout->bpp == QPixelLayout::BPP32) {
+                            buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                            buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                            buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                            buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                        } else {
+                            buf1[i * 2 + 0] = fetch(s1, x1);
+                            buf1[i * 2 + 1] = fetch(s1, x2);
+                            buf2[i * 2 + 0] = fetch(s2, x1);
+                            buf2[i * 2 + 1] = fetch(s2, x2);
+                        }
 
                         fx += fdx;
                     }
@@ -2614,10 +2584,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     const uchar *s1 = data->texture.scanLine(y1);
                     const uchar *s2 = data->texture.scanLine(y2);
 
-                    buf1[i * 2 + 0] = fetch(s1, x1);
-                    buf1[i * 2 + 1] = fetch(s1, x2);
-                    buf2[i * 2 + 0] = fetch(s2, x1);
-                    buf2[i * 2 + 1] = fetch(s2, x2);
+                    if (layout->bpp == QPixelLayout::BPP32) {
+                        buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                        buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                        buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                        buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                    } else {
+                        buf1[i * 2 + 0] = fetch(s1, x1);
+                        buf1[i * 2 + 1] = fetch(s1, x2);
+                        buf2[i * 2 + 0] = fetch(s2, x1);
+                        buf2[i * 2 + 1] = fetch(s2, x2);
+                    }
 
                     fx += fdx;
                     fy += fdy;
@@ -2699,10 +2676,17 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 const uchar *s1 = data->texture.scanLine(y1);
                 const uchar *s2 = data->texture.scanLine(y2);
 
-                buf1[i * 2 + 0] = fetch(s1, x1);
-                buf1[i * 2 + 1] = fetch(s1, x2);
-                buf2[i * 2 + 0] = fetch(s2, x1);
-                buf2[i * 2 + 1] = fetch(s2, x2);
+                if (layout->bpp == QPixelLayout::BPP32) {
+                    buf1[i * 2 + 0] = ((const uint*)s1)[x1];
+                    buf1[i * 2 + 1] = ((const uint*)s1)[x2];
+                    buf2[i * 2 + 0] = ((const uint*)s2)[x1];
+                    buf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                } else {
+                    buf1[i * 2 + 0] = fetch(s1, x1);
+                    buf1[i * 2 + 1] = fetch(s1, x2);
+                    buf2[i * 2 + 0] = fetch(s2, x1);
+                    buf2[i * 2 + 1] = fetch(s2, x2);
+                }
 
                 fx += fdx;
                 fy += fdy;
@@ -6368,24 +6352,22 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
-#if QT_COMPILER_SUPPORTS_SSE4_1
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1) && !defined(__SSE4_1__)
     if (qCpuHasFeature(SSE4_1)) {
-#if !defined(__SSE4_1__)
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
-        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
-        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
-#endif
         extern const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         extern const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         extern const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
     }
 #endif
 
-#if QT_COMPILER_SUPPORTS_AVX2 && !defined(__AVX2__)
+#if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
     if (qCpuHasFeature(AVX2)) {
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);

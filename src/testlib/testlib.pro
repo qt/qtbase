@@ -64,8 +64,7 @@ DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
     QT_NO_DATASTREAM
 embedded:QMAKE_CXXFLAGS += -fno-rtti
-wince*::LIBS += libcmt.lib \
-    corelibc.lib \
+wince: LIBS += \
     ole32.lib \
     oleaut32.lib \
     uuid.lib \
@@ -96,5 +95,10 @@ mac {
         MODULE_CONFIG += xctest
     }
 }
+
+# Exclude these headers from the clean check if their dependencies aren't
+# being built
+contains(QT_CONFIG, no-widgets): HEADERSCLEAN_EXCLUDE += qtest_widgets.h
+contains(QT_CONFIG, no-gui):     HEADERSCLEAN_EXCLUDE += qtest_gui.h
 
 load(qt_module)

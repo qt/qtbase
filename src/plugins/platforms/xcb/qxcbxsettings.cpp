@@ -63,7 +63,7 @@ public:
         : last_change_serial(-1)
     {}
 
-    void updateValue(QXcbScreen *screen, const QByteArray &name, const QVariant &value, int last_change_serial)
+    void updateValue(QXcbVirtualDesktop *screen, const QByteArray &name, const QVariant &value, int last_change_serial)
     {
         if (last_change_serial <= this->last_change_serial)
             return;
@@ -92,7 +92,7 @@ public:
 class QXcbXSettingsPrivate
 {
 public:
-    QXcbXSettingsPrivate(QXcbScreen *screen)
+    QXcbXSettingsPrivate(QXcbVirtualDesktop *screen)
         : screen(screen)
         , initialized(false)
     {
@@ -217,18 +217,18 @@ public:
     }
 #endif //XCB_USE_XLIB
 
-    QXcbScreen *screen;
+    QXcbVirtualDesktop *screen;
     xcb_window_t x_settings_window;
     QMap<QByteArray, QXcbXSettingsPropertyValue> settings;
     bool initialized;
 };
 
 
-QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
+QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
     : d_ptr(new QXcbXSettingsPrivate(screen))
 {
     QByteArray settings_atom_for_screen("_XSETTINGS_S");
-    settings_atom_for_screen.append(QByteArray::number(screen->screenNumber()));
+    settings_atom_for_screen.append(QByteArray::number(screen->number()));
     xcb_intern_atom_cookie_t atom_cookie = xcb_intern_atom(screen->xcb_connection(),
                                                            true,
                                                            settings_atom_for_screen.length(),

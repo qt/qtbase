@@ -33,7 +33,6 @@
 
 #include <qimage.h>
 #include <private/qdrawhelper_p.h>
-#include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 
@@ -45,7 +44,7 @@ const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *
                                                       const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
+        buffer[i] = 0xff000000 | qUnpremultiply(src[i]);
     return buffer;
 }
 

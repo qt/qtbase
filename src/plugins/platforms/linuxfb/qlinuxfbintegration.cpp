@@ -49,7 +49,7 @@
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
 #endif
 
 #if !defined(QT_NO_TSLIB) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
@@ -139,7 +139,7 @@ void QLinuxFbIntegration::createInputHandlers()
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
     else
 #endif // QT_NO_TSLIB
-        new QEvdevTouchScreenHandlerThread(QString(), this);
+        new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
 #endif
 }
 

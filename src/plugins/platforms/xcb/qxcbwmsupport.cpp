@@ -68,7 +68,7 @@ void QXcbWMSupport::updateNetWMAtoms()
         remaining = 0;
 
         if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
-            int len = xcb_get_property_value_length(reply)/4;
+            int len = xcb_get_property_value_length(reply)/sizeof(xcb_atom_t);
             xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
             int s = net_wm_atoms.size();
             net_wm_atoms.resize(s + len);
@@ -102,11 +102,11 @@ void QXcbWMSupport::updateVirtualRoots()
         remaining = 0;
 
         if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
-            int len = xcb_get_property_value_length(reply)/4;
-            xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
-            int s = net_wm_atoms.size();
-            net_wm_atoms.resize(s + len);
-            memcpy(net_wm_atoms.data() + s, atoms, len*sizeof(xcb_atom_t));
+            int len = xcb_get_property_value_length(reply)/sizeof(xcb_window_t);
+            xcb_window_t *roots = (xcb_window_t *)xcb_get_property_value(reply);
+            int s = net_virtual_roots.size();
+            net_virtual_roots.resize(s + len);
+            memcpy(net_virtual_roots.data() + s, roots, len*sizeof(xcb_window_t));
 
             remaining = reply->bytes_after;
             offset += len;

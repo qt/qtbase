@@ -48,7 +48,7 @@ flex.dependency_type = TYPE_C
 flex.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += flex
 
-bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c  --output=${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_NAME}
+bison.commands = $$addGnuPath(win_bison) --no-lines --skeleton=yacc.c  --output=${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_NAME}
 bison.output = ${QMAKE_FILE_BASE}.cpp
 bison.input = BISON_SOURCES
 bison.dependency_type = TYPE_C

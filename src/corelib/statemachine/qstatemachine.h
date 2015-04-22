@@ -145,16 +145,8 @@ public Q_SLOTS:
     void setRunning(bool running);
 
 Q_SIGNALS:
-    void started(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void stopped(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void started(QPrivateSignal);
+    void stopped(QPrivateSignal);
     void runningChanged(bool running);
 
 

@@ -1254,6 +1254,54 @@ void tst_QMetaType::registerType()
     QCOMPARE(qRegisterMetaType<MyFoo>("MyFoo"), fooId);
 
     QCOMPARE(QMetaType::type("MyFoo"), fooId);
+
+    // cannot unregister built-in types
+    QVERIFY(!QMetaType::unregisterType(QMetaType::QString));
+    QCOMPARE(QMetaType::type("QString"), int(QMetaType::QString));
+    QCOMPARE(QMetaType::type("MyString"), int(QMetaType::QString));
+
+    // cannot unregister declared types
+    QVERIFY(!QMetaType::unregisterType(fooId));
+    QCOMPARE(QMetaType::type("TestSpace::Foo"), fooId);
+    QCOMPARE(QMetaType::type("MyFoo"), fooId);
+
+    // test unregistration of dynamic types (used by Qml)
+    int unregId = QMetaType::registerType("UnregisterMe",
+                                          0,
+                                          0,
+                                          QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
+                                          QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
+                                          0, QMetaType::TypeFlags(), 0);
+    QCOMPARE(QMetaType::registerTypedef("UnregisterMeTypedef", unregId), unregId);
+    int unregId2 = QMetaType::registerType("UnregisterMe2",
+                                           0,
+                                           0,
+                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
+                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
+                                           0, QMetaType::TypeFlags(), 0);
+    QVERIFY(unregId >= int(QMetaType::User));
+    QCOMPARE(unregId2, unregId + 2);
+
+    QVERIFY(QMetaType::unregisterType(unregId));
+    QCOMPARE(QMetaType::type("UnregisterMe"), 0);
+    QCOMPARE(QMetaType::type("UnregisterMeTypedef"), 0);
+    QCOMPARE(QMetaType::type("UnregisterMe2"), unregId2);
+    QVERIFY(QMetaType::unregisterType(unregId2));
+    QCOMPARE(QMetaType::type("UnregisterMe2"), 0);
+
+    // re-registering should always return the lowest free index
+    QCOMPARE(QMetaType::registerType("UnregisterMe2",
+                                     0,
+                                     0,
+                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
+                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
+                                     0, QMetaType::TypeFlags(), 0), unregId);
+    QCOMPARE(QMetaType::registerType("UnregisterMe",
+                                     0,
+                                     0,
+                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
+                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
+                                     0, QMetaType::TypeFlags(), 0), unregId + 1);
 }
 
 class IsRegisteredDummyType { };

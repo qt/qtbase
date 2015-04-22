@@ -67,16 +67,8 @@ protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
-    void senderObjectChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void signalChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void senderObjectChanged(QPrivateSignal);
+    void signalChanged(QPrivateSignal);
 
 private:
     Q_DISABLE_COPY(QSignalTransition)

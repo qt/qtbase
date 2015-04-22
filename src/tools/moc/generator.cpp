@@ -1310,6 +1310,7 @@ void Generator::generateStaticMetacall()
             } else {
                 fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
             }
+            fprintf(out, "        Q_UNUSED(_t)\n");
             if (needTempVarForGet)
                 fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
@@ -1355,6 +1356,7 @@ void Generator::generateStaticMetacall()
             } else {
                 fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
             }
+            fprintf(out, "        Q_UNUSED(_t)\n");
             fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
@@ -1408,6 +1410,7 @@ void Generator::generateStaticMetacall()
             } else {
                 fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
             }
+            fprintf(out, "        Q_UNUSED(_t)\n");
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);

@@ -171,11 +171,7 @@ public Q_SLOTS:
     static void quit();
 
 Q_SIGNALS:
-    void aboutToQuit(
-#if !defined(Q_QDOC)
-    QPrivateSignal
-#endif
-    );
+    void aboutToQuit(QPrivateSignal);
 
     void organizationNameChanged();
     void organizationDomainChanged();

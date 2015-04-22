@@ -117,7 +117,7 @@ static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *
     return buffer;
 }
 
-#ifdef QT_COMPILER_SUPPORTS_SSE4_1
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1) && !defined(__SSE4_1__)
 extern const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
 #endif
 
@@ -144,7 +144,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         if (src->format == QImage::Format_RGB32)
             convertToARGB32PM = convertRGB32ToARGB32PM;
         if (dest->format == QImage::Format_RGB32) {
-#ifdef QT_COMPILER_SUPPORTS_SSE4_1
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1) && !defined(__SSE4_1__)
             if (qCpuHasFeature(SSE4_1))
                 convertFromARGB32PM = convertRGB32FromARGB32PM_sse4;
             else
@@ -193,7 +193,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         if (data->format == QImage::Format_RGB32)
             convertToARGB32PM = convertRGB32ToARGB32PM;
         if (dst_format == QImage::Format_RGB32) {
-#ifdef QT_COMPILER_SUPPORTS_SSE4_1
+#if defined(QT_COMPILER_SUPPORTS_SSE4_1) && !defined(__SSE4_1__)
             if (qCpuHasFeature(SSE4_1))
                 convertFromARGB32PM = convertRGB32FromARGB32PM_sse4;
             else

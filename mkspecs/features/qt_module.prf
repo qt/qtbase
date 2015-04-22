@@ -60,10 +60,6 @@ MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
 load(qt_module_pris)
 
-INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
-
-!no_module_headers: load(qt_module_headers)
-
 #other
 TEMPLATE         = lib
 DESTDIR          = $$eval(QT.$${MODULE_ID}.libs)
@@ -72,6 +68,11 @@ win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE_ID}.bins)
 CONFIG          += qmake_cache target_qt
 
 QMAKE_DOCS_TARGETDIR = qt$${MODULE}
+
+load(qt_common)
+
+!no_module_headers: load(qt_module_headers)
+INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
 
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
@@ -175,7 +176,6 @@ android: CONFIG += qt_android_deps
 load(qt_installs)
 
 load(qt_targets)
-load(qt_common)
 
 # this builds on top of qt_common
 unix|mingw {

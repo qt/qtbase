@@ -144,7 +144,6 @@ EXPORTS
     glViewport@16                            @142
 
     ; Extensions
-    glTexImage3DOES@40                       @143
     glBlitFramebufferANGLE@40                @149
     glRenderbufferStorageMultisampleANGLE@20 @150
     glDeleteFencesNV@8                       @151
@@ -285,12 +284,5 @@ EXPORTS
     glTexStorage3D@24                        @282
     glGetInternalformativ@20                 @283
 
-    ; EGL dependencies
-    glCreateContext                          @144 NONAME
-    glDestroyContext                         @145 NONAME
-    glMakeCurrent                            @146 NONAME
-    glGetCurrentContext                      @147 NONAME
-    glGetProcAddress@4                       @148 NONAME
-    glBindTexImage@4                         @158 NONAME
-    glCreateRenderer                         @177 NONAME
-    glDestroyRenderer                        @178 NONAME
+    ; Setting up TRACE macro callbacks
+    SetTraceFunctionPointers@8               @284

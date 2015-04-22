@@ -2549,21 +2549,6 @@ bool QTextEngine::atWordSeparator(int position) const
     return false;
 }
 
-bool QTextEngine::atSpace(int position) const
-{
-    const QChar c = layoutData->string.at(position);
-    switch (c.unicode()) {
-    case QChar::Tabulation:
-    case QChar::Space:
-    case QChar::Nbsp:
-    case QChar::LineSeparator:
-        return true;
-    default:
-        break;
-    }
-    return false;
-}
-
 void QTextEngine::setPreeditArea(int position, const QString &preeditText)
 {
     if (preeditText.isEmpty()) {

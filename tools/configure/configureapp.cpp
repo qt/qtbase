@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2013 Intel Corporation
+** Copyright (C) 2014 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -927,6 +927,10 @@ void Configure::parseCmdLine()
             dictionary[ "WERROR" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-warnings-are-errors") {
             dictionary[ "WERROR" ] = "no";
+        } else if (configCmdLine.at(i) == "-no-headersclean") {
+            dictionary[ "HEADERSCLEAN" ] = "no";
+        } else if (configCmdLine.at(i) == "-headersclean") {
+            dictionary[ "HEADERSCLEAN" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-eventfd") {
             dictionary[ "QT_EVENTFD" ] = "no";
         } else if (configCmdLine.at(i) == "-eventfd") {
@@ -1459,9 +1463,13 @@ void Configure::parseCmdLine()
         qtConfig << "private_tests";
         if (dictionary["WERROR"] != "no")
             qmakeConfig << "warnings_are_errors";
+        if (dictionary["HEADERSCLEAN"] != "no")
+            qmakeConfig << "headersclean";
     } else {
         if (dictionary["WERROR"] == "yes")
             qmakeConfig << "warnings_are_errors";
+        if (dictionary["HEADERSCLEAN"] == "yes")
+            qmakeConfig << "headersclean";
     }
 
     if (dictionary["FORCE_ASSERTS"] == "yes")

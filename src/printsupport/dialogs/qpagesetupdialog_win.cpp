@@ -94,7 +94,7 @@ int QPageSetupDialog::exec()
     parent = parent ? parent->window() : QApplication::activeWindow();
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
 
-    QWindow *parentWindow = parent->windowHandle();
+    QWindow *parentWindow = parent ? parent->windowHandle() : 0;
     psd.hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
 
     psd.Flags = PSD_MARGINS;

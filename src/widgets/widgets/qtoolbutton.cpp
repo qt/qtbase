@@ -733,9 +733,9 @@ void QToolButtonPrivate::popupTimerDone()
         horizontal = false;
 #endif
     QPoint p;
-    QRect screen = QApplication::desktop()->availableGeometry(q);
+    const QRect rect = q->rect(); // Find screen via point in case of QGraphicsProxyWidget.
+    QRect screen = QApplication::desktop()->availableGeometry(q->mapToGlobal(rect.center()));
     QSize sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
-    QRect rect = q->rect();
     if (horizontal) {
         if (q->isRightToLeft()) {
             if (q->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {

@@ -103,31 +103,11 @@ public:
 #endif
 
 Q_SIGNALS:
-    void finished(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void propertiesAssigned(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void childModeChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void initialStateChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void errorStateChanged(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void finished(QPrivateSignal);
+    void propertiesAssigned(QPrivateSignal);
+    void childModeChanged(QPrivateSignal);
+    void initialStateChanged(QPrivateSignal);
+    void errorStateChanged(QPrivateSignal);
 
 protected:
     void onEntry(QEvent *event) Q_DECL_OVERRIDE;

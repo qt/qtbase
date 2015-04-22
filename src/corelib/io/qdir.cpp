@@ -219,7 +219,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
     if ((qt_cmp_si_sort_flags & QDir::DirsLast) && (f1->item.isDir() != f2->item.isDir()))
         return !f1->item.isDir();
 
-    int r = 0;
+    qint64 r = 0;
     int sortBy = (qt_cmp_si_sort_flags & QDir::SortByMask)
                  | (qt_cmp_si_sort_flags & QDir::Type);
 
@@ -1818,8 +1818,8 @@ QFileInfoList QDir::drives()
 }
 
 /*!
-    Returns the native directory separator: "/" under Unix (including
-    Mac OS X) and "\\" under Windows.
+    Returns the native directory separator: "/" under Unix
+    and "\\" under Windows.
 
     You do not need to use this function to build file paths. If you
     always use "/", Qt will translate your paths to conform to the

@@ -484,6 +484,7 @@ public:
                             int size,
                             QMetaType::TypeFlags flags,
                             const QMetaObject *metaObject);
+    static bool unregisterType(int type);
     static int registerNormalizedType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, Deleter deleter,
                             Creator creator,
                             Destructor destructor,

@@ -80,28 +80,24 @@ static const int composingKeys[] = {
 };
 
 QComposeInputContext::QComposeInputContext()
+    : m_tableState(TableGenerator::EmptyTable)
+    , m_compositionTableInitialized(false)
 {
-    TableGenerator reader;
-    m_tableState = reader.tableState();
-
-    if ((m_tableState & TableGenerator::NoErrors) == TableGenerator::NoErrors) {
-        m_composeTable = reader.composeTable();
-        clearComposeBuffer();
-    }
+    clearComposeBuffer();
 }
 
 bool QComposeInputContext::filterEvent(const QEvent *event)
 {
-    // if there were errors when generating the compose table input
-    // context should not try to filter anything, simply return false
-    if ((m_tableState & TableGenerator::NoErrors) != TableGenerator::NoErrors)
-        return false;
-
     const QKeyEvent *keyEvent = (const QKeyEvent *)event;
     // should pass only the key presses
     if (keyEvent->type() != QEvent::KeyPress) {
         return false;
     }
+
+    // if there were errors when generating the compose table input
+    // context should not try to filter anything, simply return false
+    if (m_compositionTableInitialized && (m_tableState & TableGenerator::NoErrors) != TableGenerator::NoErrors)
+        return false;
 
     int keyval = keyEvent->key();
     int keysym = 0;
@@ -109,8 +105,7 @@ bool QComposeInputContext::filterEvent(const QEvent *event)
     if (ignoreKey(keyval))
         return false;
 
-    QString text = keyEvent->text();
-    if (!composeKey(keyval) && text.isEmpty())
+    if (!composeKey(keyval) && keyEvent->text().isEmpty())
         return false;
 
     keysym = keyEvent->nativeVirtualKey();
@@ -163,6 +158,15 @@ static bool isDuplicate(const QComposeTableElement &lhs, const QComposeTableElem
 
 bool QComposeInputContext::checkComposeTable()
 {
+    if (!m_compositionTableInitialized) {
+        TableGenerator reader;
+        m_tableState = reader.tableState();
+
+        if ((m_tableState & TableGenerator::NoErrors) == TableGenerator::NoErrors)
+            m_composeTable = reader.composeTable();
+
+        m_compositionTableInitialized = true;
+    }
     QVector<QComposeTableElement>::const_iterator it =
             std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
 

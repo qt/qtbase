@@ -120,7 +120,8 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
     swizzleMask[2] = QOpenGLTexture::BlueValue;
     swizzleMask[3] = QOpenGLTexture::AlphaValue;
 
-    wrapModes[0] = wrapModes[1] = wrapModes[2] = QOpenGLTexture::ClampToEdge;
+    wrapModes[0] = wrapModes[1] = wrapModes[2] = target == QOpenGLTexture::TargetRectangle
+        ? QOpenGLTexture::ClampToEdge : QOpenGLTexture::Repeat;
 }
 
 QOpenGLTexturePrivate::~QOpenGLTexturePrivate()
@@ -215,7 +216,8 @@ void QOpenGLTexturePrivate::destroy()
     swizzleMask[2] = QOpenGLTexture::BlueValue;
     swizzleMask[3] = QOpenGLTexture::AlphaValue;
 
-    wrapModes[0] = wrapModes[1] = wrapModes[2] = QOpenGLTexture::ClampToEdge;
+    wrapModes[0] = wrapModes[1] = wrapModes[2] = target == QOpenGLTexture::TargetRectangle
+        ? QOpenGLTexture::ClampToEdge : QOpenGLTexture::Repeat;
 }
 
 void QOpenGLTexturePrivate::bind()
@@ -1393,7 +1395,7 @@ QOpenGLTexture::WrapMode QOpenGLTexturePrivate::wrapMode(QOpenGLTexture::Coordin
 
         case QOpenGLTexture::DirectionT:
         case QOpenGLTexture::DirectionR:
-            qWarning("QOpenGLTexture::setWrapMode() direction not valid for this texture target");
+            qWarning("QOpenGLTexture::wrapMode() direction not valid for this texture target");
             return QOpenGLTexture::Repeat;
         }
         break;
@@ -1413,7 +1415,7 @@ QOpenGLTexture::WrapMode QOpenGLTexturePrivate::wrapMode(QOpenGLTexture::Coordin
             return wrapModes[1];
 
         case QOpenGLTexture::DirectionR:
-            qWarning("QOpenGLTexture::setWrapMode() direction not valid for this texture target");
+            qWarning("QOpenGLTexture::wrapMode() direction not valid for this texture target");
             return QOpenGLTexture::Repeat;
         }
         break;

@@ -61,11 +61,7 @@ public Q_SLOTS:
     void setEnabled(bool enable);
 
 Q_SIGNALS:
-    void activated(HANDLE hEvent
-#if !defined(Q_QDOC)
-    , QPrivateSignal
-#endif
-    );
+    void activated(HANDLE hEvent, QPrivateSignal);
 
 protected:
     bool event(QEvent * e);

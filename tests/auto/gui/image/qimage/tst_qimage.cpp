@@ -108,6 +108,7 @@ private slots:
     void cacheKey();
 
     void smoothScale();
+    void smoothScale2_data();
     void smoothScale2();
     void smoothScale3();
 
@@ -1539,58 +1540,68 @@ void tst_QImage::smoothScale()
 }
 
 // test area sampling
+void tst_QImage::smoothScale2_data()
+{
+    QTest::addColumn<int>("format");
+    QTest::addColumn<int>("size");
+
+    int sizes[] = { 2, 3, 4, 6, 7, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128, 0 };
+    QImage::Format formats[] = { QImage::Format_RGB32, QImage::Format_ARGB32_Premultiplied, QImage::Format_Invalid };
+    for (int j = 0; formats[j] != QImage::Format_Invalid; ++j) {
+        QString formatstr = formats[j] == QImage::Format_RGB32 ? QStringLiteral("rgb32") : QStringLiteral("argb32pm");
+        for (int i = 0; sizes[i] != 0; ++i) {
+            QTest::newRow(QString("%1 %2x%2").arg(formatstr).arg(sizes[i]).toUtf8()) << (int)formats[j] << sizes[i];
+        }
+    }
+}
+
 void tst_QImage::smoothScale2()
 {
-    int sizes[] = { 2, 4, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128, 0 };
-    QImage::Format formats[] = { QImage::Format_ARGB32, QImage::Format_RGB32, QImage::Format_Invalid };
-    for (int i = 0; sizes[i] != 0; ++i) {
-        for (int j = 0; formats[j] != QImage::Format_Invalid; ++j) {
-            int size = sizes[i];
+    QFETCH(int, format);
+    QFETCH(int, size);
 
-            QRgb expected = formats[j] == QImage::Format_ARGB32 ? qRgba(63, 127, 255, 255) : qRgb(63, 127, 255);
+    QRgb expected = format == QImage::Format_RGB32 ? qRgb(63, 127, 255) : qRgba(31, 63, 127, 127);
 
-            QImage img(size, size, formats[j]);
-            img.fill(expected);
+    QImage img(size, size, (QImage::Format)format);
+    img.fill(expected);
 
-            // scale x down, y down
-            QImage scaled = img.scaled(QSize(1, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            QRgb pixel = scaled.pixel(0, 0);
+    // scale x down, y down
+    QImage scaled = img.scaled(QSize(1, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QRgb pixel = scaled.pixel(0, 0);
+    QCOMPARE(qAlpha(pixel), qAlpha(expected));
+    QCOMPARE(qRed(pixel), qRed(expected));
+    QCOMPARE(qGreen(pixel), qGreen(expected));
+    QCOMPARE(qBlue(pixel), qBlue(expected));
+
+    // scale x down, y up
+    scaled = img.scaled(QSize(1, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        pixel = scaled.pixel(0, y);
+        QCOMPARE(qAlpha(pixel), qAlpha(expected));
+        QCOMPARE(qRed(pixel), qRed(expected));
+        QCOMPARE(qGreen(pixel), qGreen(expected));
+        QCOMPARE(qBlue(pixel), qBlue(expected));
+    }
+
+    // scale x up, y down
+    scaled = img.scaled(QSize(size * 2, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int x = 0; x < scaled.width(); ++x) {
+        pixel = scaled.pixel(x, 0);
+        QCOMPARE(qAlpha(pixel), qAlpha(expected));
+        QCOMPARE(qRed(pixel), qRed(expected));
+        QCOMPARE(qGreen(pixel), qGreen(expected));
+        QCOMPARE(qBlue(pixel), qBlue(expected));
+    }
+
+    // scale x up, y up
+    scaled = img.scaled(QSize(size * 2, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = scaled.pixel(x, y);
             QCOMPARE(qAlpha(pixel), qAlpha(expected));
             QCOMPARE(qRed(pixel), qRed(expected));
             QCOMPARE(qGreen(pixel), qGreen(expected));
             QCOMPARE(qBlue(pixel), qBlue(expected));
-
-            // scale x down, y up
-            scaled = img.scaled(QSize(1, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            for (int y = 0; y < scaled.height(); ++y) {
-                pixel = scaled.pixel(0, y);
-                QCOMPARE(qAlpha(pixel), qAlpha(expected));
-                QCOMPARE(qRed(pixel), qRed(expected));
-                QCOMPARE(qGreen(pixel), qGreen(expected));
-                QCOMPARE(qBlue(pixel), qBlue(expected));
-            }
-
-            // scale x up, y down
-            scaled = img.scaled(QSize(size * 2, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            for (int x = 0; x < scaled.width(); ++x) {
-                pixel = scaled.pixel(x, 0);
-                QCOMPARE(qAlpha(pixel), qAlpha(expected));
-                QCOMPARE(qRed(pixel), qRed(expected));
-                QCOMPARE(qGreen(pixel), qGreen(expected));
-                QCOMPARE(qBlue(pixel), qBlue(expected));
-            }
-
-            // scale x up, y up
-            scaled = img.scaled(QSize(size * 2, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            for (int y = 0; y < scaled.height(); ++y) {
-                for (int x = 0; x < scaled.width(); ++x) {
-                    pixel = scaled.pixel(x, y);
-                    QCOMPARE(qAlpha(pixel), qAlpha(expected));
-                    QCOMPARE(qRed(pixel), qRed(expected));
-                    QCOMPARE(qGreen(pixel), qGreen(expected));
-                    QCOMPARE(qBlue(pixel), qBlue(expected));
-                }
-            }
         }
     }
 }

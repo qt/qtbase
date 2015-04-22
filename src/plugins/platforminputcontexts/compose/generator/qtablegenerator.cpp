@@ -554,6 +554,10 @@ void TableGenerator::parseKeySequence(char *line)
     if (!composeValueEnd)
         return;
 
+    // if composed value is a quotation mark adjust the end pointer
+    if (composeValueEnd[1] == '"')
+        ++composeValueEnd;
+
     if (*composeValue == '\\' && composeValue[1] >= '0' && composeValue[1] <= '9') {
         // handle octal and hex code values
         char detectBase = composeValue[2];
@@ -568,7 +572,7 @@ void TableGenerator::parseKeySequence(char *line)
         // handle direct text encoded in the locale
         if (*composeValue == '\\')
             ++composeValue;
-        elem.value = QString::fromLocal8Bit(composeValue).at(0).unicode();
+        elem.value = QString::fromLocal8Bit(composeValue, composeValueEnd - composeValue).at(0).unicode();
         ++composeValue;
     }
 

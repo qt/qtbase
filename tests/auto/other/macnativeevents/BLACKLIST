@@ -1,0 +1,11 @@
+# QTBUG-22775
+[testDragWindow]
+osx
+[testMouseEnter]
+osx-10.9
+[testChildDialogInFrontOfModalParent]
+osx
+[testChildWindowInFrontOfStaysOnTopParentWindow]
+osx
+[testModifierCtrlWithDontSwapCtrlAndMeta]
+osx

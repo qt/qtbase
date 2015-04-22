@@ -231,6 +231,8 @@ QPlatformServices *QPlatformIntegration::services() const
     implementation for QOpenGLContext::getProcAddress() and support returning a function
     pointer also for the standard, non-extension functions. This capability is a
     prerequisite for dynamic OpenGL loading.
+
+    \value ApplicationIcon The platform supports setting the application icon. (since 5.5)
  */
 
 /*!
@@ -394,6 +396,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::TabFocusBehavior);
     case ReplayMousePressOutsidePopup:
         return true;
+    case ItemViewActivateItemOnSingleClick:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::ItemViewActivateItemOnSingleClick);
     }
 
     return 0;
@@ -543,5 +547,17 @@ QOpenGLContext::OpenGLModuleType QPlatformIntegration::openGLModuleType()
     return QOpenGLContext::LibGL;
 }
 #endif
+
+/*!
+    \since 5.5
+
+    Platform integration function for setting the application icon.
+
+    \sa QGuiApplication::setWindowIcon()
+*/
+void QPlatformIntegration::setApplicationIcon(const QIcon &icon) const
+{
+    Q_UNUSED(icon);
+}
 
 QT_END_NAMESPACE

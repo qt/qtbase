@@ -787,14 +787,18 @@ void VcprojGenerator::init()
 
     processVars();
 
-    if(!project->values("VERSION").isEmpty()) {
-        QString version = project->values("VERSION")[0].toQString();
-        int firstDot = version.indexOf(".");
-        QString major = version.left(firstDot);
-        QString minor = version.right(version.length() - firstDot - 1);
-        minor.replace(QRegExp("\\."), "");
-        project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
+    // set /VERSION for EXE/DLL header
+    ProString major_minor = project->first("VERSION_PE_HEADER");
+    if (major_minor.isEmpty()) {
+        ProString version = project->first("VERSION");
+        if (!version.isEmpty()) {
+            int firstDot = version.indexOf(".");
+            int secondDot = version.indexOf(".", firstDot + 1);
+            major_minor = version.left(secondDot);
+        }
     }
+    if (!major_minor.isEmpty())
+        project->values("QMAKE_LFLAGS").append("/VERSION:" + major_minor);
 
     MakefileGenerator::init();
 
@@ -1414,9 +1418,29 @@ void VcprojGenerator::initWinDeployQtTool()
     conf.windeployqt.ExcludedFromBuild = true;
     if (project->isActiveConfig("windeployqt")) {
         conf.windeployqt.Record = QStringLiteral("$(TargetName).windeployqt.$(Platform).$(Configuration)");
-        conf.windeployqt.CommandLine =
-                MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
-                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '))
+        const QString commandLine = MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
+                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '));
+
+        //  Visual Studio copies all files to be deployed into the MSIL directory
+        //  and then invokes MDILXapCompile on it, which checks for managed code and
+        //  translates it into native code. The problem is that all entries of the
+        //  package will be copied into the MSIL directly, losing the subdirectory
+        //  structure (for instance for plugins). However, the MDILXapCompile call
+        //  itself contains the original subdirectories as parameters and hence the
+        //  call fails.
+        //  Neither there is a way to disable this behavior for Windows Phone, nor
+        //  to influence the parameters. Hence the only way to get a release build
+        //  done is to recreate the directory structure manually by invoking
+        //  windeployqt a second time, so that the MDILXapCompile call succeeds and
+        //  deployment continues.
+        if (conf.WinPhone && conf.Name == QStringLiteral("Release|ARM")) {
+            conf.windeployqt.CommandLine = commandLine
+                    + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\\")
+                    + var("OBJECTS_DIR")
+                    + QStringLiteral("MSIL\" \"$(OutDir)\\$(TargetName).exe\" ")
+                    + QLatin1String(" && ");
+        }
+        conf.windeployqt.CommandLine += commandLine
                 + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
                 + MakefileGenerator::shellQuote(conf.windeployqt.Record);
         conf.windeployqt.config = &vcProject.Configuration;
@@ -1564,7 +1588,7 @@ void VcprojGenerator::initResourceFiles()
                         QT_PCLOSE(proc);
                         if(!indeps.isEmpty())
                             deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '),
-                                               QString(), Option::output_dir);
+                                               FileFixifyFromOutdir);
                     }
                 }
             }

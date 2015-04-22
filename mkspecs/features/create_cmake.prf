@@ -173,9 +173,28 @@ contains(CONFIG, plugin) {
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
-CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
-!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
+sorted_deps = $$sort_depends(QT.$${MODULE}.depends, QT.)
+mod_deps =
+lib_deps =
+aux_mod_deps =
+aux_lib_deps =
+# Until CMake 3.0 is the minimum requirement of Qt 5, we need to filter
+# out header-only modules from dependencies.  CMake 3.0 provides INTERFACE
+# libraries which are equivalent to header-only modules.
+for (dep, sorted_deps) {
+    cdep = $$cmakeModuleName($$dep)
+    !contains(QT.$${dep}.module_config, no_link) {
+        mod_deps += $$cdep
+        lib_deps += Qt5::$$cdep
+    } else {
+        aux_mod_deps += $$cdep
+        aux_lib_deps += Qt5::$$cdep
+    }
+}
+CMAKE_MODULE_DEPS = $$join(mod_deps, ";")
+CMAKE_QT5_MODULE_DEPS = $$join(lib_deps, ";")
+CMAKE_INTERFACE_MODULE_DEPS = $$join(aux_mod_deps, ";")
+CMAKE_INTERFACE_QT5_MODULE_DEPS = $$join(aux_lib_deps, ";")
 
 CMAKE_QT_STEM = Qt$$QT_MAJOR_VERSION$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
 

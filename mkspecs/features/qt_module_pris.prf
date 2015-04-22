@@ -26,8 +26,11 @@ else: \
     mod_inst_pfx = $$mod_work_pfx
 !internal_module {
     MODULE_ID = $$MODULE
-    MODULE_PRIVATE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE}_private.pri
-    mods_to_load = $$MODULE $${MODULE}_private
+    mods_to_load = $$MODULE
+    !no_private_module {
+        MODULE_PRIVATE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE}_private.pri
+        mods_to_load += $${MODULE}_private
+    }
 } else {
     MODULE_ID = $${MODULE}_private
     mods_to_load = $${MODULE}_private

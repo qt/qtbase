@@ -58,16 +58,8 @@ public:
     bool active() const;
 
 Q_SIGNALS:
-    void entered(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
-    void exited(
-#if !defined(Q_QDOC)
-      QPrivateSignal
-#endif
-    );
+    void entered(QPrivateSignal);
+    void exited(QPrivateSignal);
     void activeChanged(bool active);
 
 protected:

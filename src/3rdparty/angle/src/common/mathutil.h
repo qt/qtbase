@@ -6,8 +6,8 @@
 
 // mathutil.h: Math and bit manipulation functions.
 
-#ifndef LIBGLESV2_MATHUTIL_H_
-#define LIBGLESV2_MATHUTIL_H_
+#ifndef COMMON_MATHUTIL_H_
+#define COMMON_MATHUTIL_H_
 
 #include "common/debug.h"
 #include "common/platform.h"
@@ -15,6 +15,7 @@
 #include <limits>
 #include <algorithm>
 #include <string.h>
+#include <stdlib.h>
 
 namespace gl
 {
@@ -118,6 +119,9 @@ inline bool supportsSSE2()
         return supports;
     }
 
+#if defined(__GNUC__)
+    supports = __builtin_cpu_supports("sse2");
+#else
     int info[4];
     __cpuid(info, 0);
 
@@ -127,6 +131,7 @@ inline bool supportsSSE2()
 
         supports = (info[3] >> 26) & 1;
     }
+#endif
 
     checked = true;
 
@@ -353,7 +358,7 @@ inline float float11ToFloat32(unsigned short fp11)
         }
         else // The value is zero
         {
-            exponent = -112;
+            exponent = static_cast<unsigned short>(-112);
         }
 
         return bitCast<float>(((exponent + 112) << 23) | (mantissa << 17));
@@ -392,7 +397,7 @@ inline float float10ToFloat32(unsigned short fp11)
         }
         else // The value is zero
         {
-            exponent = -112;
+            exponent = static_cast<unsigned short>(-112);
         }
 
         return bitCast<float>(((exponent + 112) << 23) | (mantissa << 18));
@@ -402,7 +407,7 @@ inline float float10ToFloat32(unsigned short fp11)
 template <typename T>
 inline float normalizedToFloat(T input)
 {
-    META_ASSERT(std::numeric_limits<T>::is_integer);
+    static_assert(std::numeric_limits<T>::is_integer, "T must be an integer.");
 
     const float inverseMax = 1.0f / std::numeric_limits<T>::max();
     return input * inverseMax;
@@ -411,8 +416,8 @@ inline float normalizedToFloat(T input)
 template <unsigned int inputBitCount, typename T>
 inline float normalizedToFloat(T input)
 {
-    META_ASSERT(std::numeric_limits<T>::is_integer);
-    META_ASSERT(inputBitCount < (sizeof(T) * 8));
+    static_assert(std::numeric_limits<T>::is_integer, "T must be an integer.");
+    static_assert(inputBitCount < (sizeof(T) * 8), "T must have more bits than inputBitCount.");
 
     const float inverseMax = 1.0f / ((1 << inputBitCount) - 1);
     return input * inverseMax;
@@ -427,14 +432,15 @@ inline T floatToNormalized(float input)
 template <unsigned int outputBitCount, typename T>
 inline T floatToNormalized(float input)
 {
-    META_ASSERT(outputBitCount < (sizeof(T) * 8));
+    static_assert(outputBitCount < (sizeof(T) * 8), "T must have more bits than outputBitCount.");
     return ((1 << outputBitCount) - 1) * input + 0.5f;
 }
 
 template <unsigned int inputBitCount, unsigned int inputBitStart, typename T>
 inline T getShiftedData(T input)
 {
-    META_ASSERT(inputBitCount + inputBitStart <= (sizeof(T) * 8));
+    static_assert(inputBitCount + inputBitStart <= (sizeof(T) * 8),
+                  "T must have at least as many bits as inputBitCount + inputBitStart.");
     const T mask = (1 << inputBitCount) - 1;
     return (input >> inputBitStart) & mask;
 }
@@ -442,7 +448,8 @@ inline T getShiftedData(T input)
 template <unsigned int inputBitCount, unsigned int inputBitStart, typename T>
 inline T shiftData(T input)
 {
-    META_ASSERT(inputBitCount + inputBitStart <= (sizeof(T) * 8));
+    static_assert(inputBitCount + inputBitStart <= (sizeof(T) * 8),
+                  "T must have at least as many bits as inputBitCount + inputBitStart.");
     const T mask = (1 << inputBitCount) - 1;
     return (input & mask) << inputBitStart;
 }
@@ -503,6 +510,7 @@ inline unsigned int averageFloat10(unsigned int a, unsigned int b)
 namespace rx
 {
 
+// Represents intervals of the type [a, b)
 template <typename T>
 struct Range
 {
@@ -513,6 +521,18 @@ struct Range
     T end;
 
     T length() const { return end - start; }
+
+    bool intersects(Range<T> other)
+    {
+        if (start <= other.start)
+        {
+            return other.start < end;
+        }
+        else
+        {
+            return start < other.end;
+        }
+    }
 };
 
 typedef Range<int> RangeI;
@@ -533,14 +553,14 @@ inline unsigned int UnsignedCeilDivide(unsigned int value, unsigned int divisor)
 template <class T>
 inline bool IsUnsignedAdditionSafe(T lhs, T rhs)
 {
-    META_ASSERT(!std::numeric_limits<T>::is_signed);
+    static_assert(!std::numeric_limits<T>::is_signed, "T must be unsigned.");
     return (rhs <= std::numeric_limits<T>::max() - lhs);
 }
 
 template <class T>
 inline bool IsUnsignedMultiplicationSafe(T lhs, T rhs)
 {
-    META_ASSERT(!std::numeric_limits<T>::is_signed);
+    static_assert(!std::numeric_limits<T>::is_signed, "T must be unsigned.");
     return (lhs == T(0) || rhs == T(0) || (rhs <= std::numeric_limits<T>::max() / lhs));
 }
 
@@ -550,6 +570,21 @@ inline bool IsIntegerCastSafe(BigIntT bigValue)
     return (static_cast<BigIntT>(static_cast<SmallIntT>(bigValue)) == bigValue);
 }
 
+#if defined(_MSC_VER)
+
+#define ANGLE_ROTL(x,y) _rotl(x,y)
+
+#else
+
+inline uint32_t RotL(uint32_t x, int8_t r)
+{
+    return (x << r) | (x >> (32 - r));
 }
 
-#endif   // LIBGLESV2_MATHUTIL_H_
+#define ANGLE_ROTL(x,y) RotL(x,y)
+
+#endif // namespace rx
+
+}
+
+#endif   // COMMON_MATHUTIL_H_

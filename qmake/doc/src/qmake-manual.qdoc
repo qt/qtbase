@@ -763,9 +763,55 @@
 
     \section1 Windows
 
-    Features specific to this platform include support for creating Visual
-    Studio project files and handling manifest files when deploying Qt
-    applications developed using Visual Studio 2005, or later.
+    Features specific to this platform include support for Windows resource
+    files (provided or auto-generated), creating Visual Studio project files,
+    and handling manifest files when deploying Qt applications developed
+    using Visual Studio 2005, or later.
+
+    \section2 Adding Windows Resource Files
+
+    This section describes how to handle a Windows resource file with
+    qmake to have it linked to an application executable (EXE) or dynamic
+    link library (DLL). qmake can optionally auto-generate a suitably
+    filled Windows resource file.
+
+    A linked Windows resource file may contain many elements that can
+    be accessed by its EXE or DLL. However, the
+    \l{The Qt Resource System}{Qt resource system} should be used for
+    accessing linked-in resources in a platform-independent way. But
+    some standard elements of the linked Windows resource file are
+    accessed by Windows itself. For example, in Windows explorer the
+    version tab of the file properties is filled by resource elements.
+    In addition, the program icon of the EXE is read from these elements.
+    So it is good practice for a Qt created Windows EXE or DLL to use
+    both techniques at the same time: link platform-independent resources
+    via the \l{The Qt Resource System}{Qt resource system} and add Windows
+    specific resources via a Windows resource file.
+
+    Typically, a resource-definition script (.rc file) is compiled to a
+    Windows resource file. Within the Microsoft toolchain, the RC tool
+    generates a .res file, which can be linked with the Microsoft linker
+    to an EXE or DLL. The MinGW toolchain uses the windres tool to generate
+    an .o file that can be linked with the MinGW linker to an EXE or DLL.
+
+    The optional auto-generation of a suitably filled .rc file by qmake is
+    triggered by setting at least one of the system variables \l{VERSION}
+    and \l{RC_ICONS}. The generated .rc file is automatically compiled and
+    linked. Elements that are added to the .rc file are defined by the system
+    variables \l{QMAKE_TARGET_COMPANY}, \l{QMAKE_TARGET_DESCRIPTION},
+    \l{QMAKE_TARGET_COPYRIGHT}, \l{QMAKE_TARGET_PRODUCT}, \l{RC_CODEPAGE},
+    \l{RC_ICONS}, \l{RC_LANG},and \l{VERSION}.
+
+    If these elements are not sufficient, qmake has the two system variables
+    \l{RC_FILE} and \l{RES_FILE} that point directly to an externally created
+    .rc or .res file. By setting one of these variables, the specified file
+    is linked to the EXE or DLL.
+
+    \note The generation of the .rc file by qmake is blocked, if \l{RC_FILE}
+    or \l{RES_FILE} is set. In this case, no further changes are made to the
+    given .rc file or the .res or .o file by qmake; the variables pertaining
+    to .rc file generation have no effect.
+
 
     \section2 Creating Visual Studio Project Files
 
@@ -2132,34 +2178,35 @@
     \target QMAKE_TARGET_COMPANY
     \section1 QMAKE_TARGET_COMPANY
 
-    Windows only. Specifies the company for the project target, this is used where
-    applicable for putting the company name in the application's properties. This is
-    only utilized if the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE
-    variables are not set.
+    Windows only. Specifies the company for the project target; this is
+    used where applicable for putting the company name in the application's
+    properties. This is only utilized if the \l{VERSION} or \l{RC_ICONS}
+    variable is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
     \target QMAKE_TARGET_DESCRIPTION
     \section1 QMAKE_TARGET_DESCRIPTION
 
-    Windows only. Specifies the description for the project target, this is used where
-    applicable for putting the description in the application's properties. This is only
-    utilized if the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE variables
-    are not set.
+    Windows only. Specifies the description for the project target; this is
+    used where applicable for putting the description in the application's
+    properties. This is only utilized if the \l{VERSION} or \l{RC_ICONS}
+    variable is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
     \target QMAKE_TARGET_COPYRIGHT
     \section1 QMAKE_TARGET_COPYRIGHT
 
-    Windows only. Specifies the copyright information for the project target, this is used where
-    applicable for putting the copyright information in the application's properties. This is only
-    utilized if the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE variables
+    Windows only. Specifies the copyright information for the project target;
+    this is used where applicable for putting the copyright information in the
+    application's properties. This is only utilized if the \l{VERSION} or
+    \l{RC_ICONS} variable is set and the \l{RC_FILE} and \l{RES_FILE} variables
     are not set.
 
     \target QMAKE_TARGET_PRODUCT
     \section1 QMAKE_TARGET_PRODUCT
 
-    Windows only. Specifies the product for the project target, this is used where
-    applicable for putting the product in the application's properties. This is only utilized if
-    the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE variables
-    are not set.
+    Windows only. Specifies the product for the project target; this is used
+    where applicable for putting the product in the application's properties.
+    This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable is set
+    and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
     \section1 QT
 
@@ -2263,22 +2310,24 @@
     \target RC_CODEPAGE
     \section1 RC_CODEPAGE
 
-    Windows only. Specifies the codepage that should be specified in a generated rc file. This is
-    only utilized if the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE variables
-    are not set.
+    Windows only. Specifies the codepage that should be specified in a generated
+    .rc file. This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable
+    is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
     \target RC_ICONS
     \section1 RC_ICONS
 
-    Windows only. Specifies the icons that should be included into a generated rc file, this
-    is only utilized if the RC_FILE and RES_FILE variable are not set.
+    Windows only. Specifies the icons that should be included into a generated
+    .rc file. This is only utilized if the \l{RC_FILE} and \l{RES_FILE} variable
+    are not set. More details about the generation of .rc files can be found in
+    the \l{Platform Notes}.
 
     \target RC_LANG
     \section1 RC_LANG
 
-    Windows only. Specifies the language that should be specified in a generated rc file. This is
-    only utilized if the VERSION or RC_ICONS variable is set and the RC_FILE and RES_FILE variables
-    are not set.
+    Windows only. Specifies the language that should be specified in a generated
+    .rc file. This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable
+    is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
     \section1 RC_INCLUDEPATH
 
@@ -2477,12 +2526,30 @@
     \target VERSION
     \section1 VERSION
 
-    Specifies the version number of the application if the \c app \l{#TEMPLATE}{template} is
-    specified or the version number of the library if the \c lib template is specified.
+    Specifies the version number of the application if the \c app
+    \l{#TEMPLATE}{template} is specified or the version number of
+    the library if the \c lib template is specified.
+
+    On Windows, triggers auto-generation of an .rc file if the \l{RC_FILE}
+    and \l{RES_FILE} variables are not set. The generated .rc file will have
+    the FILEVERSION and PRODUCTVERSION entries filled with major, minor, patch
+    level, and build number. Each number must be in the range from 0 to 65535.
+    More details about the generation of .rc files can be found in the
+    \l{Platform Notes}.
 
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 57
+
+    \section1 VERSION_PE_HEADER
+
+    Windows only. Specifies the version number, that the Windows linker
+    puts into the header of the .exe or .dll file via the /VERSION option.
+    Only a major and minor version may be specified.
+    If VERSION_PE_HEADER is not set, it falls back to
+    the major and minor version from \l{VERSION} (if set).
+
+    \snippet code/doc_src_qmake-manual.pro 185
 
     \section1 VER_MAJ
 
@@ -4638,7 +4705,9 @@
 
     When using this template, the following qmake
     system variables are recognized. You should use these in your .pro file to
-    specify information about your application.
+    specify information about your application. For additional
+    platform-dependent system variables, you could have a look at the
+    \l{Platform Notes}.
 
     \list
     \li \l{HEADERS} - A list of header files for the application.
@@ -4660,9 +4729,6 @@
     \li \l{VPATH} - The search path to find supplied files.
     \li \l{DEF_FILE} - Windows only: A .def file to be linked against for the
         application.
-    \li \l{RC_FILE} - Windows only: A resource file for the application.
-    \li \l{RES_FILE} - Windows only: A resource file to be linked against for
-        the application.
     \endlist
 
     You only need to use the system variables that you have values for. For

@@ -762,6 +762,7 @@ QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
+CFG_HEADERSCLEAN=auto
 CFG_QREAL=double
 OPT_MAC_SDK=
 COMMERCIAL_USER=ask
@@ -2236,6 +2237,13 @@ while [ "$#" -gt 0 ]; do
     warnings-are-errors|Werror)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_WERROR="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    headersclean)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_HEADERSCLEAN="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6712,8 +6720,16 @@ if [ "$CFG_DEV" = "yes" ]; then
     if [ "$CFG_WERROR" != "no" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
     fi
-elif [ "$CFG_WERROR" = "yes" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
+    if [ "$CFG_HEADERSCLEAN" != "no" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG headersclean"
+    fi
+else
+    if [ "$CFG_WERROR" = "yes" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
+    fi
+    if [ "$CFG_HEADERSCLEAN" = "yes" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG headersclean"
+    fi
 fi
 
 cat >>"$QTCONFIG.tmp" <<EOF
