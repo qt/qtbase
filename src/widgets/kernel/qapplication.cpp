@@ -2312,7 +2312,6 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
  */
 void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, const QPointF &globalPosF)
 {
-    const QPoint globalPos = globalPosF.toPoint();
 #if 0
     if (leave) {
         QEvent e(QEvent::Leave);
@@ -2399,6 +2398,10 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         }
     }
     if (!enterList.isEmpty()) {
+        // Guard against QGuiApplicationPrivate::lastCursorPosition initialized to qInf(), qInf().
+        const QPoint globalPos = qIsInf(globalPosF.x())
+            ? QPoint(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
+            : globalPosF.toPoint();
         const QPoint windowPos = enterList.front()->window()->mapFromGlobal(globalPos);
         for (int i = 0; i < enterList.size(); ++i) {
             w = enterList.at(i);
