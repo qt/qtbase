@@ -446,8 +446,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             if (receiver != popup)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
             QWidget *alien = m_widget->childAt(m_widget->mapFromGlobal(event->globalPos()));
-            QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers());
-            QGuiApplicationPrivate::setMouseEventSource(&e, QGuiApplicationPrivate::mouseEventSource(event));
+            QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
+                          event->button(), event->buttons(), event->modifiers(), event->source());
             e.setTimestamp(event->timestamp());
             QApplicationPrivate::sendMouseEvent(receiver, &e, alien, m_widget, &qt_button_down, qt_last_mouse_receiver);
             qt_last_mouse_receiver = receiver;
@@ -489,9 +489,9 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                         if (globalGeometry.contains(event->globalPos())) {
                             // Use postEvent() to ensure the local QEventLoop terminates when called from QMenu::exec()
                             const QPoint localPos = win->mapFromGlobal(event->globalPos());
-                            QMouseEvent *e = new QMouseEvent(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+                            QMouseEvent *e = new QMouseEvent(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(),
+                                                             event->button(), event->buttons(), event->modifiers(), event->source());
                             QCoreApplicationPrivate::setEventSpontaneous(e, true);
-                            QGuiApplicationPrivate::setMouseEventSource(e, QGuiApplicationPrivate::mouseEventSource(event));
                             e->setTimestamp(event->timestamp());
                             QCoreApplication::postEvent(win, e);
                         }
@@ -548,8 +548,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         // The preceding statement excludes MouseButtonPress events which caused
         // creation of a MouseButtonDblClick event. QTBUG-25831
         QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(),
-                               event->button(), event->buttons(), event->modifiers());
-        QGuiApplicationPrivate::setMouseEventSource(&translated, QGuiApplicationPrivate::mouseEventSource(event));
+                               event->button(), event->buttons(), event->modifiers(), event->source());
         translated.setTimestamp(event->timestamp());
         QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
                                             &qt_button_down, qt_last_mouse_receiver);

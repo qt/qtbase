@@ -3250,12 +3250,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             QPointer<QWidget> pw = w;
             while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(), mouse->button(), mouse->buttons(),
-                               mouse->modifiers());
+                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(),
+                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
                 QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
-                QGuiApplicationPrivate::setMouseEventSource(&me, mouse->source());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {

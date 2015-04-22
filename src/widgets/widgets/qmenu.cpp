@@ -1110,8 +1110,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             handleEnterLeaveEvents(&previousMouseMenu,qobject_cast<QMenu *>(caused));
             if(e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
             QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
-                              e->button(), e->buttons(), e->modifiers());
-            QGuiApplicationPrivate::setMouseEventSource(&new_e, e->source());
+                              e->button(), e->buttons(), e->modifiers(), e->source());
             QApplication::sendEvent(caused, &new_e);
             return true;
             }

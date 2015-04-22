@@ -106,6 +106,9 @@ public:
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+                Qt::MouseButton button, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
     ~QMouseEvent();
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
