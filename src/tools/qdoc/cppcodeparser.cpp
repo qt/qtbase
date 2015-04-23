@@ -1781,10 +1781,18 @@ bool CppCodeParser::matchEnumItem(Aggregate *parent, EnumNode *enume)
 
     QString name = previousLexeme();
     CodeChunk val;
+    int parenLevel = 0;
 
     if (match(Tok_Equal)) {
-        while (tok != Tok_Comma && tok != Tok_RightBrace &&
-               tok != Tok_Eoi) {
+        while (tok != Tok_RightBrace && tok != Tok_Eoi) {
+            if (tok == Tok_LeftParen)
+                parenLevel++;
+            else if (tok == Tok_RightParen)
+                parenLevel--;
+            else if (tok == Tok_Comma) {
+                if (parenLevel <= 0)
+                    break;
+            }
             val.append(lexeme());
             readToken();
         }
