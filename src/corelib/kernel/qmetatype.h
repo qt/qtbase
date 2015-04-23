@@ -1773,7 +1773,7 @@ template <typename T>
 struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
 {
     enum {
-        Defined = 1
+        Defined = QtPrivate::is_default_constructible<T>::value
     };
 
     static int qt_metatype_id()
