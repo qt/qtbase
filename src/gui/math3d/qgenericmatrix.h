@@ -92,8 +92,6 @@ private:
 #endif
     T m[N][M];    // Column-major order to match OpenGL.
 
-    explicit QGenericMatrix(int) {}       // Construct without initializing identity matrix.
-
 #if !defined(Q_NO_TEMPLATE_FRIENDS)
     template <int NN, int MM, typename TT>
     friend class QGenericMatrix;
@@ -169,7 +167,7 @@ Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T>::fill(T value)
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<M, N, T> QGenericMatrix<N, M, T>::transposed() const
 {
-    QGenericMatrix<M, N, T> result(1);
+    QGenericMatrix<M, N, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[row][col] = m[col][row];
@@ -237,7 +235,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T>& QGenericMatrix<N, M, T>::operator/
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator+(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = m1.m[col][row] + m2.m[col][row];
@@ -247,7 +245,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator+(const QGenericMatrix<N, M
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& m1, const QGenericMatrix<N, M, T>& m2)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = m1.m[col][row] - m2.m[col][row];
@@ -257,7 +255,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M
 template <int N, int M1, int M2, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<M1, M2, T> operator*(const QGenericMatrix<N, M2, T>& m1, const QGenericMatrix<M1, N, T>& m2)
 {
-    QGenericMatrix<M1, M2, T> result(1);
+    QGenericMatrix<M1, M2, T> result(Qt::Uninitialized);
     for (int row = 0; row < M2; ++row) {
         for (int col = 0; col < M1; ++col) {
             T sum(0.0f);
@@ -272,7 +270,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<M1, M2, T> operator*(const QGenericMatrix<N,
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M, T>& matrix)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = -matrix.m[col][row];
@@ -282,7 +280,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator-(const QGenericMatrix<N, M
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(T factor, const QGenericMatrix<N, M, T>& matrix)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = matrix.m[col][row] * factor;
@@ -292,7 +290,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(T factor, const QGenericM
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(const QGenericMatrix<N, M, T>& matrix, T factor)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = matrix.m[col][row] * factor;
@@ -302,7 +300,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator*(const QGenericMatrix<N, M
 template <int N, int M, typename T>
 Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator/(const QGenericMatrix<N, M, T>& matrix, T divisor)
 {
-    QGenericMatrix<N, M, T> result(1);
+    QGenericMatrix<N, M, T> result(Qt::Uninitialized);
     for (int row = 0; row < M; ++row)
         for (int col = 0; col < N; ++col)
             result.m[col][row] = matrix.m[col][row] / divisor;
