@@ -1670,6 +1670,16 @@
     \value Key_Blue
     \value Key_ChannelUp
     \value Key_ChannelDown
+    \value Key_Guide
+    \value Key_Info
+    \value Key_Settings
+    \value Key_MicVolumeUp
+    \value Key_MicVolumeDown
+    \value Key_New
+    \value Key_Open
+    \value Key_Find
+    \value Key_Undo
+    \value Key_Redo
     \value Key_MediaLast
     \value Key_unknown
 
@@ -1694,6 +1704,7 @@
     \value Key_Play
     \value Key_Sleep
     \value Key_Zoom
+    \value Key_Exit
     \value Key_Cancel
 
     \sa QKeyEvent::key()
@@ -2938,6 +2949,19 @@
     \sa QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 
+/*!
+    \enum Qt::NativeGestureType
+    \since 5.2
+
+    \value BeginNativeGesture
+    \value EndNativeGesture
+    \value PanNativeGesture
+    \value ZoomNativeGesture
+    \value SmartZoomNativeGesture
+    \value RotateNativeGesture
+    \value SwipeNativeGesture
+
+*/
 /*!
     \enum Qt::NavigationMode
     \since 4.6
