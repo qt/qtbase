@@ -420,7 +420,7 @@ bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QSt
             state = ScriptState;
             break;
         case ScriptState: {
-            QString scripts = QString::fromLatin1((const char *)script_code_list, sizeof(script_code_list));
+            QString scripts = QString::fromLatin1((const char *)script_code_list, sizeof(script_code_list) - 1);
             if (value.length() == 4 && scripts.indexOf(value) % 4 == 0) {
                 // script name is always 4 characters
                 script = value;
