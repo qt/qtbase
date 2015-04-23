@@ -130,11 +130,11 @@ int QPageSetupDialog::exec()
     if (result) {
         engine->setGlobalDevMode(psd.hDevNames, psd.hDevMode);
         // You must divide margins by 'multiplier' before assign it to QMarginsF object,
-        // because float is to short to store not divided rtMargin
-        const QMarginsF margins(psd.rtMargin.left   / multiplier,
-                                psd.rtMargin.top    / multiplier,
-                                psd.rtMargin.right  / multiplier,
-                                psd.rtMargin.bottom / multiplier);
+        // because qreal can be float and to short to store not divided rtMargin (long)
+        const QMarginsF margins(qreal(double(psd.rtMargin.left)   / multiplier),
+                                qreal(double(psd.rtMargin.top)    / multiplier),
+                                qreal(double(psd.rtMargin.right)  / multiplier),
+                                qreal(double(psd.rtMargin.bottom) / multiplier) );
         d->printer->setPageMargins(margins, layout.units());
 
         // copy from our temp DEVMODE struct
