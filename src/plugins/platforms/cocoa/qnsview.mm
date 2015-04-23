@@ -369,9 +369,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     if (m_platformWindow->m_inSetStyleMask && !self.window)
         return;
 
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
-#endif
+     qCDebug(lcQpaCocoaWindow) << "[QNSView udpateGeometry:]" << m_window
+                               << "current" << m_platformWindow->geometry() << "new" << geometry;
 
     // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
     // doing that will initiate a geometry change it and possibly create
@@ -514,6 +513,8 @@ QT_WARNING_POP
 
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
+    qCDebug(lcQpaCocoaWindow) << "[QNSView flushBackingStore:]" << m_window << region.rectCount() << region.boundingRect() << offset;
+
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
     foreach (QRect rect, region.rects())
@@ -576,6 +577,8 @@ QT_WARNING_POP
 
 - (void) drawRect:(NSRect)dirtyRect
 {
+    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_window << qt_mac_toQRect(dirtyRect);
+
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
         [m_glContext->nsOpenGLContext() setView:self];
