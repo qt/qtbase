@@ -8,62 +8,30 @@ SUBDIRS += qmake/qmake-docs.pro
 
 cross_compile: CONFIG += nostrip
 
-confclean.depends += clean
-confclean.commands =
-unix {
-  confclean.commands += (cd config.tests/unix/stl && $(MAKE) distclean); \
-			(cd config.tests/unix/ptrsize && $(MAKE) distclean); \
-			(cd config.tests/x11/notype && $(MAKE) distclean); \
-			(cd config.tests/unix/getaddrinfo && $(MAKE) distclean); \
-			(cd config.tests/unix/cups && $(MAKE) distclean); \
-			(cd config.tests/unix/psql && $(MAKE) distclean); \
-			(cd config.tests/unix/mysql && $(MAKE) distclean); \
- 	 		(cd config.tests/unix/mysql_r && $(MAKE) distclean); \
-			(cd config.tests/unix/nis && $(MAKE) distclean); \
-			(cd config.tests/unix/iodbc && $(MAKE) distclean); \
-			(cd config.tests/unix/odbc && $(MAKE) distclean); \
-			(cd config.tests/unix/oci && $(MAKE) distclean); \
-			(cd config.tests/unix/tds && $(MAKE) distclean); \
-			(cd config.tests/unix/db2 && $(MAKE) distclean); \
-			(cd config.tests/unix/ibase && $(MAKE) distclean); \
-			(cd config.tests/unix/ipv6ifname && $(MAKE) distclean); \
-			(cd config.tests/unix/zlib && $(MAKE) distclean); \
-			(cd config.tests/unix/sqlite2 && $(MAKE) distclean); \
-			(cd config.tests/unix/libjpeg && $(MAKE) distclean); \
-			(cd config.tests/unix/libpng && $(MAKE) distclean); \
-                        (cd config.tests/unix/slog2 && $(MAKE) distclean); \
-                        (cd config.tests/unix/lgmon && $(MAKE) distclean); \
-			(cd config.tests/x11/xcursor && $(MAKE) distclean); \
-			(cd config.tests/x11/xrender && $(MAKE) distclean); \
-			(cd config.tests/x11/xrandr && $(MAKE) distclean); \
-			(cd config.tests/x11/xkb && $(MAKE) distclean); \
-			(cd config.tests/x11/xinput && $(MAKE) distclean); \
-			(cd config.tests/x11/fontconfig && $(MAKE) distclean); \
-			(cd config.tests/x11/xinerama && $(MAKE) distclean); \
-			(cd config.tests/x11/xshape && $(MAKE) distclean); \
-			(cd config.tests/x11/opengl && $(MAKE) distclean); \
-                        $(DEL_FILE) config.tests/.qmake.cache; \
-			$(DEL_FILE) src/corelib/global/qconfig.h; \
-			$(DEL_FILE) src/corelib/global/qconfig.cpp; \
-			$(DEL_FILE) mkspecs/qconfig.pri; \
-			$(DEL_FILE) mkspecs/qdevice.pri; \
-			$(DEL_FILE) mkspecs/qmodule.pri; \
-			$(DEL_FILE) .qmake.cache; \
- 			(cd qmake && $(MAKE) distclean);
-}
-win32 {
-  confclean.commands += -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) mkspecs\\qdevice.pri $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
-			(cd qmake && $(MAKE) distclean)
-}
+confclean.depends += distclean
+confclean.commands = echo The confclean target is obsolete. Please use distclean instead.
 QMAKE_EXTRA_TARGETS += confclean
-qmakeclean.commands += (cd qmake && $(MAKE) clean)
-QMAKE_EXTRA_TARGETS += qmakeclean
-CLEAN_DEPS += qmakeclean
+
+qmake-clean.commands += (cd qmake && $(MAKE) clean)
+QMAKE_EXTRA_TARGETS += qmake-clean
+CLEAN_DEPS += qmake-clean
+
+# We don't distclean qmake, as it may be needed for rebuilding Makefiles as a
+# recursive distclean proceeds, including beyond qtbase.
+DISTCLEAN_DEPS += qmake-clean
+
+# Files created by configure.
+# config.status (and configure.cache, which is the same for Windows)
+# are omitted for convenience of rebuilds.
+QMAKE_DISTCLEAN += \
+    config.summary \
+    config.tests/.qmake.cache \
+    mkspecs/qconfig.pri \
+    mkspecs/qdevice.pri \
+    mkspecs/qmodule.pri \
+    src/corelib/global/qconfig.h \
+    src/corelib/global/qconfig.cpp \
+    bin/qt.conf
 
 CONFIG -= qt
 
@@ -185,6 +153,14 @@ write_file($$OUT_PWD/include/QtCore/qconfig.h, FWD_QCONFIG_H)|error("Aborting.")
 FWD_QTCONFIG = \
     '$${LITERAL_HASH}include "qconfig.h"'
 write_file($$OUT_PWD/include/QtCore/QtConfig, FWD_QTCONFIG)|error("Aborting.")
+
+# Files created by us
+QMAKE_DISTCLEAN += \
+    src/corelib/global/qfeatures.h \
+    include/QtCore/qfeatures.h \
+    mkspecs/qfeatures.pri \
+    include/QtCore/qconfig.h \
+    include/QtCore/QtConfig
 
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
