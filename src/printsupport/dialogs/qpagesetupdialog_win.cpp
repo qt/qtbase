@@ -129,8 +129,13 @@ int QPageSetupDialog::exec()
     QDialog::setVisible(false);
     if (result) {
         engine->setGlobalDevMode(psd.hDevNames, psd.hDevMode);
-        const QMarginsF margins(psd.rtMargin.left, psd.rtMargin.top, psd.rtMargin.right, psd.rtMargin.bottom);
-        d->printer->setPageMargins(margins / multiplier, layout.units());
+        // You must divide margins by 'multiplier' before assign it to QMarginsF object,
+        // because float is to short to store not divided rtMargin
+        const QMarginsF margins(psd.rtMargin.left   / multiplier,
+                                psd.rtMargin.top    / multiplier,
+                                psd.rtMargin.right  / multiplier,
+                                psd.rtMargin.bottom / multiplier);
+        d->printer->setPageMargins(margins, layout.units());
 
         // copy from our temp DEVMODE struct
         if (!engine->globalDevMode() && hDevMode) {
