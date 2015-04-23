@@ -1411,7 +1411,9 @@ UnixMakefileGenerator::writeLibtoolFile()
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
-    project->values("ALL_DEPS").append(fileFixify(fname));
+    QString ffname(fileFixify(fname));
+    project->values("ALL_DEPS").append(ffname);
+    project->values("QMAKE_DISTCLEAN").append(ffname);
 
     QTextStream t(&ft);
     t << "# " << lname << " - a libtool library file\n";

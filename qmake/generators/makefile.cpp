@@ -573,10 +573,12 @@ MakefileGenerator::init()
                     contentBytes = contents.toUtf8();
                 }
                 QFile out(outn);
+                QFileInfo outfi(out);
                 if (out.exists() && out.open(QFile::ReadOnly)) {
                     QByteArray old = out.readAll();
                     if (contentBytes == old) {
                         v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
+                        v["QMAKE_DISTCLEAN"].append(outfi.absoluteFilePath());
                         continue;
                     }
                     out.close();
@@ -586,9 +588,10 @@ MakefileGenerator::init()
                         continue;
                     }
                 }
-                mkdir(QFileInfo(out).absolutePath());
+                mkdir(outfi.absolutePath());
                 if(out.open(QFile::WriteOnly)) {
                     v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
+                    v["QMAKE_DISTCLEAN"].append(outfi.absoluteFilePath());
                     out.write(contentBytes);
                 } else {
                     warn_msg(WarnLogic, "Cannot open substitute for output '%s'",
@@ -1121,6 +1124,7 @@ MakefileGenerator::writePrlFile()
         if(ft.open(QIODevice::WriteOnly)) {
             project->values("ALL_DEPS").append(prl);
             project->values("QMAKE_INTERNAL_PRL_FILE").append(prl);
+            project->values("QMAKE_DISTCLEAN").append(prl);
             QTextStream t(&ft);
             writePrlFile(t);
         }
@@ -3160,7 +3164,9 @@ MakefileGenerator::writePkgConfigFile()
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
-    project->values("ALL_DEPS").append(fileFixify(fname));
+    QString ffname(fileFixify(fname));
+    project->values("ALL_DEPS").append(ffname);
+    project->values("QMAKE_DISTCLEAN").append(ffname);
     QTextStream t(&ft);
 
     QString prefix = pkgConfigPrefix();
