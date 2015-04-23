@@ -1041,9 +1041,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t-$(DEL_FILE) -r " << bundlePath << endl;
     } else if(project->isActiveConfig("compile_libtool")) {
         t << "\t-$(LIBTOOL) --mode=clean $(DEL_FILE) $(TARGET)\n";
-    } else if (project->isActiveConfig("staticlib")) {
+    } else if (project->isActiveConfig("staticlib") || project->isActiveConfig("plugin")) {
         t << "\t-$(DEL_FILE) " << escapeFilePath(destdir) << "$(TARGET) \n";
-    } else if (project->values("QMAKE_APP_FLAG").isEmpty() && !project->isActiveConfig("plugin")) {
+    } else if (project->values("QMAKE_APP_FLAG").isEmpty()) {
         destdir = escapeFilePath(destdir);
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
         if (!project->isActiveConfig("unversioned_libname")) {
