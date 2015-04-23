@@ -1399,7 +1399,7 @@ typedef unsigned long long int uint64_t;
 typedef long int int32_t;
 typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
-#elif defined(_WIN32) && defined(__GNUC__)
+#elif defined(_WIN32) && (defined(__GNUC__) || (defined(_MSC_VER) && _MSC_VER >= 1600))
 #include <stdint.h>
 #elif defined(_WIN32)
 typedef __int32 int32_t;
