@@ -47,7 +47,6 @@ class QGenericMatrix
 public:
     QGenericMatrix();
     explicit QGenericMatrix(Qt::Initialization) {}
-    QGenericMatrix(const QGenericMatrix<N, M, T>& other);
     explicit QGenericMatrix(const T *values);
 
     const T& operator()(int row, int column) const;
@@ -105,14 +104,6 @@ template <int N, int M, typename T>
 Q_INLINE_TEMPLATE QGenericMatrix<N, M, T>::QGenericMatrix()
 {
     setToIdentity();
-}
-
-template <int N, int M, typename T>
-Q_INLINE_TEMPLATE QGenericMatrix<N, M, T>::QGenericMatrix(const QGenericMatrix<N, M, T>& other)
-{
-    for (int col = 0; col < N; ++col)
-        for (int row = 0; row < M; ++row)
-            m[col][row] = other.m[col][row];
 }
 
 template <int N, int M, typename T>
