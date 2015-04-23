@@ -883,7 +883,8 @@ void QWidgetTextControl::setTextCursor(const QTextCursor &cursor)
     const bool posChanged = cursor.position() != d->cursor.position();
     const QTextCursor oldSelection = d->cursor;
     d->cursor = cursor;
-    d->cursorOn = d->hasFocus && (d->interactionFlags & Qt::TextEditable);
+    d->cursorOn = d->hasFocus
+            && (d->interactionFlags & (Qt::TextSelectableByKeyboard | Qt::TextEditable));
     d->_q_updateCurrentCharFormatAndSelection();
     ensureCursorVisible();
     d->repaintOldAndNewSelection(oldSelection);
@@ -2138,7 +2139,7 @@ void QWidgetTextControlPrivate::focusEvent(QFocusEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
         if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && (e->reason() == Qt::PopupFocusReason))) {
 #endif
-        cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);
+        cursorOn = (interactionFlags & (Qt::TextSelectableByKeyboard | Qt::TextEditable));
         if (interactionFlags & Qt::TextEditable) {
             setBlinkingCursorEnabled(true);
         }
