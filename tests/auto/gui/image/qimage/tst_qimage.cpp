@@ -184,6 +184,8 @@ private slots:
 
     void devicePixelRatio();
 
+    void metadataPassthrough();
+
 private:
     const QString m_prefix;
 };
@@ -2825,6 +2827,40 @@ void tst_QImage::devicePixelRatio()
     a.setDevicePixelRatio(qreal(2.0));
     QCOMPARE(a.devicePixelRatio(), qreal(2.0));
     QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+}
+
+void tst_QImage::metadataPassthrough()
+{
+    QImage a(64, 64, QImage::Format_ARGB32);
+    a.fill(Qt::white);
+    a.setText(QStringLiteral("Test"), QStringLiteral("Text"));
+    a.setDotsPerMeterX(100);
+    a.setDotsPerMeterY(80);
+    a.setDevicePixelRatio(2.0);
+
+    QImage scaled = a.scaled(QSize(32, 32), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QCOMPARE(scaled.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(scaled.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(scaled.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(scaled.devicePixelRatio(), a.devicePixelRatio());
+
+    scaled = a.scaled(QSize(128, 128), Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    QCOMPARE(scaled.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(scaled.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(scaled.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(scaled.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage mirrored = a.mirrored();
+    QCOMPARE(mirrored.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(mirrored.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(mirrored.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(mirrored.devicePixelRatio(), a.devicePixelRatio());
+
+    QImage swapped = a.rgbSwapped();
+    QCOMPARE(swapped.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
+    QCOMPARE(swapped.dotsPerMeterX(), a.dotsPerMeterX());
+    QCOMPARE(swapped.dotsPerMeterY(), a.dotsPerMeterY());
+    QCOMPARE(swapped.devicePixelRatio(), a.devicePixelRatio());
 }
 
 QTEST_GUILESS_MAIN(tst_QImage)

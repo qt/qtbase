@@ -1087,6 +1087,15 @@ void QImage::detach()
 }
 
 
+static void copyMetadata(QImageData *dst, const QImageData *src)
+{
+    // Doesn't copy colortable and alpha_clut, or offset.
+    dst->dpmx = src->dpmx;
+    dst->dpmy = src->dpmy;
+    dst->devicePixelRatio = src->devicePixelRatio;
+    dst->text = src->text;
+}
+
 /*!
     \fn QImage QImage::copy(int x, int y, int width, int height) const
     \overload
@@ -1136,12 +1145,9 @@ QImage QImage::copy(const QRect& r) const
         } else
             memcpy(image.bits(), bits(), d->nbytes);
         image.d->colortable = d->colortable;
-        image.d->dpmx = d->dpmx;
-        image.d->dpmy = d->dpmy;
-        image.d->devicePixelRatio = d->devicePixelRatio;
         image.d->offset = d->offset;
         image.d->has_alpha_clut = d->has_alpha_clut;
-        image.d->text = d->text;
+        copyMetadata(image.d, d);
         return image;
     }
 
@@ -1227,12 +1233,9 @@ QImage QImage::copy(const QRect& r) const
         }
     }
 
-    image.d->dpmx = dotsPerMeterX();
-    image.d->dpmy = dotsPerMeterY();
-    image.d->devicePixelRatio = devicePixelRatio();
+    copyMetadata(image.d, d);
     image.d->offset = offset();
     image.d->has_alpha_clut = d->has_alpha_clut;
-    image.d->text = d->text;
     return image;
 }
 
@@ -1983,11 +1986,8 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
 
         QIMAGE_SANITYCHECK_MEMORY(image);
 
-        image.setDotsPerMeterY(dotsPerMeterY());
-        image.setDotsPerMeterX(dotsPerMeterX());
-        image.setDevicePixelRatio(devicePixelRatio());
-
-        image.d->text = d->text;
+        image.d->offset = offset();
+        copyMetadata(image.d, d);
 
         converter(image.d, d, flags);
         return image;
@@ -2112,9 +2112,9 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 
     QImage image(d->width, d->height, format);
     QIMAGE_SANITYCHECK_MEMORY(image);
-    image.setDevicePixelRatio(devicePixelRatio());
 
-    image.d->text = d->text;
+    image.d->offset = offset();
+    copyMetadata(image.d, d);
 
     converter(image.d, d, flags);
     return image;
@@ -2952,9 +2952,7 @@ QImage QImage::mirrored_helper(bool horizontal, bool vertical) const
 
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
-    result.d->devicePixelRatio = d->devicePixelRatio;
-    result.d->dpmx = d->dpmx;
-    result.d->dpmy = d->dpmy;
+    copyMetadata(result.d, d);
 
     do_mirror(result.d, d, horizontal, vertical);
 
@@ -3103,6 +3101,7 @@ QImage QImage::rgbSwapped_helper() const
         rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
         break;
     }
+    copyMetadata(res.d, d);
     return res;
 }
 
@@ -4254,8 +4253,8 @@ int QImage::bitPlaneCount() const
     return bpc;
 }
 
-static QImage smoothScaled(const QImage &source, int w, int h) {
-    QImage src = source;
+QImage QImage::smoothScaled(int w, int h) const {
+    QImage src = *this;
     switch (src.format()) {
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32_Premultiplied:
@@ -4270,10 +4269,10 @@ static QImage smoothScaled(const QImage &source, int w, int h) {
         else
             src = src.convertToFormat(QImage::Format_RGB32);
     }
-
-    return qSmoothScaleImage(src, w, h);
+    src = qSmoothScaleImage(src, w, h);
+    copyMetadata(src.d, d);
+    return src;
 }
-
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
@@ -4475,13 +4474,13 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     // Make use of the optimized algorithm when we're scaling
     if (scale_xform && mode == Qt::SmoothTransformation) {
         if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-            return smoothScaled(mirrored(true, true), wd, hd);
+            return smoothScaled(wd, hd).mirrored(true, true);
         } else if (mat.m11() < 0.0F) { // horizontal flip
-            return smoothScaled(mirrored(true, false), wd, hd);
+            return smoothScaled(wd, hd).mirrored(true, false);
         } else if (mat.m22() < 0.0F) { // vertical flip
-            return smoothScaled(mirrored(false, true), wd, hd);
+            return smoothScaled(wd, hd).mirrored(false, true);
         } else { // no flipping
-            return smoothScaled(*this, wd, hd);
+            return smoothScaled(wd, hd);
         }
     }
 
@@ -4533,9 +4532,6 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         dImage.d->has_alpha_clut = d->has_alpha_clut | complex_xform;
     }
 
-    dImage.d->dpmx = dotsPerMeterX();
-    dImage.d->dpmy = dotsPerMeterY();
-
     // initizialize the data
     if (d->format == QImage::Format_Indexed8) {
         if (dImage.d->colortable.size() < 256) {
@@ -4573,8 +4569,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         int dbpl = dImage.bytesPerLine();
         qt_xForm_helper(mat, 0, type, bpp, dImage.bits(), dbpl, 0, hd, sptr, sbpl, ws, hs);
     }
+    copyMetadata(dImage.d, d);
 
-    dImage.d->devicePixelRatio = devicePixelRatio();
     return dImage;
 }
 

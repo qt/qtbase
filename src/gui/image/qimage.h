@@ -328,6 +328,7 @@ protected:
     void rgbSwapped_inplace();
     QImage convertToFormat_helper(Format format, Qt::ImageConversionFlags flags) const;
     bool convertToFormat_inplace(Format format, Qt::ImageConversionFlags flags);
+    QImage smoothScaled(int w, int h) const;
 
 private:
     friend class QWSOnScreenSurface;
