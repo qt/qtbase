@@ -617,13 +617,12 @@ static void parseFontName(const QString &name, QString &foundry, QString &family
 
 struct QtFontDesc
 {
-    inline QtFontDesc() : family(0), foundry(0), style(0), size(0), encoding(0), familyIndex(-1) {}
+    inline QtFontDesc() : family(0), foundry(0), style(0), size(0), encoding(0) {}
     QtFontFamily *family;
     QtFontFoundry *foundry;
     QtFontStyle *style;
     QtFontSize *size;
     QtFontEncoding *encoding;
-    int familyIndex;
 };
 
 static int match(int script, const QFontDef &request,
@@ -1157,7 +1156,6 @@ static int match(int script, const QFontDef &request,
     desc->style = 0;
     desc->size = 0;
     desc->encoding = 0;
-    desc->familyIndex = -1;
 
     unsigned int score = ~0u;
 
@@ -1174,7 +1172,6 @@ static int match(int script, const QFontDef &request,
             continue;
         QtFontDesc test;
         test.family = db->families[x];
-        test.familyIndex = x;
 
         if (!matchFamilyName(family_name, test.family))
             continue;
