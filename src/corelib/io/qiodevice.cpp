@@ -148,8 +148,12 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
     \internal
  */
 QIODevicePrivate::QIODevicePrivate()
-    : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
+    : openMode(QIODevice::NotOpen),
       pos(0), devicePos(0),
+      readChannelCount(0),
+      writeChannelCount(0),
+      currentReadChannel(0),
+      currentWriteChannel(0),
       transactionPos(0),
       transactionStarted(false)
        , baseReadLineDataCalled(false)
@@ -278,6 +282,15 @@ QIODevicePrivate::~QIODevicePrivate()
     mechanism implemented by QIODevice. See startTransaction() and related
     functions for more details.
 
+    Some sequential devices support communicating via multiple channels. These
+    channels represent separate streams of data that have the property of
+    independently sequenced delivery. Once the device is opened, you can
+    determine the number of channels by calling the readChannelCount() and
+    writeChannelCount() functions. To switch between channels, call
+    setCurrentReadChannel() and setCurrentWriteChannel(), respectively.
+    QIODevice also provides additional signals to handle asynchronous
+    communication on a per-channel basis.
+
     \sa QBuffer, QFile, QTcpSocket
 */
 
@@ -315,8 +328,8 @@ QIODevicePrivate::~QIODevicePrivate()
 /*!     \fn QIODevice::bytesWritten(qint64 bytes)
 
     This signal is emitted every time a payload of data has been
-    written to the device. The \a bytes argument is set to the number
-    of bytes that were written in this payload.
+    written to the device's current write channel. The \a bytes argument is
+    set to the number of bytes that were written in this payload.
 
     bytesWritten() is not emitted recursively; if you reenter the event loop
     or call waitForBytesWritten() inside a slot connected to the
@@ -327,12 +340,28 @@ QIODevicePrivate::~QIODevicePrivate()
 */
 
 /*!
+    \fn QIODevice::channelBytesWritten(int channel, qint64 bytes)
+    \since 5.7
+
+    This signal is emitted every time a payload of data has been written to
+    the device. The \a bytes argument is set to the number of bytes that were
+    written in this payload, while \a channel is the channel they were written
+    to. Unlike bytesWritten(), it is emitted regardless of the
+    \l{currentWriteChannel()}{current write channel}.
+
+    channelBytesWritten() can be emitted recursively - even for the same
+    channel.
+
+    \sa bytesWritten(), channelReadyRead()
+*/
+
+/*!
     \fn QIODevice::readyRead()
 
     This signal is emitted once every time new data is available for
-    reading from the device. It will only be emitted again once new
-    data is available, such as when a new payload of network data has
-    arrived on your network socket, or when a new block of data has
+    reading from the device's current read channel. It will only be emitted
+    again once new data is available, such as when a new payload of network
+    data has arrived on your network socket, or when a new block of data has
     been appended to your device.
 
     readyRead() is not emitted recursively; if you reenter the event loop or
@@ -346,6 +375,20 @@ QIODevicePrivate::~QIODevicePrivate()
     buffers). Do not emit readyRead() in other conditions.
 
     \sa bytesWritten()
+*/
+
+/*!
+    \fn QIODevice::channelReadyRead(int channel)
+    \since 5.7
+
+    This signal is emitted when new data is available for reading from the
+    device. The \a channel argument is set to the index of the read channel on
+    which the data has arrived. Unlike readyRead(), it is emitted regardless of
+    the \l{currentReadChannel()}{current read channel}.
+
+    channelReadyRead() can be emitted recursively - even for the same channel.
+
+    \sa readyRead(), channelBytesWritten()
 */
 
 /*! \fn QIODevice::aboutToClose()
@@ -483,8 +526,8 @@ void QIODevice::setOpenMode(OpenMode openMode)
 #endif
     d->openMode = openMode;
     d->accessMode = QIODevicePrivate::Unset;
-    if (!isReadable())
-        d->buffer.clear();
+    d->setReadChannelCount(isReadable() ? qMax(d->readChannelCount, 1) : 0);
+    d->setWriteChannelCount(isWritable() ? qMax(d->writeChannelCount, 1) : 0);
 }
 
 /*!
@@ -561,6 +604,135 @@ bool QIODevice::isWritable() const
 }
 
 /*!
+    \since 5.7
+
+    Returns the number of available read channels if the device is open;
+    otherwise returns 0.
+
+    \sa writeChannelCount(), QProcess
+*/
+int QIODevice::readChannelCount() const
+{
+    return d_func()->readChannelCount;
+}
+
+/*!
+    \since 5.7
+
+    Returns the number of available write channels if the device is open;
+    otherwise returns 0.
+
+    \sa readChannelCount()
+*/
+int QIODevice::writeChannelCount() const
+{
+    return d_func()->writeChannelCount;
+}
+
+/*!
+    \since 5.7
+
+    Returns the index of the current read channel.
+
+    \sa setCurrentReadChannel(), readChannelCount(), QProcess
+*/
+int QIODevice::currentReadChannel() const
+{
+    return d_func()->currentReadChannel;
+}
+
+/*!
+    \since 5.7
+
+    Sets the current read channel of the QIODevice to the given \a
+    channel. The current input channel is used by the functions
+    read(), readAll(), readLine(), and getChar(). It also determines
+    which channel triggers QIODevice to emit readyRead().
+
+    \sa currentReadChannel(), readChannelCount(), QProcess
+*/
+void QIODevice::setCurrentReadChannel(int channel)
+{
+    Q_D(QIODevice);
+
+    if (d->transactionStarted) {
+        checkWarnMessage(this, "setReadChannel", "Failed due to read transaction being in progress");
+        return;
+    }
+
+#if defined QIODEVICE_DEBUG
+    qDebug("%p QIODevice::setCurrentReadChannel(%d), d->currentReadChannel = %d, d->readChannelCount = %d\n",
+           this, channel, d->currentReadChannel, d->readChannelCount);
+#endif
+
+    d->setCurrentReadChannel(channel);
+}
+
+/*!
+    \internal
+*/
+void QIODevicePrivate::setReadChannelCount(int count)
+{
+    if (count > readBuffers.size()) {
+        readBuffers.insert(readBuffers.end(), count - readBuffers.size(),
+                           QRingBuffer(QIODEVICE_BUFFERSIZE));
+    } else {
+        readBuffers.resize(count);
+    }
+    readChannelCount = count;
+    setCurrentReadChannel(currentReadChannel);
+}
+
+/*!
+    \since 5.7
+
+    Returns the the index of the current write channel.
+
+    \sa setCurrentWriteChannel(), writeChannelCount()
+*/
+int QIODevice::currentWriteChannel() const
+{
+    return d_func()->currentWriteChannel;
+}
+
+/*!
+    \since 5.7
+
+    Sets the current write channel of the QIODevice to the given \a
+    channel. The current output channel is used by the functions
+    write(), putChar(). It also determines  which channel triggers
+    QIODevice to emit bytesWritten().
+
+    \sa currentWriteChannel(), writeChannelCount()
+*/
+void QIODevice::setCurrentWriteChannel(int channel)
+{
+    Q_D(QIODevice);
+
+#if defined QIODEVICE_DEBUG
+    qDebug("%p QIODevice::setCurrentWriteChannel(%d), d->currentWriteChannel = %d, d->writeChannelCount = %d\n",
+           this, channel, d->currentWriteChannel, d->writeChannelCount);
+#endif
+
+    d->setCurrentWriteChannel(channel);
+}
+
+/*!
+    \internal
+*/
+void QIODevicePrivate::setWriteChannelCount(int count)
+{
+    if (count > writeBuffers.size()) {
+        writeBuffers.insert(writeBuffers.end(), count - writeBuffers.size(),
+                            QRingBuffer(QIODEVICE_BUFFERSIZE));
+    } else {
+        writeBuffers.resize(count);
+    }
+    writeChannelCount = count;
+    setCurrentWriteChannel(currentWriteChannel);
+}
+
+/*!
     Opens the device and sets its OpenMode to \a mode. Returns \c true if successful;
     otherwise returns \c false. This function should be called from any
     reimplementations of open() or other functions that open the device.
@@ -572,8 +744,11 @@ bool QIODevice::open(OpenMode mode)
     Q_D(QIODevice);
     d->openMode = mode;
     d->pos = (mode & Append) ? size() : qint64(0);
-    d->buffer.clear();
     d->accessMode = QIODevicePrivate::Unset;
+    d->readBuffers.clear();
+    d->writeBuffers.clear();
+    d->setReadChannelCount(isReadable() ? 1 : 0);
+    d->setWriteChannelCount(isWritable() ? 1 : 0);
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::open(0x%x)\n", this, quint32(mode));
 #endif
@@ -604,7 +779,9 @@ void QIODevice::close()
     d->pos = 0;
     d->transactionStarted = false;
     d->transactionPos = 0;
-    d->buffer.clear();
+    d->setReadChannelCount(0);
+    // Do not clear write buffers to allow delayed close in sockets
+    d->writeChannelCount = 0;
 }
 
 /*!
@@ -771,11 +948,14 @@ qint64 QIODevice::bytesAvailable() const
     waiting to be written. For devices with no buffer, this function
     returns 0.
 
+    Subclasses that reimplement this function must call the base
+    implementation in order to include the size of the buffer of QIODevice.
+
     \sa bytesAvailable(), bytesWritten(), isSequential()
 */
 qint64 QIODevice::bytesToWrite() const
 {
-    return qint64(0);
+    return d_func()->writeBuffer.size();
 }
 
 /*!

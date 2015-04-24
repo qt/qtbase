@@ -114,6 +114,8 @@ void tst_QIODevice::constructing_QTcpSocket()
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected(30000));
     QVERIFY(device->isOpen());
+    QCOMPARE(device->readChannelCount(), 1);
+    QCOMPARE(device->writeChannelCount(), 1);
 
     while (!device->canReadLine())
         QVERIFY(device->waitForReadyRead(30000));
@@ -125,6 +127,8 @@ void tst_QIODevice::constructing_QTcpSocket()
     QCOMPARE(socket.pos(), qlonglong(0));
 
     socket.close();
+    QCOMPARE(socket.readChannelCount(), 0);
+    QCOMPARE(socket.writeChannelCount(), 0);
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected(30000));
     QVERIFY(device->isOpen());
@@ -158,6 +162,8 @@ void tst_QIODevice::constructing_QFile()
     QVERIFY(file.open(QFile::ReadOnly));
     QVERIFY(device->isOpen());
     QCOMPARE((int) device->openMode(), (int) QFile::ReadOnly);
+    QCOMPARE(device->readChannelCount(), 1);
+    QCOMPARE(device->writeChannelCount(), 0);
 
     char buf[1024];
     memset(buf, 0, sizeof(buf));
@@ -576,6 +582,8 @@ void tst_QIODevice::readAllKeepPosition()
     buffer.open(QIODevice::ReadOnly);
     char c;
 
+    QCOMPARE(buffer.readChannelCount(), 1);
+    QCOMPARE(buffer.writeChannelCount(), 0);
     QVERIFY(buffer.getChar(&c));
     QCOMPARE(buffer.pos(), qint64(0));
     buffer.ungetChar(c);

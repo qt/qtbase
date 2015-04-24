@@ -96,6 +96,13 @@ public:
     bool isWritable() const;
     virtual bool isSequential() const;
 
+    int readChannelCount() const;
+    int writeChannelCount() const;
+    int currentReadChannel() const;
+    void setCurrentReadChannel(int channel);
+    int currentWriteChannel() const;
+    void setCurrentWriteChannel(int channel);
+
     virtual bool open(OpenMode mode);
     virtual void close();
 
@@ -142,7 +149,9 @@ public:
 #ifndef QT_NO_QOBJECT
 Q_SIGNALS:
     void readyRead();
+    void channelReadyRead(int channel);
     void bytesWritten(qint64 bytes);
+    void channelBytesWritten(int channel, qint64 bytes);
     void aboutToClose();
     void readChannelFinished();
 #endif
