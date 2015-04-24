@@ -3768,7 +3768,7 @@ QString QFileDialogPrivate::getEnvironmentVariable(const QString &string)
 {
 #ifdef Q_OS_UNIX
     if (string.size() > 1 && string.startsWith(QLatin1Char('$'))) {
-        return QString::fromLocal8Bit(getenv(string.mid(1).toLatin1().constData()));
+        return QString::fromLocal8Bit(qgetenv(string.mid(1).toLatin1().constData()));
     }
 #else
     if (string.size() > 2 && string.startsWith(QLatin1Char('%')) && string.endsWith(QLatin1Char('%'))) {

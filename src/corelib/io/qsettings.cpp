@@ -1048,12 +1048,12 @@ static void initDefaultPaths(QMutexLocker *locker)
         // Non XDG platforms (OS X, iOS, Blackberry, Android...) have used this code path erroneously
         // for some time now. Moving away from that would require migrating existing settings.
         QString userPath;
-        char *env = getenv("XDG_CONFIG_HOME");
-        if (env == 0) {
+        QByteArray env = qgetenv("XDG_CONFIG_HOME");
+        if (env.isEmpty()) {
             userPath = QDir::homePath();
             userPath += QLatin1Char('/');
             userPath += QLatin1String(".config");
-        } else if (*env == '/') {
+        } else if (env.startsWith('/')) {
             userPath = QFile::decodeName(env);
         } else {
             userPath = QDir::homePath();

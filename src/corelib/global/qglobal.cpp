@@ -42,6 +42,7 @@
 #include <private/qlocale_tools_p.h>
 
 #include <private/qsystemlibrary_p.h>
+#include <qmutex.h>
 
 #ifndef QT_NO_QOBJECT
 #include <private/qthread_p.h>
@@ -3029,6 +3030,10 @@ QString qt_error_string(int errorCode)
     return ret.trimmed();
 }
 
+// In the C runtime on all platforms access to the environment is not thread-safe. We
+// add thread-safety for the Qt wrappers.
+static QBasicMutex environmentMutex;
+
 // getenv is declared as deprecated in VS2005. This function
 // makes use of the new secure getenv function.
 /*!
@@ -3046,6 +3051,7 @@ QString qt_error_string(int errorCode)
 */
 QByteArray qgetenv(const char *varName)
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     size_t requiredSize = 0;
     QByteArray buffer;
@@ -3079,6 +3085,7 @@ QByteArray qgetenv(const char *varName)
 */
 bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     // we provide a buffer that can only hold the empty string, so
     // when the env.var isn't empty, we'll get an ERANGE error (buffer
@@ -3110,6 +3117,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 */
 int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     // we provide a buffer that can hold any int value:
     static const int NumBinaryDigitsPerOctalDigit = 3;
@@ -3158,6 +3166,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 */
 bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     size_t requiredSize = 0;
     (void)getenv_s(&requiredSize, 0, 0, varName);
@@ -3187,6 +3196,7 @@ bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 */
 bool qputenv(const char *varName, const QByteArray& value)
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     return _putenv_s(varName, value.constData()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
@@ -3217,6 +3227,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 */
 bool qunsetenv(const char *varName)
 {
+    QMutexLocker locker(&environmentMutex);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     return _putenv_s(varName, "") == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
