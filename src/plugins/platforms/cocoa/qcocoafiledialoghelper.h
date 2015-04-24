@@ -51,6 +51,7 @@ public:
     virtual ~QCocoaFileDialogHelper();
 
     void exec();
+    void execModalForWindow(QWindow *parent);
 
     bool defaultNameFilterDisables() const;
 
