@@ -1181,9 +1181,6 @@ static int match(int script, const QFontDef &request,
 
         test.family->ensurePopulated();
 
-        if (family_name.isEmpty())
-            load(test.family->name, script);
-
         // Check if family is supported in the script we want
         if (writingSystem != QFontDatabase::Any && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
             continue;
