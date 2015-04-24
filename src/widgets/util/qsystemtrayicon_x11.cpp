@@ -372,7 +372,7 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
     }
     if (!sys)
         return;
-    QBalloonTip::showBalloon(icon, message, title, sys->systemTrayIcon(),
+    QBalloonTip::showBalloon(icon, title, message, sys->systemTrayIcon(),
                              sys->globalGeometry().center(),
                              msecs);
 }
