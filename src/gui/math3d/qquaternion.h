@@ -161,12 +161,12 @@ inline QQuaternion::QQuaternion(float aScalar, float xpos, float ypos, float zpo
 
 inline bool QQuaternion::isNull() const
 {
-    return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && qIsNull(wp);
+    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 0.0f;
 }
 
 inline bool QQuaternion::isIdentity() const
 {
-    return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && wp == 1.0f;
+    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 1.0f;
 }
 
 inline float QQuaternion::x() const { return xp; }
