@@ -2046,8 +2046,10 @@ class WatchDog : public QThread
 public:
     WatchDog()
     {
+        QMutexLocker locker(&mutex);
         timeout.store(-1);
         start();
+        waitCondition.wait(&mutex);
     }
     ~WatchDog() {
         {
@@ -2072,6 +2074,7 @@ public:
 
     void run() {
         QMutexLocker locker(&mutex);
+        waitCondition.wakeAll();
         while (1) {
             int t = timeout.load();
             if (!t)
