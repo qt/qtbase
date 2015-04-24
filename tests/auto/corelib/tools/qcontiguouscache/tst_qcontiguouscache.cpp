@@ -43,6 +43,8 @@ class tst_QContiguousCache : public QObject
 {
     Q_OBJECT
 private slots:
+    void assignment();
+
     void empty();
     void swap();
 
@@ -63,6 +65,16 @@ private slots:
 };
 
 QTEST_MAIN(tst_QContiguousCache)
+
+void tst_QContiguousCache::assignment()
+{
+    // compile-only test: QTBUG-45783
+   QContiguousCache<int> cc1, cc2;
+   // copy:
+   cc1 = cc2;
+   // move:
+   cc1 = qMove(cc2);
+}
 
 void tst_QContiguousCache::empty()
 {
