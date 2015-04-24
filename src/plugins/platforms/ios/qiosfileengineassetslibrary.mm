@@ -169,7 +169,10 @@ bool QIOSFileEngineAssetsLibrary::close()
 QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags flags = 0;
-    if (!loadAsset())
+    const bool isDir = (m_assetUrl == QLatin1String("assets-library://"));
+    const bool exists = isDir || loadAsset();
+
+    if (!exists)
         return flags;
 
     if (type & FlagsMask)
@@ -180,7 +183,7 @@ QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractF
             flags |= ReadOwnerPerm | ReadUserPerm | ReadGroupPerm | ReadOtherPerm;
     }
     if (type & TypesMask)
-        flags |= FileType;
+        flags |= isDir ? DirectoryType : FileType;
 
     return flags;
 }
