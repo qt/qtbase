@@ -412,13 +412,14 @@
     / *!
         \preliminary
 
-        Returns information about the joining properties of the
-        character (needed for certain languages such as
-        Arabic).
+        Returns information about the joining type attributes of the
+        character (needed for certain languages such as Arabic or
+        Syriac).
+
     * /
-    QChar::Joining QChar::joining() const
+    QChar::JoiningType QChar::joiningType() const
     {
-        return ::joining(*this);
+        return QChar::joiningType(ucs);
     }
     \endcode
 
@@ -427,28 +428,25 @@
     \quotation
         \raw HTML
         <h3>
-        <a href="http://doc.qt.io/qt-5/qchar.html#JoiningType-enum">Joining</a>
-        QChar::joining () const</h3>
+        <a href="http://doc.qt.io/qt-5/qchar.html#JoiningType-enum">JoiningType</a>
+        QChar::joiningType() const</h3>
         \endraw
 
         \b {This function is under development and
         subject to change.}
 
-        Returns information about the joining properties of the
-        character (needed for certain languages such as
-        Arabic).
+        Returns information about the joining type attributes of the
+        character (needed for certain languages such as Arabic or
+        Syriac).
     \endquotation
 
-    And the function's entry in QChar's list of functions will be
+    And the function's entry in QChar's list of public functions will be
     rendered as:
 
     \quotation
         \list
         \li ...
-        \li Joining
-           \l {Joining-enum}
-              {joining}()
-           const   \c (preliminary)
+        \li JoiningType \l {QChar::joiningType()} {joiningType}() const  \c (preliminary)
        \li ...
        \endlist
     \endquotation
@@ -791,7 +789,7 @@
         </h3>
         \endraw
 
-    This function overloads \l {addAction} {addAction()}
+    This function overloads \l {QMenu::addAction()} {addAction()}
 
         This convenience function creates a new action with an
         \e icon and some \e text. The function adds the newly
@@ -799,8 +797,7 @@
         returns it.
 
         See also
-        \l {addAction}
-        {QWidget::addAction}().
+        \l {QWidget::addAction()} {QWidget::addAction}().
     \endquotation
 
     If you don't include the function name with the \b{\\overload}
