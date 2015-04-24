@@ -174,8 +174,11 @@ QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractF
 
     if (type & FlagsMask)
         flags |= ExistsFlag;
-    if (type & PermsMask)
-        flags |= ReadOwnerPerm | ReadUserPerm | ReadGroupPerm | ReadOtherPerm;
+    if (type & PermsMask) {
+        ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+        if (status != ALAuthorizationStatusRestricted && status != ALAuthorizationStatusDenied)
+            flags |= ReadOwnerPerm | ReadUserPerm | ReadGroupPerm | ReadOtherPerm;
+    }
     if (type & TypesMask)
         flags |= FileType;
 
