@@ -47,6 +47,24 @@ static QThreadStorage<QString> g_iteratorCurrentUrl;
 static const int kBufferSize = 10;
 static ALAsset *kNoAsset = 0;
 
+static void ensureAuthorizationDialogNotBlocked()
+{
+    if ([ALAssetsLibrary authorizationStatus] != ALAuthorizationStatusNotDetermined)
+        return;
+    if (static_cast<QCoreApplicationPrivate *>(QObjectPrivate::get(qApp))->in_exec)
+        return;
+
+    // Since authorization status has not been determined, the user will be asked
+    // to authorize the app. But since main has not finished, the dialog will be held
+    // back until the launch completes. To avoid a dead-lock below, we start an event
+    // loop to complete the launch.
+    QEventLoop loop;
+    QTimer::singleShot(1, &loop, &QEventLoop::quit);
+    loop.exec();
+}
+
+// -------------------------------------------------------------------------
+
 class QIOSAssetEnumerator
 {
 public:
@@ -61,6 +79,7 @@ public:
         , m_writeIndex(0)
         , m_nextAssetReady(false)
     {
+        ensureAuthorizationDialogNotBlocked();
         startEnumerate();
     }
 
@@ -166,35 +185,19 @@ public:
         , m_assetUrl(assetUrl)
         , m_assetLibrary(0)
     {
-        switch ([ALAssetsLibrary authorizationStatus]) {
-        case ALAuthorizationStatusRestricted:
-        case ALAuthorizationStatusDenied:
-            engine->setError(QFile::PermissionsError, QLatin1String("Unauthorized access"));
-            return;
-        case ALAuthorizationStatusNotDetermined:
-            if (!static_cast<QCoreApplicationPrivate *>(QObjectPrivate::get(qApp))->in_exec) {
-                // Since authorization status has not been determined, the user will be asked
-                // to authorize the app. But since main has not finished, the dialog will be held
-                // back until the launch completes. To avoid a dead-lock below, we start an event
-                // loop to complete the launch.
-                QEventLoop loop;
-                QTimer::singleShot(1, &loop, &QEventLoop::quit);
-                loop.exec();
-            }
-            break;
-        default:
-            if (g_currentAssetData) {
-                // It's a common pattern that QFiles pointing to the same path are created and destroyed
-                // several times during a single event loop cycle. To avoid loading the same asset
-                // over and over, we check if the last loaded asset has not been destroyed yet, and try to
-                // reuse its data. Since QFile is (mostly) reentrant, we need to protect m_currentAssetData
-                // from being modified by several threads at the same time.
-                QMutexLocker lock(&g_mutex);
-                if (g_currentAssetData && g_currentAssetData->m_assetUrl == assetUrl) {
-                    m_assetLibrary = [g_currentAssetData->m_assetLibrary retain];
-                    m_asset = [g_currentAssetData->m_asset retain];
-                    return;
-                }
+        ensureAuthorizationDialogNotBlocked();
+
+        if (g_currentAssetData) {
+            // It's a common pattern that QFiles pointing to the same path are created and destroyed
+            // several times during a single event loop cycle. To avoid loading the same asset
+            // over and over, we check if the last loaded asset has not been destroyed yet, and try to
+            // reuse its data. Since QFile is (mostly) reentrant, we need to protect m_currentAssetData
+            // from being modified by several threads at the same time.
+            QMutexLocker lock(&g_mutex);
+            if (g_currentAssetData && g_currentAssetData->m_assetUrl == assetUrl) {
+                m_assetLibrary = [g_currentAssetData->m_assetLibrary retain];
+                m_asset = [g_currentAssetData->m_asset retain];
+                return;
             }
         }
 
