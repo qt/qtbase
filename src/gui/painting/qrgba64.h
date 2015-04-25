@@ -169,6 +169,8 @@ private:
     }
 };
 
+Q_DECLARE_TYPEINFO(QRgba64, Q_PRIMITIVE_TYPE);
+
 Q_DECL_RELAXED_CONSTEXPR inline QRgba64 qRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
 {
     return QRgba64::fromRgba64(r, g, b, a);
