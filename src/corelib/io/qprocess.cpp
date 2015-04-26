@@ -373,8 +373,8 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     Use with the QProcess::setEnvironment function is not recommended due to
     potential encoding problems under Unix, and worse performance.
 
-    \sa systemEnvironment(), QProcess::systemEnvironment(), QProcess::environment(),
-        QProcess::setEnvironment()
+    \sa systemEnvironment(), QProcess::systemEnvironment(),
+        QProcess::setProcessEnvironment()
 */
 QStringList QProcessEnvironment::toStringList() const
 {
@@ -534,7 +534,7 @@ void QProcessPrivate::Channel::clear()
 
     Certain processes need special environment settings in order to
     operate. You can set environment variables for your process by
-    calling setEnvironment(). To set a working directory, call
+    calling setProcessEnvironment(). To set a working directory, call
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
 
@@ -2471,7 +2471,7 @@ QT_END_INCLUDE_NAMESPACE
 
     \note For new code, it is recommended to use QProcessEnvironment::systemEnvironment()
 
-    \sa QProcessEnvironment::systemEnvironment(), environment(), setEnvironment()
+    \sa QProcessEnvironment::systemEnvironment(), setProcessEnvironment()
 */
 QStringList QProcess::systemEnvironment()
 {
