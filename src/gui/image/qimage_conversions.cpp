@@ -557,7 +557,7 @@ static inline uint qUnpremultiplyRgb30(uint rgb30)
     }
     case 2: {
         uint rgb = rgb30 & 0x3fffffff;
-        rgb += rgb >> 1;
+        rgb += (rgb >> 1) & 0x5ff7fdff;
         return (a << 30) | rgb;
     }
     case 3:
@@ -2348,9 +2348,9 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        convert_BGR30_to_RGB30,
-        convert_BGR30_to_RGB30,
         0,
+        convert_BGR30_to_RGB30,
+        convert_BGR30_to_RGB30,
         0,
         convert_passthrough,
         0, 0

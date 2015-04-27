@@ -183,6 +183,7 @@ private slots:
     void cleanupFunctions();
 
     void devicePixelRatio();
+    void rgb30Unpremul();
 
     void metadataPassthrough();
 
@@ -2827,6 +2828,20 @@ void tst_QImage::devicePixelRatio()
     a.setDevicePixelRatio(qreal(2.0));
     QCOMPARE(a.devicePixelRatio(), qreal(2.0));
     QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+}
+
+void tst_QImage::rgb30Unpremul()
+{
+    QImage a(3, 1, QImage::Format_A2RGB30_Premultiplied);
+    ((uint*)a.bits())[0] = (3U << 30) | (128 << 20) | (256 << 10) | 512;
+    ((uint*)a.bits())[1] = (2U << 30) | (131 << 20) | (259 << 10) | 515;
+    ((uint*)a.bits())[2] = (1U << 30) | ( 67 << 20) | (131 << 10) | 259;
+
+    QImage b = a.convertToFormat(QImage::Format_RGB30);
+    const uint* bbits = (const uint*)b.bits();
+    QCOMPARE(bbits[0], (3U << 30) | (128 << 20) | (256 << 10) | 512);
+    QCOMPARE(bbits[1], (3U << 30) | (196 << 20) | (388 << 10) | 772);
+    QCOMPARE(bbits[2], (3U << 30) | (201 << 20) | (393 << 10) | 777);
 }
 
 void tst_QImage::metadataPassthrough()
