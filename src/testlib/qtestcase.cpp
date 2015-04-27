@@ -121,6 +121,17 @@ static void stackTrace()
     if (system(cmd) == -1)
         fprintf(stderr, "calling gdb failed\n");
     fprintf(stderr, "========= End of stack trace ==============\n");
+#elif defined(Q_OS_OSX)
+    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
+    char cmd[512];
+    qsnprintf(cmd, 512, "lldb -p %d 2>/dev/null <<EOF\n"
+                         "bt all\n"
+                         "quit\n"
+                         "EOF\n",
+                         (int)getpid());
+    if (system(cmd) == -1)
+        fprintf(stderr, "calling lldb failed\n");
+    fprintf(stderr, "========= End of stack trace ==============\n");
 #endif
 }
 
