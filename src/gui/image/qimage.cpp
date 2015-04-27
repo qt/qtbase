@@ -1993,9 +1993,12 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
         return image;
     }
 
-    // Convert indexed formats over ARGB32 to the final format.
-    Q_ASSERT(format != QImage::Format_ARGB32);
-    Q_ASSERT(d->format != QImage::Format_ARGB32);
+    // Convert indexed formats over ARGB32 or RGB32 to the final format.
+    Q_ASSERT(format != QImage::Format_ARGB32 && format != QImage::Format_RGB32);
+    Q_ASSERT(d->format != QImage::Format_ARGB32 && d->format != QImage::Format_RGB32);
+
+    if (!hasAlphaChannel())
+        return convertToFormat(Format_RGB32, flags).convertToFormat(format, flags);
 
     return convertToFormat(Format_ARGB32, flags).convertToFormat(format, flags);
 }
@@ -4612,8 +4615,7 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     if (ref.load() > 1 || ro_data)
         return false;
 
-    const InPlace_Image_Converter *const converterPtr = &qimage_inplace_converter_map[format][newFormat];
-    InPlace_Image_Converter converter = *converterPtr;
+    InPlace_Image_Converter converter = qimage_inplace_converter_map[format][newFormat];
     if (converter)
         return converter(this, flags);
     else if (format > QImage::Format_Indexed8 && newFormat > QImage::Format_Indexed8 && !qimage_converter_map[format][newFormat])
