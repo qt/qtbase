@@ -48,6 +48,12 @@ static inline QByteArray localHostName()
     return qgetenv("COMPUTERNAME");
 }
 
+static inline bool fileExists(const wchar_t *fileName)
+{
+    WIN32_FILE_ATTRIBUTE_DATA  data;
+    return GetFileAttributesEx(fileName, GetFileExInfoStandard, &data);
+}
+
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
     const QFileSystemEntry fileEntry(fileName);
@@ -79,8 +85,13 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         case ERROR_SHARING_VIOLATION:
         case ERROR_ALREADY_EXISTS:
         case ERROR_FILE_EXISTS:
-        case ERROR_ACCESS_DENIED: // readonly file, or file still in use by another process. Assume the latter, since we don't create it readonly.
             return QLockFile::LockFailedError;
+        case ERROR_ACCESS_DENIED:
+            // readonly file, or file still in use by another process.
+            // Assume the latter if the file exists, since we don't create it readonly.
+            return fileExists((const wchar_t*)fileEntry.nativeFilePath().utf16())
+                ? QLockFile::LockFailedError
+                : QLockFile::PermissionError;
         default:
             qWarning() << "Got unexpected locking error" << lastError;
             return QLockFile::UnknownError;

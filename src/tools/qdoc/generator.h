@@ -103,6 +103,7 @@ public:
     static bool useOutputSubdirs() { return useOutputSubdirs_; }
     static void setQmlTypeContext(QmlTypeNode* t) { qmlTypeContext_ = t; }
     static QmlTypeNode* qmlTypeContext() { return qmlTypeContext_; }
+    static QString cleanRef(const QString& ref);
 
 protected:
     virtual void beginSubPage(const Aggregate* node, const QString& fileName);

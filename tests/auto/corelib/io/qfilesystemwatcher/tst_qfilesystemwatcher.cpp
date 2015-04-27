@@ -36,6 +36,9 @@
 
 #include <QTemporaryDir>
 #include <QFileSystemWatcher>
+#include <QElapsedTimer>
+#include <QTextStream>
+#include <QDir>
 
 /* All tests need to run in temporary directories not used
  * by the application to avoid non-deterministic failures on Windows
@@ -387,6 +390,60 @@ void tst_QFileSystemWatcher::addPaths()
     QCOMPARE(watcher.addPaths(paths), QStringList());
 }
 
+// A signal spy that records the paths and times received for better diagnostics.
+class FileSystemWatcherSpy : public QObject {
+    Q_OBJECT
+public:
+    enum Mode {
+        SpyOnDirectoryChanged,
+        SpyOnFileChanged
+    };
+
+    explicit FileSystemWatcherSpy(QFileSystemWatcher *watcher, Mode mode)
+    {
+        connect(watcher, mode == SpyOnDirectoryChanged ?
+                &QFileSystemWatcher::directoryChanged : &QFileSystemWatcher::fileChanged,
+                this, &FileSystemWatcherSpy::spySlot);
+        m_elapsedTimer.start();
+    }
+
+    int count() const { return m_entries.size(); }
+    void clear()
+    {
+        m_entries.clear();
+        m_elapsedTimer.restart();
+    }
+
+    QByteArray receivedFilesMessage() const
+    {
+        QString result;
+        QTextStream str(&result);
+        str << "At " << m_elapsedTimer.elapsed() << "ms, received "
+            << count() << " changes: ";
+        for (int i =0, e = m_entries.size(); i < e; ++i) {
+            if (i)
+                str << ", ";
+            str << m_entries.at(i).timeStamp << "ms: " << QDir::toNativeSeparators(m_entries.at(i).path);
+        }
+        return result.toLocal8Bit();
+    }
+
+private slots:
+    void spySlot(const QString &p) { m_entries.append(Entry(m_elapsedTimer.elapsed(), p)); }
+
+private:
+    struct Entry {
+        Entry() : timeStamp(0) {}
+        Entry(qint64 t, const QString &p) : timeStamp(t), path(p) {}
+
+        qint64 timeStamp;
+        QString path;
+    };
+
+    QElapsedTimer m_elapsedTimer;
+    QList<Entry> m_entries;
+};
+
 void tst_QFileSystemWatcher::removePaths()
 {
     QFileSystemWatcher watcher;
@@ -438,9 +495,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QVERIFY(watcher.addPath(testFileName));
 
     QSignalSpy fileChangedSpy(&watcher, &QFileSystemWatcher::fileChanged);
-    QSignalSpy dirChangedSpy(&watcher, &QFileSystemWatcher::directoryChanged);
+    FileSystemWatcherSpy dirChangedSpy(&watcher, FileSystemWatcherSpy::SpyOnDirectoryChanged);
     QVERIFY(fileChangedSpy.isValid());
-    QVERIFY(dirChangedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -460,7 +516,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 #endif
 
     QTRY_VERIFY(fileChangedSpy.count() > 0);
-    QCOMPARE(dirChangedSpy.count(), 0);
+    QVERIFY2(dirChangedSpy.count() == 0, dirChangedSpy.receivedFilesMessage());
 
     fileChangedSpy.clear();
     QFile secondFile(secondFileName);
@@ -640,13 +696,14 @@ private:
 // emitted with the destination path instead of the starting path
 void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
 {
+    const int fileCount = 10;
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
     QVERIFY(temporaryDirectory.isValid());
     QDir testDir(temporaryDirectory.path());
     QVERIFY(testDir.mkdir("movehere"));
     QString movePath = testDir.filePath("movehere");
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < fileCount; ++i) {
         QFile f(testDir.filePath(QString("test%1.txt").arg(i)));
         QVERIFY(f.open(QIODevice::WriteOnly));
         f.write(QByteArray("i am ") + QByteArray::number(i));
@@ -659,6 +716,7 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
 
     // add files to watcher
     QFileInfoList files = testDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
+    QCOMPARE(files.size(), fileCount);
     foreach (const QFileInfo &finfo, files)
         QVERIFY(watcher.addPath(finfo.absoluteFilePath()));
 
@@ -667,14 +725,16 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     connect(&watcher, SIGNAL(fileChanged(QString)), &signalReceiver, SLOT(fileChanged(QString)));
 
     // watch signals
-    QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::fileChanged);
-    QVERIFY(changedSpy.isValid());
+    FileSystemWatcherSpy changedSpy(&watcher, FileSystemWatcherSpy::SpyOnFileChanged);
+    QCOMPARE(changedSpy.count(), 0);
 
     // move files to second directory
     foreach (const QFileInfo &finfo, files)
         QVERIFY(testDir.rename(finfo.fileName(), QString("movehere/%2").arg(finfo.fileName())));
 
-    QTRY_COMPARE(changedSpy.count(), 10);
+    QCoreApplication::processEvents();
+    QVERIFY2(changedSpy.count() <= fileCount, changedSpy.receivedFilesMessage());
+    QTRY_COMPARE(changedSpy.count(), fileCount);
 }
 #endif // QT_NO_FILESYSTEMWATCHER
 

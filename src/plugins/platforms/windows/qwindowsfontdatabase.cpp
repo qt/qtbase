@@ -1631,6 +1631,8 @@ QStringList QWindowsFontDatabase::extraTryFontsForFamily(const QString &family)
             ++tf;
         }
     }
+    result.append(QStringLiteral("Segoe UI Emoji"));
+    result.append(QStringLiteral("Segoe UI Symbol"));
     return result;
 }
 

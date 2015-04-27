@@ -71,3 +71,21 @@ exists($$_PRO_FILE_PWD_/tests/tests.pro) {
 
 QT_BUILD_PARTS -= libs tools examples tests
 !isEmpty(QT_BUILD_PARTS): warning("Unknown build part(s): $$QT_BUILD_PARTS")
+
+QMAKE_DISTCLEAN += \
+    .qmake.cache \
+    config.log \
+    mkspecs/modules/*.pri \
+    mkspecs/modules-inst/*.pri
+
+tests = $$files($$_PRO_FILE_PWD_/config.tests/*.pro, true)
+testdirs =
+for (t, tests): \
+    testdirs += $$relative_path($$dirname(t), $$_PRO_FILE_PWD_)
+testdirs = $$unique(testdirs)
+for (td, testdirs) {
+    t = $$basename(td)-distclean
+    $${t}.commands = -cd $$shell_path($$td) && $(MAKE) distclean
+    QMAKE_EXTRA_TARGETS += $$t
+    DISTCLEAN_DEPS += $$t
+}

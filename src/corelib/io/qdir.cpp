@@ -239,7 +239,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         break;
       }
       case QDir::Size:
-          r = int(qBound<qint64>(-1, f2->item.size() - f1->item.size(), 1));
+          r = f2->item.size() - f1->item.size();
         break;
       case QDir::Type:
       {

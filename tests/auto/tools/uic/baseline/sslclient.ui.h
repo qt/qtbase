@@ -86,7 +86,6 @@ public:
         connectButton = new QPushButton(Form);
         connectButton->setObjectName(QStringLiteral("connectButton"));
         connectButton->setEnabled(true);
-        connectButton->setDefault(true);
 
         vboxLayout->addWidget(connectButton);
 
@@ -136,7 +135,6 @@ public:
         sendButton->setObjectName(QStringLiteral("sendButton"));
         sendButton->setEnabled(false);
         sendButton->setFocusPolicy(Qt::TabFocus);
-        sendButton->setDefault(true);
 
         hboxLayout1->addWidget(sendButton);
 
@@ -150,6 +148,10 @@ public:
         retranslateUi(Form);
         QObject::connect(hostNameEdit, SIGNAL(returnPressed()), connectButton, SLOT(animateClick()));
         QObject::connect(sessionInput, SIGNAL(returnPressed()), sendButton, SLOT(animateClick()));
+
+        connectButton->setDefault(true);
+        sendButton->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(Form);
     } // setupUi

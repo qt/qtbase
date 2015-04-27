@@ -36,8 +36,11 @@
 #include <QtConcurrentRun>
 #include <qlockfile.h>
 #include <qtemporarydir.h>
+#include <qsysinfo.h>
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#  include <qt_windows.h>
 #endif
 
 class tst_QLockFile : public QObject
@@ -58,6 +61,7 @@ private slots:
     void staleLongLockFromBusyProcess();
     void staleLockRace();
     void noPermissions();
+    void noPermissionsWindows();
 
 public:
     QString m_helperApp;
@@ -410,6 +414,67 @@ void tst_QLockFile::noPermissions()
     QVERIFY2(dirAsFile.setPermissions(QFile::Permissions(0)), qPrintable(dir.path())); // no permissions
     PermissionRestorer permissionRestorer(dir.path());
 
+    QLockFile lockFile(fileName);
+    QVERIFY(!lockFile.lock());
+    QCOMPARE(int(lockFile.error()), int(QLockFile::PermissionError));
+}
+
+enum ProcessProperty {
+    ElevatedProcess = 0x1,
+    VirtualStore = 0x2
+};
+
+Q_DECLARE_FLAGS(ProcessProperties, ProcessProperty)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ProcessProperties)
+
+static inline ProcessProperties processProperties()
+{
+    ProcessProperties result;
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+    HANDLE processToken = NULL;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &processToken)) {
+        DWORD elevation; // struct containing a DWORD, not present in some MinGW headers.
+        DWORD cbSize = sizeof(elevation);
+        if (GetTokenInformation(processToken, TokenElevation, &elevation, cbSize, &cbSize)
+            && elevation) {
+            result |= ElevatedProcess;
+        }
+        // Check for UAC virtualization (compatibility mode for old software
+        // allowing it to write to system folders by mirroring them under
+        // "\Users\...\AppData\Local\VirtualStore\", which is typically the case
+        // for MinGW).
+        DWORD virtualStoreEnabled = 0;
+        cbSize = sizeof(virtualStoreEnabled);
+        if (GetTokenInformation(processToken, TokenVirtualizationEnabled, &virtualStoreEnabled, cbSize, &cbSize)
+            && virtualStoreEnabled) {
+            result |= VirtualStore;
+        }
+        CloseHandle(processToken);
+    }
+#endif
+    return result;
+}
+
+void tst_QLockFile::noPermissionsWindows()
+{
+    // Windows: Do the permissions test in a system directory in which
+    // files cannot be created.
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+    QSKIP("This test is for desktop Windows only");
+#endif
+#ifdef Q_OS_WIN
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
+        QSKIP("This test requires at least Windows 7");
+#endif
+    if (const int p = processProperties()) {
+        const QByteArray message = "This test cannot be run (properties=0x"
+            + QByteArray::number(p, 16) + ')';
+        QSKIP(message.constData());
+    }
+
+    const QString fileName = QFile::decodeName(qgetenv("ProgramFiles"))
+        + QLatin1Char('/') + QCoreApplication::applicationName()
+        + QDateTime::currentDateTime().toString(QStringLiteral("yyMMddhhmm"));
     QLockFile lockFile(fileName);
     QVERIFY(!lockFile.lock());
     QCOMPARE(int(lockFile.error()), int(QLockFile::PermissionError));

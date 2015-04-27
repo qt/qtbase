@@ -2924,13 +2924,21 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
     if (dst == src) {
         // When mirroring in-place, stop in the middle for one of the directions, since we
         // are swapping the bytes instead of merely copying.
-        const int srcXEnd = dstX0 ? w / 2 : w;
-        const int srcYEnd = !dstX0 && dstY0 ? h / 2 : h;
+        const int srcXEnd = (dstX0 && !dstY0) ? w / 2 : w;
+        const int srcYEnd = dstY0 ? h / 2 : h;
         for (int srcY = 0, dstY = dstY0; srcY < srcYEnd; ++srcY, dstY += dstYIncr) {
             T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
             T *dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
             for (int srcX = 0, dstX = dstX0; srcX < srcXEnd; ++srcX, dstX += dstXIncr)
                 std::swap(srcPtr[srcX], dstPtr[dstX]);
+        }
+        // If mirroring both ways, the middle line needs to be mirrored horizontally only.
+        if (dstX0 && dstY0 && (h & 1)) {
+            int srcY = h / 2;
+            int srcXEnd2 = w / 2;
+            T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
+            for (int srcX = 0, dstX = dstX0; srcX < srcXEnd2; ++srcX, dstX += dstXIncr)
+                std::swap(srcPtr[srcX], srcPtr[dstX]);
         }
     } else {
         for (int srcY = 0, dstY = dstY0; srcY < h; ++srcY, dstY += dstYIncr) {

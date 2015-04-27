@@ -198,7 +198,7 @@ static inline bool isDescendant(const QAbstractState *state1, const QAbstractSta
 
 static bool containsDecendantOf(const QSet<QAbstractState *> &states, const QAbstractState *node)
 {
-    Q_FOREACH (QAbstractState *s, states)
+    foreach (QAbstractState *s, states)
         if (isDescendant(s, node))
             return true;
 
@@ -490,11 +490,11 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
     filteredTransitions.reserve(enabledTransitions.size());
     std::sort(enabledTransitions.begin(), enabledTransitions.end(), transitionStateEntryLessThan);
 
-    Q_FOREACH (QAbstractTransition *t1, enabledTransitions) {
+    foreach (QAbstractTransition *t1, enabledTransitions) {
         bool t1Preempted = false;
         QVarLengthArray<QAbstractTransition *> transitionsToRemove;
         QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(QList<QAbstractTransition*>() << t1);
-        Q_FOREACH (QAbstractTransition *t2, filteredTransitions) {
+        foreach (QAbstractTransition *t2, filteredTransitions) {
             QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(QList<QAbstractTransition*>() << t2);
             if (!exitSetT1.intersect(exitSetT2).isEmpty()) {
                 if (isDescendant(t1->sourceState(), t2->sourceState())) {
@@ -506,7 +506,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
             }
         }
         if (!t1Preempted) {
-            Q_FOREACH (QAbstractTransition *t3, transitionsToRemove)
+            foreach (QAbstractTransition *t3, transitionsToRemove)
                 filteredTransitions.removeAll(t3);
             filteredTransitions.append(t1);
         }
@@ -615,7 +615,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(const QList
             Q_ASSERT(domain != 0);
         }
 
-        Q_FOREACH (QAbstractState* s, configuration) {
+        foreach (QAbstractState* s, configuration) {
             if (isDescendant(s, domain))
                 statesToExit.insert(s);
         }
@@ -685,14 +685,14 @@ QList<QAbstractState*> QStateMachinePrivate::computeEntrySet(const QList<QAbstra
 {
     QSet<QAbstractState*> statesToEnter;
     if (pendingErrorStates.isEmpty()) {
-        Q_FOREACH (QAbstractTransition *t, enabledTransitions) {
-            Q_FOREACH (QAbstractState *s, t->targetStates()) {
+        foreach (QAbstractTransition *t, enabledTransitions) {
+            foreach (QAbstractState *s, t->targetStates()) {
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
             }
 
             QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t).toList();
             QAbstractState *ancestor = getTransitionDomain(t, effectiveTargetStates);
-            Q_FOREACH (QAbstractState *s, effectiveTargetStates) {
+            foreach (QAbstractState *s, effectiveTargetStates) {
                 addAncestorStatesToEnter(s, ancestor, statesToEnter, statesForDefaultEntry);
             }
         }
@@ -738,7 +738,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
     if (QState *tSource = t->sourceState()) {
         if (isCompound(tSource)) {
             bool allDescendants = true;
-            Q_FOREACH (QAbstractState *s, effectiveTargetStates) {
+            foreach (QAbstractState *s, effectiveTargetStates) {
                 if (!isDescendant(s, tSource)) {
                     allDescendants = false;
                     break;
@@ -970,9 +970,9 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
     if (QHistoryState *h = toHistoryState(state)) {
         QList<QAbstractState*> historyConfiguration = QHistoryStatePrivate::get(h)->configuration;
         if (!historyConfiguration.isEmpty()) {
-            Q_FOREACH (QAbstractState *s, historyConfiguration)
+            foreach (QAbstractState *s, historyConfiguration)
                 addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-            Q_FOREACH (QAbstractState *s, historyConfiguration)
+            foreach (QAbstractState *s, historyConfiguration)
                 addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 
 #ifdef QSTATEMACHINE_DEBUG
@@ -988,9 +988,9 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             if (defaultHistoryContent.isEmpty()) {
                 setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
             } else {
-                Q_FOREACH (QAbstractState *s, defaultHistoryContent)
+                foreach (QAbstractState *s, defaultHistoryContent)
                     addDescendantStatesToEnter(s, statesToEnter, statesForDefaultEntry);
-                Q_FOREACH (QAbstractState *s, defaultHistoryContent)
+                foreach (QAbstractState *s, defaultHistoryContent)
                     addAncestorStatesToEnter(s, state->parentState(), statesToEnter, statesForDefaultEntry);
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q_func() << ": initial history targets for" << state << ':' << defaultHistoryContent;
@@ -1021,7 +1021,7 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             }
         } else if (isParallel(state)) {
             QState *grp = toStandardState(state);
-            Q_FOREACH (QAbstractState *child, QStatePrivate::get(grp)->childStates()) {
+            foreach (QAbstractState *child, QStatePrivate::get(grp)->childStates()) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }
@@ -1044,12 +1044,12 @@ void QStateMachinePrivate::addAncestorStatesToEnter(QAbstractState *s, QAbstract
                                                     QSet<QAbstractState*> &statesToEnter,
                                                     QSet<QAbstractState*> &statesForDefaultEntry)
 {
-    Q_FOREACH (QState *anc, getProperAncestors(s, ancestor)) {
+    foreach (QState *anc, getProperAncestors(s, ancestor)) {
         if (!anc->parentState())
             continue;
         statesToEnter.insert(anc);
         if (isParallel(anc)) {
-            Q_FOREACH (QAbstractState *child, QStatePrivate::get(anc)->childStates()) {
+            foreach (QAbstractState *child, QStatePrivate::get(anc)->childStates()) {
                 if (!containsDecendantOf(statesToEnter, child))
                     addDescendantStatesToEnter(child, statesToEnter, statesForDefaultEntry);
             }

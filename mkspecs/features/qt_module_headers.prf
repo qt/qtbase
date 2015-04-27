@@ -24,6 +24,10 @@ load(qt_build_paths)
         -outdir $$system_quote($$MODULE_BASE_OUTDIR) $$MODULE_SYNCQT_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
+
+    include-distclean.commands = $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME))
+    QMAKE_EXTRA_TARGETS += include-distclean
+    DISTCLEAN_DEPS += include-distclean
 }
 
 minimal_syncqt: return()
@@ -41,11 +45,13 @@ for (injection, SYNCQT.INJECTIONS) {
     MAIN_FWD = $$INC_PATH/include/$$MODULE_INCNAME/$$fwd_hdr
     MAIN_FWD_CONT = '$${LITERAL_HASH}include "$$member(injects, 0)"'
     write_file($$MAIN_FWD, MAIN_FWD_CONT)|error("Aborting.")
+    !git_build: QMAKE_DISTCLEAN += $$MAIN_FWD
     injects = $$member(injects, 2, -1)
     for (inject, injects) {
         CLASS_FWD = $$INC_PATH/include/$$MODULE_INCNAME/$$inject
         CLASS_FWD_CONT = '$${LITERAL_HASH}include "$$fwd_hdr"'
         write_file($$CLASS_FWD, CLASS_FWD_CONT)|error("Aborting.")
+        !git_build: QMAKE_DISTCLEAN += $$CLASS_FWD
     }
 }
 
@@ -65,6 +71,7 @@ MODULE_MASTER_DEPS_HEADER = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME/$${MOD
     }
     MODULE_MASTER_DEPS_HEADER_CONT += "$${LITERAL_HASH}endif"
     write_file($$MODULE_MASTER_DEPS_HEADER, MODULE_MASTER_DEPS_HEADER_CONT)|error("Aborting.")
+    !git_build: QMAKE_DISTCLEAN += $$MODULE_MASTER_DEPS_HEADER
 }
 SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 

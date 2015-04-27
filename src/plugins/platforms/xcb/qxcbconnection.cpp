@@ -306,7 +306,6 @@ void QXcbConnection::initializeScreens()
         m_virtualDesktops.append(virtualDesktop);
         QList<QPlatformScreen *> siblings;
         int outputCount = 0;
-        int connectedOutputCount = 0;
         if (has_randr_extension) {
             xcb_generic_error_t *error = NULL;
             // RRGetScreenResourcesCurrent is fast but it may return nothing if the
@@ -375,7 +374,6 @@ void QXcbConnection::initializeScreens()
 
                             QXcbScreen *screen = createScreen(virtualDesktop, outputs[i], output.data());
                             siblings << screen;
-                            ++connectedOutputCount;
                             hasOutputs = true;
                             m_screens << screen;
 

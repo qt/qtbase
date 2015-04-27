@@ -688,7 +688,6 @@ public:
         buttonOk = new QPushButton(Config);
         buttonOk->setObjectName(QStringLiteral("buttonOk"));
         buttonOk->setAutoDefault(true);
-        buttonOk->setDefault(true);
 
         hboxLayout3->addWidget(buttonOk);
 
@@ -705,6 +704,9 @@ public:
         retranslateUi(Config);
         QObject::connect(size_width, SIGNAL(valueChanged(int)), size_custom, SLOT(click()));
         QObject::connect(size_height, SIGNAL(valueChanged(int)), size_custom, SLOT(click()));
+
+        buttonOk->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(Config);
     } // setupUi

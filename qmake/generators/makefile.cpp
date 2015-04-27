@@ -573,10 +573,12 @@ MakefileGenerator::init()
                     contentBytes = contents.toUtf8();
                 }
                 QFile out(outn);
+                QFileInfo outfi(out);
                 if (out.exists() && out.open(QFile::ReadOnly)) {
                     QByteArray old = out.readAll();
                     if (contentBytes == old) {
                         v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
+                        v["QMAKE_DISTCLEAN"].append(outfi.absoluteFilePath());
                         continue;
                     }
                     out.close();
@@ -586,9 +588,10 @@ MakefileGenerator::init()
                         continue;
                     }
                 }
-                mkdir(QFileInfo(out).absolutePath());
+                mkdir(outfi.absolutePath());
                 if(out.open(QFile::WriteOnly)) {
                     v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
+                    v["QMAKE_DISTCLEAN"].append(outfi.absoluteFilePath());
                     out.write(contentBytes);
                 } else {
                     warn_msg(WarnLogic, "Cannot open substitute for output '%s'",
@@ -1121,6 +1124,7 @@ MakefileGenerator::writePrlFile()
         if(ft.open(QIODevice::WriteOnly)) {
             project->values("ALL_DEPS").append(prl);
             project->values("QMAKE_INTERNAL_PRL_FILE").append(prl);
+            project->values("QMAKE_DISTCLEAN").append(prl);
             QTextStream t(&ft);
             writePrlFile(t);
         }
@@ -1850,8 +1854,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         t << endl;
 
         if (config.indexOf("no_clean") == -1) {
-            const ProStringList &raw_clean = project->values(ProKey(*it + ".clean"));
-            QString tmp_clean = escapeFilePaths(raw_clean).join(' ');
+            QStringList raw_clean = project->values(ProKey(*it + ".clean")).toQStringList();
+            if (raw_clean.isEmpty())
+                raw_clean << tmp_out;
+            QString tmp_clean;
+            foreach (const QString &rc, raw_clean)
+                tmp_clean += ' ' + escapeFilePath(Option::fixPathToTargetOS(rc));
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
                 clean_targets += QString("compiler_" + (*it) + "_clean ");
@@ -1863,14 +1871,11 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 t << "\n\t" << tmp_clean_cmds;
                 wrote_clean_cmds = true;
             }
-            if(tmp_clean.isEmpty())
-                tmp_clean = escapeFilePath(tmp_out);
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
-                t << "\n\t-$(DEL_FILE) " << tmp_clean;
+                t << "\n\t-$(DEL_FILE)" << tmp_clean;
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
-                QStringList q_raw_clean = raw_clean.toQStringList();
                 QStringList cleans;
                 const QString del_statement("-$(DEL_FILE)");
                 if(!wrote_clean) {
@@ -1878,7 +1883,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     for (ProStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         QString tinp = (*input).toQString();
                         QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
-                        foreach (const QString &rc, q_raw_clean) {
+                        foreach (const QString &rc, raw_clean) {
                             dels << ' ' + escapeFilePath(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(rc, tinp, out, NoShell), false));
                         }
@@ -2569,11 +2574,11 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             t << " " << targetRule;
         }
         if(suffix == "all" || suffix == "make_first")
-            t << depVar("ALL_DEPS");
+            t << ' ' << depVar("ALL_DEPS");
         if(suffix == "clean")
-            t << depVar("CLEAN_DEPS");
+            t << ' ' << depVar("CLEAN_DEPS");
         else if (suffix == "distclean")
-            t << depVar("DISTCLEAN_DEPS");
+            t << ' ' << depVar("DISTCLEAN_DEPS");
         t << " FORCE\n";
         if(suffix == "clean") {
             t << fixFileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");
@@ -3159,7 +3164,9 @@ MakefileGenerator::writePkgConfigFile()
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
-    project->values("ALL_DEPS").append(fileFixify(fname));
+    QString ffname(fileFixify(fname));
+    project->values("ALL_DEPS").append(ffname);
+    project->values("QMAKE_DISTCLEAN").append(ffname);
     QTextStream t(&ft);
 
     QString prefix = pkgConfigPrefix();

@@ -171,7 +171,6 @@ public:
 
         okButton = new QPushButton(QSqlConnectionDialogUi);
         okButton->setObjectName(QStringLiteral("okButton"));
-        okButton->setDefault(true);
 
         hboxLayout1->addWidget(okButton);
 
@@ -201,6 +200,9 @@ public:
         QWidget::setTabOrder(okButton, cancelButton);
 
         retranslateUi(QSqlConnectionDialogUi);
+
+        okButton->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(QSqlConnectionDialogUi);
     } // setupUi

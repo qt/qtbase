@@ -517,12 +517,8 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 /*!
     \fn bool QSizeF::isNull() const
 
-    Returns \c true if both the width and height are +0.0; otherwise returns
-    false.
-
-    \note Since this function treats +0.0 and -0.0 differently, sizes with
-    zero width and height where either or both values have a negative
-    sign are not defined to be null sizes.
+    Returns \c true if both the width and height are 0.0 (ignoring the sign);
+    otherwise returns \c false.
 
     \sa isValid(), isEmpty()
 */
