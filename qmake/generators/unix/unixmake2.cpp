@@ -614,9 +614,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString currentLink = destdir_r + "Versions/Current";
-            QString currentLink_f = escapeDependencyPath(currentLink);
-            bundledFiles << currentLink << destdir_r + "$(TARGET)";
+            bundledFiles << destdir_r + "$(TARGET)";
             t << "\n\t"
               << "-$(DEL_FILE) $(TARGET) $(TARGET0) $(DESTDIR)$(TARGET0)\n\t"
               << var("QMAKE_LINK_SHLIB_CMD") << "\n\t"
@@ -624,10 +622,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "-$(MOVE) $(TARGET) $(DESTDIR)$(TARGETD)\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t"
               << varGlue("QMAKE_LN_SHLIB", "-", " ",
-                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
-              << "-$(DEL_FILE) " << currentLink_f << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," ", " " + project->first("QMAKE_FRAMEWORK_VERSION") +
-                         ' ' + currentLink_f) << "\n\t";
+                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -936,6 +931,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << escapeDependencyPath(symIt.key()) << ":\n\t"
               << mkdir_p_asstring(bundle_dir) << "\n\t"
               << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
+        }
+        if (!project->first("QMAKE_FRAMEWORK_VERSION").isEmpty()) {
+            QString currentLink = bundle_dir + "Versions/Current";
+            QString currentLink_f = escapeDependencyPath(currentLink);
+            bundledFiles << currentLink;
+            alldeps << currentLink;
+            t << currentLink_f << ": $(MAKEFILE)\n\t"
+              << mkdir_p_asstring(bundle_dir + "Versions") << "\n\t"
+              << "@-$(DEL_FILE) " << currentLink_f << "\n\t"
+              << "@$(SYMLINK) " << project->first("QMAKE_FRAMEWORK_VERSION")
+                         << ' ' << currentLink_f << endl;
         }
     }
 
