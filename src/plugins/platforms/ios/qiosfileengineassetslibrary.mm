@@ -43,6 +43,7 @@
 #include <QtCore/qthreadstorage.h>
 
 static QThreadStorage<QString> g_iteratorCurrentUrl;
+static QThreadStorage<QPointer<QIOSAssetData> > g_assetDataCache;
 
 static const int kBufferSize = 10;
 static ALAsset *kNoAsset = 0;
@@ -187,16 +188,14 @@ public:
     {
         ensureAuthorizationDialogNotBlocked();
 
-        if (g_currentAssetData) {
+        if (QIOSAssetData *assetData = g_assetDataCache.localData()) {
             // It's a common pattern that QFiles pointing to the same path are created and destroyed
             // several times during a single event loop cycle. To avoid loading the same asset
             // over and over, we check if the last loaded asset has not been destroyed yet, and try to
-            // reuse its data. Since QFile is (mostly) reentrant, we need to protect m_currentAssetData
-            // from being modified by several threads at the same time.
-            QMutexLocker lock(&g_mutex);
-            if (g_currentAssetData && g_currentAssetData->m_assetUrl == assetUrl) {
-                m_assetLibrary = [g_currentAssetData->m_assetLibrary retain];
-                m_asset = [g_currentAssetData->m_asset retain];
+            // reuse its data.
+            if (assetData->m_assetUrl == assetUrl) {
+                m_assetLibrary = [assetData->m_assetLibrary retain];
+                m_asset = [assetData->m_asset retain];
                 return;
             }
         }
@@ -243,17 +242,15 @@ public:
         dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
         dispatch_release(semaphore);
 
-        QMutexLocker lock(&g_mutex);
-        g_currentAssetData = this;
+        g_assetDataCache.setLocalData(this);
     }
 
     ~QIOSAssetData()
     {
-        QMutexLocker lock(&g_mutex);
         [m_assetLibrary release];
         [m_asset release];
-        if (this == g_currentAssetData)
-            g_currentAssetData = 0;
+        if (g_assetDataCache.localData() == this)
+            g_assetDataCache.setLocalData(0);
     }
 
     ALAsset *m_asset;
@@ -261,13 +258,7 @@ public:
 private:
     QString m_assetUrl;
     ALAssetsLibrary *m_assetLibrary;
-
-    static QBasicMutex g_mutex;
-    static QPointer<QIOSAssetData> g_currentAssetData;
 };
-
-QBasicMutex QIOSAssetData::g_mutex;
-QPointer<QIOSAssetData> QIOSAssetData::g_currentAssetData = 0;
 
 // -------------------------------------------------------------------------
 
