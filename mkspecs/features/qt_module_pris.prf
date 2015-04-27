@@ -62,14 +62,14 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(QT_PRIVATE, -private$, _private)"
     else: \
         module_rundep =
-    equals(TEMPLATE, aux): \
-        module_build_type = no_link
-    else:static: \
+    static: \
         module_build_type = staticlib
     else:mac:contains(QT_CONFIG, qt_framework): \
         module_build_type = lib_bundle
     else: \
         module_build_type =
+    equals(TEMPLATE, aux): \
+        module_build_type += no_link
     internal_module: \
         module_build_type += internal_module
     ltcg: \
