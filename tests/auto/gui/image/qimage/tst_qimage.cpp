@@ -2664,16 +2664,7 @@ void tst_QImage::inplaceRgbConversion()
             QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
         }
     }
-    bool expectInplace = image.depth() == imageConverted.depth();
-    // RGB30 <-> RGB32 have a few direct conversions without inplace counterparts.
-    if (format >= QImage::Format_BGR30 && format <= QImage::Format_A2RGB30_Premultiplied
-        && dest_format >= QImage::Format_RGB32 && dest_format <= QImage::Format_ARGB32_Premultiplied)
-        expectInplace = false;
-    if (dest_format >= QImage::Format_BGR30 && dest_format <= QImage::Format_A2RGB30_Premultiplied
-        && format >= QImage::Format_RGB32 && format <= QImage::Format_ARGB32_Premultiplied)
-        expectInplace = false;
-
-    if (expectInplace)
+    if (image.depth() == imageConverted.depth())
         QCOMPARE(imageConverted.constScanLine(0), originalPtr);
 
     {

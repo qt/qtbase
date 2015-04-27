@@ -49,6 +49,12 @@ private slots:
     void convertRgb32ToRgb888_data();
     void convertRgb32ToRgb888();
 
+    void convertRgb16_data();
+    void convertRgb16();
+
+    void convertRgb32_data();
+    void convertRgb32();
+
     void convertGeneric_data();
     void convertGeneric();
 
@@ -146,55 +152,96 @@ void tst_QImageConversion::convertRgb32ToRgb888()
     }
 }
 
-
-void tst_QImageConversion::convertGeneric_data()
+void tst_QImageConversion::convertRgb16_data()
 {
     QTest::addColumn<QImage>("inputImage");
     QTest::addColumn<QImage::Format>("outputFormat");
     QImage rgb16 = generateImageRgb16(1000, 1000);
+
+    QTest::newRow("rgb32") << rgb16 << QImage::Format_RGB32;
+    QTest::newRow("rgb888") << rgb16 << QImage::Format_RGB888;
+    QTest::newRow("rgb666") << rgb16 << QImage::Format_RGB666;
+    QTest::newRow("rgb555") << rgb16 << QImage::Format_RGB555;
+}
+
+void tst_QImageConversion::convertRgb16()
+{
+    QFETCH(QImage, inputImage);
+    QFETCH(QImage::Format, outputFormat);
+
+    QBENCHMARK {
+        QImage output = inputImage.convertToFormat(outputFormat);
+        output.constBits();
+    }
+}
+
+void tst_QImageConversion::convertRgb32_data()
+{
+    QTest::addColumn<QImage>("inputImage");
+    QTest::addColumn<QImage::Format>("outputFormat");
     QImage rgb32 = generateImageRgb32(1000, 1000);
     QImage argb32 = generateImageArgb32(1000, 1000);
     QImage argb32pm = argb32.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    QImage rgba32 = argb32.convertToFormat(QImage::Format_RGBA8888);
-    QImage a2rgb30 = argb32.convertToFormat(QImage::Format_A2RGB30_Premultiplied);
-
-    QTest::newRow("rgb16 -> rgb32") << rgb16 << QImage::Format_RGB32;
-    QTest::newRow("rgb16 -> rgb888") << rgb16 << QImage::Format_RGB888;
-    QTest::newRow("rgb16 -> rgb666") << rgb16 << QImage::Format_RGB666;
-    QTest::newRow("rgb16 -> rgb555") << rgb16 << QImage::Format_RGB555;
 
     QTest::newRow("rgb32 -> rgb16") << rgb32 << QImage::Format_RGB16;
-    QTest::newRow("rgb32 -> rgb888") << rgb32 << QImage::Format_RGB888;
-    QTest::newRow("rgb32 -> rgb666") << rgb32 << QImage::Format_RGB666;
-    QTest::newRow("rgb32 -> rgb555") << rgb32 << QImage::Format_RGB555;
     QTest::newRow("rgb32 -> argb32") << rgb32 << QImage::Format_ARGB32;
     QTest::newRow("rgb32 -> argb32pm") << rgb32 << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("rgb32 -> rgbx8888") << rgb32 << QImage::Format_RGBX8888;
     QTest::newRow("rgb32 -> rgba8888") << rgb32 << QImage::Format_RGBA8888;
     QTest::newRow("rgb32 -> rgba8888pm") << rgb32 << QImage::Format_RGBA8888_Premultiplied;
     QTest::newRow("rgb32 -> rgb30") << rgb32 << QImage::Format_RGB30;
-    QTest::newRow("rgb32 -> bgr30") << rgb32 << QImage::Format_BGR30;
+    QTest::newRow("rgb32 -> a2bgr30") << rgb32 << QImage::Format_A2BGR30_Premultiplied;
+    QTest::newRow("rgb32 -> rgb888") << rgb32 << QImage::Format_RGB888;
+    QTest::newRow("rgb32 -> rgb666") << rgb32 << QImage::Format_RGB666;
+    QTest::newRow("rgb32 -> rgb555") << rgb32 << QImage::Format_RGB555;
 
-    QTest::newRow("argb32 -> rgb888") << argb32 << QImage::Format_RGB888;
-    QTest::newRow("argb32 -> rgb666") << argb32 << QImage::Format_RGB666;
-    QTest::newRow("argb32 -> argb8565pm") << argb32 << QImage::Format_ARGB8565_Premultiplied;
-    QTest::newRow("argb32 -> argb4444pm") << argb32 << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("argb32 -> rgb16") << argb32 << QImage::Format_RGB16;
     QTest::newRow("argb32 -> rgb32") << argb32 << QImage::Format_RGB32;
     QTest::newRow("argb32 -> argb32pm") << argb32 << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("argb32 -> rgbx8888") << argb32 << QImage::Format_RGBX8888;
     QTest::newRow("argb32 -> rgba8888") << argb32 << QImage::Format_RGBA8888;
     QTest::newRow("argb32 -> rgba8888pm") << argb32 << QImage::Format_RGBA8888_Premultiplied;
     QTest::newRow("argb32 -> rgb30") << argb32 << QImage::Format_RGB30;
-    QTest::newRow("argb32 -> a2rgb30") << argb32 << QImage::Format_A2RGB30_Premultiplied;
+    QTest::newRow("argb32 -> a2bgr30") << argb32 << QImage::Format_A2BGR30_Premultiplied;
+    QTest::newRow("argb32 -> rgb888") << argb32 << QImage::Format_RGB888;
+    QTest::newRow("argb32 -> rgb666") << argb32 << QImage::Format_RGB666;
+    QTest::newRow("argb32 -> argb8565pm") << argb32 << QImage::Format_ARGB8565_Premultiplied;
+    QTest::newRow("argb32 -> argb4444pm") << argb32 << QImage::Format_ARGB4444_Premultiplied;
 
-    QTest::newRow("argb32pm -> argb4444pm") << argb32pm << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("argb32pm -> rgb16") << argb32pm << QImage::Format_RGB16;
     QTest::newRow("argb32pm -> rgb32") << argb32pm << QImage::Format_RGB32;
     QTest::newRow("argb32pm -> argb32") << argb32pm << QImage::Format_ARGB32;
     QTest::newRow("argb32pm -> rgbx8888") << argb32pm << QImage::Format_RGBX8888;
     QTest::newRow("argb32pm -> rgba8888") << argb32pm << QImage::Format_RGBA8888;
     QTest::newRow("argb32pm -> rgba8888pm") << argb32pm << QImage::Format_RGBA8888_Premultiplied;
     QTest::newRow("argb32pm -> rgb30") << argb32pm << QImage::Format_RGB30;
-    QTest::newRow("argb32pm -> a2rgb30") << argb32pm << QImage::Format_A2RGB30_Premultiplied;
+    QTest::newRow("argb32pm -> a2bgr30") << argb32pm << QImage::Format_A2BGR30_Premultiplied;
+    QTest::newRow("argb32pm -> rgb888") << argb32pm << QImage::Format_RGB888;
+    QTest::newRow("argb32pm -> rgb666") << argb32pm << QImage::Format_RGB666;
+    QTest::newRow("argb32pm -> argb8565pm") << argb32pm << QImage::Format_ARGB8565_Premultiplied;
+    QTest::newRow("argb32pm -> argb4444pm") << argb32pm << QImage::Format_ARGB4444_Premultiplied;
+}
+
+void tst_QImageConversion::convertRgb32()
+{
+    QFETCH(QImage, inputImage);
+    QFETCH(QImage::Format, outputFormat);
+
+    QBENCHMARK {
+        QImage output = inputImage.convertToFormat(outputFormat);
+        output.constBits();
+    }
+}
+
+void tst_QImageConversion::convertGeneric_data()
+{
+    QTest::addColumn<QImage>("inputImage");
+    QTest::addColumn<QImage::Format>("outputFormat");
+    QImage rgb32 = generateImageRgb32(1000, 1000);
+    QImage argb32 = generateImageArgb32(1000, 1000);
+    QImage rgba32 = argb32.convertToFormat(QImage::Format_RGBA8888);
+    QImage bgr30 = rgb32.convertToFormat(QImage::Format_BGR30);
+    QImage a2rgb30 = argb32.convertToFormat(QImage::Format_A2RGB30_Premultiplied);
 
     QTest::newRow("rgba8888 -> rgb32") << rgba32 << QImage::Format_RGB32;
     QTest::newRow("rgba8888 -> argb32") << rgba32 << QImage::Format_ARGB32;
@@ -202,7 +249,16 @@ void tst_QImageConversion::convertGeneric_data()
     QTest::newRow("rgba8888 -> rgbx8888") << rgba32 << QImage::Format_RGBX8888;
     QTest::newRow("rgba8888 -> rgba8888pm") << rgba32 << QImage::Format_RGBA8888_Premultiplied;
     QTest::newRow("rgba8888 -> rgb30") << rgba32 << QImage::Format_RGB30;
-    QTest::newRow("rgba8888 -> a2rgb30") << rgba32 << QImage::Format_A2RGB30_Premultiplied;
+    QTest::newRow("rgba8888 -> a2bgr30") << rgba32 << QImage::Format_A2BGR30_Premultiplied;
+
+    QTest::newRow("bgr30 -> rgb32") << bgr30 << QImage::Format_RGB32;
+    QTest::newRow("bgr30 -> argb32") << bgr30 << QImage::Format_ARGB32;
+    QTest::newRow("bgr30 -> argb32pm") << bgr30 << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("bgr30 -> rgbx8888") << bgr30 << QImage::Format_RGBX8888;
+    QTest::newRow("bgr30 -> rgba8888") << bgr30 << QImage::Format_RGBA8888;
+    QTest::newRow("bgr30 -> rgba8888pm") << bgr30 << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("bgr30 -> rgb30") << bgr30 << QImage::Format_RGB30;
+    QTest::newRow("bgr30 -> a2bgr30") << bgr30 << QImage::Format_A2BGR30_Premultiplied;
 
     QTest::newRow("a2rgb30 -> rgb32") << a2rgb30 << QImage::Format_RGB32;
     QTest::newRow("a2rgb30 -> argb32") << a2rgb30 << QImage::Format_ARGB32;
@@ -210,7 +266,9 @@ void tst_QImageConversion::convertGeneric_data()
     QTest::newRow("a2rgb30 -> rgbx8888") << a2rgb30 << QImage::Format_RGBX8888;
     QTest::newRow("a2rgb30 -> rgba8888") << a2rgb30 << QImage::Format_RGBA8888;
     QTest::newRow("a2rgb30 -> rgba8888pm") << a2rgb30 << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("a2rgb30 -> rgb30") << a2rgb30 << QImage::Format_RGB30;
     QTest::newRow("a2rgb30 -> bgr30") << a2rgb30 << QImage::Format_BGR30;
+    QTest::newRow("a2rgb30 -> a2bgr30") << a2rgb30 << QImage::Format_A2BGR30_Premultiplied;
 }
 
 void tst_QImageConversion::convertGeneric()
@@ -316,12 +374,14 @@ QImage tst_QImageConversion::generateImageRgb32(int width, int height)
 QImage tst_QImageConversion::generateImageArgb32(int width, int height)
 {
     QImage image(width, height, QImage::Format_ARGB32);
-    const int byteWidth = width * 4;
 
     for (int y = 0; y < image.height(); ++y) {
-        uchar *scanline = image.scanLine(y);
-        for (int x = 0; x < byteWidth; ++x)
-            scanline[x] = x ^ y;
+        QRgb *scanline = (QRgb*)image.scanLine(y);
+        for (int x = 0; x < width; ++x) {
+            int alpha = (x ^ y) & 0x1ff;
+            alpha = qMax(0, qMin(alpha - 128, 255));
+            scanline[x] = qRgba(x, y, x ^ y, alpha);
+        }
     }
     return image;
 }
