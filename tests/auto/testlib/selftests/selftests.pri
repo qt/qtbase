@@ -8,6 +8,7 @@ SUBPROGRAMS = \
      benchliboptions \
      benchlibtickcounter \
      benchlibwalltime \
+     blacklisted \
      cmptest \
      commandlinedata \
      counting \

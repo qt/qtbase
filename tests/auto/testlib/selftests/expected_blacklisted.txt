@@ -1,0 +1,26 @@
+********* Start testing of tst_Blacklisted *********
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+PASS   : tst_Blacklisted::initTestCase()
+BPASS  : tst_Blacklisted::pass()
+SKIP   : tst_Blacklisted::skip() This test should SKIP
+   Loc: [tst_blacklisted.cpp(62)]
+BFAIL  : tst_Blacklisted::fail() 'false' returned FALSE. (This test should BFAIL)
+   Loc: [tst_blacklisted.cpp(67)]
+XFAIL  : tst_Blacklisted::xfail() This test should XFAIL then BFAIL
+   Loc: [tst_blacklisted.cpp(73)]
+BPASS  : tst_Blacklisted::xfail()
+XPASS  : tst_Blacklisted::xpass() 'true' returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)
+   Loc: [tst_blacklisted.cpp(79)]
+QWARN  : tst_Blacklisted::messages() This is a warning that should not appear in silent test output
+WARNING: tst_Blacklisted::messages() This is an internal testlib warning that should not appear in silent test output
+   Loc: [tst_blacklisted.cpp(85)]
+QDEBUG : tst_Blacklisted::messages() This is a debug message that should not appear in silent test output
+QSYSTEM: tst_Blacklisted::messages() This is a critical message that should not appear in silent test output
+QINFO  : tst_Blacklisted::messages() This is an info message that should not appear in silent test output
+INFO   : tst_Blacklisted::messages() This is an internal testlib info message that should not appear in silent test output
+   Loc: [tst_blacklisted.cpp(89)]
+QFATAL : tst_Blacklisted::messages() This is a fatal error message that should still appear in silent test output
+BFAIL  : tst_Blacklisted::messages() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 1 passed, 1 failed, 1 skipped, 4 blacklisted
+********* Finished testing of tst_Blacklisted *********
