@@ -906,7 +906,7 @@ void QFileDialog::setDirectory(const QString &directory)
         return;
 
     QUrl newDirUrl = QUrl::fromLocalFile(newDirectory);
-    d->setLastVisitedDirectory(newDirUrl);
+    QFileDialogPrivate::setLastVisitedDirectory(newDirUrl);
 
     d->options->setInitialDirectory(QUrl::fromLocalFile(directory));
     if (!d->usingWidgets()) {
@@ -967,7 +967,7 @@ void QFileDialog::setDirectoryUrl(const QUrl &directory)
     if (!directory.isValid())
         return;
 
-    d->setLastVisitedDirectory(directory);
+    QFileDialogPrivate::setLastVisitedDirectory(directory);
     d->options->setInitialDirectory(directory);
 
     if (d->nativeDialogInUse)

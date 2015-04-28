@@ -88,6 +88,7 @@ public:
     virtual ~tst_QFileDialog2();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -135,13 +136,13 @@ private slots:
     void dontShowCompleterOnRoot();
 
 private:
-    QByteArray userSettings;
+    void cleanupSettingsFile();
+
     QTemporaryDir tempDir;
 };
 
 tst_QFileDialog2::tst_QFileDialog2()
-    : userSettings()
-    , tempDir(QDir::tempPath() + "/tst_qfiledialog2.XXXXXX")
+    : tempDir(QDir::tempPath() + "/tst_qfiledialog2.XXXXXX")
 {
 #if defined(Q_OS_WINCE)
     qApp->setAutoMaximizeThreshold(-1);
@@ -152,17 +153,29 @@ tst_QFileDialog2::~tst_QFileDialog2()
 {
 }
 
-void tst_QFileDialog2::init()
+void tst_QFileDialog2::cleanupSettingsFile()
+{
+    // clean up the sidebar between each test
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
+    settings.beginGroup(QLatin1String("FileDialog"));
+    settings.remove(QString());
+    settings.endGroup();
+    settings.beginGroup(QLatin1String("Qt")); // Compatibility settings
+    settings.remove(QLatin1String("filedialog"));
+    settings.endGroup();
+}
+
+void tst_QFileDialog2::initTestCase()
 {
     QVERIFY(tempDir.isValid());
+    QStandardPaths::setTestModeEnabled(true);
+    cleanupSettingsFile();
+}
 
-    // Save the developers settings so they don't get mad when their sidebar folders are gone.
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("Qt"));
-    userSettings = settings.value(QLatin1String("filedialog")).toByteArray();
-    settings.remove(QLatin1String("filedialog"));
-
-    // populate it with some default settings
+void tst_QFileDialog2::init()
+{
+    QFileDialogPrivate::setLastVisitedDirectory(QUrl());
+    // populate the sidebar with some default settings
     QNonNativeFileDialog fd;
 #if defined(Q_OS_WINCE)
     QTest::qWait(1000);
@@ -171,9 +184,7 @@ void tst_QFileDialog2::init()
 
 void tst_QFileDialog2::cleanup()
 {
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("Qt"));
-    settings.setValue(QLatin1String("filedialog"), userSettings);
+    cleanupSettingsFile();
 }
 
 #ifdef QT_BUILD_INTERNAL
