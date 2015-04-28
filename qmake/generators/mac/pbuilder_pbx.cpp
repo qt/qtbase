@@ -1812,11 +1812,14 @@ ProjectBuilderMakefileGenerator::openOutput(QFile &file, const QString &build) c
         }
         output += QString("project.pbxproj");
         file.setFileName(output);
+        bool ret = UnixMakefileGenerator::openOutput(file, build);
+        ((ProjectBuilderMakefileGenerator*)this)->pbx_dir = Option::output_dir.section(Option::dir_sep, 0, -1);
+        Option::output_dir = pbx_dir.section(Option::dir_sep, 0, -2);
+        return ret;
     }
-    bool ret = UnixMakefileGenerator::openOutput(file, build);
-    ((ProjectBuilderMakefileGenerator*)this)->pbx_dir = Option::output_dir.section(Option::dir_sep, 0, -1);
-    Option::output_dir = pbx_dir.section(Option::dir_sep, 0, -2);
-    return ret;
+
+    ((ProjectBuilderMakefileGenerator*)this)->pbx_dir = Option::output_dir;
+    return UnixMakefileGenerator::openOutput(file, build);
 }
 
 /* This function is such a hack it is almost pointless, but it
