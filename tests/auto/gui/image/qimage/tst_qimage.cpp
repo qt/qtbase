@@ -155,6 +155,9 @@ private slots:
     void inplaceMirrored_data();
     void inplaceMirrored();
 
+    void inplaceMirroredOdd_data();
+    void inplaceMirroredOdd();
+
     void inplaceRgbMirrored();
 
     void inplaceConversion_data();
@@ -2465,6 +2468,54 @@ void tst_QImage::inplaceMirrored()
             else
                 expect = (i % 2) ? 0xfff0U : 0x000fU;
             QCOMPARE(*scanLine, expect);
+        }
+    }
+    QCOMPARE(imageMirrored.constScanLine(0), originalPtr);
+#endif
+}
+
+void tst_QImage::inplaceMirroredOdd_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<bool>("swap_vertical");
+    QTest::addColumn<bool>("swap_horizontal");
+
+    QTest::newRow("Format_ARGB32, vertical") << QImage::Format_ARGB32 << true << false;
+    QTest::newRow("Format_RGB888, vertical") << QImage::Format_RGB888 << true << false;
+    QTest::newRow("Format_RGB16, vertical") << QImage::Format_RGB16 << true << false;
+
+    QTest::newRow("Format_ARGB32, horizontal") << QImage::Format_ARGB32 << false << true;
+    QTest::newRow("Format_RGB888, horizontal") << QImage::Format_RGB888 << false << true;
+    QTest::newRow("Format_RGB16, horizontal") << QImage::Format_RGB16 << false << true;
+
+    QTest::newRow("Format_ARGB32, horizontal+vertical") << QImage::Format_ARGB32 << true << true;
+    QTest::newRow("Format_RGB888, horizontal+vertical") << QImage::Format_RGB888 << true << true;
+    QTest::newRow("Format_RGB16, horizontal+vertical") << QImage::Format_RGB16 << true << true;
+}
+
+void tst_QImage::inplaceMirroredOdd()
+{
+#if defined(Q_COMPILER_REF_QUALIFIERS)
+    QFETCH(QImage::Format, format);
+    QFETCH(bool, swap_vertical);
+    QFETCH(bool, swap_horizontal);
+
+    QImage image(15, 15, format);
+
+    for (int i = 0; i < image.height(); ++i)
+        for (int j = 0; j < image.width(); ++j)
+            image.setPixel(j, i, qRgb(j*16, i*16, 0));
+
+    const uchar* originalPtr = image.constScanLine(0);
+
+    QImage imageMirrored = std::move(image).mirrored(swap_horizontal, swap_vertical);
+    for (int i = 0; i < imageMirrored.height(); ++i) {
+        int mirroredI = swap_vertical ? (imageMirrored.height() - i - 1) : i;
+        for (int j = 0; j < imageMirrored.width(); ++j) {
+            int mirroredJ = swap_horizontal ? (imageMirrored.width() - j - 1) : j;
+            QRgb mirroredColor = imageMirrored.pixel(mirroredJ, mirroredI);
+            QCOMPARE(qRed(mirroredColor) & 0xF8, j * 16);
+            QCOMPARE(qGreen(mirroredColor) & 0xF8, i * 16);
         }
     }
     QCOMPARE(imageMirrored.constScanLine(0), originalPtr);

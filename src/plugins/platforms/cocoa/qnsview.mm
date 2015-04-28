@@ -704,8 +704,10 @@ QT_WARNING_POP
     }
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
-        targetView = popup->contentView();
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        if (QNSView *popupView = popup->qtView())
+            targetView = popupView;
+    }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -757,12 +759,13 @@ QT_WARNING_POP
     NSPoint windowPoint = [theEvent locationInWindow];
 
     int windowScreenY = [window frame].origin.y + [window frame].size.height;
-    int viewScreenY = [window convertBaseToScreen:[self convertPoint:[self frame].origin toView:nil]].y;
+    NSPoint windowCoord = [self convertPoint:[self frame].origin toView:nil];
+    int viewScreenY = [window convertRectToScreen:NSMakeRect(windowCoord.x, windowCoord.y, 0, 0)].origin.y;
     int titleBarHeight = windowScreenY - viewScreenY;
 
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
     QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
-    NSPoint screenPoint = [window convertBaseToScreen:windowPoint];
+    NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 0, 0)].origin;
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -808,10 +811,7 @@ QT_WARNING_POP
     }
 
     if ([self hasMarkedText]) {
-        NSInputManager* inputManager = [NSInputManager currentInputManager];
-        if ([inputManager wantsToHandleMouseEvents]) {
-            [inputManager handleMouseEvent:theEvent];
-        }
+        [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
         if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
@@ -1983,7 +1983,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
 
     NSWindow *window = [self window];
-    NSPoint screenPoint = [window convertBaseToScreen :point];
+    NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(point.x, point.y, 0, 0)].origin;
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_window, target, qtWindowPoint), qtScreenPoint, m_buttons);

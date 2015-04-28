@@ -58,17 +58,22 @@ else: \
     MODULE_DEFINE = QT_$${ucmodule}_LIB
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
-load(qt_module_pris)
+load(qt_build_paths)
 
-#other
-TEMPLATE         = lib
-DESTDIR          = $$eval(QT.$${MODULE_ID}.libs)
-win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE_ID}.bins)
+qt_no_install_library {
+    TEMPLATE     = aux
+    CONFIG      += force_qt  # Needed for the headers_clean tests.
+} else {
+    TEMPLATE     = lib
+}
+DESTDIR          = $$MODULE_BASE_OUTDIR/lib
+win32:!wince*:!prefix_build: DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 CONFIG          += qmake_cache target_qt
 
 QMAKE_DOCS_TARGETDIR = qt$${MODULE}
 
+load(qt_module_pris)
 load(qt_common)
 
 !no_module_headers: load(qt_module_headers)

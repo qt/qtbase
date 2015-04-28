@@ -421,6 +421,24 @@ bool VcprojGenerator::isStandardSuffix(const QString &suffix) const
     return false;
 }
 
+ProString VcprojGenerator::firstInputFileName(const ProString &extraCompilerName) const
+{
+    foreach (const ProString &var, project->values(ProKey(extraCompilerName + ".input"))) {
+        const ProStringList &files = project->values(var.toKey());
+        if (!files.isEmpty())
+            return files.first();
+    }
+    return ProString();
+}
+
+QString VcprojGenerator::firstExpandedOutputFileName(const ProString &extraCompilerName)
+{
+    const ProString firstOutput = project->first(ProKey(extraCompilerName + ".output"));
+    return replaceExtraCompilerVariables(firstOutput.toQString(),
+                                         firstInputFileName(extraCompilerName).toQString(),
+                                         QString(), NoShell);
+}
+
 ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QString, QString> &projLookup,
                                                    QHash<QString, QString> &projGuids,
                                                    QHash<VcsolutionDepend *, QStringList> &extraSubdirs,
@@ -1642,10 +1660,9 @@ void VcprojGenerator::initExtraCompilerOutputs()
         extraCompile.Filter = "";
         extraCompile.Guid = QString(_GUIDExtraCompilerFiles) + "-" + (*it);
 
-
         // If the extra compiler has a variable_out set the output file
         // is added to an other file list, and does not need its own..
-        bool addOnInput = hasBuiltinCompiler(project->first(ProKey(*it + ".output")).toQString());
+        bool addOnInput = hasBuiltinCompiler(firstExpandedOutputFileName(*it));
         const ProString &tmp_other_out = project->first(ProKey(*it + ".variable_out"));
         if (!tmp_other_out.isEmpty() && !addOnInput)
             continue;

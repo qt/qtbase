@@ -76,10 +76,8 @@ protected:
     virtual VCProjectWriter *createProjectWriter();
     virtual bool doDepends() const { return false; } //never necesary
     virtual void processSources() { filterIncludedFiles("SOURCES"); filterIncludedFiles("GENERATED_SOURCES"); }
-    using MakefileGenerator::ReplaceFor;
+    using Win32MakefileGenerator::replaceExtraCompilerVariables;
     virtual QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &, ReplaceFor);
-    inline QString replaceExtraCompilerVariables(const QString &val, const QString &in, const QString &out, ReplaceFor forShell)
-    { return MakefileGenerator::replaceExtraCompilerVariables(val, in, out, forShell); }
     virtual bool supportsMetaBuild() { return true; }
     virtual bool supportsMergedBuilds() { return true; }
     virtual bool mergeBuildProject(MakefileGenerator *other);
@@ -135,6 +133,8 @@ private:
     QUuid increaseUUID(const QUuid &id);
     QString retrievePlatformToolSet() const;
     bool isStandardSuffix(const QString &suffix) const;
+    ProString firstInputFileName(const ProString &extraCompilerName) const;
+    QString firstExpandedOutputFileName(const ProString &extraCompilerName);
     friend class VCFilter;
 };
 

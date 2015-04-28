@@ -528,12 +528,8 @@ QDebug operator<<(QDebug dbg, const QPointF &p)
 /*!
     \fn bool QPointF::isNull() const
 
-    Returns \c true if both the x and y coordinates are set to +0.0;
-    otherwise returns \c false.
-
-    \note Since this function treats +0.0 and -0.0 differently, points
-    with zero-valued coordinates where either or both values have a
-    negative sign are not defined to be null points.
+    Returns \c true if both the x and y coordinates are set to 0.0 (ignoring
+    the sign); otherwise returns \c false.
 */
 
 

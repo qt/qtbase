@@ -357,12 +357,12 @@ compilerSupportsFlag()
 int main() { return 0; }
 EOF
     if [ "$OPT_VERBOSE" = "yes" ]; then
-        "$@" -o conftest-out.o conftest.cpp
+        "$@" -o conftest-out conftest.cpp
     else
-        "$@" -o conftest-out.o conftest.cpp >/dev/null 2>&1
+        "$@" -o conftest-out conftest.cpp >/dev/null 2>&1
     fi
     ret=$?
-    rm -f conftest.cpp conftest-out.o
+    rm -f conftest.cpp conftest-out
     return $ret
 }
 
@@ -376,6 +376,9 @@ linkerSupportsFlag()
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
+    if [ $CFG_USE_GOLD_LINKER = yes ]; then
+        lflags="-fuse-ld=gold $lflags"
+    fi
     compilerSupportsFlag $compiler $lflags
 }
 

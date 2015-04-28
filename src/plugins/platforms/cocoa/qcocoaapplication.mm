@@ -133,7 +133,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
         return true;
 
     if ([event type] == NSApplicationDefined) {
-        switch ([event subtype]) {
+        switch (static_cast<short>([event subtype])) {
             case QtCocoaEventSubTypePostMessage:
                 [NSApp QT_MANGLE_NAMESPACE(qt_sendPostedMessage):event];
                 return true;

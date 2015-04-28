@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 class QPlatformPrintDevice;
 class QMarginsF;
 class QMimeType;
+class QDebug;
 
 class Q_PRINTSUPPORT_EXPORT QPrintDevice
 {
@@ -127,6 +128,10 @@ public:
     QList<QMimeType> supportedMimeTypes() const;
 #endif
 
+#  ifndef QT_NO_DEBUG_STREAM
+    void format(QDebug debug) const;
+#  endif
+
 private:
     friend class QPlatformPrinterSupport;
     friend class QPlatformPrintDevice;
@@ -136,6 +141,9 @@ private:
 
 Q_DECLARE_SHARED(QPrintDevice)
 
+#  ifndef QT_NO_DEBUG_STREAM
+Q_PRINTSUPPORT_EXPORT QDebug operator<<(QDebug debug, const QPrintDevice &);
+#  endif
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

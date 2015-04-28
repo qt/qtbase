@@ -388,7 +388,6 @@ void Tree::resolveInheritanceHelper(int pass, ClassNode* cn)
         while (b != bases.end()) {
             if (!(*b).node_) {
                 Node* n = qdb_->findClassNode((*b).path_);
-#if 0
                 /*
                   If the node for the base class was not found,
                   the reason might be that the subclass is in a
@@ -401,9 +400,11 @@ void Tree::resolveInheritanceHelper(int pass, ClassNode* cn)
                  */
                 if (!n) {
                     Aggregate* parent = cn->parent();
-                    n = findClassNode((*b).path_, parent);
+                    if (parent)
+                        // Exclude the root namespace
+                        if (parent->isNamespace() && !parent->name().isEmpty())
+                            n = findClassNode((*b).path_, parent);
                 }
-#endif
                 if (n) {
                     ClassNode* bcn = static_cast<ClassNode*>(n);
                     (*b).node_ = bcn;

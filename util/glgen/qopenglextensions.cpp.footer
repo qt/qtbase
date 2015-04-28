@@ -21,7 +21,7 @@ bool QOpenGLExtension_OES_EGL_image::initializeOpenGLFunctions()
     Q_D(QOpenGLExtension_OES_EGL_image);
 
     d->EGLImageTargetTexture2DOES = (void (QOPENGLF_APIENTRYP)(GLenum target, GLeglImageOES image))context->getProcAddress("glEGLImageTargetTexture2DOES");
-    d->EGLImageTargetRenderbufferStorageOES = (void (QOPENGLF_APIENTRYP)(GLenum target, GLeglImageOES image))context->getProcAddress("glEGLImageTargetRenderbufferStorageOESs");
+    d->EGLImageTargetRenderbufferStorageOES = (void (QOPENGLF_APIENTRYP)(GLenum target, GLeglImageOES image))context->getProcAddress("glEGLImageTargetRenderbufferStorageOES");
     return QAbstractOpenGLExtension::initializeOpenGLFunctions();
 }
 

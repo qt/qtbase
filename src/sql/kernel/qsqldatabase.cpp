@@ -1224,6 +1224,9 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li CLIENT_INTERACTIVE
     \li UNIX_SOCKET
     \li MYSQL_OPT_RECONNECT
+    \li MYSQL_OPT_CONNECT_TIMEOUT
+    \li MYSQL_OPT_READ_TIMEOUT
+    \li MYSQL_OPT_WRITE_TIMEOUT
     \endlist
 
     \li

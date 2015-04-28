@@ -73,19 +73,10 @@ void QAndroidPlatformForeignWindow::raise()
 
 void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
 {
-    QWindow *parent = window()->parent();
-    QRect newGeometry = rect;
-
-    if (parent != 0)
-        newGeometry.moveTo(parent->mapToGlobal(rect.topLeft()));
-
-    if (newGeometry == geometry())
-        return;
-
-    QAndroidPlatformWindow::setGeometry(newGeometry);
+    QAndroidPlatformWindow::setGeometry(rect);
 
     if (m_surfaceId != -1)
-        QtAndroid::setSurfaceGeometry(m_surfaceId, newGeometry);
+        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
 }
 
 void QAndroidPlatformForeignWindow::setVisible(bool visible)
@@ -118,18 +109,7 @@ void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState
 
 void QAndroidPlatformForeignWindow::setParent(const QPlatformWindow *window)
 {
-    QRect newGeometry = geometry();
-
-    if (window != 0)
-        newGeometry.moveTo(window->mapToGlobal(geometry().topLeft()));
-
-    if (newGeometry != geometry())
-        QAndroidPlatformWindow::setGeometry(newGeometry);
-
-    if (m_surfaceId == -1)
-        return;
-
-    QtAndroid::setSurfaceGeometry(m_surfaceId, newGeometry);
+    Q_UNUSED(window);
 }
 
 QT_END_NAMESPACE

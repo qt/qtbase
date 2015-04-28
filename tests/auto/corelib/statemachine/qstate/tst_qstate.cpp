@@ -41,23 +41,13 @@ class tst_QState : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QState();
-
 private slots:
     void assignProperty();
     void assignPropertyTwice();
     void historyInitialState();
     void transitions();
     void privateSignals();
-
-private:
-    bool functionCalled;
 };
-
-tst_QState::tst_QState() : functionCalled(false)
-{
-}
 
 class TestClass: public QObject
 {

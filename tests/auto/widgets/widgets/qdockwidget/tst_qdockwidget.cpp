@@ -72,6 +72,7 @@ private slots:
     void setTitleBarWidget();
     void titleBarDoubleClick();
     void restoreStateOfFloating();
+    void restoreDockWidget();
     // task specific tests:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
@@ -694,20 +695,78 @@ void tst_QDockWidget::titleBarDoubleClick()
     QCOMPARE(win.dockWidgetArea(&dock), Qt::TopDockWidgetArea);
 }
 
+static QDockWidget *createTestDock(QMainWindow &parent)
+{
+    const QString title = QStringLiteral("dock1");
+    QDockWidget *dock = new QDockWidget(title, &parent);
+    dock->setObjectName(title);
+    dock->setAllowedAreas(Qt::AllDockWidgetAreas);
+    return dock;
+}
+
 void tst_QDockWidget::restoreStateOfFloating()
 {
     QMainWindow mw;
-    QDockWidget dock;
-    dock.setObjectName("dock1");
-    mw.addDockWidget(Qt::TopDockWidgetArea, &dock);
-    QVERIFY(!dock.isFloating());
+    QDockWidget *dock = createTestDock(mw);
+    mw.addDockWidget(Qt::TopDockWidgetArea, dock);
+    QVERIFY(!dock->isFloating());
     QByteArray ba = mw.saveState();
-    dock.setFloating(true);
-    QVERIFY(dock.isFloating());
+    dock->setFloating(true);
+    QVERIFY(dock->isFloating());
     QVERIFY(mw.restoreState(ba));
-    QVERIFY(!dock.isFloating());
+    QVERIFY(!dock->isFloating());
 }
 
+void tst_QDockWidget::restoreDockWidget()
+{
+    QByteArray geometry;
+    QByteArray state;
+    const QString name = QStringLiteral("main");
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry();
+    const QSize size = availableGeometry.size() / 5;
+    const QPoint mainWindowPos = availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100);
+    const QPoint dockPos = availableGeometry.center();
+
+    {
+        QMainWindow saveWindow;
+        saveWindow.setObjectName(name);
+        saveWindow.setWindowTitle(QTest::currentTestFunction() + QStringLiteral(" save"));
+        saveWindow.resize(size);
+        saveWindow.move(mainWindowPos);
+        saveWindow.restoreState(QByteArray());
+        QDockWidget *dock = createTestDock(saveWindow);
+        QVERIFY(!saveWindow.restoreDockWidget(dock)); // Not added, no placeholder
+        saveWindow.addDockWidget(Qt::TopDockWidgetArea, dock);
+        dock->setFloating(true);
+        dock->resize(size);
+        dock->move(dockPos);
+        saveWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&saveWindow));
+        QVERIFY(dock->isFloating());
+        state = saveWindow.saveState();
+        geometry = saveWindow.saveGeometry();
+    }
+
+    QVERIFY(!geometry.isEmpty());
+    QVERIFY(!state.isEmpty());
+
+    {
+        QMainWindow restoreWindow;
+        restoreWindow.setObjectName(name);
+        restoreWindow.setWindowTitle(QTest::currentTestFunction() + QStringLiteral(" restore"));
+        QVERIFY(restoreWindow.restoreState(state));
+        QVERIFY(restoreWindow.restoreGeometry(geometry));
+
+        // QMainWindow::restoreDockWidget() restores the state when adding the dock
+        // after restoreState().
+        QDockWidget *dock = createTestDock(restoreWindow);
+        QVERIFY(restoreWindow.restoreDockWidget(dock));
+        restoreWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&restoreWindow));
+        QTRY_VERIFY(dock->isFloating());
+        QTRY_COMPARE(dock->pos(), dockPos);
+    }
+}
 
 void tst_QDockWidget::task165177_deleteFocusWidget()
 {

@@ -1237,6 +1237,9 @@ bool QMYSQLDriver::open(const QString& db,
     QString unixSocket;
 #if MYSQL_VERSION_ID >= 50000
     my_bool reconnect=false;
+    uint connectTimeout = 0;
+    uint readTimeout = 0;
+    uint writeTimeout = 0;
 #endif
 
     // extract the real options from the string
@@ -1252,6 +1255,12 @@ bool QMYSQLDriver::open(const QString& db,
             else if (opt == QLatin1String("MYSQL_OPT_RECONNECT")) {
                 if (val == QLatin1String("TRUE") || val == QLatin1String("1") || val.isEmpty())
                     reconnect = true;
+            } else if (opt == QLatin1String("MYSQL_OPT_CONNECT_TIMEOUT")) {
+                connectTimeout = val.toInt();
+            } else if (opt == QLatin1String("MYSQL_OPT_READ_TIMEOUT")) {
+                readTimeout = val.toInt();
+            } else if (opt == QLatin1String("MYSQL_OPT_WRITE_TIMEOUT")) {
+                writeTimeout = val.toInt();
             }
 #endif
             else if (val == QLatin1String("TRUE") || val == QLatin1String("1"))
@@ -1264,8 +1273,16 @@ bool QMYSQLDriver::open(const QString& db,
         }
     }
 
-    if ((d->mysql = mysql_init((MYSQL*) 0)) &&
-            mysql_real_connect(d->mysql,
+    if ((d->mysql = mysql_init((MYSQL*) 0))) {
+#if MYSQL_VERSION_ID >= 50000
+        if (connectTimeout != 0)
+            mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
+        if (readTimeout != 0)
+            mysql_options(d->mysql, MYSQL_OPT_READ_TIMEOUT, &readTimeout);
+        if (writeTimeout != 0)
+            mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
+#endif
+        if (mysql_real_connect(d->mysql,
                                host.isNull() ? static_cast<const char *>(0)
                                              : host.toLocal8Bit().constData(),
                                user.isNull() ? static_cast<const char *>(0)
@@ -1277,18 +1294,18 @@ bool QMYSQLDriver::open(const QString& db,
                                (port > -1) ? port : 0,
                                unixSocket.isNull() ? static_cast<const char *>(0)
                                            : unixSocket.toLocal8Bit().constData(),
-                               optionFlags))
-    {
-        if (!db.isEmpty() && mysql_select_db(d->mysql, db.toLocal8Bit().constData())) {
-            setLastError(qMakeError(tr("Unable to open database '%1'").arg(db), QSqlError::ConnectionError, d));
-            mysql_close(d->mysql);
-            setOpenError(true);
-            return false;
-        }
+                               optionFlags)) {
+            if (!db.isEmpty() && mysql_select_db(d->mysql, db.toLocal8Bit().constData())) {
+                setLastError(qMakeError(tr("Unable to open database '%1'").arg(db), QSqlError::ConnectionError, d));
+                mysql_close(d->mysql);
+                setOpenError(true);
+                return false;
+            }
 #if MYSQL_VERSION_ID >= 50000
-        if(reconnect)
-            mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
+            if (reconnect)
+                mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
 #endif
+        }
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));

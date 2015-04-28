@@ -3355,7 +3355,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
             out() << section.pluralMember;
         }
         out() << " inherited from <a href=\"" << fileName((*p).first)
-              << '#' << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << '#' << Generator::cleanRef(section.name.toLower()) << "\">"
               << protectEnc((*p).first->plainFullName(relative))
               << "</a></li>\n";
         ++p;
@@ -3610,62 +3610,9 @@ void HtmlGenerator::generateLink(const Atom* atom, CodeMarker* marker)
     }
 }
 
-QString HtmlGenerator::cleanRef(const QString& ref)
-{
-    QString clean;
-
-    if (ref.isEmpty())
-        return clean;
-
-    clean.reserve(ref.size() + 20);
-    const QChar c = ref[0];
-    const uint u = c.unicode();
-
-    if ((u >= 'a' && u <= 'z') ||
-            (u >= 'A' && u <= 'Z') ||
-            (u >= '0' && u <= '9')) {
-        clean += c;
-    } else if (u == '~') {
-        clean += "dtor.";
-    } else if (u == '_') {
-        clean += "underscore.";
-    } else {
-        clean += QLatin1Char('A');
-    }
-
-    for (int i = 1; i < (int) ref.length(); i++) {
-        const QChar c = ref[i];
-        const uint u = c.unicode();
-        if ((u >= 'a' && u <= 'z') ||
-                (u >= 'A' && u <= 'Z') ||
-                (u >= '0' && u <= '9') || u == '-' ||
-                u == '_' || u == ':' || u == '.') {
-            clean += c;
-        } else if (c.isSpace()) {
-            clean += QLatin1Char('-');
-        } else if (u == '!') {
-            clean += "-not";
-        } else if (u == '&') {
-            clean += "-and";
-        } else if (u == '<') {
-            clean += "-lt";
-        } else if (u == '=') {
-            clean += "-eq";
-        } else if (u == '>') {
-            clean += "-gt";
-        } else if (u == '#') {
-            clean += QLatin1Char('#');
-        } else {
-            clean += QLatin1Char('-');
-            clean += QString::number((int)u, 16);
-        }
-    }
-    return clean;
-}
-
 QString HtmlGenerator::registerRef(const QString& ref)
 {
-    QString clean = HtmlGenerator::cleanRef(ref);
+    QString clean = Generator::cleanRef(ref);
 
     for (;;) {
         QString& prevRef = refMap[clean.toLower()];

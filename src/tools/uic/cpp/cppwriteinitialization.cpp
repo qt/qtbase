@@ -1176,6 +1176,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             continue;
         QString propertyName = p->attributeName();
         QString propertyValue;
+        bool delayProperty = false;
 
         // special case for the property `geometry': Do not use position
         if (isTopLevel && propertyName == QLatin1String("geometry") && p->elementRect()) {
@@ -1204,6 +1205,10 @@ void WriteInitialization::writeProperties(const QString &varName,
                     && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QAxWidget"))) {
             // already done ;)
             continue;
+        } else if (propertyName == QLatin1String("default")
+                   && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QPushButton"))) {
+            // QTBUG-44406: Setting of QPushButton::default needs to be delayed until the parent is set
+            delayProperty = true;
         } else if (propertyName == QLatin1String("database")
                     && p->elementStringList()) {
             // Sql support
@@ -1479,7 +1484,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             else if (propertyName == QLatin1String("accessibleName") || propertyName == QLatin1String("accessibleDescription"))
                 defineC = accessibilityDefineC;
 
-            QTextStream &o = autoTrOutput(p);
+            QTextStream &o = delayProperty ? m_delayedOut : autoTrOutput(p);
 
             if (defineC)
                 openIfndef(o, QLatin1String(defineC));

@@ -123,9 +123,11 @@ clean::
 distclean:: clean
 	$(RM_RF) .deps
 	$(RM_F) $(BUILD_PATH)/bin/qmake$(EXEEXT)
+	$(RM_F) Makefile
 
 depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)
+	$(RM_F) Makefile.bak
 
 
 ioutils.o: $(QMKLIBSRC)/ioutils.cpp

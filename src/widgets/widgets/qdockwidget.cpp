@@ -1031,8 +1031,14 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     q->setWindowFlags(flags);
 
 
-    if (!rect.isNull())
-        q->setGeometry(rect);
+    if (!rect.isNull()) {
+        if (floating) {
+            q->resize(rect.size());
+            q->move(rect.topLeft());
+        } else {
+            q->setGeometry(rect);
+        }
+    }
 
     updateButtons();
 
