@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_GUIMAIN
-#define QT_GUIMAIN
+#ifndef QT_WIDGETSMAIN
+#define QT_WIDGETSMAIN
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qloggingcategory.h>
@@ -49,61 +49,59 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(QT_GUI_MAIN)
+Q_DECLARE_LOGGING_CATEGORY(QT_WIDGETS_MAIN)
 
 #ifdef Q_OS_NACL
 
-void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction,
-                                           QAppExitFunction appExitFunction);
-void Q_GUI_EXPORT qGuiRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction);
+void Q_WIDGETS_EXPORT qWidgetsRegisterAppFunctions(QAppInitFunction appInitFunction,
+                                                   QAppExitFunction appExitFunction);
+void Q_WIDGETS_EXPORT qWidgetsRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction);
 
-typedef QGuiApplication *(*QApplicationConstructurFunction)();
-
-// NaCl QtGui main:
+// NaCl QtWidgets main:
 // - define the pp::CreateModule() Ppapi main entry point.
 // - register app init and exit functions.
-#define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
+#define Q_WIDGETS_MAIN(qAppInitFunction, qAppExitFunction) \
 namespace pp { class Module; } \
 extern pp::Module *qtGuiCreatePepperModule(); \
 namespace pp {  \
     pp::Module* CreateModule() { \
-        qGuiRegisterAppFunctions(qAppInitFunction, qAppExitFunction); \
+        qWidgetsRegisterAppFunctions(qAppInitFunction, qAppExitFunction); \
         return qtGuiCreatePepperModule(); \
     } \
 }
 
 // Alternative startup function for apps that need more control over the
-// startup sequence, or that are unable to move the Q_GUI_MAIN.
+// startup sequence, or that are unable to move the Q_WIDGETS_MAIN.
 // 1) QApplication construction is handled by the app
 // 2) The must block and return at app exit.
 //
 // Using this API forces Qt/Pepper to use a secondary thread.
 //
-#define Q_GUI_BLOCKING_MAIN(qAppBlockingFunction) \
+#define Q_WIDGETS_BLOCKING_MAIN(qAppBlockingFunction) \
 namespace pp { class Module; } \
 extern pp::Module *qtGuiCreatePepperModule(); \
 namespace pp { \
     pp::Module* CreateModule() { \
-        qGuiRegisterAppBlockingFunction(qAppBlockingFunction); \
+        qWidgetsRegisterAppBlockingFunction(qAppBlockingFunction); \
         return qtGuiCreatePepperModule(); \
     } \
 }
 
 #else
 
-int Q_GUI_EXPORT qGuiMainWithAppFunctions(int argc, char **argv, 
-                                          QAppInitFunction appInitFunction,
-                                          QAppExitFunction appExitFunction);
+int Q_WIDGETS_EXPORT qWidgetsMainWithAppFunctions(int argc, char **argv, 
+                                                  QAppInitFunction appInitFunction,
+                                                  QAppExitFunction appExitFunction);
 
-// Standard QtGui main: define main(), call
-// qGuiMainWithAppFunctions which will run the applicaiton.
-#define Q_GUI_MAIN(qAppInitFunction, qAppExitFunction) \
+// Standard QtWidgets main: define main(), call
+// qWidgetsMainWithAppFunctions which will run the applicaiton.
+#define Q_WIDGETS_MAIN(qAppInitFunction, qAppExitFunction) \
 int main(int argc, char **argv) { \
-    return qGuiMainWithAppFunctions( \
+    return qWidgetsMainWithAppFunctions( \
         argc, argv, qAppInitFunction, qAppExitFunction); \
 }
 
-#define Q_GUI_BLOCKING_MAIN(appBlockingFunction) \
+#define Q_WIDGETS_BLOCKING_MAIN(appBlockingFunction) \
 int main(int argc, char **argv) { \
     return qCoreMainWithBlockingFunction(appBlockingFunction); \
 }

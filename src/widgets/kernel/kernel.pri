@@ -35,7 +35,8 @@ HEADERS += \
 	kernel/qgesturemanager_p.h \
         kernel/qdesktopwidget_p.h \
         kernel/qwidgetwindow_p.h \
-        kernel/qwindowcontainer_p.h
+        kernel/qwindowcontainer_p.h \
+        kernel/qwidgetsmain.h \
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -62,7 +63,8 @@ SOURCES += \
         kernel/qdesktopwidget.cpp \
         kernel/qwidgetsvariant.cpp \
         kernel/qwidgetwindow.cpp \
-        kernel/qwindowcontainer.cpp
+        kernel/qwindowcontainer.cpp \
+        kernel/qwidgetsmain.cpp
 
 macx: {
     HEADERS += kernel/qmacgesturerecognizer_p.h

@@ -61,19 +61,23 @@ QAppInitFunction g_appInit = 0;
 QAppExitFunction g_appExit = 0;
 QAppBlockingFunction g_appBlock = 0;
 
+QApplicationConstructurFunction g_applicationConstructorFunction = 0;
 QGuiApplication *g_guiApplcation = 0;
+QGuiApplication *qGuiApplicationConstructorFunction();
 
 void Q_GUI_EXPORT qGuiRegisterAppFunctions(QAppInitFunction appInitFunction, QAppExitFunction appExitFunction)
 {
     qCDebug(QT_GUI_MAIN) << "qGuiRegisterAppFunctions" << appInitFunction << appExitFunction;
     g_appInit = appInitFunction;
     g_appExit = appExitFunction;
+    g_applicationConstructorFunction = qGuiApplicationConstructorFunction;
 }
 
 void Q_GUI_EXPORT qGuiRegisterAppBlockingFunction(QAppBlockingFunction appBlockingFunction)
 {
     qCDebug(QT_GUI_MAIN) << "qGuiRegisterAppBlockingFunction" << appBlockingFunction;
     g_appBlock = appBlockingFunction;
+    g_applicationConstructorFunction = qGuiApplicationConstructorFunction;
 }
 
 int g_argc = 0;
@@ -89,10 +93,15 @@ int qGuiCallBlockingMain()
     return g_appBlock(g_argc, &g_argv);
 }
 
+QGuiApplication *qGuiApplicationConstructorFunction()
+{
+    return new QGuiApplication(g_argc, &g_argv);
+}
+
 void qGuiStartup()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiStartup";
-    g_guiApplcation = new QGuiApplication(g_argc, &g_argv);
+    g_guiApplcation = g_applicationConstructorFunction();
 }
 
 void qGuiAppInit()
