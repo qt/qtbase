@@ -51,6 +51,7 @@
 #include <QMutex>
 #include <QList>
 #include <QWaitCondition>
+#include <QAtomicInt>
 
 QT_BEGIN_NAMESPACE
 
@@ -488,6 +489,7 @@ public:
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
+    static QAtomicInt eventAccepted;
 
     static QList<QTouchEvent::TouchPoint>
         fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,

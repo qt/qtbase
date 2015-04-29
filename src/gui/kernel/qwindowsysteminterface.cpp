@@ -49,6 +49,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
+QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 
 //------------------------------------------------------------
@@ -618,17 +619,21 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::Process
     QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
 }
 
-void QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+/*!
+    Make Qt Gui process all events on the event queue immediately. Return the
+    accepted state for the last event on the queue.
+*/
+bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
     if (!count)
-        return;
+        return false;
     if (!QGuiApplication::instance()) {
         qWarning().nospace()
             << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
                "QGuiApplication destruction, discarding " << count << " events.";
         QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
-        return;
+        return false;
     }
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
@@ -638,6 +643,7 @@ void QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
     } else {
         sendWindowSystemEvents(flags);
     }
+    return QWindowSystemInterfacePrivate::eventAccepted.load() > 0;
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
@@ -659,6 +665,13 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
             nevents++;
             QGuiApplicationPrivate::processWindowSystemEvent(event);
         }
+
+        // Record the accepted state for the processed event
+        // (excluding flush events). This state can then be
+        // returned by flushWindowSystemEvents().
+        if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
+            QWindowSystemInterfacePrivate::eventAccepted.store(event->eventAccepted);
+
         delete event;
     }
 
