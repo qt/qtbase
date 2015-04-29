@@ -126,7 +126,6 @@ private slots:
     void cache();
 
     void abortHostLookup();
-    void abortHostLookupInDifferentThread();
 protected slots:
     void resultsReady(const QHostInfo &);
 
@@ -620,26 +619,6 @@ public slots:
 public:
     int id;
 };
-
-void tst_QHostInfo::abortHostLookupInDifferentThread()
-{
-    //reset counter
-    lookupsDoneCounter = 0;
-    bool valid = false;
-    int id = -1;
-    QHostInfo result = qt_qhostinfo_lookup("a-single" TEST_DOMAIN, this, SLOT(resultsReady(QHostInfo)), &valid, &id);
-    QVERIFY(!valid);
-    QThread thread;
-    LookupAborter aborter;
-    aborter.id = id;
-    aborter.moveToThread(&thread);
-    connect(&thread, SIGNAL(started()), &aborter, SLOT(abort()));
-    //it is assumed that the DNS request/response in the backend is slower than it takes to schedule the thread and call abort
-    thread.start();
-    QVERIFY(thread.wait(5000));
-    QTestEventLoop::instance().enterLoop(5);
-    QCOMPARE(lookupsDoneCounter, 0);
-}
 
 QTEST_MAIN(tst_QHostInfo)
 #include "tst_qhostinfo.moc"
