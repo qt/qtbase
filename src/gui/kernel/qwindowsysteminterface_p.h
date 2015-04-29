@@ -482,6 +482,7 @@ public:
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
+    static void postWindowSystemEvent(WindowSystemEvent *ev);
     static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;

@@ -442,18 +442,33 @@ void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *e
     windowSystemEventQueue.remove(event);
 }
 
+void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
+{
+    windowSystemEventQueue.append(ev);
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
+    if (dispatcher)
+        dispatcher->wakeUp();
+}
+
 bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
     bool accepted = true;
     if (synchronousWindowSystemEvents) {
-        QGuiApplicationPrivate::processWindowSystemEvent(ev);
-        accepted = ev->eventAccepted;
-        delete ev;
+        if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
+            // Process the event immediately on the current thread and return the accepted state.
+            QGuiApplicationPrivate::processWindowSystemEvent(ev);
+            accepted = ev->eventAccepted;
+            delete ev;
+        } else {
+            // Post the event on the Qt main thread queue and flush the queue.
+            // This will wake up the Gui thread which will process the event.
+            // Return the accepted state for the last event on the queue,
+            // which is the event posted by this function.
+            postWindowSystemEvent(ev);
+            accepted = QWindowSystemInterface::flushWindowSystemEvents();
+        }
     } else {
-        windowSystemEventQueue.append(ev);
-        QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
-        if (dispatcher)
-            dispatcher->wakeUp();
+        postWindowSystemEvent(ev);
     }
     return accepted;
 }
@@ -636,9 +651,11 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
         return false;
     }
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+        // Post a FlushEvents event which will trigger a call back to
+        // deferredFlushWindowSystemEvents from the Gui thread.
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
         QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
-        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::postWindowSystemEvent(e);
         QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
     } else {
         sendWindowSystemEvents(flags);
