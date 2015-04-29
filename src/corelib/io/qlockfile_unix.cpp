@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -47,6 +48,15 @@
 #include <sys/types.h> // kill
 #include <signal.h>    // kill
 #include <unistd.h>    // gethostname
+
+#if defined(Q_OS_OSX)
+#   include <libproc.h>
+#elif defined(Q_OS_LINUX)
+#   include <unistd.h>
+#   include <cstdio>
+#elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
+#   include <sys/user.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -189,10 +199,48 @@ bool QLockFilePrivate::isApparentlyStale() const
         if (hostname.isEmpty() || hostname == QString::fromLocal8Bit(localHostName())) {
             if (::kill(pid, 0) == -1 && errno == ESRCH)
                 return true; // PID doesn't exist anymore
+            const QString processName = processNameByPid(pid);
+            if (!processName.isEmpty()) {
+                QFileInfo fi(appname);
+                if (fi.isSymLink())
+                    fi.setFile(fi.symLinkTarget());
+                if (processName != fi.fileName())
+                    return true; // PID got reused by a different application.
+            }
         }
     }
     const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
     return staleLockTime > 0 && age > staleLockTime;
+}
+
+QString QLockFilePrivate::processNameByPid(qint64 pid)
+{
+#if defined(Q_OS_OSX)
+    char name[1024];
+    proc_name(pid, name, sizeof(name) / sizeof(char));
+    return QString::fromUtf8(name);
+#elif defined(Q_OS_LINUX)
+    if (!QFile::exists(QStringLiteral("/proc/version")))
+        return QString();
+    char exePath[64];
+    char buf[PATH_MAX];
+    memset(buf, 0, sizeof(buf));
+    sprintf(exePath, "/proc/%lld/exe", pid);
+    if (readlink(exePath, buf, sizeof(buf)) < 0) {
+        // The pid is gone. Return some invalid process name to fail the test.
+        return QStringLiteral("/ERROR/");
+    }
+    return QFileInfo(QString::fromUtf8(buf)).fileName();
+#elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
+    kinfo_proc *proc = kinfo_getproc(pid);
+    if (!proc)
+        return QString();
+    QString name = QString::fromUtf8(proc->ki_comm);
+    free(proc);
+    return name;
+#else
+    return QString();
+#endif
 }
 
 void QLockFile::unlock()
