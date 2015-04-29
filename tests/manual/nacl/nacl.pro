@@ -14,6 +14,7 @@ SUBDIRS = \
     window_raster \                 # QWindow with raster graphics.
     window_opengl \                 # QWindow with OpenGL graphics.
     window_qtquick \                # QQuickWindow
+    window_widgets \                # QQwidget
     window_qmlapplicationengine \   # QQmlApplicationEngine
     window_appmodule \              # App-defined pp::CreateModule()
     window_shadereffects \          # Shaders!
