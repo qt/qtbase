@@ -720,6 +720,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
         iconSize|SHGFI_SYSICONINDEX;
 #endif // Q_OS_WINCE
     unsigned long val = 0;
+#if !defined(QT_NO_WINCE_SHELLSDK)
     if (cacheableDirIcon && useDefaultFolderIcon) {
         flags |= SHGFI_USEFILEATTRIBUTES;
         val = SHGetFileInfo(L"dummy",
@@ -729,6 +730,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
         val = SHGetFileInfo(reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
                             &info, sizeof(SHFILEINFO), flags);
     }
+#endif // !QT_NO_WINCE_SHELLSDK
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
     if (val && info.hIcon) {

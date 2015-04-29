@@ -407,7 +407,7 @@ static QString readLink(const QFileSystemEntry &link)
     Q_UNUSED(link);
     return QString();
 #endif // QT_NO_LIBRARY
-#else
+#elif !defined(QT_NO_WINCE_SHELLSDK)
     wchar_t target[MAX_PATH];
     QString result;
     if (SHGetShortcutTarget((wchar_t*)QFileInfo(link.filePath()).absoluteFilePath().replace(QLatin1Char('/'),QLatin1Char('\\')).utf16(), target, MAX_PATH)) {
@@ -418,6 +418,9 @@ static QString readLink(const QFileSystemEntry &link)
             result.remove(result.size()-1,1);
     }
     return result;
+#else // QT_NO_WINCE_SHELLSDK
+    Q_UNUSED(link);
+    return QString();
 #endif // Q_OS_WINCE
 }
 
