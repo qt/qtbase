@@ -160,6 +160,7 @@ void QPepperBackingStore::createFrameBuffer(QSize size, qreal devicePixelRatio)
         // Create a new 2D graphics context, an pp::ImageData with the new size
         // plus a QImage that shares the ImageData frame buffer.
         m_context2D = new pp::Graphics2D(instance, toPPSize(devicePixelSize), false);
+        m_context2D->SetScale(1.0 / devicePixelRatio);
         if (!instance->BindGraphics(*m_context2D)) {
             qWarning("Couldn't bind the device context\n");
         }
