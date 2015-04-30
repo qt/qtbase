@@ -45,6 +45,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
+#include <QtGui/qguiapplication.h>
 #include <QtCore/qcoremain.h>
 
 QT_BEGIN_NAMESPACE
