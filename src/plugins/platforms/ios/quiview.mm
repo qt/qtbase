@@ -194,7 +194,7 @@
 
 - (BOOL)canBecomeFirstResponder
 {
-    return YES;
+    return !(m_qioswindow->window()->flags() & Qt::WindowDoesNotAcceptFocus);
 }
 
 - (BOOL)becomeFirstResponder
