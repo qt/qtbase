@@ -42,7 +42,6 @@
 #include <private/qfont_p.h>
 
 #include "qpixmap_raster_p.h"
-#include "qnativeimage_p.h"
 #include "qimage_p.h"
 #include "qpaintengine.h"
 
@@ -50,9 +49,12 @@
 #include "qimage.h"
 #include <QBuffer>
 #include <QImageReader>
+#include <QGuiApplication>
+#include <QScreen>
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 #include <private/qdrawhelper_p.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +90,13 @@ QRasterPlatformPixmap::~QRasterPlatformPixmap()
 {
 }
 
+QImage::Format QRasterPlatformPixmap::systemOpaqueFormat()
+{
+    if (!QGuiApplication::primaryScreen())
+        return QImage::Format_RGB32;
+    return QGuiApplication::primaryScreen()->handle()->format();
+}
+
 QPlatformPixmap *QRasterPlatformPixmap::createCompatiblePlatformPixmap() const
 {
     return new QRasterPlatformPixmap(pixelType());
@@ -99,7 +108,7 @@ void QRasterPlatformPixmap::resize(int width, int height)
     if (pixelType() == BitmapType)
         format = QImage::Format_MonoLSB;
     else
-        format = QNativeImage::systemFormat();
+        format = systemOpaqueFormat();
 
     image = QImage(width, height, format);
     w = width;
@@ -306,13 +315,13 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
                     ? QImage::Format_ARGB32_Premultiplied
                     : QImage::Format_RGB32;
         } else {
-            QImage::Format opaqueFormat = QNativeImage::systemFormat();
+            QImage::Format opaqueFormat = systemOpaqueFormat();
             QImage::Format alphaFormat = qt_alphaVersionForPainting(opaqueFormat);
 
             if (!sourceImage.hasAlphaChannel()) {
                 format = opaqueFormat;
             } else if ((flags & Qt::NoOpaqueDetection) == 0
-                       && !const_cast<QImage &>(sourceImage).data_ptr()->checkForAlphaPixels())
+                       && !sourceImage.data_ptr()->checkForAlphaPixels())
             {
                 format = opaqueFormat;
             } else {

@@ -11,7 +11,6 @@ HEADERS += \
         image/qimagereader.h \
         image/qimagewriter.h \
         image/qmovie.h \
-        image/qnativeimage_p.h \
         image/qpaintengine_pic_p.h \
         image/qpicture.h \
         image/qpicture_p.h \
@@ -45,7 +44,6 @@ SOURCES += \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
-        image/qnativeimage.cpp \
         image/qimagepixmapcleanuphooks.cpp \
         image/qicon.cpp \
         image/qiconloader.cpp \

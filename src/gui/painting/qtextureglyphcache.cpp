@@ -42,7 +42,6 @@
 #include "qtextureglyphcache_p.h"
 #include "private/qfontengine_p.h"
 #include "private/qnumeric_p.h"
-#include "private/qnativeimage_p.h"
 
 QT_BEGIN_NAMESPACE
 
