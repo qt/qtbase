@@ -218,36 +218,14 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
 {
 }
 
-BOOL QT_WIN_CALLBACK monitorResolutionEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM p)
-{
-    QWindowsScreenData data;
-    if (monitorData(hMonitor, &data)) {
-        int *maxHorizResolution = reinterpret_cast<int *>(p);
-        const int horizResolution = qRound(data.dpi.first);
-        if (horizResolution > *maxHorizResolution)
-            *maxHorizResolution = horizResolution;
-    }
-    return TRUE;
-}
-
-int QWindowsScreen::maxMonitorHorizResolution()
-{
-    int result = 0;
-    EnumDisplayMonitors(0, 0, monitorResolutionEnumCallback, (LPARAM)&result);
-    return result;
-}
-
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 
-QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const
+QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
     RECT r;
     HWND hwnd = window ? (HWND)window : GetDesktopWindow();
     GetClientRect(hwnd, &r);
-    const int x = qX * QWindowsScaling::factor();
-    const int y = qY * QWindowsScaling::factor();
-    int width = qWidth * QWindowsScaling::factor();
-    int height = qHeight * QWindowsScaling::factor();
+
     if (width < 0) width = r.right - r.left;
     if (height < 0) height = r.bottom - r.top;
 
@@ -271,10 +249,6 @@ QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int q
     DeleteObject(bitmap);
     ReleaseDC(0, display_dc);
 
-    if (QWindowsScaling::isActive()) {
-        const qreal factor = 1.0 / qreal(QWindowsScaling::factor());
-        return pixmap.transformed(QTransform::fromScale(factor, factor));
-    }
     return pixmap;
 }
 
@@ -285,7 +259,7 @@ QPixmap QWindowsScreen::grabWindow(WId window, int qX, int qY, int qWidth, int q
 QWindow *QWindowsScreen::topLevelAt(const QPoint &point) const
 {
     QWindow *result = 0;
-    if (QWindow *child = QWindowsScreen::windowAt(point * QWindowsScaling::factor(), CWP_SKIPINVISIBLE))
+    if (QWindow *child = QWindowsScreen::windowAt(point, CWP_SKIPINVISIBLE))
         result = QWindowsWindow::topLevelOf(child);
     qCDebug(lcQpaWindows) <<__FUNCTION__ << point << result;
     return result;
@@ -542,7 +516,7 @@ void QWindowsScreenManager::clearScreens()
 const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
 {
     foreach (QWindowsScreen *scr, m_screens) {
-        if (scr->geometryDp().contains(p))
+        if (scr->geometry().contains(p))
             return scr;
     }
     return Q_NULLPTR;

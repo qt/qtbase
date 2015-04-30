@@ -34,7 +34,6 @@
 #ifndef QWINDOWSSCREEN_H
 #define QWINDOWSSCREEN_H
 
-#include "qwindowsscaling.h"
 #include "qtwindowsglobal.h"
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
@@ -82,16 +81,13 @@ public:
 
     static QWindowsScreen *screenOf(const QWindow *w = 0);
 
-    QRect geometryDp() const { return m_data.geometry; }
-    QRect geometry() const Q_DECL_OVERRIDE { return QWindowsScaling::mapFromNative(geometryDp()); }
-    QRect availableGeometryDp() const { return m_data.availableGeometry; }
-    QRect availableGeometry() const Q_DECL_OVERRIDE { return QWindowsScaling::mapFromNative(availableGeometryDp()); }
+    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
+    QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
     int depth() const Q_DECL_OVERRIDE { return m_data.depth; }
     QImage::Format format() const Q_DECL_OVERRIDE { return m_data.format; }
     QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_data.physicalSizeMM; }
-    QDpi logicalDpi() const Q_DECL_OVERRIDE
-        { return QDpi(m_data.dpi.first / QWindowsScaling::factor(), m_data.dpi.second / QWindowsScaling::factor()); }
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE { return QWindowsScaling::factor(); }
+    QDpi logicalDpi() const Q_DECL_OVERRIDE { return m_data.dpi; }
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE { return 1.0; }
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_data.refreshRateHz; }
     QString name() const Q_DECL_OVERRIDE { return m_data.name; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_data.orientation; }
@@ -112,7 +108,6 @@ public:
 #endif // !QT_NO_CURSOR
 
     const QWindowsScreenData &data() const  { return m_data; }
-    static int maxMonitorHorizResolution();
 
 private:
     QWindowsScreenData m_data;

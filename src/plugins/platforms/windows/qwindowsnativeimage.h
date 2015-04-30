@@ -57,8 +57,6 @@ public:
 
     HDC hdc() const { return m_hdc; }
 
-    void setDevicePixelRatio(qreal scaleFactor) { m_image.setDevicePixelRatio(scaleFactor); }
-
     static QImage::Format systemFormat();
 
 private:

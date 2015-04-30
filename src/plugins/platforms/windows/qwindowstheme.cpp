@@ -43,7 +43,6 @@
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
 #include "qwindowsfontdatabase.h"
-#include "qwindowsscaling.h"
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
 #  include "winuser.h"
@@ -495,7 +494,7 @@ static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
 
 QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
-    const int scaleFactor = QWindowsScaling::factor();
+    const int scaleFactor = 1; // HIGDPI Fixme: ?
     const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
     LPCTSTR iconName = 0;
