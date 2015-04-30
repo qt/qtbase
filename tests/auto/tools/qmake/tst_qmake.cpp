@@ -60,12 +60,6 @@ private slots:
     void simple_dll();
     void subdirs();
     void subdir_via_pro_file_extra_target();
-    void functions();
-    void operators();
-    void variables();
-    void func_export();
-    void func_variables();
-    void comments();
     void duplicateLibraryEntries();
     void export_across_file_boundaries();
     void include_dir();
@@ -80,11 +74,9 @@ private slots:
 #if defined(Q_OS_MAC)
     void bundle_spaces();
 #endif
-    void includefunction();
     void substitutes();
     void project();
     void proFileCache();
-    void json();
 
 private:
     TestCompiler test_compiler;
@@ -251,43 +243,6 @@ void tst_qmake::subdir_via_pro_file_extra_target()
     D.remove( workDir + "/simple/Makefile.subdir");
     QVERIFY( test_compiler.qmake( workDir, "subdir_via_pro_file_extra_target" ));
     QVERIFY( test_compiler.make( workDir, "extratarget" ));
-}
-
-void tst_qmake::functions()
-{
-    QString workDir = base_path + "/testdata/functions";
-    QString buildDir = base_path + "/testdata/functions_build";
-    QVERIFY( test_compiler.qmake( workDir, "functions", buildDir ));
-}
-
-void tst_qmake::operators()
-{
-    QString workDir = base_path + "/testdata/operators";
-    QVERIFY( test_compiler.qmake( workDir, "operators" ));
-}
-
-void tst_qmake::variables()
-{
-    QString workDir = base_path + "/testdata/variables";
-    QVERIFY(test_compiler.qmake( workDir, "variables" ));
-}
-
-void tst_qmake::func_export()
-{
-    QString workDir = base_path + "/testdata/func_export";
-    QVERIFY(test_compiler.qmake( workDir, "func_export" ));
-}
-
-void tst_qmake::func_variables()
-{
-    QString workDir = base_path + "/testdata/func_variables";
-    QVERIFY(test_compiler.qmake( workDir, "func_variables" ));
-}
-
-void tst_qmake::comments()
-{
-    QString workDir = base_path + "/testdata/comments";
-    QVERIFY(test_compiler.qmake( workDir, "comments" ));
 }
 
 void tst_qmake::duplicateLibraryEntries()
@@ -490,26 +445,6 @@ void tst_qmake::bundle_spaces()
 }
 #endif // defined(Q_OS_MAC)
 
-void tst_qmake::includefunction()
-{
-    QString workDir = base_path + "/testdata/include_function";
-    QRegExp warningMsg("Cannot read .*: No such file or directory");
-    QVERIFY(test_compiler.qmake( workDir, "include_existing_file"));
-    QVERIFY(!test_compiler.commandOutput().contains(warningMsg));
-
-    // test include()  usage on a missing file
-    test_compiler.clearCommandOutput();
-    workDir = base_path + "/testdata/include_function";
-    QVERIFY(test_compiler.qmake( workDir, "include_missing_file" ));
-    QVERIFY(test_compiler.commandOutput().contains(warningMsg));
-
-    // test include() usage on a missing file when all function parameters are used
-    test_compiler.clearCommandOutput();
-    workDir = base_path + "/testdata/include_function";
-    QVERIFY(test_compiler.qmake( workDir, "include_missing_file2" ));
-    QVERIFY(test_compiler.commandOutput().contains(warningMsg));
-}
-
 void tst_qmake::substitutes()
 {
     QString workDir = base_path + "/testdata/substitutes";
@@ -553,34 +488,6 @@ void tst_qmake::proFileCache()
 {
     QString workDir = base_path + "/testdata/pro_file_cache";
     QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
-}
-
-void tst_qmake::json()
-{
-    QString workDir = base_path + "/testdata/json";
-    QVERIFY( test_compiler.qmake( workDir, "json.pro" ));
-    QString output = test_compiler.commandOutput();
-
-    // all keys
-    QVERIFY(output.contains("json._KEYS_ array false null number object string true"));
-    // array
-    QVERIFY(output.contains("json.array._KEYS_ 0 1 2"));
-    QVERIFY(output.contains("json.array.0 arrayItem1"));
-    QVERIFY(output.contains("json.array.1 arrayItem2"));
-    QVERIFY(output.contains("json.array.2 arrayItem3"));
-    // object
-    QVERIFY(output.contains("json.object._KEYS_ key1 key2"));
-    QVERIFY(output.contains("json.object.key1 objectValue1"));
-    QVERIFY(output.contains("json.object.key1 objectValue1"));
-     // value types
-    QVERIFY(output.contains("json.string: test string"));
-    QVERIFY(output.contains("json.number: 999"));
-    QVERIFY(output.contains("json.true: true"));
-    QVERIFY(output.contains("json.false: false"));
-    QVERIFY(output.contains("json.null:"));
-    // functional booleans
-    QVERIFY(output.contains("json.true is true"));
-    QVERIFY(output.contains("json.false is false"));
 }
 
 QTEST_MAIN(tst_qmake)
