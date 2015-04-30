@@ -50,8 +50,10 @@
 
 #ifdef Q_OS_WINCE
 typedef ULONG NDIS_OID, *PNDIS_OID;
-#include <nuiouser.h>
-#endif
+#  ifndef QT_NO_WINCE_NUIOUSER
+#    include <nuiouser.h>
+#  endif
+#endif // Q_OS_WINCE
 
 #ifdef Q_OS_LINUX
 #include <sys/socket.h>
@@ -71,7 +73,7 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
     NDISUIO_QUERY_OID nicGetOid;
     HANDLE handle = CreateFile((PTCHAR)NDISUIO_DEVICE_NAME, 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
@@ -85,7 +87,7 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
     bytesWritten = 0;
 
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
     ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
     nicGetOid.Oid = OID_GEN_MEDIA_SUPPORTED;
     nicGetOid.ptcDeviceName = (PTCHAR)interface.utf16();
@@ -103,7 +105,7 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
     bytesWritten = 0;
 
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) && !defined(QT_NO_WINCE_NUIOUSER)
     medium = NDIS_MEDIUM( *(LPDWORD)nicGetOid.Data );
 
     ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
