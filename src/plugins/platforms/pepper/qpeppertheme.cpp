@@ -66,7 +66,7 @@ QVariant QPepperTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::StyleNames:
-        return QStringList(QStringLiteral("cleanlooks"));
+        return QStringList(QStringLiteral("fusion"));
     case QPlatformTheme::KeyboardScheme:
         return m_keyboardScheme;
     default:
