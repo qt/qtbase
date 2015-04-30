@@ -210,7 +210,8 @@ public:
         QObject *obj;
         QByteArray prop;
         // two overloads because friends can't have default arguments
-        friend uint qHash(const RestorableId &key, uint seed) Q_DECL_NOEXCEPT_EXPR(noexcept(std::declval<QByteArray>()))
+        friend uint qHash(const RestorableId &key, uint seed)
+            Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<QByteArray>())))
         { return qHash(qMakePair(key.obj, key.prop), seed); }
         friend uint qHash(const RestorableId &key) Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key, 0U)))
         { return qHash(key, 0U); }
