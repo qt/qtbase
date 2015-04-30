@@ -2577,8 +2577,8 @@ void QSortFilterProxyModel::invalidateFilter()
 
 /*!
     Returns \c true if the value of the item referred to by the given
-    index \a left is less than the value of the item referred to by
-    the given index \a right, otherwise returns \c false.
+    index \a source_left is less than the value of the item referred to by
+    the given index \a source_right, otherwise returns \c false.
 
     This function is used as the < operator when sorting, and handles
     the following QVariant types:
@@ -2612,11 +2612,11 @@ void QSortFilterProxyModel::invalidateFilter()
 
     \sa sortRole, sortCaseSensitivity, dynamicSortFilter
 */
-bool QSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     Q_D(const QSortFilterProxyModel);
-    QVariant l = (left.model() ? left.model()->data(left, d->sort_role) : QVariant());
-    QVariant r = (right.model() ? right.model()->data(right, d->sort_role) : QVariant());
+    QVariant l = (source_left.model() ? source_left.model()->data(source_left, d->sort_role) : QVariant());
+    QVariant r = (source_right.model() ? source_right.model()->data(source_right, d->sort_role) : QVariant());
     switch (l.userType()) {
     case QVariant::Invalid:
         return (r.type() != QVariant::Invalid);
