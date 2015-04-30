@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include "qwindowstabletsupport.h"
-#include "qwindowsscaling.h"
 
 #ifndef QT_NO_TABLETEVENT
 
@@ -399,8 +398,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     //    in which case we snap the position to the mouse position.
     // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
     // area is always the virtual desktop.
-    const QRect virtualDesktopArea
-        = QWindowsScaling::mapToNative(QGuiApplication::primaryScreen()->virtualGeometry());
+    const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
         << "target:" << QGuiApplicationPrivate::tabletPressTarget;
@@ -420,7 +418,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         QPoint globalPos = globalPosF.toPoint();
 
         // Get Mouse Position and compare to tablet info
-        QPoint mouseLocation = QWindowsCursor::mousePosition();
+        const QPoint mouseLocation = QWindowsCursor::mousePosition();
 
         // Positions should be almost the same if we are in absolute
         // mode. If they are not, use the mouse location.
@@ -475,9 +473,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
 
-        const QPointF localPosDip = QPointF(localPos / QWindowsScaling::factor());
-        const QPointF globalPosDip = globalPosF / qreal(QWindowsScaling::factor());
-        QWindowSystemInterface::handleTabletEvent(target, localPosDip, globalPosDip,
+        QWindowSystemInterface::handleTabletEvent(target, QPointF(localPos), globalPosF,
                                                   currentDevice, currentPointer,
                                                   static_cast<Qt::MouseButtons>(packet.pkButtons),
                                                   pressureNew, tiltX, tiltY,

@@ -51,7 +51,6 @@
 #endif
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
-#include "qwindowsscaling.h"
 
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
@@ -1228,9 +1227,7 @@ bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
         }
     }
 
-    QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered,
-                                                   pos / QWindowsScaling::factor(),
-                                                   globalPos / QWindowsScaling::factor(),
+    QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered, pos, globalPos,
                                                    QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
 }

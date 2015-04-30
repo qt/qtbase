@@ -40,7 +40,6 @@ SOURCES += \
     $$PWD/qwindowsservices.cpp \
     $$PWD/qwindowsnativeimage.cpp \
     $$PWD/qwindowsnativeinterface.cpp \
-    $$PWD/qwindowsscaling.cpp \
     $$PWD/qwindowsopengltester.cpp
 
 HEADERS += \
@@ -67,7 +66,6 @@ HEADERS += \
     $$PWD/qplatformfunctions_wince.h \
     $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h \
-    $$PWD/qwindowsscaling.h \
     $$PWD/qwindowsopengltester.h
 
 INCLUDEPATH += $$PWD

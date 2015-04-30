@@ -36,7 +36,6 @@
 #include "qwindowscontext.h"
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
-#include "qwindowsscaling.h"
 #include "qwindowsintegration.h"
 #include "qwindowsopenglcontext.h"
 #ifdef QT_NO_CURSOR
@@ -49,7 +48,7 @@
 #include <QtGui/QRegion>
 #include <QtGui/QOpenGLContext>
 #include <private/qsystemlibrary_p.h>
-#include <private/qwindow_p.h>
+#include <private/qwindow_p.h> // QWINDOWSIZE_MAX
 #include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
@@ -169,7 +168,7 @@ static QPoint windowPlacementOffset(HWND hwnd, const QPoint &point)
     const QWindowsScreen *screen = screenManager.screens().size() == 1
         ? screenManager.screens().first() : screenManager.screenAtDp(point);
     if (screen)
-        return screen->availableGeometryDp().topLeft() - screen->geometryDp().topLeft();
+        return screen->availableGeometry().topLeft() - screen->geometry().topLeft();
 #else
     Q_UNUSED(hwnd)
     Q_UNUSED(point)
@@ -608,9 +607,7 @@ QWindowsWindowData
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w);
 
-    const QRect geometryDip = QWindowsScaling::mapFromNative(data.geometry);
-    QRect fixedGeometryDip = QPlatformWindow::initialGeometry(w, geometryDip, defaultWindowWidth, defaultWindowHeight);
-    const QRect rect = fixedGeometryDip != geometryDip ? QWindowsScaling::mapToNative(fixedGeometryDip) : data.geometry;
+    const QRect rect = QPlatformWindow::initialGeometry(w, data.geometry, defaultWindowWidth, defaultWindowHeight);
 
     if (title.isEmpty() && (result.flags & Qt::WindowTitleHint))
         title = topLevel ? qAppName() : w->objectName();
@@ -718,8 +715,8 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 */
 
 QWindowsGeometryHint::QWindowsGeometryHint(const QWindow *w, const QMargins &cm) :
-     minimumSize(QWindowsScaling::mapToNativeConstrained(w->minimumSize())),
-     maximumSize(QWindowsScaling::mapToNativeConstrained(w->maximumSize())),
+     minimumSize(w->minimumSize()),
+     maximumSize(w->maximumSize()),
      customMargins(cm)
 {
 }
@@ -953,8 +950,7 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
         clearFlag(Exposed);
     else
         setFlag(Exposed);
-    QWindowSystemInterface::handleExposeEvent(window(),
-                                              QWindowsScaling::mapFromNative(region));
+    QWindowSystemInterface::handleExposeEvent(window(), region);
 }
 
 static inline QWindow *findTransientChild(const QWindow *parent)
@@ -1134,7 +1130,7 @@ bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
     return m_data.embedded;
 }
 
-QPoint QWindowsWindow::mapToGlobalDp(const QPoint &pos) const
+QPoint QWindowsWindow::mapToGlobal(const QPoint &pos) const
 {
     if (m_data.hwnd)
         return QWindowsGeometryHint::mapToGlobal(m_data.hwnd, pos);
@@ -1142,7 +1138,7 @@ QPoint QWindowsWindow::mapToGlobalDp(const QPoint &pos) const
         return pos;
 }
 
-QPoint QWindowsWindow::mapFromGlobalDp(const QPoint &pos) const
+QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
 {
     if (m_data.hwnd)
         return QWindowsGeometryHint::mapFromGlobal(m_data.hwnd, pos);
@@ -1323,22 +1319,22 @@ static QRect normalFrameGeometry(HWND hwnd)
     return QRect();
 }
 
-QRect QWindowsWindow::normalGeometryDp() const
+QRect QWindowsWindow::normalGeometry() const
 {
     // Check for fake 'fullscreen' mode.
     const bool fakeFullScreen = m_savedFrameGeometry.isValid() && window()->windowState() == Qt::WindowFullScreen;
     const QRect frame = fakeFullScreen ? m_savedFrameGeometry : normalFrameGeometry(m_data.hwnd);
-    const QMargins margins = fakeFullScreen ? QWindowsGeometryHint::frame(m_savedStyle, 0) : frameMarginsDp();
+    const QMargins margins = fakeFullScreen ? QWindowsGeometryHint::frame(m_savedStyle, 0) : frameMargins();
     return frame.isValid() ? frame.marginsRemoved(margins) : frame;
 }
 
-void QWindowsWindow::setGeometryDp(const QRect &rectIn)
+void QWindowsWindow::setGeometry(const QRect &rectIn)
 {
     QRect rect = rectIn;
     // This means it is a call from QWindow::setFramePosition() and
     // the coordinates include the frame (size is still the contents rectangle).
     if (QWindowsGeometryHint::positionIncludesFrame(window())) {
-        const QMargins margins = frameMarginsDp();
+        const QMargins margins = frameMargins();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
     if (m_windowState == Qt::WindowMinimized)
@@ -1407,9 +1403,8 @@ void QWindowsWindow::handleGeometryChange()
         return;
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
-    const QRect geometryDip = QWindowsScaling::mapFromNative(m_data.geometry);
-    QPlatformWindow::setGeometry(geometryDip);
-    QWindowSystemInterface::handleGeometryChange(window(), geometryDip);
+    QPlatformWindow::setGeometry(m_data.geometry);
+    QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
     // expose events when shrinking, synthesize.
     if (!testFlag(OpenGL_ES2) && isExposed()
@@ -1417,7 +1412,7 @@ void QWindowsWindow::handleGeometryChange()
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
     if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QPlatformScreen *newScreen = screenForGeometry(geometryDip);
+        QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
         if (newScreen != screen())
             QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
     }
@@ -1429,7 +1424,7 @@ void QWindowsWindow::handleGeometryChange()
 
 void QWindowsWindow::setGeometry_sys(const QRect &rect) const
 {
-    const QMargins margins = frameMarginsDp();
+    const QMargins margins = frameMargins();
     const QRect frameGeometry = rect + margins;
 
     qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << window()
@@ -1468,7 +1463,7 @@ QRect QWindowsWindow::frameGeometry_sys() const
 
 QRect QWindowsWindow::geometry_sys() const
 {
-    return frameGeometry_sys().marginsRemoved(frameMarginsDp());
+    return frameGeometry_sys().marginsRemoved(frameMargins());
 }
 
 /*!
@@ -1540,7 +1535,7 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << this << window() << "\n    from: "
         << m_data.flags << "\n    to: " << flags;
-    const QRect oldGeometry = geometryDp();
+    const QRect oldGeometry = geometry();
     if (m_data.flags != flags) {
         m_data.flags = flags;
         if (m_data.hwnd) {
@@ -1626,8 +1621,7 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
 
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return window()->isTopLevel()
-        && geometry_sys() == QWindowsScaling::mapToNative(window()->screen()->geometry());
+    return window()->isTopLevel() && geometry_sys() == window()->screen()->geometry();
 }
 
 /*!
@@ -1697,15 +1691,14 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
             const QScreen *screen = window()->screen();
-            const QRect rDip = screen->geometry();
-            const QRect r = QWindowsScaling::mapToNative(rDip);
+            const QRect r = screen->geometry();
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
             SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
             if (!wasSync)
                 clearFlag(SynchronousGeometryChangeEvent);
-            QWindowSystemInterface::handleGeometryChange(window(), rDip);
+            QWindowSystemInterface::handleGeometryChange(window(), r);
             QWindowSystemInterface::flushWindowSystemEvents();
         } else if (newState != Qt::WindowMinimized) {
             // Restore saved state.
@@ -1804,7 +1797,7 @@ void QWindowsWindow::propagateSizeHints()
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
 }
 
-bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp)
+bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
 #ifndef Q_OS_WINCE
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
@@ -1812,26 +1805,20 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
     WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
     if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
         return false;
-    const QRect suggestedFrameGeometryDp(windowPos->x, windowPos->y,
-                                         windowPos->cx, windowPos->cy);
-    const qreal factor = QWindowsScaling::factor();
-    const QRect suggestedGeometryDp = suggestedFrameGeometryDp - marginsDp;
-    const QRectF suggestedGeometry = QRectF(QPointF(suggestedGeometryDp.topLeft()) / factor,
-                                            QSizeF(suggestedGeometryDp.size()) / factor);
+    const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
+                                       windowPos->cx, windowPos->cy);
+    const QRect suggestedGeometry = suggestedFrameGeometry - margins;
     const QRectF correctedGeometryF =
         qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(suggestedGeometry);
     if (!correctedGeometryF.isValid())
         return false;
-    const QRect correctedFrameGeometryDp
-        = QRectF(correctedGeometryF.topLeft() * factor,
-                 correctedGeometryF.size() * factor).toRect()
-          + marginsDp;
-    if (correctedFrameGeometryDp == suggestedFrameGeometryDp)
+    const QRect correctedFrameGeometry = correctedGeometryF.toRect() + margins;
+    if (correctedFrameGeometry == suggestedFrameGeometry)
         return false;
-    windowPos->x = correctedFrameGeometryDp.left();
-    windowPos->y = correctedFrameGeometryDp.top();
-    windowPos->cx = correctedFrameGeometryDp.width();
-    windowPos->cy = correctedFrameGeometryDp.height();
+    windowPos->x = correctedFrameGeometry.left();
+    windowPos->y = correctedFrameGeometry.top();
+    windowPos->cx = correctedFrameGeometry.width();
+    windowPos->cy = correctedFrameGeometry.height();
     return true;
 #else // !Q_OS_WINCE
     Q_UNUSED(message)
@@ -1841,11 +1828,11 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
 
 bool QWindowsWindow::handleGeometryChanging(MSG *message) const
 {
-    const QMargins marginsDp = window()->isTopLevel() ? frameMarginsDp() : QMargins();
-    return QWindowsWindow::handleGeometryChangingMessage(message, window(), marginsDp);
+    const QMargins margins = window()->isTopLevel() ? frameMargins() : QMargins();
+    return QWindowsWindow::handleGeometryChangingMessage(message, window(), margins);
 }
 
-QMargins QWindowsWindow::frameMarginsDp() const
+QMargins QWindowsWindow::frameMargins() const
 {
     // Frames are invalidated by style changes (window state, flags).
     // As they are also required for geometry calculations in resize
@@ -1892,17 +1879,17 @@ static inline void addRectToWinRegion(const QRect &rect, HRGN *winRegion)
     }
 }
 
-static HRGN qRegionToWinRegion(const QRegion &regionDip)
+static HRGN qRegionToWinRegion(const QRegion &region)
 {
-    const QVector<QRect> rects = regionDip.rects();
+    const QVector<QRect> rects = region.rects();
     if (rects.isEmpty())
         return NULL;
     const int rectCount = rects.size();
     if (rectCount == 1)
-        return createRectRegion(QWindowsScaling::mapToNative(regionDip.boundingRect()));
-    HRGN hRegion = createRectRegion(QWindowsScaling::mapToNative(rects.front()));
+        return createRectRegion(region.boundingRect());
+    HRGN hRegion = createRectRegion(rects.front());
     for (int i = 1; i < rectCount; ++i)
-        addRectToWinRegion(QWindowsScaling::mapToNative(rects.at(i)), &hRegion);
+        addRectToWinRegion(rects.at(i), &hRegion);
     return hRegion;
 }
 
@@ -1916,7 +1903,7 @@ void QWindowsWindow::setMask(const QRegion &region)
 
     // Mask is in client area coordinates, so offset it in case we have a frame
     if (window()->isTopLevel()) {
-        const QMargins margins = frameMarginsDp();
+        const QMargins margins = frameMargins();
         OffsetRgn(winRegion, margins.left(), margins.top());
     }
 
@@ -2053,23 +2040,23 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
         || (m_data.flags & Qt::FramelessWindowHint)) {
         return false;
     }
-    const QSize minimumSize = QWindowsScaling::mapToNativeConstrained(w->minimumSize());
+    const QSize minimumSize = w->minimumSize();
     if (minimumSize.isEmpty())
         return false;
-    const QSize maximumSize = QWindowsScaling::mapToNativeConstrained(w->maximumSize());
+    const QSize maximumSize = w->maximumSize();
     const bool fixedWidth = minimumSize.width() == maximumSize.width();
     const bool fixedHeight = minimumSize.height() == maximumSize.height();
     if (!fixedWidth && !fixedHeight)
         return false;
-    const QPoint localPos = mapFromGlobalDp(globalPos);
-    const QSize size = w->size() * QWindowsScaling::factor();
+    const QPoint localPos = w->mapFromGlobal(globalPos);
+    const QSize size = w->size();
     if (fixedHeight) {
         if (localPos.y() >= size.height()) {
             *result = HTBORDER; // Unspecified border, no resize cursor.
             return true;
         }
         if (localPos.y() < 0) {
-            const QMargins margins = frameMarginsDp();
+            const QMargins margins = frameMargins();
             const int topResizeBarPos = margins.left() - margins.top();
             if (localPos.y() < topResizeBarPos) {
                 *result = HTCAPTION; // Extend caption over top resize bar, let's user move the window.
@@ -2245,10 +2232,6 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
     The property can be set using QPlatformNativeInterface::setWindowProperty() or,
     before platform window creation, by setting a dynamic property
     on the QWindow (see QWindowsIntegration::createPlatformWindow()).
-
-    Note: The function uses (unscaled) device pixels since the QWizard also
-    uses AdjustWindowRect() and using device independent pixels would introduce
-    rounding errors.
 */
 
 void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
