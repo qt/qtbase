@@ -47,7 +47,7 @@ QShapedPixmapWindow::QShapedPixmapWindow()
     setFormat(format);
     setSurfaceType(RasterSurface);
     setFlags(Qt::ToolTip | Qt::FramelessWindowHint |
-                   Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
+                   Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput | Qt::WindowDoesNotAcceptFocus);
     create();
     m_backingStore = new QBackingStore(this);
 }
