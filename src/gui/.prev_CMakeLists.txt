@@ -6,8 +6,9 @@
 
 qt_add_module(Gui
     GENERATE_METATYPES
-    PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
+    PLUGIN_TYPES accessiblebridge platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     SOURCES
+        image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
         image/qicon.cpp image/qicon.h image/qicon_p.h
@@ -352,6 +353,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_accessibility
     SOURCES
         accessible/qaccessible.cpp accessible/qaccessible.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
+        accessible/qaccessiblebridgeutils.cpp accessible/qaccessiblebridgeutils_p.h
         accessible/qaccessiblecache.cpp accessible/qaccessiblecache_p.h
         accessible/qaccessibleobject.cpp accessible/qaccessibleobject.h
         accessible/qaccessibleplugin.cpp accessible/qaccessibleplugin.h

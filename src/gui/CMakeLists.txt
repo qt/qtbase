@@ -53,17 +53,17 @@ endif()
 
 qt_add_module(Gui
     GENERATE_METATYPES
-    PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
+    PLUGIN_TYPES accessiblebridge platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
     QMAKE_MODULE_CONFIG "${qmake_module_config}" # special case
     SOURCES
+        image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
         image/qicon.cpp image/qicon.h image/qicon_p.h
         image/qiconengine.cpp image/qiconengine.h
         image/qiconengineplugin.cpp image/qiconengineplugin.h
-        image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qiconloader.cpp image/qiconloader_p.h
         image/qimage.cpp image/qimage.h image/qimage_p.h
         image/qimage_conversions.cpp

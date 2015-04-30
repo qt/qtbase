@@ -8,6 +8,7 @@ DEFINES   += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 
 MODULE_PLUGIN_TYPES = \
+    accessiblebridge \
     platforms \
     platforms/darwin \
     xcbglintegrations \
