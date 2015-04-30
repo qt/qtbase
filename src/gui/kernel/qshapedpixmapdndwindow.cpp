@@ -86,16 +86,14 @@ void QShapedPixmapWindow::setHotspot(const QPoint &hotspot)
     m_hotSpot = hotspot;
 }
 
-void QShapedPixmapWindow::updateGeometry()
+void QShapedPixmapWindow::updateGeometry(const QPoint &pos)
 {
-#ifndef QT_NO_CURSOR
-    QRect rect(QCursor::pos() - m_hotSpot, m_pixmap.size());
     if (m_pixmap.isNull())
         m_backingStore->resize(QSize(1,1));
     else if (m_backingStore->size() != m_pixmap.size())
         m_backingStore->resize(m_pixmap.size());
-    setGeometry(rect);
-#endif
+
+    setGeometry(QRect(pos - m_hotSpot, m_backingStore->size()));
 }
 
 void QShapedPixmapWindow::exposeEvent(QExposeEvent *)
