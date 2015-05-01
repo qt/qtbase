@@ -72,12 +72,14 @@ QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff
 
+#if defined(QT_BUILD_INTERNAL)
 bool qt_enable_test_font = false;
 
 Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
 {
     qt_enable_test_font = value;
 }
+#endif
 
 static int getFontWeight(const QString &weightString)
 {
@@ -2561,6 +2563,15 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
 
     QFontEngine *engine;
 
+#if defined(QT_BUILD_INTERNAL)
+    // For testing purpose only, emulates an exact-matching monospace font
+    if (qt_enable_test_font && request.family == QLatin1String("__Qt__Box__Engine__")) {
+        engine = new QTestFontEngine(request.pixelSize);
+        engine->fontDef = request;
+        return engine;
+    }
+#endif
+
     // Until we specifically asked not to, try looking for Multi font engine
     // first, the last '1' indicates that we want Multi font engine instead
     // of single ones
@@ -2575,12 +2586,6 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
     QString family_name, foundry_name;
 
     parseFontName(request.family, foundry_name, family_name);
-
-    if (qt_enable_test_font && request.family == QLatin1String("__Qt__Box__Engine__")) {
-        engine =new QTestFontEngine(request.pixelSize);
-        engine->fontDef = request;
-        return engine;
-    }
 
     QtFontDesc desc;
     QList<int> blackListed;

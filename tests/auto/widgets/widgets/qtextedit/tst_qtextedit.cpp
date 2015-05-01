@@ -1907,9 +1907,12 @@ void tst_QTextEdit::setText()
     QCOMPARE(browser.toPlainText(), QLatin1String("with   space"));
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value);
+// qfontdatabase.cpp
+Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
+#endif
 
 #ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::fullWidthSelection_data()

@@ -68,6 +68,7 @@ public slots:
 private slots:
     void getSetCheck();
     void lineBreaking();
+#ifdef QT_BUILD_INTERNAL
     void simpleBoundingRect();
     void threeLineBoundingRect();
     void boundingRectWithLongLineAndNoWrap();
@@ -83,16 +84,20 @@ private slots:
     void horizontalAlignment();
     void horizontalAlignmentMultiline_data();
     void horizontalAlignmentMultiline();
+#endif
     void defaultWordSeparators_data();
     void defaultWordSeparators();
     void cursorMovementFromInvalidPositions();
     void cursorMovementInsideSpaces();
     void charWordStopOnLineSeparator();
+#ifdef QT_BUILD_INTERNAL
     void xToCursorAtEndOfLine();
+#endif
     void boundingRectTopLeft();
     void graphemeBoundaryForSurrogatePairs();
     void tabStops();
     void integerOverflow();
+#ifdef QT_BUILD_INTERNAL
     void testDefaultTabs();
     void testTabs();
     void testMultilineTab();
@@ -103,6 +108,7 @@ private slots:
     void testMultiTab();
     void testTabDPIScale();
     void tabsForRtl();
+#endif
     void tabHeight();
     void capitalization_allUpperCase();
     void capitalization_allUpperCase_newline();
@@ -119,12 +125,14 @@ private slots:
     void layoutWithCustomTabStops();
 
     // QTextLine stuff
+#ifdef QT_BUILD_INTERNAL
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
     void setNumColumnsWordWrap();
     void smallTextLengthNoWrap();
     void smallTextLengthWordWrap();
     void smallTextLengthWrapAtWordBoundaryOrAnywhere();
     void testLineBreakingAllSpaces();
+#endif
     void lineWidthFromBOM();
     void textWidthVsWIdth();
     void textWithSurrogates_qtbug15679();
@@ -143,7 +151,7 @@ private:
 void tst_QTextLayout::getSetCheck()
 {
     QString str("Bogus text");
-    QTextLayout layout(str, testFont);
+    QTextLayout layout(str);
     layout.beginLayout();
     QTextEngine *engine = layout.engine();
     QTextInlineObject obj1(0, engine);
@@ -177,13 +185,18 @@ void tst_QTextLayout::getSetCheck()
     QCOMPARE(true, obj2.cacheEnabled());
 }
 
+#ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value);
+// qfontdatabase.cpp
+Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
+#endif
 
 tst_QTextLayout::tst_QTextLayout()
 {
+#ifdef QT_BUILD_INTERNAL
     qt_setQtEnableTestFont(true);
+#endif
 }
 
 tst_QTextLayout::~tst_QTextLayout()
@@ -193,10 +206,14 @@ tst_QTextLayout::~tst_QTextLayout()
 void tst_QTextLayout::init()
 {
     testFont = QFont();
+#ifdef QT_BUILD_INTERNAL
     testFont.setFamily("__Qt__Box__Engine__");
+#endif
     testFont.setPixelSize(TESTFONT_SIZE);
     testFont.setWeight(QFont::Normal);
+#ifdef QT_BUILD_INTERNAL
     QCOMPARE(QFontMetrics(testFont).width('a'), testFont.pixelSize());
+#endif
 }
 
 void tst_QTextLayout::cleanup()
@@ -286,6 +303,7 @@ void tst_QTextLayout::lineBreaking()
 #endif
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextLayout::simpleBoundingRect()
 {
     /* just check if boundingRect() gives sane values. The text is not broken. */
@@ -972,6 +990,7 @@ void tst_QTextLayout::horizontalAlignmentMultiline()
     QCOMPARE(rect.left(), lastLeft);
     QCOMPARE(rect.right(), lastRight);
 }
+#endif
 
 void tst_QTextLayout::defaultWordSeparators_data()
 {
@@ -1009,7 +1028,7 @@ void tst_QTextLayout::defaultWordSeparators()
     QFETCH(QString, text);
     QFETCH(int, startPos);
     QFETCH(int, endPos);
-    QTextLayout layout(text, testFont);
+    QTextLayout layout(text);
 
     QCOMPARE(layout.nextCursorPosition(startPos, QTextLayout::SkipWords), endPos);
     QCOMPARE(layout.previousCursorPosition(endPos, QTextLayout::SkipWords), startPos);
@@ -1019,7 +1038,7 @@ void tst_QTextLayout::cursorMovementFromInvalidPositions()
 {
     int badpos = 10000;
 
-    QTextLayout layout("ABC", testFont);
+    QTextLayout layout("ABC");
 
     QCOMPARE(layout.previousCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
     QCOMPARE(layout.nextCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
@@ -1030,13 +1049,13 @@ void tst_QTextLayout::cursorMovementFromInvalidPositions()
 
 void tst_QTextLayout::cursorMovementInsideSpaces()
 {
-    QTextLayout layout("ABC            DEF", testFont);
+    QTextLayout layout("ABC            DEF");
 
     QCOMPARE(layout.previousCursorPosition(6, QTextLayout::SkipWords), 0);
     QCOMPARE(layout.nextCursorPosition(6, QTextLayout::SkipWords), 15);
 
 
-    QTextLayout layout2("ABC\t\t\t\t\t\t\t\t\t\t\t\tDEF", testFont);
+    QTextLayout layout2("ABC\t\t\t\t\t\t\t\t\t\t\t\tDEF");
 
     QCOMPARE(layout2.previousCursorPosition(6, QTextLayout::SkipWords), 0);
     QCOMPARE(layout2.nextCursorPosition(6, QTextLayout::SkipWords), 15);
@@ -1048,13 +1067,14 @@ void tst_QTextLayout::charWordStopOnLineSeparator()
     QString txt;
     txt.append(lineSeparator);
     txt.append(lineSeparator);
-    QTextLayout layout(txt, testFont);
+    QTextLayout layout(txt);
     QTextEngine *engine = layout.engine();
     const QCharAttributes *attrs = engine->attributes();
     QVERIFY(attrs);
     QVERIFY(attrs[1].graphemeBoundary);
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextLayout::xToCursorAtEndOfLine()
 {
     QString text = "FirstLine SecondLine";
@@ -1078,13 +1098,14 @@ void tst_QTextLayout::xToCursorAtEndOfLine()
     line = layout.lineAt(1);
     QCOMPARE(line.xToCursor(100000), 20);
 }
+#endif
 
 void tst_QTextLayout::boundingRectTopLeft()
 {
     QString text = "FirstLine\nSecondLine";
     text.replace('\n', QChar::LineSeparator);
 
-    QTextLayout layout(text, testFont);
+    QTextLayout layout(text);
     layout.setCacheEnabled(true);
 
     layout.beginLayout();
@@ -1106,7 +1127,7 @@ void tst_QTextLayout::graphemeBoundaryForSurrogatePairs()
     txt.append(0xd87e);
     txt.append(0xdc25);
     txt.append("b");
-    QTextLayout layout(txt, testFont);
+    QTextLayout layout(txt);
     QTextEngine *engine = layout.engine();
     const QCharAttributes *attrs = engine->attributes();
     QVERIFY(attrs);
@@ -1119,13 +1140,13 @@ void tst_QTextLayout::graphemeBoundaryForSurrogatePairs()
 void tst_QTextLayout::tabStops()
 {
     QString txt("Hello there\tworld");
-    QTextLayout layout(txt, testFont);
+    QTextLayout layout(txt);
     layout.beginLayout();
     QTextLine line = layout.createLine();
 
     QVERIFY(line.isValid());
     line.setNumColumns(11);
-    QCOMPARE(line.textLength(), TESTFONT_SIZE);
+    QCOMPARE(line.textLength(), 12);
 
     line = layout.createLine();
     QVERIFY(line.isValid());
@@ -1142,7 +1163,7 @@ void tst_QTextLayout::integerOverflow()
     for (int i = 0; i < 8; ++i)
         txt += txt;
 
-    QTextLayout layout(txt, testFont);
+    QTextLayout layout(txt);
     layout.beginLayout();
     QTextLine line = layout.createLine();
 
@@ -1155,6 +1176,7 @@ void tst_QTextLayout::integerOverflow()
     layout.endLayout();
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QTextLayout::setNumColumnsWrapAtWordBoundaryOrAnywhere()
 {
     QString txt("This is a small test text");
@@ -1695,22 +1717,23 @@ void tst_QTextLayout::testTabDPIScale()
     QCOMPARE(line.cursorToX(12), tabs.at(1).position * scale - TESTFONT_SIZE * 5);
     QCOMPARE(line.cursorToX(18), tabs.at(2).position * scale - TESTFONT_SIZE * 3 / 2.0);
 }
+#endif
 
 void tst_QTextLayout::tabHeight()
 {
-    QTextLayout layout("\t", testFont);
+    QTextLayout layout("\t");
     layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
 
-    QCOMPARE(qRound(line.ascent()), QFontMetrics(testFont).ascent());
-    QCOMPARE(qRound(line.descent()), QFontMetrics(testFont).descent());
+    QCOMPARE(qRound(line.ascent()), QFontMetrics(layout.font()).ascent());
+    QCOMPARE(qRound(line.descent()), QFontMetrics(layout.font()).descent());
 }
 
 void tst_QTextLayout::capitalization_allUpperCase()
 {
-    QFont font(testFont);
+    QFont font;
     font.setCapitalization(QFont::AllUppercase);
     QTextLayout layout("Test", font);
     layout.setCacheEnabled(true);
@@ -1726,7 +1749,7 @@ void tst_QTextLayout::capitalization_allUpperCase()
 
 void tst_QTextLayout::capitalization_allUpperCase_newline()
 {
-    QFont font(testFont);
+    QFont font;
     font.setCapitalization(QFont::AllUppercase);
 
     QString tmp = "hello\nworld!";
@@ -1748,7 +1771,7 @@ void tst_QTextLayout::capitalization_allUpperCase_newline()
 
 void tst_QTextLayout::capitalization_allLowerCase()
 {
-    QFont font(testFont);
+    QFont font;
     font.setCapitalization(QFont::AllLowercase);
     QTextLayout layout("Test", font);
     layout.setCacheEnabled(true);
@@ -1764,7 +1787,7 @@ void tst_QTextLayout::capitalization_allLowerCase()
 
 void tst_QTextLayout::capitalization_smallCaps()
 {
-    QFont font(testFont);
+    QFont font;
     font.setCapitalization(QFont::SmallCaps);
     QTextLayout layout("Test", font);
     layout.setCacheEnabled(true);
@@ -1781,7 +1804,7 @@ void tst_QTextLayout::capitalization_smallCaps()
 
 void tst_QTextLayout::capitalization_capitalize()
 {
-    QFont font(testFont);
+    QFont font;
     font.setCapitalization(QFont::Capitalize);
     QTextLayout layout("hello\tworld", font);
     layout.setCacheEnabled(true);
@@ -1804,7 +1827,7 @@ void tst_QTextLayout::longText()
     QString longText(128000, 'a');
 
     {
-        QTextLayout layout(longText, testFont);
+        QTextLayout layout(longText);
         layout.setCacheEnabled(true);
         layout.beginLayout();
         QTextLine line = layout.createLine();
@@ -1814,7 +1837,7 @@ void tst_QTextLayout::longText()
     }
 
     for (int cap = QFont::MixedCase; cap < QFont::Capitalize + 1; ++cap) {
-        QFont f(testFont);
+        QFont f;
         f.setCapitalization(QFont::Capitalization(cap));
         QTextLayout layout(longText, f);
         layout.setCacheEnabled(true);
@@ -1826,7 +1849,7 @@ void tst_QTextLayout::longText()
     }
 
     {
-        QTextLayout layout(longText, testFont);
+        QTextLayout layout(longText);
         layout.setCacheEnabled(true);
         layout.setFlags(Qt::TextForceLeftToRight);
         layout.beginLayout();
@@ -1837,7 +1860,7 @@ void tst_QTextLayout::longText()
     }
 
     {
-        QTextLayout layout(longText, testFont);
+        QTextLayout layout(longText);
         layout.setCacheEnabled(true);
         layout.setFlags(Qt::TextForceRightToLeft);
         layout.beginLayout();
@@ -1850,7 +1873,8 @@ void tst_QTextLayout::longText()
 
 void tst_QTextLayout::widthOfTabs()
 {
-    QTextEngine engine("ddd\t\t", testFont);
+    QTextEngine engine;
+    engine.text = "ddd\t\t";
     engine.ignoreBidi = true;
     engine.itemize();
     QCOMPARE(qRound(engine.width(0, 5)), qRound(engine.boundingBox(0, 5).width));
@@ -2078,7 +2102,7 @@ void tst_QTextLayout::cursorInNonStopChars()
 
 void tst_QTextLayout::justifyTrailingSpaces()
 {
-    QTextLayout layout(QStringLiteral("     t"), testFont);
+    QTextLayout layout(QStringLiteral("     t"));
     layout.setTextOption(QTextOption(Qt::AlignJustify));
     layout.beginLayout();
 
