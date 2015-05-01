@@ -447,6 +447,9 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
             bytesRead = device->read(buf, sizeof(buf));
     }
 
+    if (bytesRead <= 0)
+        return false;
+
 #ifndef QT_NO_TEXTCODEC
     // codec auto detection, explicitly defaults to locale encoding if the
     // codec has been set to 0.
@@ -469,9 +472,6 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     qDebug("QTextStreamPrivate::fillReadBuffer(), device->read(\"%s\", %d) == %d",
            qt_prettyDebug(buf, qMin(32,int(bytesRead)) , int(bytesRead)).constData(), int(sizeof(buf)), int(bytesRead));
 #endif
-
-    if (bytesRead <= 0)
-        return false;
 
     int oldReadBufferSize = readBuffer.size();
 #ifndef QT_NO_TEXTCODEC
