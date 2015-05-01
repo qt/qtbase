@@ -179,6 +179,7 @@ private slots:
     void task250119_shortcutContext();
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
     void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
+    void QTBUG_45867_send_itemChildAddedChange_to_parent();
 };
 
 
@@ -3488,6 +3489,37 @@ void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
     scene.addItem(item3);
 
     //This should not crash
+}
+
+void tst_QGraphicsWidget::QTBUG_45867_send_itemChildAddedChange_to_parent()
+{
+    class GraphicsItem : public QGraphicsItem
+    {
+    public:
+        int m_itemChildAddedChangeNotificationsCount;
+
+        GraphicsItem()
+            : QGraphicsItem(),
+              m_itemChildAddedChangeNotificationsCount(0)
+        {
+        }
+
+        QRectF boundingRect() const Q_DECL_OVERRIDE { return QRectF(); }
+
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE {}
+
+    protected:
+        QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE
+        {
+            if (change == QGraphicsItem::ItemChildAddedChange)
+                ++m_itemChildAddedChangeNotificationsCount;
+            return QGraphicsItem::itemChange(change, value);
+        }
+    };
+
+    GraphicsItem item;
+    QGraphicsWidget widget(&item);
+    QCOMPARE(item.m_itemChildAddedChangeNotificationsCount, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)
