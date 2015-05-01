@@ -348,7 +348,7 @@ static const char * const qt_unshade_xpm[] = {
 "..........",
 ".........."};
 
-static const char * dock_widget_close_xpm[] = {
+static const char * const dock_widget_close_xpm[] = {
 "8 8 2 1",
 "# c #000000",
 ". c None",

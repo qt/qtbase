@@ -999,7 +999,7 @@ bool QBrush::operator==(const QBrush &b) const
 */
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
-    static const char *BRUSH_STYLES[] = {
+    static const char *const BRUSH_STYLES[] = {
      "NoBrush",
      "SolidPattern",
      "Dense1Pattern",

@@ -121,7 +121,7 @@ struct MibToName {
     short index;
 };
 
-static MibToName mibToName[] = {
+static const MibToName mibToName[] = {
     { 3, 0 },
     { 4, 9 },
     { 5, 20 },

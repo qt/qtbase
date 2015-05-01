@@ -499,7 +499,7 @@ static const char zones[] =
     "eet\0" // 2
     "jst\0" // 9
     "\0";
-static int zoneOffsets[] = {-8, -8, -7, -7, -6, -6, -5, -5, -4, -3, 0, 0, 0, 1, 2, 9 };
+static const int zoneOffsets[] = {-8, -8, -7, -7, -6, -6, -5, -5, -4, -3, 0, 0, 0, 1, 2, 9 };
 
 static const char months[] =
     "jan\0"

@@ -128,7 +128,7 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
 }
 
 enum Operator { NotEqual, LessThan, LessEqualThan, Equals, GreaterThan, GreaterEqualThan };
-static const char *operators[] = {"!=", "<", "<=", "=", ">", ">="};
+static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
 
 static inline QString valueKey()         { return QStringLiteral("value"); }
 static inline QString opKey()            { return QStringLiteral("op"); }

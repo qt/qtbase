@@ -3568,7 +3568,7 @@ void QOpenGLExtensions::flushShared()
         d->flushIsSufficientToSyncContexts = false; // default to false, not guaranteed by the spec
         const char *vendor = (const char *) glGetString(GL_VENDOR);
         if (vendor) {
-            static const char *flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
+            static const char *const flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
             for (size_t i = 0; i < sizeof(flushEnough) / sizeof(const char *); ++i) {
                 if (strstr(vendor, flushEnough[i])) {
                     d->flushIsSufficientToSyncContexts = true;

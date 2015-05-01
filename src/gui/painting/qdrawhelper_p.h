@@ -1126,8 +1126,8 @@ typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *sr
 typedef void (QT_FASTCALL *StorePixelsFunc)(uchar *dest, const uint *src, int index, int count);
 
 extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
-extern FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount];
-extern StorePixelsFunc qStorePixels[QPixelLayout::BPPCount];
+extern const FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount];
+extern const StorePixelsFunc qStorePixels[QPixelLayout::BPPCount];
 
 
 

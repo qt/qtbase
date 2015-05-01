@@ -1078,7 +1078,7 @@ QDataStream & operator>>(QDataStream &s, QTransform &t)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTransform &m)
 {
-    static const char *typeStr[] =
+    static const char *const typeStr[] =
     {
         "TxNone",
         "TxTranslate",
