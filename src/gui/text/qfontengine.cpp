@@ -1641,7 +1641,7 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.styleStrategy |= QFont::NoFontMerging;
     request.family = fallbackFamilyAt(at - 1);
 
-    if (QFontEngine *engine = QFontDatabase::findFont(m_script, /*fontprivate = */0, request, /*multi = */false)) {
+    if (QFontEngine *engine = QFontDatabase::findFont(request, m_script)) {
         engine->fontDef = request;
         return engine;
     }
