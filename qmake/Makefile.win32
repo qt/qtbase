@@ -88,6 +88,7 @@ QTOBJS= \
 	qglobal.obj \
 	qhash.obj \
 	qiodevice.obj \
+	qringbuffer.obj \
 	qdebug.obj \
 	qlist.obj \
 	qlinkedlist.obj \
