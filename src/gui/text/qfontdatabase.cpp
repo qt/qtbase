@@ -2536,22 +2536,12 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     int index = match(script, request, family_name, foundry_name, &desc, blackListed);
     if (index >= 0) {
         engine = loadEngine(script, request, desc.family, desc.foundry, desc.style, desc.size);
-        if (!engine)
+        if (engine)
+            initFontDef(desc, request, &engine->fontDef, engine->type() == QFontEngine::Multi);
+        else
             blackListed.append(index);
     } else {
         FM_DEBUG("  NO MATCH FOUND\n");
-    }
-
-    if (engine && engine->type() != QFontEngine::TestFontEngine) {
-        initFontDef(desc, request, &engine->fontDef, engine->type() == QFontEngine::Multi);
-
-        if (fp) {
-            QFontDef def = request;
-            if (def.family.isEmpty()) {
-                def.family = fp->request.family;
-                def.family = def.family.left(def.family.indexOf(QLatin1Char(',')));
-            }
-        }
     }
 
     if (!engine) {
