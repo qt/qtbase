@@ -611,7 +611,7 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
         hasScript = true;
         //qDebug("font %s supports Korean", familyName.latin1());
     }
-    if (codePageRange[0] & (1 << SymbolCsbBit)) {
+    if (codePageRange[0] & (1U << SymbolCsbBit)) {
         writingSystems = QSupportedWritingSystems();
         hasScript = false;
     }
