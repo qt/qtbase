@@ -160,7 +160,10 @@ public:
         MV_IOS_6_1 = Q_MV_IOS(6, 1),
         MV_IOS_7_0 = Q_MV_IOS(7, 0),
         MV_IOS_7_1 = Q_MV_IOS(7, 1),
-        MV_IOS_8_0 = Q_MV_IOS(8, 0)
+        MV_IOS_8_0 = Q_MV_IOS(8, 0),
+        MV_IOS_8_1 = Q_MV_IOS(8, 1),
+        MV_IOS_8_2 = Q_MV_IOS(8, 2),
+        MV_IOS_8_3 = Q_MV_IOS(8, 3)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

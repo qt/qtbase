@@ -1152,6 +1152,9 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_7_0  iOS 7.0
     \value MV_IOS_7_1  iOS 7.1
     \value MV_IOS_8_0  iOS 8.0
+    \value MV_IOS_8_1  iOS 8.1
+    \value MV_IOS_8_2  iOS 8.2
+    \value MV_IOS_8_3  iOS 8.3
 
     \value MV_None     Not a Darwin operating system
 

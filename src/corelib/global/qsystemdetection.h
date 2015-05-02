@@ -270,6 +270,15 @@
 #  if !defined(__IPHONE_8_0)
 #       define __IPHONE_8_0 80000
 #  endif
+#  if !defined(__IPHONE_8_1)
+#       define __IPHONE_8_1 80100
+#  endif
+#  if !defined(__IPHONE_8_2)
+#       define __IPHONE_8_2 80200
+#  endif
+#  if !defined(__IPHONE_8_3)
+#       define __IPHONE_8_3 80300
+#  endif
 #endif
 
 #ifdef __LSB_VERSION__
