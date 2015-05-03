@@ -552,18 +552,18 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
 
-    // Create a quad in homogeneous coordinates
-    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
-    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
-    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
-    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
-
 #if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+    // Create a quad in homogeneous coordinates
+    float x1 = -1.0f;
+    float y1 = -1.0f;
+    float x2 = 1.0f;
+    float y2 = 1.0f;
+
     const float dim = std::max(mWidth, mHeight);
-    float u1 = x / dim;
-    float v1 = y / dim;
-    float u2 = (x + width) / dim;
-    float v2 = (y + height) / dim;
+    float u1 = 0;
+    float v1 = 0;
+    float u2 = float(width) / dim;
+    float v2 = float(height) / dim;
 
     const NativeWindow::RotationFlags flags = mNativeWindow.rotationFlags();
     const bool rotateL = flags == NativeWindow::RotateLeft;
@@ -573,6 +573,12 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
     d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
     d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
 #else
+    // Create a quad in homogeneous coordinates
+    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
+    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
+    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
+    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
+
     float u1 = x / float(mWidth);
     float v1 = y / float(mHeight);
     float u2 = (x + width) / float(mWidth);
@@ -613,8 +619,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
 #if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    viewport.Width = (rotateL || rotateR) ? mHeight : mWidth;
-    viewport.Height = (rotateL || rotateR) ? mWidth : mHeight;
+    viewport.Width = (rotateL || rotateR) ? height : width;
+    viewport.Height = (rotateL || rotateR) ? width : height;
 #else
     viewport.Width = mWidth;
     viewport.Height = mHeight;
