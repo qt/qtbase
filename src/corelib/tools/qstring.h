@@ -495,7 +495,7 @@ public:
     };
     QString normalized(NormalizationForm mode, QChar::UnicodeVersion version = QChar::Unicode_Unassigned) const Q_REQUIRED_RESULT;
 
-    QString repeated(int times) const;
+    QString repeated(int times) const Q_REQUIRED_RESULT;
 
     const ushort *utf16() const;
 

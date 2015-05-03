@@ -83,12 +83,12 @@ public:
     float length() const;
     float lengthSquared() const;
 
-    QQuaternion normalized() const;
+    QQuaternion normalized() const Q_REQUIRED_RESULT;
     void normalize();
 
     inline QQuaternion inverted() const;
 
-    QQuaternion conjugate() const;
+    QQuaternion conjugate() const Q_REQUIRED_RESULT;
 
     QVector3D rotatedVector(const QVector3D& vector) const;
 

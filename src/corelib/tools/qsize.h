@@ -54,7 +54,7 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void setWidth(int w) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void setHeight(int h) Q_DECL_NOTHROW;
     void transpose() Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QSize transposed() const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QSize transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     inline void scale(int w, int h, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;
     inline void scale(const QSize &s, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;

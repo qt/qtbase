@@ -186,7 +186,7 @@ public:
     QString url(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
     QString toString(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
     QString toDisplayString(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
-    QUrl adjusted(FormattingOptions options) const;
+    QUrl adjusted(FormattingOptions options) const Q_REQUIRED_RESULT;
 
     QByteArray toEncoded(FormattingOptions options = FullyEncoded) const;
     static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode);
@@ -243,7 +243,7 @@ public:
     QString fragment(ComponentFormattingOptions options = PrettyDecoded) const;
     void setFragment(const QString &fragment, ParsingMode mode = TolerantMode);
 
-    QUrl resolved(const QUrl &relative) const;
+    QUrl resolved(const QUrl &relative) const Q_REQUIRED_RESULT;
 
     bool isRelative() const;
     bool isParentOf(const QUrl &url) const;
