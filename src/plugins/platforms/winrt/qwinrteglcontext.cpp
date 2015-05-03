@@ -33,11 +33,25 @@
 
 #include "qwinrteglcontext.h"
 
+#define EGL_EGLEXT_PROTOTYPES
+#include "EGL/eglext.h"
+
 QT_BEGIN_NAMESPACE
 
 QWinRTEGLContext::QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface, EGLConfig config)
     : QEGLPlatformContext(format, share, display, &config), m_eglSurface(surface)
 {
+}
+
+void QWinRTEGLContext::swapBuffers(QPlatformSurface *surface)
+{
+#ifdef Q_OS_WINPHONE
+    const QSize size = surface->surface()->size();
+    eglPostSubBufferNV(eglDisplay(), eglSurfaceForPlatformSurface(surface),
+                       0, 0, size.width(), size.height());
+#else
+    eglSwapBuffers(eglDisplay(), eglSurfaceForPlatformSurface(surface));
+#endif
 }
 
 EGLSurface QWinRTEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)

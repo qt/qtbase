@@ -43,6 +43,7 @@ class QWinRTEGLContext : public QEGLPlatformContext
 public:
     explicit QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface, EGLConfig config);
 
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
 protected:
