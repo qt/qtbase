@@ -5048,4 +5048,18 @@ QImage::Format QImage::toImageFormat(QPixelFormat format) Q_DECL_NOTHROW
     return Format_Invalid;
 }
 
+Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient)
+{
+    if (orient == QImageIOHandler::TransformationNone)
+        return;
+    if (orient == QImageIOHandler::TransformationRotate270) {
+        src = rotated270(src);
+    } else {
+        src = qMove(src).mirrored(orient & QImageIOHandler::TransformationMirror,
+                                  orient & QImageIOHandler::TransformationFlip);
+        if (orient & QImageIOHandler::TransformationRotate90)
+            src = rotated90(src);
+    }
+}
+
 QT_END_NAMESPACE

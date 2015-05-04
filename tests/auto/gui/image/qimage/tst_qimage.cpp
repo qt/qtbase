@@ -181,6 +181,11 @@ private slots:
     void invertPixelsRGB_data();
     void invertPixelsRGB();
 
+    void exifOrientation_data();
+    void exifOrientation();
+
+    void exif_QTBUG45865();
+
     void cleanupFunctions();
 
     void devicePixelRatio();
@@ -2808,6 +2813,61 @@ void tst_QImage::invertPixelsRGB()
     QCOMPARE(qRed(pixel) >> 4, (255 - 32) >> 4);
     QCOMPARE(qGreen(pixel) >> 4, (255 - 64) >> 4);
     QCOMPARE(qBlue(pixel) >> 4, (255 - 96) >> 4);
+}
+
+void tst_QImage::exifOrientation_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<int>("orientation");
+    QTest::newRow("Orientation 1, Intel format") << m_prefix + "jpeg_exif_orientation_value_1.jpg" << (int)QImageIOHandler::TransformationNone;
+    QTest::newRow("Orientation 2, Intel format") << m_prefix + "jpeg_exif_orientation_value_2.jpg" << (int)QImageIOHandler::TransformationMirror;
+    QTest::newRow("Orientation 3, Intel format") << m_prefix + "jpeg_exif_orientation_value_3.jpg" << (int)QImageIOHandler::TransformationRotate180;
+    QTest::newRow("Orientation 4, Intel format") << m_prefix + "jpeg_exif_orientation_value_4.jpg" << (int)QImageIOHandler::TransformationFlip;
+    QTest::newRow("Orientation 5, Intel format") << m_prefix + "jpeg_exif_orientation_value_5.jpg" << (int)QImageIOHandler::TransformationFlipAndRotate90;
+    QTest::newRow("Orientation 6, Intel format") << m_prefix + "jpeg_exif_orientation_value_6.jpg" << (int)QImageIOHandler::TransformationRotate90;
+    QTest::newRow("Orientation 6, Motorola format") << m_prefix + "jpeg_exif_orientation_value_6_motorola.jpg" << (int)QImageIOHandler::TransformationRotate90;
+    QTest::newRow("Orientation 7, Intel format") << m_prefix + "jpeg_exif_orientation_value_7.jpg" << (int)QImageIOHandler::TransformationMirrorAndRotate90;
+    QTest::newRow("Orientation 8, Intel format") << m_prefix + "jpeg_exif_orientation_value_8.jpg" << (int)QImageIOHandler::TransformationRotate270;
+}
+
+QT_BEGIN_NAMESPACE
+extern void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient);
+QT_END_NAMESPACE
+QT_USE_NAMESPACE
+
+void tst_QImage::exifOrientation()
+{
+    QFETCH(QString, fileName);
+    QFETCH(int, orientation);
+
+    QImageReader imageReader(fileName);
+    imageReader.setAutoTransform(true);
+    QCOMPARE(imageReader.transformation(), orientation);
+    QImage img = imageReader.read();
+    QRgb px;
+    QVERIFY(!img.isNull());
+
+    px = img.pixel(0, 0);
+    QVERIFY(qRed(px) > 250 && qGreen(px) < 5 && qBlue(px) < 5);
+
+    px = img.pixel(img.width() - 1, 0);
+    QVERIFY(qRed(px) < 5 && qGreen(px) < 5 && qBlue(px) > 250);
+
+    QImageReader imageReader2(fileName);
+    QCOMPARE(imageReader2.autoTransform(), false);
+    QCOMPARE(imageReader2.transformation(), orientation);
+    QImage img2 = imageReader2.read();
+    qt_imageTransform(img2, imageReader2.transformation());
+    QCOMPARE(img, img2);
+}
+
+void tst_QImage::exif_QTBUG45865()
+{
+    QFile file(m_prefix + "jpeg_exif_QTBUG-45865.jpg");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QByteArray byteArray = file.readAll();
+    QImage image = QImage::fromData(byteArray);
+    QCOMPARE(image.size(), QSize(5, 8));
 }
 
 static void cleanupFunction(void* info)

@@ -714,7 +714,7 @@ public:
     };
 
     QJpegHandlerPrivate(QJpegHandler *qq)
-        : quality(75), iod_src(0),
+        : quality(75), transformation(QImageIOHandler::TransformationNone), iod_src(0),
           rgb888ToRgb32ConverterPtr(qt_convert_rgb888_to_rgb32), state(Ready), optimize(false), progressive(false), q(qq)
     {}
 
@@ -732,6 +732,7 @@ public:
     bool read(QImage *image);
 
     int quality;
+    QImageIOHandler::Transformations transformation;
     QVariant size;
     QImage::Format format;
     QSize scaledSize;
@@ -754,6 +755,122 @@ public:
     QJpegHandler *q;
 };
 
+static bool readExifHeader(QDataStream &stream)
+{
+    char prefix[6];
+    if (stream.readRawData(prefix, sizeof(prefix)) != sizeof(prefix))
+        return false;
+    static const char exifMagic[6] = {'E', 'x', 'i', 'f', 0, 0};
+    return memcmp(prefix, exifMagic, 6) == 0;
+}
+
+/*
+ * Returns -1 on error
+ * Returns 0 if no Exif orientation was found
+ * Returns 1 orientation is horizontal (normal)
+ * Returns 2 mirror horizontal
+ * Returns 3 rotate 180
+ * Returns 4 mirror vertical
+ * Returns 5 mirror horizontal and rotate 270 CCW
+ * Returns 6 rotate 90 CW
+ * Returns 7 mirror horizontal and rotate 90 CW
+ * Returns 8 rotate 270 CW
+ */
+static int getExifOrientation(QByteArray &exifData)
+{
+    QDataStream stream(&exifData, QIODevice::ReadOnly);
+
+    if (!readExifHeader(stream))
+        return -1;
+
+    quint16 val;
+    quint32 offset;
+    const qint64 headerStart = stream.device()->pos();
+
+    // read byte order marker
+    stream >> val;
+    if (val == 0x4949) // 'II' == Intel
+        stream.setByteOrder(QDataStream::LittleEndian);
+    else if (val == 0x4d4d) // 'MM' == Motorola
+        stream.setByteOrder(QDataStream::BigEndian);
+    else
+        return -1; // unknown byte order
+
+    // read size
+    stream >> val;
+    if (val != 0x2a)
+        return -1;
+
+    stream >> offset;
+
+    // read IFD
+    while (!stream.atEnd()) {
+        quint16 numEntries;
+
+        // skip offset bytes to get the next IFD
+        const qint64 bytesToSkip = offset - (stream.device()->pos() - headerStart);
+
+        if (stream.skipRawData(bytesToSkip) != bytesToSkip)
+            return -1;
+
+        stream >> numEntries;
+
+        for (; numEntries > 0; --numEntries) {
+            quint16 tag;
+            quint16 type;
+            quint32 components;
+            quint16 value;
+            quint16 dummy;
+
+            stream >> tag >> type >> components >> value >> dummy;
+            if (tag == 0x0112) { // Tag Exif.Image.Orientation
+                if (components != 1)
+                    return -1;
+                if (type != 3) // we are expecting it to be an unsigned short
+                    return -1;
+                if (value < 1 || value > 8) // check for valid range
+                    return -1;
+
+                // It is possible to include the orientation multiple times.
+                // Right now the first value is returned.
+                return value;
+            }
+        }
+
+        // read offset to next IFD
+        stream >> offset;
+        if (offset == 0) // this is the last IFD
+            break;
+    }
+
+    // No Exif orientation was found
+    return 0;
+}
+
+static QImageIOHandler::Transformations exif2Qt(int exifOrientation)
+{
+    switch (exifOrientation) {
+    case 1: // normal
+        return QImageIOHandler::TransformationNone;
+    case 2: // mirror horizontal
+        return QImageIOHandler::TransformationMirror;
+    case 3: // rotate 180
+        return QImageIOHandler::TransformationRotate180;
+    case 4: // mirror vertical
+        return QImageIOHandler::TransformationFlip;
+    case 5: // mirror horizontal and rotate 270 CW
+        return QImageIOHandler::TransformationFlipAndRotate90;
+    case 6: // rotate 90 CW
+        return QImageIOHandler::TransformationRotate90;
+    case 7: // mirror horizontal and rotate 90 CW
+        return QImageIOHandler::TransformationMirrorAndRotate90;
+    case 8: // rotate 270 CW
+        return QImageIOHandler::TransformationRotate270;
+    }
+    qWarning("Invalid EXIF orientation");
+    return QImageIOHandler::TransformationNone;
+}
+
 /*!
     \internal
 */
@@ -773,6 +890,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
         if (!setjmp(err.setjmp_buffer)) {
             jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
+            jpeg_save_markers(&info, JPEG_APP0 + 1, 0xFFFF); // Exif uses APP1 marker
 
             (void) jpeg_read_header(&info, TRUE);
 
@@ -783,6 +901,8 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             format = QImage::Format_Invalid;
             read_jpeg_format(format, &info);
+
+            QByteArray exifData;
 
             for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
@@ -801,7 +921,18 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
                     description += key + QLatin1String(": ") + value.simplified();
                     readTexts.append(key);
                     readTexts.append(value);
+                } else if (marker->marker == JPEG_APP0 + 1) {
+                    exifData.append((const char*)marker->data, marker->data_length);
                 }
+            }
+
+            if (!exifData.isEmpty()) {
+                // Exif data present
+                int exifOrientation = getExifOrientation(exifData);
+                if (exifOrientation == -1)
+                    return false;
+                if (exifOrientation > 0)
+                    transformation = exif2Qt(exifOrientation);
             }
 
             state = ReadHeader;
@@ -905,8 +1036,16 @@ bool QJpegHandler::read(QImage *image)
     return d->read(image);
 }
 
+extern void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient);
+
 bool QJpegHandler::write(const QImage &image)
 {
+    if (d->transformation != QImageIOHandler::TransformationNone) {
+        // We don't support writing EXIF headers so apply the transform to the data.
+        QImage img = image;
+        qt_imageTransform(img, d->transformation);
+        return write_jpeg_image(img, device(), d->quality, d->description, d->optimize, d->progressive);
+    }
     return write_jpeg_image(image, device(), d->quality, d->description, d->optimize, d->progressive);
 }
 
@@ -920,7 +1059,8 @@ bool QJpegHandler::supportsOption(ImageOption option) const
         || option == Size
         || option == ImageFormat
         || option == OptimizedWrite
-        || option == ProgressiveScanWrite;
+        || option == ProgressiveScanWrite
+        || option == ImageTransformation;
 }
 
 QVariant QJpegHandler::option(ImageOption option) const
@@ -947,6 +1087,9 @@ QVariant QJpegHandler::option(ImageOption option) const
         return d->optimize;
     case ProgressiveScanWrite:
         return d->progressive;
+    case ImageTransformation:
+        d->readJpegHeader(device());
+        return int(d->transformation);
     default:
         break;
     }
@@ -978,6 +1121,11 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
     case ProgressiveScanWrite:
         d->progressive = value.toBool();
         break;
+    case ImageTransformation: {
+        int transformation = value.toInt();
+        if (transformation > 0 && transformation < 8)
+            d->transformation = QImageIOHandler::Transformations(transformation);
+    }
     default:
         break;
     }
