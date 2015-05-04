@@ -315,7 +315,7 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
         return;
 
     int dpr = int(m_image->image()->devicePixelRatio());
-    const int windowDpr = int(QHighDpi::fromNativePixels(window()->devicePixelRatio()));
+    const int windowDpr = int(QHighDpi::fromNativePixels(window()->devicePixelRatio(), window()));
     if (windowDpr != dpr) {
         resize(window()->size(), QRegion());
         dpr = int(m_image->image()->devicePixelRatio());
@@ -385,7 +385,7 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     QSize imageSize = m_image->size() / dpr; //because we multiply with the DPR later
 
     QRegion clipped = region;
-    clipped &= QHighDpi::toNativePixels(QRect(0, 0, window->width(), window->height()));
+    clipped &= QRect(QPoint(), QHighDpi::toNativePixels(window->size(), window));
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
     QRect bounds = clipped.boundingRect();

@@ -424,8 +424,8 @@ void QXcbWindow::create()
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
     } else {
-        rect.setWidth(QHighDpi::toNativePixels(int(defaultWindowWidth)));
-        rect.setHeight(QHighDpi::toNativePixels(int(defaultWindowHeight)));
+        rect.setWidth(QHighDpi::toNativePixels(int(defaultWindowWidth), platformScreen->QPlatformScreen::screen()));
+        rect.setHeight(QHighDpi::toNativePixels(int(defaultWindowHeight), platformScreen->QPlatformScreen::screen()));
     }
 
     xcb_window_t xcb_parent_id = platformScreen->root();
@@ -680,11 +680,11 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
     propagateSizeHints();
 
-    QXcbScreen *currentScreen = xcbScreen();
+    QXcbScreen *currentScreen = m_xcbScreen;
     QXcbScreen *newScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     if (!newScreen)
-        newScreen = currentScreen;
+        newScreen = xcbScreen();
 
     m_xcbScreen = newScreen;
     const QRect xRect = mapToNative(rect, newScreen);
@@ -2000,16 +2000,20 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 QXcbScreen *QXcbWindow::screenForNativeGeometry(const QRect &newGeometry) const
 {
     QXcbScreen *currentScreen = xcbScreen();
+    QXcbScreen *fallback = currentScreen;
+    QPoint center = newGeometry.center();
     if (!currentScreen && QGuiApplication::primaryScreen())
         currentScreen = static_cast<QXcbScreen*>(QGuiApplication::primaryScreen()->handle());
-    if (currentScreen && !parent() && !currentScreen->nativeGeometry().intersects(newGeometry)) {
+    if (currentScreen && !parent() && !currentScreen->nativeGeometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
             QXcbScreen *xcbScreen = static_cast<QXcbScreen*>(screen);
-            if (xcbScreen->nativeGeometry().intersects(newGeometry))
+            if (xcbScreen->nativeGeometry().contains(center))
                 return xcbScreen;
+            if (xcbScreen->nativeGeometry().intersects(newGeometry))
+                fallback = xcbScreen;
         }
     }
-    return currentScreen;
+    return fallback;
 }
 
 void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)

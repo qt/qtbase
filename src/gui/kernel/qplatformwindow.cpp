@@ -483,13 +483,17 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) const
 {
     QPlatformScreen *currentScreen = screen();
-    if (!parent() && currentScreen && !currentScreen->geometry().intersects(newGeometry)) {
+    QPlatformScreen *fallback = currentScreen;
+    QPoint center = newGeometry.center();
+    if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
-            if (screen->geometry().intersects(newGeometry))
+            if (screen->geometry().contains(center))
                 return screen;
+            if (screen->geometry().intersects(newGeometry))
+                fallback = screen;
         }
     }
-    return currentScreen;
+    return fallback;
 }
 
 /*!

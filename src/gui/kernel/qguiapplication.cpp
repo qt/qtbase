@@ -957,10 +957,11 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     QList<QScreen *>::const_iterator screen = screens.constBegin();
     QList<QScreen *>::const_iterator end = screens.constEnd();
 
-    const QPoint devicePosition = QHighDpi::toNativePixels(pos);
     while (screen != end) {
-        if ((*screen)->geometry().contains(pos))
+        if ((*screen)->geometry().contains(pos)) {
+            const QPoint devicePosition = QHighDpi::toNativePixels(pos, *screen);
             return (*screen)->handle()->topLevelAt(devicePosition);
+        }
         ++screen;
     }
     return 0;
@@ -1814,7 +1815,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type, window);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
@@ -2025,6 +2026,11 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             window->d_func()->setTopLevelScreen(screen, false /* recreate */);
         else // Fall back to default behavior, and try to find some appropriate screen
             window->setScreen(0);
+        // we may have changed scaling, so trigger resize event if needed
+        if (window->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());
+            processGeometryChangeEvent(&gce);
+        }
     }
 }
 

@@ -136,6 +136,7 @@ public:
     void connectToScreen(QScreen *topLevelScreen);
     void disconnectFromScreen();
     void emitScreenChangedRecursion(QScreen *newScreen);
+    QScreen *screenForGeometry(const QRect &rect);
 
     virtual void clearFocusObject();
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;

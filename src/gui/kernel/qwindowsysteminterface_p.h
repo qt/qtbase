@@ -486,7 +486,7 @@ public:
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
 
-    static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
+    static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type, const QWindow *window);
 };
 
 QT_END_NAMESPACE

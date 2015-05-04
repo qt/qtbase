@@ -301,8 +301,8 @@ void QPlatformScreen::resizeMaximizedWindows()
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
     const QRect oldGeometry = screen()->geometry();
     const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = QHighDpi::fromNativePixels(geometry());
-    const QRect newAvailableGeometry = QHighDpi::fromNativePixels(availableGeometry());
+    const QRect newGeometry = deviceIndependentGeometry();
+    const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
     // make sure maximized and fullscreen windows are updated
     for (int i = 0; i < windows.size(); ++i) {
@@ -404,14 +404,24 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     return rect;
 }
 
+QRect QPlatformScreen::deviceIndependentGeometry() const
+{
+    qreal scaleFactor = QHighDpiScaling::factor(this);
+    QRect nativeGeometry = geometry();
+    return QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
+}
+
+
 QRect QPlatformScreen::screenGeometry() const
 {
-    return QHighDpi::toNativePixels(screen()->geometry());
+    qreal scaleFactor = QHighDpiScaling::factor(this);
+    QRect geometry = screen()->geometry();
+    return QRect(geometry.topLeft(), QHighDpi::toNative(geometry.size(), scaleFactor));
 }
 
 QRect QPlatformScreen::screenAvailableGeometry() const
 {
-    return QHighDpi::toNativePixels(screen()->availableGeometry());
+    return QHighDpi::toNativePixels(screen()->availableGeometry(), this);
 }
 
 /*!

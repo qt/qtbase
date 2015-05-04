@@ -122,7 +122,10 @@ public:
     static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
     static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
 
-    // Screen property accessors. Platform plugins should use these
+    // The platform screen's geometry in device independent coordinates
+    QRect deviceIndependentGeometry() const;
+
+    // Accessors for QScreen geometry in native coordinates. Platform plugins should use these
     // instead of accessing QScreen directly.
     QRect screenGeometry() const;
     QRect screenAvailableGeometry() const;

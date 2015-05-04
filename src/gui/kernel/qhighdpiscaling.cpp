@@ -78,7 +78,7 @@ static inline qreal initialScaleFactor()
 
 qreal QHighDpiScaling::m_factor = initialScaleFactor();
 bool QHighDpiScaling::m_autoFactor = qgetenv("QT_SCALE_FACTOR").toLower() == "auto";
-bool QHighDpiScaling::m_active = !qFuzzyCompare(QHighDpiScaling::m_factor, qreal(1));
+bool QHighDpiScaling::m_active = m_autoFactor || !qFuzzyCompare(QHighDpiScaling::m_factor, qreal(1));
 bool QHighDpiScaling::m_perWindowActive = false;
 
 void QHighDpiScaling::setFactor(qreal factor)
@@ -104,6 +104,44 @@ void QHighDpiScaling::setWindowFactor(QWindow *window, qreal factor)
     window->setProperty(scaleFactorProperty, QVariant(factor));
 }
 
+
+/*
+
+QPoint QXcbScreen::mapToNative(const QPoint &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
+}
+
+QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
+}
+
+
+ */
+
+
+QPoint QHighDpiScaling::mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen)
+{
+    if (!platformScreen)
+        return pos;
+    const qreal scaleFactor = factor(platformScreen);
+    const QPoint topLeft = platformScreen->geometry().topLeft();
+    return (pos - topLeft) * scaleFactor + topLeft;
+}
+
+QPoint QHighDpiScaling::mapPositionFromNative(const QPoint &pos, const QPlatformScreen *platformScreen)
+{
+    if (!platformScreen)
+        return pos;
+    const qreal scaleFactor = factor(platformScreen);
+    const QPoint topLeft = platformScreen->geometry().topLeft();
+    return (pos - topLeft) / scaleFactor + topLeft;
+}
+
+
 qreal QHighDpiScaling::factor(const QScreen *screen)
 {
     if (m_autoFactor && screen && screen->handle())
@@ -111,6 +149,12 @@ qreal QHighDpiScaling::factor(const QScreen *screen)
     return m_factor;
 }
 
+qreal QHighDpiScaling::factor(const QPlatformScreen *platformScreen)
+{
+    if (m_autoFactor && platformScreen)
+        return platformScreen->pixelDensity();
+    return m_factor;
+}
 
 qreal QHighDpiScaling::factor(const QWindow *window)
 {
@@ -123,6 +167,17 @@ qreal QHighDpiScaling::factor(const QWindow *window)
     QVariant windowFactor = window->property(scaleFactorProperty);
     return f * (windowFactor.isValid() ? windowFactor.toReal() : 1);
 }
+
+QPoint QHighDpiScaling::origin(const QScreen *screen)
+{
+    return screen->geometry().topLeft();
+}
+
+QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
+{
+    return platformScreen->geometry().topLeft();
+}
+
 
 Q_GUI_EXPORT QSize QHighDpi::toNativePixelsConstrained(const QSize &size, const QWindow *window)
 {

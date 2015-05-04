@@ -1432,7 +1432,13 @@ void QWindow::setGeometry(const QRect &rect)
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QHighDpi::toNativePixels(rect, this));
+        QRect nativeRect;
+        QScreen *newScreen = d->screenForGeometry(rect);
+        if (newScreen && isTopLevel())
+            nativeRect = QHighDpi::toNativePixels(rect, newScreen);
+        else 
+            nativeRect = QHighDpi::toNativePixels(rect, this);
+        d->platformWindow->setGeometry(nativeRect);
     } else {
         d->geometry = rect;
 
@@ -1446,6 +1452,26 @@ void QWindow::setGeometry(const QRect &rect)
             emit heightChanged(rect.height());
     }
 }
+
+//######### This logic duplicated three times!!!!!
+// equivalent to QPlatformWindow::screenForGeometry, but in platform independent coordinates
+QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
+{
+    Q_Q(QWindow);
+    QScreen *currentScreen = q->screen();
+    QScreen *fallback = currentScreen;
+    QPoint center = newGeometry.center();
+    if (!q->parent() && currentScreen && !currentScreen->geometry().contains(center)) {
+        Q_FOREACH (QScreen* screen, currentScreen->virtualSiblings()) {
+            if (screen->geometry().contains(center))
+                return screen;
+            if (screen->geometry().intersects(newGeometry))
+                fallback = screen;
+        }
+    }
+    return fallback;
+}
+
 
 /*!
     Returns the geometry of the window, excluding its window frame.

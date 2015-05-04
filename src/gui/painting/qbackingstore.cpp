@@ -106,7 +106,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     }
 #endif
 
-    d_ptr->platformBackingStore->flush(win, QHighDpi::toNativePixels(region, d_ptr->window), offset);
+    d_ptr->platformBackingStore->flush(win, QHighDpi::toNativeLocalRegion(region, d_ptr->window), offset);
 }
 
 /*!
@@ -182,7 +182,10 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
-    d_ptr->platformBackingStore->beginPaint(QHighDpi::toNativePixels(region, d_ptr->window));
+    if (d_ptr->highDpiBackingstore &&
+        d_ptr->highDpiBackingstore->devicePixelRatio() != d_ptr->window->devicePixelRatio())
+        resize(size());
+    d_ptr->platformBackingStore->beginPaint(QHighDpi::toNativeLocalRegion(region, d_ptr->window));
 }
 
 /*!
@@ -226,7 +229,7 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     Q_UNUSED(dx);
     Q_UNUSED(dy);
 
-    return d_ptr->platformBackingStore->scroll(QHighDpi::toNativePixels(area, d_ptr->window), QHighDpi::toNativePixels(dx, d_ptr->window), QHighDpi::toNativePixels(dy, d_ptr->window));
+    return d_ptr->platformBackingStore->scroll(QHighDpi::toNativeLocalRegion(area, d_ptr->window), QHighDpi::toNativePixels(dx, d_ptr->window), QHighDpi::toNativePixels(dy, d_ptr->window));
 }
 
 void QBackingStore::setStaticContents(const QRegion &region)
