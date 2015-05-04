@@ -315,13 +315,12 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
 
     QWindowsWindowData obtained = QWindowsWindowData::create(window, requested, window->title());
     qCDebug(lcQpaWindows).nospace()
-        << __FUNCTION__ << '<' << window
-        << "\n    Requested: " << requested.geometry << "frame incl.: "
+        << __FUNCTION__ << ' ' << window
+        << "\n    Requested: " << requested.geometry << " frame incl.="
         << QWindowsGeometryHint::positionIncludesFrame(window)
-        << " Flags=" << requested.flags
-        << "\n    Obtained : " << obtained.geometry << " Margins "<< obtained.frame
-        << " Flags=" << obtained.flags
-        << " Handle=" << obtained.hwnd << '\n';
+        << ' ' << requested.flags
+        << "\n    Obtained : " << obtained.geometry << " margins=" << obtained.frame
+        << " handle=" << obtained.hwnd << ' ' << obtained.flags << '\n';
 
     if (obtained.hwnd) {
         if (requested.flags != obtained.flags)

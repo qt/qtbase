@@ -103,7 +103,14 @@ mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
-   CONFIG += lib_bundle sliced_bundle qt_framework
+   CONFIG += sliced_bundle qt_framework
+   qt_no_install_library {
+        CONFIG += bundle
+        QMAKE_BUNDLE_EXTENSION = .framework
+        QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
+   } else {
+        CONFIG += lib_bundle
+   }
    CONFIG -= qt_install_headers #no need to install these as well
    !debug_and_release|!build_all|CONFIG(release, debug|release) {
         FRAMEWORK_HEADERS.version = Versions

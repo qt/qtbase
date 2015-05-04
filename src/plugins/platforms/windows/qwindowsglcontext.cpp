@@ -286,40 +286,41 @@ static inline void initPixelFormatDescriptor(PIXELFORMATDESCRIPTOR *d)
 
 QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
 {
-    QDebug nsp = d.nospace();
-    nsp << "PIXELFORMATDESCRIPTOR "
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "PIXELFORMATDESCRIPTOR "
         << "dwFlags=" << hex << showbase << pd.dwFlags << dec << noshowbase;
-    if (pd.dwFlags & PFD_DRAW_TO_WINDOW) nsp << " PFD_DRAW_TO_WINDOW";
-    if (pd.dwFlags & PFD_DRAW_TO_BITMAP) nsp << " PFD_DRAW_TO_BITMAP";
-    if (pd.dwFlags & PFD_SUPPORT_GDI) nsp << " PFD_SUPPORT_GDI";
-    if (pd.dwFlags & PFD_SUPPORT_OPENGL) nsp << " PFD_SUPPORT_OPENGL";
-    if (pd.dwFlags & PFD_GENERIC_ACCELERATED) nsp << " PFD_GENERIC_ACCELERATED";
-    if (pd.dwFlags & PFD_SUPPORT_DIRECTDRAW) nsp << " PFD_SUPPORT_DIRECTDRAW";
-    if (pd.dwFlags & PFD_DIRECT3D_ACCELERATED) nsp << " PFD_DIRECT3D_ACCELERATED";
-    if (pd.dwFlags & PFD_SUPPORT_COMPOSITION) nsp << " PFD_SUPPORT_COMPOSITION";
-    if (pd.dwFlags & PFD_GENERIC_FORMAT) nsp << " PFD_GENERIC_FORMAT";
-    if (pd.dwFlags & PFD_NEED_PALETTE) nsp << " PFD_NEED_PALETTE";
-    if (pd.dwFlags & PFD_NEED_SYSTEM_PALETTE) nsp << " PFD_NEED_SYSTEM_PALETTE";
-    if (pd.dwFlags & PFD_DOUBLEBUFFER) nsp << " PFD_DOUBLEBUFFER";
-    if (pd.dwFlags & PFD_STEREO) nsp << " PFD_STEREO";
-    if (pd.dwFlags & PFD_SWAP_LAYER_BUFFERS) nsp << " PFD_SWAP_LAYER_BUFFERS";
-    if (hasGLOverlay(pd)) nsp << " overlay";
-    nsp << " iPixelType=" << pd.iPixelType << " cColorBits=" << pd.cColorBits
+    if (pd.dwFlags & PFD_DRAW_TO_WINDOW) d << " PFD_DRAW_TO_WINDOW";
+    if (pd.dwFlags & PFD_DRAW_TO_BITMAP) d << " PFD_DRAW_TO_BITMAP";
+    if (pd.dwFlags & PFD_SUPPORT_GDI) d << " PFD_SUPPORT_GDI";
+    if (pd.dwFlags & PFD_SUPPORT_OPENGL) d << " PFD_SUPPORT_OPENGL";
+    if (pd.dwFlags & PFD_GENERIC_ACCELERATED) d << " PFD_GENERIC_ACCELERATED";
+    if (pd.dwFlags & PFD_SUPPORT_DIRECTDRAW) d << " PFD_SUPPORT_DIRECTDRAW";
+    if (pd.dwFlags & PFD_DIRECT3D_ACCELERATED) d << " PFD_DIRECT3D_ACCELERATED";
+    if (pd.dwFlags & PFD_SUPPORT_COMPOSITION) d << " PFD_SUPPORT_COMPOSITION";
+    if (pd.dwFlags & PFD_GENERIC_FORMAT) d << " PFD_GENERIC_FORMAT";
+    if (pd.dwFlags & PFD_NEED_PALETTE) d << " PFD_NEED_PALETTE";
+    if (pd.dwFlags & PFD_NEED_SYSTEM_PALETTE) d << " PFD_NEED_SYSTEM_PALETTE";
+    if (pd.dwFlags & PFD_DOUBLEBUFFER) d << " PFD_DOUBLEBUFFER";
+    if (pd.dwFlags & PFD_STEREO) d << " PFD_STEREO";
+    if (pd.dwFlags & PFD_SWAP_LAYER_BUFFERS) d << " PFD_SWAP_LAYER_BUFFERS";
+    if (hasGLOverlay(pd)) d << " overlay";
+    d << " iPixelType=" << pd.iPixelType << " cColorBits=" << pd.cColorBits
         << " cRedBits=" << pd.cRedBits << " cRedShift=" << pd.cRedShift
         << " cGreenBits=" << pd.cGreenBits << " cGreenShift=" << pd.cGreenShift
         << " cBlueBits=" << pd.cBlueBits << " cBlueShift=" << pd.cBlueShift;
-    nsp  << " cDepthBits=" << pd.cDepthBits;
+    d  << " cDepthBits=" << pd.cDepthBits;
     if (pd.cStencilBits)
-        nsp << " cStencilBits=" << pd.cStencilBits;
+        d << " cStencilBits=" << pd.cStencilBits;
     if (pd.cAuxBuffers)
-        nsp << " cAuxBuffers=" << pd.cAuxBuffers;
-    nsp << " iLayerType=" << pd.iLayerType;
+        d << " cAuxBuffers=" << pd.cAuxBuffers;
+    d << " iLayerType=" << pd.iLayerType;
     if (pd.dwVisibleMask)
-        nsp << " dwVisibleMask=" << pd.dwVisibleMask;
+        d << " dwVisibleMask=" << pd.dwVisibleMask;
     if (pd.cAlphaBits)
-        nsp << " cAlphaBits=" << pd.cAlphaBits << " cAlphaShift=" << pd.cAlphaShift;
+        d << " cAlphaBits=" << pd.cAlphaBits << " cAlphaShift=" << pd.cAlphaShift;
     if (pd.cAccumBits)
-        nsp << " cAccumBits=" << pd.cAccumBits << " cAccumRedBits=" << pd.cAccumRedBits
+        d << " cAccumBits=" << pd.cAccumBits << " cAccumRedBits=" << pd.cAccumRedBits
         << " cAccumGreenBits=" << pd.cAccumGreenBits << " cAccumBlueBits=" << pd.cAccumBlueBits
         << " cAccumAlphaBits=" << pd.cAccumAlphaBits;
     return d;
@@ -906,9 +907,10 @@ void QWindowsOpenGLContextFormat::apply(QSurfaceFormat *format) const
 
 QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
 {
-    d.nospace() << "ContextFormat: v" << (f.version >> 8) << '.'
-                << (f.version & 0xFF) << " profile: " << f.profile
-                << " options: " << f.options;
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "ContextFormat: v" << (f.version >> 8) << '.' << (f.version & 0xFF)
+        << " profile: " << f.profile << " options: " << f.options;
     return d;
 }
 
@@ -1018,16 +1020,17 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
 
 QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
 {
-    QDebug nsp = d.nospace();
-    nsp << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
         <<  s.defaultFormat;
     if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
-        nsp << ",SampleBuffers";
+        d << ",SampleBuffers";
     if (s.hasExtensions())
-        nsp << ", Extension-API present";
-    nsp  << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
+        d << ", Extension-API present";
+    d << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
     if (QWindowsContext::verbose > 1)
-        nsp <<  s.extensionNames;
+        d <<  s.extensionNames;
     return d;
 }
 

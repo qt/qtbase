@@ -71,22 +71,23 @@ static const char formatTextHtmlC[] = "text/html";
 
 QDebug operator<<(QDebug d, const QMimeData &m)
 {
-    QDebug nospace = d.nospace();
+    QDebugStateSaver saver(d);
+    d.nospace();
     const QStringList formats = m.formats();
-    nospace << "QMimeData: " << formats.join(QStringLiteral(", ")) << '\n'
+    d << "QMimeData: " << formats.join(QStringLiteral(", ")) << '\n'
             << "  Text=" << m.hasText() << " HTML=" << m.hasHtml()
             << " Color=" << m.hasColor() << " Image=" << m.hasImage()
             << " URLs=" << m.hasUrls() << '\n';
     if (m.hasText())
-        nospace << "  Text: '" << m.text() << "'\n";
+        d << "  Text: '" << m.text() << "'\n";
     if (m.hasHtml())
-        nospace << "  HTML: '" << m.html() << "'\n";
+        d << "  HTML: '" << m.html() << "'\n";
     if (m.hasColor())
-        nospace << "  Color: " << qvariant_cast<QColor>(m.colorData()) << '\n';
+        d << "  Color: " << qvariant_cast<QColor>(m.colorData()) << '\n';
     if (m.hasImage())
-        nospace << "  Image: " << qvariant_cast<QImage>(m.imageData()).size() << '\n';
+        d << "  Image: " << qvariant_cast<QImage>(m.imageData()).size() << '\n';
     if (m.hasUrls())
-        nospace << "  URLs: " << m.urls() << '\n';
+        d << "  URLs: " << m.urls() << '\n';
     return d;
 }
 

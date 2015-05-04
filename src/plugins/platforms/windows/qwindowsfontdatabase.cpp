@@ -608,11 +608,13 @@ static inline bool initDirectWrite(QWindowsFontEngineData *d)
 
 QDebug operator<<(QDebug d, const QFontDef &def)
 {
-    d.nospace() << "Family=" << def.family << " Stylename=" << def.styleName
-                << " pointsize=" << def.pointSize << " pixelsize=" << def.pixelSize
-                << " styleHint=" << def.styleHint << " weight=" << def.weight
-                << " stretch=" << def.stretch << " hintingPreference="
-                << def.hintingPreference << ' ';
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "Family=" << def.family << " Stylename=" << def.styleName
+        << " pointsize=" << def.pointSize << " pixelsize=" << def.pixelSize
+        << " styleHint=" << def.styleHint << " weight=" << def.weight
+        << " stretch=" << def.stretch << " hintingPreference="
+        << def.hintingPreference;
     return d;
 }
 

@@ -2657,7 +2657,8 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid range in character class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "group name must start with a non-digit"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)")
+    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "digits missing in \\x{} or \\o{}")
 };
 #endif // #if 0
 

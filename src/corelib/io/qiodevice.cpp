@@ -989,6 +989,10 @@ QByteArray QIODevice::readAll()
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
+            if (quint64(readBytes) + QIODEVICE_BUFFERSIZE > QByteArray::MaxSize) {
+                // If resize would fail, don't read more, return what we have.
+                break;
+            }
             result.resize(readBytes + QIODEVICE_BUFFERSIZE);
             readResult = read(result.data() + readBytes, QIODEVICE_BUFFERSIZE);
             if (readResult > 0 || readBytes == 0)
