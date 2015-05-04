@@ -280,6 +280,12 @@
 
 // -------------------------------------------------------------------------
 
+-(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
+{
+    if (m_qioswindow->window()->flags() & Qt::WindowTransparentForInput)
+        return NO;
+    return [super pointInside:point withEvent:event];
+}
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
