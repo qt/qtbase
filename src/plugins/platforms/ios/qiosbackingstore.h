@@ -39,6 +39,8 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLPaintDevice;
+class QOpenGLFramebufferObject;
+class QOffscreenSurface;
 
 class QIOSBackingStore : public QPlatformBackingStore
 {
@@ -49,13 +51,19 @@ public:
     QPaintDevice *paintDevice();
 
     void beginPaint(const QRegion &);
+    void endPaint();
 
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
+    GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const;
+
+    void makeCurrent();
 
 private:
     QOpenGLContext *m_context;
     QOpenGLPaintDevice *m_device;
+    QOpenGLFramebufferObject *m_fbo;
+    QOffscreenSurface *m_surface;
 };
 
 QT_END_NAMESPACE

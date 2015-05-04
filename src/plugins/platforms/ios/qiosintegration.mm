@@ -77,6 +77,15 @@ QIOSIntegration::QIOSIntegration()
                "'applicationDidFinishLaunching' inside your UIApplication delegate.\n");
     }
 
+    // The backingstore needs a global share context in order to support composition in
+    // QPlatformBackingStore.
+    qApp->setAttribute(Qt::AA_ShareOpenGLContexts, true);
+    // And that context must match the format used for the backingstore's context.
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(16);
+    fmt.setStencilBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(fmt);
+
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
@@ -136,6 +145,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
     case WindowManagement:
         return false;
     case ApplicationState:
+        return true;
+    case RasterGLSurface:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
