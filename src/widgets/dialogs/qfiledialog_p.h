@@ -187,7 +187,7 @@ public:
 #endif
 
     bool restoreWidgetState(QStringList &history, int splitterPosition);
-    void setLastVisitedDirectory(const QUrl &dir);
+    static void setLastVisitedDirectory(const QUrl &dir);
     void retranslateWindowTitle();
     void retranslateStrings();
     void emitFilesSelected(const QStringList &files);

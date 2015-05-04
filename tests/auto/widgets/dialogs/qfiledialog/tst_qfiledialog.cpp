@@ -54,10 +54,10 @@
 #include <qsortfilterproxymodel.h>
 #include <qlineedit.h>
 #include <qlayout.h>
+#include <private/qfiledialog_p.h>
 #if defined QT_BUILD_INTERNAL
 #include <private/qsidebar_p.h>
 #include <private/qfilesystemmodel_p.h>
-#include <private/qfiledialog_p.h>
 #endif
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -108,6 +108,7 @@ public:
 public slots:
     void initTestCase();
     void init();
+    void cleanup();
 
 private slots:
     void currentChangedSignal();
@@ -166,7 +167,7 @@ private slots:
     void rejectModalDialogs();
 
 private:
-    QByteArray userSettings;
+    void cleanupSettingsFile();
 };
 
 tst_QFiledialog::tst_QFiledialog()
@@ -177,23 +178,37 @@ tst_QFiledialog::~tst_QFiledialog()
 {
 }
 
+void tst_QFiledialog::cleanupSettingsFile()
+{
+    // clean up the sidebar between each test
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
+    settings.beginGroup(QLatin1String("FileDialog"));
+    settings.remove(QString());
+    settings.endGroup();
+    settings.beginGroup(QLatin1String("Qt")); // Compatibility settings
+    settings.remove(QLatin1String("filedialog"));
+    settings.endGroup();
+}
+
 void tst_QFiledialog::initTestCase()
 {
     QStandardPaths::setTestModeEnabled(true);
+    cleanupSettingsFile();
 }
 
 void tst_QFiledialog::init()
 {
-    // clean up the sidebar between each test
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("Qt"));
-    settings.remove(QLatin1String("filedialog"));
-
+    QFileDialogPrivate::setLastVisitedDirectory(QUrl());
     // populate the sidebar with some default settings
     QNonNativeFileDialog fd;
 #if defined(Q_OS_WINCE)
     QTest::qWait(1000);
 #endif
+}
+
+void tst_QFiledialog::cleanup()
+{
+    cleanupSettingsFile();
 }
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate

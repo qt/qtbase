@@ -222,6 +222,32 @@ static const EnumLookup scriptEnumLookup[] =
     {QChar::Script_Sharada, "Script_Sharada"},
     {QChar::Script_SoraSompeng, "Script_SoraSompeng"},
     {QChar::Script_Takri, "Script_Takri"},
+
+#if QT_VERSION >= 0x050500
+    {QChar::Script_CaucasianAlbanian, "Script_CaucasianAlbanian"},
+    {QChar::Script_BassaVah, "Script_BassaVah"},
+    {QChar::Script_Duployan, "Script_Duployan"},
+    {QChar::Script_Elbasan, "Script_Elbasan"},
+    {QChar::Script_Grantha, "Script_Grantha"},
+    {QChar::Script_PahawhHmong, "Script_PahawhHmong"},
+    {QChar::Script_Khojki, "Script_Khojki"},
+    {QChar::Script_LinearA, "Script_LinearA"},
+    {QChar::Script_Mahajani, "Script_Mahajani"},
+    {QChar::Script_Manichaean, "Script_Manichaean"},
+    {QChar::Script_MendeKikakui, "Script_MendeKikakui"},
+    {QChar::Script_Modi, "Script_Modi"},
+    {QChar::Script_Mro, "Script_Mro"},
+    {QChar::Script_OldNorthArabian, "Script_OldNorthArabian"},
+    {QChar::Script_Nabataean, "Script_Nabataean"},
+    {QChar::Script_Palmyrene, "Script_Palmyrene"},
+    {QChar::Script_PauCinHau, "Script_PauCinHau"},
+    {QChar::Script_OldPermic, "Script_OldPermic"},
+    {QChar::Script_PsalterPahlavi, "Script_PsalterPahlavi"},
+    {QChar::Script_Siddham, "Script_Siddham"},
+    {QChar::Script_Khudawadi, "Script_Khudawadi"},
+    {QChar::Script_Tirhuta, "Script_Tirhuta"},
+    {QChar::Script_WarangCiti, "Script_WarangCiti"},
+#endif // Qt 5.5
 };
 
 #endif // Qt 5.1
@@ -335,6 +361,9 @@ static const EnumLookup unicodeVersionEnumLookup[] =
     {QChar::Unicode_6_1, "Unicode_6_1"},
     {QChar::Unicode_6_2, "Unicode_6_2"},
     {QChar::Unicode_6_3, "Unicode_6_3"},
+#if QT_VERSION >= 0x050500
+    {QChar::Unicode_7_0, "Unicode_7_0"},
+#endif // Qt 5.5
 #endif // Qt 5
 };
 

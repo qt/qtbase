@@ -566,7 +566,22 @@ QByteArray QMimeData::data(const QString &mimeType) const
 void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 {
     Q_D(QMimeData);
-    d->setData(mimeType, QVariant(data));
+
+    if (mimeType == QLatin1String("text/uri-list")) {
+        QByteArray ba = data;
+        if (ba.endsWith('\0'))
+            ba.chop(1);
+        QList<QByteArray> urls = ba.split('\n');
+        QList<QVariant> list;
+        for (int i = 0; i < urls.size(); ++i) {
+            QByteArray ba = urls.at(i).trimmed();
+            if (!ba.isEmpty())
+                list.append(QUrl::fromEncoded(ba));
+        }
+        d->setData(mimeType, list);
+    } else {
+        d->setData(mimeType, QVariant(data));
+    }
 }
 
 /*!

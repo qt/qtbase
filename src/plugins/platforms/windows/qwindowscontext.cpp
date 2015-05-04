@@ -566,8 +566,8 @@ QString QWindowsContext::registerWindowClass(QString cname,
 
     d->m_registeredWindowClassNames.insert(cname);
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << cname
-                 << " style=0x" << QString::number(style, 16)
-                 << " brush=" << brush << " icon=" << icon << " atom=" << atom;
+        << " style=0x" << hex << style << dec
+        << " brush=" << brush << " icon=" << icon << " atom=" << atom;
     return cname;
 }
 

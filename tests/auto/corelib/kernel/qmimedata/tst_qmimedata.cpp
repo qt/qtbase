@@ -297,9 +297,16 @@ void tst_QMimeData::setText() const
     QVERIFY(mimeData.hasText() == false);
 }
 
+// Publish retrieveData for verifying content validity
+class TstMetaData : public QMimeData
+{
+public:
+    using QMimeData::retrieveData;
+};
+
 void tst_QMimeData::setUrls() const
 {
-    QMimeData mimeData;
+    TstMetaData mimeData;
     QList<QUrl> shortUrlList;
     QList<QUrl> longUrlList;
 
@@ -320,6 +327,14 @@ void tst_QMimeData::setUrls() const
     mimeData.setUrls(longUrlList);
     QCOMPARE(mimeData.urls(), longUrlList);
     QCOMPARE(mimeData.text(), QString("http://qt-project.org\nhttp://www.google.com\n"));
+
+    // test and verify that setData doesn't corrupt url content
+    foreach (const QString &format, mimeData.formats()) {
+         QVariant before = mimeData.retrieveData(format, QVariant::ByteArray);
+         mimeData.setData(format, mimeData.data(format));
+         QVariant after = mimeData.retrieveData(format, QVariant::ByteArray);
+         QCOMPARE(after, before);
+     }
 
     // clear, verify
     mimeData.clear();
