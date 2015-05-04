@@ -61,6 +61,7 @@ public:
     virtual const char* readPointer(qint64 maximumLength, qint64 &len) = 0;
     virtual bool advanceReadPointer(qint64 amount) = 0;
     virtual bool atEnd() = 0;
+    virtual qint64 pos() { return -1; }
     virtual bool reset() = 0;
     void disableReset();
     bool isResetDisabled() { return resetDisabled; }
@@ -106,6 +107,7 @@ public:
     bool atEnd();
     bool reset();
     qint64 size();
+    qint64 pos() Q_DECL_OVERRIDE;
 protected:
     QByteArray* byteArray;
     qint64 currentPosition;
@@ -121,6 +123,7 @@ public:
     bool atEnd();
     bool reset();
     qint64 size();
+    qint64 pos() Q_DECL_OVERRIDE;
 protected:
     QSharedPointer<QRingBuffer> ringBuffer;
     qint64 currentPosition;
@@ -138,6 +141,7 @@ public:
     bool atEnd();
     bool reset();
     qint64 size();
+    qint64 pos() Q_DECL_OVERRIDE;
 protected:
     QIODevice* device;
     QByteArray* currentReadBuffer;
