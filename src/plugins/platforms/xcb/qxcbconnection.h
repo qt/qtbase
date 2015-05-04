@@ -194,6 +194,7 @@ namespace QXcbAtom {
         _KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
 
         _KDE_NET_WM_FRAME_STRUT,
+        _NET_FRAME_EXTENTS,
 
         _NET_STARTUP_INFO,
         _NET_STARTUP_INFO_BEGIN,

@@ -1578,6 +1578,7 @@ static const char * xcb_atomnames = {
     "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE\0"
 
     "_KDE_NET_WM_FRAME_STRUT\0"
+    "_NET_FRAME_EXTENTS\0"
 
     "_NET_STARTUP_INFO\0"
     "_NET_STARTUP_INFO_BEGIN\0"

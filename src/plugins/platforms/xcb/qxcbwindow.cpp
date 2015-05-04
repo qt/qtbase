@@ -745,6 +745,22 @@ void QXcbWindow::setGeometry(const QRect &rect)
 QMargins QXcbWindow::frameMargins() const
 {
     if (m_dirtyFrameMargins) {
+        if (connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_FRAME_EXTENTS))) {
+            xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, m_window,
+                                                                atom(QXcbAtom::_NET_FRAME_EXTENTS), XCB_ATOM_CARDINAL, 0, 4);
+            QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
+                xcb_get_property_reply(xcb_connection(), cookie, NULL));
+            if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 4) {
+                quint32 *data = (quint32 *)xcb_get_property_value(reply.data());
+                // _NET_FRAME_EXTENTS format is left, right, top, bottom
+                m_frameMargins = QMargins(data[0], data[2], data[1], data[3]);
+                m_dirtyFrameMargins = false;
+                return m_frameMargins;
+            }
+        }
+
+        // _NET_FRAME_EXTENTS property is not available, so
+        // walk up the window tree to get the frame parent
         xcb_window_t window = m_window;
         xcb_window_t parent = m_window;
 
@@ -2385,6 +2401,8 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             m_windowState = newState;
         }
         return;
+    } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
+        m_dirtyFrameMargins = true;
     } else if (event->atom == atom(QXcbAtom::_NET_WORKAREA) && xcbScreen() && event->window == xcbScreen()->root()) {
         xcbScreen()->updateGeometry(event->time);
     }
