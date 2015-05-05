@@ -143,7 +143,7 @@ public:
     static uint visualIdStatic(QWindow *window);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
-    void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
+    void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::WindowFlags flags);
 
     uint visualId() const;
 
@@ -179,7 +179,6 @@ protected:
     NetWmStates netWmStates();
     void setNetWmStates(NetWmStates);
 
-    void setNetWmWindowFlags(Qt::WindowFlags flags);
     void setMotifWindowFlags(Qt::WindowFlags flags);
 
     void updateMotifWmHintsBeforeMap();
