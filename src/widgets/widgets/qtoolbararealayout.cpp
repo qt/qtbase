@@ -789,7 +789,7 @@ void QToolBarAreaLayout::deleteAllLayoutItems()
     }
 }
 
-QInternal::DockPosition QToolBarAreaLayout::findToolBar(QToolBar *toolBar) const
+QInternal::DockPosition QToolBarAreaLayout::findToolBar(const QToolBar *toolBar) const
 {
     for (int i = 0; i < QInternal::DockCount; ++i) {
         const QToolBarAreaLayoutInfo &dock = docks[i];

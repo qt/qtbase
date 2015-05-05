@@ -475,7 +475,7 @@ public:
 
     void addToolBar(Qt::ToolBarArea area, QToolBar *toolbar, bool needAddChildWidget = true);
     void insertToolBar(QToolBar *before, QToolBar *toolbar);
-    Qt::ToolBarArea toolBarArea(QToolBar *toolbar) const;
+    Qt::ToolBarArea toolBarArea(const QToolBar *toolbar) const;
     bool toolBarBreak(QToolBar *toolBar) const;
     void getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar *toolBar) const;
     void removeToolBar(QToolBar *toolbar);

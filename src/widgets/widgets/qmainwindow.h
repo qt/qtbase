@@ -158,7 +158,11 @@ public:
 
     bool unifiedTitleAndToolBarOnMac() const;
 
-    Qt::ToolBarArea toolBarArea(QToolBar *toolbar) const;
+    Qt::ToolBarArea toolBarArea(
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        const
+#endif
+        QToolBar *toolbar) const;
     bool toolBarBreak(QToolBar *toolbar) const;
 #endif
 #if QT_CONFIG(dockwidget)

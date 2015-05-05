@@ -196,7 +196,7 @@ public:
     void insertItem(QInternal::DockPosition pos, QLayoutItem *item);
     void insertItem(QToolBar *before, QLayoutItem *item);
 
-    QInternal::DockPosition findToolBar(QToolBar *toolBar) const;
+    QInternal::DockPosition findToolBar(const QToolBar *toolBar) const;
     bool toolBarBreak(QToolBar *toolBar) const;
 
     void getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar *toolBar) const;

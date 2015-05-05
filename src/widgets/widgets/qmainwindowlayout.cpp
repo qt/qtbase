@@ -1388,7 +1388,7 @@ void QMainWindowLayout::insertToolBar(QToolBar *before, QToolBar *toolbar)
     invalidate();
 }
 
-Qt::ToolBarArea QMainWindowLayout::toolBarArea(QToolBar *toolbar) const
+Qt::ToolBarArea QMainWindowLayout::toolBarArea(const QToolBar *toolbar) const
 {
     QInternal::DockPosition pos = layoutState.toolBarAreaLayout.findToolBar(toolbar);
     switch (pos) {
