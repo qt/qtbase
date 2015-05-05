@@ -48,7 +48,7 @@ MyClass::MyClass() : BaseClass()
 {
     Q_INIT_RESOURCE(resources);
 
-    QFile file("qrc:/myfile.dat");
+    QFile file(":/myfile.dat");
     ...
 }
 //! [5]
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(graphlib);
 
-    QFile file("qrc:/graph.png");
+    QFile file(":/graph.png");
     ...
     return app.exec();
 }
