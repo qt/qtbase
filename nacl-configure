@@ -171,10 +171,6 @@ NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE  $QT_PLATFPORM -device-option NACL_SDK
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -I $NACL_SDK_ROOT/include -L $NACL_SDK_ROOT/lib/$LIBDIR/Release"
 # developer build
 NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -developer-build -opensource -confirm-license -nomake examples -nomake tests"
-# OpenGL
-if [[ $TOOLCHAIN != "host" ]]; then
-    NACL_CONFIGURE_LINE"$NACL_CONFIGURE_LINE -opengl es2"
-fi
 
 # disable sse
 if [[ $TOOLCHAIN != "host" ]]; then
