@@ -32,7 +32,7 @@
     \brief The QXcbWindowFunctions class is an inline class containing
     miscellaneous functionality for xcb window specific functionality.
 
-    A commen usage pattern is as follows:
+    A common usage pattern is as follows:
     \snippet qxcbwindowfunctions/main.cpp 0
 
     \note There is no binary compatibility guarantee for this class,
@@ -71,7 +71,7 @@
 /*!
     \fn QByteArray QXcbWindowFunctions::setWmWindowTypeIdentifier()
 
-    This function returnes the bytearray that can be used to query
+    This function returns the byte array that can be used to query
     QGuiApplication::platformFunction to retrieve the SetWmWindowType function.
 */
 
