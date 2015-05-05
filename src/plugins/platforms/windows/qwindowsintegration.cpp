@@ -63,6 +63,7 @@
 #  include "qwindowssessionmanager.h"
 #endif
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
 #include <QtCore/private/qeventdispatcher_win_p.h>
@@ -302,7 +303,7 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
 {
     QWindowsWindowData requested;
     requested.flags = window->flags();
-    requested.geometry = window->geometry();
+    requested.geometry = QHighDpi::toNativePixels(window->geometry(), window);
     // Apply custom margins (see  QWindowsWindow::setCustomMargins())).
     const QVariant customMarginsV = window->property("_q_windowsCustomMargins");
     if (customMarginsV.isValid())

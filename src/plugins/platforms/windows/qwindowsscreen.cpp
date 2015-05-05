@@ -43,6 +43,7 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 #include <QtGui/QScreen>
 
 #include <QtCore/QDebug>
@@ -116,12 +117,14 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
         HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
 #endif
         if (hdc) {
+            if (!QHighDpiScaling::isActive()) { // Assume 96 DPI to get fonts right when scaling.
 #ifndef Q_OS_WINCE
-            const QDpi dpi = monitorDPI(hMonitor);
-            data->dpi = dpi.first ? dpi : deviceDPI(hdc);
+                const QDpi dpi = monitorDPI(hMonitor);
+                data->dpi = dpi.first ? dpi : deviceDPI(hdc);
 #else
-            data->dpi = deviceDPI(hdc);
+                data->dpi = deviceDPI(hdc);
 #endif
+            }
             data->depth = GetDeviceCaps(hdc, BITSPIXEL);
             data->format = data->depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
             data->physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
@@ -285,6 +288,12 @@ QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
         if (QPlatformScreen *ppscr = ps->handle())
             return static_cast<QWindowsScreen *>(ppscr);
     return 0;
+}
+
+qreal QWindowsScreen::pixelDensity() const
+{
+    const qreal physicalDpi = m_data.geometry.width() / m_data.physicalSizeMM.width() * qreal(25.4);
+    return qRound(physicalDpi / 96);
 }
 
 /*!

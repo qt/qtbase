@@ -50,6 +50,7 @@
 #include <private/qsystemlibrary_p.h>
 #include <private/qwindow_p.h> // QWINDOWSIZE_MAX
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
@@ -713,8 +714,8 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 */
 
 QWindowsGeometryHint::QWindowsGeometryHint(const QWindow *w, const QMargins &cm) :
-     minimumSize(w->minimumSize()),
-     maximumSize(w->maximumSize()),
+     minimumSize(QHighDpi::toNativePixelsConstrained(w->minimumSize(), w)),
+     maximumSize(QHighDpi::toNativePixelsConstrained(w->maximumSize(), w)),
      customMargins(cm)
 {
 }
@@ -1619,7 +1620,9 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
 
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return window()->isTopLevel() && geometry_sys() == window()->screen()->geometry();
+    const QWindow *w = window();
+    return w->isTopLevel()
+        && geometry_sys() == QHighDpi::toNativePixels(w->screen()->geometry(), w);
 }
 
 /*!
@@ -1689,7 +1692,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
             const QScreen *screen = window()->screen();
-            const QRect r = screen->geometry();
+            const QRect r = QHighDpi::toNativePixels(screen->geometry(), window());
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
@@ -2046,7 +2049,7 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     const bool fixedHeight = minimumSize.height() == maximumSize.height();
     if (!fixedWidth && !fixedHeight)
         return false;
-    const QPoint localPos = w->mapFromGlobal(globalPos);
+    const QPoint localPos = w->mapFromGlobal(QHighDpi::fromNativePixels(globalPos, w));
     const QSize size = w->size();
     if (fixedHeight) {
         if (localPos.y() >= size.height()) {
