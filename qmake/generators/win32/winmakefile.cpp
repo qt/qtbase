@@ -784,7 +784,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
        (t == "dlltarget" && (project->first("TEMPLATE") != "lib" || !project->isActiveConfig("shared"))) ||
-        project->first("TEMPLATE") == "subdirs")
+        project->first("TEMPLATE") == "subdirs" || project->first("TEMPLATE") == "aux")
        return QString();
 
     const QString root = "$(INSTALL_ROOT)";

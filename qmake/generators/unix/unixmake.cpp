@@ -699,6 +699,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         return QString();
 
     enum { NoBundle, SolidBundle, SlicedBundle } bundle = NoBundle;
+    bool isAux = (project->first("TEMPLATE") == "aux");
     const QString root = "$(INSTALL_ROOT)";
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret, destdir = project->first("DESTDIR").toQString();
@@ -773,21 +774,21 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         }
         src_targ = escapeFilePath(src_targ);
         dst_targ = escapeFilePath(dst_targ);
-        if(!ret.isEmpty())
-            ret += "\n\t";
 
-        QString copy_cmd("-");
+        QString copy_cmd;
         if (bundle == SolidBundle) {
-            copy_cmd += "$(INSTALL_DIR) " + src_targ + ' ' + plain_targ;
+            copy_cmd += "-$(INSTALL_DIR) " + src_targ + ' ' + plain_targ;
         } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
-            copy_cmd += "$(INSTALL_FILE) " + src_targ + ' ' + dst_targ;
-        } else {
+            copy_cmd += "-$(INSTALL_FILE) " + src_targ + ' ' + dst_targ;
+        } else if (!isAux) {
             if (bundle == SlicedBundle)
                 ret += mkdir_p_asstring("\"`dirname " + dst_targ + "`\"", false) + "\n\t";
-            copy_cmd += "$(INSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
+            copy_cmd += "-$(INSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
         }
         if(project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib")
            && project->values(ProKey(t + ".CONFIG")).indexOf("fix_rpath") != -1) {
+            if (!ret.isEmpty())
+                ret += "\n\t";
             if(!project->isEmpty("QMAKE_FIX_RPATH")) {
                 ret += copy_cmd;
                 ret += "\n\t-" + var("QMAKE_FIX_RPATH") + ' ' + dst_targ + ' ' + dst_targ;
@@ -797,11 +798,14 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             } else {
                 ret += copy_cmd;
             }
-        } else {
+        } else if (!copy_cmd.isEmpty()) {
+            if (!ret.isEmpty())
+                ret += "\n\t";
             ret += copy_cmd;
         }
 
-        if(project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
+        if (isAux) {
+        } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
             if(!project->isEmpty("QMAKE_RANLIB"))
                 ret += QString("\n\t$(RANLIB) ") + dst_targ;
         } else if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip")
@@ -820,7 +824,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             uninst.append("\n\t");
         if (bundle == SolidBundle)
             uninst.append("-$(DEL_FILE) -r " + plain_targ);
-        else
+        else if (!isAux)
             uninst.append("-$(DEL_FILE) " + dst_targ);
         if (bundle == SlicedBundle) {
             int dstlen = project->first("DESTDIR").length();
