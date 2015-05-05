@@ -1844,41 +1844,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     return NO;
 }
 
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+- (void)updateCursorFromDragResponse:(QPlatformDragQtResponse)response drag:(QCocoaDrag *)drag
 {
-    return [self handleDrag : sender];
-}
-
-- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
-{
-    return [self handleDrag : sender];
-}
-
-// Sends drag update to Qt, return the action
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender
-{
-    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
-    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
-    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
-
-    QWindow *target = findEventTargetWindow(m_window);
-    if (!target)
-        return NSDragOperationNone;
-
-    // update these so selecting move/copy/link works
-    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
-
-    QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
-    if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-        response = QWindowSystemInterface::handleDrag(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
-    } else {
-        QCocoaDropData mimeData([sender draggingPasteboard]);
-        response = QWindowSystemInterface::handleDrag(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
-    }
-
-    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    const QPixmap pixmapCursor = nativeDrag->currentDrag()->dragCursor(response.acceptedAction());
+    const QPixmap pixmapCursor = drag->currentDrag()->dragCursor(response.acceptedAction());
     NSCursor *nativeCursor = nil;
 
     if (pixmapCursor.isNull()) {
@@ -1918,6 +1886,41 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     ));
     CGEventPost(kCGHIDEventTap, moveEvent);
     CFRelease(moveEvent);
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    return [self handleDrag : sender];
+}
+
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+{
+    return [self handleDrag : sender];
+}
+
+// Sends drag update to Qt, return the action
+- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender
+{
+    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
+
+    QWindow *target = findEventTargetWindow(m_window);
+    if (!target)
+        return NSDragOperationNone;
+
+    // update these so selecting move/copy/link works
+    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
+
+    QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
+    if ([sender draggingSource] != nil) {
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+        response = QWindowSystemInterface::handleDrag(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
+        [self updateCursorFromDragResponse:response drag:nativeDrag];
+    } else {
+        QCocoaDropData mimeData([sender draggingPasteboard]);
+        response = QWindowSystemInterface::handleDrag(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
+    }
 
     return qt_mac_mapDropAction(response.acceptedAction());
 }
