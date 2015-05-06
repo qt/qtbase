@@ -1258,7 +1258,7 @@ void QStandardItem::setCheckable(bool checkable)
 void QStandardItem::setTristate(bool tristate)
 {
     Q_D(QStandardItem);
-    d->changeFlags(tristate, Qt::ItemIsTristate);
+    d->changeFlags(tristate, Qt::ItemIsAutoTristate);
 }
 
 /*!

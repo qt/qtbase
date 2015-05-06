@@ -2642,10 +2642,12 @@
     \value ItemIsDropEnabled It can be used as a drop target.
     \value ItemIsUserCheckable It can be checked or unchecked by the user.
     \value ItemIsEnabled The user can interact with the item.
-    \value ItemIsTristate The item can show three separate states.
+    \value ItemIsAutoTristate The item's state depends on the state of its children.
            This enables automatic management of the state of parent items in QTreeWidget
            (checked if all children are checked, unchecked if all children are unchecked,
            or partially checked if only some children are checked).
+    \value ItemIsTristate \e{This enum value is deprecated.} Use Qt::ItemIsAutoTristate
+    instead.
     \value ItemNeverHasChildren The item never has child items.
     \value ItemIsUserTristate The user can cycle through three separate states.
            This value has been added in Qt 5.5.

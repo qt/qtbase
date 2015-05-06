@@ -1720,12 +1720,12 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
         }
     } break;
     case Qt::CheckStateRole:
-        if ((itemFlags & Qt::ItemIsTristate) && value != Qt::PartiallyChecked) {
+        if ((itemFlags & Qt::ItemIsAutoTristate) && value != Qt::PartiallyChecked) {
             for (int i = 0; i < children.count(); ++i) {
                 QTreeWidgetItem *child = children.at(i);
                 if (child->data(column, role).isValid()) {// has a CheckState
                     Qt::ItemFlags f = itemFlags; // a little hack to avoid multiple dataChanged signals
-                    itemFlags &= ~Qt::ItemIsTristate;
+                    itemFlags &= ~Qt::ItemIsAutoTristate;
                     child->setData(column, role, value);
                     itemFlags = f;
                 }
@@ -1760,7 +1760,7 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
         model->emitDataChanged(this, column);
         if (role == Qt::CheckStateRole) {
             QTreeWidgetItem *p;
-            for (p = par; p && (p->itemFlags & Qt::ItemIsTristate); p = p->par)
+            for (p = par; p && (p->itemFlags & Qt::ItemIsAutoTristate); p = p->par)
                 model->emitDataChanged(p, column);
         }
     }
@@ -1779,7 +1779,7 @@ QVariant QTreeWidgetItem::data(int column, int role) const
         break;
     case Qt::CheckStateRole:
         // special case for check state in tristate
-        if (children.count() && (itemFlags & Qt::ItemIsTristate))
+        if (children.count() && (itemFlags & Qt::ItemIsAutoTristate))
             return childrenCheckState(column);
         // fallthrough intended
    default:

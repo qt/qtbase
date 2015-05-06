@@ -1458,7 +1458,10 @@ public:
         ItemIsDropEnabled = 8,
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
-        ItemIsTristate = 64,
+        ItemIsAutoTristate = 64,
+#if QT_DEPRECATED_SINCE(5, 6)
+        ItemIsTristate = ItemIsAutoTristate,
+#endif
         ItemNeverHasChildren = 128,
         ItemIsUserTristate = 256
     };

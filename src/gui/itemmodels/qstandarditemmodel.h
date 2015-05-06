@@ -159,7 +159,7 @@ public:
     void setCheckable(bool checkable);
 
     inline bool isTristate() const {
-        return (flags() & Qt::ItemIsTristate) != 0;
+        return (flags() & Qt::ItemIsAutoTristate) != 0;
     }
     void setTristate(bool tristate);
 

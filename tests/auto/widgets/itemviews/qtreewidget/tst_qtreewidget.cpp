@@ -1037,7 +1037,7 @@ void tst_QTreeWidget::checkState()
     QCOMPARE(firstChild->checkState(0), Qt::Checked);
     QCOMPARE(seccondChild->checkState(0), Qt::Unchecked);
 
-    item->setFlags(item->flags()|Qt::ItemIsTristate);
+    item->setFlags(item->flags()|Qt::ItemIsAutoTristate);
     QCOMPARE(item->checkState(0), Qt::PartiallyChecked);
     QCOMPARE(firstChild->checkState(0), Qt::Checked);
     QCOMPARE(seccondChild->checkState(0), Qt::Unchecked);
@@ -3155,11 +3155,11 @@ void tst_QTreeWidget::setSelectionModel()
 void tst_QTreeWidget::task217309()
 {
     QTreeWidgetItem item;
-    item.setFlags(item.flags() | Qt::ItemIsTristate);
+    item.setFlags(item.flags() | Qt::ItemIsAutoTristate);
     QTreeWidgetItem subitem1;
-    subitem1.setFlags(subitem1.flags() | Qt::ItemIsTristate);
+    subitem1.setFlags(subitem1.flags() | Qt::ItemIsAutoTristate);
     QTreeWidgetItem subitem2;
-    subitem2.setFlags(subitem2.flags() | Qt::ItemIsTristate);
+    subitem2.setFlags(subitem2.flags() | Qt::ItemIsAutoTristate);
     item.addChild(&subitem1);
     item.addChild(&subitem2);
     subitem1.setCheckState(0, Qt::Checked);
@@ -3180,7 +3180,7 @@ void tst_QTreeWidget::nonEditableTristate()
     QTreeWidget *tree = new QTreeWidget;
     QTreeWidgetItem *item = new QTreeWidgetItem();
     tree->insertTopLevelItem(0, item);
-    item->setFlags(item->flags() | Qt::ItemIsTristate);
+    item->setFlags(item->flags() | Qt::ItemIsAutoTristate);
     item->setCheckState(0, Qt::Unchecked);
     QTreeWidgetItem *subitem1 = new QTreeWidgetItem(item);
     subitem1->setCheckState(0, Qt::Unchecked);
