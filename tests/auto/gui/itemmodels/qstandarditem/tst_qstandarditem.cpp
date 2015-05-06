@@ -277,8 +277,11 @@ void tst_QStandardItem::getSetFlags()
     QVERIFY(item.isCheckable());
     QCOMPARE(item.checkState(), Qt::Unchecked);
     QVERIFY(item.flags() & Qt::ItemIsUserCheckable);
-    item.setTristate(true);
-    QVERIFY(item.isTristate());
+    item.setUserTristate(true);
+    QVERIFY(item.isUserTristate());
+    QVERIFY(item.flags() & Qt::ItemIsUserTristate);
+    item.setAutoTristate(true);
+    QVERIFY(item.isAutoTristate());
     QVERIFY(item.flags() & Qt::ItemIsAutoTristate);
 #ifndef QT_NO_DRAGANDDROP
     item.setDragEnabled(true);
@@ -305,9 +308,11 @@ void tst_QStandardItem::getSetFlags()
     item.setCheckable(false);
     QVERIFY(!item.isCheckable());
     QVERIFY(!(item.flags() & Qt::ItemIsUserCheckable));
-    QVERIFY(item.isTristate());
-    item.setTristate(false);
-    QVERIFY(!item.isTristate());
+    item.setUserTristate(false);
+    QVERIFY(!item.isUserTristate());
+    QVERIFY(!(item.flags() & Qt::ItemIsUserTristate));
+    item.setAutoTristate(false);
+    QVERIFY(!item.isAutoTristate());
     QVERIFY(!(item.flags() & Qt::ItemIsAutoTristate));
 #ifndef QT_NO_DRAGANDDROP
     QVERIFY(item.isDragEnabled());
@@ -324,6 +329,13 @@ void tst_QStandardItem::getSetFlags()
     item.setCheckState(Qt::Checked);
     item.setCheckable(true);
     QCOMPARE(item.checkState(), Qt::Checked);
+
+    // deprecated API
+    item.setTristate(true);
+    QVERIFY(item.isTristate());
+    QVERIFY(item.flags() & Qt::ItemIsTristate);
+    item.setTristate(false);
+    QVERIFY(!(item.flags() & Qt::ItemIsTristate));
 }
 
 void tst_QStandardItem::getSetRowAndColumnCount()
