@@ -190,6 +190,8 @@ private slots:
 
     void devicePixelRatio();
     void rgb30Unpremul();
+    void rgb30Repremul_data();
+    void rgb30Repremul();
 
     void metadataPassthrough();
 
@@ -2944,6 +2946,31 @@ void tst_QImage::rgb30Unpremul()
     QCOMPARE(bbits[0], (3U << 30) | (128 << 20) | (256 << 10) | 512);
     QCOMPARE(bbits[1], (3U << 30) | (196 << 20) | (388 << 10) | 772);
     QCOMPARE(bbits[2], (3U << 30) | (201 << 20) | (393 << 10) | 777);
+}
+
+void tst_QImage::rgb30Repremul_data()
+{
+    QTest::addColumn<uint>("color");
+    for (int i = 255; i > 0; i -= 15) {
+        QTest::newRow(qPrintable(QStringLiteral("100% red=") + QString::number(i))) << qRgba(i, 0, 0, 0xff);
+        QTest::newRow(qPrintable(QStringLiteral("75% red=") + QString::number(i))) << qRgba(i, 0, 0, 0xc0);
+        QTest::newRow(qPrintable(QStringLiteral("50% red=") + QString::number(i))) << qRgba(i, 0, 0, 0x80);
+        QTest::newRow(qPrintable(QStringLiteral("37.5% red=") + QString::number(i))) << qRgba(i, 0, 0, 0x60);
+    }
+}
+
+void tst_QImage::rgb30Repremul()
+{
+    QFETCH(uint, color);
+
+    QImage a(1, 1, QImage::Format_ARGB32);
+    a.setPixel(0, 0, color);
+
+    QImage b = a.convertToFormat(QImage::Format_A2BGR30_Premultiplied);
+    b = b.convertToFormat(QImage::Format_ARGB32);
+    uint expectedColor = qUnpremultiply(qPremultiply(color));
+    uint newColor = b.pixel(0, 0);
+    QVERIFY(qAbs(qRed(newColor) - qRed(expectedColor)) <= 1);
 }
 
 void tst_QImage::metadataPassthrough()

@@ -847,9 +847,25 @@ template<enum QtPixelOrder> inline uint qConvertRgb32ToRgb30(QRgb);
 
 template<enum QtPixelOrder> inline QRgb qConvertA2rgb30ToArgb32(uint c);
 
+// A combined unpremultiply and premultiply with new simplified alpha.
+// Needed when alpha loses precision relative to other colors during conversion (ARGB32 -> A2RGB30).
+template<unsigned int Shift>
+inline QRgb qRepremultiply(QRgb p)
+{
+    const uint alpha = qAlpha(p);
+    if (alpha == 255 || alpha == 0)
+        return p;
+    p = qUnpremultiply(p);
+    Q_CONSTEXPR  uint mult = 255 / (255 >> Shift);
+    const uint newAlpha = mult * (alpha >> Shift);
+    p = (p & ~0xff000000) | (newAlpha<<24);
+    return qPremultiply(p);
+}
+
 template<>
 inline uint qConvertArgb32ToA2rgb30<PixelOrderBGR>(QRgb c)
 {
+    c = qRepremultiply<6>(c);
     return (c & 0xc0000000)
         | (((c << 22) & 0x3fc00000) | ((c << 14) & 0x00300000))
         | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
@@ -859,6 +875,7 @@ inline uint qConvertArgb32ToA2rgb30<PixelOrderBGR>(QRgb c)
 template<>
 inline uint qConvertArgb32ToA2rgb30<PixelOrderRGB>(QRgb c)
 {
+    c = qRepremultiply<6>(c);
     return (c & 0xc0000000)
         | (((c << 6) & 0x3fc00000) | ((c >> 2) & 0x00300000))
         | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
