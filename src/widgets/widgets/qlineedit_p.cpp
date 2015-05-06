@@ -440,6 +440,10 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     Q_Q(QLineEdit);
     if (!newAction)
         return 0;
+    if (!hasSideWidgets()) { // initial setup.
+        QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
+        lastTextSize = q->text().size();
+    }
     QWidget *w = 0;
     // Store flags about QWidgetAction here since removeAction() may be called from ~QAction,
     // in which a qobject_cast<> no longer works.
@@ -455,10 +459,6 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
             QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(_q_clearButtonClicked()));
         toolButton->setDefaultAction(newAction);
         w = toolButton;
-    }
-    if (!hasSideWidgets()) { // initial setup.
-        QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
-        lastTextSize = q->text().size();
     }
     // If there is a 'before' action, it takes preference
     PositionIndexPair positionIndex = before ? findSideWidget(before) : PositionIndexPair(position, -1);
