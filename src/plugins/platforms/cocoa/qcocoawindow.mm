@@ -799,9 +799,22 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (flags & Qt::FramelessWindowHint)
         return styleMask;
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (!windowIsPopupType(type))
-            styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
-                         NSMiniaturizableWindowMask | NSTitledWindowMask);
+        if (!windowIsPopupType(type)) {
+            styleMask = NSUtilityWindowMask;
+            if (!(flags & Qt::CustomizeWindowHint)) {
+                styleMask |= NSResizableWindowMask | NSClosableWindowMask |
+                             NSMiniaturizableWindowMask | NSTitledWindowMask;
+            } else {
+                if (flags & Qt::WindowMaximizeButtonHint)
+                    styleMask |= NSResizableWindowMask;
+                if (flags & Qt::WindowTitleHint)
+                    styleMask |= NSTitledWindowMask;
+                if (flags & Qt::WindowCloseButtonHint)
+                    styleMask |= NSClosableWindowMask;
+                if (flags & Qt::WindowMinimizeButtonHint)
+                    styleMask |= NSMiniaturizableWindowMask;
+            }
+        }
     } else {
         if (type == Qt::Window && !(flags & Qt::CustomizeWindowHint)) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
