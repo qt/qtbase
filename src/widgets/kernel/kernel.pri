@@ -49,6 +49,7 @@ SOURCES += \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
         kernel/qshortcut.cpp \
+        kernel/qsizepolicy.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
 	kernel/qwhatsthis.cpp \

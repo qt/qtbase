@@ -112,7 +112,7 @@ public:
 
     bool operator==(const QSizePolicy& s) const { return data == s.data; }
     bool operator!=(const QSizePolicy& s) const { return data != s.data; }
-    operator QVariant() const; // implemented in qlayoutitem.cpp
+    operator QVariant() const;
 
     int horizontalStretch() const { return static_cast<int>(bits.horStretch); }
     int verticalStretch() const { return static_cast<int>(bits.verStretch); }
@@ -155,7 +155,6 @@ Q_DECLARE_TYPEINFO(QSizePolicy, Q_PRIMITIVE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
 
 #ifndef QT_NO_DATASTREAM
-// implemented in qlayout.cpp
 Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
 Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif

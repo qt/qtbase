@@ -3,9 +3,9 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:FDL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
@@ -14,16 +14,30 @@
 ** and conditions see http://www.qt.io/terms-conditions. For further
 ** information use the contact form at http://www.qt.io/contact-us.
 **
-** GNU Free Documentation License Usage
-** Alternatively, this file may be used under the terms of the GNU Free
-** Documentation License version 1.3 as published by the Free Software
-** Foundation and appearing in the file included in the packaging of
-** this file. Please review the following information to ensure
-** the GNU Free Documentation License version 1.3 requirements
-** will be met: http://www.gnu.org/copyleft/fdl.html.
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** As a special exception, The Qt Company gives you certain additional
+** rights. These rights are described in The Qt Company LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "qsizepolicy.h"
+
+#include <qdatastream.h>
+#include <qdebug.h>
+#include <qvariant.h>
+
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QSizePolicy
@@ -207,15 +221,18 @@
 */
 
 /*!
-    \fn ControlType QSizePolicy::controlType() const
     \since 4.3
 
     Returns the control type associated with the widget for which
     this size policy applies.
 */
+QSizePolicy::ControlType QSizePolicy::controlType() const
+{
+    return QSizePolicy::ControlType(1 << bits.ctype);
+}
+
 
 /*!
-    \fn void QSizePolicy::setControlType(ControlType type)
     \since 4.3
 
     Sets the control type associated with the widget for which this
@@ -230,6 +247,31 @@
 
     \sa QStyle::layoutSpacing()
 */
+void QSizePolicy::setControlType(ControlType type)
+{
+    /*
+        The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
+        etc. In memory, we pack it onto the available bits (CTSize) in
+        setControlType(), and unpack it here.
+
+        Example:
+
+            0x00000001 maps to 0
+            0x00000002 maps to 1
+            0x00000004 maps to 2
+            0x00000008 maps to 3
+            etc.
+    */
+
+    int i = 0;
+    while (true) {
+        if (type & (0x1 << i)) {
+            bits.ctype = i;
+            return;
+        }
+        ++i;
+    }
+}
 
 /*!
     \fn void QSizePolicy::setHeightForWidth(bool dependent)
@@ -385,3 +427,72 @@
     \sa setControlType(), controlType()
 */
 
+/*!
+   Returns a QVariant storing this QSizePolicy.
+*/
+QSizePolicy::operator QVariant() const
+{
+    return QVariant(QVariant::SizePolicy, this);
+}
+
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \relates QSizePolicy
+    \since 4.2
+
+    Writes the size \a policy to the data stream \a stream.
+
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
+*/
+QDataStream &operator<<(QDataStream &stream, const QSizePolicy &policy)
+{
+    // The order here is for historical reasons. (compatibility with Qt4)
+    quint32 data = (policy.bits.horPolicy |         // [0, 3]
+                    policy.bits.verPolicy << 4 |    // [4, 7]
+                    policy.bits.hfw << 8 |          // [8]
+                    policy.bits.ctype << 9 |        // [9, 13]
+                    policy.bits.wfh << 14 |         // [14]
+                    policy.bits.retainSizeWhenHidden << 15 |     // [15]
+                    policy.bits.verStretch << 16 |  // [16, 23]
+                    policy.bits.horStretch << 24);  // [24, 31]
+    return stream << data;
+}
+
+#define VALUE_OF_BITS(data, bitstart, bitcount) ((data >> bitstart) & ((1 << bitcount) -1))
+
+/*!
+    \relates QSizePolicy
+    \since 4.2
+
+    Reads the size \a policy from the data stream \a stream.
+
+    \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
+*/
+QDataStream &operator>>(QDataStream &stream, QSizePolicy &policy)
+{
+    quint32 data;
+    stream >> data;
+    policy.bits.horPolicy =  VALUE_OF_BITS(data, 0, 4);
+    policy.bits.verPolicy =  VALUE_OF_BITS(data, 4, 4);
+    policy.bits.hfw =        VALUE_OF_BITS(data, 8, 1);
+    policy.bits.ctype =      VALUE_OF_BITS(data, 9, 5);
+    policy.bits.wfh =        VALUE_OF_BITS(data, 14, 1);
+    policy.bits.retainSizeWhenHidden =    VALUE_OF_BITS(data, 15, 1);
+    policy.bits.verStretch = VALUE_OF_BITS(data, 16, 8);
+    policy.bits.horStretch = VALUE_OF_BITS(data, 24, 8);
+    return stream;
+}
+#endif // QT_NO_DATASTREAM
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QSizePolicy &p)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QSizePolicy(horizontalPolicy = " << p.horizontalPolicy()
+                  << ", verticalPolicy = " << p.verticalPolicy() << ')';
+    return dbg;
+}
+#endif
+
+QT_END_NAMESPACE
