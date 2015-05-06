@@ -1280,7 +1280,7 @@ void QNetworkReplyHttpImplPrivate::sentUploadDataSlot(qint64 pos, qint64 amount)
 {
     if (uploadByteDevicePosition + amount != pos) {
         // Sanity check, should not happen.
-        error(QNetworkReply::UnknownNetworkError, "");
+        error(QNetworkReply::UnknownNetworkError, QString());
         return;
     }
     uploadByteDevice->advanceReadPointer(amount);
