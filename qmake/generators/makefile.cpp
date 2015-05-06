@@ -2019,7 +2019,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 for(int i = 0; i < pre_deps.size(); ++i)
                    deps << replaceExtraCompilerVariables(pre_deps.at(i), inpf, out, NoShell);
             }
-            QString cmd = replaceExtraCompilerVariables(tmp_cmd, inpf, out, LocalShell);
+            QString cmd = replaceExtraCompilerVariables(tmp_cmd, inpf, out, TargetShell);
             // NOTE: The var -> QMAKE_COMP_var replace feature is unsupported, do not use!
             for (ProStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
