@@ -386,7 +386,8 @@ void QSizePolicy::setControlType(ControlType type)
     \fn void QSizePolicy::retainSizeWhenHidden() const
     \since 5.2
 
-    Returns if the layout should retain the widgets size when it is hidden. This is by default false.
+    Returns whether the layout should retain the widget's size when it is hidden.
+    This is \c false by default.
 
     \sa setRetainSizeWhenHidden()
 */
@@ -395,8 +396,8 @@ void QSizePolicy::setControlType(ControlType type)
    \fn void QSizePolicy::setRetainSizeWhenHidden(bool retainSize)
    \since 5.2
 
-    Set if a layout should retain the widgets size when it is hidden.
-    If \a retainSize is true the layout will not be changed by hiding the widget.
+    Sets whether a layout should retain the widget's size when it is hidden.
+    If \a retainSize is \c true, the layout will not be changed by hiding the widget.
 
     \sa retainSizeWhenHidden()
 */
