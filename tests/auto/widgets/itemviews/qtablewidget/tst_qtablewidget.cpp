@@ -281,21 +281,21 @@ void tst_QTableWidget::itemAssignment()
 {
     QTableWidgetItem itemInWidget("inWidget");
     testWidget->setItem(0, 0, &itemInWidget);
-    itemInWidget.setFlags(itemInWidget.flags() | Qt::ItemIsTristate);
+    itemInWidget.setFlags(itemInWidget.flags() | Qt::ItemIsUserTristate);
     QTableWidgetItem itemOutsideWidget("outsideWidget");
 
     QVERIFY(itemInWidget.tableWidget());
     QCOMPARE(itemInWidget.text(), QString("inWidget"));
-    QVERIFY(itemInWidget.flags() & Qt::ItemIsTristate);
+    QVERIFY(itemInWidget.flags() & Qt::ItemIsUserTristate);
 
     QVERIFY(!itemOutsideWidget.tableWidget());
     QCOMPARE(itemOutsideWidget.text(), QString("outsideWidget"));
-    QVERIFY(!(itemOutsideWidget.flags() & Qt::ItemIsTristate));
+    QVERIFY(!(itemOutsideWidget.flags() & Qt::ItemIsUserTristate));
 
     itemOutsideWidget = itemInWidget;
     QVERIFY(!itemOutsideWidget.tableWidget());
     QCOMPARE(itemOutsideWidget.text(), QString("inWidget"));
-    QVERIFY(itemOutsideWidget.flags() & Qt::ItemIsTristate);
+    QVERIFY(itemOutsideWidget.flags() & Qt::ItemIsUserTristate);
 }
 
 void tst_QTableWidget::item_data()
