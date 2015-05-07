@@ -20,14 +20,10 @@ create two windows, and will center one each screen, by setting the geometry.
 
 Alternatively you can configure xorg.conf to create separate screens for each
 graphics card; then the mouse cursor can move between the screens, but
-application windows cannot: each app needs to be started up on the screen that
-you want to run it on. In either case, ideally this test app ought to create
-two windows, one on each screen; but in fact, it can do that only if the
-screens are virtual siblings. If they are on different Displays, the second
-Display is not accessible to the QXcbConnection instance which was createad on
-the first Display. It can be considered a known bug that the API appears to
-make this possible (you would think QWindow::setScreen might work) but it
-isn't possible.
+application windows cannot: each app needs to be started on the screen that
+you want to run it on (by specifying e.g. DISPLAY=:0.1 for the second screen),
+or the application has to set the desired screen via QWindow::setScreen() before
+showing the window.
 
 The physical size of the screen is considered to be a constant. This can create
 discrepancies in DPI when orientation is changed, or when the screen is
