@@ -3042,16 +3042,6 @@ void Configure::generateOutputVars()
     if (!qmakeStylePlugins.isEmpty())
         qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(' ');
 
-    if (dictionary["QMAKESPEC"].endsWith("-g++")) {
-        QString includepath = qgetenv("INCLUDE");
-        const bool hasSh = !QStandardPaths::findExecutable(QStringLiteral("sh.exe")).isEmpty();
-        QChar separator = (!includepath.contains(":\\") && hasSh ? QChar(':') : QChar(';'));
-        qmakeVars += QString("TMPPATH            = $$quote($$(INCLUDE))");
-        qmakeVars += QString("QMAKE_INCDIR_POST += $$split(TMPPATH,\"%1\")").arg(separator);
-        qmakeVars += QString("TMPPATH            = $$quote($$(LIB))");
-        qmakeVars += QString("QMAKE_LIBDIR_POST += $$split(TMPPATH,\"%1\")").arg(separator);
-    }
-
     if (!dictionary[ "QMAKESPEC" ].length()) {
         cout << "Configure could not detect your compiler. QMAKESPEC must either" << endl
              << "be defined as an environment variable, or specified as an" << endl
