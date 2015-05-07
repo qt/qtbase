@@ -1427,6 +1427,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win->setProperty("_q_showWithoutActivating", QVariant(true));
     if (q->testAttribute(Qt::WA_MacAlwaysShowToolWindow))
         win->setProperty("_q_macAlwaysShowToolWindow", QVariant::fromValue(QVariant(true)));
+    setNetWmWindowTypes(true); // do nothing if none of WA_X11NetWmWindowType* is set
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)
@@ -11224,7 +11225,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     }
 
-#ifdef Q_DEAD_CODE_FROM_QT4_X11
     case Qt::WA_X11NetWmWindowTypeDesktop:
     case Qt::WA_X11NetWmWindowTypeDock:
     case Qt::WA_X11NetWmWindowTypeToolBar:
@@ -11238,10 +11238,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_X11NetWmWindowTypeNotification:
     case Qt::WA_X11NetWmWindowTypeCombo:
     case Qt::WA_X11NetWmWindowTypeDND:
-        if (testAttribute(Qt::WA_WState_Created))
-            d->setNetWmWindowTypes();
+        d->setNetWmWindowTypes();
         break;
-#endif
 
     case Qt::WA_StaticContents:
         if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
@@ -12907,6 +12905,47 @@ void QWidgetPrivate::setWidgetParentHelper(QObject *widgetAsObject, QObject *new
     Q_ASSERT(!newParent || newParent->isWidgetType());
     QWidget *widget = static_cast<QWidget*>(widgetAsObject);
     widget->setParent(static_cast<QWidget*>(newParent));
+}
+
+void QWidgetPrivate::setNetWmWindowTypes(bool skipIfMissing)
+{
+    Q_Q(QWidget);
+
+    if (!q->windowHandle())
+        return;
+
+    int wmWindowType = 0;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDesktop))
+        wmWindowType |= QXcbWindowFunctions::Desktop;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDock))
+        wmWindowType |= QXcbWindowFunctions::Dock;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeToolBar))
+        wmWindowType |= QXcbWindowFunctions::Toolbar;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeMenu))
+        wmWindowType |= QXcbWindowFunctions::Menu;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeUtility))
+        wmWindowType |= QXcbWindowFunctions::Utility;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeSplash))
+        wmWindowType |= QXcbWindowFunctions::Splash;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDialog))
+        wmWindowType |= QXcbWindowFunctions::Dialog;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu))
+        wmWindowType |= QXcbWindowFunctions::DropDownMenu;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypePopupMenu))
+        wmWindowType |= QXcbWindowFunctions::PopupMenu;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeToolTip))
+        wmWindowType |= QXcbWindowFunctions::Tooltip;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeNotification))
+        wmWindowType |= QXcbWindowFunctions::Notification;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeCombo))
+        wmWindowType |= QXcbWindowFunctions::Combo;
+    if (q->testAttribute(Qt::WA_X11NetWmWindowTypeDND))
+        wmWindowType |= QXcbWindowFunctions::Dnd;
+
+    if (wmWindowType == 0 && skipIfMissing)
+        return;
+
+    QXcbWindowFunctions::setWmWindowType(q->windowHandle(), static_cast<QXcbWindowFunctions::WmWindowType>(wmWindowType));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
