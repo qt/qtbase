@@ -175,9 +175,11 @@ void QXcbConnection::xi2SetupDevices()
             case XIKeyClass:
                 qCDebug(lcQpaXInputDevices) << "   it's a keyboard";
                 break;
+#ifdef XCB_USE_XINPUT22
             case XITouchClass:
                 // will be handled in deviceForId()
                 break;
+#endif
             default:
                 qCDebug(lcQpaXInputDevices) << "   has class" << devices[i].classes[c]->type;
                 break;
