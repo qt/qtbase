@@ -103,18 +103,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         // NSDownloadsDirectory points to a non-existing write-protected path.
         location = pathForDirectory(NSDocumentDirectory) + QLatin1String("/Download");
         break;
-    default:
-        break;
-    }
-
-    switch (type) {
     case RuntimeLocation:
         break;
     default:
-        // All other types must return something, so use the document directory
-        // as a reasonable fall-back (which will always exist).
-        if (location.isEmpty())
-            location = pathForDirectory(NSDocumentDirectory);
         break;
     }
 
