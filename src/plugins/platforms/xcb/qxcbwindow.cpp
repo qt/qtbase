@@ -873,7 +873,7 @@ void QXcbWindow::show()
         updateNetWmStateBeforeMap();
     }
 
-    if (window()->metaObject()->indexOfProperty(wm_window_type_property_id) >= 0) {
+    if (window()->dynamicPropertyNames().contains(wm_window_type_property_id)) {
         QXcbWindowFunctions::WmWindowTypes wmWindowTypes(window()->property(wm_window_type_property_id).value<int>());
         setWmWindowType(wmWindowTypes);
     }
