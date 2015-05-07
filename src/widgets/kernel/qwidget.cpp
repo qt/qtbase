@@ -12074,6 +12074,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
         QOpenGLContext *ctx = new QOpenGLContext;
         ctx->setShareContext(qt_gl_global_share_context());
         ctx->setFormat(extra->topextra->window->format());
+        ctx->setScreen(extra->topextra->window->screen());
         ctx->create();
         that->extra->topextra->shareContext = ctx;
     }

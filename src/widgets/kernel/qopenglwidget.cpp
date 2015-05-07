@@ -739,6 +739,7 @@ void QOpenGLWidgetPrivate::initialize()
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
     ctx->setShareContext(shareContext);
     ctx->setFormat(requestedFormat);
+    ctx->setScreen(shareContext->screen());
     if (!ctx->create()) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
@@ -762,6 +763,7 @@ void QOpenGLWidgetPrivate::initialize()
     // in QQuickWidget, use a dedicated QOffscreenSurface.
     surface = new QOffscreenSurface;
     surface->setFormat(ctx->format());
+    surface->setScreen(ctx->screen());
     surface->create();
 
     if (!ctx->makeCurrent(surface)) {
