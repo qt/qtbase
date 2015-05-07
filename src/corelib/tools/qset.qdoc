@@ -127,10 +127,23 @@
 */
 
 /*!
+    \fn QSet::QSet(QSet && other)
+
+    Move-constructs a QSet instance, making it point to the same object that \a other was pointing to.
+*/
+
+
+/*!
     \fn QSet<T> &QSet::operator=(const QSet<T> &other)
 
     Assigns the \a other set to this set and returns a reference to
     this set.
+*/
+
+/*!
+    \fn QSet<T> &QSet::operator=(QSet<T> &&other)
+
+    Move-assigns the \a other set to this set.
 */
 
 /*!

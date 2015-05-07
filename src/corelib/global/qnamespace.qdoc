@@ -2908,6 +2908,23 @@
 */
 
 /*!
+    \enum Qt::NativeGestureType
+    \since 5.2
+
+    This enum returns the gesture type.
+
+    \value BeginNativeGesture Sent before gesture event stream.
+    \value EndNativeGesture   Sent after gesture event stream.
+    \value PanNativeGesture   Sent after a panning gesture.
+                              Similar to a click-and-drag mouse movement.
+    \value ZoomNativeGesture  Specifies the magnification delta in percent.
+    \value SmartZoomNativeGesture Boolean magnification state.
+    \value RotateNativeGesture    Rotation delta in degrees.
+    \value SwipeNativeGesture     Sent after a swipe movements.
+
+*/
+
+/*!
     \enum Qt::NavigationMode
     \since 4.6
 

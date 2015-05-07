@@ -96,6 +96,30 @@
     \sa qMakePair()
 */
 
+\fn void QPair::swap(QPair &other)
+
+    \since 5.5
+    Swaps this pair with \a other.
+
+    Equivalent to
+    \code
+        qSwap(this->first, other.first);
+        qSwap(this->second, other.second);
+    \endcode
+
+    Swap overloads are found in namespace \c std as well as via
+    argument-dependent lookup (ADL) in \c{T}'s namespace.
+*/
+
+/*!
+\fn void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs)
+    \overload
+    \relates QPair
+    \since 5.5
+
+    Swaps \a lhs with \a rhs.
+*/
+
 /*!
     \fn QPair::QPair(const QPair<TT1, TT2> &p)
     \since 5.2
@@ -108,37 +132,27 @@
 */
 
 /*!
-    \fn QPair &QPair::operator=(const QPair<TT1, TT2> &p)
+    \fn QPair::QPair(QPair<TT1, TT2> &&p)
     \since 5.2
 
-    Copies the pair \a p onto this pair.
+    Move-constructs a QPair instance, making it point to the same object that
+    \a p was pointing to.
+*/
+
+/*!
+    \fn QPair & QPair::operator=(const QPair<TT1, TT2> &p)
+    \since 5.2
+
+    Copies pair \a p into this pair.
 
     \sa qMakePair()
 */
 
 /*!
-    \fn void QPair::swap(QPair &other)
-    \since 5.5
+    \fn QPair & QPair::operator=(QPair<TT1, TT2> &&p)
+    \since 5.2
 
-    Swaps this pair with \a other.
-
-    Equivalent to
-    \code
-    qSwap(this->first, other.first);
-    qSwap(this->second, other.second);
-    \endcode
-
-    Swap overloads are found in namespace \c std as well as via
-    argument-dependent lookup (ADL) in \c{T}'s namespace.
-*/
-
-/*!
-    \fn void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs)
-    \overload
-    \relates QPair
-    \since 5.5
-
-    Swaps \a lhs with \a rhs.
+    Move-assigns pair \a p into this pair instance.
 */
 
 /*! \fn bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
