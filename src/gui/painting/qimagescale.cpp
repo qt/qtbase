@@ -77,6 +77,8 @@ QT_BEGIN_NAMESPACE
  *
  * Changes include formatting, namespaces and other C++'ings, removal of old
  * #ifdef'ed code, and removal of unneeded border calculation code.
+ * Later the code has been refactored and an SSE4.1 optimizated path have been
+ * added instead of the removed MMX assembler.
  *
  * Imlib2 is (C) Carsten Haitzler and various contributors. The MMX code
  * is by Willem Monsuwe <willem@stack.nl>. All other modifications are
@@ -100,13 +102,13 @@ using namespace QImageScale;
 //
 
 const unsigned int** QImageScale::qimageCalcYPoints(const unsigned int *src,
-                                              int sw, int sh, int dh)
+                                                    int sw, int sh, int dh)
 {
     const unsigned int **p;
     int j = 0, rv = 0;
     qint64 val, inc;
 
-    if(dh < 0){
+    if (dh < 0) {
         dh = -dh;
         rv = 1;
     }
@@ -134,7 +136,7 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
     int *p, j = 0, rv = 0;
     qint64 val, inc;
 
-    if(dw < 0){
+    if (dw < 0) {
         dw = -dw;
         rv = 1;
     }
@@ -155,25 +157,23 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
             p[dw - i - 1] = tmp;
         }
     }
-   return(p);
+   return p;
 }
 
 int* QImageScale::qimageCalcApoints(int s, int d, int up)
 {
     int *p, j = 0, rv = 0;
 
-    if(d < 0){
+    if (d < 0) {
         rv = 1;
         d = -d;
     }
     p = new int[d];
 
-    /* scaling up */
-    if(up){
-        qint64 val, inc;
-
-        val = 0x8000 * s / d - 0x8000;
-        inc = (((qint64)s) << 16) / d;
+    if (up) {
+        /* scaling up */
+        qint64 val = 0x8000 * s / d - 0x8000;
+        qint64 inc = (((qint64)s) << 16) / d;
         for (int i = 0; i < d; i++) {
             int pos = val >> 16;
             if (pos < 0)
@@ -184,9 +184,8 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
                 p[j++] = (val >> 8) - ((val >> 8) & 0xffffff00);
             val += inc;
         }
-    }
-    /* scaling down */
-    else {
+    } else {
+        /* scaling down */
         qint64 val = 0;
         qint64 inc = (((qint64)s) << 16) / d;
         int Cp = (((d << 14) + s - 1) / s);
@@ -197,7 +196,7 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
             val += inc;
         }
     }
-    if(rv){
+    if (rv) {
         int tmp;
         for (int i = d / 2; --i >= 0; ) {
             tmp = p[i];
@@ -210,7 +209,7 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
 
 QImageScaleInfo* QImageScale::qimageFreeScaleInfo(QImageScaleInfo *isi)
 {
-    if(isi){
+    if (isi) {
         delete[] isi->xpoints;
         delete[] isi->ypoints;
         delete[] isi->xapoints;
@@ -231,28 +230,28 @@ QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     sch = dh * qlonglong(img.height()) / sh;
 
     isi = new QImageScaleInfo;
-    if(!isi)
+    if (!isi)
         return 0;
     memset(isi, 0, sizeof(QImageScaleInfo));
 
     isi->xup_yup = (qAbs(dw) >= sw) + ((qAbs(dh) >= sh) << 1);
 
     isi->xpoints = qimageCalcXPoints(img.width(), scw);
-    if(!isi->xpoints)
-        return(qimageFreeScaleInfo(isi));
+    if (!isi->xpoints)
+        return qimageFreeScaleInfo(isi);
     isi->ypoints = qimageCalcYPoints((const unsigned int *)img.scanLine(0),
                                      img.bytesPerLine() / 4, img.height(), sch);
     if (!isi->ypoints)
-        return(qimageFreeScaleInfo(isi));
-    if(aa) {
+        return qimageFreeScaleInfo(isi);
+    if (aa) {
         isi->xapoints = qimageCalcApoints(img.width(), scw, isi->xup_yup & 1);
-        if(!isi->xapoints)
-            return(qimageFreeScaleInfo(isi));
+        if (!isi->xapoints)
+            return qimageFreeScaleInfo(isi);
         isi->yapoints = qimageCalcApoints(img.height(), sch, isi->xup_yup & 2);
-        if(!isi->yapoints)
-            return(qimageFreeScaleInfo(isi));
+        if (!isi->yapoints)
+            return qimageFreeScaleInfo(isi);
     }
-    return(isi);
+    return isi;
 }
 
 
@@ -326,7 +325,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
                                  int dh, int dow, int sow)
 {
     /* scaling up both ways */
-    if (isi->xup_yup == 3){
+    if (isi->xup_yup == 3) {
         qt_qimageScaleAARGBA_up_xy(isi, dest, dxx, dyy, dx, dy, dw, dh, dow, sow);
     }
     /* if we're scaling down vertically */
