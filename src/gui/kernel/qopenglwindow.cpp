@@ -206,6 +206,7 @@ public:
             context.reset(new QOpenGLContext);
             context->setShareContext(shareContext);
             context->setFormat(q->requestedFormat());
+            context->setScreen(q->screen());
             if (!context->create())
                 qWarning("QOpenGLWindow::beginPaint: Failed to create context");
             if (!context->makeCurrent(q))
