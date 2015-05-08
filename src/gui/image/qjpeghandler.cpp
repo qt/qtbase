@@ -714,7 +714,7 @@ public:
     };
 
     QJpegHandlerPrivate(QJpegHandler *qq)
-        : quality(75), exifOrientation(1), iod_src(0),
+        : quality(75), iod_src(0),
           rgb888ToRgb32ConverterPtr(qt_convert_rgb888_to_rgb32), state(Ready), optimize(false), progressive(false), q(qq)
     {}
 
@@ -730,10 +730,8 @@ public:
 
     bool readJpegHeader(QIODevice*);
     bool read(QImage *image);
-    void applyExifOrientation(QImage *image);
 
     int quality;
-    int exifOrientation;
     QVariant size;
     QImage::Format format;
     QSize scaledSize;
@@ -756,97 +754,6 @@ public:
     QJpegHandler *q;
 };
 
-static bool readExifHeader(QDataStream &stream)
-{
-    char prefix[6];
-    if (stream.readRawData(prefix, sizeof(prefix)) != sizeof(prefix))
-        return false;
-    if (prefix[0] != 'E' || prefix[1] != 'x' || prefix[2] != 'i' || prefix[3] != 'f' || prefix[4] != 0 || prefix[5] != 0)
-        return false;
-    return true;
-}
-
-/*
- * Returns -1 on error
- * Returns 0 if no Exif orientation was found
- * Returns 1 orientation is horizontal (normal)
- * Returns 2 mirror horizontal
- * Returns 3 rotate 180
- * Returns 4 mirror vertical
- * Returns 5 mirror horizontal and rotate 270 CCW
- * Returns 6 rotate 90 CW
- * Returns 7 mirror horizontal and rotate 90 CW
- * Returns 8 rotate 270 CW
- */
-static int getExifOrientation(QByteArray &exifData)
-{
-    QDataStream stream(&exifData, QIODevice::ReadOnly);
-
-    if (!readExifHeader(stream))
-        return -1;
-
-    quint16 val;
-    quint32 offset;
-
-    // read byte order marker
-    stream >> val;
-    if (val == 0x4949) // 'II' == Intel
-        stream.setByteOrder(QDataStream::LittleEndian);
-    else if (val == 0x4d4d) // 'MM' == Motorola
-        stream.setByteOrder(QDataStream::BigEndian);
-    else
-        return -1; // unknown byte order
-
-    // read size
-    stream >> val;
-    if (val != 0x2a)
-        return -1;
-
-    stream >> offset;
-    // we have already used 8 bytes of TIFF header
-    offset -= 8;
-
-    // read IFD
-    while (!stream.atEnd()) {
-        quint16 numEntries;
-
-        // skip offset bytes to get the next IFD
-        if (stream.skipRawData(offset) != (qint32)offset)
-            return -1;
-
-        stream >> numEntries;
-
-        for (;numEntries > 0; --numEntries) {
-            quint16 tag;
-            quint16 type;
-            quint32 components;
-            quint16 value;
-            quint16 dummy;
-
-            stream >> tag >> type >> components >> value >> dummy;
-            if (tag == 0x0112) { // Tag Exif.Image.Orientation
-                if (components !=1)
-                    return -1;
-                if (type != 3) // we are expecting it to be an unsigned short
-                    return -1;
-                if (value < 1 || value > 8) // check for valid range
-                    return -1;
-
-                // It is possible to include the orientation multiple times.
-                // Right now the first value is returned.
-                return value;
-            }
-        }
-
-        // read offset to next IFD
-        stream >> offset;
-        if (offset == 0) // this is the last IFD
-            break;
-    }
-
-    // No Exif orientation was found
-    return 0;
-}
 /*!
     \internal
 */
@@ -866,7 +773,6 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
         if (!setjmp(err.setjmp_buffer)) {
             jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
-            jpeg_save_markers(&info, JPEG_APP0+1, 0xFFFF); // Exif uses APP1 marker
 
             (void) jpeg_read_header(&info, TRUE);
 
@@ -877,8 +783,6 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             format = QImage::Format_Invalid;
             read_jpeg_format(format, &info);
-
-            QByteArray exifData;
 
             for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
@@ -897,16 +801,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
                     description += key + QLatin1String(": ") + value.simplified();
                     readTexts.append(key);
                     readTexts.append(value);
-                } else if (marker->marker == JPEG_APP0+1) {
-                    exifData.append((const char*)marker->data, marker->data_length);
                 }
-            }
-
-            if (exifData.size()) {
-                // Exif data present
-                int orientation = getExifOrientation(exifData);
-                if (orientation > 0)
-                    exifOrientation = orientation;
             }
 
             state = ReadHeader;
@@ -922,48 +817,6 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
     return true;
 }
 
-void QJpegHandlerPrivate::applyExifOrientation(QImage *image)
-{
-    // This is not an optimized implementation, but easiest to maintain
-    QTransform transform;
-
-    switch (exifOrientation) {
-        case 1: // normal
-            break;
-        case 2: // mirror horizontal
-            *image = image->mirrored(true, false);
-            break;
-        case 3: // rotate 180
-            transform.rotate(180);
-            *image = image->transformed(transform);
-            break;
-        case 4: // mirror vertical
-            *image = image->mirrored(false, true);
-            break;
-        case 5: // mirror horizontal and rotate 270 CCW
-            *image = image->mirrored(true, false);
-            transform.rotate(270);
-            *image = image->transformed(transform);
-            break;
-        case 6: // rotate 90 CW
-            transform.rotate(90);
-            *image = image->transformed(transform);
-            break;
-        case 7: // mirror horizontal and rotate 90 CW
-            *image = image->mirrored(true, false);
-            transform.rotate(90);
-            *image = image->transformed(transform);
-            break;
-        case 8: // rotate 270 CW
-            transform.rotate(-90);
-            *image = image->transformed(transform);
-            break;
-        default:
-            qWarning("This should never happen");
-    }
-    exifOrientation = 1;
-}
-
 bool QJpegHandlerPrivate::read(QImage *image)
 {
     if(state == Ready)
@@ -975,7 +828,6 @@ bool QJpegHandlerPrivate::read(QImage *image)
         if (success) {
             for (int i = 0; i < readTexts.size()-1; i+=2)
                 image->setText(readTexts.at(i), readTexts.at(i+1));
-            applyExifOrientation(image);
 
             state = Ready;
             return true;

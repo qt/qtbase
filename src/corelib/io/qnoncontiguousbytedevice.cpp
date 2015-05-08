@@ -216,6 +216,11 @@ qint64 QNonContiguousByteDeviceByteArrayImpl::size()
     return byteArray->size();
 }
 
+qint64 QNonContiguousByteDeviceByteArrayImpl::pos()
+{
+    return currentPosition;
+}
+
 QNonContiguousByteDeviceRingBufferImpl::QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb)
     : QNonContiguousByteDevice(), currentPosition(0)
 {
@@ -251,6 +256,11 @@ bool QNonContiguousByteDeviceRingBufferImpl::advanceReadPointer(qint64 amount)
 bool QNonContiguousByteDeviceRingBufferImpl::atEnd()
 {
     return currentPosition >= size();
+}
+
+qint64 QNonContiguousByteDeviceRingBufferImpl::pos()
+{
+    return currentPosition;
 }
 
 bool QNonContiguousByteDeviceRingBufferImpl::reset()
@@ -379,6 +389,14 @@ qint64 QNonContiguousByteDeviceIoDeviceImpl::size()
         return -1;
 
     return device->size() - initialPosition;
+}
+
+qint64 QNonContiguousByteDeviceIoDeviceImpl::pos()
+{
+    if (device->isSequential())
+        return -1;
+
+    return device->pos();
 }
 
 QByteDeviceWrappingIoDevice::QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd) : QIODevice((QObject*)0)

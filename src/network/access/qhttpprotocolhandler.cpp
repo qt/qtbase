@@ -368,6 +368,13 @@ bool QHttpProtocolHandler::sendRequest()
                 // nothing to read currently, break the loop
                 break;
             } else {
+                if (m_channel->written != uploadByteDevice->pos()) {
+                    // Sanity check. This was useful in tracking down an upload corruption.
+                    qWarning() << "QHttpProtocolHandler: Internal error in sendRequest. Expected to write at position" << m_channel->written << "but read device is at" << uploadByteDevice->pos();
+                    Q_ASSERT(m_channel->written == uploadByteDevice->pos());
+                    m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::ProtocolFailure);
+                    return false;
+                }
                 qint64 currentWriteSize = m_socket->write(readPointer, currentReadSize);
                 if (currentWriteSize == -1 || currentWriteSize != currentReadSize) {
                     // socket broke down
