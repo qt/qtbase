@@ -1696,7 +1696,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "DYNAMICGL" ]           = "no";
-        dictionary[ "REDUCE_RELOCATIONS" ]  = "no";
+        dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
         dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
