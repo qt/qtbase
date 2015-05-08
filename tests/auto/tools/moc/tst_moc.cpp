@@ -662,7 +662,7 @@ void tst_Moc::oldStyleCasts()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIE" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -732,7 +732,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIE" <<  "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" <<  "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -1011,7 +1011,7 @@ void tst_Moc::ignoreOptionClashes()
     // If -pthread wasn't ignored, it was parsed as a prefix of "thread/", which breaks compilation.
     QStringList gccArgs;
     gccArgs << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qtIncludePath << "-I" << includeDir << "-o" << "/dev/null" << "-fPIE" <<  "-";
+         << "-I" << qtIncludePath << "-I" << includeDir << "-o" << "/dev/null" << "-fPIC" <<  "-";
     proc.start("gcc", gccArgs);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
