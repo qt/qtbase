@@ -989,7 +989,7 @@ QByteArray QIODevice::readAll()
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
-            if (quint64(readBytes) + QIODEVICE_BUFFERSIZE > QByteArray::MaxSize) {
+            if (quint64(readBytes) + QIODEVICE_BUFFERSIZE >= QByteArray::MaxSize) {
                 // If resize would fail, don't read more, return what we have.
                 break;
             }
@@ -1001,7 +1001,7 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        if (quint64(readBytes + theSize - d->pos) > QByteArray::MaxSize)
+        if (quint64(readBytes + theSize - d->pos) >= QByteArray::MaxSize)
             return QByteArray();
         result.resize(int(readBytes + theSize - d->pos));
         readBytes += read(result.data() + readBytes, result.size() - readBytes);
