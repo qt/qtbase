@@ -435,7 +435,9 @@ QCocoaWindow::~QCocoaWindow()
 
     // While it is unlikely that this window will be in the popup stack
     // during deletetion we clear any pointers here to make sure.
-    QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+    if (QCocoaIntegration::instance()) {
+        QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+    }
 
     foreach (QCocoaWindow *child, m_childWindows) {
        [m_nsWindow removeChildWindow:child->m_nsWindow];
