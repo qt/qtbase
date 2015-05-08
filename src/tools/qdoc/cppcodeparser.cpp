@@ -870,7 +870,8 @@ const QSet<QString>& CppCodeParser::otherMetaCommands()
                            << COMMAND_QMLINSTANTIATES
                            << COMMAND_QMLDEFAULT
                            << COMMAND_QMLREADONLY
-                           << COMMAND_QMLABSTRACT;
+                           << COMMAND_QMLABSTRACT
+                           << COMMAND_ABSTRACT;
     }
     return otherMetaCommands_;
 }
@@ -1014,7 +1015,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             }
         }
     }
-    else if (command == COMMAND_QMLABSTRACT) {
+    else if ((command == COMMAND_QMLABSTRACT) || (command == COMMAND_ABSTRACT)) {
         if (node->isQmlType() || node->isJsType())
             node->setAbstract(true);
     }

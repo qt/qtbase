@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_SINCE                   Doc::alias("since")
 #define COMMAND_WRAPPER                 Doc::alias("wrapper")
 
+#define COMMAND_ABSTRACT                Doc::alias("abstract")
 #define COMMAND_QMLABSTRACT             Doc::alias("qmlabstract")
 #define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLTYPE                 Doc::alias("qmltype")
@@ -251,6 +252,7 @@ const QSet<QString>& QmlCodeParser::otherMetaCommands()
                            << COMMAND_OBSOLETE
                            << COMMAND_PRELIMINARY
                            << COMMAND_SINCE
+                           << COMMAND_ABSTRACT
                            << COMMAND_QMLABSTRACT
                            << COMMAND_INQMLMODULE
                            << COMMAND_INJSMODULE

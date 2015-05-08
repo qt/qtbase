@@ -47,8 +47,6 @@ class Atom
 {
 public:
     enum AtomType {
-        AbstractLeft,
-        AbstractRight,
         AnnotatedList,
         AutoLink,
         BaseName,

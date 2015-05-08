@@ -474,14 +474,6 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
     static bool in_para = false;
 
     switch (atom->type()) {
-    case Atom::AbstractLeft:
-        if (relative)
-            relative->doc().location().warning(tr("\abstract is not implemented."));
-        else
-            Location::information(tr("\abstract is not implemented."));
-        break;
-    case Atom::AbstractRight:
-        break;
     case Atom::AutoLink:
     case Atom::NavAutoLink:
         if (!inLink_ && !inContents_ && !inSectionHeading_) {
