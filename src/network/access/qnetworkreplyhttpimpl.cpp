@@ -424,6 +424,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , synchronous(false)
     , state(Idle)
     , statusCode(0)
+    , uploadByteDevicePosition(false)
     , uploadDeviceChoking(false)
     , outgoingData(0)
     , bytesUploaded(-1)
@@ -867,9 +868,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                              q, SLOT(uploadByteDeviceReadyReadSlot()),
                              Qt::QueuedConnection);
 
-            // From main thread to user thread:
-            QObject::connect(q, SIGNAL(haveUploadData(QByteArray,bool,qint64)),
-                             forwardUploadDevice, SLOT(haveDataSlot(QByteArray,bool,qint64)), Qt::QueuedConnection);
+            // From user thread to http thread:
+            QObject::connect(q, SIGNAL(haveUploadData(qint64,QByteArray,bool,qint64)),
+                             forwardUploadDevice, SLOT(haveDataSlot(qint64,QByteArray,bool,qint64)), Qt::QueuedConnection);
             QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()),
                              forwardUploadDevice, SIGNAL(readyRead()),
                              Qt::QueuedConnection);
@@ -877,8 +878,8 @@ void QNetworkReplyHttpImplPrivate::postRequest()
             // From http thread to user thread:
             QObject::connect(forwardUploadDevice, SIGNAL(wantData(qint64)),
                              q, SLOT(wantUploadDataSlot(qint64)));
-            QObject::connect(forwardUploadDevice, SIGNAL(processedData(qint64)),
-                             q, SLOT(sentUploadDataSlot(qint64)));
+            QObject::connect(forwardUploadDevice,SIGNAL(processedData(qint64, qint64)),
+                             q, SLOT(sentUploadDataSlot(qint64,qint64)));
             QObject::connect(forwardUploadDevice, SIGNAL(resetData(bool*)),
                     q, SLOT(resetUploadDataSlot(bool*)),
                     Qt::BlockingQueuedConnection); // this is the only one with BlockingQueued!
@@ -1278,12 +1279,22 @@ void QNetworkReplyHttpImplPrivate::replyPreSharedKeyAuthenticationRequiredSlot(Q
 void QNetworkReplyHttpImplPrivate::resetUploadDataSlot(bool *r)
 {
     *r = uploadByteDevice->reset();
+    if (*r) {
+        // reset our own position which is used for the inter-thread communication
+        uploadByteDevicePosition = 0;
+    }
 }
 
 // Coming from QNonContiguousByteDeviceThreadForwardImpl in HTTP thread
-void QNetworkReplyHttpImplPrivate::sentUploadDataSlot(qint64 amount)
+void QNetworkReplyHttpImplPrivate::sentUploadDataSlot(qint64 pos, qint64 amount)
 {
+    if (uploadByteDevicePosition + amount != pos) {
+        // Sanity check, should not happen.
+        error(QNetworkReply::UnknownNetworkError, QString());
+        return;
+    }
     uploadByteDevice->advanceReadPointer(amount);
+    uploadByteDevicePosition += amount;
 }
 
 // Coming from QNonContiguousByteDeviceThreadForwardImpl in HTTP thread
@@ -1308,7 +1319,7 @@ void QNetworkReplyHttpImplPrivate::wantUploadDataSlot(qint64 maxSize)
     QByteArray dataArray(data, currentUploadDataLength);
 
     // Communicate back to HTTP thread
-    emit q->haveUploadData(dataArray, uploadByteDevice->atEnd(), uploadByteDevice->size());
+    emit q->haveUploadData(uploadByteDevicePosition, dataArray, uploadByteDevice->atEnd(), uploadByteDevice->size());
 }
 
 void QNetworkReplyHttpImplPrivate::uploadByteDeviceReadyReadSlot()

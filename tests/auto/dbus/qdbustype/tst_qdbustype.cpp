@@ -87,8 +87,19 @@ static void addFixedTypes()
     QTest::newRow("int64") << DBUS_TYPE_INT64_AS_STRING << true << true;
     QTest::newRow("uint64") << DBUS_TYPE_UINT64_AS_STRING << true << true;
     QTest::newRow("double") << DBUS_TYPE_DOUBLE_AS_STRING << true << true;
+
 #ifdef DBUS_TYPE_UNIX_FD_AS_STRING
-    QTest::newRow("unixfd") << DBUS_TYPE_UNIX_FD_AS_STRING << true << true;
+#  ifndef QT_LINKED_LIBDBUS
+    // We have got the macro from dbus_minimal_p.h, so we need to check if
+    // the library recognizes this as valid type first.
+    // The following function was added for Unix FD support, so if it is
+    // present, so is support for Unix FDs.
+    bool supportsUnixFds = qdbus_resolve_conditionally("dbus_connection_can_send_type");
+#  else
+    bool supportsUnixFds = true;
+#  endif
+    if (supportsUnixFds)
+        QTest::newRow("unixfd") << DBUS_TYPE_UNIX_FD_AS_STRING << true << true;
 #endif
 }
 

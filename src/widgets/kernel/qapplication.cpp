@@ -4273,15 +4273,16 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
-QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos)
+QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint)
 {
+    const QPointF screenPos = touchPoint.screenPos();
     int closestTouchPointId = -1;
     QObject *closestTarget = 0;
     qreal closestDistance = qreal(0.);
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it = activeTouchPoints.constBegin(),
             ite = activeTouchPoints.constEnd();
     while (it != ite) {
-        if (it.key().device == device) {
+        if (it.key().device == device && it.key().touchPointId != touchPoint.id()) {
             const QTouchEvent::TouchPoint &touchPoint = it->touchPoint;
             qreal dx = screenPos.x() - touchPoint.screenPos().x();
             qreal dy = screenPos.y() - touchPoint.screenPos().y();
@@ -4337,7 +4338,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             }
 
             if (device->type() == QTouchDevice::TouchScreen) {
-                QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint.screenPos());
+                QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint);
                 QWidget *widget = static_cast<QWidget *>(target.data());
                 if (closestWidget
                         && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {

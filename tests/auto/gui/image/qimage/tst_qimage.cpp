@@ -181,9 +181,6 @@ private slots:
     void invertPixelsRGB_data();
     void invertPixelsRGB();
 
-    void exifOrientation_data();
-    void exifOrientation();
-
     void cleanupFunctions();
 
     void devicePixelRatio();
@@ -2811,36 +2808,6 @@ void tst_QImage::invertPixelsRGB()
     QCOMPARE(qRed(pixel) >> 4, (255 - 32) >> 4);
     QCOMPARE(qGreen(pixel) >> 4, (255 - 64) >> 4);
     QCOMPARE(qBlue(pixel) >> 4, (255 - 96) >> 4);
-}
-
-void tst_QImage::exifOrientation_data()
-{
-    QTest::addColumn<QString>("fileName");
-    QTest::newRow("Orientation 1, Intel format") << m_prefix + "jpeg_exif_orientation_value_1.jpg";
-    QTest::newRow("Orientation 2, Intel format") << m_prefix + "jpeg_exif_orientation_value_2.jpg";
-    QTest::newRow("Orientation 3, Intel format") << m_prefix + "jpeg_exif_orientation_value_3.jpg";
-    QTest::newRow("Orientation 4, Intel format") << m_prefix + "jpeg_exif_orientation_value_4.jpg";
-    QTest::newRow("Orientation 5, Intel format") << m_prefix + "jpeg_exif_orientation_value_5.jpg";
-    QTest::newRow("Orientation 6, Intel format") << m_prefix + "jpeg_exif_orientation_value_6.jpg";
-    QTest::newRow("Orientation 6, Motorola format") << m_prefix + "jpeg_exif_orientation_value_6_motorola.jpg";
-    QTest::newRow("Orientation 7, Intel format") << m_prefix + "jpeg_exif_orientation_value_7.jpg";
-    QTest::newRow("Orientation 8, Intel format") << m_prefix + "jpeg_exif_orientation_value_8.jpg";
-}
-
-void tst_QImage::exifOrientation()
-{
-    QFETCH(QString, fileName);
-
-    QImage img;
-    QRgb px;
-
-    QVERIFY(img.load(fileName));
-
-    px = img.pixel(0, 0);
-    QVERIFY(qRed(px) > 250 && qGreen(px) < 5 && qBlue(px) < 5);
-
-    px = img.pixel(img.width() - 1, 0);
-    QVERIFY(qRed(px) < 5 && qGreen(px) < 5 && qBlue(px) > 250);
 }
 
 static void cleanupFunction(void* info)
