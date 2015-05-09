@@ -66,6 +66,7 @@ class Q_WIDGETS_EXPORT QFileDialog : public QDialog
     Q_PROPERTY(bool nameFilterDetailsVisible READ isNameFilterDetailsVisible
                WRITE setNameFilterDetailsVisible DESIGNABLE false)
     Q_PROPERTY(Options options READ options WRITE setOptions)
+    Q_PROPERTY(QStringList supportedSchemes READ supportedSchemes WRITE setSupportedSchemes)
 
 public:
     enum ViewMode { Detail, List };
@@ -166,6 +167,9 @@ public:
 
     void setLabelText(DialogLabel label, const QString &text);
     QString labelText(DialogLabel label) const;
+
+    void setSupportedSchemes(const QStringList &schemes);
+    QStringList supportedSchemes() const;
 
 #ifndef QT_NO_PROXYMODEL
     void setProxyModel(QAbstractProxyModel *model);

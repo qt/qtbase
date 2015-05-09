@@ -348,6 +348,9 @@ public:
     QList<QUrl> initiallySelectedFiles() const;
     void setInitiallySelectedFiles(const QList<QUrl> &);
 
+    void setSupportedSchemes(const QStringList &schemes);
+    QStringList supportedSchemes() const;
+
 private:
     QSharedDataPointer<QFileDialogOptionsPrivate> d;
 };

@@ -422,6 +422,7 @@ public:
     QUrl initialDirectory;
     QString initiallySelectedNameFilter;
     QList<QUrl> initiallySelectedFiles;
+    QStringList supportedSchemes;
 };
 
 QFileDialogOptions::QFileDialogOptions() : d(new QFileDialogOptionsPrivate)
@@ -613,6 +614,18 @@ void QFileDialogOptions::setInitiallySelectedFiles(const QList<QUrl> &files)
     d->initiallySelectedFiles = files;
 }
 
+// Schemes supported by the application
+void QFileDialogOptions::setSupportedSchemes(const QStringList &schemes)
+{
+    d->supportedSchemes = schemes;
+}
+
+QStringList QFileDialogOptions::supportedSchemes() const
+{
+    return d->supportedSchemes;
+}
+
+// Return true if the URL is supported by the filedialog implementation *and* by the application.
 bool QPlatformFileDialogHelper::isSupportedUrl(const QUrl &url) const
 {
     return url.isLocalFile();
