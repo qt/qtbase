@@ -188,8 +188,8 @@ bool PureDocParser::processQdocComments()
                     topics.insert(i+1,"and");
                     doc.location().warning(tr("Multiple topic commands found in comment: %1").arg(topics));
                 }
-                ArgList::ConstIterator a = args.begin();
-                while (a != args.end()) {
+                ArgList::ConstIterator a = args.cbegin();
+                while (a != args.cend()) {
                     Doc nodeDoc = doc;
                     Node* node = processTopicCommand(nodeDoc,topic,*a);
                     if (node != 0) {

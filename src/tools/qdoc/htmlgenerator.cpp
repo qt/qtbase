@@ -2199,7 +2199,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
         out() << "<div class=\"table\"><table class=\"alignedsummary\">\n";
 
         QStringList::ConstIterator i;
-        for (i = requisiteorder.begin(); i != requisiteorder.constEnd(); ++i) {
+        for (i = requisiteorder.constBegin(); i != requisiteorder.constEnd(); ++i) {
 
             if (requisites.contains(*i)) {
                 out() << "<tr>"
@@ -2319,7 +2319,7 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
         out() << "<div class=\"table\"><table class=\"alignedsummary\">\n";
 
         QStringList::ConstIterator i;
-        for (i = requisiteorder.begin(); i != requisiteorder.constEnd(); ++i) {
+        for (i = requisiteorder.constBegin(); i != requisiteorder.constEnd(); ++i) {
 
             if (requisites.contains(*i)) {
                 out() << "<tr>"

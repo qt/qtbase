@@ -2763,8 +2763,8 @@ bool CollectionNode::hasNamespaces() const
 bool CollectionNode::hasClasses() const
 {
     if (!members_.isEmpty()) {
-        NodeList::const_iterator i = members_.begin();
-        while (i != members_.end()) {
+        NodeList::const_iterator i = members_.cbegin();
+        while (i != members_.cend()) {
             if ((*i)->isClass())
                 return true;
             ++i;
@@ -2780,8 +2780,8 @@ bool CollectionNode::hasClasses() const
 void CollectionNode::getMemberNamespaces(NodeMap& out)
 {
     out.clear();
-    NodeList::const_iterator i = members_.begin();
-    while (i != members_.end()) {
+    NodeList::const_iterator i = members_.cbegin();
+    while (i != members_.cend()) {
         if ((*i)->isNamespace())
             out.insert((*i)->name(),(*i));
         ++i;
@@ -2795,8 +2795,8 @@ void CollectionNode::getMemberNamespaces(NodeMap& out)
 void CollectionNode::getMemberClasses(NodeMap& out)
 {
     out.clear();
-    NodeList::const_iterator i = members_.begin();
-    while (i != members_.end()) {
+    NodeList::const_iterator i = members_.cbegin();
+    while (i != members_.cend()) {
         if ((*i)->isClass())
             out.insert((*i)->name(),(*i));
         ++i;

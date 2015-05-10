@@ -1549,8 +1549,8 @@ void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* r
     foreach (Tree* t, searchOrder()) {
         CNMap* m = t->getCollectionMap(genus);
         if (m && !m->isEmpty()) {
-            CNMap::const_iterator i = m->begin();
-            while (i != m->end()) {
+            CNMap::const_iterator i = m->cbegin();
+            while (i != m->cend()) {
                 if (!i.value()->isInternal())
                     cnmm.insert(i.key(), i.value());
                 ++i;
