@@ -2096,8 +2096,8 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2219,8 +2219,8 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2338,8 +2338,8 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to save the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
@@ -2445,8 +2445,8 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
     user will be able to select. It is a way for the application to declare
     the protocols it will support to fetch the file content. An empty list
     means that no restriction is applied (the default).
-    Supported for local files ("file" scheme) is implicit and always enabled.
-    it is not necessary to include in the restriction.
+    Supported for local files ("file" scheme) is implicit and always enabled;
+    it is not necessary to include it in the restriction.
 
     When possible, this static function will use the native file dialog and
     not a QFileDialog. On platforms which don't support selecting remote
