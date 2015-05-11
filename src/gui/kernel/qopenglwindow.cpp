@@ -175,130 +175,16 @@ public:
             this->shareContext = qt_gl_global_share_context();
     }
 
-    ~QOpenGLWindowPrivate()
-    {
-        Q_Q(QOpenGLWindow);
-        if (q->isValid()) {
-            q->makeCurrent(); // this works even when the platformwindow is destroyed
-            paintDevice.reset(0);
-            fbo.reset(0);
-            blitter.destroy();
-            q->doneCurrent();
-        }
-    }
+    ~QOpenGLWindowPrivate();
 
     static QOpenGLWindowPrivate *get(QOpenGLWindow *w) { return w->d_func(); }
 
-    void bindFBO()
-    {
-        if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
-            fbo->bind();
-        else
-            QOpenGLFramebufferObject::bindDefault();
-    }
+    void bindFBO();
+    void initialize();
 
-    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE
-    {
-        Q_UNUSED(region);
-        Q_Q(QOpenGLWindow);
-
-        if (!context) {
-            context.reset(new QOpenGLContext);
-            context->setShareContext(shareContext);
-            context->setFormat(q->requestedFormat());
-            context->setScreen(q->screen());
-            if (!context->create())
-                qWarning("QOpenGLWindow::beginPaint: Failed to create context");
-            if (!context->makeCurrent(q))
-                qWarning("QOpenGLWindow::beginPaint: Failed to make context current");
-
-            paintDevice.reset(new QOpenGLWindowPaintDevice(q));
-            if (updateBehavior == QOpenGLWindow::PartialUpdateBlit)
-                hasFboBlit = QOpenGLFramebufferObject::hasOpenGLFramebufferBlit();
-
-            q->initializeGL();
-        } else {
-            context->makeCurrent(q);
-        }
-
-        const int deviceWidth = q->width() * q->devicePixelRatio();
-        const int deviceHeight = q->height() * q->devicePixelRatio();
-        const QSize deviceSize(deviceWidth, deviceHeight);
-        if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
-            if (!fbo || fbo->size() != deviceSize) {
-                QOpenGLFramebufferObjectFormat fboFormat;
-                fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-                if (q->requestedFormat().samples() > 0) {
-                    if (updateBehavior != QOpenGLWindow::PartialUpdateBlend)
-                        fboFormat.setSamples(q->requestedFormat().samples());
-                    else
-                        qWarning("QOpenGLWindow: PartialUpdateBlend does not support multisampling");
-                }
-                fbo.reset(new QOpenGLFramebufferObject(deviceSize, fboFormat));
-                markWindowAsDirty();
-            }
-        } else {
-            markWindowAsDirty();
-        }
-
-        paintDevice->setSize(QSize(deviceWidth, deviceHeight));
-        paintDevice->setDevicePixelRatio(q->devicePixelRatio());
-        context->functions()->glViewport(0, 0, deviceWidth, deviceHeight);
-
-        context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
-
-        q->paintUnderGL();
-
-        if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
-            fbo->bind();
-    }
-
-    void endPaint() Q_DECL_OVERRIDE
-    {
-        Q_Q(QOpenGLWindow);
-
-        if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
-            fbo->release();
-
-        context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
-
-        if (updateBehavior == QOpenGLWindow::PartialUpdateBlit && hasFboBlit) {
-            const int deviceWidth = q->width() * q->devicePixelRatio();
-            const int deviceHeight = q->height() * q->devicePixelRatio();
-            QOpenGLExtensions extensions(context.data());
-            extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->handle());
-            extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context->defaultFramebufferObject());
-            extensions.glBlitFramebuffer(0, 0, deviceWidth, deviceHeight,
-                                         0, 0, deviceWidth, deviceHeight,
-                                         GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        } else if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
-            if (updateBehavior == QOpenGLWindow::PartialUpdateBlend) {
-                context->functions()->glEnable(GL_BLEND);
-                context->functions()->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
-            if (!blitter.isCreated())
-                blitter.create();
-
-            QRect windowRect(QPoint(0, 0), fbo->size());
-            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
-            blitter.bind();
-            blitter.blit(fbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
-            blitter.release();
-
-            if (updateBehavior == QOpenGLWindow::PartialUpdateBlend)
-                context->functions()->glDisable(GL_BLEND);
-        }
-
-        q->paintOverGL();
-    }
-
-    void flush(const QRegion &region) Q_DECL_OVERRIDE
-    {
-        Q_UNUSED(region);
-        Q_Q(QOpenGLWindow);
-        context->swapBuffers(q);
-        emit q->frameSwapped();
-    }
+    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
+    void flush(const QRegion &region) Q_DECL_OVERRIDE;
 
     QOpenGLWindow::UpdateBehavior updateBehavior;
     bool hasFboBlit;
@@ -310,6 +196,135 @@ public:
     QColor backgroundColor;
     QScopedPointer<QOffscreenSurface> offscreenSurface;
 };
+
+QOpenGLWindowPrivate::~QOpenGLWindowPrivate()
+{
+    Q_Q(QOpenGLWindow);
+    if (q->isValid()) {
+        q->makeCurrent(); // this works even when the platformwindow is destroyed
+        paintDevice.reset(0);
+        fbo.reset(0);
+        blitter.destroy();
+        q->doneCurrent();
+    }
+}
+
+void QOpenGLWindowPrivate::initialize()
+{
+    Q_Q(QOpenGLWindow);
+
+    if (context)
+        return;
+
+    context.reset(new QOpenGLContext);
+    context->setShareContext(shareContext);
+    context->setFormat(q->requestedFormat());
+    if (!context->create())
+        qWarning("QOpenGLWindow::beginPaint: Failed to create context");
+    if (!context->makeCurrent(q))
+        qWarning("QOpenGLWindow::beginPaint: Failed to make context current");
+
+    paintDevice.reset(new QOpenGLWindowPaintDevice(q));
+    if (updateBehavior == QOpenGLWindow::PartialUpdateBlit)
+        hasFboBlit = QOpenGLFramebufferObject::hasOpenGLFramebufferBlit();
+
+    q->initializeGL();
+}
+
+void QOpenGLWindowPrivate::beginPaint(const QRegion &region)
+{
+    Q_UNUSED(region);
+    Q_Q(QOpenGLWindow);
+
+    initialize();
+    context->makeCurrent(q);
+
+    const int deviceWidth = q->width() * q->devicePixelRatio();
+    const int deviceHeight = q->height() * q->devicePixelRatio();
+    const QSize deviceSize(deviceWidth, deviceHeight);
+    if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
+        if (!fbo || fbo->size() != deviceSize) {
+            QOpenGLFramebufferObjectFormat fboFormat;
+            fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+            if (q->requestedFormat().samples() > 0) {
+                if (updateBehavior != QOpenGLWindow::PartialUpdateBlend)
+                    fboFormat.setSamples(q->requestedFormat().samples());
+                else
+                    qWarning("QOpenGLWindow: PartialUpdateBlend does not support multisampling");
+            }
+            fbo.reset(new QOpenGLFramebufferObject(deviceSize, fboFormat));
+            markWindowAsDirty();
+        }
+    } else {
+        markWindowAsDirty();
+    }
+
+    paintDevice->setSize(QSize(deviceWidth, deviceHeight));
+    paintDevice->setDevicePixelRatio(q->devicePixelRatio());
+    context->functions()->glViewport(0, 0, deviceWidth, deviceHeight);
+
+    context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
+
+    q->paintUnderGL();
+
+    if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
+        fbo->bind();
+}
+
+void QOpenGLWindowPrivate::endPaint()
+{
+    Q_Q(QOpenGLWindow);
+
+    if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
+        fbo->release();
+
+    context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
+
+    if (updateBehavior == QOpenGLWindow::PartialUpdateBlit && hasFboBlit) {
+        const int deviceWidth = q->width() * q->devicePixelRatio();
+        const int deviceHeight = q->height() * q->devicePixelRatio();
+        QOpenGLExtensions extensions(context.data());
+        extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->handle());
+        extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context->defaultFramebufferObject());
+        extensions.glBlitFramebuffer(0, 0, deviceWidth, deviceHeight,
+                                     0, 0, deviceWidth, deviceHeight,
+                                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    } else if (updateBehavior > QOpenGLWindow::NoPartialUpdate) {
+        if (updateBehavior == QOpenGLWindow::PartialUpdateBlend) {
+            context->functions()->glEnable(GL_BLEND);
+            context->functions()->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        if (!blitter.isCreated())
+            blitter.create();
+
+        QRect windowRect(QPoint(0, 0), fbo->size());
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
+        blitter.bind();
+        blitter.blit(fbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
+        blitter.release();
+
+        if (updateBehavior == QOpenGLWindow::PartialUpdateBlend)
+            context->functions()->glDisable(GL_BLEND);
+    }
+
+    q->paintOverGL();
+}
+
+void QOpenGLWindowPrivate::bindFBO()
+{
+    if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
+        fbo->bind();
+    else
+        QOpenGLFramebufferObject::bindDefault();
+}
+
+void QOpenGLWindowPrivate::flush(const QRegion &region)
+{
+    Q_UNUSED(region);
+    Q_Q(QOpenGLWindow);
+    context->swapBuffers(q);
+    emit q->frameSwapped();
+}
 
 void QOpenGLWindowPaintDevice::ensureActiveTarget()
 {
@@ -632,6 +647,8 @@ void QOpenGLWindow::paintEvent(QPaintEvent *event)
 void QOpenGLWindow::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
+    Q_D(QOpenGLWindow);
+    d->initialize();
     resizeGL(width(), height());
 }
 
