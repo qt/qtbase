@@ -1,8 +1,10 @@
 TEMPLATE = subdirs
 # subdirs roughly in order of complexity
 SUBDIRS = \ 
-    qmake \                         # build a standard ppapi "hello world" example with qmake.
-    qtcore \                        # simple QtCore usage (qstring).
+    qmake_cpp\                      # C++ hello world built by qmake
+    qmake_qtcore\                   # QtCore hello world built by qmake
+    qmake_ppapi \                   # build a standard ppapi "hello world" example with qmake.
+    qtcore \                        # Pppapi and  simple QtCore usage (qstring).
     qtcore_main \                   # implement main and use QtCore
     clipboard \                     # test javascript clipboard events
     resources \                     # test the qrc resources system

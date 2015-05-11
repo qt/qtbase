@@ -1,12 +1,11 @@
 TEMPLATE = app
-TARGET = hello_world
 DEPENDPATH += .
 
 # should be set by Qt, but isn't
-INCLUDEPATH += $$(NACL_SDK_ROOT)/include
+# INCLUDEPATH += $$(NACL_SDK_ROOT)/include
 
 # Input
-SOURCES += hello_world.cpp
+SOURCES += main.cpp
 
 LIBS += -lppapi
 QT =

@@ -64,12 +64,15 @@ win32 {
             }
         } else {
             nacl {
-                # Add .nexe extenson to app targes.
+                # Set extension for app targets, depending build type (emscripten, pnacl, nacl)
                 # Except don't do it for the configure tests. QT_CONFIG does not contain "qpa"
-                # at configure time, use that as a somewhat arbitray test condition.
+                # at configure time, use that as a somewhat arbitrary test condition.
                 # better way?: QTDIR_build|!contains(IN_PWD, ^$$[QT_HOST_PREFIX/get].*)
                 contains(QT_CONFIG, "qpa") {
-                    pnacl {
+                    emscripten {
+                        TARGET_EXT = .js
+                    }
+                    else:pnacl {
                         TARGET_EXT = .bc
                     } else {
                         TARGET_EXT = .nexe

@@ -672,6 +672,7 @@ CFG_HOST_CPUFEATURES=
 OPT_OBSOLETE_HOST_ARG=no
 
 CFG_USE_GNUMAKE=no
+CFG_XLIB=auto
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
@@ -1548,6 +1549,13 @@ while [ "$#" -gt 0 ]; do
     xsync)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSYNC="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xlib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XLIB="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2511,6 +2519,9 @@ Third Party Libraries:
     -xkb-config-root .... Set default XKB config root. This option is used only together with -qt-xkbcommon-x11.
     -qt-xkbcommon-x11 ... Use the xkbcommon library bundled with Qt in combination with xcb.
  +  -system-xkbcommon-x11 Use the xkbcommon library from the operating system in combination with xcb.
+
+    -no-xlib ........... Do not compile xlib support.
+ *  -xlib .............. Compile xlib support.
 
     -no-xkbcommon-evdev . Do not use X-less xkbcommon when compiling libinput support.
  *  -xkbcommon-evdev .... Use X-less xkbcommon when compiling libinput support.
@@ -5333,8 +5344,10 @@ if [ "$CFG_LIBINPUT" = "no" ]; then
 fi
 
 # Check we actually have X11 :-)
-if compileTest x11/xlib "XLib"; then
-    QT_CONFIG="$QT_CONFIG xlib"
+if [ "$CFG_XLIB" != "no" ]; then
+    if compileTest x11/xlib "XLib"; then
+        QT_CONFIG="$QT_CONFIG xlib"
+    fi
 fi
 
 # auto-detect Xrender support

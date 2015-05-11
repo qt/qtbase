@@ -58,8 +58,8 @@ for platform, variant, action in itertools.product(platforms, variants, actions)
         # configure Qt
         configurearglist = ' '.join(["-"  + configurearg for configurearg in configure])
         cmd = naclconfigureScript
-        if platform == 'host':
-            cmd += ' host'
+        if platform in ['host', 'emscripten']:
+            cmd += ' ' + platform
         else:
             cmd +=  ' ' + hostPlatform + '_' + platform
         cmd += ' ' + variant + ' ' + configurearglist

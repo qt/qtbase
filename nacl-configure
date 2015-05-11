@@ -19,14 +19,14 @@ if [ ! -d "$NACL_SDK_ROOT" ]; then
 
 fi
 
-# simple mac/linux detecton
+# simple mac/linux detection
 platform='mac'
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
    platform='linux'
 fi
 
-# Require a toolcahin as an argument
+# Require a toolcahain as an argument
 if [ $# -eq 0 ]
   then
     echo ""
@@ -37,6 +37,7 @@ if [ $# -eq 0 ]
     echo "    ${platform}_pnacl"
     echo "    ${platform}_x86_glibc"
     echo "    ${platform}_x86_newlib"
+    echo "    emscripten"
     echo "    host"
     echo ""
     exit 
@@ -100,6 +101,12 @@ if [[ $TOOLCHAIN == *glibc* ]]
   then
     CLIB="glibc"
 fi
+if [[ $TOOLCHAIN == emscripten ]]
+  then
+    PNACL=""
+    CLIB=""
+    ARCH=""
+fi
 if [[ $TOOLCHAIN == host ]]
   then
     PNACL=""
@@ -132,6 +139,10 @@ if [[ $TOOLCHAIN == *x86_newlib ]]
   then
     QT_MKSPEC="nacl-x86-newlib-g++-$BITS"
 fi
+if [[ $TOOLCHAIN == emscripten ]]
+  then
+    QT_MKSPEC="nacl-emscripten"
+fi
 if [[ $TOOLCHAIN == host ]]
   then
     QT_MKSPEC=""
@@ -159,6 +170,12 @@ if [[ $ARCH == x86 ]]
   then
       LIBDIR="${LIBDIR}_${BITS}"
 fi
+
+if [[ $TOOLCHAIN == emscripten ]]
+  then
+      LIBDIR="pnacl"
+fi
+
 if [[ $TOOLCHAIN == host ]]
   then
     LIBDIR==""
@@ -189,6 +206,12 @@ fi
 if [[ $QT_MKSPEC == *pnacl* ]]
   then
     NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-c++11"
+fi
+
+# emscripten has x11 headers, which makes several configure tests pass.
+if [[ $TOOLCHAIN == emscripten ]]
+  then
+    NACL_CONFIGURE_LINE="$NACL_CONFIGURE_LINE -no-xlib -no-xcb-xlib -no-eglfs"
 fi
 
 # set release/debug build

@@ -160,6 +160,7 @@ int access(const char *, int)
     return 0;
 }
 
+#ifndef Q_OS_NACL_EMSCRIPTEN
 typedef long off64_t;
 off64_t ftello64(void *)
 {
@@ -172,6 +173,7 @@ off64_t lseek64(int, off_t, int)
     qFatal("lseek64 called");
     return 0;
 }
+#endif
 
 #ifdef Q_OS_NACL_NEWLIB
 char * getenv(const char *)
@@ -206,6 +208,132 @@ int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, co
 {
     return 0;
 }
+
+#ifdef Q_OS_NACL_EMSCRIPTEN
+
+// pthread stubs (no thrading support in emscripten)
+
+int pthread_setcancelstate(int state, int *oldstate)
+{
+    return 0;
+}
+
+int pthread_setcanceltype(int type, int *oldtype)
+{
+    return 0;
+}
+
+void pthread_testcancel()
+{
+
+}
+
+int pthread_cancel(pthread_t thread)
+{
+    return 0;
+}
+
+int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param  *param)
+{
+    return 0;
+}
+
+int pthread_setschedparam(pthread_t thread, int policy, const struct sched_param *param)
+{
+    return 0;
+}
+
+int pthread_attr_getschedparam(const pthread_attr_t  *attr, struct sched_param  *param)
+{
+    return 0;
+}
+
+int pthread_attr_getschedpolicy(const pthread_attr_t  *attr, int  *policy)
+{
+    return 0;
+}
+
+int pthread_attr_getscope(const pthread_attr_t  *attr, int  *contentionscope)
+{
+    return 0;
+}
+
+int pthread_attr_getstackaddr(const pthread_attr_t  *attr, void * *stackaddr)
+{
+    return 0;
+}
+
+int pthread_attr_getstacksize(const pthread_attr_t  *attr, size_t  *stacksize)
+{
+    return 0;
+}
+
+int pthread_attr_init(pthread_attr_t *attr)
+{
+    return 0;
+}
+
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate)
+{
+    return 0;
+}
+
+int pthread_attr_setinheritsched(pthread_attr_t *attr, int inheritsched)
+{
+    return 0;
+}
+
+int pthread_attr_setschedparam(pthread_attr_t  *attr, const struct sched_param  *param)
+{
+    return 0;
+}
+
+int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy)
+{
+    return 0;
+}
+
+int pthread_attr_setscope(pthread_attr_t *attr, int contentionscope)
+{
+    return 0;
+}
+
+int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr)
+{
+    return 0;
+}
+
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize)
+{
+    return 0;
+}
+
+int pthread_condattr_init(pthread_condattr_t *)
+{
+    return 0;
+}
+
+int pthread_condattr_destroy(pthread_condattr_t *attr)
+{
+    return 0;
+}
+
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg)
+{
+    return 0;
+}
+
+int sched_get_priority_max(int policy)
+{
+    return 0;
+}
+
+int sched_get_priority_min(int policy)
+{
+    return 0;
+}
+
+#endif
 
 // Several Qt components (such at the QtCore event dispatcher and networking) 
 // may require access to the application global module and instance objects.

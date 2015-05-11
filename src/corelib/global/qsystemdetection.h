@@ -85,9 +85,12 @@
               - only Q_OS_QNX is defined if building for other QNX targets
      FREEBSD  - Q_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
               - Q_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
-     NACL     - Q_OS_NACL_PNACL is defined for Portable Native Client builds.
+     NACL     - Q_OS_PNACL is defined for Portable Native Client builds.
               - Q_OS_NACL_NEWLIB and Q_OS_NACL_GLIBC are defined for static newlib builds
                 and shared library glibc builds, respectively.
+              - O_OS_NACL_EMSCRIPTEN is defined for emscripten/pepper.js builds.
+                Emscripten is not related to NaCl, but the current Qt support for
+                it re-uses the NaCL implemenation and treats it as a NaCl variant.
 */
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
@@ -131,6 +134,8 @@
 #  define Q_OS_RELIANT
 #elif defined(__native_client__)
 #  define Q_OS_NACL
+#elif defined(__EMSCRIPTEN__)
+#  define Q_OS_NACL // Emscripten  is implemented  as an NaCl variant. See O_OS_NACL_EMSCRIPTEN
 #elif defined(__linux__) || defined(__linux)
 #  define Q_OS_LINUX
 #elif defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
@@ -299,6 +304,7 @@
 // - shared libraries build using glibc: Q_OS_NACL_GLIBC
 // - portable native client: Q_OS_PNACL
 //   (pNaCl is currently a newlib build)
+// - emscripten/pepper.js: Q_OS_NACL_EMSCRIPTEN
 //
 #ifdef Q_OS_NACL
 // include in libc header to get _NEWLIB_VERSION defined when using newlib
@@ -311,7 +317,9 @@
 #ifdef __pnacl__
 #  define Q_OS_PNACL
 #endif
+#ifdef __EMSCRIPTEN__
+#  define Q_OS_NACL_EMSCRIPTEN
 #endif
-
+#endif
 
 #endif // QSYSTEMDETECTION_H

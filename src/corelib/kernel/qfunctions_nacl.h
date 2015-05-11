@@ -113,10 +113,12 @@ char * _EXFUN(mkdtemp,(char *));
 int fcntl(int fildes, int cmd, ...);
 int sigaction(int sig, const struct sigaction * act, struct sigaction * oact);
 
+#ifndef Q_OS_NACL_EMSCRIPTEN
 typedef long off64_t;
 off64_t ftello64(void *stream);
 off64_t lseek64(int fildes, off_t offset, int whence);
 int open64(const char *path, int oflag, ...);
+#endif
 
 long pathconf(const char *, int);
 //long int pathconf (__const char *__path, int __name) __THROW __nonnull ((1));
