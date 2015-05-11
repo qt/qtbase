@@ -12646,7 +12646,8 @@ int QWidget::metric(PaintDeviceMetric m) const
     } else if (m == PdmDevicePixelRatio) {
         return topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio();
     } else if (m == PdmDevicePixelRatioScaled) {
-        return (topLevelWindow ? topLevelWindow->devicePixelRatio() * QPaintDevice::devicePixelRatioFScale : qApp->devicePixelRatio());
+        return (QPaintDevice::devicePixelRatioFScale *
+                (topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio()));
     } else {
         val = QPaintDevice::metric(m);// XXX
     }
