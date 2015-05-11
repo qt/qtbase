@@ -87,6 +87,16 @@ struct QTBUG_31218_Derived : QTBUG_31218<-1<0> {};
  class QTBUG_45790 : Bug() { };
 #endif
 
+class CreatableGadget
+{
+    Q_GADGET
+    Q_PROPERTY(int a MEMBER a)
+public:
+    Q_INVOKABLE CreatableGadget() : a(0xdeadbeef) { }
+
+    int a;
+};
+
 struct MyStruct {};
 struct MyStruct2 {};
 
