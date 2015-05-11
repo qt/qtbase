@@ -1171,11 +1171,12 @@ inline int comp_func_Plus_one_pixel(uint d, const uint s)
 #undef MIX
 #undef AMIX
 
-struct QPixelLayout;
+struct QDitherInfo;
+
 typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, int count,
-                                               const QPixelLayout *layout, const QRgb *clut);
+                                               const QVector<QRgb> *clut, QDitherInfo *dither);
 typedef const QRgba64 *(QT_FASTCALL *ConvertFunc64)(QRgba64 *buffer, const uint *src, int count,
-                                                    const QPixelLayout *layout, const QRgb *clut);
+                                                    const QVector<QRgb> *clut, QDitherInfo *dither);
 
 struct QPixelLayout
 {

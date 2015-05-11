@@ -44,13 +44,13 @@
 QT_BEGIN_NAMESPACE
 
 const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
-                                                     const QPixelLayout *, const QRgb *)
+                                                     const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertARGB32ToARGB32PM(buffer, src, count);
 }
 
 const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertRGBA8888ToARGB32PM(buffer, src, count);
 }

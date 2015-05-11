@@ -168,7 +168,7 @@ template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB66
 
 template<QImage::Format Format>
 static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int count,
-                                              const QPixelLayout *, const QRgb *)
+                                              const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
     Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
@@ -198,7 +198,7 @@ static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int
 
 template<QImage::Format Format>
 static const QRgba64 *QT_FASTCALL convertToRGB64(QRgba64 *buffer, const uint *src, int count,
-                                                 const QPixelLayout *, const QRgb *)
+                                                 const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
     Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
@@ -228,7 +228,7 @@ static const QRgba64 *QT_FASTCALL convertToRGB64(QRgba64 *buffer, const uint *sr
 
 template<QImage::Format Format>
 static const uint *QT_FASTCALL convertARGBPMToARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
@@ -282,7 +282,7 @@ static const uint *QT_FASTCALL convertARGBPMToARGB32PM(uint *buffer, const uint 
 
 template<QImage::Format Format>
 static const QRgba64 *QT_FASTCALL convertARGBPMToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                          const QPixelLayout *, const QRgb *)
+                                                          const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
     Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
@@ -336,7 +336,7 @@ static const QRgba64 *QT_FASTCALL convertARGBPMToARGB64PM(QRgba64 *buffer, const
 
 template<QImage::Format Format, bool fromRGB>
 static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                      const QPixelLayout *, const QRgb *)
+                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint rMask = ((1 << redWidth<Format>()) - 1);
     Q_CONSTEXPR uint gMask = ((1 << greenWidth<Format>()) - 1);
@@ -358,7 +358,7 @@ static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *
 
 template<QImage::Format Format, bool fromRGB>
 static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
+                                                         const QVector<QRgb> *, QDitherInfo *)
 {
     Q_CONSTEXPR uint aMask = ((1 << alphaWidth<Format>()) - 1);
     Q_CONSTEXPR uint rMask = ((1 << redWidth<Format>()) - 1);
@@ -418,35 +418,35 @@ template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixe
 
 // To convert in place, let 'dest' and 'src' be the same.
 static const uint *QT_FASTCALL convertIndexedToARGB32PM(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *clut)
+                                                        const QVector<QRgb> *clut, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(clut[src[i]]);
+        buffer[i] = qPremultiply(clut->at(src[i]));
     return buffer;
 }
 
 static const QRgba64 *QT_FASTCALL convertIndexedToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                           const QPixelLayout *, const QRgb *clut)
+                                                           const QVector<QRgb> *clut, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = QRgba64::fromArgb32(clut[src[i]]).premultiplied();
+        buffer[i] = QRgba64::fromArgb32(clut->at(src[i])).premultiplied();
     return buffer;
 }
 
 static const uint *QT_FASTCALL convertPassThrough(uint *, const uint *src, int,
-                                                  const QPixelLayout *, const QRgb *)
+                                                  const QVector<QRgb> *, QDitherInfo *)
 {
     return src;
 }
 
 static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertARGB32ToARGB32PM(buffer, src, count);
 }
 
 static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
-                                                           const QPixelLayout *, const QRgb *)
+                                                           const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = RGBA2ARGB(src[i]);
@@ -454,13 +454,13 @@ static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const u
 }
 
 static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                                const QPixelLayout *, const QRgb *)
+                                                         const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertRGBA8888ToARGB32PM(buffer, src, count);
 }
 
 static const uint *QT_FASTCALL convertAlpha8ToRGB32(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
+                                                    const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qRgba(0, 0, 0, src[i]);
@@ -468,7 +468,7 @@ static const uint *QT_FASTCALL convertAlpha8ToRGB32(uint *buffer, const uint *sr
 }
 
 static const uint *QT_FASTCALL convertGrayscale8ToRGB32(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
+                                                        const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qRgb(src[i], src[i], src[i]);
@@ -476,7 +476,7 @@ static const uint *QT_FASTCALL convertGrayscale8ToRGB32(uint *buffer, const uint
 }
 
 static const QRgba64 *QT_FASTCALL convertAlpha8ToRGB64(QRgba64 *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = QRgba64::fromRgba(0, 0, 0, src[i]);
@@ -484,7 +484,7 @@ static const QRgba64 *QT_FASTCALL convertAlpha8ToRGB64(QRgba64 *buffer, const ui
 }
 
 static const QRgba64 *QT_FASTCALL convertGrayscale8ToRGB64(QRgba64 *buffer, const uint *src, int count,
-                                                           const QPixelLayout *, const QRgb *)
+                                                           const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = QRgba64::fromRgba(src[i], src[i], src[i], 255);
@@ -492,7 +492,7 @@ static const QRgba64 *QT_FASTCALL convertGrayscale8ToRGB64(QRgba64 *buffer, cons
 }
 
 static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
+                                                         const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qUnpremultiply(src[i]);
@@ -500,7 +500,7 @@ static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uin
 }
 
 static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                             const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(src[i]);
@@ -551,7 +551,7 @@ static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *
 #endif
 
 static const QRgba64 *QT_FASTCALL convertRGB32ToRGB64(QRgba64 *buffer, const uint *src, int count,
-                                                      const QPixelLayout *, const QRgb *)
+                                                      const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertARGB32PMToARGB64PM_sse2<false, true>(buffer, src, count);
@@ -563,7 +563,7 @@ static const QRgba64 *QT_FASTCALL convertRGB32ToRGB64(QRgba64 *buffer, const uin
 }
 
 static const QRgba64 *QT_FASTCALL convertARGB32ToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                          const QPixelLayout *, const QRgb *)
+                                                          const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertARGB32PMToARGB64PM_sse2<false, false>(buffer, src, count);
@@ -577,7 +577,7 @@ static const QRgba64 *QT_FASTCALL convertARGB32ToARGB64PM(QRgba64 *buffer, const
 }
 
 static const QRgba64 *QT_FASTCALL convertARGB32PMToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                            const QPixelLayout *, const QRgb *)
+                                                            const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertARGB32PMToARGB64PM_sse2<false, false>(buffer, src, count);
@@ -589,7 +589,7 @@ static const QRgba64 *QT_FASTCALL convertARGB32PMToARGB64PM(QRgba64 *buffer, con
 }
 
 static const QRgba64 *QT_FASTCALL convertRGBA8888ToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                            const QPixelLayout *, const QRgb *)
+                                                            const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertARGB32PMToARGB64PM_sse2<true, false>(buffer, src, count);
@@ -603,7 +603,7 @@ static const QRgba64 *QT_FASTCALL convertRGBA8888ToARGB64PM(QRgba64 *buffer, con
 }
 
 static const QRgba64 *QT_FASTCALL convertRGBA8888PMToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                              const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertARGB32PMToARGB64PM_sse2<true, false>(buffer, src, count);
@@ -615,7 +615,7 @@ static const QRgba64 *QT_FASTCALL convertRGBA8888PMToARGB64PM(QRgba64 *buffer, c
 }
 
 static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                           const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(qUnpremultiply(src[i]));
@@ -623,7 +623,7 @@ static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const u
 }
 
 static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
-                                                    const QPixelLayout *, const QRgb *)
+                                                    const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(0xff000000 | src[i]);
@@ -631,7 +631,7 @@ static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *sr
 }
 
 static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply(src[i]));
@@ -640,7 +640,7 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const uint *src, int count,
-                                                          const QPixelLayout *, const QRgb *)
+                                                          const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertA2rgb30ToArgb32<PixelOrder>(src[i]);
@@ -693,7 +693,7 @@ static inline void qConvertA2RGB30PMToARGB64PM_sse2(QRgba64 *buffer, const uint 
 
 template<QtPixelOrder PixelOrder>
 static const QRgba64 *QT_FASTCALL convertA2RGB30PMToARGB64PM(QRgba64 *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                             const QVector<QRgb> *, QDitherInfo *)
 {
 #ifdef __SSE2__
     qConvertA2RGB30PMToARGB64PM_sse2<PixelOrder>(buffer, src, count);
@@ -706,7 +706,7 @@ static const QRgba64 *QT_FASTCALL convertA2RGB30PMToARGB64PM(QRgba64 *buffer, co
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                            const QPixelLayout *, const QRgb *)
+                                                            const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertArgb32ToA2rgb30<PixelOrder>(src[i]);
@@ -715,7 +715,7 @@ static const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM(uint *buffer, const 
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertRGB30FromRGB32(uint *buffer, const uint *src, int count,
-                                                     const QPixelLayout *, const QRgb *)
+                                                     const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertRgb32ToRgb30<PixelOrder>(src[i]);
@@ -724,7 +724,7 @@ static const uint *QT_FASTCALL convertRGB30FromRGB32(uint *buffer, const uint *s
 
 template<QtPixelOrder PixelOrder>
 static const uint *QT_FASTCALL convertRGB30FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
+                                                        const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertRgb32ToRgb30<PixelOrder>(qUnpremultiply(src[i]));
@@ -732,7 +732,7 @@ static const uint *QT_FASTCALL convertRGB30FromARGB32PM(uint *buffer, const uint
 }
 
 static const uint *QT_FASTCALL convertAlpha8FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                         const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qAlpha(src[i]);
@@ -740,7 +740,7 @@ static const uint *QT_FASTCALL convertAlpha8FromARGB32PM(uint *buffer, const uin
 }
 
 static const uint *QT_FASTCALL convertGrayscale8FromRGB32(uint *buffer, const uint *src, int count,
-                                                          const QPixelLayout *, const QRgb *)
+                                                          const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qGray(src[i]);
@@ -748,7 +748,7 @@ static const uint *QT_FASTCALL convertGrayscale8FromRGB32(uint *buffer, const ui
 }
 
 static const uint *QT_FASTCALL convertGrayscale8FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
+                                                             const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qGray(qUnpremultiply(src[i]));
@@ -1037,7 +1037,7 @@ static uint *QT_FASTCALL destFetch(uint *buffer, QRasterBuffer *rasterBuffer, in
 {
     const QPixelLayout *layout = &qPixelLayouts[rasterBuffer->format];
     const uint *ptr = qFetchPixels[layout->bpp](buffer, rasterBuffer->scanLine(y), x, length);
-    return const_cast<uint *>(layout->convertToARGB32PM(buffer, ptr, length, layout, 0));
+    return const_cast<uint *>(layout->convertToARGB32PM(buffer, ptr, length, 0, 0));
 }
 
 static QRgba64 *QT_FASTCALL destFetch64(QRgba64 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length)
@@ -1045,14 +1045,14 @@ static QRgba64 *QT_FASTCALL destFetch64(QRgba64 *buffer, QRasterBuffer *rasterBu
     const QPixelLayout *layout = &qPixelLayouts[rasterBuffer->format];
     uint buffer32[buffer_size];
     const uint *ptr = qFetchPixels[layout->bpp](buffer32, rasterBuffer->scanLine(y), x, length);
-    return const_cast<QRgba64 *>(layout->convertToARGB64PM(buffer, ptr, length, layout, 0));
+    return const_cast<QRgba64 *>(layout->convertToARGB64PM(buffer, ptr, length, 0, 0));
 }
 
 static QRgba64 *QT_FASTCALL destFetch64uint32(QRgba64 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[rasterBuffer->format];
     const uint *src = ((const uint *)rasterBuffer->scanLine(y)) + x;
-    return const_cast<QRgba64 *>(layout->convertToARGB64PM(buffer, src, length, layout, 0));
+    return const_cast<QRgba64 *>(layout->convertToARGB64PM(buffer, src, length, 0, 0));
 }
 
 static DestFetchProc destFetchProc[QImage::NImageFormats] =
@@ -1219,9 +1219,9 @@ static void QT_FASTCALL destStore(QRasterBuffer *rasterBuffer, int x, int y, con
         int l = qMin(length, buffer_size);
         const uint *ptr = 0;
         if (!layout->premultiplied && !layout->alphaWidth)
-            ptr = layout->convertFromRGB32(buf, buffer, l, layout, 0);
+            ptr = layout->convertFromRGB32(buf, buffer, l, 0, 0);
         else
-            ptr = layout->convertFromARGB32PM(buf, buffer, l, layout, 0);
+            ptr = layout->convertFromARGB32PM(buf, buffer, l, 0, 0);
         store(dest, ptr, x, l);
         length -= l;
         buffer += l;
@@ -1247,9 +1247,9 @@ static void QT_FASTCALL destStore64(QRasterBuffer *rasterBuffer, int x, int y, c
         const uint *ptr = 0;
         convertFromRgb64(buf, buffer, l);
         if (!layout->premultiplied && !layout->alphaWidth)
-            ptr = layout->convertFromRGB32(buf, buf, l, layout, 0);
+            ptr = layout->convertFromRGB32(buf, buf, l, 0, 0);
         else
-            ptr = layout->convertFromARGB32PM(buf, buf, l, layout, 0);
+            ptr = layout->convertFromARGB32PM(buf, buf, l, 0, 0);
         store(dest, ptr, x, l);
         length -= l;
         buffer += l;
@@ -1436,8 +1436,7 @@ static const uint *QT_FASTCALL fetchUntransformed(uint *buffer, const Operator *
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
     const uint *ptr = qFetchPixels[layout->bpp](buffer, data->texture.scanLine(y), x, length);
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
-    return layout->convertToARGB32PM(buffer, ptr, length, layout, clut);
+    return layout->convertToARGB32PM(buffer, ptr, length, data->texture.colorTable, 0);
 }
 
 static const uint *QT_FASTCALL fetchUntransformedARGB32PM(uint *, const Operator *,
@@ -1465,14 +1464,13 @@ static const QRgba64 *QT_FASTCALL fetchUntransformed64(QRgba64 *buffer, const Op
                                                        const QSpanData *data, int y, int x, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
     if (layout->bpp != QPixelLayout::BPP32) {
         uint buffer32[buffer_size];
         const uint *ptr = qFetchPixels[layout->bpp](buffer32, data->texture.scanLine(y), x, length);
-        return layout->convertToARGB64PM(buffer, ptr, length, layout, clut);
+        return layout->convertToARGB64PM(buffer, ptr, length, data->texture.colorTable, 0);
     } else {
         const uint *src = (const uint *)data->texture.scanLine(y) + x;
-        return layout->convertToARGB64PM(buffer, src, length, layout, clut);
+        return layout->convertToARGB64PM(buffer, src, length, data->texture.colorTable, 0);
     }
 }
 
@@ -1639,8 +1637,7 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
             ++b;
         }
     }
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
-    return layout->convertToARGB32PM(buffer, buffer, length, layout, clut);
+    return layout->convertToARGB32PM(buffer, buffer, length, data->texture.colorTable, 0);
 }
 
 template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
@@ -1655,7 +1652,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
 
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
     FetchPixelFunc fetch = qFetchPixel[layout->bpp];
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
+    const QVector<QRgb> *clut = data->texture.colorTable;
 
     uint buffer32[buffer_size];
     QRgba64 *b = buffer;
@@ -1672,7 +1669,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
         int i = 0,  j = 0;
         while (i < length) {
             if (j == buffer_size) {
-                layout->convertToARGB64PM(b, buffer32, buffer_size, layout, clut);
+                layout->convertToARGB64PM(b, buffer32, buffer_size, clut, 0);
                 b += buffer_size;
                 j = 0;
             }
@@ -1695,7 +1692,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
             ++i; ++j;
         }
         if (j > 0) {
-            layout->convertToARGB64PM(b, buffer32, j, layout, clut);
+            layout->convertToARGB64PM(b, buffer32, j, clut, 0);
             b += j;
         }
     } else {
@@ -1710,7 +1707,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
         int i = 0,  j = 0;
         while (i < length) {
             if (j == buffer_size) {
-                layout->convertToARGB64PM(b, buffer32, buffer_size, layout, clut);
+                layout->convertToARGB64PM(b, buffer32, buffer_size, clut, 0);
                 b += buffer_size;
                 j = 0;
             }
@@ -1741,7 +1738,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
             ++i; ++j;
         }
         if (j > 0) {
-            layout->convertToARGB64PM(b, buffer32, j, layout, clut);
+            layout->convertToARGB64PM(b, buffer32, j, clut, 0);
             b += j;
         }
     }
@@ -2423,7 +2420,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                                                         const QSpanData *data, int y, int x, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
+    const QVector<QRgb> *clut = data->texture.colorTable;
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -2479,9 +2476,9 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     int len2 = qMin(x, count - len1);
 
                     ptr1 = fetch(buf1, s1, x, len1);
-                    ptr1 = layout->convertToARGB32PM(buf1, ptr1, len1, layout, clut);
+                    ptr1 = layout->convertToARGB32PM(buf1, ptr1, len1, clut, 0);
                     ptr2 = fetch(buf2, s2, x, len1);
-                    ptr2 = layout->convertToARGB32PM(buf2, ptr2, len1, layout, clut);
+                    ptr2 = layout->convertToARGB32PM(buf2, ptr2, len1, clut, 0);
                     for (int i = 0; i < len1; ++i) {
                         uint t = ptr1[i];
                         uint b = ptr2[i];
@@ -2491,9 +2488,9 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
 
                     if (len2) {
                         ptr1 = fetch(buf1 + len1, s1, 0, len2);
-                        ptr1 = layout->convertToARGB32PM(buf1 + len1, ptr1, len2, layout, clut);
+                        ptr1 = layout->convertToARGB32PM(buf1 + len1, ptr1, len2, clut, 0);
                         ptr2 = fetch(buf2 + len1, s2, 0, len2);
-                        ptr2 = layout->convertToARGB32PM(buf2 + len1, ptr2, len2, layout, clut);
+                        ptr2 = layout->convertToARGB32PM(buf2 + len1, ptr2, len2, clut, 0);
                         for (int i = 0; i < len2; ++i) {
                             uint t = ptr1[i];
                             uint b = ptr2[i];
@@ -2512,9 +2509,9 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     int leading = start - x;
 
                     ptr1 = fetch(buf1 + leading, s1, start, len);
-                    ptr1 = layout->convertToARGB32PM(buf1 + leading, ptr1, len, layout, clut);
+                    ptr1 = layout->convertToARGB32PM(buf1 + leading, ptr1, len, clut, 0);
                     ptr2 = fetch(buf2 + leading, s2, start, len);
-                    ptr2 = layout->convertToARGB32PM(buf2 + leading, ptr2, len, layout, clut);
+                    ptr2 = layout->convertToARGB32PM(buf2 + leading, ptr2, len, clut, 0);
 
                     for (int i = 0; i < len; ++i) {
                         uint t = ptr1[i];
@@ -2576,8 +2573,8 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
 
                         fx += fdx;
                     }
-                    layout->convertToARGB32PM(buf1, buf1, len * 2, layout, clut);
-                    layout->convertToARGB32PM(buf2, buf2, len * 2, layout, clut);
+                    layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
+                    layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
                     if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
                         int disty = (fy & 0x0000ffff) >> 8;
@@ -2638,8 +2635,8 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     fx += fdx;
                     fy += fdy;
                 }
-                layout->convertToARGB32PM(buf1, buf1, len * 2, layout, clut);
-                layout->convertToARGB32PM(buf2, buf2, len * 2, layout, clut);
+                layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
+                layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
                 if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
                     //if we are zooming more than 8 times, we use 8bit precision for the position.
@@ -2730,8 +2727,8 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     fw += fdw;
             }
 
-            layout->convertToARGB32PM(buf1, buf1, len * 2, layout, clut);
-            layout->convertToARGB32PM(buf2, buf2, len * 2, layout, clut);
+            layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
+            layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
             for (int i = 0; i < len; ++i) {
                 int distx = distxs[i];
@@ -2752,7 +2749,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                                                              const QSpanData *data, int y, int x, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
-    const QRgb *clut = data->texture.colorTable ? data->texture.colorTable->constData() : 0;
+    const QVector<QRgb> *clut = data->texture.colorTable;
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -2863,9 +2860,9 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
 
                     fx += fdx;
                 }
-                layout->convertToARGB64PM(buf1, sbuf1, len * 2, layout, clut);
+                layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
                 if (disty)
-                    layout->convertToARGB64PM(buf2, sbuf2, len * 2, layout, clut);
+                    layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
 
                 for (int i = 0; i < len; ++i) {
                     int distx = (fracX & 0x0000ffff);
@@ -3001,8 +2998,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     fx += fdx;
                     fy += fdy;
                 }
-                layout->convertToARGB64PM(buf1, sbuf1, len * 2, layout, clut);
-                layout->convertToARGB64PM(buf2, sbuf2, len * 2, layout, clut);
+                layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
+                layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
 
                 for (int i = 0; i < len; ++i) {
                     int distx = (fracX & 0x0000ffff);
@@ -3073,8 +3070,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     fw += fdw;
             }
 
-            layout->convertToARGB64PM(buf1, sbuf1, len * 2, layout, clut);
-            layout->convertToARGB64PM(buf2, sbuf2, len * 2, layout, clut);
+            layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
+            layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
 
             for (int i = 0; i < len; ++i) {
                 int distx = distxs[i];
@@ -6321,7 +6318,7 @@ void qt_memfill32(quint32 *dest, quint32 color, int count)
 #endif
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
-template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QVector<QRgb> *, QDitherInfo *);
 #endif
 
 extern void qInitBlendFunctions();
@@ -6397,14 +6394,19 @@ static void qInitDrawhelperFunctions()
 #if defined(QT_COMPILER_SUPPORTS_SSE4_1)
     if (qCpuHasFeature(SSE4_1)) {
 #if !defined(__SSE4_1__)
-        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
-        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                                    const QVector<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                                      const QVector<QRgb> *, QDitherInfo *);
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
 #endif
-        extern const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
-        extern const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
-        extern const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                                      const QVector<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                                        const QVector<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                                    const QVector<QRgb> *, QDitherInfo *);
         qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
@@ -6415,8 +6417,10 @@ static void qInitDrawhelperFunctions()
 
 #if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
     if (qCpuHasFeature(AVX2)) {
-        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
-        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
+                                                                    const QVector<QRgb> *, QDitherInfo *);
+        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
+                                                                      const QVector<QRgb> *, QDitherInfo *);
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_avx2;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_avx2;
     }

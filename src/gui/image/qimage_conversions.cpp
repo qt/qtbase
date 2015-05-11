@@ -108,7 +108,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
 
 // The drawhelper conversions from/to RGB32 are passthroughs which is not always correct for general image conversion.
 static const uint *QT_FASTCALL convertRGB32FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
+                                                        const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = 0xff000000 | qUnpremultiply(src[i]);
@@ -116,7 +116,7 @@ static const uint *QT_FASTCALL convertRGB32FromARGB32PM(uint *buffer, const uint
 }
 
 static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                      const QPixelLayout *, const QRgb *)
+                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = 0xff000000 |src[i];
@@ -124,7 +124,8 @@ static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *
 }
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
-extern const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count, const QPixelLayout *, const QRgb *);
+extern const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
+                                                             const QVector<QRgb> *, QDitherInfo *);
 #endif
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
@@ -164,8 +165,8 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         while (x < src->width) {
             int l = qMin(src->width - x, buffer_size);
             const uint *ptr = fetch(buffer, srcData, x, l);
-            ptr = convertToARGB32PM(buffer, ptr, l, srcLayout, 0);
-            ptr = convertFromARGB32PM(buffer, ptr, l, destLayout, 0);
+            ptr = convertToARGB32PM(buffer, ptr, l, 0, 0);
+            ptr = convertFromARGB32PM(buffer, ptr, l, 0, 0);
             store(destData, ptr, x, l);
             x += l;
         }
@@ -213,8 +214,8 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         while (x < data->width) {
             int l = qMin(data->width - x, buffer_size);
             const uint *ptr = fetch(buffer, srcData, x, l);
-            ptr = convertToARGB32PM(buffer, ptr, l, srcLayout, 0);
-            ptr = convertFromARGB32PM(buffer, ptr, l, destLayout, 0);
+            ptr = convertToARGB32PM(buffer, ptr, l, 0, 0);
+            ptr = convertFromARGB32PM(buffer, ptr, l, 0, 0);
             // The conversions might be passthrough and not use the buffer, in that case we are already done.
             if (srcData != (const uchar*)ptr)
                 store(srcData, ptr, x, l);

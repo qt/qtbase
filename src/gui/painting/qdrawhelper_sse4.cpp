@@ -45,19 +45,19 @@
 QT_BEGIN_NAMESPACE
 
 const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                     const QPixelLayout *, const QRgb *)
+                                                     const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertARGB32ToARGB32PM(buffer, src, count);
 }
 
 const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     return qt_convertRGBA8888ToARGB32PM(buffer, src, count);
 }
 
 const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
+                                                       const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qUnpremultiply_sse4(src[i]);
@@ -65,7 +65,7 @@ const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint 
 }
 
 const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
+                                                         const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(qUnpremultiply_sse4(src[i]));
@@ -73,7 +73,7 @@ const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uin
 }
 
 const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                     const QPixelLayout *, const QRgb *)
+                                                     const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply_sse4(src[i]));
@@ -82,7 +82,7 @@ const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *s
 
 template<QtPixelOrder PixelOrder>
 const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                          const QPixelLayout *, const QRgb *)
+                                                          const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = qConvertArgb32ToA2rgb30_sse4<PixelOrder>(src[i]);
@@ -91,10 +91,10 @@ const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4(uint *buffer, const ui
 
 template
 const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uint *buffer, const uint *src, int count,
-                                                                         const QPixelLayout *, const QRgb *);
+                                                                         const QVector<QRgb> *, QDitherInfo *);
 template
 const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>(uint *buffer, const uint *src, int count,
-                                                                         const QPixelLayout *, const QRgb *);
+                                                                         const QVector<QRgb> *, QDitherInfo *);
 
 QT_END_NAMESPACE
 

@@ -2275,7 +2275,7 @@ QRgb QImage::pixel(int x, int y) const
     const QPixelLayout *layout = &qPixelLayouts[d->format];
     uint result;
     const uint *ptr = qFetchPixels[layout->bpp](&result, s, x, 1);
-    return *layout->convertToARGB32PM(&result, ptr, 1, layout, 0);
+    return *layout->convertToARGB32PM(&result, ptr, 1, 0, 0);
 }
 
 /*!
@@ -2377,7 +2377,7 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
 
     const QPixelLayout *layout = &qPixelLayouts[d->format];
     uint result;
-    const uint *ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, layout, 0);
+    const uint *ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, 0, 0);
     qStorePixels[layout->bpp](s, ptr, x, 1);
 }
 
@@ -2557,7 +2557,7 @@ bool QImage::allGray() const
         while (x < d->width) {
             int l = qMin(d->width - x, buffer_size);
             const uint *ptr = fetch(buffer, b, x, l);
-            ptr = layout->convertToARGB32PM(buffer, ptr, l, layout, 0);
+            ptr = layout->convertToARGB32PM(buffer, ptr, l, 0, 0);
             for (int i = 0; i < l; ++i) {
                 if (!qIsGray(ptr[i]))
                     return false;

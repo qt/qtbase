@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 const uint *QT_FASTCALL convertRGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
-                                                      const QPixelLayout *, const QRgb *)
+                                                      const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = 0xff000000 | qUnpremultiply_sse4(src[i]);
