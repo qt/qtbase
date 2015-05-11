@@ -90,12 +90,14 @@ struct QTBUG_31218_Derived : QTBUG_31218<-1<0> {};
 class CreatableGadget
 {
     Q_GADGET
-    Q_PROPERTY(int a MEMBER a)
 public:
-    Q_INVOKABLE CreatableGadget() : a(0xdeadbeef) { }
-
-    int a;
+    Q_INVOKABLE CreatableGadget()
+    {
+        CreatableGadget::qt_static_metacall((QObject*)this, QMetaObject::ReadProperty, -1, Q_NULLPTR);
+    }
 };
+
+CreatableGadget creatableGadget; // Force the compiler to use the constructor
 
 struct MyStruct {};
 struct MyStruct2 {};

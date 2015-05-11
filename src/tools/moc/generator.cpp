@@ -448,7 +448,8 @@ void Generator::generateCode()
 // Generate internal qt_static_metacall() function
 //
     const bool hasStaticMetaCall = !isQt &&
-            (cdef->hasQObject || !cdef->methodList.isEmpty() || !cdef->propertyList.isEmpty());
+            (cdef->hasQObject || !cdef->methodList.isEmpty()
+             || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
     if (hasStaticMetaCall)
         generateStaticMetacall();
 
