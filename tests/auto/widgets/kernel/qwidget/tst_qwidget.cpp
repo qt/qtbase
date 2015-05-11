@@ -84,6 +84,7 @@
 #  include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
+#include <private/qhighdpiscaling_p.h>
 
 static HWND winHandleOf(const QWidget *w)
 {
@@ -191,6 +192,11 @@ static QByteArray msgComparisonFailed(T v1, const char *op, T v2)
     QString s;
     QDebug(&s) << v1 << op << v2;
     return s.toLocal8Bit();
+}
+
+static inline bool qFuzzyCompare(const QPoint &p1, const QPoint p2)
+{
+    return (p1 - p2).manhattanLength() <= 2;
 }
 
 class tst_QWidget : public QObject
@@ -1905,7 +1911,7 @@ void tst_QWidget::windowState()
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & Qt::WindowMaximized));
-    QTRY_COMPARE(widget1.pos(), pos);
+    QTRY_VERIFY(qFuzzyCompare(widget1.pos(), pos));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowMinimized);
@@ -1926,7 +1932,7 @@ void tst_QWidget::windowState()
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized)));
-    QTRY_COMPARE(widget1.pos(), pos);
+    QTRY_VERIFY(qFuzzyCompare(widget1.pos(), pos));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
@@ -1947,7 +1953,7 @@ void tst_QWidget::windowState()
     widget1.setWindowState(Qt::WindowNoState);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowNoState);
-    QTRY_COMPARE(widget1.pos(), pos);
+    QTRY_VERIFY(qFuzzyCompare(widget1.pos(), pos));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
@@ -1980,7 +1986,7 @@ void tst_QWidget::windowState()
     QVERIFY(!(widget1.windowState() & stateMask));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
-    QTRY_COMPARE(widget1.pos(), pos);
+    QTRY_VERIFY(qFuzzyCompare(widget1.pos(), pos));
     QTRY_COMPARE(widget1.size(), size);
 }
 
@@ -3678,6 +3684,8 @@ void tst_QWidget::optimizedResizeMove()
 
 void tst_QWidget::optimizedResize_topLevel()
 {
+    if (QHighDpiScaling::isActive())
+        QSKIP("Skip due to rounding errors in the regions.");
     StaticWidget topLevel;
     topLevel.gotPaintEvent = false;
     topLevel.show();

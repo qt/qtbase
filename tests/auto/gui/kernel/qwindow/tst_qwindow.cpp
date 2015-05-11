@@ -35,6 +35,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <QtGui/QPainter>
 
 #include <QtTest/QtTest>
@@ -265,6 +266,11 @@ void tst_QWindow::positioning_data()
 #endif
 }
 
+static inline bool qFuzzyCompare(const QPoint &p1, const QPoint p2)
+{
+    return (p1 - p2).manhattanLength() <= 2;
+}
+
 void tst_QWindow::positioning()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
@@ -327,21 +333,23 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().center();
+        const QPlatformScreen *pScreen = QPlatformScreen::platformScreenForWindow(&window);
+        const QRect availableGeometry = QHighDpi::fromNativeScreenGeometry(pScreen->availableGeometry(), pScreen->screen());
+        const QPoint framePos = availableGeometry.center();
 
         window.reset();
         const QPoint oldFramePos = window.framePosition();
         window.setFramePosition(framePos);
 
         QTRY_VERIFY(window.received(QEvent::Move));
-        if (window.framePosition() != framePos) {
+        if (!qFuzzyCompare(window.framePosition(), framePos)) {
             qDebug() << "About to fail auto-test. Here is some additional information:";
             qDebug() << "window.framePosition() == " << window.framePosition();
             qDebug() << "old frame position == " << oldFramePos;
             qDebug() << "We received " << window.received(QEvent::Move) << " move events";
             qDebug() << "frame positions after each move event:" << window.m_framePositionsOnMove;
         }
-        QTRY_COMPARE(framePos, window.framePosition());
+        QTRY_VERIFY(qFuzzyCompare(window.framePosition(), framePos));
         QTRY_COMPARE(originalMargins, window.frameMargins());
         QCOMPARE(window.position(), window.framePosition() + QPoint(originalMargins.left(), originalMargins.top()));
 
@@ -661,8 +669,9 @@ void tst_QWindow::testInputEvents()
     QCOMPARE(window.keyReleaseCode, int(Qt::Key_A));
 
     QPointF local(12, 34);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::NoButton);
+    const QPointF deviceLocal = QHighDpi::toNativeLocalPosition(local, &window);
+    QWindowSystemInterface::handleMouseEvent(&window, deviceLocal, deviceLocal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, deviceLocal, deviceLocal, Qt::NoButton);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
@@ -688,15 +697,17 @@ void tst_QWindow::testInputEvents()
     // Now with null pointer as window. local param should not be utilized:
     // handleMouseEvent() with tlw == 0 means the event is in global coords only.
     window.mousePressButton = window.mouseReleaseButton = 0;
-    QPointF nonWindowGlobal(window.geometry().topRight() + QPoint(200, 50)); // not inside the window
-    QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::NoButton);
+    const QPointF nonWindowGlobal(window.geometry().topRight() + QPoint(200, 50)); // not inside the window
+    const QPointF deviceNonWindowGlobal = QHighDpi::toNativePixels(nonWindowGlobal, window.screen());
+    QWindowSystemInterface::handleMouseEvent(0, deviceNonWindowGlobal, deviceNonWindowGlobal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(0, deviceNonWindowGlobal, deviceNonWindowGlobal, Qt::NoButton);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, 0);
     QCOMPARE(window.mouseReleaseButton, 0);
-    QPointF windowGlobal = window.mapToGlobal(local.toPoint());
-    QWindowSystemInterface::handleMouseEvent(0, windowGlobal, windowGlobal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(0, windowGlobal, windowGlobal, Qt::NoButton);
+    const QPointF windowGlobal = window.mapToGlobal(local.toPoint());
+    const QPointF deviceWindowGlobal = QHighDpi::toNativePixels(windowGlobal, window.screen());
+    QWindowSystemInterface::handleMouseEvent(0, deviceWindowGlobal, deviceWindowGlobal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(0, deviceWindowGlobal, deviceWindowGlobal, Qt::NoButton);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
@@ -718,7 +729,7 @@ void tst_QWindow::touchToMouseTranslation()
     const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
     tp1.state = Qt::TouchPointPressed;
-    tp1.area = pressArea;
+    tp1.area = QHighDpi::toNativePixels(pressArea, &window);
     tp2.id = 2;
     tp2.state = Qt::TouchPointPressed;
     points << tp1 << tp2;
@@ -729,7 +740,7 @@ void tst_QWindow::touchToMouseTranslation()
     tp1.state = Qt::TouchPointStationary;
     tp2.id = 1;
     tp2.state = Qt::TouchPointMoved;
-    tp2.area = moveArea;
+    tp2.area = QHighDpi::toNativePixels(moveArea, &window);
     points.clear();
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
@@ -946,12 +957,13 @@ void tst_QWindow::touchCancelWithTouchToMouse()
     tp1.id = 1;
 
     tp1.state = Qt::TouchPointPressed;
-    tp1.area = QRect(100, 100, 4, 4);
+    const QRect area(100, 100, 4, 4);
+    tp1.area = QHighDpi::toNativePixels(area, &window);
     points << tp1;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
-    QTRY_COMPARE(window.mousePressScreenPos, points[0].area.center());
+    QTRY_VERIFY(qFuzzyCompare(window.mousePressScreenPos.toPoint(), area.center()));
 
     // Cancel the touch. Should result in a mouse release for windows that have
     // have an active touch-to-mouse sequence.
@@ -1149,8 +1161,9 @@ void tst_QWindow::mouseEventSequence()
 
     ulong timestamp = 0;
     QPointF local(12, 34);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    const QPointF deviceLocal = QHighDpi::toNativePixels(local, &window);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, deviceLocal, deviceLocal, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, deviceLocal, deviceLocal, Qt::NoButton);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 1);
     QCOMPARE(window.mouseReleasedCount, 1);
@@ -1337,14 +1350,16 @@ void tst_QWindow::tabletEvents()
     window.setGeometry(QRect(m_availableTopLeft + QPoint(10, 10), m_testWindowSize));
     qGuiApp->installEventFilter(&window);
 
-    QPoint local(10, 10);
-    QPoint global = window.mapToGlobal(local);
-    QWindowSystemInterface::handleTabletEvent(&window, true, local, global, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    const QPoint local(10, 10);
+    const QPoint global = window.mapToGlobal(local);
+    const QPoint deviceLocal = QHighDpi::toNativeLocalPosition(local, &window).toPoint();
+    const QPoint deviceGlobal = QHighDpi::toNativePixels(global, window.screen());
+    QWindowSystemInterface::handleTabletEvent(&window, true, deviceLocal, deviceGlobal, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.eventType == QEvent::TabletPress);
     QTRY_COMPARE(window.eventGlobal.toPoint(), global);
     QTRY_COMPARE(window.eventLocal.toPoint(), local);
-    QWindowSystemInterface::handleTabletEvent(&window, false, local, global, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    QWindowSystemInterface::handleTabletEvent(&window, false, deviceLocal, deviceGlobal, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.eventType == QEvent::TabletRelease);
 
