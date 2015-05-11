@@ -53,12 +53,12 @@ QMimeTypePrivate::QMimeTypePrivate()
 {}
 
 QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
-        : name(other.d->name),
+      : loaded(other.d->loaded),
+        name(other.d->name),
         localeComments(other.d->localeComments),
         genericIconName(other.d->genericIconName),
         iconName(other.d->iconName),
-        globPatterns(other.d->globPatterns),
-        loaded(other.d->loaded)
+        globPatterns(other.d->globPatterns)
 {}
 
 void QMimeTypePrivate::clear()

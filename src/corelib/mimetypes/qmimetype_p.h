@@ -66,12 +66,12 @@ public:
 
     void addGlobPattern(const QString &pattern);
 
+    bool loaded; // QSharedData leaves a 4 byte gap, so don't put 8 byte members first
     QString name;
     LocaleHash localeComments;
     QString genericIconName;
     QString iconName;
     QStringList globPatterns;
-    bool loaded;
 };
 
 QT_END_NAMESPACE

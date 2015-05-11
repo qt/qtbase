@@ -972,8 +972,8 @@ struct QMessagePattern {
     QElapsedTimer timer;
 #endif
 #ifdef QLOGGING_HAVE_BACKTRACE
-    int backtraceDepth;
     QString backtraceSeparator;
+    int backtraceDepth;
 #endif
 
     bool fromEnvironment;
@@ -986,8 +986,8 @@ QMessagePattern::QMessagePattern()
     : literals(0)
     , tokens(0)
 #ifdef QLOGGING_HAVE_BACKTRACE
-    , backtraceDepth(5)
     , backtraceSeparator(QLatin1Char('|'))
+    , backtraceDepth(5)
 #endif
     , fromEnvironment(false)
 {
