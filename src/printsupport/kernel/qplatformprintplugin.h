@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformPrinterSupport;
 
-#define QPlatformPrinterSupportFactoryInterface_iid "org.qt-project.QPlatformPrinterSupportFactoryInterface"
+#define QPlatformPrinterSupportFactoryInterface_iid "org.qt-project.QPlatformPrinterSupportFactoryInterface.5.1"
 
 class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupportPlugin : public QObject
 {
