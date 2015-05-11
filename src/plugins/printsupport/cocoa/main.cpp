@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "cocoa.json")
+    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "cocoa.json")
 
 public:
     QPlatformPrinterSupport *create(const QString &);
