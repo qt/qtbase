@@ -77,7 +77,7 @@
         if (QIOSIntegration::instance()->debugWindowManagement()) {
             static CGFloat hue = 0.0;
             CGFloat lastHue = hue;
-            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabsf(hue - lastHue))
+            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabs(hue - lastHue))
                 hue = drand48();
 
             #define colorWithBrightness(br) \
