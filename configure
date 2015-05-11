@@ -3306,7 +3306,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_RPATH="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
     CFG_PRECOMPILE="no" # Precompiled headers not supported with multiple -arch arguments
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
