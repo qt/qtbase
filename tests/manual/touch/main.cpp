@@ -38,14 +38,19 @@
 #include <QAction>
 #include <QMainWindow>
 #include <QSplitter>
+#include <QToolBar>
 #include <QVector>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QPlainTextEdit>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPaintEvent>
 #include <QScreen>
 #include <QDebug>
 #include <QTextStream>
+
+bool optIgnoreTouch = false;
 
 QDebug operator<<(QDebug debug, const QTouchDevice *d)
 {
@@ -92,27 +97,135 @@ bool EventFilter::eventFilter(QObject *o, QEvent *e)
     return false;
 }
 
+enum PointType {
+    TouchPoint,
+    MousePress,
+    MouseRelease
+};
+
+struct Point
+{
+    Point(const QPointF &p = QPoint(), PointType t = TouchPoint,
+          Qt::MouseEventSource s = Qt::MouseEventNotSynthesized) : pos(p), type(t), source(s) {}
+
+    QColor color() const;
+
+    QPointF pos;
+    PointType type;
+    Qt::MouseEventSource source;
+};
+
+QColor Point::color() const
+{
+    Qt::GlobalColor globalColor = Qt::black;
+    if (type != TouchPoint) {
+        switch (source) {
+        case Qt::MouseEventSynthesizedBySystem:
+            globalColor = Qt::red;
+            break;
+        case Qt::MouseEventSynthesizedByQt:
+            globalColor = Qt::blue;
+            break;
+        case Qt::MouseEventNotSynthesized:
+            break;
+        }
+    }
+    const QColor result(globalColor);
+    return type == MousePress ? result.lighter() : result;
+}
+
 class TouchTestWidget : public QWidget {
+    Q_OBJECT
+    Q_PROPERTY(bool drawPoints READ drawPoints WRITE setDrawPoints)
 public:
-    explicit TouchTestWidget(QWidget *parent = 0) : QWidget(parent)
+    explicit TouchTestWidget(QWidget *parent = 0) : QWidget(parent), m_drawPoints(true)
     {
         setAttribute(Qt::WA_AcceptTouchEvents);
     }
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE
-    {
-        switch (event->type()) {
-        case QEvent::TouchBegin:
-        case QEvent::TouchUpdate:
-        case QEvent::TouchEnd:
-            event->accept();
-            return true;
-        default:
-            break;
-        }
-        return QWidget::event(event);
-    }
+    bool drawPoints() const { return m_drawPoints; }
+
+public slots:
+    void clearPoints();
+    void setDrawPoints(bool drawPoints);
+
+protected:
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+
+private:
+     QVector<Point> m_points;
+     bool m_drawPoints;
 };
+
+void TouchTestWidget::clearPoints()
+{
+    if (!m_points.isEmpty()) {
+        m_points.clear();
+        update();
+    }
+}
+
+void TouchTestWidget::setDrawPoints(bool drawPoints)
+{
+    if (m_drawPoints != drawPoints) {
+        clearPoints();
+        m_drawPoints = drawPoints;
+    }
+}
+
+bool TouchTestWidget::event(QEvent *event)
+{
+    const QEvent::Type type = event->type();
+    switch (type) {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+        if (m_drawPoints) {
+            const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
+            m_points.append(Point(me->localPos(),
+                                  type == QEvent::MouseButtonPress ? MousePress : MouseRelease,
+                                  me->source()));
+            update();
+        }
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+        if (m_drawPoints) {
+            foreach (const QTouchEvent::TouchPoint &p, static_cast<const QTouchEvent *>(event)->touchPoints())
+                m_points.append(Point(p.pos(), TouchPoint));
+            update();
+        }
+    case QEvent::TouchEnd:
+        if (optIgnoreTouch)
+            event->ignore();
+        else
+            event->accept();
+        return true;
+    default:
+        break;
+    }
+    return QWidget::event(event);
+}
+
+void TouchTestWidget::paintEvent(QPaintEvent *)
+{
+    // Draw touch points as dots, mouse press as light filled circles, mouse release as circles.
+    QPainter painter(this);
+    const QRectF geom = QRectF(QPointF(0, 0), QSizeF(size()));
+    painter.fillRect(geom, Qt::white);
+    painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
+    foreach (const Point &point, m_points) {
+        if (geom.contains(point.pos)) {
+            QPainterPath painterPath;
+            const qreal radius = point.type == TouchPoint ? 1 : 4;
+            painterPath.addEllipse(point.pos, radius, radius);
+            if (point.type == MouseRelease)
+                painter.strokePath(painterPath, QPen(point.color()));
+            else
+                painter.fillPath(painterPath, point.color());
+        }
+    }
+}
 
 class MainWindow : public QMainWindow
 {
@@ -126,7 +239,7 @@ public slots:
     void dumpTouchDevices();
 
 private:
-    QWidget *m_touchWidget;
+    TouchTestWidget *m_touchWidget;
     QPlainTextEdit *m_logTextEdit;
 };
 
@@ -137,23 +250,37 @@ MainWindow::MainWindow()
     setWindowTitle(QStringLiteral("Touch Event Tester ") + QT_VERSION_STR);
 
     setObjectName("MainWin");
+    QToolBar *toolBar = new QToolBar(this);
+    addToolBar(Qt::TopToolBarArea, toolBar);
     QMenu *fileMenu = menuBar()->addMenu("File");
-    QAction *da = fileMenu->addAction(QStringLiteral("Dump devices"));
-    da->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    connect(da, SIGNAL(triggered()), this, SLOT(dumpTouchDevices()));
-    QAction *qa = fileMenu->addAction(QStringLiteral("Quit"));
-    qa->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-    connect(qa, SIGNAL(triggered()), this, SLOT(close()));
+    QAction *dumpDeviceAction = fileMenu->addAction(QStringLiteral("Dump devices"));
+    dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    connect(dumpDeviceAction, SIGNAL(triggered()), this, SLOT(dumpTouchDevices()));
+    toolBar->addAction(dumpDeviceAction);
+    QAction *clearLogAction = fileMenu->addAction(QStringLiteral("Clear Log"));
+    clearLogAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
+    connect(clearLogAction, SIGNAL(triggered()), m_logTextEdit, SLOT(clear()));
+    toolBar->addAction(clearLogAction);
+    QAction *toggleDrawPointAction = fileMenu->addAction(QStringLiteral("Draw Points"));
+    toggleDrawPointAction->setCheckable(true);
+    toggleDrawPointAction->setChecked(m_touchWidget->drawPoints());
+    connect(toggleDrawPointAction, SIGNAL(toggled(bool)), m_touchWidget, SLOT(setDrawPoints(bool)));
+    toolBar->addAction(toggleDrawPointAction);
+    QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
+    clearPointAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
+    connect(clearPointAction, SIGNAL(triggered()), m_touchWidget, SLOT(clearPoints()));
+    toolBar->addAction(clearPointAction);
+    QAction *quitAction = fileMenu->addAction(QStringLiteral("Quit"));
+    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    toolBar->addAction(quitAction);
 
-    QSplitter *mainSplitter = new QSplitter(Qt::Vertical);
+    QSplitter *mainSplitter = new QSplitter(Qt::Vertical, this);
 
     m_touchWidget->setObjectName(QStringLiteral("TouchWidget"));
-    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
-    m_touchWidget->setMinimumSize(screenSize / 2);
     mainSplitter->addWidget(m_touchWidget);
 
     m_logTextEdit->setObjectName(QStringLiteral("LogTextEdit"));
-    m_logTextEdit->setMinimumHeight(screenSize.height() / 4);
     mainSplitter->addWidget(m_logTextEdit);
     setCentralWidget(mainSplitter);
 
@@ -183,12 +310,19 @@ int main(int argc, char *argv[])
     const QCommandLineOption globalFilterOption(QStringLiteral("global"),
                                              QStringLiteral("Global event filter"));
     parser.addOption(globalFilterOption);
+
+    const QCommandLineOption ignoreTouchOption(QStringLiteral("ignore"),
+                                               QStringLiteral("Ignore touch events (for testing mouse emulation)."));
+    parser.addOption(ignoreTouchOption);
     parser.process(QApplication::arguments());
+    optIgnoreTouch = parser.isSet(ignoreTouchOption);
 
     MainWindow w;
+    const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
+    w.resize(screenSize / 2);
+    const QSize sizeDiff = screenSize - w.size();
+    w.move(sizeDiff.width() / 2, sizeDiff.height() / 2);
     w.show();
-    const QSize pos = QGuiApplication::primaryScreen()->availableGeometry().size() - w.size();
-    w.move(pos.width() / 2, pos.height() / 2);
 
     EventTypeVector eventTypes;
     eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease
