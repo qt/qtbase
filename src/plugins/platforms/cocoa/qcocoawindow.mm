@@ -415,7 +415,7 @@ QCocoaWindow::~QCocoaWindow()
     if (m_isNSWindowChild) {
         if (m_parentCocoaWindow)
             m_parentCocoaWindow->removeChildWindow(this);
-    } else if (parent()) {
+    } else if ([m_contentView superview]) {
         [m_contentView removeFromSuperview];
     }
 
