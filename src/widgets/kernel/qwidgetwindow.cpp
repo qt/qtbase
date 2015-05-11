@@ -45,6 +45,7 @@
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformwindow.h>
 #include <private/qgesturemanager_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -673,7 +674,7 @@ void QWidgetWindow::updateNormalGeometry()
      // Ask platform window, default to widget geometry.
     QRect normalGeometry;
     if (const QPlatformWindow *pw = handle())
-        normalGeometry = pw->normalGeometry();
+        normalGeometry = QHighDpi::fromNativePixels(pw->normalGeometry(), this);
     if (!normalGeometry.isValid() && effectiveState(m_widget->windowState()) == Qt::WindowNoState)
         normalGeometry = m_widget->geometry();
     if (normalGeometry.isValid())
