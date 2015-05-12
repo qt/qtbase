@@ -807,11 +807,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             } else {
                 info_plist = escapeFilePath(fileFixify(info_plist));
             }
-            bool isApp = (project->first("TEMPLATE") == "app");
-            QString info_plist_out =
-                    bundle_dir + (isApp ? "Contents/Info.plist"
-                                        : "Versions/" + project->first("QMAKE_FRAMEWORK_VERSION")
-                                          + "/Resources/Info.plist");
+            bool isFramework = project->first("TEMPLATE") == "lib" && project->isActiveConfig("lib_bundle");
+            QString info_plist_out = bundle_dir +
+                (isFramework ? ("Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/Resources/Info.plist")
+                             : "Contents/Info.plist");
             bundledFiles << info_plist_out;
             alldeps << info_plist_out;
             QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
@@ -842,7 +841,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 bundleIdentifier.chop(10);
             commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
 
-            if (isApp) {
+            if (!isFramework) {
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
@@ -850,6 +849,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << arg;
                 t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
                   << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
+                  << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
                   << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                              QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
                   << "" << info_plist << " >" << info_plist_out << endl;
