@@ -142,7 +142,11 @@ bool QLockFilePrivate::isApparentlyStale() const
                 return true;
         }
     }
-#endif // !Q_OS_WINRT
+#else // !Q_OS_WINRT
+    Q_UNUSED(pid);
+    Q_UNUSED(hostname);
+    Q_UNUSED(appname);
+#endif // Q_OS_WINRT
     const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
     return staleLockTime > 0 && age > staleLockTime;
 }

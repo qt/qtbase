@@ -653,10 +653,12 @@ int QFileSystemModel::columnCount(const QModelIndex &parent) const
  */
 QVariant QFileSystemModel::myComputer(int role) const
 {
+#ifndef QT_NO_FILESYSTEMWATCHER
     Q_D(const QFileSystemModel);
+#endif
     switch (role) {
     case Qt::DisplayRole:
-        return d->myComputer();
+        return QFileSystemModelPrivate::myComputer();
 #ifndef QT_NO_FILESYSTEMWATCHER
     case Qt::DecorationRole:
         return d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Computer);

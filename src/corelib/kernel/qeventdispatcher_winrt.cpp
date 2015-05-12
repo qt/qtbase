@@ -484,7 +484,8 @@ bool QEventDispatcherWinRT::event(QEvent *e)
 QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
+    HRESULT hr;
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
     Q_ASSERT_SUCCEEDED(hr);
     HANDLE interruptHandle = CreateEventEx(NULL, NULL, NULL, SYNCHRONIZE|EVENT_MODIFY_STATE);
     timerIdToHandle.insert(INTERRUPT_HANDLE, interruptHandle);
