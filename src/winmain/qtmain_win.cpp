@@ -111,7 +111,7 @@ extern "C" int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR /*cmdParamarg*/, int
     argv[argc] = Q_NULLPTR;
     LocalFree(argvW);
     const int exitCode = main(argc, argv);
-    for (int i = 0; i < argc; ++i)
+    for (int i = 0; i < argc && argv[i]; ++i)
         delete [] argv[i];
     delete [] argv;
     return exitCode;
