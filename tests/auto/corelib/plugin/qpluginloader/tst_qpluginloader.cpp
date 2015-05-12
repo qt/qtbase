@@ -312,7 +312,7 @@ void tst_QPluginLoader::loadCorruptElf()
 
 void tst_QPluginLoader::loadMachO_data()
 {
-#ifdef Q_OF_MACH_O
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
     QTest::addColumn<int>("parseResult");
 
     QTest::newRow("/dev/null") << int(QMachOParser::NotSuitable);
@@ -348,7 +348,7 @@ void tst_QPluginLoader::loadMachO_data()
 
 void tst_QPluginLoader::loadMachO()
 {
-#ifdef Q_OF_MACH_O
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
     QFile f(QFINDTESTDATA(QTest::currentDataTag()));
     QVERIFY(f.open(QIODevice::ReadOnly));
     QByteArray data = f.readAll();
