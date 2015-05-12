@@ -38,22 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef void (*qt_qimageScaleFunc)(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                                   int dxx, int dyy, int dx, int dy, int dw,
-                                   int dh, int dow, int sow);
-
-static void qt_qimageScaleAARGB(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                         int dxx, int dyy, int dx, int dy, int dw,
-                         int dh, int dow, int sow);
-
-static void qt_qimageScaleAARGBA(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                          int dxx, int dyy, int dx, int dy, int dw,
-                          int dh, int dow, int sow);
-
-qt_qimageScaleFunc qt_qimageScaleArgb = qt_qimageScaleAARGBA;
-qt_qimageScaleFunc qt_qimageScaleRgb  = qt_qimageScaleAARGB;
-
-
 /*
  * Copyright (C) 2004, 2005 Daniel M. Duley
  *
@@ -794,11 +778,11 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
     }
 
     if (src.hasAlphaChannel())
-        qt_qimageScaleArgb(scaleinfo, (unsigned int *)buffer.scanLine(0),
-                           0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
+        qt_qimageScaleAARGBA(scaleinfo, (unsigned int *)buffer.scanLine(0),
+                             0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
     else
-        qt_qimageScaleRgb(scaleinfo, (unsigned int *)buffer.scanLine(0),
-                          0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
+        qt_qimageScaleAARGB(scaleinfo, (unsigned int *)buffer.scanLine(0),
+                            0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
 
     qimageFreeScaleInfo(scaleinfo);
     return buffer;
