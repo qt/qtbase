@@ -249,6 +249,7 @@ private slots:
     void qtbug_44783();
     void internalTransition();
     void conflictingTransition();
+    void qtbug_46059();
 };
 
 class TestState : public QState
@@ -6442,6 +6443,44 @@ void tst_QStateMachine::conflictingTransition()
     QTRY_COMPARE(machine.configuration().contains(&f1), false);
     QTRY_COMPARE(machine.configuration().contains(&f2), true);
     QTRY_COMPARE(machine.configuration().contains(&a1), false);
+
+    QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::qtbug_46059()
+{
+    QStateMachine machine;
+    QState a(&machine);
+        QState b(&a);
+        QState c(&a);
+        QState success(&a);
+    QState failure(&machine);
+
+    machine.setInitialState(&a);
+    a.setInitialState(&b);
+    b.addTransition(new EventTransition(QEvent::Type(QEvent::User + 1), &c));
+    c.addTransition(new EventTransition(QEvent::Type(QEvent::User + 2), &success));
+    b.addTransition(new EventTransition(QEvent::Type(QEvent::User + 2), &failure));
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(machine.configuration().contains(&a), true);
+    QTRY_COMPARE(machine.configuration().contains(&b), true);
+    QTRY_COMPARE(machine.configuration().contains(&c), false);
+    QTRY_COMPARE(machine.configuration().contains(&failure), false);
+    QTRY_COMPARE(machine.configuration().contains(&success), false);
+
+    machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 0)), QStateMachine::HighPriority);
+    machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)), QStateMachine::HighPriority);
+    machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 2)), QStateMachine::NormalPriority);
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(machine.configuration().contains(&a), true);
+    QTRY_COMPARE(machine.configuration().contains(&b), false);
+    QTRY_COMPARE(machine.configuration().contains(&c), false);
+    QTRY_COMPARE(machine.configuration().contains(&failure), false);
+    QTRY_COMPARE(machine.configuration().contains(&success), true);
 
     QVERIFY(machine.isRunning());
 }

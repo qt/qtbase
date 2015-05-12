@@ -1925,7 +1925,7 @@ void QStateMachinePrivate::_q_process()
             delete e;
             e = 0;
         }
-        if (enabledTransitions.isEmpty() && ((e = dequeueInternalEvent()) != 0)) {
+        while (enabledTransitions.isEmpty() && ((e = dequeueInternalEvent()) != 0)) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": dequeued internal event" << e << "of type" << e->type();
 #endif
@@ -1935,8 +1935,7 @@ void QStateMachinePrivate::_q_process()
                 e = 0;
             }
         }
-        if (enabledTransitions.isEmpty()) {
-            if ((e = dequeueExternalEvent()) != 0) {
+        while (enabledTransitions.isEmpty() && ((e = dequeueExternalEvent()) != 0)) {
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q << ": dequeued external event" << e << "of type" << e->type();
 #endif
@@ -1945,24 +1944,19 @@ void QStateMachinePrivate::_q_process()
                     delete e;
                     e = 0;
                 }
-            } else {
-                if (isInternalEventQueueEmpty()) {
-                    processing = false;
-                    stopProcessingReason = EventQueueEmpty;
-                }
-            }
         }
-        if (!enabledTransitions.isEmpty()) {
-            didChange = true;
-            q->beginMicrostep(e);
-            microstep(e, enabledTransitions, &calculationCache);
-            q->endMicrostep(e);
-        }
-        else {
+        if (enabledTransitions.isEmpty()) {
+            processing = false;
+            stopProcessingReason = EventQueueEmpty;
             noMicrostep();
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": no transitions enabled";
 #endif
+        } else {
+            didChange = true;
+            q->beginMicrostep(e);
+            microstep(e, enabledTransitions, &calculationCache);
+            q->endMicrostep(e);
         }
         delete e;
     }
