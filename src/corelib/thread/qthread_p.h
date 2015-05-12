@@ -57,6 +57,16 @@
 
 #include <algorithm>
 
+#ifdef Q_OS_WINRT
+namespace ABI {
+    namespace Windows {
+        namespace Foundation {
+            struct IAsyncAction;
+        }
+    }
+}
+#endif // Q_OS_WINRT
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
@@ -124,10 +134,6 @@ private:
 };
 
 #ifndef QT_NO_THREAD
-
-#ifdef Q_OS_WINRT
-namespace ABI { namespace Windows { namespace Foundation { struct IAsyncAction; } } }
-#endif
 
 class QThreadPrivate : public QObjectPrivate
 {

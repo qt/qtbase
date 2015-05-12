@@ -36,12 +36,14 @@
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
-QT_BEGIN_NAMESPACE
-
 #ifdef QT_WINRT_USE_DWRITE
 struct IDWriteFontFile;
 struct IDWriteFontFamily;
+#endif
 
+QT_BEGIN_NAMESPACE
+
+#ifdef QT_WINRT_USE_DWRITE
 struct FontDescription
 {
     quint32 index;

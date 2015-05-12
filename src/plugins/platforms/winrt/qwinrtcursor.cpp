@@ -46,7 +46,7 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::Foundation;
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QWinRTCursorPrivate
 {
@@ -155,3 +155,6 @@ QPoint QWinRTCursor::pos() const
     coreWindow->get_PointerPosition(&point);
     return QPoint(point.X, point.Y);
 }
+
+QT_END_NAMESPACE
+

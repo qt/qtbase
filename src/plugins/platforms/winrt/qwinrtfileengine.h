@@ -36,8 +36,6 @@
 
 #include <private/qabstractfileengine_p.h>
 
-QT_BEGIN_NAMESPACE
-
 namespace ABI {
     namespace Windows {
         namespace Storage {
@@ -45,6 +43,8 @@ namespace ABI {
         }
     }
 }
+
+QT_BEGIN_NAMESPACE
 
 class QWinRTFileEngineHandlerPrivate;
 class QWinRTFileEngineHandler : public QAbstractFileEngineHandler

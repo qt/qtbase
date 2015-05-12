@@ -36,7 +36,7 @@
 
 #include <qpa/qplatformcursor.h>
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QWinRTCursorPrivate;
 class QWinRTCursor : public QPlatformCursor
@@ -53,5 +53,7 @@ private:
     QScopedPointer<QWinRTCursorPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTCursor)
 };
+
+QT_END_NAMESPACE
 
 #endif // QWINRTCURSOR_H

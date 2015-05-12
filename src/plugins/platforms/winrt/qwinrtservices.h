@@ -37,7 +37,7 @@
 #include <qpa/qplatformservices.h>
 #include <QtCore/QScopedPointer>
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QWinRTServicesPrivate;
 class QWinRTServices : public QPlatformServices
@@ -53,5 +53,7 @@ private:
     QScopedPointer<QWinRTServicesPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTServices)
 };
+
+QT_END_NAMESPACE
 
 #endif // QWINRTSERVICES_H

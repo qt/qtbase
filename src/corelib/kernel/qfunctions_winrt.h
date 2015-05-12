@@ -131,9 +131,13 @@ generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
 generate_inline_return_func0(tzset, void)
 generate_inline_return_func0(_tzset, void)
 
-QT_BEGIN_NAMESPACE
+namespace Microsoft {
+    namespace WRL {
+        template <typename T> class ComPtr;
+    }
+}
 
-namespace Microsoft { namespace WRL { template <typename T> class ComPtr; } }
+QT_BEGIN_NAMESPACE
 
 namespace QWinRTFunctions {
 
