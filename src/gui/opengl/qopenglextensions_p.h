@@ -76,6 +76,9 @@ public:
     void (QOPENGLF_APIENTRYP TexStorage2D)(GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height);
 
 private:
+    bool init();
+    QFunctionPointer resolve(const char *name);
+
     QLibrary m_gl;
 };
 
