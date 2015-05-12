@@ -1815,7 +1815,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type, window);
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;

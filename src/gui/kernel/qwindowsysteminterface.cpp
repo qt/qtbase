@@ -449,7 +449,10 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
     handleTouchEvent(w, time, device, points, mods);
 }
 
-QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type, const QWindow *window)
+QList<QTouchEvent::TouchPoint>
+    QWindowSystemInterfacePrivate::fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
+                                                         const QWindow *window,
+                                                         QEvent::Type *type)
 {
     QList<QTouchEvent::TouchPoint> touchPoints;
     Qt::TouchPointStates states;
@@ -491,6 +494,27 @@ QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints
     return touchPoints;
 }
 
+QList<QWindowSystemInterface::TouchPoint>
+    QWindowSystemInterfacePrivate::toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
+                                                       const QWindow *window)
+{
+    QList<QWindowSystemInterface::TouchPoint> newList;
+    newList.reserve(pointList.size());
+    foreach (const QTouchEvent::TouchPoint &pt, pointList) {
+        QWindowSystemInterface::TouchPoint p;
+        p.id = pt.id();
+        p.flags = pt.flags();
+        p.normalPosition = QHighDpi::toNativeLocalPosition(pt.normalizedPos(), window);
+        p.area = QHighDpi::toNativePixels(pt.screenRect(), window);
+        p.pressure = pt.pressure();
+        p.state = pt.state();
+        p.velocity = pt.velocity();
+        p.rawPositions = pt.rawScreenPositions();
+        newList.append(p);
+    }
+    return newList;
+}
+
 void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
@@ -501,7 +525,7 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
         return;
 
     QEvent::Type type;
-    QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type, tlw);
+    QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, tlw, &type);
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
@@ -810,35 +834,11 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
     return QWindowSystemInterface::tryHandleShortcutEventToObject(o, timestamp, k, mods, text, autorep, count);
 }
 
-static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-{
-    QWindowSystemInterface::TouchPoint p;
-    p.id = pt.id();
-    p.flags = pt.flags();
-    p.normalPosition = pt.normalizedPos();
-    p.area = pt.screenRect();
-    p.pressure = pt.pressure();
-    p.state = pt.state();
-    p.velocity = pt.velocity();
-    p.rawPositions = pt.rawScreenPositions();
-    return p;
-}
-static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-{
-    QList<struct QWindowSystemInterface::TouchPoint> newList;
-
-    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-    {
-        newList.append(touchPoint(p));
-    }
-    return newList;
-}
-
 Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+    QWindowSystemInterface::handleTouchEvent(w, device, QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
 }
 
 QT_END_NAMESPACE
