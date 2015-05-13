@@ -13,7 +13,7 @@ SOURCES = bubble.cpp \
     qtlogo.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/overpainting
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/overpainting
 INSTALLS += target
 
 contains(QT_CONFIG, opengles.) {

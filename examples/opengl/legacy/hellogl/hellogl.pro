@@ -11,7 +11,7 @@ SOURCES       = glwidget.cpp \
 QT           += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/hellogl
 INSTALLS += target
 
 contains(QT_CONFIG, opengles.) {

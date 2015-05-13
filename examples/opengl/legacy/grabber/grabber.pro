@@ -6,7 +6,7 @@ SOURCES       = glwidget.cpp \
 QT           += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/grabber
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/grabber
 INSTALLS += target
 
 contains(QT_CONFIG, opengles.) {

@@ -5,7 +5,7 @@ SOURCES += glwidget.cpp main.cpp
 RESOURCES += pbuffers2.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/pbuffers2
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/pbuffers2
 INSTALLS += target
 
 contains(QT_CONFIG, opengles.) {

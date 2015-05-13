@@ -5,7 +5,7 @@ RESOURCES += framebufferobject2.qrc
 QT += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/framebufferobject2
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/framebufferobject2
 INSTALLS += target
 
 contains(QT_CONFIG, opengles.) {
