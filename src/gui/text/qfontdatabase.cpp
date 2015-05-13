@@ -756,7 +756,7 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
     return alias;
 }
 
-static QStringList fallbackFamilies(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
+QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     // make sure that the db has all fallback families
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
@@ -884,17 +884,19 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
     Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
-        QStringList fallbacks = request.fallBackFamilies;
-
-        QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
-        if (styleHint == QFont::AnyStyle && request.fixedPitch)
-            styleHint = QFont::TypeWriter;
-
-        fallbacks += fallbackFamilies(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
-
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
-        pfMultiEngine->setFallbackFamiliesList(fallbacks);
+        if (!request.fallBackFamilies.isEmpty()) {
+            QStringList fallbacks = request.fallBackFamilies;
+
+            QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
+            if (styleHint == QFont::AnyStyle && request.fixedPitch)
+                styleHint = QFont::TypeWriter;
+
+            fallbacks += qt_fallbacksForFamily(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
+
+            pfMultiEngine->setFallbackFamiliesList(fallbacks);
+        }
         engine = pfMultiEngine;
 
         // Cache Multi font engine as well in case we got the single
@@ -2560,10 +2562,10 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 styleHint = QFont::TypeWriter;
 
             QStringList fallbacks = request.fallBackFamilies
-                                  + fallbackFamilies(request.family,
-                                                     QFont::Style(request.style),
-                                                     styleHint,
-                                                     QChar::Script(script));
+                                  + qt_fallbacksForFamily(request.family,
+                                                          QFont::Style(request.style),
+                                                          styleHint,
+                                                          QChar::Script(script));
             if (script > QChar::Script_Common)
                 fallbacks += QString(); // Find the first font matching the specified script.
 

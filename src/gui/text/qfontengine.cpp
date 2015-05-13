@@ -1590,15 +1590,15 @@ QFontEngineMulti::~QFontEngineMulti()
     }
 }
 
+QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script);
+
 void QFontEngineMulti::ensureFallbackFamiliesQueried()
 {
-    if (QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration()) {
-        const QStringList fallbackFamilies = integration->fontDatabase()->fallbacksForFamily(fontDef.family,
-                                                                                             QFont::Style(fontDef.style),
-                                                                                             QFont::AnyStyle,
-                                                                                             QChar::Script(m_script));
-        setFallbackFamiliesList(fallbackFamilies);
-    }
+    QFont::StyleHint styleHint = QFont::StyleHint(fontDef.styleHint);
+    if (styleHint == QFont::AnyStyle && fontDef.fixedPitch)
+        styleHint = QFont::TypeWriter;
+
+    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.family, QFont::Style(fontDef.style), styleHint, QChar::Script(m_script)));
 }
 
 void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamilies)
