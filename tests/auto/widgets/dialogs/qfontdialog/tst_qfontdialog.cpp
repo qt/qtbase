@@ -225,6 +225,8 @@ void tst_QFontDialog::qtbug_41513_stylesheetStyle()
         QFontDialog::DontUseNativeDialog);
     QVERIFY(accepted);
 
+    // The fontdialog sets the styleName, when the fontdatabase knows the style name.
+    resultFont.setStyleName(testFont.styleName());
     QCOMPARE(resultFont, testFont);
 
     // reset stylesheet
