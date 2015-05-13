@@ -77,4 +77,6 @@ signals:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QInputDeviceManager::DeviceType)
+
 #endif // QINPUTDEVICEMANAGER_P_H
