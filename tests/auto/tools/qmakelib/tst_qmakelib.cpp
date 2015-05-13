@@ -228,6 +228,9 @@ private:
 #define S(s) ProString(QString::fromWCharArray(s))
 #define HS(s) ProKey(QString::fromWCharArray(s))
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4003)  // "not enough actual parameters for macro TS()"
+
 void tst_qmakelib::proParser_data()
 {
     QTest::addColumn<QString>("in");
@@ -2067,6 +2070,8 @@ void tst_qmakelib::proParser_data()
             << "in:1: option() must appear outside any control structures."
             << false;
 }
+
+QT_WARNING_POP
 
 void tst_qmakelib::proParser()
 {
