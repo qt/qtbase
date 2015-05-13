@@ -564,6 +564,11 @@ void tst_QDialog::snapToDefaultButton()
     topLeftPos = QPoint(topLeftPos.x() + 100, topLeftPos.y() + 100);
     QPoint startingPos(topLeftPos.x() + 250, topLeftPos.y() + 250);
     QCursor::setPos(startingPos);
+#ifdef Q_OS_OSX
+    // On OS X we use CGEventPost to move the cursor, it needs at least
+    // some time before the event handled and the position really set.
+    QTest::qWait(100);
+#endif
     QCOMPARE(QCursor::pos(), startingPos);
     QDialog dialog;
     QPushButton *button = new QPushButton(&dialog);
