@@ -7315,6 +7315,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
         stream >> restoredScreenWidth;
 
     const QDesktopWidget * const desktop = QApplication::desktop();
+    if (restoredScreenNumber >= desktop->numScreens())
+        restoredScreenNumber = desktop->primaryScreen();
     const qreal screenWidthF = qreal(desktop->screenGeometry(restoredScreenNumber).width());
     // Sanity check bailing out when large variations of screen sizes occur due to
     // high DPI scaling or different levels of DPI awareness.
@@ -7341,9 +7343,6 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
                                        .size()
                                        .expandedTo(d_func()->adjustedSize()));
     }
-
-    if (restoredScreenNumber >= desktop->numScreens())
-        restoredScreenNumber = desktop->primaryScreen();
 
     const QRect availableGeometry = desktop->availableGeometry(restoredScreenNumber);
 
