@@ -52,7 +52,6 @@ public:
     NSView *nativeView() const;
 
 protected:
-    void init(NSView *parentView);
     bool event(QEvent *ev);
 
 private:
