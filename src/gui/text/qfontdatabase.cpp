@@ -121,6 +121,8 @@ static int getFontWeight(const QString &weightString)
             return QFont::DemiBold;
         return QFont::Bold;
     }
+    if (s.contains(QLatin1String("thin")))
+        return QFont::Thin;
     if (s.contains(QLatin1String("light")))
         return QFont::Light;
     if (s.contains(QLatin1String("black")))
