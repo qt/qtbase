@@ -571,7 +571,7 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
-    QRect rect(initialGeometry);
+    QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (rect.width() == 0) {
         const int minWidth = w->minimumWidth();
         rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
@@ -599,7 +599,7 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
             }
         }
     }
-    return rect;
+    return QHighDpi::toNativePixels(rect, w);
 }
 
 /*!
