@@ -1373,6 +1373,29 @@ void tst_qmakelib::proParser_data()
             << "in:1: Unexpected 'else'."
             << false;
 
+    QTest::newRow("double-test-else")
+            << "foo bar\nelse"
+            << TS(
+    /*     0 */ << H(TokBranch)
+    /*     1 */ /* then branch */ << I(0)
+    /*     3 */ /* else branch */ << I(1)  // This seems weird
+    /*     5 */     << H(TokTerminator))
+            << "in:1: Extra characters after test expression."
+            << false;
+
+    QTest::newRow("test-function-else")
+            << "foo bar()\nelse"
+            << TS(
+    /*     0 */ << H(TokLine) << H(1)
+    /*     2 */ << H(TokTestCall)  // This seems pointless
+    /*     3 */     << H(TokFuncTerminator)
+    /*     4 */ << H(TokBranch)
+    /*     5 */ /* then branch */ << I(0)
+    /*     7 */ /* else branch */ << I(1)  // This seems weird
+    /*     9 */     << H(TokTerminator))
+            << "in:1: Extra characters after test expression."
+            << false;
+
     // Braces
 
     QTest::newRow("{}")
