@@ -1254,7 +1254,9 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 {
     bool wasNSWindowChild = m_isNSWindowChild;
-    m_isNSWindowChild = parentWindow && (window()->property("_q_platform_MacUseNSWindow").toBool());
+    BOOL requestNSWindowChild = qt_mac_resolveOption(NO, window(), "_q_platform_MacUseNSWindow",
+                                                                   "QT_MAC_USE_NSWINDOW");
+    m_isNSWindowChild = parentWindow && requestNSWindowChild;
     bool needsNSWindow = m_isNSWindowChild || !parentWindow;
 
     QCocoaWindow *oldParentCocoaWindow = m_parentCocoaWindow;
