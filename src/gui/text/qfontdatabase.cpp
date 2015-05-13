@@ -1184,14 +1184,25 @@ static int match(int script, const QFontDef &request,
 static QString styleStringHelper(int weight, QFont::Style style)
 {
     QString result;
-    if (weight >= QFont::Black)
-        result = QCoreApplication::translate("QFontDatabase", "Black");
-    else if (weight >= QFont::Bold)
-        result = QCoreApplication::translate("QFontDatabase", "Bold");
-    else if (weight >= QFont::DemiBold)
-        result = QCoreApplication::translate("QFontDatabase", "Demi Bold");
-    else if (weight < QFont::Normal)
-        result = QCoreApplication::translate("QFontDatabase", "Light");
+    if (weight > QFont::Normal) {
+        if (weight >= QFont::Black)
+            result = QCoreApplication::translate("QFontDatabase", "Black");
+        else if (weight >= QFont::ExtraBold)
+            result = QCoreApplication::translate("QFontDatabase", "Extra Bold");
+        else if (weight >= QFont::Bold)
+            result = QCoreApplication::translate("QFontDatabase", "Bold");
+        else if (weight >= QFont::DemiBold)
+            result = QCoreApplication::translate("QFontDatabase", "Demi Bold");
+        else if (weight >= QFont::Medium)
+            result = QCoreApplication::translate("QFontDatabase", "Medium", "The Medium font weight");
+    } else {
+        if (weight <= QFont::Thin)
+            result = QCoreApplication::translate("QFontDatabase", "Thin");
+        else if (weight <= QFont::ExtraLight)
+            result = QCoreApplication::translate("QFontDatabase", "Extra Light");
+        else if (weight <= QFont::Light)
+            result = QCoreApplication::translate("QFontDatabase", "Light");
+    }
 
     if (style == QFont::StyleItalic)
         result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Italic");
@@ -1199,7 +1210,7 @@ static QString styleStringHelper(int weight, QFont::Style style)
         result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
-        result = QCoreApplication::translate("QFontDatabase", "Normal");
+        result = QCoreApplication::translate("QFontDatabase", "Normal", "The Normal or Regular font weight");
 
     return result.simplified();
 }
