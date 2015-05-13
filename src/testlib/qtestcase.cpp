@@ -50,6 +50,9 @@
 #include <QtCore/private/qtools_p.h>
 #include <QtCore/qdiriterator.h>
 #include <QtCore/qtemporarydir.h>
+#include <QtCore/qthread.h>
+#include <QtCore/qwaitcondition.h>
+#include <QtCore/qmutex.h>
 
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qtesttable_p.h>
@@ -69,6 +72,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#if defined(Q_OS_LINUX)
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 #ifdef Q_OS_WIN
 #ifndef Q_OS_WINCE
@@ -92,6 +100,40 @@ QT_BEGIN_NAMESPACE
 
 using QtMiscUtils::toHexUpper;
 using QtMiscUtils::fromHex;
+
+
+static void stackTrace()
+{
+    bool ok = false;
+    const int disableStackDump = qEnvironmentVariableIntValue("QTEST_DISABLE_STACK_DUMP", &ok);
+    if (ok && disableStackDump == 1)
+        return;
+#ifdef Q_OS_LINUX
+    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
+    char cmd[512];
+    qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
+                         "set prompt\n"
+                         "thread apply all where\n"
+                         "detach\n"
+                         "quit\n"
+                         "EOF\n",
+                         (int)getpid());
+    if (system(cmd) == -1)
+        fprintf(stderr, "calling gdb failed\n");
+    fprintf(stderr, "========= End of stack trace ==============\n");
+#elif defined(Q_OS_OSX)
+    fprintf(stderr, "\n========= Received signal, dumping stack ==============\n");
+    char cmd[512];
+    qsnprintf(cmd, 512, "lldb -p %d 2>/dev/null <<EOF\n"
+                         "bt all\n"
+                         "quit\n"
+                         "EOF\n",
+                         (int)getpid());
+    if (system(cmd) == -1)
+        fprintf(stderr, "calling lldb failed\n");
+    fprintf(stderr, "========= End of stack trace ==============\n");
+#endif
+}
 
 /*!
    \namespace QTest
@@ -2010,6 +2052,58 @@ static void qInvokeTestMethodDataEntry(char *slot)
     }
 }
 
+class WatchDog : public QThread
+{
+public:
+    WatchDog()
+    {
+        QMutexLocker locker(&mutex);
+        timeout.store(-1);
+        start();
+        waitCondition.wait(&mutex);
+    }
+    ~WatchDog() {
+        {
+            QMutexLocker locker(&mutex);
+            timeout.store(0);
+            waitCondition.wakeAll();
+        }
+        wait();
+    }
+
+    void beginTest() {
+        QMutexLocker locker(&mutex);
+        timeout.store(5*60*1000);
+        waitCondition.wakeAll();
+    }
+
+    void testFinished() {
+        QMutexLocker locker(&mutex);
+        timeout.store(-1);
+        waitCondition.wakeAll();
+    }
+
+    void run() {
+        QMutexLocker locker(&mutex);
+        waitCondition.wakeAll();
+        while (1) {
+            int t = timeout.load();
+            if (!t)
+                break;
+            if (!waitCondition.wait(&mutex, t)) {
+                stackTrace();
+                qFatal("Test function timed out");
+            }
+        }
+    }
+
+private:
+    QBasicAtomicInt timeout;
+    QMutex mutex;
+    QWaitCondition waitCondition;
+};
+
+
 /*!
     \internal
 
@@ -2019,7 +2113,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
     If the function was successfully called, true is returned, otherwise
     false.
  */
-static bool qInvokeTestMethod(const char *slotName, const char *data=0)
+static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *watchDog)
 {
     QTEST_ASSERT(slotName);
 
@@ -2078,7 +2172,9 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
+                    watchDog->beginTest();
                     qInvokeTestMethodDataEntry(slot);
+                    watchDog->testFinished();
 
                     if (data)
                         break;
@@ -2359,6 +2455,8 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestTable::globalTestTable();
     invokeMethod(testObject, "initTestCase_data()");
 
+    WatchDog watchDog;
+
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         invokeMethod(testObject, "initTestCase()");
 
@@ -2373,7 +2471,7 @@ static void qInvokeTestMethods(QObject *testObject)
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
                     if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
-                                                              QTest::testFuncs[i].data())) {
+                                                              QTest::testFuncs[i].data(), &watchDog)) {
                         break;
                     }
                 }
@@ -2386,7 +2484,7 @@ static void qInvokeTestMethods(QObject *testObject)
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData()))
+                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, &watchDog))
                         break;
                 }
                 delete[] testMethods;
@@ -2422,6 +2520,8 @@ private:
 
 void FatalSignalHandler::signal(int signum)
 {
+    if (signum != SIGINT)
+        stackTrace();
     qFatal("Received signal %d", signum);
 #if defined(Q_OS_INTEGRITY)
     {

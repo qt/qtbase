@@ -38,6 +38,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qhashfunctions.h>
 
 #include <iterator>
 #include <list>
@@ -62,8 +63,13 @@ QT_BEGIN_NAMESPACE
 template <typename T> class QVector;
 template <typename T> class QSet;
 
-template <typename T> struct QListSpecialMethods { };
+template <typename T> struct QListSpecialMethods
+{
+protected:
+    ~QListSpecialMethods() {}
+};
 template <> struct QListSpecialMethods<QByteArray>;
+template <> struct QListSpecialMethods<QString>;
 
 struct Q_CORE_EXPORT QListData {
     // tags for tag-dispatching of QList implementations,
@@ -215,7 +221,6 @@ public:
 
         inline iterator() : i(0) {}
         inline iterator(Node *n) : i(n) {}
-        inline iterator(const iterator &o): i(o.i){}
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
         inline T &operator[](difference_type j) const { return i[j].t(); }
@@ -263,7 +268,6 @@ public:
 
         inline const_iterator() : i(0) {}
         inline const_iterator(Node *n) : i(n) {}
-        inline const_iterator(const const_iterator &o): i(o.i) {}
 #ifdef QT_STRICT_ITERATORS
         inline explicit const_iterator(const iterator &o): i(o.i) {}
 #else
@@ -1022,6 +1026,13 @@ inline int QList<T>::count_impl(const T &t, QListData::ArrayCompatibleLayout) co
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(List)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(List)
+
+template <typename T>
+uint qHash(const QList<T> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+{
+    return qHashRange(key.cbegin(), key.cend(), seed);
+}
 
 template <typename T>
 bool operator<(const QList<T> &lhs, const QList<T> &rhs)

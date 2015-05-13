@@ -42,7 +42,6 @@
 #include <QtGui/QIconEngine>
 #include <QtGui/QPalette>
 #include <QtCore/QList>
-#include <QtCore/QHash>
 #include <QtCore/QDir>
 #include <QtCore/QSettings>
 #include <QtGui/QPainter>

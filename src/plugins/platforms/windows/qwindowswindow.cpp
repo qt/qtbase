@@ -109,12 +109,13 @@ static QByteArray debugWinExStyle(DWORD exStyle)
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 QDebug operator<<(QDebug d, const MINMAXINFO &i)
 {
-    d.nospace() << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
-                << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
-                 << ',' << i.ptMaxPosition.y << " mintrack="
-                 << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
-                 << " maxtrack=" << i.ptMaxTrackSize.x << ','
-                 << i.ptMaxTrackSize.y;
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
+        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
+        << ',' << i.ptMaxPosition.y << " mintrack="
+        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
+        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
     return d;
 }
 #endif // !Q_OS_WINCE
@@ -139,18 +140,20 @@ static inline RECT RECTfromQRect(const QRect &rect)
 
 QDebug operator<<(QDebug d, const RECT &r)
 {
-    d.nospace() << "RECT: left/top=" << r.left << ',' << r.top
-                << " right/bottom=" << r.right << ',' << r.bottom;
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "RECT: left/top=" << r.left << ',' << r.top
+        << " right/bottom=" << r.right << ',' << r.bottom;
     return d;
 }
 
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_NCCALCSIZE
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
-    qDebug().nospace() << "NCCALCSIZE_PARAMS "
-        << qrectFromRECT(p.rgrc[0])
-        << ' ' << qrectFromRECT(p.rgrc[1]) << ' '
-        << qrectFromRECT(p.rgrc[2]);
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "NCCALCSIZE_PARAMS " << qrectFromRECT(p.rgrc[0])
+        << ' ' << qrectFromRECT(p.rgrc[1]) << ' ' << qrectFromRECT(p.rgrc[2]);
     return d;
 }
 #endif // !Q_OS_WINCE
@@ -417,13 +420,18 @@ struct WindowCreationData
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
 {
-    debug.nospace() << d.flags
-        << " topLevel=" << d.topLevel << " popup="
-        << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
-        << " embedded=" << d.embedded
-        << " tool=" << d.tool << " style=" << debugWinStyle(d.style)
-        << " exStyle=" << debugWinExStyle(d.exStyle)
-        << " parent=" << d.parentHandle;
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug.noquote();
+    debug << "WindowCreationData: " << d.flags
+        << "\n  topLevel=" << d.topLevel;
+     if (d.parentHandle)
+         debug << " parent=" << d.parentHandle;
+     debug << " popup=" << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
+        << " embedded=" << d.embedded << " tool=" << d.tool
+        << "\n  style=" << debugWinStyle(d.style);
+    if (d.exStyle)
+        debug << "\n  exStyle=" << debugWinExStyle(d.exStyle);
     return debug;
 }
 
@@ -540,13 +548,9 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                 }
                 if (flags & Qt::WindowSystemMenuHint)
                     style |= WS_SYSMENU;
-                else if (dialog) {
-                    // QTBUG-2027, dialogs without system menu.
-                    style |= WS_SYSMENU;
-                    if (!(flags & Qt::FramelessWindowHint)) {
-                        style |= WS_BORDER;
-                        exStyle |= WS_EX_DLGMODALFRAME;
-                    }
+                else if (dialog && (flags & Qt::WindowCloseButtonHint) && !(flags & Qt::FramelessWindowHint)) {
+                    style |= WS_SYSMENU | WS_BORDER; // QTBUG-2027, dialogs without system menu.
+                    exStyle |= WS_EX_DLGMODALFRAME;
                 }
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
@@ -618,8 +622,8 @@ QWindowsWindowData
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     qCDebug(lcQpaWindows).nospace()
-        << "CreateWindowEx: " << w << *this << " class=" <<windowClassName << " title=" << title
-        << "\nrequested: " << rect << ": "
+        << "CreateWindowEx: " << w << " class=" << windowClassName << " title=" << title
+        << '\n' << *this << "\nrequested: " << rect << ": "
         << context->frameWidth << 'x' <<  context->frameHeight
         << '+' << context->frameX << '+' << context->frameY
         << " custom margins: " << context->customMargins;
@@ -635,7 +639,7 @@ QWindowsWindowData
 #endif
     qCDebug(lcQpaWindows).nospace()
         << "CreateWindowEx: returns " << w << ' ' << result.hwnd << " obtained geometry: "
-        << context->obtainedGeometry << context->margins;
+        << context->obtainedGeometry << ' ' << context->margins;
 
     if (!result.hwnd) {
         qErrnoWarning("%s: CreateWindowEx failed", __FUNCTION__);
@@ -736,9 +740,9 @@ QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
         qErrnoWarning("%s: AdjustWindowRectEx failed", __FUNCTION__);
     const QMargins result(qAbs(rect.left), qAbs(rect.top),
                           qAbs(rect.right), qAbs(rect.bottom));
-    qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << " style= 0x"
-        << QString::number(style, 16) << " exStyle=0x" << QString::number(exStyle, 16) << ' ' << rect << ' ' << result;
-
+    qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << " style="
+        << showbase << hex << style << " exStyle=" << exStyle << dec << noshowbase
+        << ' ' << rect << ' ' << result;
     return result;
 }
 
@@ -857,12 +861,12 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     }
 
     qCDebug(lcQpaWindows).nospace()
-        << __FUNCTION__ << ' ' << w << geometry
-        << " pos incl. frame" << QWindowsGeometryHint::positionIncludesFrame(w)
-        << " frame: " << frameWidth << 'x' << frameHeight << '+'
+        << __FUNCTION__ << ' ' << w << ' ' << geometry
+        << " pos incl. frame=" << QWindowsGeometryHint::positionIncludesFrame(w)
+        << " frame=" << frameWidth << 'x' << frameHeight << '+'
         << frameX << '+' << frameY
-        << " min" << geometryHint.minimumSize << " max" << geometryHint.maximumSize
-        << " custom margins " << customMargins;
+        << " min=" << geometryHint.minimumSize << " max=" << geometryHint.maximumSize
+        << " custom margins=" << customMargins;
 }
 
 /*!
@@ -1426,10 +1430,10 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
     const QMargins margins = frameMarginsDp();
     const QRect frameGeometry = rect + margins;
 
-    qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << this << window()
-                 << "    \n from " << geometry_sys() << " frame: "
-                 << margins << " to " <<rect
-                 << " new frame: " << frameGeometry;
+    qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << window()
+        << "\n from " << geometry_sys() << " frame: "
+        << margins << " to " <<rect
+        << " new frame: " << frameGeometry;
 
     bool result = false;
 #ifndef Q_OS_WINCE
@@ -1450,8 +1454,8 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
         result = MoveWindow(m_data.hwnd, frameGeometry.x(), frameGeometry.y(),
                             frameGeometry.width(), frameGeometry.height(), true);
     }
-    qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window()
-        << "    \n resulting " << result << geometry_sys();
+    qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << window()
+        << "\n resulting " << result << geometry_sys();
 }
 
 QRect QWindowsWindow::frameGeometry_sys() const
@@ -2135,8 +2139,8 @@ void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
 #ifndef QT_NO_CURSOR
     if (c.handle() != m_cursor.handle()) {
         const bool apply = applyNewCursor(window());
-        qCDebug(lcQpaWindows) <<window() << __FUNCTION__
-            << "Shape=" << c.cursor().shape() << " doApply=" << apply;
+        qCDebug(lcQpaWindows) << window() << __FUNCTION__
+            << c.cursor().shape() << " doApply=" << apply;
         m_cursor = c;
         if (apply)
             applyCursor();

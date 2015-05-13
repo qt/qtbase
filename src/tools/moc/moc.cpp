@@ -140,7 +140,8 @@ bool Moc::parseClassHead(ClassDef *def)
             }
         } while (test(COMMA));
 
-        if (knownGadgets.contains(def->superclassList.first().first)) {
+        if (!def->superclassList.isEmpty()
+            && knownGadgets.contains(def->superclassList.first().first)) {
             // Q_GADGET subclasses are treated as Q_GADGETs
             knownGadgets.insert(def->classname, def->qualified);
             knownGadgets.insert(def->qualified, def->qualified);

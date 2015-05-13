@@ -38,7 +38,6 @@
 #include "qabstracteventdispatcher.h"
 
 #include <qeventloop.h>
-#include <qhash.h>
 
 #include "qthread_p.h"
 #include "private/qcoreapplication_p.h"

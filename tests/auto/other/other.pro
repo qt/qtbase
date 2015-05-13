@@ -4,7 +4,6 @@ SUBDIRS=\
    baselineexample \
    compiler \
    gestures \
-   headersclean \
    lancelot \
    languagechange \
    macgui \
@@ -29,7 +28,6 @@ SUBDIRS=\
 !qtHaveModule(widgets): SUBDIRS -= \
    baselineexample \
    gestures \
-   headersclean \
    lancelot \
    languagechange \
    modeltest \
@@ -44,13 +42,10 @@ SUBDIRS=\
 
 !qtHaveModule(network): SUBDIRS -= \
    baselineexample \
-   headersclean \
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
    qobjectperformance
-
-testcocoon: SUBDIRS -= headersclean
 
 cross_compile: SUBDIRS -= \
    atwrapper \

@@ -38,6 +38,7 @@
 #ifndef QT_NO_REGULAREXPRESSION
 
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
@@ -1838,6 +1839,21 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 */
 
 /*!
+    \since 5.6
+    \relates QRegularExpression
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QRegularExpression &key, uint seed) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.d->pattern);
+    seed = hash(seed, key.d->patternOptions);
+    return seed;
+}
+
+/*!
     Escapes all characters of \a str so that they no longer have any special
     meaning when used as a regular expression pattern string, and returns
     the escaped string. For instance:
@@ -2657,7 +2673,8 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid range in character class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "group name must start with a non-digit"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)")
+    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "digits missing in \\x{} or \\o{}")
 };
 #endif // #if 0
 

@@ -173,20 +173,22 @@ static inline WindowsScreenDataList monitorData()
 
 static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
 {
-    QDebug nospace =  dbg.nospace();
-    nospace << "Screen " << d.name << ' '
-            << d.geometry.width() << 'x' << d.geometry.height() << '+' << d.geometry.x() << '+' << d.geometry.y()
-            << " avail: "
-            << d.availableGeometry.width() << 'x' << d.availableGeometry.height() << '+' << d.availableGeometry.x() << '+' << d.availableGeometry.y()
-            << " physical: " << d.physicalSizeMM.width() <<  'x' << d.physicalSizeMM.height()
-            << " DPI: " << d.dpi.first << 'x' << d.dpi.second << " Depth: " << d.depth
-            << " Format: " << d.format;
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg.noquote();
+    dbg << "Screen \"" << d.name << "\" "
+        << d.geometry.width() << 'x' << d.geometry.height() << '+' << d.geometry.x() << '+' << d.geometry.y()
+        << " avail: "
+        << d.availableGeometry.width() << 'x' << d.availableGeometry.height() << '+' << d.availableGeometry.x() << '+' << d.availableGeometry.y()
+        << " physical: " << d.physicalSizeMM.width() << 'x' << d.physicalSizeMM.height()
+        << " DPI: " << d.dpi.first << 'x' << d.dpi.second << " Depth: " << d.depth
+        << " Format: " << d.format;
     if (d.flags & QWindowsScreenData::PrimaryScreen)
-        nospace << " primary";
+        dbg << " primary";
     if (d.flags & QWindowsScreenData::VirtualDesktop)
-        nospace << " virtual desktop";
+        dbg << " virtual desktop";
     if (d.flags & QWindowsScreenData::LockScreen)
-        nospace << " lock screen";
+        dbg << " lock screen";
     return dbg;
 }
 

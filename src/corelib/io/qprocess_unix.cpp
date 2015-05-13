@@ -93,7 +93,6 @@ QT_END_NAMESPACE
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qhash.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>
@@ -406,7 +405,7 @@ void QProcessPrivate::startProcess()
     char **path = 0;
     int pathc = 0;
     if (!program.contains(QLatin1Char('/'))) {
-        const QString pathEnv = QString::fromLocal8Bit(::getenv("PATH"));
+        const QString pathEnv = QString::fromLocal8Bit(qgetenv("PATH"));
         if (!pathEnv.isEmpty()) {
             QStringList pathEntries = pathEnv.split(QLatin1Char(':'), QString::SkipEmptyParts);
             if (!pathEntries.isEmpty()) {
@@ -1111,10 +1110,6 @@ bool QProcessPrivate::waitForDeadChild()
     return true;
 }
 
-void QProcessPrivate::_q_notified()
-{
-}
-
 #if defined(QPROCESS_USE_SPAWN)
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
 {
@@ -1192,7 +1187,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
             argv[arguments.size() + 1] = 0;
 
             if (!program.contains(QLatin1Char('/'))) {
-                const QString path = QString::fromLocal8Bit(::getenv("PATH"));
+                const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
                 if (!path.isEmpty()) {
                     QStringList pathEntries = path.split(QLatin1Char(':'));
                     for (int k = 0; k < pathEntries.size(); ++k) {

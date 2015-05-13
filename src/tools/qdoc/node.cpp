@@ -200,7 +200,7 @@ void Node::setDoc(const Doc& doc, bool replace)
   given \a parent and \a name. The new node is added to the
   parent's child list.
  */
-Node::Node(NodeType type, InnerNode *parent, const QString& name)
+Node::Node(NodeType type, Aggregate *parent, const QString& name)
     : nodeType_((unsigned char) type),
       access_((unsigned char) Public),
       safeness_((unsigned char) UnspecifiedSafeness),
@@ -460,7 +460,7 @@ bool Node::fromFlagValue(FlagValue fv, bool defaultValue)
 /*!
   Sets the pointer to the node that this node relates to.
  */
-void Node::setRelates(InnerNode *pseudoParent)
+void Node::setRelates(Aggregate *pseudoParent)
 {
     if (relatesTo_) {
         relatesTo_->removeRelated(this);
@@ -683,14 +683,14 @@ const Node* Node::root() const
 }
 
 /*!
-  \class InnerNode
+  \class Aggregate
  */
 
 /*!
   The inner node destructor deletes the children and removes
   this node from its related nodes.
  */
-InnerNode::~InnerNode()
+Aggregate::~Aggregate()
 {
     deleteChildren();
     removeFromRelated();
@@ -706,7 +706,7 @@ InnerNode::~InnerNode()
   find all this node's children that have the given \a name,
   and return the one that satisfies the \a genus requirement.
  */
-Node *InnerNode::findChildNode(const QString& name, Node::Genus genus) const
+Node *Aggregate::findChildNode(const QString& name, Node::Genus genus) const
 {
     if (genus == Node::DontCare) {
         Node *node = childMap.value(name);
@@ -716,7 +716,7 @@ Node *InnerNode::findChildNode(const QString& name, Node::Genus genus) const
             for (int i=0; i<children_.size(); ++i) {
                 Node* n = children_.at(i);
                 if (n->isQmlPropertyGroup() || isJsPropertyGroup()) {
-                    node = static_cast<InnerNode*>(n)->findChildNode(name, genus);
+                    node = static_cast<Aggregate*>(n)->findChildNode(name, genus);
                     if (node)
                         return node;
                 }
@@ -740,7 +740,7 @@ Node *InnerNode::findChildNode(const QString& name, Node::Genus genus) const
   Find all the child nodes of this node that are named
   \a name and return them in \a nodes.
  */
-void InnerNode::findChildren(const QString& name, NodeList& nodes) const
+void Aggregate::findChildren(const QString& name, NodeList& nodes) const
 {
     nodes = childMap.values(name);
     Node* n = primaryFunctionMap.value(name);
@@ -773,7 +773,7 @@ void InnerNode::findChildren(const QString& name, NodeList& nodes) const
   with the specified \a name is found but it is not of the
   specified \a type, 0 is returned.
  */
-Node* InnerNode::findChildNode(const QString& name, NodeType type)
+Node* Aggregate::findChildNode(const QString& name, NodeType type)
 {
     if (type == Function)
         return primaryFunctionMap.value(name);
@@ -792,7 +792,7 @@ Node* InnerNode::findChildNode(const QString& name, NodeType type)
   Find a function node that is a child of this nose, such
   that the function node has the specified \a name.
  */
-FunctionNode *InnerNode::findFunctionNode(const QString& name) const
+FunctionNode *Aggregate::findFunctionNode(const QString& name) const
 {
     return static_cast<FunctionNode *>(primaryFunctionMap.value(name));
 }
@@ -802,7 +802,7 @@ FunctionNode *InnerNode::findFunctionNode(const QString& name) const
   that the function has the same name and signature as the
   \a clone node.
  */
-FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone) const
+FunctionNode *Aggregate::findFunctionNode(const FunctionNode *clone) const
 {
     QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.constFind(clone->name());
     if (c != primaryFunctionMap.constEnd()) {
@@ -825,7 +825,7 @@ FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone) const
 /*!
   Returns the list of keys from the primary function map.
  */
-QStringList InnerNode::primaryKeys()
+QStringList Aggregate::primaryKeys()
 {
     QStringList t;
     QMap<QString, Node*>::iterator i = primaryFunctionMap.begin();
@@ -839,7 +839,7 @@ QStringList InnerNode::primaryKeys()
 /*!
   Returns the list of keys from the secondary function map.
  */
-QStringList InnerNode::secondaryKeys()
+QStringList Aggregate::secondaryKeys()
 {
     QStringList t;
     QMap<QString, NodeList>::iterator i = secondaryFunctionMap.begin();
@@ -852,7 +852,7 @@ QStringList InnerNode::secondaryKeys()
 
 /*!
  */
-void InnerNode::setOverload(FunctionNode *func, bool b)
+void Aggregate::setOverload(FunctionNode *func, bool b)
 {
     Node *node = (Node *) func;
     Node *&primary = primaryFunctionMap[func->name()];
@@ -887,7 +887,7 @@ void InnerNode::setOverload(FunctionNode *func, bool b)
   Intermediate status, meaning that they should be ignored,
   but not their children.
  */
-void InnerNode::makeUndocumentedChildrenInternal()
+void Aggregate::makeUndocumentedChildrenInternal()
 {
     foreach (Node *child, childNodes()) {
         if (child->doc().isEmpty() && child->status() != Node::Intermediate) {
@@ -899,7 +899,7 @@ void InnerNode::makeUndocumentedChildrenInternal()
 
 /*!
  */
-void InnerNode::normalizeOverloads()
+void Aggregate::normalizeOverloads()
 {
     QMap<QString, Node *>::Iterator p1 = primaryFunctionMap.begin();
     while (p1 != primaryFunctionMap.end()) {
@@ -949,15 +949,15 @@ void InnerNode::normalizeOverloads()
 
     NodeList::ConstIterator c = childNodes().constBegin();
     while (c != childNodes().constEnd()) {
-        if ((*c)->isInnerNode())
-            ((InnerNode *) *c)->normalizeOverloads();
+        if ((*c)->isAggregate())
+            ((Aggregate *) *c)->normalizeOverloads();
         ++c;
     }
 }
 
 /*!
  */
-void InnerNode::removeFromRelated()
+void Aggregate::removeFromRelated()
 {
     while (!related_.isEmpty()) {
         Node *p = static_cast<Node *>(related_.takeFirst());
@@ -969,13 +969,13 @@ void InnerNode::removeFromRelated()
 /*!
   Deletes all this node's children.
  */
-void InnerNode::deleteChildren()
+void Aggregate::deleteChildren()
 {
     NodeList childrenCopy = children_; // `children_` will be changed in ~Node()
     qDeleteAll(childrenCopy);
 }
 
-/*! \fn bool InnerNode::isInnerNode() const
+/*! \fn bool Aggregate::isAggregate() const
   Returns \c true because this is an inner node.
  */
 
@@ -995,7 +995,7 @@ bool Node::isWrapper() const
   no enum type node is found that has \a enumValue as one
   of its values.
  */
-const EnumNode *InnerNode::findEnumNodeForValue(const QString &enumValue) const
+const EnumNode *Aggregate::findEnumNodeForValue(const QString &enumValue) const
 {
     foreach (const Node *node, enumChildren_) {
         const EnumNode *en = static_cast<const EnumNode *>(node);
@@ -1010,7 +1010,7 @@ const EnumNode *InnerNode::findEnumNodeForValue(const QString &enumValue) const
   in the list of overloaded functions for a class, such that
   all the functions have the same name as the \a func.
  */
-int InnerNode::overloadNumber(const FunctionNode *func) const
+int Aggregate::overloadNumber(const FunctionNode *func) const
 {
     Node *node = const_cast<FunctionNode *>(func);
     if (primaryFunctionMap[func->name()] == node) {
@@ -1025,7 +1025,7 @@ int InnerNode::overloadNumber(const FunctionNode *func) const
   Returns a node list containing all the member functions of
   some class such that the functions overload the name \a funcName.
  */
-NodeList InnerNode::overloads(const QString &funcName) const
+NodeList Aggregate::overloads(const QString &funcName) const
 {
     NodeList result;
     Node *primary = primaryFunctionMap.value(funcName);
@@ -1040,7 +1040,7 @@ NodeList InnerNode::overloads(const QString &funcName) const
   Construct an inner node (i.e., not a leaf node) of the
   given \a type and having the given \a parent and \a name.
  */
-InnerNode::InnerNode(NodeType type, InnerNode *parent, const QString& name)
+Aggregate::Aggregate(NodeType type, Aggregate *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1057,7 +1057,7 @@ InnerNode::InnerNode(NodeType type, InnerNode *parent, const QString& name)
 /*!
   Appends an \a include file to the list of include files.
  */
-void InnerNode::addInclude(const QString& include)
+void Aggregate::addInclude(const QString& include)
 {
     includes_.append(include);
 }
@@ -1065,7 +1065,7 @@ void InnerNode::addInclude(const QString& include)
 /*!
   Sets the list of include files to \a includes.
  */
-void InnerNode::setIncludes(const QStringList& includes)
+void Aggregate::setIncludes(const QStringList& includes)
 {
     includes_ = includes;
 }
@@ -1073,7 +1073,7 @@ void InnerNode::setIncludes(const QStringList& includes)
 /*!
   f1 is always the clone
  */
-bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
+bool Aggregate::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 {
     if (f1->parameters().count() != f2->parameters().count())
         return false;
@@ -1111,7 +1111,7 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
   be necessary to update this node's internal collections and
   the child's parent pointer and output subdirectory.
  */
-void InnerNode::addChild(Node *child)
+void Aggregate::addChild(Node *child)
 {
     children_.append(child);
     if ((child->type() == Function) || (child->type() == QmlMethod)) {
@@ -1141,7 +1141,7 @@ void InnerNode::addChild(Node *child)
   again, because it is presumed to already be there. We just
   want to be able to find the child by its \a title.
  */
-void InnerNode::addChild(Node* child, const QString& title)
+void Aggregate::addChild(Node* child, const QString& title)
 {
     childMap.insertMulti(title, child);
 }
@@ -1152,7 +1152,7 @@ void InnerNode::addChild(Node* child, const QString& title)
   pointer is set to 0, but its output subdirectory is not
   changed.
  */
-void InnerNode::removeChild(Node *child)
+void Aggregate::removeChild(Node *child)
 {
     children_.removeAll(child);
     enumChildren_.removeAll(child);
@@ -1196,7 +1196,7 @@ void InnerNode::removeChild(Node *child)
 /*!
  Recursively sets the output subdirectory for children
  */
-void InnerNode::setOutputSubdirectory(const QString &t)
+void Aggregate::setOutputSubdirectory(const QString &t)
 {
     Node::setOutputSubdirectory(t);
     for (int i = 0; i < childNodes().size(); ++i)
@@ -1259,7 +1259,7 @@ QString Node::physicalModuleName() const
 
 /*!
  */
-void InnerNode::removeRelated(Node *pseudoChild)
+void Aggregate::removeRelated(Node *pseudoChild)
 {
     related_.removeAll(pseudoChild);
 }
@@ -1268,7 +1268,7 @@ void InnerNode::removeRelated(Node *pseudoChild)
   If this node has a child that is a QML property named \a n,
   return the pointer to that child.
  */
-QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n) const
+QmlPropertyNode* Aggregate::hasQmlProperty(const QString& n) const
 {
     foreach (Node* child, childNodes()) {
         if (child->type() == Node::QmlProperty) {
@@ -1289,7 +1289,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n) const
   whose type (attached or normal property) matches \a attached,
   return the pointer to that child.
  */
-QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) const
+QmlPropertyNode* Aggregate::hasQmlProperty(const QString& n, bool attached) const
 {
     foreach (Node* child, childNodes()) {
         if (child->type() == Node::QmlProperty) {
@@ -1309,7 +1309,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) cons
   \class LeafNode
  */
 
-/*! \fn bool LeafNode::isInnerNode() const
+/*! \fn bool LeafNode::isAggregate() const
   Returns \c false because this is a LeafNode.
  */
 
@@ -1317,7 +1317,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n, bool attached) cons
   Constructs a leaf node named \a name of the specified
   \a type. The new leaf node becomes a child of \a parent.
  */
-LeafNode::LeafNode(NodeType type, InnerNode *parent, const QString& name)
+LeafNode::LeafNode(NodeType type, Aggregate *parent, const QString& name)
     : Node(type, parent, name)
 {
     switch (type) {
@@ -1344,7 +1344,7 @@ LeafNode::LeafNode(NodeType type, InnerNode *parent, const QString& name)
   documentation case where a \e{qmlproperty} command is used
   to override the QML definition of a QML property.
  */
-LeafNode::LeafNode(InnerNode* parent, NodeType type, const QString& name)
+LeafNode::LeafNode(Aggregate* parent, NodeType type, const QString& name)
     : Node(type, 0, name)
 {
     setParent(parent);
@@ -1372,8 +1372,8 @@ LeafNode::LeafNode(InnerNode* parent, NodeType type, const QString& name)
 /*!
   Constructs a namespace node.
  */
-NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
-    : InnerNode(Namespace, parent, name), seen_(false), tree_(0)
+NamespaceNode::NamespaceNode(Aggregate *parent, const QString& name)
+    : Aggregate(Namespace, parent, name), seen_(false), tree_(0)
 {
     setGenus(Node::CPP);
     setPageType(ApiPage);
@@ -1387,8 +1387,8 @@ NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
 /*!
   Constructs a class node. A class node will generate an API page.
  */
-ClassNode::ClassNode(InnerNode *parent, const QString& name)
-    : InnerNode(Class, parent, name)
+ClassNode::ClassNode(Aggregate *parent, const QString& name)
+    : Aggregate(Class, parent, name)
 {
     abstract_ = false;
     wrapper_ = false;
@@ -1582,8 +1582,8 @@ QmlTypeNode* ClassNode::findQmlBaseNode()
   which specifies the type of DocumentNode. The page type for
   the page index is set here.
  */
-DocumentNode::DocumentNode(InnerNode* parent, const QString& name, DocSubtype subtype, Node::PageType ptype)
-    : InnerNode(Document, parent, name), nodeSubtype_(subtype)
+DocumentNode::DocumentNode(Aggregate* parent, const QString& name, DocSubtype subtype, Node::PageType ptype)
+    : Aggregate(Document, parent, name), nodeSubtype_(subtype)
 {
     setGenus(Node::DOC);
     switch (subtype) {
@@ -1667,7 +1667,7 @@ QString DocumentNode::subTitle() const
   The constructor for the node representing an enum type
   has a \a parent class and an enum type \a name.
  */
-EnumNode::EnumNode(InnerNode *parent, const QString& name)
+EnumNode::EnumNode(Aggregate *parent, const QString& name)
     : LeafNode(Enum, parent, name), flagsType_(0)
 {
     setGenus(Node::CPP);
@@ -1712,7 +1712,7 @@ QString EnumNode::itemValue(const QString &name) const
 
 /*!
  */
-TypedefNode::TypedefNode(InnerNode *parent, const QString& name)
+TypedefNode::TypedefNode(Aggregate *parent, const QString& name)
     : LeafNode(Typedef, parent, name), associatedEnum_(0)
 {
     setGenus(Node::CPP);
@@ -1793,7 +1793,7 @@ QString Parameter::reconstruct(bool value) const
   Construct a function node for a C++ function. It's parent
   is \a parent, and it's name is \a name.
  */
-FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
+FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
     : LeafNode(Function, parent, name),
       metaness_(Plain),
       virtualness_(NonVirtual),
@@ -1802,6 +1802,7 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
       overload_(false),
       reimplemented_(false),
       attached_(false),
+      privateSignal_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {
@@ -1813,7 +1814,7 @@ FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
   by \a type. It's parent is \a parent, and it's name is \a name.
   If \a attached is true, it is an attached method or signal.
  */
-FunctionNode::FunctionNode(NodeType type, InnerNode *parent, const QString& name, bool attached)
+FunctionNode::FunctionNode(NodeType type, Aggregate *parent, const QString& name, bool attached)
     : LeafNode(type, parent, name),
       metaness_(Plain),
       virtualness_(NonVirtual),
@@ -1822,6 +1823,7 @@ FunctionNode::FunctionNode(NodeType type, InnerNode *parent, const QString& name
       overload_(false),
       reimplemented_(false),
       attached_(attached),
+      privateSignal_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {
@@ -2006,7 +2008,7 @@ void FunctionNode::debug() const
   The constructor sets the \a parent and the \a name, but
   everything else is set to default values.
  */
-PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
+PropertyNode::PropertyNode(Aggregate *parent, const QString& name)
     : LeafNode(Property, parent, name),
       stored_(FlagValueDefault),
       designable_(FlagValueDefault),
@@ -2079,8 +2081,8 @@ QMultiMap<QString,Node*> QmlTypeNode::inheritedBy;
   Constructs a Qml class node. The new node has the given
   \a parent and \a name.
  */
-QmlTypeNode::QmlTypeNode(InnerNode *parent, const QString& name)
-    : InnerNode(QmlType, parent, name),
+QmlTypeNode::QmlTypeNode(Aggregate *parent, const QString& name)
+    : Aggregate(QmlType, parent, name),
       abstract_(false),
       cnodeRequired_(false),
       wrapper_(false),
@@ -2194,9 +2196,9 @@ QString QmlTypeNode::logicalModuleIdentifier() const
   Constructs a Qml basic type node. The new node has the given
   \a parent and \a name.
  */
-QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
+QmlBasicTypeNode::QmlBasicTypeNode(Aggregate *parent,
                                    const QString& name)
-    : InnerNode(QmlBasicType, parent, name)
+    : Aggregate(QmlBasicType, parent, name)
 {
     setTitle(name);
     setGenus(Node::QML);
@@ -2207,7 +2209,7 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
   always a QmlTypeNode.
  */
 QmlPropertyGroupNode::QmlPropertyGroupNode(QmlTypeNode* parent, const QString& name)
-    : InnerNode(QmlPropertyGroup, parent, name)
+    : Aggregate(QmlPropertyGroup, parent, name)
 {
     idNumber_ = -1;
     setGenus(Node::QML);
@@ -2230,7 +2232,7 @@ QString QmlPropertyGroupNode::idNumber()
 /*!
   Constructor for the QML property node.
  */
-QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
+QmlPropertyNode::QmlPropertyNode(Aggregate* parent,
                                  const QString& name,
                                  const QString& type,
                                  bool attached)
@@ -2704,7 +2706,7 @@ QString Node::idForNode() const
   Prints the inner node's list of children.
   For debugging only.
  */
-void InnerNode::printChildren(const QString& title)
+void Aggregate::printChildren(const QString& title)
 {
     qDebug() << title << name() << children_.size();
     if (children_.size() > 0) {

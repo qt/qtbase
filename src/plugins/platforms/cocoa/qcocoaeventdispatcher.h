@@ -80,7 +80,6 @@
 //
 
 #include <QtCore/qabstracteventdispatcher.h>
-#include <QtCore/qhash.h>
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>

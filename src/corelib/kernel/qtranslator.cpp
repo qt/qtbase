@@ -46,7 +46,6 @@
 #include "qfile.h"
 #include "qmap.h"
 #include "qalgorithms.h"
-#include "qhash.h"
 #include "qtranslator_p.h"
 #include "qlocale.h"
 #include "qendian.h"

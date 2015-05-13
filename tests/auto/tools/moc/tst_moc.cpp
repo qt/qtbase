@@ -83,6 +83,10 @@ QT_USE_NAMESPACE
 template <bool b> struct QTBUG_31218 {};
 struct QTBUG_31218_Derived : QTBUG_31218<-1<0> {};
 
+#if defined(Q_MOC_RUN)
+ class QTBUG_45790 : Bug() { };
+#endif
+
 struct MyStruct {};
 struct MyStruct2 {};
 

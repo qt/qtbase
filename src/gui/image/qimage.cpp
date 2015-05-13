@@ -476,6 +476,10 @@ bool QImageData::checkForAlphaPixels() const
     \snippet code/src_gui_image_qimage.cpp 1
     \endtable
 
+    For images with more than 8-bit per color-channel. The methods
+    setPixelColor() and pixelColor() can be used to set and get
+    with QColor values.
+
     QImage also provide the scanLine() function which returns a
     pointer to the pixel data at the scanline with the given index,
     and the bits() function which returns a pointer to the first pixel
@@ -1087,6 +1091,15 @@ void QImage::detach()
 }
 
 
+static void copyMetadata(QImageData *dst, const QImageData *src)
+{
+    // Doesn't copy colortable and alpha_clut, or offset.
+    dst->dpmx = src->dpmx;
+    dst->dpmy = src->dpmy;
+    dst->devicePixelRatio = src->devicePixelRatio;
+    dst->text = src->text;
+}
+
 /*!
     \fn QImage QImage::copy(int x, int y, int width, int height) const
     \overload
@@ -1136,12 +1149,9 @@ QImage QImage::copy(const QRect& r) const
         } else
             memcpy(image.bits(), bits(), d->nbytes);
         image.d->colortable = d->colortable;
-        image.d->dpmx = d->dpmx;
-        image.d->dpmy = d->dpmy;
-        image.d->devicePixelRatio = d->devicePixelRatio;
         image.d->offset = d->offset;
         image.d->has_alpha_clut = d->has_alpha_clut;
-        image.d->text = d->text;
+        copyMetadata(image.d, d);
         return image;
     }
 
@@ -1227,12 +1237,9 @@ QImage QImage::copy(const QRect& r) const
         }
     }
 
-    image.d->dpmx = dotsPerMeterX();
-    image.d->dpmy = dotsPerMeterY();
-    image.d->devicePixelRatio = devicePixelRatio();
+    copyMetadata(image.d, d);
     image.d->offset = offset();
     image.d->has_alpha_clut = d->has_alpha_clut;
-    image.d->text = d->text;
     return image;
 }
 
@@ -1983,19 +1990,19 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
 
         QIMAGE_SANITYCHECK_MEMORY(image);
 
-        image.setDotsPerMeterY(dotsPerMeterY());
-        image.setDotsPerMeterX(dotsPerMeterX());
-        image.setDevicePixelRatio(devicePixelRatio());
-
-        image.d->text = d->text;
+        image.d->offset = offset();
+        copyMetadata(image.d, d);
 
         converter(image.d, d, flags);
         return image;
     }
 
-    // Convert indexed formats over ARGB32 to the final format.
-    Q_ASSERT(format != QImage::Format_ARGB32);
-    Q_ASSERT(d->format != QImage::Format_ARGB32);
+    // Convert indexed formats over ARGB32 or RGB32 to the final format.
+    Q_ASSERT(format != QImage::Format_ARGB32 && format != QImage::Format_RGB32);
+    Q_ASSERT(d->format != QImage::Format_ARGB32 && d->format != QImage::Format_RGB32);
+
+    if (!hasAlphaChannel())
+        return convertToFormat(Format_RGB32, flags).convertToFormat(format, flags);
 
     return convertToFormat(Format_ARGB32, flags).convertToFormat(format, flags);
 }
@@ -2112,9 +2119,9 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 
     QImage image(d->width, d->height, format);
     QIMAGE_SANITYCHECK_MEMORY(image);
-    image.setDevicePixelRatio(devicePixelRatio());
 
-    image.d->text = d->text;
+    image.d->offset = offset();
+    copyMetadata(image.d, d);
 
     converter(image.d, d, flags);
     return image;
@@ -2187,9 +2194,10 @@ int QImage::pixelIndex(int x, int y) const
     If the \a position is not valid, the results are undefined.
 
     \warning This function is expensive when used for massive pixel
-    manipulations.
+    manipulations. Use constBits() or constScanLine() when many
+    pixels needs to be read.
 
-    \sa setPixel(), valid(), {QImage#Pixel Manipulation}{Pixel
+    \sa setPixel(), valid(), constBits(), constScanLine(), {QImage#Pixel Manipulation}{Pixel
     Manipulation}
 */
 
@@ -2239,25 +2247,23 @@ QRgb QImage::pixel(int x, int y) const
     return *layout->convertToARGB32PM(&result, ptr, 1, layout, 0);
 }
 
-
 /*!
     \fn void QImage::setPixel(const QPoint &position, uint index_or_rgb)
 
     Sets the pixel index or color at the given \a position to \a
     index_or_rgb.
 
-    If the image's format is either monochrome or 8-bit, the given \a
+    If the image's format is either monochrome or paletted, the given \a
     index_or_rgb value must be an index in the image's color table,
     otherwise the parameter must be a QRgb value.
 
     If \a position is not a valid coordinate pair in the image, or if
     \a index_or_rgb >= colorCount() in the case of monochrome and
-    8-bit images, the result is undefined.
+    paletted images, the result is undefined.
 
     \warning This function is expensive due to the call of the internal
     \c{detach()} function called within; if performance is a concern, we
-    recommend the use of \l{QImage::}{scanLine()} to access pixel data
-    directly.
+    recommend the use of scanLine() or bits() to access pixel data directly.
 
     \sa pixel(), {QImage#Pixel Manipulation}{Pixel Manipulation}
 */
@@ -2342,6 +2348,102 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     uint result;
     const uint *ptr = layout->convertFromARGB32PM(&result, &index_or_rgb, 1, layout, 0);
     qStorePixels[layout->bpp](s, ptr, x, 1);
+}
+
+/*!
+    \fn QColor QImage::pixelColor(const QPoint &position) const
+    \since 5.6
+
+    Returns the color of the pixel at the given \a position as a QColor.
+
+    If the \a position is not valid, an invalid QColor is returned.
+
+    \warning This function is expensive when used for massive pixel
+    manipulations. Use constBits() or constScanLine() when many
+    pixels needs to be read.
+
+    \sa setPixel(), valid(), constBits(), constScanLine(), {QImage#Pixel Manipulation}{Pixel
+    Manipulation}
+*/
+
+/*!
+    \overload
+    \since 5.6
+
+    Returns the color of the pixel at coordinates (\a x, \a y) as a QColor.
+*/
+QColor QImage::pixelColor(int x, int y) const
+{
+    if (!d || x < 0 || x >= d->width || y < 0 || y >= height()) {
+        qWarning("QImage::pixelColor: coordinate (%d,%d) out of range", x, y);
+        return QColor();
+    }
+
+    const uchar * s = constScanLine(y);
+    switch (d->format) {
+    case Format_BGR30:
+    case Format_A2BGR30_Premultiplied:
+        return QColor(qConvertA2rgb30ToRgb64<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]));
+    case Format_RGB30:
+    case Format_A2RGB30_Premultiplied:
+        return QColor(qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]));
+    default:
+        return QColor(pixel(x, y));
+    }
+}
+
+/*!
+    \fn void QImage::setPixelColor(const QPoint &position, const QColor &color)
+    \since 5.6
+
+    Sets the color at the given \a position to \a color.
+
+    If \a position is not a valid coordinate pair in the image, or
+    the image's format is either monochrome or paletted, the result is undefined.
+
+    \warning This function is expensive due to the call of the internal
+    \c{detach()} function called within; if performance is a concern, we
+    recommend the use of scanLine() or bits() to access pixel data directly.
+
+    \sa pixel(), bits(), scanLine(), {QImage#Pixel Manipulation}{Pixel Manipulation}
+*/
+
+/*!
+    \overload
+    \since 5.6
+
+    Sets the pixel color at (\a x, \a y) to \a color.
+*/
+void QImage::setPixelColor(int x, int y, const QColor &color)
+{
+    if (!d || x < 0 || x >= width() || y < 0 || y >= height() || !color.isValid()) {
+        qWarning("QImage::setPixelColor: coordinate (%d,%d) out of range", x, y);
+        return;
+    }
+    // detach is called from within scanLine
+    uchar * s = scanLine(y);
+    switch (d->format) {
+    case Format_Mono:
+    case Format_MonoLSB:
+    case Format_Indexed8:
+        qWarning("QImage::setPixelColor: called on monochrome or indexed format");
+        return;
+    case Format_BGR30:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()) | 0xc0000000;
+        return;
+    case Format_A2BGR30_Premultiplied:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64());
+        return;
+    case Format_RGB30:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()) | 0xc0000000;
+        return;
+    case Format_A2RGB30_Premultiplied:
+        ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64());
+        return;
+    default:
+        setPixel(x, y, color.rgba());
+        return;
+    }
 }
 
 /*!
@@ -2825,13 +2927,21 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
     if (dst == src) {
         // When mirroring in-place, stop in the middle for one of the directions, since we
         // are swapping the bytes instead of merely copying.
-        const int srcXEnd = dstX0 ? w / 2 : w;
-        const int srcYEnd = !dstX0 && dstY0 ? h / 2 : h;
+        const int srcXEnd = (dstX0 && !dstY0) ? w / 2 : w;
+        const int srcYEnd = dstY0 ? h / 2 : h;
         for (int srcY = 0, dstY = dstY0; srcY < srcYEnd; ++srcY, dstY += dstYIncr) {
             T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
             T *dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
             for (int srcX = 0, dstX = dstX0; srcX < srcXEnd; ++srcX, dstX += dstXIncr)
                 std::swap(srcPtr[srcX], dstPtr[dstX]);
+        }
+        // If mirroring both ways, the middle line needs to be mirrored horizontally only.
+        if (dstX0 && dstY0 && (h & 1)) {
+            int srcY = h / 2;
+            int srcXEnd2 = w / 2;
+            T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
+            for (int srcX = 0, dstX = dstX0; srcX < srcXEnd2; ++srcX, dstX += dstXIncr)
+                std::swap(srcPtr[srcX], srcPtr[dstX]);
         }
     } else {
         for (int srcY = 0, dstY = dstY0; srcY < h; ++srcY, dstY += dstYIncr) {
@@ -2944,9 +3054,7 @@ QImage QImage::mirrored_helper(bool horizontal, bool vertical) const
 
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
-    result.d->devicePixelRatio = d->devicePixelRatio;
-    result.d->dpmx = d->dpmx;
-    result.d->dpmy = d->dpmy;
+    copyMetadata(result.d, d);
 
     do_mirror(result.d, d, horizontal, vertical);
 
@@ -3095,6 +3203,7 @@ QImage QImage::rgbSwapped_helper() const
         rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
         break;
     }
+    copyMetadata(res.d, d);
     return res;
 }
 
@@ -4250,22 +4359,26 @@ int QImage::bitPlaneCount() const
     return bpc;
 }
 
-static QImage smoothScaled(const QImage &source, int w, int h) {
-    QImage src = source;
-    bool canSkipConversion = (src.format() == QImage::Format_RGB32 || src.format() == QImage::Format_ARGB32_Premultiplied);
+QImage QImage::smoothScaled(int w, int h) const {
+    QImage src = *this;
+    switch (src.format()) {
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32_Premultiplied:
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    canSkipConversion = canSkipConversion || (src.format() == QImage::Format_RGBX8888 || src.format() == QImage::Format_RGBA8888_Premultiplied);
+    case QImage::Format_RGBX8888:
 #endif
-    if (!canSkipConversion) {
+    case QImage::Format_RGBA8888_Premultiplied:
+        break;
+    default:
         if (src.hasAlphaChannel())
             src = src.convertToFormat(QImage::Format_ARGB32_Premultiplied);
         else
             src = src.convertToFormat(QImage::Format_RGB32);
     }
-
-    return qSmoothScaleImage(src, w, h);
+    src = qSmoothScaleImage(src, w, h);
+    copyMetadata(src.d, d);
+    return src;
 }
-
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
@@ -4467,13 +4580,13 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     // Make use of the optimized algorithm when we're scaling
     if (scale_xform && mode == Qt::SmoothTransformation) {
         if (mat.m11() < 0.0F && mat.m22() < 0.0F) { // horizontal/vertical flip
-            return smoothScaled(mirrored(true, true), wd, hd);
+            return smoothScaled(wd, hd).mirrored(true, true);
         } else if (mat.m11() < 0.0F) { // horizontal flip
-            return smoothScaled(mirrored(true, false), wd, hd);
+            return smoothScaled(wd, hd).mirrored(true, false);
         } else if (mat.m22() < 0.0F) { // vertical flip
-            return smoothScaled(mirrored(false, true), wd, hd);
+            return smoothScaled(wd, hd).mirrored(false, true);
         } else { // no flipping
-            return smoothScaled(*this, wd, hd);
+            return smoothScaled(wd, hd);
         }
     }
 
@@ -4525,9 +4638,6 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         dImage.d->has_alpha_clut = d->has_alpha_clut | complex_xform;
     }
 
-    dImage.d->dpmx = dotsPerMeterX();
-    dImage.d->dpmy = dotsPerMeterY();
-
     // initizialize the data
     if (d->format == QImage::Format_Indexed8) {
         if (dImage.d->colortable.size() < 256) {
@@ -4565,8 +4675,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
         int dbpl = dImage.bytesPerLine();
         qt_xForm_helper(mat, 0, type, bpp, dImage.bits(), dbpl, 0, hd, sptr, sbpl, ws, hs);
     }
+    copyMetadata(dImage.d, d);
 
-    dImage.d->devicePixelRatio = devicePixelRatio();
     return dImage;
 }
 
@@ -4608,8 +4718,7 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     if (ref.load() > 1 || ro_data)
         return false;
 
-    const InPlace_Image_Converter *const converterPtr = &qimage_inplace_converter_map[format][newFormat];
-    InPlace_Image_Converter converter = *converterPtr;
+    InPlace_Image_Converter converter = qimage_inplace_converter_map[format][newFormat];
     if (converter)
         return converter(this, flags);
     else if (format > QImage::Format_Indexed8 && newFormat > QImage::Format_Indexed8 && !qimage_converter_map[format][newFormat])

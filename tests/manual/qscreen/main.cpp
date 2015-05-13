@@ -36,22 +36,117 @@
 #include <QScreen>
 #include <QWindow>
 #include <QDebug>
+#include <QTextStream>
 #include <QFormLayout>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
+#include <QStatusBar>
 #include <QLineEdit>
 
-int i = 0;
-
-typedef QHash<QScreen*, PropertyWatcher*> ScreensHash;
-Q_GLOBAL_STATIC(ScreensHash, props);
-
-void updateSiblings(PropertyWatcher* w)
+class ScreenPropertyWatcher : public PropertyWatcher
 {
-    QLineEdit *siblingsField = w->findChild<QLineEdit *>("siblings");
-    QScreen* screen = (QScreen*)w->subject();
-    QStringList siblingsList;
-    foreach (QScreen *sibling, screen->virtualSiblings())
-        siblingsList << sibling->name();
-    siblingsField->setText(siblingsList.join(", "));
+    Q_OBJECT
+public:
+    ScreenPropertyWatcher(QWidget *wp = Q_NULLPTR) : PropertyWatcher(Q_NULLPTR, QString(), wp)
+    {
+        // workaround for the fact that virtualSiblings is not a property,
+        // thus there is no change notification:
+        // allow the user to update the field manually
+        connect(this, &PropertyWatcher::updatedAllFields, this, &ScreenPropertyWatcher::updateSiblings);
+    }
+
+    QScreen *screenSubject() const { return qobject_cast<QScreen *>(subject()); }
+    void setScreenSubject(QScreen *s, const QString &annotation = QString())
+    {
+        setSubject(s, annotation);
+        updateSiblings();
+    }
+
+public slots:
+    void updateSiblings();
+};
+
+void ScreenPropertyWatcher::updateSiblings()
+{
+    const QScreen *screen = screenSubject();
+    if (!screen)
+        return;
+    const QString objectName = QLatin1String("siblings");
+    QLineEdit *siblingsField = findChild<QLineEdit *>(objectName);
+    if (!siblingsField) {
+        siblingsField = new QLineEdit(this);
+        siblingsField->setObjectName(objectName);
+        siblingsField->setReadOnly(true);
+        formLayout()->insertRow(0, QLatin1String("virtualSiblings"), siblingsField);
+    }
+    QString text;
+    foreach (const QScreen *sibling, screen->virtualSiblings()) {
+        if (!text.isEmpty())
+            text += QLatin1String(", ");
+        text += sibling->name();
+    }
+    siblingsField->setText(text);
+}
+
+class ScreenWatcherMainWindow : public QMainWindow
+{
+    Q_OBJECT
+public:
+    explicit ScreenWatcherMainWindow(QScreen *screen);
+
+    QScreen *screenSubject() const { return m_watcher->screenSubject(); }
+
+protected:
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+
+private:
+    const QString m_annotation;
+    ScreenPropertyWatcher *m_watcher;
+};
+
+static int i = 0;
+
+ScreenWatcherMainWindow::ScreenWatcherMainWindow(QScreen *screen)
+    : m_annotation(QLatin1Char('#') + QString::number(i++))
+    ,  m_watcher(new ScreenPropertyWatcher(this))
+{
+    setAttribute(Qt::WA_DeleteOnClose);
+    setCentralWidget(m_watcher);
+    m_watcher->setScreenSubject(screen, m_annotation);
+
+    QMenu *fileMenu = menuBar()->addMenu(QLatin1String("&File"));
+    QAction *a = fileMenu->addAction(QLatin1String("Close"));
+    a->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
+    connect(a, SIGNAL(triggered()), this, SLOT(close()));
+    a = fileMenu->addAction(QLatin1String("Quit"));
+    a->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    connect(a, SIGNAL(triggered()), qApp, SLOT(quit()));
+}
+
+static inline QString msgScreenChange(const QWidget *w, const QScreen *oldScreen, const QScreen *newScreen)
+{
+    QString result;
+    const QRect geometry = w->geometry();
+    const QPoint pos = QCursor::pos();
+    QTextStream(&result) << "Screen changed \"" << oldScreen->name() << "\" --> \""
+        << newScreen->name() << "\" at " << pos.x() << ',' << pos.y() << " geometry: "
+        << geometry.width() << 'x' << geometry.height() << forcesign << geometry.x()
+        << geometry.y() << '.';
+    return result;
+}
+
+bool ScreenWatcherMainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::ScreenChangeInternal) {
+        QScreen *newScreen = windowHandle()->screen();
+        const QString message = msgScreenChange(this, m_watcher->screenSubject(), newScreen);
+        qDebug().noquote() << message;
+        statusBar()->showMessage(message);
+        m_watcher->setScreenSubject(newScreen, m_annotation);
+    }
+    return QMainWindow::event(event);
 }
 
 void screenAdded(QScreen* screen)
@@ -59,12 +154,7 @@ void screenAdded(QScreen* screen)
     screen->setOrientationUpdateMask((Qt::ScreenOrientations)0x0F);
     qDebug("\nscreenAdded %s siblings %d first %s", qPrintable(screen->name()), screen->virtualSiblings().count(),
         (screen->virtualSiblings().isEmpty() ? "none" : qPrintable(screen->virtualSiblings().first()->name())));
-    PropertyWatcher *w = new PropertyWatcher(screen, QString::number(i++));
-    QLineEdit *siblingsField = new QLineEdit();
-    siblingsField->setObjectName("siblings");
-    siblingsField->setReadOnly(true);
-    w->layout()->insertRow(0, "virtualSiblings", siblingsField);
-    updateSiblings(w);
+    ScreenWatcherMainWindow *w = new ScreenWatcherMainWindow(screen);
 
     // This doesn't work.  If the multiple screens are part of
     // a virtual desktop (i.e. they are virtual siblings), then
@@ -85,18 +175,17 @@ void screenAdded(QScreen* screen)
         geom.setHeight(screen->geometry().height() * 9 / 10);
     geom.moveCenter(screen->geometry().center());
     w->setGeometry(geom);
-
-    props->insert(screen, w);
-
-    // workaround for the fact that virtualSiblings is not a property,
-    // thus there is no change notification:
-    // allow the user to update the field manually
-    QObject::connect(w, &PropertyWatcher::updatedAllFields, &updateSiblings);
 }
 
 void screenRemoved(QScreen* screen)
 {
-    delete props->take(screen);
+    const QWidgetList topLevels = QApplication::topLevelWidgets();
+    for (int i = topLevels.size() - 1; i >= 0; --i) {
+        if (ScreenWatcherMainWindow *sw = qobject_cast<ScreenWatcherMainWindow *>(topLevels.at(i))) {
+            if (sw->screenSubject() == screen)
+                sw->close();
+        }
+    }
 }
 
 int main(int argc, char *argv[])
@@ -109,3 +198,5 @@ int main(int argc, char *argv[])
     QObject::connect((const QGuiApplication*)QGuiApplication::instance(), &QGuiApplication::screenRemoved, &screenRemoved);
     return a.exec();
 }
+
+#include "main.moc"

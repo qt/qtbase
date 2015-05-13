@@ -762,6 +762,7 @@ QWidgetBackingStore::~QWidgetBackingStore()
         resetWidget(dirtyRenderToTextureWidgets.at(c));
 
 #ifndef QT_NO_OPENGL
+    delete widgetTextures;
     delete dirtyOnScreenWidgets;
 #endif
     dirtyOnScreenWidgets = 0;

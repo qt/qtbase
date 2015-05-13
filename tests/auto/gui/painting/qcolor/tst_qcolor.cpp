@@ -38,8 +38,8 @@
 
 #include <qcolor.h>
 #include <qdebug.h>
-#include <qrgba64.h>
 #include <private/qdrawingprimitive_sse2_p.h>
+#include <qrgba64.h>
 
 class tst_QColor : public QObject
 {
@@ -1459,7 +1459,7 @@ void tst_QColor::unpremultiply_sse4()
         for (uint a = 0; a < 256; a++) {
             for (uint c = 0; c <= a; c++) {
                 QRgb p = qRgba(c, a-c, c, a);
-                QCOMPARE(qUnpremultiply_sse4(p), qUnpremultiply(p));
+                QCOMPARE(qUnpremultiply(p), qUnpremultiply_sse4(p));
             }
         }
         return;

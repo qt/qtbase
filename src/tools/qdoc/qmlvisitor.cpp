@@ -196,7 +196,7 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         const TopicList& topicsUsed = doc.topicsUsed();
         NodeList nodes;
         Node* nodePassedIn = node;
-        InnerNode* parent = nodePassedIn->parent();
+        Aggregate* parent = nodePassedIn->parent();
         node->setDoc(doc);
         nodes.append(node);
         if (topicsUsed.size() > 0) {

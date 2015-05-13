@@ -35,7 +35,6 @@
 #include "qresource_p.h"
 #include "qresource_iterator_p.h"
 #include "qset.h"
-#include "qhash.h"
 #include "qmutex.h"
 #include "qdebug.h"
 #include "qlocale.h"

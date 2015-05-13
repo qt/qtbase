@@ -53,7 +53,6 @@
 #include "QtGui/qpainter.h"
 #include "QtGui/qpainterpath.h"
 #include "QtGui/qpaintengine.h"
-#include <QtCore/qhash.h>
 
 #include <private/qpen_p.h>
 

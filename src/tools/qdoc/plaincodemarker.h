@@ -61,7 +61,7 @@ public:
     QString markedUpIncludes( const QStringList& includes ) Q_DECL_OVERRIDE;
     QString functionBeginRegExp( const QString& funcName ) Q_DECL_OVERRIDE;
     QString functionEndRegExp( const QString& funcName ) Q_DECL_OVERRIDE;
-    QList<Section> sections(const InnerNode *innerNode, SynopsisStyle style, Status status) Q_DECL_OVERRIDE;
+    QList<Section> sections(const Aggregate *innerNode, SynopsisStyle style, Status status) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

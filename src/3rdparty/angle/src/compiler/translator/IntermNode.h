@@ -13,182 +13,19 @@
 // each node can have it's own type of list of children.
 //
 
-#ifndef COMPILER_TRANSLATOR_INTERMEDIATE_H_
-#define COMPILER_TRANSLATOR_INTERMEDIATE_H_
+#ifndef COMPILER_TRANSLATOR_INTERMNODE_H_
+#define COMPILER_TRANSLATOR_INTERMNODE_H_
 
 #include "GLSLANG/ShaderLang.h"
 
 #include <algorithm>
 #include <queue>
 
+#include "common/angleutils.h"
 #include "compiler/translator/Common.h"
 #include "compiler/translator/Types.h"
 #include "compiler/translator/ConstantUnion.h"
-
-//
-// Operators used by the high-level (parse tree) representation.
-//
-enum TOperator
-{
-    EOpNull,            // if in a node, should only mean a node is still being built
-    EOpSequence,        // denotes a list of statements, or parameters, etc.
-    EOpFunctionCall,
-    EOpFunction,        // For function definition
-    EOpParameters,      // an aggregate listing the parameters to a function
-
-    EOpDeclaration,
-    EOpInvariantDeclaration, // Specialized declarations for attributing invariance
-    EOpPrototype,
-
-    //
-    // Unary operators
-    //
-
-    EOpNegative,
-    EOpPositive,
-    EOpLogicalNot,
-    EOpVectorLogicalNot,
-
-    EOpPostIncrement,
-    EOpPostDecrement,
-    EOpPreIncrement,
-    EOpPreDecrement,
-
-    //
-    // binary operations
-    //
-
-    EOpAdd,
-    EOpSub,
-    EOpMul,
-    EOpDiv,
-    EOpEqual,
-    EOpNotEqual,
-    EOpVectorEqual,
-    EOpVectorNotEqual,
-    EOpLessThan,
-    EOpGreaterThan,
-    EOpLessThanEqual,
-    EOpGreaterThanEqual,
-    EOpComma,
-
-    EOpVectorTimesScalar,
-    EOpVectorTimesMatrix,
-    EOpMatrixTimesVector,
-    EOpMatrixTimesScalar,
-
-    EOpLogicalOr,
-    EOpLogicalXor,
-    EOpLogicalAnd,
-
-    EOpIndexDirect,
-    EOpIndexIndirect,
-    EOpIndexDirectStruct,
-    EOpIndexDirectInterfaceBlock,
-
-    EOpVectorSwizzle,
-
-    //
-    // Built-in functions potentially mapped to operators
-    //
-
-    EOpRadians,
-    EOpDegrees,
-    EOpSin,
-    EOpCos,
-    EOpTan,
-    EOpAsin,
-    EOpAcos,
-    EOpAtan,
-
-    EOpPow,
-    EOpExp,
-    EOpLog,
-    EOpExp2,
-    EOpLog2,
-    EOpSqrt,
-    EOpInverseSqrt,
-
-    EOpAbs,
-    EOpSign,
-    EOpFloor,
-    EOpCeil,
-    EOpFract,
-    EOpMod,
-    EOpMin,
-    EOpMax,
-    EOpClamp,
-    EOpMix,
-    EOpStep,
-    EOpSmoothStep,
-
-    EOpLength,
-    EOpDistance,
-    EOpDot,
-    EOpCross,
-    EOpNormalize,
-    EOpFaceForward,
-    EOpReflect,
-    EOpRefract,
-
-    EOpDFdx,            // Fragment only, OES_standard_derivatives extension
-    EOpDFdy,            // Fragment only, OES_standard_derivatives extension
-    EOpFwidth,          // Fragment only, OES_standard_derivatives extension
-
-    EOpMatrixTimesMatrix,
-
-    EOpAny,
-    EOpAll,
-
-    //
-    // Branch
-    //
-
-    EOpKill,            // Fragment only
-    EOpReturn,
-    EOpBreak,
-    EOpContinue,
-
-    //
-    // Constructors
-    //
-
-    EOpConstructInt,
-    EOpConstructUInt,
-    EOpConstructBool,
-    EOpConstructFloat,
-    EOpConstructVec2,
-    EOpConstructVec3,
-    EOpConstructVec4,
-    EOpConstructBVec2,
-    EOpConstructBVec3,
-    EOpConstructBVec4,
-    EOpConstructIVec2,
-    EOpConstructIVec3,
-    EOpConstructIVec4,
-    EOpConstructUVec2,
-    EOpConstructUVec3,
-    EOpConstructUVec4,
-    EOpConstructMat2,
-    EOpConstructMat3,
-    EOpConstructMat4,
-    EOpConstructStruct,
-
-    //
-    // moves
-    //
-
-    EOpAssign,
-    EOpInitialize,
-    EOpAddAssign,
-    EOpSubAssign,
-    EOpMulAssign,
-    EOpVectorTimesMatrixAssign,
-    EOpVectorTimesScalarAssign,
-    EOpMatrixTimesScalarAssign,
-    EOpMatrixTimesMatrixAssign,
-    EOpDivAssign
-};
+#include "compiler/translator/Operator.h"
 
 class TIntermTraverser;
 class TIntermAggregate;
@@ -196,10 +33,13 @@ class TIntermBinary;
 class TIntermUnary;
 class TIntermConstantUnion;
 class TIntermSelection;
+class TIntermSwitch;
+class TIntermCase;
 class TIntermTyped;
 class TIntermSymbol;
 class TIntermLoop;
 class TInfoSink;
+class TInfoSinkBase;
 class TIntermRaw;
 
 //
@@ -228,6 +68,8 @@ class TIntermNode
     virtual TIntermBinary *getAsBinaryNode() { return 0; }
     virtual TIntermUnary *getAsUnaryNode() { return 0; }
     virtual TIntermSelection *getAsSelectionNode() { return 0; }
+    virtual TIntermSwitch *getAsSwitchNode() { return 0; }
+    virtual TIntermCase *getAsCaseNode() { return 0; }
     virtual TIntermSymbol *getAsSymbolNode() { return 0; }
     virtual TIntermLoop *getAsLoopNode() { return 0; }
     virtual TIntermRaw *getAsRawNode() { return 0; }
@@ -236,10 +78,6 @@ class TIntermNode
     // node and it is replaced; otherwise, return false.
     virtual bool replaceChildNode(
         TIntermNode *original, TIntermNode *replacement) = 0;
-
-    // For traversing a tree in no particular order, but using
-    // heap memory.
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const = 0;
 
   protected:
     TSourceLoc mLine;
@@ -331,8 +169,6 @@ class TIntermLoop : public TIntermNode
     void setUnrollFlag(bool flag) { mUnrollFlag = flag; }
     bool getUnrollFlag() const { return mUnrollFlag; }
 
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
-
   protected:
     TLoopType mType;
     TIntermNode *mInit;  // for-loop initialization
@@ -359,8 +195,6 @@ class TIntermBranch : public TIntermNode
 
     TOperator getFlowOp() { return mFlowOp; }
     TIntermTyped* getExpression() { return mExpression; }
-
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
 
 protected:
     TOperator mFlowOp;
@@ -394,8 +228,6 @@ class TIntermSymbol : public TIntermTyped
     virtual TIntermSymbol *getAsSymbolNode() { return this; }
     virtual bool replaceChildNode(TIntermNode *, TIntermNode *) { return false; }
 
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const {}
-
   protected:
     int mId;
     TString mSymbol;
@@ -419,7 +251,6 @@ class TIntermRaw : public TIntermTyped
 
     virtual TIntermRaw *getAsRawNode() { return this; }
     virtual bool replaceChildNode(TIntermNode *, TIntermNode *) { return false; }
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const {}
 
   protected:
     TString mRawText;
@@ -458,8 +289,6 @@ class TIntermConstantUnion : public TIntermTyped
     virtual bool replaceChildNode(TIntermNode *, TIntermNode *) { return false; }
 
     TIntermTyped *fold(TOperator, TIntermTyped *, TInfoSink &);
-
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const {}
 
   protected:
     ConstantUnion *mUnionArrayPointer;
@@ -519,8 +348,6 @@ class TIntermBinary : public TIntermOperator
     void setAddIndexClamp() { mAddIndexClamp = true; }
     bool getAddIndexClamp() { return mAddIndexClamp; }
 
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
-
   protected:
     TIntermTyped* mLeft;
     TIntermTyped* mRight;
@@ -556,12 +383,10 @@ class TIntermUnary : public TIntermOperator
 
     void setOperand(TIntermTyped *operand) { mOperand = operand; }
     TIntermTyped *getOperand() { return mOperand; }
-    bool promote(TInfoSink &);
+    void promote(const TType *funcReturnType);
 
     void setUseEmulatedFunction() { mUseEmulatedFunction = true; }
     bool getUseEmulatedFunction() { return mUseEmulatedFunction; }
-
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
 
   protected:
     TIntermTyped *mOperand;
@@ -613,8 +438,6 @@ class TIntermAggregate : public TIntermOperator
     void setUseEmulatedFunction() { mUseEmulatedFunction = true; }
     bool getUseEmulatedFunction() { return mUseEmulatedFunction; }
 
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
-
     void setPrecisionFromChildren();
     void setBuiltInFunctionPrecision();
 
@@ -634,7 +457,7 @@ class TIntermAggregate : public TIntermOperator
 };
 
 //
-// For if tests.  Simplified since there is no switch statement.
+// For if tests.
 //
 class TIntermSelection : public TIntermTyped
 {
@@ -664,12 +487,62 @@ class TIntermSelection : public TIntermTyped
     TIntermNode *getFalseBlock() const { return mFalseBlock; }
     TIntermSelection *getAsSelectionNode() { return this; }
 
-    virtual void enqueueChildren(std::queue<TIntermNode *> *nodeQueue) const;
-
 protected:
     TIntermTyped *mCondition;
     TIntermNode *mTrueBlock;
     TIntermNode *mFalseBlock;
+};
+
+//
+// Switch statement.
+//
+class TIntermSwitch : public TIntermNode
+{
+  public:
+    TIntermSwitch(TIntermTyped *init, TIntermAggregate *statementList)
+        : TIntermNode(),
+          mInit(init),
+          mStatementList(statementList)
+    {
+    }
+
+    void traverse(TIntermTraverser *it) override;
+    bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement) override;
+
+    TIntermSwitch *getAsSwitchNode() override { return this; }
+
+    TIntermAggregate *getStatementList() { return mStatementList; }
+    void setStatementList(TIntermAggregate *statementList) { mStatementList = statementList; }
+
+  protected:
+    TIntermTyped *mInit;
+    TIntermAggregate *mStatementList;
+};
+
+//
+// Case label.
+//
+class TIntermCase : public TIntermNode
+{
+  public:
+    TIntermCase(TIntermTyped *condition)
+        : TIntermNode(),
+          mCondition(condition)
+    {
+    }
+
+    void traverse(TIntermTraverser *it) override;
+    bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement) override;
+
+    TIntermCase *getAsCaseNode() override { return this; }
+
+    bool hasCondition() const { return mCondition != nullptr; }
+    TIntermTyped *getCondition() const { return mCondition; }
+
+  protected:
+    TIntermTyped *mCondition;
 };
 
 enum Visit
@@ -687,7 +560,7 @@ enum Visit
 // When using this, just fill in the methods for nodes you want visited.
 // Return false from a pre-visit to skip visiting that node's subtree.
 //
-class TIntermTraverser
+class TIntermTraverser : angle::NonCopyable
 {
   public:
     POOL_ALLOCATOR_NEW_DELETE();
@@ -708,6 +581,8 @@ class TIntermTraverser
     virtual bool visitBinary(Visit, TIntermBinary *) { return true; }
     virtual bool visitUnary(Visit, TIntermUnary *) { return true; }
     virtual bool visitSelection(Visit, TIntermSelection *) { return true; }
+    virtual bool visitSwitch(Visit, TIntermSwitch *) { return true; }
+    virtual bool visitCase(Visit, TIntermCase *) { return true; }
     virtual bool visitAggregate(Visit, TIntermAggregate *) { return true; }
     virtual bool visitLoop(Visit, TIntermLoop *) { return true; }
     virtual bool visitBranch(Visit, TIntermBranch *) { return true; }
@@ -741,12 +616,38 @@ class TIntermTraverser
     const bool postVisit;
     const bool rightToLeft;
 
+    // If traversers need to replace nodes, they can add the replacements in
+    // mReplacements during traversal and the user of the traverser should call
+    // this function after traversal to perform them.
+    void updateTree();
+
   protected:
     int mDepth;
     int mMaxDepth;
 
     // All the nodes from root to the current node's parent during traversing.
     TVector<TIntermNode *> mPath;
+
+    struct NodeUpdateEntry
+    {
+        NodeUpdateEntry(TIntermNode *_parent,
+                        TIntermNode *_original,
+                        TIntermNode *_replacement,
+                        bool _originalBecomesChildOfReplacement)
+            : parent(_parent),
+              original(_original),
+              replacement(_replacement),
+              originalBecomesChildOfReplacement(_originalBecomesChildOfReplacement) {}
+
+        TIntermNode *parent;
+        TIntermNode *original;
+        TIntermNode *replacement;
+        bool originalBecomesChildOfReplacement;
+    };
+
+    // During traversing, save all the changes that need to happen into
+    // mReplacements, then do them by calling updateTree().
+    std::vector<NodeUpdateEntry> mReplacements;
 };
 
 //
@@ -768,10 +669,10 @@ class TMaxDepthTraverser : public TIntermTraverser
     virtual bool visitLoop(Visit, TIntermLoop *) { return depthCheck(); }
     virtual bool visitBranch(Visit, TIntermBranch *) { return depthCheck(); }
 
-protected:
+  protected:
     bool depthCheck() const { return mMaxDepth < mDepthLimit; }
 
     int mDepthLimit;
 };
 
-#endif  // COMPILER_TRANSLATOR_INTERMEDIATE_H_
+#endif  // COMPILER_TRANSLATOR_INTERMNODE_H_

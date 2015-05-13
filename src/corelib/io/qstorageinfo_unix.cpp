@@ -122,7 +122,11 @@ public:
     inline QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
+#  if defined(Q_OS_NETBSD)
+    struct statvfs *stat_buf;
+#  else
     struct statfs *stat_buf;
+#  endif
     int entryCount;
     int currentIndex;
 #elif defined(Q_OS_SOLARIS)
@@ -206,7 +210,7 @@ inline bool QStorageIterator::isValid() const
 
 inline bool QStorageIterator::next()
 {
-    return ::getmntent(fp, &mnt) == Q_NULLPTR;
+    return ::getmntent(fp, &mnt) == 0;
 }
 
 inline QString QStorageIterator::rootPath() const

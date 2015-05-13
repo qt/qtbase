@@ -492,6 +492,7 @@ public:
         AA_UseOpenGLES = 16,
         AA_UseSoftwareOpenGL = 17,
         AA_ShareOpenGLContexts = 18,
+        AA_SetPalette = 19,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -1457,7 +1458,10 @@ public:
         ItemIsDropEnabled = 8,
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
-        ItemIsTristate = 64,
+        ItemIsAutoTristate = 64,
+#if QT_DEPRECATED_SINCE(5, 6)
+        ItemIsTristate = ItemIsAutoTristate,
+#endif
         ItemNeverHasChildren = 128,
         ItemIsUserTristate = 256
     };

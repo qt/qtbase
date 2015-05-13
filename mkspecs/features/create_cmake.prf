@@ -24,6 +24,8 @@ load(cmake_functions)
 CMAKE_INSTALL_LIBS_DIR = $$cmakeTargetPath($$[QT_INSTALL_LIBS])
 contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_USR_MOVE_WORKAROUND = $$CMAKE_INSTALL_LIBS_DIR
 
+CMAKE_OUT_DIR = $$MODULE_BASE_OUTDIR/lib/cmake
+
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
 split_incpath {
@@ -36,7 +38,7 @@ split_incpath {
             $$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)/Qt$${CMAKE_MODULE_NAME})
 
     cmake_extra_source_includes.input = $$PWD/data/cmake/ExtraSourceIncludes.cmake.in
-    cmake_extra_source_includes.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/ExtraSourceIncludes.cmake
+    cmake_extra_source_includes.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/ExtraSourceIncludes.cmake
 
     !build_pass:QMAKE_SUBSTITUTES += \
         cmake_extra_source_includes
@@ -159,7 +161,7 @@ contains(CONFIG, plugin) {
         }
     }
     cmake_target_file.input = $$PWD/data/cmake/Qt5PluginTarget.cmake.in
-    cmake_target_file.output = $$DESTDIR/../../$${CMAKE_LIB_DIR}cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}_$${PLUGIN_CLASS_NAME}.cmake
+    cmake_target_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}_$${PLUGIN_CLASS_NAME}.cmake
 
     !build_pass:QMAKE_SUBSTITUTES += \
       cmake_target_file
@@ -173,9 +175,28 @@ contains(CONFIG, plugin) {
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
-CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
-!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
+sorted_deps = $$sort_depends(QT.$${MODULE}.depends, QT.)
+mod_deps =
+lib_deps =
+aux_mod_deps =
+aux_lib_deps =
+# Until CMake 3.0 is the minimum requirement of Qt 5, we need to filter
+# out header-only modules from dependencies.  CMake 3.0 provides INTERFACE
+# libraries which are equivalent to header-only modules.
+for (dep, sorted_deps) {
+    cdep = $$cmakeModuleName($$dep)
+    !contains(QT.$${dep}.module_config, no_link) {
+        mod_deps += $$cdep
+        lib_deps += Qt5::$$cdep
+    } else {
+        aux_mod_deps += $$cdep
+        aux_lib_deps += Qt5::$$cdep
+    }
+}
+CMAKE_MODULE_DEPS = $$join(mod_deps, ";")
+CMAKE_QT5_MODULE_DEPS = $$join(lib_deps, ";")
+CMAKE_INTERFACE_MODULE_DEPS = $$join(aux_mod_deps, ";")
+CMAKE_INTERFACE_QT5_MODULE_DEPS = $$join(aux_lib_deps, ";")
 
 CMAKE_QT_STEM = Qt$$QT_MAJOR_VERSION$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
 
@@ -254,12 +275,12 @@ mac {
 INSTALLS += cmake_qt5_module_files
 
 cmake_config_file.input = $$PWD/data/cmake/Qt5BasicConfig.cmake.in
-cmake_config_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
+cmake_config_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
 
 CMAKE_PACKAGE_VERSION = $$eval(QT.$${MODULE}.VERSION)
 
 cmake_config_version_file.input = $$PWD/data/cmake/Qt5ConfigVersion.cmake.in
-cmake_config_version_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake
+cmake_config_version_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake
 
 !build_pass:QMAKE_SUBSTITUTES += \
     cmake_config_file \
@@ -273,7 +294,7 @@ cmake_extras_file.input = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.
 exists($$cmake_extras_file.input) {
 
     CMAKE_MODULE_EXTRAS = "true"
-    cmake_extras_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake
+    cmake_extras_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake
 
     !build_pass:QMAKE_SUBSTITUTES += cmake_extras_file
 
@@ -285,7 +306,7 @@ cmake_macros_file.input = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
 exists($$cmake_macros_file.input) {
     CMAKE_MODULE_MACROS = "true"
 
-    cmake_macros_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
+    cmake_macros_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
     cmake_macros_file.CONFIG = verbatim
 
     !build_pass:QMAKE_SUBSTITUTES += cmake_macros_file

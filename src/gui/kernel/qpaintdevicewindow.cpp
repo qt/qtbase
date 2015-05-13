@@ -60,6 +60,9 @@ QT_BEGIN_NAMESPACE
 
     \note Subsequent calls to this function before the next paint
     event will get ignored.
+
+    \note For non-exposed windows the update is deferred until the
+    window becomes exposed again.
 */
 void QPaintDeviceWindow::update()
 {
@@ -70,26 +73,34 @@ void QPaintDeviceWindow::update()
     Marks the \a rect of the window as dirty and schedules a repaint.
 
     \note Subsequent calls to this function before the next paint
-    event will get ignored.
+    event will get ignored, but \a rect is added to the region to update.
+
+    \note For non-exposed windows the update is deferred until the
+    window becomes exposed again.
 */
 void QPaintDeviceWindow::update(const QRect &rect)
 {
     Q_D(QPaintDeviceWindow);
     d->dirtyRegion += rect;
-    requestUpdate();
+    if (isExposed())
+        requestUpdate();
 }
 
 /*!
     Marks the \a region of the window as dirty and schedules a repaint.
 
     \note Subsequent calls to this function before the next paint
-    event will get ignored.
+    event will get ignored, but \a region is added to the region to update.
+
+    \note For non-exposed windows the update is deferred until the
+    window becomes exposed again.
 */
 void QPaintDeviceWindow::update(const QRegion &region)
 {
     Q_D(QPaintDeviceWindow);
     d->dirtyRegion += region;
-    requestUpdate();
+    if (isExposed())
+        requestUpdate();
 }
 
 /*!
@@ -170,6 +181,9 @@ void QPaintDeviceWindow::exposeEvent(QExposeEvent *exposeEvent)
         // sometimes relative to the parent, depending on the platform plugin.
         // We require local coords here.
         d->doFlush(QRect(QPoint(0, 0), size()));
+    } else if (!d->dirtyRegion.isEmpty()) {
+        // Updates while non-exposed were ignored. Schedule an update now.
+        requestUpdate();
     }
 }
 

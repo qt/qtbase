@@ -344,6 +344,9 @@ long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, Q
         options |= SSL_OP_NO_COMPRESSION;
 #endif
 
+    if (!(sslOptions & QSsl::SslOptionDisableServerCipherPreference))
+        options |= SSL_OP_CIPHER_SERVER_PREFERENCE;
+
     return options;
 }
 
@@ -659,8 +662,10 @@ void QSslSocketPrivate::resetDefaultCiphers()
         if (SSL_CIPHER *cipher = q_sk_SSL_CIPHER_value(supportedCiphers, i)) {
             QSslCipher ciph = QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(cipher);
             if (!ciph.isNull()) {
-                // Unconditionally exclude ADH ciphers since they offer no MITM protection
-                if (!ciph.name().toLower().startsWith(QLatin1String("adh")))
+                // Unconditionally exclude ADH and AECDH ciphers since they offer no MITM protection
+                if (!ciph.name().toLower().startsWith(QLatin1String("adh")) &&
+                    !ciph.name().toLower().startsWith(QLatin1String("exp-adh")) &&
+                    !ciph.name().toLower().startsWith(QLatin1String("aecdh")))
                     ciphers << ciph;
                 if (ciph.usedBits() >= 128)
                     defaultCiphers << ciph;
@@ -1392,7 +1397,7 @@ void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertifi
     if (plainSocket)
         plainSocket->resume();
     paused = false;
-    if (checkSslErrors())
+    if (checkSslErrors() && ssl)
         continueHandshake();
 }
 

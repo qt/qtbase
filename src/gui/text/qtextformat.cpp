@@ -38,7 +38,7 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qmap.h>
-#include <qhash.h>
+#include <qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3027,8 +3027,8 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
     \ingroup richtext-processing
     \ingroup shared
 
-    Inline images are represented by an object replacement character
-    (0xFFFC in Unicode) which has an associated QTextImageFormat. The
+    Inline images are represented by a Unicode value U+FFFC (OBJECT
+    REPLACEMENT CHARACTER) which has an associated QTextImageFormat. The
     image format specifies a name with setName() that is used to
     locate the image. The size of the rectangle that the image will
     occupy is specified using setWidth() and setHeight().

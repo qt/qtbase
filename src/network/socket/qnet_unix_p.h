@@ -193,6 +193,32 @@ static inline int qt_safe_sendto(int sockfd, const void *buf, size_t len, int fl
     return ret;
 }
 
+static inline int qt_safe_recvmsg(int sockfd, struct msghdr *msg, int flags)
+{
+    int ret;
+
+    EINTR_LOOP(ret, ::recvmsg(sockfd, msg, flags));
+    return ret;
+}
+
+// VxWorks' headers do not specify any const modifiers
+static inline int qt_safe_sendmsg(int sockfd, const struct msghdr *msg, int flags)
+{
+#ifdef MSG_NOSIGNAL
+    flags |= MSG_NOSIGNAL;
+#else
+    qt_ignore_sigpipe();
+#endif
+
+    int ret;
+#ifdef Q_OS_VXWORKS
+    EINTR_LOOP(ret, ::sendmsg(sockfd, (struct msghdr *) msg, flags);
+#else
+    EINTR_LOOP(ret, ::sendmsg(sockfd, msg, flags));
+#endif
+    return ret;
+}
+
 QT_END_NAMESPACE
 
 #endif // QNET_UNIX_P_H

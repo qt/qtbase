@@ -184,28 +184,6 @@ Q_CORE_EXPORT void __cdecl qWinMain(HINSTANCE instance, HINSTANCE prevInstance, 
 
 #ifndef QT_NO_QOBJECT
 
-void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)
-{
-    QThreadData *data = object->d_func()->threadData;
-
-    QMutexLocker locker(&data->postEventList.mutex);
-    if (data->postEventList.size() == 0)
-        return;
-    for (int i = 0; i < data->postEventList.size(); ++i) {
-        const QPostEvent & pe = data->postEventList.at(i);
-        if (pe.receiver == object
-            && pe.event
-            && (pe.event->type() == QEvent::Timer || pe.event->type() == QEvent::ZeroTimerEvent)
-            && static_cast<QTimerEvent *>(pe.event)->timerId() == timerId) {
-                --pe.receiver->d_func()->postedEvents;
-                pe.event->posted = false;
-                delete pe.event;
-                const_cast<QPostEvent &>(pe).event = 0;
-                return;
-            }
-    }
-}
-
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 /*****************************************************************************
   Convenience functions for convert WM_* messages into human readable strings,
@@ -1049,5 +1027,29 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
 #endif // QT_NO_QOBJECT
 
 #endif // !defined(Q_OS_WINRT)
+
+#ifndef QT_NO_QOBJECT
+void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)
+{
+    QThreadData *data = object->d_func()->threadData;
+
+    QMutexLocker locker(&data->postEventList.mutex);
+    if (data->postEventList.size() == 0)
+        return;
+    for (int i = 0; i < data->postEventList.size(); ++i) {
+        const QPostEvent &pe = data->postEventList.at(i);
+        if (pe.receiver == object
+                && pe.event
+                && (pe.event->type() == QEvent::Timer || pe.event->type() == QEvent::ZeroTimerEvent)
+                && static_cast<QTimerEvent *>(pe.event)->timerId() == timerId) {
+            --pe.receiver->d_func()->postedEvents;
+            pe.event->posted = false;
+            delete pe.event;
+            const_cast<QPostEvent &>(pe).event = 0;
+            return;
+        }
+    }
+}
+#endif // QT_NO_QOBJECT
 
 QT_END_NAMESPACE

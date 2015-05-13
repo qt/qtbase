@@ -125,18 +125,18 @@ public:
         MV_Unknown = 0x0000,
 
         /* version */
-        MV_9 = 0x0001,
-        MV_10_0 = 0x0002,
-        MV_10_1 = 0x0003,
-        MV_10_2 = 0x0004,
-        MV_10_3 = 0x0005,
-        MV_10_4 = 0x0006,
-        MV_10_5 = 0x0007,
-        MV_10_6 = 0x0008,
-        MV_10_7 = 0x0009,
-        MV_10_8 = 0x000A,
-        MV_10_9 = 0x000B,
-        MV_10_10 = 0x000C,
+        MV_9 = Q_MV_OSX(9, 0),
+        MV_10_0 = Q_MV_OSX(10, 0),
+        MV_10_1 = Q_MV_OSX(10, 1),
+        MV_10_2 = Q_MV_OSX(10, 2),
+        MV_10_3 = Q_MV_OSX(10, 3),
+        MV_10_4 = Q_MV_OSX(10, 4),
+        MV_10_5 = Q_MV_OSX(10, 5),
+        MV_10_6 = Q_MV_OSX(10, 6),
+        MV_10_7 = Q_MV_OSX(10, 7),
+        MV_10_8 = Q_MV_OSX(10, 8),
+        MV_10_9 = Q_MV_OSX(10, 9),
+        MV_10_10 = Q_MV_OSX(10, 10),
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -160,7 +160,10 @@ public:
         MV_IOS_6_1 = Q_MV_IOS(6, 1),
         MV_IOS_7_0 = Q_MV_IOS(7, 0),
         MV_IOS_7_1 = Q_MV_IOS(7, 1),
-        MV_IOS_8_0 = Q_MV_IOS(8, 0)
+        MV_IOS_8_0 = Q_MV_IOS(8, 0),
+        MV_IOS_8_1 = Q_MV_IOS(8, 1),
+        MV_IOS_8_2 = Q_MV_IOS(8, 2),
+        MV_IOS_8_3 = Q_MV_IOS(8, 3)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

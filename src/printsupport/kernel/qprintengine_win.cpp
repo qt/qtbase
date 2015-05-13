@@ -69,7 +69,7 @@ extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit f
 // #define QT_DEBUG_METRICS
 
 static void draw_text_item_win(const QPointF &_pos, const QTextItemInt &ti, HDC hdc,
-                               bool convertToText, const QTransform &xform, const QPointF &topLeft);
+                               const QTransform &xform, const QPointF &topLeft);
 
 QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
     : QAlphaPaintEngine(*(new QWin32PrintEnginePrivate),
@@ -309,27 +309,12 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
         return ;
     }
 
-    // We only want to convert the glyphs to text if the entire string is compatible with ASCII
-    // and if we actually have access to the chars.
-    bool convertToText = ti.chars != 0;
-    for (int i=0;  i < ti.num_chars; ++i) {
-        if (ti.chars[i].unicode() >= 0x80) {
-            convertToText = false;
-            break;
-        }
-
-        if (ti.logClusters[i] != i) {
-            convertToText = false;
-            break;
-        }
-    }
-
     COLORREF cf = RGB(qRed(brushColor), qGreen(brushColor), qBlue(brushColor));
     SelectObject(d->hdc, CreateSolidBrush(cf));
     SelectObject(d->hdc, CreatePen(PS_SOLID, 1, cf));
     SetTextColor(d->hdc, cf);
 
-    draw_text_item_win(p, ti, d->hdc, convertToText, d->matrix, QPointF(0.0, 0.0));
+    draw_text_item_win(p, ti, d->hdc, d->matrix, QPointF(0.0, 0.0));
     DeleteObject(SelectObject(d->hdc,GetStockObject(HOLLOW_BRUSH)));
     DeleteObject(SelectObject(d->hdc,GetStockObject(BLACK_PEN)));
 }
@@ -398,6 +383,9 @@ int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
         break;
     case QPaintDevice::PdmDepth:
         val = GetDeviceCaps(d->hdc, PLANES);
+        break;
+    case QPaintDevice::PdmDevicePixelRatio:
+        val = 1;
         break;
     default:
         qWarning("QPrinter::metric: Invalid metric command");
@@ -1682,7 +1670,7 @@ void QWin32PrintEnginePrivate::debugMetrics() const
 }
 
 static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC hdc,
-                               bool convertToText, const QTransform &xform, const QPointF &topLeft)
+                               const QTransform &xform, const QPointF &topLeft)
 {
     QPointF baseline_pos = xform.inverted().map(xform.map(pos) - topLeft);
 
@@ -1692,24 +1680,20 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     const bool has_kerning = ti.f && ti.f->kerning();
 
     HFONT hfont = 0;
-    bool ttf = false;
 
     if (ti.fontEngine->type() == QFontEngine::Win) {
         const QVariantMap userData = ti.fontEngine->userData().toMap();
         const QVariant hfontV = userData.value(QStringLiteral("hFont"));
         const QVariant ttfV = userData.value(QStringLiteral("trueType"));
-        if (ttfV.type() == QVariant::Bool && hfontV.canConvert<HFONT>()) {
+        if (ttfV.toBool() && hfontV.canConvert<HFONT>())
             hfont = hfontV.value<HFONT>();
-            ttf = ttfV.toBool();
-        }
     }
 
     if (!hfont)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
 
     HGDIOBJ old_font = SelectObject(hdc, hfont);
-    unsigned int options = (ttf && !convertToText) ? ETO_GLYPH_INDEX : 0;
-    wchar_t *convertedGlyphs = (wchar_t *)ti.chars;
+    unsigned int options = ETO_GLYPH_INDEX;
     QGlyphLayout glyphs = ti.glyphs;
 
     bool fast = !has_kerning && !(ti.flags & QTextItem::RightToLeft);
@@ -1743,7 +1727,7 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
         ExtTextOut(hdc,
                    qRound(baseline_pos.x() + glyphs.offsets[0].x.toReal()),
                    qRound(baseline_pos.y() + glyphs.offsets[0].y.toReal()),
-                   options, 0, convertToText ? convertedGlyphs : g.data(), glyphs.numGlyphs, 0);
+                   options, 0, g.constData(), glyphs.numGlyphs, 0);
     } else {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> _glyphs;
@@ -1756,7 +1740,6 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
             return;
         }
 
-        convertToText = convertToText && glyphs.numGlyphs == _glyphs.size();
         bool outputEntireItem = _glyphs.size() > 0;
 
         if (outputEntireItem) {
@@ -1772,7 +1755,7 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
             glyphDistances[(_glyphs.size() - 1) * 2 + 1] = 0;
             g[_glyphs.size() - 1] = _glyphs[_glyphs.size() - 1];
             ExtTextOut(hdc, qRound(positions[0].x), qRound(positions[0].y), options, 0,
-                       convertToText ? convertedGlyphs : g.data(), _glyphs.size(),
+                       g.constData(), _glyphs.size(),
                        glyphDistances.data());
         } else {
             int i = 0;
@@ -1781,7 +1764,7 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
 
                 ExtTextOut(hdc, qRound(positions[i].x),
                            qRound(positions[i].y), options, 0,
-                           convertToText ? convertedGlyphs + i : &g, 1, 0);
+                           &g, 1, 0);
                 ++i;
             }
         }

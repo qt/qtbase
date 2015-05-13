@@ -248,6 +248,9 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
     case NoFontHinting:
         result = xcbScreen->noFontHinting() ? this : 0; //qboolptr...
         break;
+    case RootWindow:
+        result = reinterpret_cast<void *>(xcbScreen->root());
+        break;
     default:
         break;
     }
@@ -361,6 +364,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbIntegrationFunctions::xEmbedSystemTrayVisualHasAlphaChannelIdentifier())
         return QFunctionPointer(QXcbIntegrationFunctions::XEmbedSystemTrayVisualHasAlphaChannel(QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel));
 
+    if (function == QXcbWindowFunctions::visualIdIdentifier()) {
+        return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
+    }
     return Q_NULLPTR;
 }
 

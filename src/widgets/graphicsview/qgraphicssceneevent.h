@@ -40,7 +40,9 @@
 #include <QtCore/qrect.h>
 #include <QtGui/qpolygon.h>
 #include <QtCore/qset.h>
+#if QT_DEPRECATED_SINCE(5, 5)
 #include <QtCore/qhash.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -358,7 +358,7 @@ public:
 
     void updateFont(const QFont &);
     inline void setFont_helper(const QFont &font) {
-        if (data.fnt == font && data.fnt.resolve() == font.resolve())
+        if (data.fnt.resolve() == font.resolve() && data.fnt == font)
             return;
         updateFont(font);
     }

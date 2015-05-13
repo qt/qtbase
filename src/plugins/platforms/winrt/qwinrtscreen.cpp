@@ -497,9 +497,9 @@ QWinRTScreen::QWinRTScreen()
     Q_ASSERT_SUCCEEDED(hr);
 
 #ifdef Q_OS_WINPHONE
-    d->inputContext.reset(new QWinRTInputContext(d->coreWindow.Get()));
+    d->inputContext.reset(new QWinRTInputContext(this));
 #else
-    d->inputContext = Make<QWinRTInputContext>(d->coreWindow.Get());
+    d->inputContext = Make<QWinRTInputContext>(this);
 #endif
 
     Rect rect;
@@ -580,7 +580,7 @@ QWinRTScreen::QWinRTScreen()
     d->orientation = d->nativeOrientation;
     onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
 
-    d->eglDisplay = eglGetDisplay(d->displayInformation.Get());
+    d->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (d->eglDisplay == EGL_NO_DISPLAY)
         qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
 
@@ -616,14 +616,7 @@ QWinRTScreen::QWinRTScreen()
 
     d->eglConfig = q_configFromGLFormat(d->eglDisplay, d->surfaceFormat);
     d->surfaceFormat = q_glFormatFromConfig(d->eglDisplay, d->eglConfig, d->surfaceFormat);
-    const QRect bounds = geometry();
-    EGLint windowAttributes[] = {
-        EGL_FIXED_SIZE_ANGLE, EGL_TRUE,
-        EGL_WIDTH, bounds.width(),
-        EGL_HEIGHT, bounds.height(),
-        EGL_NONE
-    };
-    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, d->eglConfig, d->coreWindow.Get(), windowAttributes);
+    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, d->eglConfig, d->coreWindow.Get(), NULL);
     if (d->eglSurface == EGL_NO_SURFACE)
         qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
 }
@@ -678,6 +671,12 @@ QDpi QWinRTScreen::logicalDpi() const
 {
     Q_D(const QWinRTScreen);
     return QDpi(d->logicalDpi, d->logicalDpi);
+}
+
+qreal QWinRTScreen::scaleFactor() const
+{
+    Q_D(const QWinRTScreen);
+    return d->scaleFactor;
 }
 
 QWinRTInputContext *QWinRTScreen::inputContext() const
@@ -1081,14 +1080,6 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
     d->logicalSize = logicalSize;
     if (d->eglDisplay) {
         const QRect newGeometry = geometry();
-        int width = newGeometry.width();
-        int height = newGeometry.height();
-#ifdef Q_OS_WINPHONE // Windows Phone can pass in a negative size to provide orientation information
-        width *= (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::LandscapeOrientation) ? -1 : 1;
-        height *= (d->orientation == Qt::InvertedPortraitOrientation || d->orientation == Qt::InvertedLandscapeOrientation) ? -1 : 1;
-#endif
-        eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_WIDTH, width);
-        eglSurfaceAttrib(d->eglDisplay, d->eglSurface, EGL_HEIGHT, height);
         QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry, newGeometry);
         QPlatformScreen::resizeMaximizedWindows();
         handleExpose();

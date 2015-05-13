@@ -102,7 +102,7 @@ static QBasicAtomicInt fcntlOK = Q_BASIC_ATOMIC_INITIALIZER(-1);
 /*!
   \internal
   Checks that the OS isn't using POSIX locks to emulate flock().
-  Mac OS X is one of those.
+  OS X is one of those.
 */
 static bool fcntlWorksAfterFlock()
 {

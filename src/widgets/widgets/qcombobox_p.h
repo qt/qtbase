@@ -57,7 +57,6 @@
 #include "QtGui/qpainter.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qstyleoption.h"
-#include "QtCore/qhash.h"
 #include "QtCore/qpair.h"
 #include "QtCore/qtimer.h"
 #include "private/qwidget_p.h"

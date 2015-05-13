@@ -34,6 +34,7 @@
 #include "qurlquery.h"
 #include "qurl_p.h"
 
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -407,10 +408,30 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
     if (d == other.d)
         return true;
     if (d && other.d)
+        // keep in sync with qHash(QUrlQuery):
         return d->valueDelimiter == other.d->valueDelimiter &&
                 d->pairDelimiter == other.d->pairDelimiter &&
                 d->itemList == other.d->itemList;
     return false;
+}
+
+/*!
+    \since 5.6
+    \relates QUrlQuery
+
+    Returns the hash value for \a key,
+    using \a seed to seed the calculation.
+*/
+uint qHash(const QUrlQuery &key, uint seed) Q_DECL_NOTHROW
+{
+    if (const QUrlQueryPrivate *d = key.d) {
+        QtPrivate::QHashCombine hash;
+        // keep in sync with operator==:
+        seed = hash(seed, d->valueDelimiter);
+        seed = hash(seed, d->pairDelimiter);
+        seed = hash(seed, d->itemList);
+    }
+    return seed;
 }
 
 /*!

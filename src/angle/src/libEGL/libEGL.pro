@@ -5,40 +5,13 @@ winrt: LIBS_PRIVATE += -ld3d11
 
 LIBS_PRIVATE += -ldxguid -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget(libGLESv2)
 
+DEFINES += GL_APICALL= GL_GLEXT_PROTOTYPES= EGLAPI= LIBEGL_IMPLEMENTATION
+
 HEADERS += \
-    $$ANGLE_DIR/src/common/NativeWindow.h \
-    $$ANGLE_DIR/src/libEGL/AttributeMap.h \
-    $$ANGLE_DIR/src/libEGL/Config.h \
-    $$ANGLE_DIR/src/libEGL/Display.h \
-    $$ANGLE_DIR/src/libEGL/Error.h \
-    $$ANGLE_DIR/src/libEGL/main.h \
-    $$ANGLE_DIR/src/libEGL/resource.h \
-    $$ANGLE_DIR/src/libEGL/ShaderCache.h \
-    $$ANGLE_DIR/src/libEGL/Surface.h
+    $$ANGLE_DIR/src/libEGL/resource.h
 
 SOURCES += \
-    $$ANGLE_DIR/src/libEGL/AttributeMap.cpp \
-    $$ANGLE_DIR/src/libEGL/Config.cpp \
-    $$ANGLE_DIR/src/libEGL/Display.cpp \
-    $$ANGLE_DIR/src/libEGL/Error.cpp \
-    $$ANGLE_DIR/src/libEGL/libEGL.cpp \
-    $$ANGLE_DIR/src/libEGL/main.cpp \
-    $$ANGLE_DIR/src/libEGL/Surface.cpp
-
-!winrt {
-    SOURCES += \
-        $$ANGLE_DIR/src/common/win32/NativeWindow.cpp
-} else {
-    HEADERS += \
-        $$ANGLE_DIR/src/common/winrt/CoreWindowNativeWindow.h \
-        $$ANGLE_DIR/src/common/winrt/InspectableNativeWindow.h \
-        $$ANGLE_DIR/src/common/winrt/SwapChainPanelNativeWindow.h
-
-    SOURCES += \
-        $$ANGLE_DIR/src/common/winrt/CoreWindowNativeWindow.cpp \
-        $$ANGLE_DIR/src/common/winrt/InspectableNativeWindow.cpp \
-        $$ANGLE_DIR/src/common/winrt/SwapChainPanelNativeWindow.cpp
-}
+    $$ANGLE_DIR/src/libEGL/libEGL.cpp
 
 !static {
     DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def

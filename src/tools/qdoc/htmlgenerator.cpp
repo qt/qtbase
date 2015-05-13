@@ -1336,7 +1336,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
 /*!
   Generate a reference page for a C++ class or a C++ namespace.
  */
-void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
+void HtmlGenerator::generateClassLikeNode(Aggregate* inner, CodeMarker* marker)
 {
     QList<Section> sections;
     QList<Section>::ConstIterator s;
@@ -2086,7 +2086,7 @@ void HtmlGenerator::generateFooter(const Node *node)
 Lists the required imports and includes in a table.
 The number of rows is known, so this path is simpler than the generateSection() path.
 */
-void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
+void HtmlGenerator::generateRequisites(Aggregate *inner, CodeMarker *marker)
 {
     QMap<QString, Text> requisites;
     Text text;
@@ -2176,7 +2176,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
                     else if ((*r).access_ == Node::Private) {
                         text << " (private)";
                     }
-                    text << separator(index++, classe->baseClasses().count());
+                    text << comma(index++, classe->baseClasses().count());
                 }
                 ++r;
             }
@@ -2358,7 +2358,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
     }
 }
 
-void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
+void HtmlGenerator::generateIncludes(const Aggregate *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
         out() << "<pre class=\"cpp\">"
@@ -2517,7 +2517,7 @@ void HtmlGenerator::generateSidebar() {
     out() << "</div>\n";
 }
 
-QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
+QString HtmlGenerator::generateListOfAllMemberFile(const Aggregate *inner,
                                                    CodeMarker *marker)
 {
     QList<Section> sections;
@@ -2612,7 +2612,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(QmlTypeNode* qml_cn, CodeMarker
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
+QString HtmlGenerator::generateLowStatusMemberFile(Aggregate *inner,
                                                    CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
@@ -3265,6 +3265,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
 {
     bool alignNames = true;
     if (!section.members.isEmpty()) {
+        bool hasPrivateSignals = false;
         bool twoColumn = false;
         if (style == CodeMarker::Subpage) {
             alignNames = false;
@@ -3307,6 +3308,14 @@ void HtmlGenerator::generateSectionList(const Section& section,
                 prefix = prefix.left(section.keys.at(i).indexOf("::")+1);
             }
             generateSynopsis(*m, relative, marker, style, alignNames, &prefix);
+            if ((*m)->isFunction()) {
+                const FunctionNode* fn = static_cast<const FunctionNode*>(*m);
+                if (fn->isPrivateSignal()) {
+                    hasPrivateSignals = true;
+                    if (alignNames)
+                        out() << "</td><td class=\"memItemRight bottomAlign\">[see note below]";
+                }
+            }
             if (alignNames)
                 out() << "</td></tr>\n";
             else
@@ -3321,6 +3330,9 @@ void HtmlGenerator::generateSectionList(const Section& section,
             if (twoColumn)
                 out() << "</td></tr>\n</table></div>\n";
         }
+        if (hasPrivateSignals && alignNames) {
+            generatePrivateSignalNote(relative, marker);
+        }
     }
 
     if (style == CodeMarker::Summary && !section.inherited.isEmpty()) {
@@ -3332,7 +3344,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
 
 void HtmlGenerator::generateSectionInheritedList(const Section& section, const Node *relative)
 {
-    QList<QPair<InnerNode *, int> >::ConstIterator p = section.inherited.constBegin();
+    QList<QPair<Aggregate *, int> >::ConstIterator p = section.inherited.constBegin();
     while (p != section.inherited.constEnd()) {
         out() << "<li class=\"fn\">";
         out() << (*p).second << ' ';
@@ -3343,7 +3355,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
             out() << section.pluralMember;
         }
         out() << " inherited from <a href=\"" << fileName((*p).first)
-              << '#' << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << '#' << Generator::cleanRef(section.name.toLower()) << "\">"
               << protectEnc((*p).first->plainFullName(relative))
               << "</a></li>\n";
         ++p;
@@ -3598,62 +3610,9 @@ void HtmlGenerator::generateLink(const Atom* atom, CodeMarker* marker)
     }
 }
 
-QString HtmlGenerator::cleanRef(const QString& ref)
-{
-    QString clean;
-
-    if (ref.isEmpty())
-        return clean;
-
-    clean.reserve(ref.size() + 20);
-    const QChar c = ref[0];
-    const uint u = c.unicode();
-
-    if ((u >= 'a' && u <= 'z') ||
-            (u >= 'A' && u <= 'Z') ||
-            (u >= '0' && u <= '9')) {
-        clean += c;
-    } else if (u == '~') {
-        clean += "dtor.";
-    } else if (u == '_') {
-        clean += "underscore.";
-    } else {
-        clean += QLatin1Char('A');
-    }
-
-    for (int i = 1; i < (int) ref.length(); i++) {
-        const QChar c = ref[i];
-        const uint u = c.unicode();
-        if ((u >= 'a' && u <= 'z') ||
-                (u >= 'A' && u <= 'Z') ||
-                (u >= '0' && u <= '9') || u == '-' ||
-                u == '_' || u == ':' || u == '.') {
-            clean += c;
-        } else if (c.isSpace()) {
-            clean += QLatin1Char('-');
-        } else if (u == '!') {
-            clean += "-not";
-        } else if (u == '&') {
-            clean += "-and";
-        } else if (u == '<') {
-            clean += "-lt";
-        } else if (u == '=') {
-            clean += "-eq";
-        } else if (u == '>') {
-            clean += "-gt";
-        } else if (u == '#') {
-            clean += QLatin1Char('#');
-        } else {
-            clean += QLatin1Char('-');
-            clean += QString::number((int)u, 16);
-        }
-    }
-    return clean;
-}
-
 QString HtmlGenerator::registerRef(const QString& ref)
 {
-    QString clean = HtmlGenerator::cleanRef(ref);
+    QString clean = Generator::cleanRef(ref);
 
     for (;;) {
         QString& prevRef = refMap[clean.toLower()];
@@ -3726,7 +3685,7 @@ QString HtmlGenerator::fileBase(const Node *node) const
 
     result = Generator::fileBase(node);
 
-    if (!node->isInnerNode()) {
+    if (!node->isAggregate()) {
         switch (node->status()) {
         case Node::Compat:
             result += "-compat";
@@ -3912,7 +3871,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     }
     QString link = fn;
 
-    if (!node->isInnerNode() || node->isQmlPropertyGroup() || node->isJsPropertyGroup()) {
+    if (!node->isAggregate() || node->isQmlPropertyGroup() || node->isJsPropertyGroup()) {
         QString ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
@@ -3963,7 +3922,7 @@ void HtmlGenerator::generateFullName(const Node *apparentNode, const Node *relat
 }
 
 void HtmlGenerator::generateDetailedMember(const Node *node,
-                                           const InnerNode *relative,
+                                           const Aggregate *relative,
                                            CodeMarker *marker)
 {
     const EnumNode *enume;
@@ -3998,6 +3957,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
 
     generateStatus(node, marker);
     generateBody(node, marker);
+    generateOverloadedSignal(node, marker);
     generateThreadSafeness(node, marker);
     generateSince(node, marker);
 
@@ -4022,6 +3982,11 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
             //out() << "<p>This signal is emitted when the property value is changed.</p>\n";
             generateSectionList(notifiers, node, marker, CodeMarker::Accessors);
         }
+    }
+    else if (node->isFunction()) {
+        const FunctionNode* fn = static_cast<const FunctionNode*>(node);
+        if (fn->isPrivateSignal())
+            generatePrivateSignalNote(node, marker);
     }
     else if (node->type() == Node::Enum) {
         const EnumNode *enume = static_cast<const EnumNode *>(node);
@@ -4088,7 +4053,7 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
 
     switch (node->status()) {
     case Node::Obsolete:
-        if (node->isInnerNode())
+        if (node->isAggregate())
             Generator::generateStatus(node, marker);
         break;
     case Node::Compat:
@@ -4201,7 +4166,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
   on a QML element reference page.
  */
 void HtmlGenerator::generateDetailedQmlMember(Node *node,
-                                              const InnerNode *relative,
+                                              const Aggregate *relative,
                                               CodeMarker *marker)
 {
     QmlPropertyNode* qpn = 0;
@@ -4702,7 +4667,7 @@ void HtmlGenerator::readManifestMetaContent(const Config &config)
   subtype: QML class
   subtype: QML module
  */
-void HtmlGenerator::reportOrphans(const InnerNode* parent)
+void HtmlGenerator::reportOrphans(const Aggregate* parent)
 {
     const NodeList& children = parent->childNodes();
     if (children.size() == 0)
@@ -4828,7 +4793,7 @@ QXmlStreamWriter& HtmlGenerator::xmlWriter()
 
   It also ensures that a GUID map is created for the output file.
  */
-void HtmlGenerator::beginDitamapPage(const InnerNode* node, const QString& fileName)
+void HtmlGenerator::beginDitamapPage(const Aggregate* node, const QString& fileName)
 {
     Generator::beginSubPage(node,fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());

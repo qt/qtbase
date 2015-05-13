@@ -139,7 +139,7 @@ QPluginLoader::QPluginLoader(QObject *parent)
 
     To be loadable, the file's suffix must be a valid suffix for a
     loadable library in accordance with the platform, e.g. \c .so on
-    Unix, - \c .dylib on Mac OS X, and \c .dll on Windows. The suffix
+    Unix, - \c .dylib on OS X and iOS, and \c .dll on Windows. The suffix
     can be verified with QLibrary::isLibrary().
 
     \sa setFileName()

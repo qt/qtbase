@@ -78,7 +78,8 @@ static const char *kwords[] = {
     "QT3_SUPPORT",
     "QT3_SUPPORT_CONSTRUCTOR",
     "QT3_MOC_SUPPORT",
-    "QDOC_PROPERTY"
+    "QDOC_PROPERTY",
+    "QPrivateSignal"
 };
 
 static const int KwordHashTableSize = 4096;

@@ -167,6 +167,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 - (void)dealloc
 {
     CGImageRelease(m_maskImage);
+    [m_trackingArea release];
     m_maskImage = 0;
     m_window = 0;
     m_subscribesForGlobalFrameNotifications = false;
@@ -188,6 +189,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     m_window = window;
     m_platformWindow = platformWindow;
     m_sendKeyEvent = false;
+    m_trackingArea = nil;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
     // prevent rift in space-time continuum, disable
@@ -702,8 +704,10 @@ QT_WARNING_POP
     }
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
-        targetView = popup->contentView();
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        if (QNSView *popupView = popup->qtView())
+            targetView = popupView;
+    }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -755,12 +759,13 @@ QT_WARNING_POP
     NSPoint windowPoint = [theEvent locationInWindow];
 
     int windowScreenY = [window frame].origin.y + [window frame].size.height;
-    int viewScreenY = [window convertBaseToScreen:[self convertPoint:[self frame].origin toView:nil]].y;
+    NSPoint windowCoord = [self convertPoint:[self frame].origin toView:nil];
+    int viewScreenY = [window convertRectToScreen:NSMakeRect(windowCoord.x, windowCoord.y, 0, 0)].origin.y;
     int titleBarHeight = windowScreenY - viewScreenY;
 
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
     QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
-    NSPoint screenPoint = [window convertBaseToScreen:windowPoint];
+    NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 0, 0)].origin;
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     ulong timestamp = [theEvent timestamp] * 1000;
@@ -806,10 +811,7 @@ QT_WARNING_POP
     }
 
     if ([self hasMarkedText]) {
-        NSInputManager* inputManager = [NSInputManager currentInputManager];
-        if ([inputManager wantsToHandleMouseEvents]) {
-            [inputManager handleMouseEvent:theEvent];
-        }
+        [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
         if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
@@ -847,19 +849,11 @@ QT_WARNING_POP
 {
     [super updateTrackingAreas];
 
-    // [NSView addTrackingArea] is slow, so bail out early if we can:
-    if (NSIsEmptyRect([self visibleRect]))
-        return;
-
-    // Remove current trakcing areas:
     QCocoaAutoReleasePool pool;
-    if (NSArray *trackingArray = [self trackingAreas]) {
-        NSUInteger size = [trackingArray count];
-        for (NSUInteger i = 0; i < size; ++i) {
-            NSTrackingArea *t = [trackingArray objectAtIndex:i];
-            [self removeTrackingArea:t];
-        }
-    }
+
+    // NSTrackingInVisibleRect keeps care of updating once the tracking is set up, so bail out early
+    if (m_trackingArea && [[self trackingAreas] containsObject:m_trackingArea])
+        return;
 
     // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
     // only be turned on if mouseTracking, hover is on or a tool tip is set.
@@ -869,12 +863,12 @@ QT_WARNING_POP
     // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
                                  | NSTrackingInVisibleRect | NSTrackingMouseMoved | NSTrackingCursorUpdate;
-    NSTrackingArea *ta = [[[NSTrackingArea alloc] initWithRect:[self frame]
-                                                      options:trackingOptions
-                                                        owner:m_mouseMoveHelper
-                                                     userInfo:nil]
-                                                                autorelease];
-    [self addTrackingArea:ta];
+    [m_trackingArea release];
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:[self frame]
+                                                  options:trackingOptions
+                                                    owner:m_mouseMoveHelper
+                                                 userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
 }
 
 -(void)cursorUpdateImpl:(NSEvent *)theEvent
@@ -1889,6 +1883,48 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
         response = QWindowSystemInterface::handleDrag(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     }
 
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    const QPixmap pixmapCursor = nativeDrag->currentDrag()->dragCursor(response.acceptedAction());
+    NSCursor *nativeCursor = nil;
+
+    if (pixmapCursor.isNull()) {
+        switch (response.acceptedAction()) {
+            case Qt::CopyAction:
+                nativeCursor = [NSCursor dragCopyCursor];
+                break;
+            case Qt::LinkAction:
+                nativeCursor = [NSCursor dragLinkCursor];
+                break;
+            case Qt::IgnoreAction:
+                // Uncomment the next lines if forbiden cursor wanted on non droppable targets.
+                /*nativeCursor = [NSCursor operationNotAllowedCursor];
+                break;*/
+            case Qt::MoveAction:
+            default:
+                nativeCursor = [NSCursor arrowCursor];
+                break;
+        }
+    }
+    else {
+        NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
+        nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
+        [nsimage release];
+    }
+
+    // change the cursor
+    [nativeCursor set];
+
+    // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
+    // by creating a fake move event
+    const QPoint mousePos(QCursor::pos());
+    CGEventRef moveEvent(CGEventCreateMouseEvent(
+        NULL, kCGEventMouseMoved,
+        CGPointMake(mousePos.x(), mousePos.y()),
+        kCGMouseButtonLeft // ignored
+    ));
+    CGEventPost(kCGHIDEventTap, moveEvent);
+    CFRelease(moveEvent);
+
     return qt_mac_mapDropAction(response.acceptedAction());
 }
 
@@ -1947,7 +1983,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
 
     NSWindow *window = [self window];
-    NSPoint screenPoint = [window convertBaseToScreen :point];
+    NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(point.x, point.y, 0, 0)].origin;
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_window, target, qtWindowPoint), qtScreenPoint, m_buttons);

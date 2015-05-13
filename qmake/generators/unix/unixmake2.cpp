@@ -107,7 +107,7 @@ UnixMakefileGenerator::writeDefaultVariables(QTextStream &t)
         project->values("QMAKE_DISTDIR") = project->first("QMAKE_DISTNAME");
     t << "DISTDIR = " << escapeFilePath(fileFixify(
             (project->isEmpty("OBJECTS_DIR") ? ProString(".tmp/") : project->first("OBJECTS_DIR")) + project->first("QMAKE_DISTDIR"),
-            Option::output_dir, Option::output_dir, FileFixifyAbsolute)) << endl;
+            FileFixifyFromOutdir | FileFixifyAbsolute)) << endl;
 }
 
 void
@@ -377,7 +377,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
 
                         if(!d_file.isEmpty()) {
-                            d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
+                            d_file = odir + ".deps/" + fileFixify(d_file, FileFixifyBackwards) + ".d";
                             QString d_file_d = escapeDependencyPath(d_file);
                             QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
@@ -614,9 +614,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
-            QString currentLink = destdir_r + "Versions/Current";
-            QString currentLink_f = escapeDependencyPath(currentLink);
-            bundledFiles << currentLink << destdir_r + "$(TARGET)";
+            bundledFiles << destdir_r + "$(TARGET)";
             t << "\n\t"
               << "-$(DEL_FILE) $(TARGET) $(TARGET0) $(DESTDIR)$(TARGET0)\n\t"
               << var("QMAKE_LINK_SHLIB_CMD") << "\n\t"
@@ -624,10 +622,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "-$(MOVE) $(TARGET) $(DESTDIR)$(TARGETD)\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t"
               << varGlue("QMAKE_LN_SHLIB", "-", " ",
-                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
-              << "-$(DEL_FILE) " << currentLink_f << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," ", " " + project->first("QMAKE_FRAMEWORK_VERSION") +
-                         ' ' + currentLink_f) << "\n\t";
+                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -937,6 +932,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << mkdir_p_asstring(bundle_dir) << "\n\t"
               << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
         }
+        if (!project->first("QMAKE_FRAMEWORK_VERSION").isEmpty()) {
+            QString currentLink = bundle_dir + "Versions/Current";
+            QString currentLink_f = escapeDependencyPath(currentLink);
+            bundledFiles << currentLink;
+            alldeps << currentLink;
+            t << currentLink_f << ": $(MAKEFILE)\n\t"
+              << mkdir_p_asstring(bundle_dir + "Versions") << "\n\t"
+              << "@-$(DEL_FILE) " << currentLink_f << "\n\t"
+              << "@$(SYMLINK) " << project->first("QMAKE_FRAMEWORK_VERSION")
+                         << ' ' << currentLink_f << endl;
+        }
     }
 
     t << endl << "all: " << deps
@@ -1041,9 +1047,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t-$(DEL_FILE) -r " << bundlePath << endl;
     } else if(project->isActiveConfig("compile_libtool")) {
         t << "\t-$(LIBTOOL) --mode=clean $(DEL_FILE) $(TARGET)\n";
-    } else if (project->isActiveConfig("staticlib")) {
+    } else if (project->isActiveConfig("staticlib") || project->isActiveConfig("plugin")) {
         t << "\t-$(DEL_FILE) " << escapeFilePath(destdir) << "$(TARGET) \n";
-    } else if (project->values("QMAKE_APP_FLAG").isEmpty() && !project->isActiveConfig("plugin")) {
+    } else if (project->values("QMAKE_APP_FLAG").isEmpty()) {
         destdir = escapeFilePath(destdir);
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
         if (!project->isActiveConfig("unversioned_libname")) {
@@ -1160,10 +1166,9 @@ void UnixMakefileGenerator::init2()
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
-    if (project->first("TEMPLATE") == "aux")
-        return;
-
-    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+    if (project->first("TEMPLATE") == "aux") {
+        // nothing
+    } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
@@ -1335,7 +1340,7 @@ void UnixMakefileGenerator::init2()
             project->values("QMAKE_LINK_SHLIB_CMD").append(
                 "$(LINK) $(LFLAGS) " + project->first("QMAKE_LINK_O_FLAG") + "$(TARGET) $(OBJECTS) $(LIBS) $(OBJCOMP)");
     }
-    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+    if (!project->values("QMAKE_APP_FLAG").isEmpty() || project->first("TEMPLATE") == "aux") {
         project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
         project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_APP");
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_APP");
@@ -1396,7 +1401,7 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
     if(fixify) {
         if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
             ret.prepend(project->first("DESTDIR").toQString());
-        ret = fileFixify(ret, qmake_getpwd(), Option::output_dir);
+        ret = fileFixify(ret, FileFixifyBackwards);
     }
     return ret;
 }
@@ -1412,7 +1417,9 @@ UnixMakefileGenerator::writeLibtoolFile()
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
-    project->values("ALL_DEPS").append(fileFixify(fname));
+    QString ffname(fileFixify(fname));
+    project->values("ALL_DEPS").append(ffname);
+    project->values("QMAKE_DISTCLEAN").append(ffname);
 
     QTextStream t(&ft);
     t << "# " << lname << " - a libtool library file\n";

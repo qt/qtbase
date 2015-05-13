@@ -502,7 +502,7 @@ bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     return setTheme;
 }
 
- void QXcbCursor::cursorThemePropertyChanged(QXcbScreen *screen, const QByteArray &name, const QVariant &property, void *handle)
+ void QXcbCursor::cursorThemePropertyChanged(QXcbVirtualDesktop *screen, const QByteArray &name, const QVariant &property, void *handle)
 {
     Q_UNUSED(screen);
     Q_UNUSED(name);

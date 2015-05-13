@@ -80,6 +80,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 
+class QXcbVirtualDesktop;
 class QXcbScreen;
 class QXcbWindow;
 class QXcbDrag;
@@ -369,7 +370,7 @@ class Q_XCB_EXPORT QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = 0);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -399,8 +400,13 @@ public:
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
     xcb_window_t rootWindow();
+
+    bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
+    xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
+
 #ifdef XCB_USE_XLIB
     void *xlib_display() const;
+    void *createVisualInfoForDefaultVisualId() const;
 #endif
 
 #if defined(XCB_USE_XINPUT2)
@@ -497,12 +503,12 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* createScreen(int screenNumber, xcb_screen_t* xcbScreen,
+    QXcbScreen* createScreen(QXcbVirtualDesktop *virtualDesktop,
                              xcb_randr_output_t outputId = XCB_NONE,
                              xcb_randr_get_output_info_reply_t *output = 0);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
-    xcb_screen_t* xcbScreenForRootWindow(xcb_window_t rootWindow, int *xcbScreenNumber = 0);
+    QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow);
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void initializeScreens();
     void updateScreens(const xcb_randr_notify_event_t *event);
@@ -566,7 +572,9 @@ private:
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
     bool m_canGrabServer;
+    xcb_visualid_t m_defaultVisualId;
 
+    QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
     int m_primaryScreenNumber;
 
@@ -633,6 +641,7 @@ private:
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+#define CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(object) ((XVisualInfo *)(object->connection()->createVisualInfoForDefaultVisualId()))
 
 template<typename T>
 xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)

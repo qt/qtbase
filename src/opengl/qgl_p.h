@@ -50,7 +50,7 @@
 #include "QtCore/qmap.h"
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadstorage.h"
-#include "QtCore/qhash.h"
+#include "QtCore/qhashfunctions.h"
 #include "QtCore/qatomic.h"
 #include "QtWidgets/private/qwidget_p.h"
 #include "QtGui/private/qopenglcontext_p.h"

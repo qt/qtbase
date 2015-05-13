@@ -162,16 +162,6 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     return true;
 }
 
-static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *childWidget)
-{
-    if (!parentInterface || !childWidget)
-        return -1;
-    QAccessibleInterface *childInterface(QAccessible::queryAccessibleInterface(childWidget));
-    if (!childInterface)
-        return -1;
-    return parentInterface->indexOfChild(childInterface);
-}
-
 #define EXPECT(cond) \
     do { \
         if (!errorAt && !(cond)) { \

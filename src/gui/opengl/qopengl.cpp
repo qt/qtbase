@@ -36,6 +36,7 @@
 
 #include "qopenglcontext.h"
 #include "qopenglfunctions.h"
+#include "qoffscreensurface.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QJsonDocument>
@@ -89,8 +90,8 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 }
 
 /* Helpers to read out the list of features matching a device from
- * a Chromium driver bug list of the format using a subset of keys
- * (namely, matching by gl_vendor RegExp is not implemented):
+ * a Chromium driver bug list. Note that not all keys are supported and
+ * some may behave differently: gl_vendor is a substring match instead of regex.
  {
   "entries": [
  {
@@ -291,14 +292,14 @@ static bool matches(const QJsonObject &object,
 
     const QJsonValue vendorV = object.value(vendorIdKey());
     if (vendorV.isString()) {
-    if (gpu.vendorId != vendorV.toString().toUInt(Q_NULLPTR, /* base */ 0))
-        return false;
+        if (gpu.vendorId != vendorV.toString().toUInt(Q_NULLPTR, /* base */ 0))
+            return false;
     } else {
         if (object.contains(glVendorKey())) {
-            qWarning().nospace() << "Id " << object.value(idKey()).toInt()
-                << ": Matching by " << glVendorKey() << " is not implemented.";
-            return false;
-       }
+            const QByteArray glVendorV = object.value(glVendorKey()).toString().toUtf8();
+            if (!gpu.glVendor.contains(glVendorV))
+                return false;
+        }
     }
 
     if (gpu.deviceId) {
@@ -447,5 +448,30 @@ QSet<QString> QOpenGLConfig::gpuFeatures(const Gpu &gpu, const QString &fileName
     return gpuFeatures(gpu, OsTypeTerm::hostOs(), OsTypeTerm::hostKernelVersion(), fileName);
 }
 
+QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QScopedPointer<QOpenGLContext> tmpContext;
+    QScopedPointer<QOffscreenSurface> tmpSurface;
+    if (!ctx) {
+        tmpContext.reset(new QOpenGLContext);
+        if (!tmpContext->create()) {
+            qWarning("QOpenGLConfig::Gpu::fromContext: Failed to create temporary context");
+            return QOpenGLConfig::Gpu();
+        }
+        tmpSurface.reset(new QOffscreenSurface);
+        tmpSurface->setFormat(tmpContext->format());
+        tmpSurface->create();
+        tmpContext->makeCurrent(tmpSurface.data());
+    }
+
+    QOpenGLConfig::Gpu gpu;
+    ctx = QOpenGLContext::currentContext();
+    const GLubyte *p = ctx->functions()->glGetString(GL_VENDOR);
+    if (p)
+        gpu.glVendor = QByteArray(reinterpret_cast<const char *>(p));
+
+    return gpu;
+}
 
 QT_END_NAMESPACE

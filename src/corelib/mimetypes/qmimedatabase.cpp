@@ -238,7 +238,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 
     The MIME type database is provided by the freedesktop.org shared-mime-info
     project. If the MIME type database cannot be found on the system, as is the case
-    on most Windows and Mac OS X systems, Qt will use its own copy of it.
+    on most Windows, OS X, and iOS systems, Qt will use its own copy of it.
 
     Applications which want to define custom MIME types need to install an
     XML file into the locations searched for MIME definitions.

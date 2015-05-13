@@ -99,9 +99,8 @@ void QCocoaInputContext::reset()
         return;
 
     QCocoaAutoReleasePool pool;
-    NSInputManager *currentIManager = [NSInputManager currentInputManager];
-    if (currentIManager) {
-        [currentIManager markedTextAbandoned:view];
+    if (NSTextInputContext *ctxt = [NSTextInputContext currentInputContext]) {
+        [ctxt discardMarkedText];
         [view unmarkText];
     }
 }

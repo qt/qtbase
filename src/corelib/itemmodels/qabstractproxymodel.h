@@ -92,11 +92,7 @@ public:
     Qt::DropActions supportedDropActions() const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
-    void sourceModelChanged(
-#if !defined(qdoc)
-        QPrivateSignal
-#endif
-    );
+    void sourceModelChanged(QPrivateSignal);
 
 protected Q_SLOTS:
     void resetInternalData();

@@ -55,7 +55,10 @@ QT_END_NAMESPACE
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
-#include <QtCore/qhash.h>    // for qHash
+#if QT_DEPRECATED_SINCE(5, 5)
+#include <QtCore/qhash.h>
+#endif
+#include <QtCore/qhashfunctions.h>
 
 #if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
 #  include <utility>           // for std::forward

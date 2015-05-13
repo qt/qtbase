@@ -379,7 +379,7 @@ ProjectGenerator::addConfig(const QString &cfg, bool add)
 bool
 ProjectGenerator::addFile(QString file)
 {
-    file = fileFixify(file, qmake_getpwd());
+    file = fileFixify(file, FileFixifyToIndir);
     QString dir;
     int s = file.lastIndexOf(Option::dir_sep);
     if(s != -1)

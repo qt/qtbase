@@ -48,7 +48,7 @@ class Node;
 class Tree;
 class EnumNode;
 class ClassNode;
-class InnerNode;
+class Aggregate;
 class ExampleNode;
 class TypedefNode;
 class QmlTypeNode;
@@ -176,14 +176,14 @@ public:
     }
     void setThreadSafeness(ThreadSafeness t) { safeness_ = (unsigned char) t; }
     void setSince(const QString &since);
-    void setRelates(InnerNode* pseudoParent);
+    void setRelates(Aggregate* pseudoParent);
     void setPhysicalModuleName(const QString &name) { physicalModuleName_ = name; }
     void setUrl(const QString& url) { url_ = url; }
     void setTemplateStuff(const QString &t) { templateStuff_ = t; }
     void setReconstitutedBrief(const QString &t) { reconstitutedBrief_ = t; }
     void setPageType(PageType t) { pageType_ = (unsigned char) t; }
     void setPageType(const QString& t);
-    void setParent(InnerNode* n) { parent_ = n; }
+    void setParent(Aggregate* n) { parent_ = n; }
     void setIndexNodeFlag() { indexNodeFlag_ = true; }
     virtual void setOutputFileName(const QString& ) { }
 
@@ -191,7 +191,7 @@ public:
     bool isJsNode() const { return genus() == JS; }
     bool isCppNode() const { return genus() == CPP; }
 
-    virtual bool isInnerNode() const = 0;
+    virtual bool isAggregate() const = 0;
     virtual bool isCollectionNode() const { return false; }
     virtual bool isDocumentNode() const { return false; }
     virtual bool isGroup() const { return false; }
@@ -257,9 +257,9 @@ public:
     NodeType type() const { return (NodeType) nodeType_; }
     virtual DocSubtype docSubtype() const { return NoSubtype; }
     bool match(const NodeTypeList& types) const;
-    InnerNode* parent() const { return parent_; }
+    Aggregate* parent() const { return parent_; }
     const Node* root() const;
-    InnerNode* relates() const { return relatesTo_; }
+    Aggregate* relates() const { return relatesTo_; }
     const QString& name() const { return name_; }
     QString physicalModuleName() const;
     QString url() const { return url_; }
@@ -330,7 +330,7 @@ public:
     static NodeType goal(const QString& t) { return goals_.value(t); }
 
 protected:
-    Node(NodeType type, InnerNode* parent, const QString& name);
+    Node(NodeType type, Aggregate* parent, const QString& name);
 
 private:
 
@@ -342,8 +342,8 @@ private:
     unsigned char status_;
     bool indexNodeFlag_;
 
-    InnerNode* parent_;
-    InnerNode* relatesTo_;
+    Aggregate* parent_;
+    Aggregate* relatesTo_;
     QString name_;
     Location loc_;
     Doc doc_;
@@ -361,10 +361,10 @@ private:
     static QMap<QString,Node::NodeType> goals_;
 };
 
-class InnerNode : public Node
+class Aggregate : public Node
 {
 public:
-    virtual ~InnerNode();
+    virtual ~Aggregate();
 
     Node* findChildNode(const QString& name, Node::Genus genus) const;
     Node* findChildNode(const QString& name, NodeType type);
@@ -379,7 +379,7 @@ public:
     void deleteChildren();
     void removeFromRelated();
 
-    virtual bool isInnerNode() const Q_DECL_OVERRIDE { return true; }
+    virtual bool isAggregate() const Q_DECL_OVERRIDE { return true; }
     virtual bool isLeaf() const Q_DECL_OVERRIDE { return false; }
     const EnumNode* findEnumNodeForValue(const QString &enumValue) const;
     const NodeList & childNodes() const { return children_; }
@@ -404,10 +404,10 @@ public:
     void printChildren(const QString& title);
     void addChild(Node* child);
     void removeChild(Node* child);
-    virtual void setOutputSubdirectory(const QString& t);
+    void setOutputSubdirectory(const QString& t) Q_DECL_OVERRIDE;
 
 protected:
-    InnerNode(NodeType type, InnerNode* parent, const QString& name);
+    Aggregate(NodeType type, Aggregate* parent, const QString& name);
 
 private:
     friend class Node;
@@ -433,18 +433,18 @@ public:
     LeafNode();
     virtual ~LeafNode() { }
 
-    virtual bool isInnerNode() const Q_DECL_OVERRIDE { return false; }
+    virtual bool isAggregate() const Q_DECL_OVERRIDE { return false; }
     virtual bool isLeaf() const Q_DECL_OVERRIDE { return true; }
 
 protected:
-    LeafNode(NodeType type, InnerNode* parent, const QString& name);
-    LeafNode(InnerNode* parent, NodeType type, const QString& name);
+    LeafNode(NodeType type, Aggregate* parent, const QString& name);
+    LeafNode(Aggregate* parent, NodeType type, const QString& name);
 };
 
-class NamespaceNode : public InnerNode
+class NamespaceNode : public Aggregate
 {
 public:
-    NamespaceNode(InnerNode* parent, const QString& name);
+    NamespaceNode(Aggregate* parent, const QString& name);
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const Q_DECL_OVERRIDE { return true; }
     virtual Tree* tree() const Q_DECL_OVERRIDE { return (parent() ? parent()->tree() : tree_); }
@@ -492,10 +492,10 @@ struct UsingClause
     QString     signature_;
 };
 
-class ClassNode : public InnerNode
+class ClassNode : public Aggregate
 {
 public:
-    ClassNode(InnerNode* parent, const QString& name);
+    ClassNode(Aggregate* parent, const QString& name);
     virtual ~ClassNode() { }
     virtual bool isClass() const Q_DECL_OVERRIDE { return true; }
     virtual bool isWrapper() const Q_DECL_OVERRIDE { return wrapper_; }
@@ -538,11 +538,11 @@ private:
     QmlTypeNode* qmlelement;
 };
 
-class DocumentNode : public InnerNode
+class DocumentNode : public Aggregate
 {
 public:
 
-    DocumentNode(InnerNode* parent,
+    DocumentNode(Aggregate* parent,
              const QString& name,
              DocSubtype docSubtype,
              PageType ptype);
@@ -574,7 +574,7 @@ protected:
 class ExampleNode : public DocumentNode
 {
 public:
-    ExampleNode(InnerNode* parent, const QString& name)
+    ExampleNode(Aggregate* parent, const QString& name)
         : DocumentNode(parent, name, Node::Example, Node::ExamplePage) { }
     virtual ~ExampleNode() { }
     virtual QString imageFileName() const Q_DECL_OVERRIDE { return imageFileName_; }
@@ -604,10 +604,10 @@ struct ImportRec {
 
 typedef QList<ImportRec> ImportList;
 
-class QmlTypeNode : public InnerNode
+class QmlTypeNode : public Aggregate
 {
 public:
-    QmlTypeNode(InnerNode* parent, const QString& name);
+    QmlTypeNode(Aggregate* parent, const QString& name);
     virtual ~QmlTypeNode();
     virtual bool isQmlType() const Q_DECL_OVERRIDE { return genus() == Node::QML; }
     virtual bool isJsType() const Q_DECL_OVERRIDE { return genus() == Node::JS; }
@@ -659,17 +659,17 @@ private:
     ImportList          importList_;
 };
 
-class QmlBasicTypeNode : public InnerNode
+class QmlBasicTypeNode : public Aggregate
 {
 public:
-    QmlBasicTypeNode(InnerNode* parent,
+    QmlBasicTypeNode(Aggregate* parent,
                      const QString& name);
     virtual ~QmlBasicTypeNode() { }
     virtual bool isQmlBasicType() const Q_DECL_OVERRIDE { return (genus() == Node::QML); }
     virtual bool isJsBasicType() const Q_DECL_OVERRIDE { return (genus() == Node::JS); }
 };
 
-class QmlPropertyGroupNode : public InnerNode
+class QmlPropertyGroupNode : public Aggregate
 {
 public:
     QmlPropertyGroupNode(QmlTypeNode* parent, const QString& name);
@@ -699,7 +699,7 @@ class QmlPropertyNode : public LeafNode
     Q_DECLARE_TR_FUNCTIONS(QDoc::QmlPropertyNode)
 
 public:
-    QmlPropertyNode(InnerNode *parent,
+    QmlPropertyNode(Aggregate *parent,
                     const QString& name,
                     const QString& type,
                     bool attached);
@@ -767,7 +767,7 @@ private:
 class EnumNode : public LeafNode
 {
 public:
-    EnumNode(InnerNode* parent, const QString& name);
+    EnumNode(Aggregate* parent, const QString& name);
     virtual ~EnumNode() { }
 
     void addItem(const EnumItem& item);
@@ -788,7 +788,7 @@ private:
 class TypedefNode : public LeafNode
 {
 public:
-    TypedefNode(InnerNode* parent, const QString& name);
+    TypedefNode(Aggregate* parent, const QString& name);
     virtual ~TypedefNode() { }
 
     const EnumNode* associatedEnum() const { return associatedEnum_; }
@@ -851,8 +851,8 @@ public:
         Native };
     enum Virtualness { NonVirtual, NormalVirtual, PureVirtual };
 
-    FunctionNode(InnerNode* parent, const QString &name);
-    FunctionNode(NodeType type, InnerNode* parent, const QString &name, bool attached);
+    FunctionNode(Aggregate* parent, const QString &name);
+    FunctionNode(NodeType type, Aggregate* parent, const QString &name, bool attached);
     virtual ~FunctionNode() { }
 
     void setReturnType(const QString& t) { returnType_ = t; }
@@ -922,13 +922,15 @@ public:
     virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
         return parent()->logicalModuleIdentifier();
     }
+    bool isPrivateSignal() const { return privateSignal_; }
+    void setPrivateSignal() { privateSignal_ = true; }
 
     void debug() const;
 
 private:
     void setAssociatedProperty(PropertyNode* property);
 
-    friend class InnerNode;
+    friend class Aggregate;
     friend class PropertyNode;
 
     QString     returnType_;
@@ -940,6 +942,7 @@ private:
     bool overload_ : 1;
     bool reimplemented_: 1;
     bool attached_: 1;
+    bool privateSignal_: 1;
     QList<Parameter> parameters_;
     const FunctionNode* reimplementedFrom_;
     const PropertyNode* associatedProperty_;
@@ -952,7 +955,7 @@ public:
     enum FunctionRole { Getter, Setter, Resetter, Notifier };
     enum { NumFunctionRoles = Notifier + 1 };
 
-    PropertyNode(InnerNode* parent, const QString& name);
+    PropertyNode(Aggregate* parent, const QString& name);
     virtual ~PropertyNode() { }
 
     virtual void setDataType(const QString& dataType) Q_DECL_OVERRIDE { type_ = dataType; }
@@ -1040,7 +1043,7 @@ inline NodeList PropertyNode::functions() const
 class VariableNode : public LeafNode
 {
 public:
-    VariableNode(InnerNode* parent, const QString &name);
+    VariableNode(Aggregate* parent, const QString &name);
     virtual ~VariableNode() { }
 
     void setLeftType(const QString &leftType) { lrftType_ = leftType; }
@@ -1058,7 +1061,7 @@ private:
     bool static_;
 };
 
-inline VariableNode::VariableNode(InnerNode* parent, const QString &name)
+inline VariableNode::VariableNode(Aggregate* parent, const QString &name)
     : LeafNode(Variable, parent, name), static_(false)
 {
     setGenus(Node::CPP);
@@ -1067,20 +1070,20 @@ inline VariableNode::VariableNode(InnerNode* parent, const QString &name)
 class DitaMapNode : public DocumentNode
 {
 public:
-    DitaMapNode(InnerNode* parent, const QString& name)
+    DitaMapNode(Aggregate* parent, const QString& name)
         : DocumentNode(parent, name, Node::Page, Node::DitaMapPage) { }
     virtual ~DitaMapNode() { }
 
     const DitaRefList& map() const { return doc().ditamap(); }
 };
 
-class CollectionNode : public InnerNode
+class CollectionNode : public Aggregate
 {
  public:
  CollectionNode(NodeType type,
-                InnerNode* parent,
+                Aggregate* parent,
                 const QString& name,
-                Genus genus) : InnerNode(type, parent, name), seen_(false)
+                Genus genus) : Aggregate(type, parent, name), seen_(false)
     {
         setPageType(Node::OverviewPage);
         setGenus(genus);

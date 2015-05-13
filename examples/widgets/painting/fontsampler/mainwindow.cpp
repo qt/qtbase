@@ -80,7 +80,7 @@ void MainWindow::setupFontTree()
         QTreeWidgetItem *familyItem = new QTreeWidgetItem(fontTree);
         familyItem->setText(0, family);
         familyItem->setCheckState(0, Qt::Unchecked);
-        familyItem->setFlags(familyItem->flags() | Qt::ItemIsTristate);
+        familyItem->setFlags(familyItem->flags() | Qt::ItemIsAutoTristate);
 
         foreach (QString style, styles) {
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);

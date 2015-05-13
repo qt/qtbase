@@ -47,7 +47,8 @@ my $stripModule = 0;
 my $fixedFileCount = 0;
 my $fileCount = 0;
 my $verbose = 0;
-my $qtdir = $ENV{'QTDIR'};
+my $qtdir;
+my $qtIncludeDir;
 
 my $USAGE=<<EOF;
 This script replaces all Qt 4 style includes with Qt 5 includes.
@@ -114,44 +115,54 @@ sub fixHeaders
 
 sub findQtHeaders
 {
-    my ($dirName,$baseDir) = @_;
+    my ($dirName,$includeDir) = @_;
 
     local (*DIR);
 
-    opendir(DIR, $baseDir . '/include/' . $dirName) || die ('Unable to open ' .$baseDir . '/include/' . $dirName . ': ' . $!);
+    my $moduleIncludeDir = $includeDir . '/' . $dirName;
+    opendir(DIR, $moduleIncludeDir) || die ('Unable to open ' . $moduleIncludeDir . ': ' . $!);
     my @headers = readdir(DIR);
     closedir(DIR);
 
     foreach my $header (@headers) {
-        next if (-d ($baseDir . '/include/' . $dirName . '/' . $header) || $header =~ /\.pri$/);
+        next if (-d ($moduleIncludeDir . '/' . $header) || $header =~ /\.pri$/);
         $headerSubst{$header} = $stripModule ?  $header : ($dirName . '/' . $header);
     }
 }
 
 # -------- MAIN
 
-die "This script requires the QTDIR environment variable pointing to Qt 5\n" unless $qtdir;
+if ($qtdir) {
+    $qtIncludeDir = $qtdir . '/include';
+} else {
+    $qtIncludeDir = `qmake -query QT_INSTALL_HEADERS`;
+    chop($qtIncludeDir);
+}
 
-findQtHeaders('QtCore', $qtdir);
-findQtHeaders('QtConcurrent', $qtdir);
-findQtHeaders('QtWidgets', $qtdir);
-findQtHeaders('QtPrintSupport', $qtdir);
+die "The location of the Qt 5 include files could not be determined.\n"
+        ."Please ensure qmake can be found in PATH or pass the command line option --qtdir.\n"
+    unless -d $qtIncludeDir;
 
-if (-d $qtdir . '/include/QtMultimedia') {
-    findQtHeaders('QtMultimedia', $qtdir);
-    findQtHeaders('QtMultimediaWidgets', $qtdir);
-} elsif (-d $qtdir . '/../qtmultimedia' ) {
+findQtHeaders('QtCore', $qtIncludeDir);
+findQtHeaders('QtConcurrent', $qtIncludeDir);
+findQtHeaders('QtWidgets', $qtIncludeDir);
+findQtHeaders('QtPrintSupport', $qtIncludeDir);
+
+if (-d $qtIncludeDir . '/include/QtMultimedia') {
+    findQtHeaders('QtMultimedia', $qtIncludeDir);
+    findQtHeaders('QtMultimediaWidgets', $qtIncludeDir);
+} elsif (-d $qtIncludeDir . '/../qtmultimedia' ) {
     # This is the case if QTDIR points to a source tree instead of an installed Qt
-    findQtHeaders('QtMultimedia', $qtdir . '/../qtmultimedia');
-    findQtHeaders('QtMultimediaWidgets', $qtdir . '/../qtmultimedia');
+    findQtHeaders('QtMultimedia', $qtIncludeDir . '/../qtmultimedia');
+    findQtHeaders('QtMultimediaWidgets', $qtIncludeDir . '/../qtmultimedia');
 }
 
 # Support porting from "Qt 4.99" QtDeclarative to QtQuick (QQuickItem et al)
-if (-d $qtdir . '/include/QtQuick') {
-    findQtHeaders('QtQuick', $qtdir);
-} elsif (-d $qtdir . '/../qtdeclarative' ) {
+if (-d $qtIncludeDir . '/include/QtQuick') {
+    findQtHeaders('QtQuick', $qtIncludeDir);
+} elsif (-d $qtIncludeDir . '/../qtdeclarative' ) {
     # This is the case if QTDIR points to a source tree instead of an installed Qt
-    findQtHeaders('QtQuick', $qtdir . '/../qtdeclarative');
+    findQtHeaders('QtQuick', $qtIncludeDir . '/../qtdeclarative');
 }
 
 # special case

@@ -95,7 +95,6 @@
 #include <private/qsimpledrag_p.h>
 
 #include <QtCore/QDebug>
-#include <QtCore/QHash>
 
 #include <errno.h>
 

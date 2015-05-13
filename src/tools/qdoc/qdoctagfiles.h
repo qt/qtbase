@@ -38,7 +38,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class InnerNode;
+class Aggregate;
 class QDocDatabase;
 class Generator;
 
@@ -53,8 +53,8 @@ class QDocTagFiles
     QDocTagFiles();
     ~QDocTagFiles();
 
-    void generateTagFileCompounds(QXmlStreamWriter& writer, const InnerNode* inner);
-    void generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inner);
+    void generateTagFileCompounds(QXmlStreamWriter& writer, const Aggregate* inner);
+    void generateTagFileMembers(QXmlStreamWriter& writer, const Aggregate* inner);
     void generateTagFile(const QString& fileName, Generator* g);
 
  private:

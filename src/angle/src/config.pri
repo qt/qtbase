@@ -37,8 +37,6 @@ DEFINES +=  _WINDOWS \
             NOMINMAX \
             WIN32_LEAN_AND_MEAN=1
 
-!winrt: DEFINES += ANGLE_ENABLE_D3D9 ANGLE_SKIP_DXGI_1_2_CHECK
-
 CONFIG += angle_d3d11 # Remove to disable D3D11 renderer
 
 equals(QMAKE_TARGET_OS, xp): CONFIG -= angle_d3d11
@@ -70,11 +68,12 @@ msvc {
     #   4245: 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
     #   4267: coversion from 'size_t' to 'int', possible loss of data
     #   4275: non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
+    #   4480: nonstandard extension used: specifying underlying type for enum
     #   4512: 'class' : assignment operator could not be generated
     #   4702: unreachable code
     #   4996: Function call with parameters that may be unsafe
     QMAKE_CFLAGS_WARN_ON    -= -W3
-    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4267" -wd"4275" -wd"4512" -wd"4702" -wd"4996"
+    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4267" -wd"4275" -wd"4512" -wd"4702" -wd"4996" -wd"4480"
     # Optimizations
     #   /Oy:   Omits frame pointer (x86 only).
     #   /Gy:   Enables function-level linking.

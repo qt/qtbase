@@ -65,19 +65,146 @@
 /*!
     \typedef QXcbWindowFunctions::SetWmWindowType
 
-    This is the typedef for the function returned by QGuiApplication::platformFunction when passed setWmWindowTypeIdentifier.
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by setWmWindowTypeIdentifier().
 */
 
 /*!
     \fn QByteArray QXcbWindowFunctions::setWmWindowTypeIdentifier()
 
-    This function returnes the bytearray that can be used to query
+    This function returns the byte array that can be used to query
     QGuiApplication::platformFunction to retrieve the SetWmWindowType function.
 */
 
 /*!
     \fn void QXcbWindowFunctions::setWmWindowType(QWindow *window, WmWindowType type)
 
-    This is a convenience function that can be used directly instead of resolving the function pointer.
-    \a window and \a type will be relayed to the function retrieved by QGuiApplication
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window and \a type will be
+    relayed to the function retrieved by QGuiApplication.
+*/
+
+/*!
+    \typedef QXcbWindowFunctions::SetWmWindowIconText
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by setWmWindowIconTextIdentifier().
+*/
+
+/*!
+    \fn const QByteArray QXcbWindowFunctions::setWmWindowIconTextIdentifier()
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetWmWindowIconText function.
+*/
+
+/*!
+    \fn void QXcbWindowFunctions::setWmWindowIconText(QWindow *window, const QString& text)
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window and \a text will be
+    relayed to the function retrieved by QGuiApplication.
+*/
+
+/*!
+    \typedef QXcbWindowFunctions::SetParentRelativeBackPixmap
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by setParentRelativeBackPixmapIdentifier().
+*/
+
+/*!
+    \fn const QByteArray QXcbWindowFunctions::setParentRelativeBackPixmapIdentifier()
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetParentRelativeBackPixmap function.
+*/
+
+/*!
+    \fn void QXcbWindowFunctions::setParentRelativeBackPixmap(const QWindow *window)
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window will be
+    relayed to the function retrieved by QGuiApplication.
+*/
+
+/*!
+    \typedef QXcbWindowFunctions::RequestSystemTrayWindowDock
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by requestSystemTrayWindowDockIdentifier().
+*/
+
+/*!
+    \fn const QByteArray QXcbWindowFunctions::requestSystemTrayWindowDockIdentifier()
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the RequestSystemTrayWindowDock function.
+*/
+
+/*!
+    \fn bool QXcbWindowFunctions::requestSystemTrayWindowDock(const QWindow *window)
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window will be
+    relayed to the function retrieved by QGuiApplication.
+
+    Returns the boolean result of calling the function or false if the
+    function was not found.
+*/
+
+/*!
+    \typedef QXcbWindowFunctions::SystemTrayWindowGlobalGeometry
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by systemTrayWindowGlobalGeometryIdentifier().
+*/
+
+/*!
+    \fn const QByteArray QXcbWindowFunctions::systemTrayWindowGlobalGeometryIdentifier()
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the SystemTrayWindowGlobalGeometry function.
+*/
+
+/*!
+    \fn QRect QXcbWindowFunctions::systemTrayWindowGlobalGeometry(const QWindow *window)
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window will be
+    relayed to the function retrieved by QGuiApplication.
+
+    Returns the QRect result of calling the function or an empty
+    QRect if the function was not found.
+*/
+
+/*!
+    \typedef QXcbWindowFunctions::VisualId
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by visualIdIdentifier().
+*/
+
+/*!
+    \fn const QByteArray QXcbWindowFunctions::visualIdIdentifier()
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the VisualId function.
+*/
+
+/*!
+    \fn uint QXcbWindowFunctions::visualId(QWindow *window)
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer.  \a window will be
+    relayed to the function retrieved by QGuiApplication.
+
+    Returns the unsigned integer result of calling the function or
+    UINT_MAX if the function was not found.
 */

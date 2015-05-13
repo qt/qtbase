@@ -222,6 +222,9 @@ void QTcpServerPrivate::readNotification()
 QTcpServer::QTcpServer(QObject *parent)
     : QObject(*new QTcpServerPrivate, parent)
 {
+#if defined(QTCPSERVER_DEBUG)
+    qDebug("QTcpServer::QTcpServer(%p)", parent);
+#endif
 }
 
 /*!
@@ -235,6 +238,9 @@ QTcpServer::QTcpServer(QObject *parent)
 */
 QTcpServer::~QTcpServer()
 {
+#if defined(QTCPSERVER_DEBUG)
+    qDebug("QTcpServer::~QTcpServer()");
+#endif
     close();
 }
 
@@ -243,6 +249,9 @@ QTcpServer::~QTcpServer()
 QTcpServer::QTcpServer(QTcpServerPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
+#if defined(QTCPSERVER_DEBUG)
+    qDebug("QTcpServer::QTcpServer(QTcpServerPrivate == %p, parent == %p)", &dd, parent);
+#endif
 }
 
 /*!

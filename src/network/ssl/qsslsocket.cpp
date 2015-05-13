@@ -790,7 +790,7 @@ void QSslSocket::close()
     qCDebug(lcSsl) << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
-    if (encryptedBytesToWrite())
+    if (encryptedBytesToWrite() || !d->writeBuffer.isEmpty())
         flush();
     if (d->plainSocket)
         d->plainSocket->close();

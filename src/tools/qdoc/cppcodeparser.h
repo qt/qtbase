@@ -44,7 +44,7 @@ class ClassNode;
 class CodeChunk;
 class CppCodeParserPrivate;
 class FunctionNode;
-class InnerNode;
+class Aggregate;
 class Tokenizer;
 
 class CppCodeParser : public CodeParser
@@ -52,12 +52,12 @@ class CppCodeParser : public CodeParser
     Q_DECLARE_TR_FUNCTIONS(QDoc::CppCodeParser)
 
     struct ExtraFuncData {
-        InnerNode* root; // Used as the parent.
+        Aggregate* root; // Used as the parent.
         Node::NodeType type; // The node type: Function, etc.
         bool isAttached; // If true, the method is attached.
         bool isMacro;    // If true, we are parsing a macro signature.
         ExtraFuncData() : root(0), type(Node::Function), isAttached(false), isMacro(false) { }
-        ExtraFuncData(InnerNode* r, Node::NodeType t, bool a)
+        ExtraFuncData(Aggregate* r, Node::NodeType t, bool a)
           : root(r), type(t), isAttached(a), isMacro(false) { }
     };
 
@@ -117,22 +117,22 @@ protected:
     bool matchTemplateHeader();
     bool matchDataType(CodeChunk *type, QString *var = 0);
     bool matchParameter(FunctionNode *func);
-    bool matchFunctionDecl(InnerNode *parent,
+    bool matchFunctionDecl(Aggregate *parent,
                            QStringList *parentPathPtr,
                            FunctionNode **funcPtr,
                            const QString &templateStuff,
                            ExtraFuncData& extra);
     bool matchBaseSpecifier(ClassNode *classe, bool isClass);
     bool matchBaseList(ClassNode *classe, bool isClass);
-    bool matchClassDecl(InnerNode *parent,
+    bool matchClassDecl(Aggregate *parent,
                         const QString &templateStuff = QString());
-    bool matchNamespaceDecl(InnerNode *parent);
-    bool matchUsingDecl(InnerNode* parent);
-    bool matchEnumItem(InnerNode *parent, EnumNode *enume);
-    bool matchEnumDecl(InnerNode *parent);
-    bool matchTypedefDecl(InnerNode *parent);
-    bool matchProperty(InnerNode *parent);
-    bool matchDeclList(InnerNode *parent);
+    bool matchNamespaceDecl(Aggregate *parent);
+    bool matchUsingDecl(Aggregate* parent);
+    bool matchEnumItem(Aggregate *parent, EnumNode *enume);
+    bool matchEnumDecl(Aggregate *parent);
+    bool matchTypedefDecl(Aggregate *parent);
+    bool matchProperty(Aggregate *parent);
+    bool matchDeclList(Aggregate *parent);
     bool matchDocsAndStuff();
     bool makeFunctionNode(const QString &synopsis,
                           QStringList *parentPathPtr,
@@ -140,7 +140,7 @@ protected:
                           ExtraFuncData& params);
     FunctionNode* makeFunctionNode(const Doc& doc,
                                    const QString& sig,
-                                   InnerNode* parent,
+                                   Aggregate* parent,
                                    Node::NodeType type,
                                    bool attached,
                                    QString qdoctag);

@@ -333,7 +333,8 @@ win32:UI_DIR = c:/myproject/ui
 
 
 #! [57]
-VERSION = 1.2.3
+win32:VERSION = 1.2.3.4 # major.minor.patch.build
+else:VERSION = 1.2.3    # major.minor.patch
 #! [57]
 
 
@@ -982,3 +983,7 @@ QMAKE_SONAME_PREFIX = @executable_path/../Frameworks
 QMAKE_SONAME_PREFIX = @loader_path/Frameworks
 QMAKE_SONAME_PREFIX = /Library/Frameworks
 #! [184]
+
+#! [185]
+VERSION_PE_HEADER = 1.2
+#! [185]

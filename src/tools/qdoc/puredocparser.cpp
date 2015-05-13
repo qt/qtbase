@@ -207,14 +207,14 @@ bool PureDocParser::processQdocComments()
                 processOtherMetaCommands(*d, *n);
                 (*n)->setDoc(*d);
                 checkModuleInclusion(*n);
-                if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
-                    InnerNode *m = static_cast<InnerNode *>(*n);
+                if ((*n)->isAggregate() && ((Aggregate *)*n)->includes().isEmpty()) {
+                    Aggregate *m = static_cast<Aggregate *>(*n);
                     while (m->parent() && m->parent() != treeRoot)
                         m = m->parent();
                     if (m == *n)
-                        ((InnerNode *)*n)->addInclude((*n)->name());
+                        ((Aggregate *)*n)->addInclude((*n)->name());
                     else
-                        ((InnerNode *)*n)->setIncludes(m->includes());
+                        ((Aggregate *)*n)->setIncludes(m->includes());
                 }
                 ++d;
                 ++n;

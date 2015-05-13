@@ -140,6 +140,7 @@ public:
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
     static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
+    static uint visualIdStatic(QWindow *window);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
@@ -154,6 +155,7 @@ public:
 
     static QRect systemTrayWindowGlobalGeometryStatic(const QWindow *window);
     QRect systemTrayWindowGlobalGeometry() const;
+    uint visualId() const;
 
     bool needsSync() const;
 

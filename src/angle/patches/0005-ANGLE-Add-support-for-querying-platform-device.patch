@@ -1,0 +1,84 @@
+From f6bfeecf2c7d14e9fd2b637e6ce9555489e3a256 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Fri, 27 Mar 2015 17:58:41 +0200
+Subject: [PATCH 5/5] ANGLE: Add support for querying platform device
+
+The EGL_EXT_device_base extension allows for querying the platform
+device of the graphics hardware via eglQueryDisplayAttribEXT().
+As that extension is not supported by ANGLE, this patch adds similar
+functionality to the existing eglQuerySurfacePointerANGLE API. When
+EGL_DEVICE_EXT is passed as the queried attribute, the underlying
+D3D/DXGI device pointer is passed back to the caller via the value
+argument.
+
+The D3D device is needed for video support in QtMultimedia as well as
+the IDXGIDevice3::Trim() calls required by the Windows Store.
+
+Change-Id: Ibdf228d81d6604e56db9dd8597d7cd2983ebc428
+---
+ src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp        | 7 +++++--
+ src/3rdparty/angle/src/libANGLE/renderer/d3d/SwapChainD3D.h        | 1 +
+ src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp | 5 +++++
+ src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h   | 2 ++
+ 4 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
+index a3c457d..4fde295 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SurfaceD3D.cpp
+@@ -385,8 +385,11 @@ EGLint SurfaceD3D::isPostSubBufferSupported() const
+ 
+ egl::Error SurfaceD3D::querySurfacePointerANGLE(EGLint attribute, void **value)
+ {
+-    ASSERT(attribute == EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE);
+-    *value = mSwapChain->getShareHandle();
++    ASSERT(attribute == EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE || attribute == EGL_DEVICE_EXT);
++    if (attribute == EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE)
++        *value = mSwapChain->getShareHandle();
++    else if (attribute == EGL_DEVICE_EXT)
++        *value = mSwapChain->getDevice();
+     return egl::Error(EGL_SUCCESS);
+ }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SwapChainD3D.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SwapChainD3D.h
+index 3bde92e..da36e52 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/SwapChainD3D.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/SwapChainD3D.h
+@@ -41,6 +41,7 @@ class SwapChainD3D : angle::NonCopyable
+     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval) = 0;
+     virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height) = 0;
+     virtual void recreate() = 0;
++    virtual void *getDevice() { return NULL; }
+ 
+     virtual RenderTargetD3D *getColorRenderTarget() = 0;
+     virtual RenderTargetD3D *getDepthStencilRenderTarget() = 0;
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index bcb2505..298f3cc 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -703,4 +703,9 @@ void SwapChain11::recreate()
+     // possibly should use this method instead of reset
+ }
+ 
++void *rx::SwapChain11::getDevice()
++{
++    return mRenderer->getDevice();
++}
++
+ }
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h
+index 4ea6778..48c808a 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.h
+@@ -43,6 +43,8 @@ class SwapChain11 : public SwapChainD3D
+     EGLint getWidth() const { return mWidth; }
+     EGLint getHeight() const { return mHeight; }
+ 
++    virtual void *getDevice();
++
+     static SwapChain11 *makeSwapChain11(SwapChainD3D *swapChain);
+ 
+   private:
+-- 
+2.1.4
+

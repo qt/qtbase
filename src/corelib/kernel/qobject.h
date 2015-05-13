@@ -137,8 +137,8 @@ public:
     inline bool isWidgetType() const { return d_ptr->isWidget; }
     inline bool isWindowType() const { return d_ptr->isWindow; }
 
-    inline bool signalsBlocked() const { return d_ptr->blockSig; }
-    bool blockSignals(bool b);
+    inline bool signalsBlocked() const Q_DECL_NOTHROW { return d_ptr->blockSig; }
+    bool blockSignals(bool b) Q_DECL_NOTHROW;
 
     QThread *thread() const;
     void moveToThread(QThread *thread);
@@ -413,11 +413,7 @@ public:
 
 Q_SIGNALS:
     void destroyed(QObject * = 0);
-    void objectNameChanged(const QString &objectName
-#if !defined(Q_QDOC)
-    , QPrivateSignal
-#endif
-    );
+    void objectNameChanged(const QString &objectName, QPrivateSignal);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }
@@ -552,17 +548,17 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 class QSignalBlocker
 {
 public:
-    inline explicit QSignalBlocker(QObject *o);
-    inline explicit QSignalBlocker(QObject &o);
+    inline explicit QSignalBlocker(QObject *o) Q_DECL_NOTHROW;
+    inline explicit QSignalBlocker(QObject &o) Q_DECL_NOTHROW;
     inline ~QSignalBlocker();
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QSignalBlocker(QSignalBlocker &&other);
-    inline QSignalBlocker &operator=(QSignalBlocker &&other);
+    inline QSignalBlocker(QSignalBlocker &&other) Q_DECL_NOTHROW;
+    inline QSignalBlocker &operator=(QSignalBlocker &&other) Q_DECL_NOTHROW;
 #endif
 
-    inline void reblock();
-    inline void unblock();
+    inline void reblock() Q_DECL_NOTHROW;
+    inline void unblock() Q_DECL_NOTHROW;
 private:
     Q_DISABLE_COPY(QSignalBlocker)
     QObject * m_o;
@@ -570,20 +566,20 @@ private:
     bool m_inhibited;
 };
 
-QSignalBlocker::QSignalBlocker(QObject *o)
+QSignalBlocker::QSignalBlocker(QObject *o) Q_DECL_NOTHROW
     : m_o(o),
       m_blocked(o && o->blockSignals(true)),
       m_inhibited(false)
 {}
 
-QSignalBlocker::QSignalBlocker(QObject &o)
+QSignalBlocker::QSignalBlocker(QObject &o) Q_DECL_NOTHROW
     : m_o(&o),
       m_blocked(o.blockSignals(true)),
       m_inhibited(false)
 {}
 
 #ifdef Q_COMPILER_RVALUE_REFS
-QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
+QSignalBlocker::QSignalBlocker(QSignalBlocker &&other) Q_DECL_NOTHROW
     : m_o(other.m_o),
       m_blocked(other.m_blocked),
       m_inhibited(other.m_inhibited)
@@ -591,7 +587,7 @@ QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
     other.m_o = 0;
 }
 
-QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
+QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other) Q_DECL_NOTHROW
 {
     if (this != &other) {
         // if both *this and other block the same object's signals:
@@ -614,13 +610,13 @@ QSignalBlocker::~QSignalBlocker()
         m_o->blockSignals(m_blocked);
 }
 
-void QSignalBlocker::reblock()
+void QSignalBlocker::reblock() Q_DECL_NOTHROW
 {
     if (m_o) m_o->blockSignals(true);
     m_inhibited = false;
 }
 
-void QSignalBlocker::unblock()
+void QSignalBlocker::unblock() Q_DECL_NOTHROW
 {
     if (m_o) m_o->blockSignals(m_blocked);
     m_inhibited = true;

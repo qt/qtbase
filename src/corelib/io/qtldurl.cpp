@@ -37,7 +37,6 @@
 #include "private/qtldurl_p.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qvector.h"
-#include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
 

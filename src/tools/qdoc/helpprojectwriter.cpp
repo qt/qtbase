@@ -472,8 +472,8 @@ void HelpProjectWriter::generateSections(HelpProject &project,
     if (!generateSection(project, writer, node))
         return;
 
-    if (node->isInnerNode()) {
-        const InnerNode *inner = static_cast<const InnerNode *>(node);
+    if (node->isAggregate()) {
+        const Aggregate *inner = static_cast<const Aggregate *>(node);
 
         // Ensure that we don't visit nodes more than once.
         QMap<QString, const Node*> childMap;
@@ -497,7 +497,7 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                   because The Qml/Js Property Group is
                   an actual documented thing.
                  */
-                const InnerNode* inner = static_cast<const InnerNode*>(childNode);
+                const Aggregate* inner = static_cast<const Aggregate*>(childNode);
                 foreach (const Node* n, inner->childNodes()) {
                     if (n->access() == Node::Private)
                         continue;

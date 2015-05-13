@@ -395,24 +395,24 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
-template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
-const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
-                                                           int y, int x, int length)
+template <class RadialFetchFunc, typename BlendType> static
+const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffer, const Operator *op,
+                                                                const QSpanData *data, int y, int x, int length)
 {
     // avoid division by zero
     if (qFuzzyIsNull(op->radial.a)) {
-        qt_memfill32(buffer, 0, length);
+        RadialFetchFunc::memfill(buffer, RadialFetchFunc::null(), length);
         return buffer;
     }
 
-    const uint *b = buffer;
+    const BlendType *b = buffer;
     qreal rx = data->m21 * (y + qreal(0.5))
                + data->dx + data->m11 * (x + qreal(0.5));
     qreal ry = data->m22 * (y + qreal(0.5))
                + data->dy + data->m12 * (x + qreal(0.5));
     bool affine = !data->m13 && !data->m23;
 
-    uint *end = buffer + length;
+    BlendType *end = buffer + length;
     if (affine) {
         rx -= data->gradient.radial.focal.x;
         ry -= data->gradient.radial.focal.y;
@@ -459,7 +459,7 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const O
                 qreal b  = 2*(op->radial.dr*data->gradient.radial.focal.radius + gx*op->radial.dx + gy*op->radial.dy);
                 qreal det = qRadialDeterminant(op->radial.a, b, op->radial.sqrfr - (gx*gx + gy*gy));
 
-                quint32 result = 0;
+                BlendType result = RadialFetchFunc::null();
                 if (det >= 0) {
                     qreal detSqrt = qSqrt(det);
 
@@ -469,7 +469,7 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const O
                     qreal s = qMax(s0, s1);
 
                     if (data->gradient.radial.focal.radius + op->radial.dr * s >= 0)
-                        result = qt_gradient_pixel(&data->gradient, s);
+                        result = RadialFetchFunc::fetchSingle(data->gradient, s);
                 }
 
                 *buffer = result;
@@ -490,6 +490,15 @@ template <class Simd>
 class QRadialFetchSimd
 {
 public:
+    static uint null() { return 0; }
+    static uint fetchSingle(const QGradientData& gradient, qreal v)
+    {
+        return qt_gradient_pixel(&gradient, v);
+    }
+    static void memfill(uint *buffer, uint fill, int length)
+    {
+        qt_memfill32(buffer, fill, length);
+    }
     static void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
                       qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
     {
@@ -625,6 +634,42 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
 }
 #endif
 
+#ifdef __SSE2__
+static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
+{
+    // First interpolate right and left pixels in parallel.
+    __m128i vl = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tl), _mm_cvtsi32_si128(bl));
+    __m128i vr = _mm_unpacklo_epi32(_mm_cvtsi32_si128(tr), _mm_cvtsi32_si128(br));
+    vl = _mm_unpacklo_epi8(vl, _mm_setzero_si128());
+    vr = _mm_unpacklo_epi8(vr, _mm_setzero_si128());
+    vl = _mm_mullo_epi16(vl, _mm_set1_epi16(256 - distx));
+    vr = _mm_mullo_epi16(vr, _mm_set1_epi16(distx));
+    __m128i vtb = _mm_add_epi16(vl, vr);
+    vtb = _mm_srli_epi16(vtb, 8);
+    // vtb now contains the result of the first two interpolate calls vtb = unpacked((xbot << 64) | xtop)
+
+    // Now the last interpolate between top and bottom interpolations.
+    const __m128i vidisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(256 - disty), _MM_SHUFFLE(0, 0, 0, 0));
+    const __m128i vdisty = _mm_shufflelo_epi16(_mm_cvtsi32_si128(disty), _MM_SHUFFLE(0, 0, 0, 0));
+    const __m128i vmuly = _mm_unpacklo_epi16(vidisty, vdisty);
+    vtb = _mm_unpacklo_epi16(vtb, _mm_srli_si128(vtb, 8));
+    // vtb now contains the colors of top and bottom interleaved { ta, ba, tr, br, tg, bg, tb, bb }
+    vtb = _mm_madd_epi16(vtb, vmuly); // Multiply and horizontal add.
+    vtb = _mm_srli_epi32(vtb, 8);
+    vtb = _mm_packs_epi32(vtb, _mm_setzero_si128());
+    vtb = _mm_packus_epi16(vtb, _mm_setzero_si128());
+    return _mm_cvtsi128_si32(vtb);
+}
+#else
+static inline uint interpolate_4_pixels(uint tl, uint tr, uint bl, uint br, uint distx, uint disty)
+{
+    uint idistx = 256 - distx;
+    uint idisty = 256 - disty;
+    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
+    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
+    return INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
+}
+#endif
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
@@ -1056,89 +1101,11 @@ inline int comp_func_Plus_one_pixel(uint d, const uint s)
 #undef MIX
 #undef AMIX
 
-// prototypes of all the composition functions
-void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_DestinationOver(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Source(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Destination(uint *, const uint *, int, uint);
-void QT_FASTCALL comp_func_SourceIn(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_DestinationIn(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_SourceOut(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_DestinationOut(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_SourceAtop(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_DestinationAtop(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_XOR(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Plus(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Multiply(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Screen(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Overlay(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Darken(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Lighten(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_ColorDodge(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_ColorBurn(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_HardLight(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_SoftLight(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Difference(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL comp_func_Exclusion(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SourceOrDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SourceAndDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SourceXorDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSourceAndNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSourceOrNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSourceXorDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSource(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSourceAndDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SourceAndNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotSourceOrDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SourceOrNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_ClearDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_SetDestination(uint *dest, const uint *src, int length, uint const_alpha);
-void QT_FASTCALL rasterop_NotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-// prototypes of all the solid composition functions
-void QT_FASTCALL comp_func_solid_SourceOver(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_DestinationOver(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Clear(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Source(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Destination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_SourceIn(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_DestinationIn(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_SourceOut(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_DestinationOut(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_SourceAtop(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_DestinationAtop(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_XOR(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Plus(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Multiply(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Screen(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Overlay(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Darken(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Lighten(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_ColorDodge(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_ColorBurn(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_HardLight(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_SoftLight(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Difference(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL comp_func_solid_Exclusion(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SourceOrDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SourceAndDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SourceXorDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSourceAndNotDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSourceOrNotDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSourceXorDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSource(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSourceAndDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SourceAndNotDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotSourceOrDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SourceOrNotDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_ClearDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_SetDestination(uint *dest, int length, uint color, uint const_alpha);
-void QT_FASTCALL rasterop_solid_NotDestination(uint *dest, int length, uint color, uint const_alpha);
-
-
 struct QPixelLayout;
 typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, int count,
                                                const QPixelLayout *layout, const QRgb *clut);
+typedef const QRgba64 *(QT_FASTCALL *ConvertFunc64)(QRgba64 *buffer, const uint *src, int count,
+                                                    const QPixelLayout *layout, const QRgb *clut);
 
 struct QPixelLayout
 {
@@ -1168,6 +1135,7 @@ struct QPixelLayout
     ConvertFunc convertToARGB32PM;
     ConvertFunc convertFromARGB32PM;
     ConvertFunc convertFromRGB32;
+    ConvertFunc64 convertToARGB64PM;
 };
 
 typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *src, int index, int count);

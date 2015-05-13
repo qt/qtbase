@@ -106,7 +106,7 @@
 #  if defined(WINCE) || defined(_WIN32_WCE)
 #    define Q_OS_WINCE
 #  elif defined(WINAPI_FAMILY)
-#    if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+#    if defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
 #      define Q_OS_WINPHONE
 #      define Q_OS_WINRT
 #    elif WINAPI_FAMILY==WINAPI_FAMILY_APP
@@ -269,6 +269,15 @@
 #  endif
 #  if !defined(__IPHONE_8_0)
 #       define __IPHONE_8_0 80000
+#  endif
+#  if !defined(__IPHONE_8_1)
+#       define __IPHONE_8_1 80100
+#  endif
+#  if !defined(__IPHONE_8_2)
+#       define __IPHONE_8_2 80200
+#  endif
+#  if !defined(__IPHONE_8_3)
+#       define __IPHONE_8_3 80300
 #  endif
 #endif
 

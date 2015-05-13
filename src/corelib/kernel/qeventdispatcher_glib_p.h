@@ -48,8 +48,6 @@
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
 
-#include <QtCore/qhash.h>
-
 typedef struct _GMainContext GMainContext;
 
 QT_BEGIN_NAMESPACE

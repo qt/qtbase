@@ -323,6 +323,8 @@ static bool setByteOrder(iconv_t cd)
     if (iconv(cd, inBytesPtr, &inBytesLeft, &outBytes, &outBytesLeft) == (size_t) -1) {
         return false;
     }
+#else
+    Q_UNUSED(cd);
 #endif // NO_BOM
 
     return true;

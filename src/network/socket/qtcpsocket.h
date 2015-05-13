@@ -51,6 +51,8 @@ public:
 
 protected:
     QTcpSocket(QTcpSocketPrivate &dd, QObject *parent = 0);
+    QTcpSocket(QAbstractSocket::SocketType socketType, QTcpSocketPrivate &dd,
+               QObject *parent = 0);
 
 private:
     Q_DISABLE_COPY(QTcpSocket)

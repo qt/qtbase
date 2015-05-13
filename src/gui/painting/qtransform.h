@@ -180,6 +180,8 @@ private:
 };
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
+Q_GUI_EXPORT Q_DECL_CONST_FUNCTION uint qHash(const QTransform &key, uint seed = 0) Q_DECL_NOTHROW;
+
 /******* inlines *****/
 inline QTransform::TransformationType QTransform::inline_type() const
 {

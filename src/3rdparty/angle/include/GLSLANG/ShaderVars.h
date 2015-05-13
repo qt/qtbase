@@ -7,8 +7,8 @@
 //  Types to represent GL variables (varyings, uniforms, etc)
 //
 
-#ifndef _COMPILER_INTERFACE_VARIABLES_
-#define _COMPILER_INTERFACE_VARIABLES_
+#ifndef GLSLANG_SHADERVARS_H_
+#define GLSLANG_SHADERVARS_H_
 
 #include <string>
 #include <vector>
@@ -27,6 +27,9 @@ enum InterpolationType
     INTERPOLATION_CENTROID,
     INTERPOLATION_FLAT
 };
+
+// Validate link & SSO consistency of interpolation qualifiers
+COMPILER_EXPORT bool InterpolationTypesMatch(InterpolationType a, InterpolationType b);
 
 // Uniform block layout qualifier, see section 4.3.8.3 of the ESSL 3.00.4 spec
 enum BlockLayoutType
@@ -182,4 +185,4 @@ struct COMPILER_EXPORT InterfaceBlock
 
 }
 
-#endif // _COMPILER_INTERFACE_VARIABLES_
+#endif // GLSLANG_SHADERVARS_H_

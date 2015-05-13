@@ -38,6 +38,7 @@
 #include "qcache.h"
 #include "qdatastream.h"
 #include "qdebug.h"
+#include "qhashfunctions.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qmutex.h"
@@ -880,6 +881,15 @@ static bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key
 {
     return key1.pattern == key2.pattern && key1.patternSyntax == key2.patternSyntax
            && key1.cs == key2.cs;
+}
+
+static uint qHash(const QRegExpEngineKey &key, uint seed = 0) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.pattern);
+    seed = hash(seed, key.patternSyntax);
+    seed = hash(seed, key.cs);
+    return seed;
 }
 
 class QRegExpEngine;
@@ -3807,11 +3817,6 @@ struct QRegExpPrivate
 };
 
 #if !defined(QT_NO_REGEXP_OPTIM)
-uint qHash(const QRegExpEngineKey &key, uint seed = 0) Q_DECL_NOTHROW
-{
-    return qHash(key.pattern, seed);
-}
-
 typedef QCache<QRegExpEngineKey, QRegExpEngine> EngineCache;
 Q_GLOBAL_STATIC(EngineCache, globalEngineCache)
 static QBasicMutex globalEngineCacheMutex;
@@ -4030,6 +4035,21 @@ QRegExp &QRegExp::operator=(const QRegExp &rx)
 bool QRegExp::operator==(const QRegExp &rx) const
 {
     return priv->engineKey == rx.priv->engineKey && priv->minimal == rx.priv->minimal;
+}
+
+/*!
+    \since 5.6
+    \relates QRegExp
+
+    Returns the hash value for \a key, using
+    \a seed to seed the calculation.
+*/
+uint qHash(const QRegExp &key, uint seed) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.priv->engineKey);
+    seed = hash(seed, key.priv->minimal);
+    return seed;
 }
 
 /*!

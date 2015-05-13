@@ -1724,10 +1724,8 @@ bool QFont::rawMode() const
 */
 QFont QFont::resolve(const QFont &other) const
 {
-    if (*this == other
-        && (resolve_mask == other.resolve_mask || resolve_mask == 0)
-        && d->dpi == other.d->dpi) {
-        QFont o = other;
+    if (resolve_mask == 0 || (resolve_mask == other.resolve_mask && *this == other)) {
+        QFont o(other);
         o.resolve_mask = resolve_mask;
         return o;
     }

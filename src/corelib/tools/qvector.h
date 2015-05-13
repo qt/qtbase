@@ -39,6 +39,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qhashfunctions.h>
 
 #include <iterator>
 #include <vector>
@@ -607,16 +608,23 @@ Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i, const T &defaultValue) const
 template <typename T>
 void QVector<T>::append(const T &t)
 {
-    const T copy(t);
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
+        const T copy(t);
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+
+        if (QTypeInfo<T>::isComplex)
+            new (d->end()) T(copy);
+        else
+            *d->end() = copy;
+
+    } else {
+        if (QTypeInfo<T>::isComplex)
+            new (d->end()) T(t);
+        else
+            *d->end() = t;
     }
-    if (QTypeInfo<T>::isComplex)
-        new (d->end()) T(copy);
-    else
-        *d->end() = copy;
     ++d->size;
 }
 
@@ -872,6 +880,13 @@ QList<T> QList<T>::fromVector(const QVector<T> &vector)
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Vector)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(Vector)
+
+template <typename T>
+uint qHash(const QVector<T> &key, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+{
+    return qHashRange(key.cbegin(), key.cend(), seed);
+}
 
 template <typename T>
 bool operator<(const QVector<T> &lhs, const QVector<T> &rhs)

@@ -306,10 +306,8 @@ void QHaikuWindow::haikuWindowMoved(const QPoint &pos)
     const QRect newGeometry(pos, geometry().size());
 
     QPlatformWindow::setGeometry(newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
 }
 
 void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
@@ -317,10 +315,8 @@ void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
     const QRect newGeometry(geometry().topLeft(), size);
 
     QPlatformWindow::setGeometry(newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
 
     if ((m_windowState == Qt::WindowMaximized) && !zoomInProgress) {
         // the user has resized the window while maximized -> reset maximized flag

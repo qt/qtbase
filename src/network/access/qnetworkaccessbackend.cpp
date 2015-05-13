@@ -37,7 +37,6 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
-#include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qstringlist.h"
 #include "QtNetwork/private/qnetworksession_p.h"
@@ -383,7 +382,8 @@ bool QNetworkAccessBackend::start()
             const QString host = reply->url.host();
 
             if (host == QLatin1String("localhost") ||
-                QHostAddress(host).isLoopback()) {
+                QHostAddress(host).isLoopback() ||
+                reply->url.isLocalFile()) {
                 // Don't need an open session for localhost access.
             } else {
                 // need to wait for session to be opened

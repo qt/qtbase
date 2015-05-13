@@ -338,6 +338,17 @@
     of \c operator<().
 */
 
+/*!
+    \fn uint qHash(const QVector<T> &key, uint seed = 0)
+    \since 5.6
+    \relates QVector
+
+    Returns the hash value for \a key,
+    using \a seed to seed the calculation.
+
+    This function requires qHash() to be overloaded for the value type \c T.
+*/
+
 /*! \fn int QVector::size() const
 
     Returns the number of items in the vector.

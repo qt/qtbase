@@ -158,10 +158,20 @@ public:
     }
     void setCheckable(bool checkable);
 
-    inline bool isTristate() const {
-        return (flags() & Qt::ItemIsTristate) != 0;
+    inline bool isAutoTristate() const {
+        return (flags() & Qt::ItemIsAutoTristate) != 0;
     }
-    void setTristate(bool tristate);
+    void setAutoTristate(bool tristate);
+
+    inline bool isUserTristate() const {
+        return (flags() & Qt::ItemIsUserTristate) != 0;
+    }
+    void setUserTristate(bool tristate);
+
+#if QT_DEPRECATED_SINCE(5, 6)
+    QT_DEPRECATED bool isTristate() const { return isAutoTristate(); }
+    QT_DEPRECATED void setTristate(bool tristate);
+#endif
 
 #ifndef QT_NO_DRAGANDDROP
     inline bool isDragEnabled() const {

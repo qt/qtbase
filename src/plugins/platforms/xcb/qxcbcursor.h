@@ -91,7 +91,7 @@ private:
     CursorHash m_cursorHash;
 #endif
 #ifdef XCB_USE_XLIB
-    static void cursorThemePropertyChanged(QXcbScreen *screen,
+    static void cursorThemePropertyChanged(QXcbVirtualDesktop *screen,
                                            const QByteArray &name,
                                            const QVariant &property,
                                            void *handle);

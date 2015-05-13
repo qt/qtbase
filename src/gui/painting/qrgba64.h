@@ -40,13 +40,15 @@
 QT_BEGIN_NAMESPACE
 
 class QRgba64 {
+    struct qrgba_t {
+        quint16 red;
+        quint16 green;
+        quint16 blue;
+        quint16 alpha;
+    };
+
     union {
-        struct {
-            quint16 red;
-            quint16 green;
-            quint16 blue;
-            quint16 alpha;
-        } c;
+        struct qrgba_t c;
         quint64 rgba;
     };
 public:
@@ -166,6 +168,8 @@ private:
         return fromRgba64(r, g, b, c.alpha);
     }
 };
+
+Q_DECLARE_TYPEINFO(QRgba64, Q_PRIMITIVE_TYPE);
 
 Q_DECL_RELAXED_CONSTEXPR inline QRgba64 qRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
 {

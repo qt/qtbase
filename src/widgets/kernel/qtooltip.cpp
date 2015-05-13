@@ -37,7 +37,6 @@
 #include <qapplication.h>
 #include <qdesktopwidget.h>
 #include <qevent.h>
-#include <qhash.h>
 #include <qlabel.h>
 #include <qpointer.h>
 #include <qstyle.h>

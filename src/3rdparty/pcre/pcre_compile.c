@@ -866,6 +866,14 @@ static const pcre_uint8 opcode_possessify[] = {
 };
 
 
+/* Structure for mutual recursion detection. */
+
+typedef struct recurse_check {
+  struct recurse_check *prev;
+  const pcre_uchar *group;
+} recurse_check;
+
+
 
 /*************************************************
 *            Find an error text                  *
@@ -1704,6 +1712,7 @@ Arguments:
   utf      TRUE in UTF-8 / UTF-16 / UTF-32 mode
   atend    TRUE if called when the pattern is complete
   cd       the "compile data" structure
+  recurses    chain of recurse_check to catch mutual recursion
 
 Returns:   the fixed length,
              or -1 if there is no fixed length,
@@ -1713,10 +1722,11 @@ Returns:   the fixed length,
 */
 
 static int
-find_fixedlength(pcre_uchar *code, BOOL utf, BOOL atend, compile_data *cd)
+find_fixedlength(pcre_uchar *code, BOOL utf, BOOL atend, compile_data *cd,
+  recurse_check *recurses)
 {
 int length = -1;
-
+recurse_check this_recurse;
 register int branchlength = 0;
 register pcre_uchar *cc = code + 1 + LINK_SIZE;
 
@@ -1741,7 +1751,8 @@ for (;;)
     case OP_ONCE:
     case OP_ONCE_NC:
     case OP_COND:
-    d = find_fixedlength(cc + ((op == OP_CBRA)? IMM2_SIZE : 0), utf, atend, cd);
+    d = find_fixedlength(cc + ((op == OP_CBRA)? IMM2_SIZE : 0), utf, atend, cd,
+      recurses);
     if (d < 0) return d;
     branchlength += d;
     do cc += GET(cc, 1); while (*cc == OP_ALT);
@@ -1775,7 +1786,15 @@ for (;;)
     cs = ce = (pcre_uchar *)cd->start_code + GET(cc, 1);  /* Start subpattern */
     do ce += GET(ce, 1); while (*ce == OP_ALT);           /* End subpattern */
     if (cc > cs && cc < ce) return -1;                    /* Recursion */
-    d = find_fixedlength(cs + IMM2_SIZE, utf, atend, cd);
+    else   /* Check for mutual recursion */
+      {
+      recurse_check *r = recurses;
+      for (r = recurses; r != NULL; r = r->prev) if (r->group == cs) break;
+      if (r != NULL) return -1;   /* Mutual recursion */
+      }
+    this_recurse.prev = recurses;
+    this_recurse.group = cs;
+    d = find_fixedlength(cs + IMM2_SIZE, utf, atend, cd, &this_recurse);
     if (d < 0) return d;
     branchlength += d;
     cc += 1 + LINK_SIZE;
@@ -2362,11 +2381,6 @@ Arguments:
 Returns:      TRUE if what is matched could be empty
 */
 
-typedef struct recurse_check {
-  struct recurse_check *prev;
-  const pcre_uchar *group;
-} recurse_check;
-
 static BOOL
 could_be_empty_branch(const pcre_uchar *code, const pcre_uchar *endcode,
   BOOL utf, compile_data *cd, recurse_check *recurses)
@@ -2497,8 +2511,8 @@ for (code = first_significant_code(code + PRIV(OP_lengths)[*code], TRUE);
       empty_branch = FALSE;
       do
         {
-        if (!empty_branch && could_be_empty_branch(code, endcode, utf, cd, NULL))
-          empty_branch = TRUE;
+        if (!empty_branch && could_be_empty_branch(code, endcode, utf, cd,
+          recurses)) empty_branch = TRUE;
         code += GET(code, 1);
         }
       while (*code == OP_ALT);
@@ -3093,7 +3107,7 @@ Returns:      TRUE if the auto-possessification is possible
 
 static BOOL
 compare_opcodes(const pcre_uchar *code, BOOL utf, const compile_data *cd,
-  const pcre_uint32 *base_list, const pcre_uchar *base_end)
+  const pcre_uint32 *base_list, const pcre_uchar *base_end, int *rec_limit)
 {
 pcre_uchar c;
 pcre_uint32 list[8];
@@ -3109,6 +3123,9 @@ const pcre_uint8 *set1, *set2, *set_end;
 pcre_uint32 chr;
 BOOL accepted, invert_bits;
 BOOL entered_a_group = FALSE;
+
+if (*rec_limit == 0) return FALSE;
+--(*rec_limit);
 
 /* Note: the base_list[1] contains whether the current opcode has greedy
 (represented by a non-zero value) quantifier. This is a different from
@@ -3180,7 +3197,8 @@ for(;;)
 
     while (*next_code == OP_ALT)
       {
-      if (!compare_opcodes(code, utf, cd, base_list, base_end)) return FALSE;
+      if (!compare_opcodes(code, utf, cd, base_list, base_end, rec_limit))
+        return FALSE;
       code = next_code + 1 + LINK_SIZE;
       next_code += GET(next_code, 1);
       }
@@ -3200,7 +3218,7 @@ for(;;)
     /* The bracket content will be checked by the
     OP_BRA/OP_CBRA case above. */
     next_code += 1 + LINK_SIZE;
-    if (!compare_opcodes(next_code, utf, cd, base_list, base_end))
+    if (!compare_opcodes(next_code, utf, cd, base_list, base_end, rec_limit))
       return FALSE;
 
     code += PRIV(OP_lengths)[c];
@@ -3633,6 +3651,7 @@ register pcre_uchar c;
 const pcre_uchar *end;
 pcre_uchar *repeat_opcode;
 pcre_uint32 list[8];
+int rec_limit;
 
 for (;;)
   {
@@ -3653,7 +3672,8 @@ for (;;)
       get_chr_property_list(code, utf, cd->fcc, list) : NULL;
     list[1] = c == OP_STAR || c == OP_PLUS || c == OP_QUERY || c == OP_UPTO;
 
-    if (end != NULL && compare_opcodes(end, utf, cd, list, end))
+    rec_limit = 1000;
+    if (end != NULL && compare_opcodes(end, utf, cd, list, end, &rec_limit))
       {
       switch(c)
         {
@@ -3709,7 +3729,8 @@ for (;;)
 
       list[1] = (c & 1) == 0;
 
-      if (compare_opcodes(end, utf, cd, list, end))
+      rec_limit = 1000;
+      if (compare_opcodes(end, utf, cd, list, end, &rec_limit))
         {
         switch (c)
           {
@@ -4002,7 +4023,7 @@ while ((ptr = (pcre_uchar *)find_recurse(ptr, utf)) != NULL)
   /* See if this recursion is on the forward reference list. If so, adjust the
   reference. */
 
-  for (hc = (pcre_uchar *)cd->start_workspace + save_hwm_offset; hc < cd->hwm; 
+  for (hc = (pcre_uchar *)cd->start_workspace + save_hwm_offset; hc < cd->hwm;
        hc += LINK_SIZE)
     {
     offset = (int)GET(hc, 0);
@@ -4208,7 +4229,11 @@ if ((options & PCRE_CASELESS) != 0)
       range. Otherwise, use a recursive call to add the additional range. */
 
       else if (oc < start && od >= start - 1) start = oc; /* Extend downwards */
-      else if (od > end && oc <= end + 1) end = od;       /* Extend upwards */
+      else if (od > end && oc <= end + 1)
+        {
+        end = od;       /* Extend upwards */
+        if (end > classbits_end) classbits_end = (end <= 0xff ? end : 0xff);
+        }
       else n8 += add_to_class(classbits, uchardptr, options, cd, oc, od);
       }
     }
@@ -5509,6 +5534,12 @@ for (;; ptr++)
       }
 #endif
 
+    /* Even though any XCLASS list is now discarded, we must allow for
+    its memory. */
+
+    if (lengthptr != NULL)
+      *lengthptr += (int)(class_uchardata - class_uchardata_base);
+
     /* If there are no characters > 255, or they are all to be included or
     excluded, set the opcode to OP_CLASS or OP_NCLASS, depending on whether the
     whole class was negated and whether there were negative specials such as \S
@@ -5907,6 +5938,7 @@ for (;; ptr++)
       {
       register int i;
       int len = (int)(code - previous);
+      size_t base_hwm_offset = save_hwm_offset;
       pcre_uchar *bralink = NULL;
       pcre_uchar *brazeroptr = NULL;
 
@@ -6052,21 +6084,21 @@ for (;; ptr++)
               memcpy(code, previous, IN_UCHARS(len));
 
               while (cd->hwm > cd->start_workspace + cd->workspace_size -
-                     WORK_SIZE_SAFETY_MARGIN - 
-                     (this_hwm_offset - save_hwm_offset))
+                     WORK_SIZE_SAFETY_MARGIN -
+                     (this_hwm_offset - base_hwm_offset))
                 {
                 *errorcodeptr = expand_workspace(cd);
                 if (*errorcodeptr != 0) goto FAILED;
                 }
 
-              for (hc = (pcre_uchar *)cd->start_workspace + save_hwm_offset; 
-                   hc < (pcre_uchar *)cd->start_workspace + this_hwm_offset; 
+              for (hc = (pcre_uchar *)cd->start_workspace + base_hwm_offset;
+                   hc < (pcre_uchar *)cd->start_workspace + this_hwm_offset;
                    hc += LINK_SIZE)
                 {
                 PUT(cd->hwm, 0, GET(hc, 0) + len);
                 cd->hwm += LINK_SIZE;
                 }
-              save_hwm_offset = this_hwm_offset;
+              base_hwm_offset = this_hwm_offset;
               code += len;
               }
             }
@@ -6133,21 +6165,21 @@ for (;; ptr++)
           copying them. */
 
           while (cd->hwm > cd->start_workspace + cd->workspace_size -
-                 WORK_SIZE_SAFETY_MARGIN - 
-                 (this_hwm_offset - save_hwm_offset))
+                 WORK_SIZE_SAFETY_MARGIN -
+                 (this_hwm_offset - base_hwm_offset))
             {
             *errorcodeptr = expand_workspace(cd);
             if (*errorcodeptr != 0) goto FAILED;
             }
 
-          for (hc = (pcre_uchar *)cd->start_workspace + save_hwm_offset; 
-               hc < (pcre_uchar *)cd->start_workspace + this_hwm_offset; 
+          for (hc = (pcre_uchar *)cd->start_workspace + base_hwm_offset;
+               hc < (pcre_uchar *)cd->start_workspace + this_hwm_offset;
                hc += LINK_SIZE)
             {
             PUT(cd->hwm, 0, GET(hc, 0) + len + ((i != 0)? 2+LINK_SIZE : 1));
             cd->hwm += LINK_SIZE;
             }
-          save_hwm_offset = this_hwm_offset;
+          base_hwm_offset = this_hwm_offset;
           code += len;
           }
 
@@ -6455,15 +6487,25 @@ for (;; ptr++)
     parenthesis forms.  */
 
     case CHAR_LEFT_PARENTHESIS:
-    newoptions = options;
-    skipbytes = 0;
-    bravalue = OP_CBRA;
-    save_hwm_offset = cd->hwm - cd->start_workspace;
-    reset_bracount = FALSE;
-
-    /* First deal with various "verbs" that can be introduced by '*'. */
-
     ptr++;
+
+    /* First deal with comments. Putting this code right at the start ensures
+    that comments have no bad side effects. */
+
+    if (ptr[0] == CHAR_QUESTION_MARK && ptr[1] == CHAR_NUMBER_SIGN)
+      {
+      ptr += 2;
+      while (*ptr != CHAR_NULL && *ptr != CHAR_RIGHT_PARENTHESIS) ptr++;
+      if (*ptr == CHAR_NULL)
+        {
+        *errorcodeptr = ERR18;
+        goto FAILED;
+        }
+      continue;
+      }
+
+    /* Now deal with various "verbs" that can be introduced by '*'. */
+
     if (ptr[0] == CHAR_ASTERISK && (ptr[1] == ':'
          || (MAX_255(ptr[1]) && ((cd->ctypes[ptr[1]] & ctype_letter) != 0))))
       {
@@ -6584,10 +6626,18 @@ for (;; ptr++)
       goto FAILED;
       }
 
+    /* Initialize for "real" parentheses */
+
+    newoptions = options;
+    skipbytes = 0;
+    bravalue = OP_CBRA;
+    save_hwm_offset = cd->hwm - cd->start_workspace;
+    reset_bracount = FALSE;
+
     /* Deal with the extended parentheses; all are introduced by '?', and the
     appearance of any of them means that this is not a capturing group. */
 
-    else if (*ptr == CHAR_QUESTION_MARK)
+    if (*ptr == CHAR_QUESTION_MARK)
       {
       int i, set, unset, namelen;
       int *optset;
@@ -6596,17 +6646,6 @@ for (;; ptr++)
 
       switch (*(++ptr))
         {
-        case CHAR_NUMBER_SIGN:                 /* Comment; skip to ket */
-        ptr++;
-        while (*ptr != CHAR_NULL && *ptr != CHAR_RIGHT_PARENTHESIS) ptr++;
-        if (*ptr == CHAR_NULL)
-          {
-          *errorcodeptr = ERR18;
-          goto FAILED;
-          }
-        continue;
-
-
         /* ------------------------------------------------------------ */
         case CHAR_VERTICAL_LINE:  /* Reset capture count for each branch */
         reset_bracount = TRUE;
@@ -6655,7 +6694,9 @@ for (;; ptr++)
         if (tempptr[1] == CHAR_QUESTION_MARK &&
               (tempptr[2] == CHAR_EQUALS_SIGN ||
                tempptr[2] == CHAR_EXCLAMATION_MARK ||
-               tempptr[2] == CHAR_LESS_THAN_SIGN))
+                 (tempptr[2] == CHAR_LESS_THAN_SIGN &&
+                   (tempptr[3] == CHAR_EQUALS_SIGN ||
+                    tempptr[3] == CHAR_EXCLAMATION_MARK))))
           {
           cd->iscondassert = TRUE;
           break;
@@ -8264,7 +8305,7 @@ for (;;)
       int fixed_length;
       *code = OP_END;
       fixed_length = find_fixedlength(last_branch,  (options & PCRE_UTF8) != 0,
-        FALSE, cd);
+        FALSE, cd, NULL);
       DPRINTF(("fixed length = %d\n", fixed_length));
       if (fixed_length == -3)
         {
@@ -8549,6 +8590,7 @@ do {
        case OP_RREF:
        case OP_DNRREF:
        case OP_DEF:
+       case OP_FAIL:
        return FALSE;
 
        default:     /* Assertion */
@@ -9366,7 +9408,7 @@ if (cd->check_lookbehind)
       int end_op = *be;
       *be = OP_END;
       fixed_length = find_fixedlength(cc, (re->options & PCRE_UTF8) != 0, TRUE,
-        cd);
+        cd, NULL);
       *be = end_op;
       DPRINTF(("fixed length = %d\n", fixed_length));
       if (fixed_length < 0)

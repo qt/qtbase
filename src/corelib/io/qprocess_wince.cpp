@@ -288,10 +288,6 @@ bool QProcessPrivate::waitForWrite(int msecs)
     return false;
 }
 
-void QProcessPrivate::_q_notified()
-{
-}
-
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
 {
     Q_UNUSED(workingDir);

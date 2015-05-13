@@ -213,7 +213,7 @@ void Generator::appendSortedNames(Text& text, const ClassNode* cn, const QList<R
 
     foreach (const QString &className, classNames) {
         text << classMap[className];
-        text << separator(index++, classNames.count());
+        text << comma(index++, classNames.count());
     }
 }
 
@@ -236,7 +236,7 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
 
     foreach (const QString &name, names) {
         text << classMap[name];
-        text << separator(index++, names.count());
+        text << comma(index++, names.count());
     }
 }
 
@@ -259,7 +259,7 @@ void Generator::writeOutFileNames()
   Attaches a QTextStream to the created file, which is written
   to all over the place using out().
  */
-void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
+void Generator::beginSubPage(const Aggregate* node, const QString& fileName)
 {
     QString path = outputDir() + QLatin1Char('/');
     if (Generator::useOutputSubdirs() && !node->outputSubdirectory().isEmpty() &&
@@ -281,7 +281,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
         out->setCodec(outputCodec);
 #endif
     outStreamStack.push(out);
-    const_cast<InnerNode*>(node)->setOutputFileName(fileName);
+    const_cast<Aggregate*>(node)->setOutputFileName(fileName);
 }
 
 /*!
@@ -300,7 +300,7 @@ QString Generator::fileBase(const Node *node) const
 {
     if (node->relates())
         node = node->relates();
-    else if (!node->isInnerNode())
+    else if (!node->isAggregate())
         node = node->parent();
     if (node->type() == Node::QmlPropertyGroup) {
         node = node->parent();
@@ -419,6 +419,59 @@ QString Generator::fileName(const Node* node) const
     return name;
 }
 
+QString Generator::cleanRef(const QString& ref)
+{
+    QString clean;
+
+    if (ref.isEmpty())
+        return clean;
+
+    clean.reserve(ref.size() + 20);
+    const QChar c = ref[0];
+    const uint u = c.unicode();
+
+    if ((u >= 'a' && u <= 'z') ||
+            (u >= 'A' && u <= 'Z') ||
+            (u >= '0' && u <= '9')) {
+        clean += c;
+    } else if (u == '~') {
+        clean += "dtor.";
+    } else if (u == '_') {
+        clean += "underscore.";
+    } else {
+        clean += QLatin1Char('A');
+    }
+
+    for (int i = 1; i < (int) ref.length(); i++) {
+        const QChar c = ref[i];
+        const uint u = c.unicode();
+        if ((u >= 'a' && u <= 'z') ||
+                (u >= 'A' && u <= 'Z') ||
+                (u >= '0' && u <= '9') || u == '-' ||
+                u == '_' || u == ':' || u == '.') {
+            clean += c;
+        } else if (c.isSpace()) {
+            clean += QLatin1Char('-');
+        } else if (u == '!') {
+            clean += "-not";
+        } else if (u == '&') {
+            clean += "-and";
+        } else if (u == '<') {
+            clean += "-lt";
+        } else if (u == '=') {
+            clean += "-eq";
+        } else if (u == '>') {
+            clean += "-gt";
+        } else if (u == '#') {
+            clean += QLatin1Char('#');
+        } else {
+            clean += QLatin1Char('-');
+            clean += QString::number((int)u, 16);
+        }
+    }
+    return clean;
+}
+
 QMap<QString, QString>& Generator::formattingLeftMap()
 {
     return fmtLeftMaps[format()];
@@ -521,10 +574,10 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
             return fullDocumentLocation(functionNode->associatedProperty());
 
         else if (functionNode->overloadNumber() > 1)
-            anchorRef = QLatin1Char('#') + functionNode->name()
+            anchorRef = QLatin1Char('#') + cleanRef(functionNode->name())
                     + QLatin1Char('-') + QString::number(functionNode->overloadNumber());
         else
-            anchorRef = QLatin1Char('#') + functionNode->name();
+            anchorRef = QLatin1Char('#') + cleanRef(functionNode->name());
         break;
     }
     /*
@@ -838,7 +891,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 }
 
-void Generator::generateClassLikeNode(InnerNode* /* classe */, CodeMarker* /* marker */)
+void Generator::generateClassLikeNode(Aggregate* /* classe */, CodeMarker* /* marker */)
 {
 }
 
@@ -971,7 +1024,7 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 /*!
   Recursive writing of HTML files from the root \a node.
  */
-void Generator::generateInnerNode(InnerNode* node)
+void Generator::generateAggregate(Aggregate* node)
 {
     if (!node->url().isNull())
         return;
@@ -1056,8 +1109,8 @@ void Generator::generateInnerNode(InnerNode* node)
     int i = 0;
     while (i < node->childNodes().count()) {
         Node *c = node->childNodes().at(i);
-        if (c->isInnerNode() && c->access() != Node::Private) {
-            generateInnerNode((InnerNode*)c);
+        if (c->isAggregate() && c->access() != Node::Private) {
+            generateAggregate((Aggregate*)c);
         }
         ++i;
     }
@@ -1066,7 +1119,7 @@ void Generator::generateInnerNode(InnerNode* node)
 /*!
   Generate a list of maintainers in the output
  */
-void Generator::generateMaintainerList(const InnerNode* node, CodeMarker* marker)
+void Generator::generateMaintainerList(const Aggregate* node, CodeMarker* marker)
 {
     QStringList sl = getMetadataElements(node,"maintainer");
 
@@ -1205,19 +1258,19 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
         break;
     case Node::Deprecated:
         text << Atom::ParaLeft;
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD);
         text << "This " << typeString(node) << " is deprecated.";
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD);
         text << Atom::ParaRight;
         break;
     case Node::Obsolete:
         text << Atom::ParaLeft;
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD);
         text << "This " << typeString(node) << " is obsolete.";
-        if (node->isInnerNode())
+        if (node->isAggregate())
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD);
         text << " It is provided to keep old source code working. "
              << "We strongly advise against "
@@ -1225,7 +1278,7 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
         break;
     case Node::Compat:
         // reimplemented in HtmlGenerator subclass
-        if (node->isInnerNode()) {
+        if (node->isAggregate()) {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "This "
@@ -1241,6 +1294,23 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
     default:
         break;
     }
+    generateText(text, node, marker);
+}
+
+/*!
+  Generates a bold line that says:
+  "The signal is private, not emitted by the user.
+  The function is public so the user can pass it to connect()."
+ */
+void Generator::generatePrivateSignalNote(const Node* node, CodeMarker* marker)
+{
+    Text text;
+    text << Atom::ParaLeft
+         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
+         << "Note: "
+         << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
+         << "This is a private signal. It can be used in signal connections but cannot be emitted by the user."
+         << Atom::ParaRight;
     generateText(text, node, marker);
 }
 
@@ -1307,8 +1377,8 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
              << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
              << " ";
 
-        if (node->isInnerNode()) {
-            const InnerNode* innerNode = static_cast<const InnerNode*>(node);
+        if (node->isAggregate()) {
+            const Aggregate* innerNode = static_cast<const Aggregate*>(node);
             text << "All functions in this "
                  << typeString(node)
                  << " are ";
@@ -1408,11 +1478,80 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
 }
 
 /*!
-  Traverses the current tree to generate all the documentation.
+    If the node is an overloaded signal, and a node with an example on how to connect to it
+ */
+void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
+{
+    if (node->type() != Node::Function)
+        return;
+    const FunctionNode *func = static_cast<const FunctionNode *>(node);
+    if (func->metaness() != FunctionNode::Signal)
+        return;
+    if (node->parent()->overloads(node->name()).count() <= 1)
+        return;
+
+
+    // Compute a friendly name for the object of that instance.
+    // e.g:  "QAbstractSocket" -> "abstractSocket"
+    QString objectName = node->parent()->name();
+    if (objectName.size() >= 2) {
+        if (objectName[0] == 'Q')
+            objectName = objectName.mid(1);
+        objectName[0] = objectName[0].toLower();
+    }
+
+
+    // We have an overloaded signal, show an example
+    QString code = "connect(" + objectName + ", static_cast<" + func->returnType()
+        + "(" + func->parent()->name() + "::*)(";
+    for (int i = 0; i < func->parameters().size(); ++i) {
+        if (i != 0)
+            code += ", ";
+        const Parameter &p = func->parameters().at(i);
+        code += p.leftType() + p.rightType();
+    }
+
+    code += ")";
+    if (func->isConst())
+        code += " const";
+    code += ">(&" +  func->parent()->name() + "::" + func->name() + "),\n    [=](";
+
+    for (int i = 0; i < func->parameters().size(); ++i) {
+        if (i != 0)
+            code += ", ";
+        const Parameter &p = func->parameters().at(i);
+        code += p.leftType();
+        if (code[code.size()-1].isLetterOrNumber())
+            code += " ";
+        code += p.name()  + p.rightType();
+    }
+
+    code += "){ /* ... */ });";
+
+    Text text;
+    text << Atom::ParaLeft
+         << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+         << "Note:"
+         << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
+         << "Signal "
+         << Atom(Atom::FormattingLeft,ATOM_FORMATTING_ITALIC)
+         << node->name()
+         << Atom(Atom::FormattingRight,ATOM_FORMATTING_ITALIC)
+         << " is overloaded in this class. "
+            "To connect to this one using the function pointer syntax, you must "
+            "specify the signal type in a static cast, as shown in this example:"
+          << Atom(Atom::Code, marker->markedUpCode(code, node, func->location()));
+
+    generateText(text, node, marker);
+}
+
+
+/*!
+  Traverses the database recursivly to generate all the documentation.
  */
 void Generator::generateDocs()
 {
-    generateInnerNode(qdb_->primaryTreeRoot());
+    generateAggregate(qdb_->primaryTreeRoot());
 }
 
 Generator *Generator::generatorForFormat(const QString& format)
@@ -1435,7 +1574,7 @@ Generator *Generator::generatorForFormat(const QString& format)
   i.e. Once you call this function for a particular \a t,
   you consume \a t.
  */
-QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
+QString Generator::getMetadataElement(const Aggregate* inner, const QString& t)
 {
     QString s;
     QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());
@@ -1456,7 +1595,7 @@ QString Generator::getMetadataElement(const InnerNode* inner, const QString& t)
   having the key \a t are erased. i.e. Once you call this
   function for a particular \a t, you consume \a t.
  */
-QStringList Generator::getMetadataElements(const InnerNode* inner, const QString& t)
+QStringList Generator::getMetadataElements(const Aggregate* inner, const QString& t)
 {
     QStringList s;
     QStringMultiMap& metaTagMap = const_cast<QStringMultiMap&>(inner->doc().metaTagMap());

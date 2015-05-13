@@ -666,7 +666,7 @@ bool QIODevice::seek(qint64 pos)
     For some devices, atEnd() can return true even though there is more data
     to read. This special case only applies to devices that generate data in
     direct response to you calling read() (e.g., \c /dev or \c /proc files on
-    Unix and Mac OS X, or console input / \c stdin on all platforms).
+    Unix and OS X, or console input / \c stdin on all platforms).
 
     \sa bytesAvailable(), read(), isSequential()
 */
@@ -989,8 +989,12 @@ QByteArray QIODevice::readAll()
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
-            result.resize(result.size() + QIODEVICE_BUFFERSIZE);
-            readResult = read(result.data() + readBytes, result.size() - readBytes);
+            if (quint64(readBytes) + QIODEVICE_BUFFERSIZE > QByteArray::MaxSize) {
+                // If resize would fail, don't read more, return what we have.
+                break;
+            }
+            result.resize(readBytes + QIODEVICE_BUFFERSIZE);
+            readResult = read(result.data() + readBytes, QIODEVICE_BUFFERSIZE);
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult > 0);

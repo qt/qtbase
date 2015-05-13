@@ -170,6 +170,9 @@ private slots:
     void protocol();
     void protocolServerSide_data();
     void protocolServerSide();
+#ifndef QT_NO_OPENSSL
+    void serverCipherPreferences();
+#endif // QT_NO_OPENSSL
     void setCaCertificates();
     void setLocalCertificate();
     void localCertificateChain();
@@ -1063,6 +1066,7 @@ public:
               const QString &certFile = SRCDIR "certs/fluke.cert",
               const QString &interFile = QString())
         : socket(0),
+          config(QSslConfiguration::defaultConfiguration()),
           ignoreSslErrors(true),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           protocol(QSsl::TlsV1_0),
@@ -1071,6 +1075,7 @@ public:
           m_interFile(interFile)
           { }
     QSslSocket *socket;
+    QSslConfiguration config;
     QString addCaCertificates;
     bool ignoreSslErrors;
     QSslSocket::PeerVerifyMode peerVerifyMode;
@@ -1084,6 +1089,7 @@ protected:
     void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
+        socket->setSslConfiguration(config);
         socket->setPeerVerifyMode(peerVerifyMode);
         socket->setProtocol(protocol);
         if (ignoreSslErrors)
@@ -1253,6 +1259,78 @@ void tst_QSslSocket::protocolServerSide()
     QCOMPARE(int(client->state()), int(expectedState));
     QCOMPARE(client->isEncrypted(), works);
 }
+
+#ifndef QT_NO_OPENSSL
+
+void tst_QSslSocket::serverCipherPreferences()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // First using the default (server preference)
+    {
+        SslServer server;
+        server.ciphers = QString("AES128-SHA:AES256-SHA");
+        QVERIFY(server.listen());
+
+        QEventLoop loop;
+        QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+        QSslSocketPtr client(new QSslSocket);
+        socket = client.data();
+        socket->setCiphers("AES256-SHA:AES128-SHA");
+
+        // upon SSL wrong version error, error will be triggered, not sslErrors
+        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+        connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+        connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+        client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+        loop.exec();
+
+        QVERIFY(client->isEncrypted());
+        QCOMPARE(client->sessionCipher().name(), QString("AES128-SHA"));
+    }
+
+    {
+        // Now using the client preferences
+        SslServer server;
+        QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+        config.setSslOption(QSsl::SslOptionDisableServerCipherPreference, true);
+        server.config = config;
+        server.ciphers = QString("AES128-SHA:AES256-SHA");
+        QVERIFY(server.listen());
+
+        QEventLoop loop;
+        QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+        QSslSocketPtr client(new QSslSocket);
+        socket = client.data();
+        socket->setCiphers("AES256-SHA:AES128-SHA");
+
+        // upon SSL wrong version error, error will be triggered, not sslErrors
+        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+        connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+        connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+        client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+        loop.exec();
+
+        QVERIFY(client->isEncrypted());
+        QCOMPARE(client->sessionCipher().name(), QString("AES256-SHA"));
+    }
+}
+
+#endif // QT_NO_OPENSSL
+
 
 void tst_QSslSocket::setCaCertificates()
 {
@@ -2354,28 +2432,28 @@ void tst_QSslSocket::sslOptions()
 #ifdef SSL_OP_NO_COMPRESSION
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_COMPRESSION));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_COMPRESSION|SSL_OP_CIPHER_SERVER_PREFERENCE));
 #else
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE));
 #endif
 
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments
                                                            |QSsl::SslOptionDisableLegacyRenegotiation),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3));
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE));
 
 #ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION|SSL_OP_CIPHER_SERVER_PREFERENCE)));
 #endif
 
 #ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableLegacyRenegotiation),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
 #endif
 
 #ifdef SSL_OP_NO_TICKET
@@ -2383,7 +2461,7 @@ void tst_QSslSocket::sslOptions()
                                                            QSsl::SslOptionDisableEmptyFragments
                                                            |QSsl::SslOptionDisableLegacyRenegotiation
                                                            |QSsl::SslOptionDisableSessionTickets),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_CIPHER_SERVER_PREFERENCE)));
 #endif
 
 #ifdef SSL_OP_NO_TICKET
@@ -2393,7 +2471,7 @@ void tst_QSslSocket::sslOptions()
                                                            |QSsl::SslOptionDisableLegacyRenegotiation
                                                            |QSsl::SslOptionDisableSessionTickets
                                                            |QSsl::SslOptionDisableCompression),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION)));
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION|SSL_OP_CIPHER_SERVER_PREFERENCE)));
 #endif
 #endif
 }

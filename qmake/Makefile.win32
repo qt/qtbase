@@ -140,7 +140,9 @@ clean::
 	-del qmake.tds
 
 distclean:: clean
-	-del qmake
+	-del qmake.exe
+	-del $(BUILD_PATH)\bin\qmake.exe
+	-del Makefile
 
 .c.obj:
 	$(CXX) $(CFLAGS) $<

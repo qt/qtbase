@@ -164,7 +164,6 @@ public:
         vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
         findNxt = new QPushButton(FindDialog);
         findNxt->setObjectName(QStringLiteral("findNxt"));
-        findNxt->setDefault(true);
         findNxt->setFlat(false);
 
         vboxLayout1->addWidget(findNxt);
@@ -193,6 +192,9 @@ public:
 
         retranslateUi(FindDialog);
         QObject::connect(cancel, SIGNAL(clicked()), FindDialog, SLOT(reject()));
+
+        findNxt->setDefault(true);
+
 
         QMetaObject::connectSlotsByName(FindDialog);
     } // setupUi

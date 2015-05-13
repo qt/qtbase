@@ -399,6 +399,9 @@ private slots:
     void eraseValidIteratorsOnSharedList() const;
     void insertWithValidIteratorsOnSharedList() const;
 
+    void qhashOptimal() const { qhash<Optimal>(); }
+    void qhashMovable() const { qhash<Movable>(); }
+    void qhashComplex() const { qhash<Complex>(); }
     void reserve() const;
 private:
     template<typename T> void length() const;
@@ -415,6 +418,7 @@ private:
     template<typename T> void endsWith() const;
     template<typename T> void lastIndexOf() const;
     template<typename T> void move() const;
+    template<typename T> void qhash() const;
     template<typename T> void removeAll() const;
     template<typename T> void removeAt() const;
     template<typename T> void removeOne() const;
@@ -1906,6 +1910,16 @@ void tst_QList::insertWithValidIteratorsOnSharedList() const
     QCOMPARE(a.size(), b.size() + 1);
     QCOMPARE(b.at(1), 20);
     QCOMPARE(a.at(1), 15);
+}
+
+template <typename T>
+void tst_QList::qhash() const
+{
+    QList<T> l1, l2;
+    QCOMPARE(qHash(l1), qHash(l2));
+    l1 << T_BAR;
+    l2 << T_BAR;
+    QCOMPARE(qHash(l1), qHash(l2));
 }
 
 void tst_QList::reserve() const

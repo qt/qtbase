@@ -872,13 +872,17 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
     \internal
     Similar to QMetaType::type(), but only looks in the custom set of
     types, and doesn't lock the mutex.
+    The extra \a firstInvalidIndex parameter is an easy way to avoid
+    iterating over customTypes() a second time in registerNormalizedType().
 */
-static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
+static int qMetaTypeCustomType_unlocked(const char *typeName, int length, int *firstInvalidIndex = 0)
 {
     const QVector<QCustomTypeInfo> * const ct = customTypes();
     if (!ct)
         return QMetaType::UnknownType;
 
+    if (firstInvalidIndex)
+        *firstInvalidIndex = -1;
     for (int v = 0; v < ct->count(); ++v) {
         const QCustomTypeInfo &customInfo = ct->at(v);
         if ((length == customInfo.typeName.size())
@@ -887,6 +891,8 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
                 return customInfo.alias;
             return v + QMetaType::User;
         }
+        if (firstInvalidIndex && (*firstInvalidIndex < 0) && customInfo.typeName.isEmpty())
+            *firstInvalidIndex = v;
     }
     return QMetaType::UnknownType;
 }
@@ -904,6 +910,39 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                         QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
                         QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct, 0, TypeFlags(), 0);
 }
+
+/*!
+    \internal
+    \since 5.5
+
+    Unregisters the user type with the given \a typeId and all its aliases.
+    Returns \c true if the type was unregistered or \c false otherwise.
+
+    This function was added for QML to be able to deregister types after
+    they are unloaded to prevent an infinite increase in custom types for
+    applications that are unloading/reloading components often.
+ */
+bool QMetaType::unregisterType(int type)
+{
+    QWriteLocker locker(customTypesLock());
+    QVector<QCustomTypeInfo> *ct = customTypes();
+
+    // check if user type
+    if ((type < User) || ((type - User) >= ct->size()))
+        return false;
+
+    // only types without Q_DECLARE_METATYPE can be unregistered
+    if (ct->data()[type - User].flags & WasDeclaredAsMetaType)
+        return false;
+
+    // invalidate type and all its alias entries
+    for (int v = 0; v < ct->count(); ++v) {
+        if (((v + User) == type) || (ct->at(v).alias == type))
+            ct->data()[v].typeName.clear();
+    }
+    return true;
+}
+
 
 /*!
     \internal
@@ -977,8 +1016,10 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
     int previousFlags = 0;
     if (idx == UnknownType) {
         QWriteLocker locker(customTypesLock());
+        int posInVector = -1;
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
-                                           normalizedTypeName.size());
+                                           normalizedTypeName.size(),
+                                           &posInVector);
         if (idx == UnknownType) {
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
@@ -992,8 +1033,13 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
             inf.size = size;
             inf.flags = flags;
             inf.metaObject = metaObject;
-            idx = ct->size() + User;
-            ct->append(inf);
+            if (posInVector == -1) {
+                idx = ct->size() + User;
+                ct->append(inf);
+            } else {
+                idx = posInVector + User;
+                ct->data()[posInVector] = inf;
+            }
             return idx;
         }
 
@@ -1075,14 +1121,19 @@ int QMetaType::registerNormalizedTypedef(const NS(QByteArray) &normalizedTypeNam
 
     if (idx == UnknownType) {
         QWriteLocker locker(customTypesLock());
+        int posInVector = -1;
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
-                                               normalizedTypeName.size());
+                                               normalizedTypeName.size(),
+                                               &posInVector);
 
         if (idx == UnknownType) {
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
             inf.alias = aliasId;
-            ct->append(inf);
+            if (posInVector == -1)
+                ct->append(inf);
+            else
+                ct->data()[posInVector] = inf;
             return aliasId;
         }
     }

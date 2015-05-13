@@ -4,11 +4,15 @@
     "entries": [
         {
             "id": 1,
-            "description": "Desktop OpenGL is unreliable on Intel HD3000/GMA (QTBUG-43263, QTBUG-42240)",
+            "description": "Desktop OpenGL is unreliable on some Intel HD laptops (QTBUG-43263, QTBUG-42240)",
             "vendor_id": "0x8086",
             "device_id": [ "0x0A16" ],
             "os": {
                 "type": "win"
+            },
+            "driver_version": {
+                "op": "<=",
+                "value": "10.18.10.3277"
             },
             "features": [
                 "disable_desktopgl"

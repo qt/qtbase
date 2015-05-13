@@ -650,6 +650,8 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
         return false;
     }
 
+    configureCreatedSocket();
+
     if (threadData->hasEventDispatcher())
         socketEngine->setReceiver(this);
 
@@ -658,6 +660,12 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
            typeStr.toLatin1().constData(), protocolStr.toLatin1().constData());
 #endif
     return true;
+}
+
+/*! \internal
+*/
+void QAbstractSocketPrivate::configureCreatedSocket()
+{
 }
 
 /*! \internal

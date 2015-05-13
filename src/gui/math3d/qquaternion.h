@@ -266,7 +266,7 @@ inline bool operator==(const QQuaternion &q1, const QQuaternion &q2)
 
 inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
 {
-    return q1.xp != q2.xp || q1.yp != q2.yp || q1.zp != q2.zp || q1.wp != q2.wp;
+    return !operator==(q1, q2);
 }
 
 inline const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2)

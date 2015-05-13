@@ -244,6 +244,9 @@ private slots:
     void signalTransitionSenderInDifferentThread2();
     void signalTransitionRegistrationThreadSafety();
     void childModeConstructor();
+
+    void qtbug_44963();
+    void qtbug_44783();
 };
 
 class TestState : public QState
@@ -908,8 +911,11 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
     QStateMachine machine;
 
     QState *initialState = new QState(&machine);
+    initialState->setObjectName("initialState");
     machine.setInitialState(initialState);
-    machine.setErrorState(new QState(&machine)); // avoid warnings
+    QState *errorState = new QState(&machine);
+    errorState->setObjectName("errorState");
+    machine.setErrorState(errorState); // avoid warnings
 
     QState *brokenState = new QState(&machine);
     brokenState->setObjectName("brokenState");
@@ -917,7 +923,9 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
 
     QHistoryState *historyState = new QHistoryState(brokenState);
     historyState->setObjectName("historyState");
-    initialState->addTransition(new EventTransition(QEvent::User, historyState));
+    EventTransition *t = new EventTransition(QEvent::User, historyState);
+    t->setObjectName("initialState->historyState");
+    initialState->addTransition(t);
 
     machine.start();
     QCoreApplication::processEvents();
@@ -4272,6 +4280,11 @@ void tst_QStateMachine::transitionsFromParallelStateWithNoChildren()
 
 void tst_QStateMachine::parallelStateTransition()
 {
+    // This test checks if the parallel state is exited and re-entered if one compound state
+    // is exited and subsequently re-entered. When the parallel state is exited, the other compound
+    // state in the parallel state has to be exited too. When the parallel state is re-entered, the
+    // other state also needs to be re-entered.
+
     QStateMachine machine;
 
     QState *parallelState = new QState(QState::ParallelStates, &machine);
@@ -4300,12 +4313,16 @@ void tst_QStateMachine::parallelStateTransition()
     s1OtherChild->setObjectName("s1OtherChild");
     DEFINE_ACTIVE_SPY(s1OtherChild);
 
+    // The following transition will exit s1 (which means that parallelState is also exited), and
+    // subsequently re-entered (which means that parallelState is also re-entered).
     EventTransition *et = new EventTransition(QEvent::User, s1OtherChild);
     et->setObjectName("s1->s1OtherChild");
     s1->addTransition(et);
 
     machine.start();
     QCoreApplication::processEvents();
+
+    // Initial entrance of the parallel state and its sub-states:
     TEST_ACTIVE_CHANGED(parallelState, 1);
     TEST_ACTIVE_CHANGED(s1, 1);
     TEST_ACTIVE_CHANGED(s1InitialChild, 1);
@@ -4323,22 +4340,22 @@ void tst_QStateMachine::parallelStateTransition()
     machine.postEvent(new QEvent(QEvent::User));
     QCoreApplication::processEvents();
 
-    TEST_ACTIVE_CHANGED(parallelState, 1);
-    TEST_ACTIVE_CHANGED(s1, 3);
-    TEST_ACTIVE_CHANGED(s1InitialChild, 2);
-    TEST_ACTIVE_CHANGED(s2, 3);
-    TEST_ACTIVE_CHANGED(s2InitialChild, 3);
-    TEST_ACTIVE_CHANGED(s1OtherChild, 1);
+    TEST_ACTIVE_CHANGED(parallelState, 3); // initial + exit + entry
+    TEST_ACTIVE_CHANGED(s1, 3); // initial + exit + entry
+    TEST_ACTIVE_CHANGED(s1InitialChild, 2); // initial + exit
+    TEST_ACTIVE_CHANGED(s2, 3); // initial + exit due to parent exit + entry due to parent re-entry
+    TEST_ACTIVE_CHANGED(s2InitialChild, 3); // initial + exit due to parent exit + re-entry due to parent re-entry
+    TEST_ACTIVE_CHANGED(s1OtherChild, 1); // entry due to transition
     QVERIFY(machine.isRunning());
 
+    // Check that s1InitialChild is not in the configuration, because although s1 is re-entered,
+    // another child state (s1OtherChild) is active, so the initial child should not be activated.
     QVERIFY(machine.configuration().contains(parallelState));
-
     QVERIFY(machine.configuration().contains(s1));
     QVERIFY(machine.configuration().contains(s2));
     QVERIFY(machine.configuration().contains(s1OtherChild));
     QVERIFY(machine.configuration().contains(s2InitialChild));
     QCOMPARE(machine.configuration().size(), 5);
-
 }
 
 void tst_QStateMachine::nestedRestoreProperties()
@@ -6167,6 +6184,155 @@ void tst_QStateMachine::childModeConstructor()
         QCOMPARE(machine.parent(), static_cast<QObject *>(&state));
         QCOMPARE(machine.parentState(), &state);
     }
+}
+
+void tst_QStateMachine::qtbug_44963()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState a(QState::ParallelStates, &machine);
+        QHistoryState ha(QHistoryState::DeepHistory, &a);
+        QState b(QState::ParallelStates, &a);
+            QState c(QState::ParallelStates, &b);
+                QState d(QState::ParallelStates, &c);
+                    QState e(QState::ParallelStates, &d);
+                        QState i(&e);
+                            QState i1(&i);
+                            QState i2(&i);
+                        QState j(&e);
+                    QState h(&d);
+                QState g(&c);
+        QState k(&a);
+    QState l(&machine);
+
+    machine.setInitialState(&a);
+    ha.setDefaultState(&b);
+    i.setInitialState(&i1);
+    i1.addTransition(&emitter, SIGNAL(signalWithIntArg(int)), &i2)->setObjectName("i1->i2");
+    i2.addTransition(&emitter, SIGNAL(signalWithDefaultArg(int)), &l)->setObjectName("i2->l");
+    l.addTransition(&emitter, SIGNAL(signalWithNoArg()), &ha)->setObjectName("l->ha");
+
+    a.setObjectName("a");
+    ha.setObjectName("ha");
+    b.setObjectName("b");
+    c.setObjectName("c");
+    d.setObjectName("d");
+    e.setObjectName("e");
+    i.setObjectName("i");
+    i1.setObjectName("i1");
+    i2.setObjectName("i2");
+    j.setObjectName("j");
+    h.setObjectName("h");
+    g.setObjectName("g");
+    k.setObjectName("k");
+    l.setObjectName("l");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), true);
+    QTRY_COMPARE(machine.configuration().contains(&i2), false);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    emitter.emitSignalWithIntArg(0);
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), true);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    emitter.emitSignalWithDefaultArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), false);
+    QTRY_COMPARE(machine.configuration().contains(&j), false);
+    QTRY_COMPARE(machine.configuration().contains(&h), false);
+    QTRY_COMPARE(machine.configuration().contains(&g), false);
+    QTRY_COMPARE(machine.configuration().contains(&k), false);
+    QTRY_COMPARE(machine.configuration().contains(&l), true);
+
+    emitter.emitSignalWithNoArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&i1), false);
+    QTRY_COMPARE(machine.configuration().contains(&i2), true);
+    QTRY_COMPARE(machine.configuration().contains(&j), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), true);
+    QTRY_COMPARE(machine.configuration().contains(&g), true);
+    QTRY_COMPARE(machine.configuration().contains(&k), true);
+    QTRY_COMPARE(machine.configuration().contains(&l), false);
+
+    QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::qtbug_44783()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState s(&machine);
+        QState p(QState::ParallelStates, &s);
+            QState p1(&p);
+                QState p1_1(&p1);
+                QState p1_2(&p1);
+            QState p2(&p);
+    QState s1(&machine);
+
+    machine.setInitialState(&s);
+    s.setInitialState(&p);
+    p1.setInitialState(&p1_1);
+    p1_1.addTransition(&emitter, SIGNAL(signalWithNoArg()), &p1_2)->setObjectName("p1_1->p1_2");
+    p2.addTransition(&emitter, SIGNAL(signalWithNoArg()), &s1)->setObjectName("p2->s1");
+
+    s.setObjectName("s");
+    p.setObjectName("p");
+    p1.setObjectName("p1");
+    p1_1.setObjectName("p1_1");
+    p1_2.setObjectName("p1_2");
+    p2.setObjectName("p2");
+    s1.setObjectName("s1");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&s), true);
+    QTRY_COMPARE(machine.configuration().contains(&p), true);
+    QTRY_COMPARE(machine.configuration().contains(&p1), true);
+    QTRY_COMPARE(machine.configuration().contains(&p1_1), true);
+    QTRY_COMPARE(machine.configuration().contains(&p1_2), false);
+    QTRY_COMPARE(machine.configuration().contains(&p2), true);
+    QTRY_COMPARE(machine.configuration().contains(&s1), false);
+
+    emitter.emitSignalWithNoArg();
+
+    // Only one of the following two can be true, because the two possible transitions conflict.
+    if (machine.configuration().contains(&s1)) {
+        // the transition p2 -> s1 was taken, not p1_1 -> p1_2, so:
+        // the parallel state exited, so none of the states inside it are active
+        QTRY_COMPARE(machine.configuration().contains(&s), false);
+        QTRY_COMPARE(machine.configuration().contains(&p), false);
+        QTRY_COMPARE(machine.configuration().contains(&p1), false);
+        QTRY_COMPARE(machine.configuration().contains(&p1_1), false);
+        QTRY_COMPARE(machine.configuration().contains(&p1_2), false);
+        QTRY_COMPARE(machine.configuration().contains(&p2), false);
+    } else {
+        // the transition p1_1 -> p1_2 was taken, not p2 -> s1, so:
+        // the parallel state was not exited and the state is the same as the start state with one
+        // difference: p1_1 inactive and p1_2 active:
+        QTRY_COMPARE(machine.configuration().contains(&s), true);
+        QTRY_COMPARE(machine.configuration().contains(&p), true);
+        QTRY_COMPARE(machine.configuration().contains(&p1), true);
+        QTRY_COMPARE(machine.configuration().contains(&p1_1), false);
+        QTRY_COMPARE(machine.configuration().contains(&p1_2), true);
+        QTRY_COMPARE(machine.configuration().contains(&p2), true);
+    }
+
+    QVERIFY(machine.isRunning());
 }
 
 QTEST_MAIN(tst_QStateMachine)

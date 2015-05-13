@@ -340,7 +340,7 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
 
 QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
 {
-    QByteArray display(getenv("DISPLAY"));
+    QByteArray display(qgetenv("DISPLAY"));
     QByteArray host = "unix";
     QByteArray displayNumber = "0";
 

@@ -1,8 +1,10 @@
 HEADERS += \
-    $$PWD/qevdevtouch_p.h
+    $$PWD/qevdevtouchhandler_p.h \
+    $$PWD/qevdevtouchmanager_p.h
 
 SOURCES += \
-    $$PWD/qevdevtouch.cpp
+    $$PWD/qevdevtouchhandler.cpp \
+    $$PWD/qevdevtouchmanager.cpp
 
 contains(QT_CONFIG, libudev) {
     LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV

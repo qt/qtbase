@@ -72,7 +72,6 @@
 #include "qcocoahelpers.h"
 #include "qguiapplication.h"
 #include "qevent.h"
-#include "qhash.h"
 #include "qmutex.h"
 #include "qsocketnotifier.h"
 #include <qpa/qplatformwindow.h>

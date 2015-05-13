@@ -984,7 +984,7 @@ public class QtActivityDelegate
             if (!m_backKeyPressedSent)
                 return true;
         }
-        QtNative.keyDown(keyCode, c, event.getMetaState());
+        QtNative.keyDown(keyCode, c, event.getMetaState(), event.getRepeatCount() > 0);
 
         return true;
     }
@@ -1008,7 +1008,7 @@ public class QtActivityDelegate
         }
 
         m_metaState = MetaKeyKeyListener.handleKeyUp(m_metaState, keyCode, event);
-        QtNative.keyUp(keyCode, event.getUnicodeChar(), event.getMetaState());
+        QtNative.keyUp(keyCode, event.getUnicodeChar(), event.getMetaState(), event.getRepeatCount() > 0);
         return true;
     }
 
@@ -1019,8 +1019,8 @@ public class QtActivityDelegate
                 && event.getCharacters() != null
                 && event.getCharacters().length() == 1
                 && event.getKeyCode() == 0) {
-            QtNative.keyDown(0, event.getCharacters().charAt(0), event.getMetaState());
-            QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState());
+            QtNative.keyDown(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
+            QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
         }
 
         try {
@@ -1196,7 +1196,6 @@ public class QtActivityDelegate
             } else {
                 m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId));
             }
-
             if (m_dummyView != null) {
                 m_layout.removeView(m_dummyView);
                 m_dummyView = null;

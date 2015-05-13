@@ -58,6 +58,7 @@ namespace ABI {
 
 QT_BEGIN_NAMESPACE
 
+class QWinRTScreen;
 class QWinRTInputContext : public QPlatformInputContext
 #ifndef Q_OS_WINPHONE
                          , public Microsoft::WRL::RuntimeClass<
@@ -66,7 +67,7 @@ class QWinRTInputContext : public QPlatformInputContext
 #endif // !Q_OS_WINPHONE
 {
 public:
-    explicit QWinRTInputContext(ABI::Windows::UI::Core::ICoreWindow *window);
+    explicit QWinRTInputContext(QWinRTScreen *);
 
     QRectF keyboardRect() const;
 
@@ -101,9 +102,10 @@ private:
                       ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs *);
     HRESULT onHiding(ABI::Windows::UI::ViewManagement::IInputPane *,
                      ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs *);
-    void setKeyboardRect(const QRectF rect);
 
-    ABI::Windows::UI::Core::ICoreWindow *m_window;
+    HRESULT handleVisibilityChange(ABI::Windows::UI::ViewManagement::IInputPane *);
+
+    QWinRTScreen *m_screen;
     QRectF m_keyboardRect;
     bool m_isInputPanelVisible;
 };

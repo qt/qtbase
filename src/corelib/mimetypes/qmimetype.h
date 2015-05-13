@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 class QMimeTypePrivate;
 class QFileinfo;
 class QStringList;
+class QMimeType;
+
+Q_CORE_EXPORT uint qHash(const QMimeType &key, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_CORE_EXPORT QMimeType
 {
@@ -100,6 +103,7 @@ protected:
     friend class QMimeXMLProvider;
     friend class QMimeBinaryProvider;
     friend class QMimeTypePrivate;
+    friend Q_CORE_EXPORT uint qHash(const QMimeType &key, uint seed) Q_DECL_NOTHROW;
 
     QExplicitlySharedDataPointer<QMimeTypePrivate> d;
 };

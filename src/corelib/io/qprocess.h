@@ -223,30 +223,14 @@ public Q_SLOTS:
     void kill();
 
 Q_SIGNALS:
-    void started(
-#if !defined(Q_QDOC)
-        QPrivateSignal
-#endif
-    );
+    void started(QPrivateSignal);
     void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
     void error(QProcess::ProcessError error);
-    void stateChanged(QProcess::ProcessState state
-#if !defined(Q_QDOC)
-        , QPrivateSignal
-#endif
-    );
+    void stateChanged(QProcess::ProcessState state, QPrivateSignal);
 
-    void readyReadStandardOutput(
-#if !defined(Q_QDOC)
-        QPrivateSignal
-#endif
-    );
-    void readyReadStandardError(
-#if !defined(Q_QDOC)
-        QPrivateSignal
-#endif
-    );
+    void readyReadStandardOutput(QPrivateSignal);
+    void readyReadStandardError(QPrivateSignal);
 
 protected:
     void setProcessState(ProcessState state);
@@ -266,7 +250,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), bool _q_canWrite())
     Q_PRIVATE_SLOT(d_func(), bool _q_startupNotification())
     Q_PRIVATE_SLOT(d_func(), bool _q_processDied())
-    Q_PRIVATE_SLOT(d_func(), void _q_notified())
     friend class QProcessManager;
 };
 

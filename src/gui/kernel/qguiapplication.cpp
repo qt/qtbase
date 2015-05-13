@@ -185,6 +185,7 @@ extern void qRegisterGuiVariant();
 #ifndef QT_NO_ANIMATION
 extern void qRegisterGuiGetInterpolator();
 #endif
+extern void qInitBlendFunctions();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -1281,6 +1282,8 @@ void QGuiApplicationPrivate::init()
     if (platform_integration == 0)
         createPlatformIntegration();
 
+    // Set up blend function tables.
+    qInitBlendFunctions();
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
     // and QImage conversion functions
@@ -2761,6 +2764,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
+    QCoreApplication::setAttribute(Qt::AA_SetPalette);
     emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 
@@ -2844,6 +2848,9 @@ void QGuiApplication::setWindowIcon(const QIcon &icon)
     if (!QGuiApplicationPrivate::app_icon)
         QGuiApplicationPrivate::app_icon = new QIcon();
     *QGuiApplicationPrivate::app_icon = icon;
+    if (QGuiApplicationPrivate::platform_integration
+            && QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::ApplicationIcon))
+        QGuiApplicationPrivate::platform_integration->setApplicationIcon(icon);
     if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::self->notifyWindowIconChanged();
 }

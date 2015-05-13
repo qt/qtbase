@@ -58,20 +58,26 @@ else: \
     MODULE_DEFINE = QT_$${ucmodule}_LIB
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
-load(qt_module_pris)
+load(qt_build_paths)
 
-INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
-
-!no_module_headers: load(qt_module_headers)
-
-#other
-TEMPLATE         = lib
-DESTDIR          = $$eval(QT.$${MODULE_ID}.libs)
-win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE_ID}.bins)
+qt_no_install_library {
+    TEMPLATE     = aux
+    CONFIG      += force_qt  # Needed for the headers_clean tests.
+} else {
+    TEMPLATE     = lib
+}
+DESTDIR          = $$MODULE_BASE_OUTDIR/lib
+win32:!wince*:!prefix_build: DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 CONFIG          += qmake_cache target_qt
 
 QMAKE_DOCS_TARGETDIR = qt$${MODULE}
+
+load(qt_module_pris)
+load(qt_common)
+
+!no_module_headers: load(qt_module_headers)
+INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
 
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
@@ -97,7 +103,14 @@ mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
-   CONFIG += lib_bundle sliced_bundle qt_framework
+   CONFIG += sliced_bundle qt_framework
+   qt_no_install_library {
+        CONFIG += bundle
+        QMAKE_BUNDLE_EXTENSION = .framework
+        QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
+   } else {
+        CONFIG += lib_bundle
+   }
    CONFIG -= qt_install_headers #no need to install these as well
    !debug_and_release|!build_all|CONFIG(release, debug|release) {
         FRAMEWORK_HEADERS.version = Versions
@@ -175,7 +188,6 @@ android: CONFIG += qt_android_deps
 load(qt_installs)
 
 load(qt_targets)
-load(qt_common)
 
 # this builds on top of qt_common
 unix|mingw {

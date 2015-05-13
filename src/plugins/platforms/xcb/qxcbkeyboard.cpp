@@ -437,6 +437,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioPrev,           Qt::Key_MediaPrevious,
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
+    XF86XK_AudioPause,          Qt::Key_MediaPause,
     XF86XK_Mail,                Qt::Key_LaunchMail,
     XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 6: remap properly
     XF86XK_Calculator,          Qt::Key_Launch1,
@@ -1515,11 +1516,13 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
 
 QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) const
 {
-    QByteArray chars;
-    chars.resize(1 + xkb_state_key_get_utf8(state, code, 0, 0));
-    // equivalent of XLookupString
-    xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
-    return QString::fromUtf8(chars);
+    QVarLengthArray<char, 32> chars(32);
+    const int size = xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    if (Q_UNLIKELY(size + 1 > chars.size())) { // +1 for NUL
+        chars.resize(size + 1);
+        xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    }
+    return QString::fromUtf8(chars.constData(), size);
 }
 
 void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *event)

@@ -2337,7 +2337,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                         for (int i = 0; i < extradeps.count(); ++i) {
                             QString dd = extradeps.at(i).simplified();
                             if (!dd.isEmpty())
-                                deps += Project->fileFixify(dd, QString(), Option::output_dir);
+                                deps += Project->fileFixify(dd, MakefileGenerator::FileFixifyFromOutdir);
                         }
                     }
                 }

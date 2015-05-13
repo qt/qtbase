@@ -181,7 +181,13 @@ public:
 #endif
     }
 
-    void setLastVisitedDirectory(const QUrl &dir);
+#ifndef QT_NO_SETTINGS
+    void saveSettings();
+    bool restoreFromSettings();
+#endif
+
+    bool restoreWidgetState(QStringList &history, int splitterPosition);
+    static void setLastVisitedDirectory(const QUrl &dir);
     void retranslateWindowTitle();
     void retranslateStrings();
     void emitFilesSelected(const QStringList &files);

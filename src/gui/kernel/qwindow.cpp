@@ -1076,6 +1076,10 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 
     Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
+    \note For windows not backed by a platform window, meaning that create() was not
+    called, the function will fall back to QGuiApplication::devicePixelRatio() which in
+    turn returns the highest screen device pixel ratio found on the system.
+
     \sa QScreen::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
 qreal QWindow::devicePixelRatio() const

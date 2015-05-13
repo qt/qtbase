@@ -130,6 +130,7 @@ public:
     bool flush();
 
     bool initSocketLayer(QAbstractSocket::NetworkLayerProtocol protocol);
+    virtual void configureCreatedSocket();
     void startConnectingByName(const QString &host);
     void fetchConnectionParameters();
     void setupSocketNotifiers();

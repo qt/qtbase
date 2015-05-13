@@ -311,90 +311,6 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
     }
 }
 
-#ifndef QDRAWHELPER_AVX
-CompositionFunctionSolid qt_functionForModeSolid_SSE2[numCompositionFunctions] = {
-    comp_func_solid_SourceOver_sse2,
-    comp_func_solid_DestinationOver,
-    comp_func_solid_Clear,
-    comp_func_solid_Source,
-    comp_func_solid_Destination,
-    comp_func_solid_SourceIn,
-    comp_func_solid_DestinationIn,
-    comp_func_solid_SourceOut,
-    comp_func_solid_DestinationOut,
-    comp_func_solid_SourceAtop,
-    comp_func_solid_DestinationAtop,
-    comp_func_solid_XOR,
-    comp_func_solid_Plus,
-    comp_func_solid_Multiply,
-    comp_func_solid_Screen,
-    comp_func_solid_Overlay,
-    comp_func_solid_Darken,
-    comp_func_solid_Lighten,
-    comp_func_solid_ColorDodge,
-    comp_func_solid_ColorBurn,
-    comp_func_solid_HardLight,
-    comp_func_solid_SoftLight,
-    comp_func_solid_Difference,
-    comp_func_solid_Exclusion,
-    rasterop_solid_SourceOrDestination,
-    rasterop_solid_SourceAndDestination,
-    rasterop_solid_SourceXorDestination,
-    rasterop_solid_NotSourceAndNotDestination,
-    rasterop_solid_NotSourceOrNotDestination,
-    rasterop_solid_NotSourceXorDestination,
-    rasterop_solid_NotSource,
-    rasterop_solid_NotSourceAndDestination,
-    rasterop_solid_SourceAndNotDestination,
-    rasterop_solid_NotSourceOrDestination,
-    rasterop_solid_SourceOrNotDestination,
-    rasterop_solid_ClearDestination,
-    rasterop_solid_SetDestination,
-    rasterop_solid_NotDestination
-};
-
-CompositionFunction qt_functionForMode_SSE2[numCompositionFunctions] = {
-    comp_func_SourceOver_sse2,
-    comp_func_DestinationOver,
-    comp_func_Clear,
-    comp_func_Source_sse2,
-    comp_func_Destination,
-    comp_func_SourceIn,
-    comp_func_DestinationIn,
-    comp_func_SourceOut,
-    comp_func_DestinationOut,
-    comp_func_SourceAtop,
-    comp_func_DestinationAtop,
-    comp_func_XOR,
-    comp_func_Plus_sse2,
-    comp_func_Multiply,
-    comp_func_Screen,
-    comp_func_Overlay,
-    comp_func_Darken,
-    comp_func_Lighten,
-    comp_func_ColorDodge,
-    comp_func_ColorBurn,
-    comp_func_HardLight,
-    comp_func_SoftLight,
-    comp_func_Difference,
-    comp_func_Exclusion,
-    rasterop_SourceOrDestination,
-    rasterop_SourceAndDestination,
-    rasterop_SourceXorDestination,
-    rasterop_NotSourceAndNotDestination,
-    rasterop_NotSourceOrNotDestination,
-    rasterop_NotSourceXorDestination,
-    rasterop_NotSource,
-    rasterop_NotSourceAndDestination,
-    rasterop_SourceAndNotDestination,
-    rasterop_NotSourceOrDestination,
-    rasterop_SourceOrNotDestination,
-    rasterop_ClearDestination,
-    rasterop_SetDestination,
-    rasterop_NotDestination
-};
-#endif
-
 void qt_memfill16(quint16 *dest, quint16 value, int count)
 {
     if (count < 3) {
@@ -550,7 +466,7 @@ public:
 const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
                                                        int y, int x, int length)
 {
-    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2> >(buffer, op, data, y, x, length);
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2>,uint>(buffer, op, data, y, x, length);
 }
 
 void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,

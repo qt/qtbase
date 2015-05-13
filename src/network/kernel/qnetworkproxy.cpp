@@ -218,7 +218,6 @@
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
 #include "qdebug.h"
-#include "qhash.h"
 #include "qmutex.h"
 #include "qstringlist.h"
 #include "qurl.h"
