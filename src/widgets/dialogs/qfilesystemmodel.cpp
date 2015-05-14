@@ -544,7 +544,7 @@ QModelIndex QFileSystemModel::parent(const QModelIndex &index) const
 
     QFileSystemModelPrivate::QFileSystemNode *indexNode = d->node(index);
     Q_ASSERT(indexNode != 0);
-    QFileSystemModelPrivate::QFileSystemNode *parentNode = (indexNode ? indexNode->parent : 0);
+    QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
     if (parentNode == 0 || parentNode == &d->root)
         return QModelIndex();
 
