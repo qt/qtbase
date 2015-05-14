@@ -450,7 +450,7 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 #if defined(XCB_USE_XINPUT21) || !defined(QT_NO_TABLETEVENT)
 static qreal fixed1616ToReal(FP1616 val)
 {
-    return (qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF;
+    return qreal(val) / 0x10000;
 }
 #endif // defined(XCB_USE_XINPUT21) || !defined(QT_NO_TABLETEVENT)
 
