@@ -62,27 +62,8 @@ private:
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4003)  // "not enough actual parameters for macro TS()"
 
-void tst_qmakelib::proParser_data()
+void tst_qmakelib::addParseOperators()
 {
-    QTest::addColumn<QString>("in");
-    QTest::addColumn<QString>("out");
-    QTest::addColumn<QString>("msgs");
-    QTest::addColumn<bool>("ok");
-
-    QTest::newRow("empty")
-            << ""
-            << TS()
-            << ""
-            << true;
-
-    QTest::newRow("empty (whitespace)")
-            << "  \t   \t"
-            << TS()
-            << ""
-            << true;
-
-    // Variable operators
-
     QTest::newRow("assign none")
             << "VAR ="
             << TS(
@@ -150,9 +131,10 @@ void tst_qmakelib::proParser_data()
     /*     4 */ << H(TokValueTerminator))
             << "in:1: Assignment needs exactly one word on the left hand side."
             << false;
+}
 
-    // Values
-
+void tst_qmakelib::addParseValues()
+{
 #define ASSIGN_VAR(h) \
         H(TokLine) << H(1) \
         << H(TokHashLiteral) << HS(L"VAR") \
@@ -601,9 +583,10 @@ void tst_qmakelib::proParser_data()
     /*    20 */ << H(TokValueTerminator))
             << ""
             << true;
+}
 
-    // Conditionals ("Tests")
-
+void tst_qmakelib::addParseConditions()
+{
     QTest::newRow("one test")
             << "foo"
             << TS(
@@ -1055,9 +1038,10 @@ void tst_qmakelib::proParser_data()
     /*    20 */     << H(TokFuncTerminator))
             << ""
             << true;
+}
 
-    // Control statements
-
+void tst_qmakelib::addParseControlStatements()
+{
     QTest::newRow("for(VAR, LIST) loop")
             << "for(VAR, LIST)"
             << TS(
@@ -1226,9 +1210,10 @@ void tst_qmakelib::proParser_data()
     /*     9 */     << H(TokTerminator))
             << "in:1: Extra characters after test expression."
             << false;
+}
 
-    // Braces
-
+void tst_qmakelib::addParseBraces()
+{
     QTest::newRow("{}")
             << "{ }"
             << TS()
@@ -1613,9 +1598,10 @@ void tst_qmakelib::proParser_data()
     /*    62 */ /* else branch */ << I(0))
             << ""
             << true;
+}
 
-    // Custom functions
-
+void tst_qmakelib::addParseCustomFunctions()
+{
     QTest::newRow("defineTest-{newlines}")
             << "defineTest(test) {\n}"
             << TS(
@@ -1703,9 +1689,10 @@ void tst_qmakelib::proParser_data()
     /*    22 */     << H(TokTerminator))
             << ""
             << true;
+}
 
-    // Operator abuse
-
+void tst_qmakelib::addParseAbuse()
+{
     QTest::newRow("!")
             << ""
             << TS()
@@ -1885,6 +1872,40 @@ void tst_qmakelib::proParser_data()
     /*    24 */ /* else branch */ << I(0))
             << "in:1: OR operator without prior condition."
             << false;
+}
+
+void tst_qmakelib::proParser_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+    QTest::addColumn<QString>("msgs");
+    QTest::addColumn<bool>("ok");
+
+    QTest::newRow("empty")
+            << ""
+            << TS()
+            << ""
+            << true;
+
+    QTest::newRow("empty (whitespace)")
+            << "  \t   \t"
+            << TS()
+            << ""
+            << true;
+
+    addParseOperators();  // Variable operators
+
+    addParseValues();
+
+    addParseConditions();  // "Tests"
+
+    addParseControlStatements();
+
+    addParseBraces();
+
+    addParseCustomFunctions();
+
+    addParseAbuse();  // Mostly operator abuse
 
     // option() (these produce no tokens)
 

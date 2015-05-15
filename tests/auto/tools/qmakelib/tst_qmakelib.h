@@ -56,6 +56,15 @@ private slots:
 
     void proParser_data();
     void proParser();
+
+private:
+    void addParseOperators();
+    void addParseValues();
+    void addParseConditions();
+    void addParseControlStatements();
+    void addParseBraces();
+    void addParseCustomFunctions();
+    void addParseAbuse();
 };
 
 class QMakeHandler : public QMakeParserHandler {
