@@ -4358,8 +4358,10 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
 #ifdef Q_OS_OSX
         // Single-touch events are normally not sent unless WA_TouchPadAcceptSingleTouchEvents is set.
-        // In Qt 4 this check was in OS X-only coode. That behavior is preserved here by the #ifdef.
-        if (touchPoints.count() == 1 && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
+        // In Qt 4 this check was in OS X-only code. That behavior is preserved here by the #ifdef.
+        if (touchPoints.count() == 1
+            && device->type() == QTouchDevice::TouchPad
+            && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
             continue;
 #endif
 
