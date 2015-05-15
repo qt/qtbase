@@ -43,7 +43,6 @@
 
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
-#define FINGER_MAX_WIDTH_MM 10
 
 struct XInput2TouchDeviceData {
     XInput2TouchDeviceData()
@@ -517,7 +516,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                 QWindowSystemInterface::TouchPoint &touchPoint = m_touchPoints[xiDeviceEvent->detail];
                 qreal x = fixed1616ToReal(xiDeviceEvent->root_x);
                 qreal y = fixed1616ToReal(xiDeviceEvent->root_y);
-                qreal nx = -1.0, ny = -1.0, w = 0.0, h = 0.0;
+                qreal nx = -1.0, ny = -1.0, d = 0.0;
                 QXcbScreen* screen = m_screens.at(0);
                 for (int i = 0; i < dev->xiDeviceInfo->num_classes; ++i) {
                     XIAnyClassInfo *classinfo = dev->xiDeviceInfo->classes[i];
@@ -543,13 +542,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         } else if (vci->label == atom(QXcbAtom::AbsMTPositionY)) {
                             ny = valuatorNormalized(value, vci);
                         } else if (vci->label == atom(QXcbAtom::AbsMTTouchMajor)) {
-                            // Convert the value within its range as a fraction of a finger's max (contact patch)
-                            //  width in mm, and from there to pixels depending on screen resolution
-                            w = valuatorNormalized(value, vci) * FINGER_MAX_WIDTH_MM *
-                                screen->geometry().width() / screen->physicalSize().width();
-                        } else if (vci->label == atom(QXcbAtom::AbsMTTouchMinor)) {
-                            h = valuatorNormalized(value, vci) * FINGER_MAX_WIDTH_MM *
-                                screen->geometry().height() / screen->physicalSize().height();
+                            d = valuatorNormalized(value, vci) * screen->geometry().width();
                         } else if (vci->label == atom(QXcbAtom::AbsMTPressure) ||
                                    vci->label == atom(QXcbAtom::AbsPressure)) {
                             touchPoint.pressure = valuatorNormalized(value, vci);
@@ -566,10 +559,8 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     ny = y / screen->geometry().height();
                 }
                 if (xiEvent->evtype != XI_TouchEnd) {
-                    if (w == 0.0)
-                        w = touchPoint.area.width();
-                    if (h == 0.0)
-                        h = touchPoint.area.height();
+                    if (d == 0.0)
+                        d = touchPoint.area.width();
                 }
 
                 switch (xiEvent->evtype) {
@@ -606,7 +597,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     }
                     dev->pointPressedPosition.remove(touchPoint.id);
                 }
-                touchPoint.area = QRectF(x - w/2, y - h/2, w, h);
+                touchPoint.area = QRectF(x - d/2, y - d/2, d, d);
                 touchPoint.normalPosition = QPointF(nx, ny);
 
                 if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
