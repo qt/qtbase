@@ -35,6 +35,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
@@ -106,6 +107,7 @@ void QEglFSWindow::create()
 
     if (isRaster()) {
         QOpenGLContext *context = new QOpenGLContext(QGuiApplication::instance());
+        context->setShareContext(qt_gl_global_share_context());
         context->setFormat(m_format);
         context->setScreen(window()->screen());
         if (!context->create())
