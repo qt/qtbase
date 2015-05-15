@@ -4543,33 +4543,49 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
             writer.writeCDATA(QString("No description available"));
         writer.writeEndElement(); // description
 
-        // Add words from module name as tags (QtQuickControls -> qt,quick,controls)
-        QRegExp re("([A-Z]+[a-z0-9]*)");
+        // Add words from module name as tags
+        // QtQuickControls -> qt,quick,controls
+        // QtOpenGL -> qt,opengl
+        QRegExp re("([A-Z]+[a-z0-9]*(3D|GL)?)");
         int pos = 0;
         while ((pos = re.indexIn(project, pos)) != -1) {
             tags << re.cap(1).toLower();
             pos += re.matchedLength();
         }
         tags += QSet<QString>::fromList(en->title().toLower().split(QLatin1Char(' ')));
+
+        // Clean up tags, exclude invalid and common words
+        QSet<QString>::iterator tag_it = tags.begin();
+        QSet<QString> modified;
+        while (tag_it != tags.end()) {
+            QString s = *tag_it;
+            if (s.at(0) == '(')
+                s.remove(0, 1).chop(1);
+            if (s.endsWith(QLatin1Char(':')))
+                s.chop(1);
+
+            if (s.length() < 2
+                || s.at(0).isDigit()
+                || s.at(0) == '-'
+                || s == QStringLiteral("qt")
+                || s == QStringLiteral("the")
+                || s == QStringLiteral("and")
+                || s.startsWith(QStringLiteral("example"))
+                || s.startsWith(QStringLiteral("chapter")))
+                tag_it = tags.erase(tag_it);
+            else if (s != *tag_it) {
+                modified << s;
+                tag_it = tags.erase(tag_it);
+            }
+            else
+                ++tag_it;
+        }
+        tags += modified;
+
         if (!tags.isEmpty()) {
             writer.writeStartElement("tags");
             bool wrote_one = false;
-            // Exclude invalid and common words
             foreach (QString tag, tags) {
-                if (tag.length() < 2)
-                    continue;
-                if (tag.at(0).isDigit())
-                    continue;
-                if (tag.at(0) == '-')
-                    continue;
-                if (tag == QLatin1String("qt"))
-                    continue;
-                if (tag.startsWith("example"))
-                    continue;
-                if (tag.startsWith("chapter"))
-                    continue;
-                if (tag.endsWith(QLatin1Char(':')))
-                    tag.chop(1);
                 if (wrote_one)
                     writer.writeCharacters(",");
                 writer.writeCharacters(tag);
