@@ -6,8 +6,12 @@ QT = core testlib
 INCLUDEPATH += ../../../../qmake/library
 VPATH += ../../../../qmake/library
 
+HEADERS += \
+    tst_qmakelib.h
+
 SOURCES += \
     tst_qmakelib.cpp \
+    parsertest.cpp \
     ioutils.cpp \
     proitems.cpp \
     qmakevfs.cpp \
