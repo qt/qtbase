@@ -1956,7 +1956,7 @@ void tst_qmakelib::proParser()
     QFETCH(bool, ok);
 
     bool verified = true;
-    QMakeHandler handler;
+    QMakeTestHandler handler;
     handler.setExpectedMessages(msgs.split('\n', QString::SkipEmptyParts));
     QMakeVfs vfs;
     QMakeParser parser(0, &vfs, &handler);

@@ -12,9 +12,13 @@ HEADERS += \
 SOURCES += \
     tst_qmakelib.cpp \
     parsertest.cpp \
+    evaltest.cpp \
     ioutils.cpp \
     proitems.cpp \
     qmakevfs.cpp \
-    qmakeparser.cpp
+    qmakeparser.cpp \
+    qmakeglobals.cpp \
+    qmakebuiltins.cpp \
+    qmakeevaluator.cpp
 
-DEFINES += PROPARSER_DEBUG
+DEFINES += PROPARSER_DEBUG PROEVALUATOR_FULL PROEVALUATOR_SETENV

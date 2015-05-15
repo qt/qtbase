@@ -37,6 +37,27 @@
 
 using namespace QMakeInternal;
 
+void tst_qmakelib::initTestCase()
+{
+    m_indir = QFINDTESTDATA("testdata");
+    m_outdir = m_indir + QLatin1String("_build");
+    m_env.insert(QStringLiteral("E1"), QStringLiteral("env var"));
+#ifdef Q_OS_WIN
+    m_env.insert(QStringLiteral("COMSPEC"), qgetenv("COMSPEC"));
+#endif
+    m_prop.insert(ProKey("P1"), ProString("prop val"));
+    m_prop.insert(ProKey("QT_HOST_DATA/get"), ProString(m_indir));
+
+    QVERIFY(!m_indir.isEmpty());
+    QVERIFY(QDir(m_outdir).removeRecursively());
+    QVERIFY(QDir().mkpath(m_outdir));
+}
+
+void tst_qmakelib::cleanupTestCase()
+{
+    QVERIFY(QDir(m_outdir).removeRecursively());
+}
+
 void tst_qmakelib::proString()
 {
     QString qs1(QStringLiteral("this is a string"));
@@ -225,21 +246,24 @@ void tst_qmakelib::pathUtils()
     QCOMPARE(IoUtils::resolvePath(fnbase, fn1), QStringLiteral("/a/unix/file/path"));
 }
 
-void QMakeHandler::print(const QString &fileName, int lineNo, int type, const QString &msg)
+void QMakeTestHandler::print(const QString &fileName, int lineNo, int type, const QString &msg)
 {
     QString pfx = ((type & QMakeParserHandler::CategoryMask) == QMakeParserHandler::WarningMessage)
                   ? QString::fromLatin1("WARNING: ") : QString();
-    QString out;
     if (lineNo)
-        out = QStringLiteral("%1%2:%3: %4").arg(pfx, fileName, QString::number(lineNo), msg);
+        doPrint(QStringLiteral("%1%2:%3: %4").arg(pfx, fileName, QString::number(lineNo), msg));
     else
-        out = QStringLiteral("%1%2").arg(pfx, msg);
-    if (!expected.isEmpty() && expected.first() == out) {
+        doPrint(QStringLiteral("%1%2").arg(pfx, msg));
+}
+
+void QMakeTestHandler::doPrint(const QString &msg)
+{
+    if (!expected.isEmpty() && expected.first() == msg) {
         expected.removeAt(0);
-        return;
+    } else {
+        qWarning("%s", qPrintable(msg));
+        printed = true;
     }
-    qWarning("%s", qPrintable(out));
-    printed = true;
 }
 
 QTEST_MAIN(tst_qmakelib)

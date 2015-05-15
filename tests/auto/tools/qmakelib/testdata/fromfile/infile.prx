@@ -1,0 +1,1 @@
+DEFINES = QT_DLL

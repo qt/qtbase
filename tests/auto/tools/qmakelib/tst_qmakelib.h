@@ -31,9 +31,10 @@
 **
 ****************************************************************************/
 
-#include <qmakeparser.h>
+#include <qmakeevaluator.h>
 
 #include <QObject>
+#include <QProcessEnvironment>
 #include <QtTest/QtTest>
 
 class tst_qmakelib : public QObject
@@ -45,6 +46,9 @@ public:
     virtual ~tst_qmakelib() {}
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
     void quoteArgUnix_data();
     void quoteArgUnix();
     void quoteArgWin_data();
@@ -57,6 +61,9 @@ private slots:
     void proParser_data();
     void proParser();
 
+    void proEval_data();
+    void proEval();
+
 private:
     void addParseOperators();
     void addParseValues();
@@ -65,13 +72,29 @@ private:
     void addParseBraces();
     void addParseCustomFunctions();
     void addParseAbuse();
+
+    void addAssignments();
+    void addExpansions();
+    void addControlStructs();
+    void addReplaceFunctions(const QString &qindir);
+    void addTestFunctions(const QString &qindir);
+
+    QProcessEnvironment m_env;
+    QHash<ProKey, ProString> m_prop;
+    QString m_indir, m_outdir;
 };
 
-class QMakeHandler : public QMakeParserHandler {
+class QMakeTestHandler : public QMakeHandler {
 public:
-    QMakeHandler() : QMakeParserHandler(), printed(false) {}
+    QMakeTestHandler() : QMakeHandler(), printed(false) {}
     virtual void message(int type, const QString &msg, const QString &fileName, int lineNo)
         { print(fileName, lineNo, type, msg); }
+
+    virtual void fileMessage(const QString &msg)
+        { doPrint(msg); }
+
+    virtual void aboutToEval(ProFile *, ProFile *, EvalFileType) {}
+    virtual void doneWithEval(ProFile *) {}
 
     void setExpectedMessages(const QStringList &msgs) { expected = msgs; }
     QStringList expectedMessages() const { return expected; }
@@ -80,7 +103,9 @@ public:
 
 private:
     void print(const QString &fileName, int lineNo, int type, const QString &msg);
+    void doPrint(const QString &msg);
 
     QStringList expected;
     bool printed;
 };
+
