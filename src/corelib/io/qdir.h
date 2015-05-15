@@ -177,7 +177,16 @@ public:
 
     static QFileInfoList drives();
 
-    static QChar separator();
+    Q_DECL_CONSTEXPR static inline QChar listSeparator() Q_DECL_NOTHROW
+    {
+#if defined(Q_OS_WIN)
+        return QLatin1Char(';');
+#else
+        return QLatin1Char(':');
+#endif
+    }
+
+    static QChar separator(); // ### Qt6: Make it inline
 
     static bool setCurrent(const QString &path);
     static inline QDir current() { return QDir(currentPath()); }
