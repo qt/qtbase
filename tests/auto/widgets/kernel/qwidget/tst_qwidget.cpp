@@ -3354,8 +3354,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
     QTRY_VERIFY(QApplication::widgetAt(testPos) == w1.data());
     QTRY_VERIFY(QApplication::widgetAt(testPos + QPoint(1, 1)) == w2.data());
 }
