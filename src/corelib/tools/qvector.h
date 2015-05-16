@@ -212,8 +212,10 @@ public:
     inline int count() const { return d->size; }
     inline T& first() { Q_ASSERT(!isEmpty()); return *begin(); }
     inline const T &first() const { Q_ASSERT(!isEmpty()); return *begin(); }
+    inline const T &constFirst() const { Q_ASSERT(!isEmpty()); return *begin(); }
     inline T& last() { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline const T &last() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
+    inline const T &constLast() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline bool startsWith(const T &t) const { return !isEmpty() && first() == t; }
     inline bool endsWith(const T &t) const { return !isEmpty() && last() == t; }
     QVector<T> mid(int pos, int len = -1) const;
