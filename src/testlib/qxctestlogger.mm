@@ -126,7 +126,7 @@ private:
 
     if (!([NSDate timeIntervalSinceReferenceDate] > 0))
         qFatal("error: Device date '%s' is bad, likely set to update automatically. Please correct.",
-            [NSDate date].description.UTF8String);
+            [[NSDate date] description].UTF8String);
 
     XCTestDriver *testDriver = nil;
     if ([QtTestLibWrapper usingTestManager])
