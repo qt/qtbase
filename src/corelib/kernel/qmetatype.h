@@ -1381,6 +1381,7 @@ QT_WARNING_DISABLE_CLANG("-Wlocal-type-template-args")
         // qt_getEnumMetaObject(T) which returns 'char'
         enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
     };
+    template<> struct IsQEnumHelper<void> { enum { Value = false }; };
 QT_WARNING_POP
 
     template<typename T, typename Enable = void>
