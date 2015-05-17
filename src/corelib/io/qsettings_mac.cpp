@@ -505,7 +505,7 @@ QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec)
                     QString currentKey =
                             qtKey(static_cast<CFStringRef>(CFArrayGetValueAtIndex(cfarray, k)));
                     if (currentKey.startsWith(prefix))
-                        processChild(currentKey.mid(startPos), spec, result);
+                        processChild(currentKey.midRef(startPos), spec, result);
                 }
             }
         }

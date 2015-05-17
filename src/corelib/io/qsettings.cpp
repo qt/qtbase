@@ -299,7 +299,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 }
 #endif
 
-void QSettingsPrivate::processChild(QString key, ChildSpec spec, QMap<QString, QString> &result)
+void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QMap<QString, QString> &result)
 {
     if (spec != AllKeys) {
         int slashPos = key.indexOf(QLatin1Char('/'));
@@ -312,7 +312,7 @@ void QSettingsPrivate::processChild(QString key, ChildSpec spec, QMap<QString, Q
             key.truncate(slashPos);
         }
     }
-    result.insert(key, QString());
+    result.insert(key.toString(), QString());
 }
 
 void QSettingsPrivate::beginGroupOrArray(const QSettingsGroup &group)
@@ -1292,14 +1292,14 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                     &confFile->originalKeys)->lowerBound( thePrefix);
             while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
                 if (!confFile->removedKeys.contains(j.key()))
-                    processChild(j.key().originalCaseKey().mid(startPos), spec, result);
+                    processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
                 ++j;
             }
 
             j = const_cast<const ParsedSettingsMap *>(
                     &confFile->addedKeys)->lowerBound(thePrefix);
             while (j != confFile->addedKeys.constEnd() && j.key().startsWith(thePrefix)) {
-                processChild(j.key().originalCaseKey().mid(startPos), spec, result);
+                processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
                 ++j;
             }
 
