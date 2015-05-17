@@ -82,6 +82,7 @@ private slots:
     void integer_conversion_data();
     void integer_conversion();
     void trimmed();
+    void truncate();
     void left();
     void right();
     void mid();
@@ -1837,6 +1838,30 @@ void tst_QStringRef::trimmed()
     b = a.midRef(4);
     QCOMPARE(b.compare(QStringLiteral(" a   ")), 0);
     QCOMPARE(b.trimmed().compare(QStringLiteral("a")), 0);
+}
+
+void tst_QStringRef::truncate()
+{
+    const QString str = "OriginalString~";
+    const QStringRef cref = str.midRef(0);
+    {
+        QStringRef ref = cref;
+        ref.truncate(1000);
+        QCOMPARE(ref, cref);
+        for (int i = str.size(); i >= 0; --i) {
+            ref.truncate(i);
+            QCOMPARE(ref.size(), i);
+            QCOMPARE(ref, cref.left(i));
+        }
+        QVERIFY(ref.isEmpty());
+    }
+
+    {
+        QStringRef ref = cref;
+        QVERIFY(!ref.isEmpty());
+        ref.truncate(-1);
+        QVERIFY(ref.isEmpty());
+    }
 }
 
 void tst_QStringRef::left()

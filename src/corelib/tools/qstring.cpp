@@ -4880,7 +4880,7 @@ modifiable reference.
 
     If \a position is negative, it is equivalent to passing zero.
 
-    \sa chop(), resize(), left()
+    \sa chop(), resize(), left(), QStringRef::truncate()
 */
 
 void QString::truncate(int pos)
@@ -9374,6 +9374,20 @@ QStringRef QString::midRef(int position, int n) const
     Q_UNREACHABLE();
     return QStringRef();
 }
+
+/*!
+    \fn void QStringRef::truncate(int position)
+    \since 5.6
+
+    Truncates the string at the given \a position index.
+
+    If the specified \a position index is beyond the end of the
+    string, nothing happens.
+
+    If \a position is negative, it is equivalent to passing zero.
+
+    \sa QString::truncate()
+*/
 
 /*!
   \since 4.8

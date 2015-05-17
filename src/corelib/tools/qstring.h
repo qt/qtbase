@@ -1399,6 +1399,8 @@ public:
     QStringRef right(int n) const Q_REQUIRED_RESULT;
     QStringRef mid(int pos, int n = -1) const Q_REQUIRED_RESULT;
 
+    void truncate(int pos) Q_DECL_NOTHROW { m_size = qBound(0, pos, m_size); }
+
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
