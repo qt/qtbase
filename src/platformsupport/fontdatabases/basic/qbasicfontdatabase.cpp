@@ -179,7 +179,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
 
 QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    return addTTFile(fontData,fileName.toLocal8Bit());
+    return QBasicFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
 }
 
 void QBasicFontDatabase::releaseHandle(void *handle)
@@ -190,7 +190,7 @@ void QBasicFontDatabase::releaseHandle(void *handle)
 
 extern FT_Library qt_getFreetype();
 
-QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file, QSupportedWritingSystems *supportedWritingSystems)
+QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     FT_Library library = qt_getFreetype();
 
@@ -229,8 +229,6 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             if (cm->encoding == FT_ENCODING_ADOBE_CUSTOM
                     || cm->encoding == FT_ENCODING_MS_SYMBOL) {
                 writingSystems.setSupported(QFontDatabase::Symbol);
-                if (supportedWritingSystems)
-                    supportedWritingSystems->setSupported(QFontDatabase::Symbol);
                 break;
             }
         }
@@ -249,8 +247,6 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             };
 
             writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
-            if (supportedWritingSystems)
-                *supportedWritingSystems = writingSystems;
 
             if (os2->usWeightClass) {
                 weight = QPlatformFontDatabase::weightFromInteger(os2->usWeightClass);
