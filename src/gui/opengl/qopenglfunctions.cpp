@@ -32,12 +32,14 @@
 ****************************************************************************/
 
 #include "qopenglfunctions.h"
+#include "qopenglextrafunctions.h"
 #include "qopenglextensions_p.h"
 #include "qdebug.h"
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <QtCore/qloggingcategory.h>
 
 #ifdef Q_OS_IOS
 #include <dlfcn.h>
@@ -48,6 +50,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcGLES3, "qt.opengl.es3")
 
 /*!
     \class QOpenGLFunctions
@@ -155,6 +159,8 @@ QT_BEGIN_NAMESPACE
     QOpenGLFunctions funcs(QOpenGLContext::currentContext());
     bool npot = funcs.hasOpenGLFeature(QOpenGLFunctions::NPOTTextures);
     \endcode
+
+    \sa QOpenGLContext, QSurfaceFormat
 */
 
 /*!
@@ -251,12 +257,11 @@ QOpenGLFunctions::QOpenGLFunctions(QOpenGLContext *context)
 }
 
 QOpenGLExtensions::QOpenGLExtensions()
-    : QOpenGLFunctions()
 {
 }
 
 QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
-    : QOpenGLFunctions(context)
+    : QOpenGLExtraFunctions(context)
 {
 }
 
@@ -2124,6 +2129,9 @@ public:
     template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8, typename P9, typename P10>
     ReturnType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10);
 
+    template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8, typename P9, typename P10, typename P11>
+    ReturnType operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11);
+
 private:
     FuncType Base::*funcPointerName;
     FuncType fallbackFuncPointer;
@@ -2174,6 +2182,9 @@ public:
 
     template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8, typename P9, typename P10>
     void operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10);
+
+    template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8, typename P9, typename P10, typename P11>
+    void operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11);
 
 private:
     FuncType Base::*funcPointerName;
@@ -2424,6 +2435,14 @@ void Resolver<Base, FuncType, Policy, void>::operator()(P1 p1, P2 p2, P3 p3, P4 
     (funcs->*funcPointerName)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
 }
 
+template <typename Base, typename FuncType, int Policy> template <typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8, typename P9, typename P10, typename P11>
+void Resolver<Base, FuncType, Policy, void>::operator()(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11)
+{
+    RESOLVER_COMMON_VOID
+
+    (funcs->*funcPointerName)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
+}
+
 template <typename ReturnType, int Policy, typename Base, typename FuncType>
 Resolver<Base, FuncType, Policy, ReturnType> functionResolverWithFallback(FuncType Base::*func, FuncType fallback, const char *name, const char *alternate = 0)
 {
@@ -2436,7 +2455,7 @@ Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*fu
     return Resolver<Base, FuncType, Policy, ReturnType>(func, 0, name, alternate);
 }
 
-}
+} // namespace
 
 #define RESOLVE_FUNC(RETURN_TYPE, POLICY, NAME) \
     return functionResolver<RETURN_TYPE, POLICY>(&QOpenGLExtensionsPrivate::NAME, "gl" #NAME)
@@ -3204,84 +3223,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribPointer(GLuint indx, GL
 
 #endif // !QT_OPENGL_ES_2
 
-// Functions part of the OpenGL ES 3.0+ standard need special handling. These,
-// just like the 2.0 functions, are not guaranteed to be resolvable via
-// eglGetProcAddress or similar. Calling them directly is, unlike the 2.0
-// functions, not feasible because one may build the binaries on a GLES3-capable
-// system and then deploy on a GLES2-only system that does not have these
-// symbols. Until ES3 gets universally available, they have to be dlsym'ed.
-
-Q_GLOBAL_STATIC(QOpenGLES3Helper, qgles3Helper)
-
-bool QOpenGLES3Helper::init()
-{
-#ifdef QT_NO_LIBRARY
-    return false;
-#elif !defined(Q_OS_IOS)
-# ifdef Q_OS_WIN
-#  ifndef QT_DEBUG
-    m_gl.setFileName(QStringLiteral("libGLESv2"));
-#  else
-    m_gl.setFileName(QStringLiteral("libGLESv2d"));
-#  endif
-# else
-#  ifdef Q_OS_ANDROID
-    m_gl.setFileName(QStringLiteral("GLESv2"));
-#  else
-    m_gl.setFileNameAndVersion(QStringLiteral("GLESv2"), 2);
-#  endif
-# endif // Q_OS_WIN
-    return m_gl.load();
-#else
-    return true;
-#endif // Q_OS_IOS
-}
-
-QFunctionPointer QOpenGLES3Helper::resolve(const char *name)
-{
-#ifdef Q_OS_IOS
-    return QFunctionPointer(dlsym(RTLD_DEFAULT, name));
-#elif !defined(QT_NO_LIBRARY)
-    return m_gl.resolve(name);
-#else
-    Q_UNUSED(name);
-    return 0;
-#endif
-}
-
-QOpenGLES3Helper::QOpenGLES3Helper()
-{
-    if (init()) {
-        MapBufferRange = (GLvoid* (QOPENGLF_APIENTRYP)(GLenum, qopengl_GLintptr, qopengl_GLsizeiptr, GLbitfield)) resolve("glMapBufferRange");
-        UnmapBuffer = (GLboolean (QOPENGLF_APIENTRYP)(GLenum)) resolve("glUnmapBuffer");
-        BlitFramebuffer = (void (QOPENGLF_APIENTRYP)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) resolve("glBlitFramebuffer");
-        RenderbufferStorageMultisample = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glRenderbufferStorageMultisample");
-
-        GenVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, GLuint *)) resolve("glGenVertexArrays");
-        DeleteVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, const GLuint *)) resolve("glDeleteVertexArrays");
-        BindVertexArray = (void (QOPENGLF_APIENTRYP)(GLuint)) resolve("glBindVertexArray");
-        IsVertexArray = (GLboolean (QOPENGLF_APIENTRYP)(GLuint)) resolve("glIsVertexArray");
-
-        TexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)) resolve("glTexImage3D");
-        TexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)) resolve("glTexSubImage3D");
-        CompressedTexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid *)) resolve("glCompressedTexImage3D");
-        CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid *)) resolve("glCompressedTexSubImage3D");
-
-        TexStorage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) resolve("glTexStorage3D");
-        TexStorage2D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glTexStorage2D");
-
-        if (!MapBufferRange || !GenVertexArrays || !TexImage3D || !TexStorage3D)
-            qFatal("OpenGL ES 3.0 entry points not found");
-    } else {
-        qFatal("Failed to load libGLESv2");
-    }
-}
-
-static inline bool isES3()
-{
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    return ctx->isOpenGLES() && ctx->format().majorVersion() >= 3;
-}
+// Extensions not standard in any ES version
 
 static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBuffer(GLenum target, GLenum access)
 {
@@ -3289,50 +3231,13 @@ static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBuffer(GLenum target, GLenum 
     // differentiate between glUnmapBufferOES and glUnmapBuffer causes extra
     // headache. QOpenGLBuffer::map() will handle this automatically, while direct
     // calls are better off with migrating to the standard glMapBufferRange.
-    if (isES3()) {
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (ctx->isOpenGLES() && ctx->format().majorVersion() >= 3) {
         qWarning("QOpenGLFunctions: glMapBuffer is not available in OpenGL ES 3.0 and up. Use glMapBufferRange instead.");
         return 0;
     } else {
         RESOLVE_FUNC(GLvoid *, ResolveOES, MapBuffer)(target, access);
     }
-}
-
-static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBufferRange(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr length, GLbitfield access)
-{
-    if (isES3())
-        return qgles3Helper()->MapBufferRange(target, offset, length, access);
-    else
-        RESOLVE_FUNC(GLvoid *, 0, MapBufferRange)(target, offset, length, access);
-}
-
-static GLboolean QOPENGLF_APIENTRY qopenglfResolveUnmapBuffer(GLenum target)
-{
-    if (isES3())
-        return qgles3Helper()->UnmapBuffer(target);
-    else
-        RESOLVE_FUNC(GLboolean, ResolveOES, UnmapBuffer)(target);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
-                       GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
-                       GLbitfield mask, GLenum filter)
-{
-    if (isES3())
-        qgles3Helper()->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-    else
-        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, BlitFramebuffer)
-            (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-}
-
-static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLenum target, GLsizei samples,
-                                      GLenum internalFormat,
-                                      GLsizei width, GLsizei height)
-{
-    if (isES3())
-        qgles3Helper()->RenderbufferStorageMultisample(target, samples, internalFormat, width, height);
-    else
-        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, RenderbufferStorageMultisample)
-            (target, samples, internalFormat, width, height);
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data)
@@ -3575,15 +3480,4114 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 #endif // !QT_OPENGL_ES_2
 }
 
+/*!
+    \class QOpenGLExtraFunctions
+    \brief The QOpenGLExtraFunctions class provides cross-platform access to the OpenGL ES 3.0 and 3.1 API.
+    \since 5.6
+    \ingroup painting-3D
+    \inmodule QtGui
+
+    This subclass of QOpenGLFunctions includes the OpenGL ES 3.0 and 3.1
+    functions. These will only work when an OpenGL ES 3.0 or 3.1 context, or an
+    OpenGL context of a version containing the functions in question either in
+    core or as extension, is in use. This allows developing GLES 3.0 and 3.1
+    applications in a cross-platform manner: development can happen on a desktop
+    platform with OpenGL 3.x or 4.x, deploying to a real GLES 3.1 device later
+    on will require no or minimal changes to the application.
+
+    \note This class is different from the versioned OpenGL wrappers, for
+    instance QOpenGLFunctions_3_2_Core. The versioned function wrappers target a
+    given version and profile of OpenGL. They are therefore not suitable for
+    cross-OpenGL-OpenGLES development.
+ */
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBeginQuery(GLenum target, GLuint id)
+
+    Convenience function that calls glBeginQuery(\a target, \a id).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBeginQuery.xml}{glBeginQuery()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBeginTransformFeedback(GLenum primitiveMode)
+
+    Convenience function that calls glBeginTransformFeedback(\a primitiveMode).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBeginTransformFeedback.xml}{glBeginTransformFeedback()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindBufferBase(GLenum target, GLuint index, GLuint buffer)
+
+    Convenience function that calls glBindBufferBase(\a target, \a index, \a buffer).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindBufferBase.xml}{glBindBufferBase()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
+
+    Convenience function that calls glBindBufferRange(\a target, \a index, \a buffer, \a offset, \a size).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindBufferRange.xml}{glBindBufferRange()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindSampler(GLuint unit, GLuint sampler)
+
+    Convenience function that calls glBindSampler(\a unit, \a sampler).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindSampler.xml}{glBindSampler()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindTransformFeedback(GLenum target, GLuint id)
+
+    Convenience function that calls glBindTransformFeedback(\a target, \a id).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindTransformFeedback.xml}{glBindTransformFeedback()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindVertexArray(GLuint array)
+
+    Convenience function that calls glBindVertexArray(\a array).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindVertexArray.xml}{glBindVertexArray()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
+
+    Convenience function that calls glBlitFramebuffer(\a srcX0, \a srcY0, \a srcX1, \a srcY1, \a dstX0, \a dstY0, \a dstX1, \a dstY1, \a mask, \a filter).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBlitFramebuffer.xml}{glBlitFramebuffer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
+
+    Convenience function that calls glClearBufferfi(\a buffer, \a drawbuffer, \a depth, \a stencil).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glClearBufferfi.xml}{glClearBufferfi()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat * value)
+
+    Convenience function that calls glClearBufferfv(\a buffer, \a drawbuffer, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glClearBufferfv.xml}{glClearBufferfv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint * value)
+
+    Convenience function that calls glClearBufferiv(\a buffer, \a drawbuffer, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glClearBufferiv.xml}{glClearBufferiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint * value)
+
+    Convenience function that calls glClearBufferuiv(\a buffer, \a drawbuffer, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glClearBufferuiv.xml}{glClearBufferuiv()}.
+*/
+
+/*!
+    \fn GLenum QOpenGLExtraFunctions::glClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
+
+    Convenience function that calls glClientWaitSync(\a sync, \a flags, \a timeout).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glClientWaitSync.xml}{glClientWaitSync()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glCompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void * data)
+
+    Convenience function that calls glCompressedTexImage3D(\a target, \a level, \a internalformat, \a width, \a height, \a depth, \a border, \a imageSize, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glCompressedTexImage3D.xml}{glCompressedTexImage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void * data)
+
+    Convenience function that calls glCompressedTexSubImage3D(\a target, \a level, \a xoffset, \a yoffset, \a zoffset, \a width, \a height, \a depth, \a format, \a imageSize, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glCompressedTexSubImage3D.xml}{glCompressedTexSubImage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
+
+    Convenience function that calls glCopyBufferSubData(\a readTarget, writeTarget, \a readOffset, \a writeOffset, \a size).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glCopyBufferSubData.xml}{glCopyBufferSubData()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+
+    Convenience function that calls glCopyTexSubImage3D(\a target, \a level, \a xoffset, \a yoffset, \a zoffset, \a x, \a y, \a width, \a height).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glCopyTexSubImage3D.xml}{glCopyTexSubImage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteQueries(GLsizei n, const GLuint * ids)
+
+    Convenience function that calls glDeleteQueries(\a n, \a ids).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteQueries.xml}{glDeleteQueries()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteSamplers(GLsizei count, const GLuint * samplers)
+
+    Convenience function that calls glDeleteSamplers(\a count, \a samplers).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteSamplers.xml}{glDeleteSamplers()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteSync(GLsync sync)
+
+    Convenience function that calls glDeleteSync(\a sync).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteSync.xml}{glDeleteSync()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteTransformFeedbacks(GLsizei n, const GLuint * ids)
+
+    Convenience function that calls glDeleteTransformFeedbacks(\a n, \a ids).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteTransformFeedbacks.xml}{glDeleteTransformFeedbacks()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteVertexArrays(GLsizei n, const GLuint * arrays)
+
+    Convenience function that calls glDeleteVertexArrays(\a n, \a arrays).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteVertexArrays.xml}{glDeleteVertexArrays()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
+
+    Convenience function that calls glDrawArraysInstanced(\a mode, \a first, \a count, \a instancecount).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawArraysInstanced.xml}{glDrawArraysInstanced()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawBuffers(GLsizei n, const GLenum * bufs)
+
+    Convenience function that calls glDrawBuffers(\a n, \a bufs).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawBuffers.xml}{glDrawBuffers()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount)
+
+    Convenience function that calls glDrawElementsInstanced(\a mode, \a count, \a type, \a indices, \a instancecount).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawElementsInstanced.xml}{glDrawElementsInstanced()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices)
+
+    Convenience function that calls glDrawRangeElements(\a mode, \a start, \a end, \a count, \a type, \a indices).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawRangeElements.xml}{glDrawRangeElements()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glEndQuery(GLenum target)
+
+    Convenience function that calls glEndQuery(\a target).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glEndQuery.xml}{glEndQuery()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glEndTransformFeedback()
+
+    Convenience function that calls glEndTransformFeedback().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glEndTransformFeedback.xml}{glEndTransformFeedback()}.
+*/
+
+/*!
+    \fn GLsync QOpenGLExtraFunctions::glFenceSync(GLenum condition, GLbitfield flags)
+
+    Convenience function that calls glFenceSync(\a condition, \a flags).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glFenceSync.xml}{glFenceSync()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
+
+    Convenience function that calls glFlushMappedBufferRange(\a target, \a offset, \a length).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glFlushMappedBufferRange.xml}{glFlushMappedBufferRange()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer)
+
+    Convenience function that calls glFramebufferTextureLayer(\a target, \a attachment, \a texture, \a level, \a layer).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glFramebufferTextureLayer.xml}{glFramebufferTextureLayer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGenQueries(GLsizei n, GLuint* ids)
+
+    Convenience function that calls glGenQueries(\a n, \a ids).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGenQueries.xml}{glGenQueries()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGenSamplers(GLsizei count, GLuint* samplers)
+
+    Convenience function that calls glGenSamplers(\a count, \a samplers).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGenSamplers.xml}{glGenSamplers()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGenTransformFeedbacks(GLsizei n, GLuint* ids)
+
+    Convenience function that calls glGenTransformFeedbacks(\a n, \a ids).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGenTransformFeedbacks.xml}{glGenTransformFeedbacks()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGenVertexArrays(GLsizei n, GLuint* arrays)
+
+    Convenience function that calls glGenVertexArrays(\a n, \a arrays).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGenVertexArrays.xml}{glGenVertexArrays()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei* length, GLchar* uniformBlockName)
+
+    Convenience function that calls glGetActiveUniformBlockName(\a program, \a uniformBlockIndex, \a bufSize, \a length, \a uniformBlockName).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetActiveUniformBlockName.xml}{glGetActiveUniformBlockName()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetActiveUniformBlockiv(\a program, \a uniformBlockIndex, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetActiveUniformBlockiv.xml}{glGetActiveUniformBlockiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const GLuint * uniformIndices, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetActiveUniformsiv(\a program, \a uniformCount, \a uniformIndices, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetActiveUniformsiv.xml}{glGetActiveUniformsiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetBufferParameteri64v(GLenum target, GLenum pname, GLint64* params)
+
+    Convenience function that calls glGetBufferParameteri64v(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetBufferParameteri64v.xml}{glGetBufferParameteri64v()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetBufferPointerv(GLenum target, GLenum pname, void ** params)
+
+    Convenience function that calls glGetBufferPointerv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetBufferPointerv.xml}{glGetBufferPointerv()}.
+*/
+
+/*!
+    \fn GLint QOpenGLExtraFunctions::glGetFragDataLocation(GLuint program, const GLchar * name)
+
+    Convenience function that calls glGetFragDataLocation(\a program, \a name).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetFragDataLocation.xml}{glGetFragDataLocation()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetInteger64i_v(GLenum target, GLuint index, GLint64* data)
+
+    Convenience function that calls glGetInteger64i_v(\a target, \a index, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetInteger64i_v.xml}{glGetInteger64i_v()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetInteger64v(GLenum pname, GLint64* data)
+
+    Convenience function that calls glGetInteger64v(\a pname, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetInteger64v.xml}{glGetInteger64v()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetIntegeri_v(GLenum target, GLuint index, GLint* data)
+
+    Convenience function that calls glGetIntegeri_v(\a target, \a index, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetIntegeri_v.xml}{glGetIntegeri_v()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetInternalformativ(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint* params)
+
+    Convenience function that calls glGetInternalformativ(\a target, \a internalformat, \a pname, \a bufSize, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetInternalformativ.xml}{glGetInternalformativ()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void * binary)
+
+    Convenience function that calls glGetProgramBinary(\a program, \a bufSize, \a length, \a binaryFormat, \a binary).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramBinary.xml}{glGetProgramBinary()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params)
+
+    Convenience function that calls glGetQueryObjectuiv(\a id, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetQueryObjectuiv.xml}{glGetQueryObjectuiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetQueryiv(GLenum target, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetQueryiv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetQueryiv.xml}{glGetQueryiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat* params)
+
+    Convenience function that calls glGetSamplerParameterfv(\a sampler, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetSamplerParameterfv.xml}{glGetSamplerParameterfv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetSamplerParameteriv(\a sampler, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetSamplerParameteriv.xml}{glGetSamplerParameteriv()}.
+*/
+
+/*!
+    \fn const GLubyte * QOpenGLExtraFunctions::glGetStringi(GLenum name, GLuint index)
+
+    Convenience function that calls glGetStringi(\a name, \a index).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetStringi.xml}{glGetStringi()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length, GLint* values)
+
+    Convenience function that calls glGetSynciv(\a sync, \a pname, \a bufSize, \a length, \a values).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetSynciv.xml}{glGetSynciv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetTransformFeedbackVarying(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLsizei* size, GLenum* type, GLchar* name)
+
+    Convenience function that calls glGetTransformFeedbackVarying(\a program, \a index, \a bufSize, \a length, \a size, \a type, \a name).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetTransformFeedbackVarying.xml}{glGetTransformFeedbackVarying()}.
+*/
+
+/*!
+    \fn GLuint QOpenGLExtraFunctions::glGetUniformBlockIndex(GLuint program, const GLchar * uniformBlockName)
+
+    Convenience function that calls glGetUniformBlockIndex(\a program, \a uniformBlockName).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetUniformBlockIndex.xml}{glGetUniformBlockIndex()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetUniformIndices(GLuint program, GLsizei uniformCount, const GLchar *const* uniformNames, GLuint* uniformIndices)
+
+    Convenience function that calls glGetUniformIndices(\a program, \a uniformCount, \a uniformNames, \a uniformIndices).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetUniformIndices.xml}{glGetUniformIndices()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetUniformuiv(GLuint program, GLint location, GLuint* params)
+
+    Convenience function that calls glGetUniformuiv(\a program, \a location, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetUniformuiv.xml}{glGetUniformuiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetVertexAttribIiv(\a index, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetVertexAttribIiv.xml}{glGetVertexAttribIiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params)
+
+    Convenience function that calls glGetVertexAttribIuiv(\a index, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetVertexAttribIuiv.xml}{glGetVertexAttribIuiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments)
+
+    Convenience function that calls glInvalidateFramebuffer(\a target, \a numAttachments, \a attachments).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glInvalidateFramebuffer.xml}{glInvalidateFramebuffer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments, GLint x, GLint y, GLsizei width, GLsizei height)
+
+    Convenience function that calls glInvalidateSubFramebuffer(\a target, \a numAttachments, \a attachments, \a x, \a y, \a width, \a height).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glInvalidateSubFramebuffer.xml}{glInvalidateSubFramebuffer()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsQuery(GLuint id)
+
+    Convenience function that calls glIsQuery(\a id).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsQuery.xml}{glIsQuery()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsSampler(GLuint sampler)
+
+    Convenience function that calls glIsSampler(\a sampler).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsSampler.xml}{glIsSampler()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsSync(GLsync sync)
+
+    Convenience function that calls glIsSync(\a sync).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsSync.xml}{glIsSync()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsTransformFeedback(GLuint id)
+
+    Convenience function that calls glIsTransformFeedback(\a id).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsTransformFeedback.xml}{glIsTransformFeedback()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsVertexArray(GLuint array)
+
+    Convenience function that calls glIsVertexArray(\a array).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsVertexArray.xml}{glIsVertexArray()}.
+*/
+
+/*!
+    \fn void * QOpenGLExtraFunctions::glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
+
+    Convenience function that calls glMapBufferRange(\a target, \a offset, \a length, \a access).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glMapBufferRange.xml}{glMapBufferRange()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glPauseTransformFeedback()
+
+    Convenience function that calls glPauseTransformFeedback().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glPauseTransformFeedback.xml}{glPauseTransformFeedback()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramBinary(GLuint program, GLenum binaryFormat, const void * binary, GLsizei length)
+
+    Convenience function that calls glProgramBinary(\a program, \a binaryFormat, \a binary, \a length).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramBinary.xml}{glProgramBinary()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramParameteri(GLuint program, GLenum pname, GLint value)
+
+    Convenience function that calls glProgramParameteri(\a program, \a pname, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramParameteri.xml}{glProgramParameteri()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glReadBuffer(GLenum src)
+
+    Convenience function that calls glReadBuffer(\a src).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glReadBuffer.xml}{glReadBuffer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
+
+    Convenience function that calls glRenderbufferStorageMultisample(\a target, \a samples, \a internalformat, \a width, \a height).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glRenderbufferStorageMultisample.xml}{glRenderbufferStorageMultisample()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glResumeTransformFeedback()
+
+    Convenience function that calls glResumeTransformFeedback().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glResumeTransformFeedback.xml}{glResumeTransformFeedback()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
+
+    Convenience function that calls glSamplerParameterf(\a sampler, \a pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glSamplerParameterf.xml}{glSamplerParameterf()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat * param)
+
+    Convenience function that calls glSamplerParameterfv(\a sampler, pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glSamplerParameterfv.xml}{glSamplerParameterfv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
+
+    Convenience function that calls glSamplerParameteri(\a sampler, \a pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glSamplerParameteri.xml}{glSamplerParameteri()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameteriv(GLuint sampler, GLenum pname, const GLint * param)
+
+    Convenience function that calls glSamplerParameteriv(\a sampler, \a pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glSamplerParameteriv.xml}{glSamplerParameteriv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void * pixels)
+
+    Convenience function that calls glTexImage3D(\a target, \a level, \a internalformat, \a width, \a height, \a depth, \a border, \a format, \a type, \a pixels).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTexImage3D.xml}{glTexImage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+
+    Convenience function that calls glTexStorage2D(\a target, \a levels, \a internalformat, \a width, \a height).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTexStorage2D.xml}{glTexStorage2D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
+
+    Convenience function that calls glTexStorage3D(\a target, \a levels, \a internalformat, \a width, \a height, \a depth).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTexStorage3D.xml}{glTexStorage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void * pixels)
+
+    Convenience function that calls glTexSubImage3D(\a target, \a level, \a xoffset, \a yoffset, \a zoffset, \a width, \a height, \a depth, \a format, \a type, \a pixels).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTexSubImage3D.xml}{glTexSubImage3D()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar *const* varyings, GLenum bufferMode)
+
+    Convenience function that calls glTransformFeedbackVaryings(\a program, \a count, \a varyings, \a bufferMode).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTransformFeedbackVaryings.xml}{glTransformFeedbackVaryings()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform1ui(GLint location, GLuint v0)
+
+    Convenience function that calls glUniform1ui(\a location, \a v0).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform1ui.xml}{glUniform1ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform1uiv(GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glUniform1uiv(\a location, \a count, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform1uiv.xml}{glUniform1uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform2ui(GLint location, GLuint v0, GLuint v1)
+
+    Convenience function that calls glUniform2ui(\a location, \a v0, \a v1).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform2ui.xml}{glUniform2ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform2uiv(GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glUniform2uiv(\a location, \a count, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform2uiv.xml}{glUniform2uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform3ui(GLint location, GLuint v0, GLuint v1, GLuint v2)
+
+    Convenience function that calls glUniform3ui(\a location, \a v0, \a v1, \a v2).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform3ui.xml}{glUniform3ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform3uiv(GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glUniform3uiv(\a location, count, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform3uiv.xml}{glUniform3uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
+
+    Convenience function that calls glUniform4ui(\a location, \a v0, \a v1, \a v2, \a v3).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform4ui.xml}{glUniform4ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniform4uiv(GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glUniform4uiv(\a location, \a count, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniform4uiv.xml}{glUniform4uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
+
+    Convenience function that calls glUniformBlockBinding(\a program, \a uniformBlockIndex, \a uniformBlockBinding).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformBlockBinding.xml}{glUniformBlockBinding()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix2x3fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix2x3fv.xml}{glUniformMatrix2x3fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix2x4fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix2x4fv.xml}{glUniformMatrix2x4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix3x2fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix3x2fv.xml}{glUniformMatrix3x2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix3x4fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix3x4fv.xml}{glUniformMatrix3x4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix4x2fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix4x2fv.xml}{glUniformMatrix4x2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glUniformMatrix4x3fv(\a location, \a count, \a transpose, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUniformMatrix4x3fv.xml}{glUniformMatrix4x3fv()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glUnmapBuffer(GLenum target)
+
+    Convenience function that calls glUnmapBuffer(\a target).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUnmapBuffer.xml}{glUnmapBuffer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribDivisor(GLuint index, GLuint divisor)
+
+    Convenience function that calls glVertexAttribDivisor(\a index, \a divisor).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribDivisor.xml}{glVertexAttribDivisor()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w)
+
+    Convenience function that calls glVertexAttribI4i(\a index, \a x, \a y, \a z, \a w).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribI4i.xml}{glVertexAttribI4i()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribI4iv(GLuint index, const GLint * v)
+
+    Convenience function that calls glVertexAttribI4iv(\a index, \a v).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribI4iv.xml}{glVertexAttribI4iv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
+
+    Convenience function that calls glVertexAttribI4ui(\a index, \a x, \a y, \a z, \a w).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribI4ui.xml}{glVertexAttribI4ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribI4uiv(GLuint index, const GLuint * v)
+
+    Convenience function that calls glVertexAttribI4uiv(\a index, \a v).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribI4uiv.xml}{glVertexAttribI4uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void * pointer)
+
+    Convenience function that calls glVertexAttribIPointer(\a index, \a size, \a type, \a stride, \a pointer).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribIPointer.xml}{glVertexAttribIPointer()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
+
+    Convenience function that calls glWaitSync(\a sync, \a flags, \a timeout).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glWaitSync.xml}{glWaitSync()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glActiveShaderProgram(GLuint pipeline, GLuint program)
+
+    Convenience function that calls glActiveShaderProgram(pipeline, program).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glActiveShaderProgram.xml}{glActiveShaderProgram()}.
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
+
+    Convenience function that calls glBindImageTexture(unit, texture, level, layered, layer, access, format).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindImageTexture.xml}{glBindImageTexture()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindProgramPipeline(GLuint pipeline)
+
+    Convenience function that calls glBindProgramPipeline(pipeline).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindProgramPipeline.xml}{glBindProgramPipeline()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
+
+    Convenience function that calls glBindVertexBuffer(bindingindex, buffer, offset, stride).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glBindVertexBuffer.xml}{glBindVertexBuffer()}.
+*/
+
+/*!
+    \fn GLuint QOpenGLExtraFunctions::glCreateShaderProgramv(GLenum type, GLsizei count, const GLchar *const* strings)
+
+    Convenience function that calls glCreateShaderProgramv(type, count, strings).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glCreateShaderProgramv.xml}{glCreateShaderProgramv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDeleteProgramPipelines(GLsizei n, const GLuint * pipelines)
+
+    Convenience function that calls glDeleteProgramPipelines(n, pipelines).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDeleteProgramPipelines.xml}{glDeleteProgramPipelines()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
+
+    Convenience function that calls glDispatchCompute(num_groups_x, num_groups_y, num_groups_z).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDispatchCompute.xml}{glDispatchCompute()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDispatchComputeIndirect(GLintptr indirect)
+
+    Convenience function that calls glDispatchComputeIndirect(indirect).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDispatchComputeIndirect.xml}{glDispatchComputeIndirect()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawArraysIndirect(GLenum mode, const void * indirect)
+
+    Convenience function that calls glDrawArraysIndirect(mode, indirect).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawArraysIndirect.xml}{glDrawArraysIndirect()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawElementsIndirect(GLenum mode, GLenum type, const void * indirect)
+
+    Convenience function that calls glDrawElementsIndirect(mode, type, indirect).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glDrawElementsIndirect.xml}{glDrawElementsIndirect()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glFramebufferParameteri(GLenum target, GLenum pname, GLint param)
+
+    Convenience function that calls glFramebufferParameteri(target, pname, param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glFramebufferParameteri.xml}{glFramebufferParameteri()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGenProgramPipelines(GLsizei n, GLuint* pipelines)
+
+    Convenience function that calls glGenProgramPipelines(n, pipelines).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGenProgramPipelines.xml}{glGenProgramPipelines()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetBooleani_v(GLenum target, GLuint index, GLboolean* data)
+
+    Convenience function that calls glGetBooleani_v(target, index, data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetBooleani_v.xml}{glGetBooleani_v()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetFramebufferParameteriv(GLenum target, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetFramebufferParameteriv(target, pname, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetFramebufferParameteriv.xml}{glGetFramebufferParameteriv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetMultisamplefv(GLenum pname, GLuint index, GLfloat* val)
+
+    Convenience function that calls glGetMultisamplefv(pname, index, val).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetMultisamplefv.xml}{glGetMultisamplefv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramInterfaceiv(GLuint program, GLenum programInterface, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetProgramInterfaceiv(program, programInterface, pname, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramInterfaceiv.xml}{glGetProgramInterfaceiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
+
+    Convenience function that calls glGetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramPipelineInfoLog.xml}{glGetProgramPipelineInfoLog()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramPipelineiv(GLuint pipeline, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetProgramPipelineiv(pipeline, pname, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramPipelineiv.xml}{glGetProgramPipelineiv()}.
+*/
+
+/*!
+    \fn GLuint QOpenGLExtraFunctions::glGetProgramResourceIndex(GLuint program, GLenum programInterface, const GLchar * name)
+
+    Convenience function that calls glGetProgramResourceIndex(program, programInterface, name).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramResourceIndex.xml}{glGetProgramResourceIndex()}.
+*/
+
+/*!
+    \fn GLint QOpenGLExtraFunctions::glGetProgramResourceLocation(GLuint program, GLenum programInterface, const GLchar * name)
+
+    Convenience function that calls glGetProgramResourceLocation(program, programInterface, name).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramResourceLocation.xml}{glGetProgramResourceLocation()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramResourceName(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei* length, GLchar* name)
+
+    Convenience function that calls glGetProgramResourceName(program, programInterface, index, bufSize, length, name).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramResourceName.xml}{glGetProgramResourceName()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetProgramResourceiv(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum * props, GLsizei bufSize, GLsizei* length, GLint* params)
+
+    Convenience function that calls glGetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetProgramResourceiv.xml}{glGetProgramResourceiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat* params)
+
+    Convenience function that calls glGetTexLevelParameterfv(target, level, pname, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetTexLevelParameterfv.xml}{glGetTexLevelParameterfv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetTexLevelParameteriv(target, level, pname, params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glGetTexLevelParameteriv.xml}{glGetTexLevelParameteriv()}.
+*/
+
+/*!
+    \fn GLboolean QOpenGLExtraFunctions::glIsProgramPipeline(GLuint pipeline)
+
+    Convenience function that calls glIsProgramPipeline(pipeline).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glIsProgramPipeline.xml}{glIsProgramPipeline()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glMemoryBarrier(GLbitfield barriers)
+
+    Convenience function that calls glMemoryBarrier(barriers).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glMemoryBarrier.xml}{glMemoryBarrier()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glMemoryBarrierByRegion(GLbitfield barriers)
+
+    Convenience function that calls glMemoryBarrierByRegion(barriers).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glMemoryBarrierByRegion.xml}{glMemoryBarrierByRegion()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1f(GLuint program, GLint location, GLfloat v0)
+
+    Convenience function that calls glProgramUniform1f(program, location, v0).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1f.xml}{glProgramUniform1f()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+
+    Convenience function that calls glProgramUniform1fv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1fv.xml}{glProgramUniform1fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1i(GLuint program, GLint location, GLint v0)
+
+    Convenience function that calls glProgramUniform1i(program, location, v0).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1i.xml}{glProgramUniform1i()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+
+    Convenience function that calls glProgramUniform1iv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1iv.xml}{glProgramUniform1iv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1ui(GLuint program, GLint location, GLuint v0)
+
+    Convenience function that calls glProgramUniform1ui(program, location, v0).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1ui.xml}{glProgramUniform1ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform1uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glProgramUniform1uiv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform1uiv.xml}{glProgramUniform1uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1)
+
+    Convenience function that calls glProgramUniform2f(program, location, v0, v1).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2f.xml}{glProgramUniform2f()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+
+    Convenience function that calls glProgramUniform2fv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2fv.xml}{glProgramUniform2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1)
+
+    Convenience function that calls glProgramUniform2i(program, location, v0, v1).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2i.xml}{glProgramUniform2i()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+
+    Convenience function that calls glProgramUniform2iv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2iv.xml}{glProgramUniform2iv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2ui(GLuint program, GLint location, GLuint v0, GLuint v1)
+
+    Convenience function that calls glProgramUniform2ui(program, location, v0, v1).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2ui.xml}{glProgramUniform2ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform2uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glProgramUniform2uiv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform2uiv.xml}{glProgramUniform2uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
+
+    Convenience function that calls glProgramUniform3f(program, location, v0, v1, v2).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3f.xml}{glProgramUniform3f()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+
+    Convenience function that calls glProgramUniform3fv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3fv.xml}{glProgramUniform3fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
+
+    Convenience function that calls glProgramUniform3i(program, location, v0, v1, v2).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3i.xml}{glProgramUniform3i()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+
+    Convenience function that calls glProgramUniform3iv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3iv.xml}{glProgramUniform3iv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
+
+    Convenience function that calls glProgramUniform3ui(program, location, v0, v1, v2).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3ui.xml}{glProgramUniform3ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform3uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glProgramUniform3uiv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform3uiv.xml}{glProgramUniform3uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+
+    Convenience function that calls glProgramUniform4f(program, location, v0, v1, v2, v3).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4f.xml}{glProgramUniform4f()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+
+    Convenience function that calls glProgramUniform4fv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4fv.xml}{glProgramUniform4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
+
+    Convenience function that calls glProgramUniform4i(program, location, v0, v1, v2, v3).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4i.xml}{glProgramUniform4i()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+
+    Convenience function that calls glProgramUniform4iv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4iv.xml}{glProgramUniform4iv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
+
+    Convenience function that calls glProgramUniform4ui(program, location, v0, v1, v2, v3).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4ui.xml}{glProgramUniform4ui()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniform4uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+
+    Convenience function that calls glProgramUniform4uiv(program, location, count, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniform4uiv.xml}{glProgramUniform4uiv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix2fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix2fv.xml}{glProgramUniformMatrix2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix2x3fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix2x3fv.xml}{glProgramUniformMatrix2x3fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix2x4fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix2x4fv.xml}{glProgramUniformMatrix2x4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix3fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix3fv.xml}{glProgramUniformMatrix3fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix3x2fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix3x2fv.xml}{glProgramUniformMatrix3x2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix3x4fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix3x4fv.xml}{glProgramUniformMatrix3x4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix4fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix4fv.xml}{glProgramUniformMatrix4fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix4x2fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix4x2fv.xml}{glProgramUniformMatrix4x2fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+
+    Convenience function that calls glProgramUniformMatrix4x3fv(program, location, count, transpose, value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glProgramUniformMatrix4x3fv.xml}{glProgramUniformMatrix4x3fv()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSampleMaski(GLuint maskNumber, GLbitfield mask)
+
+    Convenience function that calls glSampleMaski(maskNumber, mask).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glSampleMaski.xml}{glSampleMaski()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
+
+    Convenience function that calls glTexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glTexStorage2DMultisample.xml}{glTexStorage2DMultisample()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program)
+
+    Convenience function that calls glUseProgramStages(pipeline, stages, program).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glUseProgramStages.xml}{glUseProgramStages()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glValidateProgramPipeline(GLuint pipeline)
+
+    Convenience function that calls glValidateProgramPipeline(pipeline).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glValidateProgramPipeline.xml}{glValidateProgramPipeline()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribBinding(GLuint attribindex, GLuint bindingindex)
+
+    Convenience function that calls glVertexAttribBinding(attribindex, bindingindex).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribBinding.xml}{glVertexAttribBinding()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
+
+    Convenience function that calls glVertexAttribFormat(attribindex, size, type, normalized, relativeoffset).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribFormat.xml}{glVertexAttribFormat()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
+
+    Convenience function that calls glVertexAttribIFormat(attribindex, size, type, relativeoffset).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexAttribIFormat.xml}{glVertexAttribIFormat()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glVertexBindingDivisor(GLuint bindingindex, GLuint divisor)
+
+    Convenience function that calls glVertexBindingDivisor(bindingindex, divisor).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.x documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexBindingDivisor.xml}{glVertexBindingDivisor()}.
+*/
+
+/*!
+    \fn bool QOpenGLExtraFunctions::isInitialized(const QOpenGLExtraFunctionsPrivate *d)
+    \internal
+*/
+
+// Functions part of the OpenGL ES 3.0+ standard need special handling. These, just like
+// the 2.0 functions, are not guaranteed to be resolvable via eglGetProcAddress or
+// similar. (we cannot count on EGL_KHR_(client_)get_all_proc_addresses being available)
+
+// Calling them directly is, unlike the 2.0 functions, not feasible because one may build
+// the binaries on a GLES3-capable system and then deploy on a GLES2-only system that does
+// not have these symbols, and vice versa. Until ES3 becomes universally available, they
+// have to be dlsym'ed.
+
+Q_GLOBAL_STATIC(QOpenGLES3Helper, qgles3Helper)
+
+bool QOpenGLES3Helper::init()
+{
+#ifdef QT_NO_LIBRARY
+    return false;
+#elif !defined(Q_OS_IOS)
+# ifdef Q_OS_WIN
+#  ifndef QT_DEBUG
+    m_gl.setFileName(QStringLiteral("libGLESv2"));
+#  else
+    m_gl.setFileName(QStringLiteral("libGLESv2d"));
+#  endif
+# else
+#  ifdef Q_OS_ANDROID
+    m_gl.setFileName(QStringLiteral("GLESv2"));
+#  else
+    m_gl.setFileNameAndVersion(QStringLiteral("GLESv2"), 2);
+#  endif
+# endif // Q_OS_WIN
+    return m_gl.load();
+#else
+    return true;
+#endif // Q_OS_IOS
+}
+
+QFunctionPointer QOpenGLES3Helper::resolve(const char *name)
+{
+#ifdef Q_OS_IOS
+    return QFunctionPointer(dlsym(RTLD_DEFAULT, name));
+#elif !defined(QT_NO_LIBRARY)
+    return m_gl.resolve(name);
+#else
+    Q_UNUSED(name);
+    return 0;
+#endif
+}
+
+QOpenGLES3Helper::QOpenGLES3Helper()
+{
+    m_supportedVersion = qMakePair(2, 0);
+
+    if (init()) {
+        const QPair<int, int> contextVersion = QOpenGLContext::currentContext()->format().version();
+
+        qCDebug(lcGLES3, "Resolving OpenGL ES 3.0 entry points");
+
+        BeginQuery = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glBeginQuery");
+        BeginTransformFeedback = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glBeginTransformFeedback");
+        BindBufferBase = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint)) resolve("glBindBufferBase");
+        BindBufferRange = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint, GLintptr, GLsizeiptr)) resolve("glBindBufferRange");
+        BindSampler = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glBindSampler");
+        BindTransformFeedback = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glBindTransformFeedback");
+        BindVertexArray = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glBindVertexArray");
+        BlitFramebuffer = (void (QOPENGLF_APIENTRYP) (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) resolve("glBlitFramebuffer");
+        ClearBufferfi = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLfloat, GLint)) resolve("glClearBufferfi");
+        ClearBufferfv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLfloat *)) resolve("glClearBufferfv");
+        ClearBufferiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLint *)) resolve("glClearBufferiv");
+        ClearBufferuiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, const GLuint *)) resolve("glClearBufferuiv");
+        ClientWaitSync = (GLenum (QOPENGLF_APIENTRYP) (GLsync, GLbitfield, GLuint64)) resolve("glClientWaitSync");
+        CompressedTexImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)) resolve("glCompressedTexImage3D");
+        CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const void *)) resolve("glCompressedTexSubImage3D");
+        CopyBufferSubData = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLintptr, GLintptr, GLsizeiptr)) resolve("glCopyBufferSubData");
+        CopyTexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)) resolve("glCopyTexSubImage3D");
+        DeleteQueries = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteQueries");
+        DeleteSamplers = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteSamplers");
+        DeleteSync = (void (QOPENGLF_APIENTRYP) (GLsync)) resolve("glDeleteSync");
+        DeleteTransformFeedbacks = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteTransformFeedbacks");
+        DeleteVertexArrays = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteVertexArrays");
+        DrawArraysInstanced = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLsizei, GLsizei)) resolve("glDrawArraysInstanced");
+        DrawBuffers = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLenum *)) resolve("glDrawBuffers");
+        DrawElementsInstanced = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, const void *, GLsizei)) resolve("glDrawElementsInstanced");
+        DrawRangeElements = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLuint, GLsizei, GLenum, const void *)) resolve("glDrawRangeElements");
+        EndQuery = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glEndQuery");
+        EndTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glEndTransformFeedback");
+        FenceSync = (GLsync (QOPENGLF_APIENTRYP) (GLenum, GLbitfield)) resolve("glFenceSync");
+        FlushMappedBufferRange = (void (QOPENGLF_APIENTRYP) (GLenum, GLintptr, GLsizeiptr)) resolve("glFlushMappedBufferRange");
+        FramebufferTextureLayer = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLuint, GLint, GLint)) resolve("glFramebufferTextureLayer");
+        GenQueries = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenQueries");
+        GenSamplers = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenSamplers");
+        GenTransformFeedbacks = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenTransformFeedbacks");
+        GenVertexArrays = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenVertexArrays");
+        GetActiveUniformBlockName = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetActiveUniformBlockName");
+        GetActiveUniformBlockiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLenum, GLint*)) resolve("glGetActiveUniformBlockiv");
+        GetActiveUniformsiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLuint *, GLenum, GLint*)) resolve("glGetActiveUniformsiv");
+        GetBufferParameteri64v = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint64*)) resolve("glGetBufferParameteri64v");
+        GetBufferPointerv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, void **)) resolve("glGetBufferPointerv");
+        GetFragDataLocation = (GLint (QOPENGLF_APIENTRYP) (GLuint, const GLchar *)) resolve("glGetFragDataLocation");
+        GetInteger64i_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLint64*)) resolve("glGetInteger64i_v");
+        GetInteger64v = (void (QOPENGLF_APIENTRYP) (GLenum, GLint64*)) resolve("glGetInteger64v");
+        GetIntegeri_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLint*)) resolve("glGetIntegeri_v");
+        GetInternalformativ = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLenum, GLsizei, GLint*)) resolve("glGetInternalformativ");
+        GetProgramBinary = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, GLsizei*, GLenum*, void *)) resolve("glGetProgramBinary");
+        GetQueryObjectuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint*)) resolve("glGetQueryObjectuiv");
+        GetQueryiv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint*)) resolve("glGetQueryiv");
+        GetSamplerParameterfv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLfloat*)) resolve("glGetSamplerParameterfv");
+        GetSamplerParameteriv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetSamplerParameteriv");
+        GetStringi = (const GLubyte * (QOPENGLF_APIENTRYP) (GLenum, GLuint)) resolve("glGetStringi");
+        GetSynciv = (void (QOPENGLF_APIENTRYP) (GLsync, GLenum, GLsizei, GLsizei*, GLint*)) resolve("glGetSynciv");
+        GetTransformFeedbackVarying = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLsizei, GLsizei*, GLsizei*, GLenum*, GLchar*)) resolve("glGetTransformFeedbackVarying");
+        GetUniformBlockIndex = (GLuint (QOPENGLF_APIENTRYP) (GLuint, const GLchar *)) resolve("glGetUniformBlockIndex");
+        GetUniformIndices = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLchar *const*, GLuint*)) resolve("glGetUniformIndices");
+        GetUniformuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint*)) resolve("glGetUniformuiv");
+        GetVertexAttribIiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetVertexAttribIiv");
+        GetVertexAttribIuiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint*)) resolve("glGetVertexAttribIuiv");
+        InvalidateFramebuffer = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLenum *)) resolve("glInvalidateFramebuffer");
+        InvalidateSubFramebuffer = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)) resolve("glInvalidateSubFramebuffer");
+        IsQuery = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsQuery");
+        IsSampler = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsSampler");
+        IsSync = (GLboolean (QOPENGLF_APIENTRYP) (GLsync)) resolve("glIsSync");
+        IsTransformFeedback = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsTransformFeedback");
+        IsVertexArray = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsVertexArray");
+        MapBufferRange = (void * (QOPENGLF_APIENTRYP) (GLenum, GLintptr, GLsizeiptr, GLbitfield)) resolve("glMapBufferRange");
+        PauseTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glPauseTransformFeedback");
+        ProgramBinary = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const void *, GLsizei)) resolve("glProgramBinary");
+        ProgramParameteri = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint)) resolve("glProgramParameteri");
+        ReadBuffer = (void (QOPENGLF_APIENTRYP) (GLenum)) resolve("glReadBuffer");
+        RenderbufferStorageMultisample = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glRenderbufferStorageMultisample");
+        ResumeTransformFeedback = (void (QOPENGLF_APIENTRYP) ()) resolve("glResumeTransformFeedback");
+        SamplerParameterf = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLfloat)) resolve("glSamplerParameterf");
+        SamplerParameterfv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLfloat *)) resolve("glSamplerParameterfv");
+        SamplerParameteri = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint)) resolve("glSamplerParameteri");
+        SamplerParameteriv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLint *)) resolve("glSamplerParameteriv");
+        TexImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)) resolve("glTexImage3D");
+        TexStorage2D = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glTexStorage2D");
+        TexStorage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) resolve("glTexStorage3D");
+        TexSubImage3D = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void *)) resolve("glTexSubImage3D");
+        TransformFeedbackVaryings = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, const GLchar *const*, GLenum)) resolve("glTransformFeedbackVaryings");
+        Uniform1ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint)) resolve("glUniform1ui");
+        Uniform1uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform1uiv");
+        Uniform2ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint)) resolve("glUniform2ui");
+        Uniform2uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform2uiv");
+        Uniform3ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint, GLuint)) resolve("glUniform3ui");
+        Uniform3uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform3uiv");
+        Uniform4ui = (void (QOPENGLF_APIENTRYP) (GLint, GLuint, GLuint, GLuint, GLuint)) resolve("glUniform4ui");
+        Uniform4uiv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, const GLuint *)) resolve("glUniform4uiv");
+        UniformBlockBinding = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint)) resolve("glUniformBlockBinding");
+        UniformMatrix2x3fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix2x3fv");
+        UniformMatrix2x4fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix2x4fv");
+        UniformMatrix3x2fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix3x2fv");
+        UniformMatrix3x4fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix3x4fv");
+        UniformMatrix4x2fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix4x2fv");
+        UniformMatrix4x3fv = (void (QOPENGLF_APIENTRYP) (GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glUniformMatrix4x3fv");
+        UnmapBuffer = (GLboolean (QOPENGLF_APIENTRYP) (GLenum)) resolve("glUnmapBuffer");
+        VertexAttribDivisor = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexAttribDivisor");
+        VertexAttribI4i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint)) resolve("glVertexAttribI4i");
+        VertexAttribI4iv = (void (QOPENGLF_APIENTRYP) (GLuint, const GLint *)) resolve("glVertexAttribI4iv");
+        VertexAttribI4ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint, GLuint, GLuint)) resolve("glVertexAttribI4ui");
+        VertexAttribI4uiv = (void (QOPENGLF_APIENTRYP) (GLuint, const GLuint *)) resolve("glVertexAttribI4uiv");
+        VertexAttribIPointer = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLsizei, const void *)) resolve("glVertexAttribIPointer");
+        WaitSync = (void (QOPENGLF_APIENTRYP) (GLsync, GLbitfield, GLuint64)) resolve("glWaitSync");
+
+        if (!BeginQuery || !BlitFramebuffer || !GenTransformFeedbacks || !GenVertexArrays || !MapBufferRange
+            || !RenderbufferStorageMultisample || !TexStorage2D || !WaitSync) {
+            qWarning("OpenGL ES 3.0 entry points not found. This is odd because the driver returned a context of version %d.%d",
+                     contextVersion.first, contextVersion.second);
+            return;
+        }
+        m_supportedVersion = qMakePair(3, 0);
+
+        if (contextVersion >= qMakePair(3, 1)) {
+            qCDebug(lcGLES3, "Resolving OpenGL ES 3.1 entry points");
+
+            ActiveShaderProgram = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glActiveShaderProgram");
+            BindImageTexture = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLint, GLboolean, GLint, GLenum, GLenum)) resolve("glBindImageTexture");
+            BindProgramPipeline = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glBindProgramPipeline");
+            BindVertexBuffer = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLintptr, GLsizei)) resolve("glBindVertexBuffer");
+            CreateShaderProgramv = (GLuint (QOPENGLF_APIENTRYP) (GLenum, GLsizei, const GLchar *const*)) resolve("glCreateShaderProgramv");
+            DeleteProgramPipelines = (void (QOPENGLF_APIENTRYP) (GLsizei, const GLuint *)) resolve("glDeleteProgramPipelines");
+            DispatchCompute = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint, GLuint)) resolve("glDispatchCompute");
+            DispatchComputeIndirect = (void (QOPENGLF_APIENTRYP) (GLintptr)) resolve("glDispatchComputeIndirect");
+            DrawArraysIndirect = (void (QOPENGLF_APIENTRYP) (GLenum, const void *)) resolve("glDrawArraysIndirect");
+            DrawElementsIndirect = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, const void *)) resolve("glDrawElementsIndirect");
+            FramebufferParameteri = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint)) resolve("glFramebufferParameteri");
+            GenProgramPipelines = (void (QOPENGLF_APIENTRYP) (GLsizei, GLuint*)) resolve("glGenProgramPipelines");
+            GetBooleani_v = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLboolean*)) resolve("glGetBooleani_v");
+            GetFramebufferParameteriv = (void (QOPENGLF_APIENTRYP) (GLenum, GLenum, GLint*)) resolve("glGetFramebufferParameteriv");
+            GetMultisamplefv = (void (QOPENGLF_APIENTRYP) (GLenum, GLuint, GLfloat*)) resolve("glGetMultisamplefv");
+            GetProgramInterfaceiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLenum, GLint*)) resolve("glGetProgramInterfaceiv");
+            GetProgramPipelineInfoLog = (void (QOPENGLF_APIENTRYP) (GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetProgramPipelineInfoLog");
+            GetProgramPipelineiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLint*)) resolve("glGetProgramPipelineiv");
+            GetProgramResourceIndex = (GLuint (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLchar *)) resolve("glGetProgramResourceIndex");
+            GetProgramResourceLocation = (GLint (QOPENGLF_APIENTRYP) (GLuint, GLenum, const GLchar *)) resolve("glGetProgramResourceLocation");
+            GetProgramResourceName = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint, GLsizei, GLsizei*, GLchar*)) resolve("glGetProgramResourceName");
+            GetProgramResourceiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLenum, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei*, GLint*)) resolve("glGetProgramResourceiv");
+            GetTexLevelParameterfv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLfloat*)) resolve("glGetTexLevelParameterfv");
+            GetTexLevelParameteriv = (void (QOPENGLF_APIENTRYP) (GLenum, GLint, GLenum, GLint*)) resolve("glGetTexLevelParameteriv");
+            IsProgramPipeline = (GLboolean (QOPENGLF_APIENTRYP) (GLuint)) resolve("glIsProgramPipeline");
+            MemoryBarrierFunc = (void (QOPENGLF_APIENTRYP) (GLbitfield)) resolve("glMemoryBarrier");
+            MemoryBarrierByRegion = (void (QOPENGLF_APIENTRYP) (GLbitfield)) resolve("glMemoryBarrierByRegion");
+            ProgramUniform1f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat)) resolve("glProgramUniform1f");
+            ProgramUniform1fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform1fv");
+            ProgramUniform1i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint)) resolve("glProgramUniform1i");
+            ProgramUniform1iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform1iv");
+            ProgramUniform1ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint)) resolve("glProgramUniform1ui");
+            ProgramUniform1uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform1uiv");
+            ProgramUniform2f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat)) resolve("glProgramUniform2f");
+            ProgramUniform2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform2fv");
+            ProgramUniform2i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint)) resolve("glProgramUniform2i");
+            ProgramUniform2iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform2iv");
+            ProgramUniform2ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint)) resolve("glProgramUniform2ui");
+            ProgramUniform2uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform2uiv");
+            ProgramUniform3f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat, GLfloat)) resolve("glProgramUniform3f");
+            ProgramUniform3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform3fv");
+            ProgramUniform3i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint)) resolve("glProgramUniform3i");
+            ProgramUniform3iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform3iv");
+            ProgramUniform3ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint, GLuint)) resolve("glProgramUniform3ui");
+            ProgramUniform3uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform3uiv");
+            ProgramUniform4f = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)) resolve("glProgramUniform4f");
+            ProgramUniform4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLfloat *)) resolve("glProgramUniform4fv");
+            ProgramUniform4i = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLint, GLint, GLint, GLint)) resolve("glProgramUniform4i");
+            ProgramUniform4iv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLint *)) resolve("glProgramUniform4iv");
+            ProgramUniform4ui = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLuint, GLuint, GLuint, GLuint)) resolve("glProgramUniform4ui");
+            ProgramUniform4uiv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, const GLuint *)) resolve("glProgramUniform4uiv");
+            ProgramUniformMatrix2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2fv");
+            ProgramUniformMatrix2x3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2x3fv");
+            ProgramUniformMatrix2x4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix2x4fv");
+            ProgramUniformMatrix3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3fv");
+            ProgramUniformMatrix3x2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3x2fv");
+            ProgramUniformMatrix3x4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix3x4fv");
+            ProgramUniformMatrix4fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4fv");
+            ProgramUniformMatrix4x2fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4x2fv");
+            ProgramUniformMatrix4x3fv = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLsizei, GLboolean, const GLfloat *)) resolve("glProgramUniformMatrix4x3fv");
+            SampleMaski = (void (QOPENGLF_APIENTRYP) (GLuint, GLbitfield)) resolve("glSampleMaski");
+            TexStorage2DMultisample = (void (QOPENGLF_APIENTRYP) (GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean)) resolve("glTexStorage2DMultisample");
+            UseProgramStages = (void (QOPENGLF_APIENTRYP) (GLuint, GLbitfield, GLuint)) resolve("glUseProgramStages");
+            ValidateProgramPipeline = (void (QOPENGLF_APIENTRYP) (GLuint)) resolve("glValidateProgramPipeline");
+            VertexAttribBinding = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexAttribBinding");
+            VertexAttribFormat = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLboolean, GLuint)) resolve("glVertexAttribFormat");
+            VertexAttribIFormat = (void (QOPENGLF_APIENTRYP) (GLuint, GLint, GLenum, GLuint)) resolve("glVertexAttribIFormat");
+            VertexBindingDivisor = (void (QOPENGLF_APIENTRYP) (GLuint, GLuint)) resolve("glVertexBindingDivisor");
+
+            if (!ActiveShaderProgram || !BindImageTexture || !DispatchCompute || !DrawArraysIndirect
+                || !GenProgramPipelines || !MemoryBarrierFunc) {
+                qWarning("OpenGL ES 3.1 entry points not found. This is odd because the driver returned a context of version %d.%d",
+                         contextVersion.first, contextVersion.second);
+                return;
+            }
+            m_supportedVersion = qMakePair(3, 1);
+        }
+    } else {
+        qFatal("Failed to load libGLESv2");
+    }
+}
+
+// GLES 3.0 and 3.1
+
+// Checks for true OpenGL ES 3.x. OpenGL with GL_ARB_ES3_compatibility
+// does not count because there the plain resolvers work anyhow.
+static inline bool isES3(int minor)
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+
+    const bool libMatches = QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
+    const bool contextMatches = ctx->isOpenGLES() && ctx->format().version() >= qMakePair(3, minor);
+
+    // Resolving happens whenever qgles3Helper() is called first. So do it only
+    // when the driver gives a 3.0+ context.
+    if (libMatches && contextMatches)
+        return qgles3Helper()->supportedVersion() >= qMakePair(3, minor);
+
+    return false;
+}
+
+// Go through the dlsym-based helper for real ES 3, resolve using
+// wglGetProcAddress or similar when on plain OpenGL.
+
+static void QOPENGLF_APIENTRY qopenglfResolveBeginQuery(GLenum target, GLuint id)
+{
+    if (isES3(0))
+        qgles3Helper()->BeginQuery(target, id);
+    else
+        RESOLVE_FUNC_VOID(0, BeginQuery)(target, id);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBeginTransformFeedback(GLenum primitiveMode)
+{
+    if (isES3(0))
+        qgles3Helper()->BeginTransformFeedback(primitiveMode);
+    else
+        RESOLVE_FUNC_VOID(0, BeginTransformFeedback)(primitiveMode);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindBufferBase(GLenum target, GLuint index, GLuint buffer)
+{
+    if (isES3(0))
+        qgles3Helper()->BindBufferBase(target, index, buffer);
+    else
+        RESOLVE_FUNC_VOID(0, BindBufferBase)(target, index, buffer);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
+{
+    if (isES3(0))
+        qgles3Helper()->BindBufferRange(target, index, buffer, offset, size);
+    else
+        RESOLVE_FUNC_VOID(0, BindBufferRange)(target, index, buffer, offset, size);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindSampler(GLuint unit, GLuint sampler)
+{
+    if (isES3(0))
+        qgles3Helper()->BindSampler(unit, sampler);
+    else
+        RESOLVE_FUNC_VOID(0, BindSampler)(unit, sampler);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindTransformFeedback(GLenum target, GLuint id)
+{
+    if (isES3(0))
+        qgles3Helper()->BindTransformFeedback(target, id);
+    else
+        RESOLVE_FUNC_VOID(0, BindTransformFeedback)(target, id);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindVertexArray(GLuint array)
+{
+    if (isES3(0))
+        qgles3Helper()->BindVertexArray(array);
+    else
+        RESOLVE_FUNC_VOID(0, BindVertexArray)(array);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
+{
+    if (isES3(0))
+        qgles3Helper()->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    else
+        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, BlitFramebuffer)
+            (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
+{
+    if (isES3(0))
+        qgles3Helper()->ClearBufferfi(buffer, drawbuffer, depth, stencil);
+    else
+        RESOLVE_FUNC_VOID(0, ClearBufferfi)(buffer, drawbuffer, depth, stencil);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->ClearBufferfv(buffer, drawbuffer, value);
+    else
+        RESOLVE_FUNC_VOID(0, ClearBufferfv)(buffer, drawbuffer, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->ClearBufferiv(buffer, drawbuffer, value);
+    else
+        RESOLVE_FUNC_VOID(0, ClearBufferiv)(buffer, drawbuffer, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->ClearBufferuiv(buffer, drawbuffer, value);
+    else
+        RESOLVE_FUNC_VOID(0, ClearBufferuiv)(buffer, drawbuffer, value);
+}
+
+static GLenum QOPENGLF_APIENTRY qopenglfResolveClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
+{
+    if (isES3(0))
+        return qgles3Helper()->ClientWaitSync(sync, flags, timeout);
+    else
+        RESOLVE_FUNC(GLenum, 0, ClientWaitSync)(sync, flags, timeout);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void * data)
+{
+    if (isES3(0))
+        qgles3Helper()->CompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize, data);
+    else
+        RESOLVE_FUNC_VOID(0, CompressedTexImage3D)(target, level, internalformat, width, height, depth, border, imageSize, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void * data)
+{
+    if (isES3(0))
+        qgles3Helper()->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
+    else
+        RESOLVE_FUNC_VOID(0, CompressedTexSubImage3D)(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
+{
+    if (isES3(0))
+        qgles3Helper()->CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
+    else
+        RESOLVE_FUNC_VOID(0, CopyBufferSubData)(readTarget, writeTarget, readOffset, writeOffset, size);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    if (isES3(0))
+        qgles3Helper()->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
+    else
+        RESOLVE_FUNC_VOID(0, CopyTexSubImage3D)(target, level, xoffset, yoffset, zoffset, x, y, width, height);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteQueries(GLsizei n, const GLuint * ids)
+{
+    if (isES3(0))
+        qgles3Helper()->DeleteQueries(n, ids);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteQueries)(n, ids);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteSamplers(GLsizei count, const GLuint * samplers)
+{
+    if (isES3(0))
+        qgles3Helper()->DeleteSamplers(count, samplers);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteSamplers)(count, samplers);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteSync(GLsync sync)
+{
+    if (isES3(0))
+        qgles3Helper()->DeleteSync(sync);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteSync)(sync);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteTransformFeedbacks(GLsizei n, const GLuint * ids)
+{
+    if (isES3(0))
+        qgles3Helper()->DeleteTransformFeedbacks(n, ids);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteTransformFeedbacks)(n, ids);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteVertexArrays(GLsizei n, const GLuint * arrays)
+{
+    if (isES3(0))
+        qgles3Helper()->DeleteVertexArrays(n, arrays);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteVertexArrays)(n, arrays);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
+{
+    if (isES3(0))
+        qgles3Helper()->DrawArraysInstanced(mode, first, count, instancecount);
+    else
+        RESOLVE_FUNC_VOID(0, DrawArraysInstanced)(mode, first, count, instancecount);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawBuffers(GLsizei n, const GLenum * bufs)
+{
+    if (isES3(0))
+        qgles3Helper()->DrawBuffers(n, bufs);
+    else
+        RESOLVE_FUNC_VOID(0, DrawBuffers)(n, bufs);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount)
+{
+    if (isES3(0))
+        qgles3Helper()->DrawElementsInstanced(mode, count, type, indices, instancecount);
+    else
+        RESOLVE_FUNC_VOID(0, DrawElementsInstanced)(mode, count, type, indices, instancecount);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices)
+{
+    if (isES3(0))
+        qgles3Helper()->DrawRangeElements(mode, start, end, count, type, indices);
+    else
+        RESOLVE_FUNC_VOID(0, DrawRangeElements)(mode, start, end, count, type, indices);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveEndQuery(GLenum target)
+{
+    if (isES3(0))
+        qgles3Helper()->EndQuery(target);
+    else
+        RESOLVE_FUNC_VOID(0, EndQuery)(target);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveEndTransformFeedback()
+{
+    if (isES3(0))
+        qgles3Helper()->EndTransformFeedback();
+    else
+        RESOLVE_FUNC_VOID(0, EndTransformFeedback)();
+}
+
+static GLsync QOPENGLF_APIENTRY qopenglfResolveFenceSync(GLenum condition, GLbitfield flags)
+{
+    if (isES3(0))
+        return qgles3Helper()->FenceSync(condition, flags);
+    else
+        RESOLVE_FUNC(GLsync, 0, FenceSync)(condition, flags);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
+{
+    if (isES3(0))
+        qgles3Helper()->FlushMappedBufferRange(target, offset, length);
+    else
+        RESOLVE_FUNC_VOID(0, FlushMappedBufferRange)(target, offset, length);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer)
+{
+    if (isES3(0))
+        qgles3Helper()->FramebufferTextureLayer(target, attachment, texture, level, layer);
+    else
+        RESOLVE_FUNC_VOID(0, FramebufferTextureLayer)(target, attachment, texture, level, layer);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenQueries(GLsizei n, GLuint* ids)
+{
+    if (isES3(0))
+        qgles3Helper()->GenQueries(n, ids);
+    else
+        RESOLVE_FUNC_VOID(0, GenQueries)(n, ids);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenSamplers(GLsizei count, GLuint* samplers)
+{
+    if (isES3(0))
+        qgles3Helper()->GenSamplers(count, samplers);
+    else
+        RESOLVE_FUNC_VOID(0, GenSamplers)(count, samplers);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenTransformFeedbacks(GLsizei n, GLuint* ids)
+{
+    if (isES3(0))
+        qgles3Helper()->GenTransformFeedbacks(n, ids);
+    else
+        RESOLVE_FUNC_VOID(0, GenTransformFeedbacks)(n, ids);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenVertexArrays(GLsizei n, GLuint* arrays)
+{
+    if (isES3(0))
+        qgles3Helper()->GenVertexArrays(n, arrays);
+    else
+        RESOLVE_FUNC_VOID(0, GenVertexArrays)(n, arrays);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei* length, GLchar* uniformBlockName)
+{
+    if (isES3(0))
+        qgles3Helper()->GetActiveUniformBlockName(program, uniformBlockIndex, bufSize, length, uniformBlockName);
+    else
+        RESOLVE_FUNC_VOID(0, GetActiveUniformBlockName)(program, uniformBlockIndex, bufSize, length, uniformBlockName);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetActiveUniformBlockiv(program, uniformBlockIndex, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetActiveUniformBlockiv)(program, uniformBlockIndex, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const GLuint * uniformIndices, GLenum pname, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetActiveUniformsiv(program, uniformCount, uniformIndices, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetActiveUniformsiv)(program, uniformCount, uniformIndices, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetBufferParameteri64v(GLenum target, GLenum pname, GLint64* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetBufferParameteri64v(target, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetBufferParameteri64v)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetBufferPointerv(GLenum target, GLenum pname, void ** params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetBufferPointerv(target, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetBufferPointerv)(target, pname, params);
+}
+
+static GLint QOPENGLF_APIENTRY qopenglfResolveGetFragDataLocation(GLuint program, const GLchar * name)
+{
+    if (isES3(0))
+        return qgles3Helper()->GetFragDataLocation(program, name);
+    else
+        RESOLVE_FUNC(GLint, 0, GetFragDataLocation)(program, name);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetInteger64i_v(GLenum target, GLuint index, GLint64* data)
+{
+    if (isES3(0))
+        qgles3Helper()->GetInteger64i_v(target, index, data);
+    else
+        RESOLVE_FUNC_VOID(0, GetInteger64i_v)(target, index, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetInteger64v(GLenum pname, GLint64* data)
+{
+    if (isES3(0))
+        qgles3Helper()->GetInteger64v(pname, data);
+    else
+        RESOLVE_FUNC_VOID(0, GetInteger64v)(pname, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetIntegeri_v(GLenum target, GLuint index, GLint* data)
+{
+    if (isES3(0))
+        qgles3Helper()->GetIntegeri_v(target, index, data);
+    else
+        RESOLVE_FUNC_VOID(0, GetIntegeri_v)(target, index, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetInternalformativ(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetInternalformativ(target, internalformat, pname, bufSize, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetInternalformativ)(target, internalformat, pname, bufSize, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void * binary)
+{
+    if (isES3(0))
+        qgles3Helper()->GetProgramBinary(program, bufSize, length, binaryFormat, binary);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramBinary)(program, bufSize, length, binaryFormat, binary);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetQueryObjectuiv(id, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetQueryObjectuiv)(id, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetQueryiv(GLenum target, GLenum pname, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetQueryiv(target, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetQueryiv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetSamplerParameterfv(sampler, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetSamplerParameterfv)(sampler, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetSamplerParameteriv(sampler, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetSamplerParameteriv)(sampler, pname, params);
+}
+
+static const GLubyte * QOPENGLF_APIENTRY qopenglfResolveGetStringi(GLenum name, GLuint index)
+{
+    if (isES3(0))
+        return qgles3Helper()->GetStringi(name, index);
+    else
+        RESOLVE_FUNC(const GLubyte *, 0, GetStringi)(name, index);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length, GLint* values)
+{
+    if (isES3(0))
+        qgles3Helper()->GetSynciv(sync, pname, bufSize, length, values);
+    else
+        RESOLVE_FUNC_VOID(0, GetSynciv)(sync, pname, bufSize, length, values);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTransformFeedbackVarying(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLsizei* size, GLenum* type, GLchar* name)
+{
+    if (isES3(0))
+        qgles3Helper()->GetTransformFeedbackVarying(program, index, bufSize, length, size, type, name);
+    else
+        RESOLVE_FUNC_VOID(0, GetTransformFeedbackVarying)(program, index, bufSize, length, size, type, name);
+}
+
+static GLuint QOPENGLF_APIENTRY qopenglfResolveGetUniformBlockIndex(GLuint program, const GLchar * uniformBlockName)
+{
+    if (isES3(0))
+        return qgles3Helper()->GetUniformBlockIndex(program, uniformBlockName);
+    else
+        RESOLVE_FUNC(GLuint, 0, GetUniformBlockIndex)(program, uniformBlockName);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetUniformIndices(GLuint program, GLsizei uniformCount, const GLchar *const* uniformNames, GLuint* uniformIndices)
+{
+    if (isES3(0))
+        qgles3Helper()->GetUniformIndices(program, uniformCount, uniformNames, uniformIndices);
+    else
+        RESOLVE_FUNC_VOID(0, GetUniformIndices)(program, uniformCount, uniformNames, uniformIndices);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetUniformuiv(GLuint program, GLint location, GLuint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetUniformuiv(program, location, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetUniformuiv)(program, location, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetVertexAttribIiv(index, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetVertexAttribIiv)(index, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params)
+{
+    if (isES3(0))
+        qgles3Helper()->GetVertexAttribIuiv(index, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetVertexAttribIuiv)(index, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments)
+{
+    if (isES3(0))
+        qgles3Helper()->InvalidateFramebuffer(target, numAttachments, attachments);
+    else
+        RESOLVE_FUNC_VOID(0, InvalidateFramebuffer)(target, numAttachments, attachments);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments, const GLenum * attachments, GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    if (isES3(0))
+        qgles3Helper()->InvalidateSubFramebuffer(target, numAttachments, attachments, x, y, width, height);
+    else
+        RESOLVE_FUNC_VOID(0, InvalidateSubFramebuffer)(target, numAttachments, attachments, x, y, width, height);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsQuery(GLuint id)
+{
+    if (isES3(0))
+        return qgles3Helper()->IsQuery(id);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsQuery)(id);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsSampler(GLuint sampler)
+{
+    if (isES3(0))
+        return qgles3Helper()->IsSampler(sampler);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsSampler)(sampler);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsSync(GLsync sync)
+{
+    if (isES3(0))
+        return qgles3Helper()->IsSync(sync);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsSync)(sync);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsTransformFeedback(GLuint id)
+{
+    if (isES3(0))
+        return qgles3Helper()->IsTransformFeedback(id);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsTransformFeedback)(id);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsVertexArray(GLuint array)
+{
+    if (isES3(0))
+        return qgles3Helper()->IsVertexArray(array);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsVertexArray)(array);
+}
+
+static void * QOPENGLF_APIENTRY qopenglfResolveMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
+{
+    if (isES3(0))
+        return qgles3Helper()->MapBufferRange(target, offset, length, access);
+    else
+        RESOLVE_FUNC(void *, 0, MapBufferRange)(target, offset, length, access);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolvePauseTransformFeedback()
+{
+    if (isES3(0))
+        qgles3Helper()->PauseTransformFeedback();
+    else
+        RESOLVE_FUNC_VOID(0, PauseTransformFeedback)();
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramBinary(GLuint program, GLenum binaryFormat, const void * binary, GLsizei length)
+{
+    if (isES3(0))
+        qgles3Helper()->ProgramBinary(program, binaryFormat, binary, length);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramBinary)(program, binaryFormat, binary, length);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramParameteri(GLuint program, GLenum pname, GLint value)
+{
+    if (isES3(0))
+        qgles3Helper()->ProgramParameteri(program, pname, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramParameteri)(program, pname, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveReadBuffer(GLenum src)
+{
+    if (isES3(0))
+        qgles3Helper()->ReadBuffer(src);
+    else
+        RESOLVE_FUNC_VOID(0, ReadBuffer)(src);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
+{
+    if (isES3(0))
+        qgles3Helper()->RenderbufferStorageMultisample(target, samples, internalformat, width, height);
+    else
+        RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, RenderbufferStorageMultisample)
+            (target, samples, internalformat, width, height);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveResumeTransformFeedback()
+{
+    if (isES3(0))
+        qgles3Helper()->ResumeTransformFeedback();
+    else
+        RESOLVE_FUNC_VOID(0, ResumeTransformFeedback)();
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
+{
+    if (isES3(0))
+        qgles3Helper()->SamplerParameterf(sampler, pname, param);
+    else
+        RESOLVE_FUNC_VOID(0, SamplerParameterf)(sampler, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat * param)
+{
+    if (isES3(0))
+        qgles3Helper()->SamplerParameterfv(sampler, pname, param);
+    else
+        RESOLVE_FUNC_VOID(0, SamplerParameterfv)(sampler, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
+{
+    if (isES3(0))
+        qgles3Helper()->SamplerParameteri(sampler, pname, param);
+    else
+        RESOLVE_FUNC_VOID(0, SamplerParameteri)(sampler, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveSamplerParameteriv(GLuint sampler, GLenum pname, const GLint * param)
+{
+    if (isES3(0))
+        qgles3Helper()->SamplerParameteriv(sampler, pname, param);
+    else
+        RESOLVE_FUNC_VOID(0, SamplerParameteriv)(sampler, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void * pixels)
+{
+    if (isES3(0))
+        qgles3Helper()->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
+    else
+        RESOLVE_FUNC_VOID(0, TexImage3D)(target, level, internalformat, width, height, depth, border, format, type, pixels);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+{
+    if (isES3(0))
+        qgles3Helper()->TexStorage2D(target, levels, internalformat, width, height);
+    else
+        RESOLVE_FUNC_VOID(0, TexStorage2D)(target, levels, internalformat, width, height);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
+{
+    if (isES3(0))
+        qgles3Helper()->TexStorage3D(target, levels, internalformat, width, height, depth);
+    else
+        RESOLVE_FUNC_VOID(0, TexStorage3D)(target, levels, internalformat, width, height, depth);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void * pixels)
+{
+    if (isES3(0))
+        qgles3Helper()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+    else
+        RESOLVE_FUNC_VOID(0, TexSubImage3D)(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar *const* varyings, GLenum bufferMode)
+{
+    if (isES3(0))
+        qgles3Helper()->TransformFeedbackVaryings(program, count, varyings, bufferMode);
+    else
+        RESOLVE_FUNC_VOID(0, TransformFeedbackVaryings)(program, count, varyings, bufferMode);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform1ui(GLint location, GLuint v0)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform1ui(location, v0);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform1ui)(location, v0);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform1uiv(GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform1uiv(location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform1uiv)(location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform2ui(GLint location, GLuint v0, GLuint v1)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform2ui(location, v0, v1);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform2ui)(location, v0, v1);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform2uiv(GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform2uiv(location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform2uiv)(location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform3ui(GLint location, GLuint v0, GLuint v1, GLuint v2)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform3ui(location, v0, v1, v2);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform3ui)(location, v0, v1, v2);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform3uiv(GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform3uiv(location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform3uiv)(location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform4ui(location, v0, v1, v2, v3);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform4ui)(location, v0, v1, v2, v3);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniform4uiv(GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(0))
+        qgles3Helper()->Uniform4uiv(location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, Uniform4uiv)(location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding);
+    else
+        RESOLVE_FUNC_VOID(0, UniformBlockBinding)(program, uniformBlockIndex, uniformBlockBinding);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix2x3fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix2x3fv)(location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix2x4fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix2x4fv)(location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix3x2fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix3x2fv)(location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix3x4fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix3x4fv)(location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix4x2fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix4x2fv)(location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(0))
+        qgles3Helper()->UniformMatrix4x3fv(location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, UniformMatrix4x3fv)(location, count, transpose, value);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveUnmapBuffer(GLenum target)
+{
+    if (isES3(0))
+        return qgles3Helper()->UnmapBuffer(target);
+    else
+        RESOLVE_FUNC(GLboolean, ResolveOES, UnmapBuffer)(target);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribDivisor(GLuint index, GLuint divisor)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribDivisor(index, divisor);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribDivisor)(index, divisor);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribI4i(index, x, y, z, w);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribI4i)(index, x, y, z, w);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4iv(GLuint index, const GLint * v)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribI4iv(index, v);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribI4iv)(index, v);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribI4ui(index, x, y, z, w);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribI4ui)(index, x, y, z, w);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribI4uiv(GLuint index, const GLuint * v)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribI4uiv(index, v);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribI4uiv)(index, v);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void * pointer)
+{
+    if (isES3(0))
+        qgles3Helper()->VertexAttribIPointer(index, size, type, stride, pointer);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribIPointer)(index, size, type, stride, pointer);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
+{
+    if (isES3(0))
+        qgles3Helper()->WaitSync(sync, flags, timeout);
+    else
+        RESOLVE_FUNC_VOID(0, WaitSync)(sync, flags, timeout);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveActiveShaderProgram(GLuint pipeline, GLuint program)
+{
+    if (isES3(1))
+        qgles3Helper()->ActiveShaderProgram(pipeline, program);
+    else
+        RESOLVE_FUNC_VOID(0, ActiveShaderProgram)(pipeline, program);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
+{
+    if (isES3(1))
+        qgles3Helper()->BindImageTexture(unit, texture, level, layered, layer, access, format);
+    else
+        RESOLVE_FUNC_VOID(0, BindImageTexture)(unit, texture, level, layered, layer, access, format);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindProgramPipeline(GLuint pipeline)
+{
+    if (isES3(1))
+        qgles3Helper()->BindProgramPipeline(pipeline);
+    else
+        RESOLVE_FUNC_VOID(0, BindProgramPipeline)(pipeline);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
+{
+    if (isES3(1))
+        qgles3Helper()->BindVertexBuffer(bindingindex, buffer, offset, stride);
+    else
+        RESOLVE_FUNC_VOID(0, BindVertexBuffer)(bindingindex, buffer, offset, stride);
+}
+
+static GLuint QOPENGLF_APIENTRY qopenglfResolveCreateShaderProgramv(GLenum type, GLsizei count, const GLchar *const* strings)
+{
+    if (isES3(1))
+        return qgles3Helper()->CreateShaderProgramv(type, count, strings);
+    else
+        RESOLVE_FUNC(GLuint, 0, CreateShaderProgramv)(type, count, strings);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteProgramPipelines(GLsizei n, const GLuint * pipelines)
+{
+    if (isES3(1))
+        qgles3Helper()->DeleteProgramPipelines(n, pipelines);
+    else
+        RESOLVE_FUNC_VOID(0, DeleteProgramPipelines)(n, pipelines);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
+{
+    if (isES3(1))
+        qgles3Helper()->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    else
+        RESOLVE_FUNC_VOID(0, DispatchCompute)(num_groups_x, num_groups_y, num_groups_z);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDispatchComputeIndirect(GLintptr indirect)
+{
+    if (isES3(1))
+        qgles3Helper()->DispatchComputeIndirect(indirect);
+    else
+        RESOLVE_FUNC_VOID(0, DispatchComputeIndirect)(indirect);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawArraysIndirect(GLenum mode, const void * indirect)
+{
+    if (isES3(1))
+        qgles3Helper()->DrawArraysIndirect(mode, indirect);
+    else
+        RESOLVE_FUNC_VOID(0, DrawArraysIndirect)(mode, indirect);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawElementsIndirect(GLenum mode, GLenum type, const void * indirect)
+{
+    if (isES3(1))
+        qgles3Helper()->DrawElementsIndirect(mode, type, indirect);
+    else
+        RESOLVE_FUNC_VOID(0, DrawElementsIndirect)(mode, type, indirect);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFramebufferParameteri(GLenum target, GLenum pname, GLint param)
+{
+    if (isES3(1))
+        qgles3Helper()->FramebufferParameteri(target, pname, param);
+    else
+        RESOLVE_FUNC_VOID(0, FramebufferParameteri)(target, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenProgramPipelines(GLsizei n, GLuint* pipelines)
+{
+    if (isES3(1))
+        qgles3Helper()->GenProgramPipelines(n, pipelines);
+    else
+        RESOLVE_FUNC_VOID(0, GenProgramPipelines)(n, pipelines);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetBooleani_v(GLenum target, GLuint index, GLboolean* data)
+{
+    if (isES3(1))
+        qgles3Helper()->GetBooleani_v(target, index, data);
+    else
+        RESOLVE_FUNC_VOID(0, GetBooleani_v)(target, index, data);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetFramebufferParameteriv(GLenum target, GLenum pname, GLint* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetFramebufferParameteriv(target, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetFramebufferParameteriv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetMultisamplefv(GLenum pname, GLuint index, GLfloat* val)
+{
+    if (isES3(1))
+        qgles3Helper()->GetMultisamplefv(pname, index, val);
+    else
+        RESOLVE_FUNC_VOID(0, GetMultisamplefv)(pname, index, val);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramInterfaceiv(GLuint program, GLenum programInterface, GLenum pname, GLint* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetProgramInterfaceiv(program, programInterface, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramInterfaceiv)(program, programInterface, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
+{
+    if (isES3(1))
+        qgles3Helper()->GetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramPipelineInfoLog)(pipeline, bufSize, length, infoLog);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramPipelineiv(GLuint pipeline, GLenum pname, GLint* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetProgramPipelineiv(pipeline, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramPipelineiv)(pipeline, pname, params);
+}
+
+static GLuint QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceIndex(GLuint program, GLenum programInterface, const GLchar * name)
+{
+    if (isES3(1))
+        return qgles3Helper()->GetProgramResourceIndex(program, programInterface, name);
+    else
+        RESOLVE_FUNC(GLuint, 0, GetProgramResourceIndex)(program, programInterface, name);
+}
+
+static GLint QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceLocation(GLuint program, GLenum programInterface, const GLchar * name)
+{
+    if (isES3(1))
+        return qgles3Helper()->GetProgramResourceLocation(program, programInterface, name);
+    else
+        RESOLVE_FUNC(GLint, 0, GetProgramResourceLocation)(program, programInterface, name);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceName(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei* length, GLchar* name)
+{
+    if (isES3(1))
+        qgles3Helper()->GetProgramResourceName(program, programInterface, index, bufSize, length, name);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramResourceName)(program, programInterface, index, bufSize, length, name);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetProgramResourceiv(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum * props, GLsizei bufSize, GLsizei* length, GLint* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetProgramResourceiv)(program, programInterface, index, propCount, props, bufSize, length, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetTexLevelParameterfv(target, level, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetTexLevelParameterfv)(target, level, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint* params)
+{
+    if (isES3(1))
+        qgles3Helper()->GetTexLevelParameteriv(target, level, pname, params);
+    else
+        RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsProgramPipeline(GLuint pipeline)
+{
+    if (isES3(1))
+        return qgles3Helper()->IsProgramPipeline(pipeline);
+    else
+        RESOLVE_FUNC(GLboolean, 0, IsProgramPipeline)(pipeline);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveMemoryBarrier(GLbitfield barriers)
+{
+    if (isES3(1))
+        qgles3Helper()->MemoryBarrierFunc(barriers);
+    else
+        RESOLVE_FUNC_VOID(0, MemoryBarrierFunc)(barriers);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveMemoryBarrierByRegion(GLbitfield barriers)
+{
+    if (isES3(1))
+        qgles3Helper()->MemoryBarrierByRegion(barriers);
+    else
+        RESOLVE_FUNC_VOID(0, MemoryBarrierByRegion)(barriers);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1f(GLuint program, GLint location, GLfloat v0)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1f(program, location, v0);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1f)(program, location, v0);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1fv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1fv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1i(GLuint program, GLint location, GLint v0)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1i(program, location, v0);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1i)(program, location, v0);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1iv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1iv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1ui(GLuint program, GLint location, GLuint v0)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1ui(program, location, v0);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1ui)(program, location, v0);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform1uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform1uiv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform1uiv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2f(program, location, v0, v1);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2f)(program, location, v0, v1);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2fv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2fv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2i(program, location, v0, v1);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2i)(program, location, v0, v1);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2iv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2iv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2ui(GLuint program, GLint location, GLuint v0, GLuint v1)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2ui(program, location, v0, v1);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2ui)(program, location, v0, v1);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform2uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform2uiv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform2uiv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3f(program, location, v0, v1, v2);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3f)(program, location, v0, v1, v2);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3fv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3fv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3i(program, location, v0, v1, v2);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3i)(program, location, v0, v1, v2);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3iv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3iv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3ui(program, location, v0, v1, v2);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3ui)(program, location, v0, v1, v2);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform3uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform3uiv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform3uiv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4f(program, location, v0, v1, v2, v3);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4f)(program, location, v0, v1, v2, v3);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4fv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4fv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4i(program, location, v0, v1, v2, v3);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4i)(program, location, v0, v1, v2, v3);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4iv(GLuint program, GLint location, GLsizei count, const GLint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4iv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4iv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4ui(program, location, v0, v1, v2, v3);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4ui)(program, location, v0, v1, v2, v3);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniform4uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniform4uiv(program, location, count, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniform4uiv)(program, location, count, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix2fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix2x3fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2x3fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix2x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix2x4fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix2x4fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix3fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix3x2fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3x2fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix3x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix3x4fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix3x4fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix4fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix4x2fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4x2fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveProgramUniformMatrix4x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
+{
+    if (isES3(1))
+        qgles3Helper()->ProgramUniformMatrix4x3fv(program, location, count, transpose, value);
+    else
+        RESOLVE_FUNC_VOID(0, ProgramUniformMatrix4x3fv)(program, location, count, transpose, value);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveSampleMaski(GLuint maskNumber, GLbitfield mask)
+{
+    if (isES3(1))
+        qgles3Helper()->SampleMaski(maskNumber, mask);
+    else
+        RESOLVE_FUNC_VOID(0, SampleMaski)(maskNumber, mask);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
+{
+    if (isES3(1))
+        qgles3Helper()->TexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations);
+    else
+        RESOLVE_FUNC_VOID(0, TexStorage2DMultisample)(target, samples, internalformat, width, height, fixedsamplelocations);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program)
+{
+    if (isES3(1))
+        qgles3Helper()->UseProgramStages(pipeline, stages, program);
+    else
+        RESOLVE_FUNC_VOID(0, UseProgramStages)(pipeline, stages, program);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveValidateProgramPipeline(GLuint pipeline)
+{
+    if (isES3(1))
+        qgles3Helper()->ValidateProgramPipeline(pipeline);
+    else
+        RESOLVE_FUNC_VOID(0, ValidateProgramPipeline)(pipeline);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribBinding(GLuint attribindex, GLuint bindingindex)
+{
+    if (isES3(1))
+        qgles3Helper()->VertexAttribBinding(attribindex, bindingindex);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribBinding)(attribindex, bindingindex);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
+{
+    if (isES3(1))
+        qgles3Helper()->VertexAttribFormat(attribindex, size, type, normalized, relativeoffset);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribFormat)(attribindex, size, type, normalized, relativeoffset);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
+{
+    if (isES3(1))
+        qgles3Helper()->VertexAttribIFormat(attribindex, size, type, relativeoffset);
+    else
+        RESOLVE_FUNC_VOID(0, VertexAttribIFormat)(attribindex, size, type, relativeoffset);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveVertexBindingDivisor(GLuint bindingindex, GLuint divisor)
+{
+    if (isES3(1))
+        qgles3Helper()->VertexBindingDivisor(bindingindex, divisor);
+    else
+        RESOLVE_FUNC_VOID(0, VertexBindingDivisor)(bindingindex, divisor);
+}
+
+QOpenGLExtraFunctions::QOpenGLExtraFunctions()
+{
+}
+
+QOpenGLExtraFunctions::QOpenGLExtraFunctions(QOpenGLContext *context)
+    : QOpenGLFunctions(context)
+{
+}
+
+QOpenGLExtraFunctionsPrivate::QOpenGLExtraFunctionsPrivate(QOpenGLContext *ctx)
+    : QOpenGLFunctionsPrivate(ctx)
+{
+    ReadBuffer = qopenglfResolveReadBuffer;
+    DrawRangeElements = qopenglfResolveDrawRangeElements;
+    TexImage3D = qopenglfResolveTexImage3D;
+    TexSubImage3D = qopenglfResolveTexSubImage3D;
+    CopyTexSubImage3D = qopenglfResolveCopyTexSubImage3D;
+    CompressedTexImage3D = qopenglfResolveCompressedTexImage3D;
+    CompressedTexSubImage3D = qopenglfResolveCompressedTexSubImage3D;
+    GenQueries = qopenglfResolveGenQueries;
+    DeleteQueries = qopenglfResolveDeleteQueries;
+    IsQuery = qopenglfResolveIsQuery;
+    BeginQuery = qopenglfResolveBeginQuery;
+    EndQuery = qopenglfResolveEndQuery;
+    GetQueryiv = qopenglfResolveGetQueryiv;
+    GetQueryObjectuiv = qopenglfResolveGetQueryObjectuiv;
+    UnmapBuffer = qopenglfResolveUnmapBuffer;
+    GetBufferPointerv = qopenglfResolveGetBufferPointerv;
+    DrawBuffers = qopenglfResolveDrawBuffers;
+    UniformMatrix2x3fv = qopenglfResolveUniformMatrix2x3fv;
+    UniformMatrix3x2fv = qopenglfResolveUniformMatrix3x2fv;
+    UniformMatrix2x4fv = qopenglfResolveUniformMatrix2x4fv;
+    UniformMatrix4x2fv = qopenglfResolveUniformMatrix4x2fv;
+    UniformMatrix3x4fv = qopenglfResolveUniformMatrix3x4fv;
+    UniformMatrix4x3fv = qopenglfResolveUniformMatrix4x3fv;
+    BlitFramebuffer = qopenglfResolveBlitFramebuffer;
+    RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
+    FramebufferTextureLayer = qopenglfResolveFramebufferTextureLayer;
+    MapBufferRange = qopenglfResolveMapBufferRange;
+    FlushMappedBufferRange = qopenglfResolveFlushMappedBufferRange;
+    BindVertexArray = qopenglfResolveBindVertexArray;
+    DeleteVertexArrays = qopenglfResolveDeleteVertexArrays;
+    GenVertexArrays = qopenglfResolveGenVertexArrays;
+    IsVertexArray = qopenglfResolveIsVertexArray;
+    GetIntegeri_v = qopenglfResolveGetIntegeri_v;
+    BeginTransformFeedback = qopenglfResolveBeginTransformFeedback;
+    EndTransformFeedback = qopenglfResolveEndTransformFeedback;
+    BindBufferRange = qopenglfResolveBindBufferRange;
+    BindBufferBase = qopenglfResolveBindBufferBase;
+    TransformFeedbackVaryings = qopenglfResolveTransformFeedbackVaryings;
+    GetTransformFeedbackVarying = qopenglfResolveGetTransformFeedbackVarying;
+    VertexAttribIPointer = qopenglfResolveVertexAttribIPointer;
+    GetVertexAttribIiv = qopenglfResolveGetVertexAttribIiv;
+    GetVertexAttribIuiv = qopenglfResolveGetVertexAttribIuiv;
+    VertexAttribI4i = qopenglfResolveVertexAttribI4i;
+    VertexAttribI4ui = qopenglfResolveVertexAttribI4ui;
+    VertexAttribI4iv = qopenglfResolveVertexAttribI4iv;
+    VertexAttribI4uiv = qopenglfResolveVertexAttribI4uiv;
+    GetUniformuiv = qopenglfResolveGetUniformuiv;
+    GetFragDataLocation = qopenglfResolveGetFragDataLocation;
+    Uniform1ui = qopenglfResolveUniform1ui;
+    Uniform2ui = qopenglfResolveUniform2ui;
+    Uniform3ui = qopenglfResolveUniform3ui;
+    Uniform4ui = qopenglfResolveUniform4ui;
+    Uniform1uiv = qopenglfResolveUniform1uiv;
+    Uniform2uiv = qopenglfResolveUniform2uiv;
+    Uniform3uiv = qopenglfResolveUniform3uiv;
+    Uniform4uiv = qopenglfResolveUniform4uiv;
+    ClearBufferiv = qopenglfResolveClearBufferiv;
+    ClearBufferuiv = qopenglfResolveClearBufferuiv;
+    ClearBufferfv = qopenglfResolveClearBufferfv;
+    ClearBufferfi = qopenglfResolveClearBufferfi;
+    GetStringi = qopenglfResolveGetStringi;
+    CopyBufferSubData = qopenglfResolveCopyBufferSubData;
+    GetUniformIndices = qopenglfResolveGetUniformIndices;
+    GetActiveUniformsiv = qopenglfResolveGetActiveUniformsiv;
+    GetUniformBlockIndex = qopenglfResolveGetUniformBlockIndex;
+    GetActiveUniformBlockiv = qopenglfResolveGetActiveUniformBlockiv;
+    GetActiveUniformBlockName = qopenglfResolveGetActiveUniformBlockName;
+    UniformBlockBinding = qopenglfResolveUniformBlockBinding;
+    DrawArraysInstanced = qopenglfResolveDrawArraysInstanced;
+    DrawElementsInstanced = qopenglfResolveDrawElementsInstanced;
+    FenceSync = qopenglfResolveFenceSync;
+    IsSync = qopenglfResolveIsSync;
+    DeleteSync = qopenglfResolveDeleteSync;
+    ClientWaitSync = qopenglfResolveClientWaitSync;
+    WaitSync = qopenglfResolveWaitSync;
+    GetInteger64v = qopenglfResolveGetInteger64v;
+    GetSynciv = qopenglfResolveGetSynciv;
+    GetInteger64i_v = qopenglfResolveGetInteger64i_v;
+    GetBufferParameteri64v = qopenglfResolveGetBufferParameteri64v;
+    GenSamplers = qopenglfResolveGenSamplers;
+    DeleteSamplers = qopenglfResolveDeleteSamplers;
+    IsSampler = qopenglfResolveIsSampler;
+    BindSampler = qopenglfResolveBindSampler;
+    SamplerParameteri = qopenglfResolveSamplerParameteri;
+    SamplerParameteriv = qopenglfResolveSamplerParameteriv;
+    SamplerParameterf = qopenglfResolveSamplerParameterf;
+    SamplerParameterfv = qopenglfResolveSamplerParameterfv;
+    GetSamplerParameteriv = qopenglfResolveGetSamplerParameteriv;
+    GetSamplerParameterfv = qopenglfResolveGetSamplerParameterfv;
+    VertexAttribDivisor = qopenglfResolveVertexAttribDivisor;
+    BindTransformFeedback = qopenglfResolveBindTransformFeedback;
+    DeleteTransformFeedbacks = qopenglfResolveDeleteTransformFeedbacks;
+    GenTransformFeedbacks = qopenglfResolveGenTransformFeedbacks;
+    IsTransformFeedback = qopenglfResolveIsTransformFeedback;
+    PauseTransformFeedback = qopenglfResolvePauseTransformFeedback;
+    ResumeTransformFeedback = qopenglfResolveResumeTransformFeedback;
+    GetProgramBinary = qopenglfResolveGetProgramBinary;
+    ProgramBinary = qopenglfResolveProgramBinary;
+    ProgramParameteri = qopenglfResolveProgramParameteri;
+    InvalidateFramebuffer = qopenglfResolveInvalidateFramebuffer;
+    InvalidateSubFramebuffer = qopenglfResolveInvalidateSubFramebuffer;
+    TexStorage2D = qopenglfResolveTexStorage2D;
+    TexStorage3D = qopenglfResolveTexStorage3D;
+    GetInternalformativ = qopenglfResolveGetInternalformativ;
+
+    DispatchCompute = qopenglfResolveDispatchCompute;
+    DispatchComputeIndirect = qopenglfResolveDispatchComputeIndirect;
+    DrawArraysIndirect = qopenglfResolveDrawArraysIndirect;
+    DrawElementsIndirect = qopenglfResolveDrawElementsIndirect;
+    FramebufferParameteri = qopenglfResolveFramebufferParameteri;
+    GetFramebufferParameteriv = qopenglfResolveGetFramebufferParameteriv;
+    GetProgramInterfaceiv = qopenglfResolveGetProgramInterfaceiv;
+    GetProgramResourceIndex = qopenglfResolveGetProgramResourceIndex;
+    GetProgramResourceName = qopenglfResolveGetProgramResourceName;
+    GetProgramResourceiv = qopenglfResolveGetProgramResourceiv;
+    GetProgramResourceLocation = qopenglfResolveGetProgramResourceLocation;
+    UseProgramStages = qopenglfResolveUseProgramStages;
+    ActiveShaderProgram = qopenglfResolveActiveShaderProgram;
+    CreateShaderProgramv = qopenglfResolveCreateShaderProgramv;
+    BindProgramPipeline = qopenglfResolveBindProgramPipeline;
+    DeleteProgramPipelines = qopenglfResolveDeleteProgramPipelines;
+    GenProgramPipelines = qopenglfResolveGenProgramPipelines;
+    IsProgramPipeline = qopenglfResolveIsProgramPipeline;
+    GetProgramPipelineiv = qopenglfResolveGetProgramPipelineiv;
+    ProgramUniform1i = qopenglfResolveProgramUniform1i;
+    ProgramUniform2i = qopenglfResolveProgramUniform2i;
+    ProgramUniform3i = qopenglfResolveProgramUniform3i;
+    ProgramUniform4i = qopenglfResolveProgramUniform4i;
+    ProgramUniform1ui = qopenglfResolveProgramUniform1ui;
+    ProgramUniform2ui = qopenglfResolveProgramUniform2ui;
+    ProgramUniform3ui = qopenglfResolveProgramUniform3ui;
+    ProgramUniform4ui = qopenglfResolveProgramUniform4ui;
+    ProgramUniform1f = qopenglfResolveProgramUniform1f;
+    ProgramUniform2f = qopenglfResolveProgramUniform2f;
+    ProgramUniform3f = qopenglfResolveProgramUniform3f;
+    ProgramUniform4f = qopenglfResolveProgramUniform4f;
+    ProgramUniform1iv = qopenglfResolveProgramUniform1iv;
+    ProgramUniform2iv = qopenglfResolveProgramUniform2iv;
+    ProgramUniform3iv = qopenglfResolveProgramUniform3iv;
+    ProgramUniform4iv = qopenglfResolveProgramUniform4iv;
+    ProgramUniform1uiv = qopenglfResolveProgramUniform1uiv;
+    ProgramUniform2uiv = qopenglfResolveProgramUniform2uiv;
+    ProgramUniform3uiv = qopenglfResolveProgramUniform3uiv;
+    ProgramUniform4uiv = qopenglfResolveProgramUniform4uiv;
+    ProgramUniform1fv = qopenglfResolveProgramUniform1fv;
+    ProgramUniform2fv = qopenglfResolveProgramUniform2fv;
+    ProgramUniform3fv = qopenglfResolveProgramUniform3fv;
+    ProgramUniform4fv = qopenglfResolveProgramUniform4fv;
+    ProgramUniformMatrix2fv = qopenglfResolveProgramUniformMatrix2fv;
+    ProgramUniformMatrix3fv = qopenglfResolveProgramUniformMatrix3fv;
+    ProgramUniformMatrix4fv = qopenglfResolveProgramUniformMatrix4fv;
+    ProgramUniformMatrix2x3fv = qopenglfResolveProgramUniformMatrix2x3fv;
+    ProgramUniformMatrix3x2fv = qopenglfResolveProgramUniformMatrix3x2fv;
+    ProgramUniformMatrix2x4fv = qopenglfResolveProgramUniformMatrix2x4fv;
+    ProgramUniformMatrix4x2fv = qopenglfResolveProgramUniformMatrix4x2fv;
+    ProgramUniformMatrix3x4fv = qopenglfResolveProgramUniformMatrix3x4fv;
+    ProgramUniformMatrix4x3fv = qopenglfResolveProgramUniformMatrix4x3fv;
+    ValidateProgramPipeline = qopenglfResolveValidateProgramPipeline;
+    GetProgramPipelineInfoLog = qopenglfResolveGetProgramPipelineInfoLog;
+    BindImageTexture = qopenglfResolveBindImageTexture;
+    GetBooleani_v = qopenglfResolveGetBooleani_v;
+    MemoryBarrierFunc = qopenglfResolveMemoryBarrier;
+    MemoryBarrierByRegion = qopenglfResolveMemoryBarrierByRegion;
+    TexStorage2DMultisample = qopenglfResolveTexStorage2DMultisample;
+    GetMultisamplefv = qopenglfResolveGetMultisamplefv;
+    SampleMaski = qopenglfResolveSampleMaski;
+    GetTexLevelParameteriv = qopenglfResolveGetTexLevelParameteriv;
+    GetTexLevelParameterfv = qopenglfResolveGetTexLevelParameterfv;
+    BindVertexBuffer = qopenglfResolveBindVertexBuffer;
+    VertexAttribFormat = qopenglfResolveVertexAttribFormat;
+    VertexAttribIFormat = qopenglfResolveVertexAttribIFormat;
+    VertexAttribBinding = qopenglfResolveVertexAttribBinding;
+    VertexBindingDivisor = qopenglfResolveVertexBindingDivisor;
+}
+
 QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
-    : QOpenGLFunctionsPrivate(ctx),
+    : QOpenGLExtraFunctionsPrivate(ctx),
       flushVendorChecked(false)
 {
     MapBuffer = qopenglfResolveMapBuffer;
-    MapBufferRange = qopenglfResolveMapBufferRange;
-    UnmapBuffer = qopenglfResolveUnmapBuffer;
-    BlitFramebuffer = qopenglfResolveBlitFramebuffer;
-    RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
     GetBufferSubData = qopenglfResolveGetBufferSubData;
     DiscardFramebuffer = qopenglfResolveDiscardFramebuffer;
 }

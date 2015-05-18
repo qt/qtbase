@@ -719,6 +719,28 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 }
 
 /*!
+    Get the QOpenGLExtraFunctions instance for this context.
+
+    QOpenGLContext offers this as a convenient way to access QOpenGLExtraFunctions
+    without having to manage it manually.
+
+    The context or a sharing context must be current.
+
+    The returned QOpenGLExtraFunctions instance is ready to be used and it
+    does not need initializeOpenGLFunctions() to be called.
+
+    \note QOpenGLExtraFunctions contains functionality that is not guaranteed to
+    be available at runtime. Runtime availability depends on the platform,
+    graphics driver, and the OpenGL version requested by the application.
+
+    \sa QOpenGLFunctions, QOpenGLExtraFunctions
+*/
+QOpenGLExtraFunctions *QOpenGLContext::extraFunctions() const
+{
+    return static_cast<QOpenGLExtraFunctions *>(functions());
+}
+
+/*!
     \fn T *QOpenGLContext::versionFunctions() const
 
     \overload versionFunctions()

@@ -66,6 +66,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLContextPrivate;
 class QOpenGLContextGroupPrivate;
 class QOpenGLFunctions;
+class QOpenGLExtraFunctions;
 class QPlatformOpenGLContext;
 
 class QScreen;
@@ -177,6 +178,7 @@ public:
     QPlatformOpenGLContext *shareHandle() const;
 
     QOpenGLFunctions *functions() const;
+    QOpenGLExtraFunctions *extraFunctions() const;
 
     QAbstractOpenGLFunctions *versionFunctions(const QOpenGLVersionProfile &versionProfile = QOpenGLVersionProfile()) const;
 
