@@ -55,23 +55,24 @@ QT_BEGIN_NAMESPACE
 void QBasicFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
+    QDir dir(fontpath);
 
-    if(!QFile::exists(fontpath)) {
+    if (!dir.exists()) {
         qWarning("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
         return;
     }
 
-    QDir dir(fontpath);
-    dir.setNameFilters(QStringList() << QLatin1String("*.ttf")
-                       << QLatin1String("*.ttc") << QLatin1String("*.pfa")
-                       << QLatin1String("*.pfb")
-                       << QLatin1String("*.otf"));
-    dir.refresh();
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-//        qDebug() << "looking at" << file;
-        addTTFile(QByteArray(), file);
+    QStringList nameFilters;
+    nameFilters << QLatin1String("*.ttf")
+                << QLatin1String("*.ttc")
+                << QLatin1String("*.pfa")
+                << QLatin1String("*.pfb")
+                << QLatin1String("*.otf");
+
+    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+        const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
+        QBasicFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 

@@ -45,16 +45,19 @@ QString QAndroidPlatformFontDatabase::fontDir() const
 void QAndroidPlatformFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
+    QDir dir(fontpath);
 
-    if (!QFile::exists(fontpath)) {
+    if (!dir.exists()) {
         qFatal("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
     }
 
-    QDir dir(fontpath);
-    QList<QFileInfo> entries = dir.entryInfoList(QStringList() << QStringLiteral("*.ttf") << QStringLiteral("*.otf"), QDir::Files);
-    for (int i = 0; i < int(entries.count()); ++i) {
-        const QByteArray file = QFile::encodeName(entries.at(i).absoluteFilePath());
+    QStringList nameFilters;
+    nameFilters << QLatin1String("*.ttf")
+                << QLatin1String("*.otf");
+
+    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+        const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
         QBasicFontDatabase::addTTFile(QByteArray(), file);
     }
 }
