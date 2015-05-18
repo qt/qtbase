@@ -30,8 +30,7 @@
     \title Plug & Paint Example
     \ingroup examples-widgets-tools
 
-    \brief The Plug & Paint example demonstrates how to write Qt
-    applications that can be extended through plugins.
+    \brief Demonstrates how to extend Qt applications using plugins.
 
     \image plugandpaint.png Screenshot of the Plug & Paint example
 
@@ -314,6 +313,9 @@
 /*!
     \example tools/plugandpaintplugins/basictools
     \title Plug & Paint Basic Tools Example
+    \brief A plugin providing the basic tools for painting functionality.
+
+    \image plugandpaint.png Screenshot of the Plug & Paint example
 
     The Basic Tools example is a static plugin for the
     \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
@@ -499,6 +501,9 @@
 /*!
     \example tools/plugandpaintplugins/extrafilters
     \title Plug & Paint Extra Filters Example
+    \brief A plugin providing the extra filters.
+
+    \image plugandpaint.png Screenshot of the Plug & Paint example
 
     The Extra Filters example is a plugin for the
     \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
