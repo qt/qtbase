@@ -1080,11 +1080,7 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
 
 QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
-    if (script == QChar::Script_Common)
-        return new QWindowsMultiFontEngine(fontEngine, script);
-    // ### as long as fallbacksForFamily() does not take script parameter into account,
-    // prefer QFontEngineMulti's loadEngine() implementation for complex scripts
-    return QPlatformFontDatabase::fontEngineMulti(fontEngine, script);
+    return new QWindowsMultiFontEngine(fontEngine, script);
 }
 
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
@@ -1666,11 +1662,10 @@ QString QWindowsFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
 
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
-    if (!result.isEmpty())
-        return result;
+    QStringList result;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result;

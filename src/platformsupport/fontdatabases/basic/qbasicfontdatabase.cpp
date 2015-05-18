@@ -176,15 +176,6 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     return fe;
 }
 
-QStringList QBasicFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
-{
-    Q_UNUSED(family);
-    Q_UNUSED(style);
-    Q_UNUSED(script);
-    Q_UNUSED(styleHint);
-    return QStringList();
-}
-
 QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     return addTTFile(fontData,fileName.toLocal8Bit());

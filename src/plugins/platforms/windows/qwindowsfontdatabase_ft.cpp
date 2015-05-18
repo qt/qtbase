@@ -661,9 +661,7 @@ QFontEngine *QWindowsFontDatabaseFT::fontEngine(const QByteArray &fontData, qrea
 
 QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
-    if (!result.isEmpty())
-        return result;
+    QStringList result;
 
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
 
@@ -678,6 +676,8 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
 #endif
 
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+
+    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result;

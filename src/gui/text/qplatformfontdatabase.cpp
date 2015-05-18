@@ -343,17 +343,15 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
 }
 
 /*!
+    \fn QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
+
     Returns a list of alternative fonts for the specified \a family and
     \a style and \a script using the \a styleHint given.
+
+    Default implementation returns a list of fonts for which \a style and \a script support
+    has been reported during the font database population.
 */
-QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
-{
-    Q_UNUSED(family);
-    Q_UNUSED(style);
-    Q_UNUSED(styleHint);
-    Q_UNUSED(script);
-    return QStringList();
-}
+// implemented in qfontdatabase.cpp
 
 /*!
     Adds an application font described by the font contained supplied \a fontData

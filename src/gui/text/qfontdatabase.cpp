@@ -756,6 +756,46 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
     return alias;
 }
 
+QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
+{
+    Q_UNUSED(family);
+    Q_UNUSED(styleHint);
+
+    QStringList retList;
+
+    size_t writingSystem = std::find(scriptForWritingSystem,
+                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                     script) - scriptForWritingSystem;
+    if (writingSystem >= QFontDatabase::WritingSystemsCount)
+        writingSystem = QFontDatabase::Any;
+
+    QFontDatabasePrivate *db = privateDb();
+    for (int i = 0; i < db->count; ++i) {
+        QtFontFamily *f = db->families[i];
+
+        f->ensurePopulated();
+
+        if (writingSystem > QFontDatabase::Any && f->writingSystems[writingSystem] != QtFontFamily::Supported)
+            continue;
+
+        for (int j = 0; j < f->count; ++j) {
+            QtFontFoundry *foundry = f->foundries[j];
+
+            for (int k = 0; k < foundry->count; ++k) {
+                if (style == foundry->styles[k]->key.style) {
+                    if (foundry->name.isEmpty())
+                        retList.append(f->name);
+                    else
+                        retList.append(f->name + QLatin1String(" [") + foundry->name + QLatin1Char(']'));
+                    break;
+                }
+            }
+        }
+    }
+
+    return retList;
+}
+
 QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     // make sure that the db has all fallback families
