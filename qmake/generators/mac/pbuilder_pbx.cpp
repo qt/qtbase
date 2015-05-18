@@ -950,7 +950,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         if(!path.isEmpty() && !libdirs.contains(path))
                             libdirs += path;
                     }
-                    library = fileFixify(library);
+                    library = fileFixify(library, FileFixifyAbsolute);
                     QString filetype = xcodeFiletypeForFilename(library);
                     QString key = keyFor(library);
                     if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
