@@ -992,40 +992,31 @@ QByteArray QIODevice::readAll()
 #endif
 
     QByteArray result;
-    qint64 readBytes = 0;
-    const bool sequential = d->isSequential();
-
-    // flush internal read buffer
-    if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
-        if (d->buffer.size() >= MaxByteArraySize)
-            return QByteArray();
-        result = d->buffer.readAll();
-        readBytes = result.size();
-        if (!sequential)
-            d->pos += readBytes;
-    }
-
-    qint64 theSize;
-    if (sequential || (theSize = size()) == 0) {
+    qint64 readBytes = (d->isSequential() ? Q_INT64_C(0) : size());
+    if (readBytes == 0) {
         // Size is unknown, read incrementally.
+        qint64 readChunkSize = qMax(d->buffer.size(), QIODEVICE_BUFFERSIZE);
         qint64 readResult;
         do {
-            if (readBytes + QIODEVICE_BUFFERSIZE >= MaxByteArraySize) {
+            if (readBytes + readChunkSize >= MaxByteArraySize) {
                 // If resize would fail, don't read more, return what we have.
                 break;
             }
-            result.resize(readBytes + QIODEVICE_BUFFERSIZE);
-            readResult = read(result.data() + readBytes, QIODEVICE_BUFFERSIZE);
-            if (readResult > 0 || readBytes == 0)
+            result.resize(readBytes + readChunkSize);
+            readResult = read(result.data() + readBytes, readChunkSize);
+            if (readResult > 0 || readBytes == 0) {
                 readBytes += readResult;
+                readChunkSize = QIODEVICE_BUFFERSIZE;
+            }
         } while (readResult > 0);
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        if (readBytes + theSize - d->pos >= MaxByteArraySize)
+        readBytes -= d->pos;
+        if (readBytes >= MaxByteArraySize)
             return QByteArray();
-        result.resize(int(readBytes + theSize - d->pos));
-        readBytes += read(result.data() + readBytes, result.size() - readBytes);
+        result.resize(readBytes);
+        readBytes = read(result.data(), readBytes);
     }
 
     if (readBytes <= 0)
