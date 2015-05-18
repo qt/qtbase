@@ -42,11 +42,12 @@
 #define GLWIDGET_H
 
 #include <QGLWidget>
+#include <QOpenGLFunctions_1_1>
 
 class QtLogo;
 
 //! [0]
-class GLWidget : public QGLWidget
+class GLWidget : public QGLWidget, public QOpenGLFunctions_1_1
 {
     Q_OBJECT
 
