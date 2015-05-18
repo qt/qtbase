@@ -151,7 +151,7 @@ void tst_QBuffer::readBlock()
     QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
     b.open(QIODevice::WriteOnly);
     QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read: WriteOnly device");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read (QBuffer): WriteOnly device");
     QCOMPARE(b.read(a, arraySize), (qint64) -1); // no read access
     b.close();
 
