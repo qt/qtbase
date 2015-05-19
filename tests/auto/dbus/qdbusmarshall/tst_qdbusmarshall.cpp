@@ -39,10 +39,7 @@
 
 #include <QtDBus/private/qdbusutil_p.h>
 #include <QtDBus/private/qdbusconnection_p.h>
-
-#define QT_LINKED_LIBDBUS
-#include <QtDBus/private/qdbusutil_p.h>
-#include <QtDBus/private/qdbusconnection_p.h>
+#include <QtDBus/private/qdbus_symbols_p.h>
 
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";
@@ -85,10 +82,8 @@ private slots:
     void sendCallErrors_data();
     void sendCallErrors();
 
-#ifdef DBUS_TYPE_UNIX_FD
     void receiveUnknownType_data();
     void receiveUnknownType();
-#endif
 
     void demarshallPrimitives_data();
     void demarshallPrimitives();
@@ -1017,7 +1012,6 @@ void tst_QDBusMarshall::sendCallErrors()
     QCOMPARE(reply.errorMessage(), errorMsg);
 }
 
-#ifdef DBUS_TYPE_UNIX_FD
 // If DBUS_TYPE_UNIX_FD is not defined, it means the current system's D-Bus library is too old for this test
 void tst_QDBusMarshall::receiveUnknownType_data()
 {
@@ -1075,6 +1069,27 @@ public:
     }
 };
 
+// mostly the same as qdbusintegrator.cpp:connectionCapabilies
+static bool canSendUnixFd(DBusConnection *connection)
+{
+    typedef dbus_bool_t (*can_send_type_t)(DBusConnection *, int);
+    static can_send_type_t can_send_type = 0;
+
+#if defined(QT_LINKED_LIBDBUS)
+# if DBUS_VERSION-0 >= 0x010400
+    can_send_type = dbus_connection_can_send_type;
+# endif
+#else
+    // run-time check if the next functions are available
+    can_send_type = (can_send_type_t)qdbus_resolve_conditionally("dbus_connection_can_send_type");
+#endif
+
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+#endif
+    return can_send_type && can_send_type(connection, DBUS_TYPE_UNIX_FD);
+}
+
 void tst_QDBusMarshall::receiveUnknownType()
 {
     QDBusConnection con = QDBusConnection::sessionBus();
@@ -1088,7 +1103,8 @@ void tst_QDBusMarshall::receiveUnknownType()
     QVERIFY2(rawcon.data(), error.name);
 
     // check if this bus supports passing file descriptors
-    if (!q_dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
+
+    if (!canSendUnixFd(rawcon.data()))
         QSKIP("Your session bus does not allow sending Unix file descriptors");
 
     // make sure this QDBusConnection won't handle Unix file descriptors
@@ -1184,7 +1200,6 @@ void tst_QDBusMarshall::receiveUnknownType()
         QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
     }
 }
-#endif
 
 void tst_QDBusMarshall::demarshallPrimitives_data()
 {
