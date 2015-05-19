@@ -1986,6 +1986,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
 
     navigationLinks.clear();
+    refMap.clear();
 
     if (node && !node->links().empty()) {
         QPair<QString,QString> linkPair;
