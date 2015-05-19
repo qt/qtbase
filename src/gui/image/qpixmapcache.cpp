@@ -660,5 +660,19 @@ QList< QPair<QString,QPixmap> > QPixmapCache::allPixmaps()
 {
     return pm_cache()->allPixmaps();
 }
+/*!
+   \fn QPixmapCache::KeyData::KeyData()
 
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::KeyData(const KeyData &other)
+
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::~KeyData()
+
+   \internal
+*/
 QT_END_NAMESPACE

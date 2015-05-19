@@ -208,6 +208,11 @@ QFontMetrics &QFontMetrics::operator=(const QFontMetrics &fm)
 
     \since 5.2
 */
+/*!
+    \fn QFontMetricsF &QFontMetricsF::operator=(QFontMetricsF &&other)
+
+    Move-assigns \a other to this QFontMetricsF instance.
+*/
 
 /*!
     \fn void QFontMetrics::swap(QFontMetrics &other)

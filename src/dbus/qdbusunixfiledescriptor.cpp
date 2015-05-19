@@ -174,7 +174,7 @@ QDBusUnixFileDescriptor &QDBusUnixFileDescriptor::operator=(const QDBusUnixFileD
 }
 
 /*!
-   \fn QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other)
+   \fn QDBusUnixFileDescriptor &QDBusUnixFileDescriptor::operator=(QDBusUnixFileDescriptor &&other)
 
    Move-assigns  \a other to this QDBusUnixFileDescriptor.
 */

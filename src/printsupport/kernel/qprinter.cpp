@@ -1092,11 +1092,19 @@ void QPrinter::setCreator(const QString &creator)
 
     To obtain the current page margins use pageLayout().pageMargins().
 
-    Returns true if the page margins was successfully set to \a margins.
+    Returns \c true if the page margins was successfully set to \a margins.
 
     \sa pageLayout(), setPageLayout()
 */
 
+/*!
+    \fn bool QPrinter::setPageMargins(const QMarginsF &margins)
+
+    Set the page margins to \a margins using the current units.
+    Returns \c true if the page margins were set successfully.
+
+    \sa pageLayout(), setPageLayout()
+*/
 /*!
     \fn QPageLayout QPrinter::pageLayout() const
     \since 5.3

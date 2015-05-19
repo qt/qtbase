@@ -916,6 +916,12 @@ QOpenGLDebugMessage &QOpenGLDebugMessage::operator=(const QOpenGLDebugMessage &d
 }
 
 /*!
+   \fn QOpenGLDebugMessage &QOpenGLDebugMessage::operator=(QOpenGLDebugMessage &&debugMessage)
+
+   Move-assigns \a debugMessage to this object.
+*/
+
+/*!
     \fn void QOpenGLDebugMessage::swap(QOpenGLDebugMessage &debugMessage)
 
     Swaps the message \a debugMessage with this message. This operation is very

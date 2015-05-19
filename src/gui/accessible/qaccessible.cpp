@@ -1381,10 +1381,18 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 */
 
 /*! \fn QAccessibleValueChangeEvent::QAccessibleValueChangeEvent(QObject *object, const QVariant &value)
+
     Constructs a new QAccessibleValueChangeEvent for \a object.
     The event contains the new \a value.
 */
+/*! \fn QAccessibleValueChangeEvent::QAccessibleValueChangeEvent(QAccessibleInterface *iface, const QVariant &val)
+
+    Constructs a new QAccessibleValueChangeEvent for \a iface.
+    The event contains the new value \a val.
+*/
+
 /*! \fn void QAccessibleValueChangeEvent::setValue(const QVariant & value)
+
     Sets the new \a value for this event.
 */
 /*!
@@ -1406,11 +1414,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     \sa QAccessibleInterface::state()
 */
 /*! \fn QAccessibleStateChangeEvent::QAccessibleStateChangeEvent(QObject *object, QAccessible::State state)
+
     Constructs a new QAccessibleStateChangeEvent for \a object.
     The difference to the object's previous state is in \a state.
 */
 /*!
     \fn QAccessibleStateChangeEvent::QAccessibleStateChangeEvent(QAccessibleInterface *iface, QAccessible::State state)
+
     Constructs a new QAccessibleStateChangeEvent.
     \a iface is the interface associated with the event
     \a state is the state of the accessible object.
@@ -1419,8 +1429,8 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     \fn QAccessible::State QAccessibleStateChangeEvent::changedStates() const
     \brief Returns the states that have been changed.
 
-    Be aware that the returned states are the ones that have changed,
-    to find out about the state of an object, use QAccessibleInterface::state().
+    Keep in mind that the returned states are the ones that have changed.
+    To find out about the state of an object, use QAccessibleInterface::state().
 
     For example, if an object used to have the focus but loses it,
     the object's state will have focused set to \c false. This event on the
@@ -1443,7 +1453,7 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 */
 
 /*! \enum QAccessibleTableModelChangeEvent::ModelChangeType
-    This enum describes different types of changes in the table model.
+    This enum describes the different types of changes in the table model.
     \value ModelReset      The model has been reset, all previous knowledge about the model is now invalid.
     \value DataChanged     No cells have been added or removed, but the data of the specified cell range is invalid.
     \value RowsInserted    New rows have been inserted.
@@ -1452,42 +1462,57 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     \value ColumnsRemoved  Columns have been removed.
 */
 /*! \fn QAccessibleTableModelChangeEvent::QAccessibleTableModelChangeEvent(QObject *object, ModelChangeType changeType)
+
     Constructs a new QAccessibleTableModelChangeEvent for \a object of with \a changeType.
 */
 /*! \fn int QAccessibleTableModelChangeEvent::firstColumn() const
+
     Returns the first changed column.
 */
 /*! \fn int QAccessibleTableModelChangeEvent::firstRow() const
+
     Returns the first changed row.
 */
 /*! \fn int QAccessibleTableModelChangeEvent::lastColumn() const
+
     Returns the last changed column.
 */
 /*! \fn int QAccessibleTableModelChangeEvent::lastRow() const
+
     Returns the last changed row.
 */
 /*! \fn QAccessibleTableModelChangeEvent::ModelChangeType QAccessibleTableModelChangeEvent::modelChangeType() const
+
     Returns the type of change.
 */
 /*! \fn void QAccessibleTableModelChangeEvent::setFirstColumn(int column)
+
     Sets the first changed \a column.
 */
 /*! \fn void QAccessibleTableModelChangeEvent::setFirstRow(int row)
+
     Sets the first changed \a row.
 */
 /*! \fn void QAccessibleTableModelChangeEvent::setLastColumn(int column)
+
     Sets the last changed \a column.
 */
 /*! \fn void QAccessibleTableModelChangeEvent::setLastRow(int row)
+
     Sets the last changed \a row.
 */
 /*! \fn void QAccessibleTableModelChangeEvent::setModelChangeType(ModelChangeType changeType)
+
     Sets the type of change to \a changeType.
 */
-
-
 /*!
-    \class QAccessibleTextCursorEvent
+    \fn QAccessibleTableModelChangeEvent::QAccessibleTableModelChangeEvent(QAccessibleInterface *iface, ModelChangeType changeType)
+
+    Constructs a new QAccessibleTableModelChangeEvent for interface \a iface with a model
+    change type \a changeType.
+*/
+/*!
+   \class QAccessibleTextCursorEvent
     \ingroup accessibility
     \inmodule QtGui
 
@@ -1495,15 +1520,25 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 
     This class is used with \l QAccessible::updateAccessibility().
 */
-/*! \fn QAccessibleTextCursorEvent::QAccessibleTextCursorEvent(QObject *object, int cursorPosition)
+/*! \fn QAccessibleTextCursorEvent::QAccessibleTextCursorEvent(QObject *object, int cursorPos)
+
     Create a new QAccessibleTextCursorEvent for \a object.
-    The \a cursorPosition is the new cursor position.
+    The \a cursorPos is the new cursor position.
 */
 /*! \fn int QAccessibleTextCursorEvent::cursorPosition() const
+
     Returns the cursor position.
 */
 /*! \fn void QAccessibleTextCursorEvent::setCursorPosition(int position)
+
     Sets the cursor \a position for this event.
+*/
+
+/*!
+    \fn QAccessibleTextCursorEvent(QAccessibleInterface *iface, int cursorPos)
+
+    Create a new QAccessibleTextCursorEvent for \a iface,
+    The \a cursorPos is the new cursor position.
 */
 
 /*!
@@ -1516,6 +1551,7 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     This class is used with \l QAccessible::updateAccessibility().
 */
 /*! \fn QAccessibleTextInsertEvent::QAccessibleTextInsertEvent(QObject *object, int position, const QString &text)
+
     Constructs a new QAccessibleTextInsertEvent event for \a object.
     The \a text has been inserted at \a position.
     By default, it is assumed that the cursor has moved to the end
@@ -1523,9 +1559,11 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     set it with \l QAccessibleTextCursorEvent::setCursorPosition() for this event.
 */
 /*! \fn int QAccessibleTextInsertEvent::changePosition() const
+
     Returns the position where the text was inserted.
 */
 /*! \fn QString QAccessibleTextInsertEvent::textInserted() const
+
     Returns the text that has been inserted.
 */
 
@@ -1539,7 +1577,16 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     This class is used with \l QAccessible::updateAccessibility().
 */
 /*! \fn QAccessibleTextRemoveEvent::QAccessibleTextRemoveEvent(QObject *object, int position, const QString &text)
+
     Constructs a new QAccessibleTextRemoveEvent event for \a object.
+    The \a text has been removed at \a position.
+    By default it is assumed that the cursor has moved to \a position.
+    If that is not the case, one needs to manually
+    set it with \l QAccessibleTextCursorEvent::setCursorPosition() for this event.
+*/
+/*! \fn QAccessibleTextRemoveEvent::QAccessibleTextRemoveEvent(QAccessibleInterface *iface, int position, const QString &text)
+
+    Constructs a new QAccessibleTextRemoveEvent event for \a iface.
     The \a text has been removed at \a position.
     By default it is assumed that the cursor has moved to \a position.
     If that is not the case, one needs to manually
@@ -1547,11 +1594,37 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 */
 
 /*! \fn int QAccessibleTextRemoveEvent::changePosition() const
+
     Returns the position where the text was removed.
 */
 /*! \fn QString QAccessibleTextRemoveEvent::textRemoved() const
+
     Returns the text that has been removed.
 */
+/*!
+   \fn QAccessibleTextSelectionEvent::QAccessibleTextSelectionEvent(QAccessibleInterface *iface, int start, int end)
+
+   Constructs a new QAccessibleTextSelectionEvent for \a iface. The new selection this
+   event notifies about is from position \a start to \a end.
+*/
+
+/*!
+     \fn QAccessibleTextInsertEvent::QAccessibleTextInsertEvent(QAccessibleInterface *iface, int position, const QString &text)
+
+     Constructs a new QAccessibleTextInsertEvent event for \a iface. The text has been inserted at
+     \a position.
+*/
+
+/*!
+     \fn inline QAccessibleTextUpdateEvent::QAccessibleTextUpdateEvent(QAccessibleInterface *iface, int position, const QString &oldText,
+         const QString &text)
+
+     Constructs a new QAccessibleTextUpdateEvent for \a iface. The text change takes place at
+     \a position where the \a oldText was removed and \a text inserted instead.
+
+*/
+
+
 
 /*!
     \class QAccessibleTextUpdateEvent
@@ -1566,16 +1639,20 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     This class is used with \l QAccessible::updateAccessibility().
 */
 /*! \fn QAccessibleTextUpdateEvent::QAccessibleTextUpdateEvent(QObject *object, int position, const QString &oldText, const QString &text)
+
     Constructs a new QAccessibleTextUpdateEvent for \a object.
     The text change takes place at \a position where the \a oldText was removed and \a text inserted instead.
 */
 /*! \fn int QAccessibleTextUpdateEvent::changePosition() const
+
     Returns where the change took place.
 */
 /*! \fn QString QAccessibleTextUpdateEvent::textInserted() const
+
     Returns the inserted text.
 */
 /*! \fn QString QAccessibleTextUpdateEvent::textRemoved() const
+
     Returns the removed text.
 */
 
@@ -1589,16 +1666,20 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     This class is used with \l QAccessible::updateAccessibility().
 */
 /*! \fn QAccessibleTextSelectionEvent::QAccessibleTextSelectionEvent(QObject *object, int start, int end)
+
     Constructs a new QAccessibleTextSelectionEvent for \a object.
     The new selection this event notifies about is from position \a start to \a end.
 */
 /*! \fn int QAccessibleTextSelectionEvent::selectionEnd() const
+
     Returns the position of the last selected character.
 */
 /*! \fn int QAccessibleTextSelectionEvent::selectionStart() const
+
     Returns the position of the first selected character.
 */
 /*! \fn void QAccessibleTextSelectionEvent::setSelection(int start, int end)
+
     Sets the selection for this event from position \a start to \a end.
 */
 
@@ -1840,11 +1921,13 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 
 /*!
     \fn QAccessibleTextInterface::~QAccessibleTextInterface()
+
     Destroys the QAccessibleTextInterface.
 */
 
 /*!
     \fn void QAccessibleTextInterface::addSelection(int startOffset, int endOffset)
+
     Select the text from \a startOffset to \a endOffset.
     The \a startOffset is the first character that will be selected.
     The \a endOffset is the first character that will not be selected.
@@ -1857,6 +1940,7 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 
 /*!
     \fn QString QAccessibleTextInterface::attributes(int offset, int *startOffset, int *endOffset) const
+
     Returns the text attributes at the position \a offset.
     In addition the range of the attributes is returned in \a startOffset and \a endOffset.
 */
@@ -1869,6 +1953,7 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 
 /*!
     \fn QRect QAccessibleTextInterface::characterRect(int offset) const
+
     Returns the position and size of the character at position \a offset in screen coordinates.
 */
 
@@ -2222,6 +2307,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 
 /*!
     \fn QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
+
     Destroys the QAccessibleEditableTextInterface.
 */
 
@@ -2263,6 +2349,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 
 /*!
     \fn QAccessibleValueInterface::~QAccessibleValueInterface()
+
     Destructor.
 */
 
@@ -2335,46 +2422,55 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 
 /*!
     \fn virtual QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
+
     Destroys the QAccessibleTableCellInterface.
 */
 
 /*!
     \fn virtual int QAccessibleTableCellInterface::columnExtent() const
+
     Returns the number of columns occupied by this cell accessible.
 */
 
 /*!
     \fn virtual QList<QAccessibleInterface*> QAccessibleTableCellInterface::columnHeaderCells() const
+
     Returns the column headers as an array of cell accessibles.
 */
 
 /*!
     \fn virtual int QAccessibleTableCellInterface::columnIndex() const
+
     Translates this cell accessible into the corresponding column index.
 */
 
 /*!
     \fn virtual int QAccessibleTableCellInterface::rowExtent() const
+
     Returns the number of rows occupied by this cell accessible.
 */
 
 /*!
     \fn virtual QList<QAccessibleInterface*> QAccessibleTableCellInterface::rowHeaderCells() const
+
     Returns the row headers as an array of cell accessibles.
 */
 
 /*!
     \fn virtual int QAccessibleTableCellInterface::rowIndex() const
+
     Translates this cell accessible into the corresponding row index.
 */
 
 /*!
     \fn virtual bool QAccessibleTableCellInterface::isSelected() const
+
     Returns a boolean value indicating whether this cell is selected.
 */
 
 /*!
     \fn virtual QAccessibleInterface *QAccessibleTableCellInterface::table() const
+
     Returns the QAccessibleInterface of the table containing this cell.
 */
 
@@ -2391,105 +2487,125 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 
 /*!
     \fn virtual QAccessibleTableInterface::~QAccessibleTableInterface()
+
     Destroys the QAccessibleTableInterface.
 */
 
 /*!
     \fn virtual QAccessibleInterface *QAccessibleTableInterface::cellAt(int row, int column) const
+
     Returns the cell at the specified \a row and \a column in the table.
 */
 
 /*!
     \fn virtual QAccessibleInterface *QAccessibleTableInterface::caption() const
+
     Returns the caption for the table.
 */
 
 /*!
     \fn virtual QString QAccessibleTableInterface::columnDescription(int column) const
+
     Returns the description text of the specified \a column in the table.
 */
 
 /*!
     \fn virtual int QAccessibleTableInterface::columnCount() const
+
     Returns the total number of columns in table.
 */
 
 /*!
     \fn virtual int QAccessibleTableInterface::rowCount() const
+
     Returns the total number of rows in table.
 */
 
 /*!
     \fn virtual int QAccessibleTableInterface::selectedCellCount() const
+
     Returns the total number of selected cells.
 */
 
 /*!
     \fn virtual int QAccessibleTableInterface::selectedColumnCount() const
+
     Returns the total number of selected columns.
 */
 
 /*!
     \fn virtual int QAccessibleTableInterface::selectedRowCount() const
+
     Returns the total number of selected rows.
 */
 
 /*!
     \fn virtual QString QAccessibleTableInterface::rowDescription(int row) const
+
     Returns the description text of the specified \a row in the table.
 */
 
 /*!
     \fn virtual QList<int> QAccessibleTableInterface::selectedCells() const
+
     Returns the list of selected cell (by their index as \l QAccessibleInterface::child() accepts).
 */
 
 /*!
     \fn virtual QList<int> QAccessibleTableInterface::selectedColumns() const
+
     Returns the list of currently selected columns.
 */
 
 /*!
     \fn virtual QList<int> QAccessibleTableInterface::selectedRows() const
+
     Returns the list of currently selected columns.
 */
 
 /*!
     \fn virtual QAccessibleInterface *QAccessibleTableInterface::summary() const
+
     Returns a QAccessibleInterface that represents a summary of the table.
     This function may return 0 if no such interface exists.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::isColumnSelected(int column) const
+
     Returns a boolean value indicating whether the specified \a column is completely selected.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::isRowSelected(int row) const
+
     Returns a boolean value indicating whether the specified \a row is completely selected.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::selectRow(int row)
+
     Selects \a row. This function might unselect all previously selected rows.
     Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::selectColumn(int column)
+
     Selects \a column. This function might unselect all previously selected columns.
     Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::unselectRow(int row)
+
     Unselects \a row, leaving other selected rows selected (if any).
     Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::unselectColumn(int column)
+
     Unselects \a column, leaving other selected columns selected (if any).
     Returns \c true if the selection was successful.
 */
@@ -2544,6 +2660,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 
 /*!
     \fn QAccessibleActionInterface::~QAccessibleActionInterface()
+
     Destroys the QAccessibleActionInterface.
 */
 

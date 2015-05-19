@@ -631,6 +631,13 @@ QIcon::QIcon(const QIcon &other)
 }
 
 /*!
+  \fn QIcon::QIcon(QIcon &&other)
+
+  Move-constructs a QIcon instance, making it point to the same object
+  that \a other was pointing to.
+*/
+
+/*!
     Constructs an icon from the file with the given \a fileName. The
     file will be loaded on demand.
 

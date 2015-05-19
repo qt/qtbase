@@ -4898,8 +4898,15 @@ QMetaObject::Connection& QMetaObject::Connection::operator=(const QMetaObject::C
     return *this;
 }
 
+/*!
+    Creates a Connection instance.
+*/
+
 QMetaObject::Connection::Connection() : d_ptr(0) {}
 
+/*!
+    Destructor for QMetaObject::Connection.
+*/
 QMetaObject::Connection::~Connection()
 {
     if (d_ptr)

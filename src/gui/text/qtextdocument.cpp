@@ -135,9 +135,8 @@ bool Qt::mightBeRichText(const QString& text)
     return false;
 }
 
-/*!
-    \fn QString Qt::convertFromPlainText(const QString &plain, WhiteSpaceMode mode)
 
+/*!
     Converts the plain text string \a plain to an HTML-formatted
     paragraph while preserving most of its look.
 

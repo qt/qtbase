@@ -1153,17 +1153,8 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba)
 
     Returns the codec used by QObject::tr() on its argument. If this
     function returns 0 (the default), tr() assumes Latin-1.
-
-    \sa  setCodecForTr()
 */
 
-/*!
-    \fn QTextCodec::setCodecForTr ( QTextCodec * c )
-    \obsolete
-
-    Sets the codec used by QObject::tr() on its argument to c. If c
-    is 0 (the default), tr() assumes Latin-1.
-*/
 
 /*!
     \internal

@@ -83,6 +83,52 @@ QEnterEvent::~QEnterEvent()
 }
 
 /*!
+   \fn QPoint QEnterEvent::globalPos() const
+
+   Returns the global position of the widget \e{at the time of the event}.
+*/
+/*!
+   \fn int QEnterEvent::globalX() const
+
+   Returns the global position on the X-axis of the mouse cursor relative to the the widget.
+*/
+/*!
+   \fn int QEnterEvent::globalY() const
+
+   Returns the global position on the Y-axis of the mouse cursor relative to the the widget.
+*/
+/*!
+   \fn QPoint QEnterEvent::localPos() const
+
+   Returns the mouse cursor's position relative to the receiving widget.
+*/
+/*!
+   \fn QPoint QEnterEvent::pos() const
+
+   Returns the position of the mouse cursor in global screen coordinates.
+*/
+/*!
+   \fn QPoint QEnterEvent::screenPos() const
+
+   Returns the position of the mouse cursor relative to the receiving screen.
+*/
+/*!
+   \fn QPoint QEnterEvent::windowPos() const
+
+   Returns the position of the mouse cursor relative to the receiving window.
+*/
+/*!
+   \fn int QEnterEvent::x() const
+
+   Returns the x position of the mouse cursor relative to the receiving widget.
+*/
+/*!
+   \fn int QEnterEvent::y() const
+
+   Returns the y position of the mouse cursor relative to the receiving widget.
+*/
+
+/*!
     \class QInputEvent
     \ingroup events
     \inmodule QtGui
@@ -4161,6 +4207,12 @@ QTouchEvent::~QTouchEvent()
     \sa QTouchDevice::type(), QTouchEvent::device()
 */
 
+/*! \fn QTouchEvent::TouchPoint::TouchPoint(TouchPoint &&other)
+
+    Move-constructs a TouchPoint instance, making it point to the same
+    object that \a other was pointing to.
+*/
+
 /*! \fn Qt::TouchPointStates QTouchEvent::touchPointStates() const
 
     Returns a bitwise OR of all the touch point states for this event.
@@ -4687,6 +4739,10 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     \internal
  */
 
+/*!
+    \fn TouchPoint &TouchPoint::operator=(TouchPoint &&other)
+    \internal
+ */
 /*!
     \fn void QTouchEvent::TouchPoint::swap(TouchPoint &other);
     \internal

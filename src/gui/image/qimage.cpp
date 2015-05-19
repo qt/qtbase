@@ -4256,6 +4256,10 @@ int QImage::bitPlaneCount() const
     return bpc;
 }
 
+/*!
+   Returns a smoothly scaled copy of the image. The returned image has a size
+   of width \a w by height \a h pixels.
+*/
 QImage QImage::smoothScaled(int w, int h) const {
     QImage src = *this;
     switch (src.format()) {

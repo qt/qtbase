@@ -129,7 +129,8 @@
 /*!
     \fn QSet::QSet(QSet && other)
 
-    Move-constructs a QSet instance, making it point to the same object that \a other was pointing to.
+    Move-constructs a QSet instance, making it point to the same object that
+    \a other was pointing to.
 */
 
 

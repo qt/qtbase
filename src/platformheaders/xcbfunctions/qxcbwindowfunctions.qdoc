@@ -81,3 +81,4 @@
     This is a convenience function that can be used directly instead of resolving the function pointer.
     \a window and \a type will be relayed to the function retrieved by QGuiApplication
 */
+

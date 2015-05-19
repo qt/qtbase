@@ -1534,6 +1534,29 @@ bool QMetaObject::invokeMethod(QObject *obj,
 */
 
 /*!
+    \fn QMetaObject::Connection::Connection(const Connection &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn QMetaObject::Connection::Connection &operator=(const Connection &other)
+
+    Assigns \a other to this connection and returns a reference to this connection.
+*/
+
+/*!
+    \fn QMetaObject::Connection &QMetaObject::Connection::operator=(Connection &&other)
+
+    Move-assigns \a other to this object.
+*/
+/*!
+    \fn QMetaObject::Connection::Connection(Connection &&o)
+
+    Move-constructs a Connection instance, making it point to the same object that \a o was pointing to.
+*/
+
+/*!
     \class QMetaMethod
     \inmodule QtCore
 

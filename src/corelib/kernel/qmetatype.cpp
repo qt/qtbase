@@ -421,6 +421,16 @@ struct DefinedTypesFilter {
 */
 
 /*!
+    \fn void *QMetaType::construct(int type, const void *copy)
+    \deprecated
+
+    Constructs a value of the given type which is a copy of \a copy.
+    The default value for \a copy is 0.
+
+    Deprecated, use the static function QMetaType::create(int type,
+    const void *copy) instead.
+*/
+/*!
     \fn void *QMetaType::construct(void *where, const void *copy = 0) const
     \since 5.0
 
@@ -1179,10 +1189,7 @@ bool QMetaType::isRegistered(int type)
 }
 
 /*!
-    \fn int qMetaTypeTypeImpl(const char *typeName, int length)
     \internal
-
-    Implementation of QMetaType::type().
 */
 template <bool tryNormalizedType>
 static inline int qMetaTypeTypeImpl(const char *typeName, int length)
