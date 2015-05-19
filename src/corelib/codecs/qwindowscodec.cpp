@@ -181,7 +181,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
     ws[size +1] = 0;
     ws[size] = 0;
     size = mbstowcs(ws, mb, length);
-    for (int i=0; i< size; i++)
+    for (size_t i = 0; i < size; i++)
         s.append(QChar(ws[i]));
     delete [] ws;
 #endif
