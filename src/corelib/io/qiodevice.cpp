@@ -41,7 +41,6 @@
 #include "qdir.h"
 
 #include <algorithm>
-#include <limits.h>
 
 #ifdef QIODEVICE_DEBUG
 #  include <ctype.h>
@@ -942,9 +941,9 @@ QByteArray QIODevice::read(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (maxSize != qint64(int(maxSize))) {
+    if (quint64(maxSize) >= QByteArray::MaxSize) {
         checkWarnMessage(this, "read", "maxSize argument exceeds QByteArray size limit");
-        maxSize = INT_MAX;
+        maxSize = QByteArray::MaxSize - 1;
     }
 
     qint64 readBytes = 0;
@@ -996,7 +995,7 @@ QByteArray QIODevice::readAll()
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
-        if (d->buffer.size() >= INT_MAX)
+        if (quint64(d->buffer.size()) >= QByteArray::MaxSize)
             return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
@@ -1179,9 +1178,9 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (maxSize > INT_MAX) {
+    if (quint64(maxSize) >= QByteArray::MaxSize) {
         qWarning("QIODevice::read: maxSize argument exceeds QByteArray size limit");
-        maxSize = INT_MAX;
+        maxSize = QByteArray::MaxSize - 1;
     }
 
     result.resize(int(maxSize));
@@ -1189,7 +1188,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     if (!result.size()) {
         // If resize fails or maxSize == 0, read incrementally
         if (maxSize == 0)
-            maxSize = INT_MAX;
+            maxSize = QByteArray::MaxSize - 1;
 
         // The first iteration needs to leave an extra byte for the terminating null
         result.resize(1);
