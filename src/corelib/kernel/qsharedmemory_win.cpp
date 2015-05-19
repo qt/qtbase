@@ -163,6 +163,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 #if defined(Q_OS_WINPHONE)
     Q_UNIMPLEMENTED();
     Q_UNUSED(mode)
+    Q_UNUSED(permissions)
     memory = 0;
 #elif defined(Q_OS_WINRT)
     memory = (void *)MapViewOfFileFromApp(handle(), permissions, 0, 0);
