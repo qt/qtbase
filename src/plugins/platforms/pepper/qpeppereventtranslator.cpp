@@ -50,7 +50,7 @@ Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_EVENT_KEYBOARD, "qt.platform.pepper.event.
 
 QPepperEventTranslator::QPepperEventTranslator()
 {
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
 
 bool QPepperEventTranslator::processEvent(const pp::InputEvent &event)
