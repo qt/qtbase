@@ -137,11 +137,14 @@ win32 {
                 io/qfilesystemengine_unix.cpp \
                 io/qlockfile_unix.cpp \
                 io/qprocess_unix.cpp \
-                io/qfilesystemiterator_unix.cpp \
+                io/qfilesystemiterator_unix.cpp
+        !nacl {
+            SOURCE += \
                 io/forkfd_qt.cpp
-        HEADERS += \
+            HEADERS += \
                 ../3rdparty/forkfd/forkfd.h
-        INCLUDEPATH += ../3rdparty/forkfd
+            INCLUDEPATH += ../3rdparty/forkfd
+        }
 
         mac {
             SOURCES += io/qsettings_mac.cpp
