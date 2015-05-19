@@ -4913,6 +4913,16 @@ QMetaObject::Connection::~Connection()
         static_cast<QObjectPrivate::Connection *>(d_ptr)->deref();
 }
 
+/*! \internal Returns true if the object is still connected */
+bool QMetaObject::Connection::isConnected_helper() const
+{
+    Q_ASSERT(d_ptr);    // we're only called from operator RestrictedBool() const
+    QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(d_ptr);
+
+    return c->receiver;
+}
+
+
 /*!
     \fn QMetaObject::Connection::operator bool() const
 
