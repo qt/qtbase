@@ -145,7 +145,7 @@ static QString standardLibraryErrorString(int errorCode)
     return ret.trimmed();
 }
 
-QString QSystemError::toString()
+QString QSystemError::toString() const
 {
     switch(errorScope) {
     case NativeError:
