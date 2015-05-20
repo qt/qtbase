@@ -2249,11 +2249,11 @@ void tst_QTableView::resizeColumnsToContents_data()
     QTest::addColumn<int>("rowHeight");
     QTest::addColumn<int>("columnWidth");
 
-    QTest::newRow("10x10 grid shown 40x40")
-        << 10 << 10 << false << 40 << 40 << 40 << 40;
+    QTest::newRow("10x10 grid not shown 60x60")
+        << 10 << 10 << false << 60 << 60 << 60 << 60;
 
-    QTest::newRow("10x10 grid not shown 40x40")
-        << 10 << 10 << true << 40 << 40 << 41 << 41;
+    QTest::newRow("10x10 grid shown 60x60")
+        << 10 << 10 << true << 60 << 60 << 61 << 61;
 }
 
 void tst_QTableView::resizeColumnsToContents()
