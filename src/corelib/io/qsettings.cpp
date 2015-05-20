@@ -299,7 +299,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 }
 #endif
 
-void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QMap<QString, QString> &result)
+void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QStringList &result)
 {
     if (spec != AllKeys) {
         int slashPos = key.indexOf(QLatin1Char('/'));
@@ -312,7 +312,7 @@ void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QMap<QString
             key.truncate(slashPos);
         }
     }
-    result.insert(key.toString(), QString());
+    result.append(key.toString());
 }
 
 void QSettingsPrivate::beginGroupOrArray(const QSettingsGroup &group)
@@ -1272,7 +1272,7 @@ bool QConfFileSettingsPrivate::get(const QString &key, QVariant *value) const
 
 QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
 {
-    QMap<QString, QString> result;
+    QStringList result;
     ParsedSettingsMap::const_iterator j;
 
     QSettingsKey thePrefix(prefix, caseSensitivity);
@@ -1307,7 +1307,10 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                 break;
         }
     }
-    return result.keys();
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()),
+                 result.end());
+    return result;
 }
 
 void QConfFileSettingsPrivate::clear()
