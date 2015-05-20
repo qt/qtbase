@@ -208,6 +208,10 @@ QPlatformServices *QIOSIntegration::services() const
 QVariant QIOSIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
+    case PasswordMaskDelay:
+        // this number is based on timing the native delay
+        // since there is no API to get it
+        return 2000;
     case ShowIsMaximized:
         return true;
     case SetFocusOnTouchRelease:
