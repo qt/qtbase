@@ -64,6 +64,7 @@ protected:
     ~QTemporaryFilePrivate();
 
     QAbstractFileEngine *engine() const;
+    void resetFileEngine() const;
 
     bool autoRemove;
     QString templateName;
@@ -77,22 +78,17 @@ class QTemporaryFileEngine : public QFSFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
-
-    QTemporaryFileEngine(const QString &file,
-                         quint32 fileMode,
-                         bool fileIsTemplate = true) :
-        QFSFileEngine(),
-        fileMode(fileMode),
-        filePathIsTemplate(fileIsTemplate),
-        filePathWasTemplate(fileIsTemplate)
+    void initialize(const QString &file, quint32 mode, bool nameIsTemplate = true)
     {
         Q_D(QFSFileEngine);
+        Q_ASSERT(!isReallyOpen());
+        fileMode = mode;
+        filePathIsTemplate = filePathWasTemplate = nameIsTemplate;
         d->fileEntry = QFileSystemEntry(file);
 
         if (!filePathIsTemplate)
             QFSFileEngine::setFileName(file);
     }
-
     ~QTemporaryFileEngine();
 
     bool isReallyOpen();
