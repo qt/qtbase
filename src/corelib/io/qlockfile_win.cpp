@@ -120,7 +120,7 @@ bool QLockFilePrivate::isApparentlyStale() const
     // processes due to sandboxing
 #ifndef Q_OS_WINRT
     if (getLockInfo(&pid, &hostname, &appname)) {
-        if (hostname == QString::fromLocal8Bit(localHostName())) {
+        if (hostname.isEmpty() || hostname == QString::fromLocal8Bit(localHostName())) {
             HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
             if (!procHandle)
                 return true;
