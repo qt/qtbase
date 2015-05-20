@@ -18,7 +18,27 @@ const char * templateFullscreen = R"STRING_DELIMITER(
     embed { height:100vh; width:100vw; }
 </style>
 
-<body>
+<script type="text/javascript">
+
+function init()
+{
+    // Create and configure Qt/NaCl controller
+    var qt = new Qt({
+        src : "%APPNAME%.nmf",
+        type : "%APPTYPE%",
+        query : window.location.search.substring(1),
+        isChromeApp : "%CHROMEAPP%"
+    });
+
+    // Create and append nacl <embed>
+    var qtEmbed = qt.createQtElement()
+    document.getElementById("nacl-container").appendChild(qtEmbed)
+}
+
+</script>
+
+<body onload="init()">
+<div id="nacl-container"></div>
 </body>
 
 </html>
