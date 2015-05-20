@@ -91,15 +91,22 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME
     }
-    split_incpath: \
+    split_incpath {
         MODULE_SHADOW_INCLUDES = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, \
                                                             $$MODULE_BASE_OUTDIR/include)
+        generated_privates: \
+            MODULE_SHADOW_PRIVATE_INCLUDES = $$replace(MODULE_PRIVATE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, \
+                                                                                $$MODULE_BASE_OUTDIR/include)
+    }
     MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
     MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
     internal_module: \
         MODULE_INCLUDES += $$MODULE_PRIVATE_INCLUDES
-    split_incpath: \
+    split_incpath {
         MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE_ID}.includes += $$val_escape(MODULE_SHADOW_INCLUDES)"
+        generated_privates: \
+            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}_private.includes += $$val_escape(MODULE_SHADOW_PRIVATE_INCLUDES)"
+    }
     MODULE_PRI_CONT = \
         "QT.$${MODULE_ID}.VERSION = $${VERSION}" \
         "QT.$${MODULE_ID}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
