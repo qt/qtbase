@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QGesture>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -47,10 +48,48 @@
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QScreen>
+#include <QSharedPointer>
 #include <QDebug>
 #include <QTextStream>
 
 bool optIgnoreTouch = false;
+QVector<Qt::GestureType> optGestures;
+
+static inline void drawCircle(const QPointF &center, qreal radius, const QColor &color, QPainter &painter)
+{
+    const QPen oldPen = painter.pen();
+    QPen pen = oldPen;
+    pen.setColor(color);
+    painter.setPen(pen);
+    painter.drawEllipse(center, radius, radius);
+    painter.setPen(oldPen);
+}
+
+static inline void fillCircle(const QPointF &center, qreal radius, const QColor &color, QPainter &painter)
+{
+    QPainterPath painterPath;
+    painterPath.addEllipse(center, radius, radius);
+    painter.fillPath(painterPath, color);
+}
+
+// Draws an arrow assuming a mathematical coordinate system, Y axis pointing
+// upwards, angle counterclockwise (that is, 45' is pointing up/right).
+static void drawArrow(const QPointF &center, qreal length, qreal angleDegrees,
+                      const QColor &color, int arrowSize, QPainter &painter)
+{
+    painter.save();
+    painter.translate(center); // Transform center to (0,0) rotate and draw arrow pointing right.
+    painter.rotate(-angleDegrees);
+    QPen pen = painter.pen();
+    pen.setColor(color);
+    pen.setWidth(2);
+    painter.setPen(pen);
+    const QPointF endPoint(length, 0);
+    painter.drawLine(QPointF(0, 0), endPoint);
+    painter.drawLine(endPoint, endPoint + QPoint(-arrowSize, -arrowSize));
+    painter.drawLine(endPoint, endPoint + QPoint(-arrowSize, arrowSize));
+    painter.restore();
+}
 
 QDebug operator<<(QDebug debug, const QTouchDevice *d)
 {
@@ -69,6 +108,110 @@ QDebug operator<<(QDebug debug, const QTouchDevice *d)
         << ", maximumTouchPoints=" << d->maximumTouchPoints() << ')';
     return debug;
 }
+
+// Hierarchy of classes containing gesture parameters and drawing functionality.
+class Gesture {
+    Q_DISABLE_COPY(Gesture)
+public:
+    static Gesture *fromQGesture(const QWidget *w, const  QGesture *source);
+    virtual ~Gesture() {}
+
+    virtual void draw(const QRectF &rect, QPainter &painter) const = 0;
+
+protected:
+    explicit Gesture(const QWidget *w, const QGesture *source) : m_type(source->gestureType())
+        , m_hotSpot(w->mapFromGlobal(source->hotSpot().toPoint()))
+        , m_hasHotSpot(source->hasHotSpot()) {}
+
+    QPointF drawHotSpot(const QRectF &rect, QPainter &painter) const
+    {
+        const QPointF h = m_hasHotSpot ? m_hotSpot : rect.center();
+        painter.drawEllipse(h, 15, 15);
+        return h;
+    }
+
+private:
+    Qt::GestureType m_type;
+    QPointF m_hotSpot;
+    bool m_hasHotSpot;
+};
+
+class PanGesture : public Gesture {
+public:
+    explicit PanGesture(const QWidget *w, const QPanGesture *source) : Gesture(w, source)
+        , m_offset(source->offset()) {}
+
+    void draw(const QRectF &rect, QPainter &painter) const Q_DECL_OVERRIDE
+    {
+        const QPointF hotSpot = drawHotSpot(rect, painter);
+        painter.drawLine(hotSpot, hotSpot + m_offset);
+    }
+
+private:
+    QPointF m_offset;
+};
+
+class SwipeGesture : public Gesture {
+public:
+    explicit SwipeGesture(const QWidget *w, const QSwipeGesture *source) : Gesture(w, source)
+        , m_horizontal(source->horizontalDirection()), m_vertical(source->verticalDirection())
+        , m_angle(source->swipeAngle()) {}
+
+    void draw(const QRectF &rect, QPainter &painter) const Q_DECL_OVERRIDE;
+
+private:
+    QSwipeGesture::SwipeDirection m_horizontal;
+    QSwipeGesture::SwipeDirection m_vertical;
+    qreal m_angle;
+};
+
+static qreal swipeDirectionAngle(QSwipeGesture::SwipeDirection d)
+{
+    switch (d) {
+    case QSwipeGesture::NoDirection:
+    case QSwipeGesture::Right:
+        break;
+    case QSwipeGesture::Left:
+        return 180;
+    case QSwipeGesture::Up:
+        return 90;
+    case QSwipeGesture::Down:
+        return 270;
+    }
+    return 0;
+}
+
+void SwipeGesture::draw(const QRectF &rect, QPainter &painter) const
+{
+    enum { arrowLength = 50, arrowHeadSize = 10 };
+    const QPointF hotSpot = drawHotSpot(rect, painter);
+    drawArrow(hotSpot, arrowLength, swipeDirectionAngle(m_horizontal), Qt::red, arrowHeadSize, painter);
+    drawArrow(hotSpot, arrowLength, swipeDirectionAngle(m_vertical), Qt::green, arrowHeadSize, painter);
+    drawArrow(hotSpot, arrowLength, m_angle, Qt::blue, arrowHeadSize, painter);
+}
+
+Gesture *Gesture::fromQGesture(const QWidget *w, const QGesture *source)
+{
+    Gesture *result = Q_NULLPTR;
+    switch (source->gestureType()) {
+    case Qt::TapGesture:
+    case Qt::TapAndHoldGesture:
+    case Qt::PanGesture:
+        result = new PanGesture(w, static_cast<const QPanGesture *>(source));
+        break;
+    case Qt::PinchGesture:
+    case Qt::CustomGesture:
+    case Qt::LastGestureType:
+        break;
+    case Qt::SwipeGesture:
+        result = new SwipeGesture(w, static_cast<const QSwipeGesture *>(source));
+        break;
+    }
+    return result;
+}
+
+typedef QSharedPointer<Gesture> GesturePtr;
+typedef QVector<GesturePtr> GesturePtrs;
 
 typedef QVector<QEvent::Type> EventTypeVector;
 
@@ -91,7 +234,17 @@ bool EventFilter::eventFilter(QObject *o, QEvent *e)
     static int n = 0;
     if (m_types.contains(e->type())) {
         QString message;
-        QDebug(&message) << '#' << n++ << ' ' << o->objectName() << ' ' << e;
+        QDebug debug(&message);
+        debug << '#' << n++ << ' ' << o->objectName() << ' ';
+        switch (e->type()) {
+        case QEvent::Gesture:
+        case QEvent::GestureOverride:
+            debug << static_cast<const QGestureEvent *>(e); // Special operator
+            break;
+        default:
+            debug << e;
+            break;
+        }
         emit eventReceived(message);
     }
     return false;
@@ -141,6 +294,8 @@ public:
     explicit TouchTestWidget(QWidget *parent = 0) : QWidget(parent), m_drawPoints(true)
     {
         setAttribute(Qt::WA_AcceptTouchEvents);
+        foreach (Qt::GestureType t, optGestures)
+            grabGesture(t);
     }
 
     bool drawPoints() const { return m_drawPoints; }
@@ -149,19 +304,26 @@ public slots:
     void clearPoints();
     void setDrawPoints(bool drawPoints);
 
+signals:
+    void logMessage(const QString &);
+
 protected:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
 
 private:
-     QVector<Point> m_points;
-     bool m_drawPoints;
+    void handleGestureEvent(QGestureEvent *gestureEvent);
+
+    QVector<Point> m_points;
+    GesturePtrs m_gestures;
+    bool m_drawPoints;
 };
 
 void TouchTestWidget::clearPoints()
 {
-    if (!m_points.isEmpty()) {
+    if (!m_points.isEmpty() || !m_gestures.isEmpty()) {
         m_points.clear();
+        m_gestures.clear();
         update();
     }
 }
@@ -201,10 +363,39 @@ bool TouchTestWidget::event(QEvent *event)
         else
             event->accept();
         return true;
+    case QEvent::Gesture:
+        handleGestureEvent(static_cast<QGestureEvent *>(event));
+        break;
     default:
         break;
     }
     return QWidget::event(event);
+}
+
+void TouchTestWidget::handleGestureEvent(QGestureEvent *gestureEvent)
+{
+    foreach (QGesture *gesture, gestureEvent->gestures()) {
+        if (optGestures.contains(gesture->gestureType())) {
+            switch (gesture->state()) {
+            case Qt::NoGesture:
+                break;
+            case Qt::GestureStarted:
+            case Qt::GestureUpdated:
+                gestureEvent->accept(gesture);
+                break;
+            case Qt::GestureFinished:
+                gestureEvent->accept(gesture);
+                if (Gesture *g = Gesture::fromQGesture(this, gesture)) {
+                    m_gestures.append(GesturePtr(g));
+                    update();
+                }
+                break;
+            case Qt::GestureCanceled:
+                emit logMessage(QLatin1String("=== Qt::GestureCanceled ==="));
+                break;
+            }
+        }
+    }
 }
 
 void TouchTestWidget::paintEvent(QPaintEvent *)
@@ -216,15 +407,15 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
     painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
     foreach (const Point &point, m_points) {
         if (geom.contains(point.pos)) {
-            QPainterPath painterPath;
             const qreal radius = point.type == TouchPoint ? 1 : 4;
-            painterPath.addEllipse(point.pos, radius, radius);
-            if (point.type == MouseRelease)
-                painter.strokePath(painterPath, QPen(point.color()));
-            else
-                painter.fillPath(painterPath, point.color());
+            if (point.type == MouseRelease) {
+                drawCircle(point.pos, radius, point.color(), painter);
+            } else
+                fillCircle(point.pos, radius, point.color(), painter);
         }
     }
+    foreach (const GesturePtr &gp, m_gestures)
+        gp->draw(geom, painter);
 }
 
 class MainWindow : public QMainWindow
@@ -279,6 +470,7 @@ MainWindow::MainWindow()
 
     m_touchWidget->setObjectName(QStringLiteral("TouchWidget"));
     mainSplitter->addWidget(m_touchWidget);
+    connect(m_touchWidget, &TouchTestWidget::logMessage, this, &MainWindow::appendToLog);
 
     m_logTextEdit->setObjectName(QStringLiteral("LogTextEdit"));
     mainSplitter->addWidget(m_logTextEdit);
@@ -314,8 +506,36 @@ int main(int argc, char *argv[])
     const QCommandLineOption ignoreTouchOption(QStringLiteral("ignore"),
                                                QStringLiteral("Ignore touch events (for testing mouse emulation)."));
     parser.addOption(ignoreTouchOption);
+    const QCommandLineOption noTouchLogOption(QStringLiteral("notouchlog"),
+                                              QStringLiteral("Do not log touch events (for testing gestures)."));
+    parser.addOption(noTouchLogOption);
+    const QCommandLineOption noMouseLogOption(QStringLiteral("nomouselog"),
+                                              QStringLiteral("Do not log mouse events (for testing gestures)."));
+    parser.addOption(noMouseLogOption);
+
+    const QCommandLineOption tapGestureOption(QStringLiteral("tap"), QStringLiteral("Grab tap gesture."));
+    parser.addOption(tapGestureOption);
+    const QCommandLineOption tapAndHoldGestureOption(QStringLiteral("tap-and-hold"),
+                                                     QStringLiteral("Grab tap-and-hold gesture."));
+    parser.addOption(tapAndHoldGestureOption);
+    const QCommandLineOption panGestureOption(QStringLiteral("pan"), QStringLiteral("Grab pan gesture."));
+    parser.addOption(panGestureOption);
+    const QCommandLineOption pinchGestureOption(QStringLiteral("pinch"), QStringLiteral("Grab pinch gesture."));
+    parser.addOption(pinchGestureOption);
+    const QCommandLineOption swipeGestureOption(QStringLiteral("swipe"), QStringLiteral("Grab swipe gesture."));
+    parser.addOption(swipeGestureOption);
     parser.process(QApplication::arguments());
     optIgnoreTouch = parser.isSet(ignoreTouchOption);
+    if (parser.isSet(tapGestureOption))
+        optGestures.append(Qt::TapGesture);
+    if (parser.isSet(tapAndHoldGestureOption))
+        optGestures.append(Qt::TapAndHoldGesture);
+    if (parser.isSet(panGestureOption))
+        optGestures.append(Qt::PanGesture);
+    if (parser.isSet(pinchGestureOption))
+        optGestures.append(Qt::PinchGesture);
+    if (parser.isSet(swipeGestureOption))
+        optGestures.append(Qt::SwipeGesture);
 
     MainWindow w;
     const QSize screenSize = QGuiApplication::primaryScreen()->availableGeometry().size();
@@ -325,11 +545,14 @@ int main(int argc, char *argv[])
     w.show();
 
     EventTypeVector eventTypes;
-    eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease
-        << QEvent::MouseButtonDblClick
-        << QEvent::TouchBegin << QEvent::TouchUpdate << QEvent::TouchEnd;
+    if (!parser.isSet(noMouseLogOption))
+        eventTypes << QEvent::MouseButtonPress << QEvent::MouseButtonRelease << QEvent::MouseButtonDblClick;
     if (parser.isSet(mouseMoveOption))
         eventTypes << QEvent::MouseMove;
+    if (!parser.isSet(noTouchLogOption))
+        eventTypes << QEvent::TouchBegin << QEvent::TouchUpdate << QEvent::TouchEnd;
+    if (!optGestures.isEmpty())
+        eventTypes << QEvent::Gesture << QEvent::GestureOverride;
     QObject *filterTarget = parser.isSet(globalFilterOption)
             ? static_cast<QObject *>(&a)
             : static_cast<QObject *>(w.touchWidget());
