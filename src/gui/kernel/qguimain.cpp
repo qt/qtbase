@@ -101,7 +101,10 @@ QGuiApplication *qGuiApplicationConstructorFunction()
 void qGuiStartup()
 {
     qCDebug(QT_GUI_MAIN) << "qGuiStartup";
-    g_guiApplcation = g_applicationConstructorFunction();
+    if (g_applicationConstructorFunction)
+        g_guiApplcation = g_applicationConstructorFunction();
+    else
+        g_guiApplcation = qGuiApplicationConstructorFunction(); // default: create Gui Application
 }
 
 void qGuiAppInit()
