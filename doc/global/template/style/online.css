@@ -525,6 +525,21 @@ body.qt-account #navbar .navbar-oneQt h2 {
   position:absolute;
   transition:none;
 }
+#sidebar-toggle,#toc-toggle {
+  width:24px;
+  height:14px;
+  background-size:24px 28px;
+  cursor:pointer;
+  background-image:url("list_expand.png");
+  float:right
+}
+#sidebar-toggle.collapsed,
+#toc-toggle.collapsed {
+  background-position:bottom left
+}
+#sidebar-content > h2 {
+  display:none
+}
 .cookies_yum .close:hover {
   background-position:bottom left
 }
@@ -1128,7 +1143,7 @@ dd {
 .mainContent b {
   font-weight:600
 }
-.context ul {
+.context ul,.context ol {
   margin-bottom:1.5em
 }
 .mainContent ul ul {
@@ -1282,6 +1297,9 @@ div.main_index .row:after {
 div.table {
   overflow-x:auto
 }
+.context tr > td > pre {
+  font-size:0.85em
+}
 p.qt_commercial {
   border:3px solid #5caa15;
   margin:0 auto;
@@ -1312,7 +1330,6 @@ pre {
   line-height:1.5;
   overflow-x:auto;
   margin-bottom:25px;
-  overflow-x:auto;
   padding:25px;
   margin-top:0.75em
 }
@@ -1376,6 +1393,9 @@ pre:hover>.copy_text {
   margin:0;
   border:none
 }
+#sidebar-toggle,#toc-toggle {
+  display:none
+}
 @media (max-width: 980px) {
   body {
     font-size:calc-em(14px)
@@ -1413,7 +1433,8 @@ pre:hover>.copy_text {
     visibility:hidden
   }
   .col-2 h2,.toc h3,.sidebar-content h2,.sidebar-content h3,.sectionlist h2 {
-    text-align:center
+    text-align:center;
+    margin-bottom:0
   }
   div.main_index .row:after {
     content:none
@@ -1438,6 +1459,12 @@ pre:hover>.copy_text {
     margin-bottom:1em;
     padding:20px
   }
+  #sidebar-toggle,#toc-toggle {
+    display:block
+  }
+  #sidebar-toggle.collapsed + h2 {
+    display:block
+  }
   .mainContent p {
     line-height:1.56em;
     margin-bottom:1em;
@@ -1446,6 +1473,9 @@ pre:hover>.copy_text {
   table td,table th {
     padding:5px 5px
   }
+  .sectionlist {
+    padding:0
+  }
 }
 [id]:target,[name]:target,[name]:target+* {
   -webkit-animation:highlighter 3s;
@@ -1453,22 +1483,22 @@ pre:hover>.copy_text {
 }
 @-webkit-keyframes highlighter {
   25% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
   75% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
 }
 @keyframes highlighter {
   25% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
   75% {
-    background-color:#46a2da;
-    color:#fff
+    background-color:#d1e8f6;
+    color:#444
   }
 }
 @-webkit-keyframes copypaste {
@@ -1580,7 +1610,7 @@ img.gsc-branding-img {
 input.gsc-search-button {
   background-color: white !important;
   height: 35px !important;
-  width: 35px !important;
+  width: 25px !important;
   color: transparent !important;
   background-image: url("doc_search.png") !important;
   background-size: 25px auto;

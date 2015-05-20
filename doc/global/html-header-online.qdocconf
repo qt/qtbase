@@ -3,6 +3,7 @@
 HTML.stylesheets = template/style/online.css \
                    template/style/gsc.css \
                    template/style/list_arrow.png \
+                   template/style/list_expand.png \
                    template/style/icomoon.eot \
                    template/style/icomoon.svg \
                    template/style/icomoon.ttf \
@@ -15,6 +16,7 @@ HTML.stylesheets = template/style/online.css \
 qhp.extraFiles += style/online.css \
                   style/gsc.css \
                   style/list_arrow.png \
+                  style/list_expand.png \
                   style/icomoon.eot \
                   style/icomoon.svg \
                   style/icomoon.ttf \
