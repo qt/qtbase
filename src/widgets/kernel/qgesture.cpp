@@ -36,7 +36,7 @@
 #include "private/qstandardgestures_p.h"
 #include "qgraphicsview.h"
 
-#include <QtCore/QDebug>
+#include <private/qdebug_p.h>
 #ifndef QT_NO_GESTURES
 
 QT_BEGIN_NAMESPACE
@@ -1091,9 +1091,12 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 
 static void formatGestureHeader(QDebug d, const char *className, const QGesture *gesture)
 {
-     d << className << "(state=" << gesture->state();
-     if (gesture->hasHotSpot())
-         d << ",hotSpot=" << gesture->hotSpot();
+     d << className << "(state=";
+     QtDebugUtils::formatQEnum(d, gesture->state());
+     if (gesture->hasHotSpot()) {
+         d << ",hotSpot=";
+         QtDebugUtils::formatQPoint(d, gesture->hotSpot());
+     }
 }
 
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
@@ -1103,31 +1106,42 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
     switch (gesture->gestureType()) {
     case Qt::TapGesture:
         formatGestureHeader(d, "QTapGesture", gesture);
-        d << ",position=" << static_cast<const QTapGesture*>(gesture)->position() << ')';
+        d << ",position=";
+        QtDebugUtils::formatQPoint(d, static_cast<const QTapGesture*>(gesture)->position());
+        d << ')';
         break;
     case Qt::TapAndHoldGesture: {
         const QTapAndHoldGesture *tap = static_cast<const QTapAndHoldGesture*>(gesture);
         formatGestureHeader(d, "QTapAndHoldGesture", tap);
-        d << ",position=" << tap->position() << ",timeout=" << tap->timeout() << ')';
+        d << ",position=";
+        QtDebugUtils::formatQPoint(d, tap->position());
+        d << ",timeout=" << tap->timeout() << ')';
     }
         break;
     case Qt::PanGesture: {
         const QPanGesture *pan = static_cast<const QPanGesture*>(gesture);
         formatGestureHeader(d, "QPanGesture", pan);
-        d << ",lastOffset=" << pan->lastOffset() << ",offset=" << pan->offset()
-            << ",acceleration=" << pan->acceleration()
-            << ",delta=" << pan->delta() << ')';
+        d << ",lastOffset=";
+        QtDebugUtils::formatQPoint(d, pan->lastOffset());
+        d << pan->lastOffset();
+        d << ",offset=";
+        QtDebugUtils::formatQPoint(d, pan->offset());
+        d  << ",acceleration=" << pan->acceleration() << ",delta=";
+        QtDebugUtils::formatQPoint(d, pan->delta());
+        d << ')';
     }
         break;
     case Qt::PinchGesture: {
         const QPinchGesture *pinch = static_cast<const QPinchGesture*>(gesture);
         formatGestureHeader(d, "QPinchGesture", pinch);
         d << ",totalChangeFlags=" << pinch->totalChangeFlags()
-            << ",changeFlags=" << pinch->changeFlags()
-            << ",startCenterPoint=" << pinch->startCenterPoint()
-            << ",lastCenterPoint=" << pinch->lastCenterPoint()
-            << ",centerPoint=" << pinch->centerPoint()
-            << ",totalScaleFactor=" << pinch->totalScaleFactor()
+          << ",changeFlags=" << pinch->changeFlags() << ",startCenterPoint=";
+        QtDebugUtils::formatQPoint(d, pinch->startCenterPoint());
+        d << ",lastCenterPoint=";
+        QtDebugUtils::formatQPoint(d, pinch->lastCenterPoint());
+        d << ",centerPoint=";
+        QtDebugUtils::formatQPoint(d, pinch->centerPoint());
+        d << ",totalScaleFactor=" << pinch->totalScaleFactor()
             << ",lastScaleFactor=" << pinch->lastScaleFactor()
             << ",scaleFactor=" << pinch->scaleFactor()
             << ",totalRotationAngle=" << pinch->totalRotationAngle()
@@ -1138,9 +1152,11 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QGesture *gesture)
     case Qt::SwipeGesture: {
         const QSwipeGesture *swipe = static_cast<const QSwipeGesture*>(gesture);
         formatGestureHeader(d, "QSwipeGesture", swipe);
-        d << ",horizontalDirection=" << swipe->horizontalDirection()
-            << ",verticalDirection=" << swipe->verticalDirection()
-            << ",swipeAngle=" << swipe->swipeAngle() << ')';
+        d << ",horizontalDirection=";
+        QtDebugUtils::formatQEnum(d, swipe->horizontalDirection());
+        d << ",verticalDirection=";
+        QtDebugUtils::formatQEnum(d, swipe->verticalDirection());
+        d << ",swipeAngle=" << swipe->swipeAngle() << ')';
     }
         break;
     default:
