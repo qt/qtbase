@@ -932,7 +932,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << mkdir_p_asstring(bundle_dir) << "\n\t"
               << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
         }
-        if (!project->first("QMAKE_FRAMEWORK_VERSION").isEmpty()) {
+        if (!symlinks.isEmpty()) {
             QString currentLink = bundle_dir + "Versions/Current";
             QString currentLink_f = escapeDependencyPath(currentLink);
             bundledFiles << currentLink;
