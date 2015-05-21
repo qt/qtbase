@@ -47,24 +47,6 @@
 #include <QDebug>
 #include <QTextStream>
 
-QDebug operator<<(QDebug debug, const QTouchDevice *d)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace();
-    debug << "QTouchDevice(" << d->name() << ',';
-    switch (d->type()) {
-    case QTouchDevice::TouchScreen:
-        debug << "TouchScreen";
-        break;
-    case QTouchDevice::TouchPad:
-        debug << "TouchPad";
-        break;
-    }
-    debug << ", capabilities=" << d->capabilities()
-        << ", maximumTouchPoints=" << d->maximumTouchPoints() << ')';
-    return debug;
-}
-
 typedef QVector<QEvent::Type> EventTypeVector;
 
 class EventFilter : public QObject {

@@ -38,7 +38,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QDebug;
 class QTouchDevicePrivate;
 
 class Q_GUI_EXPORT QTouchDevice
@@ -83,6 +83,10 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QTouchDevice *);
+#endif
 
 QT_END_NAMESPACE
 
