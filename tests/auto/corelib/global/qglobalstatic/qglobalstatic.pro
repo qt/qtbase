@@ -1,3 +1,4 @@
+CONFIG   += testcase
 QT       += testlib core-private
 
 QT       -= gui
