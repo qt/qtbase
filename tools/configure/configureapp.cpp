@@ -3460,6 +3460,9 @@ void Configure::generateQConfigPri()
                      << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
 
+        configStream << endl
+                     << "QT_EDITION = " << dictionary["EDITION"] << endl;
+
         if (!dictionary["CFG_SYSROOT"].isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
             configStream << endl
                          << "# sysroot" << endl
