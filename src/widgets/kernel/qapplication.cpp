@@ -4377,7 +4377,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     QHash<QWidget *, StatesAndTouchPoints>::ConstIterator it = widgetsNeedingEvents.constBegin();
     const QHash<QWidget *, StatesAndTouchPoints>::ConstIterator end = widgetsNeedingEvents.constEnd();
     for (; it != end; ++it) {
-        QWidget *widget = it.key();
+        const QPointer<QWidget> widget = it.key();
         if (!QApplicationPrivate::tryModalHelper(widget, 0))
             continue;
 
@@ -4417,7 +4417,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             // has been implicitly accepted and continue to send touch events
             if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
                 accepted = true;
-                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
+                if (!widget.isNull())
+                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
             }
             break;
         }
