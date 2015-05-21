@@ -43,11 +43,13 @@ class QTouchDevicePrivate;
 
 class Q_GUI_EXPORT QTouchDevice
 {
+    Q_GADGET
 public:
     enum DeviceType {
         TouchScreen,
         TouchPad
     };
+    Q_ENUM(DeviceType)
 
     enum CapabilityFlag {
         Position = 0x0001,
@@ -58,6 +60,7 @@ public:
         NormalizedPosition = 0x0020,
         MouseEmulation = 0x0040
     };
+    Q_FLAG(CapabilityFlag)
     Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
 
     QTouchDevice();
