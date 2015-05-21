@@ -49,9 +49,15 @@ for(resource, RESOURCES) {
 
         for(file, $${resource}.files) {
             abs_path = $$absolute_path($$file, $$_PRO_FILE_PWD_)
-            alias = $$relative_path($$abs_path, $$abs_base)
-            resource_file_content += \
-                "<file alias=\"$$xml_escape($$alias)\">$$xml_escape($$abs_path)</file>"
+            files = $$files($$abs_path/*, true)
+            isEmpty(files): \
+                files = $$abs_path
+            for (file, files) {
+                exists($$file/*): next()  # exclude directories
+                alias = $$relative_path($$file, $$abs_base)
+                resource_file_content += \
+                    "<file alias=\"$$xml_escape($$alias)\">$$xml_escape($$file)</file>"
+            }
         }
 
         resource_file_content += \
