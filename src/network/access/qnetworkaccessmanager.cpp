@@ -961,6 +961,27 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
     }
 }
 
+/*!
+    \internal
+
+    Returns the network session currently in use.
+    This can be changed at any time, ownership remains with the QNetworkAccessManager
+*/
+const QWeakPointer<const QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(const QNetworkAccessManager *q)
+{
+    return q->d_func()->networkSessionWeakRef;
+}
+
+QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession() const
+{
+    if (networkSessionStrongRef)
+        return networkSessionStrongRef;
+    return networkSessionWeakRef.toStrongRef();
+}
+
+#endif // QT_NO_BEARERMANAGEMENT
+
+
 #ifndef QT_NO_SSL
 /*!
     \since 5.2
@@ -1020,26 +1041,6 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
     QNetworkRequest request(url);
     get(request);
 }
-
-/*!
-    \internal
-
-    Returns the network session currently in use.
-    This can be changed at any time, ownership remains with the QNetworkAccessManager
-*/
-const QWeakPointer<const QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(const QNetworkAccessManager *q)
-{
-    return q->d_func()->networkSessionWeakRef;
-}
-
-QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession() const
-{
-    if (networkSessionStrongRef)
-        return networkSessionStrongRef;
-    return networkSessionWeakRef.toStrongRef();
-}
-
-#endif // QT_NO_BEARERMANAGEMENT
 
 /*!
     \since 4.7
