@@ -811,12 +811,25 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 #endif
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
-    QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    QWindowSystemInterfacePrivate::MouseEvent e(w, timestamp, local, global, b, mods, Qt::MouseEventNotSynthesized);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
-    QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+
+    // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
+    // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
+    // shortcut overriding on other platforms.
+#if defined(Q_OS_OSX)
+    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(w, timestamp, k, mods, text))
+        return;
+#endif // Q_OS_OSX
+
+    QWindowSystemInterfacePrivate::KeyEvent e(w, timestamp, t, k, mods, text, autorep, count);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
 Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
@@ -824,35 +837,38 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
     return QWindowSystemInterface::tryHandleShortcutEventToObject(o, timestamp, k, mods, text, autorep, count);
 }
 
-static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-{
-    QWindowSystemInterface::TouchPoint p;
-    p.id = pt.id();
-    p.flags = pt.flags();
-    p.normalPosition = pt.normalizedPos();
-    p.area = pt.screenRect();
-    p.pressure = pt.pressure();
-    p.state = pt.state();
-    p.velocity = pt.velocity();
-    p.rawPositions = pt.rawScreenPositions();
-    return p;
-}
-static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-{
-    QList<struct QWindowSystemInterface::TouchPoint> newList;
 
-    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-    {
-        newList.append(touchPoint(p));
-    }
-    return newList;
-}
-
-Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    QWindowSystemInterface::handleTouchEvent(w, device, touchPointList(points), mods);
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+
+    if (!points.size()) // Touch events must have at least one point
+        return;
+
+    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
+        return;
+
+    QEvent::Type type;
+    Qt::TouchPointStates states;
+
+    QList<QTouchEvent::TouchPoint>::const_iterator point = points.constBegin();
+    QList<QTouchEvent::TouchPoint>::const_iterator end = points.constEnd();
+    while (point != end) {
+        states |= point->state();
+        ++point;
+    }
+
+    // Determine the event type based on the combined point states.
+    type = QEvent::TouchUpdate;
+    if (states == Qt::TouchPointPressed)
+        type = QEvent::TouchBegin;
+    else if (states == Qt::TouchPointReleased)
+        type = QEvent::TouchEnd;
+
+    QWindowSystemInterfacePrivate::TouchEvent e(w, timestamp, type, device, points, mods);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
 QWindowSystemEventHandler::~QWindowSystemEventHandler()
