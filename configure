@@ -2962,8 +2962,20 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     Edition="Preview"
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
-    if test -x "$relpath/bin/licheck"; then
-        LicheckOutput=`$relpath/bin/licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
+    if [ $UNAME_SYSTEM = "Linux" ]; then
+        if file -L /bin/sh | grep -q "64-bit" ; then
+            Licheck=licheck64
+        else
+            Licheck=licheck32
+        fi
+    elif [ $UNAME_SYSTEM = "Darwin" ]; then
+        Licheck=licheck_mac
+    else
+        echo >&2 "Host operating system not supported by this edition of Qt."
+        exit 1
+    fi
+    if [ -x "$relpath/bin/$Licheck" ]; then
+        LicheckOutput=`$relpath/bin/$Licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
                        $PLATFORM $XPLATFORM`
         if [ $? -ne 0 ]; then
             exit 1
