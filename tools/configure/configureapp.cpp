@@ -34,9 +34,7 @@
 
 #include "configureapp.h"
 #include "environment.h"
-#ifdef COMMERCIAL_VERSION
-#  include "tools.h"
-#endif
+#include "tools.h"
 
 #include <qdir.h>
 #include <qdiriterator.h>
@@ -4507,19 +4505,9 @@ void Configure::readLicense()
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
     }
-#ifdef COMMERCIAL_VERSION
     else {
         Tools::checkLicense(dictionary, sourcePath, buildPath);
     }
-#else // !COMMERCIAL_VERSION
-    else {
-        cout << endl << "Error: This is the Open Source version of Qt."
-             << endl << "If you want to use Enterprise features of Qt,"
-             << endl << "information use the contact form at http://www.qt.io/contact-us"
-             << endl << "to purchase a license." << endl << endl;
-        dictionary["DONE"] = "error";
-    }
-#endif
 }
 
 void Configure::reloadCmdLine()
