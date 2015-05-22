@@ -4389,7 +4389,7 @@ bool Configure::showLicense(QString orgLicenseFile)
     bool showLgpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
-    if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
+    if (dictionary["EDITION"] == "OpenSource") {
         if (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no") {
             theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
                          "\nor the GNU Lesser General Public License (LGPL) version 3";
@@ -4412,7 +4412,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         cout << "You are licensed to use this software under the terms of" << endl
              << "the " << theLicense << "." << endl
              << endl;
-        if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
+        if (dictionary["EDITION"] == "OpenSource") {
             cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
             if (showLgpl2)
                 cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
@@ -4431,7 +4431,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         } else if (accept == 'n') {
             return false;
         } else {
-            if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
+            if (dictionary["EDITION"] == "OpenSource") {
                 if (accept == '3')
                     licenseFile = orgLicenseFile + "/LICENSE.LGPLv3";
                 else
