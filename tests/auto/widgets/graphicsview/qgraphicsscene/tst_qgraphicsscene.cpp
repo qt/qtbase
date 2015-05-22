@@ -3492,6 +3492,8 @@ void tst_QGraphicsScene::task160653_selectionChanged()
 
     QSignalSpy spy(&scene, SIGNAL(selectionChanged()));
     QGraphicsView view(&scene);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::mouseClick(
         view.viewport(), Qt::LeftButton, 0, view.mapFromScene(scene.items().first()->scenePos()));
     QCOMPARE(spy.count(), 1);
