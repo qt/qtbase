@@ -3463,6 +3463,11 @@ void Configure::generateQConfigPri()
         configStream << endl
                      << "QT_EDITION = " << dictionary["EDITION"] << endl;
 
+        if (dictionary["EDITION"] != "OpenSource" && dictionary["EDITION"] != "Preview") {
+            configStream << "QT_LICHECK = " << dictionary["LICHECK"] << endl;
+            configStream << "QT_RELEASE_DATE = " << dictionary["RELEASEDATE"] << endl;
+        }
+
         if (!dictionary["CFG_SYSROOT"].isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
             configStream << endl
                          << "# sysroot" << endl

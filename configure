@@ -6776,8 +6776,13 @@ QT_LIBINFIX = $QT_LIBINFIX
 QT_NAMESPACE = $QT_NAMESPACE
 
 QT_EDITION = $Edition
-
 EOF
+
+if [ "$Edition" != "OpenSource" ] && [ "$Edition" != "Preview" ]; then
+    echo "QT_LICHECK = $Licheck" >> "$QTCONFIG.tmp"
+    echo "QT_RELEASE_DATE = $ReleaseDate" >> "$QTCONFIG.tmp"
+fi
+echo >> "$QTCONFIG.tmp"
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
