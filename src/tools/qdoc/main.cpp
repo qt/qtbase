@@ -480,6 +480,9 @@ static void processQdocconfFile(const QString &fileName)
         }
         Generator::debug(QString("Parsing done."));
 
+        /*
+          Currently these doneParsingSourceFiles() calls do nothing.
+         */
         foreach (CodeParser *codeParser, usedParsers)
             codeParser->doneParsingSourceFiles();
 

@@ -727,7 +727,7 @@ Aggregate::~Aggregate()
 Node *Aggregate::findChildNode(const QString& name, Node::Genus genus) const
 {
     if (genus == Node::DontCare) {
-        Node *node = childMap.value(name);
+        Node *node = childMap_.value(name);
         if (node && !node->isQmlPropertyGroup()) // mws asks: Why not property group?
             return node;
         if (isQmlType() || isJsType()) {
@@ -742,7 +742,7 @@ Node *Aggregate::findChildNode(const QString& name, Node::Genus genus) const
         }
     }
     else {
-        NodeList nodes = childMap.values(name);
+        NodeList nodes = childMap_.values(name);
         if (!nodes.isEmpty()) {
             for (int i=0; i<nodes.size(); ++i) {
                 Node* node = nodes.at(i);
@@ -751,7 +751,7 @@ Node *Aggregate::findChildNode(const QString& name, Node::Genus genus) const
             }
         }
     }
-    return primaryFunctionMap.value(name);
+    return primaryFunctionMap_.value(name);
 }
 
 /*!
@@ -760,11 +760,11 @@ Node *Aggregate::findChildNode(const QString& name, Node::Genus genus) const
  */
 void Aggregate::findChildren(const QString& name, NodeList& nodes) const
 {
-    nodes = childMap.values(name);
-    Node* n = primaryFunctionMap.value(name);
+    nodes = childMap_.values(name);
+    Node* n = primaryFunctionMap_.value(name);
     if (n) {
         nodes.append(n);
-        NodeList t = secondaryFunctionMap.value(name);
+        NodeList t = secondaryFunctionMap_.value(name);
         if (!t.isEmpty())
             nodes.append(t);
     }
@@ -774,7 +774,7 @@ void Aggregate::findChildren(const QString& name, NodeList& nodes) const
     if (i < 0)
         return;
     QString qmlPropGroup = name.left(i);
-    NodeList t = childMap.values(qmlPropGroup);
+    NodeList t = childMap_.values(qmlPropGroup);
     if (t.isEmpty())
         return;
     foreach (Node* n, t) {
@@ -794,9 +794,9 @@ void Aggregate::findChildren(const QString& name, NodeList& nodes) const
 Node* Aggregate::findChildNode(const QString& name, NodeType type)
 {
     if (type == Function)
-        return primaryFunctionMap.value(name);
+        return primaryFunctionMap_.value(name);
     else {
-        NodeList nodes = childMap.values(name);
+        NodeList nodes = childMap_.values(name);
         for (int i=0; i<nodes.size(); ++i) {
             Node* node = nodes.at(i);
             if (node->type() == type)
@@ -812,7 +812,7 @@ Node* Aggregate::findChildNode(const QString& name, NodeType type)
  */
 FunctionNode *Aggregate::findFunctionNode(const QString& name) const
 {
-    return static_cast<FunctionNode *>(primaryFunctionMap.value(name));
+    return static_cast<FunctionNode *>(primaryFunctionMap_.value(name));
 }
 
 /*!
@@ -822,13 +822,13 @@ FunctionNode *Aggregate::findFunctionNode(const QString& name) const
  */
 FunctionNode *Aggregate::findFunctionNode(const FunctionNode *clone) const
 {
-    QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.constFind(clone->name());
-    if (c != primaryFunctionMap.constEnd()) {
+    QMap<QString,Node*>::ConstIterator c = primaryFunctionMap_.constFind(clone->name());
+    if (c != primaryFunctionMap_.constEnd()) {
         if (isSameSignature(clone, (FunctionNode *) *c)) {
             return (FunctionNode *) *c;
         }
-        else if (secondaryFunctionMap.contains(clone->name())) {
-            const NodeList& secs = secondaryFunctionMap[clone->name()];
+        else if (secondaryFunctionMap_.contains(clone->name())) {
+            const NodeList& secs = secondaryFunctionMap_[clone->name()];
             NodeList::ConstIterator s = secs.constBegin();
             while (s != secs.constEnd()) {
                 if (isSameSignature(clone, (FunctionNode *) *s))
@@ -846,8 +846,8 @@ FunctionNode *Aggregate::findFunctionNode(const FunctionNode *clone) const
 QStringList Aggregate::primaryKeys()
 {
     QStringList t;
-    QMap<QString, Node*>::iterator i = primaryFunctionMap.begin();
-    while (i != primaryFunctionMap.end()) {
+    QMap<QString, Node*>::iterator i = primaryFunctionMap_.begin();
+    while (i != primaryFunctionMap_.end()) {
         t.append(i.key());
         ++i;
     }
@@ -860,42 +860,12 @@ QStringList Aggregate::primaryKeys()
 QStringList Aggregate::secondaryKeys()
 {
     QStringList t;
-    QMap<QString, NodeList>::iterator i = secondaryFunctionMap.begin();
-    while (i != secondaryFunctionMap.end()) {
+    QMap<QString, NodeList>::iterator i = secondaryFunctionMap_.begin();
+    while (i != secondaryFunctionMap_.end()) {
         t.append(i.key());
         ++i;
     }
     return t;
-}
-
-/*!
- */
-void Aggregate::setOverload(FunctionNode *func, bool b)
-{
-    Node *node = (Node *) func;
-    Node *&primary = primaryFunctionMap[func->name()];
-
-    if (secondaryFunctionMap.contains(func->name())) {
-        NodeList& secs = secondaryFunctionMap[func->name()];
-        if (b) {
-            if (primary == node) {
-                primary = secs.first();
-                secs.erase(secs.begin());
-                secs.append(node);
-            }
-            else {
-                secs.removeAll(node);
-                secs.append(node);
-            }
-        }
-        else {
-            if (primary != node) {
-                secs.removeAll(node);
-                secs.prepend(primary);
-                primary = node;
-            }
-        }
-    }
 }
 
 /*!
@@ -916,55 +886,98 @@ void Aggregate::makeUndocumentedChildrenInternal()
 }
 
 /*!
+  This is where we should set the overload numbers, including
+  the related non-members.
  */
 void Aggregate::normalizeOverloads()
 {
-    QMap<QString, Node *>::Iterator p1 = primaryFunctionMap.begin();
-    while (p1 != primaryFunctionMap.end()) {
+    QMap<QString, Node *>::Iterator p1 = primaryFunctionMap_.begin();
+    while (p1 != primaryFunctionMap_.end()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p1;
-        if (secondaryFunctionMap.contains(primaryFunc->name()) &&
-                (primaryFunc->status() != Active || primaryFunc->access() == Private)) {
-
-            NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
-            NodeList::ConstIterator s = secs.constBegin();
-            while (s != secs.constEnd()) {
-                FunctionNode *secondaryFunc = (FunctionNode *) *s;
-
-                // Any non-obsolete, non-compatibility, non-private functions
-                // (i.e, visible functions) are preferable to the primary
-                // function.
-
-                if (secondaryFunc->status() == Active && secondaryFunc->access() != Private) {
-
-                    *p1 = secondaryFunc;
-                    int index = secondaryFunctionMap[primaryFunc->name()].indexOf(secondaryFunc);
-                    secondaryFunctionMap[primaryFunc->name()].replace(index, primaryFunc);
-                    break;
+        if (primaryFunc->status() != Active || primaryFunc->access() == Private) {
+            if (secondaryFunctionMap_.contains(primaryFunc->name())) {
+                /*
+                  Either the primary function is not active or it is private.
+                  It therefore can't be the primary function. Search the list
+                  of overloads to find one that can be the primary function.
+                */
+                NodeList& overloads = secondaryFunctionMap_[primaryFunc->name()];
+                NodeList::ConstIterator s = overloads.constBegin();
+                while (s != overloads.constEnd()) {
+                    FunctionNode *overloadFunc = (FunctionNode *) *s;
+                    /*
+                      Any non-obsolete, non-private function (i.e., visible function)
+                      is preferable to the current primary function. Swap the primary
+                      and overload functions.
+                    */
+                    if (overloadFunc->status() == Active && overloadFunc->access() != Private) {
+                        primaryFunc->setOverloadNumber(overloadFunc->overloadNumber());
+                        overloads.replace(overloads.indexOf(overloadFunc), primaryFunc);
+                        *p1 = overloadFunc;
+                        overloadFunc->setOverloadFlag(false);
+                        overloadFunc->setOverloadNumber(0);
+                        break;
+                    }
+                    ++s;
                 }
-                ++s;
             }
         }
         ++p1;
     }
-
-    QMap<QString, Node *>::ConstIterator p = primaryFunctionMap.constBegin();
-    while (p != primaryFunctionMap.constEnd()) {
+    /*
+      Ensure that none of the primary functions is marked with \overload.
+     */
+    QMap<QString, Node *>::Iterator p = primaryFunctionMap_.begin();
+    while (p != primaryFunctionMap_.end()) {
         FunctionNode *primaryFunc = (FunctionNode *) *p;
-        if (primaryFunc->isOverload())
-            primaryFunc->overload_ = false;
-        if (secondaryFunctionMap.contains(primaryFunc->name())) {
-            NodeList& secs = secondaryFunctionMap[primaryFunc->name()];
-            NodeList::ConstIterator s = secs.constBegin();
-            while (s != secs.constEnd()) {
-                FunctionNode *secondaryFunc = (FunctionNode *) *s;
-                if (!secondaryFunc->isOverload())
-                    secondaryFunc->overload_ = true;
-                ++s;
+        if (primaryFunc->isOverload()) {
+            if (secondaryFunctionMap_.contains(primaryFunc->name())) {
+                /*
+                  The primary function is marked with \overload. Find an
+                  overload in the secondary function map that is not marked
+                  with \overload but that is active and not private. Then
+                  swap it with the primary function.
+                */
+                NodeList& overloads = secondaryFunctionMap_[primaryFunc->name()];
+                NodeList::ConstIterator s = overloads.constBegin();
+                while (s != overloads.constEnd()) {
+                    FunctionNode *overloadFunc = (FunctionNode *) *s;
+                    if (!overloadFunc->isOverload()) {
+                        if (overloadFunc->status() == Active && overloadFunc->access() != Private) {
+                            primaryFunc->setOverloadNumber(overloadFunc->overloadNumber());
+                            overloads.replace(overloads.indexOf(overloadFunc), primaryFunc);
+                            *p = overloadFunc;
+                            overloadFunc->setOverloadFlag(false);
+                            overloadFunc->setOverloadNumber(0);
+                            break;
+                        }
+                    }
+                    ++s;
+                }
             }
         }
         ++p;
     }
-
+    /*
+      Add the related non-members here.
+     */
+    if (!related_.isEmpty()) {
+        foreach (Node* n, related_) {
+            if (n->isFunction()) {
+                FunctionNode* fn = static_cast<FunctionNode*>(n);
+                QMap<QString, Node *>::Iterator p = primaryFunctionMap_.find(fn->name());
+                if (p != primaryFunctionMap_.end()) {
+                    secondaryFunctionMap_[fn->name()].append(fn);
+                    fn->setOverloadNumber(secondaryFunctionMap_[fn->name()].size());
+                }
+                else
+                    fn->setOverloadNumber(0);
+            }
+        }
+    }
+    /*
+      Recursive part.
+     */
     NodeList::ConstIterator c = childNodes().constBegin();
     while (c != childNodes().constEnd()) {
         if ((*c)->isAggregate())
@@ -1024,32 +1037,16 @@ const EnumNode *Aggregate::findEnumNodeForValue(const QString &enumValue) const
 }
 
 /*!
-  Returnds the sequence number of the function node \a func
-  in the list of overloaded functions for a class, such that
-  all the functions have the same name as the \a func.
- */
-int Aggregate::overloadNumber(const FunctionNode *func) const
-{
-    Node *node = const_cast<FunctionNode *>(func);
-    if (primaryFunctionMap[func->name()] == node) {
-        return 1;
-    }
-    else {
-        return secondaryFunctionMap[func->name()].indexOf(node) + 2;
-    }
-}
-
-/*!
   Returns a node list containing all the member functions of
   some class such that the functions overload the name \a funcName.
  */
 NodeList Aggregate::overloads(const QString &funcName) const
 {
     NodeList result;
-    Node *primary = primaryFunctionMap.value(funcName);
+    Node *primary = primaryFunctionMap_.value(funcName);
     if (primary) {
         result << primary;
-        result += secondaryFunctionMap[funcName];
+        result += secondaryFunctionMap_[funcName];
     }
     return result;
 }
@@ -1133,19 +1130,22 @@ void Aggregate::addChild(Node *child)
 {
     children_.append(child);
     if ((child->type() == Function) || (child->type() == QmlMethod)) {
-        FunctionNode *func = (FunctionNode *) child;
-        if (!primaryFunctionMap.contains(func->name())) {
-            primaryFunctionMap.insert(func->name(), func);
+        FunctionNode *func = static_cast<FunctionNode*>(child);
+        QString name = func->name();
+        if (!primaryFunctionMap_.contains(name)) {
+            primaryFunctionMap_.insert(name, func);
+            func->setOverloadNumber(0);
         }
         else {
-            NodeList &secs = secondaryFunctionMap[func->name()];
-            secs.append(func);
+            NodeList &overloads = secondaryFunctionMap_[name];
+            overloads.append(func);
+            func->setOverloadNumber(overloads.size());
         }
     }
     else {
         if (child->type() == Enum)
             enumChildren_.append(child);
-        childMap.insertMulti(child->name(), child);
+        childMap_.insertMulti(child->name(), child);
     }
     if (child->parent() == 0) {
         child->setParent(this);
@@ -1161,7 +1161,7 @@ void Aggregate::addChild(Node *child)
  */
 void Aggregate::addChild(Node* child, const QString& title)
 {
-    childMap.insertMulti(title, child);
+    childMap_.insertMulti(title, child);
 }
 
 /*!
@@ -1175,35 +1175,33 @@ void Aggregate::removeChild(Node *child)
     children_.removeAll(child);
     enumChildren_.removeAll(child);
     if (child->type() == Function) {
-        QMap<QString, Node *>::Iterator prim =
-                primaryFunctionMap.find(child->name());
-        NodeList& secs = secondaryFunctionMap[child->name()];
-        if (prim != primaryFunctionMap.end() && *prim == child) {
-            if (secs.isEmpty()) {
-                primaryFunctionMap.remove(child->name());
-            }
-            else {
-                primaryFunctionMap.insert(child->name(), secs.takeFirst());
+        QMap<QString, Node *>::Iterator primary = primaryFunctionMap_.find(child->name());
+        NodeList& overloads = secondaryFunctionMap_[child->name()];
+        if (primary != primaryFunctionMap_.end() && *primary == child) {
+            primaryFunctionMap_.erase(primary);
+            if (!overloads.isEmpty()) {
+                FunctionNode* fn = static_cast<FunctionNode*>(overloads.takeFirst());
+                fn->setOverloadNumber(0);
+                primaryFunctionMap_.insert(child->name(), fn);
             }
         }
-        else {
-            secs.removeAll(child);
-        }
+        else
+            overloads.removeAll(child);
     }
-    QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
-    while (ent != childMap.end() && ent.key() == child->name()) {
+    QMap<QString, Node *>::Iterator ent = childMap_.find(child->name());
+    while (ent != childMap_.end() && ent.key() == child->name()) {
         if (*ent == child) {
-            childMap.erase(ent);
+            childMap_.erase(ent);
             break;
         }
         ++ent;
     }
     if (child->title().isEmpty())
         return;
-    ent = childMap.find(child->title());
-    while (ent != childMap.end() && ent.key() == child->title()) {
+    ent = childMap_.find(child->title());
+    while (ent != childMap_.end() && ent.key() == child->title()) {
         if (*ent == child) {
-            childMap.erase(ent);
+            childMap_.erase(ent);
             break;
         }
         ++ent;
@@ -1810,6 +1808,9 @@ QString Parameter::reconstruct(bool value) const
 /*!
   Construct a function node for a C++ function. It's parent
   is \a parent, and it's name is \a name.
+
+  Do not set overloadNumber_ in the initializer list because it
+  is set by addChild() in the Node base class.
  */
 FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
     : LeafNode(Function, parent, name),
@@ -1817,10 +1818,10 @@ FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
       virtualness_(NonVirtual),
       const_(false),
       static_(false),
-      overload_(false),
       reimplemented_(false),
       attached_(false),
       privateSignal_(false),
+      overload_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {
@@ -1831,6 +1832,9 @@ FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
   Construct a function node for a QML method or signal, specified
   by \a type. It's parent is \a parent, and it's name is \a name.
   If \a attached is true, it is an attached method or signal.
+
+  Do not set overloadNumber_ in the initializer list because it
+  is set by addChild() in the Node base class.
  */
 FunctionNode::FunctionNode(NodeType type, Aggregate *parent, const QString& name, bool attached)
     : LeafNode(type, parent, name),
@@ -1838,10 +1842,10 @@ FunctionNode::FunctionNode(NodeType type, Aggregate *parent, const QString& name
       virtualness_(NonVirtual),
       const_(false),
       static_(false),
-      overload_(false),
       reimplemented_(false),
       attached_(attached),
       privateSignal_(false),
+      overload_(false),
       reimplementedFrom_(0),
       associatedProperty_(0)
 {
@@ -1866,13 +1870,15 @@ void FunctionNode::setVirtualness(Virtualness v)
         parent()->setAbstract(true);
 }
 
-/*!
+/*! \fn void FunctionNode::setOverloadFlag(bool b)
+  Sets this function node's overload flag to \a b.
+  It does not set the overload number.
  */
-void FunctionNode::setOverload(bool b)
-{
-    parent()->setOverload(this, b);
-    overload_ = b;
-}
+
+/*! \fn void FunctionNode::setOverloadNumber(unsigned char n)
+  Sets this function node's overload number to \a n.
+  It does not set the overload flag.
+ */
 
 /*!
   Sets the function node's reimplementation flag to \a b.
@@ -1927,14 +1933,9 @@ void FunctionNode::setAssociatedProperty(PropertyNode *p)
     associatedProperty_ = p;
 }
 
-/*!
-  Returns the overload number for this function obtained
-  from the parent.
+/*! \fn unsigned char FunctionNode::overloadNumber() const
+  Returns the overload number for this function.
  */
-int FunctionNode::overloadNumber() const
-{
-    return parent()->overloadNumber(this);
-}
 
 /*!
   Returns the list of parameter names.
@@ -2596,7 +2597,7 @@ QString Node::idForNode() const
                              << parent_->type() << func->name();
 
             }
-            if (func->overloadNumber() != 1)
+            if (func->overloadNumber() != 0)
                 str += QLatin1Char('-') + QString::number(func->overloadNumber());
         }
         break;
@@ -2697,7 +2698,7 @@ QString Node::idForNode() const
         else
             str = "js-method-";
         str += parent_->name().toLower() + "-" + func->name();
-        if (func->overloadNumber() != 1)
+        if (func->overloadNumber() != 0)
             str += QLatin1Char('-') + QString::number(func->overloadNumber());
         break;
     case Node::Variable:

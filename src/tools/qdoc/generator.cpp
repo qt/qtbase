@@ -573,7 +573,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         else if (functionNode->associatedProperty())
             return fullDocumentLocation(functionNode->associatedProperty());
 
-        else if (functionNode->overloadNumber() > 1)
+        else if (functionNode->overloadNumber() > 0)
             anchorRef = QLatin1Char('#') + cleanRef(functionNode->name())
                     + QLatin1Char('-') + QString::number(functionNode->overloadNumber());
         else
@@ -840,9 +840,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                     }
                     else if (!(*a).isEmpty() && !documentedParams.contains(*a)) {
                         bool needWarning = (func->status() > Node::Obsolete);
-                        if (func->overloadNumber() > 1) {
-                            FunctionNode *primaryFunc =
-                                    func->parent()->findFunctionNode(func->name());
+                        if (func->overloadNumber() > 0) {
+                            FunctionNode *primaryFunc = func->parent()->findFunctionNode(func->name());
                             if (primaryFunc) {
                                 foreach (const Parameter &param,
                                          primaryFunc->parameters()) {
@@ -2021,7 +2020,7 @@ void Generator::supplementAlsoList(const Node *node, QList<Text> &alsoList)
 {
     if (node->type() == Node::Function) {
         const FunctionNode *func = static_cast<const FunctionNode *>(node);
-        if (func->overloadNumber() == 1) {
+        if (func->overloadNumber() == 0) {
             QString alternateName;
             const FunctionNode *alternateFunc = 0;
 

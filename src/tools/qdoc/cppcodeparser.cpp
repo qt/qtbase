@@ -250,16 +250,11 @@ void CppCodeParser::doneParsingHeaderFiles()
 
 /*!
   This is called after all the source files (i.e., not the
-  header files) have been parsed. It traverses the tree to
-  resolve property links, normalize overload signatures, and
-  do other housekeeping of the database.
+  header files) have been parsed. Currently nothing to do.
  */
 void CppCodeParser::doneParsingSourceFiles()
 {
-    qdb_->primaryTreeRoot()->normalizeOverloads();
-    qdb_->fixInheritance();
-    qdb_->resolveProperties();
-    qdb_->primaryTreeRoot()->makeUndocumentedChildrenInternal();
+    // contents moved to QdocDatabase::resolveIssues()
 }
 
 static QSet<QString> topicCommands_;
@@ -886,13 +881,10 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_OVERLOAD) {
-        if (node != 0 && node->type() == Node::Function) {
-            ((FunctionNode *) node)->setOverload(true);
-        }
-        else {
-            doc.location().warning(tr("Ignored '\\%1'")
-                                   .arg(COMMAND_OVERLOAD));
-        }
+        if (node && node->isFunction())
+            ((FunctionNode *) node)->setOverloadFlag(true);
+        else
+            doc.location().warning(tr("Ignored '\\%1'").arg(COMMAND_OVERLOAD));
     }
     else if (command == COMMAND_REIMP) {
         if (node != 0 && node->parent() && !node->parent()->isInternal()) {

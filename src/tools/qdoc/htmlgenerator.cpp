@@ -1477,7 +1477,7 @@ void HtmlGenerator::generateClassLikeNode(Aggregate* inner, CodeMarker* marker)
                     const FunctionNode *func = reinterpret_cast<const FunctionNode *>(*m);
                     if (func->metaness() == FunctionNode::Ctor ||
                             func->metaness() == FunctionNode::Dtor ||
-                            func->overloadNumber() != 1)
+                            func->overloadNumber() != 0)
                         names.clear();
                 }
                 else if ((*m)->type() == Node::Property) {
@@ -3734,7 +3734,7 @@ QString HtmlGenerator::refForNode(const Node *node)
         }
         else {
             ref = func->name();
-            if (func->overloadNumber() != 1)
+            if (func->overloadNumber() != 0)
                 ref += QLatin1Char('-') + QString::number(func->overloadNumber());
         }
         break;
@@ -3759,7 +3759,7 @@ QString HtmlGenerator::refForNode(const Node *node)
     case Node::QmlMethod:
         func = static_cast<const FunctionNode *>(node);
         ref = func->name() + "-method";
-        if (func->overloadNumber() != 1)
+        if (func->overloadNumber() != 0)
             ref += QLatin1Char('-') + QString::number(func->overloadNumber());
         break;
     case Node::Variable:
@@ -4365,7 +4365,7 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
             if (node->type() == Node::Function) {
                 const FunctionNode *func = static_cast<const FunctionNode *>(node);
                 if (!func->associatedProperty()) {
-                    if (func->overloadNumber() == 1)
+                    if (func->overloadNumber() == 0)
                         out() << "[overload1]";
                     out() << "$$$" + func->name() + func->rawParameters().remove(' ');
                 }

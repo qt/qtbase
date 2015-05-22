@@ -752,14 +752,14 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
             if (current->isJsType())
                 qmlMethod->setGenus(Node::JS);
             int overloads = 0;
-            NodeList::ConstIterator overloadIterator = current->childNodes().constBegin();
-            while (overloadIterator != current->childNodes().constEnd()) {
-                if ((*overloadIterator)->name() == name)
+            NodeList::ConstIterator i = current->childNodes().constBegin();
+            while (i != current->childNodes().constEnd()) {
+                if ((*i)->name() == name)
                     overloads++;
-                overloadIterator++;
+                i++;
             }
             if (overloads > 1)
-                qmlMethod->setOverload(true);
+                qmlMethod->setOverloadFlag(true);
             QList<Parameter> parameters;
             QQmlJS::AST::FormalParameterList* formals = fd->formals;
             if (formals) {

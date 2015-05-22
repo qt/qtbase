@@ -361,8 +361,7 @@ QString CodeMarker::sortName(const Node *node, const QString* name)
             else
                 sortNo = QLatin1String("E");
         }
-        return sortNo + nodeName + QLatin1Char(' ')
-                + QString::number(func->overloadNumber(), 36);
+        return sortNo + nodeName + QLatin1Char(' ') + QString::number(func->overloadNumber(), 36);
     }
 
     if (node->type() == Node::Class)

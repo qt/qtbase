@@ -376,7 +376,6 @@ public:
     FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
-    void setOverload(FunctionNode* func, bool overlode);
     void normalizeOverloads();
     void makeUndocumentedChildrenInternal();
     void deleteChildren();
@@ -389,7 +388,6 @@ public:
     const NodeList & relatedNodes() const { return related_; }
 
     int count() const { return children_.size(); }
-    int overloadNumber(const FunctionNode* func) const;
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return includes_; }
 
@@ -408,6 +406,8 @@ public:
     void addChild(Node* child);
     void removeChild(Node* child);
     void setOutputSubdirectory(const QString& t) Q_DECL_OVERRIDE;
+    const NodeMap& primaryFunctionMap() { return primaryFunctionMap_; }
+    const QMap<QString, NodeList>& secondaryFunctionMap() { return secondaryFunctionMap_; }
 
 protected:
     Aggregate(NodeType type, Aggregate* parent, const QString& name);
@@ -425,9 +425,9 @@ private:
     NodeList children_;
     NodeList enumChildren_;
     NodeList related_;
-    QMap<QString, Node*> childMap;
-    QMap<QString, Node*> primaryFunctionMap;
-    QMap<QString, NodeList> secondaryFunctionMap;
+    NodeMap childMap_;
+    NodeMap primaryFunctionMap_;
+    QMap<QString, NodeList> secondaryFunctionMap_;
 };
 
 class LeafNode : public Node
@@ -864,7 +864,9 @@ public:
     void setVirtualness(Virtualness v);
     void setConst(bool b) { const_ = b; }
     void setStatic(bool b) { static_ = b; }
-    void setOverload(bool b);
+    unsigned char overloadNumber() const { return overloadNumber_; }
+    void setOverloadFlag(bool b) { overload_ = b; }
+    void setOverloadNumber(unsigned char n) { overloadNumber_ = n; }
     void setReimplemented(bool b);
     void addParameter(const Parameter& parameter);
     inline void setParameters(const QList<Parameter>& parameters);
@@ -900,7 +902,6 @@ public:
     virtual bool isJsMethod() const Q_DECL_OVERRIDE {
         return (type() == Node::QmlMethod) && (genus() == Node::JS);
     }
-    int overloadNumber() const;
     const QList<Parameter>& parameters() const { return parameters_; }
     void clearParams() { parameters_.clear(); }
     QStringList parameterNames() const;
@@ -942,10 +943,11 @@ private:
     Virtualness virtualness_;
     bool const_ : 1;
     bool static_ : 1;
-    bool overload_ : 1;
     bool reimplemented_: 1;
     bool attached_: 1;
     bool privateSignal_: 1;
+    bool overload_ : 1;
+    unsigned char overloadNumber_;
     QList<Parameter> parameters_;
     const FunctionNode* reimplementedFrom_;
     const PropertyNode* associatedProperty_;

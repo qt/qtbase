@@ -520,8 +520,14 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         functionNode->setMetaness(meta);
         functionNode->setConst(element.attribute("const") == "true");
         functionNode->setStatic(element.attribute("static") == "true");
-        functionNode->setOverload(element.attribute("overload") == "true");
-
+        if (element.attribute("overload") == "true") {
+            functionNode->setOverloadFlag(true);
+            functionNode->setOverloadNumber(element.attribute("overload-number").toUInt());
+        }
+        else {
+            functionNode->setOverloadFlag(false);
+            functionNode->setOverloadNumber(0);
+        }
         if (element.hasAttribute("relates")
                 && element.attribute("relates") != parent->name()) {
             relatedList_.append(

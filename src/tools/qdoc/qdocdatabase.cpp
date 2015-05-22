@@ -1264,6 +1264,10 @@ const NodeMap& QDocDatabase::getSinceMap(const QString& key)
   to generating documentation.
  */
 void QDocDatabase::resolveIssues() {
+    primaryTreeRoot()->normalizeOverloads();
+    fixInheritance();
+    resolveProperties();
+    primaryTreeRoot()->makeUndocumentedChildrenInternal();
     resolveQmlInheritance(primaryTreeRoot());
     primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
@@ -1277,6 +1281,7 @@ void QDocDatabase::resolveStuff()
     primaryTree()->resolveCppToQmlLinks();
     primaryTree()->resolveUsingClauses();
     resolveNamespaces();
+    primaryTreeRoot()->normalizeOverloads();
 }
 
 /*!
