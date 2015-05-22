@@ -50,7 +50,7 @@
     return [CAEAGLLayer class];
 }
 
--(id)initWithQIOSWindow:(QIOSWindow *)window
+- (id)initWithQIOSWindow:(QIOSWindow *)window
 {
     if (self = [self initWithFrame:toCGRect(window->geometry())])
         m_qioswindow = window;
@@ -310,7 +310,7 @@
     }
 }
 
-- (void) sendTouchEventWithTimestamp:(ulong)timeStamp
+- (void)sendTouchEventWithTimestamp:(ulong)timeStamp
 {
     // Send touch event synchronously
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();

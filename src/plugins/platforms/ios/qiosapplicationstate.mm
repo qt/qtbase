@@ -43,7 +43,7 @@
 
 @implementation QIOSApplicationStateListener
 
-- (id) init
+- (id)init
 {
     self = [super init];
     if (self) {
@@ -75,7 +75,7 @@
     return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
@@ -92,12 +92,12 @@
     [super dealloc];
 }
 
-- (void) applicationDidBecomeActive
+- (void)applicationDidBecomeActive
 {
     [self handleApplicationStateChanged:UIApplicationStateActive];
 }
 
-- (void) applicationWillResignActive
+- (void)applicationWillResignActive
 {
     // Note that UIApplication is still UIApplicationStateActive at this
     // point, but since there is no separate notification for the inactive
@@ -105,12 +105,12 @@
     [self handleApplicationStateChanged:UIApplicationStateInactive];
 }
 
-- (void) applicationDidEnterBackground
+- (void)applicationDidEnterBackground
 {
     [self handleApplicationStateChanged:UIApplicationStateBackground];
 }
 
-- (void) handleApplicationStateChanged:(UIApplicationState) uiApplicationState
+- (void)handleApplicationStateChanged:(UIApplicationState)uiApplicationState
 {
     // We may receive application state changes after QCoreApplication has
     // gone down, as the block we schedule on the main queue keeps the

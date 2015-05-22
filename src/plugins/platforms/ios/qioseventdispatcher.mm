@@ -293,7 +293,7 @@ static bool rootLevelRunLoopIntegration()
 
 @implementation QIOSApplicationStateTracker
 
-+ (void) load
++ (void)load
 {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -323,7 +323,7 @@ static bool rootLevelRunLoopIntegration()
 #  error "Unknown processor family"
 #endif
 
-+ (void) applicationDidFinishLaunching
++ (void)applicationDidFinishLaunching
 {
     if (!isQtApplication())
         return;
@@ -377,7 +377,7 @@ static bool rootLevelRunLoopIntegration()
 // four bits of the exit code (exit(3) will only pass on the lower 8 bits).
 static const char kApplicationWillTerminateExitCode = SIGTERM | 0x80;
 
-+ (void) applicationWillTerminate
++ (void)applicationWillTerminate
 {
     if (!isQtApplication())
         return;

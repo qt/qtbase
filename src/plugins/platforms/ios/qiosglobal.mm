@@ -133,7 +133,7 @@ int infoPlistValue(NSString* key, int defaultValue)
 @end
 
 @implementation QtFirstResponderEvent
-- (void) dealloc
+- (void)dealloc
 {
     self.firstResponder = 0;
     [super dealloc];
@@ -158,7 +158,7 @@ int infoPlistValue(NSString* key, int defaultValue)
 
 @implementation UIResponder (QtFirstResponder)
 
-+(id)currentFirstResponder
++ (id)currentFirstResponder
 {
     QtFirstResponderEvent *event = [[[QtFirstResponderEvent alloc] init] autorelease];
     [[UIApplication sharedApplication] sendAction:@selector(qt_findFirstResponder:event:) to:nil from:nil forEvent:event];

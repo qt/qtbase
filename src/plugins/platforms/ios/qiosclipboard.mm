@@ -62,7 +62,7 @@
 
 @implementation QUIClipboard
 
--(id)initWithQIOSClipboard:(QIOSClipboard *)qiosClipboard
+- (id)initWithQIOSClipboard:(QIOSClipboard *)qiosClipboard
 {
     self = [super init];
     if (self) {
@@ -87,7 +87,7 @@
     return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
     [[NSNotificationCenter defaultCenter]
         removeObserver:self

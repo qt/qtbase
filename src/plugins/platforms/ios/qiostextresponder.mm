@@ -92,12 +92,12 @@
     return [QUITextPosition positionWithIndex:(self.range.location + self.range.length)];
 }
 
-- (NSRange) range
+- (NSRange)range
 {
     return _range;
 }
 
--(BOOL)isEmpty
+- (BOOL)isEmpty
 {
     return (self.range.length == 0);
 }
@@ -111,7 +111,7 @@
 
 @implementation WrapperView
 
--(id)initWithView:(UIView *)view
+- (id)initWithView:(UIView *)view
 {
     if (self = [self init]) {
         [self addSubview:view];
@@ -143,7 +143,7 @@
 // retained, we ensure that all messages sent to the view during
 // its lifetime in a window hierarcy will be able to traverse the
 // responder chain.
--(void)willMoveToWindow:(UIWindow *)window
+- (void)willMoveToWindow:(UIWindow *)window
 {
     if (window)
         [[self nextResponder] retain];
@@ -383,17 +383,17 @@
     return m_inputContext->imeState().currentState.value(query);
 }
 
--(id<UITextInputTokenizer>)tokenizer
+- (id<UITextInputTokenizer>)tokenizer
 {
     return [[[UITextInputStringTokenizer alloc] initWithTextInput:id<UITextInput>(self)] autorelease];
 }
 
--(UITextPosition *)beginningOfDocument
+- (UITextPosition *)beginningOfDocument
 {
     return [QUITextPosition positionWithIndex:0];
 }
 
--(UITextPosition *)endOfDocument
+- (UITextPosition *)endOfDocument
 {
     int endPosition = [self currentImeState:Qt::ImSurroundingText].toString().length();
     return [QUITextPosition positionWithIndex:endPosition];
@@ -659,7 +659,7 @@
     return [NSDictionary dictionaryWithObject:uifont forKey:UITextInputTextFontKey];
 }
 
--(NSDictionary *)markedTextStyle
+- (NSDictionary *)markedTextStyle
 {
     return [NSDictionary dictionary];
 }

@@ -37,7 +37,7 @@
 
 @implementation QMacAccessibilityElement
 
-- (id) initWithId: (QAccessible::Id) anId withAccessibilityContainer: (id) view
+- (id)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
 {
     Q_ASSERT((int)anId < 0);
     self = [super initWithAccessibilityContainer: view];
@@ -47,7 +47,7 @@
     return self;
 }
 
-+ (id) elementWithId: (QAccessible::Id) anId withAccessibilityContainer: (id) view
++ (id)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
 {
     Q_ASSERT(anId);
     if (!anId)
@@ -64,17 +64,17 @@
     return element;
 }
 
-- (void) invalidate
+- (void)invalidate
 {
     [self release];
 }
 
-- (BOOL) isAccessibilityElement
+- (BOOL)isAccessibilityElement
 {
     return YES;
 }
 
-- (NSString*) accessibilityLabel
+- (NSString*)accessibilityLabel
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (!iface) {
@@ -85,7 +85,7 @@
     return iface->text(QAccessible::Name).toNSString();
 }
 
-- (NSString*) accessibilityHint
+- (NSString*)accessibilityHint
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (!iface) {
@@ -95,7 +95,7 @@
     return iface->text(QAccessible::Description).toNSString();
 }
 
-- (NSString*) accessibilityValue
+- (NSString*)accessibilityValue
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (!iface) {
@@ -119,7 +119,7 @@
     return [super accessibilityHint];
 }
 
-- (CGRect) accessibilityFrame
+- (CGRect)accessibilityFrame
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (!iface) {
@@ -131,7 +131,7 @@
     return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-- (UIAccessibilityTraits) accessibilityTraits
+- (UIAccessibilityTraits)accessibilityTraits
 {
     UIAccessibilityTraits traits = UIAccessibilityTraitNone;
 
@@ -156,7 +156,7 @@
     return traits;
 }
 
-- (BOOL) accessibilityActivate
+- (BOOL)accessibilityActivate
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (QAccessibleActionInterface *action = iface->actionInterface()) {
@@ -171,21 +171,21 @@
     return NO; // fall back to sending mouse clicks
 }
 
-- (void) accessibilityIncrement
+- (void)accessibilityIncrement
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (QAccessibleActionInterface *action = iface->actionInterface())
         action->doAction(QAccessibleActionInterface::increaseAction());
 }
 
-- (void) accessibilityDecrement
+- (void)accessibilityDecrement
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     if (QAccessibleActionInterface *action = iface->actionInterface())
         action->doAction(QAccessibleActionInterface::decreaseAction());
 }
 
-- (BOOL) accessibilityScroll : (UIAccessibilityScrollDirection) direction
+- (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction
 {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
     QAccessibleActionInterface *action = iface->actionInterface();
