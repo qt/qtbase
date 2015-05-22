@@ -72,35 +72,31 @@ void tst_QByteArray_macTypes()
     }
     // QByteArray <-> NSData
     {
-        NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+        QMacAutoReleasePool pool;
         QByteArray qtByteArray("test bytearray");
         const NSData *nsData = qtByteArray.toNSData();
         QCOMPARE(QByteArray::fromNSData(nsData), qtByteArray);
-        [autoreleasepool release];
     }
     {
-        NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+        QMacAutoReleasePool pool;
         QByteArray qtByteArray("test bytearray");
         const NSData *nsData = qtByteArray.toNSData();
         QByteArray qtByteArrayCopy(qtByteArray);
         qtByteArray = qtByteArray.toUpper(); // modify
         QCOMPARE(QByteArray::fromNSData(nsData), qtByteArrayCopy);
-        [autoreleasepool release];
     }
     // QByteArray <-> NSData Raw
     {
-        NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+        QMacAutoReleasePool pool;
         QByteArray qtByteArray("test bytearray");
         const NSData *nsData = qtByteArray.toRawNSData();
         QCOMPARE([nsData bytes], qtByteArray.constData());
-        [autoreleasepool release];
     }
     {
-        NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+        QMacAutoReleasePool pool;
         const char data[] = "nsdata test";
         const NSData *nsData = [NSData dataWithBytes:data length:sizeof(data)];
         QByteArray qtByteArray = QByteArray::fromRawNSData(nsData);
         QCOMPARE(qtByteArray.constData(), [nsData bytes]);
-        [autoreleasepool release];
     }
 }

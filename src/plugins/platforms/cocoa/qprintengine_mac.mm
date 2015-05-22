@@ -38,7 +38,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 
-#include "qcocoaautoreleasepool.h"
 
 #ifndef QT_NO_PRINTER
 
@@ -230,7 +229,7 @@ void QMacPrintEnginePrivate::initialize()
 
     q->gccaps = paintEngine->gccaps;
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     printInfo = [[NSPrintInfo alloc] initWithDictionary:[NSDictionary dictionary]];
 
     QList<int> resolutions = m_printDevice->supportedResolutions();

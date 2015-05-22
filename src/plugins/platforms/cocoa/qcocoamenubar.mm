@@ -37,7 +37,6 @@
 #include "qcocoawindow.h"
 #include "qcocoamenuloader.h"
 #include "qcocoaapplication.h" // for custom application category
-#include "qcocoaautoreleasepool.h"
 #include "qcocoaapplicationdelegate.h"
 
 #include <QtGui/QGuiApplication>
@@ -84,7 +83,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
 
 void QCocoaMenuBar::insertNativeMenu(QCocoaMenu *menu, QCocoaMenu *beforeMenu)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (beforeMenu) {
         NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeMenu->nsMenuItem()];
@@ -127,7 +126,7 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 
 void QCocoaMenuBar::removeNativeMenu(QCocoaMenu *menu)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (menu->menuBar() == this)
         menu->setMenuBar(0);
@@ -148,7 +147,7 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 
 void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
     Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
@@ -261,7 +260,7 @@ void QCocoaMenuBar::resetKnownMenuItemsToQt()
 
 void QCocoaMenuBar::updateMenuBarImmediately()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaMenuBar *mb = findGlobalMenubar();
     QCocoaWindow *cw = findWindowForMenubar();
 

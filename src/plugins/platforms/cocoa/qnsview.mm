@@ -39,7 +39,6 @@
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
-#include "qcocoaautoreleasepool.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
 #include <qpa/qplatformintegration.h>
@@ -849,7 +848,7 @@ QT_WARNING_POP
 {
     [super updateTrackingAreas];
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     // NSTrackingInVisibleRect keeps care of updating once the tracking is set up, so bail out early
     if (m_trackingArea && [[self trackingAreas] containsObject:m_trackingArea])
@@ -1786,7 +1785,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 -(void)registerDragTypes
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QStringList customTypes = qt_mac_enabledDraggedTypes();
     if (currentCustomDragTypes == 0 || *currentCustomDragTypes != customTypes) {
         if (currentCustomDragTypes == 0)

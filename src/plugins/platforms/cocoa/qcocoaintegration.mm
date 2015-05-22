@@ -33,7 +33,6 @@
 
 #include "qcocoaintegration.h"
 
-#include "qcocoaautoreleasepool.h"
 #include "qcocoawindow.h"
 #include "qcocoabackingstore.h"
 #include "qcocoanativeinterface.h"
@@ -137,7 +136,7 @@ void QCocoaScreen::updateGeometry()
 
 qreal QCocoaScreen::devicePixelRatio() const
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     NSScreen * screen = osScreen();
     return qreal(screen ? [screen backingScaleFactor] : 1.0);
 }
@@ -263,7 +262,7 @@ QCocoaIntegration::QCocoaIntegration()
     mInstance = this;
 
     initResources();
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
@@ -314,7 +313,7 @@ QCocoaIntegration::~QCocoaIntegration()
 
     qt_resetNSApplicationSendEvent();
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
         // remove the apple event handlers installed by QCocoaApplicationDelegate
         QCocoaApplicationDelegate *delegate = [QCocoaApplicationDelegate sharedDelegate];

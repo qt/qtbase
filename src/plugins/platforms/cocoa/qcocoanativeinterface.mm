@@ -234,7 +234,7 @@ void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 
 void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
     NSMenu *menu = cocoaPlatformMenu->nsMenu();
     [NSApp QT_MANGLE_NAMESPACE(qt_setDockMenu): menu];

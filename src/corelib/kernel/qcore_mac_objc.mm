@@ -131,5 +131,22 @@ QAppleOperatingSystemVersion qt_apple_os_version()
     return v;
 }
 
+// -------------------------------------------------------------------------
+
+QMacAutoReleasePool::QMacAutoReleasePool()
+    : pool([[NSAutoreleasePool alloc] init])
+{
+}
+
+QMacAutoReleasePool::~QMacAutoReleasePool()
+{
+    // Drain behaves the same as release, with the advantage that
+    // if we're ever used in a garbage-collected environment, the
+    // drain acts as a hint to the garbage collector to collect.
+    [pool drain];
+}
+
+// -------------------------------------------------------------------------
+
 QT_END_NAMESPACE
 

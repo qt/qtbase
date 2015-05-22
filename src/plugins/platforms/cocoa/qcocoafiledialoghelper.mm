@@ -53,7 +53,6 @@
 #include <qvarlengtharray.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
-#include "qcocoaautoreleasepool.h"
 #include <QDir>
 
 #include <qpa/qplatformnativeinterface.h>
@@ -557,7 +556,7 @@ QCocoaFileDialogHelper::~QCocoaFileDialogHelper()
 {
     if (!mDelegate)
         return;
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     [mDelegate release];
     mDelegate = 0;
 }
@@ -687,7 +686,7 @@ bool QCocoaFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
 
 void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     const SharedPointerFileDialogOptions &opts = options();
     const QList<QUrl> selectedFiles = opts->initiallySelectedFiles();
@@ -737,7 +736,7 @@ void QCocoaFileDialogHelper::exec()
     // QEventLoop has been interrupted, and the second-most event loop has not
     // yet been reactivated (regardless if [NSApp run] is still on the stack)),
     // showing a native modal dialog will fail.
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if ([mDelegate runApplicationModalPanel])
         emit accept();
     else

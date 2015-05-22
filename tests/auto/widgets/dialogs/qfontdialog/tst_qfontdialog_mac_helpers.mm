@@ -36,7 +36,7 @@
 
 void click_cocoa_button()
 {
-    QMacCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     NSArray *windows = [NSApp windows];
     for (NSWindow *window in windows) {
         // This is NOT how one should do RTTI, but since I don't want to leak the class too much...

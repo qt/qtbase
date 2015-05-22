@@ -33,7 +33,6 @@
 #include "qcocoawindow.h"
 #include "qcocoaintegration.h"
 #include "qnswindowdelegate.h"
-#include "qcocoaautoreleasepool.h"
 #include "qcocoaeventdispatcher.h"
 #ifndef QT_NO_OPENGL
 #include "qcocoaglcontext.h"
@@ -374,7 +373,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
 #endif
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (tlw->type() == Qt::ForeignWindow) {
         NSView *foreignView = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
@@ -410,7 +409,7 @@ QCocoaWindow::~QCocoaWindow()
     qDebug() << "QCocoaWindow::~QCocoaWindow" << this;
 #endif
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     [m_nsWindow setContentView:nil];
     [m_nsWindow.helper detachFromPlatformWindow];
     if (m_isNSWindowChild) {
@@ -492,7 +491,7 @@ QRect QCocoaWindow::geometry() const
 
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (m_contentViewIsEmbedded) {
         QPlatformWindow::setGeometry(rect);
@@ -616,7 +615,7 @@ void QCocoaWindow::setVisible(bool visible)
 
     m_inSetVisible = true;
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaWindow *parentCocoaWindow = 0;
     if (window()->transientParent())
         parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
@@ -887,7 +886,7 @@ void QCocoaWindow::setWindowState(Qt::WindowState state)
 
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (!m_nsWindow)
         return;
 
@@ -898,7 +897,7 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 
 void QCocoaWindow::setWindowFilePath(const QString &filePath)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (!m_nsWindow)
         return;
 
@@ -908,7 +907,7 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     NSButton *iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     if (iconButton == nil) {
@@ -1026,7 +1025,7 @@ bool QCocoaWindow::isOpaque() const
 
 void QCocoaWindow::propagateSizeHints()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (!m_nsWindow)
         return;
 
@@ -1367,7 +1366,7 @@ bool QCocoaWindow::shouldUseNSPanel()
 
 QCocoaNSWindow * QCocoaWindow::createNSWindow()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     QRect rect = initialGeometry(window(), window()->geometry(), defaultWindowWidth, defaultWindowHeight);
     NSRect frame = qt_mac_flipRect(rect);

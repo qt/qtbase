@@ -47,7 +47,6 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
-#include "qcocoaautoreleasepool.h"
 
 #include <QtCore/qfileinfo.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -253,7 +252,7 @@ QPixmap QCocoaTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &siz
                                     QPlatformTheme::IconOptions iconOptions) const
 {
     Q_UNUSED(iconOptions);
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:QCFString::toNSString(fileInfo.canonicalFilePath())];
     if (!iconImage)

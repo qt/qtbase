@@ -1087,7 +1087,7 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     addDockWidget(area, dockwidget, orientation);
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC     //drawer support
-    QMacCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
     if (qt_mac_is_macdrawer(dockwidget)) {
         extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp

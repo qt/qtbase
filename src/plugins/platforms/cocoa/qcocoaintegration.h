@@ -36,7 +36,6 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "qcocoaautoreleasepool.h"
 #include "qcocoacursor.h"
 #include "qcocoawindow.h"
 #include "qcocoanativeinterface.h"

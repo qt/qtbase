@@ -322,6 +322,15 @@ typedef double qreal;
 #endif
 
 /*
+   Some classes do not permit copies to be made of an object. These
+   classes contains a private copy constructor and assignment
+   operator to disable copying (the compiler gives an error message).
+*/
+#define Q_DISABLE_COPY(Class) \
+    Class(const Class &) Q_DECL_EQ_DELETE;\
+    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
+
+/*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
@@ -543,7 +552,21 @@ template <typename T>
 Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
 
-#ifdef Q_OS_DARWIN
+#ifndef Q_FORWARD_DECLARE_OBJC_CLASS
+#  ifdef __OBJC__
+#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
+#  else
+#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
+#  endif
+#endif
+#ifndef Q_FORWARD_DECLARE_CF_TYPE
+#  define Q_FORWARD_DECLARE_CF_TYPE(type) typedef const struct __ ## type * type ## Ref
+#endif
+#ifndef Q_FORWARD_DECLARE_MUTABLE_CF_TYPE
+#  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
+#endif
+
+#ifdef Q_OS_MAC
 #  define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) \
     ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
      (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios))
@@ -561,7 +584,21 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
       QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_NA, ios)
 #  define QT_OSX_DEPLOYMENT_TARGET_BELOW(osx) \
       QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, __IPHONE_NA)
-#endif
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSAutoreleasePool);
+
+// Implemented in qcore_mac_objc.mm
+class Q_CORE_EXPORT QMacAutoReleasePool
+{
+public:
+    QMacAutoReleasePool();
+    ~QMacAutoReleasePool();
+private:
+    Q_DISABLE_COPY(QMacAutoReleasePool);
+    NSAutoreleasePool *pool;
+};
+
+#endif // Q_OS_MAC
 
 /*
    Data stream functions are provided by many classes (defined in qdatastream.h)
@@ -1033,15 +1070,6 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
   { return T::dynamic_cast_will_always_fail_because_rtti_is_disabled; }
 #endif
 
-/*
-   Some classes do not permit copies to be made of an object. These
-   classes contains a private copy constructor and assignment
-   operator to disable copying (the compiler gives an error message).
-*/
-#define Q_DISABLE_COPY(Class) \
-    Class(const Class &) Q_DECL_EQ_DELETE;\
-    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
-
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
@@ -1075,20 +1103,6 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 template <bool B, typename T, typename F> struct QConditional { typedef T Type; };
 template <typename T, typename F> struct QConditional<false, T, F> { typedef F Type; };
 }
-
-#ifndef Q_FORWARD_DECLARE_OBJC_CLASS
-#  ifdef __OBJC__
-#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
-#  else
-#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
-#  endif
-#endif
-#ifndef Q_FORWARD_DECLARE_CF_TYPE
-#  define Q_FORWARD_DECLARE_CF_TYPE(type) typedef const struct __ ## type * type ## Ref
-#endif
-#ifndef Q_FORWARD_DECLARE_MUTABLE_CF_TYPE
-#  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
-#endif
 
 QT_END_NAMESPACE
 

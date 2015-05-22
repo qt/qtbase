@@ -66,7 +66,6 @@
 ****************************************************************************/
 
 #include "qcocoaeventdispatcher.h"
-#include "qcocoaautoreleasepool.h"
 #include "qcocoawindow.h"
 
 #include "qcocoahelpers.h"
@@ -364,7 +363,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         if (d->interrupt)
             break;
 
-        QCocoaAutoReleasePool pool;
+        QMacAutoReleasePool pool;
         NSEvent* event = 0;
 
         // First, send all previously excluded input events, if any:
@@ -622,7 +621,7 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
             continue;
 
         if (!info.session) {
-            QCocoaAutoReleasePool pool;
+            QMacAutoReleasePool pool;
             QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(info.window->handle());
             NSWindow *nswindow = cocoaWindow->nativeWindow();
             if (!nswindow)
@@ -670,7 +669,7 @@ void QCocoaEventDispatcherPrivate::updateChildrenWorksWhenModal()
     // Make the dialog children of the window
     // active. And make the dialog children of
     // the previous modal dialog unactive again:
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     int size = cocoaModalSessionStack.size();
     if (size > 0){
         if (QWindow *prevModal = cocoaModalSessionStack[size-1].window)
@@ -691,7 +690,7 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
     // point they were marked as stopped), is that ending a session
     // when no other session runs below it on the stack will make cocoa
     // drop some events on the floor.
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     int stackSize = cocoaModalSessionStack.size();
 
     for (int i=stackSize-1; i>=0; --i) {
@@ -926,7 +925,7 @@ void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
 {
     // In case the event dispatcher is waiting for more
     // events somewhere, we post a dummy event to wake it up:
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
         subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];

@@ -33,7 +33,6 @@
 
 #include "qcocoasystemsettings.h"
 
-#include "qcocoaautoreleasepool.h"
 #include "qcocoahelpers.h"
 
 #include <QtCore/private/qcore_mac_p.h>
@@ -45,7 +44,7 @@ QT_BEGIN_NAMESPACE
 
 QColor qt_mac_colorForTheme(ThemeBrush brush)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     QCFType<CGColorRef> cgClr = 0;
     HIThemeBrushCreateCGColor(brush, &cgClr);

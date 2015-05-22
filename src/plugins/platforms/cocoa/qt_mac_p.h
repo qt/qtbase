@@ -103,17 +103,6 @@ public:
     }
 };
 
-class Q_WIDGETS_EXPORT QMacCocoaAutoReleasePool
-{
-private:
-    void *pool;
-public:
-    QMacCocoaAutoReleasePool();
-    ~QMacCocoaAutoReleasePool();
-
-    inline void *handle() const { return pool; }
-};
-
 QString qt_mac_removeMnemonics(const QString &original); //implemented in qmacstyle_mac.cpp
 
 class Q_WIDGETS_EXPORT QMacWindowChangeEvent
