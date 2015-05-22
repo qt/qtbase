@@ -448,7 +448,7 @@ UnixMakefileGenerator::findLibraries()
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for (ProStringList::Iterator it = l.begin(); it != l.end(); ) {
-            QString stub, dir, extn, opt = (*it).trimmed().toQString();
+            QString stub, dir, extn, opt = (*it).toQString();
             if(opt.startsWith("-")) {
                 if(opt.startsWith("-L")) {
                     QString lib = opt.mid(2);
@@ -555,7 +555,7 @@ UnixMakefileGenerator::processPrlFiles()
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for(int lit = 0; lit < l.size(); ++lit) {
-            QString opt = l.at(lit).trimmed().toQString();
+            QString opt = l.at(lit).toQString();
             if(opt.startsWith("-")) {
                 if (opt.startsWith(libArg)) {
                     QMakeLocalFileName l(opt.mid(libArg.length()));
@@ -589,10 +589,9 @@ UnixMakefileGenerator::processPrlFiles()
                         frameworkdirs.insert(fwidx++, f);
                 } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
                     if(opt.length() > 11)
-                        opt = opt.mid(11);
+                        opt = opt.mid(11).trimmed();
                     else
                         opt = l.at(++lit).toQString();
-                    opt = opt.trimmed();
                     foreach (const QMakeLocalFileName &dir, frameworkdirs) {
                         QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
                         if(processPrlFile(prl))
@@ -624,7 +623,7 @@ UnixMakefileGenerator::processPrlFiles()
             QHash<ProKey, ProStringList> lflags;
             for(int lit = 0; lit < l.size(); ++lit) {
                 ProKey arch("default");
-                ProString opt = l.at(lit).trimmed();
+                ProString opt = l.at(lit);
                 if(opt.startsWith("-")) {
                     if (target_mode == TARG_MAC_MODE && opt.startsWith("-Xarch")) {
                         if (opt.length() > 7) {

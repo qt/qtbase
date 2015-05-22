@@ -115,7 +115,7 @@ Win32MakefileGenerator::findLibraries()
     ProStringList &l = project->values(lflags[i]);
     for (ProStringList::Iterator it = l.begin(); it != l.end();) {
         bool remove = false;
-        QString opt = (*it).trimmed().toQString();
+        QString opt = (*it).toQString();
         if(opt.startsWith("/LIBPATH:")) {
             QString libpath = opt.mid(9);
             QMakeLocalFileName l(libpath);
@@ -210,7 +210,7 @@ Win32MakefileGenerator::processPrlFiles()
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for (int lit = 0; lit < l.size(); ++lit) {
-            QString opt = l.at(lit).trimmed().toQString();
+            QString opt = l.at(lit).toQString();
             if (opt.startsWith(libArg)) {
                 QMakeLocalFileName l(opt.mid(libArg.length()));
                 if (!libdirs.contains(l))
@@ -239,7 +239,7 @@ Win32MakefileGenerator::processPrlFiles()
         if (!project->isActiveConfig("no_smart_library_merge") && !project->isActiveConfig("no_lflags_merge")) {
             ProStringList lflags;
             for (int lit = 0; lit < l.size(); ++lit) {
-                ProString opt = l.at(lit).trimmed();
+                ProString opt = l.at(lit);
                 if (opt.startsWith(libArg)) {
                     if (!lflags.contains(opt))
                         lflags.append(opt);

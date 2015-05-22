@@ -816,7 +816,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             for(int x = 0; x < tmp.count();) {
                 bool remove = false;
                 QString library, name;
-                ProString opt = tmp[x].trimmed();
+                ProString opt = tmp[x];
                 if(opt.startsWith("-L")) {
                     QString r = opt.mid(2).toQString();
                     fixForOutput(r);
