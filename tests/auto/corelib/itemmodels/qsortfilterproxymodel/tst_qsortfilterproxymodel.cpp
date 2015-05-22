@@ -87,6 +87,7 @@ private slots:
     void filter_qtbug30662();
 
     void changeSourceLayout();
+    void changeSourceLayoutFilteredOut();
     void removeSourceRows_data();
     void removeSourceRows();
     void insertSourceRows_data();
@@ -1531,6 +1532,32 @@ void tst_QSortFilterProxyModel::changeSourceLayout()
         QCOMPARE(persistentProxyIndexes.at(row).row(),
                  persistentSourceIndexes.at(row).row());
     }
+}
+
+void tst_QSortFilterProxyModel::changeSourceLayoutFilteredOut()
+{
+    QStandardItemModel model(2, 1);
+    model.setData(model.index(0, 0), QString("b"));
+    model.setData(model.index(1, 0), QString("a"));
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+
+    int beforeSortFilter = proxy.rowCount();
+
+    QSignalSpy removeSpy(&proxy, &QSortFilterProxyModel::rowsRemoved);
+    // Filter everything out
+    proxy.setFilterRegExp(QRegExp("c"));
+    QCOMPARE(removeSpy.count(), 1);
+    QCOMPARE(0, proxy.rowCount());
+
+    // change layout of source model
+    model.sort(0, Qt::AscendingOrder);
+
+    QSignalSpy insertSpy(&proxy, &QSortFilterProxyModel::rowsInserted);
+    // Remove filter; we expect an insert
+    proxy.setFilterRegExp(QRegExp(""));
+    QCOMPARE(insertSpy.count(), 1);
+    QCOMPARE(beforeSortFilter, proxy.rowCount());
 }
 
 void tst_QSortFilterProxyModel::removeSourceRows_data()

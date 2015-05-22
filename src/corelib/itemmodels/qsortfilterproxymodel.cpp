@@ -272,6 +272,7 @@ public:
     QModelIndexPairList store_persistent_indexes();
     void update_persistent_indexes(const QModelIndexPairList &source_indexes);
 
+    void filter_about_to_be_changed(const QModelIndex &source_parent = QModelIndex());
     void filter_changed(const QModelIndex &source_parent = QModelIndex());
     QSet<int> handle_filter_changed(
         QVector<int> &source_to_proxy, QVector<int> &proxy_to_source,
@@ -1043,6 +1044,19 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
         to << proxy_index;
     }
     q->changePersistentIndexList(from, to);
+}
+
+/*!
+  \internal
+
+  Updates the source_index mapping in case it's invalid and we
+  need it because we have a valid filter
+*/
+void QSortFilterProxyModelPrivate::filter_about_to_be_changed(const QModelIndex &source_parent)
+{
+  if (!filter_regexp.pattern().isEmpty() &&
+        source_index_mapping.constFind(source_parent) == source_index_mapping.constEnd())
+    create_mapping(source_parent);
 }
 
 
@@ -2304,6 +2318,7 @@ QRegExp QSortFilterProxyModel::filterRegExp() const
 void QSortFilterProxyModel::setFilterRegExp(const QRegExp &regExp)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_about_to_be_changed();
     d->filter_regexp = regExp;
     d->filter_changed();
 }
@@ -2325,6 +2340,7 @@ int QSortFilterProxyModel::filterKeyColumn() const
 void QSortFilterProxyModel::setFilterKeyColumn(int column)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_about_to_be_changed();
     d->filter_column = column;
     d->filter_changed();
 }
@@ -2350,6 +2366,7 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
     Q_D(QSortFilterProxyModel);
     if (cs == d->filter_regexp.caseSensitivity())
         return;
+    d->filter_about_to_be_changed();
     d->filter_regexp.setCaseSensitivity(cs);
     d->filter_changed();
 }
@@ -2415,6 +2432,7 @@ void QSortFilterProxyModel::setSortLocaleAware(bool on)
 void QSortFilterProxyModel::setFilterRegExp(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_about_to_be_changed();
     d->filter_regexp.setPatternSyntax(QRegExp::RegExp);
     d->filter_regexp.setPattern(pattern);
     d->filter_changed();
@@ -2429,6 +2447,7 @@ void QSortFilterProxyModel::setFilterRegExp(const QString &pattern)
 void QSortFilterProxyModel::setFilterWildcard(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_about_to_be_changed();
     d->filter_regexp.setPatternSyntax(QRegExp::Wildcard);
     d->filter_regexp.setPattern(pattern);
     d->filter_changed();
@@ -2443,6 +2462,7 @@ void QSortFilterProxyModel::setFilterWildcard(const QString &pattern)
 void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_about_to_be_changed();
     d->filter_regexp.setPatternSyntax(QRegExp::FixedString);
     d->filter_regexp.setPattern(pattern);
     d->filter_changed();
@@ -2522,6 +2542,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
     Q_D(QSortFilterProxyModel);
     if (d->filter_role == role)
         return;
+    d->filter_about_to_be_changed();
     d->filter_role = role;
     d->filter_changed();
 }
