@@ -61,6 +61,8 @@
 
 #include "private/qwidgetlinecontrol_p.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 // QLineEditIconButton: This is a simple helper class that represents clickable icons that fade in with text
@@ -81,6 +83,7 @@ public:
 #endif
 
 protected:
+    void actionEvent(QActionEvent *e) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
@@ -226,14 +229,23 @@ private:
     mutable QSize m_iconSize;
 };
 
+static bool isSideWidgetVisible(const QLineEditPrivate::SideWidgetEntry &e)
+{
+   return e.widget->isVisible();
+}
+
 inline int QLineEditPrivate::effectiveLeftTextMargin() const
 {
-    return leftTextMargin + leftSideWidgetList().size() * (QLineEditIconButton::IconMargin + iconSize().width());
+    return leftTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
+        * int(std::count_if(leftSideWidgetList().constBegin(), leftSideWidgetList().constEnd(),
+                            isSideWidgetVisible));
 }
 
 inline int QLineEditPrivate::effectiveRightTextMargin() const
 {
-    return rightTextMargin + rightSideWidgetList().size() * (QLineEditIconButton::IconMargin + iconSize().width());
+    return rightTextMargin + (QLineEditIconButton::IconMargin + iconSize().width())
+        * int(std::count_if(rightSideWidgetList().constBegin(), rightSideWidgetList().constEnd(),
+                            isSideWidgetVisible));
 }
 
 #endif // QT_NO_LINEEDIT
