@@ -3444,7 +3444,8 @@ void tst_QWidget::testDeletionInEventHandlers()
     w = new Widget;
     w->show();
     w->deleteThis = true;
-    QTest::mouseRelease(w, Qt::LeftButton);
+    QMouseEvent me(QEvent::MouseButtonRelease, QPoint(1, 1), Qt::LeftButton, Qt::LeftButton, 0);
+    qApp->notify(w, &me);
     QVERIFY(w == 0);
     delete w;
 
@@ -3482,7 +3483,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->setMouseTracking(true);
     w->show();
     w->deleteThis = true;
-    QMouseEvent me(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    me = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(w, &me);
     QVERIFY(w == 0);
     delete w;
@@ -8957,7 +8958,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          int numEnterEvents, numMouseMoveEvents;
      };
 
-    QCursor::setPos(QPoint(0,0));
+     QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
      parent.move(200, 200);
@@ -8965,8 +8966,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      SELChild child(&parent);
      child.resize(200, 200);
      parent.show();
-     QVERIFY(QTest::qWaitForWindowExposed(&parent));
-     QTest::qWait(150);
+     QVERIFY(QTest::qWaitForWindowActive(&parent));
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
      // Make sure the cursor has entered the child.
@@ -9714,8 +9714,9 @@ void tst_QWidget::grabMouse()
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QStringList expectedLog;
-    grabber->grabMouse();
     QPoint mousePos = QPoint(w.width() / 2, 10);
+    QTest::mouseMove(w.windowHandle(), mousePos);
+    grabber->grabMouse();
     const int step = w.height() / 5;
     for ( ; mousePos.y() < w.height() ; mousePos.ry() += step) {
         QTest::mouseClick(w.windowHandle(), Qt::LeftButton, 0, mousePos);
@@ -10333,6 +10334,9 @@ public:
 void tst_QWidget::keyboardModifiers()
 {
     KeyboardWidget w;
+    w.resize(300, 300);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     QTest::mouseClick(&w, Qt::LeftButton, Qt::ControlModifier);
     QCOMPARE(w.m_eventCounter, 1);
     QCOMPARE(int(w.m_modifiers), int(Qt::ControlModifier));
