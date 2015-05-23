@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
 QWidget *qt_button_down = 0; // widget got last button-down
-static QPointer<QWidget> qt_tablet_target = 0;
 
 // popup control
 QWidget *qt_popup_down = 0; // popup that contains the pressed widget
@@ -873,6 +872,7 @@ bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long
 #ifndef QT_NO_TABLETEVENT
 void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
 {
+    static QPointer<QWidget> qt_tablet_target = 0;
     if (event->type() == QEvent::TabletPress) {
         QWidget *widget = m_widget->childAt(event->pos());
         if (!widget)
