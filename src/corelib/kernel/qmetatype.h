@@ -1357,12 +1357,16 @@ namespace QtPrivate
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
     };
 
+    template<typename T, typename Enable = void>
+    struct IsGadgetHelper { enum { Value = false }; };
+
     template<typename T>
-    struct IsGadgetHelper
+    struct IsGadgetHelper<T, typename T::QtGadgetHelper>
     {
-        template<typename X> static typename X::QtGadgetHelper *checkType(X*);
-        static char checkType(void*);
-        enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(void*)  };
+        template <typename X>
+        static char checkType(void (X::*)());
+        static void *checkType(void (T::*)());
+        enum { Value =  sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *) };
     };
 
 
