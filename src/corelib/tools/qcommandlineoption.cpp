@@ -41,11 +41,13 @@ QT_BEGIN_NAMESPACE
 class QCommandLineOptionPrivate : public QSharedData
 {
 public:
+    Q_NEVER_INLINE
     explicit QCommandLineOptionPrivate(const QString &name)
         : names(removeInvalidNames(QStringList(name))),
           hidden(false)
     { }
 
+    Q_NEVER_INLINE
     explicit QCommandLineOptionPrivate(const QStringList &names)
         : names(removeInvalidNames(names)),
           hidden(false)
