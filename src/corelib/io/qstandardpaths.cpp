@@ -494,13 +494,8 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     QStringList searchPaths = paths;
     if (paths.isEmpty()) {
         QByteArray pEnv = qgetenv("PATH");
-#if defined(Q_OS_WIN)
-        const QLatin1Char pathSep(';');
-#else
-        const QLatin1Char pathSep(':');
-#endif
         // Remove trailing slashes, which occur on Windows.
-        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
+        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());
         foreach (const QString &rawPath, rawPaths) {
             QString cleanPath = QDir::cleanPath(rawPath);
