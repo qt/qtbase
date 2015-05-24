@@ -334,8 +334,10 @@ void tst_QMenu::keyboardNavigation_data()
     QTest::newRow("data9") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << false<< true;
     QTest::newRow("data10") << Qt::Key(Qt::Key_Return) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << true << false;
 
-    // Test shortcuts.
-    QTest::newRow("shortcut0") << Qt::Key(Qt::Key_V) << Qt::KeyboardModifiers(Qt::AltModifier) << 5 << 0 << true << true << false;
+    if (qApp->platformName().toLower() != QStringLiteral("xcb")) {
+        // Test shortcuts.
+        QTest::newRow("shortcut0") << Qt::Key(Qt::Key_V) << Qt::KeyboardModifiers(Qt::AltModifier) << 5 << 0 << true << true << false;
+    }
 }
 
 void tst_QMenu::keyboardNavigation()

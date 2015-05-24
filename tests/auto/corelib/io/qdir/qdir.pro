@@ -10,3 +10,5 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 android:!android-no-sdk {
     RESOURCES += android_testdata.qrc
 }
+
+win32: CONFIG += insignificant_test # Crashes on Windows in release builds

@@ -1,0 +1,9 @@
+[cacheControl]
+windows
+osx
+[expires]
+osx
+[etag]
+osx
+[lastModified]
+osx
