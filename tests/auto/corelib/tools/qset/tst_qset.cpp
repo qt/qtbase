@@ -73,6 +73,7 @@ private slots:
     void makeSureTheComfortFunctionsCompile();
     void initializerList();
     void qhash();
+    void intersects();
 };
 
 struct IdentityTracker {
@@ -1028,6 +1029,32 @@ void tst_QSet::qhash()
 #endif
         QCOMPARE(intSetSet.size(), 3);
     }
+}
+
+void tst_QSet::intersects()
+{
+    QSet<int> s1;
+    QSet<int> s2;
+
+    QVERIFY(!s1.intersects(s1));
+    QVERIFY(!s1.intersects(s2));
+
+    s1 << 100;
+    QVERIFY(s1.intersects(s1));
+    QVERIFY(!s1.intersects(s2));
+
+    s2 << 200;
+    QVERIFY(!s1.intersects(s2));
+
+    s1 << 200;
+    QVERIFY(s1.intersects(s2));
+
+    const QtQHashSeedSaver seedSaver(0x10101010);
+    QSet<int> s3;
+    s3 << 500;
+    QVERIFY(!s1.intersects(s3));
+    s3 << 200;
+    QVERIFY(s1.intersects(s3));
 }
 
 QTEST_APPLESS_MAIN(tst_QSet)

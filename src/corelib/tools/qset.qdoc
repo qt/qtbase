@@ -490,7 +490,17 @@
     Removes all items from this set that are not contained in the
     \a other set. A reference to this set is returned.
 
-    \sa operator&=(), unite(), subtract()
+    \sa intersects(), operator&=(), unite(), subtract()
+*/
+
+/*!
+    \fn bool QSet::intersects(const QSet<T> &other) const
+    \since 5.6
+
+    Returns \c true if this set has at least one item in common with
+    \a other.
+
+    \sa contains(), intersect()
 */
 
 /*!

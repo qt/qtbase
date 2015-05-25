@@ -353,6 +353,7 @@ public:
     class const_iterator
     {
         friend class iterator;
+        friend class QSet<Key>;
         QHashData::Node *i;
 
     public:
