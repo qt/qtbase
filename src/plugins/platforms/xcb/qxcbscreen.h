@@ -116,8 +116,6 @@ public:
     xcb_randr_crtc_t crtc() const { return m_crtc; }
     xcb_randr_mode_t mode() const { return m_mode; }
 
-    xcb_window_t clientLeader() const { return m_clientLeader; }
-
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_windowManagerName; }
     bool syncRequestSupported() const { return m_syncRequestSupported; }
@@ -173,7 +171,6 @@ private:
     Qt::ScreenOrientation m_orientation;
     QString m_windowManagerName;
     bool m_syncRequestSupported;
-    xcb_window_t m_clientLeader;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
     QXcbCursor *m_cursor;

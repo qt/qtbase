@@ -403,6 +403,7 @@ public:
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
     xcb_window_t rootWindow();
+    xcb_window_t clientLeader();
 
     bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
     xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
@@ -640,6 +641,7 @@ private:
 
     QXcbWindow *m_focusWindow;
 
+    xcb_window_t m_clientLeader;
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker;
     QXcbGlIntegration *m_glIntegration;

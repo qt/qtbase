@@ -454,6 +454,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
+    , m_clientLeader(0)
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
     , m_xiGrab(false)
@@ -1334,6 +1335,58 @@ xcb_window_t QXcbConnection::rootWindow()
 {
     QXcbScreen *s = primaryScreen();
     return s ? s->root() : 0;
+}
+
+xcb_window_t QXcbConnection::clientLeader()
+{
+    if (m_clientLeader == 0) {
+        m_clientLeader = xcb_generate_id(xcb_connection());
+        QXcbScreen *screen = primaryScreen();
+        Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                     XCB_COPY_FROM_PARENT,
+                                     m_clientLeader,
+                                     screen->root(),
+                                     0, 0, 1, 1,
+                                     0,
+                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                     screen->screen()->root_visual,
+                                     0, 0));
+#ifndef QT_NO_DEBUG
+        QByteArray ba("Qt client leader window");
+        Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                       XCB_PROP_MODE_REPLACE,
+                                       m_clientLeader,
+                                       atom(QXcbAtom::_NET_WM_NAME),
+                                       atom(QXcbAtom::UTF8_STRING),
+                                       8,
+                                       ba.length(),
+                                       ba.constData()));
+#endif
+        Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                       XCB_PROP_MODE_REPLACE,
+                                       m_clientLeader,
+                                       atom(QXcbAtom::WM_CLIENT_LEADER),
+                                       XCB_ATOM_WINDOW,
+                                       32,
+                                       1,
+                                       &m_clientLeader));
+
+#if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
+        // If we are session managed, inform the window manager about it
+        QByteArray session = qGuiApp->sessionId().toLatin1();
+        if (!session.isEmpty()) {
+            Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                           XCB_PROP_MODE_REPLACE,
+                                           m_clientLeader,
+                                           atom(QXcbAtom::SM_CLIENT_ID),
+                                           XCB_ATOM_STRING,
+                                           8,
+                                           session.length(),
+                                           session.constData()));
+        }
+#endif
+    }
+    return m_clientLeader;
 }
 
 #ifdef XCB_USE_XLIB

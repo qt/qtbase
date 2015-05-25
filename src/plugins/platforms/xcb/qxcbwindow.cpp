@@ -622,7 +622,7 @@ void QXcbWindow::create()
 
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
-    xcb_window_t leader = platformScreen->clientLeader();
+    xcb_window_t leader = connection()->clientLeader();
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
                                    1, &leader));
@@ -874,7 +874,7 @@ void QXcbWindow::show()
             // Default to client leader if there is no transient parent, else modal dialogs can
             // be hidden by their parents.
             if (!transientXcbParent)
-                transientXcbParent = xcbScreen()->clientLeader();
+                transientXcbParent = connection()->clientLeader();
             if (transientXcbParent) { // ICCCM 4.1.2.6
                 Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
