@@ -1120,38 +1120,6 @@
     Specifies a list of all directories to look in to resolve dependencies. This
     variable is used when crawling through \c included files.
 
-    \target DEPLOYMENT
-    \section1 DEPLOYMENT
-
-    \note This variable is used only on the Windows CE platform.
-
-    Specifies which additional files will be deployed. Deployment means the
-    transfer of files from the development system to the target device or
-    emulator.
-
-    Files can be deployed by either creating a Visual Studio project or using
-    the \l {Using Qt Test remotely on Windows CE}{cetest} executable.
-
-    For example, the following definition uploads all PNG images in \c path to
-    the directory where the build target is deployed:
-
-    \snippet code/doc_src_qmake-manual.pro 28
-
-    The default deployment target path for Windows CE is
-    \c{%CSIDL_PROGRAM_FILES%\target}, which usually gets expanded to
-    \c{\Program Files\target}.
-
-    It is also possible to specify multiple \c sources to be deployed on
-    target \c paths. In addition, different variables can be used for
-    deployment to different directories.
-
-    For example:
-
-    \snippet code/doc_src_qmake-manual.pro 29
-
-    \note In Windows CE all linked Qt libraries will be deployed to the path
-    specified by \c{myFiles.path}.
-
     \target DEPLOYMENT_PLUGIN
     \section1 DEPLOYMENT_PLUGIN
 
@@ -1275,6 +1243,13 @@
     \snippet code/doc_src_qmake-manual.pro 36
 
     For more information, see \l{Installing Files}.
+
+    This variable is also used to specify which additional files will be
+    deployed to embedded devices.
+
+    For Windows CE, the default deployment target path is
+    \c{%CSIDL_PROGRAM_FILES%\target}, which usually gets expanded to
+    \c{\Program Files\target}.
 
     \target LEXIMPLS
     \section1 LEXIMPLS

@@ -1374,8 +1374,7 @@ void VcprojGenerator::initDeploymentTool()
         }
     }
 
-    // foreach item in DEPLOYMENT
-    foreach (const ProString &item, project->values("DEPLOYMENT")) {
+    foreach (const ProString &item, project->values("INSTALLS")) {
         // get item.path
         QString devicePath = project->first(ProKey(item + ".path")).toQString();
         if (!conf.WinRT) {
