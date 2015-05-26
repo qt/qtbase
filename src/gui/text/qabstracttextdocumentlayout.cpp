@@ -40,6 +40,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QAbstractTextDocumentLayoutPrivate::~QAbstractTextDocumentLayoutPrivate()
+{
+}
+
 /*!
     \class QAbstractTextDocumentLayout
     \reentrant
