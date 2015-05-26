@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 QFramePrivate::QFramePrivate()
-    : frect(QRect(0, 0, 0, 0)),
+    : frect(0, 0, 0, 0),
       frameStyle(QFrame::NoFrame | QFrame::Plain),
       lineWidth(1),
       midLineWidth(0),
