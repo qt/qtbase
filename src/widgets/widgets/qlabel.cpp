@@ -53,6 +53,49 @@
 
 QT_BEGIN_NAMESPACE
 
+QLabelPrivate::QLabelPrivate()
+    : QFramePrivate(),
+      sh(),
+      msh(),
+      valid_hints(false),
+      sizePolicy(),
+      margin(0),
+      text(),
+      pixmap(Q_NULLPTR),
+      scaledpixmap(Q_NULLPTR),
+      cachedimage(Q_NULLPTR),
+#ifndef QT_NO_PICTURE
+      picture(Q_NULLPTR),
+#endif
+#ifndef QT_NO_MOVIE
+      movie(),
+#endif
+#ifndef QT_NO_SHORTCUT
+      buddy(),
+      shortcutId(0),
+#endif
+      align(Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs),
+      indent(-1),
+      scaledcontents(false),
+      textLayoutDirty(false),
+      textDirty(false),
+      isRichText(false),
+      isTextLabel(false),
+      hasShortcut(/*???*/),
+      textformat(Qt::AutoText),
+      control(Q_NULLPTR),
+      shortcutCursor(),
+      textInteractionFlags(Qt::LinksAccessibleByMouse),
+      openExternalLinks(false)
+#ifndef QT_NO_CURSOR
+      ,
+      validCursor(false),
+      onAnchor(false),
+      cursor()
+#endif
+{
+}
+
 QLabelPrivate::~QLabelPrivate()
 {
 }
@@ -206,41 +249,8 @@ void QLabelPrivate::init()
 {
     Q_Q(QLabel);
 
-    valid_hints = false;
-    margin = 0;
-#ifndef QT_NO_MOVIE
-    movie = 0;
-#endif
-#ifndef QT_NO_SHORTCUT
-    shortcutId = 0;
-#endif
-    pixmap = 0;
-    scaledpixmap = 0;
-    cachedimage = 0;
-#ifndef QT_NO_PICTURE
-    picture = 0;
-#endif
-    align = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs;
-    indent = -1;
-    scaledcontents = false;
-    textLayoutDirty = false;
-    textDirty = false;
-    textformat = Qt::AutoText;
-    control = 0;
-    textInteractionFlags = Qt::LinksAccessibleByMouse;
-    isRichText = false;
-    isTextLabel = false;
-
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred,
                                  QSizePolicy::Label));
-
-#ifndef QT_NO_CURSOR
-    validCursor = false;
-    onAnchor = false;
-#endif
-
-    openExternalLinks = false;
-
     setLayoutItemMargins(QStyle::SE_LabelLayoutItem);
 }
 

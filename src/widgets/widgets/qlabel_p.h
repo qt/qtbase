@@ -64,7 +64,7 @@ class QLabelPrivate : public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QLabel)
 public:
-    QLabelPrivate() {}
+    QLabelPrivate();
     ~QLabelPrivate();
 
     void init();
