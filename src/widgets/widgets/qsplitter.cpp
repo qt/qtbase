@@ -58,6 +58,10 @@ QT_BEGIN_NAMESPACE
 
 //#define QSPLITTER_DEBUG
 
+QSplitterPrivate::~QSplitterPrivate()
+{
+}
+
 /*!
     \class QSplitterHandle
     \brief The QSplitterHandle class provides handle functionality for the splitter.

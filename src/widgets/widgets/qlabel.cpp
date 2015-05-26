@@ -53,6 +53,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QLabelPrivate::~QLabelPrivate()
+{
+}
+
 /*!
     \class QLabel
     \brief The QLabel widget provides a text or image display.

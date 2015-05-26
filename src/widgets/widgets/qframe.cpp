@@ -55,6 +55,10 @@ QFramePrivate::QFramePrivate()
 {
 }
 
+QFramePrivate::~QFramePrivate()
+{
+}
+
 inline void QFramePrivate::init()
 {
     setLayoutItemMargins(QStyle::SE_FrameLayoutItem);
