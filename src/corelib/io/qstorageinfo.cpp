@@ -186,6 +186,8 @@ QString QStorageInfo::rootPath() const
     This size can be less than or equal to the free size returned by
     bytesFree() function.
 
+    Returns -1 if QStorageInfo object is not valid.
+
     \sa bytesTotal(), bytesFree()
 */
 qint64 QStorageInfo::bytesAvailable() const
@@ -198,6 +200,8 @@ qint64 QStorageInfo::bytesAvailable() const
     quotas on the filesystem, this value can be larger than the value
     returned by bytesAvailable().
 
+    Returns -1 if QStorageInfo object is not valid.
+
     \sa bytesTotal(), bytesAvailable()
 */
 qint64 QStorageInfo::bytesFree() const
@@ -207,6 +211,8 @@ qint64 QStorageInfo::bytesFree() const
 
 /*!
     Returns the total volume size in bytes.
+
+    Returns -1 if QStorageInfo object is not valid.
 
     \sa bytesFree(), bytesAvailable()
 */
