@@ -107,6 +107,11 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 
+QException::~QException()
+{
+    // must stay empty until ### Qt 6
+}
+
 void QException::raise() const
 {
     QException e = *this;
@@ -116,6 +121,11 @@ void QException::raise() const
 QException *QException::clone() const
 {
     return new QException(*this);
+}
+
+QUnhandledException::~QUnhandledException()
+{
+    // must stay empty until ### Qt 6
 }
 
 void QUnhandledException::raise() const
