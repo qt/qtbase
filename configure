@@ -2986,7 +2986,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo
         echo "Error: This is the Open Source version of Qt."
         echo "If you want to use Enterprise features of Qt,"
-        echo "information use the contact form at http://www.qt.io/contact-us"
+        echo "use the contact form at http://www.qt.io/contact-us"
         echo "to purchase a license."
         echo
         exit 1
