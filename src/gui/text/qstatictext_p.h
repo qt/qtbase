@@ -52,7 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QStaticTextUserData
+// ### Qt 6: Unexport again, if QOpenGLStaticTextUserData (the one from QtOpenGL) is gone by then
+class Q_GUI_EXPORT QStaticTextUserData
 {
 public:
     enum Type {
@@ -61,7 +62,7 @@ public:
     };
 
     QStaticTextUserData(Type t) : ref(0), type(t) {}
-    virtual ~QStaticTextUserData() {}
+    virtual ~QStaticTextUserData();
 
     QAtomicInt ref;
     Type type;

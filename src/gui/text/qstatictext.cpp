@@ -39,6 +39,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QStaticTextUserData::~QStaticTextUserData()
+{
+}
+
 /*!
     \class QStaticText
     \brief The QStaticText class enables optimized drawing of text when the text and its layout
