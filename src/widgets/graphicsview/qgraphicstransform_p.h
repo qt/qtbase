@@ -51,12 +51,14 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
 
-class QGraphicsTransformPrivate : public QObjectPrivate {
+// ### Qt 6: unexport again, if QtQuick1's QDeclarativeTranslatePrivate is gone by then
+class Q_WIDGETS_EXPORT QGraphicsTransformPrivate : public QObjectPrivate {
 public:
     Q_DECLARE_PUBLIC(QGraphicsTransform)
 
     QGraphicsTransformPrivate()
         : QObjectPrivate(), item(0) {}
+    ~QGraphicsTransformPrivate();
 
     QGraphicsItem *item;
 

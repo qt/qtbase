@@ -89,6 +89,11 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
+
+QGraphicsTransformPrivate::~QGraphicsTransformPrivate()
+{
+}
+
 void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 {
     if (item == i)
