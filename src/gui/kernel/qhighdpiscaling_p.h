@@ -83,6 +83,10 @@ class QPlatformScreen;
 
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
+    static void initHighDPiScaling();
+    static void setGlobalFactor(qreal factor);
+    static void setScreenFactor(QScreen *window, qreal factor);
+
     static bool isActive() { return m_active; }
     static qreal factor(const QWindow *window);
     static qreal factor(const QScreen *screen);
@@ -91,13 +95,12 @@ public:
     static QPoint origin(const QPlatformScreen *platformScreen);
     static QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen);
-    static void setFactor(qreal factor);
-    static void setWindowFactor(QWindow *window, qreal factor);
 private:
+    static qreal screenSubfactor(const QPlatformScreen *screen);
+
     static qreal m_factor;
-    static bool m_autoFactor;
     static bool m_active;
-    static bool m_perWindowActive;
+    static bool m_perScreenActive;
 };
 
 // Coordinate system conversion functions:
@@ -156,7 +159,6 @@ inline QRect toNative(const QRect &rect, qreal scaleFactor, const QPoint &origin
     return QRect(toNative(rect.topLeft(), scaleFactor, origin), toNative(rect.size(), scaleFactor));
 
 }
-
 
 inline QRect fromNative(const QRect &rect, const QScreen *screen, const QPoint &screenOrigin)
 {

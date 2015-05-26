@@ -56,69 +56,64 @@
 #include <QDebug>
 #include <private/qhighdpiscaling_p.h>
 
-class ScaleFactorSetter : public QWidget
+class ScreenScaleFactorSetter : public QWidget
 {
 Q_OBJECT
 public:
-    ScaleFactorSetter();
-    QLabel *label;
-    QSlider *slider;
-    QLabel *scaleFactorLabel;
-    QHBoxLayout *layout;
-private Q_SLOTS:
-    void scaleFactorChanged(int scaleFactor);
+    ScreenScaleFactorSetter();
 };
 
-// Shows a slider which sets the scale factor for all windows.
-ScaleFactorSetter::ScaleFactorSetter()
+ScreenScaleFactorSetter::ScreenScaleFactorSetter()
 {
-    label = new QLabel("Scale Factor");
-    slider = new QSlider();
-    slider->setOrientation(Qt::Horizontal);
-    slider->setMinimum(1);
-    slider->setMaximum(40);
-    slider->setValue(10);
-    slider->setTracking(true);
-    slider->setTickInterval(5);
-    slider->setTickPosition(QSlider::TicksBelow);
-    scaleFactorLabel = new QLabel("1.0");
+    setWindowTitle("screen scale factors");
+    setObjectName("controller"); // make WindowScaleFactorSetter skip this window
 
-    layout = new QHBoxLayout();
-    layout->addWidget(label);
-    layout->addWidget(slider);
-    layout->addWidget(scaleFactorLabel);
+    QVBoxLayout *layout = new QVBoxLayout;
     setLayout(layout);
 
-    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(scaleFactorChanged(int)));
-}
+    // set up one scale control line per screen
+    QList<QScreen *> screens = QGuiApplication::screens();
+    foreach (QScreen *screen, screens) {
+        // create scale control line
+        QHBoxLayout *row = new QHBoxLayout;
+        QSize screenSize = screen->geometry().size();
+        QString screenId = screen->name() + " " + QString::number(screenSize.width())
+                                          + " " + QString::number(screenSize.height());
+        QLabel *label = new QLabel(screenId);
+        QSlider *slider = new QSlider();
+        slider->setOrientation(Qt::Horizontal);
+        slider->setMinimum(1);
+        slider->setMaximum(40);
+        slider->setValue(10);
+        slider->setTracking(true);
+        slider->setTickInterval(5);
+        slider->setTickPosition(QSlider::TicksBelow);
+        QLabel *scaleFactorLabel = new QLabel("1.0");
 
-void ScaleFactorSetter::scaleFactorChanged(int scaleFactor)
-{
-    // slider value is scale factor times ten;
-    qreal scalefactorF = qreal(scaleFactor) / 10.0;
+        // set up layouts
+        row->addWidget(label);
+        row->addWidget(slider);
+        row->addWidget(scaleFactorLabel);
+        layout->addLayout(row);
 
-    // update label, add ".0" if needed.
-    QString number = QString::number(scalefactorF);
-    if (!number.contains("."))
-        number.append(".0");
-    scaleFactorLabel->setText(number);
+        // handle slider value change
+        connect(slider, &QSlider::valueChanged, [scaleFactorLabel, screen](int scaleFactor){
+            // slider value is scale factor times ten;
+            qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
-    // set scale factor on all top-level windows
-    QWindowList windows = QGuiApplication::topLevelWindows();
-    foreach (QWindow *window, windows) {
+            // update label, add ".0" if needed.
+            QString number = QString::number(scalefactorF);
+            if (!number.contains("."))
+                number.append(".0");
+            scaleFactorLabel->setText(number);
 
-        // skip this controller window
-        if (window == this->windowHandle())
-            continue;
+            // set scale factor for screen
+            qreal oldFactor = QHighDpiScaling::factor(screen);
+            QHighDpiScaling::setScreenFactor(screen, scalefactorF);
+            qreal newFactor = QHighDpiScaling::factor(screen);
 
-        qDebug() << "set scale factor on" << window;
-        qreal oldFactor = QHighDpiScaling::factor(window);
-        QHighDpiScaling::setWindowFactor(window, scalefactorF);
-        qreal newFactor = QHighDpiScaling::factor(window);
-        qDebug() << "factor was / is" << oldFactor << newFactor;
-
-        // resize window to keep showing the same amount of content.
-        window->resize(window->size() / oldFactor * newFactor);
+            qDebug() << "factor was / is" << oldFactor << newFactor;
+        });
     }
 }
 
@@ -272,7 +267,7 @@ public:
         int dy = 50;
         int maxX = 500;
 
-        for (int iconIndex = QStyle::SP_TitleBarMenuButton; iconIndex < QStyle::SP_MediaVolumeMuted; ++iconIndex) {
+        for (uint iconIndex = QStyle::SP_TitleBarMenuButton; iconIndex < QStyle::SP_MediaVolumeMuted; ++iconIndex) {
             QIcon icon = qApp->style()->standardIcon(QStyle::StandardPixmap(iconIndex));
             QPainter p(this);
             p.drawPixmap(x, y, icon.pixmap(dx - 5, dy - 5));
@@ -607,11 +602,15 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("High DPI tester");
+    parser.setApplicationDescription("High DPI tester. Pass one or more of the options to\n"
+                                     "test various high-dpi aspects. \n"
+                                     "--sceen-scale-factor is a special option and opens a configuration"
+                                     " window for setting window and screen scale factors.");
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption scaleFactorOption("window-scale-factor", "Show Scale Factor Slider");
-    parser.addOption(scaleFactorOption);
+    QCommandLineOption screenScaleFactorOption("screen-scale-factor", "Show screen scale factor setter.");
+    parser.addOption(screenScaleFactorOption);
+
     QCommandLineOption pixmapPainterOption("pixmap", "Test pixmap painter");
     parser.addOption(pixmapPainterOption);
     QCommandLineOption labelOption("label", "Test Labels");
@@ -633,13 +632,13 @@ int main(int argc, char **argv)
     QCommandLineOption linePainterOption("linepainter", "Test line painting");
     parser.addOption(linePainterOption);
 
-
     parser.process(app);
 
-    QScopedPointer<ScaleFactorSetter> scaleFactorSetter;
-    if (parser.isSet(scaleFactorOption)) {
-        scaleFactorSetter.reset(new ScaleFactorSetter);
-        scaleFactorSetter->show();
+    // special screen scale factor controller
+    QScopedPointer<ScreenScaleFactorSetter> screeScaleFactorSetter;
+    if (parser.isSet(screenScaleFactorOption)) {
+        screeScaleFactorSetter.reset(new ScreenScaleFactorSetter);
+        screeScaleFactorSetter->show();
     }
 
     QScopedPointer<PixmapPainter> pixmapPainter;

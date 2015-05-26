@@ -1086,17 +1086,13 @@ qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
 
-    // Get the platform scale factor. If there is no platform window
-    // use the app global devicePixelRatio, which is the the highest
-    // devicePixelRatio found on the system screens, and will be
-    // correct for single-display systems (a very common case).
-    qreal ratio = d->platformWindow ? d->platformWindow->devicePixelRatio()
-                                    : qApp->devicePixelRatio();
+    // If there is no platform window use the app global devicePixelRatio,
+    // which is the the highest devicePixelRatio found on the system
+    // screens, and will be correct for single-display systems (a very common case).
+    if (!d->platformWindow)
+        return qApp->devicePixelRatio();
 
-    //
-    ratio *= QHighDpiScaling::factor(this);
-
-    return ratio;
+    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
 /*!

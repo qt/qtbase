@@ -43,6 +43,7 @@
 #include "qwindow_p.h" // for QWINDOWSIZE_MAX
 #include "qguiapplication.h"
 #include "qscreen.h"
+#include "qplatformintegration.h"
 #include "private/qscreen_p.h"
 
 #include <QtCore/qdebug.h>
@@ -68,7 +69,7 @@ static inline qreal initialScaleFactor()
 
 /*!
     \class QHighDpiScaling
-    \since 5.4
+    \since 5.6
     \internal
     \preliminary
     \ingroup qpa
@@ -76,12 +77,26 @@ static inline qreal initialScaleFactor()
     \brief Collection of utility functions for UI scaling.
 */
 
-qreal QHighDpiScaling::m_factor = initialScaleFactor();
-bool QHighDpiScaling::m_autoFactor = qgetenv("QT_SCALE_FACTOR").toLower() == "auto";
-bool QHighDpiScaling::m_active = m_autoFactor || !qFuzzyCompare(QHighDpiScaling::m_factor, qreal(1));
-bool QHighDpiScaling::m_perWindowActive = false;
 
-void QHighDpiScaling::setFactor(qreal factor)
+qreal QHighDpiScaling::m_factor;
+
+bool QHighDpiScaling::m_active; //"overall active" - is there any scale factor set.
+bool QHighDpiScaling::m_perScreenActive;
+
+void QHighDpiScaling::initHighDPiScaling()
+{
+    QHighDpiScaling::m_factor = initialScaleFactor();
+    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR");
+
+    // m_active below is "overall active" - is there any scale factor set.
+    QHighDpiScaling::m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
+    QHighDpiScaling::m_perScreenActive = usePlatformPluginPixelDensity;
+}
+
+/*
+    Sets the global scale factor which is applied to all windows.
+*/
+void QHighDpiScaling::setGlobalFactor(qreal factor)
 {
     if (qFuzzyCompare(factor, QHighDpiScaling::m_factor))
         return;
@@ -97,13 +112,15 @@ void QHighDpiScaling::setFactor(qreal factor)
 
 static const char *scaleFactorProperty = "_q_scaleFactor";
 
-void QHighDpiScaling::setWindowFactor(QWindow *window, qreal factor)
+/*
+    Sets a per-screen scale factor.
+*/
+void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
 {
     m_active = true;
-    m_perWindowActive = true;
-    window->setProperty(scaleFactorProperty, QVariant(factor));
+    m_perScreenActive = true;
+    screen->setProperty(scaleFactorProperty, QVariant(factor));
 }
-
 
 /*
 
@@ -141,31 +158,46 @@ QPoint QHighDpiScaling::mapPositionFromNative(const QPoint &pos, const QPlatform
     return (pos - topLeft) / scaleFactor + topLeft;
 }
 
+qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
+{
+    qreal factor = qreal(1.0);
+    if (m_perScreenActive && screen) {
+        factor *= screen->pixelDensity();
+        QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
+        if (screenFactor.isValid())
+            factor *= screenFactor.toReal();
+    }
+    return factor;
+}
 
 qreal QHighDpiScaling::factor(const QScreen *screen)
 {
-    if (m_autoFactor && screen && screen->handle())
-        return screen->handle()->pixelDensity();
-    return m_factor;
+    // Fast path for when scaling in Qt is not used at all.
+    if (!m_active)
+        return qreal(1.0);
+
+    // The effective factor for a given screen is the product of the
+    // screen and global sub-factors
+    qreal factor = m_factor;
+    if (screen)
+        factor *= screenSubfactor(screen->handle());
+    return factor;
 }
 
 qreal QHighDpiScaling::factor(const QPlatformScreen *platformScreen)
 {
-    if (m_autoFactor && platformScreen)
-        return platformScreen->pixelDensity();
-    return m_factor;
+    if (!m_active)
+        return qreal(1.0);
+
+    return m_factor * screenSubfactor(platformScreen);
 }
 
 qreal QHighDpiScaling::factor(const QWindow *window)
 {
-    qreal f = m_factor;
-    if (m_autoFactor && window && window->screen() && window->screen()->handle())
-        f = window->screen()->handle()->pixelDensity();
-    if (!m_perWindowActive || window == 0)
-        return f;
+    if (!m_active || !window)
+        return qreal(1.0);
 
-    QVariant windowFactor = window->property(scaleFactorProperty);
-    return f * (windowFactor.isValid() ? windowFactor.toReal() : 1);
+    return factor(window->screen());
 }
 
 QPoint QHighDpiScaling::origin(const QScreen *screen)

@@ -574,7 +574,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_density = density;
 
     if (m_highDpiScalingEnabled)
-        QHighDpiScaling::setFactor(density);
+        QHighDpiScaling::setGlobalFactor(density);
 
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,

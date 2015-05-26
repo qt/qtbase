@@ -1118,6 +1118,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // this flag.
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
+
+    QHighDpiScaling::initHighDPiScaling();
+
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
