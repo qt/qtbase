@@ -2314,6 +2314,14 @@
     .rc file. This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable
     is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
 
+    \target RC_DEFINES
+    \section1 RC_DEFINES
+
+    Windows only. qmake adds the values of this variable as RC preprocessor macros
+    (/d option). If this variable is not set, the \l{DEFINES} variable is used instead.
+
+    \snippet code/doc_src_qmake-manual.pro 186
+
     \target RC_ICONS
     \section1 RC_ICONS
 

@@ -752,10 +752,6 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
     if(!project->values("RC_FILE").isEmpty()) {
         const ProString res_file = project->first("RES_FILE");
         const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
-        // The resource tool needs to have the same defines passed in as the compiler, since you may
-        // use these defines in the .rc file itself. Also, we need to add the _DEBUG define manually
-        // since the compiler defines this symbol by itself, and we use it in the automatically
-        // created rc file when VERSION is define the .pro file.
 
         const ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
         QString incPathStr;
@@ -767,9 +763,20 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
             incPathStr += escapeFilePath(path);
         }
 
+        // The resource tool may use defines. This might be the same defines passed in as the
+        // compiler, since you may use these defines in the .rc file itself.
+        // As the escape syntax for the command line defines for RC is different from that for CL,
+        // we might have to set specific defines for RC.
+        ProString defines = varGlue("RC_DEFINES", " -D", " -D", "");
+        if (defines.isEmpty())
+            defines = ProString(" $(DEFINES)");
+
+        // Also, we need to add the _DEBUG define manually since the compiler defines this symbol
+        // by itself, and we use it in the automatically created rc file when VERSION is defined
+        // in the .pro file.
         t << escapeDependencyPath(res_file) << ": " << escapeDependencyPath(rc_file) << "\n\t"
           << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
-          << " $(DEFINES)" << incPathStr << " -fo " << escapeFilePath(res_file)
+          << defines << incPathStr << " -fo " << escapeFilePath(res_file)
           << ' ' << escapeFilePath(rc_file);
         t << endl << endl;
     }

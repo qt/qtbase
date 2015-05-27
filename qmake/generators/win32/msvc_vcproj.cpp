@@ -1213,7 +1213,12 @@ void VcprojGenerator::initLinkerTool()
 void VcprojGenerator::initResourceTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
-    conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
+
+    ProStringList rcDefines = project->values("RC_DEFINES");
+    if (rcDefines.size() > 0)
+        conf.resource.PreprocessorDefinitions = rcDefines.toQStringList();
+    else
+        conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
 
     foreach (const ProString &path, project->values("RC_INCLUDEPATH")) {
         QString fixedPath = fileFixify(path.toQString());

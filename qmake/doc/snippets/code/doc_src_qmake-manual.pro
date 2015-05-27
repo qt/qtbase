@@ -987,3 +987,8 @@ QMAKE_SONAME_PREFIX = /Library/Frameworks
 #! [185]
 VERSION_PE_HEADER = 1.2
 #! [185]
+
+#! [186]
+RC_DEFINES += USE_MY_STUFF
+#! [186]
+

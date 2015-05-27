@@ -405,9 +405,14 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     }
 
     if (!rc_file.isEmpty()) {
+
+        ProString defines = varGlue("RC_DEFINES", " -D", " -D", "");
+        if (defines.isEmpty())
+            defines = ProString(" $(DEFINES)");
+
         t << escapeDependencyPath(var("RES_FILE")) << ": " << escapeDependencyPath(rc_file) << "\n\t"
           << var("QMAKE_RC") << " -i " << escapeFilePath(rc_file) << " -o " << fileVar("RES_FILE")
-          << incPathStr << " $(DEFINES)\n\n";
+          << incPathStr << defines << "\n\n";
     }
 }
 
