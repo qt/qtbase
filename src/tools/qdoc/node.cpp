@@ -683,6 +683,24 @@ const Node* Node::root() const
 }
 
 /*!
+  Sets the node's declaration location, its definition
+  location, or both, depending on the suffix of the file
+  name from the file path in location \a t.
+ */
+void Node::setLocation(const Location& t)
+{
+    QString suffix = t.fileSuffix();
+    if (suffix == "h")
+        declLocation_ = t;
+    else if (suffix == "cpp")
+        defLocation_ = t;
+    else {
+        declLocation_ = t;
+        defLocation_ = t;
+    }
+}
+
+/*!
   \class Aggregate
  */
 
@@ -2278,16 +2296,16 @@ bool QmlPropertyNode::isWritable()
                 if (pn)
                     return pn->isWritable();
                 else
-                    location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
-                                          "in C++ class documented as QML type: "
-                                          "(property not found in the C++ class or its base classes)")
-                                       .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
+                    defLocation().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
+                                             "in C++ class documented as QML type: "
+                                             "(property not found in the C++ class or its base classes)")
+                                          .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
             }
             else
-                location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
-                                      "in C++ class documented as QML type: "
-                                      "(C++ class not specified or not found).")
-                                   .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
+                defLocation().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
+                                         "in C++ class documented as QML type: "
+                                         "(C++ class not specified or not found).")
+                                      .arg(logicalModuleName()).arg(qmlTypeName()).arg(name()));
         }
     }
     return true;

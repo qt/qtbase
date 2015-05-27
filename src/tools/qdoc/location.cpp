@@ -202,23 +202,32 @@ void Location::pop()
  */
 
 /*! \fn const QString& Location::filePath() const
-  Returns the current path and file name.
-  Must not be called on an empty Location object.
+  Returns the current path and file name. If the Location is
+  empty, the returned string is null.
 
   \sa lineNo(), columnNo()
  */
 
 /*!
-  Returns the file name part of the file path, ie the
-  current file.  Must not be called on an empty Location
-  object.
+  Returns the file name part of the file path, ie the current
+  file. Returns an empty string if the file path is empty.
  */
 QString Location::fileName() const
 {
     QString fp = filePath();
-    return fp.mid(fp.lastIndexOf('/') + 1);
+    return (fp.isEmpty() ? fp : fp.mid(fp.lastIndexOf('/') + 1));
 }
 
+
+/*!
+  Returns the suffix of the file name. Returns an empty string
+  if the file path is empty.
+ */
+QString Location::fileSuffix() const
+{
+    QString fp = filePath();
+    return (fp.isEmpty() ? fp : fp.mid(fp.lastIndexOf('.') + 1));
+}
 
 /*!
   \brief  Returns \a path which is canonicalized and relative to the config file.

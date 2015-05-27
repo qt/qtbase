@@ -167,7 +167,7 @@ public:
     void setGenus(Genus t) { genus_ = (unsigned char) t; }
 
     void setAccess(Access t) { access_ = (unsigned char) t; }
-    void setLocation(const Location& location) { loc_ = location; }
+    void setLocation(const Location& t);
     void setDoc(const Doc& doc, bool replace = false);
     void setStatus(Status t) {
         if (status_ == (unsigned char) Obsolete && t == Deprecated)
@@ -276,7 +276,9 @@ public:
     Access access() const { return (Access) access_; }
     bool isPrivate() const { return (Access) access_ == Private; }
     QString accessString() const;
-    const Location& location() const { return loc_; }
+    const Location& declLocation() const { return declLocation_; }
+    const Location& defLocation() const { return defLocation_; }
+    const Location& location() const { return (defLocation_.isEmpty() ? declLocation_ : defLocation_); }
     const Doc& doc() const { return doc_; }
     bool hasDoc() const { return !doc_.isEmpty(); }
     Status status() const { return (Status) status_; }
@@ -345,7 +347,8 @@ private:
     Aggregate* parent_;
     Aggregate* relatesTo_;
     QString name_;
-    Location loc_;
+    Location declLocation_;
+    Location defLocation_;
     Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
     QString fileNameBase_;

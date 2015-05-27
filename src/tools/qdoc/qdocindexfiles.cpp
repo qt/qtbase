@@ -954,11 +954,12 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         if (node->isAbstract())
             writer.writeAttribute("abstract", "true");
     }
-    if (!node->location().fileName().isEmpty())
-        writer.writeAttribute("location", node->location().fileName());
-    if (!node->location().filePath().isEmpty()) {
-        writer.writeAttribute("filepath", node->location().filePath());
-        writer.writeAttribute("lineno", QString("%1").arg(node->location().lineNo()));
+    const Location& declLocation = node->declLocation();
+    if (!declLocation.fileName().isEmpty())
+        writer.writeAttribute("location", declLocation.fileName());
+    if (!declLocation.filePath().isEmpty()) {
+        writer.writeAttribute("filepath", declLocation.filePath());
+        writer.writeAttribute("lineno", QString("%1").arg(declLocation.lineNo()));
     }
 
     if (!node->since().isEmpty()) {
