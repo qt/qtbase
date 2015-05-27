@@ -41,6 +41,10 @@ information about a particular change.
   Qt's option "reduce relocations" is active. Note that Clang is known
   to generate incompatible code even with -fPIC if the -flto option is
   active.
+  Applications using qmake or cmake >= 2.8.12 as their build system will
+  adapt automatically. Applications using an older release of cmake need to
+  change their CMakeLists.txt to add Qt5Core_EXECUTABLE_COMPILE_FLAGS to
+  CMAKE_CXX_FLAGS.
 
 ****************************************************************************
 *                               Library                                    *
