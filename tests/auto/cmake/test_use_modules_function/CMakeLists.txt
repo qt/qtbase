@@ -12,5 +12,7 @@ add_executable(three three.cpp)
 
 find_package(Qt5Core)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 qt5_use_modules(two Test)
 qt5_use_modules(three Gui Test)
