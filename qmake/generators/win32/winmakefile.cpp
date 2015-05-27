@@ -100,10 +100,13 @@ ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
     if (lib.startsWith('/')) {
         if (lib.startsWith("/LIBPATH:"))
-            return QStringLiteral("/LIBPATH:") + escapeFilePath(lib.mid(9));
+            return QLatin1String("/LIBPATH:")
+                    + escapeFilePath(Option::fixPathToTargetOS(lib.mid(9).toQString(), false));
+        // This appears to be a user-supplied flag. Assume sufficient quoting.
         return lib;
     }
-    return escapeFilePath(lib);
+    // This must be a fully resolved library path.
+    return escapeFilePath(Option::fixPathToTargetOS(lib.toQString(), false));
 }
 
 bool
