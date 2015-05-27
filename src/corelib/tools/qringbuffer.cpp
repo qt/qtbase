@@ -188,24 +188,6 @@ void QRingBuffer::clear()
     bufferSize = 0;
 }
 
-qint64 QRingBuffer::indexOf(char c) const
-{
-    qint64 index = 0;
-    qint64 j = head;
-    for (int i = 0; i < buffers.size(); ++i) {
-        const char *ptr = buffers[i].constData() + j;
-        j = index + (i == tailBuffer ? tail : buffers[i].size()) - j;
-
-        while (index < j) {
-            if (*ptr++ == c)
-                return index;
-            ++index;
-        }
-        j = 0;
-    }
-    return -1;
-}
-
 qint64 QRingBuffer::indexOf(char c, qint64 maxLength) const
 {
     qint64 index = 0;
