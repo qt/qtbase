@@ -69,13 +69,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 */
 QObject *QGenericPluginFactory::create(const QString& key, const QString &specification)
 {
+#if (!defined(Q_OS_WIN32) || defined(QT_SHARED)) && !defined(QT_NO_LIBRARY)
     const QString driver = key.toLower();
-
-#if !defined(Q_OS_WIN32) || defined(QT_SHARED)
-#ifndef QT_NO_LIBRARY
     if (QObject *object = qLoadPlugin1<QObject, QGenericPlugin>(loader(), driver, specification))
         return object;
-#endif
+#else // (!Q_OS_WIN32 || QT_SHARED) && !QT_NO_LIBRARY
+    Q_UNUSED(key)
+    Q_UNUSED(specification)
 #endif
     return 0;
 }
