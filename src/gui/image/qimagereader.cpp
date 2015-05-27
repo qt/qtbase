@@ -1203,6 +1203,39 @@ bool QImageReader::autoTransform() const
 }
 
 /*!
+    \since 5.6
+
+    This is an image format specific function that forces images with
+    gamma information to be gamma corrected to \a gamma. For image formats
+    that do not support gamma correction, this value is ignored.
+
+    To gamma correct to a standard PC color-space, set gamma to \c 1/2.2.
+
+    \sa gamma()
+*/
+void QImageReader::setGamma(float gamma)
+{
+    if (d->initHandler() && d->handler->supportsOption(QImageIOHandler::Gamma))
+        d->handler->setOption(QImageIOHandler::Gamma, gamma);
+}
+
+/*!
+    \since 5.6
+
+    Returns the gamma level of the decoded image. If setGamma() has been
+    called and gamma correction is supported it will return the gamma set.
+    If gamma level is not supported by the image format, \c 0.0 is returned.
+
+    \sa setGamma()
+*/
+float QImageReader::gamma() const
+{
+    if (d->initHandler() && d->handler->supportsOption(QImageIOHandler::Gamma))
+        return d->handler->option(QImageIOHandler::Gamma).toFloat();
+    return 0.0;
+}
+
+/*!
     Returns \c true if an image can be read for the device (i.e., the
     image format is supported, and the device seems to contain valid
     data); otherwise returns \c false.
