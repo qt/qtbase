@@ -234,7 +234,7 @@ Win32MakefileGenerator::processPrlFiles()
             }
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
             for (int prl = 0; prl < prl_libs.size(); ++prl)
-                l.insert(lit + prl + 1, prl_libs.at(prl));
+                l.insert(++lit, prl_libs.at(prl));
             prl_libs.clear();
         }
 
