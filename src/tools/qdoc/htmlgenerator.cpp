@@ -3551,7 +3551,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             bool handled = false;
             for (int k = 0; k != 18; ++k) {
                 const QString & tag = spanTags[2 * k];
-                if (tag == QStringRef(&src, i, tag.length())) {
+                if (i + tag.length() <= src.length() &&
+                    tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
                     i += tag.length();
                     handled = true;
