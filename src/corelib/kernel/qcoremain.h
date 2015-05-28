@@ -97,7 +97,6 @@ int main(int argc, char **argv) { \
 }
 
 #define Q_CORE_BLOCKING_MAIN(appBlockingFunction) \
-
 int main(int argc, char **argv) { \
     return qCoreMainWithBlockingFunction(argc, argv, appBlockingFunction); \
 }
