@@ -22,6 +22,7 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_NACL
 #include <ppapi/cpp/instance.h>
 
 QT_BEGIN_NAMESPACE
@@ -38,4 +39,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif
 #endif
