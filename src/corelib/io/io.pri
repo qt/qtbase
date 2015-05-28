@@ -139,7 +139,7 @@ win32 {
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp
         !nacl {
-            SOURCE += \
+            SOURCES += \
                 io/forkfd_qt.cpp
             HEADERS += \
                 ../3rdparty/forkfd/forkfd.h
