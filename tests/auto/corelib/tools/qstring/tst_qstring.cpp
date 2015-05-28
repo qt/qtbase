@@ -4843,7 +4843,7 @@ void tst_QString::localeAwareCompare_data()
         It's hard to test English, because it's treated differently
         on different platforms. For example, on Linux, it uses the
         iso14651_t1 template file, which happens to provide good
-        defaults for Swedish. Mac OS X seems to do a pure bytewise
+        defaults for Swedish. OS X seems to do a pure bytewise
         comparison of Latin-1 values, although I'm not sure. So I
         just test digits to make sure that it's not totally broken.
     */

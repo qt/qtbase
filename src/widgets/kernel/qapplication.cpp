@@ -1530,7 +1530,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
     \note Some styles do not use the palette for all drawing, for instance, if
     they make use of native theme engines. This is the case for the Windows XP,
-    Windows Vista, and Mac OS X styles.
+    Windows Vista, and OS X styles.
 
     \sa QWidget::setPalette(), palette(), QStyle::polish()
 */
@@ -3229,7 +3229,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
                 // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
-                // like Mac OS X (probably others too), can optimize their views by not
+                // like OS X (probably others too), can optimize their views by not
                 // dispatching mouse move events. We have attributes to control hover,
                 // and mouse tracking, but as long as we are deciding to implement this
                 // feature without choice of opting-in or out, you ALWAYS have to have
@@ -3934,7 +3934,7 @@ bool QApplication::keypadNavigationEnabled()
 
     Currently this function does nothing on Qt for Embedded Linux.
 
-    On Mac OS X, this works more at the application level and will cause the
+    On OS X, this works more at the application level and will cause the
     application icon to bounce in the dock.
 
     On Windows, this causes the window's taskbar entry to flash for a time. If

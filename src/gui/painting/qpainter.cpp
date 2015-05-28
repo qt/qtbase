@@ -6206,7 +6206,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
         QPen wavePen = pen;
         wavePen.setCapStyle(Qt::SquareCap);
 
-        // This is to protect against making the line too fat, as happens on Mac OS X
+        // This is to protect against making the line too fat, as happens on OS X
         // due to it having a rather thick width for the regular underline.
         const qreal maxPenWidth = .8 * radius;
         if (wavePen.widthF() > maxPenWidth)

@@ -248,7 +248,7 @@ bool QWidgetTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
         return false;
     }
 
-// Except for pageup and pagedown, Mac OS X has very different behavior, we don't do it all, but
+// Except for pageup and pagedown, OS X has very different behavior, we don't do it all, but
 // here's the breakdown:
 // Shift still works as an anchor, but only one of the other keys can be down Ctrl (Command),
 // Alt (Option), or Meta (Control).

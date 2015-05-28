@@ -136,7 +136,7 @@
     setDefaultCaCertificates().
     \endlist
 
-    \note If available, root certificates on Unix (excluding Mac OS X) will be
+    \note If available, root certificates on Unix (excluding OS X) will be
     loaded on demand from the standard certificate directories. If
     you do not want to load root certificates on demand, you need to call either
     the static function setDefaultCaCertificates() before the first SSL handshake

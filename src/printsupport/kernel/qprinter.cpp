@@ -311,7 +311,7 @@ public:
   features, such as orientation and resolution, and to step through
   the pages in a document as it is generated.
 
-  When printing directly to a printer on Windows or Mac OS X, QPrinter uses
+  When printing directly to a printer on Windows or OS X, QPrinter uses
   the built-in printer drivers. On X11, QPrinter uses the
   \l{Common Unix Printing System (CUPS)}
   to send PDF output to the printer. As an alternative,
@@ -909,7 +909,7 @@ QString QPrinter::outputFileName() const
 
     QPrinter uses Qt's cross-platform PDF print engines
     respectively. If you can produce this format natively, for example
-    Mac OS X can generate PDF's from its print engine, set the output format
+    OS X can generate PDF's from its print engine, set the output format
     back to NativeFormat.
 
     \sa outputFileName(), setOutputFormat()
@@ -1371,7 +1371,7 @@ QPrinter::ColorMode QPrinter::colorMode() const
   \obsolete
   Returns the number of copies to be printed. The default value is 1.
 
-  On Windows, Mac OS X and X11 systems that support CUPS, this will always
+  On Windows, OS X and X11 systems that support CUPS, this will always
   return 1 as these operating systems can internally handle the number
   of copies.
 

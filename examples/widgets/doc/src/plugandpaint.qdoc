@@ -162,7 +162,7 @@
     subdirectory of the Plug & Paint example. On Unix, this is just a
     matter of initializing the QDir variable with
     QApplication::applicationDirPath(), the path of the executable
-    file, and to do a \l{QDir::cd()}{cd()}. On Windows and Mac OS X,
+    file, and to do a \l{QDir::cd()}{cd()}. On Windows and OS X,
     this file is usually located in a subdirectory, so we need to
     take this into account.
 

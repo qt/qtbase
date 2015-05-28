@@ -1476,7 +1476,7 @@ void tst_QSettings::remove()
 void tst_QSettings::contains()
 {
     QSettings settings1(QSettings::UserScope, "software.org", "KillerAPP");
-    int initialNumKeys = settings1.allKeys().size(); // 0 on all platforms but Mac OS X.
+    int initialNumKeys = settings1.allKeys().size(); // 0 on all platforms but OS X.
     settings1.setValue("alpha/beta/geometry", -7);
     settings1.setValue("alpha/beta/geometry/x", 1);
     settings1.setValue("alpha/beta/geometry/y", 2);

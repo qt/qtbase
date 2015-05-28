@@ -143,7 +143,7 @@
     platforms, this means the right mouse button was clicked.
 
     \value Keyboard The keyboard caused this event to be sent. On
-    Windows and Mac OS X, this means the menu button was pressed.
+    Windows and OS X, this means the menu button was pressed.
 
     \value Other The event was sent by some other means (i.e. not
     by the mouse or keyboard).

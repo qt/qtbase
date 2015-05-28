@@ -7193,7 +7193,7 @@ static CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintD
     returned if it can't be obtained. It is the caller's responsibility to
     CGContextRelease the context when finished using it.
 
-    \warning This function is only available on Mac OS X.
+    \warning This function is only available on OS X.
     \warning This function is duplicated in the Cocoa platform plugin.
 */
 

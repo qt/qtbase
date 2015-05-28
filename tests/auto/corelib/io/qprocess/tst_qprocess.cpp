@@ -1558,7 +1558,7 @@ void tst_QProcess::failToStart()
     QVERIFY(finishedSpy.isValid());
     QVERIFY(finishedSpy2.isValid());
 
-// Mac OS X and HP-UX have a really low default process limit (~100), so spawning
+// OS X and HP-UX have a really low default process limit (~100), so spawning
 // to many processes here will cause test failures later on.
 #if defined Q_OS_HPUX
    const int attempts = 15;

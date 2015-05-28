@@ -187,7 +187,7 @@ void tst_QLabel::cleanup()
     }
 }
 
-// Set buddy doesn't make much sense on Mac OS X
+// Set buddy doesn't make much sense on OS X
 #ifndef Q_OS_MAC
 void tst_QLabel::setBuddy()
 {

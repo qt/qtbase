@@ -1499,7 +1499,7 @@ bool QMainWindow::event(QEvent *event)
 
 /*!
     \property QMainWindow::unifiedTitleAndToolBarOnMac
-    \brief whether the window uses the unified title and toolbar look on Mac OS X
+    \brief whether the window uses the unified title and toolbar look on OS X
 
     Note that the Qt 5 implementation has several limitations compared to Qt 4:
     \list

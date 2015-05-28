@@ -1124,7 +1124,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_10_4     Mac OS X 10.4 (unsupported)
     \value MV_10_5     Mac OS X 10.5 (unsupported)
     \value MV_10_6     Mac OS X 10.6
-    \value MV_10_7     OS X 10.7
+    \value MV_10_7     Mac OS X 10.7
     \value MV_10_8     OS X 10.8
     \value MV_10_9     OS X 10.9
     \value MV_10_10    OS X 10.10
@@ -2731,7 +2731,7 @@ QString QSysInfo::prettyProductName()
         basename = "Mac OS X Snow Leopard (";
         break;
     case MV_LION:
-        basename = "Mac OS X Lion (";
+        basename = "OS X Lion (";
         break;
     case MV_MOUNTAINLION:
         basename = "OS X Mountain Lion (";

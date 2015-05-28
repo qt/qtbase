@@ -37,7 +37,7 @@
     OpenGL is a standard API for rendering 3D graphics. OpenGL only
     deals with 3D rendering and provides little or no support for GUI
     programming issues. The user interface for an OpenGL application
-    must be created with another toolkit, such as Cocoa on the Mac OS X
+    must be created with another toolkit, such as Cocoa on the OS X
     platform, Microsoft Foundation Classes (MFC) under Windows, or Qt
     on both platforms.
 

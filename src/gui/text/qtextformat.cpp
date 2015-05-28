@@ -1325,7 +1325,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \value WaveUnderline        The text is underlined using a wave shaped line.
     \value SpellCheckUnderline  The underline is drawn depending on the QStyle::SH_SpellCeckUnderlineStyle
                                 style hint of the QApplication style. By default this is mapped to
-                                WaveUnderline, on Mac OS X it is mapped to DashDotLine.
+                                WaveUnderline, on OS X it is mapped to DashDotLine.
 
     \sa Qt::PenStyle
 */

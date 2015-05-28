@@ -1432,7 +1432,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     do not support the signals: aboutToHide (), aboutToShow () and hovered ().
     It is not possible to display an icon in a native menu on Windows Mobile.
 
-    \section1 QMenu on Mac OS X with Qt Build Against Cocoa
+    \section1 QMenu on OS X with Qt Build Against Cocoa
 
     QMenu can be inserted only once in a menu/menubar. Subsequent insertions will
     have no effect or will result in a disabled menu item.

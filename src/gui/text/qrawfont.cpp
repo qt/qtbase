@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
    also have accessors to some relevant data in the physical font.
 
    QRawFont only provides support for the main font technologies: GDI and DirectWrite on Windows
-   platforms, FreeType on Linux platforms and CoreText on Mac OS X. For other
+   platforms, FreeType on Linux platforms and CoreText on OS X. For other
    font back-ends, the APIs will be disabled.
 
    QRawFont can be constructed in a number of ways:
