@@ -281,6 +281,12 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS_RELEASE QT_NO_DEBUG)
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS_RELWITHDEBINFO QT_NO_DEBUG)
             set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS_MINSIZEREL QT_NO_DEBUG)
+            if (Qt5_POSITION_INDEPENDENT_CODE
+                    AND (CMAKE_VERSION VERSION_LESS 2.8.12
+                        AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL \"GNU\"
+                        OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)))
+                set_property(TARGET ${_target} PROPERTY POSITION_INDEPENDENT_CODE ${Qt5_POSITION_INDEPENDENT_CODE})
+            endif()
         endforeach()
     endmacro()
 endif()

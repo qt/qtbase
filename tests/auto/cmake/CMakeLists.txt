@@ -126,8 +126,11 @@ if (QT_WITH_ANGLE OR (NOT WIN32 AND NOT APPLE AND NOT NO_EGL))
 endif()
 expect_pass(test_opengl_lib)
 
-if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
+if (NOT CMAKE_VERSION VERSION_LESS 2.8.11)
     expect_pass(test_interface)
+endif()
+
+if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
     expect_pass(test_interface_link_libraries)
     expect_pass(test_moc_macro_target)
 endif()
