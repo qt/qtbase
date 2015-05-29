@@ -2955,7 +2955,7 @@ namespace {
     // depending on the return type
     static inline Q_DECL_UNUSED QString fromstrerror_helper(int, const QByteArray &buf)
     {
-        return QString::fromLocal8Bit(buf);
+        return QString::fromLocal8Bit(buf.constData());
     }
     static inline Q_DECL_UNUSED QString fromstrerror_helper(const char *str, const QByteArray &)
     {
