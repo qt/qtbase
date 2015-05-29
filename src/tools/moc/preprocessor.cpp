@@ -661,8 +661,10 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     expansion += s;
                 }
             } else if (mode == Hash) {
-                if (index < 0)
+                if (index < 0 || index >= arguments.size()) {
                     that->error("'#' is not followed by a macro parameter");
+                    continue;
+                }
 
                 const Symbols &arg = arguments.at(index);
                 QByteArray stringified;
@@ -681,7 +683,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     expansion.pop_back();
 
                 Symbol next = s;
-                if (index >= 0) {
+                if (index >= 0 && index < arguments.size()) {
                     const Symbols &arg = arguments.at(index);
                     if (arg.size() == 0) {
                         mode = Normal;
@@ -703,7 +705,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     expansion += next;
                 }
 
-                if (index >= 0) {
+                if (index >= 0 && index < arguments.size()) {
                     const Symbols &arg = arguments.at(index);
                     for (int i = 1; i < arg.size(); ++i)
                         expansion += arg.at(i);
