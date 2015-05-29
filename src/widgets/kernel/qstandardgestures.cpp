@@ -334,23 +334,27 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
 
             static const int MoveThreshold = 50;
+            static const int directionChangeThreshold = MoveThreshold / 8;
             if (qAbs(xDistance) > MoveThreshold || qAbs(yDistance) > MoveThreshold) {
                 // measure the distance to check if the direction changed
                 d->lastPositions[0] = p1.screenPos().toPoint();
                 d->lastPositions[1] = p2.screenPos().toPoint();
                 d->lastPositions[2] = p3.screenPos().toPoint();
-                QSwipeGesture::SwipeDirection horizontal =
-                        xDistance > 0 ? QSwipeGesture::Right : QSwipeGesture::Left;
-                QSwipeGesture::SwipeDirection vertical =
-                        yDistance > 0 ? QSwipeGesture::Down : QSwipeGesture::Up;
-                if (d->verticalDirection == QSwipeGesture::NoDirection)
+                result = QGestureRecognizer::TriggerGesture;
+                // QTBUG-46195, small changes in direction should not cause the gesture to be canceled.
+                if (d->verticalDirection == QSwipeGesture::NoDirection || qAbs(yDistance) > directionChangeThreshold) {
+                    const QSwipeGesture::SwipeDirection vertical = yDistance > 0
+                        ? QSwipeGesture::Down : QSwipeGesture::Up;
+                    if (d->verticalDirection != QSwipeGesture::NoDirection && d->verticalDirection != vertical)
+                        result = QGestureRecognizer::CancelGesture;
                     d->verticalDirection = vertical;
-                if (d->horizontalDirection == QSwipeGesture::NoDirection)
+                }
+                if (d->horizontalDirection == QSwipeGesture::NoDirection || qAbs(xDistance) > directionChangeThreshold) {
+                    const QSwipeGesture::SwipeDirection horizontal = xDistance > 0
+                        ? QSwipeGesture::Right : QSwipeGesture::Left;
+                    if (d->horizontalDirection != QSwipeGesture::NoDirection && d->horizontalDirection != horizontal)
+                        result = QGestureRecognizer::CancelGesture;
                     d->horizontalDirection = horizontal;
-                if (d->verticalDirection != vertical || d->horizontalDirection != horizontal) {
-                    result = QGestureRecognizer::CancelGesture;
-                } else {
-                    result = QGestureRecognizer::TriggerGesture;
                 }
             } else {
                 if (q->state() != Qt::NoGesture)
