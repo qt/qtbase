@@ -4388,7 +4388,9 @@ bool Configure::showLicense(QString orgLicenseFile)
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource") {
-        if (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no") {
+        if (platform() != WINDOWS_RT
+                && platform() != WINDOWS_CE
+                && (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no")) {
             theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
                          "\nor the GNU Lesser General Public License (LGPL) version 3";
         } else {
