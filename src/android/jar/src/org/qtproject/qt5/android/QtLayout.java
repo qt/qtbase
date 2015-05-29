@@ -216,4 +216,34 @@ public class QtLayout extends ViewGroup
         invalidate();
         attachViewToParent(view, index, view.getLayoutParams());
     }
+
+    /**
+    * set the layout params on a child view.
+    *
+    * Note: This function adds the child view if it's not in the
+    *       layout already.
+    */
+    public void setLayoutParams(final View childView,
+                                final ViewGroup.LayoutParams params,
+                                final boolean forceRedraw)
+    {
+        // Invalid view
+        if (childView == null)
+            return;
+
+        // Invalid params
+        if (!checkLayoutParams(params))
+            return;
+
+        // View is already in the layout and can therefore be updated
+        final boolean canUpdate = (this == childView.getParent());
+
+        if (canUpdate) {
+            childView.setLayoutParams(params);
+            if (forceRedraw)
+                invalidate();
+        } else {
+            addView(childView, params);
+        }
+    }
 }
