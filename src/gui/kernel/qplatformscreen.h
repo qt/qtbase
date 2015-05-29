@@ -137,7 +137,7 @@ protected:
 private:
     Q_DISABLE_COPY(QPlatformScreen)
 
-    friend class QPlatformIntegration;
+    friend class QScreenPrivate;
 };
 
 QT_END_NAMESPACE

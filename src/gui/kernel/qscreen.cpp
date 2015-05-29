@@ -36,6 +36,7 @@
 #include "qpixmap.h"
 #include "qguiapplication_p.h"
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformscreen_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/private/qobject_p.h>
@@ -63,9 +64,35 @@ QT_BEGIN_NAMESPACE
 */
 
 QScreen::QScreen(QPlatformScreen *screen)
-    : QObject(*new QScreenPrivate(screen), 0)
+    : QObject(*new QScreenPrivate(), 0)
 {
+    Q_D(QScreen);
+    d->setPlatformScreen(screen);
 }
+
+void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
+{
+    Q_Q(QScreen);
+    platformScreen = screen;
+    platformScreen->d_func()->screen = q;
+    orientation = platformScreen->orientation();
+    geometry = platformScreen->deviceIndependentGeometry();
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+    logicalDpi = platformScreen->logicalDpi();
+    refreshRate = platformScreen->refreshRate();
+    // safeguard ourselves against buggy platform behavior...
+    if (refreshRate < 1.0)
+        refreshRate = 60.0;
+
+    updatePrimaryOrientation();
+
+    filteredOrientation = orientation;
+    if (filteredOrientation == Qt::PrimaryOrientation)
+        filteredOrientation = primaryOrientation;
+
+    updateHighDpi();
+}
+
 
 
 /*!
