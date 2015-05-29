@@ -85,7 +85,7 @@ ScreenScaleFactorSetter::ScreenScaleFactorSetter()
         slider->setMinimum(1);
         slider->setMaximum(40);
         slider->setValue(10);
-        slider->setTracking(true);
+        slider->setTracking(false);
         slider->setTickInterval(5);
         slider->setTickPosition(QSlider::TicksBelow);
         QLabel *scaleFactorLabel = new QLabel("1.0");
@@ -96,8 +96,8 @@ ScreenScaleFactorSetter::ScreenScaleFactorSetter()
         row->addWidget(scaleFactorLabel);
         layout->addLayout(row);
 
-        // handle slider value change
-        connect(slider, &QSlider::valueChanged, [scaleFactorLabel, screen](int scaleFactor){
+        // handle slider position change
+        connect(slider, &QSlider::sliderMoved, [scaleFactorLabel, screen](int scaleFactor){
             // slider value is scale factor times ten;
             qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
@@ -106,6 +106,11 @@ ScreenScaleFactorSetter::ScreenScaleFactorSetter()
             if (!number.contains("."))
                 number.append(".0");
             scaleFactorLabel->setText(number);
+            });
+        // handle slider value change
+        connect(slider, &QSlider::valueChanged, [scaleFactorLabel, screen](int scaleFactor){
+            // slider value is scale factor times ten;
+            qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
             // set scale factor for screen
             qreal oldFactor = QHighDpiScaling::factor(screen);
