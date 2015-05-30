@@ -506,7 +506,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
             }
 
             QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(QList<QAbstractTransition*>() << t2);
-            if (exitSetT1.intersect(exitSetT2).isEmpty()) {
+            if (!exitSetT1.intersects(exitSetT2)) {
                 // No conflict, no cry. Next patient please.
                 ++t2It;
             } else {
