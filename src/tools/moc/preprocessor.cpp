@@ -547,7 +547,10 @@ void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, Symbols &toExp
         Symbols newSyms = macroExpandIdentifier(that, symbols, lineNum, &macro);
 
         if (macro.isEmpty()) {
-            *into += newSyms;
+            // not a macro
+            Symbol s = symbols.symbol();
+            s.lineNum = lineNum;
+            *into += s;
         } else {
             SafeSymbols sf;
             sf.symbols = newSyms;
@@ -573,10 +576,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
     // not a macro
     if (s.token != PP_IDENTIFIER || !that->macros.contains(s) || symbols.dontReplaceSymbol(s.lexem())) {
-        Symbols syms;
-        syms += s;
-        syms.last().lineNum = lineNum;
-        return syms;
+        return Symbols();
     }
 
     const Macro &macro = that->macros.value(s);
