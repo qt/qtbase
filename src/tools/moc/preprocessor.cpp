@@ -154,6 +154,11 @@ bool Preprocessor::skipBranch()
 Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocessor::TokenizeMode mode)
 {
     Symbols symbols;
+    // Preallocate some space to speed up the code below.
+    // The magic divisor value was found by calculating the average ratio between
+    // input size and the final size of symbols.
+    // This yielded a value of 16.x when compiling Qt Base.
+    symbols.reserve(input.size() / 16);
     const char *begin = input.constData();
     const char *data = begin;
     while (*data) {
