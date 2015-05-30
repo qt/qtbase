@@ -1222,6 +1222,10 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, QFile *file)
 
     // phase 3: preprocess conditions and substitute macros
     Symbols result;
+    // Preallocate some space to speed up the code below.
+    // The magic value was found by logging the final size
+    // and calculating an average when running moc over FOSS projects.
+    result.reserve(file->size() / 300000);
     preprocess(filename, result);
     mergeStringLiterals(&result);
 
