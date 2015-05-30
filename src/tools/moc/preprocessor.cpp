@@ -529,7 +529,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
     return symbols;
 }
 
-void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, Symbols &toExpand, int &index,
+void Preprocessor::macroExpand(Symbols *into, Preprocessor *that, const Symbols &toExpand, int &index,
                                   int lineNum, bool one, const QSet<QByteArray> &excludeSymbols)
 {
     SymbolStack symbols;
