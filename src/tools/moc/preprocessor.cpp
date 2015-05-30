@@ -597,7 +597,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             syms.last().lineNum = lineNum;
             return syms;
         }
-        QList<Symbols> arguments;
+        QVarLengthArray<Symbols, 5> arguments;
         while (symbols.hasNext()) {
             Symbols argument;
             // strip leading space
