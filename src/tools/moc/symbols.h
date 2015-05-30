@@ -113,8 +113,11 @@ struct Symbol
     Token token;
     inline QByteArray lexem() const { return lex.mid(from, len); }
     inline QByteArray unquotedLexem() const { return lex.mid(from+1, len-2); }
-    inline operator QByteArray() const { return lex.mid(from, len); }
     inline operator SubArray() const { return SubArray(lex, from, len); }
+    bool operator==(const Symbol& o) const
+    {
+        return SubArray(lex, from, len) == SubArray(o.lex, o.from, o.len);
+    }
     QByteArray lex;
     int from, len;
 
