@@ -31,24 +31,13 @@
 **
 ****************************************************************************/
 
-#ifndef QFACTORYINTERFACE_H
-#define QFACTORYINTERFACE_H
-
-#include <QtCore/qobject.h>
-#include <QtCore/qstringlist.h>
+#include "qfactoryinterface.h"
 
 QT_BEGIN_NAMESPACE
 
-
-struct Q_CORE_EXPORT QFactoryInterface
+QFactoryInterface::~QFactoryInterface()
 {
-    virtual ~QFactoryInterface();
-    virtual QStringList keys() const = 0;
-};
-
-
-Q_DECLARE_INTERFACE(QFactoryInterface, "org.qt-project.Qt.QFactoryInterface")
+    // must be empty until ### Qt 6
+}
 
 QT_END_NAMESPACE
-
-#endif // QFACTORYINTERFACE_H

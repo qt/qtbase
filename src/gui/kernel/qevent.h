@@ -531,6 +531,8 @@ public:
     };
     QInputMethodEvent();
     QInputMethodEvent(const QString &preeditText, const QList<Attribute> &attributes);
+    ~QInputMethodEvent();
+
     void setCommitString(const QString &commitString, int replaceFrom = 0, int replaceLength = 0);
     inline const QList<Attribute> &attributes() const { return attrs; }
     inline const QString &preeditString() const { return preedit; }
