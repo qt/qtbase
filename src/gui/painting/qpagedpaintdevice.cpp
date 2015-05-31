@@ -36,6 +36,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
+{
+}
+
 /*!
     \class QPagedPaintDevice
     \inmodule QtGui

@@ -111,6 +111,10 @@
 #ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
+QGraphicsEffectPrivate::~QGraphicsEffectPrivate()
+{
+}
+
 /*!
     \internal
     \class QGraphicsEffectSource

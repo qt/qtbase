@@ -968,6 +968,10 @@ QRect QPaintEngine::systemRect() const
     return d_func()->systemRect;
 }
 
+QPaintEnginePrivate::~QPaintEnginePrivate()
+{
+}
+
 void QPaintEnginePrivate::drawBoxTextItem(const QPointF &p, const QTextItemInt &ti)
 {
     if (!ti.glyphs.numGlyphs)

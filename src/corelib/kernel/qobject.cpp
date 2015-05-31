@@ -65,6 +65,16 @@ QT_BEGIN_NAMESPACE
 
 static int DIRECT_CONNECTION_ONLY = 0;
 
+
+QDynamicMetaObjectData::~QDynamicMetaObjectData()
+{
+}
+
+QAbstractDynamicMetaObject::~QAbstractDynamicMetaObject()
+{
+}
+
+
 struct QSlotObjectBaseDeleter { // for use with QScopedPointer<QSlotObjectBase,...>
     static void cleanup(QtPrivate::QSlotObjectBase *slot) {
         if (slot) slot->destroyIfLastRef();

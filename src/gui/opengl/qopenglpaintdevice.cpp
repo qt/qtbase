@@ -169,6 +169,10 @@ QOpenGLPaintDevicePrivate::QOpenGLPaintDevicePrivate(const QSize &sz)
 {
 }
 
+QOpenGLPaintDevicePrivate::~QOpenGLPaintDevicePrivate()
+{
+}
+
 class QOpenGLEngineThreadStorage
 {
 public:
