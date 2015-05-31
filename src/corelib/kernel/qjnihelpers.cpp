@@ -52,6 +52,18 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtAndroidPrivate {
+    // *Listener virtual function implementations.
+    // Defined out-of-line to pin the vtable/type_info.
+    ActivityResultListener::~ActivityResultListener() {}
+    NewIntentListener::~NewIntentListener() {}
+    ResumePauseListener::~ResumePauseListener() {}
+    void ResumePauseListener::handlePause() {}
+    void ResumePauseListener::handleResume() {}
+    GenericMotionEventListener::~GenericMotionEventListener() {}
+    KeyEventListener::~KeyEventListener() {}
+}
+
 static JavaVM *g_javaVM = Q_NULLPTR;
 static jobject g_jActivity = Q_NULLPTR;
 static jobject g_jService = Q_NULLPTR;
