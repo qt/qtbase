@@ -609,6 +609,11 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     \sa installActivationObserver()
 */
 
+QAccessible::ActivationObserver::~ActivationObserver()
+{
+    // must be empty until ### Qt 6
+}
+
 /*!
     \internal
 
@@ -1326,9 +1331,13 @@ QColor QAccessibleInterface::backgroundColor() const
     the overload taking a \l QObject parameter as it might be cheaper.
 */
 
-/*! \fn QAccessibleEvent::~QAccessibleEvent()
+/*!
   Destroys the event.
 */
+QAccessibleEvent::~QAccessibleEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 /*! \fn QAccessible::Event QAccessibleEvent::type() const
   Returns the event type.
@@ -1389,6 +1398,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 
     Returns the new value of the accessible object of this event.
 */
+/*!
+    \internal
+*/
+QAccessibleValueChangeEvent::~QAccessibleValueChangeEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \class QAccessibleStateChangeEvent
@@ -1418,7 +1434,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     other hand tells about the change and has focused set to \c true since
     the focus state is changed from \c true to \c false.
 */
-
+/*!
+    \internal
+*/
+QAccessibleStateChangeEvent::~QAccessibleStateChangeEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \class QAccessibleTableModelChangeEvent
@@ -1475,6 +1497,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn void QAccessibleTableModelChangeEvent::setModelChangeType(ModelChangeType changeType)
     Sets the type of change to \a changeType.
 */
+/*!
+    \internal
+*/
+QAccessibleTableModelChangeEvent::~QAccessibleTableModelChangeEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 
 /*!
@@ -1496,6 +1525,14 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn void QAccessibleTextCursorEvent::setCursorPosition(int position)
     Sets the cursor \a position for this event.
 */
+/*!
+    \internal
+*/
+QAccessibleTextCursorEvent::~QAccessibleTextCursorEvent()
+{
+    // must be empty until ### Qt 6
+}
+
 
 /*!
     \class QAccessibleTextInsertEvent
@@ -1519,6 +1556,14 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn QString QAccessibleTextInsertEvent::textInserted() const
     Returns the text that has been inserted.
 */
+/*!
+    \internal
+*/
+QAccessibleTextInsertEvent::~QAccessibleTextInsertEvent()
+{
+    // must be empty until ### Qt 6
+}
+
 
 /*!
     \class QAccessibleTextRemoveEvent
@@ -1543,6 +1588,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn QString QAccessibleTextRemoveEvent::textRemoved() const
     Returns the text that has been removed.
 */
+/*!
+    \internal
+*/
+QAccessibleTextRemoveEvent::~QAccessibleTextRemoveEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \class QAccessibleTextUpdateEvent
@@ -1569,6 +1621,14 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn QString QAccessibleTextUpdateEvent::textRemoved() const
     Returns the removed text.
 */
+/*!
+    \internal
+*/
+QAccessibleTextUpdateEvent::~QAccessibleTextUpdateEvent()
+{
+    // must be empty until ### Qt 6
+}
+
 
 /*!
     \class QAccessibleTextSelectionEvent
@@ -1592,6 +1652,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 /*! \fn void QAccessibleTextSelectionEvent::setSelection(int start, int end)
     Sets the selection for this event from position \a start to \a end.
 */
+/*!
+    \internal
+*/
+QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
+{
+    // must be empty until ### Qt 6
+}
 
 
 
@@ -1830,9 +1897,12 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 */
 
 /*!
-    \fn QAccessibleTextInterface::~QAccessibleTextInterface()
     Destroys the QAccessibleTextInterface.
 */
+QAccessibleTextInterface::~QAccessibleTextInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn void QAccessibleTextInterface::addSelection(int startOffset, int endOffset)
@@ -2212,9 +2282,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
-    \fn QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
     Destroys the QAccessibleEditableTextInterface.
 */
+QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn void QAccessibleEditableTextInterface::deleteText(int startOffset, int endOffset)
@@ -2253,9 +2326,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
-    \fn QAccessibleValueInterface::~QAccessibleValueInterface()
-    Destructor.
+    Destroys the QAccessibleValueInterface.
 */
+QAccessibleValueInterface::~QAccessibleValueInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn QVariant QAccessibleValueInterface::currentValue() const
@@ -2314,6 +2390,14 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
+    Destroys the QAccessibleImageInterface.
+*/
+QAccessibleImageInterface::~QAccessibleImageInterface()
+{
+    // must be empty until ### Qt 6
+}
+
+/*!
     \class QAccessibleTableCellInterface
     \inmodule QtGui
     \ingroup accessibility
@@ -2325,9 +2409,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
-    \fn virtual QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
     Destroys the QAccessibleTableCellInterface.
 */
+QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn virtual int QAccessibleTableCellInterface::columnExtent() const
@@ -2381,9 +2468,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
-    \fn virtual QAccessibleTableInterface::~QAccessibleTableInterface()
     Destroys the QAccessibleTableInterface.
 */
+QAccessibleTableInterface::~QAccessibleTableInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn virtual QAccessibleInterface *QAccessibleTableInterface::cellAt(int row, int column) const
@@ -2534,9 +2624,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 
 /*!
-    \fn QAccessibleActionInterface::~QAccessibleActionInterface()
     Destroys the QAccessibleActionInterface.
 */
+QAccessibleActionInterface::~QAccessibleActionInterface()
+{
+    // must be empty until ### Qt 6
+}
 
 /*!
     \fn QStringList QAccessibleActionInterface::actionNames() const
