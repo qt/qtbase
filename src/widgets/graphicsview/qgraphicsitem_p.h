@@ -237,8 +237,7 @@ public:
     {
     }
 
-    inline virtual ~QGraphicsItemPrivate()
-    { }
+    virtual ~QGraphicsItemPrivate();
 
     static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
     {

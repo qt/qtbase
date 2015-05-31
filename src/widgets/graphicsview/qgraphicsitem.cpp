@@ -812,6 +812,13 @@ static QPainterPath qt_graphicsItem_shapeFromPath(const QPainterPath &path, cons
 
 /*!
     \internal
+*/
+QGraphicsItemPrivate::~QGraphicsItemPrivate()
+{
+}
+
+/*!
+    \internal
 
     Propagates the ancestor flag \a flag with value \a enabled to all this
     item's children. If \a root is false, the flag is also set on this item
