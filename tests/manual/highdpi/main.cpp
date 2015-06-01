@@ -32,6 +32,7 @@
  ****************************************************************************/
 
 #include <QMainWindow>
+#include <QMenuBar>
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QApplication>
@@ -312,15 +313,18 @@ class MainWindow : public QMainWindow
 {
 public:
     MainWindow();
+    QMenu *addNewMenu(const QString &title, int itemCount = 5);
 
     QIcon qtIcon;
     QIcon qtIcon1x;
     QIcon qtIcon2x;
 
     QToolBar *fileToolBar;
+    int menuCount;
 };
 
 MainWindow::MainWindow()
+    :menuCount(0)
 {
     // beware that QIcon auto-loads the @2x versions.
     qtIcon1x.addFile(":/qticon16.png");
@@ -332,7 +336,32 @@ MainWindow::MainWindow()
 //    fileToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     fileToolBar->addAction(new QAction(qtIcon1x, QString("1x"), this));
     fileToolBar->addAction(new QAction(qtIcon2x, QString("2x"), this));
+    addNewMenu("&Edit");
+    addNewMenu("&Build");
+    addNewMenu("&Debug", 4);
+    addNewMenu("&Transmogrify", 7);
+    addNewMenu("T&ools");
+    addNewMenu("&Help", 2);
 }
+
+
+QMenu *MainWindow::addNewMenu(const QString &title, int itemCount)
+{
+    QMenu *menu = menuBar()->addMenu(title);
+    for (int i = 0; i < itemCount; i++) {
+        menuCount++;
+        QString s = "Menu item " + QString::number(menuCount);
+        if (i == 3) {
+            QMenu *subMenu = menu->addMenu(s);
+            for (int j = 1; j < 4; j++)
+                subMenu->addAction(QString::fromLatin1("SubMenu item %1.%2").arg(menuCount).arg(j));
+        } else {
+            menu->addAction(s);
+        }
+    }
+    return menu;
+}
+
 
 class StandardIcons : public QWidget
 {
