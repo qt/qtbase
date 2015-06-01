@@ -101,6 +101,7 @@ private:
     static qreal m_factor;
     static bool m_active;
     static bool m_perScreenActive;
+    static bool m_usePixelDensity;
 };
 
 // Coordinate system conversion functions:

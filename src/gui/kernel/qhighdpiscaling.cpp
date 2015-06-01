@@ -81,16 +81,18 @@ static inline qreal initialScaleFactor()
 qreal QHighDpiScaling::m_factor;
 
 bool QHighDpiScaling::m_active; //"overall active" - is there any scale factor set.
-bool QHighDpiScaling::m_perScreenActive;
+bool QHighDpiScaling::m_perScreenActive; // different screens may have different scale
+bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugin
 
 void QHighDpiScaling::initHighDPiScaling()
 {
-    QHighDpiScaling::m_factor = initialScaleFactor();
+    m_factor = initialScaleFactor();
     bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR");
 
     // m_active below is "overall active" - is there any scale factor set.
-    QHighDpiScaling::m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
-    QHighDpiScaling::m_perScreenActive = usePlatformPluginPixelDensity;
+    m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
+    m_usePixelDensity = usePlatformPluginPixelDensity;
+    m_perScreenActive = m_usePixelDensity;
 }
 
 /*
@@ -162,7 +164,8 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
     if (m_perScreenActive && screen) {
-        factor *= screen->pixelDensity();
+        if (m_usePixelDensity)
+            factor *= screen->pixelDensity();
         QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
         if (screenFactor.isValid())
             factor *= screenFactor.toReal();
