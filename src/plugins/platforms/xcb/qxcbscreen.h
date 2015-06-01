@@ -96,7 +96,6 @@ public:
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi virtualDpi() const;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     qreal pixelDensity() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
@@ -141,11 +140,6 @@ public:
     int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
     QXcbXSettings *xSettings() const;
-
-    QPoint mapToNative(const QPoint &pos) const;
-    QPoint mapFromNative(const QPoint &pos) const;
-    QRect mapToNative(const QRect &rect) const;
-    QRect mapFromNative(const QRect &rect) const;
 
 private:
     static bool xResource(const QByteArray &identifier,

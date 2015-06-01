@@ -635,15 +635,14 @@ QPoint QXcbCursor::pos() const
 {
     QPoint p;
     queryPointer(connection(), 0, &p);
-    return m_screen->mapFromNative(p);
+    return p;
 }
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    const QPoint xPos = m_screen->mapToNative(pos);
     xcb_window_t root = 0;
     queryPointer(connection(), &root, 0);
-    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, xPos.x(), xPos.y());
+    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(xcb_connection());
 }
 
