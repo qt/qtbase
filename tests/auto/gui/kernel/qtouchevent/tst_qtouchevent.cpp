@@ -601,7 +601,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
 
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
@@ -738,7 +738,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -968,7 +968,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
 
     QPointF leftPos = leftWidget.rect().center();
     QPointF rightPos = rightWidget.rect().center();
@@ -1468,7 +1468,7 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
             .release(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport())
             .release(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
 
-    QCOMPARE(root->touchBeginCounter, 1);
+    QTRY_COMPARE(root->touchBeginCounter, 1);
     QCOMPARE(root->touchUpdateCounter, 1);
     QCOMPARE(root->touchEndCounter, 1);
     QCOMPARE(root->touchUpdatePoints.size(), 2);
