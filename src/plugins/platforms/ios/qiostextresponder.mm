@@ -170,25 +170,25 @@
     QVariantMap platformData = m_configuredImeState->value(Qt::ImPlatformData).toMap();
     Qt::InputMethodHints hints = Qt::InputMethodHints(m_configuredImeState->value(Qt::ImHints).toUInt());
 
-    Qt::ReturnKeyType returnKeyType = Qt::ReturnKeyType(m_configuredImeState->value(Qt::ImReturnKeyType).toUInt());
+    Qt::EnterKeyType enterKeyType = Qt::EnterKeyType(m_configuredImeState->value(Qt::ImEnterKeyType).toUInt());
 
-    switch (returnKeyType) {
-    case Qt::ReturnKeyEnter:
+    switch (enterKeyType) {
+    case Qt::EnterKeyReturn:
         self.returnKeyType = UIReturnKeyDefault;
         break;
-    case Qt::ReturnKeyDone:
+    case Qt::EnterKeyDone:
         self.returnKeyType = UIReturnKeyDone;
         break;
-    case Qt::ReturnKeyGo:
+    case Qt::EnterKeyGo:
         self.returnKeyType = UIReturnKeyGo;
         break;
-    case Qt::ReturnKeySend:
+    case Qt::EnterKeySend:
         self.returnKeyType = UIReturnKeySend;
         break;
-    case Qt::ReturnKeySearch:
+    case Qt::EnterKeySearch:
         self.returnKeyType = UIReturnKeySearch;
         break;
-    case Qt::ReturnKeyNext:
+    case Qt::EnterKeyNext:
         self.returnKeyType = UIReturnKeyNext;
         break;
     default:
@@ -255,7 +255,7 @@
     }
 
     // Based on what we set up in initWithInputContext above
-    updatedProperties &= (Qt::ImHints | Qt::ImReturnKeyType | Qt::ImPlatformData);
+    updatedProperties &= (Qt::ImHints | Qt::ImEnterKeyType | Qt::ImPlatformData);
 
     if (!updatedProperties)
         return NO;
