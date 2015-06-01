@@ -1157,7 +1157,7 @@ void QWidgetBackingStore::doSync()
 #ifndef QT_NO_OPENGL
     if (widgetTextures && widgetTextures->count()) {
         for (int i = 0; i < widgetTextures->count(); ++i) {
-            QWidget *w = widgetTextures->widget(i);
+            QWidget *w = static_cast<QWidget *>(widgetTextures->source(i));
             if (dirtyRenderToTextureWidgets.contains(w)) {
                 const QRect rect = widgetTextures->geometry(i); // mapped to the tlw already
                 dirty += rect;

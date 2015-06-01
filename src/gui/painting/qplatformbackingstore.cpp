@@ -83,7 +83,7 @@ public:
 
 struct QBackingstoreTextureInfo
 {
-    QWidget *widget; // may be null
+    void *source; // may be null
     GLuint textureId;
     QRect rect;
     QRect clipRect;
@@ -125,10 +125,10 @@ GLuint QPlatformTextureList::textureId(int index) const
     return d->textures.at(index).textureId;
 }
 
-QWidget *QPlatformTextureList::widget(int index)
+void *QPlatformTextureList::source(int index)
 {
     Q_D(const QPlatformTextureList);
-    return d->textures.at(index).widget;
+    return d->textures.at(index).source;
 }
 
 QPlatformTextureList::Flags QPlatformTextureList::flags(int index) const
@@ -164,12 +164,12 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry,
+void QPlatformTextureList::appendTexture(void *source, GLuint textureId, const QRect &geometry,
                                          const QRect &clipRect, Flags flags)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
-    bi.widget = widget;
+    bi.source = source;
     bi.textureId = textureId;
     bi.rect = geometry;
     bi.clipRect = clipRect;

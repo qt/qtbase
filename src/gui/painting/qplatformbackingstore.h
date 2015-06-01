@@ -83,12 +83,12 @@ public:
     GLuint textureId(int index) const;
     QRect geometry(int index) const;
     QRect clipRect(int index) const;
-    QWidget *widget(int index);
+    void *source(int index);
     Flags flags(int index) const;
     void lock(bool on);
     bool isLocked() const;
 
-    void appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry,
+    void appendTexture(void *source, GLuint textureId, const QRect &geometry,
                        const QRect &clipRect = QRect(), Flags flags = 0);
     void clear();
 
