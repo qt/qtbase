@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
+static const char legacyEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+
 static inline qreal initialScaleFactor()
 {
     static const char envVar[] = "QT_SCALE_FACTOR";
@@ -63,6 +65,10 @@ static inline qreal initialScaleFactor()
             qCDebug(lcScaling) << "Apply QT_SCALE_FACTOR" << f;
             result = f;
         }
+    } else {
+        int dpr = qEnvironmentVariableIntValue(legacyEnvVar);
+        if (dpr > 0)
+            result = dpr;
     }
     return result;
 }
@@ -87,7 +93,7 @@ bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugi
 void QHighDpiScaling::initHighDPiScaling()
 {
     m_factor = initialScaleFactor();
-    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR");
+    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR") || qgetenv(legacyEnvVar).toLower() == "auto";
 
     // m_active below is "overall active" - is there any scale factor set.
     m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
