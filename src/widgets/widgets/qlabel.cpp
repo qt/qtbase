@@ -57,9 +57,6 @@ QLabelPrivate::QLabelPrivate()
     : QFramePrivate(),
       sh(),
       msh(),
-      valid_hints(false),
-      sizePolicy(),
-      margin(0),
       text(),
       pixmap(Q_NULLPTR),
       scaledpixmap(Q_NULLPTR),
@@ -70,29 +67,33 @@ QLabelPrivate::QLabelPrivate()
 #ifndef QT_NO_MOVIE
       movie(),
 #endif
+      control(Q_NULLPTR),
+      shortcutCursor(),
+#ifndef QT_NO_CURSOR
+      cursor(),
+#endif
 #ifndef QT_NO_SHORTCUT
       buddy(),
       shortcutId(0),
 #endif
+      textformat(Qt::AutoText),
+      textInteractionFlags(Qt::LinksAccessibleByMouse),
+      sizePolicy(),
+      margin(0),
       align(Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs),
       indent(-1),
+      valid_hints(false),
       scaledcontents(false),
       textLayoutDirty(false),
       textDirty(false),
       isRichText(false),
       isTextLabel(false),
       hasShortcut(/*???*/),
-      textformat(Qt::AutoText),
-      control(Q_NULLPTR),
-      shortcutCursor(),
-      textInteractionFlags(Qt::LinksAccessibleByMouse),
-      openExternalLinks(false)
 #ifndef QT_NO_CURSOR
-      ,
       validCursor(false),
       onAnchor(false),
-      cursor()
 #endif
+      openExternalLinks(false)
 {
 }
 
