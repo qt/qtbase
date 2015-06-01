@@ -156,40 +156,6 @@ Win32MakefileGenerator::findLibraries()
             if(out.isEmpty())
                 out = lib + ".lib";
             (*it) = out;
-        } else if (!exists(Option::normalizePath(opt))) {
-            QList<QMakeLocalFileName> lib_dirs;
-            QString file = Option::fixPathToTargetOS(opt);
-            int slsh = file.lastIndexOf(Option::dir_sep);
-            if(slsh != -1) {
-                lib_dirs.append(QMakeLocalFileName(file.left(slsh+1)));
-                file = file.right(file.length() - slsh - 1);
-            } else {
-                lib_dirs = dirs;
-            }
-            if(file.endsWith(".lib")) {
-                file = file.left(file.length() - 4);
-                if(!file.at(file.length()-1).isNumber()) {
-                    ProString suffix = project->first(ProKey("QMAKE_" + file.toUpper() + "_SUFFIX"));
-                    for(QList<QMakeLocalFileName>::Iterator dep_it = lib_dirs.begin(); dep_it != lib_dirs.end(); ++dep_it) {
-                        QString lib_tmpl(file + "%1" + suffix + ".lib");
-                        int ver = findHighestVersion((*dep_it).local(), file);
-                        if(ver != -1) {
-                            if(ver)
-                                lib_tmpl = lib_tmpl.arg(ver);
-                            else
-                                lib_tmpl = lib_tmpl.arg("");
-                            if(slsh != -1) {
-                                QString dir = (*dep_it).real();
-                                if(!dir.endsWith(Option::dir_sep))
-                                    dir += Option::dir_sep;
-                                lib_tmpl.prepend(dir);
-                            }
-                            (*it) = lib_tmpl;
-                            break;
-                        }
-                    }
-                }
-            }
         }
         if(remove) {
             it = l.erase(it);

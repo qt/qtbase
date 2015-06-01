@@ -432,7 +432,7 @@ UnixMakefileGenerator::findLibraries()
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
         for (ProStringList::Iterator it = l.begin(); it != l.end(); ) {
-            QString stub, dir, extn, opt = (*it).toQString();
+            QString opt = (*it).toQString();
             if(opt.startsWith("-")) {
                 if(opt.startsWith("-L")) {
                     QString lib = opt.mid(2);
@@ -444,63 +444,39 @@ UnixMakefileGenerator::findLibraries()
                     }
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
-                    stub = opt.mid(2);
-                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
-                    if (opt.length() == 10)
-                        ++it;
-                    // Skip
-                }
-            } else {
-                extn = dir = "";
-                stub = opt;
-                int slsh = opt.lastIndexOf(Option::dir_sep);
-                if(slsh != -1) {
-                    dir = opt.left(slsh);
-                    stub = opt.mid(slsh+1);
-                }
-                QRegExp stub_reg("^.*lib(" + stub + "[^./=]*)\\.(.*)$");
-                if(stub_reg.exactMatch(stub)) {
-                    stub = stub_reg.cap(1);
-                    extn = stub_reg.cap(2);
-                }
-            }
-            if(!stub.isEmpty()) {
-                stub += project->first(ProKey("QMAKE_" + stub.toUpper() + "_SUFFIX")).toQString();
-                bool found = false;
-                ProStringList extens;
-                if(!extn.isNull())
-                    extens << extn;
-                else
+                    QString lib = opt.mid(2);
+                    lib += project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX")).toQString();
+                    bool found = false;
+                    ProStringList extens;
                     extens << project->first("QMAKE_EXTENSION_SHLIB") << "a";
-                for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
-                    if(dir.isNull()) {
-                        for(QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin(); dep_it != libdirs.end(); ++dep_it) {
+                    for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
+                        for (QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin();
+                             dep_it != libdirs.end(); ++dep_it) {
                             QString pathToLib = ((*dep_it).local() + '/'
                                     + project->first("QMAKE_PREFIX_SHLIB")
-                                    + stub + "." + (*extit));
-                            if(exists(pathToLib)) {
-                                (*it) = "-l" + stub;
+                                    + lib + '.' + (*extit));
+                            if (exists(pathToLib)) {
+                                (*it) = "-l" + lib;
                                 found = true;
                                 break;
                             }
                         }
-                    } else {
-                        QString lib = dir + project->first("QMAKE_PREFIX_SHLIB") + stub + "." + (*extit);
-                        if (exists(lib)) {
-                            (*it) = lib;
-                            found = true;
-                            break;
+                    }
+                    if (!found && project->isActiveConfig("compile_libtool")) {
+                        for (int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
+                            if (exists(libdirs[dep_i].local() + '/'
+                                       + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext)) {
+                                (*it) = libdirs[dep_i].real() + Option::dir_sep
+                                        + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext;
+                                found = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if(!found && project->isActiveConfig("compile_libtool")) {
-                    for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                        if (exists(libdirs[dep_i].local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + stub + Option::libtool_ext)) {
-                            (*it) = libdirs[dep_i].real() + Option::dir_sep + project->first("QMAKE_PREFIX_SHLIB") + stub + Option::libtool_ext;
-                            found = true;
-                            break;
-                        }
-                    }
+                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
+                    if (opt.length() == 10)
+                        ++it;
+                    // Skip
                 }
             }
             ++it;
