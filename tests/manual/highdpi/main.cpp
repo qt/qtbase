@@ -39,6 +39,7 @@
 #include <QStyle>
 #include <QToolBar>
 #include <QPushButton>
+#include <QButtonGroup>
 #include <QLineEdit>
 #include <QScrollBar>
 #include <QSlider>
@@ -56,14 +57,56 @@
 #include <QDebug>
 #include <private/qhighdpiscaling_p.h>
 
-class ScreenScaleFactorSetter : public QWidget
+class DemoContainerBase
+{
+public:
+    virtual ~DemoContainerBase() {}
+    QString name() { return option().names().first(); }
+    virtual QCommandLineOption &option() = 0;
+    virtual void makeVisible(bool visible) = 0;
+};
+
+typedef QList<DemoContainerBase*> DemoContainerList ;
+
+
+template <class T>
+class DemoContainer : public DemoContainerBase
+{
+public:
+    DemoContainer(const QString &optionName, const QString &description)
+        : m_widget(0), m_option(optionName, description)
+    {
+    }
+    ~DemoContainer() { delete m_widget; }
+
+    QCommandLineOption &option() { return m_option; }
+
+    void makeVisible(bool visible) {
+        if (visible && !m_widget)
+            m_widget = new T;
+        if (m_widget)
+            m_widget->setVisible(visible);
+    }
+private:
+    QWidget *m_widget;
+    QCommandLineOption m_option;
+};
+
+class DemoController : public QWidget
 {
 Q_OBJECT
 public:
-    ScreenScaleFactorSetter();
+    DemoController(DemoContainerList *demos, QCommandLineParser *parser);
+    ~DemoController();
+private slots:
+    void handleButton(int id, bool toggled);
+private:
+    DemoContainerList *m_demos;
+    QButtonGroup *m_group;
 };
 
-ScreenScaleFactorSetter::ScreenScaleFactorSetter()
+DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *parser)
+    : m_demos(demos)
 {
     setWindowTitle("screen scale factors");
     setObjectName("controller"); // make WindowScaleFactorSetter skip this window
@@ -120,6 +163,34 @@ ScreenScaleFactorSetter::ScreenScaleFactorSetter()
             qDebug() << "factor was / is" << oldFactor << newFactor;
         });
     }
+
+    m_group = new QButtonGroup(this);
+    m_group->setExclusive(false);
+
+    for (int i = 0; i < m_demos->size(); ++i) {
+        DemoContainerBase *demo = m_demos->at(i);
+        QPushButton *button = new QPushButton(demo->name());
+        button->setToolTip(demo->option().description());
+        button->setCheckable(true);
+        layout->addWidget(button);
+        m_group->addButton(button, i);
+
+        if (parser->isSet(demo->option())) {
+            demo->makeVisible(true);
+            button->setChecked(true);
+        }
+    }
+    connect(m_group, SIGNAL(buttonToggled(int, bool)), this, SLOT(handleButton(int, bool)));
+}
+
+DemoController::~DemoController()
+{
+    qDeleteAll(*m_demos);
+}
+
+void DemoController::handleButton(int id, bool toggled)
+{
+    m_demos->at(id)->makeVisible(toggled);
 }
 
 class PixmapPainter : public QWidget
@@ -606,108 +677,42 @@ int main(int argc, char **argv)
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
+    int argumentCount = QCoreApplication::arguments().count();
+
     QCommandLineParser parser;
     parser.setApplicationDescription("High DPI tester. Pass one or more of the options to\n"
                                      "test various high-dpi aspects. \n"
-                                     "--sceen-scale-factor is a special option and opens a configuration"
-                                     " window for setting window and screen scale factors.");
+                                     "--interactive is a special option and opens a configuration"
+                                     " window.");
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption screenScaleFactorOption("screen-scale-factor", "Show screen scale factor setter.");
-    parser.addOption(screenScaleFactorOption);
+    QCommandLineOption controllerOption("interactive", "Show configuration window.");
+    parser.addOption(controllerOption);
 
-    QCommandLineOption pixmapPainterOption("pixmap", "Test pixmap painter");
-    parser.addOption(pixmapPainterOption);
-    QCommandLineOption labelOption("label", "Test Labels");
-    parser.addOption(labelOption);
-    QCommandLineOption mainWindowOption("mainwindow", "Test QMainWindow");
-    parser.addOption(mainWindowOption);
-    QCommandLineOption standardIconsOption("standard-icons", "Test standard icons");
-    parser.addOption(standardIconsOption);
-    QCommandLineOption cachingOption("caching", "Test caching");
-    parser.addOption(cachingOption);
-    QCommandLineOption styleOption("styles", "Test style");
-    parser.addOption(styleOption);
-    QCommandLineOption fontsOption("fonts", "Test fonts");
-    parser.addOption(fontsOption);
-    QCommandLineOption iconDrawingOption("icondrawing", "Test icon drawing");
-    parser.addOption(iconDrawingOption);
-    QCommandLineOption buttonsOption("buttons", "Test buttons");
-    parser.addOption(buttonsOption);
-    QCommandLineOption linePainterOption("linepainter", "Test line painting");
-    parser.addOption(linePainterOption);
+
+    DemoContainerList demoList;
+    demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");
+    demoList << new DemoContainer<Labels>("label", "Test Labels");
+    demoList << new DemoContainer<MainWindow>("mainwindow", "Test QMainWindow");
+    demoList << new DemoContainer<StandardIcons>("standard-icons", "Test standard icons");
+    demoList << new DemoContainer<Caching>("caching", "Test caching");
+    demoList << new DemoContainer<Style>("styles", "Test style");
+    demoList << new DemoContainer<Fonts>("fonts", "Test fonts");
+    demoList << new DemoContainer<IconDrawing>("icondrawing", "Test icon drawing");
+    demoList << new DemoContainer<Buttons>("buttons", "Test buttons");
+    demoList << new DemoContainer<LinePainter>("linepainter", "Test line painting");
+
+
+    foreach (DemoContainerBase *demo, demoList)
+        parser.addOption(demo->option());
 
     parser.process(app);
 
-    // special screen scale factor controller
-    QScopedPointer<ScreenScaleFactorSetter> screeScaleFactorSetter;
-    if (parser.isSet(screenScaleFactorOption)) {
-        screeScaleFactorSetter.reset(new ScreenScaleFactorSetter);
-        screeScaleFactorSetter->show();
-    }
+    //controller takes ownership of all demos
+    DemoController controller(&demoList, &parser);
 
-    QScopedPointer<PixmapPainter> pixmapPainter;
-    if (parser.isSet(pixmapPainterOption)) {
-        pixmapPainter.reset(new PixmapPainter);
-        pixmapPainter->show();
-    }
-
-    QScopedPointer<Labels> label;
-    if (parser.isSet(labelOption)) {
-        label.reset(new Labels);
-        label->resize(200, 200);
-        label->show();
-    }
-
-    QScopedPointer<MainWindow> mainWindow;
-    if (parser.isSet(mainWindowOption)) {
-        mainWindow.reset(new MainWindow);
-        mainWindow->show();
-    }
-
-    QScopedPointer<StandardIcons> icons;
-    if (parser.isSet(standardIconsOption)) {
-        icons.reset(new StandardIcons);
-        icons->resize(510, 510);
-        icons->show();
-    }
-
-    QScopedPointer<Caching> caching;
-    if (parser.isSet(cachingOption)) {
-        caching.reset(new Caching);
-        caching->resize(300, 300);
-        caching->show();
-    }
-
-    QScopedPointer<Style> style;
-    if (parser.isSet(styleOption)) {
-        style.reset(new Style);
-        style->show();
-    }
-
-    QScopedPointer<Fonts> fonts;
-    if (parser.isSet(fontsOption)) {
-        fonts.reset(new Fonts);
-        fonts->show();
-    }
-
-    QScopedPointer<IconDrawing> iconDrawing;
-    if (parser.isSet(iconDrawingOption)) {
-        iconDrawing.reset(new IconDrawing);
-        iconDrawing->show();
-    }
-
-    QScopedPointer<Buttons> buttons;
-    if (parser.isSet(buttonsOption)) {
-        buttons.reset(new Buttons);
-        buttons->show();
-    }
-
-    QScopedPointer<LinePainter> linePainter;
-    if (parser.isSet(linePainterOption)) {
-        linePainter.reset(new LinePainter);
-        linePainter->show();
-    }
+    if (parser.isSet(controllerOption) || argumentCount <= 1)
+        controller.show();
 
     if (QApplication::topLevelWidgets().isEmpty())
         parser.showHelp(0);
