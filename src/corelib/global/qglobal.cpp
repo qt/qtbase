@@ -1128,6 +1128,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_10_8     OS X 10.8
     \value MV_10_9     OS X 10.9
     \value MV_10_10    OS X 10.10
+    \value MV_10_11    OS X 10.11
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1141,6 +1142,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_MOUNTAINLION Apple codename for MV_10_8
     \value MV_MAVERICKS    Apple codename for MV_10_9
     \value MV_YOSEMITE     Apple codename for MV_10_10
+    \value MV_ELCAPITAN    Apple codename for MV_10_11
 
     \value MV_IOS      iOS (any)
     \value MV_IOS_4_3  iOS 4.3
@@ -1151,6 +1153,11 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_IOS_7_0  iOS 7.0
     \value MV_IOS_7_1  iOS 7.1
     \value MV_IOS_8_0  iOS 8.0
+    \value MV_IOS_8_1  iOS 8.1
+    \value MV_IOS_8_2  iOS 8.2
+    \value MV_IOS_8_3  iOS 8.3
+    \value MV_IOS_8_4  iOS 8.4
+    \value MV_IOS_9_0  iOS 9.0
 
     \value MV_None     Not a Darwin operating system
 
@@ -2737,6 +2744,9 @@ QString QSysInfo::prettyProductName()
         break;
     case MV_YOSEMITE:
         basename = "OS X Yosemite (";
+        break;
+    case MV_ELCAPITAN:
+        basename = "OS X El Capitan (";
         break;
     }
     if (basename)
