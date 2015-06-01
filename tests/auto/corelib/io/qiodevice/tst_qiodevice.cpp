@@ -224,7 +224,7 @@ void tst_QIODevice::unget()
         buf[0] = '@';
         buf[1] = '@';
         QTest::ignoreMessage(QtWarningMsg,
-                              "QIODevice::readLine: Called with maxSize < 2");
+                              "QIODevice::readLine (QBuffer): Called with maxSize < 2");
         QCOMPARE(buffer.readLine(buf, 1), qint64(-1));
         QCOMPARE(buffer.readLine(buf, 2), qint64(i < 4 ? 1 : -1));
         switch (i) {

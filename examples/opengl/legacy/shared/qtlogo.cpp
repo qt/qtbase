@@ -43,6 +43,7 @@
 #include <QGLWidget>
 #include <QMatrix4x4>
 #include <QVector3D>
+#include <QOpenGLFunctions_1_1>
 
 #include <qmath.h>
 
@@ -60,7 +61,7 @@ struct Geometry
     void appendSmooth(const QVector3D &a, const QVector3D &n, int from);
     void appendFaceted(const QVector3D &a, const QVector3D &n);
     void finalize();
-    void loadArrays() const;
+    void loadArrays(QOpenGLFunctions_1_1 *functions) const;
 };
 //! [0]
 
@@ -73,7 +74,7 @@ public:
     void setSmoothing(Smoothing s) { sm = s; }
     void translate(const QVector3D &t);
     void rotate(qreal deg, QVector3D axis);
-    void draw() const;
+    void draw(QOpenGLFunctions_1_1 *functions) const;
     void addTri(const QVector3D &a, const QVector3D &b, const QVector3D &c, const QVector3D &n);
     void addQuad(const QVector3D &a, const QVector3D &b,  const QVector3D &c, const QVector3D &d);
 
@@ -96,10 +97,10 @@ static inline void qSetColor(float colorVec[], QColor c)
     colorVec[3] = c.alphaF();
 }
 
-void Geometry::loadArrays() const
+void Geometry::loadArrays(QOpenGLFunctions_1_1 *functions) const
 {
-    glVertexPointer(3, GL_FLOAT, 0, vertices.constData());
-    glNormalPointer(GL_FLOAT, 0, normals.constData());
+    functions->glVertexPointer(3, GL_FLOAT, 0, vertices.constData());
+    functions->glNormalPointer(GL_FLOAT, 0, normals.constData());
 }
 
 void Geometry::finalize()
@@ -170,15 +171,15 @@ void Patch::translate(const QVector3D &t)
 }
 
 //! [2]
-void Patch::draw() const
+void Patch::draw(QOpenGLFunctions_1_1 *functions) const
 {
-    glPushMatrix();
-    glMultMatrixf(mat.constData());
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, faceColor);
+    functions->glPushMatrix();
+    functions->glMultMatrixf(mat.constData());
+    functions->glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, faceColor);
 
     const GLushort *indices = geom->faces.constData();
-    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, indices + start);
-    glPopMatrix();
+    functions->glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, indices + start);
+    functions->glPopMatrix();
 }
 //! [2]
 
@@ -371,17 +372,17 @@ void QtLogo::buildGeometry(int divisions, qreal scale)
 //! [3]
 
 //! [4]
-void QtLogo::draw() const
+void QtLogo::draw(QOpenGLFunctions_1_1 *functions) const
 {
-    geom->loadArrays();
+    geom->loadArrays(functions);
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
+    functions->glEnableClientState(GL_VERTEX_ARRAY);
+    functions->glEnableClientState(GL_NORMAL_ARRAY);
 
     for (int i = 0; i < parts.count(); ++i)
-        parts[i]->draw();
+        parts[i]->draw(functions);
 
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
+    functions->glDisableClientState(GL_VERTEX_ARRAY);
+    functions->glDisableClientState(GL_NORMAL_ARRAY);
 }
 //! [4]

@@ -59,6 +59,11 @@ contains(QT_CONFIG, xcb-xlib) {
         DEFINES += XCB_USE_XINPUT2
         SOURCES += qxcbconnection_xi2.cpp
         LIBS += -lXi
+        !isEmpty(QMAKE_LIBXI_VERSION_MAJOR) {
+            DEFINES += LIBXI_MAJOR=$$QMAKE_LIBXI_VERSION_MAJOR \
+                       LIBXI_MINOR=$$QMAKE_LIBXI_VERSION_MINOR \
+                       LIBXI_PATCH=$$QMAKE_LIBXI_VERSION_PATCH
+        }
     }
 }
 

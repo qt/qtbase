@@ -37,6 +37,7 @@ bool NativeWindow::isValidNativeWindow(EGLNativeWindowType window)
     return IsWindow(window) == TRUE;
 }
 
+#if defined(ANGLE_ENABLE_D3D11)
 HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory,
                                       DXGI_FORMAT format, unsigned int width, unsigned int height,
                                       DXGISwapChain** swapChain)
@@ -65,4 +66,5 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
 
     return factory->CreateSwapChain(device, &swapChainDesc, swapChain);
 }
+#endif
 }

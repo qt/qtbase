@@ -1879,13 +1879,13 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
 
     // insert sections into hiddenSectionSize
     QHash<int, int> newHiddenSectionSize; // from logical index to section size
-    for (int i = 0; i < logicalFirst; ++i)
-        if (isSectionHidden(i))
-            newHiddenSectionSize[i] = d->hiddenSectionSize[i];
-    for (int j = logicalLast + 1; j < d->sectionCount(); ++j)
-        if (isSectionHidden(j))
-            newHiddenSectionSize[j] = d->hiddenSectionSize[j - insertCount];
-    d->hiddenSectionSize = newHiddenSectionSize;
+    for (QHash<int, int>::const_iterator it = d->hiddenSectionSize.cbegin(),
+         end = d->hiddenSectionSize.cend(); it != end; ++it) {
+        const int oldIndex = it.key();
+        const int newIndex = (oldIndex < logicalFirst) ? oldIndex : oldIndex + insertCount;
+        newHiddenSectionSize[newIndex] = it.value();
+    }
+    d->hiddenSectionSize.swap(newHiddenSectionSize);
 
     d->doDelayedResizeSections();
     emit sectionCountChanged(oldCount, count());

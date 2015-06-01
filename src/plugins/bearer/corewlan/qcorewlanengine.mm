@@ -85,8 +85,11 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
     return self;
 }
 
+static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
+
 -(void)dealloc
 {
+    listener = nil;
     [super dealloc];
 }
 
@@ -117,7 +120,6 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 }
 @end
 
-static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
 
 QT_BEGIN_NAMESPACE
 

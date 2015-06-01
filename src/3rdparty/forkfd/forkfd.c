@@ -63,7 +63,7 @@
 #  include <Availability.h>
 #  include <AvailabilityMacros.h>
 #  if MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
-#    define HAVE_BROKEN_WAITID_ALL 1
+#    define HAVE_BROKEN_WAITID 1
 #  endif
 #endif
 
@@ -109,10 +109,10 @@ static struct sigaction old_sigaction;
 static pthread_once_t forkfd_initialization = PTHREAD_ONCE_INIT;
 static ffd_atomic_int forkfd_status = FFD_ATOMIC_INIT(0);
 
-#ifdef HAVE_BROKEN_WAITID_ALL
-static int waitid_p_all_works = 0;
+#ifdef HAVE_BROKEN_WAITID
+static int waitid_works = 0;
 #else
-static const int waitid_p_all_works = 1;
+static const int waitid_works = 1;
 #endif
 
 static ProcessInfo *tryAllocateInSection(Header *header, ProcessInfo entries[], int maxCount)
@@ -183,10 +183,13 @@ static int tryReaping(pid_t pid, siginfo_t *info)
 {
     /* reap the child */
 #ifdef HAVE_WAITID
-    // we have waitid(2), which fills in siginfo_t for us
-    info->si_pid = 0;
-    return waitid(P_PID, pid, info, WEXITED | WNOHANG) == 0 && info->si_pid == pid;
-#else
+    if (waitid_works) {
+        // we have waitid(2), which fills in siginfo_t for us
+        info->si_pid = 0;
+        return waitid(P_PID, pid, info, WEXITED | WNOHANG) == 0 && info->si_pid == pid;
+    }
+#endif
+
     int status;
     if (waitpid(pid, &status, WNOHANG) <= 0)
         return 0;     // child did not change state
@@ -206,7 +209,6 @@ static int tryReaping(pid_t pid, siginfo_t *info)
     }
 
     return 1;
-#endif
 }
 
 static void freeInfo(Header *header, ProcessInfo *entry)
@@ -246,7 +248,7 @@ static void sigchld_handler(int signum)
         memset(&info, 0, sizeof info);
 
 #ifdef HAVE_WAITID
-        if (!waitid_p_all_works)
+        if (!waitid_works)
             goto search_arrays;
 
         /* be optimistic: try to see if we can get the child that exited */
@@ -310,12 +312,14 @@ search_arrays:
             if (pid <= 0)
                 continue;
 #ifdef HAVE_WAITID
-            /* The child might have been reaped by the block above in another thread,
-             * so first check if it's ready and, if it is, lock it */
-            if (!isChildReady(pid, &info) ||
-                    !ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
-                                                 FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
-                continue;
+            if (waitid_works) {
+                /* The child might have been reaped by the block above in another thread,
+                 * so first check if it's ready and, if it is, lock it */
+                if (!isChildReady(pid, &info) ||
+                        !ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
+                                                     FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
+                    continue;
+            }
 #endif
             if (tryReaping(pid, &info)) {
                 /* this is our child, send notification and free up this entry */
@@ -331,12 +335,14 @@ search_arrays:
                 if (pid <= 0)
                     continue;
 #ifdef HAVE_WAITID
-                /* The child might have been reaped by the block above in another thread,
-                 * so first check if it's ready and, if it is, lock it */
-                if (!isChildReady(pid, &info) ||
-                        !ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
-                                                     FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
-                    continue;
+                if (waitid_works) {
+                    /* The child might have been reaped by the block above in another thread,
+                     * so first check if it's ready and, if it is, lock it */
+                    if (!isChildReady(pid, &info) ||
+                            !ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
+                                                         FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
+                        continue;
+                }
 #endif
                 if (tryReaping(pid, &info)) {
                     /* this is our child, send notification and free up this entry */
@@ -357,17 +363,19 @@ chain_handler:
 
 static void forkfd_initialize()
 {
-#if defined(HAVE_BROKEN_WAITID_ALL)
+#if defined(HAVE_BROKEN_WAITID)
     pid_t pid = fork();
     if (pid == 0) {
         _exit(0);
     } else if (pid > 0) {
         siginfo_t info;
         waitid(P_ALL, 0, &info, WNOWAIT | WEXITED);
-        waitid_p_all_works = (info.si_pid != 0);
+        waitid_works = (info.si_pid != 0);
+        info.si_pid = 0;
 
         // now really reap the child
         waitid(P_PID, pid, &info, WEXITED);
+        waitid_works = waitid_works && (info.si_pid != 0);
     }
 #endif
 

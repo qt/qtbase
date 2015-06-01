@@ -56,6 +56,8 @@ public:
     void addNew();
     bool timerEnabled() const { return m_timer->isActive(); }
 
+    void resizeEvent(QResizeEvent *);
+
 private slots:
     void updateIntervalChanged(int value);
     void timerUsageChanged(bool enabled);

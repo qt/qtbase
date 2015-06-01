@@ -810,7 +810,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isActiveConfig("staticlib")) { //DUMP LIBRARIES
         ProStringList &libdirs = project->values("QMAKE_PBX_LIBPATHS"),
               &frameworkdirs = project->values("QMAKE_FRAMEWORKPATH");
-        static const char * const libs[] = { "QMAKE_LFLAGS", "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+        static const char * const libs[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
         for (int i = 0; libs[i]; i++) {
             tmp = project->values(libs[i]);
             for(int x = 0; x < tmp.count();) {
@@ -821,9 +821,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString r = opt.mid(2).toQString();
                     fixForOutput(r);
                     libdirs.append(r);
-                } else if(opt == "-prebind") {
-                    project->values("QMAKE_DO_PREBINDING").append("TRUE");
-                    remove = true;
                 } else if(opt.startsWith("-l")) {
                     name = opt.mid(2).toQString();
                     QString lib("lib" + name);

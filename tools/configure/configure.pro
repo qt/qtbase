@@ -132,5 +132,3 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/plugin/quuid.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qcryptographichash.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
-
-DEFINES += COMMERCIAL_VERSION

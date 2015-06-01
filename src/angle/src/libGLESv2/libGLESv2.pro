@@ -329,6 +329,8 @@ angle_d3d11 {
 !static {
     DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}.def
     mingw:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}_mingw32.def
+} else {
+    DEFINES += DllMain=DllMain_ANGLE # prevent symbol from conflicting with the user's DllMain
 }
 
 float_converter.target = float_converter

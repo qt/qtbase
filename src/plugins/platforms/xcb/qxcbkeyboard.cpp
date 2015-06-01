@@ -47,6 +47,12 @@
 #include <stdio.h>
 #include <X11/keysym.h>
 
+#ifdef XCB_USE_XINPUT22
+#include <X11/extensions/XI2proto.h>
+#undef KeyPress
+#undef KeyRelease
+#endif
+
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
 #endif
@@ -789,6 +795,31 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
             //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
         }
     }
+}
+
+void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
+{
+#ifdef XCB_USE_XINPUT22
+    if (m_config && !connection()->hasXKB()) {
+        xXIModifierInfo *mods = static_cast<xXIModifierInfo *>(modInfo);
+        xXIGroupInfo *group = static_cast<xXIGroupInfo *>(groupInfo);
+        const xkb_state_component newState = xkb_state_update_mask(xkb_state,
+                                                                   mods->base_mods,
+                                                                   mods->latched_mods,
+                                                                   mods->locked_mods,
+                                                                   group->base_group,
+                                                                   group->latched_group,
+                                                                   group->locked_group);
+
+        if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
+            //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
+        }
+    }
+#else
+    Q_UNUSED(modInfo);
+    Q_UNUSED(groupInfo);
+    Q_ASSERT(false); // this can't be
+#endif
 }
 
 quint32 QXcbKeyboard::xkbModMask(quint16 state)

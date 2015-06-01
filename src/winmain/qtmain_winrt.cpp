@@ -222,11 +222,49 @@ private:
 // Main entry point for Appx containers
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+#if _MSC_VER < 1900
     int argc = 0;
     char **argv, **env;
     _startupinfo info = { _query_new_mode() };
     if (int init = __getmainargs(&argc, &argv, &env, false, &info))
         return init;
+#else
+    QByteArray commandLine = QString::fromWCharArray(GetCommandLine()).toUtf8();
+    QVarLengthArray<char *> args;
+    args.append(commandLine.data());
+    bool quote = false;
+    bool escape = false;
+    for (int i = 0; i < commandLine.size(); ++i) {
+        switch (commandLine.at(i)) {
+        case '\\':
+            escape = true;
+            break;
+        case '"':
+            if (escape) {
+                escape = false;
+                break;
+            }
+            quote = !quote;
+            commandLine[i] = '\0';
+            break;
+        case ' ':
+            if (quote)
+                break;
+            commandLine[i] = '\0';
+            if (args.last()[0] != '\0')
+                args.append(commandLine.data() + i + 1);
+            // fall through
+        default:
+            if (args.last()[0] == '\0')
+                args.last() = commandLine.data() + i;
+            escape = false; // only quotes are escaped
+            break;
+        }
+    }
+    int argc = args.size();
+    char **argv = args.data();
+    char **env = Q_NULLPTR;
+#endif // _MSC_VER >= 1900
 
     for (int i = 0; env && env[i]; ++i) {
         QByteArray var(env[i]);

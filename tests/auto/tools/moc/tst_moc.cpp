@@ -1882,6 +1882,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
+
+    QTest::newRow("QTBUG-46210: crash on invalid macro")
+        << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45);")
+        << QStringList()
+        << 1
+        << QString("IGNORE_ALL_STDOUT")
+        << QString(":2: Error: '#' is not followed by a macro parameter");
 }
 
 void tst_Moc::warnings()

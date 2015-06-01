@@ -46,6 +46,7 @@
 //
 #include <QtCore/QEventLoop>
 #include <QtCore/QBuffer>
+#include <QtCore/QMutex>
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #include <wrl.h>

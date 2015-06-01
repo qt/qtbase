@@ -81,7 +81,7 @@ QT_END_NAMESPACE
 }
 
 - (id) initWithMenu:(QCocoaMenu*) m;
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
+- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
 
 @end
 
@@ -152,11 +152,20 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 
     // Change the private unicode keys to the ones used in setting the "Key Equivalents"
     NSString *characters = qt_mac_removePrivateUnicode([event characters]);
-    if ([self hasShortcut:menu
-            forKey:characters
-            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
-            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
-            ]) {
+    // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
+    const NSUInteger mask = NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask;
+    if (NSMenuItem *menuItem = [self findItem:menu forKey:characters forModifiers:([event modifierFlags] & mask)]) {
+        if (!menuItem.target) {
+            // This item was modified by QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder
+            // and it looks like we're running a modal session for NSOpenPanel/NSSavePanel.
+            // QCocoaFileDialogHelper is actually the only place we use this and we run NSOpenPanel modal
+            // (modal sheet, window modal, application modal).
+            // Whatever the current first responder is, let's give it a chance
+            // and do not touch the Qt's focusObject (which is different from some native view
+            // having a focus inside NSSave/OpenPanel.
+            return YES;
+        }
+
         QObject *object = qApp->focusObject();
         if (object) {
             QChar ch;
@@ -194,22 +203,23 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
     return NO;
 }
 
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
+- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
 {
     for (NSMenuItem *item in [menu itemArray]) {
         if (![item isEnabled] || [item isHidden] || [item isSeparatorItem])
             continue;
-        if ([item hasSubmenu]
-            && [self hasShortcut:[item submenu] forKey:key forModifiers:modifier])
-            return YES;
+        if ([item hasSubmenu]) {
+            if (NSMenuItem *nested = [self findItem:[item submenu] forKey:key forModifiers:modifier])
+                return nested;
+        }
 
         NSString *menuKey = [item keyEquivalent];
         if (menuKey
             && NSOrderedSame == [menuKey compare:key]
             && modifier == [item keyEquivalentModifierMask])
-            return YES;
+            return item;
     }
-    return NO;
+    return nil;
 }
 
 @end

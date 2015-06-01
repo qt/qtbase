@@ -2962,8 +2962,20 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     Edition="Preview"
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
-    if test -x "$relpath/bin/licheck"; then
-        LicheckOutput=`$relpath/bin/licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
+    if [ $UNAME_SYSTEM = "Linux" ]; then
+        if file -L /bin/sh | grep -q "64-bit" ; then
+            Licheck=licheck64
+        else
+            Licheck=licheck32
+        fi
+    elif [ $UNAME_SYSTEM = "Darwin" ]; then
+        Licheck=licheck_mac
+    else
+        echo >&2 "Host operating system not supported by this edition of Qt."
+        exit 1
+    fi
+    if [ -x "$relpath/bin/$Licheck" ]; then
+        LicheckOutput=`$relpath/bin/$Licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
                        $PLATFORM $XPLATFORM`
         if [ $? -ne 0 ]; then
             exit 1
@@ -2974,7 +2986,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo
         echo "Error: This is the Open Source version of Qt."
         echo "If you want to use Enterprise features of Qt,"
-        echo "information use the contact form at http://www.qt.io/contact-us"
+        echo "use the contact form at http://www.qt.io/contact-us"
         echo "to purchase a license."
         echo
         exit 1
@@ -5346,6 +5358,14 @@ fi
 # auto-detect XInput2 support
 if [ "$CFG_XINPUT2" != "no" ]; then
     if compileTest x11/xinput2 "XInput2"; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xi 2>/dev/null; then
+            QMAKE_LIBXI_VERSION_MAJOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 1`
+            QMAKE_LIBXI_VERSION_MINOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 2`
+            QMAKE_LIBXI_VERSION_PATCH=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 3`
+            QMakeVar set QMAKE_LIBXI_VERSION_MAJOR "$QMAKE_LIBXI_VERSION_MAJOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_MINOR "$QMAKE_LIBXI_VERSION_MINOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_PATCH "$QMAKE_LIBXI_VERSION_PATCH"
+        fi
         CFG_XINPUT2=yes
         CFG_XINPUT=no
     else
@@ -6763,7 +6783,14 @@ QT_PATCH_VERSION = $QT_PATCH_VERSION
 QT_LIBINFIX = $QT_LIBINFIX
 QT_NAMESPACE = $QT_NAMESPACE
 
+QT_EDITION = $Edition
 EOF
+
+if [ "$Edition" != "OpenSource" ] && [ "$Edition" != "Preview" ]; then
+    echo "QT_LICHECK = $Licheck" >> "$QTCONFIG.tmp"
+    echo "QT_RELEASE_DATE = $ReleaseDate" >> "$QTCONFIG.tmp"
+fi
+echo >> "$QTCONFIG.tmp"
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"

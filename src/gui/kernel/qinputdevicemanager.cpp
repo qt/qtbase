@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 QInputDeviceManager::QInputDeviceManager(QObject *parent)
     : QObject(*new QInputDeviceManagerPrivate, parent)
 {
+    qRegisterMetaType<DeviceType>();
 }
 
 int QInputDeviceManager::deviceCount(DeviceType type) const

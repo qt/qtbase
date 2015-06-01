@@ -104,6 +104,12 @@ QT_BEGIN_NAMESPACE
   non-sharable. To overcome this issue, prefer using
   QSurfaceFormat::setDefaultFormat() instead of setFormat().
 
+  \note Calling QSurfaceFormat::setDefaultFormat() before constructing
+  the QApplication instance is mandatory on some platforms (for example,
+  OS X) when an OpenGL core profile context is requested. This is to
+  ensure that resource sharing between contexts stays functional as all
+  internal contexts are created using the correct version and profile.
+
   \section1 Painting Techniques
 
   As described above, subclass QOpenGLWidget to render pure 3D content in the

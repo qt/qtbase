@@ -128,6 +128,8 @@ void GLWidget::setZRotation(int angle)
 //! [6]
 void GLWidget::initializeGL()
 {
+    initializeOpenGLFunctions();
+
     qglClearColor(qtPurple.dark());
 
     logo = new QtLogo(this, 64);
@@ -153,7 +155,7 @@ void GLWidget::paintGL()
     glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
-    logo->draw();
+    logo->draw(static_cast<QOpenGLFunctions_1_1 *>(this));
 }
 //! [7]
 

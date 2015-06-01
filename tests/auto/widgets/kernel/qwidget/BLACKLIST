@@ -1,11 +1,16 @@
+# OSX QTBUG-25300 QTBUG-45502
 [normalGeometry]
 ubuntu-14.04
+osx
 [saveRestoreGeometry]
 ubuntu-14.04
+osx
 [restoreVersion1Geometry]
 ubuntu-14.04
+osx
 [updateWhileMinimized]
 ubuntu-14.04
+osx
 [focusProxyAndInputMethods]
 ubuntu-14.04
 [touchEventSynthesizedMouseEvent]
@@ -14,3 +19,119 @@ ubuntu-14.04
 ubuntu-14.04
 [largerThanScreen_QTBUG30142]
 ubuntu-14.04
+[windowState]
+osx
+[showMaximized]
+osx
+[setGeometry]
+osx
+[stackUnder]
+osx
+[raise]
+osx-10.9
+[widgetAt]
+osx
+[sheetOpacity]
+osx
+[resizeEvent]
+osx
+[setWindowGeometry:100,123 200x200, flags 0]
+osx-10.10
+[windowMoveResize:100,123 200x200, flags 0]
+osx-10.10
+[setWindowGeometry:100,122 200x200, flags 0]
+osx-10.9
+[windowMoveResize:100,122 200x200, flags 0]
+osx-10.9
+[setWindowGeometry:100,100 824x564, flags 0]
+osx-10.10
+[windowMoveResize:100,100 824x564, flags 0]
+osx-10.10
+[setWindowGeometry:100,100 824x516, flags 0]
+osx-10.10
+[windowMoveResize:100,100 824x516, flags 0]
+osx-10.10
+[setWindowGeometry:100,73 200x0, flags 0]
+osx-10.10
+[windowMoveResize:100,73 200x0, flags 0]
+osx-10.10
+[setWindowGeometry:100,100 824x519, flags 0]
+osx-10.10
+[windowMoveResize:100,100 824x519, flags 0]
+osx-10.10
+[setWindowGeometry:100,100 824x518, flags 0]
+osx-10.10
+[windowMoveResize:100,100 824x518, flags 0]
+osx-10.10
+[setWindowGeometry:100,72 200x0, flags 0]
+osx-10.9
+[windowMoveResize:100,72 200x0, flags 0]
+osx-10.9
+[setWindowGeometry:100,122 952x574, flags 0]
+osx-10.9
+[windowMoveResize:100,122 952x574, flags 0]
+osx-10.9
+[setWindowGeometry:100,122 952x578, flags 0]
+osx-10.9
+[windowMoveResize:100,122 952x578, flags 0]
+osx-10.9
+[setWindowGeometry:100,122 952x576, flags 0]
+osx-10.9
+[windowMoveResize:100,122 952x576, flags 0]
+osx-10.9
+[setWindowGeometry:100,100 824x521, flags 0]
+osx-10.10
+[windowMoveResize:100,100 824x521, flags 0]
+osx-10.10
+[setWindowGeometry:100,122 952x577, flags 0]
+osx-10.9
+[windowMoveResize:100,122 952x577, flags 0]
+osx-10.9
+[setWindowGeometry:100,122 952x580, flags 0]
+osx-10.9
+[windowMoveResize:100,122 952x580, flags 0]
+osx-10.9
+[windowMoveResize:130,72 0x0, flags 0]
+osx-10.9
+[windowMoveResize:130,122 0x200, flags 0]
+osx-10.9
+[childEvents]
+osx
+[renderInvisible]
+osx
+[optimizedResizeMove]
+osx
+[optimizedResize_topLevel]
+osx
+[render_systemClip]
+osx
+[update]
+osx
+[doubleRepaint]
+osx
+[childAt_unifiedToolBar]
+osx
+[showMinimizedKeepsFocus]
+osx-10.10
+[moveWindowInShowEvent:1]
+osx-10.9
+[moveWindowInShowEvent:2]
+osx-10.9
+[taskQTBUG_4055_sendSyntheticEnterLeave]
+osx
+[syntheticEnterLeave]
+osx
+[maskedUpdate]
+osx
+[hideWhenFocusWidgetIsChild]
+osx-10.10
+[hideOpaqueChildWhileHidden]
+osx
+[resizeStaticContentsChildWidget_QTBUG35282]
+osx-10.9
+[lower]
+osx
+[setClearAndResizeMask]
+osx
+[setToolTip]
+osx-10.9

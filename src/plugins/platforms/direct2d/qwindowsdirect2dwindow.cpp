@@ -163,7 +163,7 @@ void QWindowsDirect2DWindow::present(const QRegion &region)
     const SIZE size = { bounds.width(), bounds.height() };
     const POINT ptDst = { bounds.x(), bounds.y() };
     const POINT ptSrc = { 0, 0 };
-    const BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255.0 * opacity(), AC_SRC_ALPHA };
+    const BLENDFUNCTION blend = { AC_SRC_OVER, 0, BYTE(255.0 * opacity()), AC_SRC_ALPHA };
     const QRect r = region.boundingRect();
     const RECT dirty = { r.left(), r.top(), r.left() + r.width(), r.top() + r.height() };
     UPDATELAYEREDWINDOWINFO info = { sizeof(UPDATELAYEREDWINDOWINFO), NULL,
