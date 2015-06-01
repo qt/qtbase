@@ -2688,7 +2688,9 @@ void QXcbWindow::setMask(const QRegion &region)
     } else {
         const int dpr = devicePixelRatio();
         QVector<xcb_rectangle_t> rects;
-        foreach (const QRect &r, region.rects())
+        const QVector<QRect> regionRects = region.rects();
+        rects.reserve(regionRects.count());
+        foreach (const QRect &r, regionRects)
             rects.push_back(qRectToXCBRectangle(mapLocalGeometryToNative(r, dpr)));
         xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                              XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,

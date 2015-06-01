@@ -2128,6 +2128,7 @@ bool QSortFilterProxyModel::removeRows(int row, int count, const QModelIndex &pa
     // remove corresponding source intervals
     // ### if this proves to be slow, we can switch to single-row removal
     QVector<int> rows;
+    rows.reserve(count);
     for (int i = row; i < row + count; ++i)
         rows.append(m->source_rows.at(i));
     std::sort(rows.begin(), rows.end());
@@ -2167,6 +2168,7 @@ bool QSortFilterProxyModel::removeColumns(int column, int count, const QModelInd
     }
     // remove corresponding source intervals
     QVector<int> columns;
+    columns.reserve(count);
     for (int i = column; i < column + count; ++i)
         columns.append(m->source_columns.at(i));
 

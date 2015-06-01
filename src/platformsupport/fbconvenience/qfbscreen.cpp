@@ -206,10 +206,11 @@ void QFbScreen::generateRects()
         }
 #endif
     }
-    foreach (const QRect &rect, remainingScreen.rects())
+    const QVector<QRect> remainingScreenRects = remainingScreen.rects();
+    mCachedRects.reserve(mCachedRects.count() + remainingScreenRects.count());
+    foreach (const QRect &rect, remainingScreenRects)
         mCachedRects += QPair<QRect, int>(rect, -1);
     mIsUpToDate = true;
-    return;
 }
 
 QRegion QFbScreen::doRedraw()

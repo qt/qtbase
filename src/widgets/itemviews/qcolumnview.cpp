@@ -861,11 +861,15 @@ void QColumnView::setColumnWidths(const QList<int> &list)
 {
     Q_D(QColumnView);
     int i = 0;
-    for (; (i < list.count() && i < d->columns.count()); ++i) {
+    const int listCount = list.count();
+    const int count = qMin(listCount, d->columns.count());
+    for (; i < count; ++i) {
         d->columns.at(i)->resize(list.at(i), d->columns.at(i)->height());
         d->columnSizes[i] = list.at(i);
     }
-    for (; i < list.count(); ++i)
+
+    d->columnSizes.reserve(listCount);
+    for (; i < listCount; ++i)
         d->columnSizes.append(list.at(i));
 }
 

@@ -751,6 +751,7 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
 
     AnchorVertex *prev = before;
     QVector<AnchorData *> edges;
+    edges.reserve(vertices.count() + 1);
 
     const int numVertices = vertices.count();
     edges.reserve(numVertices + 1);

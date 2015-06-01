@@ -671,6 +671,7 @@ void QSslSocketPrivate::resetDefaultEllipticCurves()
     QVarLengthArray<EC_builtin_curve> builtinCurves(static_cast<int>(curveCount));
 
     if (q_EC_get_builtin_curves(builtinCurves.data(), curveCount) == curveCount) {
+        curves.reserve(int(curveCount));
         for (size_t i = 0; i < curveCount; ++i) {
             QSslEllipticCurve curve;
             curve.id = builtinCurves[int(i)].nid;

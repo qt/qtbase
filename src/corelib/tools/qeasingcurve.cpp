@@ -1219,6 +1219,7 @@ QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 {
     const int count = tcbPoints.count();
     QVector<QPointF> bezierPoints;
+    bezierPoints.reserve(3 * (count - 1));
 
     for (int i = 1; i < count; i++) {
         const qreal t_0 = tcbPoints.at(i - 1)._t;

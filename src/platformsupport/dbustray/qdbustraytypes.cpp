@@ -82,6 +82,8 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         sizes.append(QSize(IconNormalSmallSize * dpr, IconNormalSmallSize * dpr));
     if (!hasMediumIcon)
         sizes.append(QSize(IconNormalMediumSize * dpr, IconNormalMediumSize * dpr));
+
+    ret.reserve(sizes.size());
     foreach (QSize size, sizes) {
         // Protocol specifies ARGB32 format in network byte order
         QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);

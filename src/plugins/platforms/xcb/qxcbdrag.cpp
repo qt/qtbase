@@ -689,6 +689,7 @@ void QXcbDrag::handleEnter(QWindow *window, const xcb_client_message_event_t *ev
                 length = xdnd_max_type;
 
             xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
+            xdnd_types.reserve(length);
             for (int i = 0; i < length; ++i)
                 xdnd_types.append(atoms[i]);
         }

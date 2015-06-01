@@ -398,6 +398,7 @@ void QPicturePaintEngine::drawPolygon(const QPointF *points, int numPoints, Poly
     int pos;
 
     QPolygonF polygon;
+    polygon.reserve(numPoints);
     for (int i=0; i<numPoints; ++i)
         polygon << points[i];
 

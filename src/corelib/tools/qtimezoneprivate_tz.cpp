@@ -630,6 +630,7 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     }
 
     // Now for each transition time calculate our rule and save them
+    m_tranTimes.reserve(tranList.count());
     foreach (const QTzTransition &tz_tran, tranList) {
         QTzTransitionTime tran;
         QTzTransitionRule rule;

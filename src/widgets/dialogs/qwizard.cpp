@@ -751,6 +751,7 @@ void QWizardPrivate::init()
 
     updateButtonLayout();
 
+    defaultPropertyTable.reserve(NFallbackDefaultProperties);
     for (uint i = 0; i < NFallbackDefaultProperties; ++i)
         defaultPropertyTable.append(QWizardDefaultProperty(fallbackProperties[i].className,
                                                            fallbackProperties[i].property,
