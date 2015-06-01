@@ -1010,6 +1010,9 @@ QAccessible::Role QAccessibleTableCell::role() const
 QAccessible::State QAccessibleTableCell::state() const
 {
     QAccessible::State st;
+    if (!view)
+        return st;
+
     QRect globalRect = view->rect();
     globalRect.translate(view->mapToGlobal(QPoint(0,0)));
     if (!globalRect.intersects(rect()))
