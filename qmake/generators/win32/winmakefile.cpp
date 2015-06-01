@@ -50,7 +50,7 @@ Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
 }
 
 int
-Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem, const QString &ext)
+Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem)
 {
     QString bd = Option::normalizePath(d);
     if(!exists(bd))
@@ -69,30 +69,10 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
         return vover.first().toInt();
 
     int biggest=-1;
-    if (project->isActiveConfig("link_highest_lib_version")) {
-        static QHash<QString, QStringList> dirEntryListCache;
-        QStringList entries = dirEntryListCache.value(bd);
-        if (entries.isEmpty()) {
-            QDir dir(bd);
-            entries = dir.entryList();
-            dirEntryListCache.insert(bd, entries);
-        }
-
-        QRegExp regx(QString("((lib)?%1([0-9]*)).(%2|prl)$").arg(stem).arg(ext), Qt::CaseInsensitive);
-        for(QStringList::Iterator it = entries.begin(); it != entries.end(); ++it) {
-            if(regx.exactMatch((*it))) {
-                if (!regx.cap(3).isEmpty()) {
-                    bool ok = true;
-                    int num = regx.cap(3).toInt(&ok);
-                    biggest = qMax(biggest, (!ok ? -1 : num));
-                }
-            }
-        }
-    }
     if(libInfoRead
        && !libinfo.values("QMAKE_PRL_CONFIG").contains("staticlib")
        && !libinfo.isEmpty("QMAKE_PRL_VERSION"))
-       biggest = qMax(biggest, libinfo.first("QMAKE_PRL_VERSION").toQString().replace(".", "").toInt());
+       biggest = libinfo.first("QMAKE_PRL_VERSION").toQString().replace(".", "").toInt();
     return biggest;
 }
 

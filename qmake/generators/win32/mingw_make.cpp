@@ -82,7 +82,7 @@ bool MingwMakefileGenerator::findLibraries()
             QString suffix = project->first(ProKey("QMAKE_" + steam.toUpper() + "_SUFFIX")).toQString();
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString extension;
-                int ver = findHighestVersion((*dir_it).local(), steam, "dll.a|a");
+                int ver = findHighestVersion((*dir_it).local(), steam);
                 if (ver > 0)
                     extension += QString::number(ver);
                 extension += suffix;
