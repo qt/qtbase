@@ -111,11 +111,6 @@ UnixMakefileGenerator::init()
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PREBIND");
     if(!project->isEmpty("QMAKE_INCDIR"))
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
-    project->values("QMAKE_L_FLAG")
-            << (project->isActiveConfig("rvct_linker") ? "--userlibpath "
-              : project->isActiveConfig("armcc_linker") ? "-L--userlibpath="
-              : project->isActiveConfig("ti_linker") ? "--search_path="
-              : "-L");
     ProStringList ldadd;
     if(!project->isEmpty("QMAKE_LIBDIR")) {
         const ProStringList &libdirs = project->values("QMAKE_LIBDIR");
@@ -437,9 +432,6 @@ UnixMakefileGenerator::fixLibFlag(const ProString &lib)
 bool
 UnixMakefileGenerator::findLibraries()
 {
-    ProString libArg = project->first("QMAKE_L_FLAG");
-    if (libArg == "-L")
-        libArg.clear();
     QList<QMakeLocalFileName> libdirs;
     int libidx = 0;
     foreach (const ProString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
@@ -459,16 +451,8 @@ UnixMakefileGenerator::findLibraries()
                         continue;
                     }
                     libdirs.insert(libidx++, f);
-                    if (!libArg.isEmpty())
-                        *it = libArg + f.real();
                 } else if(opt.startsWith("-l")) {
-                    if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
-                        (*it) = "lib" + opt.mid(2) + ".so";
-                    } else if (project->isActiveConfig("ti_linker")) {
-                        (*it) = opt.mid(2);
-                    } else {
-                        stub = opt.mid(2);
-                    }
+                    stub = opt.mid(2);
                 } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
                     if (opt.length() == 10)
                         ++it;
@@ -544,7 +528,6 @@ QString linkLib(const QString &file, const QString &libName) {
 void
 UnixMakefileGenerator::processPrlFiles()
 {
-    const QString libArg = project->first("QMAKE_L_FLAG").toQString();
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     int libidx = 0, fwidx = 0;
     foreach (const ProString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
@@ -557,8 +540,8 @@ UnixMakefileGenerator::processPrlFiles()
         for(int lit = 0; lit < l.size(); ++lit) {
             QString opt = l.at(lit).toQString();
             if(opt.startsWith("-")) {
-                if (opt.startsWith(libArg)) {
-                    QMakeLocalFileName l(opt.mid(libArg.length()));
+                if (opt.startsWith("-L")) {
+                    QMakeLocalFileName l(opt.mid(2));
                     if(!libdirs.contains(l))
                        libdirs.insert(libidx++, l);
                 } else if(opt.startsWith("-l")) {
@@ -632,7 +615,7 @@ UnixMakefileGenerator::processPrlFiles()
                         }
                     }
 
-                    if (opt.startsWith(libArg) ||
+                    if (opt.startsWith("-L") ||
                        (target_mode == TARG_MAC_MODE && opt.startsWith("-F"))) {
                         if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
