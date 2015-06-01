@@ -24,5 +24,5 @@ wince*: {
     } else {
         imageFiles.path    = images
     }
-    DEPLOYMENT += imageFiles
+    INSTALLS += imageFiles
 }

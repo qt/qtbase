@@ -9,7 +9,7 @@ win32: CONFIG += console
 wince*:{
    htmlfiles.files = *.html
    htmlfiles.path = .
-   DEPLOYMENT += htmlfiles
+   INSTALLS += htmlfiles
 }
 
 # install
