@@ -86,6 +86,7 @@ struct QBackingstoreTextureInfo
     QWidget *widget; // may be null
     GLuint textureId;
     QRect rect;
+    QRect clipRect;
     QPlatformTextureList::Flags flags;
 };
 
@@ -142,6 +143,12 @@ QRect QPlatformTextureList::geometry(int index) const
     return d->textures.at(index).rect;
 }
 
+QRect QPlatformTextureList::clipRect(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).clipRect;
+}
+
 void QPlatformTextureList::lock(bool on)
 {
     Q_D(QPlatformTextureList);
@@ -157,13 +164,15 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry, Flags flags)
+void QPlatformTextureList::appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry,
+                                         const QRect &clipRect, Flags flags)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
     bi.widget = widget;
     bi.textureId = textureId;
     bi.rect = geometry;
+    bi.clipRect = clipRect;
     bi.flags = flags;
     d->textures.append(bi);
 }
@@ -198,7 +207,7 @@ void QPlatformTextureList::clear()
 
 #ifndef QT_NO_OPENGL
 
-static QRect deviceRect(const QRect &rect, QWindow *window)
+static inline QRect deviceRect(const QRect &rect, QWindow *window)
 {
     QRect deviceRect(rect.topLeft() * window->devicePixelRatio(),
                      rect.size() * window->devicePixelRatio());
@@ -217,6 +226,32 @@ static QRegion deviceRegion(const QRegion &region, QWindow *window)
     QRegion deviceRegion;
     deviceRegion.setRects(rects.constData(), rects.count());
     return deviceRegion;
+}
+
+static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
+{
+    return QRect(topLeftRect.x(), windowHeight - topLeftRect.bottomRight().y() - 1,
+                 topLeftRect.width(), topLeftRect.height());
+}
+
+static void blit(const QPlatformTextureList *textures, int idx, QWindow *window, const QRect &deviceWindowRect,
+                 QOpenGLTextureBlitter *blitter)
+{
+    const QRect rectInWindow = textures->geometry(idx);
+    QRect clipRect = textures->clipRect(idx);
+    if (clipRect.isEmpty())
+        clipRect = QRect(QPoint(0, 0), rectInWindow.size());
+    const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
+    const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
+
+    const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(deviceRect(clippedRectInWindow, window),
+                                                                     deviceWindowRect);
+
+    const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
+                                                                     deviceRect(rectInWindow, window).size(),
+                                                                     QOpenGLTextureBlitter::OriginBottomLeft);
+
+    blitter->blit(textures->textureId(idx), target, source);
 }
 
 /*!
@@ -254,15 +289,12 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     d_ptr->blitter->bind();
 
-    QRect windowRect(QPoint(), window->size() * window->devicePixelRatio());
+    const QRect deviceWindowRect = deviceRect(QRect(QPoint(), window->size()), window);
 
     // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
-        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            QRect targetRect = deviceRect(textures->geometry(i), window);
-            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
-            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
-        }
+        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blit(textures, i, window, deviceWindowRect, d_ptr->blitter);
     }
 
     funcs->glEnable(GL_BLEND);
@@ -272,6 +304,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     // semi-transparency even when it is not wanted.
     funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
+    // Backingstore texture with the normal widgets.
     GLuint textureId = 0;
     QOpenGLTextureBlitter::Origin origin = QOpenGLTextureBlitter::OriginTopLeft;
     if (QPlatformGraphicsBuffer *graphicsBuffer = this->graphicsBuffer()) {
@@ -307,7 +340,6 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             origin = QOpenGLTextureBlitter::OriginBottomLeft;
         textureId = d_ptr->textureId;
     } else {
-        // Backingstore texture with the normal widgets.
         TextureFlags flags = 0;
         textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize, &flags);
         d_ptr->needsSwizzle = (flags & TextureSwizzle) != 0;
@@ -316,7 +348,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     }
 
     if (textureId) {
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), deviceWindowRect);
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(true);
         d_ptr->blitter->blit(textureId, target, origin);
@@ -326,11 +358,8 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {
-        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            QRect targetRect = deviceRect(textures->geometry(i), window);
-            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
-            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
-        }
+        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blit(textures, i, window, deviceWindowRect, d_ptr->blitter);
     }
 
     funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

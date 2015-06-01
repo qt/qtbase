@@ -175,7 +175,8 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
 
     m_textures->clear();
     for (int i = 0; i < textures->count(); ++i)
-        m_textures->appendTexture(textures->widget(i), textures->textureId(i), textures->geometry(i), textures->flags(i));
+        m_textures->appendTexture(textures->widget(i), textures->textureId(i), textures->geometry(i),
+                                  textures->clipRect(i), textures->flags(i));
 
     updateTexture();
     m_textures->appendTexture(Q_NULLPTR, m_bsTexture, window->geometry());

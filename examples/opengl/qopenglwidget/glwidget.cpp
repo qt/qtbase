@@ -537,14 +537,14 @@ void GLWidget::setTransparent(bool transparent)
     window()->update();
 }
 
-void GLWidget::resizeGL(int w, int h)
+void GLWidget::resizeGL(int, int)
 {
     if (m_hasButton) {
         if (!m_btn) {
-            m_btn = new QPushButton("A widget on top.\nPress me!", this);
+            m_btn = new QPushButton("A widget on top.\nPress for more widgets.", this);
             connect(m_btn, &QPushButton::clicked, this, &GLWidget::handleButtonPress);
         }
-        m_btn->move(w / 2, h / 2);
+        m_btn->move(20, 80);
     }
 }
 
