@@ -717,8 +717,8 @@ void QColor::setHsv(int h, int s, int v, int a)
     saturation, lightness, and alpha-channel (transparency) components of the
     color's HSL value.
 
-    These components can be retrieved individually using the hueHslF(),
-    saturationHslF(), lightnessF() and alphaF() functions.
+    These components can be retrieved individually using the hslHueF(),
+    hslSaturationF(), lightnessF() and alphaF() functions.
 
     \sa setHsl()
 */
@@ -747,8 +747,8 @@ void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
     saturation, lightness, and alpha-channel (transparency) components of the
     color's HSL value.
 
-    These components can be retrieved individually using the hueHsl(),
-    saturationHsl(), lightness() and alpha() functions.
+    These components can be retrieved individually using the hslHue(),
+    hslSaturation(), lightness() and alpha() functions.
 
     \sa setHsl()
 */
