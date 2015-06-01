@@ -1221,7 +1221,7 @@ void tst_QListView::scrollTo()
     list << "Short item";
     model.setStringList(list);
     lv.setModel(&model);
-    lv.setFixedSize(100, 200);
+    lv.setFixedSize(110, 200);
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
