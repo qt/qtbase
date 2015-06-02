@@ -4051,9 +4051,9 @@ void tst_QTableView::mouseWheel()
     QWheelEvent verticalEvent(pos, delta, 0, 0, Qt::Vertical);
     QWheelEvent horizontalEvent(pos, delta, 0, 0, Qt::Horizontal);
     QApplication::sendEvent(view.viewport(), &horizontalEvent);
-    QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPositon) < 10);
+    QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPositon) < 15);
     QApplication::sendEvent(view.viewport(), &verticalEvent);
-    QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 10);
+    QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 15);
 }
 #endif // !QT_NO_WHEELEVENT
 
