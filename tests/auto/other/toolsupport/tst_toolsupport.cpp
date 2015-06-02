@@ -124,7 +124,7 @@ void tst_toolsupport::offsets_data()
     {
         QTestData &data = QTest::newRow("QFilePrivate::fileName")
                 << pmm_to_offsetof(&QFilePrivate::fileName);
-        data << 168 << 248;
+        data << 184 << 256;
     }
 #endif
 

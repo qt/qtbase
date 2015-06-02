@@ -355,7 +355,7 @@ bool QFileDevice::atEnd() const
     Q_D(const QFileDevice);
 
     // If there's buffered data left, we're not at the end.
-    if (!d->buffer.isEmpty())
+    if (!d->isBufferEmpty())
         return false;
 
     if (!isOpen())

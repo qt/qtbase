@@ -1395,15 +1395,17 @@ QProcess::ProcessChannel QProcess::readChannel() const
 void QProcess::setReadChannel(ProcessChannel channel)
 {
     Q_D(QProcess);
+
+    if (d->transactionStarted) {
+        qWarning("QProcess::setReadChannel: Failed due to the active read transaction");
+        return;
+    }
+
     if (d->processChannel != channel) {
-        QByteArray buf = d->buffer.readAll();
-        if (d->processChannel == QProcess::StandardOutput) {
-            for (int i = buf.size() - 1; i >= 0; --i)
-                d->stdoutChannel.buffer.ungetChar(buf.at(i));
-        } else {
-            for (int i = buf.size() - 1; i >= 0; --i)
-                d->stderrChannel.buffer.ungetChar(buf.at(i));
-        }
+        QRingBuffer *buffer = (d->processChannel == QProcess::StandardOutput)
+                              ? &d->stdoutChannel.buffer
+                              : &d->stderrChannel.buffer;
+        d->buffer.read(buffer->reserveFront(d->buffer.size()), d->buffer.size());
     }
     d->processChannel = channel;
 }

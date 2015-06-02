@@ -2531,7 +2531,7 @@ qint64 QSslSocketPrivate::peek(char *data, qint64 maxSize)
     if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
         //unencrypted mode - do not use QIODevice::peek, as it reads ahead data from the plain socket
         //peek at data already in the QIODevice buffer (from a previous read)
-        qint64 r = buffer.peek(data, maxSize);
+        qint64 r = buffer.peek(data, maxSize, transactionPos);
         if (r == maxSize)
             return r;
         data += r;
@@ -2560,7 +2560,7 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
         //peek at data already in the QIODevice buffer (from a previous read)
         QByteArray ret;
         ret.reserve(maxSize);
-        ret.resize(buffer.peek(ret.data(), maxSize));
+        ret.resize(buffer.peek(ret.data(), maxSize, transactionPos));
         if (ret.length() == maxSize)
             return ret;
         //peek at data in the plain socket

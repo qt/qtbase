@@ -111,6 +111,11 @@ public:
     QByteArray readLine(qint64 maxlen = 0);
     virtual bool canReadLine() const;
 
+    void startTransaction();
+    void commitTransaction();
+    void rollbackTransaction();
+    bool isTransactionStarted() const;
+
     qint64 write(const char *data, qint64 len);
     qint64 write(const char *data);
     inline qint64 write(const QByteArray &data)

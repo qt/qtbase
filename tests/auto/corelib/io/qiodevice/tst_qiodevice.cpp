@@ -57,9 +57,11 @@ private slots:
     void readLine2_data();
     void readLine2();
 
-    void peekBug();
     void readAllKeepPosition();
     void writeInTextMode();
+
+    void transaction_data();
+    void transaction();
 };
 
 void tst_QIODevice::initTestCase()
@@ -528,77 +530,23 @@ void tst_QIODevice::readLine2()
     }
 }
 
-
-class PeekBug : public QIODevice {
-    Q_OBJECT
-public:
-    char alphabet[27];
-    qint64 counter;
-    PeekBug() : QIODevice(), counter(0) {
-        memcpy(alphabet,"abcdefghijklmnopqrstuvqxyz",27);
-    };
-    qint64 readData(char *data, qint64 maxlen) {
-        qint64 pos = 0;
-        while (pos < maxlen) {
-            *(data + pos) = alphabet[counter];
-            pos++;
-            counter++;
-            if (counter == 26)
-                counter = 0;
-        }
-        return maxlen;
-    }
-    qint64 writeData(const char * /* data */, qint64 /* maxlen */) {
-        return -1;
-    }
-
-};
-
-// This is a regression test for an old bug where peeking at
-// more than one character failed to put them back.
-void tst_QIODevice::peekBug()
-{
-    PeekBug peekBug;
-    peekBug.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
-
-    char onetwo[2];
-    peekBug.peek(onetwo, 2);
-    QCOMPARE(onetwo[0], 'a');
-    QCOMPARE(onetwo[1], 'b');
-
-    peekBug.read(onetwo, 1);
-    QCOMPARE(onetwo[0], 'a');
-
-    peekBug.peek(onetwo, 2);
-    QCOMPARE(onetwo[0], 'b');
-    QCOMPARE(onetwo[1], 'c');
-
-    peekBug.read(onetwo, 1);
-    QCOMPARE(onetwo[0], 'b');
-    peekBug.read(onetwo, 1);
-    QCOMPARE(onetwo[0], 'c');
-    peekBug.read(onetwo, 1);
-    QCOMPARE(onetwo[0], 'd');
-
-    peekBug.peek(onetwo, 2);
-    QCOMPARE(onetwo[0], 'e');
-    QCOMPARE(onetwo[1], 'f');
-
-}
-
 class SequentialReadBuffer : public QIODevice
 {
 public:
-    SequentialReadBuffer(const char *data) : QIODevice(), buf(data), offset(0) { }
+    SequentialReadBuffer(const char *data)
+        : QIODevice(), buf(new QByteArray(data)), offset(0), ownbuf(true) { }
+    SequentialReadBuffer(QByteArray *byteArray)
+        : QIODevice(), buf(byteArray), offset(0), ownbuf(false) { }
+    virtual ~SequentialReadBuffer() { if (ownbuf) delete buf; }
 
     bool isSequential() const Q_DECL_OVERRIDE { return true; }
-    const QByteArray &buffer() const { return buf; }
+    const QByteArray &buffer() const { return *buf; }
 
 protected:
     qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE
     {
-        maxSize = qMin(maxSize, qint64(buf.size() - offset));
-        memcpy(data, buf.constData() + offset, maxSize);
+        maxSize = qMin(maxSize, qint64(buf->size() - offset));
+        memcpy(data, buf->constData() + offset, maxSize);
         offset += maxSize;
         return maxSize;
     }
@@ -608,8 +556,9 @@ protected:
     }
 
 private:
-    QByteArray buf;
+    QByteArray *buf;
     int offset;
+    bool ownbuf;
 };
 
 // Test readAll() on position change for sequential device
@@ -667,6 +616,118 @@ void tst_QIODevice::writeInTextMode()
     QCOMPARE(buffer.write("two\n"), 4);
     QCOMPARE(buffer.readLine(), QByteArray("three\n"));
 #endif
+}
+
+void tst_QIODevice::transaction_data()
+{
+    QTest::addColumn<bool>("sequential");
+    QTest::addColumn<qint8>("i8Data");
+    QTest::addColumn<qint16>("i16Data");
+    QTest::addColumn<qint32>("i32Data");
+    QTest::addColumn<qint64>("i64Data");
+    QTest::addColumn<bool>("bData");
+    QTest::addColumn<float>("fData");
+    QTest::addColumn<double>("dData");
+    QTest::addColumn<QByteArray>("strData");
+
+    bool sequential = true;
+    do {
+        QByteArray devName(sequential ? "sequential" : "random-access");
+
+        QTest::newRow(qPrintable(devName + '1')) << sequential << qint8(1) << qint16(2)
+                                                 << qint32(3) << qint64(4) << true
+                                                 << 5.0f << double(6.0)
+                                                 << QByteArray("Hello world!");
+        QTest::newRow(qPrintable(devName + '2')) << sequential << qint8(1 << 6) << qint16(1 << 14)
+                                                 << qint32(1 << 30) << (qint64(1) << 62) << false
+                                                 << 123.0f << double(234.0)
+                                                 << QByteArray("abcdefghijklmnopqrstuvwxyz");
+        QTest::newRow(qPrintable(devName + '3')) << sequential << qint8(-1) << qint16(-2)
+                                                 << qint32(-3) << qint64(-4) << true
+                                                 << -123.0f << double(-234.0)
+                                                 << QByteArray("Qt rocks!");
+        sequential = !sequential;
+    } while (!sequential);
+}
+
+// Test transaction integrity
+void tst_QIODevice::transaction()
+{
+    QByteArray testBuffer;
+
+    QFETCH(bool, sequential);
+    QFETCH(qint8, i8Data);
+    QFETCH(qint16, i16Data);
+    QFETCH(qint32, i32Data);
+    QFETCH(qint64, i64Data);
+    QFETCH(bool, bData);
+    QFETCH(float, fData);
+    QFETCH(double, dData);
+    QFETCH(QByteArray, strData);
+
+    {
+        QDataStream stream(&testBuffer, QIODevice::WriteOnly);
+
+        stream << i8Data << i16Data << i32Data << i64Data
+               << bData << fData << dData << strData.constData();
+    }
+
+    for (int splitPos = 0; splitPos <= testBuffer.size(); ++splitPos) {
+        QByteArray readBuffer(testBuffer.left(splitPos));
+        QIODevice *dev = sequential ? (QIODevice *) new SequentialReadBuffer(&readBuffer)
+                                    : (QIODevice *) new QBuffer(&readBuffer);
+        dev->open(QIODevice::ReadOnly);
+        QDataStream stream(dev);
+
+        qint8 i8;
+        qint16 i16;
+        qint32 i32;
+        qint64 i64;
+        bool b;
+        float f;
+        double d;
+        char *str;
+
+        forever {
+            QVERIFY(!dev->isTransactionStarted());
+            dev->startTransaction();
+            QVERIFY(dev->isTransactionStarted());
+
+            // Try to read all data in one go. If the status of the data stream
+            // indicates an unsuccessful operation, restart a read transaction
+            // on the completed buffer.
+            stream >> i8 >> i16 >> i32 >> i64 >> b >> f >> d >> str;
+
+            QVERIFY(stream.atEnd());
+            if (stream.status() == QDataStream::Ok) {
+                dev->commitTransaction();
+                break;
+            }
+
+            dev->rollbackTransaction();
+            QVERIFY(splitPos == 0 || !stream.atEnd());
+            QCOMPARE(dev->pos(), Q_INT64_C(0));
+            QCOMPARE(dev->bytesAvailable(), qint64(readBuffer.size()));
+            QVERIFY(readBuffer.size() < testBuffer.size());
+            delete [] str;
+            readBuffer.append(testBuffer.right(testBuffer.size() - splitPos));
+            stream.resetStatus();
+        }
+
+        QVERIFY(!dev->isTransactionStarted());
+        QVERIFY(stream.atEnd());
+        QCOMPARE(i8, i8Data);
+        QCOMPARE(i16, i16Data);
+        QCOMPARE(i32, i32Data);
+        QCOMPARE(i64, i64Data);
+        QCOMPARE(b, bData);
+        QCOMPARE(f, fData);
+        QCOMPARE(d, dData);
+        QVERIFY(strData == str);
+        delete [] str;
+        stream.setDevice(0);
+        delete dev;
+    }
 }
 
 QTEST_MAIN(tst_QIODevice)
