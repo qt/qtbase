@@ -94,26 +94,25 @@ Win32MakefileGenerator::findLibraries()
   for (int i = 0; lflags[i]; i++) {
     ProStringList &l = project->values(lflags[i]);
     for (ProStringList::Iterator it = l.begin(); it != l.end();) {
-        bool remove = false;
         QString opt = (*it).toQString();
         if(opt.startsWith("/LIBPATH:")) {
             QString libpath = opt.mid(9);
-            QMakeLocalFileName l(libpath);
-            if (!dirs.contains(l)) {
-                dirs.append(l);
-                (*it) = "/LIBPATH:" + l.real();
-            } else {
-                remove = true;
+            QMakeLocalFileName lp(libpath);
+            if (dirs.contains(lp)) {
+                it = l.erase(it);
+                continue;
             }
+            dirs.append(lp);
+            (*it) = "/LIBPATH:" + lp.real();
         } else if(opt.startsWith("-L") || opt.startsWith("/L")) {
             QString libpath = Option::fixPathToTargetOS(opt.mid(2), false, false);
-            QMakeLocalFileName l(libpath);
-            if(!dirs.contains(l)) {
-                dirs.append(l);
-                (*it) = "/LIBPATH:" + l.real();
-            } else {
-                remove = true;
+            QMakeLocalFileName lp(libpath);
+            if (dirs.contains(lp)) {
+                it = l.erase(it);
+                continue;
             }
+            dirs.append(lp);
+            (*it) = "/LIBPATH:" + lp.real();
         } else if(opt.startsWith("-l") || opt.startsWith("/l")) {
             QString lib = opt.right(opt.length() - 2), out;
             if(!lib.isEmpty()) {
@@ -137,11 +136,7 @@ Win32MakefileGenerator::findLibraries()
                 out = lib + ".lib";
             (*it) = out;
         }
-        if(remove) {
-            it = l.erase(it);
-        } else {
-            ++it;
-        }
+        ++it;
     }
   }
     return true;
