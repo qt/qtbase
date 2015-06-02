@@ -17,7 +17,8 @@ HEADERS +=  \
         global/qisenum.h \
         global/qtypetraits.h \
         global/qflags.h \
-        global/qhooks_p.h
+        global/qhooks_p.h \
+        global/qversiontagging.h
 
 SOURCES += \
         global/archdetect.cpp \
