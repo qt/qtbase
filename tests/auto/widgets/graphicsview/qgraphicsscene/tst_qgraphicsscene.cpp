@@ -1282,33 +1282,16 @@ void tst_QGraphicsScene::removeItem()
     view.show();
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
-    QTest::mouseMove(view.viewport(), QPoint(-1, -1));
-    {
-        QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)), Qt::NoButton, 0, 0);
-        QApplication::sendEvent(view.viewport(), &moveEvent);
-    }
-    qApp->processEvents(); // update
-    qApp->processEvents(); // draw
-    QVERIFY(!hoverItem->isHovered);
+    QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)), Qt::NoButton);
+    QTRY_VERIFY(!hoverItem->isHovered);
 
-    {
-        QTest::qWait(250);
-        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
-        QTest::qWait(10);
-        QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos()), Qt::NoButton, 0, 0);
-        QApplication::sendEvent(view.viewport(), &moveEvent);
-    }
-    qApp->processEvents(); // update
-    qApp->processEvents(); // draw
-    QVERIFY(hoverItem->isHovered);
+    QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
+    QTRY_VERIFY(hoverItem->isHovered);
 
     scene.removeItem(hoverItem);
     hoverItem->setAcceptsHoverEvents(false);
     scene.addItem(hoverItem);
-    qApp->processEvents(); // <- delayed update is called
-    qApp->processEvents(); // <- scene schedules pending update
-    qApp->processEvents(); // <- pending update is sent to view
-    QVERIFY(!hoverItem->isHovered);
+    QTRY_VERIFY(!hoverItem->isHovered);
 }
 
 void tst_QGraphicsScene::focusItem()
