@@ -194,8 +194,11 @@ unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
     internal_module {
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API { *; };"
     } else {
+        verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API {" \
+                            "    qt_private_api_tag*;" "@CLASSLIST@" "};"
+
         current = Qt_$$QT_MAJOR_VERSION
-        verscript_content = "$$current { *; };"
+        verscript_content += "$$current { *; };"
         isEmpty(QT_NAMESPACE): tag_symbol = qt_version_tag
         else:                  tag_symbol = qt_version_tag_$$QT_NAMESPACE
 
@@ -205,6 +208,16 @@ unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
             equals(i, $$QT_MINOR_VERSION): verscript_content += "$$current { $$tag_symbol; } $$previous;"
             else:                          verscript_content += "$$current {} $$previous;"
         }
+
+        # Add a post-processing step to replace the @CLASSLIST@
+        verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < $^ > $@
+        verscriptprocess.target = $$verscript
+        verscriptprocess.depends = $${verscript}.in
+        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+            verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
+        QMAKE_EXTRA_TARGETS += verscriptprocess
+        PRE_TARGETDEPS += $$verscript
+        verscript = $${verscript}.in
     }
     write_file($$verscript, verscript_content)|error("Aborting.")
     unset(current)
