@@ -333,8 +333,8 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        const QPlatformScreen *pScreen = QPlatformScreen::platformScreenForWindow(&window);
-        const QRect availableGeometry = QHighDpi::fromNativeScreenGeometry(pScreen->availableGeometry(), pScreen->screen());
+        const QScreen *screen = window.screen();
+        const QRect availableGeometry = screen->availableGeometry();
         const QPoint framePos = availableGeometry.center();
 
         window.reset();
