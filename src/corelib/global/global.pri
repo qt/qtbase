@@ -27,7 +27,8 @@ SOURCES += \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \
         global/qlogging.cpp \
-        global/qhooks.cpp
+        global/qhooks.cpp \
+        global/qversiontagging.cpp
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
