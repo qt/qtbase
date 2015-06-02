@@ -550,15 +550,7 @@ UnixMakefileGenerator::processPrlFiles()
                     }
                 }
             } else if(!opt.isNull()) {
-                QString lib = opt;
-                processPrlFile(lib);
-#if 0
-                if(ret)
-                    opt = linkLib(lib, "");
-#endif
-                if(!opt.isEmpty())
-                    for (int k = 0; k < l.size(); ++k)
-                        l[k] = l.at(k).toQString().replace(lib, opt);
+                processPrlFile(opt);
             }
 
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
