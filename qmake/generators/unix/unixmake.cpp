@@ -508,17 +508,8 @@ UnixMakefileGenerator::processPrlFiles()
                     QString lib = opt.right(opt.length() - 2);
                     QString prl_ext = project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX")).toQString();
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                        const QMakeLocalFileName &lfn = libdirs[dep_i];
-                        if(!project->isActiveConfig("compile_libtool")) { //give them the .libs..
-                            QString la = lfn.local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext;
-                            if (exists(la) && QFile::exists(lfn.local() + "/.libs")) {
-                                QString dot_libs = lfn.real() + Option::dir_sep + ".libs";
-                                l.append("-L" + dot_libs);
-                                libdirs.insert(libidx++, QMakeLocalFileName(dot_libs));
-                            }
-                        }
-
-                        QString prl = lfn.local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
+                        QString prl = libdirs[dep_i].local() + '/'
+                                      + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
                         if (processPrlFile(prl))
                             break;
                     }
