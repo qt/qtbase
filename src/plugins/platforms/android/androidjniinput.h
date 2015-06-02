@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 namespace QtAndroidInput
 {
     // Software keyboard support
-    void showSoftwareKeyboard(int top, int left, int width, int height, int inputHints);
+    void showSoftwareKeyboard(int top, int left, int width, int height, int inputHints, int enterKeyType);
     void resetSoftwareKeyboard();
     void hideSoftwareKeyboard();
     bool isSoftwareKeyboardVisible();

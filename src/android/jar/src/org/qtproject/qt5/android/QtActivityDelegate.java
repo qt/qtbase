@@ -203,6 +203,16 @@ public class QtActivityDelegate
     private final int ImhUrlCharactersOnly = 0x400000;
     private final int ImhLatinOnly = 0x800000;
 
+    // enter key type - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
+    private final int EnterKeyDefault = 0;
+    private final int EnterKeyReturn = 1;
+    private final int EnterKeyDone = 2;
+    private final int EnterKeyGo = 3;
+    private final int EnterKeySend = 4;
+    private final int EnterKeySearch = 5;
+    private final int EnterKeyNext = 6;
+    private final int EnterKeyPrevious = 7;
+
     // application state
     private final int ApplicationSuspended = 0x0;
     private final int ApplicationHidden = 0x1;
@@ -239,7 +249,7 @@ public class QtActivityDelegate
         }, 5);
     }
 
-    public void showSoftwareKeyboard(int x, int y, int width, int height, int inputHints)
+    public void showSoftwareKeyboard(int x, int y, int width, int height, int inputHints, int enterKeyType)
     {
         if (m_imm == null)
             return;
@@ -252,7 +262,31 @@ public class QtActivityDelegate
             m_activity.getWindow().setSoftInputMode(m_softInputMode);
 
         int initialCapsMode = 0;
+
         int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+
+        switch (enterKeyType) {
+        case EnterKeyReturn:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+            break;
+        case EnterKeyGo:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            break;
+        case EnterKeySend:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
+            break;
+        case EnterKeySearch:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
+            break;
+        case EnterKeyNext:
+            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
+            break;
+        case EnterKeyPrevious:
+            if (Build.VERSION.SDK_INT > 10)
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS;
+            break;
+        }
+
         int inputType = android.text.InputType.TYPE_CLASS_TEXT;
 
         if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
@@ -278,7 +312,9 @@ public class QtActivityDelegate
             if ((inputHints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) != 0) {
                 if ((inputHints & ImhUrlCharactersOnly) != 0) {
                     inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+
+                    if (enterKeyType == 0) // not explicitly overridden
+                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
                 } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
                     inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
                 }
@@ -305,7 +341,7 @@ public class QtActivityDelegate
             }
         }
 
-        if ((inputHints & ImhMultiLine) != 0)
+        if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
             imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
 
         m_editText.setInitialCapsMode(initialCapsMode);
