@@ -74,6 +74,7 @@ public:
     jobject m_jobject;
     jclass m_jclass;
     bool m_own_jclass;
+    QByteArray m_className;
 };
 
 class Q_CORE_EXPORT QJNIObjectPrivate

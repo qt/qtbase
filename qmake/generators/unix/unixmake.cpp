@@ -612,7 +612,7 @@ UnixMakefileGenerator::processPrlFiles()
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
             if(!prl_libs.isEmpty()) {
                 for(int prl = 0; prl < prl_libs.size(); ++prl)
-                    l.insert(lit+prl+1, prl_libs.at(prl).toQString());
+                    l.insert(++lit, prl_libs.at(prl));
                 prl_libs.clear();
             }
         }

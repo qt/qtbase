@@ -34,6 +34,23 @@ information about a particular change.
   common EXIF-format (big-endian) was not working until 5.4.1. 5.4.2 restores the
   behavior of 5.4.0 and earlier for most EXIF-tagged JPEGs.
   EXIF orientation will be an opt-in starting with Qt 5.5.
+- On x86 and x86-64 systems with ELF binaries (especially Linux), due to
+  a new optimization in GCC 5.x in combination with a recent version of
+  GNU binutils, compiling Qt applications with -fPIE is no longer
+  enough with GCC 5.x. Applications now need to be compiled with
+  the -fPIC option if Qt's option "reduce relocations" is active. For
+  backward compatibility only, Qt accepts the use of -fPIE for GCC 4.x
+  versions.
+  Note that Clang is known to generate incompatible code even with -fPIC if
+  the -flto option is active.
+  Applications using qmake or cmake >= 2.8.12 as their build system will
+  adapt automatically. Applications using an older release of cmake in
+  combination with GCC 5.x need to change their CMakeLists.txt to add
+  Qt5Core_EXECUTABLE_COMPILE_FLAGS to CMAKE_CXX_FLAGS. In particular,
+  applications using cmake >= 2.8.9 and < 2.8.11 will continue to build
+  with the -fPIE option and invoke the special compatibility mode if using
+  GCC 4.x.
+
 
 ****************************************************************************
 *                               Library                                    *
