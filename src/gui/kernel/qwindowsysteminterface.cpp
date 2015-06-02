@@ -810,8 +810,8 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 }
 #endif
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
-    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
+{
     QWindowSystemInterfacePrivate::MouseEvent e(w, timestamp, local, global, b, mods, Qt::MouseEventNotSynthesized);
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }

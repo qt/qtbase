@@ -1695,12 +1695,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // A mouse event should not change both position and buttons at the same time. Instead we
         // should first send a move event followed by a button changed event. Since this is not the case
         // with the current event, we split it in two.
-        QWindowSystemInterfacePrivate::MouseEvent *mouseButtonEvent = new QWindowSystemInterfacePrivate::MouseEvent(
+        QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(
                     e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
-            mouseButtonEvent->flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-        QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(mouseButtonEvent);
-        stateChange = Qt::NoButton;
+            mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        e->buttons = buttons;
+        processMouseEvent(e);
+        processMouseEvent(&mouseButtonEvent);
+        return;
     }
 
     QWindow *window = e->window.data();
