@@ -443,10 +443,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QAccessibleInterface::~QAccessibleInterface()
-
-    Destroys the object.
+    Destroys the QAccessibleInterface.
 */
+QAccessibleInterface::~QAccessibleInterface()
+{
+}
 
 /*!
     \typedef QAccessible::Id
@@ -1252,10 +1253,6 @@ QColor QAccessibleInterface::foregroundColor() const
 QColor QAccessibleInterface::backgroundColor() const
 {
     return QColor();
-}
-
-QAccessibleInterface::~QAccessibleInterface()
-{
 }
 
 /*!
