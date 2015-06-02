@@ -44,6 +44,7 @@
 #include <QtCore/qdebug.h>
 
 #include <QDir>
+#ifndef QT_NO_BEARERMANAGEMENT
 
 extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 #import <CoreWLAN/CoreWLAN.h>
@@ -890,3 +891,5 @@ quint64 QCoreWlanEngine::getBytes(const QString &interfaceName, bool b)
 }
 
 QT_END_NAMESPACE
+
+#endif

@@ -109,9 +109,8 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
 }
 QMAKE_INSTALL_DIR = $$QMAKE_COPY_DIR
 equals(QMAKE_HOST.os, Windows) {
-    # Ugly (and broken for relative paths) hack to support cross-building for Unix.
-    QMAKE_SYMBOLIC_LINK     = $$QMAKE_COPY
-    QMAKE_LN_SHLIB          = $$QMAKE_SYMBOLIC_LINK
+    QMAKE_SYMBOLIC_LINK     = $(QMAKE) -install ln -f -s
+    QMAKE_LN_SHLIB          = $(QMAKE) -install ln -s
 } else {
     QMAKE_SYMBOLIC_LINK     = ln -f -s
     QMAKE_LN_SHLIB          = ln -s

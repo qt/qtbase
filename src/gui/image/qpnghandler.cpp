@@ -676,16 +676,9 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
                    && num_palette <= 256)
         {
             // 1-bit and 8-bit color
-            if (bit_depth != 1)
-                png_set_packing(png_ptr);
-            png_read_update_info(png_ptr, info_ptr);
-            png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
             format = bit_depth == 1 ? QImage::Format_Mono : QImage::Format_Indexed8;
         } else {
             // 32-bit
-            if (bit_depth == 16)
-                png_set_strip_16(png_ptr);
-
             format = QImage::Format_ARGB32;
             // Only add filler if no alpha, or we can get 5 channel data.
             if (!(color_type & PNG_COLOR_MASK_ALPHA)

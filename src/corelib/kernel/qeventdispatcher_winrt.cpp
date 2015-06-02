@@ -203,9 +203,9 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
         }
 
-        // Dispatch accumulated user events
-        if (sendPostedEvents(flags))
-            return true;
+        // Additional user events have to be handled before timer events, but the function may not
+        // return yet.
+        const bool userEventsSent = sendPostedEvents(flags);
 
         emit aboutToBlock();
         const QVector<HANDLE> timerHandles = d->timerIdToHandle.values().toVector();
@@ -228,6 +228,9 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
             return true;
         }
         emit awake();
+
+        if (userEventsSent)
+            return true;
     } while (flags & QEventLoop::WaitForMoreEvents);
     return false;
 }

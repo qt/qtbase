@@ -1764,7 +1764,7 @@ QRectF QPrinter::paperRect(Unit unit) const
 }
 
 /*!
-    \obsolete Use pageLayout().paintRect() instead.
+    \obsolete Use pageLayout().paintRectPixels(resolution()) instead.
 
     Returns the page's rectangle; this is usually smaller than the
     paperRect() since the page normally has margins between its
@@ -1781,7 +1781,7 @@ QRect QPrinter::pageRect() const
 }
 
 /*!
-    \obsolete Use pageLayout().fullPageRect() instead.
+    \obsolete Use pageLayout().fullRectPixels(resolution()) instead.
 
     Returns the paper's rectangle; this is usually larger than the
     pageRect().
