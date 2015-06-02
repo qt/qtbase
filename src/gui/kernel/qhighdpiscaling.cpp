@@ -52,23 +52,31 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
-static const char legacyEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
+static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 
 static inline qreal initialScaleFactor()
 {
-    static const char envVar[] = "QT_SCALE_FACTOR";
+
     qreal result = 1;
-    if (qEnvironmentVariableIsSet(envVar)) {
+    if (qEnvironmentVariableIsSet(scaleFactorEnvVar)) {
         bool ok;
-        const qreal f = qgetenv(envVar).toDouble(&ok);
+        const qreal f = qgetenv(scaleFactorEnvVar).toDouble(&ok);
         if (ok && f > 0) {
-            qCDebug(lcScaling) << "Apply QT_SCALE_FACTOR" << f;
+            qCDebug(lcScaling) << "Apply " << scaleFactorEnvVar << f;
             result = f;
         }
     } else {
-        int dpr = qEnvironmentVariableIntValue(legacyEnvVar);
-        if (dpr > 0)
-            result = dpr;
+        if (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)) {
+            qWarning() << "Warning:" << legacyDevicePixelEnvVar << "is deprecated. Instead use:";
+            qWarning() << "   " << scaleFactorEnvVar << "to set the application global scale factor.";
+            qWarning() << "   " << autoScreenEnvVar << "to enable platform plugin controlled per-screen factors.";
+
+            int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
+            if (dpr > 0)
+                result = dpr;
+        }
     }
     return result;
 }
@@ -93,7 +101,8 @@ bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugi
 void QHighDpiScaling::initHighDPiScaling()
 {
     m_factor = initialScaleFactor();
-    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR") || qgetenv(legacyEnvVar).toLower() == "auto";
+    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet(autoScreenEnvVar)
+                                         || qgetenv(legacyDevicePixelEnvVar).toLower() == "auto";
 
     // m_active below is "overall active" - is there any scale factor set.
     m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
