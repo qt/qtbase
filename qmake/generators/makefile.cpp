@@ -254,8 +254,7 @@ MakefileGenerator::setProjectFile(QMakeProject *p)
     init();
     bool linkPrl = (Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
                    && project->isActiveConfig("link_prl");
-    bool mergeLflags = linkPrl
-                       && !project->isActiveConfig("no_smart_library_merge")
+    bool mergeLflags = !project->isActiveConfig("no_smart_library_merge")
                        && !project->isActiveConfig("no_lflags_merge");
     findLibraries(linkPrl, mergeLflags);
 }
