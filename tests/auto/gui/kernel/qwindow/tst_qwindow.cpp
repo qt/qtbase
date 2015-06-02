@@ -662,16 +662,13 @@ void tst_QWindow::testInputEvents()
     window.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
-    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyRelease, Qt::Key_A, Qt::NoModifier);
+    QTest::keyClick(&window, Qt::Key_A, Qt::NoModifier);
     QCoreApplication::processEvents();
     QCOMPARE(window.keyPressCode, int(Qt::Key_A));
     QCOMPARE(window.keyReleaseCode, int(Qt::Key_A));
 
     QPointF local(12, 34);
-    const QPointF deviceLocal = QHighDpi::toNativeLocalPosition(local, &window);
-    QWindowSystemInterface::handleMouseEvent(&window, deviceLocal, deviceLocal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, deviceLocal, deviceLocal, Qt::NoButton);
+    QTest::mouseClick(&window, Qt::LeftButton, Qt::NoModifier, local.toPoint());
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
