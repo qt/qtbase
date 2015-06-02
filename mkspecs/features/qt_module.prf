@@ -185,6 +185,28 @@ equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):compiler_support
     QMAKE_CXXFLAGS += -mfpmath=sse
 }
 
+unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
+    verscript = $$OUT_PWD/$${TARGET}.version
+    QMAKE_LFLAGS += $${QMAKE_LFLAGS_VERSION_SCRIPT}$$verscript
+
+    internal_module {
+        verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API { *; };"
+    } else {
+        current = Qt_$$QT_MAJOR_VERSION
+        verscript_content = "$$current { *; };"
+        for(i, 0..$$section(VERSION, ., 1, 1)) {
+            previous = $$current
+            current = Qt_$${QT_MAJOR_VERSION}.$$i
+            verscript_content += "$$current {} $$previous;"
+        }
+    }
+    write_file($$verscript, verscript_content)|error("Aborting.")
+    unset(current)
+    unset(previous)
+    unset(verscript)
+    unset(verscript_content)
+}
+
 android: CONFIG += qt_android_deps
 
 #install directives
