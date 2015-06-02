@@ -1927,13 +1927,13 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         }
 #ifndef QT_NO_DRAGANDDROP
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
-        connection()->drag()->handleEnter(window(), event);
+        connection()->drag()->handleEnter(this, event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {
-        connection()->drag()->handlePosition(window(), event);
+        connection()->drag()->handlePosition(this, event);
     } else if (event->type == atom(QXcbAtom::XdndLeave)) {
-        connection()->drag()->handleLeave(window(), event);
+        connection()->drag()->handleLeave(this, event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
-        connection()->drag()->handleDrop(window(), event);
+        connection()->drag()->handleDrop(this, event);
 #endif
     } else if (event->type == atom(QXcbAtom::_XEMBED)) {
         handleXEmbedMessage(event);

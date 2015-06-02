@@ -55,6 +55,7 @@
 #include <private/qdnd_p.h>
 
 #include <private/qshapedpixmapdndwindow_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,6 +107,12 @@ void QBasicDrag::disableEventFilter()
     qApp->removeEventFilter(this);
 }
 
+
+static inline QPoint getNativeMousePos(QEvent *e, QObject *o)
+{
+    return QHighDpi::toNativePixels(static_cast<QMouseEvent *>(e)->globalPos(), qobject_cast<QWindow*>(o));
+}
+
 bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
 {
     Q_UNUSED(o);
@@ -139,19 +146,21 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         }
 
         case QEvent::MouseMove:
-            move(static_cast<QMouseEvent *>(e));
+        {
+            QPoint nativePosition = getNativeMousePos(e, o);
+            move(nativePosition);
             return true; // Eat all mouse events
-
+        }
         case QEvent::MouseButtonRelease:
             disableEventFilter();
             if (canDrop()) {
-                drop(static_cast<QMouseEvent *>(e));
+                QPoint nativePosition = getNativeMousePos(e, o);
+                drop(nativePosition);
             } else {
                 cancel();
             }
             exitDndEventLoop();
             return true; // Eat all mouse events
-
         case QEvent::MouseButtonPress:
         case QEvent::MouseButtonDblClick:
         case QEvent::Wheel:
@@ -218,13 +227,13 @@ void QBasicDrag::cancel()
     m_drag_icon_window->setVisible(false);
 }
 
-void QBasicDrag::move(const QMouseEvent *)
+void QBasicDrag::move(const QPoint &)
 {
     if (m_drag)
         m_drag_icon_window->updateGeometry();
 }
 
-void QBasicDrag::drop(const QMouseEvent *)
+void QBasicDrag::drop(const QPoint &)
 {
     disableEventFilter();
     restoreCursor();
@@ -321,14 +330,15 @@ void QSimpleDrag::cancel()
     }
 }
 
-void QSimpleDrag::move(const QMouseEvent *me)
+void QSimpleDrag::move(const QPoint &globalPos)
 {
-    QBasicDrag::move(me);
-    QWindow *window = topLevelAt(me->globalPos());
+    //### not high-DPI aware
+    QBasicDrag::move(globalPos);
+    QWindow *window = topLevelAt(globalPos);
     if (!window)
         return;
 
-    const QPoint pos = me->globalPos() - window->geometry().topLeft();
+    const QPoint pos = globalPos - window->geometry().topLeft();
     const QPlatformDragQtResponse qt_response =
         QWindowSystemInterface::handleDrag(window, drag()->mimeData(), pos, drag()->supportedActions());
 
@@ -336,14 +346,16 @@ void QSimpleDrag::move(const QMouseEvent *me)
     setCanDrop(qt_response.isAccepted());
 }
 
-void QSimpleDrag::drop(const QMouseEvent *me)
+void QSimpleDrag::drop(const QPoint &globalPos)
 {
-    QBasicDrag::drop(me);
-    QWindow *window = topLevelAt(me->globalPos());
+    //### not high-DPI aware
+
+    QBasicDrag::drop(globalPos);
+    QWindow *window = topLevelAt(globalPos);
     if (!window)
         return;
 
-    const QPoint pos = me->globalPos() - window->geometry().topLeft();
+    const QPoint pos = globalPos - window->geometry().topLeft();
     const QPlatformDropQtResponse response =
             QWindowSystemInterface::handleDrop(window, drag()->mimeData(),pos, drag()->supportedActions());
     if (response.isAccepted()) {

@@ -171,6 +171,18 @@ inline QRect fromNativeScreenGeometry(const QRect &nativeScreenGeometry, const Q
     return QRect(nativeScreenGeometry.topLeft(), fromNative(nativeScreenGeometry.size(), QHighDpiScaling::factor(screen)));
 }
 
+inline QPoint fromNativeLocalPosition(const QPoint &pos, const QWindow *window)
+{
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
+    return pos / scaleFactor;
+}
+
+inline QPoint toNativeLocalPosition(const QPoint &pos, const QWindow *window)
+{
+    const qreal scaleFactor = QHighDpiScaling::factor(window);
+    return pos * scaleFactor;
+}
+
 inline QPointF fromNativeLocalPosition(const QPointF &pos, const QWindow *window)
 {
     const qreal scaleFactor = QHighDpiScaling::factor(window);

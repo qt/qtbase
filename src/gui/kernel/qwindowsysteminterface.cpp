@@ -651,12 +651,12 @@ int QWindowSystemInterface::windowSystemEventsQueued()
 #ifndef QT_NO_DRAGANDDROP
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrag(w, dropData, QHighDpi::fromNativePixels(p, w),supportedActions);
+    return QGuiApplicationPrivate::processDrag(w, dropData, QHighDpi::fromNativeLocalPosition(p, w) ,supportedActions);
 }
 
 QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrop(w, dropData, QHighDpi::fromNativePixels(p, w),supportedActions);
+    return QGuiApplicationPrivate::processDrop(w, dropData, QHighDpi::fromNativeLocalPosition(p, w),supportedActions);
 }
 #endif // QT_NO_DRAGANDDROP
 
