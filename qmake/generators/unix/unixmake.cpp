@@ -485,14 +485,6 @@ UnixMakefileGenerator::findLibraries()
     return false;
 }
 
-QString linkLib(const QString &file, const QString &libName) {
-    QString ret;
-    QRegExp reg("^.*lib(" + QRegExp::escape(libName) + "[^./=]*).*$");
-    if(reg.exactMatch(file))
-        ret = "-l" + reg.cap(1);
-    return ret;
-}
-
 void
 UnixMakefileGenerator::processPrlFiles()
 {
@@ -527,12 +519,8 @@ UnixMakefileGenerator::processPrlFiles()
                         }
 
                         QString prl = lfn.local() + '/' + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
-                        if(processPrlFile(prl)) {
-                            if(prl.startsWith(lfn.local()))
-                                prl.replace(0, lfn.local().length(), lfn.real());
-                            opt = linkLib(prl, lib);
+                        if (processPrlFile(prl))
                             break;
-                        }
                     }
                 } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-F")) {
                     QMakeLocalFileName f(opt.right(opt.length()-2));
