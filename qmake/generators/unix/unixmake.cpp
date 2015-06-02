@@ -582,17 +582,9 @@ UnixMakefileGenerator::processPrlFiles()
                         }
                         bool found = false;
                         for(int x = 0; x < lflags[arch].size(); ++x) {
-                            ProString xf = lflags[arch].at(x);
-                            if(xf.startsWith("-framework")) {
-                                ProString framework;
-                                if(xf.length() > 11)
-                                    framework = xf.mid(11);
-                                else
-                                    framework = lflags[arch].at(++x);
-                                if(framework == opt) {
-                                    found = true;
-                                    break;
-                                }
+                            if (lflags[arch].at(x) == "-framework" && lflags[arch].at(++x) == opt) {
+                                found = true;
+                                break;
                             }
                         }
                         if(!found) {
