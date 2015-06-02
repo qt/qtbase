@@ -1591,7 +1591,7 @@ QString QTextStream::readLine(qint64 maxlen)
 {
     QString line;
 
-    readLine(&line, maxlen);
+    readLineInto(&line, maxlen);
     return line;
 }
 
@@ -1620,7 +1620,7 @@ QString QTextStream::readLine(qint64 maxlen)
 
     \sa readAll(), QIODevice::readLine()
 */
-bool QTextStream::readLine(QString *line, qint64 maxlen)
+bool QTextStream::readLineInto(QString *line, qint64 maxlen)
 {
     Q_D(QTextStream);
     // keep in sync with CHECK_VALID_STREAM
