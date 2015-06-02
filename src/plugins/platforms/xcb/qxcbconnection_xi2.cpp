@@ -562,10 +562,12 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         dev->touchPoints[tp.id] = tp;
     }
     QWindowSystemInterface::TouchPoint &touchPoint = dev->touchPoints[xiDeviceEvent->detail];
-    qreal x = fixed1616ToReal(xiDeviceEvent->root_x);
-    qreal y = fixed1616ToReal(xiDeviceEvent->root_y);
+    QXcbScreen* screen = platformWindow->xcbScreen();
+    QPointF pos = screen->mapFromNative(QPointF(fixed1616ToReal(xiDeviceEvent->root_x),
+                                                fixed1616ToReal(xiDeviceEvent->root_y)));
+    qreal x = pos.x();
+    qreal y = pos.y();
     qreal nx = -1.0, ny = -1.0, d = 0.0;
-    QXcbScreen* screen = m_screens.at(0);
     for (int i = 0; i < dev->xiDeviceInfo->num_classes; ++i) {
         XIAnyClassInfo *classinfo = dev->xiDeviceInfo->classes[i];
         if (classinfo->type == XIValuatorClass) {

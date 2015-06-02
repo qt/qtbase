@@ -282,6 +282,18 @@ QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
     return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
 }
 
+QPointF QXcbScreen::mapToNative(const QPointF &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
+}
+
+QPointF QXcbScreen::mapFromNative(const QPointF &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
+}
+
 QRect QXcbScreen::mapToNative(const QRect &rect) const
 {
     const int dpr = int(devicePixelRatio());
