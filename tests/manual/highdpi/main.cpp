@@ -702,6 +702,70 @@ void LinePainter::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
+class CursorTester : public QWidget
+{
+public:
+    CursorTester()
+        :moveLabel(0), moving(false)
+    {
+    }
+
+    void paintEvent(QPaintEvent *)
+    {
+        QRect r1(10, 10, width() - 20, height()/2 - 20);
+        QRect r2(10, height()/2 + 10, width() - 20, height()/2 - 20);
+        QPainter p(this);
+        p.fillRect(r1, QColor(200, 200, 250));
+        p.drawText(r1, "Drag from here to move a window based on QCursor::pos()");
+        p.fillRect(r2, QColor(250, 200, 200));
+        p.drawText(r2, "Drag from here to move a window based on mouse event position");
+    }
+
+    void mousePressEvent(QMouseEvent *e)
+    {
+        if (moving)
+            return;
+        QRect r1(10, 10, width() - 20, height()/2 - 20);
+        QRect r2(10, height()/2 + 10, width() - 20, height()/2 - 20);
+
+        moving = r1.contains(e->pos()) || r2.contains(e->pos());
+        if (!moving)
+            return;
+        useCursorPos = r1.contains(e->pos());
+
+        if (!moveLabel)
+            moveLabel = new QLabel(this,Qt::BypassWindowManagerHint|Qt::FramelessWindowHint|Qt::Window );
+
+        if (useCursorPos)
+            moveLabel->setText("I'm following QCursor::pos()");
+        else
+            moveLabel->setText("I'm following QMouseEvent::globalPos()");
+        moveLabel->adjustSize();
+        mouseMoveEvent(e);
+        moveLabel->show();
+    }
+
+    void mouseReleaseEvent(QMouseEvent *)
+    {
+        if (moveLabel)
+            moveLabel->hide();
+        moving = false;
+    }
+
+    void mouseMoveEvent(QMouseEvent *e)
+    {
+        if (!moving)
+            return;
+        QPoint pos = useCursorPos ? QCursor::pos() : e->globalPos();
+        pos -= moveLabel->rect().center();
+        moveLabel->move(pos);
+    }
+private:
+    QLabel *moveLabel;
+    bool useCursorPos;
+    bool moving;
+};
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -733,6 +797,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<Buttons>("buttons", "Test buttons");
     demoList << new DemoContainer<LinePainter>("linepainter", "Test line painting");
     demoList << new DemoContainer<DragWidget>("draganddrop", "Test drag and drop");
+    demoList << new DemoContainer<CursorTester>("cursorpos", "Test cursor and window positioning");
 
 
     foreach (DemoContainerBase *demo, demoList)
