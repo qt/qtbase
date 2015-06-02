@@ -57,6 +57,8 @@
 #include <QDebug>
 #include <private/qhighdpiscaling_p.h>
 
+#include "dragwidget.h"
+
 class DemoContainerBase
 {
 public:
@@ -701,6 +703,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<IconDrawing>("icondrawing", "Test icon drawing");
     demoList << new DemoContainer<Buttons>("buttons", "Test buttons");
     demoList << new DemoContainer<LinePainter>("linepainter", "Test line painting");
+    demoList << new DemoContainer<DragWidget>("draganddrop", "Test drag and drop");
 
 
     foreach (DemoContainerBase *demo, demoList)

@@ -6,7 +6,12 @@ CONFIG +=console
 CONFIG -= app_bundle
 CONFIG += c++11
 # Input
-SOURCES += main.cpp
+SOURCES += \
+        dragwidget.cpp \
+        main.cpp
+
+HEADERS += \
+        dragwidget.h
 
 RESOURCES += \
     highdpi.qrc
