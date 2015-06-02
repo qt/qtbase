@@ -918,7 +918,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         if(!path.isEmpty() && !libdirs.contains(path))
                             libdirs += path;
                     }
-                    library = fileFixify(library, FileFixifyFromOutdir);
+                    library = fileFixify(library, FileFixifyFromOutdir | FileFixifyAbsolute);
                     QString key = keyFor(library);
                     if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
                         bool is_frmwrk = (library.endsWith(".framework"));
