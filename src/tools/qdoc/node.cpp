@@ -606,7 +606,6 @@ QString Node::fileBase() const
     base.replace(QLatin1Char(' '), QLatin1Char('-'));
     return base.toLower();
 }
-#endif
 /*!
   Returns this node's Universally Unique IDentifier as a
   QString. Creates the UUID first, if it has not been created.
@@ -617,6 +616,7 @@ QString Node::guid() const
         uuid_ = idForNode();
     return uuid_;
 }
+#endif
 
 /*!
   If this node is a QML or JS type node, return a pointer to
@@ -1822,8 +1822,7 @@ FunctionNode::FunctionNode(Aggregate *parent, const QString& name)
       attached_(false),
       privateSignal_(false),
       overload_(false),
-      reimplementedFrom_(0),
-      associatedProperty_(0)
+      reimplementedFrom_(0)
 {
     setGenus(Node::CPP);
 }
@@ -1846,8 +1845,7 @@ FunctionNode::FunctionNode(NodeType type, Aggregate *parent, const QString& name
       attached_(attached),
       privateSignal_(false),
       overload_(false),
-      reimplementedFrom_(0),
-      associatedProperty_(0)
+      reimplementedFrom_(0)
 {
     setGenus(Node::QML);
     if (type == QmlMethod || type == QmlSignal) {
@@ -1925,12 +1923,29 @@ void FunctionNode::setReimplementedFrom(FunctionNode *f)
 }
 
 /*!
-  Sets the "associated" property to \a property. The function
-  might be the setter or getter for a property, for example.
+  Adds the "associated" property \a p to this function node.
+  The function might be the setter or getter for a property,
+  for example.
  */
-void FunctionNode::setAssociatedProperty(PropertyNode *p)
+void FunctionNode::addAssociatedProperty(PropertyNode *p)
 {
-    associatedProperty_ = p;
+    associatedProperties_.append(p);
+}
+
+/*!
+  Returns true if this function has at least one property
+  that is active, i.e. at least one property that is not
+  obsolete.
+ */
+bool FunctionNode::hasActiveAssociatedProperty() const
+{
+    if (associatedProperties_.isEmpty())
+        return false;
+    foreach (const PropertyNode* p, associatedProperties_) {
+        if (!p->isObsolete())
+            return true;
+    }
+    return false;
 }
 
 /*! \fn unsigned char FunctionNode::overloadNumber() const
@@ -2006,6 +2021,19 @@ QString FunctionNode::signature(bool values) const
     }
     s += QLatin1Char(')');
     return s;
+}
+
+/*!
+  Returns true if function \a fn has role \a r for this
+  property.
+ */
+PropertyNode::FunctionRole PropertyNode::role(const FunctionNode* fn) const
+{
+    for (int i=0; i<4; i++) {
+        if (functions_[i].contains((Node*)fn))
+            return (FunctionRole) i;
+    }
+    return Notifier;
 }
 
 /*!
@@ -2493,6 +2521,7 @@ QString Node::cleanId(const QString &str)
     return clean;
 }
 
+#if 0
 /*!
   Creates a string that can be used as a UUID for the node,
   depending on the type and subtype of the node. Uniquenss
@@ -2720,6 +2749,7 @@ QString Node::idForNode() const
     }
     return str;
 }
+#endif
 
 /*!
   Prints the inner node's list of children.

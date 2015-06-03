@@ -537,11 +537,9 @@ QList<Section> CppCodeMarker::sections(const Aggregate *inner,
                         isSlot = (func->metaness() == FunctionNode::Slot);
                         isSignal = (func->metaness() == FunctionNode::Signal);
                         isStatic = func->isStatic();
-                        if (func->associatedProperty()) {
-                            if (func->associatedProperty()->status() == Node::Obsolete) {
-                                ++c;
-                                continue;
-                            }
+                        if (func->hasAssociatedProperties() && !func->hasActiveAssociatedProperty()) {
+                            ++c;
+                            continue;
                         }
                     }
                     else if ((*c)->type() == Node::Variable) {
@@ -685,7 +683,7 @@ QList<Section> CppCodeMarker::sections(const Aggregate *inner,
                 }
                 else if ((*c)->type() == Node::Function) {
                     FunctionNode *function = static_cast<FunctionNode *>(*c);
-                    if (!function->associatedProperty())
+                    if (!function->hasAssociatedProperties() || !function->doc().isEmpty())
                         insert(memberFunctions, function, style, status);
                 }
                 ++c;

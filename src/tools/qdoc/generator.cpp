@@ -564,20 +564,19 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         break;
     case Node::Function:
     {
-        const FunctionNode *functionNode =
-                static_cast<const FunctionNode *>(node);
+        const FunctionNode *fn = static_cast<const FunctionNode *>(node);
 
-        if (functionNode->metaness() == FunctionNode::Dtor)
-            anchorRef = "#dtor." + functionNode->name().mid(1);
+        if (fn->metaness() == FunctionNode::Dtor)
+            anchorRef = "#dtor." + fn->name().mid(1);
 
-        else if (functionNode->associatedProperty())
-            return fullDocumentLocation(functionNode->associatedProperty());
+        else if (fn->hasOneAssociatedProperty() && fn->doc().isEmpty())
+            return fullDocumentLocation(fn->firstAssociatedProperty());
 
-        else if (functionNode->overloadNumber() > 0)
-            anchorRef = QLatin1Char('#') + cleanRef(functionNode->name())
-                    + QLatin1Char('-') + QString::number(functionNode->overloadNumber());
+        else if (fn->overloadNumber() > 0)
+            anchorRef = QLatin1Char('#') + cleanRef(fn->name())
+                    + QLatin1Char('-') + QString::number(fn->overloadNumber());
         else
-            anchorRef = QLatin1Char('#') + cleanRef(functionNode->name());
+            anchorRef = QLatin1Char('#') + cleanRef(fn->name());
         break;
     }
     /*

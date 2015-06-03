@@ -3729,8 +3729,8 @@ QString HtmlGenerator::refForNode(const Node *node)
         break;
     case Node::Function:
         func = static_cast<const FunctionNode *>(node);
-        if (func->associatedProperty()) {
-            return refForNode(func->associatedProperty());
+        if (func->hasOneAssociatedProperty() && func->doc().isEmpty()) {
+            return refForNode(func->firstAssociatedProperty());
         }
         else {
             ref = func->name();
@@ -3918,24 +3918,22 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
                                            const Aggregate *relative,
                                            CodeMarker *marker)
 {
-    const EnumNode *enume;
-
+    const EnumNode *etn;
 #ifdef GENERATE_MAC_REFS
     generateMacRef(node, marker);
 #endif
     generateExtractionMark(node, MemberMark);
     generateKeywordAnchors(node);
     QString nodeRef = refForNode(node);
-    if (node->type() == Node::Enum
-            && (enume = static_cast<const EnumNode *>(node))->flagsType()) {
+    if (node->isEnumType() && (etn = static_cast<const EnumNode *>(node))->flagsType()) {
 #ifdef GENERATE_MAC_REFS
-        generateMacRef(enume->flagsType(), marker);
+        generateMacRef(etn->flagsType(), marker);
 #endif
         out() << "<h3 class=\"flags\" id=\"" << nodeRef << "\">";
         out() << "<a name=\"" + nodeRef + "\"></a>";
-        generateSynopsis(enume, relative, marker, CodeMarker::Detailed);
+        generateSynopsis(etn, relative, marker, CodeMarker::Detailed);
         out() << "<br/>";
-        generateSynopsis(enume->flagsType(),
+        generateSynopsis(etn->flagsType(),
                          relative,
                          marker,
                          CodeMarker::Detailed);
@@ -3954,7 +3952,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
     generateThreadSafeness(node, marker);
     generateSince(node, marker);
 
-    if (node->type() == Node::Property) {
+    if (node->isProperty()) {
         const PropertyNode *property = static_cast<const PropertyNode *>(node);
         Section section;
 
@@ -3980,16 +3978,17 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         const FunctionNode* fn = static_cast<const FunctionNode*>(node);
         if (fn->isPrivateSignal())
             generatePrivateSignalNote(node, marker);
+        generateAssociatedPropertyNotes(fn);
     }
-    else if (node->type() == Node::Enum) {
-        const EnumNode *enume = static_cast<const EnumNode *>(node);
-        if (enume->flagsType()) {
-            out() << "<p>The " << protectEnc(enume->flagsType()->name())
+    else if (node->isEnumType()) {
+        const EnumNode *etn = static_cast<const EnumNode *>(node);
+        if (etn->flagsType()) {
+            out() << "<p>The " << protectEnc(etn->flagsType()->name())
                   << " type is a typedef for "
                   << "<a href=\"" << qflagsHref_ << "\">QFlags</a>&lt;"
-                  << protectEnc(enume->name())
+                  << protectEnc(etn->name())
                   << "&gt;. It stores an OR combination of "
-                  << protectEnc(enume->name())
+                  << protectEnc(etn->name())
                   << " values.</p>\n";
         }
     }
@@ -4364,7 +4363,7 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
         if (markType == MemberMark) {
             if (node->type() == Node::Function) {
                 const FunctionNode *func = static_cast<const FunctionNode *>(node);
-                if (!func->associatedProperty()) {
+                if (!func->hasAssociatedProperties()) {
                     if (func->overloadNumber() == 0)
                         out() << "[overload1]";
                     out() << "$$$" + func->name() + func->rawParameters().remove(' ');
@@ -4871,6 +4870,39 @@ void HtmlGenerator::writeDitaRefs(const DitaRefList& ditarefs)
         if (t->subrefs() && !t->subrefs()->isEmpty())
             writeDitaRefs(*(t->subrefs()));
         xmlWriter().writeEndElement(); // </topicref> or </mapref>
+    }
+}
+
+/*!
+  Generates bold Note lines that explain how function \a fn
+  is associated with each of its associated properties.
+ */
+void HtmlGenerator::generateAssociatedPropertyNotes(const FunctionNode* fn)
+{
+    if (fn->hasAssociatedProperties()) {
+        out() << "<p><b>Note:</b> ";
+        foreach (const PropertyNode* pn, fn->associatedProperties()) {
+            QString msg;
+            switch (pn->role(fn)) {
+            case PropertyNode::Getter:
+                msg = QStringLiteral("Getter function ");
+                break;
+            case PropertyNode::Setter:
+                msg = QStringLiteral("Setter function ");
+                break;
+            case PropertyNode::Resetter:
+                msg = QStringLiteral("Resetter function ");
+                break;
+            case PropertyNode::Notifier:
+                msg = QStringLiteral("Notifier signal ");
+                break;
+            default:
+                break;
+            }
+            QString link = linkForNode(pn, 0);
+            out() << msg << "for property <a href=\"" << link << "\">" << pn->name() << "</a>. ";
+        }
+        out() << "</p>";
     }
 }
 

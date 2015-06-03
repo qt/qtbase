@@ -1189,9 +1189,11 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (functionNode->relates()) {
                 writer.writeAttribute("relates", functionNode->relates()->name());
             }
-            const PropertyNode* propertyNode = functionNode->associatedProperty();
-            if (propertyNode)
-                writer.writeAttribute("associated-property", propertyNode->name());
+            if (functionNode->hasAssociatedProperties()) {
+                foreach (PropertyNode* pn, functionNode->associatedProperties()) {
+                    writer.writeAttribute("associated-property", pn->name());
+                }
+            }
             writer.writeAttribute("type", functionNode->returnType());
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);

@@ -327,6 +327,8 @@ Aggregate* Tree::findRelatesNode(const QStringList& path)
 }
 
 /*!
+  Inserts function name \a funcName and function role \a funcRole into
+  the property function map for the specified \a property.
  */
 void Tree::addPropertyFunction(PropertyNode* property,
                                const QString& funcName,
