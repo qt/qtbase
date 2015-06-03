@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qhighdpiscaling_p.h"
-#include "qwindow_p.h" // for QWINDOWSIZE_MAX
 #include "qguiapplication.h"
 #include "qscreen.h"
 #include "qplatformintegration.h"
@@ -226,17 +225,6 @@ QPoint QHighDpiScaling::origin(const QScreen *screen)
 QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
 {
     return platformScreen->geometry().topLeft();
-}
-
-
-Q_GUI_EXPORT QSize QHighDpi::toNativePixelsConstrained(const QSize &size, const QWindow *window)
-{
-    const int width = size.width();
-    const int height = size.height();
-    return QSize(width > 0 && width < QWINDOWSIZE_MAX ?
-                 QHighDpi::toNativePixels(width, window) : width,
-                 height > 0 && height < QWINDOWSIZE_MAX ?
-                 QHighDpi::toNativePixels(height, window) : height);
 }
 
 QT_END_NAMESPACE

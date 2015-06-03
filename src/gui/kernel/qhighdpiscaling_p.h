@@ -284,9 +284,6 @@ inline QSize fromNativePixels(const QSize &pixelSize, const QWindow *window)
     return pixelSize / QHighDpiScaling::factor(window);
 }
 
-// For converting minimum/maximum sizes of QWindow, limits to 0..QWINDOWSIZE_MAX
-Q_GUI_EXPORT QSize toNativePixelsConstrained(const QSize &size, const QWindow *window);
-
 inline QSize toNativePixels(const QSize &pointSize, const QWindow *window)
 {
     return pointSize * QHighDpiScaling::factor(window);

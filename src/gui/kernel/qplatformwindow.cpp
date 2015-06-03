@@ -497,6 +497,14 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
 }
 
 /*!
+    Returns a size with both dimentions bounded to [0, QWINDOWSIZE_MAX]
+*/
+QSize QPlatformWindow::constrainWindowSize(const QSize &size)
+{
+    return size.boundedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
+}
+
+/*!
     Reimplement this method to set whether the window demands attention
     (for example, by flashing the taskbar icon) depending on \a enabled.
 
@@ -637,7 +645,7 @@ void QPlatformWindow::requestUpdate()
 */
 QSize QPlatformWindow::windowMinimumSize() const
 {
-    return QHighDpi::toNativePixelsConstrained(window()->minimumSize(), window());
+    return QHighDpi::toNativePixels(constrainWindowSize(window()->minimumSize()), window());
 }
 
 /*!
@@ -645,7 +653,7 @@ QSize QPlatformWindow::windowMinimumSize() const
 */
 QSize QPlatformWindow::windowMaximumSize() const
 {
-    return QHighDpi::toNativePixelsConstrained(window()->maximumSize(), window());
+    return QHighDpi::toNativePixels(constrainWindowSize(window()->maximumSize()), window());
 }
 
 /*!

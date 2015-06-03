@@ -141,6 +141,7 @@ public:
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);
     QPlatformScreen *screenForGeometry(const QRect &newGeometry) const;
+    static QSize constrainWindowSize(const QSize &size);
 
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:
