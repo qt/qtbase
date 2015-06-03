@@ -105,6 +105,11 @@ public:
 
     bool supportsAnimation() const;
 
+    QImageIOHandler::Transformations transformation() const;
+
+    void setAutoTransform(bool enabled);
+    bool autoTransform() const;
+
     QByteArray subType() const;
     QList<QByteArray> supportedSubTypes() const;
 

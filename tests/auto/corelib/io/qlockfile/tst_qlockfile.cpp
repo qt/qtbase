@@ -57,11 +57,16 @@ private slots:
     void waitForLock();
     void staleLockFromCrashedProcess_data();
     void staleLockFromCrashedProcess();
+    void staleLockFromCrashedProcessReusedPid();
     void staleShortLockFromBusyProcess();
     void staleLongLockFromBusyProcess();
     void staleLockRace();
     void noPermissions();
     void noPermissionsWindows();
+    void corruptedLockFile();
+
+private:
+    static bool overwritePidInLockFile(const QString &filePath, qint64 pid);
 
 public:
     QString m_helperApp;
@@ -276,6 +281,30 @@ void tst_QLockFile::staleLockFromCrashedProcess()
 #endif // !QT_NO_PROCESS
 }
 
+void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
+{
+#if defined(QT_NO_PROCESS)
+    QSKIP("This test requires QProcess support");
+#elif defined(Q_OS_WINRT) || defined(Q_OS_WINCE) || defined(Q_OS_IOS)
+    QSKIP("We cannot retrieve information about other processes on this platform.");
+#else
+    const QString fileName = dir.path() + "/staleLockFromCrashedProcessReusedPid";
+
+    int ret = QProcess::execute(m_helperApp, QStringList() << fileName << "-crash");
+    QCOMPARE(ret, int(QLockFile::NoError));
+    QVERIFY(QFile::exists(fileName));
+    QVERIFY(overwritePidInLockFile(fileName, QCoreApplication::applicationPid()));
+
+    QLockFile secondLock(fileName);
+    qint64 pid = 0;
+    secondLock.getLockInfo(&pid, 0, 0);
+    QCOMPARE(pid, QCoreApplication::applicationPid());
+    secondLock.setStaleLockTime(0);
+    QVERIFY(secondLock.tryLock());
+    QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
+#endif // !QT_NO_PROCESS
+}
+
 void tst_QLockFile::staleShortLockFromBusyProcess()
 {
 #ifdef QT_NO_PROCESS
@@ -478,6 +507,42 @@ void tst_QLockFile::noPermissionsWindows()
     QLockFile lockFile(fileName);
     QVERIFY(!lockFile.lock());
     QCOMPARE(int(lockFile.error()), int(QLockFile::PermissionError));
+}
+
+void tst_QLockFile::corruptedLockFile()
+{
+    const QString fileName = dir.path() + "/corruptedLockFile";
+
+    {
+        // Create a empty file. Typically the result of a computer crash or hard disk full.
+        QFile file(fileName);
+        QVERIFY(file.open(QFile::WriteOnly));
+    }
+
+    QLockFile secondLock(fileName);
+    secondLock.setStaleLockTime(100);
+    QVERIFY(secondLock.tryLock(10000));
+    QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
+}
+
+bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)
+{
+    QFile f(filePath);
+    if (!f.open(QFile::ReadWrite)) {
+        qWarning("Cannot open %s.", qPrintable(filePath));
+        return false;
+    }
+    QByteArray buf = f.readAll();
+    int i = buf.indexOf('\n');
+    if (i < 0) {
+        qWarning("Unexpected lockfile content.");
+        return false;
+    }
+    buf.remove(0, i);
+    buf.prepend(QByteArray::number(pid));
+    f.seek(0);
+    f.resize(buf.size());
+    return f.write(buf) == buf.size();
 }
 
 QTEST_MAIN(tst_QLockFile)

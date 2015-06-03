@@ -384,7 +384,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
 
 
 
-static const char* pattern_for_brush[] = {
+static const char* const pattern_for_brush[] = {
     0, // NoBrush
     0, // SolidPattern
     "0 J\n"

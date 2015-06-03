@@ -738,7 +738,7 @@ bool QImageData::checkForAlphaPixels() const
     \sa isNull()
 */
 
-QImage::QImage()
+QImage::QImage() Q_DECL_NOEXCEPT
     : QPaintDevice()
 {
     d = 0;
@@ -5145,6 +5145,20 @@ QImage::Format QImage::toImageFormat(QPixelFormat format) Q_DECL_NOTHROW
             return Format(i);
     }
     return Format_Invalid;
+}
+
+Q_GUI_EXPORT void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient)
+{
+    if (orient == QImageIOHandler::TransformationNone)
+        return;
+    if (orient == QImageIOHandler::TransformationRotate270) {
+        src = rotated270(src);
+    } else {
+        src = qMove(src).mirrored(orient & QImageIOHandler::TransformationMirror,
+                                  orient & QImageIOHandler::TransformationFlip);
+        if (orient & QImageIOHandler::TransformationRotate90)
+            src = rotated90(src);
+    }
 }
 
 QT_END_NAMESPACE

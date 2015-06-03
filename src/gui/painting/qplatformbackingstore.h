@@ -82,12 +82,14 @@ public:
     bool isEmpty() const { return count() == 0; }
     GLuint textureId(int index) const;
     QRect geometry(int index) const;
-    QWidget *widget(int index);
+    QRect clipRect(int index) const;
+    void *source(int index);
     Flags flags(int index) const;
     void lock(bool on);
     bool isLocked() const;
 
-    void appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry, Flags flags = 0);
+    void appendTexture(void *source, GLuint textureId, const QRect &geometry,
+                       const QRect &clipRect = QRect(), Flags flags = 0);
     void clear();
 
  Q_SIGNALS:
@@ -114,7 +116,12 @@ public:
                                  QPlatformTextureList *textures, QOpenGLContext *context,
                                  bool translucentBackground);
     virtual QImage toImage() const;
-    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const;
+    enum TextureFlag {
+        TextureSwizzle = 0x01,
+        TextureFlip = 0x02
+    };
+    Q_DECLARE_FLAGS(TextureFlags, TextureFlag)
+    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const;
 #endif
 
     virtual QPlatformGraphicsBuffer *graphicsBuffer() const;
@@ -129,6 +136,10 @@ public:
 private:
     QPlatformBackingStorePrivate *d_ptr;
 };
+
+#ifndef QT_NO_OPENGL
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformBackingStore::TextureFlags)
+#endif
 
 QT_END_NAMESPACE
 

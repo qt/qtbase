@@ -37,6 +37,8 @@
 #include <QMutex>
 #include <QCoreApplication>
 
+#include <private/qdebug_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -238,5 +240,26 @@ void QTouchDevicePrivate::registerDevice(QTouchDevice *dev)
         qAddPostRoutine(cleanupDevicesList);
     deviceList()->append(dev);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QTouchDevice *device)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug.noquote();
+    debug << "QTouchDevice(";
+    if (device) {
+        debug << '"' << device->name() << "\", type=";
+        QtDebugUtils::formatQEnum(debug, device->type());
+        debug << ", capabilities=";
+        QtDebugUtils::formatQFlags(debug, device->capabilities());
+        debug << ", maximumTouchPoints=" << device->maximumTouchPoints();
+    } else {
+        debug << '0';
+    }
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE

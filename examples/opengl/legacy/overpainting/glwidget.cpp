@@ -115,6 +115,8 @@ void GLWidget::setZRotation(int angle)
 //! [2]
 void GLWidget::initializeGL()
 {
+    initializeOpenGLFunctions();
+
     glEnable(GL_MULTISAMPLE);
 
     logo = new QtLogo(this);
@@ -173,7 +175,7 @@ void GLWidget::paintEvent(QPaintEvent *event)
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
 
-    logo->draw();
+    logo->draw(static_cast<QOpenGLFunctions_1_1 *>(this));
 //! [7]
 
 //! [8]

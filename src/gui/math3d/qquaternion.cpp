@@ -301,10 +301,18 @@ void QQuaternion::normalize()
 */
 
 /*!
-    \fn QQuaternion QQuaternion::conjugate() const
+    \fn QQuaternion QQuaternion::conjugated() const
+    \since 5.5
 
     Returns the conjugate of this quaternion, which is
     (-x, -y, -z, scalar).
+*/
+
+/*!
+    \fn QQuaternion QQuaternion::conjugate() const
+    \obsolete
+
+    Use conjugated() instead.
 */
 
 /*!
@@ -318,12 +326,12 @@ void QQuaternion::normalize()
     is equivalent to the following:
 
     \code
-    QVector3D result = (q * QQuaternion(0, vector) * q.conjugate()).vector();
+    QVector3D result = (q * QQuaternion(0, vector) * q.conjugated()).vector();
     \endcode
 */
 QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 {
-    return (*this * QQuaternion(0, vector) * conjugate()).vector();
+    return (*this * QQuaternion(0, vector) * conjugated()).vector();
 }
 
 /*!

@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QEvdevKeyboardPlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevkeyboard.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "evdevkeyboard.json")
 
 public:
     QEvdevKeyboardPlugin();

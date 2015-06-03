@@ -47,7 +47,6 @@
 
 #include <qbytearray.h>
 #include <qobject.h>
-#include <qtimer.h>
 #include <private/qringbuffer_p.h>
 
 #include <qt_windows.h>
@@ -89,7 +88,6 @@ private Q_SLOTS:
     void notified(quint32 numberOfBytesRead, quint32 errorCode, OVERLAPPED *notifiedOverlapped);
 
 private:
-    bool completeAsyncRead(DWORD bytesRead, DWORD errorCode);
     DWORD checkPipeState();
 
 private:
@@ -99,7 +97,7 @@ private:
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     qint64 actualReadBufferSize;
-    QTimer *emitReadyReadTimer;
+    bool stopped;
     bool readSequenceStarted;
     bool pipeBroken;
     bool readyReadEmitted;

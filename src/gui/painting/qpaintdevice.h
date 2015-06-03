@@ -80,7 +80,7 @@ public:
     int depth() const { return metric(PdmDepth); }
 
 protected:
-    QPaintDevice();
+    QPaintDevice() Q_DECL_NOEXCEPT;
     virtual int metric(PaintDeviceMetric metric) const;
     virtual void initPainter(QPainter *painter) const;
     virtual QPaintDevice *redirected(QPoint *offset) const;

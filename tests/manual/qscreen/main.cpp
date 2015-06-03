@@ -44,6 +44,7 @@
 #include <QAction>
 #include <QStatusBar>
 #include <QLineEdit>
+#include <QDesktopWidget>
 
 class ScreenPropertyWatcher : public PropertyWatcher
 {
@@ -156,19 +157,17 @@ void screenAdded(QScreen* screen)
         (screen->virtualSiblings().isEmpty() ? "none" : qPrintable(screen->virtualSiblings().first()->name())));
     ScreenWatcherMainWindow *w = new ScreenWatcherMainWindow(screen);
 
-    // This doesn't work.  If the multiple screens are part of
-    // a virtual desktop (i.e. they are virtual siblings), then
-    // setScreen has no effect, and we need the code below to
-    // change the window geometry.  If on the other hand the
-    // screens are really separate, so that windows are not
-    // portable between them, XCreateWindow needs to have not just
-    // a different root Window but also a different Display, in order to
-    // put the window on the other screen.  That would require a
-    // different QXcbConnection.  So this setScreen call doesn't seem useful.
-    //w->windowHandle()->setScreen(screen);
+    // Set the screen via QDesktopWidget. This corresponds to setScreen() for the underlying
+    // QWindow. This is essential when having separate X screens since the the positioning below is
+    // not sufficient to get the windows show up on the desired screen.
+    QList<QScreen *> screens = QGuiApplication::screens();
+    int screenNumber = screens.indexOf(screen);
+    Q_ASSERT(screenNumber >= 0);
+    w->setParent(qApp->desktop()->screen(screenNumber));
 
-    // But this works as long as the screens are all virtual siblings
     w->show();
+
+    // Position the windows so that they end up at the center of the corresponding screen.
     QRect geom = w->geometry();
     geom.setSize(w->sizeHint());
     if (geom.height() > screen->geometry().height())

@@ -201,7 +201,16 @@ void QBasicDrag::startDrag()
 
     m_drag_icon_window->setPixmap(m_drag->pixmap());
     m_drag_icon_window->setHotspot(m_drag->hotSpot());
-    m_drag_icon_window->updateGeometry();
+
+#ifndef QT_NO_CURSOR
+    QPoint pos = QCursor::pos();
+    if (pos.x() == int(qInf())) {
+        // ### fixme: no mouse pos registered. Get pos from touch...
+        pos = QPoint();
+    }
+    m_drag_icon_window->updateGeometry(pos);
+#endif
+
     m_drag_icon_window->setVisible(true);
 
     enableEventFilter();
@@ -218,10 +227,10 @@ void QBasicDrag::cancel()
     m_drag_icon_window->setVisible(false);
 }
 
-void QBasicDrag::move(const QMouseEvent *)
+void QBasicDrag::move(const QMouseEvent *e)
 {
     if (m_drag)
-        m_drag_icon_window->updateGeometry();
+        m_drag_icon_window->updateGeometry(e->globalPos());
 }
 
 void QBasicDrag::drop(const QMouseEvent *)

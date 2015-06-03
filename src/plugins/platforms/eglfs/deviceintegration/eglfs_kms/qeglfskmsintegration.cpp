@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -60,6 +61,7 @@ QEglFSKmsIntegration::QEglFSKmsIntegration()
     : m_device(Q_NULLPTR)
     , m_hwCursor(true)
     , m_pbuffers(false)
+    , m_separateScreens(false)
 {}
 
 void QEglFSKmsIntegration::platformInit()
@@ -203,6 +205,11 @@ bool QEglFSKmsIntegration::hwCursor() const
     return m_hwCursor;
 }
 
+bool QEglFSKmsIntegration::separateScreens() const
+{
+    return m_separateScreens;
+}
+
 QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
 {
     return m_outputSettings;
@@ -235,6 +242,7 @@ void QEglFSKmsIntegration::loadConfig()
     m_hwCursor = object.value(QStringLiteral("hwcursor")).toBool(m_hwCursor);
     m_pbuffers = object.value(QStringLiteral("pbuffers")).toBool(m_pbuffers);
     m_devicePath = object.value(QStringLiteral("device")).toString();
+    m_separateScreens = object.value(QStringLiteral("separateScreens")).toBool(m_separateScreens);
 
     const QJsonArray outputs = object.value(QStringLiteral("outputs")).toArray();
     for (int i = 0; i < outputs.size(); i++) {
@@ -254,6 +262,7 @@ void QEglFSKmsIntegration::loadConfig()
     qCDebug(qLcEglfsKmsDebug) << "Configuration:\n"
                               << "\thwcursor:" << m_hwCursor << "\n"
                               << "\tpbuffers:" << m_pbuffers << "\n"
+                              << "\tseparateScreens:" << m_separateScreens << "\n"
                               << "\toutputs:" << m_outputSettings;
 }
 

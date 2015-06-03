@@ -73,6 +73,7 @@ public:
     void emitTriggered();
 
     QList<QPointer<QAbstractState> > targetStates;
+    QAbstractTransition::TransitionType transitionType;
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;

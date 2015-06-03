@@ -44,6 +44,7 @@
 #include <QObject>
 #include <QColor>
 
+class QOpenGLFunctions_1_1;
 class Patch;
 struct Geometry;
 
@@ -54,7 +55,7 @@ public:
     explicit QtLogo(QObject *parent, int d = 64, qreal s = 1.0);
     ~QtLogo();
     void setColor(QColor c);
-    void draw() const;
+    void draw(QOpenGLFunctions_1_1 *functions) const;
 private:
     void buildGeometry(int d, qreal s);
 

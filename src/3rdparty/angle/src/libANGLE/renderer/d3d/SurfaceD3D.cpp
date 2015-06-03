@@ -189,6 +189,7 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
         return egl::Error(EGL_SUCCESS);
     }
 
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (defined(ANGLE_ENABLE_WINDOWS_STORE) && WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // Qt WP: eglPostSubBufferNV comes here
     if (x + width > mWidth)
     {
         width = mWidth - x;
@@ -198,6 +199,7 @@ egl::Error SurfaceD3D::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
     {
         height = mHeight - y;
     }
+#endif
 
     if (width == 0 || height == 0)
     {

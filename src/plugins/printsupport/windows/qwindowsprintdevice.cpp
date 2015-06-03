@@ -113,26 +113,9 @@ QWindowsPrintDevice::QWindowsPrintDevice(const QString &id)
     }
 }
 
-QWindowsPrintDevice::QWindowsPrintDevice(const QWindowsPrintDevice &other)
-    : QPlatformPrintDevice(other)
-{
-    OpenPrinter((LPWSTR)other.m_id.utf16(), &m_hPrinter, NULL);
-}
-
 QWindowsPrintDevice::~QWindowsPrintDevice()
 {
     ClosePrinter(m_hPrinter);
-}
-
-QWindowsPrintDevice &QWindowsPrintDevice::operator=(const QWindowsPrintDevice &other)
-{
-    OpenPrinter((LPWSTR)other.m_id.utf16(), &m_hPrinter, NULL);
-    return *this;
-}
-
-bool QWindowsPrintDevice::operator==(const QWindowsPrintDevice &other) const
-{
-    return (m_id == other.m_id);
 }
 
 bool QWindowsPrintDevice::isValid() const

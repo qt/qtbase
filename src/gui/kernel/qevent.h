@@ -792,8 +792,10 @@ public:
         explicit TouchPoint(int id = -1);
         TouchPoint(const TouchPoint &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-        TouchPoint(TouchPoint &&other) : d(other.d) { other.d = 0; }
-        TouchPoint &operator=(TouchPoint &&other)
+        TouchPoint(TouchPoint &&other) Q_DECL_NOEXCEPT
+            : d(0)
+        { qSwap(d, other.d); }
+        TouchPoint &operator=(TouchPoint &&other) Q_DECL_NOEXCEPT
         { qSwap(d, other.d); return *this; }
 #endif
         ~TouchPoint();
@@ -801,7 +803,8 @@ public:
         TouchPoint &operator=(const TouchPoint &other)
         { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
 
-        void swap(TouchPoint &other) { qSwap(d, other.d); }
+        void swap(TouchPoint &other) Q_DECL_NOEXCEPT
+        { qSwap(d, other.d); }
 
         int id() const;
 

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -308,6 +309,7 @@ QEglFSKmsDevice::QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QStrin
     , m_gbm_device(Q_NULLPTR)
     , m_crtc_allocator(0)
     , m_connector_allocator(0)
+    , m_globalCursor(Q_NULLPTR)
 {
 }
 
@@ -347,6 +349,10 @@ void QEglFSKmsDevice::close()
         qt_safe_close(m_dri_fd);
         m_dri_fd = -1;
     }
+
+    if (m_globalCursor)
+        m_globalCursor->deleteLater();
+    m_globalCursor = Q_NULLPTR;
 }
 
 void QEglFSKmsDevice::createScreens()
@@ -357,6 +363,8 @@ void QEglFSKmsDevice::createScreens()
         return;
     }
 
+    QEglFSKmsScreen *primaryScreen = Q_NULLPTR;
+    QList<QPlatformScreen *> siblings;
     QPoint pos(0, 0);
     QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
 
@@ -369,12 +377,24 @@ void QEglFSKmsDevice::createScreens()
         if (screen) {
             integration->addScreen(screen);
             pos.rx() += screen->geometry().width();
+            siblings << screen;
+
+            if (!primaryScreen)
+                primaryScreen = screen;
         }
 
         drmModeFreeConnector(connector);
     }
 
     drmModeFreeResources(resources);
+
+    if (!m_integration->separateScreens()) {
+        Q_FOREACH (QPlatformScreen *screen, siblings)
+            static_cast<QEglFSKmsScreen *>(screen)->setVirtualSiblings(siblings);
+
+        if (primaryScreen)
+            m_globalCursor = new QEglFSKmsCursor(primaryScreen);
+    }
 }
 
 gbm_device *QEglFSKmsDevice::device() const
@@ -385,6 +405,11 @@ gbm_device *QEglFSKmsDevice::device() const
 int QEglFSKmsDevice::fd() const
 {
     return m_dri_fd;
+}
+
+QPlatformCursor *QEglFSKmsDevice::globalCursor() const
+{
+    return m_globalCursor;
 }
 
 void QEglFSKmsDevice::handleDrmEvent()

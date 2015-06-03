@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QLibInputPlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "libinput.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "libinput.json")
 
 public:
     QObject *create(const QString &key, const QString &specification);

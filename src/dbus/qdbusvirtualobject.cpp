@@ -37,11 +37,17 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Constructs a QDBusVirtualObject with \a parent.
+*/
 QDBusVirtualObject::QDBusVirtualObject(QObject *parent) :
     QObject(parent)
 {
 }
 
+/*!
+    Destroys the object, deleting all of its child objects.
+*/
 QDBusVirtualObject::~QDBusVirtualObject()
 {
 }

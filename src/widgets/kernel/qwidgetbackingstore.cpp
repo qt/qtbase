@@ -962,7 +962,8 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatfo
         QPlatformTextureList::Flags flags = 0;
         if (widget->testAttribute(Qt::WA_AlwaysStackOnTop))
             flags |= QPlatformTextureList::StacksOnTop;
-        widgetTextures->appendTexture(widget, wd->textureId(), QRect(widget->mapTo(tlw, QPoint()), widget->size()), flags);
+        const QRect rect(widget->mapTo(tlw, QPoint()), widget->size());
+        widgetTextures->appendTexture(widget, wd->textureId(), rect, wd->clipRect(), flags);
     }
 
     for (int i = 0; i < wd->children.size(); ++i) {
@@ -1156,7 +1157,7 @@ void QWidgetBackingStore::doSync()
 #ifndef QT_NO_OPENGL
     if (widgetTextures && widgetTextures->count()) {
         for (int i = 0; i < widgetTextures->count(); ++i) {
-            QWidget *w = widgetTextures->widget(i);
+            QWidget *w = static_cast<QWidget *>(widgetTextures->source(i));
             if (dirtyRenderToTextureWidgets.contains(w)) {
                 const QRect rect = widgetTextures->geometry(i); // mapped to the tlw already
                 dirty += rect;

@@ -103,8 +103,8 @@ public:
     QAbstractState *initialState;
     QState::ChildMode childMode;
     mutable bool childStatesListNeedsRefresh;
-    mutable QList<QAbstractState*> childStatesList;
     mutable bool transitionsListNeedsRefresh;
+    mutable QList<QAbstractState*> childStatesList;
     mutable QList<QAbstractTransition*> transitionsList;
 
 #ifndef QT_NO_PROPERTIES

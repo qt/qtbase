@@ -253,17 +253,22 @@ static QString strippedText(QString s)
         || [self panel:nil shouldShowFilename:filepath];
 
     [self updateProperties];
-    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     [mSavePanel setDirectoryURL: [NSURL fileURLWithPath:mCurrentDir]];
 
     [mSavePanel setNameFieldStringValue:selectable ? QCFString::toNSString(info.fileName()) : @""];
     NSWindow *nsparent = static_cast<NSWindow *>(qGuiApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parent));
 
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
+
     [mSavePanel beginSheetModalForWindow:nsparent completionHandler:^(NSInteger result){
-        mReturnCode = result;
-        if (mHelper)
-            mHelper->QNSOpenSavePanelDelegate_panelClosed(result == NSOKButton);
+        [[NSApplication sharedApplication] stopModalWithCode:result];
     }];
+
+    mReturnCode = [[NSApplication sharedApplication] runModalForWindow:nsparent];
+    QAbstractEventDispatcher::instance()->interrupt();
+    if (mHelper)
+        mHelper->QNSOpenSavePanelDelegate_panelClosed(mReturnCode == NSOKButton);
 }
 
 - (BOOL)isHiddenFile:(NSString *)filename isDir:(BOOL)isDir
@@ -705,14 +710,15 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
 
 bool QCocoaFileDialogHelper::showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent)
 {
+    Q_UNUSED(parent)
+
     createNSOpenSavePanelDelegate();
     if (!mDelegate)
         return false;
     if (windowModality == Qt::NonModal)
         [mDelegate showModelessPanel];
-    else if (windowModality == Qt::WindowModal && parent)
-        [mDelegate showWindowModalSheet:parent];
-    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
+    // no need to show a Qt::ApplicationModal dialog here, since it will be done in exec;
+    // Qt::WindowModal will be done in execModalForWindow.
     return true;
 }
 
@@ -742,6 +748,14 @@ void QCocoaFileDialogHelper::exec()
     else
         emit reject();
 
+}
+
+void QCocoaFileDialogHelper::execModalForWindow(QWindow *parent)
+{
+    if (!parent)
+        return exec();
+
+    [mDelegate showWindowModalSheet:parent];
 }
 
 bool QCocoaFileDialogHelper::defaultNameFilterDisables() const

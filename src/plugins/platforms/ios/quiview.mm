@@ -77,7 +77,7 @@
         if (QIOSIntegration::instance()->debugWindowManagement()) {
             static CGFloat hue = 0.0;
             CGFloat lastHue = hue;
-            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabsf(hue - lastHue))
+            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabs(hue - lastHue))
                 hue = drand48();
 
             #define colorWithBrightness(br) \
@@ -194,7 +194,7 @@
 
 - (BOOL)canBecomeFirstResponder
 {
-    return YES;
+    return !(m_qioswindow->window()->flags() & Qt::WindowDoesNotAcceptFocus);
 }
 
 - (BOOL)becomeFirstResponder
@@ -280,6 +280,12 @@
 
 // -------------------------------------------------------------------------
 
+-(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
+{
+    if (m_qioswindow->window()->flags() & Qt::WindowTransparentForInput)
+        return NO;
+    return [super pointInside:point withEvent:event];
+}
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {

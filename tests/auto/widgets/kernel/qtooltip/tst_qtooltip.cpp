@@ -34,29 +34,31 @@
 
 #include <QtTest/QtTest>
 #include <qtooltip.h>
+#include <qwhatsthis.h>
+#include <qscreen.h>
 
 class tst_QToolTip : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QToolTip() {}
-    virtual ~tst_QToolTip() {}
-
-public slots:
-    void initTestCase() {}
-    void cleanupTestCase() {}
-    void init() {}
-    void cleanup() {}
-
 private slots:
-
-    // task-specific tests below me
+    void init();
+    void cleanup();
     void task183679_data();
     void task183679();
     void whatsThis();
     void setPalette();
 };
+
+void tst_QToolTip::init()
+{
+    QVERIFY(!QToolTip::isVisible());
+}
+
+void tst_QToolTip::cleanup()
+{
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
+}
 
 class Widget_task183679 : public QWidget
 {
@@ -100,12 +102,14 @@ void tst_QToolTip::task183679()
 #endif
 
     Widget_task183679 widget;
+    widget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(50, 50));
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction())
+                          + QLatin1Char(' ') + QLatin1String(QTest::currentDataTag()));
     widget.show();
     QApplication::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     widget.showDelayedToolTip(100);
-    QTest::qWait(300);
     QTRY_VERIFY(QToolTip::isVisible());
 
     QTest::keyPress(&widget, key);
@@ -116,26 +120,31 @@ void tst_QToolTip::task183679()
     QTest::qWait(1500);
 
     QCOMPARE(QToolTip::isVisible(), visible);
+    if (visible)
+        QToolTip::hideText();
 }
 
-#include <QWhatsThis>
+static QWidget *findWhatsThat()
+{
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (widget->inherits("QWhatsThat"))
+            return widget;
+    }
+    return Q_NULLPTR;
+}
 
 void tst_QToolTip::whatsThis()
 {
     qApp->setStyleSheet( "QWidget { font-size: 72px; }" );
-    QWhatsThis::showText(QPoint(0,0), "THis is text");
-    QTest::qWait(400);
-    QWidget *whatsthis = 0;
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        if (widget->inherits("QWhatsThat")) {
-            whatsthis = widget;
-            break;
-        }
-    }
-    QVERIFY(whatsthis);
+    QWhatsThis::showText(QPoint(0, 0), "This is text");
+
+    QWidget *whatsthis = Q_NULLPTR;
+    QTRY_VERIFY( (whatsthis = findWhatsThat()) );
     QVERIFY(whatsthis->isVisible());
-    QVERIFY(whatsthis->height() > 100); // Test QTBUG-2416
-    qApp->setStyleSheet("");
+    const int whatsThisHeight = whatsthis->height();
+    qApp->setStyleSheet(QString());
+    QWhatsThis::hideText();
+    QVERIFY2(whatsThisHeight > 100, QByteArray::number(whatsThisHeight)); // Test QTBUG-2416
 }
 
 
@@ -167,6 +176,7 @@ void tst_QToolTip::setPalette()
     newPalette.setColor(QPalette::ToolTipText, Qt::blue);
     QToolTip::setPalette(newPalette);
     QCOMPARE(toolTip->palette(), newPalette);
+    QToolTip::hideText();
 }
 
 QTEST_MAIN(tst_QToolTip)

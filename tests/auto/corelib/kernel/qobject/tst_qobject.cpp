@@ -128,6 +128,7 @@ private slots:
     void connectWithReference();
     void connectManyArguments();
     void connectForwardDeclare();
+    void connectNoDefaultConstructorArg();
     void returnValue_data();
     void returnValue();
     void returnValue2_data();
@@ -5225,6 +5226,29 @@ void tst_QObject::connectForwardDeclare()
     ForwardDeclareArguments ob;
     // it should compile
     QVERIFY(connect(&ob, &ForwardDeclareArguments::mySignal, &ob, &ForwardDeclareArguments::mySlot, Qt::QueuedConnection));
+}
+
+class NoDefaultConstructor
+{
+    Q_GADGET
+public:
+    NoDefaultConstructor(int) {}
+};
+
+class NoDefaultContructorArguments : public QObject
+{
+    Q_OBJECT
+signals:
+    void mySignal(const NoDefaultConstructor&);
+public slots:
+    void mySlot(const NoDefaultConstructor&) {}
+};
+
+void tst_QObject::connectNoDefaultConstructorArg()
+{
+    NoDefaultContructorArguments ob;
+    // it should compile
+    QVERIFY(connect(&ob, &NoDefaultContructorArguments::mySignal, &ob, &NoDefaultContructorArguments::mySlot, Qt::QueuedConnection));
 }
 
 class ReturnValue : public QObject {

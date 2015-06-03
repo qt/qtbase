@@ -112,6 +112,22 @@ void tst_QCoreApplication::qAppName()
     // The application name should still be available after destruction;
     // global statics often rely on this.
     QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1(appName));
+
+    // Setting the appname before creating the application should work (QTBUG-45283)
+    const QString wantedAppName("my app name");
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char*>(appName) };
+        QCoreApplication::setApplicationName(wantedAppName);
+        TestApplication app(argc, argv);
+        QCOMPARE(::qAppName(), QString::fromLatin1(appName));
+        QCOMPARE(QCoreApplication::applicationName(), wantedAppName);
+    }
+    QCOMPARE(QCoreApplication::applicationName(), wantedAppName);
+
+    // Restore to initial value
+    QCoreApplication::setApplicationName(QString());
+    QCOMPARE(QCoreApplication::applicationName(), QString());
 }
 
 void tst_QCoreApplication::argc()

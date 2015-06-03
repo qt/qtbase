@@ -107,7 +107,7 @@ void ImageViewer::open()
     mimeTypeFilters.sort();
     const QStringList picturesLocations = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
     QFileDialog dialog(this, tr("Open File"),
-                       picturesLocations.isEmpty() ? QDir::currentPath() : picturesLocations.first());
+                       picturesLocations.isEmpty() ? QDir::currentPath() : picturesLocations.last());
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
     dialog.setMimeTypeFilters(mimeTypeFilters);
     dialog.selectMimeTypeFilter("image/jpeg");

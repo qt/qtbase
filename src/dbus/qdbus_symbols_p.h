@@ -183,9 +183,6 @@ DEFINEFUNC(dbus_bool_t        , dbus_connection_add_filter, (DBusConnection     
                                                              void                      *user_data,
                                                              DBusFreeFunction           free_data_function),
            (connection, function, user_data, free_data_function), return)
-DEFINEFUNC(dbus_bool_t        , dbus_connection_can_send_type, (DBusConnection             *connection,
-                                                                int                         type),
-           (connection, type), return)
 DEFINEFUNC(void               , dbus_connection_close,      (DBusConnection             *connection),
            (connection), return)
 DEFINEFUNC(DBusDispatchStatus , dbus_connection_dispatch,   (DBusConnection             *connection),

@@ -132,6 +132,7 @@ public:
     void handleFocusInEvent(const xcb_focus_in_event_t *event) Q_DECL_OVERRIDE;
     void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleXIMouseEvent(xcb_ge_event_t *) Q_DECL_OVERRIDE;
 
     QXcbWindow *toWindow() Q_DECL_OVERRIDE;
 
@@ -209,6 +210,15 @@ protected:
     bool relayFocusToModalWindow() const;
     void doFocusIn();
     void doFocusOut();
+
+    void handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
+                                int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+
+    void handleButtonReleaseEvent(int event_x, int event_y, int root_x, int root_y,
+                                  int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
+
+    void handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
+                                 Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window;
 

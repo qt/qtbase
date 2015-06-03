@@ -163,6 +163,75 @@ static int doSed(int argc, char **argv)
     return 0;
 }
 
+static int doLink(int argc, char **argv)
+{
+    bool isSymlink = false;
+    bool force = false;
+    QList<const char *> inFiles;
+    for (int i = 0; i < argc; i++) {
+        if (!strcmp(argv[i], "-s")) {
+            isSymlink = true;
+        } else if (!strcmp(argv[i], "-f")) {
+            force = true;
+        } else if (argv[i][0] == '-') {
+            fprintf(stderr, "Error: unrecognized ln option '%s'\n", argv[i]);
+            return 3;
+        } else {
+            inFiles << argv[i];
+        }
+    }
+    if (inFiles.size() != 2) {
+        fprintf(stderr, "Error: this ln requires exactly two file arguments\n");
+        return 3;
+    }
+    if (!isSymlink) {
+        fprintf(stderr, "Error: this ln supports faking symlinks only\n");
+        return 3;
+    }
+    QString target = QString::fromLocal8Bit(inFiles[0]);
+    QString linkname = QString::fromLocal8Bit(inFiles[1]);
+
+    QDir destdir;
+    QFileInfo tfi(target);
+    QFileInfo lfi(linkname);
+    if (lfi.isDir()) {
+        destdir.setPath(linkname);
+        lfi.setFile(destdir, tfi.fileName());
+    } else {
+        destdir.setPath(lfi.path());
+    }
+    if (!destdir.exists()) {
+        fprintf(stderr, "Error: destination directory %s does not exist\n", qPrintable(destdir.path()));
+        return 1;
+    }
+    tfi.setFile(destdir.absoluteFilePath(tfi.filePath()));
+    if (!tfi.exists()) {
+        fprintf(stderr, "Error: this ln does not support symlinking non-existing targets\n");
+        return 3;
+    }
+    if (tfi.isDir()) {
+        fprintf(stderr, "Error: this ln does not support symlinking directories\n");
+        return 3;
+    }
+    if (lfi.exists()) {
+        if (!force) {
+            fprintf(stderr, "Error: %s exists\n", qPrintable(lfi.filePath()));
+            return 1;
+        }
+        if (!QFile::remove(lfi.filePath())) {
+            fprintf(stderr, "Error: cannot overwrite %s\n", qPrintable(lfi.filePath()));
+            return 1;
+        }
+    }
+    if (!QFile::copy(tfi.filePath(), lfi.filePath())) {
+        fprintf(stderr, "Error: cannot copy %s to %s\n",
+                qPrintable(tfi.filePath()), qPrintable(lfi.filePath()));
+        return 1;
+    }
+
+    return 0;
+}
+
 static int doInstall(int argc, char **argv)
 {
     if (!argc) {
@@ -171,6 +240,8 @@ static int doInstall(int argc, char **argv)
     }
     if (!strcmp(argv[0], "sed"))
         return doSed(argc - 1, argv + 1);
+    if (!strcmp(argv[0], "ln"))
+        return doLink(argc - 1, argv + 1);
     fprintf(stderr, "Error: unrecognized -install subcommand '%s'\n", argv[0]);
     return 3;
 }

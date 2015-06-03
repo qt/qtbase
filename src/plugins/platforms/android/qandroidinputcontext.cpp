@@ -176,6 +176,8 @@ static jstring getSelectedText(JNIEnv *env, jobject /*thiz*/, jint flags)
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
     qDebug() << "@@@ GETSEL" << text;
 #endif
+    if (text.isEmpty())
+        return 0;
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 

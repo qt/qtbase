@@ -852,9 +852,19 @@ void QDialogButtonBoxPrivate::_q_handleButtonClicked()
 {
     Q_Q(QDialogButtonBox);
     if (QAbstractButton *button = qobject_cast<QAbstractButton *>(q->sender())) {
+        // Can't fetch this *after* emitting clicked, as clicked may destroy the button
+        // or change its role. Now changing the role is not possible yet, but arguably
+        // both clicked and accepted/rejected/etc. should be emitted "atomically"
+        // depending on whatever role the button had at the time of the click.
+        const QDialogButtonBox::ButtonRole buttonRole = q->buttonRole(button);
+        QPointer<QDialogButtonBox> guard(q);
+
         emit q->clicked(button);
 
-        switch (q->buttonRole(button)) {
+        if (!guard)
+            return;
+
+        switch (buttonRole) {
         case QPlatformDialogHelper::AcceptRole:
         case QPlatformDialogHelper::YesRole:
             emit q->accepted();

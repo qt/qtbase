@@ -97,6 +97,7 @@
 
 #if defined(XCB_USE_XINPUT2)
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/XI2proto.h>
 #endif
 
 #define XCOORD_MAX 16383
@@ -2167,16 +2168,17 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
     }
 }
 
-void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
+void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
+                                        int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
 {
-    const bool isWheel = event->detail >= 4 && event->detail <= 7;
+    const bool isWheel = detail >= 4 && detail <= 7;
     if (!isWheel && window() != QGuiApplication::focusWindow()) {
         QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
         if (!(w->flags() & Qt::WindowDoesNotAcceptFocus))
             w->requestActivate();
     }
 
-    updateNetWmUserTime(event->time);
+    updateNetWmUserTime(timestamp);
 
     if (m_embedded) {
         if (window() != QGuiApplication::focusWindow()) {
@@ -2187,53 +2189,125 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
         }
     }
     const int dpr = int(devicePixelRatio());
-    QPoint local(event->event_x/dpr, event->event_y/dpr);
-    QPoint global = xcbScreen()->mapFromNative(QPoint(event->root_x, event->root_y));
-
-    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
+    QPoint local(event_x / dpr, event_y / dpr);
+    QPoint global = xcbScreen()->mapFromNative(QPoint(root_x, root_y));
 
     if (isWheel) {
-        if (!connection()->isUsingXInput21()) {
+        if (!connection()->isAtLeastXI21()) {
             // Logic borrowed from qapplication_x11.cpp
-            int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
-            bool hor = (((event->detail == 4 || event->detail == 5)
+            int delta = 120 * ((detail == 4 || detail == 6) ? 1 : -1);
+            bool hor = (((detail == 4 || detail == 5)
                          && (modifiers & Qt::AltModifier))
-                        || (event->detail == 6 || event->detail == 7));
+                        || (detail == 6 || detail == 7));
 
-            QWindowSystemInterface::handleWheelEvent(window(), event->time,
+            QWindowSystemInterface::handleWheelEvent(window(), timestamp,
                                                      local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
         }
         return;
     }
 
-    handleMouseEvent(event->time, local, global, modifiers);
+    handleMouseEvent(timestamp, local, global, modifiers);
 }
 
-void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *event)
+void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, int root_y,
+                                          int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
 {
     const int dpr = int(devicePixelRatio());
-    QPoint local(event->event_x/dpr, event->event_y/dpr);
-    QPoint global = xcbScreen()->mapFromNative(QPoint(event->root_x, event->root_y));
-    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
+    QPoint local(event_x / dpr, event_y / dpr);
+    QPoint global = xcbScreen()->mapFromNative(QPoint(root_x, root_y));
 
-    if (event->detail >= 4 && event->detail <= 7) {
+    if (detail >= 4 && detail <= 7) {
         // mouse wheel, handled in handleButtonPressEvent()
         return;
     }
 
-    handleMouseEvent(event->time, local, global, modifiers);
+    handleMouseEvent(timestamp, local, global, modifiers);
+}
+
+void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
+                                         Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp)
+{
+    if (!xcbScreen())
+        return;
+    const int dpr = int(devicePixelRatio());
+    QPoint local(event_x / dpr, event_y / dpr);
+    QPoint global = xcbScreen()->mapFromNative(QPoint(root_x, root_y));
+    handleMouseEvent(timestamp, local, global, modifiers);
+}
+
+// Handlers for plain xcb events. Used only when XI 2.2 or newer is not available.
+void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
+{
+    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
+    handleButtonPressEvent(event->event_x, event->event_y, event->root_x, event->root_y, event->detail,
+                           modifiers, event->time);
+}
+
+void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *event)
+{
+    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
+    handleButtonReleaseEvent(event->event_x, event->event_y, event->root_x, event->root_y, event->detail,
+                             modifiers, event->time);
 }
 
 void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 {
-    const int dpr = int(devicePixelRatio());
-    QPoint local(event->event_x/dpr, event->event_y/dpr);
-    if (!xcbScreen())
-        return;
-    QPoint global = xcbScreen()->mapFromNative(QPoint(event->root_x, event->root_y));
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
+    handleMotionNotifyEvent(event->event_x, event->event_y, event->root_x, event->root_y, modifiers, event->time);
+}
 
-    handleMouseEvent(event->time, local, global, modifiers);
+#ifdef XCB_USE_XINPUT22
+static inline int fixed1616ToInt(FP1616 val)
+{
+    return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
+}
+#endif
+
+// With XI 2.2+ press/release/motion comes here instead of the above handlers.
+void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
+{
+#ifdef XCB_USE_XINPUT22
+    QXcbConnection *conn = connection();
+    xXIDeviceEvent *ev = reinterpret_cast<xXIDeviceEvent *>(event);
+    const Qt::KeyboardModifiers modifiers = conn->keyboard()->translateModifiers(ev->mods.effective_mods);
+    const int event_x = fixed1616ToInt(ev->event_x);
+    const int event_y = fixed1616ToInt(ev->event_y);
+    const int root_x = fixed1616ToInt(ev->root_x);
+    const int root_y = fixed1616ToInt(ev->root_y);
+
+    conn->keyboard()->updateXKBStateFromXI(&ev->mods, &ev->group);
+
+    const Qt::MouseButton button = conn->xiToQtMouseButton(ev->detail);
+
+    if (ev->buttons_len > 0) {
+        unsigned char *buttonMask = (unsigned char *) &ev[1];
+        for (int i = 1; i <= 15; ++i)
+            conn->setButton(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
+    }
+
+    switch (ev->evtype) {
+    case XI_ButtonPress:
+        qCDebug(lcQpaXInput, "XI2 mouse press, button %d", button);
+        conn->setButton(button, true);
+        handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
+        break;
+    case XI_ButtonRelease:
+        qCDebug(lcQpaXInput, "XI2 mouse release, button %d", button);
+        conn->setButton(button, false);
+        handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
+        break;
+    case XI_Motion:
+        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d", event_x, event_y);
+        handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time);
+        break;
+    default:
+        qWarning() << "Unrecognized XI2 mouse event" << ev->evtype;
+        break;
+    }
+#else
+    Q_UNUSED(event);
+    Q_ASSERT(false); // this can't be
+#endif
 }
 
 QXcbWindow *QXcbWindow::toWindow() { return this; }
@@ -2417,6 +2491,10 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QXcbWindow::setMouseGrabEnabled(bool grab)
 {
+#ifdef XCB_USE_XINPUT22
+    if (connection()->xi2MouseEvents())
+        return connection()->xi2SetMouseGrabEnabled(m_window, grab);
+#endif
     if (grab && !connection()->canGrab())
         return false;
 

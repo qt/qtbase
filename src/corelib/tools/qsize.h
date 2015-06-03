@@ -54,15 +54,15 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void setWidth(int w) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void setHeight(int h) Q_DECL_NOTHROW;
     void transpose() Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QSize transposed() const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QSize transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     inline void scale(int w, int h, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;
     inline void scale(const QSize &s, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;
-    QSize scaled(int w, int h, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW;
-    QSize scaled(const QSize &s, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW;
+    QSize scaled(int w, int h, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    QSize scaled(const QSize &s, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
-    Q_DECL_CONSTEXPR inline QSize expandedTo(const QSize &) const Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QSize boundedTo(const QSize &) const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QSize expandedTo(const QSize &) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QSize boundedTo(const QSize &) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     Q_DECL_RELAXED_CONSTEXPR inline int &rwidth() Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline int &rheight() Q_DECL_NOTHROW;
@@ -214,15 +214,15 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void setWidth(qreal w) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void setHeight(qreal h) Q_DECL_NOTHROW;
     void transpose() Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QSizeF transposed() const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QSizeF transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     inline void scale(qreal w, qreal h, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;
     inline void scale(const QSizeF &s, Qt::AspectRatioMode mode) Q_DECL_NOTHROW;
-    QSizeF scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW;
-    QSizeF scaled(const QSizeF &s, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW;
+    QSizeF scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    QSizeF scaled(const QSizeF &s, Qt::AspectRatioMode mode) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
-    Q_DECL_CONSTEXPR inline QSizeF expandedTo(const QSizeF &) const Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QSizeF boundedTo(const QSizeF &) const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QSizeF expandedTo(const QSizeF &) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QSizeF boundedTo(const QSizeF &) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
     Q_DECL_RELAXED_CONSTEXPR inline qreal &rwidth() Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline qreal &rheight() Q_DECL_NOTHROW;

@@ -236,6 +236,8 @@ namespace QTest
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = 0);
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, const QStringList &arguments);
 
+    Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = 0);
+
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
     Q_TESTLIB_EXPORT void qFail(const char *statementStr, const char *file, int line);

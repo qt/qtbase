@@ -255,6 +255,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QScopedArrayPointer::QScopedArrayPointer(D * p, QtPrivate::QScopedArrayEnsureSameType<T, D>::Type = 0)
+    \internal
+
+    Constructs a QScopedArrayPointer and stores the array of objects.
+*/
+
+/*!
     \fn T *QScopedArrayPointer::operator[](int i)
 
     Provides access to entry \a i of the scoped pointer's array of

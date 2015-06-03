@@ -47,6 +47,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QScrollArea>
 
 #include "glwidget.h"
 
@@ -69,7 +70,7 @@ MainWindow::MainWindow()
                                "and therefore an interval < 16 ms will likely lead to a 60 FPS update rate.");
     QGroupBox *updateGroupBox = new QGroupBox(this);
     QCheckBox *timerBased = new QCheckBox("Use timer", this);
-    timerBased->setChecked(true);
+    timerBased->setChecked(false);
     timerBased->setToolTip("Toggles using a timer to trigger update().\n"
                            "When not set, each paintGL() schedules the next update immediately,\n"
                            "expecting the blocking swap to throttle the thread.\n"
@@ -87,7 +88,7 @@ MainWindow::MainWindow()
     slider->setRange(0, 50);
     slider->setSliderPosition(30);
     m_timer->setInterval(10);
-    label->setText("A QOpenGLWidget");
+    label->setText("A scrollable QOpenGLWidget");
     label->setAlignment(Qt::AlignHCenter);
 
     QGroupBox * groupBox = new QGroupBox(this);
@@ -96,7 +97,10 @@ MainWindow::MainWindow()
 
     m_layout = new QGridLayout(groupBox);
 
-    m_layout->addWidget(glwidget,1,0,8,1);
+    QScrollArea *scrollArea = new QScrollArea;
+    scrollArea->setWidget(glwidget);
+
+    m_layout->addWidget(scrollArea,1,0,8,1);
     m_layout->addWidget(label,9,0,1,1);
     m_layout->addWidget(updateGroupBox, 10, 0, 1, 1);
     m_layout->addWidget(slider, 11,0,1,1);
@@ -134,7 +138,10 @@ MainWindow::MainWindow()
     connect(timerBased, &QCheckBox::toggled, this, &MainWindow::timerUsageChanged);
     connect(timerBased, &QCheckBox::toggled, updateInterval, &QWidget::setEnabled);
 
-    m_timer->start();
+    if (timerBased->isChecked())
+        m_timer->start();
+    else
+        updateInterval->setEnabled(false);
 }
 
 void MainWindow::updateIntervalChanged(int value)
@@ -169,4 +176,9 @@ void MainWindow::timerUsageChanged(bool enabled)
         foreach (QOpenGLWidget *w, m_glWidgets)
             w->update();
     }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *)
+{
+     m_glWidgets[0]->setMinimumSize(size() + QSize(128, 128));
 }

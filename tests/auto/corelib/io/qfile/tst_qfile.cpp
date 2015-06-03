@@ -2334,7 +2334,7 @@ void tst_QFile::readFromWriteOnlyFile()
     QFile file("writeonlyfile");
     QVERIFY(file.open(QFile::WriteOnly));
     char c;
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read: WriteOnly device");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read (QFile, \"writeonlyfile\"): WriteOnly device");
     QCOMPARE(file.read(&c, 1), qint64(-1));
 }
 
@@ -2343,7 +2343,7 @@ void tst_QFile::writeToReadOnlyFile()
     QFile file("readonlyfile");
     QVERIFY(file.open(QFile::ReadOnly));
     char c = 0;
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::write: ReadOnly device");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::write (QFile, \"readonlyfile\"): ReadOnly device");
     QCOMPARE(file.write(&c, 1), qint64(-1));
 }
 

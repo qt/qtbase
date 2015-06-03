@@ -92,10 +92,12 @@ public:
     }
 
     void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
-        m_mouseDown = true;
-        m_polygon.clear();
-        m_polygon.append(e->pos());
-        renderLater();
+        if (!m_mouseDown) {
+            m_mouseDown = true;
+            m_polygon.clear();
+            m_polygon.append(e->pos());
+            renderLater();
+        }
     }
 
     void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
@@ -106,9 +108,11 @@ public:
     }
 
     void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
-        m_mouseDown = false;
-        m_polygon.append(e->pos());
-        renderLater();
+        if (m_mouseDown) {
+            m_mouseDown = false;
+            m_polygon.append(e->pos());
+            renderLater();
+        }
     }
 
     void focusInEvent(QFocusEvent *) Q_DECL_OVERRIDE {

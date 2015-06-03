@@ -79,6 +79,9 @@ warnings_are_errors:warning_clean {
             # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
             android: QMAKE_CXXFLAGS_WARN_ON += -Wno-error=literal-suffix
         }
+    } else:msvc {
+        # enable for MSVC 2012, MSVC 2013
+        equals(MSVC_VER, "11.0")|equals(MSVC_VER, "12.0"): QMAKE_CXXFLAGS_WARN_ON += -WX
     }
     unset(ver)
 }

@@ -470,6 +470,9 @@ private Q_SLOTS:
     void ioHttpChangeMaxRedirects();
     void ioHttpRedirectErrors_data();
     void ioHttpRedirectErrors();
+#ifndef QT_NO_SSL
+    void putWithServerClosingConnectionImmediately();
+#endif
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -4744,18 +4747,22 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
 class SslServer : public QTcpServer {
     Q_OBJECT
 public:
-    SslServer() : socket(0) {};
+    SslServer() : socket(0), m_ssl(true) {}
     void incomingConnection(qintptr socketDescriptor) {
         QSslSocket *serverSocket = new QSslSocket;
         serverSocket->setParent(this);
 
         if (serverSocket->setSocketDescriptor(socketDescriptor)) {
+            connect(serverSocket, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+            if (!m_ssl) {
+                emit newPlainConnection(serverSocket);
+                return;
+            }
             QString testDataDir = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absolutePath();
             if (testDataDir.isEmpty())
                 testDataDir = QCoreApplication::applicationDirPath();
 
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
-            connect(serverSocket, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
             serverSocket->setProtocol(QSsl::AnyProtocol);
             connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), serverSocket, SLOT(ignoreSslErrors()));
             serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
@@ -4766,11 +4773,12 @@ public:
         }
     }
 signals:
-    void newEncryptedConnection();
+    void newEncryptedConnection(QSslSocket *s);
+    void newPlainConnection(QSslSocket *s);
 public slots:
     void encryptedSlot() {
         socket = (QSslSocket*) sender();
-        emit newEncryptedConnection();
+        emit newEncryptedConnection(socket);
     }
     void readyReadSlot() {
         // for the incoming sockets, not the server socket
@@ -4779,6 +4787,7 @@ public slots:
 
 public:
     QSslSocket *socket;
+    bool m_ssl;
 };
 
 // very similar to ioPostToHttpUploadProgress but for SSL
@@ -4806,7 +4815,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     QNetworkReplyPtr reply(manager.post(request, sourceFile));
 
     QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
-    connect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&server, SIGNAL(newEncryptedConnection(QSslSocket*)), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply.data(), SLOT(ignoreSslErrors()));
 
     // get the request started and the incoming socket connected
@@ -4814,7 +4823,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QTcpSocket *incomingSocket = server.socket;
     QVERIFY(incomingSocket);
-    disconnect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    disconnect(&server, SIGNAL(newEncryptedConnection(QSslSocket*)), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
 
     incomingSocket->setReadBufferSize(1*1024);
@@ -8147,6 +8156,159 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     QCOMPARE(spy.count(), 1);
     QVERIFY(reply->error() == error);
 }
+#ifndef QT_NO_SSL
+
+class PutWithServerClosingConnectionImmediatelyHandler: public QObject
+{
+    Q_OBJECT
+public:
+    bool m_parsedHeaders;
+    QByteArray m_receivedData;
+    QByteArray m_expectedData;
+    QSslSocket *m_socket;
+    PutWithServerClosingConnectionImmediatelyHandler(QSslSocket *s, QByteArray expected) :m_parsedHeaders(false),  m_expectedData(expected), m_socket(s)
+    {
+        m_socket->setParent(this);
+        connect(m_socket, SIGNAL(readyRead()), SLOT(readyReadSlot()));
+        connect(m_socket, SIGNAL(disconnected()), SLOT(disconnectedSlot()));
+    }
+signals:
+    void correctFileUploadReceived();
+    void corruptFileUploadReceived();
+
+public slots:
+    void closeDelayed() {
+        m_socket->close();
+    }
+
+    void readyReadSlot()
+    {
+        QByteArray data = m_socket->readAll();
+        m_receivedData += data;
+        if (!m_parsedHeaders && m_receivedData.contains("\r\n\r\n")) {
+            m_parsedHeaders = true;
+            QTimer::singleShot(qrand()%10, this, SLOT(closeDelayed())); // simulate random network latency
+            // This server simulates a web server connection closing, e.g. because of Apaches MaxKeepAliveRequests or KeepAliveTimeout
+            // In this case QNAM needs to re-send the upload data but it had a bug which then corrupts the upload
+            // This test catches that.
+        }
+
+    }
+    void disconnectedSlot()
+    {
+        if (m_parsedHeaders) {
+            //qDebug() << m_receivedData.left(m_receivedData.indexOf("\r\n\r\n"));
+            m_receivedData = m_receivedData.mid(m_receivedData.indexOf("\r\n\r\n")+4); // check only actual data
+        }
+        if (m_receivedData.length() > 0 && !m_expectedData.startsWith(m_receivedData)) {
+            // We had received some data but it is corrupt!
+            qDebug() << "CORRUPT" << m_receivedData.count();
+
+            // Use this to track down the pattern of the corruption and conclude the source
+//            QFile a("/tmp/corrupt");
+//            a.open(QIODevice::WriteOnly);
+//            a.write(m_receivedData);
+//            a.close();
+
+//            QFile b("/tmp/correct");
+//            b.open(QIODevice::WriteOnly);
+//            b.write(m_expectedData);
+//            b.close();
+            //exit(1);
+            emit corruptFileUploadReceived();
+        } else {
+            emit correctFileUploadReceived();
+        }
+    }
+};
+
+class PutWithServerClosingConnectionImmediatelyServer: public SslServer
+{
+    Q_OBJECT
+public:
+    int m_correctUploads;
+    int m_corruptUploads;
+    int m_repliesFinished;
+    int m_expectedReplies;
+    QByteArray m_expectedData;
+    PutWithServerClosingConnectionImmediatelyServer() : SslServer(), m_correctUploads(0), m_corruptUploads(0), m_repliesFinished(0), m_expectedReplies(0)
+    {
+        QObject::connect(this, SIGNAL(newEncryptedConnection(QSslSocket*)), this, SLOT(createHandlerForConnection(QSslSocket*)));
+        QObject::connect(this, SIGNAL(newPlainConnection(QSslSocket*)), this, SLOT(createHandlerForConnection(QSslSocket*)));
+    }
+
+public slots:
+    void createHandlerForConnection(QSslSocket* s) {
+        PutWithServerClosingConnectionImmediatelyHandler *handler = new PutWithServerClosingConnectionImmediatelyHandler(s, m_expectedData);
+        handler->setParent(this);
+        QObject::connect(handler, SIGNAL(correctFileUploadReceived()), this, SLOT(increaseCorrect()));
+        QObject::connect(handler, SIGNAL(corruptFileUploadReceived()), this, SLOT(increaseCorrupt()));
+    }
+    void increaseCorrect() {
+        m_correctUploads++;
+    }
+    void increaseCorrupt() {
+        m_corruptUploads++;
+    }
+    void replyFinished() {
+        m_repliesFinished++;
+        if (m_repliesFinished == m_expectedReplies) {
+            QTestEventLoop::instance().exitLoop();
+        }
+     }
+};
+
+
+
+void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
+{
+    const int numUploads = 40;
+    qint64 wantedSize = 512*1024; // 512 kB
+    QByteArray sourceFile;
+    for (int i = 0; i < wantedSize; ++i) {
+        sourceFile += (char)'a' +(i%26);
+    }
+    bool withSsl = false;
+
+    for (int s = 0; s <= 1; s++) {
+        withSsl = (s == 1);
+        // Test also needs to run several times because of 9c2ecf89
+        for (int j = 0; j < 20; j++) {
+            // emulate a minimal https server
+            PutWithServerClosingConnectionImmediatelyServer server;
+            server.m_ssl = withSsl;
+            server.m_expectedData = sourceFile;
+            server.m_expectedReplies = numUploads;
+            server.listen(QHostAddress(QHostAddress::LocalHost), 0);
+
+            for (int i = 0; i < numUploads; i++) {
+                // create the request
+                QUrl url = QUrl(QString("http%1://127.0.0.1:%2/file=%3").arg(withSsl ? "s" : "").arg(server.serverPort()).arg(i));
+                QNetworkRequest request(url);
+                QNetworkReply *reply = manager.put(request, sourceFile);
+                connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
+                connect(reply, SIGNAL(finished()), &server, SLOT(replyFinished()));
+                reply->setParent(&server);
+            }
+
+            // get the request started and the incoming socket connected
+            QTestEventLoop::instance().enterLoop(10);
+
+            //qDebug() << "correct=" << server.m_correctUploads << "corrupt=" << server.m_corruptUploads << "expected=" <<numUploads;
+
+            // Sanity check because ecause of 9c2ecf89 most replies will error out but we want to make sure at least some of them worked
+            QVERIFY(server.m_correctUploads > 5);
+            // Because actually important is that we don't get any corruption:
+            QCOMPARE(server.m_corruptUploads, 0);
+
+            server.close();
+        }
+    }
+
+
+}
+
+#endif
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

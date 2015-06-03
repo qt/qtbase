@@ -893,6 +893,12 @@ void QFileDialogPrivate::_q_goToUrl(const QUrl &url)
 
 /*!
     Sets the file dialog's current \a directory.
+
+    \note On iOS, if you set \a directory to \l{QStandardPaths::standardLocations()}
+        {QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last()},
+        a native image picker dialog will be used for accessing the user's photo album.
+        The filename returned can be loaded using QFile and related APIs.
+        This feature was added in Qt 5.5.
 */
 void QFileDialog::setDirectory(const QString &directory)
 {

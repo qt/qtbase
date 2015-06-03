@@ -40,5 +40,8 @@ excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images
 
+# Add a thumbnail for examples that do not have images
+manifestmeta.thumbnail.names = "QtTestLib/Chapter *"
+
 navigation.landingpage = "Qt Test"
 navigation.cppclassespage = "Qt Test C++ Classes"

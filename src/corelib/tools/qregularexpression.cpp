@@ -1830,6 +1830,13 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 }
 
 /*!
+    \fn QRegularExpression & QRegularExpression::operator=(QRegularExpression && re)
+
+    Move-assigns the regular expression \a re to this object, and returns a reference
+    to the copy.  Both the pattern and the pattern options are copied.
+*/
+
+/*!
     \fn bool QRegularExpression::operator!=(const QRegularExpression &re) const
 
     Returns \c true if the regular expression is different from \a re, or
@@ -1954,6 +1961,13 @@ QRegularExpressionMatch &QRegularExpressionMatch::operator=(const QRegularExpres
     d = match.d;
     return *this;
 }
+
+/*!
+    \fn QRegularExpressionMatch &QRegularExpressionMatch::operator=(QRegularExpressionMatch &&match)
+
+    Move-assigns the match result \a match to this object, and returns a reference
+    to the copy.
+*/
 
 /*!
     \fn void QRegularExpressionMatch::swap(QRegularExpressionMatch &other)
@@ -2318,6 +2332,12 @@ QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(cons
     d = iterator.d;
     return *this;
 }
+
+/*!
+    \fn QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(QRegularExpressionMatchIterator &&iterator)
+
+    Move-assigns the \a iterator to this object.
+*/
 
 /*!
     \fn void QRegularExpressionMatchIterator::swap(QRegularExpressionMatchIterator &other)

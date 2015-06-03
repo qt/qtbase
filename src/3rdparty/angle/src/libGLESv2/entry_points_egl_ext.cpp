@@ -101,12 +101,14 @@ EGLBoolean EGLAPIENTRY PostSubBufferNV(EGLDisplay dpy, EGLSurface surface, EGLin
         return EGL_FALSE;
     }
 
+#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (defined(ANGLE_ENABLE_WINDOWS_STORE) && WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) // Qt WP: Allow this entry point as a workaround
     if (!display->getExtensions().postSubBuffer)
     {
         // Spec is not clear about how this should be handled.
         SetGlobalError(Error(EGL_SUCCESS));
         return EGL_TRUE;
     }
+#endif
 
     error = eglSurface->postSubBuffer(x, y, width, height);
     if (error.isError())

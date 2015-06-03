@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -120,6 +121,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
     , m_cursor(Q_NULLPTR)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
+    m_siblings << this;
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
@@ -185,6 +187,9 @@ QString QEglFSKmsScreen::name() const
 QPlatformCursor *QEglFSKmsScreen::cursor() const
 {
     if (m_integration->hwCursor()) {
+        if (!m_integration->separateScreens())
+            return m_device->globalCursor();
+
         if (m_cursor.isNull()) {
             QEglFSKmsScreen *that = const_cast<QEglFSKmsScreen *>(this);
             that->m_cursor.reset(new QEglFSKmsCursor(that));

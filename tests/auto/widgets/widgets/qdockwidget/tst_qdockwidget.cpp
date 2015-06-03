@@ -764,6 +764,8 @@ void tst_QDockWidget::restoreDockWidget()
         restoreWindow.show();
         QVERIFY(QTest::qWaitForWindowExposed(&restoreWindow));
         QTRY_VERIFY(dock->isFloating());
+        if (!QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive))
+            QSKIP("Skip due to Window manager positioning issues", Abort);
         QTRY_COMPARE(dock->pos(), dockPos);
     }
 }

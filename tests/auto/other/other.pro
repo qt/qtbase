@@ -1,7 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
    # atwrapper \ # QTBUG-19452
-   baselineexample \
    compiler \
    gestures \
    lancelot \
@@ -26,7 +25,6 @@ SUBDIRS=\
    toolsupport \
 
 !qtHaveModule(widgets): SUBDIRS -= \
-   baselineexample \
    gestures \
    lancelot \
    languagechange \
@@ -41,7 +39,6 @@ SUBDIRS=\
    qaccessibilitymac \
 
 !qtHaveModule(network): SUBDIRS -= \
-   baselineexample \
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \

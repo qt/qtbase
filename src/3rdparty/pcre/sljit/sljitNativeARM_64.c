@@ -1081,12 +1081,13 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_enter(struct sljit_compiler *compil
 		FAIL_IF(push_inst(compiler, ADDI | RD(SLJIT_SP) | RN(TMP_SP) | (0 << 10)));
 		offs = (local_size - saved_regs_size) << (15 - 3);
 	} else {
-		compiler->local_size += 2 * sizeof(sljit_sw);
-		local_size -= saved_regs_size;
-		saved_regs_size += 2 * sizeof(sljit_sw);
-		FAIL_IF(push_inst(compiler, STP_PRE | 29 | RT2(TMP_LR)
-			| RN(TMP_SP) | ((-(saved_regs_size >> 3) & 0x7f) << 15)));
-		offs = 2 << 15;
+		offs = 0 << 15;
+		if (saved_regs_size & 0x8) {
+			offs = 1 << 15;
+			saved_regs_size += sizeof(sljit_sw);
+		}
+		local_size -= saved_regs_size + SLJIT_LOCALS_OFFSET;
+		FAIL_IF(push_inst(compiler, SUBI | RD(TMP_SP) | RN(TMP_SP) | (saved_regs_size << 10)));
 	}
 
 	tmp = saveds < SLJIT_NUMBER_OF_SAVED_REGISTERS ? (SLJIT_S0 + 1 - saveds) : SLJIT_FIRST_SAVED_REG;
@@ -1122,6 +1123,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_enter(struct sljit_compiler *compil
 		}
 		if (local_size)
 			FAIL_IF(push_inst(compiler, SUBI | RD(TMP_SP) | RN(TMP_SP) | (local_size << 10)));
+		FAIL_IF(push_inst(compiler, STP_PRE | 29 | RT2(TMP_LR)
+			| RN(TMP_SP) | ((-(16 >> 3) & 0x7f) << 15)));
 		FAIL_IF(push_inst(compiler, ADDI | RD(SLJIT_SP) | RN(TMP_SP) | (0 << 10)));
 	}
 
@@ -1145,8 +1148,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_set_context(struct sljit_compiler *compi
 
 	local_size += GET_SAVED_REGISTERS_SIZE(scratches, saveds, 0) + SLJIT_LOCALS_OFFSET;
 	local_size = (local_size + 15) & ~0xf;
-	if (local_size > (63 * sizeof(sljit_sw)))
-		local_size += 2 * sizeof(sljit_sw);
 	compiler->local_size = local_size;
 	return SLJIT_SUCCESS;
 }
@@ -1167,16 +1168,20 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_return(struct sljit_compiler *compi
 	if (local_size <= (63 * sizeof(sljit_sw)))
 		offs = (local_size - saved_regs_size) << (15 - 3);
 	else {
-		saved_regs_size += 2 * sizeof(sljit_sw);
-		local_size -= saved_regs_size;
+		FAIL_IF(push_inst(compiler, LDP_PST | 29 | RT2(TMP_LR)
+			| RN(TMP_SP) | (((16 >> 3) & 0x7f) << 15)));
+		offs = 0 << 15;
+		if (saved_regs_size & 0x8) {
+			offs = 1 << 15;
+			saved_regs_size += sizeof(sljit_sw);
+		}
+		local_size -= saved_regs_size + SLJIT_LOCALS_OFFSET;
 		if (local_size > 0xfff) {
 			FAIL_IF(push_inst(compiler, ADDI | RD(TMP_SP) | RN(TMP_SP) | ((local_size >> 12) << 10) | (1 << 22)));
 			local_size &= 0xfff;
 		}
 		if (local_size)
 			FAIL_IF(push_inst(compiler, ADDI | RD(TMP_SP) | RN(TMP_SP) | (local_size << 10)));
-		local_size = saved_regs_size;
-		offs = 2 << 15;
 	}
 
 	tmp = compiler->saveds < SLJIT_NUMBER_OF_SAVED_REGISTERS ? (SLJIT_S0 + 1 - compiler->saveds) : SLJIT_FIRST_SAVED_REG;
@@ -1204,8 +1209,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_return(struct sljit_compiler *compi
 	if (prev != -1)
 		FAIL_IF(push_inst(compiler, LDRI | RT(prev) | RN(TMP_SP) | (offs >> 5)));
 
-	FAIL_IF(push_inst(compiler, LDP_PST | 29 | RT2(TMP_LR)
-		| RN(TMP_SP) | (((local_size >> 3) & 0x7f) << 15)));
+	if (compiler->local_size <= (63 * sizeof(sljit_sw))) {
+		FAIL_IF(push_inst(compiler, LDP_PST | 29 | RT2(TMP_LR)
+			| RN(TMP_SP) | (((local_size >> 3) & 0x7f) << 15)));
+	} else {
+		FAIL_IF(push_inst(compiler, ADDI | RD(TMP_SP) | RN(TMP_SP) | (saved_regs_size << 10)));
+	}
 
 	FAIL_IF(push_inst(compiler, RET | RN(TMP_LR)));
 	return SLJIT_SUCCESS;

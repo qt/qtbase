@@ -291,7 +291,7 @@ QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &o
 {
     other.d->ref.ref();
     if (!d->ref.deref())
-        freeData(d);
+        freeData(p);
     d = other.d;
     if (!d->sharable)
         detach_helper();

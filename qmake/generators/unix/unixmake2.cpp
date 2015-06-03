@@ -922,17 +922,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
             }
         }
-        QString bundle_dir_f = escapeFilePath(bundle_dir);
-        QHash<QString, QString>::ConstIterator symIt = symlinks.constBegin(),
-                                               symEnd = symlinks.constEnd();
-        for (; symIt != symEnd; ++symIt) {
-            bundledFiles << symIt.key();
-            alldeps << symIt.key();
-            t << escapeDependencyPath(symIt.key()) << ":\n\t"
-              << mkdir_p_asstring(bundle_dir) << "\n\t"
-              << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
-        }
-        if (!project->first("QMAKE_FRAMEWORK_VERSION").isEmpty()) {
+        if (!symlinks.isEmpty()) {
+            QString bundle_dir_f = escapeFilePath(bundle_dir);
+            QHash<QString, QString>::ConstIterator symIt = symlinks.constBegin(),
+                                                   symEnd = symlinks.constEnd();
+            for (; symIt != symEnd; ++symIt) {
+                bundledFiles << symIt.key();
+                alldeps << symIt.key();
+                t << escapeDependencyPath(symIt.key()) << ":\n\t"
+                  << mkdir_p_asstring(bundle_dir) << "\n\t"
+                  << "@$(SYMLINK) " << escapeFilePath(symIt.value()) << ' ' << bundle_dir_f << endl;
+            }
+
             QString currentLink = bundle_dir + "Versions/Current";
             QString currentLink_f = escapeDependencyPath(currentLink);
             bundledFiles << currentLink;

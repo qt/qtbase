@@ -3034,7 +3034,7 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
     QStyle::SubControl sc = q->style()->hitTestComplexControl(QStyle::CC_ComboBox, &opt, e->pos(), q);
 
     if (e->button() == Qt::LeftButton
-            && sc != QStyle::SC_None
+            && !(sc == QStyle::SC_None && e->type() == QEvent::MouseButtonRelease)
             && (sc == QStyle::SC_ComboBoxArrow || !q->isEditable())
             && !viewContainer()->isVisible()) {
         if (sc == QStyle::SC_ComboBoxArrow)

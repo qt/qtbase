@@ -46,32 +46,32 @@ static OidNameMap createOidMap()
 {
     OidNameMap oids;
     // used by unit tests
-    oids.insert(oids.end(), QByteArrayLiteral("0.9.2342.19200300.100.1.5"), QByteArrayLiteral("favouriteDrink"));
-    oids.insert(oids.end(), QByteArrayLiteral("1.2.840.113549.1.9.1"), QByteArrayLiteral("emailAddress"));
-    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.1.1"), QByteArrayLiteral("authorityInfoAccess"));
-    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.1"), QByteArrayLiteral("OCSP"));
-    oids.insert(oids.end(), QByteArrayLiteral("1.3.6.1.5.5.7.48.2"), QByteArrayLiteral("caIssuers"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.14"), QByteArrayLiteral("subjectKeyIdentifier"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.15"), QByteArrayLiteral("keyUsage"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.17"), QByteArrayLiteral("subjectAltName"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.19"), QByteArrayLiteral("basicConstraints"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.29.35"), QByteArrayLiteral("authorityKeyIdentifier"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.10"), QByteArrayLiteral("O"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.11"), QByteArrayLiteral("OU"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.12"), QByteArrayLiteral("title"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.13"), QByteArrayLiteral("description"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.17"), QByteArrayLiteral("postalCode"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.3"), QByteArrayLiteral("CN"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.4"), QByteArrayLiteral("SN"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.41"), QByteArrayLiteral("name"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.42"), QByteArrayLiteral("GN"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.43"), QByteArrayLiteral("initials"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.46"), QByteArrayLiteral("dnQualifier"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.5"), QByteArrayLiteral("serialNumber"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.6"), QByteArrayLiteral("C"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.7"), QByteArrayLiteral("L"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.8"), QByteArrayLiteral("ST"));
-    oids.insert(oids.end(), QByteArrayLiteral("2.5.4.9"), QByteArrayLiteral("street"));
+    oids.insert(oids.cend(), QByteArrayLiteral("0.9.2342.19200300.100.1.5"), QByteArrayLiteral("favouriteDrink"));
+    oids.insert(oids.cend(), QByteArrayLiteral("1.2.840.113549.1.9.1"), QByteArrayLiteral("emailAddress"));
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.6.1.5.5.7.1.1"), QByteArrayLiteral("authorityInfoAccess"));
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.6.1.5.5.7.48.1"), QByteArrayLiteral("OCSP"));
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.6.1.5.5.7.48.2"), QByteArrayLiteral("caIssuers"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.29.14"), QByteArrayLiteral("subjectKeyIdentifier"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.29.15"), QByteArrayLiteral("keyUsage"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.29.17"), QByteArrayLiteral("subjectAltName"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.29.19"), QByteArrayLiteral("basicConstraints"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.29.35"), QByteArrayLiteral("authorityKeyIdentifier"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.10"), QByteArrayLiteral("O"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.11"), QByteArrayLiteral("OU"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.12"), QByteArrayLiteral("title"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.13"), QByteArrayLiteral("description"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.17"), QByteArrayLiteral("postalCode"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.3"), QByteArrayLiteral("CN"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.4"), QByteArrayLiteral("SN"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.41"), QByteArrayLiteral("name"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.42"), QByteArrayLiteral("GN"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.43"), QByteArrayLiteral("initials"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.46"), QByteArrayLiteral("dnQualifier"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.5"), QByteArrayLiteral("serialNumber"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.6"), QByteArrayLiteral("C"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.7"), QByteArrayLiteral("L"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.8"), QByteArrayLiteral("ST"));
+    oids.insert(oids.cend(), QByteArrayLiteral("2.5.4.9"), QByteArrayLiteral("street"));
     return oids;
 }
 Q_GLOBAL_STATIC_WITH_ARGS(OidNameMap, oidNameMap, (createOidMap()))

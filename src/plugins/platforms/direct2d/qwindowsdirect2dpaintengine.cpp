@@ -358,10 +358,10 @@ public:
         } else if (path.isRect() && (q->state()->matrix.type() <= QTransform::TxScale)) {
             const qreal * const points = path.points();
             D2D_RECT_F rect = {
-                points[0], // left
-                points[1], // top
-                points[2], // right,
-                points[5]  // bottom
+                FLOAT(points[0]), // left
+                FLOAT(points[1]), // top
+                FLOAT(points[2]), // right,
+                FLOAT(points[5])  // bottom
             };
 
             dc()->PushAxisAlignedClip(rect, antialiasMode());
@@ -918,13 +918,13 @@ public:
 
         DWRITE_GLYPH_RUN glyphRun = {
             fontFace,          //    IDWriteFontFace           *fontFace;
-            fontDef.pixelSize, //    FLOAT                     fontEmSize;
-            numGlyphs,         //    UINT32                    glyphCount;
+            FLOAT(fontDef.pixelSize), // FLOAT                 fontEmSize;
+            UINT32(numGlyphs), //    UINT32                    glyphCount;
             glyphIndices,      //    const UINT16              *glyphIndices;
             glyphAdvances,     //    const FLOAT               *glyphAdvances;
             glyphOffsets,      //    const DWRITE_GLYPH_OFFSET *glyphOffsets;
             FALSE,             //    BOOL                      isSideways;
-            rtl ? 1 : 0        //    UINT32                    bidiLevel;
+            rtl ? 1u : 0u      //    UINT32                    bidiLevel;
         };
 
         const bool antiAlias = bool((q->state()->renderHints & QPainter::TextAntialiasing)
@@ -1393,8 +1393,8 @@ void QWindowsDirect2DPaintEngine::drawEllipse(const QRectF &r)
 
         D2D1_ELLIPSE ellipse = {
             to_d2d_point_2f(p),
-            r.width() / 2.0,
-            r.height() / 2.0
+            FLOAT(r.width() / 2.0),
+            FLOAT(r.height() / 2.0)
         };
 
         if (d->brush.brush)
@@ -1421,8 +1421,8 @@ void QWindowsDirect2DPaintEngine::drawEllipse(const QRect &r)
 
         D2D1_ELLIPSE ellipse = {
             to_d2d_point_2f(p),
-            r.width() / 2.0,
-            r.height() / 2.0
+            FLOAT(r.width() / 2.0),
+            FLOAT(r.height() / 2.0)
         };
 
         if (d->brush.brush)

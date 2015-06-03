@@ -75,6 +75,7 @@ class QState;
 class QAbstractAnimation;
 #endif
 
+struct CalculationCache;
 class QStateMachine;
 class Q_CORE_EXPORT QStateMachinePrivate : public QStatePrivate
 {
@@ -124,17 +125,18 @@ public:
     void clearHistory();
     QAbstractTransition *createInitialTransition() const;
 
-    void removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions);
-    void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
+    void removeConflictingTransitions(QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
+    void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList, CalculationCache *cache);
+    QList<QAbstractTransition *> selectTransitions(QEvent *event, CalculationCache *cache);
     virtual void noMicrostep();
     virtual void processedPendingEvents(bool didChange);
     virtual void beginMacrostep();
     virtual void endMacrostep(bool didChange);
-    QList<QAbstractTransition *> selectTransitions(QEvent *event);
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
                     const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates);
-    QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions);
-    QSet<QAbstractState*> computeExitSet_Unordered(const QList<QAbstractTransition*> &enabledTransitions);
+    QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
+    QSet<QAbstractState*> computeExitSet_Unordered(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);
+    QSet<QAbstractState*> computeExitSet_Unordered(QAbstractTransition *t, CalculationCache *cache);
     void executeTransitionContent(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     void enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
                      const QList<QAbstractState*> &statesToEnter_sorted,
@@ -145,9 +147,10 @@ public:
 #endif
                      );
     QList<QAbstractState*> computeEntrySet(const QList<QAbstractTransition*> &enabledTransitions,
-                                           QSet<QAbstractState*> &statesForDefaultEntry);
+                                           QSet<QAbstractState*> &statesForDefaultEntry, CalculationCache *cache);
     QAbstractState *getTransitionDomain(QAbstractTransition *t,
-                                        const QList<QAbstractState *> &effectiveTargetStates) const;
+                                        const QList<QAbstractState *> &effectiveTargetStates,
+                                        CalculationCache *cache) const;
     void addDescendantStatesToEnter(QAbstractState *state,
                                     QSet<QAbstractState*> &statesToEnter,
                                     QSet<QAbstractState*> &statesForDefaultEntry);
@@ -199,6 +202,7 @@ public:
     void cancelAllDelayedEvents();
 
     virtual void emitStateFinished(QState *forState, QFinalState *guiltyState);
+    virtual void startupHook();
 
 #ifndef QT_NO_PROPERTIES
     class RestorableId {
@@ -206,7 +210,8 @@ public:
         QObject *obj;
         QByteArray prop;
         // two overloads because friends can't have default arguments
-        friend uint qHash(const RestorableId &key, uint seed) Q_DECL_NOEXCEPT_EXPR(noexcept(std::declval<QByteArray>()))
+        friend uint qHash(const RestorableId &key, uint seed)
+            Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(std::declval<QByteArray>())))
         { return qHash(qMakePair(key.obj, key.prop), seed); }
         friend uint qHash(const RestorableId &key) Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key, 0U)))
         { return qHash(key, 0U); }

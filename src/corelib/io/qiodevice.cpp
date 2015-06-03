@@ -38,9 +38,9 @@
 #include "qiodevice_p.h"
 #include "qfile.h"
 #include "qstringlist.h"
+#include "qdir.h"
 
 #include <algorithm>
-#include <limits.h>
 
 #ifdef QIODEVICE_DEBUG
 #  include <ctype.h>
@@ -80,10 +80,29 @@ void debugBinaryString(const char *data, qint64 maxlen)
 
 #define Q_VOID
 
+static void checkWarnMessage(const QIODevice *device, const char *function, const char *what)
+{
+    QDebug d = qWarning();
+    d.noquote();
+    d.nospace();
+    d << "QIODevice::" << function;
+#ifndef QT_NO_QOBJECT
+    d << " (" << device->metaObject()->className();
+    if (!device->objectName().isEmpty())
+        d << ", \"" << device->objectName() << '"';
+    if (const QFile *f = qobject_cast<const QFile *>(device))
+        d << ", \"" << QDir::toNativeSeparators(f->fileName()) << '"';
+    d << ')';
+#else
+    Q_UNUSED(device)
+#endif // !QT_NO_QOBJECT
+    d << ": " << what;
+}
+
 #define CHECK_MAXLEN(function, returnType) \
     do { \
         if (maxSize < 0) { \
-            qWarning("QIODevice::"#function": Called with maxSize < 0"); \
+            checkWarnMessage(this, #function, "Called with maxSize < 0"); \
             return returnType; \
         } \
     } while (0)
@@ -92,10 +111,10 @@ void debugBinaryString(const char *data, qint64 maxlen)
    do { \
        if ((d->openMode & WriteOnly) == 0) { \
            if (d->openMode == NotOpen) { \
-               qWarning("QIODevice::"#function": device not open"); \
+               checkWarnMessage(this, #function, "device not open"); \
                return returnType; \
            } \
-           qWarning("QIODevice::"#function": ReadOnly device"); \
+           checkWarnMessage(this, #function, "ReadOnly device"); \
            return returnType; \
        } \
    } while (0)
@@ -104,10 +123,10 @@ void debugBinaryString(const char *data, qint64 maxlen)
    do { \
        if ((d->openMode & ReadOnly) == 0) { \
            if (d->openMode == NotOpen) { \
-               qWarning("QIODevice::"#function": device not open"); \
+               checkWarnMessage(this, #function, "device not open"); \
                return returnType; \
            } \
-           qWarning("QIODevice::"#function": WriteOnly device"); \
+           checkWarnMessage(this, #function, "WriteOnly device"); \
            return returnType; \
        } \
    } while (0)
@@ -462,7 +481,7 @@ void QIODevice::setTextModeEnabled(bool enabled)
 {
     Q_D(QIODevice);
     if (!isOpen()) {
-        qWarning("QIODevice::setTextModeEnabled: The device is not open");
+        checkWarnMessage(this, "setTextModeEnabled", "The device is not open");
         return;
     }
     if (enabled)
@@ -621,11 +640,11 @@ bool QIODevice::seek(qint64 pos)
 {
     Q_D(QIODevice);
     if (d->isSequential()) {
-        qWarning("QIODevice::seek: Cannot call seek on a sequential device");
+        checkWarnMessage(this, "seek", "Cannot call seek on a sequential device");
         return false;
     }
     if (d->openMode == NotOpen) {
-        qWarning("QIODevice::seek: The device is not open");
+        checkWarnMessage(this, "seek", "The device is not open");
         return false;
     }
     if (pos < 0) {
@@ -922,9 +941,9 @@ QByteArray QIODevice::read(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (maxSize != qint64(int(maxSize))) {
-        qWarning("QIODevice::read: maxSize argument exceeds QByteArray size limit");
-        maxSize = INT_MAX;
+    if (quint64(maxSize) >= QByteArray::MaxSize) {
+        checkWarnMessage(this, "read", "maxSize argument exceeds QByteArray size limit");
+        maxSize = QByteArray::MaxSize - 1;
     }
 
     qint64 readBytes = 0;
@@ -976,7 +995,7 @@ QByteArray QIODevice::readAll()
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
-        if (d->buffer.size() >= INT_MAX)
+        if (quint64(d->buffer.size()) >= QByteArray::MaxSize)
             return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
@@ -1055,7 +1074,7 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
 {
     Q_D(QIODevice);
     if (maxSize < 2) {
-        qWarning("QIODevice::readLine: Called with maxSize < 2");
+        checkWarnMessage(this, "readLine", "Called with maxSize < 2");
         return qint64(-1);
     }
 
@@ -1159,9 +1178,9 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (maxSize > INT_MAX) {
+    if (quint64(maxSize) >= QByteArray::MaxSize) {
         qWarning("QIODevice::read: maxSize argument exceeds QByteArray size limit");
-        maxSize = INT_MAX;
+        maxSize = QByteArray::MaxSize - 1;
     }
 
     result.resize(int(maxSize));
@@ -1169,7 +1188,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     if (!result.size()) {
         // If resize fails or maxSize == 0, read incrementally
         if (maxSize == 0)
-            maxSize = INT_MAX;
+            maxSize = QByteArray::MaxSize - 1;
 
         // The first iteration needs to leave an extra byte for the terminating null
         result.resize(1);

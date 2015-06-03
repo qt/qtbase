@@ -57,7 +57,7 @@ QSslEllipticCurve QSslEllipticCurve::fromLongName(const QString &name)
     return QSslEllipticCurve();
 }
 
-bool QSslEllipticCurve::isTlsNamedCurve() const
+bool QSslEllipticCurve::isTlsNamedCurve() const Q_DECL_NOTHROW
 {
     return false;
 }

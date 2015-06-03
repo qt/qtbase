@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QEvdevTabletPlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevtablet.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "evdevtablet.json")
 
 public:
     QEvdevTabletPlugin();

@@ -51,22 +51,24 @@ public:
     enum Mode { Normal, Disabled, Active, Selected };
     enum State { On, Off };
 
-    QIcon();
+    QIcon() Q_DECL_NOEXCEPT;
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QIcon(QIcon &&other)
-        :d(0) { qSwap(d, other.d); }
+    QIcon(QIcon &&other) Q_DECL_NOEXCEPT
+        : d(0)
+    { qSwap(d, other.d); }
 #endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
     ~QIcon();
     QIcon &operator=(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QIcon &operator=(QIcon &&other)
+    inline QIcon &operator=(QIcon &&other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QIcon &other) { qSwap(d, other.d); }
+    inline void swap(QIcon &other) Q_DECL_NOEXCEPT
+    { qSwap(d, other.d); }
 
     operator QVariant() const;
 

@@ -972,8 +972,8 @@ struct QMessagePattern {
     QElapsedTimer timer;
 #endif
 #ifdef QLOGGING_HAVE_BACKTRACE
-    int backtraceDepth;
     QString backtraceSeparator;
+    int backtraceDepth;
 #endif
 
     bool fromEnvironment;
@@ -986,8 +986,8 @@ QMessagePattern::QMessagePattern()
     : literals(0)
     , tokens(0)
 #ifdef QLOGGING_HAVE_BACKTRACE
-    , backtraceDepth(5)
     , backtraceSeparator(QLatin1Char('|'))
+    , backtraceDepth(5)
 #endif
     , fromEnvironment(false)
 {
@@ -1737,7 +1737,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     Example:
     \code
-    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D{%endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
+    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
     \endcode
 
     The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".

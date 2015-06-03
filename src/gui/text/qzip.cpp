@@ -670,7 +670,7 @@ void QZipReaderPrivate::scanFiles()
 void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const QByteArray &contents/*, QFile::Permissions permissions, QZip::Method m*/)
 {
 #ifndef NDEBUG
-    static const char *entryTypes[] = {
+    static const char *const entryTypes[] = {
         "directory",
         "file     ",
         "symlink  " };

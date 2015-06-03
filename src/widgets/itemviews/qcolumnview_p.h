@@ -89,6 +89,16 @@ public:
         QAbstractScrollArea::resizeEvent(event);
     }
 
+    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE
+    {
+        if (!previewWidget)
+            return;
+        scrollDirtyRegion(dx, dy);
+        viewport()->scroll(dx, dy);
+
+        QAbstractItemView::scrollContentsBy(dx, dy);
+    }
+
     QRect visualRect(const QModelIndex &) const Q_DECL_OVERRIDE
     {
         return QRect();

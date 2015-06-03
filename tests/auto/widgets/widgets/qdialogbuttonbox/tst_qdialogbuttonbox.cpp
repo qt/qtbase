@@ -90,6 +90,7 @@ private slots:
 //    void buttons();
 
     void testDelete();
+    void testSignalEmissionAfterDelete_QTBUG_45835();
     void testRemove();
     void testMultipleAdd();
     void testStandardButtonMapping_data();
@@ -111,6 +112,7 @@ private:
 
 tst_QDialogButtonBox::tst_QDialogButtonBox()
 {
+    qRegisterMetaType<QAbstractButton *>();
 }
 
 tst_QDialogButtonBox::~tst_QDialogButtonBox()
@@ -412,6 +414,70 @@ void tst_QDialogButtonBox::testDelete()
     children = buttonBox.findChildren<QAbstractButton *>();
     QCOMPARE(children.count(), 0);
     QCOMPARE(buttonBox.buttons().count(), 0);
+}
+
+class ObjectDeleter : public QObject
+{
+    Q_OBJECT
+public slots:
+    void deleteButton(QAbstractButton *button)
+    {
+        delete button;
+    }
+
+    void deleteSender()
+    {
+        delete sender();
+    }
+};
+
+void tst_QDialogButtonBox::testSignalEmissionAfterDelete_QTBUG_45835()
+{
+    {
+        QDialogButtonBox buttonBox;
+        QCOMPARE(buttonBox.buttons().count(), 0);
+
+        QSignalSpy buttonClickedSpy(&buttonBox, &QDialogButtonBox::clicked);
+        QVERIFY(buttonClickedSpy.isValid());
+
+        QSignalSpy buttonBoxAcceptedSpy(&buttonBox, &QDialogButtonBox::accepted);
+        QVERIFY(buttonBoxAcceptedSpy.isValid());
+
+        QPushButton *button = buttonBox.addButton("Test", QDialogButtonBox::AcceptRole);
+        QCOMPARE(buttonBox.buttons().count(), 1);
+
+        ObjectDeleter objectDeleter;
+        connect(&buttonBox, &QDialogButtonBox::clicked, &objectDeleter, &ObjectDeleter::deleteButton);
+
+        button->click();
+
+        QCOMPARE(buttonBox.buttons().count(), 0);
+        QCOMPARE(buttonClickedSpy.count(), 1);
+        QCOMPARE(buttonBoxAcceptedSpy.count(), 1);
+    }
+
+    {
+        QPointer<QDialogButtonBox> buttonBox(new QDialogButtonBox);
+        QCOMPARE(buttonBox->buttons().count(), 0);
+
+        QSignalSpy buttonClickedSpy(buttonBox.data(), &QDialogButtonBox::clicked);
+        QVERIFY(buttonClickedSpy.isValid());
+
+        QSignalSpy buttonBoxAcceptedSpy(buttonBox.data(), &QDialogButtonBox::accepted);
+        QVERIFY(buttonBoxAcceptedSpy.isValid());
+
+        QPushButton *button = buttonBox->addButton("Test", QDialogButtonBox::AcceptRole);
+        QCOMPARE(buttonBox->buttons().count(), 1);
+
+        ObjectDeleter objectDeleter;
+        connect(buttonBox.data(), &QDialogButtonBox::clicked, &objectDeleter, &ObjectDeleter::deleteSender);
+
+        button->click();
+
+        QVERIFY(buttonBox.isNull());
+        QCOMPARE(buttonClickedSpy.count(), 1);
+        QCOMPARE(buttonBoxAcceptedSpy.count(), 0);
+    }
 }
 
 void tst_QDialogButtonBox::testMultipleAdd()

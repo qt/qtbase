@@ -119,7 +119,8 @@ void QIOSWindow::setVisible(bool visible)
     }
 
     if (visible && shouldAutoActivateWindow()) {
-        requestActivateWindow();
+        if (!window()->property("_q_showWithoutActivating").toBool())
+            requestActivateWindow();
     } else if (!visible && [m_view isActiveWindow]) {
         // Our window was active/focus window but now hidden, so relinquish
         // focus to the next possible window in the stack.
@@ -145,6 +146,9 @@ void QIOSWindow::setVisible(bool visible)
 
 bool QIOSWindow::shouldAutoActivateWindow() const
 {
+    if (![m_view canBecomeFirstResponder])
+        return false;
+
     // We don't want to do automatic window activation for popup windows
     // that are unlikely to contain editable controls (to avoid hiding
     // the keyboard while the popup is showing)

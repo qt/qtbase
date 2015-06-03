@@ -250,8 +250,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     int state = option->state;
     if (!QWindowsVistaStylePrivate::useVista()) {
-        foreach (const QObject *target, d->animationTargets())
-            d->stopAnimation(target);
         QWindowsStyle::drawPrimitive(element, option, painter, widget);
         return;
     }
@@ -810,8 +808,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
 
     if (!QWindowsVistaStylePrivate::useVista()) {
-        foreach (const QObject *target, d->animationTargets())
-            d->stopAnimation(target);
         QWindowsStyle::drawControl(element, option, painter, widget);
         return;
     }
@@ -1494,8 +1490,6 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
 {
     QWindowsVistaStylePrivate *d = const_cast<QWindowsVistaStylePrivate*>(d_func());
     if (!QWindowsVistaStylePrivate::useVista()) {
-        foreach (const QObject *target, d->animationTargets())
-            d->stopAnimation(target);
         QWindowsStyle::drawComplexControl(control, option, painter, widget);
         return;
     }

@@ -41,33 +41,17 @@ QT_BEGIN_NAMESPACE
 
 using namespace QImageScale;
 
-inline static __m128i qt_qimageScaleAARGBA_helper_x(const unsigned int *pix, int xap, int Cx, const __m128i vxap, const __m128i vCx)
+inline static __m128i qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy, int step, const __m128i vxyap, const __m128i vCxy)
 {
     __m128i vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-    __m128i vx = _mm_mullo_epi32(vpix, vxap);
+    __m128i vx = _mm_mullo_epi32(vpix, vxyap);
     int i;
-    for (i = (1 << 14) - xap; i > Cx; i -= Cx) {
-        pix++;
+    for (i = (1 << 14) - xyap; i > Cxy; i -= Cxy) {
+        pix += step;
         vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-        vx = _mm_add_epi32(vx, _mm_mullo_epi32(vpix, vCx));
+        vx = _mm_add_epi32(vx, _mm_mullo_epi32(vpix, vCxy));
     }
-    pix++;
-    vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-    vx = _mm_add_epi32(vx, _mm_mullo_epi32(vpix, _mm_set1_epi32(i)));
-    return vx;
-}
-
-inline static __m128i qt_qimageScaleAARGBA_helper_y(const unsigned int *pix, int yap, int Cy, int sow, const __m128i vyap, const __m128i vCy)
-{
-    __m128i vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-    __m128i vx = _mm_mullo_epi32(vpix, vyap);
-    int i;
-    for (i = (1 << 14) - yap; i > Cy; i -= Cy) {
-        pix += sow;
-        vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
-        vx = _mm_add_epi32(vx, _mm_mullo_epi32(vpix, vCy));
-    }
-    pix += sow;
+    pix += step;
     vpix = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*pix));
     vx = _mm_add_epi32(vx, _mm_mullo_epi32(vpix, _mm_set1_epi32(i)));
     return vx;
@@ -97,13 +81,13 @@ void qt_qimageScaleAARGBA_up_x_down_y_sse4(QImageScaleInfo *isi, unsigned int *d
         unsigned int *dptr = dest + dx + ((y + dy) * dow);
         for (int x = dxx; x < end; x++) {
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper_y(sptr, yap, Cy, sow, vyap, vCy);
+            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, vyap, vCy);
 
             int xap = xapoints[x];
             if (xap > 0) {
                 const __m128i vxap = _mm_set1_epi32(xap);
                 const __m128i vinvxap = _mm_sub_epi32(v256, vxap);
-                __m128i vr = qt_qimageScaleAARGBA_helper_y(sptr + 1, yap, Cy, sow, vyap, vCy);
+                __m128i vr = qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow, vyap, vCy);
 
                 vx = _mm_mullo_epi32(vx, vinvxap);
                 vr = _mm_mullo_epi32(vr, vxap);
@@ -145,13 +129,13 @@ void qt_qimageScaleAARGBA_down_x_up_y_sse4(QImageScaleInfo *isi, unsigned int *d
             const __m128i vxap = _mm_set1_epi32(xap);
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, vxap, vCx);
+            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
 
             int yap = yapoints[dyy + y];
             if (yap > 0) {
                 const __m128i vyap = _mm_set1_epi32(yap);
                 const __m128i vinvyap = _mm_sub_epi32(v256, vyap);
-                __m128i vr = qt_qimageScaleAARGBA_helper_x(sptr + sow, xap, Cx, vxap, vCx);
+                __m128i vr = qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1, vxap, vCx);
 
                 vx = _mm_mullo_epi32(vx, vinvyap);
                 vr = _mm_mullo_epi32(vr, vyap);
@@ -194,17 +178,17 @@ void qt_qimageScaleAARGBA_down_xy_sse4(QImageScaleInfo *isi, unsigned int *dest,
             const __m128i vxap = _mm_set1_epi32(xap);
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
-            __m128i vx = qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, vxap, vCx);
+            __m128i vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
             __m128i vr = _mm_mullo_epi32(_mm_srli_epi32(vx, 4), vyap);
 
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
                 sptr += sow;
-                vx = qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, vxap, vCx);
+                vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
                 vr = _mm_add_epi32(vr, _mm_mullo_epi32(_mm_srli_epi32(vx, 4), vCy));
             }
             sptr += sow;
-            vx = qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, vxap, vCx);
+            vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, vxap, vCx);
             vr = _mm_add_epi32(vr, _mm_mullo_epi32(_mm_srli_epi32(vx, 4), _mm_set1_epi32(j)));
 
             vr = _mm_srli_epi32(vr, 24);

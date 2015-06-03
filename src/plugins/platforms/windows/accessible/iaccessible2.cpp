@@ -102,7 +102,7 @@ HRESULT STDMETHODCALLTYPE AccessibleApplication::get_toolkitName(/* [retval][out
 
 HRESULT STDMETHODCALLTYPE AccessibleApplication::get_toolkitVersion(/* [retval][out] */ BSTR *version)
 {
-    *version = ::SysAllocString(QT_UNICODE_LITERAL(QT_VERSION_STR));
+    *version = ::SysAllocString(TEXT(QT_VERSION_STR));
     return S_OK;
 }
 

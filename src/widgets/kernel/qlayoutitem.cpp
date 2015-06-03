@@ -34,7 +34,6 @@
 #include "qlayout.h"
 
 #include "qapplication.h"
-#include "qdebug.h"
 #include "qlayoutengine_p.h"
 #include "qmenubar.h"
 #include "qtoolbar.h"
@@ -65,14 +64,6 @@ inline static QRect toLayoutItemRect(QWidgetPrivate *priv, const QRect &rect)
 inline static QSize toLayoutItemSize(QWidgetPrivate *priv, const QSize &size)
 {
     return toLayoutItemRect(priv, QRect(QPoint(0, 0), size)).size();
-}
-
-/*!
-   Returns a QVariant storing this QSizePolicy.
-*/
-QSizePolicy::operator QVariant() const
-{
-    return QVariant(QVariant::SizePolicy, this);
 }
 
 /*!
@@ -846,15 +837,5 @@ int QWidgetItemV2::heightForWidth(int width) const
     q_cachedHfws[q_firstCachedHfw] = QSize(width, height);
     return height;
 }
-
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QSizePolicy &p)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QSizePolicy(horizontalPolicy = " << p.horizontalPolicy()
-                  << ", verticalPolicy = " << p.verticalPolicy() << ')';
-    return dbg;
-}
-#endif
 
 QT_END_NAMESPACE

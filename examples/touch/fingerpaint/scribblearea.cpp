@@ -187,13 +187,14 @@ bool ScribbleArea::event(QEvent *event)
         foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
             switch (touchPoint.state()) {
             case Qt::TouchPointStationary:
-                // don't do anything if this touch point hasn't moved
+            case Qt::TouchPointReleased:
+                // don't do anything if this touch point hasn't moved or has been released
                 continue;
             default:
                 {
                     QRectF rect = touchPoint.rect();
                     if (rect.isEmpty()) {
-                        qreal diameter = MinimumDiameter;
+                        qreal diameter = MaximumDiameter;
                         if (touch->device()->capabilities() & QTouchDevice::Pressure)
                             diameter = MinimumDiameter + (MaximumDiameter - MinimumDiameter) * touchPoint.pressure();
                         rect.setSize(QSizeF(diameter, diameter));
