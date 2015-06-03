@@ -40,15 +40,13 @@ qt:!isEmpty(QT_CONFIG) {
     # libraries. This applies only to apps, since all loaded libraries inherit
     # rpaths from current process executable.
     else:!if(host_build:force_bootstrap):equals(TEMPLATE, app):!defined(QMAKE_RPATHDIR, var):contains(QT_CONFIG, rpath) {
-        # If app is outside of Qt SDK prefix use absolute path to Qt libraries,
-        # otherwise make it relative, so all SDK tools and examples work when
-        # relocated.
-        # Tests are an exception, since they are launched in their build not
-        # install location by CI, so we cannot use relative rpaths there.
-        if(!contains(target.path, "$$re_escape($$[QT_INSTALL_PREFIX])/.*")|\
-            contains(target.path, "$$re_escape($$[QT_INSTALL_TESTS])/.*")) {
-            QMAKE_RPATHDIR = $$[QT_INSTALL_LIBS]
-        } else {
+        # If app is expected to be installed into the Qt prefix build, use
+        # relative path, so all SDK tools and examples work when relocated.
+        prefix_build:defined(target.path, var):\
+            contains(target.path, "$$re_escape($$[QT_INSTALL_PREFIX])/.*"):\
+            # Tests are an exception, since they are launched in their build not
+            # install location by CI, so we cannot use relative rpaths there.
+            !contains(target.path, "$$re_escape($$[QT_INSTALL_TESTS])/.*") {
             app_bundle {
                 ios:  binpath = $$target.path/$${TARGET}.app
                 else: binpath = $$target.path/$${TARGET}.app/Contents/MacOS
@@ -57,6 +55,9 @@ qt:!isEmpty(QT_CONFIG) {
             }
             QMAKE_RPATHDIR = @loader_path/$$relative_path($$[QT_INSTALL_LIBS], $$binpath)
             unset(binpath)
+        } else {
+             # Otherwise, use absolute path to Qt libraries
+             QMAKE_RPATHDIR = $$[QT_INSTALL_LIBS]
         }
     }
 }
