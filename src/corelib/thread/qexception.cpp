@@ -108,6 +108,9 @@ QT_BEGIN_NAMESPACE
 */
 
 QException::~QException()
+#ifndef Q_COMPILER_NOEXCEPT
+    throw()
+#endif
 {
     // must stay empty until ### Qt 6
 }
@@ -124,6 +127,9 @@ QException *QException::clone() const
 }
 
 QUnhandledException::~QUnhandledException()
+#ifndef Q_COMPILER_NOEXCEPT
+    throw()
+#endif
 {
     // must stay empty until ### Qt 6
 }
