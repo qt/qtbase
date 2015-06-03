@@ -526,7 +526,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
             case XI_ButtonPress:
             case XI_ButtonRelease:
             case XI_Motion:
-                if (xi2MouseEvents() && eventListener)
+                if (xi2MouseEvents() && eventListener && !(xiDeviceEvent->flags & XIPointerEmulated))
                     eventListener->handleXIMouseEvent(event);
                 break;
 
