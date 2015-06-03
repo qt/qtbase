@@ -227,6 +227,9 @@ public:
     void updateExposedGeometry();
     QWindow *childWindowAt(QPoint windowPoint);
     bool shouldRefuseKeyWindowAndFirstResponder();
+
+    static QPoint bottomLeftClippedByNSWindowOffsetStatic(QWindow *window);
+    QPoint bottomLeftClippedByNSWindowOffset() const;
 protected:
     void recreateWindow(const QPlatformWindow *parentWindow);
     QCocoaNSWindow *createNSWindow();

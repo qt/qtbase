@@ -67,6 +67,8 @@ public:
     static void *nsOpenGLContextForContext(QOpenGLContext* context);
 #endif
 
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);
 

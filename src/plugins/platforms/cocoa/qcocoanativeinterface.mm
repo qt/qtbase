@@ -58,6 +58,8 @@
 #include <qpa/qplatformprintersupport.h>
 #endif
 
+#include <QtPlatformHeaders/qcocoawindowfunctions.h>
+
 #include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
@@ -216,6 +218,14 @@ void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
     return 0;
 }
 #endif
+
+QFunctionPointer QCocoaNativeInterface::platformFunction(const QByteArray &function) const
+{
+    if (function == QCocoaWindowFunctions::bottomLeftClippedByNSWindowOffsetIdentifier())
+        return QFunctionPointer(QCocoaWindowFunctions::BottomLeftClippedByNSWindowOffset(QCocoaWindow::bottomLeftClippedByNSWindowOffsetStatic));
+
+    return Q_NULLPTR;
+}
 
 void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
 {
