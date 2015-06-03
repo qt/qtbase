@@ -31,16 +31,19 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBFUNCTIONHELPER_H
-#define QXCBFUNCTIONHELPER_H
+#ifndef QPLATFORMHEADERHELPER_H
+#define QPLATFORMHEADERHELPER_H
 
 #include <QtCore/QByteArray>
 #include <QtGui/QGuiApplication>
 
+#if 0
+#pragma qt_class(QPlatformHeaderHelper)
+#endif
+
 QT_BEGIN_NAMESPACE
 
-namespace QXcbFunctionsHelper
-{
+namespace QPlatformHeaderHelper {
 
 template<typename ReturnT, typename FunctionT>
 ReturnT callPlatformFunction(const QByteArray &functionName)
@@ -81,4 +84,4 @@ ReturnT callPlatformFunction(const QByteArray &functionName, Arg1 a1, Arg2 a2, A
 
 QT_END_NAMESPACE
 
-#endif  /*QXCBFUNCTIONHELPER_H*/
+#endif  /*QPLATFORMHEADERHELPER_H*/

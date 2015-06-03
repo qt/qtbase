@@ -34,7 +34,7 @@
 #ifndef QXCBINTEGRATIONFUNCTIONS_H
 #define QXCBINTEGRATIONFUNCTIONS_H
 
-#include "qxcbfunctionshelper.h"
+#include <QtPlatformHeaders/QPlatformHeaderHelper>
 
 QT_BEGIN_NAMESPACE
 
@@ -45,7 +45,7 @@ public:
     static const QByteArray xEmbedSystemTrayVisualHasAlphaChannelIdentifier() { return QByteArrayLiteral("XcbXEmbedSystemTrayVisualHasAlphaChannel"); }
     static bool xEmbedSystemTrayVisualHasAlphaChannel()
     {
-        return QXcbFunctionsHelper::callPlatformFunction<bool, XEmbedSystemTrayVisualHasAlphaChannel>(xEmbedSystemTrayVisualHasAlphaChannelIdentifier());
+        return QPlatformHeaderHelper::callPlatformFunction<bool, XEmbedSystemTrayVisualHasAlphaChannel>(xEmbedSystemTrayVisualHasAlphaChannelIdentifier());
     }
 };
 
