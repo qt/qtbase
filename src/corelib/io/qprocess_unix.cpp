@@ -1101,6 +1101,9 @@ bool QProcessPrivate::waitForDeadChild()
     exitCode = info.si_status;
     crashed = info.si_code != CLD_EXITED;
 
+    delete deathNotifier;
+    deathNotifier = 0;
+
     qt_safe_close(forkfd);
     forkfd = -1; // Child is dead, don't try to kill it anymore
 
