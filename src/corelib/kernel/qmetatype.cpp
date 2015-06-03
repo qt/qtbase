@@ -1046,6 +1046,16 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
         if (idx >= User) {
             previousSize = ct->at(idx - User).size;
             previousFlags = ct->at(idx - User).flags;
+
+            // Set new/additional flags in case of old library/app.
+            // Ensures that older code works in conjunction with new Qt releases
+            // requiring the new flags.
+            if (flags != previousFlags) {
+                QCustomTypeInfo &inf = ct->data()[idx - User];
+                inf.flags |= flags;
+                if (metaObject)
+                    inf.metaObject = metaObject;
+            }
         }
     }
 
@@ -1061,11 +1071,11 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
             normalizedTypeName.constData(), idx, previousSize, size);
     }
 
+    // Do not compare types higher than 0x100:
     // Ignore WasDeclaredAsMetaType inconsitency, to many users were hitting the problem
-    previousFlags |= WasDeclaredAsMetaType;
-    flags |= WasDeclaredAsMetaType;
-
-    if (previousFlags != flags) {
+    // Ignore IsGadget as it was added in Qt 5.5
+    // Ignore all the future flags as well
+    if ((previousFlags ^ flags) & 0xff) {
         const int maskForTypeInfo = NeedsConstruction | NeedsDestruction | MovableType;
         const char *msg = "QMetaType::registerType: Binary compatibility break. "
                 "\nType flags for type '%s' [%i] don't match. Previously "
