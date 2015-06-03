@@ -33,6 +33,7 @@
 ****************************************************************************/
 
 #include "private/qringbuffer_p.h"
+#include "private/qbytearray_p.h"
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +80,7 @@ void QRingBuffer::free(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
+                Q_ASSERT(bytes < MaxByteArraySize);
                 head += int(bytes);
                 bufferSize -= bytes;
             }
@@ -96,14 +97,14 @@ void QRingBuffer::free(qint64 bytes)
 
 char *QRingBuffer::reserve(qint64 bytes)
 {
-    if (bytes <= 0 || quint64(bytes) >= QByteArray::MaxSize)
+    if (bytes <= 0 || bytes >= MaxByteArraySize)
         return 0;
 
     const qint64 newSize = bytes + tail;
     // if need buffer reallocation
     if (newSize > buffers.last().size()) {
         if (newSize > buffers.last().capacity() && (tail >= basicBlockSize
-                || quint64(newSize) >= QByteArray::MaxSize)) {
+                || newSize >= MaxByteArraySize)) {
             // shrink this buffer to its current size
             buffers.last().resize(tail);
 
@@ -117,7 +118,7 @@ char *QRingBuffer::reserve(qint64 bytes)
 
     char *writePtr = buffers.last().data() + tail;
     bufferSize += bytes;
-    Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
+    Q_ASSERT(bytes < MaxByteArraySize);
     tail += int(bytes);
     return writePtr;
 }
@@ -129,7 +130,7 @@ char *QRingBuffer::reserve(qint64 bytes)
 */
 char *QRingBuffer::reserveFront(qint64 bytes)
 {
-    if (bytes <= 0 || quint64(bytes) >= QByteArray::MaxSize)
+    if (bytes <= 0 || bytes >= MaxByteArraySize)
         return 0;
 
     if (head < bytes) {
@@ -163,7 +164,7 @@ void QRingBuffer::chop(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
+                Q_ASSERT(bytes < MaxByteArraySize);
                 tail -= int(bytes);
                 bufferSize -= bytes;
             }

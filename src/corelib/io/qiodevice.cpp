@@ -39,6 +39,7 @@
 #include "qfile.h"
 #include "qstringlist.h"
 #include "qdir.h"
+#include "private/qbytearray_p.h"
 
 #include <algorithm>
 
@@ -941,9 +942,9 @@ QByteArray QIODevice::read(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (quint64(maxSize) >= QByteArray::MaxSize) {
+    if (maxSize >= MaxByteArraySize) {
         checkWarnMessage(this, "read", "maxSize argument exceeds QByteArray size limit");
-        maxSize = QByteArray::MaxSize - 1;
+        maxSize = MaxByteArraySize - 1;
     }
 
     qint64 readBytes = 0;
@@ -995,7 +996,7 @@ QByteArray QIODevice::readAll()
 
     // flush internal read buffer
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
-        if (quint64(d->buffer.size()) >= QByteArray::MaxSize)
+        if (d->buffer.size() >= MaxByteArraySize)
             return QByteArray();
         result = d->buffer.readAll();
         readBytes = result.size();
@@ -1008,7 +1009,7 @@ QByteArray QIODevice::readAll()
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
-            if (quint64(readBytes) + QIODEVICE_BUFFERSIZE >= QByteArray::MaxSize) {
+            if (readBytes + QIODEVICE_BUFFERSIZE >= MaxByteArraySize) {
                 // If resize would fail, don't read more, return what we have.
                 break;
             }
@@ -1020,7 +1021,7 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        if (quint64(readBytes + theSize - d->pos) >= QByteArray::MaxSize)
+        if (readBytes + theSize - d->pos >= MaxByteArraySize)
             return QByteArray();
         result.resize(int(readBytes + theSize - d->pos));
         readBytes += read(result.data() + readBytes, result.size() - readBytes);
@@ -1178,9 +1179,9 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     Q_UNUSED(d);
 #endif
 
-    if (quint64(maxSize) >= QByteArray::MaxSize) {
+    if (maxSize >= MaxByteArraySize) {
         qWarning("QIODevice::read: maxSize argument exceeds QByteArray size limit");
-        maxSize = QByteArray::MaxSize - 1;
+        maxSize = MaxByteArraySize - 1;
     }
 
     result.resize(int(maxSize));
@@ -1188,7 +1189,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     if (!result.size()) {
         // If resize fails or maxSize == 0, read incrementally
         if (maxSize == 0)
-            maxSize = QByteArray::MaxSize - 1;
+            maxSize = MaxByteArraySize - 1;
 
         // The first iteration needs to leave an extra byte for the terminating null
         result.resize(1);

@@ -41,6 +41,7 @@
 #include "qlocale_p.h"
 #include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
+#include "qbytearray_p.h"
 #include <qdatastream.h>
 #include <qmath.h>
 
@@ -123,8 +124,8 @@ int qFindByteArray(
 
 int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
 {
-    Q_ASSERT(alloc >= 0 && extra >= 0);
-    Q_ASSERT_X(uint(alloc) <= QByteArray::MaxSize, "qAllocMore", "Requested size is too large!");
+    Q_ASSERT(alloc >= 0 && extra >= 0 && extra <= MaxAllocSize);
+    Q_ASSERT_X(alloc <= MaxAllocSize - extra, "qAllocMore", "Requested size is too large!");
 
     unsigned nalloc = qNextPowerOfTwo(alloc + extra);
 
@@ -835,16 +836,6 @@ static inline char qToLower(char c)
     characters using Unicode.
 
     \sa QString, QBitArray
-*/
-
-/*!
-    \variable QByteArray::MaxSize
-    \internal
-    \since 5.4
-
-    The maximum size of a QByteArray (including a '\0' terminator), in bytes.
-    Also applies to the maximum storage size of QString and QVector, though
-    not the number of elements.
 */
 
 /*!
@@ -1575,7 +1566,7 @@ void QByteArray::reallocData(uint alloc, Data::AllocationOptions options)
         d = x;
     } else {
         if (options & Data::Grow) {
-            if (alloc > uint(MaxAllocSize) - uint(sizeof(Data)))
+            if (alloc > MaxByteArraySize)
                 qBadAlloc();
             alloc = qAllocMore(alloc, sizeof(Data));
         }

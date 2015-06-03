@@ -162,9 +162,6 @@ private:
     typedef QTypedArrayData<char> Data;
 
 public:
-    // undocumented:
-    static const quint64 MaxSize = (1 << 30) - sizeof(Data);
-
     enum Base64Option {
         Base64Encoding = 0,
         Base64UrlEncoding = 1,
