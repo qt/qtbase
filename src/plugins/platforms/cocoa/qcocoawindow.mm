@@ -419,6 +419,8 @@ QCocoaWindow::~QCocoaWindow()
         [m_contentView removeFromSuperview];
     }
 
+    removeMonitor();
+
     // Make sure to disconnect observer in all case if view is valid
     // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
     if (m_qtView) {
@@ -696,6 +698,7 @@ void QCocoaWindow::setVisible(bool visible)
                     && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
                     if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
+                        removeMonitor();
                         monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
                             QPointF localPoint = qt_mac_flipPoint([NSEvent mouseLocation]);
                             QWindowSystemInterface::handleMouseEvent(window(), window()->mapFromGlobal(localPoint.toPoint()), localPoint,
@@ -744,10 +747,7 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_contentView setHidden:YES];
         }
-        if (monitor && window()->type() == Qt::Popup) {
-            [NSEvent removeMonitor:monitor];
-            monitor = nil;
-        }
+        removeMonitor();
 
         if (window()->type() == Qt::Popup)
             QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
@@ -1478,6 +1478,14 @@ void QCocoaWindow::removeChildWindow(QCocoaWindow *child)
 {
     m_childWindows.removeOne(child);
     [m_nsWindow removeChildWindow:child->m_nsWindow];
+}
+
+void QCocoaWindow::removeMonitor()
+{
+    if (!monitor)
+        return;
+    [NSEvent removeMonitor:monitor];
+    monitor = nil;
 }
 
 // Returns the current global screen geometry for the nswindow associated with this window.

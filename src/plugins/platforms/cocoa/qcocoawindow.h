@@ -245,6 +245,8 @@ public: // for QNSView
     friend class QCocoaBackingStore;
     friend class QCocoaNativeInterface;
 
+    void removeMonitor();
+
     NSView *m_contentView;
     QNSView *m_qtView;
     QCocoaNSWindow *m_nsWindow;
