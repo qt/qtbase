@@ -193,20 +193,33 @@ void QRingBuffer::clear()
     bufferSize = 0;
 }
 
-qint64 QRingBuffer::indexOf(char c, qint64 maxLength) const
+qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
 {
-    qint64 index = 0;
-    qint64 j = head;
-    for (int i = 0; index < maxLength && i < buffers.size(); ++i) {
-        const char *ptr = buffers[i].constData() + j;
-        j = qMin(index + (i == tailBuffer ? tail : buffers[i].size()) - j, maxLength);
+    if (maxLength <= 0 || pos < 0)
+        return -1;
 
-        while (index < j) {
-            if (*ptr++ == c)
-                return index;
-            ++index;
+    qint64 index = -(pos + head);
+    for (int i = 0; i < buffers.size(); ++i) {
+        const qint64 nextBlockIndex = qMin(index + (i == tailBuffer ? tail : buffers[i].size()),
+                                           maxLength);
+
+        if (nextBlockIndex > 0) {
+            const char *ptr = buffers[i].constData();
+            if (index < 0) {
+                ptr -= index;
+                index = 0;
+            }
+
+            do {
+                if (*ptr++ == c)
+                    return index + pos;
+            } while (++index < nextBlockIndex);
+
+            if (index == maxLength)
+                return -1;
+        } else {
+            index = nextBlockIndex;
         }
-        j = 0;
     }
     return -1;
 }

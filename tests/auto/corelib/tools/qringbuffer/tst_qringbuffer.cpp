@@ -284,7 +284,8 @@ void tst_QRingBuffer::indexOf()
     for (int i = 1; i < 256; ++i) {
         qint64 index = ringBuffer.indexOf(char(i));
         QCOMPARE(index, qint64(i - 1));
-        QCOMPARE(ringBuffer.indexOf(char(i), i), index);
+        QCOMPARE(ringBuffer.indexOf(char(i), i, i >> 1), index);
+        QCOMPARE(ringBuffer.indexOf(char(i), 256, i), Q_INT64_C(-1));
         QCOMPARE(ringBuffer.indexOf(char(i), i - 1), -1); // test for absent char
     }
 }

@@ -114,7 +114,7 @@ public:
 
     Q_CORE_EXPORT void clear();
     inline qint64 indexOf(char c) const { return indexOf(c, size()); }
-    Q_CORE_EXPORT qint64 indexOf(char c, qint64 maxLength) const;
+    Q_CORE_EXPORT qint64 indexOf(char c, qint64 maxLength, qint64 pos = 0) const;
     Q_CORE_EXPORT qint64 read(char *data, qint64 maxLength);
     Q_CORE_EXPORT QByteArray read();
     Q_CORE_EXPORT qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const;
