@@ -33,6 +33,7 @@
 
 #include "qwindowsdrag.h"
 #include "qwindowscontext.h"
+#include "qwindowsscreen.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
 #endif
@@ -50,6 +51,7 @@
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QBuffer>
@@ -278,6 +280,13 @@ QDebug operator<<(QDebug d, const QWindowsOleDropSource::CursorEntry &e)
 }
 #endif // !QT_NO_DEBUG_OUTPUT
 
+static qreal dragScaleFactor()
+{
+    const QWindowsScreenManager &screenManager = QWindowsContext::instance()->screenManager();
+    const QWindowsScreen *screen = screenManager.screenAtDp(QWindowsCursor::mousePosition());
+    return screen ? QHighDpiScaling::factor(screen) : qreal(1);
+}
+
 /*!
     \brief Blend custom pixmap with cursors.
 */
@@ -288,11 +297,21 @@ void QWindowsOleDropSource::createCursors()
     const QPixmap pixmap = drag->pixmap();
     const bool hasPixmap = !pixmap.isNull();
 
+    const qreal scaleFactor = dragScaleFactor();
+    const bool scalePixmap = hasPixmap
+        && m_mode != TouchDrag // Touch drag: pixmap is shown in a separate QWindow, which will be scaled.
+        && (scaleFactor != 1 && scaleFactor != qRound(pixmap.devicePixelRatio()));
+    const QPixmap scaledPixmap = scalePixmap
+        ? pixmap.scaled((QSizeF(pixmap.size()) * scaleFactor).toSize(),
+                        Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        : pixmap;
     Qt::DropAction actions[] = { Qt::MoveAction, Qt::CopyAction, Qt::LinkAction, Qt::IgnoreAction };
     int actionCount = int(sizeof(actions) / sizeof(actions[0]));
     if (!hasPixmap)
         --actionCount; // No Qt::IgnoreAction unless pixmap
-    const QPoint hotSpot = drag->hotSpot();
+    const QPoint hotSpot = scalePixmap
+        ? (QPointF(drag->hotSpot()) * scaleFactor).toPoint()
+        : drag->hotSpot();
     for (int cnum = 0; cnum < actionCount; ++cnum) {
         const Qt::DropAction action = actions[cnum];
         QPixmap cursorPixmap = drag->dragCursor(action);
@@ -312,15 +331,14 @@ void QWindowsOleDropSource::createCursors()
 
         if (hasPixmap) {
             const int x1 = qMin(-hotSpot.x(), 0);
-            const int x2 = qMax(pixmap.width() - hotSpot.x(), cursorPixmap.width());
+            const int x2 = qMax(scaledPixmap.width() - hotSpot.x(), cursorPixmap.width());
             const int y1 = qMin(-hotSpot.y(), 0);
-            const int y2 = qMax(pixmap.height() - hotSpot.y(), cursorPixmap.height());
+            const int y2 = qMax(scaledPixmap.height() - hotSpot.y(), cursorPixmap.height());
             QPixmap newCursor(x2 - x1 + 1, y2 - y1 + 1);
             newCursor.fill(Qt::transparent);
             QPainter p(&newCursor);
-            const QRect srcRect = pixmap.rect();
             const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
-            p.drawPixmap(pmDest, pixmap, srcRect);
+            p.drawPixmap(pmDest, scaledPixmap);
             p.drawPixmap(qMax(0, hotSpot.x()),qMax(0, hotSpot.y()), cursorPixmap);
             newPixmap = newCursor;
             newHotSpot = QPoint(qMax(0, hotSpot.x()), qMax(0, hotSpot.y()));
