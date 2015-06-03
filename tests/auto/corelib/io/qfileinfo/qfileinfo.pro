@@ -5,5 +5,5 @@ SOURCES = tst_qfileinfo.cpp
 RESOURCES += qfileinfo.qrc \
     testdata.qrc
 
-win32*:!wince*:!winrt:LIBS += -ladvapi32 -lnetapi32
+win32:!wince:!winrt:LIBS += -ladvapi32 -lnetapi32
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

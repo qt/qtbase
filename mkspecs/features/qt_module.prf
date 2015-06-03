@@ -67,7 +67,7 @@ header_module {
     TEMPLATE     = lib
 }
 DESTDIR          = $$MODULE_BASE_OUTDIR/lib
-win32:!wince*:!prefix_build: DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
+win32:!wince:!prefix_build: DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 CONFIG          += qmake_cache target_qt
 

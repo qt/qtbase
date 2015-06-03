@@ -4,9 +4,9 @@ QT += widgets widgets-private testlib
 QT += core-private gui-private
 SOURCES  += tst_qgraphicsscene.cpp
 RESOURCES += images.qrc
-win32:!wince*:!winrt: LIBS += -luser32
+win32:!wince:!winrt: LIBS += -luser32
 
-!wince*:DEFINES += SRCDIR=\\\"$$PWD\\\"
+!wince: DEFINES += SRCDIR=\\\"$$PWD\\\"
 DEFINES += QT_NO_CAST_TO_ASCII
 
 wince* {

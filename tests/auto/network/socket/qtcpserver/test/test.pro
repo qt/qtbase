@@ -2,7 +2,7 @@ CONFIG += testcase
 SOURCES  += ../tst_qtcpserver.cpp
 
 win32: {
-wince*: {
+wince {
 	LIBS += -lws2
 	crashApp.files = ../crashingServer/crashingServer.exe
 	crashApp.path = crashingServer

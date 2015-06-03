@@ -6,7 +6,7 @@ SOURCES  += tst_qhostinfo.cpp
 requires(contains(QT_CONFIG,private_tests))
 QT = core-private network-private testlib
 
-wince*: {
+wince {
   LIBS += ws2.lib
 } else {
   win32:LIBS += -lws2_32

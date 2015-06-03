@@ -84,7 +84,7 @@ win32 {
         }
 }
 
-wince*: {
+wince {
         SOURCES += \
                 kernel/qfunctions_wince.cpp
         HEADERS += \

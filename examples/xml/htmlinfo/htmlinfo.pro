@@ -6,7 +6,7 @@ RESOURCES   = resources.qrc
 
 win32: CONFIG += console
 
-wince*:{
+wince {
    htmlfiles.files = *.html
    htmlfiles.path = .
    DEPLOYMENT += htmlfiles

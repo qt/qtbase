@@ -10,7 +10,8 @@ qtHaveModule(widgets) {
                2dpainting \
                hellogl2
 
-    !wince*: SUBDIRS += qopenglwidget \
-                        cube \
-                        textures
+    !wince: SUBDIRS += \
+                qopenglwidget \
+                cube \
+                textures
 }

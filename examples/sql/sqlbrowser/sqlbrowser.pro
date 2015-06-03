@@ -17,6 +17,6 @@ target.path = $$[QT_INSTALL_EXAMPLES]/sql/sqlbrowser
 INSTALLS += target
 
 
-wince*: {
+wince {
     DEPLOYMENT_PLUGIN += qsqlite
 }

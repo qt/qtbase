@@ -15,7 +15,7 @@ QMAKE_PROJECT_NAME = dndpuzzle
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/puzzle
 INSTALLS += target
 
-wince*: {
+wince {
    addFile.files = example.jpg
    addFile.path = .
    DEPLOYMENT += addFile

@@ -11,7 +11,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/syntaxhighlighter
 INSTALLS += target
 
 
-wince*: {
+wince {
    addFiles.files = main.cpp mainwindow.cpp
    addFiles.path = .
    DEPLOYMENT += addFiles
