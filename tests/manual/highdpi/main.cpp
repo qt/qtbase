@@ -710,23 +710,51 @@ public:
     {
     }
 
+    inline QRect getRect(int idx) const
+    {
+        int h = height() / 2;
+        return QRect(10, 10 + h * (idx - 1), width() - 20, h - 20);
+    }
     void paintEvent(QPaintEvent *)
     {
-        QRect r1(10, 10, width() - 20, height()/2 - 20);
-        QRect r2(10, height()/2 + 10, width() - 20, height()/2 - 20);
         QPainter p(this);
+        QRect r1 = getRect(1);
+        QRect r2 = getRect(2);
         p.fillRect(r1, QColor(200, 200, 250));
         p.drawText(r1, "Drag from here to move a window based on QCursor::pos()");
         p.fillRect(r2, QColor(250, 200, 200));
         p.drawText(r2, "Drag from here to move a window based on mouse event position");
+
+        if (moving) {
+            p.setPen(Qt::darkGray);
+            QFont f = font();
+            f.setPointSize(8);
+            p.setFont(f);
+            p.drawEllipse(mousePos, 30,60);
+            QPoint pt = mousePos - QPoint(0, 60);
+            QPoint pt2 = pt - QPoint(30,10);
+            QPoint offs(30, 0);
+            p.drawLine(pt, pt2);
+            p.drawLine(pt2 - offs, pt2 + offs);
+            p.drawText(pt2 - offs, "mouse pos");
+
+            p.setPen(QColor(50,130,70));
+            QPoint cursorPos = mapFromGlobal(QCursor::pos());
+            pt = cursorPos - QPoint(0, 30);
+            pt2 = pt + QPoint(60, -20);
+            p.drawEllipse(cursorPos, 60, 30);
+            p.drawLine(pt, pt2);
+            p.drawLine(pt2 - offs, pt2 + offs);
+            p.drawText(pt2 - offs, "cursor pos");
+        }
     }
 
     void mousePressEvent(QMouseEvent *e)
     {
         if (moving)
             return;
-        QRect r1(10, 10, width() - 20, height()/2 - 20);
-        QRect r2(10, height()/2 + 10, width() - 20, height()/2 - 20);
+        QRect r1 = getRect(1);
+        QRect r2 = getRect(2);
 
         moving = r1.contains(e->pos()) || r2.contains(e->pos());
         if (!moving)
@@ -749,6 +777,7 @@ public:
     {
         if (moveLabel)
             moveLabel->hide();
+        update();
         moving = false;
     }
 
@@ -759,11 +788,98 @@ public:
         QPoint pos = useCursorPos ? QCursor::pos() : e->globalPos();
         pos -= moveLabel->rect().center();
         moveLabel->move(pos);
+        mousePos = e->pos();
+        update();
     }
+
 private:
     QLabel *moveLabel;
     bool useCursorPos;
     bool moving;
+    QPoint mousePos;
+};
+
+
+class ScreenDisplayer : public QWidget
+{
+public:
+    ScreenDisplayer()
+        : QWidget(), moveLabel(0), scaleFactor(1.0)
+    {
+    }
+
+    void timerEvent(QTimerEvent *) {
+        update();
+    }
+
+    void mousePressEvent(QMouseEvent *) {
+        if (!moveLabel)
+            moveLabel = new QLabel(this,Qt::BypassWindowManagerHint|Qt::FramelessWindowHint|Qt::Window );
+        moveLabel->setText("Hello, Qt this is a label\nwith some text");
+        moveLabel->show();
+    }
+    void mouseMoveEvent(QMouseEvent *e) {
+        if (!moveLabel)
+            return;
+        moveLabel->move(e->pos() / scaleFactor);
+        QString str;
+        QDebug dbg(&str);
+        dbg.setAutoInsertSpaces(false);
+        dbg << moveLabel->geometry();
+        moveLabel->setText(str);
+    }
+    void mouseReleaseEvent(QMouseEvent *) {
+        if (moveLabel)
+            moveLabel->hide();
+    }
+    void showEvent(QShowEvent *) {
+        refreshTimer.start(300, this);
+    }
+    void hideEvent(QHideEvent *) {
+        refreshTimer.stop();
+    }
+    void paintEvent(QPaintEvent *) {
+        QPainter p(this);
+        QRectF total;
+        QList<QScreen*> screens = qApp->screens();
+        foreach (QScreen *screen, screens) {
+            total |= screen->geometry();
+        }
+        if (total.isEmpty())
+            return;
+
+        scaleFactor = qMin(width()/total.width(), height()/total.height());
+
+        p.fillRect(rect(), Qt::black);
+        p.scale(scaleFactor, scaleFactor);
+        p.setPen(QPen(Qt::white, 10));
+        p.setBrush(Qt::gray);
+        QFont f = font();
+        f.setPixelSize(height());
+        p.setFont(f);
+
+        foreach (QScreen *screen, screens) {
+            p.drawRect(screen->geometry());
+            p.drawText(screen->geometry(), Qt::AlignCenter, screen->name());
+        }
+        p.setBrush(QColor(200,220,255,127));
+        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+            if (!widget->isHidden())
+                p.drawRect(widget->geometry());
+        }
+
+        QPolygon cursorShape;
+        cursorShape << QPoint(0,0) << QPoint(20, 60)
+                    << QPoint(30, 50) << QPoint(60, 80)
+                    << QPoint(80, 60) << QPoint(50, 30)
+                    << QPoint(60, 20);
+        cursorShape.translate(QCursor::pos());
+        p.drawPolygon(cursorShape);
+    }
+private:
+    QLabel *moveLabel;
+    QBasicTimer refreshTimer;
+    qreal scaleFactor;
 };
 
 int main(int argc, char **argv)
@@ -798,6 +914,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<LinePainter>("linepainter", "Test line painting");
     demoList << new DemoContainer<DragWidget>("draganddrop", "Test drag and drop");
     demoList << new DemoContainer<CursorTester>("cursorpos", "Test cursor and window positioning");
+    demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
 
 
     foreach (DemoContainerBase *demo, demoList)
