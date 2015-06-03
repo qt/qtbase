@@ -249,6 +249,8 @@ uint QFragmentMapData<Fragment>::createFragment()
     uint freePos = head->freelist;
     if (freePos == head->allocated) {
         // need to create some free space
+        if (freePos >= uint(MaxAllocSize) / fragmentSize)
+            qBadAlloc();
         uint needed = qAllocMore((freePos+1)*fragmentSize, 0);
         Q_ASSERT(needed/fragmentSize > head->allocated);
         Fragment *newFragments = (Fragment *)realloc(fragments, needed);

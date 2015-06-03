@@ -1656,8 +1656,11 @@ void QString::resize(int size)
 
 void QString::reallocData(uint alloc, bool grow)
 {
-    if (grow)
+    if (grow) {
+        if (alloc > (uint(MaxAllocSize) - sizeof(Data)) / sizeof(QChar))
+            qBadAlloc();
         alloc = qAllocMore(alloc * sizeof(QChar), sizeof(Data)) / sizeof(QChar);
+    }
 
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
         Data::AllocationOptions allocOptions(d->capacityReserved ? Data::CapacityReserved : 0);

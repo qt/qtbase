@@ -46,8 +46,14 @@
 //
 
 #include "QtCore/qglobal.h"
+#include <limits>
 
 QT_BEGIN_NAMESPACE
+
+// We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
+enum {
+    MaxAllocSize = (1 << (std::numeric_limits<int>::digits - 1)) - 1
+};
 
 // implemented in qbytearray.cpp
 int Q_CORE_EXPORT qAllocMore(int alloc, int extra) Q_DECL_NOTHROW;

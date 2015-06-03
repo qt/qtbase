@@ -85,8 +85,20 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         headerSize += (alignment - Q_ALIGNOF(QArrayData));
 
     // Allocate additional space if array is growing
-    if (options & Grow)
-        capacity = qAllocMore(int(objectSize * capacity), int(headerSize)) / int(objectSize);
+    if (options & Grow) {
+
+        // Guard against integer overflow when multiplying.
+        if (capacity > std::numeric_limits<size_t>::max() / objectSize)
+            return 0;
+
+        size_t alloc = objectSize * capacity;
+
+        // Make sure qAllocMore won't overflow.
+        if (headerSize > size_t(MaxAllocSize) || alloc > size_t(MaxAllocSize) - headerSize)
+            return 0;
+
+        capacity = qAllocMore(int(alloc), int(headerSize)) / int(objectSize);
+    }
 
     size_t allocSize = headerSize + objectSize * capacity;
 

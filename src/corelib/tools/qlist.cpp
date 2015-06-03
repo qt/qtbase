@@ -55,6 +55,8 @@ const QListData::Data QListData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0
 
 static int grow(int size)
 {
+    if (size_t(size) > (MaxAllocSize - QListData::DataHeaderSize) / sizeof(void *))
+        qBadAlloc();
     // dear compiler: don't optimize me out.
     volatile int x = qAllocMore(size * sizeof(void *), QListData::DataHeaderSize) / sizeof(void *);
     return x;
