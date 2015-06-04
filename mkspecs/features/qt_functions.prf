@@ -127,11 +127,6 @@ defineTest(qtAddModule) {
             lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
             LINKAGE += -l$$lib
 
-            contains(QT_CONFIG, rpath) {
-                QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
-                export(QMAKE_RPATHDIR)
-            }
-
             contains(MODULE_CONFIG, staticlib) {
                 PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
                 export(PRE_TARGETDEPS)
