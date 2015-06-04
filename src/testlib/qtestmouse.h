@@ -89,8 +89,10 @@ namespace QTest
 
         if (delay == -1 || delay < defaultMouseDelay())
             delay = defaultMouseDelay();
-        if (delay > 0)
+        if (delay > 0) {
             QTest::qWait(delay);
+            lastMouseTimestamp += delay;
+        }
 
         if (pos.isNull())
             pos = window->geometry().center();
@@ -105,7 +107,7 @@ namespace QTest
         switch (action)
         {
         case MouseDClick:
-            qt_handleMouseEvent(w, pos, global, button, stateKey, lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
             qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
             // fall through
         case MousePress:
