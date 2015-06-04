@@ -269,12 +269,9 @@ manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Event Transitions Example" \
                                        "QtWidgets/Two-way Button Example" \
                                        "QtWidgets/Validators Example" \
-                                       "ActiveQt/*"  \
                                        "QtDbus/*" \
                                        "QtHelp/*" \
                                        "QtMultimedia/AudioEngine Example" \
-                                       "QtMultimedia/Declarative Radio Example" \
-                                       "QtMultimediaWidgets/Media Player Example" \
                                        "QtQml/Extending QML*" \
                                        "QtQuick/Qt Quick Examples - Accessibility" \
                                        "QtSensors/Qt Sensors - SensorGesture QML Type example" \
