@@ -170,6 +170,10 @@ void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
     m_active = true;
     m_perScreenActive = true;
     screen->setProperty(scaleFactorProperty, QVariant(factor));
+
+    //### dirty hack to force re-evaluation of screen geometry
+    if (screen->handle())
+        screen->d_func()->setPlatformScreen(screen->handle()); // update geometries based on scale factor
 }
 
 /*
