@@ -1404,18 +1404,6 @@ while [ "$#" -gt 0 ]; do
         unixware7-g++)
             PLATFORM=unixware-g++
             ;;
-        macx-g++-64)
-            PLATFORM=macx-g++
-	    NATIVE_64_ARCH=
-            case `uname -p` in
-            i386) NATIVE_64_ARCH="x86_64" ;;
-            powerpc) NATIVE_64_ARCH="ppc64" ;;
-            *)   echo "WARNING: Can't detect CPU architecture for macx-g++-64" ;;
-            esac
-	    if [ ! -z "$NATIVE_64_ARCH" ]; then
-		QTCONFIG_CONFIG="$QTCONFIG_CONFIG $NATIVE_64_ARCH"
-            fi
-            ;;
         esac
         ;;
     xplatform)
@@ -3199,13 +3187,13 @@ if [ "$XPLATFORM_ANDROID" = "yes" ]; then
             ;;
         macx-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
-            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
                 CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
             fi
             ;;
         win32-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=windows
-            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
                 CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
             fi
             ;;
