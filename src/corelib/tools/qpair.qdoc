@@ -96,6 +96,7 @@
     \sa qMakePair()
 */
 
+/*!
 \fn void QPair::swap(QPair &other)
 
     \since 5.5
