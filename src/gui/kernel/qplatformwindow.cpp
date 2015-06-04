@@ -501,7 +501,7 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
 */
 QSize QPlatformWindow::constrainWindowSize(const QSize &size)
 {
-    return size.boundedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
+    return size.expandedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
 }
 
 /*!
