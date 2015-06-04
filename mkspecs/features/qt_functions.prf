@@ -172,23 +172,6 @@ defineTest(qtAddModules) {
     !isEmpty(BAD_QT):error("Unknown module(s) in $$1: $$replace(BAD_QT, _private$, -private)")
 }
 
-defineTest(qtAddRpathLink) {
-    # -rpath-link is used by the linker to find dependencies of dynamic
-    # libraries which were NOT specified on the command line.
-    # This means that paths of direct dependencies (QT & QT_PRIVATE)
-    # don't need to appear here. However, their private dependencies'
-    # paths OTOH need to be put there.
-    pubqt = $$replace(1, -private$, _private)
-    pubdep = $$resolve_depends(pubqt, "QT.")
-    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".run_depends")
-    privdep -= $$pubdep
-    rpaths =
-    for(dep, privdep): \
-        rpaths += $$eval(QT.$${dep}.libs)
-    QMAKE_RPATHLINKDIR *= $$unique(rpaths)
-    export(QMAKE_RPATHLINKDIR)
-}
-
 # variable, default, [suffix for variable for system() use], [prepare primary variable for system() use]
 defineTest(qtPrepareTool) {
     cmd = $$eval(QT_TOOL.$${2}.binary)

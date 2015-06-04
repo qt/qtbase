@@ -53,7 +53,6 @@ qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
 }
-qtAddRpathLink($$QT $$QT_PRIVATE)
 
 qt_module_deps = $$QT $$QT_PRIVATE
 qt_module_deps = $$replace(qt_module_deps, -private$, _private)
@@ -80,6 +79,19 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
     } else {
         QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
     }
+}
+
+!isEmpty(QMAKE_LFLAGS_RPATHLINK):!contains(QT_CONFIG, static) {
+    # -rpath-link is used by the linker to find dependencies of dynamic
+    # libraries which were NOT specified on the command line.
+    # This means that paths of direct dependencies (QT & QT_PRIVATE)
+    # don't need to be listed, unlike their private dependencies' paths.
+    privdep = $$resolve_depends(qt_module_deps, "QT.", ".depends" ".run_depends")
+    privdep -= $$qt_module_deps
+    rpaths =
+    for(dep, privdep): \
+        rpaths += $$eval(QT.$${dep}.libs)
+    QMAKE_RPATHLINKDIR *= $$unique(rpaths)
 }
 
 # static builds: link qml import plugins into the app.
