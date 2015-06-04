@@ -64,9 +64,7 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     adjustWindowFlags(&wFlags);
     windowFlags = wFlags;
 
-    if (parentItem)
-        setParentItemHelper(parentItem, 0, 0);
-
+    q->setParentItem(parentItem);
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::DefaultType));
     q->setGraphicsItem(q);
 

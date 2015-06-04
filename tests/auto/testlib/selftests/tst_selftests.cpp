@@ -352,6 +352,7 @@ void tst_Selftests::runSubTest_data()
         << "benchlibcounting"
         << "benchlibeventcounter"
         << "benchliboptions"
+        << "blacklisted"
         << "cmptest"
         << "commandlinedata"
         << "counting"
@@ -470,6 +471,9 @@ void tst_Selftests::runSubTest_data()
                 if (subtest == "benchliboptions") {
                     continue;
                 }
+                if (subtest == "blacklisted") {
+                    continue;
+                }
                 if (subtest == "printdatatags") {
                     continue;
                 }
@@ -503,7 +507,8 @@ void tst_Selftests::runSubTest_data()
 
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
-                || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent");
+                || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent")
+                || subtest == QLatin1String("blacklisted");
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
                 << loggers
@@ -612,6 +617,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         && subdir != QLatin1String("fetchbogus")
         && subdir != QLatin1String("xunit")
 #ifdef Q_CC_MINGW
+        && subdir != QLatin1String("blacklisted") // calls qFatal()
         && subdir != QLatin1String("silent") // calls qFatal()
 #endif
         && subdir != QLatin1String("benchlibcallgrind"))

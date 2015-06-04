@@ -34,9 +34,7 @@
 
 #include "configureapp.h"
 #include "environment.h"
-#ifdef COMMERCIAL_VERSION
-#  include "tools.h"
-#endif
+#include "tools.h"
 
 #include <qdir.h>
 #include <qdiriterator.h>
@@ -243,6 +241,8 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "C++11" ]           = "auto";
 
     dictionary[ "USE_GOLD_LINKER" ] = "no";
+
+    dictionary[ "ENABLE_NEW_DTAGS" ] = "no";
 
     dictionary[ "SHARED" ]          = "yes";
 
@@ -471,6 +471,10 @@ void Configure::parseCmdLine()
             dictionary[ "USE_GOLD_LINKER" ] = "yes";
         else if (configCmdLine.at(i) == "-no-use-gold-linker")
             dictionary[ "USE_GOLD_LINKER" ] = "no";
+        else if (configCmdLine.at(i) == "-enable-new-dtags")
+            dictionary[ "ENABLE_NEW_DTAGS" ] = "yes";
+        else if (configCmdLine.at(i) == "-disable-new-dtags")
+            dictionary[ "ENABLE_NEW_DTAGS" ] = "no";
         else if (configCmdLine.at(i) == "-shared")
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
@@ -1793,6 +1797,9 @@ bool Configure::displayHelp()
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
         desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
 
+        desc("ENABLE_NEW_DTAGS", "yes", "-enable-new-dtags", "Use new DTAGS for RPATH (Linux only).");
+        desc("ENABLE_NEW_DTAGS", "no", "-disable-new-dtags", "Do not use new DTAGS for RPATH.\n");
+
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
@@ -2675,6 +2682,9 @@ void Configure::generateOutputVars()
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";
 
+    if (dictionary[ "ENABLE_NEW_DTAGS" ] == "yes")
+        qmakeConfig += "enable_new_dtags";
+
     if (dictionary[ "SHARED" ] == "no")
         qtConfig += "static";
     else
@@ -3029,16 +3039,6 @@ void Configure::generateOutputVars()
         qmakeVars += QString("styles         += ") + qmakeStyles.join(' ');
     if (!qmakeStylePlugins.isEmpty())
         qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(' ');
-
-    if (dictionary["QMAKESPEC"].endsWith("-g++")) {
-        QString includepath = qgetenv("INCLUDE");
-        const bool hasSh = !QStandardPaths::findExecutable(QStringLiteral("sh.exe")).isEmpty();
-        QChar separator = (!includepath.contains(":\\") && hasSh ? QChar(':') : QChar(';'));
-        qmakeVars += QString("TMPPATH            = $$quote($$(INCLUDE))");
-        qmakeVars += QString("QMAKE_INCDIR_POST += $$split(TMPPATH,\"%1\")").arg(separator);
-        qmakeVars += QString("TMPPATH            = $$quote($$(LIB))");
-        qmakeVars += QString("QMAKE_LIBDIR_POST += $$split(TMPPATH,\"%1\")").arg(separator);
-    }
 
     if (!dictionary[ "QMAKESPEC" ].length()) {
         cout << "Configure could not detect your compiler. QMAKESPEC must either" << endl
@@ -3457,6 +3457,14 @@ void Configure::generateQConfigPri()
                      << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
                      << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
+
+        configStream << endl
+                     << "QT_EDITION = " << dictionary["EDITION"] << endl;
+
+        if (dictionary["EDITION"] != "OpenSource" && dictionary["EDITION"] != "Preview") {
+            configStream << "QT_LICHECK = " << dictionary["LICHECK"] << endl;
+            configStream << "QT_RELEASE_DATE = " << dictionary["RELEASEDATE"] << endl;
+        }
 
         if (!dictionary["CFG_SYSROOT"].isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
             configStream << endl
@@ -4379,8 +4387,10 @@ bool Configure::showLicense(QString orgLicenseFile)
     bool showLgpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
-    if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        if (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no") {
+    if (dictionary["EDITION"] == "OpenSource") {
+        if (platform() != WINDOWS_RT
+                && platform() != WINDOWS_CE
+                && (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no")) {
             theLicense = "GNU Lesser General Public License (LGPL) version 2.1"
                          "\nor the GNU Lesser General Public License (LGPL) version 3";
         } else {
@@ -4402,7 +4412,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         cout << "You are licensed to use this software under the terms of" << endl
              << "the " << theLicense << "." << endl
              << endl;
-        if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
+        if (dictionary["EDITION"] == "OpenSource") {
             cout << "Type '3' to view the Lesser GNU General Public License version 3 (LGPLv3)." << endl;
             if (showLgpl2)
                 cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
@@ -4421,7 +4431,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         } else if (accept == 'n') {
             return false;
         } else {
-            if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
+            if (dictionary["EDITION"] == "OpenSource") {
                 if (accept == '3')
                     licenseFile = orgLicenseFile + "/LICENSE.LGPLv3";
                 else
@@ -4497,19 +4507,9 @@ void Configure::readLicense()
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
     }
-#ifdef COMMERCIAL_VERSION
     else {
         Tools::checkLicense(dictionary, sourcePath, buildPath);
     }
-#else // !COMMERCIAL_VERSION
-    else {
-        cout << endl << "Error: This is the Open Source version of Qt."
-             << endl << "If you want to use Enterprise features of Qt,"
-             << endl << "information use the contact form at http://www.qt.io/contact-us"
-             << endl << "to purchase a license." << endl << endl;
-        dictionary["DONE"] = "error";
-    }
-#endif
 }
 
 void Configure::reloadCmdLine()

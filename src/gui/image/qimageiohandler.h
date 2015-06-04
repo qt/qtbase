@@ -86,8 +86,25 @@ public:
         ImageFormat,
         SupportedSubTypes,
         OptimizedWrite,
-        ProgressiveScanWrite
+        ProgressiveScanWrite,
+        ImageTransformation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , TransformedByDefault
+#endif
     };
+
+    enum Transformation {
+        TransformationNone = 0,
+        TransformationMirror = 1,
+        TransformationFlip = 2,
+        TransformationRotate180 = TransformationMirror | TransformationFlip,
+        TransformationRotate90 = 4,
+        TransformationMirrorAndRotate90 = TransformationMirror | TransformationRotate90,
+        TransformationFlipAndRotate90 = TransformationFlip | TransformationRotate90,
+        TransformationRotate270 = TransformationRotate180 | TransformationRotate90
+    };
+    Q_DECLARE_FLAGS(Transformations, Transformation)
+
     virtual QVariant option(ImageOption option) const;
     virtual void setOption(ImageOption option, const QVariant &value);
     virtual bool supportsOption(ImageOption option) const;

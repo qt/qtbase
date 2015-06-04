@@ -1222,8 +1222,8 @@ CollectionNode* Tree::getCollection(const QString& name, Node::Genus genus)
 {
     CNMap* m = getCollectionMap(genus);
     if (m) {
-        CNMap::const_iterator i = m->find(name);
-        if (i != m->end())
+        CNMap::const_iterator i = m->constFind(name);
+        if (i != m->cend())
             return i.value();
     }
     return 0;
@@ -1249,8 +1249,8 @@ CollectionNode* Tree::findCollection(const QString& name, Node::Genus genus)
     CNMap* m = getCollectionMap(genus);
     if (!m) // error
         return 0;
-    CNMap::const_iterator i = m->find(name);
-    if (i != m->end())
+    CNMap::const_iterator i = m->constFind(name);
+    if (i != m->cend())
         return i.value();
     Node::NodeType t = Node::NoType;
     switch (genus) {

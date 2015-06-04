@@ -174,6 +174,12 @@ QDBusUnixFileDescriptor &QDBusUnixFileDescriptor::operator=(const QDBusUnixFileD
 }
 
 /*!
+   \fn QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other)
+
+   Move-assigns  \a other to this QDBusUnixFileDescriptor.
+*/
+
+/*!
     Destroys this QDBusUnixFileDescriptor object and disposes of the Unix file descriptor that it contained.
 */
 QDBusUnixFileDescriptor::~QDBusUnixFileDescriptor()

@@ -1090,9 +1090,10 @@ Q_CORE_EXPORT int qrand();
 
 #define QT_MODULE(x)
 
-#if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__) && !defined(__PIE__)
+#if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && \
+    (!defined(__PIC__) || (defined(__PIE__) && defined(Q_CC_GNU) && Q_CC_GNU >= 500))
 #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
-         "Compile your code with -fPIC or -fPIE."
+         "Compile your code with -fPIC (-fPIE is not enough)."
 #endif
 
 namespace QtPrivate {

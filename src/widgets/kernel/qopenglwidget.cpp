@@ -104,6 +104,12 @@ QT_BEGIN_NAMESPACE
   non-sharable. To overcome this issue, prefer using
   QSurfaceFormat::setDefaultFormat() instead of setFormat().
 
+  \note Calling QSurfaceFormat::setDefaultFormat() before constructing
+  the QApplication instance is mandatory on some platforms (for example,
+  OS X) when an OpenGL core profile context is requested. This is to
+  ensure that resource sharing between contexts stays functional as all
+  internal contexts are created using the correct version and profile.
+
   \section1 Painting Techniques
 
   As described above, subclass QOpenGLWidget to render pure 3D content in the
@@ -739,6 +745,7 @@ void QOpenGLWidgetPrivate::initialize()
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
     ctx->setShareContext(shareContext);
     ctx->setFormat(requestedFormat);
+    ctx->setScreen(shareContext->screen());
     if (!ctx->create()) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
@@ -762,6 +769,7 @@ void QOpenGLWidgetPrivate::initialize()
     // in QQuickWidget, use a dedicated QOffscreenSurface.
     surface = new QOffscreenSurface;
     surface->setFormat(ctx->format());
+    surface->setScreen(ctx->screen());
     surface->create();
 
     if (!ctx->makeCurrent(surface)) {

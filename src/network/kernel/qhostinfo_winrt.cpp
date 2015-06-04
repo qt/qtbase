@@ -35,7 +35,6 @@
 
 #include <qurl.h>
 
-#include <ppltasks.h>
 #include <wrl.h>
 #include <windows.networking.h>
 #include <windows.networking.sockets.h>

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -34,6 +35,7 @@
 #ifndef QEGLFSKMSDEVICE_H
 #define QEGLFSKMSDEVICE_H
 
+#include "qeglfskmscursor.h"
 #include "qeglfskmsintegration.h"
 
 #include <xf86drm.h>
@@ -57,6 +59,8 @@ public:
     gbm_device *device() const;
     int fd() const;
 
+    QPlatformCursor *globalCursor() const;
+
     void handleDrmEvent();
 
 private:
@@ -69,6 +73,8 @@ private:
 
     quint32 m_crtc_allocator;
     quint32 m_connector_allocator;
+
+    QEglFSKmsCursor *m_globalCursor;
 
     int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
     QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);

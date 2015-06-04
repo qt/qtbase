@@ -605,21 +605,21 @@ void tst_QListWidget::insertItems()
 void tst_QListWidget::itemAssignment()
 {
     QListWidgetItem itemInWidget("inWidget", testWidget);
-    itemInWidget.setFlags(itemInWidget.flags() | Qt::ItemIsTristate);
+    itemInWidget.setFlags(itemInWidget.flags() | Qt::ItemIsUserTristate);
     QListWidgetItem itemOutsideWidget("outsideWidget");
 
     QVERIFY(itemInWidget.listWidget());
     QCOMPARE(itemInWidget.text(), QString("inWidget"));
-    QVERIFY(itemInWidget.flags() & Qt::ItemIsTristate);
+    QVERIFY(itemInWidget.flags() & Qt::ItemIsUserTristate);
 
     QVERIFY(!itemOutsideWidget.listWidget());
     QCOMPARE(itemOutsideWidget.text(), QString("outsideWidget"));
-    QVERIFY(!(itemOutsideWidget.flags() & Qt::ItemIsTristate));
+    QVERIFY(!(itemOutsideWidget.flags() & Qt::ItemIsUserTristate));
 
     itemOutsideWidget = itemInWidget;
     QVERIFY(!itemOutsideWidget.listWidget());
     QCOMPARE(itemOutsideWidget.text(), QString("inWidget"));
-    QVERIFY(itemOutsideWidget.flags() & Qt::ItemIsTristate);
+    QVERIFY(itemOutsideWidget.flags() & Qt::ItemIsUserTristate);
 }
 
 void tst_QListWidget::item_data()

@@ -39,7 +39,6 @@
 #include <QtGui/QOpenGLContext>
 
 #if defined(QT_OPENGL_ES_2_ANGLE) || defined(QT_OPENGL_DYNAMIC)
-#  define EGL_EGLEXT_PROTOTYPES
 #  include <QtANGLE/EGL/eglext.h>
 #endif
 
@@ -137,7 +136,6 @@ bool QWindowsLibEGL::init()
 
     eglGetError = RESOLVE((EGLint (EGLAPIENTRY *)(void)), eglGetError);
     eglGetDisplay = RESOLVE((EGLDisplay (EGLAPIENTRY *)(EGLNativeDisplayType)), eglGetDisplay);
-    eglGetPlatformDisplayEXT = RESOLVE((EGLDisplay (EGLAPIENTRY *)(EGLenum platform, void *native_display, const EGLint *attrib_list)), eglGetPlatformDisplayEXT);
     eglInitialize = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLint *, EGLint *)), eglInitialize);
     eglTerminate = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay)), eglTerminate);
     eglChooseConfig = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, const EGLint *, EGLConfig *, EGLint, EGLint *)), eglChooseConfig);
@@ -156,7 +154,15 @@ bool QWindowsLibEGL::init()
     eglSwapBuffers = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface)), eglSwapBuffers);
     eglGetProcAddress = RESOLVE((__eglMustCastToProperFunctionPointerType (EGLAPIENTRY * )(const char *)), eglGetProcAddress);
 
-    return eglGetError && eglGetDisplay && eglInitialize;
+    if (!eglGetError || !eglGetDisplay || !eglInitialize || !eglGetProcAddress)
+        return false;
+
+    eglGetPlatformDisplayEXT = 0;
+#ifdef EGL_ANGLE_platform_angle
+    eglGetPlatformDisplayEXT = reinterpret_cast<EGLDisplay (EGLAPIENTRY *)(EGLenum, void *, const EGLint *)>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
+#endif
+
+    return true;
 }
 
 #if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
@@ -360,7 +366,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
     EGLDisplay display = EGL_NO_DISPLAY;
     EGLint major = 0;
     EGLint minor = 0;
-#ifdef EGL_ANGLE_platform_angle_opengl
+#ifdef EGL_ANGLE_platform_angle
     if (libEGL.eglGetPlatformDisplayEXT
         && (preferredType & QWindowsOpenGLTester::AngleBackendMask)) {
         const EGLint anglePlatformAttributes[][5] = {
@@ -384,7 +390,7 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create(QWindowsOpenGLTester:
             }
         }
     }
-#else // EGL_ANGLE_platform_angle_opengl
+#else // EGL_ANGLE_platform_angle
     Q_UNUSED(preferredType)
 #endif
     if (display == EGL_NO_DISPLAY)

@@ -255,6 +255,7 @@ private slots:
     void taskQTBUG_8176_emitOnExpandAll();
     void taskQTBUG_34717_collapseAtBottom();
     void taskQTBUG_37813_crash();
+    void taskQTBUG_45697_crash();
     void testInitialFocus();
 };
 
@@ -4383,6 +4384,83 @@ void tst_QTreeView::taskQTBUG_37813_crash()
     const QPixmap pixmap = av->renderToPixmap(sel.indexes(), &rect);
     QVERIFY(pixmap.size().isValid());
 #endif // QT_BUILD_INTERNAL
+}
+
+// QTBUG-45697: Using a QTreeView with a multi-column model filtered by QSortFilterProxyModel,
+// when sorting the source model while the widget is not yet visible and showing the widget
+// later on, corruption occurs in QTreeView.
+class Qtbug45697TestWidget : public QWidget
+{
+   Q_OBJECT
+public:
+    static const int columnCount = 3;
+
+    explicit Qtbug45697TestWidget();
+    int timerTick() const { return m_timerTick; }
+
+public slots:
+    void slotTimer();
+
+private:
+   QTreeView *m_treeView;
+   QStandardItemModel *m_model;
+   QSortFilterProxyModel *m_sortFilterProxyModel;
+   int m_timerTick;
+};
+
+Qtbug45697TestWidget::Qtbug45697TestWidget()
+    : m_treeView(new QTreeView(this))
+    , m_model(new QStandardItemModel(0, Qtbug45697TestWidget::columnCount, this))
+    , m_sortFilterProxyModel(new QSortFilterProxyModel(this))
+    , m_timerTick(0)
+ {
+   QVBoxLayout *vBoxLayout = new QVBoxLayout(this);
+   vBoxLayout->addWidget(m_treeView);
+
+   for (char sortChar = 'z'; sortChar >= 'a' ; --sortChar) {
+       QList<QStandardItem *>  items;
+       for (int column = 0; column < Qtbug45697TestWidget::columnCount; ++column) {
+           const QString text = QLatin1Char(sortChar) + QLatin1String(" ") + QString::number(column);
+           items.append(new QStandardItem(text));
+       }
+       m_model->appendRow(items);
+   }
+
+   m_sortFilterProxyModel->setSourceModel(m_model);
+   m_treeView->setModel(m_sortFilterProxyModel);
+
+   QHeaderView *headerView = m_treeView->header();
+   for (int s = 1, lastSection = headerView->count() - 1; s < lastSection; ++s )
+       headerView->setSectionResizeMode(s, QHeaderView::ResizeToContents);
+
+   QTimer *timer = new QTimer(this);
+   timer->setInterval(50);
+   connect(timer, &QTimer::timeout, this, &Qtbug45697TestWidget::slotTimer);
+   timer->start();
+}
+
+void Qtbug45697TestWidget::slotTimer()
+{
+    switch (m_timerTick++) {
+    case 0:
+        m_model->sort(0);
+        break;
+    case 1:
+        show();
+        break;
+    default:
+        close();
+        break;
+    }
+}
+
+void tst_QTreeView::taskQTBUG_45697_crash()
+{
+    Qtbug45697TestWidget testWidget;
+    testWidget.setWindowTitle(QTest::currentTestFunction());
+    testWidget.resize(400, 400);
+    testWidget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(100, 100));
+    QTRY_VERIFY(testWidget.timerTick() >= 2);
 }
 
 QTEST_MAIN(tst_QTreeView)

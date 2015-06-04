@@ -586,7 +586,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-static const char *knownStyleHints[] = {
+static const char *const knownStyleHints[] = {
     "activate-on-singleclick",
     "alignment",
     "arrow-keys-navigate-into-children",

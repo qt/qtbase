@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
 
-#define QPlatformIntegrationFactoryInterface_iid "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2"
+#define QPlatformIntegrationFactoryInterface_iid "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.3"
 
 class Q_GUI_EXPORT QPlatformIntegrationPlugin : public QObject
 {

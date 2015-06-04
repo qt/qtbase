@@ -60,7 +60,7 @@ MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
 load(qt_build_paths)
 
-qt_no_install_library {
+header_module {
     TEMPLATE     = aux
     CONFIG      += force_qt  # Needed for the headers_clean tests.
 } else {
@@ -104,7 +104,7 @@ mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += sliced_bundle qt_framework
-   qt_no_install_library {
+   header_module {
         CONFIG += bundle
         QMAKE_BUNDLE_EXTENSION = .framework
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
@@ -132,6 +132,9 @@ mac {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings
    }
+
+   contains(QT_CONFIG, rpath): \
+       QMAKE_SONAME_PREFIX = @rpath
 }
 
 DEFINES += QT_BUILDING_QT

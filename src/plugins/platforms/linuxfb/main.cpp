@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "linuxfb.json")
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "linuxfb.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
 };

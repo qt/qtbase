@@ -506,6 +506,27 @@ Q_STATIC_ASSERT((!is_unsigned<qint64>::value));
 Q_STATIC_ASSERT((!is_signed<quint64>::value));
 Q_STATIC_ASSERT(( is_signed<qint64>::value));
 
+template<class T = void> struct is_default_constructible;
+
+template<> struct is_default_constructible<void>
+{
+protected:
+    template<bool> struct test { typedef char type; };
+public:
+    static bool const value = false;
+};
+template<> struct is_default_constructible<>::test<true> { typedef double type; };
+
+template<class T> struct is_default_constructible : is_default_constructible<>
+{
+private:
+    template<class U> static typename test<!!sizeof(::new U())>::type sfinae(U*);
+    template<class U> static char sfinae(...);
+public:
+    static bool const value = sizeof(sfinae<T>(0)) > 1;
+};
+
+
 } // namespace QtPrivate
 
 QT_END_NAMESPACE

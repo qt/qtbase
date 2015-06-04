@@ -91,6 +91,7 @@
 #include <qbytearray.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qimage.h>
 #include <qimageiohandler.h>
 #include <qjsonarray.h>
 #include <qset.h>
@@ -254,6 +255,7 @@ public:
     QByteArray subType;
     bool optimizedWrite;
     bool progressiveScanWrite;
+    QImageIOHandler::Transformations transformation;
 
     // error
     QImageWriter::ImageWriterError imageWriterError;
@@ -277,6 +279,7 @@ QImageWriterPrivate::QImageWriterPrivate(QImageWriter *qq)
     progressiveScanWrite = false;
     imageWriterError = QImageWriter::UnknownError;
     errorString = QImageWriter::tr("Unknown error");
+    transformation = QImageIOHandler::TransformationNone;
 
     q = qq;
 }
@@ -616,6 +619,33 @@ bool QImageWriter::progressiveScanWrite() const
 }
 
 /*!
+    \since 5.5
+
+    Sets the image transformations metadata including orientation.
+
+    If transformation metadata is not supported by the image format,
+    the transform is applied before writing.
+
+    \sa transformation(), write()
+*/
+void QImageWriter::setTransformation(QImageIOHandler::Transformations transform)
+{
+    d->transformation = transform;
+}
+
+/*!
+    \since 5.5
+
+    Returns the transformation and orientation the image has been set to written with.
+
+    \sa setTransformation()
+*/
+QImageIOHandler::Transformations QImageWriter::transformation() const
+{
+    return d->transformation;
+}
+
+/*!
     \obsolete
 
     Use setText() instead.
@@ -694,6 +724,8 @@ bool QImageWriter::canWrite() const
     return d->canWriteHelper();
 }
 
+extern void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient);
+
 /*!
     Writes the image \a image to the assigned device or file
     name. Returns \c true on success; otherwise returns \c false. If the
@@ -708,6 +740,7 @@ bool QImageWriter::write(const QImage &image)
     if (!canWrite())
         return false;
 
+    QImage img = image;
     if (d->handler->supportsOption(QImageIOHandler::Quality))
         d->handler->setOption(QImageIOHandler::Quality, d->quality);
     if (d->handler->supportsOption(QImageIOHandler::CompressionRatio))
@@ -722,8 +755,12 @@ bool QImageWriter::write(const QImage &image)
         d->handler->setOption(QImageIOHandler::OptimizedWrite, d->optimizedWrite);
     if (d->handler->supportsOption(QImageIOHandler::ProgressiveScanWrite))
         d->handler->setOption(QImageIOHandler::ProgressiveScanWrite, d->progressiveScanWrite);
+    if (d->handler->supportsOption(QImageIOHandler::ImageTransformation))
+        d->handler->setOption(QImageIOHandler::ImageTransformation, int(d->transformation));
+    else
+        qt_imageTransform(img, d->transformation);
 
-    if (!d->handler->write(image))
+    if (!d->handler->write(img))
         return false;
     if (QFile *file = qobject_cast<QFile *>(d->device))
         file->flush();

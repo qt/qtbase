@@ -225,9 +225,13 @@ QString QFileSelector::select(const QString &filePath) const
     return d->select(filePath);
 }
 
-static QString qrcScheme()
+static bool isLocalScheme(const QString &file)
 {
-    return QStringLiteral("qrc");
+    bool local = file == QStringLiteral("qrc");
+#ifdef Q_OS_ANDROID
+    local |= file == QStringLiteral("assets");
+#endif
+    return local;
 }
 
 /*!
@@ -240,10 +244,10 @@ static QString qrcScheme()
 QUrl QFileSelector::select(const QUrl &filePath) const
 {
     Q_D(const QFileSelector);
-    if (filePath.scheme() != qrcScheme() && !filePath.isLocalFile())
+    if (!isLocalScheme(filePath.scheme()) && !filePath.isLocalFile())
         return filePath;
     QUrl ret(filePath);
-    if (filePath.scheme() == qrcScheme()) {
+    if (isLocalScheme(filePath.scheme())) {
         QString equivalentPath = QLatin1Char(':') + filePath.path();
         QString selectedPath = d->select(equivalentPath);
         ret.setPath(selectedPath.remove(0, 1));

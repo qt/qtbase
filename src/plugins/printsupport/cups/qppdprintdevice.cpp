@@ -89,16 +89,6 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
     }
 }
 
-QPpdPrintDevice::QPpdPrintDevice(const QPpdPrintDevice &other)
-    : QPlatformPrintDevice(other),
-      m_cupsDest(0),
-      m_ppd(0)
-{
-    m_cupsName = other.m_cupsName;
-    m_cupsInstance = other.m_cupsInstance;
-    loadPrinter();
-}
-
 QPpdPrintDevice::~QPpdPrintDevice()
 {
     if (m_ppd)
@@ -107,20 +97,6 @@ QPpdPrintDevice::~QPpdPrintDevice()
         cupsFreeDests(1, m_cupsDest);
     m_cupsDest = 0;
     m_ppd = 0;
-}
-
-QPpdPrintDevice &QPpdPrintDevice::operator=(const QPpdPrintDevice &other)
-{
-    m_cupsName = other.m_cupsName;
-    m_cupsInstance = other.m_cupsInstance;
-    if (other.m_cupsDest && other.m_ppd)
-        loadPrinter();
-    return *this;
-}
-
-bool QPpdPrintDevice::operator==(const QPpdPrintDevice &other) const
-{
-    return (m_id == other.m_id);
 }
 
 bool QPpdPrintDevice::isValid() const

@@ -62,8 +62,8 @@ public:
     void unregister();
     void maybeRegister();
 
-    bool registered;
     QObject *object;
+    bool registered;
     QEvent::Type eventType;
 };
 

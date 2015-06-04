@@ -83,9 +83,10 @@ public:
 
 struct QBackingstoreTextureInfo
 {
-    QWidget *widget; // may be null
+    void *source; // may be null
     GLuint textureId;
     QRect rect;
+    QRect clipRect;
     QPlatformTextureList::Flags flags;
 };
 
@@ -124,10 +125,10 @@ GLuint QPlatformTextureList::textureId(int index) const
     return d->textures.at(index).textureId;
 }
 
-QWidget *QPlatformTextureList::widget(int index)
+void *QPlatformTextureList::source(int index)
 {
     Q_D(const QPlatformTextureList);
-    return d->textures.at(index).widget;
+    return d->textures.at(index).source;
 }
 
 QPlatformTextureList::Flags QPlatformTextureList::flags(int index) const
@@ -140,6 +141,12 @@ QRect QPlatformTextureList::geometry(int index) const
 {
     Q_D(const QPlatformTextureList);
     return d->textures.at(index).rect;
+}
+
+QRect QPlatformTextureList::clipRect(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).clipRect;
 }
 
 void QPlatformTextureList::lock(bool on)
@@ -157,13 +164,15 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(QWidget *widget, GLuint textureId, const QRect &geometry, Flags flags)
+void QPlatformTextureList::appendTexture(void *source, GLuint textureId, const QRect &geometry,
+                                         const QRect &clipRect, Flags flags)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
-    bi.widget = widget;
+    bi.source = source;
     bi.textureId = textureId;
     bi.rect = geometry;
+    bi.clipRect = clipRect;
     bi.flags = flags;
     d->textures.append(bi);
 }
@@ -198,7 +207,7 @@ void QPlatformTextureList::clear()
 
 #ifndef QT_NO_OPENGL
 
-static QRect deviceRect(const QRect &rect, QWindow *window)
+static inline QRect deviceRect(const QRect &rect, QWindow *window)
 {
     QRect deviceRect(rect.topLeft() * window->devicePixelRatio(),
                      rect.size() * window->devicePixelRatio());
@@ -217,6 +226,32 @@ static QRegion deviceRegion(const QRegion &region, QWindow *window)
     QRegion deviceRegion;
     deviceRegion.setRects(rects.constData(), rects.count());
     return deviceRegion;
+}
+
+static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
+{
+    return QRect(topLeftRect.x(), windowHeight - topLeftRect.bottomRight().y() - 1,
+                 topLeftRect.width(), topLeftRect.height());
+}
+
+static void blit(const QPlatformTextureList *textures, int idx, QWindow *window, const QRect &deviceWindowRect,
+                 QOpenGLTextureBlitter *blitter)
+{
+    const QRect rectInWindow = textures->geometry(idx);
+    QRect clipRect = textures->clipRect(idx);
+    if (clipRect.isEmpty())
+        clipRect = QRect(QPoint(0, 0), rectInWindow.size());
+    const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
+    const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
+
+    const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(deviceRect(clippedRectInWindow, window),
+                                                                     deviceWindowRect);
+
+    const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
+                                                                     deviceRect(rectInWindow, window).size(),
+                                                                     QOpenGLTextureBlitter::OriginBottomLeft);
+
+    blitter->blit(textures->textureId(idx), target, source);
 }
 
 /*!
@@ -254,15 +289,12 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     d_ptr->blitter->bind();
 
-    QRect windowRect(QPoint(), window->size() * window->devicePixelRatio());
+    const QRect deviceWindowRect = deviceRect(QRect(QPoint(), window->size()), window);
 
     // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
-        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            QRect targetRect = deviceRect(textures->geometry(i), window);
-            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
-            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
-        }
+        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blit(textures, i, window, deviceWindowRect, d_ptr->blitter);
     }
 
     funcs->glEnable(GL_BLEND);
@@ -272,6 +304,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     // semi-transparency even when it is not wanted.
     funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
 
+    // Backingstore texture with the normal widgets.
     GLuint textureId = 0;
     QOpenGLTextureBlitter::Origin origin = QOpenGLTextureBlitter::OriginTopLeft;
     if (QPlatformGraphicsBuffer *graphicsBuffer = this->graphicsBuffer()) {
@@ -307,12 +340,15 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             origin = QOpenGLTextureBlitter::OriginBottomLeft;
         textureId = d_ptr->textureId;
     } else {
-        // Backingstore texture with the normal widgets.
-        textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize, &d_ptr->needsSwizzle);
+        TextureFlags flags = 0;
+        textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize, &flags);
+        d_ptr->needsSwizzle = (flags & TextureSwizzle) != 0;
+        if (flags & TextureFlip)
+            origin = QOpenGLTextureBlitter::OriginBottomLeft;
     }
 
     if (textureId) {
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), deviceWindowRect);
         if (d_ptr->needsSwizzle)
             d_ptr->blitter->setSwizzleRB(true);
         d_ptr->blitter->blit(textureId, target, origin);
@@ -322,11 +358,8 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {
-        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            QRect targetRect = deviceRect(textures->geometry(i), window);
-            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
-            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
-        }
+        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blit(textures, i, window, deviceWindowRect, d_ptr->blitter);
     }
 
     funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -354,43 +387,55 @@ QImage QPlatformBackingStore::toImage() const
   backingstore as an OpenGL texture. \a dirtyRegion is the part of the
   backingstore which may have changed since the last call to this function. The
   caller of this function must ensure that there is a current context.
+
   The size of the texture is returned in \a textureSize.
 
   The ownership of the texture is not transferred. The caller must not store
   the return value between calls, but instead call this function before each use.
 
-  The default implementation returns a cached texture if \a dirtyRegion is
-  empty and the window has not been resized, otherwise it retrieves the
-  content using toImage() and performs a texture upload.
+  The default implementation returns a cached texture if \a dirtyRegion is empty and
+  \a textureSize matches the backingstore size, otherwise it retrieves the content using
+  toImage() and performs a texture upload. This works only if the value of \a textureSize
+  is preserved between the calls to this function.
 
-  If the red and blue components have to swapped, \a needsSwizzle will be set to \c true.
-  This allows creating textures from images in formats like QImage::Format_RGB32 without
-  any further image conversion. Instead, the swizzling will be done in the shaders when
-  performing composition. Other formats, that do not need such swizzling due to being
-  already byte ordered RGBA, for example QImage::Format_RGBA8888, must result in having \a
-  needsSwizzle set to false.
+  If the red and blue components have to swapped, \a flags will be set to include \c
+  TextureSwizzle. This allows creating textures from images in formats like
+  QImage::Format_RGB32 without any further image conversion. Instead, the swizzling will
+  be done in the shaders when performing composition. Other formats, that do not need
+  such swizzling due to being already byte ordered RGBA, for example
+  QImage::Format_RGBA8888, must result in having \a needsSwizzle set to false.
+
+  If the image has to be flipped (e.g. because the texture is attached to an FBO), \a
+  flags will be set to include \c TextureFlip.
  */
-GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const
+GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
 {
+    Q_ASSERT(textureSize);
+    Q_ASSERT(flags);
+
     QImage image = toImage();
     QSize imageSize = image.size();
-    if (imageSize.isEmpty())
-        return 0;
 
-    bool resized = d_ptr->textureSize != imageSize;
+    *flags = 0;
+    if (image.format() == QImage::Format_RGB32)
+        *flags |= TextureSwizzle;
+
+    if (imageSize.isEmpty()) {
+        *textureSize = imageSize;
+        return 0;
+    }
+
+    // Must rely on the input only, not d_ptr.
+    // With the default composeAndFlush() textureSize is &d_ptr->textureSize.
+    bool resized = *textureSize != imageSize;
     if (dirtyRegion.isEmpty() && !resized)
         return d_ptr->textureId;
 
+    *textureSize = imageSize;
+
     // Fast path for RGB32 and RGBA8888, convert everything else to RGBA8888.
-    if (image.format() == QImage::Format_RGB32) {
-        if (needsSwizzle)
-            *needsSwizzle = true;
-    } else {
-        if (needsSwizzle)
-            *needsSwizzle = false;
-        if (image.format() != QImage::Format_RGBA8888)
-            image = image.convertToFormat(QImage::Format_RGBA8888);
-    }
+    if (image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_RGBA8888)
+        image = image.convertToFormat(QImage::Format_RGBA8888);
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
 
@@ -412,8 +457,6 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageSize.width(), imageSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                             const_cast<uchar*>(image.constBits()));
-        if (textureSize)
-            *textureSize = imageSize;
     } else {
         funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
         QRect imageRect = image.rect();

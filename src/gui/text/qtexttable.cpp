@@ -1264,12 +1264,6 @@ int QTextTable::columns() const
     return d->nCols;
 }
 
-#if 0
-void QTextTable::mergeCells(const QTextCursor &selection)
-{
-}
-#endif
-
 /*!
     \fn QTextCursor QTextTable::rowStart(const QTextCursor &cursor) const
 

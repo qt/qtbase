@@ -116,7 +116,8 @@ static QString fboStatusString(GLenum status)
 
 bool QIOSContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface && (surface->surface()->surfaceType() == QSurface::OpenGLSurface
+                         || surface->surface()->surfaceType() == QSurface::RasterGLSurface));
 
     [EAGLContext setCurrentContext:m_eaglContext];
 
@@ -141,7 +142,8 @@ void QIOSContext::doneCurrent()
 
 void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface && (surface->surface()->surfaceType() == QSurface::OpenGLSurface
+                         || surface->surface()->surfaceType() == QSurface::RasterGLSurface));
 
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do

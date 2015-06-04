@@ -4859,7 +4859,7 @@ void QWidget::unsetLayoutDirection()
     \fn QFontMetrics QWidget::fontMetrics() const
 
     Returns the font metrics for the widget's current font.
-    Equivalent to QFontMetrics(widget->font()).
+    Equivalent to \c QFontMetrics(widget->font()).
 
     \sa font(), fontInfo(), setFont()
 */
@@ -4868,7 +4868,7 @@ void QWidget::unsetLayoutDirection()
     \fn QFontInfo QWidget::fontInfo() const
 
     Returns the font info for the widget's current font.
-    Equivalent to QFontInto(widget->font()).
+    Equivalent to \c QFontInfo(widget->font()).
 
     \sa font(), fontMetrics(), setFont()
 */
@@ -7334,6 +7334,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
         stream >> restoredScreenWidth;
 
     const QDesktopWidget * const desktop = QApplication::desktop();
+    if (restoredScreenNumber >= desktop->numScreens())
+        restoredScreenNumber = desktop->primaryScreen();
     const qreal screenWidthF = qreal(desktop->screenGeometry(restoredScreenNumber).width());
     // Sanity check bailing out when large variations of screen sizes occur due to
     // high DPI scaling or different levels of DPI awareness.
@@ -7360,9 +7362,6 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
                                        .size()
                                        .expandedTo(d_func()->adjustedSize()));
     }
-
-    if (restoredScreenNumber >= desktop->numScreens())
-        restoredScreenNumber = desktop->primaryScreen();
 
     const QRect availableGeometry = desktop->availableGeometry(restoredScreenNumber);
 
@@ -12093,6 +12092,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
         QOpenGLContext *ctx = new QOpenGLContext;
         ctx->setShareContext(qt_gl_global_share_context());
         ctx->setFormat(extra->topextra->window->format());
+        ctx->setScreen(extra->topextra->window->screen());
         ctx->create();
         that->extra->topextra->shareContext = ctx;
     }

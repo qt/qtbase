@@ -944,7 +944,7 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { 0, 0,  0, 0,  0, 0,  0, 0, false, QPixelLayout::BPP8, convertGrayscale8ToRGB32, convertGrayscale8FromARGB32PM, convertGrayscale8FromRGB32, convertGrayscale8ToRGB64 } // Format_Grayscale8
 };
 
-FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount] = {
+const FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount] = {
     0, // BPPNone
     fetchPixels<QPixelLayout::BPP1MSB>, // BPP1MSB
     fetchPixels<QPixelLayout::BPP1LSB>, // BPP1LSB
@@ -954,7 +954,7 @@ FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount] = {
     fetchPixels<QPixelLayout::BPP32> // BPP32
 };
 
-StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
+const StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
     0, // BPPNone
     storePixels<QPixelLayout::BPP1MSB>, // BPP1MSB
     storePixels<QPixelLayout::BPP1LSB>, // BPP1LSB
@@ -966,7 +966,7 @@ StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
 
 typedef uint (QT_FASTCALL *FetchPixelFunc)(const uchar *src, int index);
 
-FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
+static const FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
     0, // BPPNone
     fetchPixel<QPixelLayout::BPP1MSB>, // BPP1MSB
     fetchPixel<QPixelLayout::BPP1LSB>, // BPP1LSB

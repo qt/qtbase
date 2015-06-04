@@ -1423,6 +1423,12 @@ QAccessibleValueChangeEvent::~QAccessibleValueChangeEvent()
     The difference to the object's previous state is in \a state.
 */
 /*!
+    \fn QAccessibleStateChangeEvent::QAccessibleStateChangeEvent(QAccessibleInterface *iface, QAccessible::State state)
+    Constructs a new QAccessibleStateChangeEvent.
+    \a iface is the interface associated with the event
+    \a state is the state of the accessible object.
+*/
+/*!
     \fn QAccessible::State QAccessibleStateChangeEvent::changedStates() const
     \brief Returns the states that have been changed.
 

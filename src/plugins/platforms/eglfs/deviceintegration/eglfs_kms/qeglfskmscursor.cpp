@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -87,8 +88,11 @@ QEglFSKmsCursor::QEglFSKmsCursor(QEglFSKmsScreen *screen)
 
 QEglFSKmsCursor::~QEglFSKmsCursor()
 {
-    drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0, 0);
-    drmModeMoveCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0);
+    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+        drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
+        drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
+    }
 
     gbm_bo_destroy(m_bo);
     m_bo = Q_NULLPTR;
@@ -143,10 +147,15 @@ void QEglFSKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
 
     uint32_t handle = gbm_bo_get_handle(m_bo).u32;
-    int status = drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, handle,
-                                  m_cursorSize.width(), m_cursorSize.height());
-    if (status != 0)
-        qWarning("Could not set cursor: %d", status);
+
+    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+
+        int status = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, handle,
+                                      m_cursorSize.width(), m_cursorSize.height());
+        if (status != 0)
+            qWarning("Could not set cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), status);
+    }
 }
 #endif // QT_NO_CURSOR
 
@@ -157,12 +166,17 @@ QPoint QEglFSKmsCursor::pos() const
 
 void QEglFSKmsCursor::setPos(const QPoint &pos)
 {
-    QPoint adjustedPos = pos - m_cursorImage.hotspot();
-    int ret = drmModeMoveCursor(m_screen->device()->fd(), m_screen->output().crtc_id, adjustedPos.x(), adjustedPos.y());
-    if (ret == 0) {
-        m_pos = pos;
-    } else {
-        qWarning("Failed to move cursor: %d", ret);
+    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+        QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+        QPoint origin = kmsScreen->geometry().topLeft();
+        QPoint localPos = pos - origin;
+        QPoint adjustedPos = localPos - m_cursorImage.hotspot();
+
+        int ret = drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, adjustedPos.x(), adjustedPos.y());
+        if (ret == 0)
+            m_pos = pos;
+        else
+            qWarning("Failed to move cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), ret);
     }
 }
 
@@ -176,8 +190,11 @@ void QEglFSKmsCursor::initCursorAtlas()
 
     QFile file(QString::fromUtf8(json));
     if (!file.open(QFile::ReadOnly)) {
-        drmModeSetCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0, 0);
-        drmModeMoveCursor(m_screen->device()->fd(), m_screen->output().crtc_id, 0, 0);
+        Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+            QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
+            drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
+            drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
+        }
         m_visible = false;
         return;
     }

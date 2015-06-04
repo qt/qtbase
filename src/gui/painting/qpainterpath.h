@@ -81,16 +81,16 @@ public:
         inline bool operator!=(const Element &e) const { return !operator==(e); }
     };
 
-    QPainterPath();
+    QPainterPath() Q_DECL_NOEXCEPT;
     explicit QPainterPath(const QPointF &startPoint);
     QPainterPath(const QPainterPath &other);
     QPainterPath &operator=(const QPainterPath &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPainterPath &operator=(QPainterPath &&other)
+    inline QPainterPath &operator=(QPainterPath &&other) Q_DECL_NOEXCEPT
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
     ~QPainterPath();
-    inline void swap(QPainterPath &other) { d_ptr.swap(other.d_ptr); }
+    inline void swap(QPainterPath &other) Q_DECL_NOEXCEPT { d_ptr.swap(other.d_ptr); }
 
     void closeSubpath();
 
@@ -147,8 +147,8 @@ public:
     void translate(qreal dx, qreal dy);
     inline void translate(const QPointF &offset);
 
-    QPainterPath translated(qreal dx, qreal dy) const;
-    inline QPainterPath translated(const QPointF &offset) const;
+    QPainterPath translated(qreal dx, qreal dy) const Q_REQUIRED_RESULT;
+    inline QPainterPath translated(const QPointF &offset) const Q_REQUIRED_RESULT;
 
     QRectF boundingRect() const;
     QRectF controlPointRect() const;
@@ -158,7 +158,7 @@ public:
 
     bool isEmpty() const;
 
-    QPainterPath toReversed() const;
+    QPainterPath toReversed() const Q_REQUIRED_RESULT;
     QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix = QMatrix()) const;
     QList<QPolygonF> toFillPolygons(const QMatrix &matrix = QMatrix()) const;
     QPolygonF toFillPolygon(const QMatrix &matrix = QMatrix()) const;
@@ -178,12 +178,12 @@ public:
 
     bool intersects(const QPainterPath &p) const;
     bool contains(const QPainterPath &p) const;
-    QPainterPath united(const QPainterPath &r) const;
-    QPainterPath intersected(const QPainterPath &r) const;
-    QPainterPath subtracted(const QPainterPath &r) const;
-    QPainterPath subtractedInverted(const QPainterPath &r) const;
+    QPainterPath united(const QPainterPath &r) const Q_REQUIRED_RESULT;
+    QPainterPath intersected(const QPainterPath &r) const Q_REQUIRED_RESULT;
+    QPainterPath subtracted(const QPainterPath &r) const Q_REQUIRED_RESULT;
+    QPainterPath subtractedInverted(const QPainterPath &r) const Q_REQUIRED_RESULT;
 
-    QPainterPath simplified() const;
+    QPainterPath simplified() const Q_REQUIRED_RESULT;
 
     bool operator==(const QPainterPath &other) const;
     bool operator!=(const QPainterPath &other) const;

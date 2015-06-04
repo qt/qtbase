@@ -159,6 +159,43 @@
 
     \value ProgressiveScanWrite. A handler which supports
     this option is expected to write the image as a progressive scan image.
+
+    \value ImageTransformation. A handler which supports this option can read
+    the transformation metadata of an image. A handler that supports this option
+    should not apply the transformation itself.
+
+    \value TransformedByDefault. A handler that reports support for this feature
+    will have image transformation metadata applied by default on read.
+*/
+
+/*! \enum QImageIOHandler::Transformation
+    \since 5.5
+
+    This enum describes the different transformations or orientations
+    supported by some image formats, usually through EXIF.
+
+    \value TransformationNone No transformation should be applied.
+
+    \value TransformationMirror Mirror the image horizontally.
+
+    \value TransformationFlip Mirror the image vertically.
+
+    \value TransformationRotate180 Rotate the image 180 degrees.
+    This is the same as mirroring it both horizontally and vertically.
+
+    \value TransformationRotate90 Rotate the image 90 degrees.
+
+    \value TransformationMirrorAndRotate90 Mirror the image horizontally
+    and then rotate it 90 degrees.
+
+    \value TransformationFlipAndRotate90 Mirror the image vertically
+    and then rotate it 90 degrees.
+
+    \value TransformationRotate270 Rotate the image 270 degrees.
+    This is the same as mirroring it both horizontally, vertically and
+    then rotating it 90 degrees.
+
+    \sa QImageReader::transformation(), QImageReader::setAutoTransform(), QImageWriter::setTransformation()
 */
 
 /*!

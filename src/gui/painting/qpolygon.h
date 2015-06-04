@@ -138,7 +138,7 @@ public:
     void translate(const QPointF &offset);
 
     inline QPolygonF translated(qreal dx, qreal dy) const;
-    QPolygonF translated(const QPointF &offset) const;
+    QPolygonF translated(const QPointF &offset) const Q_REQUIRED_RESULT;
 
     QPolygon toPolygon() const;
 
@@ -148,9 +148,9 @@ public:
 
     bool containsPoint(const QPointF &pt, Qt::FillRule fillRule) const;
 
-    QPolygonF united(const QPolygonF &r) const;
-    QPolygonF intersected(const QPolygonF &r) const;
-    QPolygonF subtracted(const QPolygonF &r) const;
+    QPolygonF united(const QPolygonF &r) const Q_REQUIRED_RESULT;
+    QPolygonF intersected(const QPolygonF &r) const Q_REQUIRED_RESULT;
+    QPolygonF subtracted(const QPolygonF &r) const Q_REQUIRED_RESULT;
 };
 
 inline QPolygonF::QPolygonF(int asize) : QVector<QPointF>(asize) {}

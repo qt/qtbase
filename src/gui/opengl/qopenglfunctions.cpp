@@ -39,6 +39,10 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
+#ifdef Q_OS_IOS
+#include <dlfcn.h>
+#endif
+
 #ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
 #define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT   0x8DBA
 #endif
@@ -3202,35 +3206,53 @@ static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribPointer(GLuint indx, GL
 
 Q_GLOBAL_STATIC(QOpenGLES3Helper, qgles3Helper)
 
+bool QOpenGLES3Helper::init()
+{
+#ifndef Q_OS_IOS
+# ifdef Q_OS_WIN
+#  ifndef QT_DEBUG
+    m_gl.setFileName(QStringLiteral("libGLESv2"));
+#  else
+    m_gl.setFileName(QStringLiteral("libGLESv2d"));
+#  endif
+# else
+    m_gl.setFileName(QStringLiteral("GLESv2"));
+# endif // Q_OS_WIN
+    return m_gl.load();
+#else
+    return true;
+#endif // Q_OS_IOS
+}
+
+QFunctionPointer QOpenGLES3Helper::resolve(const char *name)
+{
+#ifdef Q_OS_IOS
+    return QFunctionPointer(dlsym(RTLD_DEFAULT, name));
+#else
+    return m_gl.resolve(name);
+#endif
+}
+
 QOpenGLES3Helper::QOpenGLES3Helper()
 {
-#ifdef Q_OS_WIN
-#ifdef QT_DEBUG
-    m_gl.setFileName(QStringLiteral("libGLESv2"));
-#else
-    m_gl.setFileName(QStringLiteral("libGLESv2d"));
-#endif
-#else
-    m_gl.setFileName(QStringLiteral("GLESv2"));
-#endif
-    if (m_gl.load()) {
-        MapBufferRange = (GLvoid* (QOPENGLF_APIENTRYP)(GLenum, qopengl_GLintptr, qopengl_GLsizeiptr, GLbitfield)) m_gl.resolve("glMapBufferRange");
-        UnmapBuffer = (GLboolean (QOPENGLF_APIENTRYP)(GLenum)) m_gl.resolve("glUnmapBuffer");
-        BlitFramebuffer = (void (QOPENGLF_APIENTRYP)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) m_gl.resolve("glBlitFramebuffer");
-        RenderbufferStorageMultisample = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) m_gl.resolve("glRenderbufferStorageMultisample");
+    if (init()) {
+        MapBufferRange = (GLvoid* (QOPENGLF_APIENTRYP)(GLenum, qopengl_GLintptr, qopengl_GLsizeiptr, GLbitfield)) resolve("glMapBufferRange");
+        UnmapBuffer = (GLboolean (QOPENGLF_APIENTRYP)(GLenum)) resolve("glUnmapBuffer");
+        BlitFramebuffer = (void (QOPENGLF_APIENTRYP)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) resolve("glBlitFramebuffer");
+        RenderbufferStorageMultisample = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glRenderbufferStorageMultisample");
 
-        GenVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, GLuint *)) m_gl.resolve("glGenVertexArrays");
-        DeleteVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, const GLuint *)) m_gl.resolve("glDeleteVertexArrays");
-        BindVertexArray = (void (QOPENGLF_APIENTRYP)(GLuint)) m_gl.resolve("glBindVertexArray");
-        IsVertexArray = (GLboolean (QOPENGLF_APIENTRYP)(GLuint)) m_gl.resolve("glIsVertexArray");
+        GenVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, GLuint *)) resolve("glGenVertexArrays");
+        DeleteVertexArrays = (void (QOPENGLF_APIENTRYP)(GLsizei, const GLuint *)) resolve("glDeleteVertexArrays");
+        BindVertexArray = (void (QOPENGLF_APIENTRYP)(GLuint)) resolve("glBindVertexArray");
+        IsVertexArray = (GLboolean (QOPENGLF_APIENTRYP)(GLuint)) resolve("glIsVertexArray");
 
-        TexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)) m_gl.resolve("glTexImage3D");
-        TexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)) m_gl.resolve("glTexSubImage3D");
-        CompressedTexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid *)) m_gl.resolve("glCompressedTexImage3D");
-        CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid *)) m_gl.resolve("glCompressedTexSubImage3D");
+        TexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)) resolve("glTexImage3D");
+        TexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)) resolve("glTexSubImage3D");
+        CompressedTexImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid *)) resolve("glCompressedTexImage3D");
+        CompressedTexSubImage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid *)) resolve("glCompressedTexSubImage3D");
 
-        TexStorage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) m_gl.resolve("glTexStorage3D");
-        TexStorage2D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) m_gl.resolve("glTexStorage2D");
+        TexStorage3D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)) resolve("glTexStorage3D");
+        TexStorage2D = (void (QOPENGLF_APIENTRYP)(GLenum, GLsizei, GLenum, GLsizei, GLsizei)) resolve("glTexStorage2D");
 
         if (!MapBufferRange || !GenVertexArrays || !TexImage3D || !TexStorage3D)
             qFatal("OpenGL ES 3.0 entry points not found");
@@ -3568,7 +3590,7 @@ void QOpenGLExtensions::flushShared()
         d->flushIsSufficientToSyncContexts = false; // default to false, not guaranteed by the spec
         const char *vendor = (const char *) glGetString(GL_VENDOR);
         if (vendor) {
-            static const char *flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
+            static const char *const flushEnough[] = { "Apple", "ATI", "Intel", "NVIDIA" };
             for (size_t i = 0; i < sizeof(flushEnough) / sizeof(const char *); ++i) {
                 if (strstr(vendor, flushEnough[i])) {
                     d->flushIsSufficientToSyncContexts = true;

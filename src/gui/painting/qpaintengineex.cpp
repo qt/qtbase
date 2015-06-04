@@ -238,7 +238,7 @@ bool QPaintEngineExPrivate::hasClipOperations() const
  *
  */
 
-static QPainterPath::ElementType qpaintengineex_ellipse_types[] = {
+static const QPainterPath::ElementType qpaintengineex_ellipse_types[] = {
     QPainterPath::MoveToElement,
     QPainterPath::CurveToElement,
     QPainterPath::CurveToDataElement,
@@ -257,7 +257,7 @@ static QPainterPath::ElementType qpaintengineex_ellipse_types[] = {
     QPainterPath::CurveToDataElement
 };
 
-static QPainterPath::ElementType qpaintengineex_line_types_16[] = {
+static const QPainterPath::ElementType qpaintengineex_line_types_16[] = {
     QPainterPath::MoveToElement, QPainterPath::LineToElement,
     QPainterPath::MoveToElement, QPainterPath::LineToElement,
     QPainterPath::MoveToElement, QPainterPath::LineToElement,
@@ -276,7 +276,7 @@ static QPainterPath::ElementType qpaintengineex_line_types_16[] = {
     QPainterPath::MoveToElement, QPainterPath::LineToElement
 };
 
-static QPainterPath::ElementType qpaintengineex_rect4_types_32[] = {
+static const QPainterPath::ElementType qpaintengineex_rect4_types_32[] = {
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 1
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 2
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 3
@@ -312,7 +312,7 @@ static QPainterPath::ElementType qpaintengineex_rect4_types_32[] = {
 };
 
 
-static QPainterPath::ElementType qpaintengineex_roundedrect_types[] = {
+static const QPainterPath::ElementType qpaintengineex_roundedrect_types[] = {
     QPainterPath::MoveToElement,
     QPainterPath::LineToElement,
     QPainterPath::CurveToElement,

@@ -142,8 +142,14 @@ public:
 class CustomGadget {
     Q_GADGET
 };
+class CustomGadget_NonDefaultConstructible {
+    Q_GADGET
+public:
+    CustomGadget_NonDefaultConstructible(int) {};
+};
 
 class CustomNonQObject {};
+class GadgetDerived : public CustomGadget {};
 
 void tst_QMetaType::defined()
 {
@@ -153,11 +159,12 @@ void tst_QMetaType::defined()
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<CustomQObject::CustomQEnum>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<CustomGadget>::Defined), 1);
+    QVERIFY(!QMetaTypeId2<GadgetDerived>::Defined);
     QVERIFY(int(QMetaTypeId2<CustomQObject*>::Defined));
     QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
-    QVERIFY(!QMetaTypeId2<CustomGadget*>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomGadget_NonDefaultConstructible>::Defined);
 }
 
 struct Bar

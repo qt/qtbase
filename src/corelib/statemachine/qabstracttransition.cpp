@@ -101,7 +101,35 @@ QT_BEGIN_NAMESPACE
     parallel group state.
 */
 
+/*!
+    \property QAbstractTransition::transitionType
+
+    \brief indicates whether this transition is an internal transition, or an external transition.
+
+    Internal and external transitions behave the same, except for the case of a transition whose
+    source state is a compound state and whose target(s) is a descendant of the source. In such a
+    case, an internal transition will not exit and re-enter its source state, while an external one
+    will.
+
+    By default, the type is an external transition.
+*/
+
+/*!
+  \enum QAbstractTransition::TransitionType
+
+  This enum specifies the kind of transition. By default, the type is an external transition.
+
+  \value ExternalTransition Any state that is the source state of a transition (which is not a
+                            target-less transition) is left, and re-entered when necessary.
+  \value InternalTransition If the target state of a transition is a sub-state of a compound state,
+                            and that compound state is the source state, an internal transition will
+                            not leave the source state.
+
+  \sa QAbstractTransition::transitionType
+*/
+
 QAbstractTransitionPrivate::QAbstractTransitionPrivate()
+    : transitionType(QAbstractTransition::ExternalTransition)
 {
 }
 
@@ -246,6 +274,24 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 
     if (!sameList)
         emit targetStatesChanged(QPrivateSignal());
+}
+
+/*!
+  Returns the type of the transition.
+*/
+QAbstractTransition::TransitionType QAbstractTransition::transitionType() const
+{
+    Q_D(const QAbstractTransition);
+    return d->transitionType;
+}
+
+/*!
+  Sets the type of the transition to \a type.
+*/
+void QAbstractTransition::setTransitionType(TransitionType type)
+{
+    Q_D(QAbstractTransition);
+    d->transitionType = type;
 }
 
 /*!

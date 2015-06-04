@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 //#define DEBUG_HEADER
 //#define DEBUG_FONTENGINE
 
-static QFontEngineQPF2::TagType tagTypes[QFontEngineQPF2::NumTags] = {
+static const QFontEngineQPF2::TagType tagTypes[QFontEngineQPF2::NumTags] = {
     QFontEngineQPF2::StringType, // FontName
     QFontEngineQPF2::StringType, // FileName
     QFontEngineQPF2::UInt32Type, // FileIndex

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -85,6 +86,10 @@ public:
 
     qreal refreshRate() const Q_DECL_OVERRIDE;
 
+    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
+    void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
+
+    QEglFSKmsIntegration *integration() const { return m_integration; }
     QEglFSKmsDevice *device() const { return m_device; }
 
     gbm_surface *surface() const { return m_gbm_surface; }
@@ -109,6 +114,8 @@ private:
     QEglFSKmsOutput m_output;
     QPoint m_pos;
     QScopedPointer<QEglFSKmsCursor> m_cursor;
+
+    QList<QPlatformScreen *> m_siblings;
 
     struct FrameBuffer {
         FrameBuffer() : fb(0) {}

@@ -47,6 +47,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDir>
 
+#include <set>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_OPENGL_3)
@@ -128,7 +130,7 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
 }
 
 enum Operator { NotEqual, LessThan, LessEqualThan, Equals, GreaterThan, GreaterEqualThan };
-static const char *operators[] = {"!=", "<", "<=", "=", ">", ">="};
+static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
 
 static inline QString valueKey()         { return QStringLiteral("value"); }
 static inline QString opKey()            { return QStringLiteral("op"); }
@@ -472,6 +474,15 @@ QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()
         gpu.glVendor = QByteArray(reinterpret_cast<const char *>(p));
 
     return gpu;
+}
+
+Q_GUI_EXPORT std::set<QByteArray> *qgpu_features(const QString &filename)
+{
+    const QSet<QString> features = QOpenGLConfig::gpuFeatures(QOpenGLConfig::Gpu::fromContext(), filename);
+    std::set<QByteArray> *result = new std::set<QByteArray>;
+    foreach (const QString &feature, features)
+        result->insert(feature.toUtf8());
+    return result;
 }
 
 QT_END_NAMESPACE

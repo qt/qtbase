@@ -87,6 +87,18 @@ struct QTBUG_31218_Derived : QTBUG_31218<-1<0> {};
  class QTBUG_45790 : Bug() { };
 #endif
 
+class CreatableGadget
+{
+    Q_GADGET
+public:
+    Q_INVOKABLE CreatableGadget()
+    {
+        CreatableGadget::qt_static_metacall((QObject*)this, QMetaObject::ReadProperty, -1, Q_NULLPTR);
+    }
+};
+
+CreatableGadget creatableGadget; // Force the compiler to use the constructor
+
 struct MyStruct {};
 struct MyStruct2 {};
 
@@ -680,7 +692,7 @@ void tst_Moc::oldStyleCasts()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIE" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -750,7 +762,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIE" <<  "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" <<  "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -1029,7 +1041,7 @@ void tst_Moc::ignoreOptionClashes()
     // If -pthread wasn't ignored, it was parsed as a prefix of "thread/", which breaks compilation.
     QStringList gccArgs;
     gccArgs << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qtIncludePath << "-I" << includeDir << "-o" << "/dev/null" << "-fPIE" <<  "-";
+         << "-I" << qtIncludePath << "-I" << includeDir << "-o" << "/dev/null" << "-fPIC" <<  "-";
     proc.start("gcc", gccArgs);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -1870,6 +1882,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
+
+    QTest::newRow("QTBUG-46210: crash on invalid macro")
+        << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45);")
+        << QStringList()
+        << 1
+        << QString("IGNORE_ALL_STDOUT")
+        << QString(":2: Error: '#' is not followed by a macro parameter");
 }
 
 void tst_Moc::warnings()

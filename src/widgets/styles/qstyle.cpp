@@ -2368,8 +2368,8 @@ QDebug operator<<(QDebug debug, QStyle::State state)
     return operator<< <QStyle::StateFlag>(debug, state);
 #    else
     Q_UNUSED(state);
-#    endif
     return debug;
+#    endif
 }
 #  endif // !QT_NO_DEBUG_STREAM
 #endif // QT_VERSION < QT_VERSION_CHECK(6,0,0)

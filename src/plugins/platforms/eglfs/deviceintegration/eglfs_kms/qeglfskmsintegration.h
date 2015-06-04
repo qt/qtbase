@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -65,6 +66,7 @@ public:
     bool supportsPBuffers() const Q_DECL_OVERRIDE;
 
     bool hwCursor() const;
+    bool separateScreens() const;
     QMap<QString, QVariantMap> outputSettings() const;
 
 private:
@@ -73,6 +75,7 @@ private:
     QEglFSKmsDevice *m_device;
     bool m_hwCursor;
     bool m_pbuffers;
+    bool m_separateScreens;
     QString m_devicePath;
     QMap<QString, QVariantMap> m_outputSettings;
 };

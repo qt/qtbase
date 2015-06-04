@@ -115,7 +115,7 @@ public:
 
 QtFreetypeData::~QtFreetypeData()
 {
-    for (QHash<QFontEngine::FaceId, QFreetypeFace *>::ConstIterator iter = faces.begin(); iter != faces.end(); ++iter)
+    for (QHash<QFontEngine::FaceId, QFreetypeFace *>::ConstIterator iter = faces.cbegin(); iter != faces.cend(); ++iter)
         iter.value()->cleanup();
     faces.clear();
     FT_Done_FreeType(library);

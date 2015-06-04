@@ -1302,6 +1302,14 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
         return QSqlQueryModel::flags(index) | Qt::ItemIsEditable;
 }
 
+/*!
+    This is an overloaded function.
+
+    It returns an empty record, having only the field names. This function can be used to
+    retrieve the field names of a record.
+
+    \sa QSqlRecord::isEmpty()
+*/
 QSqlRecord QSqlTableModel::record() const
 {
     return QSqlQueryModel::record();

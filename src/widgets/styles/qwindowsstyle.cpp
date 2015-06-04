@@ -299,8 +299,8 @@ void QWindowsStyle::polish(QPalette &pal)
 
 int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *, const QWidget *widget)
 {
-    switch (pm) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    switch (pm) {
     case QStyle::PM_DockWidgetFrameWidth:
 #  ifndef Q_OS_WINCE
         return GetSystemMetrics(SM_CXFRAME);
@@ -337,13 +337,14 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
 #  else
         return GetSystemMetrics(SM_CYDLGFRAME);
 #  endif
-#else
-    Q_UNUSED(widget)
-#endif // Q_OS_WIN
 
     default:
         break;
     }
+#else // Q_OS_WIN && !Q_OS_WINRT
+    Q_UNUSED(pm);
+    Q_UNUSED(widget);
+#endif
     return QWindowsStylePrivate::InvalidMetric;
 }
 

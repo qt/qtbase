@@ -255,15 +255,15 @@ QString QFileSystemEntry::completeSuffix() const
 bool QFileSystemEntry::isRelative() const
 {
     resolveFilePath();
-    return (m_filePath.isEmpty() || (!m_filePath.isEmpty() && (m_filePath[0].unicode() != '/')
-        && (!(m_filePath.length() >= 2 && m_filePath[1].unicode() == ':'))));
+    return (m_filePath.isEmpty() || (!m_filePath.isEmpty() && (m_filePath.at(0).unicode() != '/')
+        && (!(m_filePath.length() >= 2 && m_filePath.at(1).unicode() == ':'))));
 }
 
 bool QFileSystemEntry::isAbsolute() const
 {
     resolveFilePath();
     return (!m_filePath.isEmpty() && ((m_filePath.length() >= 3
-                                       && (m_filePath[0].isLetter() && m_filePath[1].unicode() == ':' && m_filePath[2].unicode() == '/'))
+                                       && (m_filePath.at(0).isLetter() && m_filePath.at(1).unicode() == ':' && m_filePath.at(2).unicode() == '/'))
                                       || (m_filePath.length() >= 2 && (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/')))
                                       ));
 }
@@ -276,7 +276,7 @@ bool QFileSystemEntry::isRelative() const
 bool QFileSystemEntry::isAbsolute() const
 {
     resolveFilePath();
-    return (!m_filePath.isEmpty() && (m_filePath[0].unicode() == '/'));
+    return (!m_filePath.isEmpty() && (m_filePath.at(0).unicode() == '/'));
 }
 #endif
 
@@ -337,10 +337,10 @@ void QFileSystemEntry::findFileNameSeparators() const
 
         int i = m_filePath.size() - 1;
         for (; i >= stop; --i) {
-            if (m_filePath[i].unicode() == '.') {
+            if (m_filePath.at(i).unicode() == '.') {
                 firstDotInFileName = lastDotInFileName = i;
                 break;
-            } else if (m_filePath[i].unicode() == '/') {
+            } else if (m_filePath.at(i).unicode() == '/') {
                 lastSeparator = i;
                 break;
             }
@@ -348,9 +348,9 @@ void QFileSystemEntry::findFileNameSeparators() const
 
         if (lastSeparator != i) {
             for (--i; i >= stop; --i) {
-                if (m_filePath[i].unicode() == '.')
+                if (m_filePath.at(i).unicode() == '.')
                     firstDotInFileName = i;
-                else if (m_filePath[i].unicode() == '/') {
+                else if (m_filePath.at(i).unicode() == '/') {
                     lastSeparator = i;
                     break;
                 }

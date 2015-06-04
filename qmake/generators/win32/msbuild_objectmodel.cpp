@@ -608,10 +608,13 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml.setIndentString("  ");
 
+    const QString toolsVersion = (tool.SdkVersion == QStringLiteral("10.0")) ? QStringLiteral("14.0")
+                                                                             : QStringLiteral("4.0");
+
     xml << decl("1.0", "utf-8")
         << tag("Project")
         << attrTag("DefaultTargets","Build")
-        << attrTag("ToolsVersion", "4.0")
+        << attrTag("ToolsVersion", toolsVersion)
         << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
@@ -640,7 +643,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << tagValue("DefaultLanguage", "en")
             << tagValue("AppContainerApplication", "true")
             << tagValue("ApplicationType", isWinPhone ? "Windows Phone" : "Windows Store")
-            << tagValue("ApplicationTypeRevision", tool.SdkVersion);
+            << tagValue("ApplicationTypeRevision", tool.SdkVersion == "10.0" ? "8.2" : tool.SdkVersion);
     }
 
     xml << closetag();

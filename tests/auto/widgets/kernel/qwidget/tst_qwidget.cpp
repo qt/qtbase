@@ -436,6 +436,7 @@ private slots:
     void grabKeyboard();
 
     void touchEventSynthesizedMouseEvent();
+    void touchUpdateOnNewTouch();
 
     void styleSheetPropagation();
 
@@ -3335,8 +3336,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
 
     QTRY_VERIFY((wr = QApplication::widgetAt(testPos)));
     QTRY_COMPARE(wr->objectName(), w1->objectName());
@@ -3355,8 +3354,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
     QTRY_VERIFY(QApplication::widgetAt(testPos) == w1.data());
     QTRY_VERIFY(QApplication::widgetAt(testPos + QPoint(1, 1)) == w2.data());
 }
@@ -9757,6 +9754,9 @@ class TouchMouseWidget : public QWidget {
 public:
     explicit TouchMouseWidget(QWidget *parent = 0)
         : QWidget(parent),
+          m_touchBeginCount(0),
+          m_touchUpdateCount(0),
+          m_touchEndCount(0),
           m_touchEventCount(0),
           m_acceptTouch(false),
           m_mouseEventCount(0),
@@ -9783,6 +9783,12 @@ protected:
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
+            if (e->type() == QEvent::TouchBegin)
+                ++m_touchBeginCount;
+            else if (e->type() == QEvent::TouchUpdate)
+                ++m_touchUpdateCount;
+            else if (e->type() == QEvent::TouchEnd)
+                ++m_touchEndCount;
             ++m_touchEventCount;
             if (m_acceptTouch)
                 e->accept();
@@ -9807,6 +9813,9 @@ protected:
     }
 
 public:
+    int m_touchBeginCount;
+    int m_touchUpdateCount;
+    int m_touchEndCount;
     int m_touchEventCount;
     bool m_acceptTouch;
     int m_mouseEventCount;
@@ -9921,6 +9930,46 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
         QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
     }
+}
+
+void tst_QWidget::touchUpdateOnNewTouch()
+{
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+
+    TouchMouseWidget widget;
+    widget.setAcceptTouch(true);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(new QWidget);
+    widget.setLayout(layout);
+    widget.show();
+
+    QWindow* window = widget.windowHandle();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_touchUpdateCount, 0);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).press(0, QPoint(20, 20), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 0);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).move(0, QPoint(25, 25), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 1);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).stationary(0).press(1, QPoint(40, 40), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 2);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).stationary(1).release(0, QPoint(25, 25), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 3);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).release(1, QPoint(40, 40), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 3);
+    QCOMPARE(widget.m_touchEndCount, 1);
 }
 
 void tst_QWidget::styleSheetPropagation()

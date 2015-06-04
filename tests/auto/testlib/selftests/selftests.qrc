@@ -151,5 +151,6 @@
         <file>expected_xunit.txt</file>
         <file>expected_xunit.xml</file>
         <file>expected_xunit.xunitxml</file>
+        <file>expected_blacklisted.txt</file>
     </qresource>
 </RCC>

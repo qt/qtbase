@@ -44,6 +44,7 @@
 #include <QtCore/qdebug.h>
 
 #include <QDir>
+#ifndef QT_NO_BEARERMANAGEMENT
 
 extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 #import <CoreWLAN/CoreWLAN.h>
@@ -84,8 +85,11 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
     return self;
 }
 
+static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
+
 -(void)dealloc
 {
+    listener = nil;
     [super dealloc];
 }
 
@@ -116,7 +120,6 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 }
 @end
 
-static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
 
 QT_BEGIN_NAMESPACE
 
@@ -878,3 +881,5 @@ quint64 QCoreWlanEngine::getBytes(const QString &interfaceName, bool b)
 }
 
 QT_END_NAMESPACE
+
+#endif

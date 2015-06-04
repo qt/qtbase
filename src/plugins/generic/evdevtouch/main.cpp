@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QEvdevTouchScreenPlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevtouch.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "evdevtouch.json")
 
 public:
     QEvdevTouchScreenPlugin();

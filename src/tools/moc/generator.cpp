@@ -448,7 +448,8 @@ void Generator::generateCode()
 // Generate internal qt_static_metacall() function
 //
     const bool hasStaticMetaCall = !isQt &&
-            (cdef->hasQObject || !cdef->methodList.isEmpty() || !cdef->propertyList.isEmpty());
+            (cdef->hasQObject || !cdef->methodList.isEmpty()
+             || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
     if (hasStaticMetaCall)
         generateStaticMetacall();
 
@@ -1125,7 +1126,8 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "%s", QByteArray("QPrivateSignal()").constData());
             }
             fprintf(out, ");\n");
-            fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
+            fprintf(out, "            if (_a[0]) *reinterpret_cast<%s**>(_a[0]) = _r; } break;\n",
+                    cdef->hasQGadget ? "void" : "QObject");
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");

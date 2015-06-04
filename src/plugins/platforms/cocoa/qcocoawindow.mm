@@ -415,7 +415,7 @@ QCocoaWindow::~QCocoaWindow()
     if (m_isNSWindowChild) {
         if (m_parentCocoaWindow)
             m_parentCocoaWindow->removeChildWindow(this);
-    } else if (parent()) {
+    } else if ([m_contentView superview]) {
         [m_contentView removeFromSuperview];
     }
 
@@ -435,7 +435,9 @@ QCocoaWindow::~QCocoaWindow()
 
     // While it is unlikely that this window will be in the popup stack
     // during deletetion we clear any pointers here to make sure.
-    QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+    if (QCocoaIntegration::instance()) {
+        QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
+    }
 
     foreach (QCocoaWindow *child, m_childWindows) {
        [m_nsWindow removeChildWindow:child->m_nsWindow];
@@ -449,7 +451,13 @@ QCocoaWindow::~QCocoaWindow()
 
 QSurfaceFormat QCocoaWindow::format() const
 {
-    return window()->requestedFormat();
+    QSurfaceFormat format = window()->requestedFormat();
+
+    // Upgrade the default surface format to include an alpha channel. The default RGB format
+    // causes Cocoa to spend an unreasonable amount of time converting it to RGBA internally.
+    if (format == QSurfaceFormat())
+        format.setAlphaBufferSize(8);
+    return format;
 }
 
 void QCocoaWindow::setGeometry(const QRect &rectIn)
@@ -688,8 +696,10 @@ void QCocoaWindow::setVisible(bool visible)
                     && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
                     if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
-                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDown handler:^(NSEvent *) {
-                            QWindowSystemInterface::handleMouseEvent(window(), QPointF(-1, -1), QPointF(window()->framePosition() - QPointF(1, 1)), Qt::LeftButton);
+                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
+                            QPointF localPoint = qt_mac_flipPoint([NSEvent mouseLocation]);
+                            QWindowSystemInterface::handleMouseEvent(window(), window()->mapFromGlobal(localPoint.toPoint()), localPoint,
+                                                                     cocoaButton2QtButton([e buttonNumber]));
                         }];
                     }
                 }
@@ -789,9 +799,22 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (flags & Qt::FramelessWindowHint)
         return styleMask;
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (!windowIsPopupType(type))
-            styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
-                         NSMiniaturizableWindowMask | NSTitledWindowMask);
+        if (!windowIsPopupType(type)) {
+            styleMask = NSUtilityWindowMask;
+            if (!(flags & Qt::CustomizeWindowHint)) {
+                styleMask |= NSResizableWindowMask | NSClosableWindowMask |
+                             NSMiniaturizableWindowMask | NSTitledWindowMask;
+            } else {
+                if (flags & Qt::WindowMaximizeButtonHint)
+                    styleMask |= NSResizableWindowMask;
+                if (flags & Qt::WindowTitleHint)
+                    styleMask |= NSTitledWindowMask;
+                if (flags & Qt::WindowCloseButtonHint)
+                    styleMask |= NSClosableWindowMask;
+                if (flags & Qt::WindowMinimizeButtonHint)
+                    styleMask |= NSMiniaturizableWindowMask;
+            }
+        }
     } else {
         if (type == Qt::Window && !(flags & Qt::CustomizeWindowHint)) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
@@ -1235,7 +1258,9 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 {
     bool wasNSWindowChild = m_isNSWindowChild;
-    m_isNSWindowChild = parentWindow && (window()->property("_q_platform_MacUseNSWindow").toBool());
+    BOOL requestNSWindowChild = qt_mac_resolveOption(NO, window(), "_q_platform_MacUseNSWindow",
+                                                                   "QT_MAC_USE_NSWINDOW");
+    m_isNSWindowChild = parentWindow && requestNSWindowChild;
     bool needsNSWindow = m_isNSWindowChild || !parentWindow;
 
     QCocoaWindow *oldParentCocoaWindow = m_parentCocoaWindow;

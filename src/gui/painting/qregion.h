@@ -66,10 +66,10 @@ public:
     ~QRegion();
     QRegion &operator=(const QRegion &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QRegion &operator=(QRegion &&other)
+    inline QRegion &operator=(QRegion &&other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); return *this; }
 #endif
-    inline void swap(QRegion &other) { qSwap(d, other.d); }
+    inline void swap(QRegion &other) Q_DECL_NOEXCEPT { qSwap(d, other.d); }
     bool isEmpty() const;
     bool isNull() const;
 

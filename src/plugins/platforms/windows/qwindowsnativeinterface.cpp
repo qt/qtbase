@@ -34,6 +34,7 @@
 #include "qwindowsnativeinterface.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
+#include "qwindowsfontdatabase.h"
 #include "qwindowsopenglcontext.h"
 #include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
@@ -220,6 +221,11 @@ void QWindowsNativeInterface::unregisterWindowsMime(void *mimeIn)
 int QWindowsNativeInterface::registerMimeType(const QString &mimeType)
 {
     return QWindowsMime::registerMimeType(mimeType);
+}
+
+QFont QWindowsNativeInterface::logFontToQFont(const void *logFont, int verticalDpi)
+{
+    return QWindowsFontDatabase::LOGFONT_to_QFont(*reinterpret_cast<const LOGFONT *>(logFont), verticalDpi);
 }
 
 QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &function) const

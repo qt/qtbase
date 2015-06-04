@@ -1,0 +1,124 @@
+Qt 5.4.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.4.1. Compatibility with Qt
+5.4.0 is also retained, except on Windows when using MSVC 2012 or MSVC
+2013. See note below.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://doc.qt.io/qt-5.4/
+
+The Qt version 5.4 series is binary compatible with the 5.3.x series.
+Applications compiled for 5.3 will continue to run with 5.4 with the
+exception of on Windows when using MSVC 2012 or MSVC 2013. See note
+below.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+- Restored binary compatibility with Qt 5.3.2 on Windows when using MSVC
+  2012 or MSVC 2013. This means that Qt 5.4.1 and 5.4.2 are no longer
+  binary compatible with Qt 5.4.0 when using either of those compilers.
+- [QTBUG-42594] OS X binary package: fixed incorrect linking to libraries in
+  /opt/local/lib
+- EXIF orientation is no longer applied to JPEG images on read. EXIF
+  orientation on JPEG was introduced in 5.4.0, but due to a bug the most
+  common EXIF-format (big-endian) was not working until 5.4.1. 5.4.2 restores the
+  behavior of 5.4.0 and earlier for most EXIF-tagged JPEGs.
+  EXIF orientation will be an opt-in starting with Qt 5.5.
+- On x86 and x86-64 systems with ELF binaries (especially Linux), due to
+  a new optimization in GCC 5.x in combination with a recent version of
+  GNU binutils, compiling Qt applications with -fPIE is no longer
+  enough with GCC 5.x. Applications now need to be compiled with
+  the -fPIC option if Qt's option "reduce relocations" is active. For
+  backward compatibility only, Qt accepts the use of -fPIE for GCC 4.x
+  versions.
+  Note that Clang is known to generate incompatible code even with -fPIC if
+  the -flto option is active.
+  Applications using qmake or cmake >= 2.8.12 as their build system will
+  adapt automatically. Applications using an older release of cmake in
+  combination with GCC 5.x need to change their CMakeLists.txt to add
+  Qt5Core_EXECUTABLE_COMPILE_FLAGS to CMAKE_CXX_FLAGS. In particular,
+  applications using cmake >= 2.8.9 and < 2.8.11 will continue to build
+  with the -fPIE option and invoke the special compatibility mode if using
+  GCC 4.x.
+
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+ - [QTBUG-43893] Fixed memory leak in qSetMessagePattern
+ - [QTBUG-43513] QXmlStreamReader: Correctly parse XML containing NUL bytes
+   in the input stream
+ - [QTBUG-43352] QTemporaryDirectory: Properly clean up in case of a failure
+ - [QTBUG-43827] Fixed regression in QSortFilterProxyModel which crashed when
+   sorting a tree model
+
+QtGui
+-----
+ - [QTBUG-44273] Fixed misplacement of outlined text with native text rendering
+ - [QTBUG-44147] Fixed VNC not working on some VNC servers
+ - [QTBUG-43850] Fixed crash with multi-threaded font usage
+ - [QTBUG-43850] Made the old harfbuzz fallback available at runtime
+ - Improvements to the experimental high-dpi support
+ - [QTBUG-43318] Better resolution of GLES 3 functions to avoid issues when
+   deploying on systems with GLES 2.0 only
+
+QtWidgets
+---------
+ - [QTBUG-43830] Fixed crash in stylesheets when styling QProgressBar
+ - [QTBUG-43663] QColorDialog: Don't lose focus while color picking
+
+QtNetwork
+---------
+ - [QTBUG-43793] Fixed disconnects of QSSLSocket after starting encryption
+
+QtPrintSupport
+--------------
+ - [QTBUG-43124] Fixed QPrinter::{width,height} return values
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Android
+-------
+
+ - [QTBUG-44648] Fixed rendering Chinese text on Android 5
+
+Linux/XCB
+---------
+
+ - [QTBUG-45071] Don't crash when resizing windows to bigger than 3840x2160
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - CMake-based projects using Qt will now always be built with -fPIE,
+   which fixes function pointer based QObject::connect() on ARM. This
+   is consistent with qmake
+ - [Android] Fixed compilation on armv5 with 4.9 toolchain
+
+qmake
+-----
+
+ - [VS] Fixed handling of files that are excluded from build
+ - [QTBUG-44413][VS] Fixed vcxproj generation for CONFIG-=flat, again
+ - [QTBUG-44595] Restored Qt 4 behavior of qtLibraryTarget()
+ - [QTBUG-45118][Windows] Fixed parallel build when using TYPELIBS
+ - [OS X/iOS] Fixed QMAKE_INFO_PLIST path resolution for shadow builds

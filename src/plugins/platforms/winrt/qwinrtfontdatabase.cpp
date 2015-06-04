@@ -5,7 +5,7 @@
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL21$
+** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
@@ -16,16 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 or version 3 as published by the Free
-** Software Foundation and appearing in the file LICENSE.LGPLv21 and
-** LICENSE.LGPLv3 included in the packaging of this file. Please review the
-** following information to ensure the GNU Lesser General Public License
-** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
-** As a special exception, The Qt Company gives you certain additional
-** rights. These rights are described in The Qt Company LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file. Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -45,6 +48,71 @@ using namespace Microsoft::WRL;
 #endif // QT_WINRT_USE_DWRITE
 
 QT_BEGIN_NAMESPACE
+
+// Based on unicode range tables at http://www.microsoft.com/typography/otspec/os2.htm#ur
+static QFontDatabase::WritingSystem writingSystemFromUnicodeRange(const DWRITE_UNICODE_RANGE &range)
+{
+    if (range.first >= 0x0000 && range.last <= 0x007F)
+        return QFontDatabase::Latin;
+    if (range.first >= 0x0370 && range.last <= 0x03FF)
+        return QFontDatabase::Greek;
+    if (range.first >= 0x0400 && range.last <= 0x04FF)
+        return QFontDatabase::Cyrillic;
+    if (range.first >= 0x0530 && range.last <= 0x058F)
+        return QFontDatabase::Armenian;
+    if (range.first >= 0x0590 && range.last <= 0x05FF)
+        return QFontDatabase::Hebrew;
+    if (range.first >= 0x0600 && range.last <= 0x06FF)
+        return QFontDatabase::Arabic;
+    if (range.first >= 0x0700 && range.last <= 0x074F)
+        return QFontDatabase::Syriac;
+    if (range.first >= 0x0780 && range.last <= 0x07BF)
+        return QFontDatabase::Thaana;
+    if (range.first >= 0x0900 && range.last <= 0x097F)
+        return QFontDatabase::Devanagari;
+    if (range.first >= 0x0980 && range.last <= 0x09FF)
+        return QFontDatabase::Bengali;
+    if (range.first >= 0x0A00 && range.last <= 0x0A7F)
+        return QFontDatabase::Gurmukhi;
+    if (range.first >= 0x0A80 && range.last <= 0x0AFF)
+        return QFontDatabase::Gujarati;
+    if (range.first >= 0x0B00 && range.last <= 0x0B7F)
+        return QFontDatabase::Oriya;
+    if (range.first >= 0x0B80 && range.last <= 0x0BFF)
+        return QFontDatabase::Tamil;
+    if (range.first >= 0x0C00 && range.last <= 0x0C7F)
+        return QFontDatabase::Telugu;
+    if (range.first >= 0x0C80 && range.last <= 0x0CFF)
+        return QFontDatabase::Kannada;
+    if (range.first >= 0x0D00 && range.last <= 0x0D7F)
+        return QFontDatabase::Malayalam;
+    if (range.first >= 0x0D80 && range.last <= 0x0DFF)
+        return QFontDatabase::Sinhala;
+    if (range.first >= 0x0E00 && range.last <= 0x0E7F)
+        return QFontDatabase::Thai;
+    if (range.first >= 0x0E80 && range.last <= 0x0EFF)
+        return QFontDatabase::Lao;
+    if (range.first >= 0x0F00 && range.last <= 0x0FFF)
+        return QFontDatabase::Tibetan;
+    if (range.first >= 0x1000 && range.last <= 0x109F)
+        return QFontDatabase::Myanmar;
+    if (range.first >= 0x10A0 && range.last <= 0x10FF)
+        return QFontDatabase::Georgian;
+    if (range.first >= 0x1780 && range.last <= 0x17FF)
+        return QFontDatabase::Khmer;
+    if (range.first >= 0x4E00 && range.last <= 0x9FFF)
+        return QFontDatabase::SimplifiedChinese;
+    if (range.first >= 0xAC00 && range.last <= 0xD7AF)
+        return QFontDatabase::Korean;
+    if (range.first >= 0x1680 && range.last <= 0x169F)
+        return QFontDatabase::Ogham;
+    if (range.first >= 0x16A0 && range.last <= 0x16FF)
+        return QFontDatabase::Runic;
+    if (range.first >= 0x07C0 && range.last <= 0x07FF)
+        return QFontDatabase::Nko;
+
+    return QFontDatabase::Other;
+}
 
 QString QWinRTFontDatabase::fontDir() const
 {
@@ -260,17 +328,27 @@ void QWinRTFontDatabase::populateFamily(const QString &familyName)
 
         const bool fixedPitch = fontFace->IsMonospacedFont();
 
-        quint32 unicodeRange[4];
+        // Get writing systems from unicode ranges
         quint32 actualRangeCount;
-        hr = fontFace->GetUnicodeRanges(
-                    2, reinterpret_cast<DWRITE_UNICODE_RANGE *>(unicodeRange), &actualRangeCount);
-        if (FAILED(hr) && hr != E_NOT_SUFFICIENT_BUFFER) { // Ignore insufficient buffer; we only need 4 indices
+        hr = fontFace->GetUnicodeRanges(0, nullptr, &actualRangeCount);
+        Q_ASSERT(hr == E_NOT_SUFFICIENT_BUFFER);
+        QVector<DWRITE_UNICODE_RANGE> unicodeRanges(actualRangeCount);
+        hr = fontFace->GetUnicodeRanges(actualRangeCount, unicodeRanges.data(), &actualRangeCount);
+        if (FAILED(hr)) {
             qWarning("Unable to get font unicode range: %s", qPrintable(qt_error_string(hr)));
             continue;
         }
-        quint32 codePageRange[2] = { 0, 0 };
-        QSupportedWritingSystems writingSystems =
-                QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+        QSupportedWritingSystems writingSystems;
+        for (quint32 i = 0; i < actualRangeCount; ++i) {
+            const QFontDatabase::WritingSystem writingSystem = writingSystemFromUnicodeRange(unicodeRanges.at(i));
+            writingSystems.setSupported(writingSystem);
+        }
+        if (writingSystems.supported(QFontDatabase::SimplifiedChinese)) {
+            writingSystems.setSupported(QFontDatabase::TraditionalChinese);
+            writingSystems.setSupported(QFontDatabase::Japanese);
+        }
+        if (writingSystems.supported(QFontDatabase::Latin))
+            writingSystems.setSupported(QFontDatabase::Vietnamese);
 
         IDWriteFontFile *fontFile;
         hr = fontFace->GetFiles(&fileCount, &fontFile);

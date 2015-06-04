@@ -100,6 +100,7 @@ bool CoreWindowNativeWindow::registerForSizeChangeEvents()
     if (SUCCEEDED(result))
     {
         result = mDisplayInformation->add_OrientationChanged(orientationChangedHandler.Get(), &mOrientationChangedEventToken);
+        orientationChangedHandler->Invoke(mDisplayInformation.Get(), nullptr);
     }
 #endif
 
@@ -135,8 +136,8 @@ HRESULT CoreWindowNativeWindow::createSwapChain(ID3D11Device *device, DXGIFactor
     }
 
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
-    swapChainDesc.Width = width;
-    swapChainDesc.Height = height;
+    swapChainDesc.Width = mRotationFlags ? height : width;
+    swapChainDesc.Height = mRotationFlags ? width : height;
     swapChainDesc.Format = format;
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc.Count = 1;

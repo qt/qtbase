@@ -464,7 +464,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     }
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::fillReadBuffer(), using %s codec",
-           codec->name().constData());
+           codec ? codec->name().constData() : "no");
 #endif
 #endif
 
@@ -476,9 +476,10 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     int oldReadBufferSize = readBuffer.size();
 #ifndef QT_NO_TEXTCODEC
     // convert to unicode
-    readBuffer += codec->toUnicode(buf, bytesRead, &readConverterState);
+    readBuffer += Q_LIKELY(codec) ? codec->toUnicode(buf, bytesRead, &readConverterState)
+                                  : QString::fromLatin1(buf, bytesRead);
 #else
-    readBuffer += QString::fromLatin1(QByteArray(buf, bytesRead).constData());
+    readBuffer += QString::fromLatin1(buf, bytesRead);
 #endif
 
     // reset the Text flag.
@@ -564,7 +565,8 @@ void QTextStreamPrivate::flushWriteBuffer()
         codec = QTextCodec::codecForLocale();
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::flushWriteBuffer(), using %s codec (%s generating BOM)",
-           codec->name().constData(), writeConverterState.flags & QTextCodec::IgnoreHeader ? "not" : "");
+           codec ? codec->name().constData() : "no",
+           !codec || (writeConverterState.flags & QTextCodec::IgnoreHeader) ? "not" : "");
 #endif
 
     // convert from unicode to raw data
@@ -572,7 +574,7 @@ void QTextStreamPrivate::flushWriteBuffer()
     QByteArray data = Q_LIKELY(codec) ? codec->fromUnicode(writeBuffer.data(), writeBuffer.size(), &writeConverterState)
                                       : writeBuffer.toLatin1();
 #else
-    QByteArray data = writeBuffer.toLocal8Bit();
+    QByteArray data = writeBuffer.toLatin1();
 #endif
     writeBuffer.clear();
 

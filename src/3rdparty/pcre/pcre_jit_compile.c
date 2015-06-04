@@ -1533,7 +1533,11 @@ while (cc < ccend)
     {
     case OP_KET:
     if (PRIVATE_DATA(cc) != 0)
+      {
       private_data_length++;
+      SLJIT_ASSERT(PRIVATE_DATA(cc + 1) != 0);
+      cc += PRIVATE_DATA(cc + 1);
+      }
     cc += 1 + LINK_SIZE;
     break;
 
@@ -1548,6 +1552,7 @@ while (cc < ccend)
     case OP_SBRAPOS:
     case OP_SCOND:
     private_data_length++;
+    SLJIT_ASSERT(PRIVATE_DATA(cc) != 0);
     cc += 1 + LINK_SIZE;
     break;
 
@@ -1710,6 +1715,8 @@ do
         {
         count = 1;
         srcw[0] = PRIVATE_DATA(cc);
+        SLJIT_ASSERT(PRIVATE_DATA(cc + 1) != 0);
+        cc += PRIVATE_DATA(cc + 1);
         }
       cc += 1 + LINK_SIZE;
       break;

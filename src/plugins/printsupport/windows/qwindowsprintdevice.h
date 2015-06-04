@@ -58,14 +58,7 @@ class QWindowsPrintDevice : public QPlatformPrintDevice
 public:
     QWindowsPrintDevice();
     explicit QWindowsPrintDevice(const QString &id);
-    QWindowsPrintDevice(const QWindowsPrintDevice &other);
     virtual ~QWindowsPrintDevice();
-
-    QWindowsPrintDevice &operator=(const QWindowsPrintDevice &other);
-
-    QWindowsPrintDevice *clone();
-
-    bool operator==(const QWindowsPrintDevice &other) const;
 
     bool isValid() const Q_DECL_OVERRIDE;
     bool isDefault() const Q_DECL_OVERRIDE;

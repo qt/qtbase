@@ -57,7 +57,9 @@ public:
     virtual bool handleXcbEvent(xcb_generic_event_t *event, uint responseType);
 
     virtual QXcbWindow *createWindow(QWindow *window) const = 0;
+#ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const = 0;
+#endif
     virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const = 0;
 
     virtual QXcbNativeInterfaceHandler *nativeInterfaceHandler() const  { return Q_NULLPTR; }

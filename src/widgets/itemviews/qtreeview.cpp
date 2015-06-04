@@ -3658,6 +3658,7 @@ void QTreeViewPrivate::updateScrollBars()
     if (!viewportSize.isValid())
         viewportSize = QSize(0, 0);
 
+    executePostedLayout();
     if (viewItems.isEmpty()) {
         q->doItemsLayout();
     }
