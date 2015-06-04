@@ -88,15 +88,49 @@ static inline qreal initialScaleFactor()
     \ingroup qpa
 
     \brief Collection of utility functions for UI scaling.
+
+    QHighDpiScaling implements utility functions for high-dpi scaling for use
+    on operating systems that provide limited support for native scaling. In
+    addition this functionality can be used for simulation and testing purposes.
+
+    The functions support scaling between the device independent coordinate
+    system used by Qt applications and the native coordinate system used by
+    the platform plugins. Intended usage locations are the low level / platform
+    plugin interfacing parts of QtGui, for example the QWindow, QScreen and
+    QWindowSystemInterface implementation.
+
+    The coordinate system scaling is enabled by setting one or more scale
+    factors. These will then be factored into the value returned by the
+    devicePixelRatio() accessors (any native scale factor will also be
+    included in this value). Several setters are available:
+
+    - A process-global scale factor
+        - QT_SCALE_FACTOR (environment variable)
+        - QHighDpiScaling::setGlobalFactor()
+
+    - A per-screen scale factor
+        - QT_AUTO_SCALE_FACTOR (environment variable)
+          Setting this to a true-ish value will make QHighDpiScaling
+          call QPlatformScreen::pixelDensity()
+        - QHighDpiScaling::setScreenFactor(screen, factor);
+
+    All scale factors are of type qreal.
+
+    The main scaling functions for use in QtGui are:
+        T toNativePixels(T, QWindow *)
+        T fromNativePixels(T, QWindow*)
+    Where T is QPoint, QSize, QRect etc.
 */
 
-
 qreal QHighDpiScaling::m_factor;
-
 bool QHighDpiScaling::m_active; //"overall active" - is there any scale factor set.
 bool QHighDpiScaling::m_perScreenActive; // different screens may have different scale
 bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugin
 
+/*
+    Initializes the QHighDpiScaling global variables. Called before the
+    platform plugin is created.
+*/
 void QHighDpiScaling::initHighDPiScaling()
 {
     m_factor = initialScaleFactor();

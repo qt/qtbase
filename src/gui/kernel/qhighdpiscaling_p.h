@@ -51,29 +51,6 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 
-// This file implmements utility functions for high-dpi scaling on operating
-// systems that do not provide native scaling support.
-//
-// The functions support creating a logical device-independent
-// coordinate system which is related to the device pixel coordinate
-// through a scaling factor.
-//
-// Several scaling factors can be set:
-//   - A process-global scale factor
-//       - the QT_SCALE_FACTOR environment variable.
-//       - QHighDpiScaling::setFactor(factor);
-//   - A per-window scale factor
-//       - QHighDpiScaling::setWindowFactor(window, factor);
-//
-// With these functions in use  most of the Qt API will then operate in
-// the device-independent coordinate system. For example, setting
-// the scale factor to 2.0 will make Qt see half of the "device"
-// window geometry. Desktop and event geometry will be scaled
-// to match.
-//
-// Integer scaling factors work best. Glitch-free graphics at non-integer
-// scaling factors can not be guaranteed.
-
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcScaling);
