@@ -38,7 +38,8 @@ defineTest(qtAddLibrary) {
     # Reverse-engineer the module name from the library name.
     for(var, QT_MODULES) {
         isEqual(QT.$${var}.name, $$1) {
-            qtAddModule($$var, LIBS)
+            QT += $$var
+            export(QT)
             return(true)
         }
     }
