@@ -98,6 +98,32 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 }
 
 /*!
+  Find the sibling screen corresponding to \a globalPos.
+
+  Returns this screen if no suitable screen is found at the position.
+ */
+const QPlatformScreen *QPlatformScreen::screenForPosition(const QPoint &point) const
+{
+    QPlatformScreen *that = const_cast<QPlatformScreen*>(this);
+    return that->screenForPosition(point);
+}
+
+/*!
+  \overload
+ */
+QPlatformScreen *QPlatformScreen::screenForPosition(const QPoint &point)
+{
+    if (!geometry().contains(point)) {
+        Q_FOREACH (QPlatformScreen* screen, virtualSiblings()) {
+            if (screen->geometry().contains(point))
+                return screen;
+        }
+    }
+    return this;
+}
+
+
+/*!
     Returns a list of all the platform screens that are part of the same
     virtual desktop.
 

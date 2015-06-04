@@ -106,6 +106,8 @@ public:
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
     virtual QList<QPlatformScreen *> virtualSiblings() const;
+    const QPlatformScreen *screenForPosition(const QPoint &point) const;
+    QPlatformScreen *screenForPosition(const QPoint &point);
 
     QScreen *screen() const;
 

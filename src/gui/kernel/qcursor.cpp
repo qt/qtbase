@@ -178,9 +178,14 @@ QT_BEGIN_NAMESPACE
 */
 QPoint QCursor::pos(const QScreen *screen)
 {
-    if (screen)
-        if (const QPlatformCursor *cursor = screen->handle()->cursor())
-            return QHighDpi::fromNativePixels(cursor->pos(), screen);
+    if (screen) {
+        if (const QPlatformCursor *cursor = screen->handle()->cursor()) {
+            QPlatformScreen *ps = screen->handle();
+            QPoint nativePos = cursor->pos();
+            ps = ps->screenForPosition(nativePos);
+            return QHighDpi::fromNativePixels(nativePos, ps->screen());
+        }
+    }
     return QGuiApplicationPrivate::lastCursorPosition.toPoint();
 }
 
