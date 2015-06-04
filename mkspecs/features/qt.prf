@@ -55,10 +55,6 @@ qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
 }
 qtAddRpathLink($$QT $$QT_PRIVATE)
 
-wince:static:gui {
-   QTLIB += qmenu_wce.res
-}
-
 qt_module_deps = $$QT $$QT_PRIVATE
 qt_module_deps = $$replace(qt_module_deps, -private$, _private)
 qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
