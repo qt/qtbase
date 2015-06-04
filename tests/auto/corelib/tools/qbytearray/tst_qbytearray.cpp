@@ -107,7 +107,7 @@ private slots:
     void number();
     void toInt_data();
     void toInt();
-    void qAllocMore();
+    void blockSizeCalculations();
 
     void resizeAfterFromRawData();
     void appendAfterFromRawData();
@@ -1346,28 +1346,80 @@ void tst_QByteArray::toULongLong()
     QCOMPARE(b, ok);
 }
 
-// global function defined in qbytearray.cpp
-void tst_QByteArray::qAllocMore()
+static bool checkSize(size_t value, uint min)
 {
-    using QT_PREPEND_NAMESPACE(qAllocMore);
+    return value >= min && value <= INT_MAX;
+}
 
+// global functions defined in qbytearray.cpp
+void tst_QByteArray::blockSizeCalculations()
+{
     // Not very important, but please behave :-)
-    QVERIFY(qAllocMore(0, 0) >= 0);
+    QCOMPARE(qCalculateBlockSize(0, 1), size_t(0));
+    QVERIFY(qCalculateGrowingBlockSize(0, 1).size <= MaxAllocSize);
+    QVERIFY(qCalculateGrowingBlockSize(0, 1).elementCount <= MaxAllocSize);
 
-    for (int i = 1; i < 1 << 8; i <<= 1)
-        QVERIFY(qAllocMore(i, 0) >= i);
+    // boundary condition
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize, 1), size_t(MaxAllocSize));
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize/2, 2), size_t(MaxAllocSize) - 1);
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize/2, 2, 1), size_t(MaxAllocSize));
+    QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize, 1).size, size_t(MaxAllocSize));
+    QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize, 1).elementCount, size_t(MaxAllocSize));
+    QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize/2, 2, 1).size, size_t(MaxAllocSize));
+    QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize/2, 2, 1).elementCount, size_t(MaxAllocSize)/2);
 
-    for (int i = 1 << 8; i < 1 << 30; i <<= 1) {
-        const int alloc = qAllocMore(i, 0);
+    // error conditions
+    QCOMPARE(qCalculateBlockSize(uint(MaxAllocSize) + 1, 1), size_t(~0));
+    QCOMPARE(qCalculateBlockSize(size_t(-1), 1), size_t(~0));
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize, 1, 1), size_t(~0));
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize/2 + 1, 2), size_t(~0));
+    QCOMPARE(qCalculateGrowingBlockSize(uint(MaxAllocSize) + 1, 1).size, size_t(~0));
+    QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize/2 + 1, 2).size, size_t(~0));
 
-        QVERIFY(alloc >= i);
-        QCOMPARE(qAllocMore(i - 8, 8), alloc - 8);
-        QCOMPARE(qAllocMore(i - 16, 16), alloc - 16);
-        QCOMPARE(qAllocMore(i - 24, 24), alloc - 24);
-        QCOMPARE(qAllocMore(i - 32, 32), alloc - 32);
+    // overflow conditions
+    // on 32-bit platforms, (1 << 16) * (1 << 16) = (1 << 32) which is zero
+    QCOMPARE(qCalculateBlockSize(1 << 16, 1 << 16), size_t(~0));
+    QCOMPARE(qCalculateBlockSize(MaxAllocSize/4, 16), size_t(~0));
+    // on 32-bit platforms, (1 << 30) * 3 + (1 << 30) would overflow to zero
+    QCOMPARE(qCalculateBlockSize(1U << 30, 3, 1U << 30), size_t(~0));
 
-        QVERIFY(qAllocMore(i - 1, 0) >= i - 1);
-        QVERIFY(qAllocMore(i + 1, 0) >= i + 1);
+    // exact block sizes
+    for (int i = 1; i < 1 << 31; i <<= 1) {
+        QCOMPARE(qCalculateBlockSize(0, 1, i), size_t(i));
+        QCOMPARE(qCalculateBlockSize(i, 1), size_t(i));
+        QCOMPARE(qCalculateBlockSize(i + i/2, 1), size_t(i + i/2));
+    }
+    for (int i = 1; i < 1 << 30; i <<= 1) {
+        QCOMPARE(qCalculateBlockSize(i, 2), 2 * size_t(i));
+        QCOMPARE(qCalculateBlockSize(i, 2, 1), 2 * size_t(i) + 1);
+        QCOMPARE(qCalculateBlockSize(i, 2, 16), 2 * size_t(i) + 16);
+    }
+
+    // growing sizes
+    for (int i = 1; i < 1 << 31; i <<= 1) {
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1).size, i));
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1).elementCount, i));
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1, 16).size, i));
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1, 16).elementCount, i));
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1, 24).size, i));
+        QVERIFY(checkSize(qCalculateGrowingBlockSize(i, 1, 16).elementCount, i));
+    }
+
+    // growth should be limited
+    for (int elementSize = 1; elementSize < (1<<8); elementSize <<= 1) {
+        size_t alloc = 1;
+        forever {
+            QVERIFY(checkSize(qCalculateGrowingBlockSize(alloc, elementSize).size, alloc * elementSize));
+            size_t newAlloc = qCalculateGrowingBlockSize(alloc, elementSize).elementCount;
+            QVERIFY(checkSize(newAlloc, alloc));
+            if (newAlloc == alloc)
+                break;  // no growth, we're at limit
+            alloc = newAlloc;
+        }
+        QVERIFY(checkSize(alloc, size_t(MaxAllocSize) / elementSize));
+
+        // the next allocation should be invalid
+        QCOMPARE(qCalculateGrowingBlockSize(alloc + 1, elementSize).size, size_t(~0));
     }
 }
 

@@ -60,15 +60,6 @@ QT_BEGIN_NAMESPACE
 
 const QListData::Data QListData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, { 0 } };
 
-static int grow(int size)
-{
-    if (size_t(size) > (MaxAllocSize - QListData::DataHeaderSize) / sizeof(void *))
-        qBadAlloc();
-    // dear compiler: don't optimize me out.
-    volatile int x = qAllocMore(size * sizeof(void *), QListData::DataHeaderSize) / sizeof(void *);
-    return x;
-}
-
 /*!
  *  Detaches the QListData by allocating new memory for a list which will be bigger
  *  than the copied one and is expected to grow further.
@@ -84,12 +75,12 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
     Data *x = d;
     int l = x->end - x->begin;
     int nl = l + num;
-    int alloc = grow(nl);
-    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
+    auto blockInfo = qCalculateGrowingBlockSize(nl, sizeof(void *), DataHeaderSize);
+    Data* t = static_cast<Data *>(::malloc(blockInfo.size));
     Q_CHECK_PTR(t);
+    t->alloc = int(uint(blockInfo.elementCount));
 
     t->ref.initializeOwned();
-    t->alloc = alloc;
     // The space reservation algorithm's optimization is biased towards appending:
     // Something which looks like an append will put the data at the beginning,
     // while something which looks like a prepend will put it in the middle
@@ -99,12 +90,12 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
     int bg;
     if (*idx < 0) {
         *idx = 0;
-        bg = (alloc - nl) >> 1;
+        bg = (t->alloc - nl) >> 1;
     } else if (*idx > l) {
         *idx = l;
         bg = 0;
     } else if (*idx < (l >> 1)) {
-        bg = (alloc - nl) >> 1;
+        bg = (t->alloc - nl) >> 1;
     } else {
         bg = 0;
     }
@@ -126,7 +117,7 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
 QListData::Data *QListData::detach(int alloc)
 {
     Data *x = d;
-    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(::malloc(qCalculateBlockSize(alloc, sizeof(void*), DataHeaderSize)));
     Q_CHECK_PTR(t);
 
     t->ref.initializeOwned();
@@ -146,7 +137,7 @@ QListData::Data *QListData::detach(int alloc)
 void QListData::realloc(int alloc)
 {
     Q_ASSERT(!d->ref.isShared());
-    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    Data *x = static_cast<Data *>(::realloc(d, qCalculateBlockSize(alloc, sizeof(void *), DataHeaderSize)));
     Q_CHECK_PTR(x);
 
     d = x;
@@ -158,12 +149,12 @@ void QListData::realloc(int alloc)
 void QListData::realloc_grow(int growth)
 {
     Q_ASSERT(!d->ref.isShared());
-    int alloc = grow(d->alloc + growth);
-    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    auto r = qCalculateGrowingBlockSize(d->alloc + growth, sizeof(void *), DataHeaderSize);
+    Data *x = static_cast<Data *>(::realloc(d, r.size));
     Q_CHECK_PTR(x);
 
     d = x;
-    d->alloc = alloc;
+    d->alloc = int(uint(r.elementCount));
 }
 
 void QListData::dispose(Data *d)

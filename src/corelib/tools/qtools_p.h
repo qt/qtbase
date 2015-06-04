@@ -52,7 +52,7 @@
 //
 
 #include "QtCore/qglobal.h"
-#include <limits>
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,11 +88,19 @@ Q_DECL_CONSTEXPR inline int fromOct(uint c) Q_DECL_NOTHROW
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
 enum {
-    MaxAllocSize = (1 << (std::numeric_limits<int>::digits - 1)) - 1
+    MaxAllocSize = INT_MAX
+};
+
+struct CalculateGrowingBlockSizeResult {
+    size_t size;
+    size_t elementCount;
 };
 
 // implemented in qbytearray.cpp
-int Q_CORE_EXPORT qAllocMore(int alloc, int extra) Q_DECL_NOTHROW;
+size_t Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
+qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) Q_DECL_NOTHROW;
+CalculateGrowingBlockSizeResult Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
+qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) Q_DECL_NOTHROW ;
 
 QT_END_NAMESPACE
 

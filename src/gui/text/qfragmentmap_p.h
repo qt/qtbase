@@ -255,14 +255,11 @@ uint QFragmentMapData<Fragment>::createFragment()
     uint freePos = head->freelist;
     if (freePos == head->allocated) {
         // need to create some free space
-        if (freePos >= uint(MaxAllocSize) / fragmentSize)
-            qBadAlloc();
-        uint needed = qAllocMore((freePos+1)*fragmentSize, 0);
-        Q_ASSERT(needed/fragmentSize > head->allocated);
-        Fragment *newFragments = (Fragment *)realloc(fragments, needed);
+        auto blockInfo = qCalculateGrowingBlockSize(freePos + 1, fragmentSize);
+        Fragment *newFragments = (Fragment *)realloc(fragments, blockInfo.size);
         Q_CHECK_PTR(newFragments);
         fragments = newFragments;
-        head->allocated = needed/fragmentSize;
+        head->allocated = quint32(blockInfo.elementCount);
         F(freePos).right = 0;
     }
 

@@ -97,5 +97,5 @@ void QVectorData::free(QVectorData *x, int alignment)
 
 int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 {
-    return qAllocMore(size * sizeOfT, sizeOfHeader) / sizeOfT;
+    return qCalculateGrowingBlockSize(size, sizeOfT, sizeOfHeader).elementCount;
 }
