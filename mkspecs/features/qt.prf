@@ -14,18 +14,6 @@ no_keywords:DEFINES += QT_NO_KEYWORDS
 plugin { #Qt plugins
    static:DEFINES += QT_STATICPLUGIN
    DEFINES += QT_PLUGIN
-
-   # Triggers both on Qt being configured with -arch boundschecker,
-   # and if you qmake CONFIG+=boundchecker on your plugin project
-   boundschecker|contains(QT_CONFIG,boundschecker) {
-      # This option is added for plugins when Qt is configured for Boundschecker,
-      # since we want Boundschecker to not instrument the qt_plugin_query_verification_data
-      # function, as we call that function without the plugin's dependent DLLs, thus
-      # Boundscheckers instrumentation will fail. The function only returns a const char *,
-      # so no instrumentation is really needed on that function anyways.
-      QMAKE_CFLAGS += /nmignore:*:qt_plugin_query_verification_data
-      QMAKE_CXXFLAGS += /nmignore:*:qt_plugin_query_verification_data
-   }
 }
 
 qtestlib {
