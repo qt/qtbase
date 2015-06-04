@@ -281,7 +281,7 @@ private:
 
     virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints) Q_DECL_OVERRIDE;
 
-
+    void setQtDefaultHintStyle(QFont::HintingPreference hintingPreference);
     virtual void setDefaultHintStyle(HintStyle style) Q_DECL_OVERRIDE;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
