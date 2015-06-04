@@ -1366,6 +1366,9 @@ void tst_QDir::relativeFilePath_data()
 
     QTest::newRow("11") << "" << "" << "";
 
+    QTest::newRow("same path 1") << "/tmp" << "/tmp" << ".";
+    QTest::newRow("same path 2") << "//tmp" << "/tmp/" << ".";
+
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("12") << "C:/foo/bar" << "ding" << "ding";
     QTest::newRow("13") << "C:/foo/bar" << "C:/ding/dong" << "../../ding/dong";
@@ -1373,10 +1376,10 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("15") << "C:/foo/bar" << "D:/ding/dong" << "D:/ding/dong";
     QTest::newRow("16") << "C:" << "C:/ding/dong" << "ding/dong";
     QTest::newRow("17") << "C:/" << "C:/ding/dong" << "ding/dong";
-    QTest::newRow("18") << "C:" << "C:" << "";
-    QTest::newRow("19") << "C:/" << "C:" << "";
-    QTest::newRow("20") << "C:" << "C:/" << "";
-    QTest::newRow("21") << "C:/" << "C:/" << "";
+    QTest::newRow("18") << "C:" << "C:" << ".";
+    QTest::newRow("19") << "C:/" << "C:" << ".";
+    QTest::newRow("20") << "C:" << "C:/" << ".";
+    QTest::newRow("21") << "C:/" << "C:/" << ".";
     QTest::newRow("22") << "C:" << "C:file.txt" << "file.txt";
     QTest::newRow("23") << "C:/" << "C:file.txt" << "file.txt";
     QTest::newRow("24") << "C:" << "C:/file.txt" << "file.txt";
