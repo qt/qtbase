@@ -53,7 +53,6 @@ QStaticTextUserData::~QStaticTextUserData()
     \ingroup multimedia
     \ingroup text
     \ingroup shared
-    \mainclass
 
     QStaticText provides a way to cache layout data for a block of text so that it can be drawn
     more efficiently than by using QPainter::drawText() in which the layout information is

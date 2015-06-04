@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
     \ingroup text
     \ingroup shared
-    \mainclass
 
     When Qt displays a string of text encoded in Unicode, it will first convert the Unicode points
     into a list of glyph indexes and a list of positions based on one or more fonts. The Unicode

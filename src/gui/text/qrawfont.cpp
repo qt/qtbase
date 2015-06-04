@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
 
    \ingroup text
    \ingroup shared
-   \mainclass
 
    \note QRawFont is a low level class. For most purposes QFont is a more appropriate class.
 
