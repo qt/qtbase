@@ -994,6 +994,7 @@ QFontEngine *QCoreTextFontDatabase::freeTypeFontEngine(const QFontDef &fontDef, 
         qWarning() << "QCoreTextFontDatabase::freeTypefontEngine Failed to create engine";
         return Q_NULLPTR;
     }
+    engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
 
     return engine.take();
 }
