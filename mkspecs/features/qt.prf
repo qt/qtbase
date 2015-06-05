@@ -45,17 +45,118 @@ qaxserver {
     QT += axserver
 }
 
+# target variable, flag source variable
+defineTest(qtProcessModuleFlags) {
+    for(flag, $$2) {
+        contains(flag, ^-.*): \
+            $$1 -= $$replace(flag, ^-, )
+        else: \
+            $$1 += $$flag
+    }
+    export($$1)
+}
+
 unset(using_privates)
-qtAddModules(QT, LIBS)
-qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
+var_sfx =
+for(ever) {
+    # qmake variables cannot contain dashes, so normalize the names first
+    CLEAN_QT$$var_sfx = $$replace(QT$$var_sfx, -private$, _private)
+    # Topological resolution of modules based on their QT.<module>.depends variable
+    FULL_QT$$var_sfx = $$resolve_depends(CLEAN_QT$$var_sfx, "QT.")
+    # Finally actually add the modules
+    unset(BAD_QT)
+    for(QTLIB, FULL_QT$$var_sfx) {
+        MODULE_NAME = $$eval(QT.$${QTLIB}.name)
+        MODULE_INCLUDES = $$eval(QT.$${QTLIB}.includes)
+        MODULE_LIBS = $$eval(QT.$${QTLIB}.libs)
+        MODULE_CONFIG = $$eval(QT.$${QTLIB}.module_config)
+
+        isEmpty(MODULE_NAME) {
+            BAD_QT += $$QTLIB
+            next()
+        }
+
+        target_qt:isEqual(TARGET, $$MODULE_NAME) {
+            warning("$$TARGET cannot have a QT$$var_sfx of $$QTLIB")
+            next()
+        }
+
+        contains(MODULE_CONFIG, internal_module): \
+            using_privates = true
+        contains(MODULE_CONFIG, ltcg): \
+            CONFIG += link_ltcg
+
+        qtProcessModuleFlags(CONFIG, QT.$${QTLIB}.CONFIG)
+        qtProcessModuleFlags(DEFINES, QT.$${QTLIB}.DEFINES)
+
+        MODULE_INCLUDES -= $$QMAKE_DEFAULT_INCDIRS
+        MODULE_LIBS_ADD = $$MODULE_LIBS
+        MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
+
+        LINKAGE =
+        mac:contains(MODULE_CONFIG, lib_bundle) {
+            FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
+            !qt_no_framework_direct_includes {
+                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
+            }
+            contains(MODULE_CONFIG, internal_module): \
+                INCLUDEPATH += \
+                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${QTLIB}.VERSION) \
+                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${QTLIB}.VERSION)/$$MODULE_NAME
+            QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
+            !contains(MODULE_CONFIG, no_link): \
+                LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
+        } else {
+            INCLUDEPATH *= $$MODULE_INCLUDES
+        }
+
+        # Only link to this module if a libs directory is set, else this is just a module
+        # to give access to sources or include files, and not for linking.
+        !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link) {
+
+            # Re-insert the major version in the library name (cf qt5LibraryTarget above)
+            # unless it's a framework build
+            !mac|!contains(MODULE_CONFIG, lib_bundle): \
+                MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
+
+            win32 {
+                # Make sure the version number isn't appended again to the lib name
+                QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE = 0
+                QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE = 0
+            }
+
+            isEmpty(LINKAGE) {
+                !isEmpty(MODULE_LIBS_ADD): \
+                    LINKAGE = -L$$MODULE_LIBS_ADD
+                lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
+                LINKAGE += -l$$lib
+
+                contains(MODULE_CONFIG, staticlib): \
+                    PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
+            }
+
+            LIBS$$var_sfx += $$LINKAGE
+
+            !isEmpty(QMAKE_LSB) {
+                !isEmpty(MODULE_LIBS_ADD): \
+                    QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
+                QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+                QMAKE_LIBDIR *= /opt/lsb/lib
+            }
+        }
+    }
+    !isEmpty(BAD_QT):error("Unknown module(s) in QT$$var_sfx: $$replace(BAD_QT, _private$, -private)")
+
+    !isEmpty(var_sfx): break()
+    var_sfx = _PRIVATE
+}
 !isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
 }
 
-qt_module_deps = $$QT $$QT_PRIVATE
-qt_module_deps = $$replace(qt_module_deps, -private$, _private)
+qt_module_deps = $$CLEAN_QT $$CLEAN_QT_PRIVATE
 qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 !no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
