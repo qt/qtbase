@@ -3042,7 +3042,9 @@ QList<QTreeWidgetItem*> QTreeWidget::findItems(const QString &text, Qt::MatchFla
     QModelIndexList indexes = d->model->match(model()->index(0, column, QModelIndex()),
                                                 Qt::DisplayRole, text, -1, flags);
     QList<QTreeWidgetItem*> items;
-    for (int i = 0; i < indexes.size(); ++i)
+    const int indexesSize = indexes.size();
+    items.reserve(indexesSize);
+    for (int i = 0; i < indexesSize; ++i)
         items.append(d->item(indexes.at(i)));
     return items;
 }
@@ -3371,7 +3373,9 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
         if (d->dropOn(event, &row, &col, &topIndex)) {
             QList<QModelIndex> idxs = selectedIndexes();
             QList<QPersistentModelIndex> indexes;
-            for (int i = 0; i < idxs.count(); i++)
+            const int indexesCount = idxs.count();
+            indexes.reserve(indexesCount);
+            for (int i = 0; i < indexesCount; i++)
                 indexes.append(idxs.at(i));
 
             if (indexes.contains(topIndex))

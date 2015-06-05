@@ -812,7 +812,9 @@ QMimeData *QTableModel::internalMimeData()  const
 QMimeData *QTableModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QTableWidgetItem*> items;
-    for (int i = 0; i < indexes.count(); ++i)
+    const int indexesCount = indexes.count();
+    items.reserve(indexesCount);
+    for (int i = 0; i < indexesCount; ++i)
         items << item(indexes.at(i));
     const QTableWidget *view = qobject_cast<const QTableWidget*>(QObject::parent());
 
@@ -2326,7 +2328,9 @@ QList<QTableWidgetSelectionRange> QTableWidget::selectedRanges() const
 {
     const QList<QItemSelectionRange> ranges = selectionModel()->selection();
     QList<QTableWidgetSelectionRange> result;
-    for (int i = 0; i < ranges.count(); ++i)
+    const int rangesCount = ranges.count();
+    result.reserve(rangesCount);
+    for (int i = 0; i < rangesCount; ++i)
         result.append(QTableWidgetSelectionRange(ranges.at(i).top(),
                                                  ranges.at(i).left(),
                                                  ranges.at(i).bottom(),
@@ -2372,7 +2376,9 @@ QList<QTableWidgetItem*> QTableWidget::findItems(const QString &text, Qt::MatchF
         indexes += d->model->match(model()->index(0, column, QModelIndex()),
                                      Qt::DisplayRole, text, -1, flags);
     QList<QTableWidgetItem*> items;
-    for (int i = 0; i < indexes.size(); ++i)
+    const int indexCount = indexes.size();
+    items.reserve(indexCount);
+    for (int i = 0; i < indexCount; ++i)
         items.append(d->tableModel()->item(indexes.at(i)));
     return items;
 }
@@ -2565,6 +2571,7 @@ QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
 
     // if non empty, it's called from the model's own mimeData
     if (cachedIndexes.isEmpty()) {
+        cachedIndexes.reserve(items.count());
         foreach (QTableWidgetItem *item, items)
             cachedIndexes << indexFromItem(item);
 
@@ -2676,7 +2683,9 @@ void QTableWidget::dropEvent(QDropEvent *event) {
             }
 
             QList<QTableWidgetItem *> taken;
-            for (int i = 0; i < indexes.count(); ++i)
+            const int indexesCount = indexes.count();
+            taken.reserve(indexesCount);
+            for (int i = 0; i < indexesCount; ++i)
                 taken.append(takeItem(indexes.at(i).row(), indexes.at(i).column()));
 
             for (int i = 0; i < indexes.count(); ++i) {
