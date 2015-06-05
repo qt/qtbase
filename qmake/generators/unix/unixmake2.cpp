@@ -1330,7 +1330,7 @@ void UnixMakefileGenerator::init2()
                     soname.prepend(instpath);
                 } else if (!project->isEmpty("QMAKE_SONAME_PREFIX")) {
                     QString sonameprefix = project->first("QMAKE_SONAME_PREFIX").toQString();
-                    if (!sonameprefix.startsWith('@') && !sonameprefix.startsWith('$'))
+                    if (!sonameprefix.startsWith('@'))
                         sonameprefix = Option::fixPathToTargetOS(sonameprefix, false);
                     if (!sonameprefix.endsWith(Option::dir_sep))
                         sonameprefix += Option::dir_sep;
