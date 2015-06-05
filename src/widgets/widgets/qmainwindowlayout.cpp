@@ -311,7 +311,7 @@ QDockAreaLayoutInfo *QDockWidgetGroupWindow::layoutInfo() const
 }
 
 /*! \internal
-    \returns the currently active QDockWidget
+    Returns the currently active QDockWidget.
  */
 QDockWidget *QDockWidgetGroupWindow::topDockWidget() const
 {
@@ -2195,7 +2195,7 @@ void QMainWindowLayout::setCentralWidget(QWidget *widget)
     widget is part if QMainWindow::GroupedDragging is set. When \a group
     is false, the widget itself is always unplugged alone
 
-    \returns the QLayoutItem of the dragged element.
+    Returns the QLayoutItem of the dragged element.
     The layout item is kept in the layout but set as a gap item.
  */
 QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
