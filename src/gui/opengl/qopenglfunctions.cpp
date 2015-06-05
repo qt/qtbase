@@ -3216,7 +3216,7 @@ bool QOpenGLES3Helper::init()
     m_gl.setFileName(QStringLiteral("libGLESv2d"));
 #  endif
 # else
-    m_gl.setFileName(QStringLiteral("GLESv2"));
+    m_gl.setFileNameAndVersion(QStringLiteral("GLESv2"), 2);
 # endif // Q_OS_WIN
     return m_gl.load();
 #else
