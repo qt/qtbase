@@ -59,9 +59,27 @@ qt_module_deps = $$QT $$QT_PRIVATE
 qt_module_deps = $$replace(qt_module_deps, -private$, _private)
 qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
-!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):!contains(QT_CONFIG, qt_framework):\
+!no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
         contains(qt_module_deps, core) {
-    QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
+    relative_qt_rpath:defined(target.path, var) {
+        mac {
+            if(equals(TEMPLATE, app):app_bundle)|\
+                    if(equals(TEMPLATE, lib):plugin:plugin_bundle) {
+                ios:  binpath = $$target.path/$${TARGET}.app
+                else: binpath = $$target.path/$${TARGET}.app/Contents/MacOS
+            } else: equals(TEMPLATE, lib):!plugin:lib_bundle {
+                binpath = $$target.path/$${TARGET}.framework/Versions/Current
+            } else {
+                binpath = $$target.path
+            }
+            QMAKE_RPATHDIR += @loader_path/$$relative_path($$[QT_INSTALL_LIBS], $$binpath)
+        } else {
+            QMAKE_LFLAGS += -Wl,-z,origin
+            QMAKE_RPATHDIR += $ORIGIN/$$relative_path($$[QT_INSTALL_LIBS], $$target.path)
+        }
+    } else {
+        QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
+    }
 }
 
 # static builds: link qml import plugins into the app.

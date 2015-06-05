@@ -42,6 +42,8 @@ host_build {
     }
 }
 
+CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
+
 ucmodule = $$upper($$MODULE)
 
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET

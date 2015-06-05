@@ -30,6 +30,8 @@ tool_plugin {
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
+CONFIG += relative_qt_rpath  # Qt's plugins should be relocatable
+
 CONFIG(static, static|shared)|prefix_build {
     isEmpty(MODULE): MODULE = $$basename(TARGET)
 

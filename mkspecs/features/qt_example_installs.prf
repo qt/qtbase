@@ -101,5 +101,7 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
         SOURCES =
         OBJECTIVE_SOURCES =
         INSTALLS -= target
+    } else {
+        CONFIG += relative_qt_rpath  # Examples built as part of Qt should be relocatable
     }
 }
