@@ -140,7 +140,9 @@ UnixMakefileGenerator::init()
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
         for (int i = 0; i < rpathdirs.size(); ++i) {
             QString rpathdir = rpathdirs[i].toQString();
-            if (!rpathdir.startsWith('@') && !rpathdir.startsWith('$'))
+            if (rpathdir.length() > 1 && rpathdir.at(0) == '$' && rpathdir.at(1) != '(')
+                rpathdir.replace(0, 1, "\\$$");  // Escape from make and the shell
+            else if (!rpathdir.startsWith('@'))
                 rpathdir = QFileInfo(rpathdir).absoluteFilePath();
             project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + escapeFilePath(rpathdir);
         }
