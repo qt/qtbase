@@ -744,6 +744,47 @@ void QProcessPrivate::Channel::clear()
 */
 
 /*!
+    \typedef QProcess::CreateProcessArgumentModifier
+    \note This typedef is only available on desktop Windows and Windows CE.
+
+    On Windows, QProcess uses the Win32 API function \c CreateProcess to
+    start child processes. While QProcess provides a comfortable way to start
+    processes without worrying about platform
+    details, it is in some cases desirable to fine-tune the parameters that are
+    passed to \c CreateProcess. This is done by defining a
+    \c CreateProcessArgumentModifier function and passing it to
+    \c setCreateProcessArgumentsModifier.
+
+    A \c CreateProcessArgumentModifier function takes one parameter: a pointer
+    to a \c CreateProcessArguments struct. The members of this struct will be
+    passed to \c CreateProcess after the \c CreateProcessArgumentModifier
+    function is called.
+
+    The following example demonstrates how to pass custom flags to
+    \c CreateProcess.
+    When starting a console process B from a console process A, QProcess will
+    reuse the console window of process A for process B by default. In this
+    example, a new console window with a custom color scheme is created for the
+    child process B instead.
+
+    \snippet qprocess/qprocess-createprocessargumentsmodifier.cpp 0
+
+    \sa QProcess::CreateProcessArguments
+    \sa setCreateProcessArgumentsModifier()
+*/
+
+/*!
+    \class QProcess::CreateProcessArguments
+    \note This struct is only available on the Windows platform.
+
+    This struct is a representation of all parameters of the Windows API
+    function \c CreateProcess. It is used as parameter for
+    \c CreateProcessArgumentModifier functions.
+
+    \sa QProcess::CreateProcessArgumentModifier
+*/
+
+/*!
     \fn void QProcess::error(QProcess::ProcessError error)
     \obsolete
 
@@ -1561,6 +1602,39 @@ void QProcess::setNativeArguments(const QString &arguments)
 {
     Q_D(QProcess);
     d->nativeArguments = arguments;
+}
+
+/*!
+    \since 5.7
+
+    Returns a previously set \c CreateProcess modifier function.
+
+    \note This function is available only on the Windows platform.
+
+    \sa setCreateProcessArgumentsModifier()
+    \sa QProcess::CreateProcessArgumentModifier
+*/
+QProcess::CreateProcessArgumentModifier QProcess::createProcessArgumentsModifier() const
+{
+    Q_D(const QProcess);
+    return d->modifyCreateProcessArgs;
+}
+
+/*!
+    \since 5.7
+
+    Sets the \a modifier for the \c CreateProcess Win32 API call.
+    Pass \c QProcess::CreateProcessArgumentModifier() to remove a previously set one.
+
+    \note This function is available only on the Windows platform and requires
+    C++11.
+
+    \sa QProcess::CreateProcessArgumentModifier
+*/
+void QProcess::setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier)
+{
+    Q_D(QProcess);
+    d->modifyCreateProcessArgs = modifier;
 }
 
 #endif

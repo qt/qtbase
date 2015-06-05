@@ -138,7 +138,8 @@ private slots:
     void spaceArgsTest();
 #if defined(Q_OS_WIN)
     void nativeArguments();
-#endif
+    void createProcessArgumentsModifier();
+#endif // Q_OS_WIN
     void exitCodeTest();
     void systemEnvironment();
     void lockupsInStartDetached();
@@ -1512,7 +1513,26 @@ void tst_QProcess::nativeArguments()
     QCOMPARE(actual, expected);
 }
 
-#endif
+void tst_QProcess::createProcessArgumentsModifier()
+{
+    int calls = 0;
+    const QString reversedCommand = "lamroNssecorPtset/lamroNssecorPtset";
+    QProcess process;
+    process.setCreateProcessArgumentsModifier([&calls] (QProcess::CreateProcessArguments *args)
+    {
+        calls++;
+        std::reverse(args->arguments, args->arguments + wcslen(args->arguments) - 1);
+    });
+    process.start(reversedCommand);
+    QVERIFY2(process.waitForStarted(), qUtf8Printable(process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(calls, 1);
+
+    process.setCreateProcessArgumentsModifier(QProcess::CreateProcessArgumentModifier());
+    QVERIFY(!process.waitForStarted());
+    QCOMPARE(calls, 1);
+}
+#endif // Q_OS_WIN
 
 void tst_QProcess::exitCodeTest()
 {

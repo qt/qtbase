@@ -497,11 +497,21 @@ void QProcessPrivate::startProcess()
                                  0, 0, 0,
                                  stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
     };
-    success = CreateProcess(0, (wchar_t*)args.utf16(),
-                            0, 0, TRUE, dwCreationFlags,
-                            environment.isEmpty() ? 0 : envlist.data(),
-                            workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
-                            &startupInfo, pid);
+
+    QProcess::CreateProcessArguments cpargs = {
+        0, (wchar_t*)args.utf16(),
+        0, 0, TRUE, dwCreationFlags,
+        environment.isEmpty() ? 0 : envlist.data(),
+        workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
+        &startupInfo, pid
+    };
+    if (modifyCreateProcessArgs)
+        modifyCreateProcessArgs(&cpargs);
+    success = CreateProcess(cpargs.applicationName, cpargs.arguments, cpargs.processAttributes,
+                            cpargs.threadAttributes, cpargs.inheritHandles, cpargs.flags,
+                            cpargs.environment, cpargs.currentDirectory, cpargs.startupInfo,
+                            cpargs.processInformation);
+
     QString errorString;
     if (!success) {
         // Capture the error string before we do CloseHandle below

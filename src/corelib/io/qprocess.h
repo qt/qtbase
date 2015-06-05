@@ -38,6 +38,8 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -48,6 +50,8 @@ typedef qint64 Q_PID;
 #else
 QT_END_NAMESPACE
 typedef struct _PROCESS_INFORMATION *Q_PID;
+typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
+typedef struct _STARTUPINFOW Q_STARTUPINFO;
 QT_BEGIN_NAMESPACE
 #endif
 
@@ -180,7 +184,23 @@ public:
 #if defined(Q_OS_WIN)
     QString nativeArguments() const;
     void setNativeArguments(const QString &arguments);
-#endif
+    struct CreateProcessArguments
+    {
+        const wchar_t *applicationName;
+        wchar_t *arguments;
+        Q_SECURITY_ATTRIBUTES *processAttributes;
+        Q_SECURITY_ATTRIBUTES *threadAttributes;
+        bool inheritHandles;
+        unsigned long flags;
+        void *environment;
+        const wchar_t *currentDirectory;
+        Q_STARTUPINFO *startupInfo;
+        Q_PID processInformation;
+    };
+    typedef std::function<void(CreateProcessArguments *)> CreateProcessArgumentModifier;
+    CreateProcessArgumentModifier createProcessArgumentsModifier() const;
+    void setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier);
+#endif // Q_OS_WIN
 
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &dir);

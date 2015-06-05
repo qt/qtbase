@@ -329,6 +329,7 @@ public:
     QStringList arguments;
 #if defined(Q_OS_WIN)
     QString nativeArguments;
+    QProcess::CreateProcessArgumentModifier modifyCreateProcessArgs;
 #endif
     QProcessEnvironment environment;
 
