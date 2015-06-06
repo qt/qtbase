@@ -370,7 +370,6 @@ void AddressBook::loadFromFile()
 
         QDataStream in(&file);
         in.setVersion(QDataStream::Qt_4_3);
-        contacts.empty();   // empty existing contacts
         in >> contacts;
 
         QMap<QString, QString>::iterator i = contacts.begin();
