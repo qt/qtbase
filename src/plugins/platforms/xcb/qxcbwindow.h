@@ -145,10 +145,12 @@ public:
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
     static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
+    static void setWmWindowRoleStatic(QWindow *window, const QByteArray &role);
     static uint visualIdStatic(QWindow *window);
 
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
     void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::WindowFlags flags);
+    void setWmWindowRole(const QByteArray &role);
 
     static void setWindowIconTextStatic(QWindow *window, const QString &text);
 

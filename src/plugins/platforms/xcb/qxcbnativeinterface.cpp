@@ -350,6 +350,9 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier())
         return QFunctionPointer(QXcbWindowFunctions::SetWmWindowType(QXcbWindow::setWmWindowTypeStatic));
 
+    if (function == QXcbWindowFunctions::setWmWindowRoleIdentifier())
+        return QFunctionPointer(QXcbWindowFunctions::SetWmWindowRole(QXcbWindow::setWmWindowRoleStatic));
+
     if (function == QXcbWindowFunctions::setWmWindowIconTextIdentifier())
         return QFunctionPointer(QXcbWindowFunctions::SetWmWindowIconText(QXcbWindow::setWindowIconTextStatic));
 

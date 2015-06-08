@@ -284,6 +284,7 @@ static QWindow *childWindowAt(QWindow *win, const QPoint &p)
 }
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
+static const char *wm_window_role_property_id = "_q_xcb_wm_window_role";
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
@@ -610,6 +611,11 @@ void QXcbWindow::create()
         setOpacity(opacity);
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
+
+    if (window()->dynamicPropertyNames().contains(wm_window_role_property_id)) {
+        QByteArray wmWindowRole = window()->property(wm_window_role_property_id).toByteArray();
+        setWmWindowRole(wmWindowRole);
+    }
 }
 
 QXcbWindow::~QXcbWindow()
@@ -1733,6 +1739,14 @@ void QXcbWindow::setWindowIconTextStatic(QWindow *window, const QString &text)
         static_cast<QXcbWindow *>(window->handle())->setWindowIconText(text);
 }
 
+void QXcbWindow::setWmWindowRoleStatic(QWindow *window, const QByteArray &role)
+{
+    if (window->handle())
+        static_cast<QXcbWindow *>(window->handle())->setWmWindowRole(role);
+    else
+        window->setProperty(wm_window_role_property_id, role);
+}
+
 uint QXcbWindow::visualIdStatic(QWindow *window)
 {
     if (window && window->handle())
@@ -1896,6 +1910,13 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::W
                                        atoms.count(), atoms.constData()));
     }
     xcb_flush(xcb_connection());
+}
+
+void QXcbWindow::setWmWindowRole(const QByteArray &role)
+{
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::WM_WINDOW_ROLE), XCB_ATOM_STRING, 8,
+                                   role.size(), role.constData()));
 }
 
 void QXcbWindow::setParentRelativeBackPixmapStatic(QWindow *window)
