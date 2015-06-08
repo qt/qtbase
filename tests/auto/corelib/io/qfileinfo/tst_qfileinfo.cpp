@@ -609,6 +609,16 @@ void tst_QFileInfo::canonicalPath()
     QCOMPARE(fi.canonicalPath(), QFileInfo(QDir::tempPath()).canonicalFilePath());
 }
 
+class FileDeleter {
+    Q_DISABLE_COPY(FileDeleter)
+public:
+    explicit FileDeleter(const QString fileName) : m_fileName(fileName) {}
+    ~FileDeleter() { QFile::remove(m_fileName); }
+
+private:
+    const QString m_fileName;
+};
+
 void tst_QFileInfo::canonicalFilePath()
 {
     const QString fileName("tmp.canon");
@@ -639,9 +649,13 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+
+    const QString dirSymLinkName = QLatin1String("tst_qfileinfo")
+        + QDateTime::currentDateTime().toString(QLatin1String("yyMMddhhmmss"));
+    const QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName);
+    FileDeleter dirSymLinkDeleter(link);
+
     {
-        const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
-        QFile::remove(link);
         QFile file(QDir::currentPath());
         if (file.link(link)) {
             QFile tempfile("tempfile.txt");
@@ -666,12 +680,12 @@ void tst_QFileInfo::canonicalFilePath()
         }
     }
     {
-        QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo"
-                     + QDir::separator() + "link_to_tst_qfileinfo");
+        QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName
+                     + "/link_to_tst_qfileinfo");
         QFile::remove(link);
 
-        QFile file(QDir::tempPath() + QDir::separator() + "tst_qfileinfo"
-                   + QDir::separator() + "tst_qfileinfo.cpp");
+        QFile file(QDir::tempPath() + QLatin1Char('/') +  dirSymLinkName
+                   + "tst_qfileinfo.cpp");
         if (file.link(link))
         {
             QFileInfo info1("tst_qfileinfo.cpp");
