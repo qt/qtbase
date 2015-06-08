@@ -39,6 +39,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qtypetraits.h>
 
 #include <string.h>
@@ -220,12 +221,28 @@ class QTestData;
 
 namespace QTest
 {
-    template <typename T>
-    inline char *toString(const T &)
+    namespace Internal {
+
+    template<typename T> // Output registered enums
+    inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, char*>::Type toString(T e)
+    {
+        QMetaEnum me = QMetaEnum::fromType<T>();
+        return qstrdup(me.key(e));
+    }
+
+    template <typename T> // Fallback
+    inline typename QtPrivate::QEnableIf<!QtPrivate::IsQEnumHelper<T>::Value, char*>::Type toString(const T &)
     {
         return 0;
     }
 
+    } // namespace Internal
+
+    template<typename T>
+    inline char *toString(const T &t)
+    {
+        return Internal::toString(t);
+    }
 
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, int length);

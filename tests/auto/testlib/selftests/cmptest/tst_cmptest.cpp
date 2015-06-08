@@ -124,6 +124,8 @@ class tst_Cmptest: public QObject
     Q_OBJECT
 
 private slots:
+    void compare_unregistered_enums();
+    void compare_registered_enums();
     void compare_boolfuncs();
     void compare_pointerfuncs();
     void compare_tostring();
@@ -139,6 +141,20 @@ private slots:
     void compareQImages_data();
 #endif
 };
+
+enum MyUnregisteredEnum { MyUnregisteredEnumValue1, MyUnregisteredEnumValue2 };
+
+void tst_Cmptest::compare_unregistered_enums()
+{
+    QCOMPARE(MyUnregisteredEnumValue1, MyUnregisteredEnumValue1);
+    QCOMPARE(MyUnregisteredEnumValue1, MyUnregisteredEnumValue2);
+}
+
+void tst_Cmptest::compare_registered_enums()
+{
+    QCOMPARE(Qt::ArrowCursor, Qt::ArrowCursor);
+    QCOMPARE(Qt::ArrowCursor, Qt::BusyCursor);
+}
 
 static bool boolfunc() { return true; }
 static bool boolfunc2() { return true; }

@@ -1,91 +1,97 @@
 ********* Start testing of tst_Cmptest *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_Cmptest::initTestCase()
+FAIL!  : tst_Cmptest::compare_unregistered_enums() Compared values are not the same
+   Loc: [tst_cmptest.cpp(150)]
+FAIL!  : tst_Cmptest::compare_registered_enums() Compared values are not the same
+   Actual   (Qt::ArrowCursor): ArrowCursor
+   Expected (Qt::BusyCursor) : BusyCursor
+   Loc: [tst_cmptest.cpp(156)]
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_pointerfuncs()
 FAIL!  : tst_Cmptest::compare_tostring(int, string) Compared values are not the same
    Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)
-   Loc: [tst_cmptest.cpp(219)]
+   Loc: [tst_cmptest.cpp(227)]
 PASS   : tst_Cmptest::compare_tostring(both invalid)
 FAIL!  : tst_Cmptest::compare_tostring(null hash, invalid) Compared values are not the same
    Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()
-   Loc: [tst_cmptest.cpp(219)]
+   Loc: [tst_cmptest.cpp(227)]
 FAIL!  : tst_Cmptest::compare_tostring(string, null user type) Compared values are not the same
    Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)
-   Loc: [tst_cmptest.cpp(219)]
+   Loc: [tst_cmptest.cpp(227)]
 FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values are not the same
    Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)
-   Loc: [tst_cmptest.cpp(219)]
+   Loc: [tst_cmptest.cpp(227)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
 PASS   : tst_Cmptest::compareQStringLists(equal lists)
 FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"
-   Loc: [tst_cmptest.cpp(313)]
+   Loc: [tst_cmptest.cpp(321)]
 FAIL!  : tst_Cmptest::compareQStringLists(second-last item different) Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"
-   Loc: [tst_cmptest.cpp(313)]
+   Loc: [tst_cmptest.cpp(321)]
 FAIL!  : tst_Cmptest::compareQStringLists(prefix) Compared lists have different sizes.
    Actual   (opA) size: 2
    Expected (opB) size: 1
-   Loc: [tst_cmptest.cpp(313)]
+   Loc: [tst_cmptest.cpp(321)]
 FAIL!  : tst_Cmptest::compareQStringLists(short list second) Compared lists have different sizes.
    Actual   (opA) size: 12
    Expected (opB) size: 1
-   Loc: [tst_cmptest.cpp(313)]
+   Loc: [tst_cmptest.cpp(321)]
 FAIL!  : tst_Cmptest::compareQStringLists(short list first) Compared lists have different sizes.
    Actual   (opA) size: 1
    Expected (opB) size: 12
-   Loc: [tst_cmptest.cpp(313)]
+   Loc: [tst_cmptest.cpp(321)]
 FAIL!  : tst_Cmptest::compareQListInt() Compared lists differ at index 2.
    Actual   (int1): 3
    Expected (int2): 4
-   Loc: [tst_cmptest.cpp(320)]
+   Loc: [tst_cmptest.cpp(328)]
 FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1
-   Loc: [tst_cmptest.cpp(327)]
+   Loc: [tst_cmptest.cpp(335)]
 PASS   : tst_Cmptest::compareQPixmaps(both null)
 FAIL!  : tst_Cmptest::compareQPixmaps(one null) Compared QPixmaps differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0
-   Loc: [tst_cmptest.cpp(353)]
+   Loc: [tst_cmptest.cpp(361)]
 FAIL!  : tst_Cmptest::compareQPixmaps(other null) Compared QPixmaps differ.
    Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1
-   Loc: [tst_cmptest.cpp(353)]
+   Loc: [tst_cmptest.cpp(361)]
 PASS   : tst_Cmptest::compareQPixmaps(equal)
 FAIL!  : tst_Cmptest::compareQPixmaps(different size) Compared QPixmaps differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20
-   Loc: [tst_cmptest.cpp(353)]
+   Loc: [tst_cmptest.cpp(361)]
 FAIL!  : tst_Cmptest::compareQPixmaps(different pixels) Compared values are not the same
-   Loc: [tst_cmptest.cpp(353)]
+   Loc: [tst_cmptest.cpp(361)]
 PASS   : tst_Cmptest::compareQImages(both null)
 FAIL!  : tst_Cmptest::compareQImages(one null) Compared QImages differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0
-   Loc: [tst_cmptest.cpp(380)]
+   Loc: [tst_cmptest.cpp(388)]
 FAIL!  : tst_Cmptest::compareQImages(other null) Compared QImages differ.
    Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1
-   Loc: [tst_cmptest.cpp(380)]
+   Loc: [tst_cmptest.cpp(388)]
 PASS   : tst_Cmptest::compareQImages(equal)
 FAIL!  : tst_Cmptest::compareQImages(different size) Compared QImages differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20
-   Loc: [tst_cmptest.cpp(380)]
+   Loc: [tst_cmptest.cpp(388)]
 FAIL!  : tst_Cmptest::compareQImages(different format) Compared QImages differ in format.
    Actual   (opA): 6
    Expected (opB): 3
-   Loc: [tst_cmptest.cpp(380)]
+   Loc: [tst_cmptest.cpp(388)]
 FAIL!  : tst_Cmptest::compareQImages(different pixels) Compared values are not the same
-   Loc: [tst_cmptest.cpp(380)]
+   Loc: [tst_cmptest.cpp(388)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 11 passed, 20 failed, 0 skipped, 0 blacklisted
+Totals: 11 passed, 22 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Cmptest *********

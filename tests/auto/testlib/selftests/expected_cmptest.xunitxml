@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="20" tests="10" name="tst_Cmptest">
+<testsuite errors="0" failures="22" tests="12" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
     <property value="" name="QtBuild"/>
   </properties>
   <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="compare_unregistered_enums">
+    <failure message="Compared values are not the same" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compare_registered_enums">
+    <failure message="Compared values are not the same
+   Actual   (Qt::ArrowCursor): ArrowCursor
+   Expected (Qt::BusyCursor) : BusyCursor" result="fail"/>
+  </testcase>
   <testcase result="pass" name="compare_boolfuncs"/>
   <testcase result="pass" name="compare_pointerfuncs"/>
   <testcase result="fail" name="compare_tostring">
