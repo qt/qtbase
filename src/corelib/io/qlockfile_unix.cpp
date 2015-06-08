@@ -218,7 +218,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
 #if defined(Q_OS_OSX)
     char name[1024];
     proc_name(pid, name, sizeof(name) / sizeof(char));
-    return QString::fromUtf8(name);
+    return QFile::decodeName(name);
 #elif defined(Q_OS_LINUX)
     if (!QFile::exists(QStringLiteral("/proc/version")))
         return QString();
@@ -231,12 +231,12 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
         return QStringLiteral("/ERROR/");
     }
     buf[len] = 0;
-    return QFileInfo(QString::fromUtf8(buf)).fileName();
+    return QFileInfo(QFile::decodeName(buf)).fileName();
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
     kinfo_proc *proc = kinfo_getproc(pid);
     if (!proc)
         return QString();
-    QString name = QString::fromUtf8(proc->ki_comm);
+    QString name = QFile::decodeName(proc->ki_comm);
     free(proc);
     return name;
 #else
