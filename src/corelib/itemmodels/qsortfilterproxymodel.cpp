@@ -1011,6 +1011,7 @@ QModelIndexPairList QSortFilterProxyModelPrivate::store_persistent_indexes()
 {
     Q_Q(QSortFilterProxyModel);
     QModelIndexPairList source_indexes;
+    source_indexes.reserve(persistent.indexes.count());
     foreach (QPersistentModelIndexData *data, persistent.indexes) {
         QModelIndex proxy_index = data->index;
         QModelIndex source_index = q->mapToSource(proxy_index);
@@ -1030,7 +1031,10 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
 {
     Q_Q(QSortFilterProxyModel);
     QModelIndexList from, to;
-    for (int i = 0; i < source_indexes.count(); ++i) {
+    const int numSourceIndexes = source_indexes.count();
+    from.reserve(numSourceIndexes);
+    to.reserve(numSourceIndexes);
+    for (int i = 0; i < numSourceIndexes; ++i) {
         QModelIndex source_index = source_indexes.at(i).second;
         QModelIndex old_proxy_index = source_indexes.at(i).first;
         create_mapping(source_index.parent());
@@ -2013,7 +2017,9 @@ QMimeData *QSortFilterProxyModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const QSortFilterProxyModel);
     QModelIndexList source_indexes;
-    for (int i = 0; i < indexes.count(); ++i)
+    const int numIndexes = indexes.count();
+    source_indexes.reserve(numIndexes);
+    for (int i = 0; i < numIndexes; ++i)
         source_indexes << mapToSource(indexes.at(i));
     return d->model->mimeData(source_indexes);
 }

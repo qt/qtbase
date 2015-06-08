@@ -357,6 +357,7 @@ void QSettingsPrivate::requestUpdate()
 QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 {
     QStringList result;
+    result.reserve(l.count());
     QVariantList::const_iterator it = l.constBegin();
     for (; it != l.constEnd(); ++it)
         result.append(variantToString(*it));
@@ -374,7 +375,9 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
                 outStringList[i].remove(0, 1);
             } else {
                 QVariantList variantList;
-                for (int j = 0; j < l.count(); ++j)
+                const int stringCount = l.count();
+                variantList.reserve(stringCount);
+                for (int j = 0; j < stringCount; ++j)
                     variantList.append(stringToVariant(l.at(j)));
                 return variantList;
             }

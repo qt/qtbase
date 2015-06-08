@@ -642,6 +642,7 @@ QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingO
     QList<QPair<QString, QString> > result;
     Map::const_iterator it = d->itemList.constBegin();
     Map::const_iterator end = d->itemList.constEnd();
+    result.reserve(d->itemList.count());
     for ( ; it != end; ++it)
         result << qMakePair(d->recodeToUser(it->first, encoding),
                             d->recodeToUser(it->second, encoding));

@@ -212,6 +212,7 @@ QItemSelection QIdentityProxyModel::mapSelectionFromSource(const QItemSelection&
 
     QItemSelection::const_iterator it = selection.constBegin();
     const QItemSelection::const_iterator end = selection.constEnd();
+    proxySelection.reserve(selection.count());
     for ( ; it != end; ++it) {
         Q_ASSERT(it->model() == d->model);
         const QItemSelectionRange range(mapFromSource(it->topLeft()), mapFromSource(it->bottomRight()));
@@ -234,6 +235,7 @@ QItemSelection QIdentityProxyModel::mapSelectionToSource(const QItemSelection& s
 
     QItemSelection::const_iterator it = selection.constBegin();
     const QItemSelection::const_iterator end = selection.constEnd();
+    sourceSelection.reserve(selection.count());
     for ( ; it != end; ++it) {
         Q_ASSERT(it->model() == this);
         const QItemSelectionRange range(mapToSource(it->topLeft()), mapToSource(it->bottomRight()));
@@ -269,6 +271,7 @@ QModelIndexList QIdentityProxyModel::match(const QModelIndex& start, int role, c
     QModelIndexList::const_iterator it = sourceList.constBegin();
     const QModelIndexList::const_iterator end = sourceList.constEnd();
     QModelIndexList proxyList;
+    proxyList.reserve(sourceList.count());
     for ( ; it != end; ++it)
         proxyList.append(mapFromSource(*it));
     return proxyList;

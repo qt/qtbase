@@ -435,7 +435,9 @@ QObjectList QPluginLoader::staticInstances()
     QObjectList instances;
     const StaticPluginList *plugins = staticPluginList();
     if (plugins) {
-        for (int i = 0; i < plugins->size(); ++i)
+        const int numPlugins = plugins->size();
+        instances.reserve(numPlugins);
+        for (int i = 0; i < numPlugins; ++i)
             instances += plugins->at(i).instance();
     }
     return instances;

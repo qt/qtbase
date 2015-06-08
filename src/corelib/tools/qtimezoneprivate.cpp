@@ -700,6 +700,7 @@ QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> result;
+    result.reserve(utcDataTableSize);
     for (int i = 0; i < utcDataTableSize; ++i)
         result << utcId(utcData(i));
     std::sort(result.begin(), result.end()); // ### or already sorted??

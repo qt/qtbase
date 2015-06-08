@@ -790,6 +790,7 @@ QStringList QResourceRoot::children(int node) const
         offset += 4;
         const int child_off = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
                               (tree[offset+2] << 8) + (tree[offset+3] << 0);
+        ret.reserve(child_count);
         for(int i = child_off; i < child_off+child_count; ++i)
             ret << name(i);
     }

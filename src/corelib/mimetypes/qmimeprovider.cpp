@@ -541,6 +541,7 @@ QList<QMimeType> QMimeBinaryProvider::allMimeTypes()
 {
     QList<QMimeType> result;
     loadMimeTypeList();
+    result.reserve(m_mimetypeNames.count());
 
     for (QSet<QString>::const_iterator it = m_mimetypeNames.constBegin();
           it != m_mimetypeNames.constEnd(); ++it)
