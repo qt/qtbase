@@ -223,13 +223,14 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     if (!QFile::exists(QStringLiteral("/proc/version")))
         return QString();
     char exePath[64];
-    char buf[PATH_MAX];
-    memset(buf, 0, sizeof(buf));
+    char buf[PATH_MAX + 1];
     sprintf(exePath, "/proc/%lld/exe", pid);
-    if (readlink(exePath, buf, sizeof(buf)) < 0) {
+    size_t len = (size_t)readlink(exePath, buf, sizeof(buf));
+    if (len >= sizeof(buf)) {
         // The pid is gone. Return some invalid process name to fail the test.
         return QStringLiteral("/ERROR/");
     }
+    buf[len] = 0;
     return QFileInfo(QString::fromUtf8(buf)).fileName();
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
     kinfo_proc *proc = kinfo_getproc(pid);
