@@ -33,11 +33,14 @@
 
 
 #include "qandroidplatformaccessibility.h"
+#include "androidjniaccessibility.h"
 
 QT_BEGIN_NAMESPACE
 
 QAndroidPlatformAccessibility::QAndroidPlatformAccessibility()
-{}
+{
+    QtAndroidAccessibility::initialize();
+}
 
 QAndroidPlatformAccessibility::~QAndroidPlatformAccessibility()
 {}
