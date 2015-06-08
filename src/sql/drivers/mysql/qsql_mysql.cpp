@@ -45,6 +45,7 @@
 #include <qstringlist.h>
 #include <qtextcodec.h>
 #include <qvector.h>
+#include <qfile.h>
 
 #include <qdebug.h>
 
@@ -1211,7 +1212,7 @@ static void setOptionFlag(uint &optionFlags, const QString &opt)
     else if (opt == QLatin1String("CLIENT_ODBC"))
         optionFlags |= CLIENT_ODBC;
     else if (opt == QLatin1String("CLIENT_SSL"))
-        optionFlags |= CLIENT_SSL;
+        qWarning("QMYSQLDriver: SSL_KEY, SSL_CERT and SSL_CA should be used instead of CLIENT_SSL.");
     else
         qWarning("QMYSQLDriver::open: Unknown connect option '%s'", opt.toLocal8Bit().constData());
 }
@@ -1235,6 +1236,11 @@ bool QMYSQLDriver::open(const QString& db,
     unsigned int optionFlags = Q_CLIENT_MULTI_STATEMENTS;
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     QString unixSocket;
+    QString sslCert;
+    QString sslCA;
+    QString sslKey;
+    QString sslCAPath;
+    QString sslCipher;
 #if MYSQL_VERSION_ID >= 50000
     my_bool reconnect=false;
     uint connectTimeout = 0;
@@ -1263,6 +1269,16 @@ bool QMYSQLDriver::open(const QString& db,
                 writeTimeout = val.toInt();
             }
 #endif
+            else if (opt == QLatin1String("SSL_KEY"))
+                sslKey = val;
+            else if (opt == QLatin1String("SSL_CERT"))
+                sslCert = val;
+            else if (opt == QLatin1String("SSL_CA"))
+                sslCA = val;
+            else if (opt == QLatin1String("SSL_CAPATH"))
+                sslCAPath = val;
+            else if (opt == QLatin1String("SSL_CIPHER"))
+                sslCipher = val;
             else if (val == QLatin1String("TRUE") || val == QLatin1String("1"))
                 setOptionFlag(optionFlags, tmp.left(idx).simplified());
             else
@@ -1273,39 +1289,60 @@ bool QMYSQLDriver::open(const QString& db,
         }
     }
 
-    if ((d->mysql = mysql_init((MYSQL*) 0))) {
+    if (!(d->mysql = mysql_init((MYSQL*) 0))) {
+        setLastError(qMakeError(tr("Unable to allocate a MYSQL object"),
+                     QSqlError::ConnectionError, d));
+        setOpenError(true);
+        return false;
+    }
+
+    if (!sslKey.isNull() || !sslCert.isNull() || !sslCA.isNull() ||
+        !sslCAPath.isNull() || !sslCipher.isNull()) {
+       mysql_ssl_set(d->mysql,
+                        sslKey.isNull() ? static_cast<const char *>(0)
+                                        : QFile::encodeName(sslKey).constData(),
+                        sslCert.isNull() ? static_cast<const char *>(0)
+                                         : QFile::encodeName(sslCert).constData(),
+                        sslCA.isNull() ? static_cast<const char *>(0)
+                                       : QFile::encodeName(sslCA).constData(),
+                        sslCAPath.isNull() ? static_cast<const char *>(0)
+                                           : QFile::encodeName(sslCAPath).constData(),
+                        sslCipher.isNull() ? static_cast<const char *>(0)
+                                           : sslCipher.toLocal8Bit().constData());
+    }
+
 #if MYSQL_VERSION_ID >= 50000
-        if (connectTimeout != 0)
-            mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
-        if (readTimeout != 0)
-            mysql_options(d->mysql, MYSQL_OPT_READ_TIMEOUT, &readTimeout);
-        if (writeTimeout != 0)
-            mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
+    if (connectTimeout != 0)
+        mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
+    if (readTimeout != 0)
+        mysql_options(d->mysql, MYSQL_OPT_READ_TIMEOUT, &readTimeout);
+    if (writeTimeout != 0)
+        mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
 #endif
-        if (mysql_real_connect(d->mysql,
-                               host.isNull() ? static_cast<const char *>(0)
-                                             : host.toLocal8Bit().constData(),
-                               user.isNull() ? static_cast<const char *>(0)
-                                             : user.toLocal8Bit().constData(),
-                               password.isNull() ? static_cast<const char *>(0)
-                                                 : password.toLocal8Bit().constData(),
-                               db.isNull() ? static_cast<const char *>(0)
-                                           : db.toLocal8Bit().constData(),
-                               (port > -1) ? port : 0,
-                               unixSocket.isNull() ? static_cast<const char *>(0)
-                                           : unixSocket.toLocal8Bit().constData(),
-                               optionFlags)) {
-            if (!db.isEmpty() && mysql_select_db(d->mysql, db.toLocal8Bit().constData())) {
-                setLastError(qMakeError(tr("Unable to open database '%1'").arg(db), QSqlError::ConnectionError, d));
-                mysql_close(d->mysql);
-                setOpenError(true);
-                return false;
-            }
-#if MYSQL_VERSION_ID >= 50000
-            if (reconnect)
-                mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
-#endif
+    if (mysql_real_connect(d->mysql,
+                              host.isNull() ? static_cast<const char *>(0)
+                                            : host.toLocal8Bit().constData(),
+                              user.isNull() ? static_cast<const char *>(0)
+                                            : user.toLocal8Bit().constData(),
+                              password.isNull() ? static_cast<const char *>(0)
+                                                : password.toLocal8Bit().constData(),
+                              db.isNull() ? static_cast<const char *>(0)
+                                          : db.toLocal8Bit().constData(),
+                              (port > -1) ? port : 0,
+                              unixSocket.isNull() ? static_cast<const char *>(0)
+                                          : unixSocket.toLocal8Bit().constData(),
+                              optionFlags))
+    {
+        if (!db.isEmpty() && mysql_select_db(d->mysql, db.toLocal8Bit().constData())) {
+            setLastError(qMakeError(tr("Unable to open database '%1'").arg(db), QSqlError::ConnectionError, d));
+            mysql_close(d->mysql);
+            setOpenError(true);
+            return false;
         }
+#if MYSQL_VERSION_ID >= 50000
+        if (reconnect)
+            mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
+#endif
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));
