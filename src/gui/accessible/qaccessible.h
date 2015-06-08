@@ -396,7 +396,7 @@ public:
     static UpdateHandler installUpdateHandler(UpdateHandler);
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
-    class ActivationObserver
+    class Q_GUI_EXPORT ActivationObserver
     {
     public:
         virtual ~ActivationObserver();
