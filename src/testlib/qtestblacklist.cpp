@@ -166,6 +166,17 @@ static std::set<QByteArray> *gpuFeatures = 0;
 
 Q_TESTLIB_EXPORT std::set<QByteArray> *(*qgpu_features_ptr)(const QString &) = 0;
 
+static bool isGPUTestBlacklisted(const char *slot)
+{
+    const QByteArray disableKey = QByteArrayLiteral("disable_") + QByteArray(slot);
+    if (gpuFeatures->find(disableKey) != gpuFeatures->end()) {
+        const QByteArray msg = QByteArrayLiteral("Skipped due to GPU blacklist: ") + disableKey;
+        QTest::qSkip(msg.constData(), __FILE__, __LINE__);
+        return true;
+    }
+    return false;
+}
+
 namespace QTestPrivate {
 
 void parseBlackList()
@@ -230,10 +241,12 @@ void checkBlackLists(const char *slot, const char *data)
     // Tests blacklisted in GPU_BLACKLIST are to be skipped. Just ignoring the result is
     // not sufficient since these are expected to crash or behave in undefined ways.
     if (!ignore && gpuFeatures) {
-        const QByteArray disableKey = QByteArrayLiteral("disable_") + QByteArray(slot);
-        if (gpuFeatures->find(disableKey) != gpuFeatures->end()) {
-            const QByteArray msg = QByteArrayLiteral("Skipped due to GPU blacklist: ") + disableKey;
-            QTest::qSkip(msg.constData(), __FILE__, __LINE__);
+        QByteArray s_gpu = slot;
+        ignore = isGPUTestBlacklisted(s_gpu);
+        if (!ignore && data) {
+            s_gpu += ':';
+            s_gpu += data;
+            isGPUTestBlacklisted(s_gpu);
         }
     }
 }
