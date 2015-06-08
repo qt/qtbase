@@ -251,7 +251,7 @@ static ISC_TIME toTime(const QTime &t)
 
 static QTime fromTime(char *buffer)
 {
-    QTime t;
+    QTime t(0, 0);
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
     t = t.addMSecs(int((*(ISC_TIME*)buffer) / 10));
