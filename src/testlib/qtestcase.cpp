@@ -2839,6 +2839,10 @@ QString QTest::qExtractTestData(const QString &dirName)
                   qWarning("Failed to copy '%s'.", qPrintable(fileInfo.filePath()));
                   return QString();
               }
+              if (!QFile::setPermissions(destination, QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
+                  qWarning("Failed to set permissions on '%s'.", qPrintable(destination));
+                  return QString();
+              }
           }
       }
 
