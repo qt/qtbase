@@ -373,7 +373,7 @@ QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherWinRT::registeredTime
     Q_D(const QEventDispatcherWinRT);
     QList<TimerInfo> timerInfos;
     foreach (const WinRTTimerInfo &info, d->timerInfos) {
-        if (info.object == object)
+        if (info.object == object && info.timerId != INVALID_TIMER_ID)
             timerInfos.append(info);
     }
     return timerInfos;
