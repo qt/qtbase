@@ -38,7 +38,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 
-#include "qcocoaautoreleasepool.h"
 
 #ifndef QT_NO_PRINTER
 
@@ -50,7 +49,7 @@ QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode) : QPaintEngine(*(ne
 {
     Q_D(QMacPrintEngine);
     d->mode = mode;
-    d->m_printDevice = new QCocoaPrintDevice(QCocoaPrinterSupport().defaultPrintDeviceId());
+    d->m_printDevice.reset(new QCocoaPrintDevice(QCocoaPrinterSupport().defaultPrintDeviceId()));
     d->m_pageLayout.setPageSize(d->m_printDevice->defaultPageSize());
     d->initialize();
 }
@@ -233,7 +232,7 @@ void QMacPrintEnginePrivate::initialize()
 
     q->gccaps = paintEngine->gccaps;
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     printInfo = [[NSPrintInfo alloc] initWithDictionary:[NSDictionary dictionary]];
 
     QList<int> resolutions = m_printDevice->supportedResolutions();
@@ -561,7 +560,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
             id = QCocoaPrinterSupport().defaultPrintDeviceId();
         else if (!QCocoaPrinterSupport().availablePrintDeviceIds().contains(id))
             break;
-        d->m_printDevice = new QCocoaPrintDevice(id);
+        d->m_printDevice.reset(new QCocoaPrintDevice(id));
         PMPrinter printer = d->m_printDevice->macPrinter();
         PMRetain(printer);
         PMSessionSetCurrentPMPrinter(d->session(), printer);

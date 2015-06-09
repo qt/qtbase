@@ -38,16 +38,18 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QDebug;
 class QTouchDevicePrivate;
 
 class Q_GUI_EXPORT QTouchDevice
 {
+    Q_GADGET
 public:
     enum DeviceType {
         TouchScreen,
         TouchPad
     };
+    Q_ENUM(DeviceType)
 
     enum CapabilityFlag {
         Position = 0x0001,
@@ -58,6 +60,7 @@ public:
         NormalizedPosition = 0x0020,
         MouseEmulation = 0x0040
     };
+    Q_FLAG(CapabilityFlag)
     Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
 
     QTouchDevice();
@@ -80,6 +83,10 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QTouchDevice *);
+#endif
 
 QT_END_NAMESPACE
 

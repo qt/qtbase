@@ -404,8 +404,8 @@ void tst_QSslSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthent
 
 void tst_QSslSocket::constructing()
 {
-    const char readNotOpenMessage[] = "QIODevice::read: device not open";
-    const char writeNotOpenMessage[] = "QIODevice::write: device not open";
+    const char readNotOpenMessage[] = "QIODevice::read (QSslSocket): device not open";
+    const char writeNotOpenMessage[] = "QIODevice::write (QSslSocket): device not open";
 
     if (!QSslSocket::supportsSsl())
         return;
@@ -443,13 +443,13 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.read(0, 0), qint64(-1));
     QTest::ignoreMessage(QtWarningMsg, readNotOpenMessage);
     QVERIFY(socket.readAll().isEmpty());
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::readLine: Called with maxSize < 2");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::readLine (QSslSocket): Called with maxSize < 2");
     QCOMPARE(socket.readLine(0, 0), qint64(-1));
     char buf[10];
     QCOMPARE(socket.readLine(buf, sizeof(buf)), qint64(-1));
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: Cannot call seek on a sequential device");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek (QSslSocket): Cannot call seek on a sequential device");
     QVERIFY(!socket.reset());
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek: Cannot call seek on a sequential device");
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek (QSslSocket): Cannot call seek on a sequential device");
     QVERIFY(!socket.seek(2));
     QCOMPARE(socket.size(), qint64(0));
     QVERIFY(!socket.waitForBytesWritten(10));

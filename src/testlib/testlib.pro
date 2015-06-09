@@ -56,6 +56,7 @@ SOURCES = qtestcase.cpp \
     qcsvbenchmarklogger.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
+    qtestmouse.cpp \
     qtestxunitstreamer.cpp \
     qxunittestlogger.cpp \
     qtestblacklist.cpp

@@ -34,6 +34,7 @@
 #ifndef QWINDOWSNATIVEINTERFACE_H
 #define QWINDOWSNATIVEINTERFACE_H
 
+#include <QtGui/qfont.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,6 +78,7 @@ public:
     Q_INVOKABLE void registerWindowsMime(void *mimeIn);
     Q_INVOKABLE void unregisterWindowsMime(void *mime);
     Q_INVOKABLE int registerMimeType(const QString &mimeType);
+    Q_INVOKABLE QFont logFontToQFont(const void *logFont, int verticalDpi);
 
     bool asyncExpose() const;
     void setAsyncExpose(bool value);

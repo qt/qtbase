@@ -64,7 +64,7 @@ public:
     QString domain;
     QString user;
     QString password;
-    bool isNull() {
+    bool isNull() const {
         return domain.isNull() && user.isNull() && password.isNull();
     }
 };

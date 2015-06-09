@@ -89,6 +89,9 @@ public:
     void setProgressiveScanWrite(bool progressive);
     bool progressiveScanWrite() const;
 
+    QImageIOHandler::Transformations transformation() const;
+    void setTransformation(QImageIOHandler::Transformations orientation);
+
     // Obsolete as of 4.1
     void setDescription(const QString &description);
     QString description() const;

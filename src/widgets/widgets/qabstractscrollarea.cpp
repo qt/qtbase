@@ -168,6 +168,10 @@ QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
 {
 }
 
+QAbstractScrollAreaPrivate::~QAbstractScrollAreaPrivate()
+{
+}
+
 QAbstractScrollAreaScrollBarContainer::QAbstractScrollAreaScrollBarContainer(Qt::Orientation orientation, QWidget *parent)
     :QWidget(parent), scrollBar(new QScrollBar(orientation, this)),
      layout(new QBoxLayout(orientation == Qt::Horizontal ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom)),

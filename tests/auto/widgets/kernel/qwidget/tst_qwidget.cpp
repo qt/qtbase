@@ -443,6 +443,7 @@ private slots:
     void grabKeyboard();
 
     void touchEventSynthesizedMouseEvent();
+    void touchUpdateOnNewTouch();
 
     void styleSheetPropagation();
 
@@ -3342,8 +3343,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
 
     QTRY_VERIFY((wr = QApplication::widgetAt(testPos)));
     QTRY_COMPARE(wr->objectName(), w1->objectName());
@@ -3362,8 +3361,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Window mask not implemented on Mac QTBUG-22326", Continue);
     QTRY_VERIFY(QApplication::widgetAt(testPos) == w1.data());
     QTRY_VERIFY(QApplication::widgetAt(testPos + QPoint(1, 1)) == w2.data());
 }
@@ -3451,7 +3448,8 @@ void tst_QWidget::testDeletionInEventHandlers()
     w = new Widget;
     w->show();
     w->deleteThis = true;
-    QTest::mouseRelease(w, Qt::LeftButton);
+    QMouseEvent me(QEvent::MouseButtonRelease, QPoint(1, 1), Qt::LeftButton, Qt::LeftButton, 0);
+    qApp->notify(w, &me);
     QVERIFY(w == 0);
     delete w;
 
@@ -3489,7 +3487,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->setMouseTracking(true);
     w->show();
     w->deleteThis = true;
-    QMouseEvent me(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    me = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(w, &me);
     QVERIFY(w == 0);
     delete w;
@@ -8966,7 +8964,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          int numEnterEvents, numMouseMoveEvents;
      };
 
-    QCursor::setPos(QPoint(0,0));
+     QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
      parent.move(200, 200);
@@ -8974,8 +8972,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      SELChild child(&parent);
      child.resize(200, 200);
      parent.show();
-     QVERIFY(QTest::qWaitForWindowExposed(&parent));
-     QTest::qWait(150);
+     QVERIFY(QTest::qWaitForWindowActive(&parent));
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
      // Make sure the cursor has entered the child.
@@ -9723,8 +9720,9 @@ void tst_QWidget::grabMouse()
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QStringList expectedLog;
-    grabber->grabMouse();
     QPoint mousePos = QPoint(w.width() / 2, 10);
+    QTest::mouseMove(w.windowHandle(), mousePos);
+    grabber->grabMouse();
     const int step = w.height() / 5;
     for ( ; mousePos.y() < w.height() ; mousePos.ry() += step) {
         QTest::mouseClick(w.windowHandle(), Qt::LeftButton, 0, mousePos);
@@ -9765,6 +9763,9 @@ class TouchMouseWidget : public QWidget {
 public:
     explicit TouchMouseWidget(QWidget *parent = 0)
         : QWidget(parent),
+          m_touchBeginCount(0),
+          m_touchUpdateCount(0),
+          m_touchEndCount(0),
           m_touchEventCount(0),
           m_acceptTouch(false),
           m_mouseEventCount(0),
@@ -9791,6 +9792,12 @@ protected:
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
+            if (e->type() == QEvent::TouchBegin)
+                ++m_touchBeginCount;
+            else if (e->type() == QEvent::TouchUpdate)
+                ++m_touchUpdateCount;
+            else if (e->type() == QEvent::TouchEnd)
+                ++m_touchEndCount;
             ++m_touchEventCount;
             if (m_acceptTouch)
                 e->accept();
@@ -9815,6 +9822,9 @@ protected:
     }
 
 public:
+    int m_touchBeginCount;
+    int m_touchUpdateCount;
+    int m_touchEndCount;
     int m_touchEventCount;
     bool m_acceptTouch;
     int m_mouseEventCount;
@@ -9929,6 +9939,46 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
         QCOMPARE(child.m_lastMouseEventPos, QPointF(10, 10));
     }
+}
+
+void tst_QWidget::touchUpdateOnNewTouch()
+{
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+
+    TouchMouseWidget widget;
+    widget.setAcceptTouch(true);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(new QWidget);
+    widget.setLayout(layout);
+    widget.show();
+
+    QWindow* window = widget.windowHandle();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_touchUpdateCount, 0);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).press(0, QPoint(20, 20), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 0);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).move(0, QPoint(25, 25), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 1);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).stationary(0).press(1, QPoint(40, 40), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 2);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).stationary(1).release(0, QPoint(25, 25), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 3);
+    QCOMPARE(widget.m_touchEndCount, 0);
+    QTest::touchEvent(window, device).release(1, QPoint(40, 40), window);
+    QCOMPARE(widget.m_touchBeginCount, 1);
+    QCOMPARE(widget.m_touchUpdateCount, 3);
+    QCOMPARE(widget.m_touchEndCount, 1);
 }
 
 void tst_QWidget::styleSheetPropagation()
@@ -10342,6 +10392,9 @@ public:
 void tst_QWidget::keyboardModifiers()
 {
     KeyboardWidget w;
+    w.resize(300, 300);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     QTest::mouseClick(&w, Qt::LeftButton, Qt::ControlModifier);
     QCOMPARE(w.m_eventCounter, 1);
     QCOMPARE(int(w.m_modifiers), int(Qt::ControlModifier));

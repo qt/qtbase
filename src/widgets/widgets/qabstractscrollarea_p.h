@@ -54,12 +54,15 @@ QT_BEGIN_NAMESPACE
 
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
+
+// ### Qt 6: is the export still needed? If not, unexport QFramePrivate, too.
 class Q_WIDGETS_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QAbstractScrollArea)
 
 public:
     QAbstractScrollAreaPrivate();
+    ~QAbstractScrollAreaPrivate();
 
     void replaceScrollBar(QScrollBar *scrollBar, Qt::Orientation orientation);
 

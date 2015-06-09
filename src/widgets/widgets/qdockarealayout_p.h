@@ -202,6 +202,7 @@ public:
     QTabBar *tabBar;
     int tabBarShape;
 
+    void reparentWidgets(QWidget *p);
     bool updateTabBar() const;
     void setTabBarShape(int shape);
     QSize tabBarMinimumSize() const;
@@ -232,7 +233,8 @@ public:
 
     bool isValid() const;
 
-    enum { DockWidgetStateMarker = 0xfd };
+    enum { DockWidgetStateMarker = 0xfd, FloatingDockWidgetTabMarker = 0xf9 };
+    static QRect constrainedRect(QRect rect, QWidget *widget);
     void saveState(QDataStream &stream) const;
     bool restoreState(QDataStream &stream, const QList<QDockWidget*> &widgets, bool testing = false);
 

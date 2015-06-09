@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "cocoa.json")
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "cocoa.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };
@@ -52,7 +52,7 @@ QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, co
 {
     Q_UNUSED(paramList);
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (system.compare(QLatin1String("cocoa"), Qt::CaseInsensitive) == 0)
         return new QCocoaIntegration;
 

@@ -37,7 +37,6 @@
 #include "qcocoamenubar.h"
 #include "messages.h"
 #include "qcocoahelpers.h"
-#include "qcocoaautoreleasepool.h"
 #include "qt_mac_p.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
@@ -104,7 +103,7 @@ QCocoaMenuItem::QCocoaMenuItem() :
 
 QCocoaMenuItem::~QCocoaMenuItem()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (m_menu && COCOA_MENU_ANCESTOR(m_menu) == this)
         SET_COCOA_MENU_ANCESTOR(m_menu, 0);
@@ -139,7 +138,7 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
             m_menu->setContainingMenuItem(0);
     }
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
         SET_COCOA_MENU_ANCESTOR(m_menu, this);

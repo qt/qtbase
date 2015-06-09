@@ -14,6 +14,6 @@ INSTALLS += target
 wince*: {
     addFiles.files = frank.xbel jennifer.xbel
     addFiles.path = "\\My Documents"
-    DEPLOYMENT += addFiles
+    INSTALLS += addFiles
 }
 

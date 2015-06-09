@@ -897,7 +897,7 @@ void QToolButton::setDefaultAction(QAction *action)
         return;
     if (!actions().contains(action))
         addAction(action);
-    setText(action->iconText());
+    setText(action->text());
     setIcon(action->icon());
 #ifndef QT_NO_TOOLTIP
     setToolTip(action->toolTip());

@@ -420,6 +420,13 @@ QMainWindow::~QMainWindow()
                             at the bottom. Implies AllowTabbedDocks. See also
                             \l setTabPosition().
 
+    \value GroupedDragging  When dragging the titlebar of a dock, all the tabs
+                            that are tabbed with it are going to be dragged.
+                            Implies AllowTabbedDocks. Does not work well if
+                            some QDockWidgets have restrictions in which area
+                            they are allowed. (This enum value was added in Qt
+                            5.6.)
+
     These options only control how dock widgets may be dropped in a QMainWindow.
     They do not re-arrange the dock widgets to conform with the specified
     options. For this reason they should be set before any dock widgets
@@ -1080,7 +1087,7 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     addDockWidget(area, dockwidget, orientation);
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC     //drawer support
-    QMacCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
     if (qt_mac_is_macdrawer(dockwidget)) {
         extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp

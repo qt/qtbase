@@ -189,7 +189,7 @@ void QWidgetLineControl::commitPreedit()
 
     m_preeditCursor = 0;
     setPreeditArea(-1, QString());
-    m_textLayout.clearAdditionalFormats();
+    m_textLayout.clearFormats();
     updateDisplayText(/*force*/ true);
 #endif
 }
@@ -557,7 +557,8 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
     const int oldPreeditCursor = m_preeditCursor;
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
+    formats.reserve(event->attributes().size());
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
         if (a.type == QInputMethodEvent::Cursor) {
@@ -574,7 +575,7 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
             }
         }
     }
-    m_textLayout.setAdditionalFormats(formats);
+    m_textLayout.setFormats(formats);
     updateDisplayText(/*force*/ true);
     if (cursorPositionChanged)
         emitCursorPositionChanged();

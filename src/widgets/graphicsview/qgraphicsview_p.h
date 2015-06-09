@@ -63,6 +63,7 @@ class Q_WIDGETS_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
     Q_DECLARE_PUBLIC(QGraphicsView)
 public:
     QGraphicsViewPrivate();
+    ~QGraphicsViewPrivate();
 
     void recalculateContentSize();
     void centerView(QGraphicsView::ViewportAnchor anchor);

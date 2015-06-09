@@ -41,9 +41,16 @@
 #include <QtCore/QThread>
 #include <QtTest/QtTest>
 
+#if defined(Q_OS_UNIX)
+#include <sys/resource.h>
+#endif
+
 class tst_QGlobalStatic : public QObject
 {
     Q_OBJECT
+
+public Q_SLOTS:
+    void initTestCase();
 
 private Q_SLOTS:
     void beforeInitialization();
@@ -54,6 +61,20 @@ private Q_SLOTS:
     void threadStressTest();
     void afterDestruction();
 };
+
+void tst_QGlobalStatic::initTestCase()
+{
+#if defined(Q_OS_UNIX)
+    // The tests create a lot of threads, which require file descriptors. On systems like
+    // OS X low defaults such as 256 as the limit for the number of simultaneously
+    // open files is not sufficient.
+    struct rlimit numFiles;
+    if (getrlimit(RLIMIT_NOFILE, &numFiles) == 0 && numFiles.rlim_cur < 1024) {
+        numFiles.rlim_cur = qMin(rlim_t(1024), numFiles.rlim_max);
+        setrlimit(RLIMIT_NOFILE, &numFiles);
+    }
+#endif
+}
 
 Q_GLOBAL_STATIC_WITH_ARGS(const int, constInt, (42))
 Q_GLOBAL_STATIC_WITH_ARGS(volatile int, volatileInt, (-47))

@@ -533,6 +533,11 @@ public:
     int quality;
     QMap<QString, QString> text;
     void getText();
+    enum {
+        UsePluginDefault,
+        ApplyTransform,
+        DoNotApplyTransform
+    } autoTransform;
 
     // error
     QImageReader::ImageReaderError imageReaderError;
@@ -552,6 +557,7 @@ QImageReaderPrivate::QImageReaderPrivate(QImageReader *qq)
     handler = 0;
     quality = -1;
     imageReaderError = QImageReader::UnknownError;
+    autoTransform = UsePluginDefault;
 
     q = qq;
 }
@@ -1144,6 +1150,59 @@ QList<QByteArray> QImageReader::supportedSubTypes() const
 }
 
 /*!
+    \since 5.5
+
+    Returns the transformation metadata of the image, including image orientation. If the format
+    does not support transformation metadata \c QImageIOHandler::Transformation_None is returned.
+
+    \sa setAutoTransform(), autoTransform()
+*/
+QImageIOHandler::Transformations QImageReader::transformation() const
+{
+    int option = QImageIOHandler::TransformationNone;
+    if (d->initHandler() && d->handler->supportsOption(QImageIOHandler::ImageTransformation))
+        option = d->handler->option(QImageIOHandler::ImageTransformation).toInt();
+    return QImageIOHandler::Transformations(option);
+}
+
+/*!
+    \since 5.5
+
+    Sets if images returned by read() should have transformation metadata automatically applied.
+
+    \sa autoTransform(), transform(), read()
+*/
+void QImageReader::setAutoTransform(bool enabled)
+{
+    d->autoTransform = enabled ? QImageReaderPrivate::ApplyTransform
+                               : QImageReaderPrivate::DoNotApplyTransform;
+}
+
+/*!
+    \since 5.5
+
+    Returns \c true if the image handler will apply transformation metadata on read().
+
+    \sa setAutoTransform(), transformation(), read()
+*/
+bool QImageReader::autoTransform() const
+{
+    switch (d->autoTransform) {
+    case QImageReaderPrivate::ApplyTransform:
+        return true;
+    case QImageReaderPrivate::DoNotApplyTransform:
+        return false;
+    case QImageReaderPrivate::UsePluginDefault:
+        if (d->initHandler())
+            return d->handler->supportsOption(QImageIOHandler::TransformedByDefault);
+        // no break
+    default:
+        break;
+    }
+    return false;
+}
+
+/*!
     Returns \c true if an image can be read for the device (i.e., the
     image format is supported, and the device seems to contain valid
     data); otherwise returns \c false.
@@ -1184,6 +1243,8 @@ QImage QImageReader::read()
     QImage image;
     return read(&image) ? image : QImage();
 }
+
+extern void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orient);
 
 /*!
     \overload
@@ -1294,6 +1355,8 @@ bool QImageReader::read(QImage *image)
     if (!disable2xImageLoading && QFileInfo(fileName()).baseName().endsWith(QLatin1String("@2x"))) {
            image->setDevicePixelRatio(2.0);
     }
+    if (autoTransform())
+        qt_imageTransform(*image, transformation());
 
     return true;
 }

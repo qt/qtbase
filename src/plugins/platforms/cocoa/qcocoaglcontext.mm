@@ -33,7 +33,6 @@
 
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
-#include "qcocoaautoreleasepool.h"
 #include "qcocoahelpers.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
@@ -145,7 +144,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     if (m_format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    QCocoaAutoReleasePool pool; // For the SG Canvas render thread
+    QMacAutoReleasePool pool; // For the SG Canvas render thread
 
     NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(m_format));
     m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
@@ -218,7 +217,7 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);

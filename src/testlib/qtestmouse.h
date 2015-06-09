@@ -45,6 +45,7 @@
 #include <QtTest/qtestspontaneevent.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qpointer.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qwindow.h>
 
@@ -57,11 +58,14 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp);
 
 namespace QTest
 {
     enum MouseAction { MousePress, MouseRelease, MouseClick, MouseDClick, MouseMove };
+
+    extern Q_TESTLIB_EXPORT Qt::MouseButton lastMouseButton;
+    extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
 
     static void waitForEvents()
     {
@@ -83,52 +87,48 @@ namespace QTest
             QTest::qWarn("Mouse event occurs outside of target window.");
         }
 
-         static Qt::MouseButton lastButton = Qt::NoButton;
-
         if (delay == -1 || delay < defaultMouseDelay())
             delay = defaultMouseDelay();
-        if (delay > 0)
+        if (delay > 0) {
             QTest::qWait(delay);
+            lastMouseTimestamp += delay;
+        }
 
         if (pos.isNull())
             pos = window->geometry().center();
 
-        if (action == MouseClick) {
-            mouseEvent(MousePress, window, button, stateKey, pos);
-            mouseEvent(MouseRelease, window, button, stateKey, pos);
-            return;
-        }
         QTEST_ASSERT(uint(stateKey) == 0 || stateKey & Qt::KeyboardModifierMask);
 
         stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
 
+        QPointF global = window->mapToGlobal(pos);
+        QPointer<QWindow> w(window);
 
         switch (action)
         {
-            case MousePress:
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
-                lastButton = button;
+        case MouseDClick:
+            qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
+            // fall through
+        case MousePress:
+        case MouseClick:
+            qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
+            lastMouseButton = button;
+            if (action == MousePress)
                 break;
-            case MouseRelease:
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
-                lastButton = Qt::NoButton;
-                break;
-            case MouseDClick:
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
-                qWait(10);
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
-                qWait(20);
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
-                qWait(10);
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
-                break;
-            case MouseMove:
-                qt_handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
-                // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
-                // which is highly undesired here. Tests must avoid relying on QCursor.
-                break;
-            default:
-                QTEST_ASSERT(false);
+            // fall through
+        case MouseRelease:
+            qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
+            lastMouseTimestamp += 500; // avoid double clicks being generated
+            lastMouseButton = Qt::NoButton;
+            break;
+        case MouseMove:
+            qt_handleMouseEvent(w, pos, global, lastMouseButton, stateKey, ++lastMouseTimestamp);
+            // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
+            // which is highly undesired here. Tests must avoid relying on QCursor.
+            break;
+        default:
+            QTEST_ASSERT(false);
         }
         waitForEvents();
     }
@@ -153,15 +153,21 @@ namespace QTest
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
         QTEST_ASSERT(widget);
+
+        if (pos.isNull())
+            pos = widget->rect().center();
+
+#ifdef QTEST_QPA_MOUSE_HANDLING
+        QWindow *w = widget->window()->windowHandle();
+        QTEST_ASSERT(w);
+        mouseEvent(action, w, button, stateKey, w->mapFromGlobal(widget->mapToGlobal(pos)), delay);
+#else
         extern int Q_TESTLIB_EXPORT defaultMouseDelay();
 
         if (delay == -1 || delay < defaultMouseDelay())
             delay = defaultMouseDelay();
         if (delay > 0)
             QTest::qWait(delay);
-
-        if (pos.isNull())
-            pos = widget->rect().center();
 
         if (action == MouseClick) {
             mouseEvent(MousePress, widget, button, stateKey, pos);
@@ -198,12 +204,12 @@ namespace QTest
         }
         QSpontaneKeyEvent::setSpontaneous(&me);
         if (!qApp->notify(widget, &me)) {
-            static const char *mouseActionNames[] =
+            static const char *const mouseActionNames[] =
                 { "MousePress", "MouseRelease", "MouseClick", "MouseDClick", "MouseMove" };
             QString warning = QString::fromLatin1("Mouse event \"%1\" not accepted by receiving widget");
             QTest::qWarn(warning.arg(QString::fromLatin1(mouseActionNames[static_cast<int>(action)])).toLatin1().data());
         }
-
+#endif
     }
 
     inline void mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,

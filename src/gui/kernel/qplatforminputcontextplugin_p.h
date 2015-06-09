@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformInputContext;
 
-#define QPlatformInputContextFactoryInterface_iid "org.qt-project.Qt.QPlatformInputContextFactoryInterface"
+#define QPlatformInputContextFactoryInterface_iid "org.qt-project.Qt.QPlatformInputContextFactoryInterface.5.1"
 
 class Q_GUI_EXPORT QPlatformInputContextPlugin : public QObject
 {

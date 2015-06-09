@@ -221,6 +221,11 @@ public:
 
         inline iterator() : i(0) {}
         inline iterator(Node *n) : i(n) {}
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        // can't remove it in Qt 5, since doing so would make the type trivial,
+        // which changes the way it's passed to functions by value.
+        inline iterator(const iterator &o): i(o.i){}
+#endif
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
         inline T &operator[](difference_type j) const { return i[j].t(); }
@@ -268,6 +273,11 @@ public:
 
         inline const_iterator() : i(0) {}
         inline const_iterator(Node *n) : i(n) {}
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        // can't remove it in Qt 5, since doing so would make the type trivial,
+        // which changes the way it's passed to functions by value.
+        inline const_iterator(const const_iterator &o): i(o.i) {}
+#endif
 #ifdef QT_STRICT_ITERATORS
         inline explicit const_iterator(const iterator &o): i(o.i) {}
 #else

@@ -123,6 +123,7 @@ public:
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const = 0;
 
     virtual QPlatformMenuItem *createMenuItem() const;
+    virtual QPlatformMenu *createSubMenu() const;
 Q_SIGNALS:
     void aboutToShow();
     void aboutToHide();

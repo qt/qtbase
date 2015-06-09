@@ -124,7 +124,7 @@ public:
     quintptr tag()const Q_DECL_OVERRIDE { return m_tag; }
     void setTag(quintptr tag) Q_DECL_OVERRIDE;
 
-    const QString text() { return m_text; }
+    const QString text() const { return m_text; }
     void setText(const QString &text) Q_DECL_OVERRIDE;
     void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
@@ -150,6 +150,7 @@ public:
     const QList<QDBusPlatformMenuItem *> items() const;
 
     QPlatformMenuItem *createMenuItem() const Q_DECL_OVERRIDE;
+    QPlatformMenu *createSubMenu() const Q_DECL_OVERRIDE;
 
     bool operator==(const QDBusPlatformMenu& other) { return m_tag == other.m_tag; }
 
@@ -175,6 +176,7 @@ private:
     uint m_revision;
     QHash<quintptr, QDBusPlatformMenuItem *> m_itemsByTag;
     QList<QDBusPlatformMenuItem *> m_items;
+    QDBusPlatformMenuItem *m_containingMenuItem;
     static QList<QDBusPlatformMenu *> m_topLevelMenus;
 };
 

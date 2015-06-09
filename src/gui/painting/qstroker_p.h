@@ -201,7 +201,7 @@ public:
     QStroker();
     ~QStroker();
 
-    void setStrokeWidth(qfixed width) { m_strokeWidth = width; }
+    void setStrokeWidth(qfixed width) { m_strokeWidth = width; m_curveThreshold = width >= 1 ? 1.0/width : 0.5;}
     qfixed strokeWidth() const { return m_strokeWidth; }
 
     void setCapStyle(Qt::PenCapStyle capStyle) { m_capStyle = joinModeForCap(capStyle); }

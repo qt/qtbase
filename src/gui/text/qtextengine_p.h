@@ -570,9 +570,9 @@ public:
 
     inline bool hasFormats() const
     { return block.docHandle() || (specialData && !specialData->formats.isEmpty()); }
-    inline QList<QTextLayout::FormatRange> formats() const
-    { return specialData ? specialData->formats : QList<QTextLayout::FormatRange>(); }
-    void setFormats(const QList<QTextLayout::FormatRange> &formats);
+    inline QVector<QTextLayout::FormatRange> formats() const
+    { return specialData ? specialData->formats : QVector<QTextLayout::FormatRange>(); }
+    void setFormats(const QVector<QTextLayout::FormatRange> &formats);
 
 private:
     static void init(QTextEngine *e);
@@ -580,7 +580,7 @@ private:
     struct SpecialData {
         int preeditPosition;
         QString preeditText;
-        QList<QTextLayout::FormatRange> formats;
+        QVector<QTextLayout::FormatRange> formats;
         QVector<QTextCharFormat> resolvedFormats;
         // only used when no docHandle is available
         QScopedPointer<QTextFormatCollection> formatCollection;

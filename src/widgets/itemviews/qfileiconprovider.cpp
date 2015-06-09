@@ -117,6 +117,7 @@ public:
             if (themeSizes.isEmpty())
                 return sizes;
 
+            sizes.reserve(themeSizes.count());
             foreach (int size, themeSizes)
                 sizes << QSize(size, size);
         }

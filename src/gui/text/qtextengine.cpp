@@ -2571,7 +2571,7 @@ void QTextEngine::setPreeditArea(int position, const QString &preeditText)
     clearLineData();
 }
 
-void QTextEngine::setFormats(const QList<QTextLayout::FormatRange> &formats)
+void QTextEngine::setFormats(const QVector<QTextLayout::FormatRange> &formats)
 {
     if (formats.isEmpty()) {
         if (!specialData)
@@ -2946,17 +2946,17 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 
 namespace {
 class FormatRangeComparatorByStart {
-    const QList<QTextLayout::FormatRange> &list;
+    const QVector<QTextLayout::FormatRange> &list;
 public:
-    FormatRangeComparatorByStart(const QList<QTextLayout::FormatRange> &list) : list(list) { }
+    FormatRangeComparatorByStart(const QVector<QTextLayout::FormatRange> &list) : list(list) { }
     bool operator()(int a, int b) {
         return list.at(a).start < list.at(b).start;
     }
 };
 class FormatRangeComparatorByEnd {
-    const QList<QTextLayout::FormatRange> &list;
+    const QVector<QTextLayout::FormatRange> &list;
 public:
-    FormatRangeComparatorByEnd(const QList<QTextLayout::FormatRange> &list) : list(list) { }
+    FormatRangeComparatorByEnd(const QVector<QTextLayout::FormatRange> &list) : list(list) { }
     bool operator()(int a, int b) {
         return list.at(a).start + list.at(a).length < list.at(b).start + list.at(b).length;
     }

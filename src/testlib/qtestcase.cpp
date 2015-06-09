@@ -1374,6 +1374,7 @@ static bool installCoverageTool(const char * appname, const char * testname)
 namespace QTest
 {
     static QObject *currentTestObject = 0;
+    static QString mainSourcePath;
 
     class TestFunction {
     public:
@@ -2167,7 +2168,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
 
-                    QTestPrivate::checkBlackList(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+                    QTestPrivate::checkBlackLists(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
 
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
@@ -2682,6 +2683,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
     QTestPrivate::parseBlackList();
+    QTestPrivate::parseGpuBlackList();
 
     QTestResult::reset();
 
@@ -3032,6 +3034,13 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             found = candidate;
     }
 
+    // 6. Try main source directory
+    if (found.isEmpty()) {
+        QString candidate = QTest::mainSourcePath % QLatin1Char('/') % base;
+        if (QFileInfo(candidate).exists())
+            found = candidate;
+    }
+
     if (found.isEmpty()) {
         QTest::qWarn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),
@@ -3216,6 +3225,19 @@ void QTest::qSleep(int ms)
 QObject *QTest::testObject()
 {
     return currentTestObject;
+}
+
+/*! \internal
+ */
+void QTest::setMainSourcePath(const char *file, const char *builddir)
+{
+    QString mainSourceFile = QFile::decodeName(file);
+    QFileInfo fi;
+    if (builddir)
+        fi.setFile(QDir(QFile::decodeName(builddir)), mainSourceFile);
+    else
+        fi.setFile(mainSourceFile);
+    QTest::mainSourcePath = fi.absolutePath();
 }
 
 /*! \internal

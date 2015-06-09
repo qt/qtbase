@@ -883,7 +883,8 @@ void QWidgetTextControl::setTextCursor(const QTextCursor &cursor)
     const bool posChanged = cursor.position() != d->cursor.position();
     const QTextCursor oldSelection = d->cursor;
     d->cursor = cursor;
-    d->cursorOn = d->hasFocus && (d->interactionFlags & Qt::TextEditable);
+    d->cursorOn = d->hasFocus
+            && (d->interactionFlags & (Qt::TextSelectableByKeyboard | Qt::TextEditable));
     d->_q_updateCurrentCharFormatAndSelection();
     ensureCursorVisible();
     d->repaintOldAndNewSelection(oldSelection);
@@ -2028,7 +2029,8 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     QTextLayout *layout = block.layout();
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
-    QList<QTextLayout::FormatRange> overrides;
+    QVector<QTextLayout::FormatRange> overrides;
+    overrides.reserve(e->attributes().size());
     const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
@@ -2048,7 +2050,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             }
         }
     }
-    layout->setAdditionalFormats(overrides);
+    layout->setFormats(overrides);
 
     cursor.endEditBlock();
 
@@ -2138,7 +2140,7 @@ void QWidgetTextControlPrivate::focusEvent(QFocusEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
         if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && (e->reason() == Qt::PopupFocusReason))) {
 #endif
-        cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);
+        cursorOn = (interactionFlags & (Qt::TextSelectableByKeyboard | Qt::TextEditable));
         if (interactionFlags & Qt::TextEditable) {
             setBlinkingCursorEnabled(true);
         }
@@ -2877,7 +2879,7 @@ void QWidgetTextControlPrivate::commitPreedit()
     QTextBlock block = cursor.block();
     QTextLayout *layout = block.layout();
     layout->setPreeditArea(-1, QString());
-    layout->clearAdditionalFormats();
+    layout->clearFormats();
     cursor.endEditBlock();
 }
 

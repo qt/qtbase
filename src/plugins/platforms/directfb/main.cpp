@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QDirectFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "directfb.json")
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "directfb.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };

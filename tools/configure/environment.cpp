@@ -611,9 +611,9 @@ QStringList Environment::headerPaths(Compiler compiler)
             foreach (const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
                 headerPaths += version.absoluteFilePath() + QLatin1String("/include");
         }
+    } else {
+        headerPaths = splitPathList(QString::fromLocal8Bit(getenv("INCLUDE")));
     }
-    // MinGW: Although gcc doesn't care about INCLUDE, qmake automatically adds it via -I
-    headerPaths += splitPathList(QString::fromLocal8Bit(getenv("INCLUDE")));
 
     // Add Direct X SDK for ANGLE
     const QString directXSdk = detectDirectXSdk();
@@ -627,9 +627,9 @@ QStringList Environment::libraryPaths(Compiler compiler)
     QStringList libraryPaths;
     if (compiler == CC_MINGW) {
         libraryPaths = mingwPaths(detectMinGW(), "lib");
+    } else {
+        libraryPaths = splitPathList(QString::fromLocal8Bit(qgetenv("LIB")));
     }
-    // MinGW: Although gcc doesn't care about LIB, qmake automatically adds it via -L
-    libraryPaths += splitPathList(QString::fromLocal8Bit(qgetenv("LIB")));
 
     // Add Direct X SDK for ANGLE
     const QString directXSdk = detectDirectXSdk();

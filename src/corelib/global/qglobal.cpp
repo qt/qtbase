@@ -2124,9 +2124,9 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 #    define USE_ETC_OS_RELEASE
 struct QUnixOSVersion
 {
-                                    // from /etc/os-release         older /etc/lsb-release
-    QString productType;            // $ID                          $DISTRIB_ID
-    QString productVersion;         // $VERSION_ID                  $DISTRIB_RELEASE
+                                    // from /etc/os-release         older /etc/lsb-release         // redhat /etc/redhat-release         // debian /etc/debian_version
+    QString productType;            // $ID                          $DISTRIB_ID                    // single line file containing:       // Debian
+    QString productVersion;         // $VERSION_ID                  $DISTRIB_RELEASE               // <Vendor_ID release Version_ID>     // single line file <Release_ID/sid>
     QString prettyName;             // $PRETTY_NAME                 $DISTRIB_DESCRIPTION
 };
 
@@ -2138,24 +2138,32 @@ static QString unquote(const char *begin, const char *end)
     }
     return QString::fromLatin1(begin, end - begin);
 }
-
-static bool readEtcFile(QUnixOSVersion &v, const char *filename,
-                        const QByteArray &idKey, const QByteArray &versionKey, const QByteArray &prettyNameKey)
+static QByteArray getEtcFileContent(const char *filename)
 {
     // we're avoiding QFile here
     int fd = qt_safe_open(filename, O_RDONLY);
     if (fd == -1)
-        return false;
+        return QByteArray();
 
     QT_STATBUF sbuf;
     if (QT_FSTAT(fd, &sbuf) == -1) {
         qt_safe_close(fd);
-        return false;
+        return QByteArray();
     }
 
     QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
     buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size));
     qt_safe_close(fd);
+    return buffer;
+}
+
+static bool readEtcFile(QUnixOSVersion &v, const char *filename,
+                        const QByteArray &idKey, const QByteArray &versionKey, const QByteArray &prettyNameKey)
+{
+
+    QByteArray buffer = getEtcFileContent(filename);
+    if (buffer.isEmpty())
+        return false;
 
     const char *ptr = buffer.constData();
     const char *end = buffer.constEnd();
@@ -2219,14 +2227,72 @@ static bool readEtcLsbRelease(QUnixOSVersion &v)
         }
     }
 
-    return ok;
+    // some distributions have a /etc/lsb-release file that does not provide the values
+    // we are looking for, i.e. DISTRIB_ID, DISTRIB_RELEASE and DISTRIB_DESCRIPTION.
+    // Assuming that neither DISTRIB_ID nor DISTRIB_RELEASE were found, or contained valid values,
+    // returning false for readEtcLsbRelease will allow further /etc/<lowercasename>-release parsing.
+    return ok && !(v.productType.isEmpty() && v.productVersion.isEmpty());
 }
+
+#if defined(Q_OS_LINUX)
+static QByteArray getEtcFileFirstLine(const char *fileName)
+{
+    QByteArray buffer = getEtcFileContent(fileName);
+    if (buffer.isEmpty())
+        return QByteArray();
+
+    const char *ptr = buffer.constData();
+    int eol = buffer.indexOf("\n");
+    return QByteArray(ptr, eol).trimmed();
+}
+
+static bool readEtcRedHatRelease(QUnixOSVersion &v)
+{
+    // /etc/redhat-release analysed should be a one line file
+    // the format of its content is <Vendor_ID release Version>
+    // i.e. "Red Hat Enterprise Linux Workstation release 6.5 (Santiago)"
+    QByteArray line = getEtcFileFirstLine("/etc/redhat-release");
+    if (line.isEmpty())
+        return false;
+
+    v.prettyName = QString::fromLatin1(line);
+
+    const char keyword[] = "release ";
+    int releaseIndex = line.indexOf(keyword);
+    v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(QLatin1Char(' '));
+    int spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
+    v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword), spaceIndex > -1 ? spaceIndex - releaseIndex - strlen(keyword) : -1));
+    return true;
+}
+
+static bool readEtcDebianVersion(QUnixOSVersion &v)
+{
+    // /etc/debian_version analysed should be a one line file
+    // the format of its content is <Release_ID/sid>
+    // i.e. "jessie/sid"
+    QByteArray line = getEtcFileFirstLine("/etc/debian_version");
+    if (line.isEmpty())
+        return false;
+
+    v.productType = QStringLiteral("Debian");
+    v.productVersion = QString::fromLatin1(line);
+    return true;
+}
+#endif
 
 static bool findUnixOsVersion(QUnixOSVersion &v)
 {
     if (readEtcOsRelease(v))
         return true;
-    return readEtcLsbRelease(v);
+    if (readEtcLsbRelease(v))
+        return true;
+#if defined(Q_OS_LINUX)
+    if (readEtcRedHatRelease(v))
+        return true;
+    if (readEtcDebianVersion(v))
+        return true;
+#endif
+    return false;
 }
 #  endif // USE_ETC_OS_RELEASE
 #endif // Q_OS_UNIX
@@ -2955,7 +3021,7 @@ namespace {
     // depending on the return type
     static inline Q_DECL_UNUSED QString fromstrerror_helper(int, const QByteArray &buf)
     {
-        return QString::fromLocal8Bit(buf);
+        return QString::fromLocal8Bit(buf.constData());
     }
     static inline Q_DECL_UNUSED QString fromstrerror_helper(const char *str, const QByteArray &)
     {

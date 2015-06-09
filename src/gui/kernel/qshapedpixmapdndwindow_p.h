@@ -63,7 +63,7 @@ public:
     void setPixmap(const QPixmap &pixmap);
     void setHotspot(const QPoint &hotspot);
 
-    void updateGeometry();
+    void updateGeometry(const QPoint &pos);
 
 protected:
     void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;

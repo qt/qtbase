@@ -55,16 +55,13 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
 
-class Q_PRINTSUPPORT_EXPORT QPlatformPrintDevice : public QSharedData
+class Q_PRINTSUPPORT_EXPORT QPlatformPrintDevice
 {
+    Q_DISABLE_COPY(QPlatformPrintDevice)
 public:
     QPlatformPrintDevice();
     explicit QPlatformPrintDevice(const QString &id);
     virtual ~QPlatformPrintDevice();
-
-    QPlatformPrintDevice *clone();
-
-    bool operator==(const QPlatformPrintDevice &other) const;
 
     virtual QString id() const;
     virtual QString name() const;

@@ -127,10 +127,23 @@
 */
 
 /*!
+    \fn QSet::QSet(QSet && other)
+
+    Move-constructs a QSet instance, making it point to the same object that \a other was pointing to.
+*/
+
+
+/*!
     \fn QSet<T> &QSet::operator=(const QSet<T> &other)
 
     Assigns the \a other set to this set and returns a reference to
     this set.
+*/
+
+/*!
+    \fn QSet<T> &QSet::operator=(QSet<T> &&other)
+
+    Move-assigns the \a other set to this set.
 */
 
 /*!
@@ -490,7 +503,17 @@
     Removes all items from this set that are not contained in the
     \a other set. A reference to this set is returned.
 
-    \sa operator&=(), unite(), subtract()
+    \sa intersects(), operator&=(), unite(), subtract()
+*/
+
+/*!
+    \fn bool QSet::intersects(const QSet<T> &other) const
+    \since 5.6
+
+    Returns \c true if this set has at least one item in common with
+    \a other.
+
+    \sa contains(), intersect()
 */
 
 /*!

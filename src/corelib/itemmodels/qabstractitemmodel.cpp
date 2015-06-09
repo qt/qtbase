@@ -479,6 +479,11 @@ public:
 
 Q_GLOBAL_STATIC(QEmptyItemModel, qEmptyModel)
 
+
+QAbstractItemModelPrivate::~QAbstractItemModelPrivate()
+{
+}
+
 QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 {
     return qEmptyModel();

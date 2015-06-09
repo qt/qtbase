@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWindowSystemEventHandler;
+
 class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
 public:
     enum EventType {
@@ -492,6 +494,17 @@ public:
     static QList<QWindowSystemInterface::TouchPoint>
         toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
                             const QWindow *window);
+
+    static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
+    static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);
+    static QWindowSystemEventHandler *eventHandler;
+};
+
+class Q_GUI_EXPORT QWindowSystemEventHandler
+{
+public:
+    virtual ~QWindowSystemEventHandler();
+    virtual bool sendEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *event);
 };
 
 QT_END_NAMESPACE

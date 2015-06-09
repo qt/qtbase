@@ -68,6 +68,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qdatetime.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qmap.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qringbuffer_p.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
@@ -119,6 +120,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qdatetime.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qmap.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qringbuffer.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring_compat.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
@@ -132,5 +134,3 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/plugin/quuid.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qcryptographichash.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
-
-DEFINES += COMMERCIAL_VERSION

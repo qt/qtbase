@@ -67,8 +67,20 @@
 #endif
 
 #if defined(Q_OS_BSD4)
-#  define QT_STATFSBUF struct statvfs
-#  define QT_STATFS    ::statvfs
+#  if defined(Q_OS_NETBSD)
+     define QT_STATFSBUF struct statvfs
+     define QT_STATFS    ::statvfs
+#  else
+#    define QT_STATFSBUF struct statfs
+#    define QT_STATFS    ::statfs
+#  endif
+
+#  if !defined(ST_RDONLY)
+#    define ST_RDONLY MNT_RDONLY
+#  endif
+#  if !defined(_STATFS_F_FLAGS)
+#    define _STATFS_F_FLAGS 1
+#  endif
 #elif defined(Q_OS_ANDROID)
 #  define QT_STATFS    ::statfs
 #  define QT_STATFSBUF struct statfs
@@ -122,11 +134,7 @@ public:
     inline QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
-#  if defined(Q_OS_NETBSD)
-    struct statvfs *stat_buf;
-#  else
-    struct statfs *stat_buf;
-#  endif
+    QT_STATFSBUF *stat_buf;
     int entryCount;
     int currentIndex;
 #elif defined(Q_OS_SOLARIS)
@@ -502,7 +510,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) || defined (Q_OS_BSD4)
 #if defined(_STATFS_F_FLAGS)
         readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
 #endif

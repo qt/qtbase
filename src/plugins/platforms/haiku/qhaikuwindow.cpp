@@ -130,6 +130,7 @@ QHaikuWindow::QHaikuWindow(QWindow *window)
     if (!m_window)
         qFatal("QHaikuWindow: failed to create window");
 
+    setGeometry(rect);
     setWindowFlags(window->flags());
 }
 
@@ -164,13 +165,13 @@ void QHaikuWindow::setVisible(bool visible)
 {
     if (visible) {
         m_window->Show();
+
+        window()->requestActivate();
+
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), window()->geometry().size()));
     } else {
         m_window->Hide();
     }
-
-    window()->requestActivate();
-
-    QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
 }
 
 bool QHaikuWindow::isExposed() const
@@ -307,7 +308,7 @@ void QHaikuWindow::haikuWindowMoved(const QPoint &pos)
 
     QPlatformWindow::setGeometry(newGeometry);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
-    QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), newGeometry.size()));
 }
 
 void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
@@ -316,7 +317,7 @@ void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
 
     QPlatformWindow::setGeometry(newGeometry);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
-    QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), newGeometry.size()));
 
     if ((m_windowState == Qt::WindowMaximized) && !zoomInProgress) {
         // the user has resized the window while maximized -> reset maximized flag

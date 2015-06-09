@@ -71,6 +71,7 @@ struct DotNetCombo {
     const char *regKey;
 } dotNetCombo[] = {
 #ifdef Q_OS_WIN64
+    {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
     {NET2012, "MSVC.NET 2012 (11.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\11.0\\Setup\\VC\\ProductDir"},
@@ -84,6 +85,7 @@ struct DotNetCombo {
     {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
     {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
 #else
+    {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
     {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
     {NET2012, "MSVC.NET 2012 (11.0)", "Software\\Microsoft\\VisualStudio\\11.0\\Setup\\VC\\ProductDir"},
@@ -175,6 +177,8 @@ const char _slnHeader110[]      = "Microsoft Visual Studio Solution File, Format
                                   "\n# Visual Studio 2012";
 const char _slnHeader120[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio 2013";
+const char _slnHeader140[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
+                                  "\n# Visual Studio 2015";
                                   // The following UUID _may_ change for later servicepacks...
                                   // If so we need to search through the registry at
                                   // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\7.0\Projects
@@ -401,6 +405,8 @@ QString VcprojGenerator::retrievePlatformToolSet() const
         return QStringLiteral("v110") + suffix;
     case NET2013:
         return QStringLiteral("v120") + suffix;
+    case NET2015:
+        return QStringLiteral("v140") + suffix;
     default:
         return QString();
     }
@@ -647,6 +653,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
 
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
+    case NET2015:
+        t << _slnHeader140;
     case NET2013:
         t << _slnHeader120;
         break;
@@ -972,6 +980,9 @@ void VcprojGenerator::initProject()
     // Own elements -----------------------------
     vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
+    case NET2015:
+        vcProject.Version = "14.00";
+        break;
     case NET2013:
         vcProject.Version = "12.00";
         break;
@@ -1213,7 +1224,12 @@ void VcprojGenerator::initLinkerTool()
 void VcprojGenerator::initResourceTool()
 {
     VCConfiguration &conf = vcProject.Configuration;
-    conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
+
+    ProStringList rcDefines = project->values("RC_DEFINES");
+    if (rcDefines.size() > 0)
+        conf.resource.PreprocessorDefinitions = rcDefines.toQStringList();
+    else
+        conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
 
     foreach (const ProString &path, project->values("RC_INCLUDEPATH")) {
         QString fixedPath = fileFixify(path.toQString());
@@ -1369,8 +1385,7 @@ void VcprojGenerator::initDeploymentTool()
         }
     }
 
-    // foreach item in DEPLOYMENT
-    foreach (const ProString &item, project->values("DEPLOYMENT")) {
+    foreach (const ProString &item, project->values("INSTALLS")) {
         // get item.path
         QString devicePath = project->first(ProKey(item + ".path")).toQString();
         if (!conf.WinRT) {

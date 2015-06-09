@@ -248,8 +248,8 @@ void ColorDock::setCustomSizeHint(const QSize &size)
     updateGeometry();
 }
 
-ColorSwatch::ColorSwatch(const QString &colorName, QWidget *parent, Qt::WindowFlags flags)
-    : QDockWidget(parent, flags)
+ColorSwatch::ColorSwatch(const QString &colorName, QMainWindow *parent, Qt::WindowFlags flags)
+    : QDockWidget(parent, flags), mainWindow(parent)
 {
     setObjectName(colorName + QLatin1String(" Dock Widget"));
     setWindowTitle(objectName() + QLatin1String(" [*]"));
@@ -390,7 +390,6 @@ ColorSwatch::ColorSwatch(const QString &colorName, QWidget *parent, Qt::WindowFl
 
 void ColorSwatch::updateContextMenu()
 {
-    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
     const Qt::DockWidgetArea area = mainWindow->dockWidgetArea(this);
     const Qt::DockWidgetAreas areas = allowedAreas();
 
@@ -458,7 +457,6 @@ void ColorSwatch::updateContextMenu()
 
 void ColorSwatch::splitInto(QAction *action)
 {
-    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
     QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     ColorSwatch *target = 0;
     foreach (ColorSwatch *dock, dock_list) {
@@ -477,7 +475,6 @@ void ColorSwatch::splitInto(QAction *action)
 
 void ColorSwatch::tabInto(QAction *action)
 {
-    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
     QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     ColorSwatch *target = 0;
     foreach (ColorSwatch *dock, dock_list) {
@@ -525,7 +522,6 @@ void ColorSwatch::place(Qt::DockWidgetArea area, bool p)
 {
     if (!p) return;
 
-    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
     mainWindow->addDockWidget(area, this);
 
     if (allowedAreasActions->isEnabled()) {

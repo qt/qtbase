@@ -294,10 +294,13 @@ public:
         WindowCloseButtonHint = 0x08000000,
         MacWindowToolBarButtonHint = 0x10000000,
         BypassGraphicsProxyWidget = 0x20000000,
-        WindowOkButtonHint = 0x00080000,
-        WindowCancelButtonHint = 0x00100000,
         NoDropShadowWindowHint = 0x40000000,
-        WindowFullscreenButtonHint = 0x80000000
+        WindowFullscreenButtonHint = 0x80000000,
+
+        // The following enums have overlapping values with other enums.
+        // This was not intentional, but it's too late to change now.
+        WindowOkButtonHint = 0x00080000, // WindowTransparentForInput
+        WindowCancelButtonHint = 0x00100000 // WindowOverridesSystemGestures
     };
 
     Q_DECLARE_FLAGS(WindowFlags, WindowType)
@@ -1323,7 +1326,7 @@ public:
         ImAbsolutePosition = 0x400,
         ImTextBeforeCursor = 0x800,
         ImTextAfterCursor = 0x1000,
-        ImReturnKeyType = 0x2000,
+        ImEnterKeyType = 0x2000,
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
@@ -1363,15 +1366,15 @@ public:
     };
     Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
 
-    enum ReturnKeyType {
-        ReturnKeyDefault,
-        ReturnKeyEnter,
-        ReturnKeyDone,
-        ReturnKeyGo,
-        ReturnKeySend,
-        ReturnKeySearch,
-        ReturnKeyNext,
-        ReturnKeyPrevious
+    enum EnterKeyType {
+        EnterKeyDefault,
+        EnterKeyReturn,
+        EnterKeyDone,
+        EnterKeyGo,
+        EnterKeySend,
+        EnterKeySearch,
+        EnterKeyNext,
+        EnterKeyPrevious
     };
 
     enum ToolButtonStyle {
@@ -1697,7 +1700,7 @@ public:
     QT_Q_ENUM(InputMethodHint)
     QT_Q_ENUM(InputMethodQuery)
     QT_Q_FLAG(InputMethodHints)
-    QT_Q_ENUM(ReturnKeyType)
+    QT_Q_ENUM(EnterKeyType)
     QT_Q_FLAG(InputMethodQueries)
     QT_Q_FLAG(TouchPointStates)
     QT_Q_ENUM(ScreenOrientation)

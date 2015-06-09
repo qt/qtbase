@@ -38,7 +38,6 @@
 
     \list
     \li \l {a-command} {\\a}
-    \li \l {abstract-command} {\\abstract}
     \li \l {annotatedlist-command} {\\annotatedlist}
     \li \l {b-command} {\\b} \span {class="newStuff"}
     \li \l {b-command} {\\bold} {(deprecated, use \\b)}
@@ -2885,19 +2884,6 @@
     The document contents commands identify parts of the documentation,
     parts with a special rendering, conceptual meaning or
     function.
-
-    \target abstract-command
-    \section1 \\abstract
-
-    The \\abstract and \\endabstract commands delimit a
-    document's abstract section.
-
-    The abstract section is rendered as an indented italicized
-    paragraph.
-
-    \warning The \b{\\abstract} and \b{\\endabstract} commands
-    have not been implemented. The abstract section is rendered as a
-    regular HTML paragraph.
 
     \target quotation-command
     \section1 \\quotation

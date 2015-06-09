@@ -66,8 +66,6 @@ QT_BEGIN_NAMESPACE
 
 /*! \enum Atom::AtomType
 
-  \value AbstractLeft
-  \value AbstractRight
   \value AnnotatedList
   \value AutoLink
   \value BaseName
@@ -149,8 +147,6 @@ static const struct {
     const char *english;
     int no;
 } atms[] = {
-    { "AbstractLeft", Atom::AbstractLeft },
-    { "AbstractRight", Atom::AbstractRight },
     { "AnnotatedList", Atom::AnnotatedList },
     { "AutoLink", Atom::AutoLink },
     { "BaseName", Atom::BaseName },

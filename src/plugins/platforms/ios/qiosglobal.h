@@ -68,7 +68,7 @@ int infoPlistValue(NSString* key, int defaultValue);
 QT_END_NAMESPACE
 
 @interface UIResponder (QtFirstResponder)
-+(id)currentFirstResponder;
++ (id)currentFirstResponder;
 @end
 
 class FirstResponderCandidate : public QScopedValueRollback<UIResponder *>

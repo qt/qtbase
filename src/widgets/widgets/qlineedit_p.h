@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 // QLineEditIconButton: This is a simple helper class that represents clickable icons that fade in with text
 
-class QLineEditIconButton : public QToolButton
+class Q_AUTOTEST_EXPORT QLineEditIconButton : public QToolButton
 {
     Q_OBJECT
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)

@@ -36,6 +36,8 @@
     the Secure Sockets Layer (SSL) protocol, using the OpenSSL Toolkit (\l{http://www.openssl.org/})
     to perform encryption and protocol handling.
 
+    \annotatedlist ssl
+
     See the \l {openssl-v1later}{OpenSSL Compatibility} page for information about the
     versions of OpenSSL that are known to work with Qt.
 

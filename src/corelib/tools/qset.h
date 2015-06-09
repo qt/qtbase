@@ -137,6 +137,7 @@ public:
         typedef QHash<T, QHashDummyValue> Hash;
         typename Hash::const_iterator i;
         friend class iterator;
+        friend class QSet<T>;
 
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -191,6 +192,7 @@ public:
     inline const_iterator constFind(const T &value) const { return find(value); }
     QSet<T> &unite(const QSet<T> &other);
     QSet<T> &intersect(const QSet<T> &other);
+    bool intersects(const QSet<T> &other) const;
     QSet<T> &subtract(const QSet<T> &other);
 
     // STL compatibility
@@ -281,6 +283,34 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::intersect(const QSet<T> &other)
             remove(*i);
     }
     return *this;
+}
+
+template <class T>
+Q_INLINE_TEMPLATE bool QSet<T>::intersects(const QSet<T> &other) const
+{
+    const bool otherIsBigger = other.size() > size();
+    const QSet &smallestSet = otherIsBigger ? *this : other;
+    const QSet &biggestSet = otherIsBigger ? other : *this;
+    const bool equalSeeds = q_hash.d->seed == other.q_hash.d->seed;
+    typename QSet::const_iterator i = smallestSet.cbegin();
+    typename QSet::const_iterator e = smallestSet.cend();
+
+    if (Q_LIKELY(equalSeeds)) {
+        // If seeds are equal we take the fast path so no hash is recalculated.
+        while (i != e) {
+            if (*biggestSet.q_hash.findNode(*i, i.i.i->h) != biggestSet.q_hash.e)
+                return true;
+            ++i;
+        }
+    } else {
+        while (i != e) {
+            if (biggestSet.contains(*i))
+                return true;
+            ++i;
+        }
+     }
+
+    return false;
 }
 
 template <class T>

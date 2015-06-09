@@ -728,6 +728,7 @@ CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_USE_GOLD_LINKER=auto
+CFG_ENABLE_NEW_DTAGS=auto
 DEFINES=
 INCLUDES=
 D_FLAGS=
@@ -2961,8 +2962,20 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     Edition="Preview"
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
-    if test -x "$relpath/bin/licheck"; then
-        LicheckOutput=`$relpath/bin/licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
+    if [ $UNAME_SYSTEM = "Linux" ]; then
+        if file -L /bin/sh | grep -q "64-bit" ; then
+            Licheck=licheck64
+        else
+            Licheck=licheck32
+        fi
+    elif [ $UNAME_SYSTEM = "Darwin" ]; then
+        Licheck=licheck_mac
+    else
+        echo >&2 "Host operating system not supported by this edition of Qt."
+        exit 1
+    fi
+    if [ -x "$relpath/bin/$Licheck" ]; then
+        LicheckOutput=`$relpath/bin/$Licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
                        $PLATFORM $XPLATFORM`
         if [ $? -ne 0 ]; then
             exit 1
@@ -2973,7 +2986,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo
         echo "Error: This is the Open Source version of Qt."
         echo "If you want to use Enterprise features of Qt,"
-        echo "information use the contact form at http://www.qt.io/contact-us"
+        echo "use the contact form at http://www.qt.io/contact-us"
         echo "to purchase a license."
         echo
         exit 1
@@ -3305,7 +3318,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_RPATH="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
     CFG_PRECOMPILE="no" # Precompiled headers not supported with multiple -arch arguments
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
@@ -3440,6 +3453,13 @@ if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
         fi
         CFG_USE_GOLD_LINKER=no
     fi
+fi
+
+# auto-detect --enable-new-dtags support
+if linkerSupportsFlag $TEST_COMPILER --enable-new-dtags; then
+    CFG_ENABLE_NEW_DTAGS=yes
+else
+    CFG_ENABLE_NEW_DTAGS=no
 fi
 
 # auto-detect -fstack-protector-strong support (for QNX only currently)
@@ -5338,6 +5358,14 @@ fi
 # auto-detect XInput2 support
 if [ "$CFG_XINPUT2" != "no" ]; then
     if compileTest x11/xinput2 "XInput2"; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xi 2>/dev/null; then
+            QMAKE_LIBXI_VERSION_MAJOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 1`
+            QMAKE_LIBXI_VERSION_MINOR=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 2`
+            QMAKE_LIBXI_VERSION_PATCH=`$PKG_CONFIG --modversion xi 2>/dev/null | cut -d . -f 3`
+            QMakeVar set QMAKE_LIBXI_VERSION_MAJOR "$QMAKE_LIBXI_VERSION_MAJOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_MINOR "$QMAKE_LIBXI_VERSION_MINOR"
+            QMakeVar set QMAKE_LIBXI_VERSION_PATCH "$QMAKE_LIBXI_VERSION_PATCH"
+        fi
         CFG_XINPUT2=yes
         CFG_XINPUT=no
     else
@@ -6067,6 +6095,7 @@ fi
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
 [ "$CFG_USE_GOLD_LINKER" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG use_gold_linker"
+[ "$CFG_ENABLE_NEW_DTAGS" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG enable_new_dtags"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG separate_debug_info"
 fi
@@ -6196,11 +6225,7 @@ fi
 [ '!' -z "$INCLUDES" ] && QMakeVar add INCLUDEPATH "$INCLUDES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
-if [ "$XPLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
-    if [ "$CFG_RPATH" = "yes" ]; then
-       QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
-    fi
-elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
+if [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
         echo
         echo "ERROR: -R cannot be used on this platform as \$QMAKE_LFLAGS_RPATH is"
@@ -6758,7 +6783,14 @@ QT_PATCH_VERSION = $QT_PATCH_VERSION
 QT_LIBINFIX = $QT_LIBINFIX
 QT_NAMESPACE = $QT_NAMESPACE
 
+QT_EDITION = $Edition
 EOF
+
+if [ "$Edition" != "OpenSource" ] && [ "$Edition" != "Preview" ]; then
+    echo "QT_LICHECK = $Licheck" >> "$QTCONFIG.tmp"
+    echo "QT_RELEASE_DATE = $ReleaseDate" >> "$QTCONFIG.tmp"
+fi
+echo >> "$QTCONFIG.tmp"
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
@@ -6980,6 +7012,7 @@ unset build_mode release
 echo "  Using sanitizer(s)...... $CFG_SANITIZERS"
 echo "  Using C++11 ............ $CFG_CXX11"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
+echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then

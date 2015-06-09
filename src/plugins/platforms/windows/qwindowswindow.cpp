@@ -438,6 +438,8 @@ QDebug operator<<(QDebug debug, const WindowCreationData &d)
 // Fix top level window flags in case only the type flags are passed.
 static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
 {
+    // Not supported on Windows, also do correction when it is set.
+    flags &= ~Qt::WindowFullscreenButtonHint;
     switch (flags) {
     case Qt::Window:
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint

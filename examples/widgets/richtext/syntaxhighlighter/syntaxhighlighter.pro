@@ -14,5 +14,5 @@ INSTALLS += target
 wince*: {
    addFiles.files = main.cpp mainwindow.cpp
    addFiles.path = .
-   DEPLOYMENT += addFiles
+   INSTALLS += addFiles
 }

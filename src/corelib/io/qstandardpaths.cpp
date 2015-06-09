@@ -274,45 +274,67 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     \table
-    \header \li Path type \li Android
+    \header \li Path type \li Android \li iOS
     \row \li DesktopLocation
          \li "<APPROOT>/files"
+         \li "<APPROOT>/<APPDIR>" (not writable)
     \row \li DocumentsLocation
          \li "<USER>/Documents", "<USER>/<APPNAME>/Documents"
+         \li "<APPROOT>/Documents"
     \row \li FontsLocation
          \li "/system/fonts" (not writable)
+         \li "<APPROOT>/Documents/.fonts"
     \row \li ApplicationsLocation
          \li not supported (directory not readable)
+         \li not supported
     \row \li MusicLocation
          \li "<USER>/Music", "<USER>/<APPNAME>/Music"
+         \li "<APPROOT>/Documents/Music"
     \row \li MoviesLocation
          \li "<USER>/Movies", "<USER>/<APPNAME>/Movies"
+         \li "<APPROOT>/Documents/Movies"
     \row \li PicturesLocation
          \li "<USER>/Pictures", "<USER>/<APPNAME>/Pictures"
+         \li "<APPROOT>/Documents/Pictures", "assets-library://"
     \row \li TempLocation
          \li "<APPROOT>/cache"
+         \li "<APPROOT>/tmp"
     \row \li HomeLocation
          \li "<APPROOT>/files"
+         \li "<APPROOT>/<APPDIR>" (not writable)
     \row \li DataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+         \li "<APPROOT>/Library/Application Support"
     \row \li CacheLocation
          \li "<APPROOT>/cache", "<USER>/<APPNAME>/cache"
+         \li "<APPROOT>/Library/Caches"
     \row \li GenericDataLocation
          \li "<USER>"
+         \li "<APPROOT>/Documents"
     \row \li RuntimeLocation
          \li "<APPROOT>/cache"
+         \li not supported
     \row \li ConfigLocation
          \li "<APPROOT>/files/settings"
+         \li "<APPROOT>/Documents"
     \row \li GenericConfigLocation
          \li "<APPROOT>/files/settings" (there is no shared settings)
+         \li "<APPROOT>/Documents"
     \row \li DownloadLocation
          \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
+         \li "<APPROOT>/Documents/Download"
     \row \li GenericCacheLocation
          \li "<APPROOT>/cache" (there is no shared cache)
+         \li "<APPROOT>/Library/Caches"
     \row \li AppDataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+         \li "<APPROOT>/Library/Application Support"
     \row \li AppConfigLocation
          \li "<APPROOT>/files/settings"
+         \li "<APPROOT>/Documents"
+    \row \li AppLocalDataLocation
+         \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+         \li "<APPROOT>/Library/Application Support"
     \endtable
 
     In the table above, \c <APPNAME> is usually the organization name, the
@@ -326,6 +348,12 @@ QT_BEGIN_NAMESPACE
 
     \note On Android, applications with open files on the external storage (<USER> locations),
           will be killed if the external storage is unmounted.
+
+    \note On iOS, if you do pass \c {QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last()}
+        as argument to \l{QFileDialog::setDirectory()},
+        a native image picker dialog will be used for accessing the user's photo album.
+        The filename returned can be loaded using QFile and related APIs.
+        This feature was added in Qt 5.5.
 
     \sa writableLocation(), standardLocations(), displayName(), locate(), locateAll()
 */
@@ -494,13 +522,8 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     QStringList searchPaths = paths;
     if (paths.isEmpty()) {
         QByteArray pEnv = qgetenv("PATH");
-#if defined(Q_OS_WIN)
-        const QLatin1Char pathSep(';');
-#else
-        const QLatin1Char pathSep(':');
-#endif
         // Remove trailing slashes, which occur on Windows.
-        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
+        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());
         foreach (const QString &rawPath, rawPaths) {
             QString cleanPath = QDir::cleanPath(rawPath);

@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_SINCE                   Doc::alias(QLatin1String("since"))
 #define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
 
+#define COMMAND_ABSTRACT                Doc::alias(QLatin1String("abstract"))
 #define COMMAND_QMLABSTRACT             Doc::alias(QLatin1String("qmlabstract"))
 #define COMMAND_QMLCLASS                Doc::alias(QLatin1String("qmlclass"))
 #define COMMAND_QMLTYPE                 Doc::alias(QLatin1String("qmltype"))
@@ -497,7 +498,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
         while (i != metacommands.end()) {
             QString command = *i;
             ArgList args = doc.metaCommandArgs(command);
-            if (command == COMMAND_QMLABSTRACT) {
+            if ((command == COMMAND_QMLABSTRACT) || (command == COMMAND_ABSTRACT)) {
                 if (node->isQmlType() || node->isJsType()) {
                     node->setAbstract(true);
                 }

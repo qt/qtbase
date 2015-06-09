@@ -146,6 +146,9 @@ protected:
 
     void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
+#endif
 
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;

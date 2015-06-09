@@ -7441,7 +7441,7 @@ start_lengthVariant:
         }
     }
 
-    QList<QTextLayout::FormatRange> underlineFormats;
+    QVector<QTextLayout::FormatRange> underlineFormats;
     int length = offset - old_offset;
     if ((hidemnmemonic || showmnemonic) && maxUnderlines > 0) {
         QChar *cout = text.data() + old_offset;
@@ -7515,7 +7515,7 @@ start_lengthVariant:
         engine.forceJustification = true;
     QTextLayout textLayout(&engine);
     textLayout.setCacheEnabled(true);
-    textLayout.setAdditionalFormats(underlineFormats);
+    textLayout.setFormats(underlineFormats);
 
     if (finalText.isEmpty()) {
         height = fm.height();

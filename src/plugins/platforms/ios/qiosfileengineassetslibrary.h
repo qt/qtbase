@@ -55,10 +55,17 @@ public:
     QString fileName(FileName file) const Q_DECL_OVERRIDE;
     void setFileName(const QString &file) Q_DECL_OVERRIDE;
     QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const Q_DECL_OVERRIDE;
+
+#ifndef QT_NO_FILESYSTEMITERATOR
+    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) Q_DECL_OVERRIDE;
+    Iterator *endEntryList() Q_DECL_OVERRIDE;
+#endif
+
     void setError(QFile::FileError error, const QString &str) { QAbstractFileEngine::setError(error, str); }
 
 private:
     QString m_fileName;
+    QString m_assetUrl;
     qint64 m_offset;
     mutable QIOSAssetData *m_data;
 

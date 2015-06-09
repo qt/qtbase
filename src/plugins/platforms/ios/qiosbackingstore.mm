@@ -36,41 +36,117 @@
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
+#include <QtGui/QOpenGLFramebufferObject>
+#include <QtGui/QOffscreenSurface>
+#include <QtGui/private/qwindow_p.h>
 
 #include <QtDebug>
+
+class QIOSPaintDevice : public QOpenGLPaintDevice
+{
+public:
+    QIOSPaintDevice(QIOSBackingStore *backingStore) : m_backingStore(backingStore) { }
+    void ensureActiveTarget() Q_DECL_OVERRIDE;
+
+private:
+    QIOSBackingStore *m_backingStore;
+};
+
+void QIOSPaintDevice::ensureActiveTarget()
+{
+    m_backingStore->makeCurrent();
+}
 
 QIOSBackingStore::QIOSBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_context(new QOpenGLContext)
     , m_device(0)
+    , m_fbo(0)
+    , m_surface(0)
 {
     QSurfaceFormat fmt = window->requestedFormat();
-    fmt.setDepthBufferSize(16);
-    fmt.setStencilBufferSize(8);
+    // Due to sharing QIOSContext redirects our makeCurrent on window() attempts to
+    // the global share context. Hence it is essential to have a compatible format.
+    fmt.setDepthBufferSize(QSurfaceFormat::defaultFormat().depthBufferSize());
+    fmt.setStencilBufferSize(QSurfaceFormat::defaultFormat().stencilBufferSize());
 
-    // Needed to prevent QOpenGLContext::makeCurrent() from failing
-    window->setSurfaceType(QSurface::OpenGLSurface);
+    if (fmt.depthBufferSize() == 0)
+        qWarning("No depth in default format, expect rendering errors");
+
+    if (window->surfaceType() == QSurface::RasterSurface)
+        window->setSurfaceType(QSurface::OpenGLSurface);
 
     m_context->setFormat(fmt);
     m_context->setScreen(window->screen());
+    Q_ASSERT(QOpenGLContext::globalShareContext());
+    m_context->setShareContext(QOpenGLContext::globalShareContext());
     m_context->create();
 }
 
 QIOSBackingStore::~QIOSBackingStore()
 {
+    delete m_fbo;
+    delete m_surface;
     delete m_context;
     delete m_device;
 }
 
+void QIOSBackingStore::makeCurrent()
+{
+    QSurface *surface = m_surface ? m_surface : static_cast<QSurface *>(window());
+    if (!m_context->makeCurrent(surface))
+        qWarning("QIOSBackingStore: makeCurrent() failed");
+    if (m_fbo)
+        m_fbo->bind();
+}
+
 void QIOSBackingStore::beginPaint(const QRegion &)
 {
-    m_context->makeCurrent(window());
+    if (qt_window_private(window())->compositing) {
+        if (!m_fbo) {
+            delete m_device;
+            m_device = 0;
+        }
+        if (!m_surface) {
+            m_surface = new QOffscreenSurface;
+            m_surface->setFormat(m_context->format());
+            m_surface->create();
+        }
+        if (!m_context->makeCurrent(m_surface))
+            qWarning("QIOSBackingStore: Failed to make offscreen surface current");
+        const QSize size = window()->size() * window()->devicePixelRatio();
+        if (m_fbo && m_fbo->size() != size) {
+            delete m_fbo;
+            m_fbo = 0;
+        }
+        if (!m_fbo)
+            m_fbo = new QOpenGLFramebufferObject(size, QOpenGLFramebufferObject::CombinedDepthStencil);
+    } else if (m_fbo) {
+        delete m_fbo;
+        m_fbo = 0;
+        delete m_surface;
+        m_surface = 0;
+        delete m_device;
+        m_device = 0;
+    }
+
+    makeCurrent();
+
+    if (!m_device)
+        m_device = new QIOSPaintDevice(this);
+}
+
+void QIOSBackingStore::endPaint()
+{
+    if (m_fbo) {
+        m_fbo->release();
+        glFlush();
+    }
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
-    if (!m_device)
-        m_device = new QOpenGLPaintDevice;
+    Q_ASSERT(m_device);
 
     // Keep paint device size and device pixel ratio in sync with window
     qreal devicePixelRatio = window()->devicePixelRatio();
@@ -82,6 +158,8 @@ QPaintDevice *QIOSBackingStore::paintDevice()
 
 void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
+    Q_ASSERT(!qt_window_private(window)->compositing);
+
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
@@ -109,6 +187,23 @@ void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 
     if (size != window()->size() && !window()->inherits("QWidgetWindow"))
         qWarning() << "QIOSBackingStore needs to have the same size as its window";
+}
+
+GLuint QIOSBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
+{
+    Q_ASSERT(qt_window_private(window())->compositing);
+    Q_UNUSED(dirtyRegion);
+
+    if (flags)
+        *flags = TextureFlip;
+
+    if (!m_fbo)
+        return 0;
+
+    if (textureSize)
+        *textureSize = m_fbo->size();
+
+    return m_fbo->texture();
 }
 
 QT_END_NAMESPACE

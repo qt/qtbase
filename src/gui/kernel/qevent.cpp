@@ -263,6 +263,36 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &wind
 {}
 
 /*!
+    \since 5.6
+
+    Constructs a mouse event object.
+
+    The \a type parameter must be QEvent::MouseButtonPress,
+    QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
+    or QEvent::MouseMove.
+
+    The points \a localPos, \a windowPos and \a screenPos specify the
+    mouse cursor's position relative to the receiving widget or item,
+    window, and screen, respectively.
+
+    The \a button that caused the event is given as a value from the
+    \l Qt::MouseButton enum. If the event \a type is \l MouseMove,
+    the appropriate button for this event is Qt::NoButton. \a buttons
+    is the state of all buttons at the time of the event, \a modifiers
+    is the state of all keyboard modifiers.
+
+    The source of the event is specified by \a source.
+
+*/
+QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+                         Qt::MouseButton button, Qt::MouseButtons buttons,
+                         Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
+    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons), caps(0)
+{
+    QGuiApplicationPrivate::setMouseEventSource(this, source);
+}
+
+/*!
     \internal
 */
 QMouseEvent::~QMouseEvent()
@@ -1939,6 +1969,11 @@ QInputMethodEvent::QInputMethodEvent(const QInputMethodEvent &other)
     : QEvent(QEvent::InputMethod), preedit(other.preedit), attrs(other.attrs),
       commit(other.commit), replace_from(other.replace_from), replace_length(other.replace_length)
 {
+}
+
+QInputMethodEvent::~QInputMethodEvent()
+{
+    // must be empty until ### Qt 6
 }
 
 /*!

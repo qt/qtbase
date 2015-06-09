@@ -13,6 +13,7 @@ HEADERS += \
         plugin/qmachparser_p.h
 
 SOURCES += \
+	plugin/qfactoryinterface.cpp \
 	plugin/qpluginloader.cpp \
 	plugin/qfactoryloader.cpp \
 	plugin/quuid.cpp \

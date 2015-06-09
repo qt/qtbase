@@ -362,6 +362,10 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
 }
 
+QGraphicsViewPrivate::~QGraphicsViewPrivate()
+{
+}
+
 /*!
     \internal
 */

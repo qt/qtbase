@@ -236,9 +236,9 @@ QTemporaryFileEngine::~QTemporaryFileEngine()
     QFSFileEngine::close();
 }
 
-bool QTemporaryFileEngine::isReallyOpen()
+bool QTemporaryFileEngine::isReallyOpen() const
 {
-    Q_D(QFSFileEngine);
+    Q_D(const QFSFileEngine);
 
     if (!((0 == d->fh) && (-1 == d->fd)
 #if defined Q_OS_WIN

@@ -180,7 +180,7 @@ static void md4_update(struct md4_context *ctx, const unsigned char *data, size_
 	saved_lo = ctx->lo;
 	if ((ctx->lo = (saved_lo + size) & 0x1fffffff) < saved_lo)
 		ctx->hi++;
-	ctx->hi += size >> 29;
+	ctx->hi += (quint32)(size >> 29);
 
 	used = saved_lo & 0x3f;
 

@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "windows.json")
+    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "windows.json")
 
 public:
     QPlatformPrinterSupport *create(const QString &);

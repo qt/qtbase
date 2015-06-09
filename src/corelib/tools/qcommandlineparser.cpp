@@ -119,8 +119,8 @@ public:
 
 QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 {
-    const NameHash_t::const_iterator it = nameHash.find(optionName);
-    if (it == nameHash.end()) {
+    const NameHash_t::const_iterator it = nameHash.constFind(optionName);
+    if (it == nameHash.cend()) {
         qWarning("QCommandLineParser: option not defined: \"%s\"", qPrintable(optionName));
         return QStringList();
     }
@@ -847,8 +847,8 @@ QString QCommandLineParser::value(const QString &optionName) const
 QStringList QCommandLineParser::values(const QString &optionName) const
 {
     d->checkParsed("values");
-    const NameHash_t::const_iterator it = d->nameHash.find(optionName);
-    if (it != d->nameHash.end()) {
+    const NameHash_t::const_iterator it = d->nameHash.constFind(optionName);
+    if (it != d->nameHash.cend()) {
         const int optionOffset = *it;
         QStringList values = d->optionValuesHash.value(optionOffset);
         if (values.isEmpty())

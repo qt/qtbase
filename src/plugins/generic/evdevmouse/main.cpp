@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 class QEvdevMousePlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevmouse.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "evdevmouse.json")
 
 public:
     QEvdevMousePlugin();

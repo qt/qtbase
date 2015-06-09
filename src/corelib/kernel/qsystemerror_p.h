@@ -62,9 +62,9 @@ public:
     inline QSystemError(int error, ErrorScope scope);
     inline QSystemError();
 
-    QString toString();
-    inline ErrorScope scope();
-    inline int error();
+    QString toString() const;
+    inline ErrorScope scope() const;
+    inline int error() const;
 
     //data members
     int errorCode;
@@ -83,12 +83,12 @@ QSystemError::QSystemError()
 
 }
 
-QSystemError::ErrorScope QSystemError::scope()
+QSystemError::ErrorScope QSystemError::scope() const
 {
     return errorScope;
 }
 
-int QSystemError::error()
+int QSystemError::error() const
 {
     return errorCode;
 }

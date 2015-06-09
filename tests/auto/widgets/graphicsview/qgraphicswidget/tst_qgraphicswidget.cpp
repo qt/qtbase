@@ -179,15 +179,8 @@ private slots:
     void task250119_shortcutContext();
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
     void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
+    void QTBUG_45867_send_itemChildAddedChange_to_parent();
 };
-
-
-static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = 0)
-{
-    QTest::mouseMove(widget, point);
-    QMouseEvent event(QEvent::MouseMove, point, button, buttons, 0);
-    QApplication::sendEvent(widget, &event);
-}
 
 // Subclass that exposes the protected functions.
 class SubQGraphicsWidget : public QGraphicsWidget {
@@ -196,7 +189,7 @@ public:
         : QGraphicsWidget(parent, windowFlags), eventCount(0)
         { }
 
-    void initStyleOption(QStyleOption *option)
+    void initStyleOption(QStyleOption *option) const
         { QGraphicsWidget::initStyleOption(option); }
 
     void call_changeEvent(QEvent* event)
@@ -1109,8 +1102,8 @@ void tst_QGraphicsWidget::initStyleOption()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(300, 300);
     view.show();
-    QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -1132,10 +1125,8 @@ void tst_QGraphicsWidget::initStyleOption()
     }
     QFETCH(bool, underMouse);
     if (underMouse) {
-        view.resize(300, 300);
-        view.show();
-        QVERIFY(QTest::qWaitForWindowActive(&view));
-        sendMouseMove(view.viewport(), view.mapFromScene(widget->mapToScene(widget->boundingRect().center())));
+        QCursor::setPos(view.viewport()->mapToGlobal(view.mapFromScene(widget->mapToScene(widget->boundingRect().center()))));
+        QTest::qWait(100);
     }
 
     QFETCH(QPalette, palette);
@@ -3488,6 +3479,37 @@ void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
     scene.addItem(item3);
 
     //This should not crash
+}
+
+void tst_QGraphicsWidget::QTBUG_45867_send_itemChildAddedChange_to_parent()
+{
+    class GraphicsItem : public QGraphicsItem
+    {
+    public:
+        int m_itemChildAddedChangeNotificationsCount;
+
+        GraphicsItem()
+            : QGraphicsItem(),
+              m_itemChildAddedChangeNotificationsCount(0)
+        {
+        }
+
+        QRectF boundingRect() const Q_DECL_OVERRIDE { return QRectF(); }
+
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE {}
+
+    protected:
+        QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE
+        {
+            if (change == QGraphicsItem::ItemChildAddedChange)
+                ++m_itemChildAddedChangeNotificationsCount;
+            return QGraphicsItem::itemChange(change, value);
+        }
+    };
+
+    GraphicsItem item;
+    QGraphicsWidget widget(&item);
+    QCOMPARE(item.m_itemChildAddedChangeNotificationsCount, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

@@ -185,6 +185,8 @@ void QFileInfoGatherer::removePath(const QString &path)
 #ifndef QT_NO_FILESYSTEMWATCHER
     QMutexLocker locker(&mutex);
     watcher->removePath(path);
+#else
+    Q_UNUSED(path);
 #endif
 }
 

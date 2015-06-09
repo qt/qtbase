@@ -56,7 +56,7 @@ class Q_GUI_EXPORT QOpenGLPaintDevicePrivate
 {
 public:
     QOpenGLPaintDevicePrivate(const QSize &size);
-    virtual ~QOpenGLPaintDevicePrivate() { }
+    virtual ~QOpenGLPaintDevicePrivate();
 
     static QOpenGLPaintDevicePrivate *get(QOpenGLPaintDevice *dev) { return dev->d_func(); }
 

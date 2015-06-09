@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     for a specified area in the text layout's content.
     \inmodule QtGui
 
-    \sa QTextLayout::setAdditionalFormats(), QTextLayout::draw()
+    \sa QTextLayout::setFormats(), QTextLayout::draw()
 */
 
 /*!
@@ -485,7 +485,6 @@ QString QTextLayout::preeditAreaText() const
     return d->preeditAreaText();
 }
 
-
 /*!
     Sets the additional formats supported by the text layout to \a formatList.
     The formats are applied with preedit area text in place.
@@ -494,7 +493,20 @@ QString QTextLayout::preeditAreaText() const
 */
 void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 {
-    d->setFormats(formatList);
+    setFormats(formatList.toVector());
+}
+
+/*!
+    \since 5.6
+
+    Sets the additional formats supported by the text layout to \a formats.
+    The formats are applied with preedit area text in place.
+
+    \sa formats(), clearFormats()
+*/
+void QTextLayout::setFormats(const QVector<FormatRange> &formats)
+{
+    d->setFormats(formats);
 
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
@@ -507,6 +519,18 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 */
 QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 {
+    return formats().toList();
+}
+
+/*!
+    \since 5.6
+
+    Returns the list of additional formats supported by the text layout.
+
+    \sa setFormats(), clearFormats()
+*/
+QVector<QTextLayout::FormatRange> QTextLayout::formats() const
+{
     return d->formats();
 }
 
@@ -517,7 +541,19 @@ QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 */
 void QTextLayout::clearAdditionalFormats()
 {
-    setAdditionalFormats(QList<FormatRange>());
+    clearFormats();
+}
+
+/*!
+    \since 5.6
+
+    Clears the list of additional formats supported by the text layout.
+
+    \sa formats(), setFormats()
+*/
+void QTextLayout::clearFormats()
+{
+    setFormats(QVector<FormatRange>());
 }
 
 /*!

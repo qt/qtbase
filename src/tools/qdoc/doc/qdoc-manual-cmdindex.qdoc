@@ -106,6 +106,7 @@
     \li \l {printto-command} {\\printto}
     \li \l {printuntil-command} {\\printuntil}
     \li \l {property-command} {\\property}
+    \li \l {qmlabstract-command} {\\qmlabstract}
     \li \l {qmlattachedproperty-command} {\\qmlattachedproperty}
     \li \l {qmlattachedsignal-command} {\\qmlattachedsignal}
     \li \l {qmlbasictype-command} {\\qmlbasictype}

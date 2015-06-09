@@ -100,17 +100,19 @@ EventReportWidget::EventReportWidget()
 void EventReportWidget::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
+    int lineSpacing = fontMetrics().lineSpacing();
+    int halfLineSpacing = lineSpacing / 2;
     const QRectF geom = QRectF(QPoint(0, 0), size());
     p.fillRect(geom, Qt::white);
     p.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1,1)));
     p.setPen(Qt::white);
     QPainterPath ellipse;
-    ellipse.addEllipse(0, 0, 50, 10);
+    ellipse.addEllipse(0, 0, halfLineSpacing * 5, halfLineSpacing);
     foreach (const TabletPoint &t, m_points) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
-              pp.addEllipse(t.pos, 8, 8);
-              QRectF pointBounds(t.pos.x() - 10, t.pos.y() - 10, 20, 20);
+              pp.addEllipse(t.pos, halfLineSpacing, halfLineSpacing);
+              QRectF pointBounds(t.pos.x() - halfLineSpacing, t.pos.y() - halfLineSpacing, lineSpacing, lineSpacing);
               switch (t.type) {
               case TabletButtonPress:
                   p.fillPath(pp, Qt::darkGreen);
@@ -133,7 +135,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
                           p.drawPath(ellipse);
                           p.restore();
                       } else {
-                          p.drawEllipse(t.pos, t.pressure * 10.0, t.pressure * 10.0);
+                          p.drawEllipse(t.pos, t.pressure * halfLineSpacing, t.pressure * halfLineSpacing);
                       }
                       p.setPen(Qt::white);
                   } else {

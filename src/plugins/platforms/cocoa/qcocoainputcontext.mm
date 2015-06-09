@@ -34,7 +34,6 @@
 #include "qnsview.h"
 #include "qcocoainputcontext.h"
 #include "qcocoanativeinterface.h"
-#include "qcocoaautoreleasepool.h"
 #include "qcocoawindow.h"
 
 #include <QtCore/QRect>
@@ -98,7 +97,7 @@ void QCocoaInputContext::reset()
     if (!view)
         return;
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (NSTextInputContext *ctxt = [NSTextInputContext currentInputContext]) {
         [ctxt discardMarkedText];
         [view unmarkText];

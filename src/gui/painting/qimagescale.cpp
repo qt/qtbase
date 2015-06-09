@@ -38,22 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef void (*qt_qimageScaleFunc)(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                                   int dxx, int dyy, int dx, int dy, int dw,
-                                   int dh, int dow, int sow);
-
-static void qt_qimageScaleAARGB(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                         int dxx, int dyy, int dx, int dy, int dw,
-                         int dh, int dow, int sow);
-
-static void qt_qimageScaleAARGBA(QImageScale::QImageScaleInfo *isi, unsigned int *dest,
-                          int dxx, int dyy, int dx, int dy, int dw,
-                          int dh, int dow, int sow);
-
-qt_qimageScaleFunc qt_qimageScaleArgb = qt_qimageScaleAARGBA;
-qt_qimageScaleFunc qt_qimageScaleRgb  = qt_qimageScaleAARGB;
-
-
 /*
  * Copyright (C) 2004, 2005 Daniel M. Duley
  *
@@ -93,6 +77,8 @@ qt_qimageScaleFunc qt_qimageScaleRgb  = qt_qimageScaleAARGB;
  *
  * Changes include formatting, namespaces and other C++'ings, removal of old
  * #ifdef'ed code, and removal of unneeded border calculation code.
+ * Later the code has been refactored and an SSE4.1 optimizated path have been
+ * added instead of the removed MMX assembler.
  *
  * Imlib2 is (C) Carsten Haitzler and various contributors. The MMX code
  * is by Willem Monsuwe <willem@stack.nl>. All other modifications are
@@ -115,21 +101,14 @@ using namespace QImageScale;
 // Code ported from Imlib...
 //
 
-// FIXME: replace with qRed, etc... These work on pointers to pixels, not
-// pixel values
-#define A_VAL(p) (qAlpha(*p))
-#define R_VAL(p) (qRed(*p))
-#define G_VAL(p) (qGreen(*p))
-#define B_VAL(p) (qBlue(*p))
-
 const unsigned int** QImageScale::qimageCalcYPoints(const unsigned int *src,
-                                              int sw, int sh, int dh)
+                                                    int sw, int sh, int dh)
 {
     const unsigned int **p;
     int j = 0, rv = 0;
     qint64 val, inc;
 
-    if(dh < 0){
+    if (dh < 0) {
         dh = -dh;
         rv = 1;
     }
@@ -157,7 +136,7 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
     int *p, j = 0, rv = 0;
     qint64 val, inc;
 
-    if(dw < 0){
+    if (dw < 0) {
         dw = -dw;
         rv = 1;
     }
@@ -178,25 +157,23 @@ int* QImageScale::qimageCalcXPoints(int sw, int dw)
             p[dw - i - 1] = tmp;
         }
     }
-   return(p);
+   return p;
 }
 
 int* QImageScale::qimageCalcApoints(int s, int d, int up)
 {
     int *p, j = 0, rv = 0;
 
-    if(d < 0){
+    if (d < 0) {
         rv = 1;
         d = -d;
     }
     p = new int[d];
 
-    /* scaling up */
-    if(up){
-        qint64 val, inc;
-
-        val = 0x8000 * s / d - 0x8000;
-        inc = (((qint64)s) << 16) / d;
+    if (up) {
+        /* scaling up */
+        qint64 val = 0x8000 * s / d - 0x8000;
+        qint64 inc = (((qint64)s) << 16) / d;
         for (int i = 0; i < d; i++) {
             int pos = val >> 16;
             if (pos < 0)
@@ -207,9 +184,8 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
                 p[j++] = (val >> 8) - ((val >> 8) & 0xffffff00);
             val += inc;
         }
-    }
-    /* scaling down */
-    else {
+    } else {
+        /* scaling down */
         qint64 val = 0;
         qint64 inc = (((qint64)s) << 16) / d;
         int Cp = (((d << 14) + s - 1) / s);
@@ -220,7 +196,7 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
             val += inc;
         }
     }
-    if(rv){
+    if (rv) {
         int tmp;
         for (int i = d / 2; --i >= 0; ) {
             tmp = p[i];
@@ -233,7 +209,7 @@ int* QImageScale::qimageCalcApoints(int s, int d, int up)
 
 QImageScaleInfo* QImageScale::qimageFreeScaleInfo(QImageScaleInfo *isi)
 {
-    if(isi){
+    if (isi) {
         delete[] isi->xpoints;
         delete[] isi->ypoints;
         delete[] isi->xapoints;
@@ -254,28 +230,28 @@ QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     sch = dh * qlonglong(img.height()) / sh;
 
     isi = new QImageScaleInfo;
-    if(!isi)
+    if (!isi)
         return 0;
     memset(isi, 0, sizeof(QImageScaleInfo));
 
     isi->xup_yup = (qAbs(dw) >= sw) + ((qAbs(dh) >= sh) << 1);
 
     isi->xpoints = qimageCalcXPoints(img.width(), scw);
-    if(!isi->xpoints)
-        return(qimageFreeScaleInfo(isi));
+    if (!isi->xpoints)
+        return qimageFreeScaleInfo(isi);
     isi->ypoints = qimageCalcYPoints((const unsigned int *)img.scanLine(0),
                                      img.bytesPerLine() / 4, img.height(), sch);
     if (!isi->ypoints)
-        return(qimageFreeScaleInfo(isi));
-    if(aa) {
+        return qimageFreeScaleInfo(isi);
+    if (aa) {
         isi->xapoints = qimageCalcApoints(img.width(), scw, isi->xup_yup & 1);
-        if(!isi->xapoints)
-            return(qimageFreeScaleInfo(isi));
+        if (!isi->xapoints)
+            return qimageFreeScaleInfo(isi);
         isi->yapoints = qimageCalcApoints(img.height(), sch, isi->xup_yup & 2);
-        if(!isi->yapoints)
-            return(qimageFreeScaleInfo(isi));
+        if (!isi->yapoints)
+            return qimageFreeScaleInfo(isi);
     }
-    return(isi);
+    return isi;
 }
 
 
@@ -349,7 +325,7 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
                                  int dh, int dow, int sow)
 {
     /* scaling up both ways */
-    if (isi->xup_yup == 3){
+    if (isi->xup_yup == 3) {
         qt_qimageScaleAARGBA_up_xy(isi, dest, dxx, dyy, dx, dy, dw, dh, dow, sow);
     }
     /* if we're scaling down vertically */
@@ -381,46 +357,25 @@ static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,
     }
 }
 
-inline static void qt_qimageScaleAARGBA_helper_x(const unsigned int *pix, int xap, int Cx, int &r, int &g, int &b, int &a)
+inline static void qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy, int step, int &r, int &g, int &b, int &a)
 {
-    r = R_VAL(pix) * xap;
-    g = G_VAL(pix) * xap;
-    b = B_VAL(pix) * xap;
-    a = A_VAL(pix) * xap;
+    r = qRed(*pix)   * xyap;
+    g = qGreen(*pix) * xyap;
+    b = qBlue(*pix)  * xyap;
+    a = qAlpha(*pix) * xyap;
     int j;
-    for (j = (1 << 14) - xap; j > Cx; j -= Cx ){
-        pix++;
-        r += R_VAL(pix) * Cx;
-        g += G_VAL(pix) * Cx;
-        b += B_VAL(pix) * Cx;
-        a += A_VAL(pix) * Cx;
+    for (j = (1 << 14) - xyap; j > Cxy; j -= Cxy) {
+        pix += step;
+        r += qRed(*pix)   * Cxy;
+        g += qGreen(*pix) * Cxy;
+        b += qBlue(*pix)  * Cxy;
+        a += qAlpha(*pix) * Cxy;
     }
-    pix++;
-    r += R_VAL(pix) * j;
-    g += G_VAL(pix) * j;
-    b += B_VAL(pix) * j;
-    a += A_VAL(pix) * j;
-}
-
-inline static void qt_qimageScaleAARGBA_helper_y(const unsigned int *pix, int yap, int Cy, int sow, int &r, int &g, int &b, int &a)
-{
-    r = R_VAL(pix) * yap;
-    g = G_VAL(pix) * yap;
-    b = B_VAL(pix) * yap;
-    a = A_VAL(pix) * yap;
-    int j;
-    for (j = (1 << 14) - yap; j > Cy; j -= Cy ){
-        pix += sow;
-        r += R_VAL(pix) * Cy;
-        g += G_VAL(pix) * Cy;
-        b += B_VAL(pix) * Cy;
-        a += A_VAL(pix) * Cy;
-    }
-    pix += sow;
-    r += R_VAL(pix) * j;
-    g += G_VAL(pix) * j;
-    b += B_VAL(pix) * j;
-    a += A_VAL(pix) * j;
+    pix += step;
+    r += qRed(*pix)   * j;
+    g += qGreen(*pix) * j;
+    b += qBlue(*pix)  * j;
+    a += qAlpha(*pix) * j;
 }
 
 static void qt_qimageScaleAARGBA_up_x_down_y(QImageScaleInfo *isi, unsigned int *dest,
@@ -443,12 +398,12 @@ static void qt_qimageScaleAARGBA_up_x_down_y(QImageScaleInfo *isi, unsigned int 
         for (int x = dxx; x < end; x++) {
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int r, g, b, a;
-            qt_qimageScaleAARGBA_helper_y(sptr, yap, Cy, sow, r, g, b, a);
+            qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow, r, g, b, a);
 
             int xap = xapoints[x];
             if (xap > 0) {
                 int rr, gg, bb, aa;
-                qt_qimageScaleAARGBA_helper_y(sptr + 1, yap, Cy, sow, rr, gg, bb, aa);
+                qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow, rr, gg, bb, aa);
 
                 r = r * (256 - xap);
                 g = g * (256 - xap);
@@ -484,12 +439,12 @@ static void qt_qimageScaleAARGBA_down_x_up_y(QImageScaleInfo *isi, unsigned int 
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int r, g, b, a;
-            qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, r, g, b, a);
+            qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, r, g, b, a);
 
             int yap = yapoints[dyy + y];
             if (yap > 0) {
                 int rr, gg, bb, aa;
-                qt_qimageScaleAARGBA_helper_x(sptr + sow, xap, Cx, rr, gg, bb, aa);
+                qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1, rr, gg, bb, aa);
 
                 r = r * (256 - yap);
                 g = g * (256 - yap);
@@ -528,7 +483,7 @@ static void qt_qimageScaleAARGBA_down_xy(QImageScaleInfo *isi, unsigned int *des
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int rx, gx, bx, ax;
-            qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, rx, gx, bx, ax);
+            qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, rx, gx, bx, ax);
 
             int r = ((rx>>4) * yap);
             int g = ((gx>>4) * yap);
@@ -538,14 +493,14 @@ static void qt_qimageScaleAARGBA_down_xy(QImageScaleInfo *isi, unsigned int *des
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
                 sptr += sow;
-                qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, rx, gx, bx, ax);
+                qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, rx, gx, bx, ax);
                 r += ((rx>>4) * Cy);
                 g += ((gx>>4) * Cy);
                 b += ((bx>>4) * Cy);
                 a += ((ax>>4) * Cy);
             }
             sptr += sow;
-            qt_qimageScaleAARGBA_helper_x(sptr, xap, Cx, rx, gx, bx, ax);
+            qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1, rx, gx, bx, ax);
 
             r += ((rx>>4) * j);
             g += ((gx>>4) * j);
@@ -609,40 +564,22 @@ static void qt_qimageScaleAARGB(QImageScaleInfo *isi, unsigned int *dest,
 }
 
 
-inline static void qt_qimageScaleAARGB_helper_x(const unsigned int *pix, int xap, int Cx, int &r, int &g, int &b)
+inline static void qt_qimageScaleAARGB_helper(const unsigned int *pix, int xyap, int Cxy, int step, int &r, int &g, int &b)
 {
-    r = R_VAL(pix) * xap;
-    g = G_VAL(pix) * xap;
-    b = B_VAL(pix) * xap;
+    r = qRed(*pix)   * xyap;
+    g = qGreen(*pix) * xyap;
+    b = qBlue(*pix)  * xyap;
     int j;
-    for (j = (1 << 14) - xap; j > Cx; j -= Cx ){
-        pix++;
-        r += R_VAL(pix) * Cx;
-        g += G_VAL(pix) * Cx;
-        b += B_VAL(pix) * Cx;
+    for (j = (1 << 14) - xyap; j > Cxy; j -= Cxy) {
+        pix += step;
+        r += qRed(*pix)   * Cxy;
+        g += qGreen(*pix) * Cxy;
+        b += qBlue(*pix)  * Cxy;
     }
-    pix++;
-    r += R_VAL(pix) * j;
-    g += G_VAL(pix) * j;
-    b += B_VAL(pix) * j;
-}
-
-inline static void qt_qimageScaleAARGB_helper_y(const unsigned int *pix, int yap, int Cy, int sow, int &r, int &g, int &b)
-{
-    r = R_VAL(pix) * yap;
-    g = G_VAL(pix) * yap;
-    b = B_VAL(pix) * yap;
-    int j;
-    for (j = (1 << 14) - yap; j > Cy; j -= Cy ){
-        pix += sow;
-        r += R_VAL(pix) * Cy;
-        g += G_VAL(pix) * Cy;
-        b += B_VAL(pix) * Cy;
-    }
-    pix += sow;
-    r += R_VAL(pix) * j;
-    g += G_VAL(pix) * j;
-    b += B_VAL(pix) * j;
+    pix += step;
+    r += qRed(*pix)   * j;
+    g += qGreen(*pix) * j;
+    b += qBlue(*pix)  * j;
 }
 
 static void qt_qimageScaleAARGB_up_x_down_y(QImageScaleInfo *isi, unsigned int *dest,
@@ -665,12 +602,12 @@ static void qt_qimageScaleAARGB_up_x_down_y(QImageScaleInfo *isi, unsigned int *
         for (int x = dxx; x < end; x++) {
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int r, g, b;
-            qt_qimageScaleAARGB_helper_y(sptr, yap, Cy, sow, r, g, b);
+            qt_qimageScaleAARGB_helper(sptr, yap, Cy, sow, r, g, b);
 
             int xap = xapoints[x];
             if (xap > 0) {
                 int rr, bb, gg;
-                qt_qimageScaleAARGB_helper_y(sptr + 1, yap, Cy, sow, rr, gg, bb);
+                qt_qimageScaleAARGB_helper(sptr + 1, yap, Cy, sow, rr, gg, bb);
 
                 r = r * (256 - xap);
                 g = g * (256 - xap);
@@ -704,12 +641,12 @@ static void qt_qimageScaleAARGB_down_x_up_y(QImageScaleInfo *isi, unsigned int *
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int r, g, b;
-            qt_qimageScaleAARGB_helper_x(sptr, xap, Cx, r, g, b);
+            qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, r, g, b);
 
             int yap = yapoints[dyy + y];
             if (yap > 0) {
                 int rr, bb, gg;
-                qt_qimageScaleAARGB_helper_x(sptr + sow, xap, Cx, rr, gg, bb);
+                qt_qimageScaleAARGB_helper(sptr + sow, xap, Cx, 1, rr, gg, bb);
 
                 r = r * (256 - yap);
                 g = g * (256 - yap);
@@ -745,7 +682,7 @@ static void qt_qimageScaleAARGB_down_xy(QImageScaleInfo *isi, unsigned int *dest
 
             const unsigned int *sptr = ypoints[dyy + y] + xpoints[x];
             int rx, gx, bx;
-            qt_qimageScaleAARGB_helper_x(sptr, xap, Cx, rx, gx, bx);
+            qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, rx, gx, bx);
 
             int r = (rx >> 4) * yap;
             int g = (gx >> 4) * yap;
@@ -754,14 +691,14 @@ static void qt_qimageScaleAARGB_down_xy(QImageScaleInfo *isi, unsigned int *dest
             int j;
             for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
                 sptr += sow;
-                qt_qimageScaleAARGB_helper_x(sptr, xap, Cx, rx, gx, bx);
+                qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, rx, gx, bx);
 
                 r += (rx >> 4) * Cy;
                 g += (gx >> 4) * Cy;
                 b += (bx >> 4) * Cy;
             }
             sptr += sow;
-            qt_qimageScaleAARGB_helper_x(sptr, xap, Cx, rx, gx, bx);
+            qt_qimageScaleAARGB_helper(sptr, xap, Cx, 1, rx, gx, bx);
 
             r += (rx >> 4) * j;
             g += (gx >> 4) * j;
@@ -794,11 +731,11 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
     }
 
     if (src.hasAlphaChannel())
-        qt_qimageScaleArgb(scaleinfo, (unsigned int *)buffer.scanLine(0),
-                           0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
+        qt_qimageScaleAARGBA(scaleinfo, (unsigned int *)buffer.scanLine(0),
+                             0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
     else
-        qt_qimageScaleRgb(scaleinfo, (unsigned int *)buffer.scanLine(0),
-                          0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
+        qt_qimageScaleAARGB(scaleinfo, (unsigned int *)buffer.scanLine(0),
+                            0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
 
     qimageFreeScaleInfo(scaleinfo);
     return buffer;

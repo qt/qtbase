@@ -66,117 +66,17 @@ public:
         return bufferSize == 0 ? Q_NULLPTR : (buffers.first().constData() + head);
     }
 
-    // access the bytes at a specified position
-    // the out-variable length will contain the amount of bytes readable
-    // from there, e.g. the amount still the same QByteArray
-    inline const char *readPointerAtPosition(qint64 pos, qint64 &length) const {
-        if (pos >= 0) {
-            pos += head;
-            for (int i = 0; i < buffers.size(); ++i) {
-                length = (i == tailBuffer ? tail : buffers[i].size());
-                if (length > pos) {
-                    length -= pos;
-                    return buffers[i].constData() + pos;
-                }
-                pos -= length;
-            }
-        }
-
-        length = 0;
-        return 0;
-    }
-
-    inline void free(qint64 bytes) {
-        while (bytes > 0) {
-            const qint64 blockSize = buffers.first().size() - head;
-
-            if (tailBuffer == 0 || blockSize > bytes) {
-                // keep a single block around if it does not exceed
-                // the basic block size, to avoid repeated allocations
-                // between uses of the buffer
-                if (bufferSize <= bytes) {
-                    if (buffers.first().size() <= basicBlockSize) {
-                        bufferSize = 0;
-                        head = tail = 0;
-                    } else {
-                        clear(); // try to minify/squeeze us
-                    }
-                } else {
-                    Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
-                    head += int(bytes);
-                    bufferSize -= bytes;
-                }
-                return;
-            }
-
-            bufferSize -= blockSize;
-            bytes -= blockSize;
-            buffers.removeFirst();
-            --tailBuffer;
-            head = 0;
-        }
-    }
-
-    inline char *reserve(qint64 bytes) {
-        if (bytes <= 0 || quint64(bytes) >= QByteArray::MaxSize)
-            return 0;
-
-        const qint64 newSize = bytes + tail;
-        // if need buffer reallocation
-        if (newSize > buffers.last().size()) {
-            if (newSize > buffers.last().capacity() && (tail >= basicBlockSize
-                    || quint64(newSize) >= QByteArray::MaxSize)) {
-                // shrink this buffer to its current size
-                buffers.last().resize(tail);
-
-                // create a new QByteArray
-                buffers.append(QByteArray());
-                ++tailBuffer;
-                tail = 0;
-            }
-            buffers.last().resize(qMax(basicBlockSize, tail + int(bytes)));
-        }
-
-        char *writePtr = buffers.last().data() + tail;
-        bufferSize += bytes;
-        Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
-        tail += int(bytes);
-        return writePtr;
-    }
+    Q_CORE_EXPORT const char *readPointerAtPosition(qint64 pos, qint64 &length) const;
+    Q_CORE_EXPORT void free(qint64 bytes);
+    Q_CORE_EXPORT char *reserve(qint64 bytes);
+    Q_CORE_EXPORT char *reserveFront(qint64 bytes);
 
     inline void truncate(qint64 pos) {
         if (pos < size())
             chop(size() - pos);
     }
 
-    inline void chop(qint64 bytes) {
-        while (bytes > 0) {
-            if (tailBuffer == 0 || tail > bytes) {
-                // keep a single block around if it does not exceed
-                // the basic block size, to avoid repeated allocations
-                // between uses of the buffer
-                if (bufferSize <= bytes) {
-                    if (buffers.first().size() <= basicBlockSize) {
-                        bufferSize = 0;
-                        head = tail = 0;
-                    } else {
-                        clear(); // try to minify/squeeze us
-                    }
-                } else {
-                    Q_ASSERT(quint64(bytes) < QByteArray::MaxSize);
-                    tail -= int(bytes);
-                    bufferSize -= bytes;
-                }
-                return;
-            }
-
-            bufferSize -= tail;
-            bytes -= tail;
-            buffers.removeLast();
-            --tailBuffer;
-            tail = buffers.last().size();
-        }
-    }
+    Q_CORE_EXPORT void chop(qint64 bytes);
 
     inline bool isEmpty() const {
         return bufferSize == 0;
@@ -195,156 +95,36 @@ public:
         *ptr = c;
     }
 
-    inline void ungetChar(char c) {
-        --head;
-        if (head < 0) {
-            if (bufferSize != 0) {
-                buffers.prepend(QByteArray());
-                ++tailBuffer;
-            } else {
-                tail = basicBlockSize;
-            }
-            buffers.first().resize(basicBlockSize);
-            head = basicBlockSize - 1;
+    void ungetChar(char c)
+    {
+        if (head > 0) {
+            --head;
+            buffers.first()[head] = c;
+            ++bufferSize;
+        } else {
+            char *ptr = reserveFront(1);
+            *ptr = c;
         }
-        buffers.first()[head] = c;
-        ++bufferSize;
     }
+
 
     inline qint64 size() const {
         return bufferSize;
     }
 
-    inline void clear() {
-        buffers.erase(buffers.begin() + 1, buffers.end());
-        buffers.first().clear();
-
-        head = tail = 0;
-        tailBuffer = 0;
-        bufferSize = 0;
-    }
-
-    inline qint64 indexOf(char c) const {
-        qint64 index = 0;
-        qint64 j = head;
-        for (int i = 0; i < buffers.size(); ++i) {
-            const char *ptr = buffers[i].constData() + j;
-            j = index + (i == tailBuffer ? tail : buffers[i].size()) - j;
-
-            while (index < j) {
-                if (*ptr++ == c)
-                    return index;
-                ++index;
-            }
-            j = 0;
-        }
-        return -1;
-    }
-
-    inline qint64 indexOf(char c, qint64 maxLength) const {
-        qint64 index = 0;
-        qint64 j = head;
-        for (int i = 0; index < maxLength && i < buffers.size(); ++i) {
-            const char *ptr = buffers[i].constData() + j;
-            j = qMin(index + (i == tailBuffer ? tail : buffers[i].size()) - j, maxLength);
-
-            while (index < j) {
-                if (*ptr++ == c)
-                    return index;
-                ++index;
-            }
-            j = 0;
-        }
-        return -1;
-    }
-
-    inline qint64 read(char *data, qint64 maxLength) {
-        const qint64 bytesToRead = qMin(size(), maxLength);
-        qint64 readSoFar = 0;
-        while (readSoFar < bytesToRead) {
-            const qint64 bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
-                                                         nextDataBlockSize());
-            if (data)
-                memcpy(data + readSoFar, readPointer(), bytesToReadFromThisBlock);
-            readSoFar += bytesToReadFromThisBlock;
-            free(bytesToReadFromThisBlock);
-        }
-        return readSoFar;
-    }
-
-    // read an unspecified amount (will read the first buffer)
-    inline QByteArray read() {
-        if (bufferSize == 0)
-            return QByteArray();
-
-        QByteArray qba(buffers.takeFirst());
-
-        qba.reserve(0); // avoid that resizing needlessly reallocates
-        if (tailBuffer == 0) {
-            qba.resize(tail);
-            tail = 0;
-            buffers.append(QByteArray());
-        } else {
-            --tailBuffer;
-        }
-        qba.remove(0, head); // does nothing if head is 0
-        head = 0;
-        bufferSize -= qba.size();
-        return qba;
-    }
-
-    // peek the bytes from a specified position
-    inline qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const
-    {
-        qint64 readSoFar = 0;
-
-        if (pos >= 0) {
-            pos += head;
-            for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
-                qint64 blockLength = (i == tailBuffer ? tail : buffers[i].size());
-
-                if (pos < blockLength) {
-                    blockLength = qMin(blockLength - pos, maxLength - readSoFar);
-                    memcpy(data + readSoFar, buffers[i].constData() + pos, blockLength);
-                    readSoFar += blockLength;
-                    pos = 0;
-                } else {
-                    pos -= blockLength;
-                }
-            }
-        }
-
-        return readSoFar;
-    }
-
-    // append a new buffer to the end
-    inline void append(const QByteArray &qba) {
-        if (tail == 0) {
-            buffers.last() = qba;
-        } else {
-            buffers.last().resize(tail);
-            buffers.append(qba);
-            ++tailBuffer;
-        }
-        tail = qba.size();
-        bufferSize += tail;
-    }
+    Q_CORE_EXPORT void clear();
+    inline qint64 indexOf(char c) const { return indexOf(c, size()); }
+    Q_CORE_EXPORT qint64 indexOf(char c, qint64 maxLength) const;
+    Q_CORE_EXPORT qint64 read(char *data, qint64 maxLength);
+    Q_CORE_EXPORT QByteArray read();
+    Q_CORE_EXPORT qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const;
+    Q_CORE_EXPORT void append(const QByteArray &qba);
 
     inline qint64 skip(qint64 length) {
         return read(0, length);
     }
 
-    inline qint64 readLine(char *data, qint64 maxLength) {
-        if (!data || --maxLength <= 0)
-            return -1;
-
-        qint64 i = indexOf('\n', maxLength);
-        i = read(data, i >= 0 ? (i + 1) : maxLength);
-
-        // Terminate it.
-        data[i] = '\0';
-        return i;
-    }
+    Q_CORE_EXPORT qint64 readLine(char *data, qint64 maxLength);
 
     inline bool canReadLine() const {
         return indexOf('\n') >= 0;

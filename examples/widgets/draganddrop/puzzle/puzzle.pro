@@ -18,5 +18,5 @@ INSTALLS += target
 wince*: {
    addFile.files = example.jpg
    addFile.path = .
-   DEPLOYMENT += addFile
+   INSTALLS += addFile
 }

@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 class QTuioTouchPlugin : public QGenericPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "tuiotouch.json")
+    Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "tuiotouch.json")
 
 public:
     QTuioTouchPlugin();

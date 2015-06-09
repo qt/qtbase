@@ -185,7 +185,7 @@ defineTest(qtAddRpathLink) {
     # paths OTOH need to be put there.
     pubqt = $$replace(1, -private$, _private)
     pubdep = $$resolve_depends(pubqt, "QT.")
-    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".private_depends" ".run_depends")
+    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".run_depends")
     privdep -= $$pubdep
     rpaths =
     for(dep, privdep): \
@@ -259,7 +259,7 @@ defineTest(qtAddToolEnv) {
 # target variable, dependency var name, [non-empty: prepare for system(), not make]
 defineTest(qtAddTargetEnv) {
     deps = $$replace($$2, -private$, _private)
-    deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
+    deps = $$resolve_depends(deps, "QT.", ".depends" ".run_depends")
     !isEmpty(deps) {
         ptypes =
         for(dep, deps) {

@@ -46,6 +46,7 @@
     below the \l {Topic Commands} {topic} command.
 
     \list
+      \li \l {abstract-command} {\\abstract}
       \li \l {compat-command}{\\compat},
       \li \l {contentspage-command}{\\contentspage},
       \li \l {indexpage-command}{\\indexpage},
@@ -59,6 +60,7 @@
       \li \l {overload-command}{\\overload},
       \li \l {preliminary-command}{\\preliminary},
       \li \l {previouspage-command}{\\previouspage},
+      \li \l {qmlabstract-command} {\\qmlabstract}
       \li \l {reentrant-command}{\\reentrant},
       \li \l {reimp-command}{\\reimp},
       \li \l {relates-command}{\\relates},
@@ -199,21 +201,41 @@
     index page of the collection.
 */
 
-
 /*!
     \page 16-qdoc-commands-status.html
     \previouspage Document Navigation
     \contentspage QDoc Manual
     \nextpage Thread Support
 
-    \title Reporting Status
+    \title Status
 
-    These commands are for indicating that a documented element is
-    still under development, is becoming obsolete, is provided for
-    compatibility reasons, or is simply not to be included in the
-    public interface. The \l {since-command}{\\since} command is for
-    including information about the version when a function or class
-    first appeared.
+    These commands are for indicating that a documented element has
+    some special status. The element could be marked as about to be
+    made obsolete, or that it is provided for compatibility with an
+    earlier version, or is simply not to be included in the public
+    interface. The \l {since-command}{\\since} command is for
+    specifying the version number in which a function or class first
+    appeared. The \l {qmlabstract-command} {\\qmlabstract} command is
+    for marking a QML type as an abstract base class.
+
+    \target abstract-command
+    \target qmlabstract-command
+    \section1 \\abstract and \\qmlabstract
+
+    \\abstract is a synonym for the \\qmlabstract command. Add this
+    command to the \l {qmltype-command} {\\qmltype} comment for a QML
+    type when that type is meant to be used \e {only} as an abstract
+    base type. When a QML type is abstract, it means that the QML type
+    that can't be instantiated. Instead, the properties in its public
+    API are included in the public properties list on the reference
+    page for each QML type that inherits the abstract QML type. The
+    properties are documented as if they are properties of the
+    inheriting QML type.
+
+    Normally, when a QML type is marked with \e{\\qmlabstract}, it is
+    also marked with \e{\\internal} so that its reference page is not
+    generated. It the abstract QML type is not marked internal, it
+    will have a reference page in the documentation.
 
     \target compat-command
     \section1 \\compat

@@ -73,7 +73,7 @@ QPrintDevice &QPrintDevice::operator=(const QPrintDevice &other)
 bool QPrintDevice::operator==(const QPrintDevice &other) const
 {
     if (d && other.d)
-        return *d == *other.d;
+        return d->id() == other.d->id();
     return d == other.d;
 }
 

@@ -72,10 +72,11 @@ public:
 
     QPicture& operator=(const QPicture &p);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QPicture &operator=(QPicture &&other)
+    inline QPicture &operator=(QPicture &&other) Q_DECL_NOEXCEPT
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
-    inline void swap(QPicture &other) { d_ptr.swap(other.d_ptr); }
+    inline void swap(QPicture &other) Q_DECL_NOEXCEPT
+    { d_ptr.swap(other.d_ptr); }
     void detach();
     bool isDetached() const;
 

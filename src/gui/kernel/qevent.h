@@ -106,6 +106,9 @@ public:
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+                Qt::MouseButton button, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
     ~QMouseEvent();
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -528,6 +531,8 @@ public:
     };
     QInputMethodEvent();
     QInputMethodEvent(const QString &preeditText, const QList<Attribute> &attributes);
+    ~QInputMethodEvent();
+
     void setCommitString(const QString &commitString, int replaceFrom = 0, int replaceLength = 0);
     inline const QList<Attribute> &attributes() const { return attrs; }
     inline const QString &preeditString() const { return preedit; }
@@ -789,8 +794,10 @@ public:
         explicit TouchPoint(int id = -1);
         TouchPoint(const TouchPoint &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-        TouchPoint(TouchPoint &&other) : d(other.d) { other.d = 0; }
-        TouchPoint &operator=(TouchPoint &&other)
+        TouchPoint(TouchPoint &&other) Q_DECL_NOEXCEPT
+            : d(0)
+        { qSwap(d, other.d); }
+        TouchPoint &operator=(TouchPoint &&other) Q_DECL_NOEXCEPT
         { qSwap(d, other.d); return *this; }
 #endif
         ~TouchPoint();
@@ -798,7 +805,8 @@ public:
         TouchPoint &operator=(const TouchPoint &other)
         { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
 
-        void swap(TouchPoint &other) { qSwap(d, other.d); }
+        void swap(TouchPoint &other) Q_DECL_NOEXCEPT
+        { qSwap(d, other.d); }
 
         int id() const;
 

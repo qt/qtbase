@@ -54,6 +54,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary,
         return;
     }
 
+    dictionary["LICHECK"] = "licheck.exe";
+
     const QString licenseChecker =
         QDir::toNativeSeparators(sourcePath + "/bin/licheck.exe");
 

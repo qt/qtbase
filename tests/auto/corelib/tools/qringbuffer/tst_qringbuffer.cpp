@@ -48,6 +48,7 @@ private slots:
     void sizeWhenReserved();
     void free();
     void reserveAndRead();
+    void reserveFrontAndRead();
     void chop();
     void ungetChar();
     void indexOf();
@@ -210,6 +211,28 @@ void tst_QRingBuffer::reserveAndRead()
 
     // readback and check stored data
     for (int i = 1; i < 256; ++i) {
+        QByteArray ba;
+        ba.resize(i);
+        qint64 thisRead = ringBuffer.read(ba.data(), i);
+        QCOMPARE(thisRead, qint64(i));
+        QVERIFY(ba.count(char(i)) == i);
+    }
+    QVERIFY(ringBuffer.size() == 0);
+}
+
+void tst_QRingBuffer::reserveFrontAndRead()
+{
+    QRingBuffer ringBuffer;
+    // fill buffer with an arithmetic progression
+    for (int i = 1; i < 256; ++i) {
+        QByteArray ba(i, char(i));
+        char *ringPos = ringBuffer.reserveFront(i);
+        QVERIFY(ringPos);
+        memcpy(ringPos, ba.constData(), i);
+    }
+
+    // readback and check stored data
+    for (int i = 255; i > 0; --i) {
         QByteArray ba;
         ba.resize(i);
         qint64 thisRead = ringBuffer.read(ba.data(), i);

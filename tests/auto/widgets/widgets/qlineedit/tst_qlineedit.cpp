@@ -304,6 +304,7 @@ private slots:
     void undoRedoAndEchoModes();
 
     void clearButton();
+    void clearButtonVisibleAfterSettingText_QTBUG_45518();
     void sideWidgets();
 
     void shouldShowPlaceholderText_data();
@@ -4271,6 +4272,50 @@ void tst_QLineEdit::clearButton()
 
     filterLineEdit->setReadOnly(true); // QTBUG-34315
     QVERIFY(!clearButton->isEnabled());
+}
+
+void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build");
+#else
+    QLineEdit edit;
+    edit.setMinimumWidth(200);
+    centerOnScreen(&edit);
+    QLineEditIconButton *clearButton;
+    clearButton = edit.findChild<QLineEditIconButton *>();
+    QVERIFY(!clearButton);
+
+    edit.setText(QStringLiteral("some text"));
+    edit.show();
+    QVERIFY(QTest::qWaitForWindowActive(&edit));
+
+    QVERIFY(!edit.isClearButtonEnabled());
+
+    clearButton = edit.findChild<QLineEditIconButton *>();
+    QVERIFY(!clearButton);
+
+    edit.setClearButtonEnabled(true);
+    QVERIFY(edit.isClearButtonEnabled());
+
+    clearButton = edit.findChild<QLineEditIconButton *>();
+    QVERIFY(clearButton);
+    QVERIFY(clearButton->isVisible());
+
+    QTRY_VERIFY(clearButton->opacity() > 0);
+    QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
+
+    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButton->rect().center());
+    QTRY_COMPARE(edit.text(), QString());
+
+    QTRY_COMPARE(clearButton->opacity(), qreal(0));
+    QTRY_COMPARE(clearButton->cursor().shape(), clearButton->parentWidget()->cursor().shape());
+
+    edit.setClearButtonEnabled(false);
+    QVERIFY(!edit.isClearButtonEnabled());
+    clearButton = edit.findChild<QLineEditIconButton *>();
+    QVERIFY(!clearButton);
+#endif // QT_BUILD_INTERNAL
 }
 
 void tst_QLineEdit::sideWidgets()

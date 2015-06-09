@@ -198,6 +198,8 @@ private slots:
     void clearMovable() const;
     void clearCustom() const;
     void constData() const;
+    void constFirst() const;
+    void constLast() const;
     void contains() const;
     void countInt() const;
     void countMovable() const;
@@ -1222,15 +1224,85 @@ void tst_QVector::first() const
 
     // test it starts ok
     QCOMPARE(myvec.first(), 69);
+    QCOMPARE(myvec.constFirst(), 69);
 
     // test removal changes
     myvec.remove(0);
     QCOMPARE(myvec.first(), 42);
+    QCOMPARE(myvec.constFirst(), 42);
 
     // test prepend changes
     myvec.prepend(23);
     QCOMPARE(myvec.first(), 23);
+    QCOMPARE(myvec.constFirst(), 23);
 }
+
+void tst_QVector::constFirst() const
+{
+    QVector<int> myvec;
+    myvec << 69 << 42 << 3;
+
+    // test it starts ok
+    QCOMPARE(myvec.constFirst(), 69);
+    QVERIFY(myvec.isDetached());
+
+    QVector<int> myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constFirst(), 69);
+    QCOMPARE(myvecCopy.constFirst(), 69);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    // test removal changes
+    myvec.remove(0);
+    QVERIFY(myvec.isDetached());
+    QVERIFY(!myvec.isSharedWith(myvecCopy));
+    QCOMPARE(myvec.constFirst(), 42);
+    QCOMPARE(myvecCopy.constFirst(), 69);
+
+    myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constFirst(), 42);
+    QCOMPARE(myvecCopy.constFirst(), 42);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    // test prepend changes
+    myvec.prepend(23);
+    QVERIFY(myvec.isDetached());
+    QVERIFY(!myvec.isSharedWith(myvecCopy));
+    QCOMPARE(myvec.constFirst(), 23);
+    QCOMPARE(myvecCopy.constFirst(), 42);
+
+    myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constFirst(), 23);
+    QCOMPARE(myvecCopy.constFirst(), 23);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+}
+
 
 template<typename T>
 void tst_QVector::fromList() const
@@ -1409,14 +1481,83 @@ void tst_QVector::last() const
 
     // test starts ok
     QCOMPARE(myvec.last(), QLatin1String("C"));
+    QCOMPARE(myvec.constLast(), QLatin1String("C"));
 
     // test it changes ok
     myvec.append(QLatin1String("X"));
     QCOMPARE(myvec.last(), QLatin1String("X"));
+    QCOMPARE(myvec.constLast(), QLatin1String("X"));
 
     // and remove again
     myvec.remove(3);
     QCOMPARE(myvec.last(), QLatin1String("C"));
+    QCOMPARE(myvec.constLast(), QLatin1String("C"));
+}
+
+void tst_QVector::constLast() const
+{
+    QVector<int> myvec;
+    myvec << 69 << 42 << 3;
+
+    // test it starts ok
+    QCOMPARE(myvec.constLast(), 3);
+    QVERIFY(myvec.isDetached());
+
+    QVector<int> myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constLast(), 3);
+    QCOMPARE(myvecCopy.constLast(), 3);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    // test removal changes
+    myvec.removeLast();
+    QVERIFY(myvec.isDetached());
+    QVERIFY(!myvec.isSharedWith(myvecCopy));
+    QCOMPARE(myvec.constLast(), 42);
+    QCOMPARE(myvecCopy.constLast(), 3);
+
+    myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constLast(), 42);
+    QCOMPARE(myvecCopy.constLast(), 42);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    // test prepend changes
+    myvec.append(23);
+    QVERIFY(myvec.isDetached());
+    QVERIFY(!myvec.isSharedWith(myvecCopy));
+    QCOMPARE(myvec.constLast(), 23);
+    QCOMPARE(myvecCopy.constLast(), 42);
+
+    myvecCopy = myvec;
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
+
+    QCOMPARE(myvec.constLast(), 23);
+    QCOMPARE(myvecCopy.constLast(), 23);
+
+    QVERIFY(!myvec.isDetached());
+    QVERIFY(!myvecCopy.isDetached());
+    QVERIFY(myvec.isSharedWith(myvecCopy));
+    QVERIFY(myvecCopy.isSharedWith(myvec));
 }
 
 void tst_QVector::lastIndexOf() const

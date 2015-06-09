@@ -165,7 +165,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     [self reloadAllComponents];
 }
 
--(void)listenForKeyboardWillHideNotification:(BOOL)listen
+- (void)listenForKeyboardWillHideNotification:(BOOL)listen
 {
     if (listen) {
         [[NSNotificationCenter defaultCenter]
@@ -179,7 +179,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     }
 }
 
--(void)dealloc
+- (void)dealloc
 {
     [self listenForKeyboardWillHideNotification:NO];
     self.toolbar = 0;

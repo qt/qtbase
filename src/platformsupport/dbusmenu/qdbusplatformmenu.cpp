@@ -75,6 +75,9 @@ void QDBusPlatformMenuItem::setIcon(const QIcon &icon)
     m_icon = icon;
 }
 
+/*!
+    Set a submenu under this menu item.
+*/
 void QDBusPlatformMenuItem::setMenu(QPlatformMenu *menu)
 {
     m_subMenu = static_cast<QDBusPlatformMenu *>(menu);
@@ -242,8 +245,12 @@ const QList<QDBusPlatformMenuItem *> QDBusPlatformMenu::items() const
 QPlatformMenuItem *QDBusPlatformMenu::createMenuItem() const
 {
     QDBusPlatformMenuItem *ret = new QDBusPlatformMenuItem();
-    ret->setMenu(const_cast<QDBusPlatformMenu *>(this));
     return ret;
+}
+
+QPlatformMenu *QDBusPlatformMenu::createSubMenu() const
+{
+    return new QDBusPlatformMenu;
 }
 
 QT_END_NAMESPACE

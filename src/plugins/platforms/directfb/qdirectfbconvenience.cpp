@@ -217,7 +217,7 @@ Qt::KeyboardModifiers QDirectFbConvenience::keyboardModifiers(DFBInputDeviceModi
         modifiers |= Qt::ControlModifier;
     }
     if (mask & DIMM_META) {
-        modifiers | Qt::MetaModifier;
+        modifiers |= Qt::MetaModifier;
     }
     return modifiers;
 }

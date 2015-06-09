@@ -122,7 +122,7 @@ public:
 
     Q_PRIVATE_SLOT(d_func(), void resetUploadDataSlot(bool *r))
     Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))
-    Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64))
+    Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64,qint64))
     Q_PRIVATE_SLOT(d_func(), void uploadByteDeviceReadyReadSlot())
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_cacheSaveDeviceAboutToClose())
@@ -146,7 +146,7 @@ signals:
 
     void startHttpRequestSynchronously();
 
-    void haveUploadData(QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
+    void haveUploadData(const qint64 pos, QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
 };
 
 class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
@@ -197,6 +197,7 @@ public:
     // upload
     QNonContiguousByteDevice* createUploadByteDevice();
     QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
+    qint64 uploadByteDevicePosition;
     bool uploadDeviceChoking; // if we couldn't readPointer() any data at the moment
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
@@ -288,7 +289,7 @@ public:
     // From QNonContiguousByteDeviceThreadForwardImpl in HTTP thread:
     void resetUploadDataSlot(bool *r);
     void wantUploadDataSlot(qint64);
-    void sentUploadDataSlot(qint64);
+    void sentUploadDataSlot(qint64, qint64);
 
     // From user's QNonContiguousByteDevice
     void uploadByteDeviceReadyReadSlot();

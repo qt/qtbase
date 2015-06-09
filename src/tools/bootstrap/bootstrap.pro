@@ -97,6 +97,7 @@ SOURCES += \
            ../../corelib/tools/qlocale_tools.cpp \
            ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qregexp.cpp \
+           ../../corelib/tools/qringbuffer.cpp \
            ../../corelib/tools/qpoint.cpp \
            ../../corelib/tools/qrect.cpp \
            ../../corelib/tools/qsize.cpp \

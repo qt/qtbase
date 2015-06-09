@@ -106,6 +106,7 @@ SOURCES += \
         tools/qrect.cpp \
         tools/qregexp.cpp \
         tools/qrefcount.cpp \
+        tools/qringbuffer.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
         tools/qsimd.cpp \

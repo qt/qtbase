@@ -43,7 +43,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "qcocoahelpers.h"
-#include "qcocoaautoreleasepool.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -555,7 +554,7 @@ QMacPasteboard::sync() const
 
 QString qt_mac_get_pasteboardString(PasteboardRef paste)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     NSPasteboard *pb = nil;
     CFStringRef pbname;
     if (PasteboardCopyName(paste, &pbname) == noErr) {

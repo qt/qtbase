@@ -40,6 +40,15 @@
 
 QT_BEGIN_NAMESPACE
 
+QAbstractTextDocumentLayoutPrivate::~QAbstractTextDocumentLayoutPrivate()
+{
+}
+
+QTextObjectInterface::~QTextObjectInterface()
+{
+    // must be empty until ### Qt 6
+}
+
 /*!
     \class QAbstractTextDocumentLayout
     \reentrant

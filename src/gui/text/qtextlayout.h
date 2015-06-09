@@ -125,10 +125,18 @@ public:
         int start;
         int length;
         QTextCharFormat format;
+
+        friend bool operator==(const FormatRange &lhs, const FormatRange &rhs)
+        { return lhs.start == rhs.start && lhs.length == rhs.length && lhs.format == rhs.format; }
+        friend bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
+        { return !operator==(lhs, rhs); }
     };
     void setAdditionalFormats(const QList<FormatRange> &overrides);
     QList<FormatRange> additionalFormats() const;
     void clearAdditionalFormats();
+    void setFormats(const QVector<FormatRange> &overrides);
+    QVector<FormatRange> formats() const;
+    void clearFormats();
 
     void setCacheEnabled(bool enable);
     bool cacheEnabled() const;

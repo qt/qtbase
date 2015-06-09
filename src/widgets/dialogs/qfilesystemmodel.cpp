@@ -544,7 +544,7 @@ QModelIndex QFileSystemModel::parent(const QModelIndex &index) const
 
     QFileSystemModelPrivate::QFileSystemNode *indexNode = d->node(index);
     Q_ASSERT(indexNode != 0);
-    QFileSystemModelPrivate::QFileSystemNode *parentNode = (indexNode ? indexNode->parent : 0);
+    QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
     if (parentNode == 0 || parentNode == &d->root)
         return QModelIndex();
 
@@ -653,10 +653,12 @@ int QFileSystemModel::columnCount(const QModelIndex &parent) const
  */
 QVariant QFileSystemModel::myComputer(int role) const
 {
+#ifndef QT_NO_FILESYSTEMWATCHER
     Q_D(const QFileSystemModel);
+#endif
     switch (role) {
     case Qt::DisplayRole:
-        return d->myComputer();
+        return QFileSystemModelPrivate::myComputer();
 #ifndef QT_NO_FILESYSTEMWATCHER
     case Qt::DecorationRole:
         return d->fileInfoGatherer.iconProvider()->icon(QFileIconProvider::Computer);

@@ -301,10 +301,9 @@ int QPrintDialog::exec()
 
     QDialog::setVisible(true);
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    QMacAutoReleasePool pool;
     d->openCocoaPrintPanel(Qt::ApplicationModal);
     d->closeCocoaPrintPanel();
-    [pool release];
 
     QDialog::setVisible(false);
 

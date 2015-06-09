@@ -100,10 +100,13 @@ ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
     if (lib.startsWith('/')) {
         if (lib.startsWith("/LIBPATH:"))
-            return QStringLiteral("/LIBPATH:") + escapeFilePath(lib.mid(9));
+            return QLatin1String("/LIBPATH:")
+                    + escapeFilePath(Option::fixPathToTargetOS(lib.mid(9).toQString(), false));
+        // This appears to be a user-supplied flag. Assume sufficient quoting.
         return lib;
     }
-    return escapeFilePath(lib);
+    // This must be a fully resolved library path.
+    return escapeFilePath(Option::fixPathToTargetOS(lib.toQString(), false));
 }
 
 bool
@@ -231,7 +234,7 @@ Win32MakefileGenerator::processPrlFiles()
             }
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
             for (int prl = 0; prl < prl_libs.size(); ++prl)
-                l.insert(lit + prl + 1, prl_libs.at(prl));
+                l.insert(++lit, prl_libs.at(prl));
             prl_libs.clear();
         }
 
@@ -752,10 +755,6 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
     if(!project->values("RC_FILE").isEmpty()) {
         const ProString res_file = project->first("RES_FILE");
         const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
-        // The resource tool needs to have the same defines passed in as the compiler, since you may
-        // use these defines in the .rc file itself. Also, we need to add the _DEBUG define manually
-        // since the compiler defines this symbol by itself, and we use it in the automatically
-        // created rc file when VERSION is define the .pro file.
 
         const ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
         QString incPathStr;
@@ -767,9 +766,20 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
             incPathStr += escapeFilePath(path);
         }
 
+        // The resource tool may use defines. This might be the same defines passed in as the
+        // compiler, since you may use these defines in the .rc file itself.
+        // As the escape syntax for the command line defines for RC is different from that for CL,
+        // we might have to set specific defines for RC.
+        ProString defines = varGlue("RC_DEFINES", " -D", " -D", "");
+        if (defines.isEmpty())
+            defines = ProString(" $(DEFINES)");
+
+        // Also, we need to add the _DEBUG define manually since the compiler defines this symbol
+        // by itself, and we use it in the automatically created rc file when VERSION is defined
+        // in the .pro file.
         t << escapeDependencyPath(res_file) << ": " << escapeDependencyPath(rc_file) << "\n\t"
           << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
-          << " $(DEFINES)" << incPathStr << " -fo " << escapeFilePath(res_file)
+          << defines << incPathStr << " -fo " << escapeFilePath(res_file)
           << ' ' << escapeFilePath(rc_file);
         t << endl << endl;
     }
@@ -784,7 +794,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
        (t == "dlltarget" && (project->first("TEMPLATE") != "lib" || !project->isActiveConfig("shared"))) ||
-        project->first("TEMPLATE") == "subdirs")
+        project->first("TEMPLATE") == "subdirs" || project->first("TEMPLATE") == "aux")
        return QString();
 
     const QString root = "$(INSTALL_ROOT)";

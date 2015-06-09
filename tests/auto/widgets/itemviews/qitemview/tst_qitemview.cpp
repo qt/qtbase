@@ -483,6 +483,7 @@ void tst_QItemView::spider()
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
     view->show();
+    QVERIFY(QTest::qWaitForWindowActive(view));
 #if defined(Q_OS_WINCE)
     srandom(0);
 #else

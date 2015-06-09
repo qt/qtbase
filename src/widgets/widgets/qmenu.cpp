@@ -183,7 +183,7 @@ void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
 }
 
 // forward declare function
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item);
+static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu);
 
 void QMenuPrivate::syncPlatformMenu()
 {
@@ -200,7 +200,7 @@ void QMenuPrivate::syncPlatformMenu()
         menuItem->setTag(reinterpret_cast<quintptr>(action));
         QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
         QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);
-        copyActionToPlatformItem(action, menuItem);
+        copyActionToPlatformItem(action, menuItem, platformMenu.data());
         platformMenu->insertMenuItem(menuItem, beforeItem);
         beforeItem = menuItem;
     }
@@ -1110,8 +1110,7 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
             handleEnterLeaveEvents(&previousMouseMenu,qobject_cast<QMenu *>(caused));
             if(e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
             QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->screenPos(),
-                              e->button(), e->buttons(), e->modifiers());
-            QGuiApplicationPrivate::setMouseEventSource(&new_e, e->source());
+                              e->button(), e->buttons(), e->modifiers(), e->source());
             QApplication::sendEvent(caused, &new_e);
             return true;
             }
@@ -3105,7 +3104,7 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
+static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu)
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
@@ -3131,6 +3130,8 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* i
     item->setEnabled(action->isEnabled());
 
     if (action->menu()) {
+        if (!action->menu()->platformMenu())
+            action->menu()->setPlatformMenu(itemsMenu->createSubMenu());
         item->setMenu(action->menu()->platformMenu());
     } else {
         item->setMenu(0);
@@ -3185,7 +3186,7 @@ void QMenu::actionEvent(QActionEvent *e)
             menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
             QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
             QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
-            copyActionToPlatformItem(e->action(), menuItem);
+            copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
             QPlatformMenuItem* beforeItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()));
             d->platformMenu->insertMenuItem(menuItem, beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
@@ -3195,7 +3196,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             if (menuItem) {
-                copyActionToPlatformItem(e->action(), menuItem);
+                copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
                 d->platformMenu->syncMenuItem(menuItem);
             }
         }

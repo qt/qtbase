@@ -494,30 +494,8 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
 
         // Initialize OpenSSL's random seed.
         if (!q_RAND_status()) {
-            struct {
-                int msec;
-                int sec;
-                void *stack;
-            } randomish;
-
-            int attempts = 500;
-            do {
-                if (attempts < 500) {
-#ifdef Q_OS_UNIX
-                    struct timespec ts = {0, 33333333};
-                    nanosleep(&ts, 0);
-#else
-                    Sleep(3);
-#endif
-                    randomish.msec = attempts;
-                }
-                randomish.stack = (void *)&randomish;
-                randomish.msec = QTime::currentTime().msec();
-                randomish.sec = QTime::currentTime().second();
-                q_RAND_seed((const char *)&randomish, sizeof(randomish));
-            } while (!q_RAND_status() && --attempts);
-            if (!attempts)
-                return false;
+            qWarning("Random number generator not seeded, disabling SSL support");
+            return false;
         }
     }
     return true;
@@ -640,7 +618,10 @@ long QSslSocketPrivate::sslLibraryBuildVersionNumber()
 
 QString QSslSocketPrivate::sslLibraryBuildVersionString()
 {
-    return QLatin1String(OPENSSL_VERSION_TEXT);
+    // Using QStringLiteral to store the version string as unicode and
+    // avoid false positives from Google searching the playstore for old
+    // SSL versions. See QTBUG-46265
+    return QStringLiteral(OPENSSL_VERSION_TEXT);
 }
 
 /*!

@@ -3250,12 +3250,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             QPointer<QWidget> pw = w;
             while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(), mouse->button(), mouse->buttons(),
-                               mouse->modifiers());
+                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(),
+                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
                 QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
-                QGuiApplicationPrivate::setMouseEventSource(&me, mouse->source());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
@@ -4273,15 +4272,16 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
-QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos)
+QWidget *QApplicationPrivate::findClosestTouchPointTarget(QTouchDevice *device, const QTouchEvent::TouchPoint &touchPoint)
 {
+    const QPointF screenPos = touchPoint.screenPos();
     int closestTouchPointId = -1;
     QObject *closestTarget = 0;
     qreal closestDistance = qreal(0.);
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it = activeTouchPoints.constBegin(),
             ite = activeTouchPoints.constEnd();
     while (it != ite) {
-        if (it.key().device == device) {
+        if (it.key().device == device && it.key().touchPointId != touchPoint.id()) {
             const QTouchEvent::TouchPoint &touchPoint = it->touchPoint;
             qreal dx = screenPos.x() - touchPoint.screenPos().x();
             qreal dy = screenPos.y() - touchPoint.screenPos().y();
@@ -4337,7 +4337,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             }
 
             if (device->type() == QTouchDevice::TouchScreen) {
-                QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint.screenPos());
+                QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint);
                 QWidget *widget = static_cast<QWidget *>(target.data());
                 if (closestWidget
                         && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
@@ -4357,8 +4357,10 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
 #ifdef Q_OS_OSX
         // Single-touch events are normally not sent unless WA_TouchPadAcceptSingleTouchEvents is set.
-        // In Qt 4 this check was in OS X-only coode. That behavior is preserved here by the #ifdef.
-        if (touchPoints.count() == 1 && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
+        // In Qt 4 this check was in OS X-only code. That behavior is preserved here by the #ifdef.
+        if (touchPoints.count() == 1
+            && device->type() == QTouchDevice::TouchPad
+            && !targetWidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents))
             continue;
 #endif
 
@@ -4374,7 +4376,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     QHash<QWidget *, StatesAndTouchPoints>::ConstIterator it = widgetsNeedingEvents.constBegin();
     const QHash<QWidget *, StatesAndTouchPoints>::ConstIterator end = widgetsNeedingEvents.constEnd();
     for (; it != end; ++it) {
-        QWidget *widget = it.key();
+        const QPointer<QWidget> widget = it.key();
         if (!QApplicationPrivate::tryModalHelper(widget, 0))
             continue;
 
@@ -4414,7 +4416,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             // has been implicitly accepted and continue to send touch events
             if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
                 accepted = true;
-                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
+                if (!widget.isNull())
+                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
             }
             break;
         }

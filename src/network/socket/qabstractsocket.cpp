@@ -559,7 +559,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       readBufferMaxSize(0),
       writeBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       isBuffered(false),
-      blockingTimeout(30000),
       connectTimer(0),
       disconnectTimer(0),
       connectTimeElapsed(0),

@@ -42,6 +42,11 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
+// out-of-line to avoid vtable duplication, breaking e.g. RTTI
+QTextureGlyphCache::~QTextureGlyphCache()
+{
+}
+
 int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
 {
     // Test 12 different subpixel positions since it factors into 3*4 so it gives
@@ -261,6 +266,11 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
 /************************************************************************
  * QImageTextureGlyphCache
  */
+
+// out-of-line to avoid vtable duplication, breaking e.g. RTTI
+QImageTextureGlyphCache::~QImageTextureGlyphCache()
+{
+}
 
 void QImageTextureGlyphCache::resizeTextureData(int width, int height)
 {

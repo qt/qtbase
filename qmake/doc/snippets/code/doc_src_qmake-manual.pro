@@ -186,21 +186,6 @@ DEFINES += USE_MY_STUFF
 #! [27]
 
 
-#! [28]
-myFiles.files = path\*.png
-DEPLOYMENT += myFiles
-#! [28]
-
-
-#! [29]
-myFiles.files = path\file1.ext1 path2\file2.ext1 path3\*
-myFiles.path = \some\path\on\device
-someother.files = C:\additional\files\*
-someother.path = \myFiles\path2
-DEPLOYMENT += myFiles someother
-#! [29]
-
-
 #! [30]
 DESTDIR = ../../lib
 #! [30]
@@ -987,3 +972,8 @@ QMAKE_SONAME_PREFIX = /Library/Frameworks
 #! [185]
 VERSION_PE_HEADER = 1.2
 #! [185]
+
+#! [186]
+RC_DEFINES += USE_MY_STUFF
+#! [186]
+

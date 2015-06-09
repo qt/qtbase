@@ -77,7 +77,8 @@ public:
         AllowNestedDocks = 0x02,
         AllowTabbedDocks = 0x04,
         ForceTabbedDocks = 0x08,  // implies AllowTabbedDocks, !AllowNestedDocks
-        VerticalTabs = 0x10       // implies AllowTabbedDocks
+        VerticalTabs = 0x10,      // implies AllowTabbedDocks
+        GroupedDragging = 0x20    // implies AllowTabbedDocks
     };
     Q_ENUM(DockOption)
     Q_DECLARE_FLAGS(DockOptions, DockOption)

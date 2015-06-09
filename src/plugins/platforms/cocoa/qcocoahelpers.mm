@@ -33,7 +33,6 @@
 
 #include "qcocoahelpers.h"
 
-#include "qcocoaautoreleasepool.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -630,7 +629,7 @@ QString qt_mac_applicationName()
 
 int qt_mac_mainScreenHeight()
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     // The first screen in the screens array is documented
     // to have the (0,0) origin.
     NSRect screenFrame = [[[NSScreen screens] firstObject] frame];

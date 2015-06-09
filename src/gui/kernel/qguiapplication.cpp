@@ -1334,6 +1334,9 @@ void QGuiApplicationPrivate::init()
 #endif
 
 #ifndef QT_NO_LIBRARY
+    if (qEnvironmentVariableIntValue("QT_LOAD_TESTABILITY") > 0)
+        loadTestability = true;
+
     if (loadTestability) {
         QLibrary testLib(QStringLiteral("qttestability"));
         if (testLib.load()) {
@@ -1697,12 +1700,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // A mouse event should not change both position and buttons at the same time. Instead we
         // should first send a move event followed by a button changed event. Since this is not the case
         // with the current event, we split it in two.
-        QWindowSystemInterfacePrivate::MouseEvent *mouseButtonEvent = new QWindowSystemInterfacePrivate::MouseEvent(
+        QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(
                     e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
-            mouseButtonEvent->flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-        QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(mouseButtonEvent);
-        stateChange = Qt::NoButton;
+            mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        e->buttons = buttons;
+        processMouseEvent(e);
+        processMouseEvent(&mouseButtonEvent);
+        return;
     }
 
     QWindow *window = e->window.data();
@@ -1771,9 +1776,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
-    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers, e->source);
     ev.setTimestamp(e->timestamp);
-    setMouseEventSource(&ev, e->source);
 #ifndef QT_NO_CURSOR
     if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
@@ -1832,9 +1836,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (!e->window.isNull() || e->nullWindow()) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
-                                      button, buttons, e->modifiers);
+                                      button, buttons, e->modifiers, e->source);
             dblClickEvent.setTimestamp(e->timestamp);
-            setMouseEventSource(&dblClickEvent, e->source);
             QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
         }
     }

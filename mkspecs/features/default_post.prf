@@ -63,6 +63,7 @@ debug {
 }
 
 use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
+enable_new_dtags: QMAKE_LFLAGS += $$QMAKE_LFLAGS_NEW_DTAGS
 
 dll:win32: QMAKE_LFLAGS += $$QMAKE_LFLAGS_DLL
 static:mac: QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB

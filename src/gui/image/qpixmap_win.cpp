@@ -40,11 +40,6 @@
 #include <QScopedArrayPointer>
 #include <qt_windows.h>
 
-#ifdef Q_OS_WINCE
-#define UNDER_NT
-#include <wingdi.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_WINCE

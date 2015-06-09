@@ -70,7 +70,6 @@
 #endif
 
 #if defined(XCB_USE_XINPUT2)
-#include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 #endif
 
@@ -457,6 +456,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_focusWindow(0)
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
+    , m_xiGrab(false)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -909,7 +909,7 @@ static Qt::MouseButtons translateMouseButtons(int s)
     return ret;
 }
 
-static Qt::MouseButton translateMouseButton(xcb_button_t s)
+Qt::MouseButton QXcbConnection::translateMouseButton(xcb_button_t s)
 {
     switch (s) {
     case 1: return Qt::LeftButton;
@@ -942,39 +942,6 @@ static Qt::MouseButton translateMouseButton(xcb_button_t s)
     case 31: return Qt::ExtraButton24;
     default: return Qt::NoButton;
     }
-}
-
-void QXcbConnection::handleButtonPress(xcb_generic_event_t *ev)
-{
-    xcb_button_press_event_t *event = (xcb_button_press_event_t *)ev;
-
-    // the event explicitly contains the state of the three first buttons,
-    // the rest we need to manage ourselves
-    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
-    m_buttons |= translateMouseButton(event->detail);
-    qCDebug(lcQpaXInput, "xcb: pressed mouse button %d, button state %X", event->detail, static_cast<unsigned int>(m_buttons));
-}
-
-void QXcbConnection::handleButtonRelease(xcb_generic_event_t *ev)
-{
-    xcb_button_release_event_t *event = (xcb_button_release_event_t *)ev;
-
-    // the event explicitly contains the state of the three first buttons,
-    // the rest we need to manage ourselves
-    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
-    m_buttons &= ~translateMouseButton(event->detail);
-    qCDebug(lcQpaXInput, "xcb: released mouse button %d, button state %X", event->detail, static_cast<unsigned int>(m_buttons));
-}
-
-void QXcbConnection::handleMotionNotify(xcb_generic_event_t *ev)
-{
-    xcb_motion_notify_event_t *event = (xcb_motion_notify_event_t *)ev;
-
-    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
-#ifdef Q_XCB_DEBUG
-    qCDebug(lcQpaXInput, "xcb: moved mouse to %4d, %4d; button state %X",
-           event->event_x, event->event_y, static_cast<unsigned int>(m_buttons));
-#endif
 }
 
 #ifndef QT_NO_XKB
@@ -1018,18 +985,35 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         switch (response_type) {
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-        case XCB_BUTTON_PRESS:
-            m_keyboard->updateXKBStateFromCore(((xcb_button_press_event_t *)event)->state);
-            handleButtonPress(event);
+
+        // press/release/motion is only delivered here when XI 2.2+ is _not_ in use
+        case XCB_BUTTON_PRESS: {
+            xcb_button_press_event_t *ev = (xcb_button_press_event_t *)event;
+            m_keyboard->updateXKBStateFromCore(ev->state);
+            // the event explicitly contains the state of the three first buttons,
+            // the rest we need to manage ourselves
+            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
+            m_buttons |= translateMouseButton(ev->detail);
+            qCDebug(lcQpaXInput, "legacy mouse press, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttons));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-        case XCB_BUTTON_RELEASE:
-            m_keyboard->updateXKBStateFromCore(((xcb_button_release_event_t *)event)->state);
-            handleButtonRelease(event);
+        }
+        case XCB_BUTTON_RELEASE: {
+            xcb_button_release_event_t *ev = (xcb_button_release_event_t *)event;
+            m_keyboard->updateXKBStateFromCore(ev->state);
+            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
+            m_buttons &= ~translateMouseButton(ev->detail);
+            qCDebug(lcQpaXInput, "legacy mouse release, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttons));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-        case XCB_MOTION_NOTIFY:
-            m_keyboard->updateXKBStateFromCore(((xcb_motion_notify_event_t *)event)->state);
-            handleMotionNotify(event);
+        }
+        case XCB_MOTION_NOTIFY: {
+            xcb_motion_notify_event_t *ev = (xcb_motion_notify_event_t *)event;
+            m_keyboard->updateXKBStateFromCore(ev->state);
+            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
+            qCDebug(lcQpaXInput, "legacy mouse move %d,%d button %d state %X", ev->event_x, ev->event_y,
+                    ev->detail, static_cast<unsigned int>(m_buttons));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+        }
+
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
         case XCB_MAP_NOTIFY:
@@ -1090,6 +1074,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             break;
 #if defined(XCB_USE_XINPUT2)
         case XCB_GE_GENERIC:
+            // Here the windowEventListener is invoked from xi2HandleEvent()
             if (m_xi2Enabled)
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
             break;
@@ -1929,6 +1914,12 @@ void QXcbConnection::initializeXKB()
         return;
     }
 #endif
+}
+
+bool QXcbConnection::xi2MouseEvents() const
+{
+    static bool mouseViaXI2 = !qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
+    return mouseViaXI2;
 }
 
 #if defined(XCB_USE_XINPUT2)

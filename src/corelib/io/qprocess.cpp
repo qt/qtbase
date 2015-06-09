@@ -110,7 +110,6 @@ QT_BEGIN_NAMESPACE
     \ingroup io
     \ingroup misc
     \ingroup shared
-    \mainclass
     \reentrant
     \since 4.6
 

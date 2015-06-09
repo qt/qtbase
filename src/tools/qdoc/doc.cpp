@@ -69,7 +69,6 @@ struct Macro
 
 enum {
     CMD_A,
-    CMD_ABSTRACT,
     CMD_ANNOTATEDLIST,
     CMD_B,
     CMD_BADCODE,
@@ -85,7 +84,6 @@ enum {
     CMD_DOTS,
     CMD_E,
     CMD_ELSE,
-    CMD_ENDABSTRACT,
     CMD_ENDCHAPTER,
     CMD_ENDCODE,
     CMD_ENDDIV,
@@ -187,7 +185,6 @@ static struct {
     QString *alias;
 } cmds[] = {
     { "a", CMD_A, 0 },
-    { "abstract", CMD_ABSTRACT, 0 },
     { "annotatedlist", CMD_ANNOTATEDLIST, 0 },
     { "b", CMD_B, 0 },
     { "badcode", CMD_BADCODE, 0 },
@@ -203,7 +200,6 @@ static struct {
     { "dots", CMD_DOTS, 0 },
     { "e", CMD_E, 0 },
     { "else", CMD_ELSE, 0 },
-    { "endabstract", CMD_ENDABSTRACT, 0 },
     { "endchapter", CMD_ENDCHAPTER, 0 },
     { "endcode", CMD_ENDCODE, 0 },
     { "enddiv", CMD_ENDDIV, 0 },
@@ -631,12 +627,6 @@ void DocParser::parse(const QString& source,
                     append(Atom::FormattingRight,ATOM_FORMATTING_PARAMETER);
                     priv->params.insert(p1);
                     break;
-                case CMD_ABSTRACT:
-                    if (openCommand(cmd)) {
-                        leavePara();
-                        append(Atom::AbstractLeft);
-                    }
-                    break;
                 case CMD_BADCODE:
                     leavePara();
                     append(Atom::CodeBad,getCode(CMD_BADCODE, marker));
@@ -746,12 +736,6 @@ void DocParser::parse(const QString& source,
                     }
                     else {
                         location().warning(tr("Unexpected '\\%1'").arg(cmdName(CMD_ELSE)));
-                    }
-                    break;
-                case CMD_ENDABSTRACT:
-                    if (closeCommand(cmd)) {
-                        leavePara();
-                        append(Atom::AbstractRight);
                     }
                     break;
                 case CMD_ENDCHAPTER:
@@ -1830,11 +1814,6 @@ bool DocParser::openCommand(int cmd)
         if (outer == CMD_LIST) {
             ok = (cmd == CMD_FOOTNOTE || cmd == CMD_LIST);
         }
-        else if (outer == CMD_ABSTRACT) {
-            ok = (cmd == CMD_LIST ||
-                  cmd == CMD_QUOTATION ||
-                  cmd == CMD_TABLE);
-        }
         else if (outer == CMD_SIDEBAR) {
             ok = (cmd == CMD_LIST ||
                   cmd == CMD_QUOTATION ||
@@ -2674,8 +2653,6 @@ void DocParser::skipToNextPreprocessorCommand()
 int DocParser::endCmdFor(int cmd)
 {
     switch (cmd) {
-    case CMD_ABSTRACT:
-        return CMD_ENDABSTRACT;
     case CMD_BADCODE:
         return CMD_ENDCODE;
     case CMD_CHAPTER:

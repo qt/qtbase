@@ -104,15 +104,21 @@ public:
         WriteError,
         UnknownError
     };
+    Q_ENUM(ProcessError)
+
     enum ProcessState {
         NotRunning,
         Starting,
         Running
     };
+    Q_ENUM(ProcessState)
+
     enum ProcessChannel {
         StandardOutput,
         StandardError
     };
+    Q_ENUM(ProcessChannel)
+
     enum ProcessChannelMode {
         SeparateChannels,
         MergedChannels,
@@ -120,14 +126,19 @@ public:
         ForwardedOutputChannel,
         ForwardedErrorChannel
     };
+    Q_ENUM(ProcessChannelMode)
+
     enum InputChannelMode {
         ManagedInputChannel,
         ForwardedInputChannel
     };
+    Q_ENUM(InputChannelMode)
+
     enum ExitStatus {
         NormalExit,
         CrashExit
     };
+    Q_ENUM(ExitStatus)
 
     explicit QProcess(QObject *parent = 0);
     virtual ~QProcess();

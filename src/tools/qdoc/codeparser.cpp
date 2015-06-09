@@ -423,33 +423,6 @@ void CodeParser::checkModuleInclusion(Node* n)
                                             .arg(n->name()).arg(Generator::defaultModuleName()));
             }
             break;
-#if 0
-        case Node::Document:
-            if (n->access() != Node::Private && !n->doc().isEmpty()) {
-                if (n->docSubtype() == Node::HeaderFile) {
-#if 0
-                    n->doc().location().warning(tr("Header file with title \"%1\" has no \\inmodule command; "
-                                                   "using project name by default: %2")
-                                                .arg(n->title()).arg(Generator::defaultModuleName()));
-#endif
-                }
-                else if (n->docSubtype() == Node::Page) {
-#if 0
-                    n->doc().location().warning(tr("Page with title \"%1\" has no \\inmodule command; "
-                                                   "using project name by default: %2")
-                                                .arg(n->title()).arg(Generator::defaultModuleName()));
-#endif
-                }
-                else if (n->docSubtype() == Node::Example) {
-#if 0
-                    n->doc().location().warning(tr("Example with title \"%1\" has no \\inmodule command; "
-                                                   "using project name by default: %2")
-                                                .arg(n->title()).arg(Generator::defaultModuleName()));
-#endif
-                }
-            }
-            break;
-#endif
         default:
             break;
         }

@@ -1223,6 +1223,7 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(500, 500);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
@@ -1231,7 +1232,6 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     QPushButton *widget = new QPushButton;
     QSignalSpy spy(widget, SIGNAL(clicked()));
     widget->resize(50, 50);
-    view.resize(100, 100);
     if (hasWidget) {
         proxy->setWidget(widget);
         proxy->show();

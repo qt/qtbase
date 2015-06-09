@@ -49,6 +49,7 @@ QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = false;
 QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
+QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 
 //------------------------------------------------------------
 //
@@ -630,12 +631,30 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFla
                 QWindowSystemInterfacePrivate::getWindowSystemEvent();
         if (!event)
             break;
-        nevents++;
-        QGuiApplicationPrivate::processWindowSystemEvent(event);
+
+        if (QWindowSystemInterfacePrivate::eventHandler) {
+            if (QWindowSystemInterfacePrivate::eventHandler->sendEvent(event))
+                nevents++;
+        } else {
+            nevents++;
+            QGuiApplicationPrivate::processWindowSystemEvent(event);
+        }
         delete event;
     }
 
     return (nevents > 0);
+}
+
+void QWindowSystemInterfacePrivate::installWindowSystemEventHandler(QWindowSystemEventHandler *handler)
+{
+    if (!eventHandler)
+        eventHandler = handler;
+}
+
+void QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(QWindowSystemEventHandler *handler)
+{
+    if (eventHandler == handler)
+        eventHandler = 0;
 }
 
 void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
@@ -819,14 +838,26 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 }
 #endif
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
-
-    QWindowSystemInterface::handleMouseEvent(w, QHighDpi::toNativeLocalPosition(local, w), QHighDpi::toNativePixels(global, w),  b,  mods);
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
+{
+    QWindowSystemInterfacePrivate::MouseEvent e(w, timestamp, local, global, b, mods, Qt::MouseEventNotSynthesized);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
-    QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+
+    // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
+    // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
+    // shortcut overriding on other platforms.
+#if defined(Q_OS_OSX)
+    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(w, timestamp, k, mods, text))
+        return;
+#endif // Q_OS_OSX
+
+    QWindowSystemInterfacePrivate::KeyEvent e(w, timestamp, t, k, mods, text, autorep, count);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
 Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
@@ -834,11 +865,49 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
     return QWindowSystemInterface::tryHandleShortcutEventToObject(o, timestamp, k, mods, text, autorep, count);
 }
 
-Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    QWindowSystemInterface::handleTouchEvent(w, device, QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+
+    if (!points.size()) // Touch events must have at least one point
+        return;
+
+    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
+        return;
+
+    QEvent::Type type;
+    Qt::TouchPointStates states;
+
+    QList<QTouchEvent::TouchPoint>::const_iterator point = points.constBegin();
+    QList<QTouchEvent::TouchPoint>::const_iterator end = points.constEnd();
+    while (point != end) {
+        states |= point->state();
+        ++point;
+    }
+
+    // Determine the event type based on the combined point states.
+    type = QEvent::TouchUpdate;
+    if (states == Qt::TouchPointPressed)
+        type = QEvent::TouchBegin;
+    else if (states == Qt::TouchPointReleased)
+        type = QEvent::TouchEnd;
+
+    QWindowSystemInterfacePrivate::TouchEvent e(w, timestamp, type, device, points, mods);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
+
+QWindowSystemEventHandler::~QWindowSystemEventHandler()
+{
+    QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(this);
+}
+
+bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
+{
+    QGuiApplicationPrivate::processWindowSystemEvent(e);
+    return true;
+}
+
 
 QT_END_NAMESPACE

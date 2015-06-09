@@ -177,6 +177,7 @@ protected:
     QString exampleImageFilter;
 };
 
+#define COMMAND_ABSTRACT                Doc::alias("abstract")
 #define COMMAND_CLASS                   Doc::alias("class")
 #define COMMAND_CONTENTSPAGE            Doc::alias("contentspage")
 #define COMMAND_DITAMAP                 Doc::alias("ditamap")

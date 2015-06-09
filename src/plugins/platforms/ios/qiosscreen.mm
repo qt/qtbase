@@ -104,12 +104,12 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     @public
     QIOSScreen *m_screen;
 }
-- (id) initWithQIOSScreen:(QIOSScreen *)screen;
+- (id)initWithQIOSScreen:(QIOSScreen *)screen;
 @end
 
 @implementation QIOSOrientationListener
 
-- (id) initWithQIOSScreen:(QIOSScreen *)screen
+- (id)initWithQIOSScreen:(QIOSScreen *)screen
 {
     self = [super init];
     if (self) {
@@ -123,7 +123,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter]
@@ -132,7 +132,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     [super dealloc];
 }
 
-- (void) orientationChanged:(NSNotification *)notification
+- (void)orientationChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
     m_screen->updateProperties();

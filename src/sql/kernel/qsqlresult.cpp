@@ -837,6 +837,9 @@ QString QSqlResult::executedQuery() const
     return d->executedQuery;
 }
 
+/*!
+    Resets the number of bind parameters.
+*/
 void QSqlResult::resetBindCount()
 {
     Q_D(QSqlResult);

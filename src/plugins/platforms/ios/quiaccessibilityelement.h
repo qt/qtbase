@@ -42,8 +42,8 @@
 
 @property (readonly) QAccessible::Id axid;
 
-- (id) initWithId: (QAccessible::Id) anId withAccessibilityContainer: (id) view;
-+ (QMacAccessibilityElement *) elementWithId: (QAccessible::Id) anId withAccessibilityContainer: (id) view;
+- (id)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
++ (QMacAccessibilityElement *)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
 
 @end
 

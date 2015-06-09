@@ -520,16 +520,6 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             else if (t == "ditamap")
                 ptype = Node::DitaMapPage;
         }
-
-#if 0
-        const Node* n = qdb_->checkForCollision(args[0]);
-        if (n) {
-            QString other = n->doc().location().fileName();
-            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
-                                   .arg(args[0]).arg(command),
-                                   tr("Also used here: %1").arg(other));
-        }
-#endif
         DocumentNode* dn = 0;
         if (ptype == Node::DitaMapPage)
             dn = new DitaMapNode(qdb_->primaryTreeRoot(), args[0]);
@@ -870,7 +860,8 @@ const QSet<QString>& CppCodeParser::otherMetaCommands()
                            << COMMAND_QMLINSTANTIATES
                            << COMMAND_QMLDEFAULT
                            << COMMAND_QMLREADONLY
-                           << COMMAND_QMLABSTRACT;
+                           << COMMAND_QMLABSTRACT
+                           << COMMAND_ABSTRACT;
     }
     return otherMetaCommands_;
 }
@@ -891,8 +882,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             ((Aggregate *) node)->addInclude(arg);
         }
         else {
-            doc.location().warning(tr("Ignored '\\%1'")
-                                   .arg(COMMAND_INHEADERFILE));
+            doc.location().warning(tr("Ignored '\\%1'").arg(COMMAND_INHEADERFILE));
         }
     }
     else if (command == COMMAND_OVERLOAD) {
@@ -931,9 +921,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                 func->setReimplemented(true);
             }
             else {
-                doc.location().warning(tr("Ignored '\\%1' in %2")
-                                       .arg(COMMAND_REIMP)
-                                       .arg(node->name()));
+                doc.location().warning(tr("Ignored '\\%1' in %2").arg(COMMAND_REIMP).arg(node->name()));
             }
         }
     }
@@ -1014,7 +1002,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             }
         }
     }
-    else if (command == COMMAND_QMLABSTRACT) {
+    else if ((command == COMMAND_QMLABSTRACT) || (command == COMMAND_ABSTRACT)) {
         if (node->isQmlType() || node->isJsType())
             node->setAbstract(true);
     }
@@ -2077,29 +2065,25 @@ bool CppCodeParser::matchDeclList(Aggregate *parent)
         case Tok_Q_DECLARE_SEQUENTIAL_ITERATOR:
             readToken();
             if (match(Tok_LeftParen) && match(Tok_Ident))
-                sequentialIteratorClasses.insert(previousLexeme(),
-                                                 location().fileName());
+                sequentialIteratorClasses.insert(previousLexeme(), location().fileName());
             match(Tok_RightParen);
             break;
         case Tok_Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR:
             readToken();
             if (match(Tok_LeftParen) && match(Tok_Ident))
-                mutableSequentialIteratorClasses.insert(previousLexeme(),
-                                                        location().fileName());
+                mutableSequentialIteratorClasses.insert(previousLexeme(), location().fileName());
             match(Tok_RightParen);
             break;
         case Tok_Q_DECLARE_ASSOCIATIVE_ITERATOR:
             readToken();
             if (match(Tok_LeftParen) && match(Tok_Ident))
-                associativeIteratorClasses.insert(previousLexeme(),
-                                                  location().fileName());
+                associativeIteratorClasses.insert(previousLexeme(), location().fileName());
             match(Tok_RightParen);
             break;
         case Tok_Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR:
             readToken();
             if (match(Tok_LeftParen) && match(Tok_Ident))
-                mutableAssociativeIteratorClasses.insert(previousLexeme(),
-                                                         location().fileName());
+                mutableAssociativeIteratorClasses.insert(previousLexeme(), location().fileName());
             match(Tok_RightParen);
             break;
         case Tok_Q_DECLARE_FLAGS:

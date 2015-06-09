@@ -93,18 +93,6 @@
 
 QT_USE_NAMESPACE
 
-namespace {
-class AutoReleasePool
-{
-public:
-    AutoReleasePool(): pool([[NSAutoreleasePool alloc] init]) {}
-    ~AutoReleasePool() { [pool release]; }
-
-private:
-    NSAutoreleasePool *pool;
-};
-}
-
 @interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject {
 QMacStylePrivate *mPrivate;
 }
@@ -1753,7 +1741,7 @@ QMacStylePrivate::QMacStylePrivate()
 
 QMacStylePrivate::~QMacStylePrivate()
 {
-    AutoReleasePool pool;
+    QMacAutoReleasePool pool;
     Q_FOREACH (NSView *b, cocoaControls)
         [b release];
 }
@@ -2135,7 +2123,7 @@ QMacStyle::QMacStyle()
     : QCommonStyle(*new QMacStylePrivate)
 {
     Q_D(QMacStyle);
-    AutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
     NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
@@ -2152,7 +2140,7 @@ QMacStyle::QMacStyle()
 QMacStyle::~QMacStyle()
 {
     Q_D(QMacStyle);
-    AutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     [reinterpret_cast<NSScroller*>(d->nsscroller) release];
 
@@ -2169,7 +2157,7 @@ QMacStyle::~QMacStyle()
 */
 QPixmap QMacStylePrivate::generateBackgroundPattern() const
 {
-    AutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QPixmap px(4, 4);
     QMacCGContext cg(&px);
     HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationNormal);
@@ -2767,7 +2755,7 @@ QPalette QMacStyle::standardPalette() const
 int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w,
                          QStyleHintReturn *hret) const
 {
-    AutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     SInt32 ret = 0;
     switch (sh) {

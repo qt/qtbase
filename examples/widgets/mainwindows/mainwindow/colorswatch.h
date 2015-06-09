@@ -70,8 +70,10 @@ class ColorSwatch : public QDockWidget
 
     QAction *windowModifiedAction;
 
+    QMainWindow *mainWindow;
+
 public:
-    explicit ColorSwatch(const QString &colorName, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit ColorSwatch(const QString &colorName, QMainWindow *parent = 0, Qt::WindowFlags flags = 0);
 
     QMenu *menu;
     void setCustomSizeHint(const QSize &size);

@@ -54,7 +54,7 @@
 # include "QtCore/qvariant.h"
 #endif
 #include "QtCore/qvector.h"
-
+#include "QtCore/qcoreapplication.h"
 
 #define QDATETIMEEDIT_TIME_MIN QTime(0, 0, 0, 0)
 #define QDATETIMEEDIT_TIME_MAX QTime(23, 59, 59, 999)
@@ -72,6 +72,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QDateTimeParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDateTimeParser)
 public:
     enum Context {
         FromString,

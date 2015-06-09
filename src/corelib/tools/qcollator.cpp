@@ -87,7 +87,7 @@ QCollator::QCollator(const QCollator &other)
 }
 
 /*!
-    Destroys the collator.
+   Destructor for QCollator.
  */
 QCollator::~QCollator()
 {
@@ -109,8 +109,8 @@ QCollator &QCollator::operator=(const QCollator &other)
     return *this;
 }
 
-/*
-    \fn void QCollator::QCollator(QCollator &&other)
+/*!
+    \fn QCollator::QCollator(QCollator &&other)
 
     Move constructor. Moves from \a other into this collator.
 
@@ -119,8 +119,8 @@ QCollator &QCollator::operator=(const QCollator &other)
     one of the assignment operators is undefined.
 */
 
-/*
-    \fn QCollator &QCollator::operator=(QCollator &&other)
+/*!
+    \fn QCollator & QCollator::operator=(QCollator && other)
 
     Move-assigns from \a other to this collator.
 
@@ -367,6 +367,12 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 }
 
 /*!
+    \fn QCollatorSortKey &QCollatorSortKey::operator=(QCollatorSortKey && other)
+
+    Move-assigns \a other to this collator key.
+*/
+
+/*!
     \fn bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
     \relates QCollatorSortKey
 
@@ -375,6 +381,12 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 
     \sa QCollatorSortKey::compare()
  */
+
+/*!
+    \fn void QCollatorSortKey::swap(QCollatorSortKey & other)
+
+    Swaps this collator key with \a other.
+*/
 
 /*!
     \fn int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const

@@ -142,6 +142,7 @@ class Q_WIDGETS_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:
     QGraphicsEffectPrivate() : source(0), isEnabled(1) {}
+    ~QGraphicsEffectPrivate();
 
     inline void setGraphicsEffectSource(QGraphicsEffectSource *newSource)
     {

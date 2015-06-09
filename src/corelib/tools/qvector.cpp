@@ -951,7 +951,7 @@
     Returns a reference to the first item in the vector. This
     function assumes that the vector isn't empty.
 
-    \sa last(), isEmpty()
+    \sa last(), isEmpty(), constFirst()
 */
 
 /*! \fn const T& QVector::first() const
@@ -959,17 +959,35 @@
     \overload
 */
 
+/*! \fn const T& QVector::constFirst() const
+    \since 5.6
+
+    Returns a const reference to the first item in the vector. This
+    function assumes that the vector isn't empty.
+
+    \sa constLast(), isEmpty(), first()
+*/
+
 /*! \fn T& QVector::last()
 
     Returns a reference to the last item in the vector. This function
     assumes that the vector isn't empty.
 
-    \sa first(), isEmpty()
+    \sa first(), isEmpty(), constLast()
 */
 
 /*! \fn const T& QVector::last() const
 
     \overload
+*/
+
+/*! \fn const T& QVector::constLast() const
+    \since 5.6
+
+    Returns a const reference to the last item in the vector. This function
+    assumes that the vector isn't empty.
+
+    \sa constFirst(), isEmpty(), last()
 */
 
 /*! \fn T QVector::value(int i) const

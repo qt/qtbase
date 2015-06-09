@@ -34,7 +34,6 @@
 #include "qcocoamenu.h"
 
 #include "qcocoahelpers.h"
-#include "qcocoaautoreleasepool.h"
 
 #include <QtCore/QtDebug>
 #include <QtCore/qmetaobject.h>
@@ -81,7 +80,7 @@ QT_END_NAMESPACE
 }
 
 - (id) initWithMenu:(QCocoaMenu*) m;
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
+- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
 
 @end
 
@@ -152,11 +151,20 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 
     // Change the private unicode keys to the ones used in setting the "Key Equivalents"
     NSString *characters = qt_mac_removePrivateUnicode([event characters]);
-    if ([self hasShortcut:menu
-            forKey:characters
-            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
-            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
-            ]) {
+    // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
+    const NSUInteger mask = NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask;
+    if (NSMenuItem *menuItem = [self findItem:menu forKey:characters forModifiers:([event modifierFlags] & mask)]) {
+        if (!menuItem.target) {
+            // This item was modified by QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder
+            // and it looks like we're running a modal session for NSOpenPanel/NSSavePanel.
+            // QCocoaFileDialogHelper is actually the only place we use this and we run NSOpenPanel modal
+            // (modal sheet, window modal, application modal).
+            // Whatever the current first responder is, let's give it a chance
+            // and do not touch the Qt's focusObject (which is different from some native view
+            // having a focus inside NSSave/OpenPanel.
+            return YES;
+        }
+
         QObject *object = qApp->focusObject();
         if (object) {
             QChar ch;
@@ -194,22 +202,23 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
     return NO;
 }
 
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
+- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
 {
     for (NSMenuItem *item in [menu itemArray]) {
         if (![item isEnabled] || [item isHidden] || [item isSeparatorItem])
             continue;
-        if ([item hasSubmenu]
-            && [self hasShortcut:[item submenu] forKey:key forModifiers:modifier])
-            return YES;
+        if ([item hasSubmenu]) {
+            if (NSMenuItem *nested = [self findItem:[item submenu] forKey:key forModifiers:modifier])
+                return nested;
+        }
 
         NSString *menuKey = [item keyEquivalent];
         if (menuKey
             && NSOrderedSame == [menuKey compare:key]
             && modifier == [item keyEquivalentModifierMask])
-            return YES;
+            return item;
     }
-    return NO;
+    return nil;
 }
 
 @end
@@ -223,7 +232,7 @@ QCocoaMenu::QCocoaMenu() :
     m_menuBar(0),
     m_containingMenuItem(0)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
     m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
@@ -243,7 +252,7 @@ QCocoaMenu::~QCocoaMenu()
     if (m_containingMenuItem)
         m_containingMenuItem->clearMenu(this);
 
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     [m_nativeItem setSubmenu:nil];
     [m_nativeMenu release];
     [m_delegate release];
@@ -252,7 +261,7 @@ QCocoaMenu::~QCocoaMenu()
 
 void QCocoaMenu::setText(const QString &text)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QString stripped = qt_mac_removeAmpersandEscapes(text);
     [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
     [m_nativeItem setTitle:QCFString::toNSString(stripped)];
@@ -274,7 +283,7 @@ void QCocoaMenu::setFont(const QFont &font)
 
 void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     QCocoaMenuItem *beforeItem = static_cast<QCocoaMenuItem *>(before);
 
@@ -328,7 +337,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     if (!m_menuItems.contains(cocoaItem)) {
         qWarning() << Q_FUNC_INFO << "Menu does not contain the item to be removed";
@@ -358,7 +367,7 @@ QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
 
 void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     if (!m_menuItems.contains(cocoaItem)) {
         qWarning() << Q_FUNC_INFO << "Item does not belong to this menu";
@@ -387,7 +396,7 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 
 void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
     if (enable) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
         NSMenuItem *previousItem = nil;
@@ -445,7 +454,7 @@ void QCocoaMenu::setVisible(bool visible)
 
 void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     QPoint pos =  QPoint(targetRect.left(), targetRect.top() + targetRect.height());
     QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
@@ -550,7 +559,7 @@ QList<QCocoaMenuItem *> QCocoaMenu::merged() const
 
 void QCocoaMenu::syncModalState(bool modal)
 {
-    QCocoaAutoReleasePool pool;
+    QMacAutoReleasePool pool;
 
     if (!m_enabled)
         modal = true;

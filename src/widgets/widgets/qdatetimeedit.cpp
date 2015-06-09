@@ -2316,9 +2316,9 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 QString QDateTimeEditPrivate::getAmPmText(AmPm ap, Case cs) const
 {
     if (ap == AmText) {
-        return (cs == UpperCase ? QDateTimeEdit::tr("AM") : QDateTimeEdit::tr("am"));
+        return (cs == UpperCase ? QDateTimeParser::tr("AM") : QDateTimeParser::tr("am"));
     } else {
-        return (cs == UpperCase ? QDateTimeEdit::tr("PM") : QDateTimeEdit::tr("pm"));
+        return (cs == UpperCase ? QDateTimeParser::tr("PM") : QDateTimeParser::tr("pm"));
     }
 }
 

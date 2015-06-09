@@ -38,6 +38,7 @@
 #include <qapplication.h>
 #include <qlistview.h>
 #include <private/qlistview_p.h>
+#include <private/qcoreapplication_p.h>
 #include <qlistwidget.h>
 #include <qitemdelegate.h>
 #include <qstandarditemmodel.h>
@@ -47,6 +48,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QStyledItemDelegate>
+#include <QtWidgets/QStyleFactory>
 
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #  include <windows.h>
@@ -148,6 +150,7 @@ private slots:
     void testScrollToWithHidden();
     void testViewOptions();
     void taskQTBUG_39902_mutualScrollBars();
+    void horizontalScrollingByVerticalWheelEvents();
 };
 
 // Testing get/set functions
@@ -1218,7 +1221,7 @@ void tst_QListView::scrollTo()
     list << "Short item";
     model.setStringList(list);
     lv.setModel(&model);
-    lv.setFixedSize(100, 200);
+    lv.setFixedSize(110, 200);
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
@@ -2348,11 +2351,34 @@ void tst_QListView::testViewOptions()
     QCOMPARE(options.decorationPosition, QStyleOptionViewItem::Top);
 }
 
+// make sure we have no transient scroll bars
+class TempStyleSetter
+{
+public:
+    TempStyleSetter()
+        : m_oldStyle(qApp->style())
+    {
+        m_oldStyle->setParent(0);
+        QListView tempView;
+        if (QApplication::style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, tempView.horizontalScrollBar()))
+            QApplication::setStyle(QStyleFactory::create("Fusion"));
+    }
+
+    ~TempStyleSetter()
+    {
+        QApplication::setStyle(m_oldStyle);
+    }
+private:
+    QStyle* m_oldStyle;
+};
+
 void tst_QListView::taskQTBUG_39902_mutualScrollBars()
 {
     QWidget window;
     window.resize(400, 300);
     QListView *view = new QListView(&window);
+    // make sure we have no transient scroll bars
+    TempStyleSetter styleSetter;
     QStandardItemModel model(200, 1);
     const QSize itemSize(100, 20);
     for (int i = 0; i < model.rowCount(); ++i)
@@ -2370,6 +2396,91 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
     view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
     // this will end up in a stack overflow, if QTBUG-39902 is not fixed
     QTest::qWait(100);
+
+    // these tests do not apply with transient scroll bars enabled
+    QVERIFY (!view->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, view->horizontalScrollBar()));
+
+    // make it double as large, no scroll bars should be visible
+    view->resize((itemSize.width() + view->frameWidth() * 2) * 2, (model.rowCount() * itemSize.height() + view->frameWidth() * 2) * 2);
+    QTRY_VERIFY(!view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(!view->verticalScrollBar()->isVisible());
+
+    // make it half the size, both scroll bars should be visible
+    view->resize((itemSize.width() + view->frameWidth() * 2) / 2, (model.rowCount() * itemSize.height() + view->frameWidth() * 2) / 2);
+    QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(view->verticalScrollBar()->isVisible());
+
+    // make it double as large, no scroll bars should be visible
+    view->resize((itemSize.width() + view->frameWidth() * 2) * 2, (model.rowCount() * itemSize.height() + view->frameWidth() * 2) * 2);
+    QTRY_VERIFY(!view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(!view->verticalScrollBar()->isVisible());
+
+    // now, coming from the double size, resize it to the exactly matching size, still no scroll bars should be visible again
+    view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
+    QTRY_VERIFY(!view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(!view->verticalScrollBar()->isVisible());
+
+    // now remove just one single pixel in height -> both scroll bars will show up since they depend on each other
+    view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2 - 1);
+    QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(view->verticalScrollBar()->isVisible());
+
+    // now remove just one single pixel in with -> both scroll bars will show up since they depend on each other
+    view->resize(itemSize.width() + view->frameWidth() * 2 - 1, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
+    QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(view->verticalScrollBar()->isVisible());
+
+    // finally, coming from a size being to small, resize back to the exactly matching size -> both scroll bars should disappear again
+    view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
+    QTRY_VERIFY(!view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(!view->verticalScrollBar()->isVisible());
+}
+
+void tst_QListView::horizontalScrollingByVerticalWheelEvents()
+{
+    QListView lv;
+    lv.setWrapping(true);
+
+    TestDelegate *delegate = new TestDelegate(&lv);
+    delegate->m_sizeHint = QSize(100, 100);
+    lv.setItemDelegate(delegate);
+
+    QtTestModel model;
+    model.colCount = 1;
+    model.rCount = 100;
+
+    lv.setModel(&model);
+
+    lv.resize(300, 300);
+    lv.show();
+    QTest::qWaitForWindowExposed(&lv);
+
+    QPoint globalPos = lv.geometry().center();
+    QPoint pos = lv.viewport()->geometry().center();
+
+    QWheelEvent wheelDownEvent(pos, globalPos, QPoint(0, 0), QPoint(0, -120), -120, Qt::Vertical, 0, 0);
+    QWheelEvent wheelUpEvent(pos, globalPos, QPoint(0, 0), QPoint(0, 120), 120, Qt::Vertical, 0, 0);
+    QWheelEvent wheelLeftDownEvent(pos, globalPos, QPoint(0, 0), QPoint(120, -120), -120, Qt::Vertical, 0, 0);
+
+    int hValue = lv.horizontalScrollBar()->value();
+    QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() > hValue);
+
+    QApplication::sendEvent(lv.viewport(), &wheelUpEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+
+    QApplication::sendEvent(lv.viewport(), &wheelLeftDownEvent);
+    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+
+    // ensure that vertical wheel events are not converted when vertical
+    // scroll bar is not visible but vertical scrolling is possible
+    lv.setWrapping(false);
+    lv.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    QApplication::processEvents();
+
+    int vValue = lv.verticalScrollBar()->value();
+    QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
+    QVERIFY(lv.verticalScrollBar()->value() > vValue);
 }
 
 QTEST_MAIN(tst_QListView)

@@ -34,7 +34,7 @@
 #ifndef QXCBWINDOWFUNCTIONS_H
 #define QXCBWINDOWFUNCTIONS_H
 
-#include "qxcbfunctionshelper.h"
+#include <QtPlatformHeaders/QPlatformHeaderHelper>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,35 +66,35 @@ public:
     static const QByteArray setWmWindowTypeIdentifier() { return QByteArrayLiteral("XcbSetWmWindowType"); }
     static void setWmWindowType(QWindow *window, WmWindowType type)
     {
-        return QXcbFunctionsHelper::callPlatformFunction<void, SetWmWindowType, QWindow *, WmWindowType>(setWmWindowTypeIdentifier(), window, type);
+        return QPlatformHeaderHelper::callPlatformFunction<void, SetWmWindowType, QWindow *, WmWindowType>(setWmWindowTypeIdentifier(), window, type);
     }
 
     typedef void (*SetWmWindowIconText)(QWindow *window, const QString &text);
     static const QByteArray setWmWindowIconTextIdentifier() { return QByteArrayLiteral("XcbSetWmWindowIconText"); }
     static void setWmWindowIconText(QWindow *window, const QString &text)
     {
-        return QXcbFunctionsHelper::callPlatformFunction<void, SetWmWindowIconText, QWindow *, const QString &>(setWmWindowIconTextIdentifier(), window, text);
+        return QPlatformHeaderHelper::callPlatformFunction<void, SetWmWindowIconText, QWindow *, const QString &>(setWmWindowIconTextIdentifier(), window, text);
     }
 
     typedef void (*SetParentRelativeBackPixmap)(const QWindow *window);
     static const QByteArray setParentRelativeBackPixmapIdentifier() { return QByteArrayLiteral("XcbSetParentRelativeBackPixmap"); }
     static void setParentRelativeBackPixmap(const QWindow *window)
     {
-        return QXcbFunctionsHelper::callPlatformFunction<void, SetParentRelativeBackPixmap, const QWindow *>(setParentRelativeBackPixmapIdentifier(), window);
+        return QPlatformHeaderHelper::callPlatformFunction<void, SetParentRelativeBackPixmap, const QWindow *>(setParentRelativeBackPixmapIdentifier(), window);
     }
 
     typedef bool (*RequestSystemTrayWindowDock)(const QWindow *window);
     static const QByteArray requestSystemTrayWindowDockIdentifier() { return QByteArrayLiteral("XcbRequestSystemTrayWindowDockIdentifier"); }
     static bool requestSystemTrayWindowDock(const QWindow *window)
     {
-        return QXcbFunctionsHelper::callPlatformFunction<bool, RequestSystemTrayWindowDock, const QWindow *>(requestSystemTrayWindowDockIdentifier(), window);
+        return QPlatformHeaderHelper::callPlatformFunction<bool, RequestSystemTrayWindowDock, const QWindow *>(requestSystemTrayWindowDockIdentifier(), window);
     }
 
     typedef QRect (*SystemTrayWindowGlobalGeometry)(const QWindow *window);
     static const QByteArray systemTrayWindowGlobalGeometryIdentifier() { return QByteArrayLiteral("XcbSystemTrayWindowGlobalGeometryIdentifier"); }
     static QRect systemTrayWindowGlobalGeometry(const QWindow *window)
     {
-        return QXcbFunctionsHelper::callPlatformFunction<QRect, SystemTrayWindowGlobalGeometry, const QWindow *>(systemTrayWindowGlobalGeometryIdentifier(), window);
+        return QPlatformHeaderHelper::callPlatformFunction<QRect, SystemTrayWindowGlobalGeometry, const QWindow *>(systemTrayWindowGlobalGeometryIdentifier(), window);
     }
 
     typedef uint (*VisualId)(QWindow *window);

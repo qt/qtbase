@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 class QCupsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "cups.json")
+    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "cups.json")
 
 public:
     QStringList keys() const;

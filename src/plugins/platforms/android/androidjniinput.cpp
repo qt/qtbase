@@ -238,6 +238,52 @@ namespace QtAndroidInput
         QWindowSystemInterface::handleTouchEvent(window, touchDevice, m_touchPoints);
     }
 
+    static void tabletEvent(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint deviceId, jlong time, jint action,
+        jint pointerType, jint buttonState, jfloat x, jfloat y, jfloat pressure)
+    {
+        QPointF globalPosF(x, y);
+        QPoint globalPos((int)x, (int)y);
+        QWindow *tlw = topLevelWindowAt(globalPos);
+        QPointF localPos = tlw ? (globalPosF - tlw->position()) : globalPosF;
+
+        // Galaxy Note with plain Android:
+        // 0 1 0    stylus press
+        // 2 1 0    stylus drag
+        // 1 1 0    stylus release
+        // 0 1 2    stylus press with side-button held
+        // 2 1 2    stylus drag with side-button held
+        // 1 1 2    stylus release with side-button held
+        // Galaxy Note 4 with Samsung firmware:
+        // 0 1 0    stylus press
+        // 2 1 0    stylus drag
+        // 1 1 0    stylus release
+        // 211 1 2  stylus press with side-button held
+        // 213 1 2  stylus drag with side-button held
+        // 212 1 2  stylus release with side-button held
+        // when action == ACTION_UP (1) it's a release; otherwise we say which button is pressed
+        Qt::MouseButtons buttons = Qt::NoButton;
+        switch (action) {
+        case 1:     // ACTION_UP
+        case 212:   // stylus release while side-button held on Galaxy Note 4
+            buttons = Qt::NoButton;
+            break;
+        default:    // action is press or drag
+            if (buttonState == 0)
+                buttons = Qt::LeftButton;
+            else // 2 means RightButton
+                buttons = Qt::MouseButtons(buttonState);
+            break;
+        }
+
+#ifdef QT_DEBUG_ANDROID_STYLUS
+        qDebug() << action << pointerType << buttonState << "@" << x << y << "pressure" << pressure << ": buttons" << buttons;
+#endif
+
+        QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
+            localPos, globalPosF, QTabletEvent::Stylus, pointerType,
+            buttons, pressure, 0, 0, 0., 0., 0, deviceId, Qt::NoModifier);
+    }
+
     static int mapAndroidKey(int key)
     {
         // 0--9        0x00000007 -- 0x00000010
@@ -702,6 +748,7 @@ namespace QtAndroidInput
         {"mouseUp", "(III)V", (void *)mouseUp},
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"longPress", "(III)V", (void *)longPress},
+        {"tabletEvent", "(IIJIIIFFF)V", (void *)tabletEvent},
         {"keyDown", "(IIIZ)V", (void *)keyDown},
         {"keyUp", "(IIIZ)V", (void *)keyUp},
         {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged}

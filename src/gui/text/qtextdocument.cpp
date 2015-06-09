@@ -1949,7 +1949,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         for (QTextBlock srcBlock = firstBlock(), dstBlock = clonedDoc->firstBlock();
              srcBlock.isValid() && dstBlock.isValid();
              srcBlock = srcBlock.next(), dstBlock = dstBlock.next()) {
-            dstBlock.layout()->setAdditionalFormats(srcBlock.layout()->additionalFormats());
+            dstBlock.layout()->setFormats(srcBlock.layout()->formats());
         }
 
         QAbstractTextDocumentLayout *layout = doc->documentLayout();

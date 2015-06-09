@@ -878,7 +878,9 @@ QList<int> QColumnView::columnWidths() const
 {
     Q_D(const QColumnView);
     QList<int> list;
-    for (int i = 0; i < d->columns.count(); ++i)
+    const int columnCount = d->columns.count();
+    list.reserve(columnCount);
+    for (int i = 0; i < columnCount; ++i)
         list.append(d->columnSizes.at(i));
     return list;
 }

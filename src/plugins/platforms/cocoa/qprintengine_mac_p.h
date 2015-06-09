@@ -116,7 +116,7 @@ class QMacPrintEnginePrivate : public QPaintEnginePrivate
 public:
     QPrinter::PrinterMode mode;
     QPrinter::PrinterState state;
-    QSharedDataPointer<QCocoaPrintDevice> m_printDevice;
+    QSharedPointer<QCocoaPrintDevice> m_printDevice;
     QPageLayout m_pageLayout;
     NSPrintInfo *printInfo;
     PMResolution resolution;

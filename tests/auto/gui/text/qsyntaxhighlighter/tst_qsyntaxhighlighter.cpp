@@ -120,7 +120,7 @@ void tst_QSyntaxHighlighter::cleanup()
 class TestHighlighter : public QSyntaxHighlighter
 {
 public:
-    inline TestHighlighter(const QList<QTextLayout::FormatRange> &fmts, QTextDocument *parent)
+    inline TestHighlighter(const QVector<QTextLayout::FormatRange> &fmts, QTextDocument *parent)
         : QSyntaxHighlighter(parent), formats(fmts), highlighted(false), callCount(0) {}
     inline TestHighlighter(QObject *parent)
         : QSyntaxHighlighter(parent) {}
@@ -138,24 +138,15 @@ public:
                 ++callCount;
             }
 
-            QList<QTextLayout::FormatRange> formats;
+            QVector<QTextLayout::FormatRange> formats;
             bool highlighted;
             int callCount;
             QString highlightedText;
 };
 
-QT_BEGIN_NAMESPACE
-bool operator==(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
-{
-    return lhs.start == rhs.start
-        && lhs.length == rhs.length
-        && lhs.format == rhs.format;
-}
-QT_END_NAMESPACE
-
 void tst_QSyntaxHighlighter::basic()
 {
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 2;
@@ -179,7 +170,7 @@ void tst_QSyntaxHighlighter::basic()
     QVERIFY(hl->highlighted);
     QVERIFY(lout->documentChangedCalled);
 
-    QVERIFY(doc->begin().layout()->additionalFormats() == formats);
+    QVERIFY(doc->begin().layout()->formats() == formats);
 }
 
 class CommentTestHighlighter : public QSyntaxHighlighter
@@ -222,7 +213,7 @@ void tst_QSyntaxHighlighter::basicTwo()
 
 void tst_QSyntaxHighlighter::removeFormatsOnDelete()
 {
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 9;
@@ -237,9 +228,9 @@ void tst_QSyntaxHighlighter::removeFormatsOnDelete()
     QVERIFY(lout->documentChangedCalled);
 
     lout->documentChangedCalled = false;
-    QVERIFY(!doc->begin().layout()->additionalFormats().isEmpty());
+    QVERIFY(!doc->begin().layout()->formats().isEmpty());
     delete hl;
-    QVERIFY(doc->begin().layout()->additionalFormats().isEmpty());
+    QVERIFY(doc->begin().layout()->formats().isEmpty());
     QVERIFY(lout->documentChangedCalled);
 }
 
@@ -405,7 +396,7 @@ void tst_QSyntaxHighlighter::highlightToEndOfDocument2()
 
 void tst_QSyntaxHighlighter::preservePreeditArea()
 {
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 8;
@@ -432,12 +423,12 @@ void tst_QSyntaxHighlighter::preservePreeditArea()
     hl->callCount = 0;
 
     cursor.beginEditBlock();
-    layout->setAdditionalFormats(formats);
+    layout->setFormats(formats);
     cursor.endEditBlock();
 
     QCOMPARE(hl->callCount, 1);
 
-    formats = layout->additionalFormats();
+    formats = layout->formats();
     QCOMPARE(formats.count(), 3);
 
     range = formats.at(0);
@@ -483,7 +474,7 @@ void tst_QSyntaxHighlighter::avoidUnnecessaryRehighlight()
 
 void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()
 {
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
     QTextLayout::FormatRange range;
     range.start = 0;
     range.length = 10;

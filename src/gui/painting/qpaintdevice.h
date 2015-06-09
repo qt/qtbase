@@ -85,7 +85,7 @@ public:
     // ### and need to access this constant. Add it here as a static constant for now
     static qreal devicePixelRatioFScale;
 protected:
-    QPaintDevice();
+    QPaintDevice() Q_DECL_NOEXCEPT;
     virtual int metric(PaintDeviceMetric metric) const;
     virtual void initPainter(QPainter *painter) const;
     virtual QPaintDevice *redirected(QPoint *offset) const;

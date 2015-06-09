@@ -1826,6 +1826,8 @@ QFileInfoList QDir::drives()
     underlying operating system. If you want to display paths to the
     user using their operating system's separator use
     toNativeSeparators().
+
+    \sa listSeparator()
 */
 QChar QDir::separator()
 {
@@ -1835,6 +1837,16 @@ QChar QDir::separator()
     return QLatin1Char('/');
 #endif
 }
+
+/*!
+    \fn QDir::listSeparator()
+    \since 5.6
+
+    Returns the native path list separator: ':' under Unix
+    and ';' under Windows.
+
+    \sa separator()
+*/
 
 /*!
     Sets the application's current working directory to \a path.

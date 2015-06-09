@@ -83,12 +83,15 @@ public:
     float length() const;
     float lengthSquared() const;
 
-    QQuaternion normalized() const;
+    QQuaternion normalized() const Q_REQUIRED_RESULT;
     void normalize();
 
     inline QQuaternion inverted() const;
 
-    QQuaternion conjugate() const;
+    QQuaternion conjugated() const Q_REQUIRED_RESULT;
+#if QT_DEPRECATED_SINCE(5, 5)
+    QT_DEPRECATED QQuaternion conjugate() const Q_REQUIRED_RESULT;
+#endif
 
     QVector3D rotatedVector(const QVector3D& vector) const;
 
@@ -161,12 +164,12 @@ inline QQuaternion::QQuaternion(float aScalar, float xpos, float ypos, float zpo
 
 inline bool QQuaternion::isNull() const
 {
-    return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && qIsNull(wp);
+    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 0.0f;
 }
 
 inline bool QQuaternion::isIdentity() const
 {
-    return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && wp == 1.0f;
+    return xp == 0.0f && yp == 0.0f && zp == 0.0f && wp == 1.0f;
 }
 
 inline float QQuaternion::x() const { return xp; }
@@ -196,10 +199,17 @@ inline QQuaternion QQuaternion::inverted() const
     return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-inline QQuaternion QQuaternion::conjugate() const
+inline QQuaternion QQuaternion::conjugated() const
 {
     return QQuaternion(wp, -xp, -yp, -zp);
 }
+
+#if QT_DEPRECATED_SINCE(5, 5)
+inline QQuaternion QQuaternion::conjugate() const
+{
+    return conjugated();
+}
+#endif
 
 inline QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion)
 {
@@ -230,9 +240,9 @@ inline QQuaternion &QQuaternion::operator*=(float factor)
 
 inline const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
 {
-    float ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
     float yy = (q1.wp - q1.yp) * (q2.wp + q2.zp);
     float zz = (q1.wp + q1.yp) * (q2.wp - q2.zp);
+    float ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
     float xx = ww + yy + zz;
     float qq = 0.5 * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
 

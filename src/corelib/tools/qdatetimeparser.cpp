@@ -1362,11 +1362,11 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
   \internal
 
   returns
-  0 if str == QDateTimeEdit::tr("AM")
-  1 if str == QDateTimeEdit::tr("PM")
-  2 if str can become QDateTimeEdit::tr("AM")
-  3 if str can become QDateTimeEdit::tr("PM")
-  4 if str can become QDateTimeEdit::tr("PM") and can become QDateTimeEdit::tr("AM")
+  0 if str == tr("AM")
+  1 if str == tr("PM")
+  2 if str can become tr("AM")
+  3 if str can become tr("PM")
+  4 if str can become tr("PM") and can become tr("AM")
   -1 can't become anything sensible
 
 */
@@ -1737,9 +1737,9 @@ QDateTime QDateTimeParser::getMaximum() const
 QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
 {
     if (ap == AmText) {
-        return (cs == UpperCase ? QLatin1String("AM") : QLatin1String("am"));
+        return (cs == UpperCase ? tr("AM") : tr("am"));
     } else {
-        return (cs == UpperCase ? QLatin1String("PM") : QLatin1String("pm"));
+        return (cs == UpperCase ? tr("PM") : tr("pm"));
     }
 }
 

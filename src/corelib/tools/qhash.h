@@ -353,6 +353,7 @@ public:
     class const_iterator
     {
         friend class iterator;
+        friend class QSet<Key>;
         QHashData::Node *i;
 
     public:
@@ -451,6 +452,7 @@ private:
     void detach_helper();
     void freeData(QHashData *d);
     Node **findNode(const Key &key, uint *hp = 0) const;
+    Node **findNode(const Key &key, uint h) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
     static void deleteNode2(QHashData::Node *node);
@@ -846,17 +848,10 @@ Q_INLINE_TEMPLATE bool QHash<Key, T>::contains(const Key &akey) const
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(const Key &akey,
-                                                                            uint *ahp) const
+Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(const Key &akey, uint h) const
 {
     Node **node;
-    uint h = 0;
 
-    if (d->numBuckets || ahp) {
-        h = qHash(akey, d->seed);
-        if (ahp)
-            *ahp = h;
-    }
     if (d->numBuckets) {
         node = reinterpret_cast<Node **>(&d->buckets[h % d->numBuckets]);
         Q_ASSERT(*node == e || (*node)->next);
@@ -866,6 +861,20 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
         node = const_cast<Node **>(reinterpret_cast<const Node * const *>(&e));
     }
     return node;
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(const Key &akey,
+                                                                            uint *ahp) const
+{
+    uint h = 0;
+
+    if (d->numBuckets || ahp) {
+        h = qHash(akey, d->seed);
+        if (ahp)
+            *ahp = h;
+    }
+    return findNode(akey, h);
 }
 
 template <class Key, class T>
