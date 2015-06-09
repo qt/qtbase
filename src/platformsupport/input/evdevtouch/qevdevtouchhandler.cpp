@@ -418,11 +418,11 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_currentData.y = qBound(hw_range_y_min, data->value, hw_range_y_max);
             if (m_singleTouch)
                 m_contacts[m_currentSlot].y = m_currentData.y;
-                if (m_typeB) {
-                    m_contacts[m_currentSlot].y = m_currentData.y;
-                    if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
-                        m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
-                }
+            if (m_typeB) {
+                m_contacts[m_currentSlot].y = m_currentData.y;
+                if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
+                    m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
+            }
         } else if (data->code == ABS_MT_TRACKING_ID) {
             m_currentData.trackingId = data->value;
             if (m_typeB) {
