@@ -613,7 +613,7 @@
 #    if __has_feature(cxx_strong_enums)
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
-#    if __has_feature(cxx_constexpr)
+#    if __has_feature(cxx_constexpr) && Q_CC_CLANG > 302 /* CLANG 3.2 has bad/partial support */
 #      define Q_COMPILER_CONSTEXPR
 #    endif
 #    if __has_feature(cxx_decltype) /* && __has_feature(cxx_decltype_incomplete_return_types) */
