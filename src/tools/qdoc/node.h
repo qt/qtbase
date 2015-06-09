@@ -245,7 +245,7 @@ public:
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const { return 0; }
     virtual QmlPropertyNode* hasQmlProperty(const QString&, bool ) const { return 0; }
     virtual void getMemberNamespaces(NodeMap& ) { }
-    virtual void getMemberClasses(NodeMap& ) { }
+    virtual void getMemberClasses(NodeMap& ) const { }
     virtual bool isInternal() const;
     virtual void setDataType(const QString& ) { }
     virtual void setReadOnly(bool ) { }
@@ -1118,7 +1118,7 @@ class CollectionNode : public Aggregate
     virtual bool hasNamespaces() const Q_DECL_OVERRIDE;
     virtual bool hasClasses() const Q_DECL_OVERRIDE;
     virtual void getMemberNamespaces(NodeMap& out) Q_DECL_OVERRIDE;
-    virtual void getMemberClasses(NodeMap& out) Q_DECL_OVERRIDE;
+    virtual void getMemberClasses(NodeMap& out) const Q_DECL_OVERRIDE;
     virtual bool wasSeen() const Q_DECL_OVERRIDE { return seen_; }
     virtual QString title() const Q_DECL_OVERRIDE { return title_; }
     virtual QString subTitle() const Q_DECL_OVERRIDE { return subtitle_; }

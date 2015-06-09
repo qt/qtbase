@@ -471,7 +471,7 @@ QString HtmlGenerator::generateLinksToBrokenLinksPage(CodeMarker* marker, int& c
  */
 int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMarker *marker)
 {
-    int skipAhead = 0;
+    int idx, skipAhead = 0;
     static bool in_para = false;
 
     switch (atom->type()) {
@@ -661,7 +661,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         break;
     case Atom::AnnotatedList:
         {
-            CollectionNode* cn = qdb_->getCollection(atom->string(), Node::DOC);
+            const CollectionNode* cn = qdb_->getCollectionNode(atom->string(), Node::DOC);
             if (cn)
                 generateList(cn, marker, atom->string());
         }
@@ -683,16 +683,25 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         else if (atom->string() == QLatin1String("qmltypes")) {
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
-        else if (atom->string().contains("classesbymodule")) {
-            QString physicalModuleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
+        else if ((idx = atom->string().indexOf(QStringLiteral("bymodule"))) != -1) {
+            QString moduleName = atom->string().mid(idx + 8).trimmed();
+            Node::Genus genus = Node::CPP;
+            if (atom->string().startsWith(QStringLiteral("qml")))
+                genus = Node::QML;
+            else if (atom->string().startsWith(QStringLiteral("js")))
+                genus = Node::JS;
             QDocDatabase* qdb = QDocDatabase::qdocDB();
-            CollectionNode* cn = qdb->findModule(physicalModuleName);
+            const CollectionNode* cn = qdb->getCollectionNode(moduleName, genus);
             if (cn) {
-                NodeMap m;
-                cn->getMemberClasses(m);
-                if (!m.isEmpty()) {
-                    generateAnnotatedList(relative, marker, m);
+                if (genus == Node::CPP) {
+                    NodeMap m;
+                    cn->getMemberClasses(m);
+                    if (!m.isEmpty()) {
+                        generateAnnotatedList(relative, marker, m);
+                    }
                 }
+                else
+                    generateAnnotatedList(relative, marker, cn->members());
             }
         }
         else if (atom->string() == QLatin1String("classhierarchy")) {
@@ -2131,7 +2140,7 @@ void HtmlGenerator::generateRequisites(Aggregate *inner, CodeMarker *marker)
     if (inner->type() == Node::Class || inner->type() == Node::Namespace) {
         //add the QT variable to the map
         if (!inner->physicalModuleName().isEmpty()) {
-            CollectionNode* cn = qdb_->findModule(inner->physicalModuleName());
+            const CollectionNode* cn = qdb_->getCollectionNode(inner->physicalModuleName(), Node::CPP);
             if (cn && !cn->qtVariable().isEmpty()) {
                 text.clear();
                 text << "QT += " + cn->qtVariable();
@@ -2241,11 +2250,7 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
 
     //add the module name and version to the map
     QString logicalModuleVersion;
-    CollectionNode* collection = 0;
-    if (qcn->isJsNode())
-        collection = qdb_->findJsModule(qcn->logicalModuleName());
-    else
-        collection = qdb_->findQmlModule(qcn->logicalModuleName());
+    const CollectionNode* collection = qdb_->getCollectionNode(qcn->logicalModuleName(), qcn->genus());
     if (collection)
         logicalModuleVersion = collection->logicalModuleVersion();
     else

@@ -177,6 +177,16 @@ class QDocForest
         return 0;
     }
 
+    const CollectionNode* getCollectionNode(const QString& name, Node::Genus genus)
+    {
+        foreach (Tree* t, searchOrder()) {
+            const CollectionNode* cn = t->getCollection(name, genus);
+            if (cn)
+                return cn;
+        }
+        return 0;
+    }
+
     QmlTypeNode* lookupQmlType(const QString& name)
     {
         foreach (Tree* t, searchOrder()) {
@@ -221,18 +231,10 @@ class QDocDatabase
 
     Tree* findTree(const QString& t) { return forest_.findTree(t); }
 
-    CollectionNode* getCollection(const QString& name, Node::Genus genus) {
-        return primaryTree()->getCollection(name, genus);
-    }
     const CNMap& groups() { return primaryTree()->groups(); }
     const CNMap& modules() { return primaryTree()->modules(); }
     const CNMap& qmlModules() { return primaryTree()->qmlModules(); }
     const CNMap& jsModules() { return primaryTree()->jsModules(); }
-
-    CollectionNode* findGroup(const QString& name) { return primaryTree()->findGroup(name); }
-    CollectionNode* findModule(const QString& name) { return primaryTree()->findModule(name); }
-    CollectionNode* findQmlModule(const QString& name) { return primaryTree()->findQmlModule(name); }
-    CollectionNode* findJsModule(const QString& name) { return primaryTree()->findJsModule(name); }
 
     CollectionNode* addGroup(const QString& name) { return primaryTree()->addGroup(name); }
     CollectionNode* addModule(const QString& name) { return primaryTree()->addModule(name); }
@@ -338,6 +340,9 @@ class QDocDatabase
     }
     Node* findNodeByNameAndType(const QStringList& path, Node::NodeType type) {
         return forest_.findNodeByNameAndType(path, type);
+    }
+    const CollectionNode* getCollectionNode(const QString& name, Node::Genus genus) {
+        return forest_.getCollectionNode(name, genus);
     }
 
   private:

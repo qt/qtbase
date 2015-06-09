@@ -2838,7 +2838,7 @@ void CollectionNode::getMemberNamespaces(NodeMap& out)
   Loads \a out with all this collection node's members that
   are class nodes.
  */
-void CollectionNode::getMemberClasses(NodeMap& out)
+void CollectionNode::getMemberClasses(NodeMap& out) const
 {
     out.clear();
     NodeList::const_iterator i = members_.cbegin();
