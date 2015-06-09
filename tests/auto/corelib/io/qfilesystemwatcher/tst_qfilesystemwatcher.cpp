@@ -62,6 +62,7 @@ private slots:
     void removePath();
     void addPaths();
     void removePaths();
+    void removePathsFilesInSameDirectory();
 
     void watchFileAndItsDirectory_data() { basicTest_data(); }
     void watchFileAndItsDirectory();
@@ -458,6 +459,31 @@ void tst_QFileSystemWatcher::removePaths()
     paths.clear();
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::removePaths: list is empty");
     watcher.removePaths(paths);
+}
+
+void tst_QFileSystemWatcher::removePathsFilesInSameDirectory()
+{
+    // QTBUG-46449/Windows: Check the return values of removePaths().
+    // When adding the 1st file, a thread is started to watch the temp path.
+    // After adding and removing the 2nd file, the thread is still running and
+    // success should be reported.
+    QTemporaryFile file1(m_tempDirPattern);
+    QTemporaryFile file2(m_tempDirPattern);
+    QVERIFY2(file1.open(), qPrintable(file1.errorString()));
+    QVERIFY2(file2.open(), qPrintable(file1.errorString()));
+    const QString path1 = file1.fileName();
+    const QString path2 = file2.fileName();
+    file1.close();
+    file2.close();
+    QFileSystemWatcher watcher;
+    QVERIFY(watcher.addPath(path1));
+    QCOMPARE(watcher.files().size(), 1);
+    QVERIFY(watcher.addPath(path2));
+    QCOMPARE(watcher.files().size(), 2);
+    QVERIFY(watcher.removePath(path1));
+    QCOMPARE(watcher.files().size(), 1);
+    QVERIFY(watcher.removePath(path2));
+    QCOMPARE(watcher.files().size(), 0);
 }
 
 static QByteArray msgFileOperationFailed(const char *what, const QFile &f)
