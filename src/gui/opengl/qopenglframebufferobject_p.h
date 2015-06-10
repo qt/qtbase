@@ -102,31 +102,40 @@ public:
 class QOpenGLFramebufferObjectPrivate
 {
 public:
-    QOpenGLFramebufferObjectPrivate() : fbo_guard(0), texture_guard(0), depth_buffer_guard(0)
-                                  , stencil_buffer_guard(0), color_buffer_guard(0)
+    QOpenGLFramebufferObjectPrivate() : fbo_guard(0), depth_buffer_guard(0)
+                                  , stencil_buffer_guard(0)
                                   , valid(false) {}
     ~QOpenGLFramebufferObjectPrivate() {}
 
-    void init(QOpenGLFramebufferObject *q, const QSize& sz,
+    void init(QOpenGLFramebufferObject *q, const QSize &size,
               QOpenGLFramebufferObject::Attachment attachment,
-              GLenum internal_format, GLenum texture_target,
+              GLenum texture_target, GLenum internal_format,
               GLint samples = 0, bool mipmap = false);
-    void initTexture(GLenum target, GLenum internal_format, const QSize &size, bool mipmap);
-    void initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment);
+    void initTexture(int idx);
+    void initColorBuffer(int idx, GLint *samples);
+    void initDepthStencilAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment);
 
     bool checkFramebufferStatus(QOpenGLContext *ctx) const;
     QOpenGLSharedResourceGuard *fbo_guard;
-    QOpenGLSharedResourceGuard *texture_guard;
     QOpenGLSharedResourceGuard *depth_buffer_guard;
     QOpenGLSharedResourceGuard *stencil_buffer_guard;
-    QOpenGLSharedResourceGuard *color_buffer_guard;
     GLenum target;
-    QSize size;
+    QSize dsSize;
     QOpenGLFramebufferObjectFormat format;
     int requestedSamples;
     uint valid : 1;
     QOpenGLFramebufferObject::Attachment fbo_attachment;
     QOpenGLExtensions funcs;
+
+    struct ColorAttachment {
+        ColorAttachment() : internalFormat(0), guard(0) { }
+        ColorAttachment(const QSize &size, GLenum internalFormat)
+            : size(size), internalFormat(internalFormat), guard(0) { }
+        QSize size;
+        GLenum internalFormat;
+        QOpenGLSharedResourceGuard *guard;
+    };
+    QVector<ColorAttachment> colorAttachments;
 
     inline GLuint fbo() const { return fbo_guard ? fbo_guard->id() : 0; }
 };

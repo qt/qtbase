@@ -86,6 +86,8 @@ private slots:
     void fboRenderingRGB30_data();
     void fboRenderingRGB30();
     void fboHandleNulledAfterContextDestroyed();
+    void fboMRT();
+    void fboMRT_differentFormats();
     void openGLPaintDevice_data();
     void openGLPaintDevice();
     void aboutToBeDestroyed();
@@ -594,6 +596,14 @@ void tst_QOpenGL::fboRenderingRGB30_data()
     common_data();
 }
 
+#ifndef GL_RGB5_A1
+#define GL_RGB5_A1                        0x8057
+#endif
+
+#ifndef GL_RGBA8
+#define GL_RGBA8                          0x8058
+#endif
+
 #ifndef GL_RGB10_A2
 #define GL_RGB10_A2                       0x8059
 #endif
@@ -605,6 +615,24 @@ void tst_QOpenGL::fboRenderingRGB30_data()
 #ifndef GL_FULL_SUPPORT
 #define GL_FULL_SUPPORT                   0x82B7
 #endif
+
+static bool hasRGB10A2(QOpenGLContext *ctx)
+{
+    if (ctx->format().majorVersion() < 3)
+        return false;
+#ifndef QT_OPENGL_ES_2
+    if (!ctx->isOpenGLES() && ctx->format().majorVersion() >= 4) {
+        GLint value = -1;
+        QOpenGLFunctions_4_2_Core* vFuncs = ctx->versionFunctions<QOpenGLFunctions_4_2_Core>();
+        if (vFuncs && vFuncs->initializeOpenGLFunctions()) {
+            vFuncs->glGetInternalformativ(GL_TEXTURE_2D, GL_RGB10_A2, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
+            if (value != GL_FULL_SUPPORT)
+                return false;
+        }
+    }
+#endif
+    return true;
+}
 
 void tst_QOpenGL::fboRenderingRGB30()
 {
@@ -623,23 +651,8 @@ void tst_QOpenGL::fboRenderingRGB30()
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
-    if (ctx.format().majorVersion() < 3)
+    if (!hasRGB10A2(&ctx))
         QSKIP("An internal RGB30_A2 format is not guaranteed on this platform");
-
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
-    // NVidia currently only supports RGB30 and RGB30_A2 in their Quadro drivers,
-    // but they do provide an extension for querying the support. We use the query
-    // in case they implement the required formats later.
-    if (!ctx.isOpenGLES() && ctx.format().majorVersion() >= 4) {
-        GLint value = -1;
-        QOpenGLFunctions_4_2_Core* vFuncs = ctx.versionFunctions<QOpenGLFunctions_4_2_Core>();
-        if (vFuncs && vFuncs->initializeOpenGLFunctions()) {
-            vFuncs->glGetInternalformativ(GL_TEXTURE_2D, GL_RGB10_A2, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
-            if (value != GL_FULL_SUPPORT)
-                QSKIP("The required RGB30_A2 format is not supported by this driver");
-        }
-    }
-#endif
 
     // No multisample with combined depth/stencil attachment:
     QOpenGLFramebufferObjectFormat fboFormat;
@@ -718,6 +731,150 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
     }
 
     QCOMPARE(fbo->handle(), 0U);
+}
+
+void tst_QOpenGL::fboMRT()
+{
+    QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
+    window.setGeometry(0, 0, 10, 10);
+    window.create();
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+    ctx.makeCurrent(&window);
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    if (!ctx.functions()->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets))
+        QSKIP("Multiple render targets not supported on this platform");
+
+    QOpenGLExtraFunctions *ef = ctx.extraFunctions();
+
+    {
+        // 3 color attachments, different sizes, same internal format, no depth/stencil.
+        QVector<QSize> sizes;
+        sizes << QSize(128, 128) << QSize(192, 128) << QSize(432, 123);
+        QOpenGLFramebufferObject fbo(sizes[0]);
+        fbo.addColorAttachment(sizes[1]);
+        fbo.addColorAttachment(sizes[2]);
+        QVERIFY(fbo.bind());
+        QCOMPARE(fbo.attachment(), QOpenGLFramebufferObject::NoAttachment);
+        QCOMPARE(sizes, fbo.sizes());
+        QCOMPARE(sizes[0], fbo.size());
+        // Clear the three buffers to red, green and blue.
+        GLenum drawBuf = GL_COLOR_ATTACHMENT0;
+        ef->glDrawBuffers(1, &drawBuf);
+        ef->glClearColor(1, 0, 0, 1);
+        ef->glClear(GL_COLOR_BUFFER_BIT);
+        drawBuf = GL_COLOR_ATTACHMENT0 + 1;
+        ef->glDrawBuffers(1, &drawBuf);
+        ef->glClearColor(0, 1, 0, 1);
+        ef->glClear(GL_COLOR_BUFFER_BIT);
+        drawBuf = GL_COLOR_ATTACHMENT0 + 2;
+        ef->glDrawBuffers(1, &drawBuf);
+        ef->glClearColor(0, 0, 1, 1);
+        ef->glClear(GL_COLOR_BUFFER_BIT);
+        // Verify, keeping in mind that only a 128x123 area is touched in the buffers.
+        // Some drivers do not get this right, unfortunately, so do not rely on it.
+        const char *vendor = (const char *) ef->glGetString(GL_VENDOR);
+        bool hasCorrectMRT = false;
+        if (vendor && strstr(vendor, "NVIDIA")) // maybe others too
+            hasCorrectMRT = true;
+        QImage img = fbo.toImage(false, 0);
+        QCOMPARE(img.size(), sizes[0]);
+        QCOMPARE(img.pixel(0, 0), qRgb(255, 0, 0));
+        if (hasCorrectMRT)
+            QCOMPARE(img.pixel(127, 122), qRgb(255, 0, 0));
+        img = fbo.toImage(false, 1);
+        QCOMPARE(img.size(), sizes[1]);
+        QCOMPARE(img.pixel(0, 0), qRgb(0, 255, 0));
+        if (hasCorrectMRT)
+            QCOMPARE(img.pixel(127, 122), qRgb(0, 255, 0));
+        img = fbo.toImage(false, 2);
+        QCOMPARE(img.size(), sizes[2]);
+        QCOMPARE(img.pixel(0, 0), qRgb(0, 0, 255));
+        if (hasCorrectMRT)
+            QCOMPARE(img.pixel(127, 122), qRgb(0, 0, 255));
+        fbo.release();
+    }
+
+    {
+        // 2 color attachments, same size, same internal format, depth/stencil.
+        QVector<QSize> sizes;
+        sizes.fill(QSize(128, 128), 2);
+        QOpenGLFramebufferObject fbo(sizes[0], QOpenGLFramebufferObject::CombinedDepthStencil);
+        fbo.addColorAttachment(sizes[1]);
+        QVERIFY(fbo.bind());
+        QCOMPARE(fbo.attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
+        QCOMPARE(sizes, fbo.sizes());
+        QCOMPARE(sizes[0], fbo.size());
+        ef->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ef->glFinish();
+        fbo.release();
+    }
+}
+
+void tst_QOpenGL::fboMRT_differentFormats()
+{
+    QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
+    window.setGeometry(0, 0, 10, 10);
+    window.create();
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+    ctx.makeCurrent(&window);
+
+    QOpenGLFunctions *f = ctx.functions();
+    const char * vendor = (const char *) f->glGetString(GL_VENDOR);
+    if (vendor && strstr(vendor, "VMware, Inc."))
+        QSKIP("The tested formats may not be supported on this platform");
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    if (!f->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets))
+        QSKIP("Multiple render targets not supported on this platform");
+
+    if (!hasRGB10A2(&ctx))
+        QSKIP("RGB10_A2 not supported on this platform");
+
+    // 3 color attachments, same size, different internal format, depth/stencil.
+    QVector<QSize> sizes;
+    sizes.fill(QSize(128, 128), 3);
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    QVector<GLenum> internalFormats;
+    internalFormats << GL_RGBA8 << GL_RGB10_A2 << GL_RGB5_A1;
+    format.setInternalTextureFormat(internalFormats[0]);
+    QOpenGLFramebufferObject fbo(sizes[0], format);
+    fbo.addColorAttachment(sizes[1], internalFormats[1]);
+    fbo.addColorAttachment(sizes[2], internalFormats[2]);
+
+    QVERIFY(fbo.bind());
+    QCOMPARE(fbo.attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(sizes, fbo.sizes());
+    QCOMPARE(sizes[0], fbo.size());
+
+    QOpenGLExtraFunctions *ef = ctx.extraFunctions();
+    QVERIFY(ef->glGetError() == 0);
+    ef->glClearColor(1, 0, 0, 1);
+    GLenum drawBuf[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0 + 1, GL_COLOR_ATTACHMENT0 + 2 };
+    ef->glDrawBuffers(3, drawBuf);
+    ef->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    QVERIFY(ef->glGetError() == 0);
+
+    QImage img = fbo.toImage(true, 0);
+    QCOMPARE(img.size(), sizes[0]);
+    QCOMPARE(img.pixel(0, 0), qRgb(255, 0, 0));
+    img = fbo.toImage(true, 1);
+    QCOMPARE(img.size(), sizes[1]);
+    QCOMPARE(img.format(), QImage::Format_A2BGR30_Premultiplied);
+    QCOMPARE(img.pixel(0, 0), qRgb(255, 0, 0));
+
+    fbo.release();
 }
 
 void tst_QOpenGL::imageFormatPainting()

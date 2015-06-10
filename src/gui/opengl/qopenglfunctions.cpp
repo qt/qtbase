@@ -184,6 +184,7 @@ Q_LOGGING_CATEGORY(lcGLES3, "qt.opengl.es3")
     \value NPOTTextureRepeat Non power of two textures can use GL_REPEAT as wrap parameter.
     \value FixedFunctionPipeline The fixed function pipeline is available.
     \value TextureRGFormats The GL_RED and GL_RG texture formats are available.
+    \value MultipleRenderTargets Multiple color attachments to framebuffer objects are available.
 */
 
 // Hidden private fields for additional extension data.
@@ -275,7 +276,7 @@ static int qt_gl_resolve_features()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (ctx->isOpenGLES()) {
-        // OpenGL ES 2
+        // OpenGL ES
         int features = QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Shaders |
             QOpenGLFunctions::Buffers |
@@ -300,6 +301,8 @@ static int qt_gl_resolve_features()
             if (!(renderer && strstr(renderer, "Mesa")))
                 features |= QOpenGLFunctions::TextureRGFormats;
         }
+        if (ctx->format().majorVersion() >= 3)
+            features |= QOpenGLFunctions::MultipleRenderTargets;
         return features;
     } else {
         // OpenGL
@@ -308,10 +311,9 @@ static int qt_gl_resolve_features()
         QOpenGLExtensionMatcher extensions;
 
         if (format.majorVersion() >= 3)
-            features |= QOpenGLFunctions::Framebuffers;
-        else if (extensions.match("GL_EXT_framebuffer_object") ||
-                extensions.match("GL_ARB_framebuffer_object"))
-                features |= QOpenGLFunctions::Framebuffers;
+            features |= QOpenGLFunctions::Framebuffers | QOpenGLFunctions::MultipleRenderTargets;
+        else if (extensions.match("GL_EXT_framebuffer_object") || extensions.match("GL_ARB_framebuffer_object"))
+            features |= QOpenGLFunctions::Framebuffers | QOpenGLFunctions::MultipleRenderTargets;
 
         if (format.majorVersion() >= 2) {
             features |= QOpenGLFunctions::BlendColor |
