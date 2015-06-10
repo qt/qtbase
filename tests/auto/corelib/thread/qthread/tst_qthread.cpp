@@ -669,9 +669,7 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
 #if defined Q_OS_UNIX
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
-#elif defined(Q_OS_WINRT)
-    // creating a new worker from within the GUI thread is not supported
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
         nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
     unsigned thrdid = 0;
@@ -690,10 +688,12 @@ void NativeThreadWrapper::join()
 {
 #if defined Q_OS_UNIX
     pthread_join(nativeThreadHandle, 0);
-#elif defined Q_OS_WINRT
-    // not supported
 #elif defined Q_OS_WIN
+#ifndef Q_OS_WINCE
+    WaitForSingleObjectEx(nativeThreadHandle, INFINITE, FALSE);
+#else
     WaitForSingleObject(nativeThreadHandle, INFINITE);
+#endif
     CloseHandle(nativeThreadHandle);
 #endif
 }
@@ -747,9 +747,6 @@ void testNativeThreadAdoption(void *)
 }
 void tst_QThread::nativeThreadAdoption()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     threadAdoptedOk = false;
     mainThread = QThread::currentThread();
     NativeThreadWrapper nativeThread;
@@ -773,9 +770,6 @@ void adoptedThreadAffinityFunction(void *arg)
 
 void tst_QThread::adoptedThreadAffinity()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     QThread *affinity[2] = { 0, 0 };
 
     NativeThreadWrapper thread;
@@ -788,9 +782,6 @@ void tst_QThread::adoptedThreadAffinity()
 
 void tst_QThread::adoptedThreadSetPriority()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     NativeThreadWrapper nativeThread;
     nativeThread.setWaitForStop();
     nativeThread.startAndWait();
@@ -818,9 +809,6 @@ void tst_QThread::adoptedThreadSetPriority()
 
 void tst_QThread::adoptedThreadExit()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     NativeThreadWrapper nativeThread;
     nativeThread.setWaitForStop();
 
@@ -850,9 +838,6 @@ void adoptedThreadExecFunction(void *)
 
 void tst_QThread::adoptedThreadExec()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     NativeThreadWrapper nativeThread;
     nativeThread.start(adoptedThreadExecFunction);
     nativeThread.join();
@@ -863,9 +848,6 @@ void tst_QThread::adoptedThreadExec()
 */
 void tst_QThread::adoptedThreadFinished()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     NativeThreadWrapper nativeThread;
     nativeThread.setWaitForStop();
     nativeThread.startAndWait();
@@ -876,17 +858,11 @@ void tst_QThread::adoptedThreadFinished()
     nativeThread.join();
 
     QTestEventLoop::instance().enterLoop(5);
-#if defined(Q_OS_WINRT)
-    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 void tst_QThread::adoptedThreadExecFinished()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
     NativeThreadWrapper nativeThread;
     nativeThread.setWaitForStop();
     nativeThread.startAndWait(adoptedThreadExecFunction);
@@ -902,9 +878,6 @@ void tst_QThread::adoptedThreadExecFinished()
 
 void tst_QThread::adoptMultipleThreads()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
 #if defined(Q_OS_WIN)
     // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
 #  if defined(Q_OS_WINCE)
@@ -936,18 +909,12 @@ void tst_QThread::adoptMultipleThreads()
     }
 
     QTestEventLoop::instance().enterLoop(5);
-#if defined(Q_OS_WINRT)
-    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }
 
 void tst_QThread::adoptMultipleThreadsOverlap()
 {
-#ifdef Q_OS_WINRT
-    QSKIP("Native thread adoption is not supported on WinRT.");
-#endif
 #if defined(Q_OS_WIN)
     // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
 #  if defined(Q_OS_WINCE)
@@ -984,9 +951,6 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     }
 
     QTestEventLoop::instance().enterLoop(5);
-#if defined(Q_OS_WINRT)
-    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }

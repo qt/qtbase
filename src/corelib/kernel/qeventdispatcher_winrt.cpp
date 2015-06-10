@@ -144,7 +144,10 @@ private:
                                             IID_PPV_ARGS(&application));
         RETURN_VOID_IF_FAILED("Failed to get the application factory");
 
-        ComPtr<ICoreApplicationView> view;
+        static ComPtr<ICoreApplicationView> view;
+        if (view)
+            return;
+
         hr = application->get_MainView(&view);
         RETURN_VOID_IF_FAILED("Failed to get the main view");
 
@@ -165,13 +168,6 @@ QEventDispatcherWinRT::QEventDispatcherWinRT(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWinRTPrivate, parent)
 {
     Q_D(QEventDispatcherWinRT);
-
-    // Special treatment for the WinMain thread, as it is created before the UI
-    static bool firstThread = true;
-    if (firstThread) {
-        firstThread = false;
-        return;
-    }
 
     d->fetchCoreDispatcher();
 }
@@ -212,6 +208,7 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
         DWORD waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, 1, TRUE);
         if (waitResult >= WAIT_OBJECT_0 && waitResult < WAIT_OBJECT_0 + timerHandles.count()) {
             const HANDLE handle = timerHandles.value(waitResult - WAIT_OBJECT_0);
+            ResetEvent(handle);
             const int timerId = d->timerHandleToId.value(handle);
             if (timerId == INTERRUPT_HANDLE)
                 break;
@@ -288,8 +285,8 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
     TimeSpan period;
     period.Duration = interval ? (interval * 10000) : 1; // TimeSpan is based on 100-nanosecond units
     IThreadPoolTimer *timer;
-    const HANDLE handle = CreateEventEx(NULL, NULL, NULL, SYNCHRONIZE|EVENT_MODIFY_STATE);
-    const HANDLE cancelHandle = CreateEventEx(NULL, NULL, NULL, SYNCHRONIZE|EVENT_MODIFY_STATE);
+    const HANDLE handle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE | EVENT_MODIFY_STATE);
+    const HANDLE cancelHandle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE|EVENT_MODIFY_STATE);
     HRESULT hr = d->timerFactory->CreatePeriodicTimerWithCompletion(
         Callback<ITimerElapsedHandler>([handle, cancelHandle](IThreadPoolTimer *timer) {
             DWORD cancelResult = WaitForSingleObjectEx(cancelHandle, 0, TRUE);
@@ -486,7 +483,9 @@ bool QEventDispatcherWinRT::event(QEvent *e)
 
 QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
 {
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    const bool isGuiThread = QCoreApplication::instance() &&
+            QThread::currentThread() == QCoreApplication::instance()->thread();
+    CoInitializeEx(NULL, isGuiThread ? COINIT_APARTMENTTHREADED : COINIT_MULTITHREADED);
     HRESULT hr;
     hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
     Q_ASSERT_SUCCEEDED(hr);
