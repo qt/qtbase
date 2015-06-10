@@ -160,6 +160,7 @@
     \table
     \row
     \li \snippet tutorials/widgets/childwidget/main.cpp main program
+    \row
     \li \inlineimage widgets-tutorial-childwidget.png
     \endtable
     \enddiv
@@ -182,6 +183,7 @@
     \table
     \row
     \li \snippet tutorials/widgets/windowlayout/main.cpp main program
+    \row
     \li \inlineimage widgets-tutorial-windowlayout.png
     \endtable
     \enddiv
