@@ -55,10 +55,10 @@ QMutexPrivate::~QMutexPrivate()
 
 bool QMutexPrivate::wait(int timeout)
 {
-#ifndef Q_OS_WINRT
-    return (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
-#else
+#ifndef Q_OS_WINCE
     return (WaitForSingleObjectEx(event, timeout < 0 ? INFINITE : timeout, FALSE) == WAIT_OBJECT_0);
+#else
+    return (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
 #endif
 }
 

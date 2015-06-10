@@ -652,7 +652,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 
         if (!pid)
             return false;
-        if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
+        if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
             bool readyReadEmitted = drainOutputPipes();
             _q_processDied();
             return readyReadEmitted;
@@ -721,7 +721,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
 
         // Wait for the process to signal any change in its state,
         // such as incoming data, or if the process died.
-        if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
+        if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
             _q_processDied();
             return false;
         }

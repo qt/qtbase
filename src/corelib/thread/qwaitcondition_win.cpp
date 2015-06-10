@@ -109,10 +109,10 @@ bool QWaitConditionPrivate::wait(QWaitConditionEvent *wce, unsigned long time)
 {
     // wait for the event
     bool ret = false;
-#ifndef Q_OS_WINRT
-    switch (WaitForSingleObject(wce->event, time)) {
-#else
+#ifndef Q_OS_WINCE
     switch (WaitForSingleObjectEx(wce->event, time, FALSE)) {
+#else
+    switch (WaitForSingleObject(wce->event, time)) {
 #endif
 
     default: break;
