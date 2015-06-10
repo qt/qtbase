@@ -2100,6 +2100,8 @@ void QWindowPrivate::deliverUpdateRequest()
     be handled by the base class. For example, the default implementation of
     this function relies on QEvent::Timer events. Filtering them away would
     therefore break the delivery of the update events.
+
+    \since 5.5
 */
 void QWindow::requestUpdate()
 {
