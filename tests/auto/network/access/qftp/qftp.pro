@@ -11,4 +11,3 @@ wince {
    DEPLOYMENT += addFiles
 }
 
-CONFIG+=insignificant_test  # QTBUG-15111: uses live qt-test-server, inherently unstable

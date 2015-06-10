@@ -390,8 +390,7 @@ void tst_QFtp::connectToUnresponsiveHost()
     a lot of other stuff in QFtp, so we just expect this test to fail on Windows.
     */
     QEXPECT_FAIL("", "timeout not working due to strange Windows socket behaviour (see source file of this test for explanation)", Abort);
-#else
-    QEXPECT_FAIL("", "QTBUG-20687", Abort);
+
 #endif
     QVERIFY2(! QTestEventLoop::instance().timeout(), "Network timeout longer than expected (should have been 60 seconds)");
 
