@@ -77,6 +77,8 @@ protected:
     virtual void drop(const QPoint &globalPos) = 0;
     virtual void endDrag();
 
+
+    void moveShapedPixmapWindow(const QPoint &deviceIndependentPosition);
     QShapedPixmapWindow *shapedPixmapWindow() const { return m_drag_icon_window; }
     void updateCursor(Qt::DropAction action);
 

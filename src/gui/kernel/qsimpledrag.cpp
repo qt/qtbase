@@ -236,7 +236,12 @@ void QBasicDrag::cancel()
     m_drag_icon_window->setVisible(false);
 }
 
-void QBasicDrag::move(const QPoint &globalPos)
+/*!
+  Move the drag label to \a globalPos, which is
+  interpreted in device independent coordinates. Typically called from reimplementations of move().
+ */
+
+void QBasicDrag::moveShapedPixmapWindow(const QPoint &globalPos)
 {
     if (m_drag)
         m_drag_icon_window->updateGeometry(globalPos);
@@ -342,7 +347,7 @@ void QSimpleDrag::cancel()
 void QSimpleDrag::move(const QPoint &globalPos)
 {
     //### not high-DPI aware
-    QBasicDrag::move(globalPos);
+    moveShapedPixmapWindow(globalPos);
     QWindow *window = topLevelAt(globalPos);
     if (!window)
         return;

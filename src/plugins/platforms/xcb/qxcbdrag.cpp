@@ -51,6 +51,7 @@
 
 #include <private/qshapedpixmapdndwindow_p.h>
 #include <private/qsimpledrag_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -303,7 +304,6 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
 void QXcbDrag::move(const QPoint &globalPos)
 {
-    QBasicDrag::move(globalPos);
 
     if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
         return;
@@ -316,6 +316,9 @@ void QXcbDrag::move(const QPoint &globalPos)
             break;
         }
     }
+
+    QBasicDrag::moveShapedPixmapWindow(QHighDpiScaling::mapPositionFromNative(globalPos, screen));
+
     if (screen != current_screen) {
         // ### need to recreate the shaped pixmap window?
 //    int screen = QCursor::x11Screen();
