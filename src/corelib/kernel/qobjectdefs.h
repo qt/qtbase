@@ -78,7 +78,11 @@ class QString;
 #define Q_CLASSINFO(name, value)
 #define Q_PLUGIN_METADATA(x)
 #define Q_INTERFACES(x)
+#ifdef Q_COMPILER_VARIADIC_MACROS
+#define Q_PROPERTY(...)
+#else
 #define Q_PROPERTY(text)
+#endif
 #define Q_PRIVATE_PROPERTY(d, text)
 #define Q_REVISION(v)
 #define Q_OVERRIDE(text)

@@ -46,6 +46,7 @@ class tst_QMetaProperty : public QObject
     Q_PROPERTY(int value8 READ value8)
     Q_PROPERTY(int value9 READ value9 CONSTANT)
     Q_PROPERTY(int value10 READ value10 FINAL)
+    Q_PROPERTY(QMap<int, int> map MEMBER map)
 
 private slots:
     void hasStdCppSet();
@@ -53,6 +54,7 @@ private slots:
     void isFinal();
     void gadget();
     void readAndWriteWithLazyRegistration();
+    void mapProperty();
 
 public:
     enum EnumType { EnumType1 };
@@ -65,6 +67,8 @@ public:
     int value8() const { return 1; }
     int value9() const { return 1; }
     int value10() const { return 1; }
+
+    QMap<int, int> map;
 };
 
 void tst_QMetaProperty::hasStdCppSet()
@@ -182,6 +186,14 @@ void tst_QMetaProperty::readAndWriteWithLazyRegistration()
     QCOMPARE(o.property("write").value<CustomWriteObjectChild*>(), &data);
 }
 
+void tst_QMetaProperty::mapProperty()
+{
+    map.insert(5, 9);
+    QVariant v1 = QVariant::fromValue(map);
+    QVariant v = property("map");
+    QVERIFY(v.isValid());
+    QCOMPARE(map, (v.value<QMap<int,int> >()));
+}
 
 QTEST_MAIN(tst_QMetaProperty)
 #include "tst_qmetaproperty.moc"
