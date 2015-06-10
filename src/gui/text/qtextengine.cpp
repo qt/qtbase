@@ -2863,6 +2863,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
     if (!tabArray.isEmpty()) {
         if (isRightToLeft()) { // rebase the tabArray positions.
             QList<QTextOption::Tab> newTabs;
+            newTabs.reserve(tabArray.count());
             QList<QTextOption::Tab>::Iterator iter = tabArray.begin();
             while(iter != tabArray.end()) {
                 QTextOption::Tab tab = *iter;

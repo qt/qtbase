@@ -1534,6 +1534,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
     QList<QKeySequence> result;
 
     QStringList strings = str.split(QLatin1String("; "));
+    result.reserve(strings.count());
     foreach (const QString &string, strings) {
         result << fromString(string, format);
     }

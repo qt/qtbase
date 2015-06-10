@@ -1803,6 +1803,7 @@ QList<QStandardItem*> QStandardItem::takeRow(int row)
     int index = d->childIndex(row, 0);  // Will return -1 if there are no columns
     if (index != -1) {
         int col_count = d->columnCount();
+        items.reserve(col_count);
         for (int column = 0; column < col_count; ++column) {
             QStandardItem *ch = d->children.at(index + column);
             if (ch)
@@ -2518,7 +2519,9 @@ QList<QStandardItem*> QStandardItemModel::findItems(const QString &text,
     QModelIndexList indexes = match(index(0, column, QModelIndex()),
                                     Qt::DisplayRole, text, -1, flags);
     QList<QStandardItem*> items;
-    for (int i = 0; i < indexes.size(); ++i)
+    const int numIndexes = indexes.size();
+    items.reserve(numIndexes);
+    for (int i = 0; i < numIndexes; ++i)
         items.append(itemFromIndex(indexes.at(i)));
     return items;
 }

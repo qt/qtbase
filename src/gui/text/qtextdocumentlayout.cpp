@@ -1071,7 +1071,9 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
             it = frameIteratorForYPosition(QFixed::fromReal(context.clip.top()));
 
         QList<QTextFrame *> floats;
-        for (int i = 0; i < fd->floats.count(); ++i)
+        const int numFloats = fd->floats.count();
+        floats.reserve(numFloats);
+        for (int i = 0; i < numFloats; ++i)
             floats.append(fd->floats.at(i));
 
         drawFlow(off, painter, context, it, floats, &cursorBlockNeedingRepaint);

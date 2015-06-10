@@ -7497,6 +7497,7 @@ start_lengthVariant:
 
     if (engine.option.tabs().isEmpty() && ta) {
         QList<qreal> tabs;
+        tabs.reserve(tabarraylen);
         for (int i = 0; i < tabarraylen; i++)
             tabs.append(qreal(ta[i]));
         engine.option.setTabArray(tabs);

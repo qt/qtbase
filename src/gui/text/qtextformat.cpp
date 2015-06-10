@@ -1115,7 +1115,9 @@ void QTextFormat::setProperty(int propertyId, const QVector<QTextLength> &value)
     if (!d)
         d = new QTextFormatPrivate;
     QVariantList list;
-    for (int i=0; i<value.size(); ++i)
+    const int numValues = value.size();
+    list.reserve(numValues);
+    for (int i = 0; i < numValues; ++i)
         list << value.at(i);
     d->insertProperty(propertyId, list);
 }
@@ -2041,6 +2043,7 @@ QTextBlockFormat::QTextBlockFormat(const QTextFormat &fmt)
 void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 {
     QList<QVariant> list;
+    list.reserve(tabs.count());
     QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
@@ -2065,6 +2068,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     QList<QTextOption::Tab> answer;
     QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
     QList<QVariant>::Iterator iter = variantsList.begin();
+    answer.reserve(variantsList.count());
     while(iter != variantsList.end()) {
         answer.append( qvariant_cast<QTextOption::Tab>(*iter));
         ++iter;

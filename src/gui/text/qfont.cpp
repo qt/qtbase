@@ -1860,14 +1860,9 @@ void QFont::removeSubstitutions(const QString &familyName)
 */
 QStringList QFont::substitutions()
 {
-    typedef QFontSubst::const_iterator QFontSubstConstIterator;
-
     QFontSubst *fontSubst = globalFontSubst();
     Q_ASSERT(fontSubst != 0);
-    QStringList ret;
-    const QFontSubstConstIterator cend = fontSubst->constEnd();
-    for (QFontSubstConstIterator it = fontSubst->constBegin(); it != cend; ++it)
-        ret.append(it.key());
+    QStringList ret = fontSubst->keys();
 
     ret.sort();
     return ret;

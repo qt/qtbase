@@ -455,6 +455,7 @@ QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints
     Qt::TouchPointStates states;
     QTouchEvent::TouchPoint p;
 
+    touchPoints.reserve(points.count());
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
