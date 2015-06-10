@@ -1209,8 +1209,15 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
 void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QMenuBar);
-    if (!(e->buttons() & Qt::LeftButton))
+    if (!(e->buttons() & Qt::LeftButton)) {
         d->mouseDown = false;
+        // We receive mouse move and mouse press on touch.
+        // Mouse move will open the menu and mouse press
+        // will close it, so ignore mouse move.
+        if (e->source() != Qt::MouseEventNotSynthesized)
+            return;
+    }
+
     bool popupState = d->popupState || d->mouseDown;
     QAction *action = d->actionAt(e->pos());
     if ((action && d->isVisible(action)) || !popupState)
