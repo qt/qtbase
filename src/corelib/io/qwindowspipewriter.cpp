@@ -39,12 +39,10 @@ QT_BEGIN_NAMESPACE
 
 QWindowsPipeWriter::QWindowsPipeWriter(HANDLE pipe, QObject * parent)
     : QThread(parent),
-      writePipe(INVALID_HANDLE_VALUE),
+      writePipe(pipe),
       quitNow(false),
       hasWritten(false)
 {
-    DuplicateHandle(GetCurrentProcess(), pipe, GetCurrentProcess(),
-                         &writePipe, 0, FALSE, DUPLICATE_SAME_ACCESS);
 }
 
 QWindowsPipeWriter::~QWindowsPipeWriter()
@@ -55,7 +53,6 @@ QWindowsPipeWriter::~QWindowsPipeWriter()
     lock.unlock();
     if (!wait(30000))
         terminate();
-    CloseHandle(writePipe);
 }
 
 bool QWindowsPipeWriter::waitForWrite(int msecs)
