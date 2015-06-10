@@ -1042,8 +1042,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
             d->activeMenu = 0;
+            menu->setAttribute(Qt::WA_NoMouseReplay);
             menu->hide();
-            d->closePopupMode = 1;
         }
     } else {
         d->setCurrentAction(action, true);
