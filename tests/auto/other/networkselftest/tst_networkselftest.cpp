@@ -34,6 +34,8 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDateTime>
+#include <QtCore/QTextStream>
+#include <QtCore/QStandardPaths>
 #include <QtCore/private/qiodevice_p.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -960,6 +962,25 @@ void tst_NetworkSelfTest::supportsSsl()
 #endif
 }
 
+#ifndef QT_NO_PROCESS
+static const QByteArray msgProcessError(const QProcess &process, const char *what)
+{
+    QString result;
+    QTextStream(&result) << what << ": \"" << process.program() << ' '
+        << process.arguments().join(QLatin1Char(' ')) << "\": " << process.errorString();
+    return result.toLocal8Bit();
+}
+
+static void ensureTermination(QProcess &process)
+{
+    if (process.state() == QProcess::Running) {
+        process.terminate();
+        if (!process.waitForFinished(300))
+            process.kill();
+    }
+}
+#endif // !QT_NO_PROCESS
+
 void tst_NetworkSelfTest::smbServer()
 {
     static const char contents[] = "This is 34 bytes. Do not change...";
@@ -977,19 +998,24 @@ void tst_NetworkSelfTest::smbServer()
     QVERIFY(memcmp(buf, contents, strlen(contents)) == 0);
 #else
 #ifndef QT_NO_PROCESS
+    enum { sambaTimeOutSecs = 5 };
     // try to use Samba
-    QString progname = "smbclient";
-    QProcess smbclient;
-    smbclient.start(progname, QIODevice::ReadOnly);
-    if (!smbclient.waitForStarted(2000))
+    const QString progname = "smbclient";
+    const QString binary = QStandardPaths::findExecutable(progname);
+    if (binary.isEmpty())
         QSKIP("Could not find smbclient (from Samba), cannot continue testing");
-    if (!smbclient.waitForFinished(2000) || smbclient.exitStatus() != QProcess::NormalExit)
-        QSKIP("smbclient isn't working, cannot continue testing");
-    smbclient.close();
 
     // try listing the server
-    smbclient.start(progname, QStringList() << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName(), QIODevice::ReadOnly);
-    QVERIFY(smbclient.waitForFinished(5000));
+    const QStringList timeOutArguments = QStringList()
+        << "--timeout" << QString::number(sambaTimeOutSecs);
+    QStringList arguments = timeOutArguments;
+    arguments << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName();
+    QProcess smbclient;
+    smbclient.start(binary, arguments, QIODevice::ReadOnly);
+    QVERIFY2(smbclient.waitForStarted(), msgProcessError(smbclient, "Unable to start"));
+    const bool listFinished = smbclient.waitForFinished((1 + sambaTimeOutSecs) * 1000);
+    ensureTermination(smbclient);
+    QVERIFY2(listFinished, msgProcessError(smbclient, "Listing servers timed out"));
     if (smbclient.exitStatus() != QProcess::NormalExit)
         QSKIP("smbclient crashed");
     QVERIFY2(smbclient.exitCode() == 0, "Test server not found");
@@ -1004,9 +1030,13 @@ void tst_NetworkSelfTest::smbServer()
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("PAGER", "/bin/cat"); // just in case
     smbclient.setProcessEnvironment(env);
-    smbclient.start(progname, QStringList() << "-N" << "-c" << "more test.pri"
-                    << QString("\\\\%1\\testshare").arg(QtNetworkSettings::winServerName()), QIODevice::ReadOnly);
-    QVERIFY(smbclient.waitForFinished(5000));
+    arguments = timeOutArguments;
+    arguments << "-N" << "-c" << "more test.pri"
+        << ("\\\\" + QtNetworkSettings::winServerName() + "\\testshare");
+    smbclient.start(binary, arguments, QIODevice::ReadOnly);
+    const bool fileFinished = smbclient.waitForFinished((1 + sambaTimeOutSecs) * 1000);
+    ensureTermination(smbclient);
+    QVERIFY2(fileFinished, msgProcessError(smbclient, "Timed out"));
     if (smbclient.exitStatus() != QProcess::NormalExit)
         QSKIP("smbclient crashed");
     QVERIFY2(smbclient.exitCode() == 0, "File //qt-test-server/testshare/test.pri not found");
