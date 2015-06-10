@@ -651,6 +651,13 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
                 int tries = 0;
                 do {
                     if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+                        if (value != NOERROR) {
+                            // MSDN says getsockopt with SO_ERROR clears the error, but it's not actually cleared
+                            // and this can affect all subsequent WSAConnect attempts, so clear it now.
+                            const int val = NO_ERROR;
+                            ::setsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, reinterpret_cast<const char*>(&val), sizeof val);
+                        }
+
                         if (value == WSAECONNREFUSED) {
                             setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
                             socketState = QAbstractSocket::UnconnectedState;
