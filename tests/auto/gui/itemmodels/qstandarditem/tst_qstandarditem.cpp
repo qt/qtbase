@@ -81,6 +81,7 @@ private slots:
     void clone();
     void sortChildren();
     void subclassing();
+    void lessThan();
 };
 
 tst_QStandardItem::tst_QStandardItem()
@@ -1093,6 +1094,20 @@ void tst_QStandardItem::subclassing()
     QCOMPARE(item->child(0), (QStandardItem*)child2);
     QCOMPARE(item->child(1), (QStandardItem*)child0);
     QCOMPARE(item->child(2), (QStandardItem*)child1);
+}
+
+void tst_QStandardItem::lessThan()
+{
+    QStandardItem stringA("A");
+    QStandardItem stringB("B");
+    QStandardItem invalid1;
+    QStandardItem invalid2;
+    QVERIFY(stringA < stringB);
+    QVERIFY(!(stringB < stringA));
+    // Items with invalid data go to the end.
+    QVERIFY(stringA < invalid1);
+    QVERIFY(!(invalid1 < stringA));
+    QVERIFY(!(invalid1 < invalid2));
 }
 
 QTEST_MAIN(tst_QStandardItem)
