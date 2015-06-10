@@ -690,6 +690,20 @@ QRect QPlatformWindow::windowGeometry() const
 }
 
 /*!
+    Returns the closest acceptable geometry for a given geometry before
+    a resize/move event for platforms that support it, for example to
+    implement heightForWidth().
+*/
+QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+{
+    QWindow *qWindow = window();
+    const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
+    const QRectF correctedGeometryF = qt_window_private(qWindow)->closestAcceptableGeometry(rectF);
+    return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
+        ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
+}
+
+/*!
     \class QPlatformWindow
     \since 4.8
     \internal

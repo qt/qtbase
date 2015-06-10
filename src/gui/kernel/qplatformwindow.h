@@ -138,6 +138,8 @@ public:
     QSize windowBaseSize() const;
     QSize windowSizeIncrement() const;
     QRect windowGeometry() const;
+    QRectF windowClosestAcceptableGeometry(const QRectF &nativeRect) const;
+
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);
     QPlatformScreen *screenForGeometry(const QRect &newGeometry) const;
