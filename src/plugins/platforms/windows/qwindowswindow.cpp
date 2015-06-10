@@ -704,6 +704,20 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
     }
 }
 
+
+// Scaling helpers for size constraints.
+static QSize toNativeSizeConstrained(QSize dip, const QWindow *w)
+{
+    if (QHighDpiScaling::isActive()) {
+        const qreal factor = QHighDpiScaling::factor(w);
+        if (dip.width() > 0 && dip.width() < QWINDOWSIZE_MAX)
+            dip.rwidth() *= factor;
+        if (dip.height() > 0 && dip.height() < QWINDOWSIZE_MAX)
+            dip.rheight() *= factor;
+    }
+    return dip;
+}
+
 /*!
     \class QWindowsGeometryHint
     \brief Stores geometry constraints and provides utility functions.
@@ -716,8 +730,8 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 */
 
 QWindowsGeometryHint::QWindowsGeometryHint(const QWindow *w, const QMargins &cm) :
-     minimumSize(QHighDpi::toNativePixelsConstrained(w->minimumSize(), w)),
-     maximumSize(QHighDpi::toNativePixelsConstrained(w->maximumSize(), w)),
+     minimumSize(toNativeSizeConstrained(w->minimumSize(), w)),
+     maximumSize(toNativeSizeConstrained(w->maximumSize(), w)),
      customMargins(cm)
 {
 }
