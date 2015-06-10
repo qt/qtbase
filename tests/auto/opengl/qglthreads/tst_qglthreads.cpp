@@ -702,6 +702,9 @@ private:
 */
 void tst_QGLThreads::painterOnGLWidgetInThread()
 {
+    //QTBUG-46446 tst_qglthreads is unstable on windows 7
+    if (QGuiApplication::platformName().compare("windows 7", Qt::CaseInsensitive))
+        QSKIP("Doesn't work on this platform. QTBUG-46446");
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
         QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
@@ -746,6 +749,9 @@ void tst_QGLThreads::painterOnPixmapInThread()
 */
 void tst_QGLThreads::painterOnPboInThread()
 {
+    //QTBUG-46446 tst_qglthreads is unstable on windows 7
+    if (QGuiApplication::platformName().compare("windows 7", Qt::CaseInsensitive))
+        QSKIP("Doesn't work on this platform. QTBUG-46446");
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
         QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
@@ -773,6 +779,9 @@ void tst_QGLThreads::painterOnPboInThread()
 */
 void tst_QGLThreads::painterOnFboInThread()
 {
+    //QTBUG-46446 tst_qglthreads is unstable on windows 7
+    if (QGuiApplication::platformName().compare("windows 7", Qt::CaseInsensitive))
+        QSKIP("Doesn't work on this platform. QTBUG-46446");
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
         QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||

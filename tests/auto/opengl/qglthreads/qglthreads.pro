@@ -11,4 +11,4 @@ x11 {
 }
 
 
-win32:CONFIG+=insignificant_test # QTBUG-28264
+
