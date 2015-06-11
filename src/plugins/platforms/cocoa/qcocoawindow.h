@@ -142,37 +142,37 @@ public:
     QCocoaWindow(QWindow *tlw);
     ~QCocoaWindow();
 
-    void setGeometry(const QRect &rect);
-    QRect geometry() const;
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE;
     void setCocoaGeometry(const QRect &rect);
     void clipChildWindows();
     void clipWindow(const NSRect &clipRect);
     void show(bool becauseOfAncestor = false);
     void hide(bool becauseOfAncestor = false);
-    void setVisible(bool visible);
-    void setWindowFlags(Qt::WindowFlags flags);
-    void setWindowState(Qt::WindowState state);
-    void setWindowTitle(const QString &title);
-    void setWindowFilePath(const QString &filePath);
-    void setWindowIcon(const QIcon &icon);
-    void setAlertState(bool enabled);
-    bool isAlertState() const;
-    void raise();
-    void lower();
-    bool isExposed() const;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void setWindowFilePath(const QString &filePath) Q_DECL_OVERRIDE;
+    void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
+    void setAlertState(bool enabled) Q_DECL_OVERRIDE;
+    bool isAlertState() const Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
+    bool isExposed() const Q_DECL_OVERRIDE;
     bool isOpaque() const;
-    void propagateSizeHints();
-    void setOpacity(qreal level);
-    void setMask(const QRegion &region);
-    bool setKeyboardGrabEnabled(bool grab);
-    bool setMouseGrabEnabled(bool grab);
-    QMargins frameMargins() const;
-    QSurfaceFormat format() const;
+    void propagateSizeHints() Q_DECL_OVERRIDE;
+    void setOpacity(qreal level) Q_DECL_OVERRIDE;
+    void setMask(const QRegion &region) Q_DECL_OVERRIDE;
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    QMargins frameMargins() const Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
-    void requestActivateWindow();
+    void requestActivateWindow() Q_DECL_OVERRIDE;
 
-    WId winId() const;
-    void setParent(const QPlatformWindow *window);
+    WId winId() const Q_DECL_OVERRIDE;
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
     NSView *contentView() const;
     void setContentView(NSView *contentView);
@@ -202,8 +202,8 @@ public:
 
     bool setWindowModified(bool modified) Q_DECL_OVERRIDE;
 
-    void setFrameStrutEventsEnabled(bool enabled);
-    bool frameStrutEventsEnabled() const
+    void setFrameStrutEventsEnabled(bool enabled) Q_DECL_OVERRIDE;
+    bool frameStrutEventsEnabled() const Q_DECL_OVERRIDE
         { return m_frameStrutEventsEnabled; }
 
     void setMenubar(QCocoaMenuBar *mb);
@@ -220,7 +220,7 @@ public:
     void applyContentBorderThickness(NSWindow *window);
     void updateNSToolbar();
 
-    qreal devicePixelRatio() const;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     bool isWindowExposable();
     void exposeWindow();
     void obscureWindow();
