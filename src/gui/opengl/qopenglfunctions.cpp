@@ -3208,7 +3208,9 @@ Q_GLOBAL_STATIC(QOpenGLES3Helper, qgles3Helper)
 
 bool QOpenGLES3Helper::init()
 {
-#ifndef Q_OS_IOS
+#ifdef QT_NO_LIBRARY
+    return false;
+#elif !defined(Q_OS_IOS)
 # ifdef Q_OS_WIN
 #  ifndef QT_DEBUG
     m_gl.setFileName(QStringLiteral("libGLESv2"));
@@ -3228,8 +3230,11 @@ QFunctionPointer QOpenGLES3Helper::resolve(const char *name)
 {
 #ifdef Q_OS_IOS
     return QFunctionPointer(dlsym(RTLD_DEFAULT, name));
-#else
+#elif !defined(QT_NO_LIBRARY)
     return m_gl.resolve(name);
+#else
+    Q_UNUSED(name);
+    return 0;
 #endif
 }
 

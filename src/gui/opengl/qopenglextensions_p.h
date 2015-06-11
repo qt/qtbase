@@ -78,8 +78,9 @@ public:
 private:
     bool init();
     QFunctionPointer resolve(const char *name);
-
+#ifndef QT_NO_LIBRARY
     QLibrary m_gl;
+#endif
 };
 
 class Q_GUI_EXPORT QOpenGLExtensions : public QOpenGLFunctions
