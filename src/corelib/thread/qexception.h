@@ -54,7 +54,9 @@ class Q_CORE_EXPORT QException : public std::exception
 {
 public:
     ~QException()
-#ifndef Q_COMPILER_NOEXCEPT
+#ifdef Q_COMPILER_NOEXCEPT
+    noexcept
+#else
     throw()
 #endif
     ;
@@ -66,10 +68,12 @@ class Q_CORE_EXPORT QUnhandledException : public QException
 {
 public:
     ~QUnhandledException()
-#ifndef Q_COMPILER_NOEXCEPT
+#ifdef Q_COMPILER_NOEXCEPT
+    noexcept
+#else
     throw()
 #endif
-;
+    ;
     void raise() const Q_DECL_OVERRIDE;
     QUnhandledException *clone() const Q_DECL_OVERRIDE;
 };
