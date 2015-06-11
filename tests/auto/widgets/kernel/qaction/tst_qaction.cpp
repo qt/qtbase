@@ -42,15 +42,12 @@ class tst_QAction : public QObject
 
 public:
     tst_QAction();
-    virtual ~tst_QAction();
-
 
     void updateState(QActionEvent *e);
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
 private slots:
+    void init();
+    void cleanup();
     void getSetCheck();
     void setText_data();
     void setText();
@@ -68,10 +65,25 @@ private slots:
 
 private:
     int m_lastEventType;
-    int m_keyboardScheme;
+    const int m_keyboardScheme;
     QAction *m_lastAction;
-    QWidget *m_tstWidget;
 };
+
+tst_QAction::tst_QAction()
+    : m_keyboardScheme(QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::KeyboardScheme).toInt())
+{
+}
+
+void tst_QAction::init()
+{
+    m_lastEventType = 0;
+    m_lastAction = nullptr;
+}
+
+void tst_QAction::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
+}
 
 // Testing get/set functions
 void tst_QAction::getSetCheck()
@@ -104,45 +116,15 @@ class MyWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MyWidget(tst_QAction *tst, QWidget *parent = 0) : QWidget(parent) { this->tst = tst; }
+    explicit MyWidget(tst_QAction *tst, QWidget *parent = nullptr) : QWidget(parent), m_test(tst)
+    { setWindowTitle(QTest::currentTestFunction()); }
 
 protected:
-    virtual void actionEvent(QActionEvent *e) { tst->updateState(e); }
+    void actionEvent(QActionEvent *e) override { m_test->updateState(e); }
 
 private:
-    tst_QAction *tst;
+    tst_QAction *m_test;
 };
-
-tst_QAction::tst_QAction() : m_keyboardScheme(QPlatformTheme::WindowsKeyboardScheme)
-{
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
-        m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
-}
-
-tst_QAction::~tst_QAction()
-{
-
-}
-
-void tst_QAction::initTestCase()
-{
-    m_lastEventType = 0;
-    m_lastAction = 0;
-
-    MyWidget *mw = new MyWidget(this);
-    m_tstWidget = mw;
-    mw->show();
-    qApp->setActiveWindow(mw);
-}
-
-void tst_QAction::cleanupTestCase()
-{
-    QWidget *testWidget = m_tstWidget;
-    if (testWidget) {
-        testWidget->hide();
-        delete testWidget;
-    }
-}
 
 void tst_QAction::setText_data()
 {
@@ -208,7 +190,10 @@ void tst_QAction::actionEvent()
     a.setText("action text");
 
     // add action
-    m_tstWidget->addAction(&a);
+    MyWidget testWidget(this);
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
+    testWidget.addAction(&a);
     qApp->processEvents();
 
     QCOMPARE(m_lastEventType, (int)QEvent::ActionAdded);
@@ -222,7 +207,7 @@ void tst_QAction::actionEvent()
     QCOMPARE(m_lastAction, &a);
 
     // remove action
-    m_tstWidget->removeAction(&a);
+    testWidget.removeAction(&a);
     qApp->processEvents();
 
     QCOMPARE(m_lastEventType, (int)QEvent::ActionRemoved);
@@ -262,22 +247,24 @@ void tst_QAction::alternateShortcuts()
 {
     //test the alternate shortcuts (by adding more than 1 shortcut)
 
-    QWidget *wid = m_tstWidget;
+    MyWidget testWidget(this);
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
 
     {
-        QAction act(wid);
-        wid->addAction(&act);
+        QAction act(&testWidget);
+        testWidget.addAction(&act);
         QList<QKeySequence> shlist = QList<QKeySequence>() << QKeySequence("CTRL+P") << QKeySequence("CTRL+A");
         act.setShortcuts(shlist);
 
         QSignalSpy spy(&act, SIGNAL(triggered()));
 
         act.setAutoRepeat(true);
-        QTest::keyClick(wid, Qt::Key_A, Qt::ControlModifier);
+        QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
         QCOMPARE(spy.count(), 1); //act should have been triggered
 
         act.setAutoRepeat(false);
-        QTest::keyClick(wid, Qt::Key_A, Qt::ControlModifier);
+        QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
         QCOMPARE(spy.count(), 2); //act should have been triggered a 2nd time
 
         //end of the scope of the action, it will be destroyed and removed from wid
@@ -286,11 +273,15 @@ void tst_QAction::alternateShortcuts()
 
 
     //this tests a crash (if the action did not unregister its alternate shortcuts)
-    QTest::keyClick(wid, Qt::Key_A, Qt::ControlModifier);
+    QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
 }
 
 void tst_QAction::enabledVisibleInteraction()
 {
+    MyWidget testWidget(this);
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
+
     QAction act(0);
     // check defaults
     QVERIFY(act.isEnabled());
@@ -305,20 +296,20 @@ void tst_QAction::enabledVisibleInteraction()
     QVERIFY(act.isVisible());
 
     // check if shortcut is disabled if not visible
-    m_tstWidget->addAction(&act);
+    testWidget.addAction(&act);
     act.setShortcut(QKeySequence("Ctrl+T"));
     QSignalSpy spy(&act, SIGNAL(triggered()));
     act.setEnabled(true);
     act.setVisible(false);
-    QTest::keyClick(m_tstWidget, Qt::Key_T, Qt::ControlModifier);
+    QTest::keyClick(&testWidget, Qt::Key_T, Qt::ControlModifier);
     QCOMPARE(spy.count(), 0); //act is not visible, so don't trigger
     act.setVisible(false);
     act.setEnabled(true);
-    QTest::keyClick(m_tstWidget, Qt::Key_T, Qt::ControlModifier);
+    QTest::keyClick(&testWidget, Qt::Key_T, Qt::ControlModifier);
     QCOMPARE(spy.count(), 0); //act is not visible, so don't trigger
     act.setVisible(true);
     act.setEnabled(true);
-    QTest::keyClick(m_tstWidget, Qt::Key_T, Qt::ControlModifier);
+    QTest::keyClick(&testWidget, Qt::Key_T, Qt::ControlModifier);
     QCOMPARE(spy.count(), 1); //act is visible and enabled, so trigger
 }
 
@@ -378,38 +369,42 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
 
 void tst_QAction::repeat()
 {
-    QWidget *wid = m_tstWidget;
-    QAction act(wid);
-    wid->addAction(&act);
+    MyWidget testWidget(this);
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&testWidget));
+
+    QAction act(&testWidget);
+    testWidget.addAction(&act);
     act.setShortcut(QKeySequence(Qt::Key_F));
     QSignalSpy spy(&act, SIGNAL(triggered()));
 
     act.setAutoRepeat(true);
-    QTest::keyPress(wid, Qt::Key_F);
-    QTest::keyRelease(wid, Qt::Key_F);
+    QTest::keyPress(&testWidget, Qt::Key_F);
+    QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 1);
 
     spy.clear();
-    QTest::keyPress(wid, Qt::Key_F);
+    QTest::keyPress(&testWidget, Qt::Key_F);
     // repeat event
-    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
-    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
-    QTest::keyRelease(wid, Qt::Key_F);
+    QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 3);
 
     spy.clear();
     act.setAutoRepeat(false);
-    QTest::keyPress(wid, Qt::Key_F);
-    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
-    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
-    QTest::keyRelease(wid, Qt::Key_F);
+    QTest::keyPress(&testWidget, Qt::Key_F);
+    QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 1);
 
     spy.clear();
     act.setAutoRepeat(true);
-    QTest::keyPress(wid, Qt::Key_F);
-    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
-    QTest::keyRelease(wid, Qt::Key_F);
+    QTest::keyPress(&testWidget, Qt::Key_F);
+    QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 2);
 }
 
