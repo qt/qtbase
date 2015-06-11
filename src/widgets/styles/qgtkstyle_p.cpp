@@ -326,6 +326,7 @@ void QGtkStylePrivate::gtkWidgetSetFocus(GtkWidget *widget, bool focus)
  */
 void QGtkStylePrivate::resolveGtk() const
 {
+#ifndef QT_NO_LIBRARY
     // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
     QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
 
@@ -427,6 +428,7 @@ void QGtkStylePrivate::resolveGtk() const
 
     gnome_icon_lookup_sync = (Ptr_gnome_icon_lookup_sync)QLibrary::resolve(QLS("gnomeui-2"), 0, "gnome_icon_lookup_sync");
     gnome_vfs_init= (Ptr_gnome_vfs_init)QLibrary::resolve(QLS("gnomevfs-2"), 0, "gnome_vfs_init");
+#endif // !QT_NO_LIBRARY
 }
 
 /* \internal
@@ -593,11 +595,13 @@ void QGtkStylePrivate::cleanupGtkWidgets()
 
 static bool resolveGConf()
 {
+#ifndef QT_NO_LIBRARY
     if (!QGtkStylePrivate::gconf_client_get_default) {
         QGtkStylePrivate::gconf_client_get_default = (Ptr_gconf_client_get_default)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_default");
         QGtkStylePrivate::gconf_client_get_string =  (Ptr_gconf_client_get_string)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_string");
         QGtkStylePrivate::gconf_client_get_bool =  (Ptr_gconf_client_get_bool)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_bool");
     }
+#endif // !QT_NO_LIBRARY
     return (QGtkStylePrivate::gconf_client_get_default !=0);
 }
 
