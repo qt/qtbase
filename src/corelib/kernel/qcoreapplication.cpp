@@ -2054,11 +2054,13 @@ QString QCoreApplication::applicationFilePath()
 
     QCoreApplicationPrivate *d = self->d_func();
 
-    static char *procName = d->argv[0];
-    if (qstrcmp(procName, d->argv[0]) != 0) {
-        // clear the cache if the procname changes, so we reprocess it.
-        QCoreApplicationPrivate::clearApplicationFilePath();
-        procName = d->argv[0];
+    if (d->argc) {
+        static const char *procName = d->argv[0];
+        if (qstrcmp(procName, d->argv[0]) != 0) {
+            // clear the cache if the procname changes, so we reprocess it.
+            QCoreApplicationPrivate::clearApplicationFilePath();
+            procName = d->argv[0];
+        }
     }
 
     if (QCoreApplicationPrivate::cachedApplicationFilePath)
