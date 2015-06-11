@@ -1730,7 +1730,7 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
 # if DBUS_VERSION-0 >= 0x010400
     can_send_type = dbus_connection_can_send_type;
 # endif
-#else
+#elif !defined(QT_NO_LIBRARY)
     // run-time check if the next functions are available
     can_send_type = (can_send_type_t)qdbus_resolve_conditionally("dbus_connection_can_send_type");
 #endif
