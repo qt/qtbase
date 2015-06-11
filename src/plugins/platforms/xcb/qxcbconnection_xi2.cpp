@@ -48,6 +48,7 @@ struct XInput2TouchDeviceData {
     XInput2TouchDeviceData()
     : xiDeviceInfo(0)
     , qtTouchDevice(0)
+    , providesTouchOrientation(false)
     {
     }
     XIDeviceInfo *xiDeviceInfo;
@@ -59,6 +60,7 @@ struct XInput2TouchDeviceData {
     QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
     QPointF firstPressedNormalPosition;  // device coordinates (0 to 1, 0 to 1) where the first point was pressed
     QSizeF size;                         // device size in mm
+    bool providesTouchOrientation;
 };
 
 void QXcbConnection::initializeXInput2()
@@ -413,6 +415,8 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                     caps |= QTouchDevice::Position | QTouchDevice::NormalizedPosition;
                 else if (vci->label == atom(QXcbAtom::AbsMTTouchMajor))
                     caps |= QTouchDevice::Area;
+                else if (vci->label == atom(QXcbAtom::AbsMTOrientation))
+                    dev->providesTouchOrientation = true;
                 else if (vci->label == atom(QXcbAtom::AbsMTPressure) || vci->label == atom(QXcbAtom::AbsPressure))
                     caps |= QTouchDevice::Pressure;
                 else if (vci->label == atom(QXcbAtom::RelX)) {
@@ -574,7 +578,9 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
     QXcbScreen* screen = platformWindow->xcbScreen();
     qreal x = fixed1616ToReal(xiDeviceEvent->root_x);
     qreal y = fixed1616ToReal(xiDeviceEvent->root_y);
-    qreal nx = -1.0, ny = -1.0, d = 0.0;
+    qreal nx = -1.0, ny = -1.0;
+    qreal w = 0.0, h = 0.0;
+    bool majorAxisIsY = touchPoint.area.height() > touchPoint.area.width();
     for (int i = 0; i < dev->xiDeviceInfo->num_classes; ++i) {
         XIAnyClassInfo *classinfo = dev->xiDeviceInfo->classes[i];
         if (classinfo->type == XIValuatorClass) {
@@ -599,7 +605,24 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
             } else if (vci->label == atom(QXcbAtom::AbsMTPositionY)) {
                 ny = valuatorNormalized(value, vci);
             } else if (vci->label == atom(QXcbAtom::AbsMTTouchMajor)) {
-                d = valuatorNormalized(value, vci) * screen->geometry().width();
+                const qreal sw = screen->geometry().width();
+                const qreal sh = screen->geometry().height();
+                w = valuatorNormalized(value, vci) * std::sqrt(sw * sw + sh * sh);
+            } else if (vci->label == atom(QXcbAtom::AbsMTTouchMinor)) {
+                const qreal sw = screen->geometry().width();
+                const qreal sh = screen->geometry().height();
+                h = valuatorNormalized(value, vci) * std::sqrt(sw * sw + sh * sh);
+            } else if (vci->label == atom(QXcbAtom::AbsMTOrientation)) {
+                // Find the closest axis.
+                // 0 corresponds to the Y axis, vci->max to the X axis.
+                // Flipping over the Y axis and rotating by 180 degrees
+                // don't change the result, so normalize value to range
+                // [0, vci->max] first.
+                value = qAbs(value);
+                while (value > vci->max)
+                    value -= 2 * vci->max;
+                value = qAbs(value);
+                majorAxisIsY = value < vci->max - value;
             } else if (vci->label == atom(QXcbAtom::AbsMTPressure) ||
                        vci->label == atom(QXcbAtom::AbsPressure)) {
                 touchPoint.pressure = valuatorNormalized(value, vci);
@@ -616,8 +639,18 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         ny = y / screen->geometry().height();
     }
     if (xiDeviceEvent->evtype != XI_TouchEnd) {
-        if (d == 0.0)
-            d = touchPoint.area.width();
+        if (!dev->providesTouchOrientation) {
+            if (w == 0.0)
+                w = touchPoint.area.width();
+            h = w;
+        } else {
+            if (w == 0.0)
+                w = qMax(touchPoint.area.width(), touchPoint.area.height());
+            if (h == 0.0)
+                h = qMin(touchPoint.area.width(), touchPoint.area.height());
+            if (majorAxisIsY)
+                qSwap(w, h);
+        }
     }
 
     switch (xiDeviceEvent->evtype) {
@@ -681,7 +714,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         }
         dev->pointPressedPosition.remove(touchPoint.id);
     }
-    touchPoint.area = QRectF(x - d/2, y - d/2, d, d);
+    touchPoint.area = QRectF(x - w/2, y - h/2, w, h);
     touchPoint.normalPosition = QPointF(nx, ny);
 
     if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))

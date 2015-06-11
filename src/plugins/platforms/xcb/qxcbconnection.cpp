@@ -1922,6 +1922,7 @@ static const char * xcb_atomnames = {
     "Abs MT Position Y\0"
     "Abs MT Touch Major\0"
     "Abs MT Touch Minor\0"
+    "Abs MT Orientation\0"
     "Abs MT Pressure\0"
     "Abs MT Tracking ID\0"
     "Max Contacts\0"

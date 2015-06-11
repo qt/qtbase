@@ -261,6 +261,7 @@ namespace QXcbAtom {
         AbsMTPositionY,
         AbsMTTouchMajor,
         AbsMTTouchMinor,
+        AbsMTOrientation,
         AbsMTPressure,
         AbsMTTrackingID,
         MaxContacts,
