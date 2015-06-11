@@ -267,6 +267,7 @@ private slots:
     void taskQT_3674_doNotCrash();
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
     void taskQTBUG_16401_focusItem();
+    void taskQTBUG_42915_focusNextPrevChild();
 };
 
 void tst_QGraphicsScene::cleanup()
@@ -4813,6 +4814,30 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     QVERIFY(!scene.focusItem());
     QApplication::sendEvent(&view, &focusIn);
     QVERIFY(!scene.focusItem());
+}
+
+void tst_QGraphicsScene::taskQTBUG_42915_focusNextPrevChild()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    scene.setSceneRect(1, 1, 198, 198);
+    view.setFocus();
+
+    QGraphicsWidget *widget1 = new QGraphicsWidget();
+    QGraphicsRectItem *rect1 = new QGraphicsRectItem(-50, -50, 100, 100, widget1);
+    rect1->setBrush(Qt::blue);
+    scene.addItem(widget1);
+    widget1->setPos(100, 100);
+    widget1->setFlags(QGraphicsItem::ItemIsPanel);
+
+    QGraphicsWidget *widget2 = new QGraphicsWidget(widget1);
+    widget2->setFocusPolicy(Qt::NoFocus);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    QTest::keyEvent(QTest::Click, &view, Qt::Key_Tab);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

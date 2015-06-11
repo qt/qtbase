@@ -5430,12 +5430,14 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
                 return true;
             }
             if (d->activePanel->isWidget()) {
-                QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(d->activePanel)->d_func()->focusNext;
+                QGraphicsWidget *test = static_cast<QGraphicsWidget *>(d->activePanel);
+                QGraphicsWidget *fw = next ? test->d_func()->focusNext : test->d_func()->focusPrev;
                 do {
                     if (fw->focusPolicy() & Qt::TabFocus) {
                         setFocusItem(fw, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
                         return true;
                     }
+                    fw = next ? fw->d_func()->focusNext : fw->d_func()->focusPrev;
                 } while (fw != d->activePanel);
             }
         }
