@@ -44,6 +44,7 @@ class tst_QSizePolicy : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void qtest();
     void defaultValues();
     void getSetCheck_data() { data(); }

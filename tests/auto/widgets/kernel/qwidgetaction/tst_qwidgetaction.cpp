@@ -55,6 +55,8 @@ class tst_QWidgetAction : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+    void cleanup();
     void defaultWidget();
     void visibilityUpdate();
     void customWidget();
@@ -64,6 +66,19 @@ private slots:
     void popup();
     void releaseWidgetCrash();
 };
+
+void tst_QWidgetAction::initTestCase()
+{
+    // Disable menu/combo animations to prevent the alpha widgets from getting in the
+    // way in popup(), failing the top level leak check in cleanup().
+    QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
+    QApplication::setEffectEnabled(Qt::UI_AnimateCombo, false);
+}
+
+void tst_QWidgetAction::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
+}
 
 void tst_QWidgetAction::defaultWidget()
 {

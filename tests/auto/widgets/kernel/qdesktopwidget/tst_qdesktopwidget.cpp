@@ -73,6 +73,7 @@ void tst_QDesktopWidget::init()
 
 void tst_QDesktopWidget::cleanup()
 {
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QDesktopWidget::numScreens()

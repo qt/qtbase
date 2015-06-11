@@ -108,6 +108,7 @@ public slots:
 public slots:
     void initTestCase();
     void cleanupTestCase();
+    void cleanup() { QCOMPARE(QApplication::topLevelWidgets().size(), 1); }
 
 private slots:
     void number_data();

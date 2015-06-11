@@ -42,6 +42,7 @@ class tst_QActionGroup : public QObject
     Q_OBJECT
 
 private slots:
+    void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void enabledPropagation();
     void visiblePropagation();
     void exclusive();

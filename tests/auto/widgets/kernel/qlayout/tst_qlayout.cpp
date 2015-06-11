@@ -66,6 +66,7 @@ public:
     virtual ~tst_QLayout();
 
 private slots:
+    void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void getSetCheck();
     void geometry();
     void smartMaxSize();
