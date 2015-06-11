@@ -447,7 +447,6 @@ static void ensureInitialized()
 QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
-    Q_D(QNetworkAccessManager);
     ensureInitialized();
 
     qRegisterMetaType<QNetworkReply::NetworkError>();
@@ -467,6 +466,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSharedPointer<char> >();
 
 #ifndef QT_NO_BEARERMANAGEMENT
+    Q_D(QNetworkAccessManager);
     if (!d->networkSessionRequired) {
         // if a session is required, we track online state through
         // the QNetworkSession's signals
