@@ -1913,8 +1913,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
-    if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    if (nativeDrag->currentDrag()) {
+        // The drag was started from within the application
         response = QWindowSystemInterface::handleDrag(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
         [self updateCursorFromDragResponse:response drag:nativeDrag];
     } else {
@@ -1950,8 +1951,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
 
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
-    if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    if (nativeDrag->currentDrag()) {
+        // The drag was started from within the application
         response = QWindowSystemInterface::handleDrop(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
