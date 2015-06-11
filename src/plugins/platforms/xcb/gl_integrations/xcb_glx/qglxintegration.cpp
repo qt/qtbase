@@ -560,10 +560,12 @@ void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
             if (!glXGetProcAddressARB)
 #endif
             {
+#ifndef QT_NO_LIBRARY
                 extern const QString qt_gl_library_name();
 //                QLibrary lib(qt_gl_library_name());
                 QLibrary lib(QLatin1String("GL"));
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
+#endif
             }
         }
         resolved = true;

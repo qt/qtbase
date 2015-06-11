@@ -52,7 +52,7 @@ typedef char *(*PtrXcursorLibraryGetTheme)(void *);
 typedef int (*PtrXcursorLibrarySetTheme)(void *, const char *);
 typedef int (*PtrXcursorLibraryGetDefaultSize)(void *);
 
-#ifdef XCB_USE_XLIB
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
 #include <X11/Xlib.h>
 enum {
     XCursorShape = CursorShape
@@ -300,7 +300,7 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     const char *cursorStr = "cursor";
     xcb_open_font(xcb_connection(), cursorFont, strlen(cursorStr), cursorStr);
 
-#ifdef XCB_USE_XLIB
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
     static bool function_ptrs_not_initialized = true;
     if (function_ptrs_not_initialized) {
         QLibrary xcursorLib(QLatin1String("Xcursor"), 1);
@@ -489,7 +489,7 @@ xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
     return cursor;
 }
 
-#ifdef XCB_USE_XLIB
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
 bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     if (!ptrXcursorLibraryGetTheme
             || !ptrXcursorLibrarySetTheme)
@@ -533,7 +533,7 @@ static xcb_cursor_t loadCursor(void *dpy, int cshape)
     }
     return cursor;
 }
-#endif //XCB_USE_XLIB
+#endif //XCB_USE_XLIB / QT_NO_LIBRARY
 
 xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 {
@@ -542,7 +542,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     xcb_cursor_t cursor = XCB_NONE;
 
     // Try Xcursor first
-#ifdef XCB_USE_XLIB
+#if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
     if (cshape >= 0 && cshape <= Qt::LastCursor) {
         void *dpy = connection()->xlib_display();
         // special case for non-standard dnd-* cursors
