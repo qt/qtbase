@@ -119,10 +119,13 @@ void qsslSocketUnresolvedSymbolWarning(const char *functionName)
     qCWarning(lcSsl, "QSslSocket: cannot call unresolved function %s", functionName);
 }
 
+#ifndef QT_NO_LIBRARY
 void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 {
     qCWarning(lcSsl, "QSslSocket: cannot resolve %s", functionName);
 }
+#endif
+
 }
 
 #endif // QT_LINKED_OPENSSL
