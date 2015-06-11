@@ -65,6 +65,9 @@ HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
 void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
 {
 #ifdef QT_NO_LIBRARY
+    Q_UNUSED(library);
+    Q_UNUSED(version);
+    Q_UNUSED(symbol);
     return 0;
 #else
     return QLibrary::resolve(QLatin1String(library), version, symbol);

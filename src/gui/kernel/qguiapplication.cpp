@@ -1346,6 +1346,8 @@ void QGuiApplicationPrivate::init()
             qCritical() << "Library qttestability load failed:" << testLib.errorString();
         }
     }
+#else
+    Q_UNUSED(loadTestability);
 #endif // QT_NO_LIBRARY
 }
 

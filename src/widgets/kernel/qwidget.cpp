@@ -9730,6 +9730,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
     d->imHints = hints;
     if (this == QGuiApplication::focusObject())
         QGuiApplication::inputMethod()->update(Qt::ImHints);
+#else
+    Q_UNUSED(hints);
 #endif //QT_NO_IM
 }
 

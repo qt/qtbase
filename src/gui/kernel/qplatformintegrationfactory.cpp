@@ -72,6 +72,12 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
     }
     if (QPlatformIntegration *ret = loadIntegration(loader(), platform, paramList, argc, argv))
         return ret;
+#else
+    Q_UNUSED(platform);
+    Q_UNUSED(paramList);
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
+    Q_UNUSED(platformPluginPath);
 #endif
     return 0;
 }
@@ -102,6 +108,7 @@ QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
     list.append(loader()->keyMap().values());
     return list;
 #else
+    Q_UNUSED(platformPluginPath);
     return QStringList();
 #endif
 }
