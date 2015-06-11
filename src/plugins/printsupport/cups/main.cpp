@@ -37,7 +37,7 @@
 #include <qpa/qplatformprintplugin.h>
 #include <QtCore/QStringList>
 
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +65,6 @@ QPlatformPrinterSupport *QCupsPrinterSupportPlugin::create(const QString &key)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTER
+#endif // !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
 
 #include "main.moc"

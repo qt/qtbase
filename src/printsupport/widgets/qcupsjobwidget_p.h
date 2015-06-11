@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
 
 class QString;
 class QTime;
@@ -100,7 +100,7 @@ private:
     Q_DISABLE_COPY(QCupsJobWidget)
 };
 
-#endif // QT_NO_PRINTER
+#endif // QT_NO_PRINTER / QT_NO_CUPS
 
 QT_END_NAMESPACE
 
