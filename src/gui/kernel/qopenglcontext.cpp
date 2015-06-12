@@ -226,7 +226,7 @@ public:
     QOpenGLContext *context;
 };
 
-static QThreadStorage<QGuiGLThreadContext *> qwindow_context_storage;
+Q_GLOBAL_STATIC(QThreadStorage<QGuiGLThreadContext *>, qwindow_context_storage);
 static QOpenGLContext *global_share_context = 0;
 
 #ifndef QT_NO_DEBUG
@@ -336,14 +336,14 @@ QOpenGLContext *qt_gl_global_share_context()
 */
 QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
+    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
             qWarning("No QTLS available. currentContext won't work");
             return 0;
         }
         threadContext = new QGuiGLThreadContext;
-        qwindow_context_storage.setLocalData(threadContext);
+        qwindow_context_storage()->setLocalData(threadContext);
     }
     QOpenGLContext *previous = threadContext->context;
     threadContext->context = context;
@@ -412,8 +412,8 @@ int QOpenGLContextPrivate::maxTextureSize()
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
-    QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
-    if(threadContext) {
+    QGuiGLThreadContext *threadContext = qwindow_context_storage()->localData();
+    if (threadContext) {
         return threadContext->context;
     }
     return 0;
