@@ -342,7 +342,7 @@ void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
         }
         br = painter()->transform().mapRect(br);
         if (painter()->hasClipping()) {
-            QRect cr = painter()->clipRegion().boundingRect();
+            QRectF cr = painter()->clipBoundingRect();
             br &= cr;
         }
 
