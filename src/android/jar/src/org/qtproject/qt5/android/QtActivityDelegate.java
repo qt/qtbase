@@ -244,12 +244,18 @@ public class QtActivityDelegate
         if (m_imm == null)
             return;
 
-        if (m_softInputMode == 0 && height > m_layout.getHeight() * 2 / 3)
-           m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        else if (m_softInputMode == 0)
-            m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        else
+        if (m_softInputMode != 0) {
             m_activity.getWindow().setSoftInputMode(m_softInputMode);
+            // softInputIsHidden is true if SOFT_INPUT_STATE_HIDDEN or SOFT_INPUT_STATE_ALWAYS_HIDDEN is set.
+            final boolean softInputIsHidden = (m_softInputMode & WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) != 0;
+            if (softInputIsHidden)
+               return;
+        } else {
+            if (height > m_layout.getHeight() * 2 / 3)
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            else
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        }
 
         int initialCapsMode = 0;
         int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
