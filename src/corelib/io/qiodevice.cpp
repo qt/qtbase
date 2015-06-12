@@ -693,12 +693,13 @@ bool QIODevice::seek(qint64 pos)
 bool QIODevice::atEnd() const
 {
     Q_D(const QIODevice);
+    const bool result = (d->openMode == NotOpen || (d->buffer.isEmpty()
+                                                    && bytesAvailable() == 0));
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::atEnd() returns %s, d->openMode == %d, d->pos == %lld\n", this,
-           (d->openMode == NotOpen || d->pos == size()) ? "true" : "false", int(d->openMode),
-           d->pos);
+           result ? "true" : "false", int(d->openMode), d->pos);
 #endif
-    return d->openMode == NotOpen || (d->buffer.isEmpty() && bytesAvailable() == 0);
+    return result;
 }
 
 /*!
