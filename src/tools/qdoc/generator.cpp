@@ -938,15 +938,17 @@ void Generator::generateFileList(const DocumentNode* dn,
                 if (!file.isEmpty()) {
                     QDir dirInfo;
                     QString userFriendlyFilePath;
+                    const QString prefix("/images/used-in-examples/");
                     QString srcPath = Config::findFile(dn->location(),
                                                        QStringList(),
                                                        exampleDirs,
                                                        file,
                                                        exampleImgExts,
                                                        userFriendlyFilePath);
+                    outFileNames_ << prefix.mid(1) + userFriendlyFilePath;
                     userFriendlyFilePath.truncate(userFriendlyFilePath.lastIndexOf('/'));
 
-                    QString imgOutDir = outDir_ + "/images/used-in-examples/" + userFriendlyFilePath;
+                    QString imgOutDir = outDir_ + prefix + userFriendlyFilePath;
                     if (!dirInfo.mkpath(imgOutDir))
                         dn->location().fatal(tr("Cannot create output directory '%1'")
                                                .arg(imgOutDir));
