@@ -585,7 +585,9 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 #  define QT_OSX_DEPLOYMENT_TARGET_BELOW(osx) \
       QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, __IPHONE_NA)
 
+QT_END_NAMESPACE
 Q_FORWARD_DECLARE_OBJC_CLASS(NSAutoreleasePool);
+QT_BEGIN_NAMESPACE
 
 // Implemented in qcore_mac_objc.mm
 class Q_CORE_EXPORT QMacAutoReleasePool
