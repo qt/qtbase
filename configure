@@ -2697,6 +2697,8 @@ MacOS/iOS options:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
+    -secure-transport .. Use SecureTransport instead of OpenSSL (requires -no-openssl)
+
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
                          one of the available SDKs as listed by 'xcodebuild -showsdks'.
                          Note that the argument applies only to Qt libraries and applications built
