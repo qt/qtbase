@@ -673,7 +673,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
     qDebug() << q_func() << ": computed entry set:" << enteredStates;
 #endif
 
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
     if (!pendingRestorables.isEmpty()) {
         // Add "implicit" assignments for restored properties to the first
@@ -784,7 +784,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
 }
 
 void QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractState*> &statesToExit_sorted,
-                                      const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+                                      const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     for (int i = 0; i < statesToExit_sorted.size(); ++i) {
         QAbstractState *s = statesToExit_sorted.at(i);
@@ -932,7 +932,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
 void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState*> &exitedStates_sorted,
                                        const QList<QAbstractState*> &statesToEnter_sorted,
                                        const QSet<QAbstractState*> &statesForDefaultEntry,
-                                       QHash<QAbstractState*, QList<QPropertyAssignment> > &propertyAssignmentsForState
+                                       QHash<QAbstractState*, QVector<QPropertyAssignment> > &propertyAssignmentsForState
 #ifndef QT_NO_ANIMATION
                                        , const QList<QAbstractAnimation *> &selectedAnimations
 #endif
@@ -955,7 +955,7 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 
         // Immediately set the properties that are not animated.
         {
-            QList<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
+            QVector<QPropertyAssignment> assignments = propertyAssignmentsForState.value(s);
             for (int i = 0; i < assignments.size(); ++i) {
                 const QPropertyAssignment &assn = assignments.at(i);
                 if (globalRestorePolicy == QState::RestoreProperties) {
@@ -1402,9 +1402,9 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
     }
 }
 
-QList<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const
+QVector<QPropertyAssignment> QStateMachinePrivate::restorablesToPropertyList(const QHash<RestorableId, QVariant> &restorables) const
 {
-    QList<QPropertyAssignment> result;
+    QVector<QPropertyAssignment> result;
     QHash<RestorableId, QVariant>::const_iterator it;
     for (it = restorables.constBegin(); it != restorables.constEnd(); ++it) {
         const RestorableId &id = it.key();
@@ -1459,16 +1459,16 @@ QHash<QStateMachinePrivate::RestorableId, QVariant> QStateMachinePrivate::comput
   properties that should not be restored because they are assigned by an
   entered state).
 */
-QHash<QAbstractState*, QList<QPropertyAssignment> > QStateMachinePrivate::computePropertyAssignments(
+QHash<QAbstractState*, QVector<QPropertyAssignment> > QStateMachinePrivate::computePropertyAssignments(
         const QList<QAbstractState*> &statesToEnter_sorted, QHash<RestorableId, QVariant> &pendingRestorables) const
 {
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForState;
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForState;
     for (int i = 0; i < statesToEnter_sorted.size(); ++i) {
         QState *s = toStandardState(statesToEnter_sorted.at(i));
         if (!s)
             continue;
 
-        QList<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
+        QVector<QPropertyAssignment> &assignments = QStatePrivate::get(s)->propertyAssignments;
         for (int j = 0; j < assignments.size(); ++j) {
             const QPropertyAssignment &assn = assignments.at(j);
             if (assn.objectDeleted()) {
@@ -1641,7 +1641,7 @@ QList<QAbstractAnimation *> QStateMachinePrivate::selectAnimations(const QList<Q
 }
 
 void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
-    const QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+    const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     Q_Q(QStateMachine);
     QList<QAbstractAnimation*> animations = animationsForState.take(state);
@@ -1666,9 +1666,9 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
         // If there is no property assignment that sets this property,
         // set the property to its target value.
         bool found = false;
-        QHash<QAbstractState*, QList<QPropertyAssignment> >::const_iterator it;
+        QHash<QAbstractState*, QVector<QPropertyAssignment> >::const_iterator it;
         for (it = assignmentsForEnteredStates.constBegin(); it != assignmentsForEnteredStates.constEnd(); ++it) {
-            const QList<QPropertyAssignment> &assignments = it.value();
+            const QVector<QPropertyAssignment> &assignments = it.value();
             for (int j = 0; j < assignments.size(); ++j) {
                 if (assignments.at(j).hasTarget(assn.object, assn.propertyName)) {
                     found = true;
@@ -1686,15 +1686,15 @@ void QStateMachinePrivate::terminateActiveAnimations(QAbstractState *state,
 
 void QStateMachinePrivate::initializeAnimations(QAbstractState *state, const QList<QAbstractAnimation *> &selectedAnimations,
                                                 const QList<QAbstractState*> &exitedStates_sorted,
-                                                QHash<QAbstractState*, QList<QPropertyAssignment> > &assignmentsForEnteredStates)
+                                                QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates)
 {
     Q_Q(QStateMachine);
     if (!assignmentsForEnteredStates.contains(state))
         return;
-    QList<QPropertyAssignment> &assignments = assignmentsForEnteredStates[state];
+    QVector<QPropertyAssignment> &assignments = assignmentsForEnteredStates[state];
     for (int i = 0; i < selectedAnimations.size(); ++i) {
         QAbstractAnimation *anim = selectedAnimations.at(i);
-        QList<QPropertyAssignment>::iterator it;
+        QVector<QPropertyAssignment>::iterator it;
         for (it = assignments.begin(); it != assignments.end(); ) {
             QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> > ret;
             const QPropertyAssignment &assn = *it;
@@ -1853,7 +1853,7 @@ void QStateMachinePrivate::_q_start()
     QSet<QAbstractState*> statesForDefaultEntry;
     QList<QAbstractState*> enteredStates = computeEntrySet(transitions, statesForDefaultEntry, &calculationCache);
     QHash<RestorableId, QVariant> pendingRestorables;
-    QHash<QAbstractState*, QList<QPropertyAssignment> > assignmentsForEnteredStates =
+    QHash<QAbstractState*, QVector<QPropertyAssignment> > assignmentsForEnteredStates =
             computePropertyAssignments(enteredStates, pendingRestorables);
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> selectedAnimations = selectAnimations(transitions);
