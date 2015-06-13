@@ -193,7 +193,7 @@ public:
     QByteArray name;
     bool isFlag;
     QList<QByteArray> keys;
-    QList<int> values;
+    QVector<int> values;
 };
 Q_DECLARE_TYPEINFO(QMetaEnumBuilderPrivate, Q_MOVABLE_TYPE);
 
