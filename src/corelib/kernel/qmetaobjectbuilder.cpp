@@ -760,7 +760,7 @@ void QMetaObjectBuilder::addMetaObject
 */
 QMetaMethodBuilder QMetaObjectBuilder::method(int index) const
 {
-    if (index >= 0 && index < int(d->methods.size()))
+    if (uint(index) < d->methods.size())
         return QMetaMethodBuilder(this, index);
     else
         return QMetaMethodBuilder();
@@ -773,7 +773,7 @@ QMetaMethodBuilder QMetaObjectBuilder::method(int index) const
 */
 QMetaMethodBuilder QMetaObjectBuilder::constructor(int index) const
 {
-    if (index >= 0 && index < int(d->constructors.size()))
+    if (uint(index) < d->constructors.size())
         return QMetaMethodBuilder(this, -(index + 1));
     else
         return QMetaMethodBuilder();
@@ -786,7 +786,7 @@ QMetaMethodBuilder QMetaObjectBuilder::constructor(int index) const
 */
 QMetaPropertyBuilder QMetaObjectBuilder::property(int index) const
 {
-    if (index >= 0 && index < int(d->properties.size()))
+    if (uint(index) < d->properties.size())
         return QMetaPropertyBuilder(this, index);
     else
         return QMetaPropertyBuilder();
@@ -800,7 +800,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::property(int index) const
 */
 QMetaEnumBuilder QMetaObjectBuilder::enumerator(int index) const
 {
-    if (index >= 0 && index < int(d->enumerators.size()))
+    if (uint(index) < d->enumerators.size())
         return QMetaEnumBuilder(this, index);
     else
         return QMetaEnumBuilder();
@@ -864,7 +864,7 @@ QByteArray QMetaObjectBuilder::classInfoValue(int index) const
 */
 void QMetaObjectBuilder::removeMethod(int index)
 {
-    if (index >= 0 && index < int(d->methods.size())) {
+    if (uint(index) < d->methods.size()) {
         d->methods.erase(d->methods.begin() + index);
         for (size_t prop = 0; prop < d->properties.size(); ++prop) {
             // Adjust the indices of property notify signal references.
@@ -886,7 +886,7 @@ void QMetaObjectBuilder::removeMethod(int index)
 */
 void QMetaObjectBuilder::removeConstructor(int index)
 {
-    if (index >= 0 && index < int(d->constructors.size()))
+    if (uint(index) < d->constructors.size())
         d->constructors.erase(d->constructors.begin() + index);
 }
 
@@ -898,7 +898,7 @@ void QMetaObjectBuilder::removeConstructor(int index)
 */
 void QMetaObjectBuilder::removeProperty(int index)
 {
-    if (index >= 0 && index < int(d->properties.size()))
+    if (uint(index) < d->properties.size())
         d->properties.erase(d->properties.begin() + index);
 }
 
@@ -911,7 +911,7 @@ void QMetaObjectBuilder::removeProperty(int index)
 */
 void QMetaObjectBuilder::removeEnumerator(int index)
 {
-    if (index >= 0 && index < int(d->enumerators.size()))
+    if (uint(index) < d->enumerators.size())
         d->enumerators.erase(d->enumerators.begin() + index);
 }
 
