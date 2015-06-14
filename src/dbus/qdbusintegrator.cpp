@@ -160,7 +160,7 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 
 static bool qDBusRealAddTimeout(QDBusConnectionPrivate *d, DBusTimeout *timeout, int ms)
 {
-    Q_ASSERT(d->timeouts.keys(timeout).isEmpty());
+    Q_ASSERT(d->timeouts.key(timeout, 0) == 0);
 
     int timerId = d->startTimer(ms);
     if (!timerId)
