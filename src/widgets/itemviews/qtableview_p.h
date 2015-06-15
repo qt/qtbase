@@ -187,8 +187,8 @@ public:
     int columnSectionAnchor;
     int columnResizeTimerID;
     int rowResizeTimerID;
-    QList<int> columnsToUpdate;
-    QList<int> rowsToUpdate;
+    QVector<int> columnsToUpdate;
+    QVector<int> rowsToUpdate;
     QHeaderView *horizontalHeader;
     QHeaderView *verticalHeader;
     QWidget *cornerWidget;

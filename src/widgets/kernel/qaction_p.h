@@ -91,7 +91,7 @@ public:
     QVariant userData;
 #ifndef QT_NO_SHORTCUT
     int shortcutId;
-    QList<int> alternateShortcutIds;
+    QVector<int> alternateShortcutIds;
     Qt::ShortcutContext shortcutContext;
     uint autorepeat : 1;
 #endif

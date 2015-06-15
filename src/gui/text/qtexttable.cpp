@@ -391,7 +391,7 @@ int QTextTablePrivate::findCellIndex(int fragment) const
 {
     QFragmentFindHelper helper(pieceTable->fragmentMap().position(fragment),
                               pieceTable->fragmentMap());
-    QList<int>::ConstIterator it = std::lower_bound(cells.constBegin(), cells.constEnd(), helper);
+    const auto it = std::lower_bound(cells.constBegin(), cells.constEnd(), helper);
     if ((it == cells.constEnd()) || (helper < *it))
         return -1;
     return it - cells.constBegin();
@@ -406,7 +406,7 @@ void QTextTablePrivate::fragmentAdded(QChar type, uint fragment)
         Q_ASSERT(cells.indexOf(fragment) == -1);
         const uint pos = pieceTable->fragmentMap().position(fragment);
         QFragmentFindHelper helper(pos, pieceTable->fragmentMap());
-        QList<int>::Iterator it = std::lower_bound(cells.begin(), cells.end(), helper);
+        auto it = std::lower_bound(cells.begin(), cells.end(), helper);
         cells.insert(it, fragment);
         if (!fragment_start || pos < pieceTable->fragmentMap().position(fragment_start))
             fragment_start = fragment;
@@ -616,7 +616,7 @@ QTextTableCell QTextTable::cellAt(int position) const
         return QTextTableCell();
 
     QFragmentFindHelper helper(position, map);
-    QList<int>::ConstIterator it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
+    auto it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
     if (it != d->cells.begin())
         --it;
 
@@ -755,7 +755,7 @@ void QTextTable::insertColumns(int pos, int num)
     QTextFormatCollection *c = p->formatCollection();
     p->beginEditBlock();
 
-    QList<int> extendedSpans;
+    QVector<int> extendedSpans;
     for (int i = 0; i < d->nRows; ++i) {
         int cell;
         if (i == d->nRows - 1 && pos == d->nCols) {
@@ -890,7 +890,7 @@ void QTextTable::removeRows(int pos, int num)
 
     p->aboutToRemoveCell(cellAt(pos, 0).firstPosition(), cellAt(pos + num - 1, d->nCols - 1).lastPosition());
 
-    QList<int> touchedCells;
+    QVector<int> touchedCells;
     for (int r = pos; r < pos + num; ++r) {
         for (int c = 0; c < d->nCols; ++c) {
             int cell = d->grid[r*d->nCols + c];
@@ -952,7 +952,7 @@ void QTextTable::removeColumns(int pos, int num)
 
     p->aboutToRemoveCell(cellAt(0, pos).firstPosition(), cellAt(d->nRows - 1, pos + num - 1).lastPosition());
 
-    QList<int> touchedCells;
+    QVector<int> touchedCells;
     for (int r = 0; r < d->nRows; ++r) {
         for (int c = pos; c < pos + num; ++c) {
             int cell = d->grid[r*d->nCols + c];
@@ -1046,7 +1046,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
     // find the position at which to insert the contents of the merged cells
     QFragmentFindHelper helper(origCellPosition, p->fragmentMap());
-    QList<int>::Iterator it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
+    const auto it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
     Q_ASSERT(it != d->cells.end());
     Q_ASSERT(!(helper < *it));
     Q_ASSERT(*it == cellFragment);
@@ -1079,7 +1079,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
             if (firstCellIndex == -1) {
                 QFragmentFindHelper helper(pos, p->fragmentMap());
-                QList<int>::Iterator it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
+                const auto it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
                 Q_ASSERT(it != d->cells.end());
                 Q_ASSERT(!(helper < *it));
                 Q_ASSERT(*it == fragment);

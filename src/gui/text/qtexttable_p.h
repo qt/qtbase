@@ -71,7 +71,7 @@ public:
 
     int findCellIndex(int fragment) const;
 
-    QList<int> cells;
+    QVector<int> cells;
     // symmetric to cells array and maps to indecs in grid,
     // used for fast-lookup for row/column by fragment
     mutable QVector<int> cellIndices;

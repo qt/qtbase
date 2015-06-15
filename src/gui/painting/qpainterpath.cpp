@@ -1653,7 +1653,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
         qDebug() << " bounds" << i << bounds.at(i);
 #endif
 
-    QVector< QList<int> > isects;
+    QVector< QVector<int> > isects;
     isects.resize(count);
 
     // find all intersections
@@ -1681,7 +1681,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     // flatten the sets of intersections
     for (int i=0; i<count; ++i) {
-        const QList<int> &current_isects = isects.at(i);
+        const QVector<int> &current_isects = isects.at(i);
         for (int j=0; j<current_isects.size(); ++j) {
             int isect_j = current_isects.at(j);
             if (isect_j == i)
@@ -1709,7 +1709,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
 
     // Join the intersected subpaths as rewinded polygons
     for (int i=0; i<count; ++i) {
-        const QList<int> &subpath_list = isects[i];
+        const QVector<int> &subpath_list = isects[i];
         if (!subpath_list.isEmpty()) {
             QPolygonF buildUp;
             for (int j=0; j<subpath_list.size(); ++j) {
