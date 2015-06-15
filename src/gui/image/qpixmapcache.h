@@ -48,11 +48,17 @@ public:
     public:
         Key();
         Key(const Key &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+        Key(Key &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
+        Key &operator =(Key &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
         ~Key();
         bool operator ==(const Key &key) const;
         inline bool operator !=(const Key &key) const
         { return !operator==(key); }
         Key &operator =(const Key &other);
+
+        void swap(Key &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     private:
         KeyData *d;
