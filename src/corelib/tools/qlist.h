@@ -90,6 +90,7 @@ struct Q_CORE_EXPORT QListData {
     Data *detach(int alloc);
     Data *detach_grow(int *i, int n);
     void realloc(int alloc);
+    void realloc_grow(int growth);
     inline void dispose() { dispose(d); }
     static void dispose(Data *d);
     static const Data shared_null;

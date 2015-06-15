@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -148,6 +149,17 @@ void QListData::realloc(int alloc)
         d->begin = d->end = 0;
 }
 
+void QListData::realloc_grow(int growth)
+{
+    Q_ASSERT(!d->ref.isShared());
+    int alloc = grow(d->alloc + growth);
+    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    Q_CHECK_PTR(x);
+
+    d = x;
+    d->alloc = alloc;
+}
+
 void QListData::dispose(Data *d)
 {
     Q_ASSERT(!d->ref.isShared());
@@ -167,7 +179,7 @@ void **QListData::append(int n)
             ::memcpy(d->array, d->array + b, e * sizeof(void *));
             d->begin = 0;
         } else {
-            realloc(grow(d->alloc + n));
+            realloc_grow(n);
         }
     }
     d->end = e + n;
@@ -191,7 +203,7 @@ void **QListData::prepend()
     Q_ASSERT(!d->ref.isShared());
     if (d->begin == 0) {
         if (d->end >= d->alloc / 3)
-            realloc(grow(d->alloc + 1));
+            realloc_grow(1);
 
         if (d->end < d->alloc / 3)
             d->begin = d->alloc - 2 * d->end;
@@ -218,7 +230,7 @@ void **QListData::insert(int i)
     if (d->begin == 0) {
         if (d->end == d->alloc) {
             // If the array is full, we expand it and move some items rightward
-            realloc(grow(d->alloc + 1));
+            realloc_grow(1);
         } else {
             // If there is free space at the end of the array, we move some items rightward
         }
