@@ -2453,7 +2453,12 @@ FatalSignalHandler::FatalSignalHandler()
 #ifdef SA_ONSTACK
     // Let the signal handlers use an alternate stack
     // This is necessary if SIGSEGV is to catch a stack overflow
-    static char alternate_stack[SIGSTKSZ];
+#  if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+    // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
+    // interfere with normal .bss symbols
+    __attribute__((section(".lbss.altstack"), aligned(4096)))
+#  endif
+    static char alternate_stack[16 * 1024];
     stack_t stack;
     stack.ss_flags = 0;
     stack.ss_size = sizeof alternate_stack;
