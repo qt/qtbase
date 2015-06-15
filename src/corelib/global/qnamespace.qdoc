@@ -3068,6 +3068,12 @@
     \value MouseEventSynthesizedByQt Indicates that the mouse event was
     synthesized from an unhandled touch event by Qt.
 
+    \value MouseEventSynthesizedByApplication Indicates that the mouse
+    event was synthesized by the application. This allows
+    distinguishing application-generated mouse events from the ones
+    that are coming from the system or are synthesized by Qt. This
+    value was introduced in Qt 5.6
+
     \sa Qt::AA_SynthesizeMouseForUnhandledTouchEvents
 */
 

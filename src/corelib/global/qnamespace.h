@@ -1625,7 +1625,8 @@ public:
     enum MouseEventSource {
         MouseEventNotSynthesized,
         MouseEventSynthesizedBySystem,
-        MouseEventSynthesizedByQt
+        MouseEventSynthesizedByQt,
+        MouseEventSynthesizedByApplication
     };
 
     enum MouseEventFlag {
