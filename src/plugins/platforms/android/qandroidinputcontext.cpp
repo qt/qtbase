@@ -917,7 +917,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     m_blockUpdateSelection = updateSelectionWasBlocked;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-     QSharedPointer<QInputMethodQueryEvent> query2 = focusObjectInputMethodQuery();
+     QSharedPointer<QInputMethodQueryEvent> query2 = focusObjectInputMethodQueryThreadSafe();
      if (!query2.isNull()) {
          qDebug() << "Setting. Prev local cpos:" << localPos << "block pos:" <<blockPosition << "comp.start:" << m_composingTextStart << "rel.start:" << relativeStart << "len:" << length << "cpos attr:" << localPos - localStart;
          qDebug() << "New cursor pos" << getAbsoluteCursorPosition(query2);
