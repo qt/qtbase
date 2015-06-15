@@ -169,7 +169,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
-    dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "DIRECTWRITE" ]     = "auto";
     dictionary[ "DIRECT2D" ]        = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
@@ -2010,8 +2010,8 @@ bool Configure::displayHelp()
         desc("WMF_BACKEND", "yes","-wmf-backend",       "Compile in the windows media foundation backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
-        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
-        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
+        desc("DIRECTWRITE", "no", "-no-directwrite",    "Do not build support for DirectWrite font rendering.");
+        desc("DIRECTWRITE", "yes", "-directwrite",      "Build support for DirectWrite font rendering.\n");
 
         desc("DIRECT2D", "no",  "-no-direct2d",         "Do not build the Direct2D platform plugin.");
         desc("DIRECT2D", "yes", "-direct2d",            "Build the Direct2D platform plugin (experimental,\n"
@@ -2291,9 +2291,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WMF_BACKEND") {
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
-        const char *dwriteLibrary = Environment::detectCompiler() != CC_MINGW
-            ? "dwrite.lib" : "libdwrite.a";
-        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile(QLatin1String(dwriteLibrary));
+        available = tryCompileProject("win/directwrite");
     } else if (part == "DIRECT2D") {
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
@@ -2511,6 +2509,9 @@ void Configure::autoDetection()
 
     if (dictionary["FONT_CONFIG"] == "auto")
         dictionary["FONT_CONFIG"] = checkAvailability("FONT_CONFIG") ? "yes" : "no";
+
+    if (dictionary["DIRECTWRITE"] == "auto")
+        dictionary["DIRECTWRITE"] = checkAvailability("DIRECTWRITE") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
