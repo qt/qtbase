@@ -6,6 +6,7 @@ SUBDIRS = \
     qmake_ppapi \                   # build a standard ppapi "hello world" example with qmake.
     qtcore \                        # Pppapi and  simple QtCore usage (qstring).
     qtcore_main \                   # implement main and use QtCore
+    qtcore_network \                # QNetworkAccessManager on main and worker threads.
     clipboard \                     # test javascript clipboard events
     resources \                     # test the qrc resources system
     urlload \                       # test url loading
@@ -21,4 +22,5 @@ SUBDIRS = \
     window_appmodule \              # App-defined pp::CreateModule()
     window_shadereffects \          # Shaders!
     window_controls \               # (some) Qt Quick Controls
+    window_controls_network \       # Qt Quick networking tests
     window_controls_gallery \       # Qt Quick Gallery example
