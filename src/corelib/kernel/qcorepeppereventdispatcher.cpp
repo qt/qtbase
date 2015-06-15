@@ -76,8 +76,7 @@ bool QCorePepperEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
     d->scheduleProcessEvents();
 
     // Start the native message loop. The Run() call will block until
-    // a Quit() is called.
-    d->messageLoop.AttachToCurrentThread();
+    // PostQuit is called.
     d->messageLoop.Run();
 
     qCDebug(QT_PLATFORM_PEPPER_COREEVENTDISPATHCER) << "processEvents done";
@@ -191,7 +190,7 @@ QCorePepperEventDispatcherPrivate::QCorePepperEventDispatcherPrivate()
     :messageLoop(reinterpret_cast<pp::Instance *>(qtPepperInstance))
     ,callbackFactory(this)
 {
-
+    messageLoop.AttachToCurrentThread();
 }
 
 QCorePepperEventDispatcherPrivate::~QCorePepperEventDispatcherPrivate()
