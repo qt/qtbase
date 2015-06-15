@@ -2439,7 +2439,7 @@ FatalSignalHandler::FatalSignalHandler()
     sigemptyset(&handledSignals);
 
     const int fatalSignals[] = {
-         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
 
     struct sigaction act;
     memset(&act, 0, sizeof(act));
@@ -2449,6 +2449,19 @@ FatalSignalHandler::FatalSignalHandler()
 #if !defined(Q_OS_INTEGRITY)
     act.sa_flags = SA_RESETHAND;
 #endif
+
+#ifdef SA_ONSTACK
+    // Let the signal handlers use an alternate stack
+    // This is necessary if SIGSEGV is to catch a stack overflow
+    static char alternate_stack[SIGSTKSZ];
+    stack_t stack;
+    stack.ss_flags = 0;
+    stack.ss_size = sizeof alternate_stack;
+    stack.ss_sp = alternate_stack;
+    sigaltstack(&stack, 0);
+    act.sa_flags |= SA_ONSTACK;
+#endif
+
     // Block all fatal signals in our signal handler so we don't try to close
     // the testlog twice.
     sigemptyset(&act.sa_mask);
