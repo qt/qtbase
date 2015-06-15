@@ -42,6 +42,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.ClipboardManager;
 import android.os.Build;
 import android.util.Log;
@@ -173,14 +175,14 @@ public class QtNative
         m_lostActions.clear();
     }
 
-    private static boolean runAction(Runnable action)
+    private static void runAction(Runnable action)
     {
         synchronized (m_mainActivityMutex) {
-            if (m_activity == null)
+            final Looper mainLooper = Looper.getMainLooper();
+            final Handler handler = new Handler(mainLooper);
+            final boolean actionIsQueued = m_activity != null && mainLooper != null && handler.post(action);
+            if (!actionIsQueued)
                 m_lostActions.add(action);
-            else
-                m_activity.runOnUiThread(action);
-            return m_activity != null;
         }
     }
 
