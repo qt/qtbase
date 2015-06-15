@@ -1,0 +1,93 @@
+
+# For Qt applications we want Xcode project files as the generated output,
+# but since qmake doesn't handle the transition between makefiles and Xcode
+# project files (which happens when using subdirs), we can't just override
+# MAKEFILE_GENERATOR. Instead, we generate the Xcode project by spawing a
+# child qmake process with -spec macx-xcode and let the top level qmake
+# process generate a wrapper makefile that forwards everything to xcodebuild.
+
+TEMPLATE = aux
+
+SOURCES =
+OBJECTIVE_SOURCES =
+RESOURCES =
+INSTALLS =
+QMAKE_EXTRA_COMPILERS =
+
+!build_pass {
+    # Top level makefile that aggregates all exclusive builds
+
+    !mkpath($$OUT_PWD): \
+        error("Failed to create $$OUT_PWD")
+
+    args =
+    for(arg, QMAKE_ARGS): \
+        args += $$system_quote($$arg)
+
+    cmd = "$$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode"
+    debug(1, "Generating Xcode project in $$OUT_PWD using '$$cmd'")
+    system("cd $$system_quote($$OUT_PWD) && $$cmd")
+
+    distclean_files += $${TARGET}.xcodeproj
+
+    # Pretend we have a target, even though our template is aux
+    CONFIG += have_target
+
+} else {
+    # Leaf makefile for a single exclusive build
+
+    iphonesimulator: \
+        sdk = iphonesimulator
+    else: \
+        sdk = iphoneos
+
+    debug: \
+        cfg = debug
+    else: \
+        cfg = release
+
+    for(action, $$list(build install clean test)) {
+        equals(action, build) {
+            action_target_suffix =
+            action_target = all
+        } else: equals(action, test) {
+            action_target_suffix = -check
+            action_target = check
+        } else {
+            action_target_suffix = -$$action
+            action_target = $$action
+        }
+
+        target = $${sdk}-$${cfg}$${action_target_suffix}
+
+        xcodebuild = "xcodebuild $$action -scheme $(TARGET) -sdk $$sdk -configuration $$title($$cfg)"
+
+        equals(action, test):equals(sdk, iphoneos) {
+            AVAILABLE_DEVICE_IDS = "$(shell system_profiler SPUSBDataType | sed -n -E -e '/(iPhone|iPad|iPod)/,/Serial/s/ *Serial Number: *(.+)/\1/p')"
+            CUSTOM_DEVICE_IDS = "$(filter $(EXPORT_AVAILABLE_DEVICE_IDS), $(IOS_TEST_DEVICE_IDS))"
+            TEST_DEVICE_IDS = "$(strip $(if $(EXPORT_CUSTOM_DEVICE_IDS), $(EXPORT_CUSTOM_DEVICE_IDS), $(EXPORT_AVAILABLE_DEVICE_IDS)))"
+
+            QMAKE_EXTRA_VARIABLES += AVAILABLE_DEVICE_IDS CUSTOM_DEVICE_IDS TEST_DEVICE_IDS
+
+            xcodebuild = "@$(if $(EXPORT_TEST_DEVICE_IDS),"\
+                "echo Running tests on $(words $(EXPORT_TEST_DEVICE_IDS)) device\\(s\\): && ("\
+                    "$(foreach deviceid, $(EXPORT_TEST_DEVICE_IDS),"\
+                        "(echo Testing on device ID '$(deviceid)' ... && $${xcodebuild} -destination 'platform=iOS,id=$(deviceid)' && echo) &&"\
+                    ") echo Tests completed successfully on all devices"\
+                "), $(error No iOS devices connected, please connect at least one device that can be used for testing.))"
+        }
+
+        $${target}.commands = $$xcodebuild
+        QMAKE_EXTRA_TARGETS += $$target
+
+        $${action_target}.depends += $$target
+        QMAKE_EXTRA_TARGETS *= $${action_target}
+    }
+
+    # Remove build dir
+    distclean_files += $$title($$cfg)-$${sdk}
+}
+
+distclean_xcodebuild.commands = -$(DEL_FILE) -R $$distclean_files
+distclean.depends += distclean_xcodebuild
+QMAKE_EXTRA_TARGETS += distclean distclean_xcodebuild
