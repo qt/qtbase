@@ -36,7 +36,10 @@
 
 #include <QtSql/qsqlrecord.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qvector.h>
+#if QT_DEPRECATED_SINCE(5,6)
 #include <QtCore/qlist.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +66,7 @@ private:
     QString createField(int i, const QString& prefix, bool verbose) const;
     QString cursor;
     QString nm;
-    QList<bool> sorts;
+    QVector<bool> sorts;
 };
 
 QT_END_NAMESPACE
