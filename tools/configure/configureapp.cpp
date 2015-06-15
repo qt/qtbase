@@ -2291,7 +2291,9 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WMF_BACKEND") {
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
-        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+        const char *dwriteLibrary = Environment::detectCompiler() != CC_MINGW
+            ? "dwrite.lib" : "libdwrite.a";
+        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile(QLatin1String(dwriteLibrary));
     } else if (part == "DIRECT2D") {
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
