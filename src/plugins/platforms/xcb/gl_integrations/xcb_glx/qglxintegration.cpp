@@ -540,6 +540,9 @@ void QGLXContext::swapBuffers(QPlatformSurface *surface)
 
 void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
 {
+#ifdef QT_STATIC
+    return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.constData()));
+#else
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
     static bool resolved = false;
@@ -569,6 +572,7 @@ void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
     if (!glXGetProcAddressARB)
         return 0;
     return (void (*)())glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.constData()));
+#endif
 }
 
 QSurfaceFormat QGLXContext::format() const
