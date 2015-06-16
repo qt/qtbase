@@ -66,6 +66,9 @@ information about a particular change.
    to avoid calling parent() (which returns a constant). Subclasses of
    these models that override parent(), will likely also need to
    override sibling() now.
+-  Qt 5.5 received some header #include cleanups. Code that relied on indirect
+   includes from Qt headers may need to include some headers explicitly now.
+   For example, qstringlist.h no longer includes QDataStream and QObject.
 
  - QCoreApplication:
    * [QTBUG-30330][QTSOLBUG-184] On Windows, QCoreApplication::arguments()
