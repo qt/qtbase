@@ -95,6 +95,46 @@ private:
     QCommandLineOption m_option;
 };
 
+class LabelSlider : public QWidget
+{
+Q_OBJECT
+public:
+    LabelSlider(const QString &text) {
+        QHBoxLayout *row = new QHBoxLayout(this);
+        QLabel *label = new QLabel(text);
+        QSlider *slider = new QSlider();
+        slider->setOrientation(Qt::Horizontal);
+        slider->setMinimum(1);
+        slider->setMaximum(40);
+        slider->setValue(10);
+        slider->setTracking(false);
+        slider->setTickInterval(5);
+        slider->setTickPosition(QSlider::TicksBelow);
+        QLabel *scaleFactorLabel = new QLabel("1.0");
+
+        // set up layouts
+        row->addWidget(label);
+        row->addWidget(slider);
+        row->addWidget(scaleFactorLabel);
+
+        // handle slider position change
+        connect(slider, &QSlider::sliderMoved, [scaleFactorLabel](int scaleFactor){
+            // slider value is scale factor times ten;
+            qreal scalefactorF = qreal(scaleFactor) / 10.0;
+
+            // update label, add ".0" if needed.
+            QString number = QString::number(scalefactorF);
+            if (!number.contains("."))
+                number.append(".0");
+            scaleFactorLabel->setText(number);
+            });
+        connect(slider, &QSlider::valueChanged, this, &LabelSlider::valueChanged);
+        setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+    }
+signals:
+    void valueChanged(int scaleFactor);
+};
+
 class DemoController : public QWidget
 {
 Q_OBJECT
@@ -117,44 +157,26 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
     QVBoxLayout *layout = new QVBoxLayout;
     setLayout(layout);
 
+    LabelSlider *globalScaleSlider = new LabelSlider("Global scale factor");
+     connect(globalScaleSlider, &LabelSlider::valueChanged, [](int scaleFactor){
+            // slider value is scale factor times ten;
+            qreal scalefactorF = qreal(scaleFactor) / 10.0;
+            QHighDpiScaling::setGlobalFactor(scalefactorF);
+         });
+     layout->addWidget(globalScaleSlider);
+     layout->addStretch();
     // set up one scale control line per screen
     QList<QScreen *> screens = QGuiApplication::screens();
     foreach (QScreen *screen, screens) {
         // create scale control line
-        QHBoxLayout *row = new QHBoxLayout;
         QSize screenSize = screen->geometry().size();
         QString screenId = screen->name() + " " + QString::number(screenSize.width())
                                           + " " + QString::number(screenSize.height());
-        QLabel *label = new QLabel(screenId);
-        QSlider *slider = new QSlider();
-        slider->setOrientation(Qt::Horizontal);
-        slider->setMinimum(1);
-        slider->setMaximum(40);
-        slider->setValue(10);
-        slider->setTracking(false);
-        slider->setTickInterval(5);
-        slider->setTickPosition(QSlider::TicksBelow);
-        QLabel *scaleFactorLabel = new QLabel("1.0");
+        LabelSlider *slider = new LabelSlider(screenId);
+        layout->addWidget(slider);
 
-        // set up layouts
-        row->addWidget(label);
-        row->addWidget(slider);
-        row->addWidget(scaleFactorLabel);
-        layout->addLayout(row);
-
-        // handle slider position change
-        connect(slider, &QSlider::sliderMoved, [scaleFactorLabel, screen](int scaleFactor){
-            // slider value is scale factor times ten;
-            qreal scalefactorF = qreal(scaleFactor) / 10.0;
-
-            // update label, add ".0" if needed.
-            QString number = QString::number(scalefactorF);
-            if (!number.contains("."))
-                number.append(".0");
-            scaleFactorLabel->setText(number);
-            });
         // handle slider value change
-        connect(slider, &QSlider::valueChanged, [scaleFactorLabel, screen](int scaleFactor){
+        connect(slider, &LabelSlider::valueChanged, [screen](int scaleFactor){
             // slider value is scale factor times ten;
             qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
