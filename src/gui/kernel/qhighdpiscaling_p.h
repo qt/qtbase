@@ -57,6 +57,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcScaling);
 
 class QScreen;
 class QPlatformScreen;
+typedef QPair<qreal, qreal> QDpi;
 
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
@@ -73,6 +74,7 @@ public:
     static QPoint origin(const QPlatformScreen *platformScreen);
     static QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen);
+    static QDpi logicalDpi();
 private:
     static qreal screenSubfactor(const QPlatformScreen *screen);
 
@@ -82,6 +84,7 @@ private:
     static bool m_globalScalingActive;
     static bool m_pixelDensityScalingActive;
     static bool m_screenFactorSet;
+    static QDpi m_logicalDpi;
 };
 
 // Coordinate system conversion functions:

@@ -128,6 +128,7 @@ bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugi
 bool QHighDpiScaling::m_pixelDensityScalingActive; // pixel density scale factor > 1
 bool QHighDpiScaling::m_globalScalingActive; // global scale factor is active
 bool QHighDpiScaling::m_screenFactorSet; // QHighDpiScaling::setScreenFactor has been used
+QDpi QHighDpiScaling::m_logicalDpi; // The scaled logical DPI of the primary screen
 
 /*
     Initializes the QHighDpiScaling global variables. Called before the
@@ -159,6 +160,11 @@ void QHighDpiScaling::updateHighDpiScaling()
         }
     }
     m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
+
+    QPlatformScreen *primaryScreen = QGuiApplication::primaryScreen()->handle();
+    qreal sf = screenSubfactor(primaryScreen);
+    QDpi primaryDpi = primaryScreen->logicalDpi();
+    m_logicalDpi = QDpi(primaryDpi.first / sf, primaryDpi.second / sf);
 }
 
 /*
@@ -244,6 +250,11 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
         }
     }
     return factor;
+}
+
+QDpi QHighDpiScaling::logicalDpi()
+{
+    return m_logicalDpi;
 }
 
 qreal QHighDpiScaling::factor(const QScreen *screen)

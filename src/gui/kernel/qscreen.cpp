@@ -235,6 +235,8 @@ qreal QScreen::physicalDotsPerInch() const
 qreal QScreen::logicalDotsPerInchX() const
 {
     Q_D(const QScreen);
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::logicalDpi().first;
     return d->logicalDpi.first;
 }
 
@@ -249,6 +251,8 @@ qreal QScreen::logicalDotsPerInchX() const
 qreal QScreen::logicalDotsPerInchY() const
 {
     Q_D(const QScreen);
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::logicalDpi().first;
     return d->logicalDpi.second;
 }
 
@@ -267,7 +271,7 @@ qreal QScreen::logicalDotsPerInchY() const
 qreal QScreen::logicalDotsPerInch() const
 {
     Q_D(const QScreen);
-    QDpi dpi = d->logicalDpi;
+    QDpi dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi() : d->logicalDpi;
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 
