@@ -362,8 +362,10 @@ void Automaton::closure (StatePointer state)
 
       if (_M_grammar->isNonTerminal (*item->dot))
         {
-          foreach (const RulePointer &rule, _M_grammar->rule_map.values (*item->dot))
+          const auto range = qAsConst(_M_grammar->rule_map).equal_range(*item->dot);
+          for (auto it = range.first; it != range.second; ++it)
             {
+              const RulePointer &rule = *it;
               Item ii;
               ii.rule = rule;
               ii.dot = rule->rhs.begin ();
@@ -701,8 +703,10 @@ void Automaton::buildLookaheads ()
     {
       for (ItemPointer item = p->closure.begin (); item != p->closure.end (); ++item)
         {
-          foreach (const Lookback &lookback, lookbacks.values (item))
+          const auto range = qAsConst(lookbacks).equal_range(item);
+          for (auto it = range.first; it != range.second; ++it)
             {
+              const Lookback &lookback = *it;
               StatePointer q = lookback.state;
 
 #ifndef QLALR_NO_DEBUG_LOOKAHEADS

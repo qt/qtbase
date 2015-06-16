@@ -134,21 +134,33 @@ public:
 
 // names
 typedef QLinkedList<QString>::iterator Name;
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(QLinkedList<QString>::iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 typedef QLinkedList<Name> NameList;
 typedef OrderedSet<Name> NameSet;
 
 // items
 typedef QLinkedList<Item> ItemList;
 typedef ItemList::iterator ItemPointer;
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(ItemList::iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 // rules
 typedef QLinkedList<Rule> debug_infot;
 typedef debug_infot::iterator RulePointer;
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(debug_infot::iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 typedef QMultiMap<Name, RulePointer> RuleMap;
 
 // states
 typedef QLinkedList<State> StateList;
 typedef StateList::iterator StatePointer;
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(StateList::iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 // arrows
 typedef QMap<Name, StatePointer> Bundle;
