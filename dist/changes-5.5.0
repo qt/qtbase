@@ -147,6 +147,11 @@ QtCore
      value of pthread_self(3)). To print the pointer to QThread::current(),
      use %{qthreadptr}.
 
+ - moc
+   * Classes annotated with Q_GADGET can now have Q_PROPERTY and Q_INVOKABLE
+     functions. QMetaProperty::{read,write}OnGadget and
+     QMetaMethod::invokeOnGadget can be used with those.
+
  - Objective-C:
    * [QTBUG-37116] Added NSDate/CDateRef converters for QDateTime
 
