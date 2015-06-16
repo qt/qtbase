@@ -60,7 +60,8 @@ class QPlatformScreen;
 
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
-    static void initHighDPiScaling();
+    static void initHighDpiScaling();
+    static void updateHighDpiScaling();
     static void setGlobalFactor(qreal factor);
     static void setScreenFactor(QScreen *window, qreal factor);
 
@@ -77,8 +78,10 @@ private:
 
     static qreal m_factor;
     static bool m_active;
-    static bool m_perScreenActive;
     static bool m_usePixelDensity;
+    static bool m_globalScalingActive;
+    static bool m_pixelDensityScalingActive;
+    static bool m_screenFactorSet;
 };
 
 // Coordinate system conversion functions:

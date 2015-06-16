@@ -1119,7 +1119,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
 
-    QHighDpiScaling::initHighDPiScaling();
+    QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
@@ -1183,6 +1183,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
+
+    QHighDpiScaling::updateHighDpiScaling();
 }
 
 /*!

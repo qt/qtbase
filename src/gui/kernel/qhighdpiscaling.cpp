@@ -124,23 +124,41 @@ static inline qreal initialScaleFactor()
 
 qreal QHighDpiScaling::m_factor;
 bool QHighDpiScaling::m_active; //"overall active" - is there any scale factor set.
-bool QHighDpiScaling::m_perScreenActive; // different screens may have different scale
 bool QHighDpiScaling::m_usePixelDensity; // use scale factor from platform plugin
+bool QHighDpiScaling::m_pixelDensityScalingActive; // pixel density scale factor > 1
+bool QHighDpiScaling::m_globalScalingActive; // global scale factor is active
+bool QHighDpiScaling::m_screenFactorSet; // QHighDpiScaling::setScreenFactor has been used
 
 /*
     Initializes the QHighDpiScaling global variables. Called before the
     platform plugin is created.
 */
-void QHighDpiScaling::initHighDPiScaling()
+void QHighDpiScaling::initHighDpiScaling()
 {
     m_factor = initialScaleFactor();
     bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet(autoScreenEnvVar)
                                          || qgetenv(legacyDevicePixelEnvVar).toLower() == "auto";
 
-    // m_active below is "overall active" - is there any scale factor set.
-    m_active = !qFuzzyCompare(m_factor, qreal(1)) || usePlatformPluginPixelDensity;
+    m_globalScalingActive = !qFuzzyCompare(m_factor, qreal(1));
     m_usePixelDensity = usePlatformPluginPixelDensity;
-    m_perScreenActive = m_usePixelDensity;
+    m_pixelDensityScalingActive = false; //set in updateHighDpiScaling below
+
+    // we update m_active in updateHighDpiScaling, but while we create the
+    // screens, we have to assume that m_usePixelDensity implies scaling
+    m_active = m_globalScalingActive || m_usePixelDensity;
+}
+
+void QHighDpiScaling::updateHighDpiScaling()
+{
+    if (m_usePixelDensity && !m_pixelDensityScalingActive) {
+        Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
+            if (!qFuzzyCompare(screenSubfactor(screen->handle()), qreal(1))) {
+                m_pixelDensityScalingActive = true;
+                break;
+            }
+        }
+    }
+    m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
 }
 
 /*
@@ -148,14 +166,15 @@ void QHighDpiScaling::initHighDPiScaling()
 */
 void QHighDpiScaling::setGlobalFactor(qreal factor)
 {
-    if (qFuzzyCompare(factor, QHighDpiScaling::m_factor))
+    if (qFuzzyCompare(factor, m_factor))
         return;
     if (!QGuiApplication::allWindows().isEmpty()) {
         qWarning() << Q_FUNC_INFO << "QHighDpiScaling::setFactor: Should only be called when no windows exist.";
     }
 
-    QHighDpiScaling::m_active = !qFuzzyCompare(factor, qreal(1));
-    QHighDpiScaling::m_factor = QHighDpiScaling::m_active ? factor : qreal(1);
+    m_globalScalingActive = !qFuzzyCompare(factor, qreal(1));
+    m_factor = m_globalScalingActive ? factor : qreal(1);
+    m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
     Q_FOREACH (QScreen *screen, QGuiApplication::screens())
          screen->d_func()->updateHighDpi();
 }
@@ -167,8 +186,8 @@ static const char *scaleFactorProperty = "_q_scaleFactor";
 */
 void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
 {
+    m_screenFactorSet = true;
     m_active = true;
-    m_perScreenActive = true;
     screen->setProperty(scaleFactorProperty, QVariant(factor));
 
     //### dirty hack to force re-evaluation of screen geometry
@@ -215,12 +234,14 @@ QPoint QHighDpiScaling::mapPositionFromNative(const QPoint &pos, const QPlatform
 qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
-    if (m_perScreenActive && screen) {
+    if (screen) {
         if (m_usePixelDensity)
             factor *= screen->pixelDensity();
-        QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
-        if (screenFactor.isValid())
-            factor *= screenFactor.toReal();
+        if (m_screenFactorSet) {
+            QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
+            if (screenFactor.isValid())
+                factor *= screenFactor.toReal();
+        }
     }
     return factor;
 }

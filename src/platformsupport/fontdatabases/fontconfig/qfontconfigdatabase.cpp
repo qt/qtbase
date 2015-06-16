@@ -33,6 +33,7 @@
 
 #include "qfontconfigdatabase_p.h"
 #include "qfontenginemultifontconfig_p.h"
+#include "qhighdpiscaling_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QElapsedTimer>
@@ -553,10 +554,8 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
-    if (QGuiApplication::platformNativeInterface()->nativeResourceForScreen("nofonthinting",
-                         QGuiApplication::primaryScreen())) {
+    if (QHighDpiScaling::isActive())
         return QFontEngine::HintNone;
-    }
 
     int hint_style = 0;
     if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultMatch) {
