@@ -2696,7 +2696,7 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
     The default implementation returns \c true if the value held by the relevant item
     matches the filter string, wildcard string or regular expression.
 
-    \note By default, the Qt::DisplayRole is used to determine if the row
+    \note By default, the Qt::DisplayRole is used to determine if the column
     should be accepted or not. This can be changed by setting the \l
     filterRole property.
 
