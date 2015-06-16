@@ -160,7 +160,7 @@ void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinte
     initEngines(format, printer);
 
     if (oldPrintEngine) {
-        foreach (QPrintEngine::PrintEnginePropertyKey key, m_properties.values()) {
+        foreach (QPrintEngine::PrintEnginePropertyKey key, m_properties) {
             QVariant prop;
             // PPK_NumberOfCopies need special treatmeant since it in most cases
             // will return 1, disregarding the actual value that was set
