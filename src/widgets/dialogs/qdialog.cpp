@@ -534,10 +534,7 @@ int QDialog::exec()
 
     QPointer<QDialog> guard = this;
     if (d->nativeDialogInUse) {
-        if (windowModality() == Qt::WindowModal)
-            d->platformHelper()->execModalForWindow(d->parentWindow());
-        else
-            d->platformHelper()->exec();
+        d->platformHelper()->exec();
     } else {
         QEventLoop eventLoop;
         d->eventLoop = &eventLoop;
