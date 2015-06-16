@@ -38,6 +38,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qtypetraits.h>
 
 #ifdef Q_MAP_DEBUG
 #include <QtCore/qdebug.h>
@@ -94,6 +95,13 @@ struct Q_CORE_EXPORT QMapNodeBase
     void setColor(Color c) { if (c == Black) p |= Black; else p &= ~Black; }
     QMapNodeBase *parent() const { return reinterpret_cast<QMapNodeBase *>(p & ~Mask); }
     void setParent(QMapNodeBase *pp) { p = (p & Mask) | quintptr(pp); }
+
+    template <typename T>
+    static typename QtPrivate::QEnableIf<QTypeInfo<T>::isComplex>::Type
+    callDestructorIfNecessary(T &t) Q_DECL_NOTHROW { Q_UNUSED(t); t.~T(); } // Q_UNUSED: silence MSVC unused 't' warning
+    template <typename T>
+    static typename QtPrivate::QEnableIf<!QTypeInfo<T>::isComplex>::Type
+    callDestructorIfNecessary(T &) Q_DECL_NOTHROW {}
 };
 
 template <class Key, class T>
@@ -112,12 +120,26 @@ struct QMapNode : public QMapNodeBase
 
     QMapNode<Key, T> *copy(QMapData<Key, T> *d) const;
 
-    void destroySubTree();
+    void destroySubTree()
+    {
+        callDestructorIfNecessary(key);
+        callDestructorIfNecessary(value);
+        doDestroySubTree(QtPrivate::integral_constant<bool, QTypeInfo<T>::isComplex || QTypeInfo<Key>::isComplex>());
+    }
 
     QMapNode<Key, T> *lowerBound(const Key &key);
     QMapNode<Key, T> *upperBound(const Key &key);
 
 private:
+    void doDestroySubTree(QtPrivate::false_type) {}
+    void doDestroySubTree(QtPrivate::true_type)
+    {
+        if (left)
+            leftNode()->destroySubTree();
+        if (right)
+            rightNode()->destroySubTree();
+    }
+
     QMapNode() Q_DECL_EQ_DELETE;
     Q_DISABLE_COPY(QMapNode)
 };
@@ -246,37 +268,11 @@ QMapNode<Key, T> *QMapNode<Key, T>::copy(QMapData<Key, T> *d) const
     return n;
 }
 
-#if defined(Q_CC_MSVC)
-#pragma warning( push )
-#pragma warning( disable : 4127 ) // conditional expression is constant
-#endif
-
-template <class Key, class T>
-void QMapNode<Key, T>::destroySubTree()
-{
-    if (QTypeInfo<Key>::isComplex)
-        key.~Key();
-    if (QTypeInfo<T>::isComplex)
-        value.~T();
-    if (QTypeInfo<Key>::isComplex || QTypeInfo<T>::isComplex) {
-        if (left)
-            leftNode()->destroySubTree();
-        if (right)
-            rightNode()->destroySubTree();
-    }
-}
-
-#if defined(Q_CC_MSVC)
-#pragma warning( pop )
-#endif
-
 template <class Key, class T>
 void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
 {
-    if (QTypeInfo<Key>::isComplex)
-        z->key.~Key();
-    if (QTypeInfo<T>::isComplex)
-        z->value.~T();
+    QMapNodeBase::callDestructorIfNecessary(z->key);
+    QMapNodeBase::callDestructorIfNecessary(z->value);
     freeNodeAndRebalance(z);
 }
 
