@@ -557,6 +557,7 @@ public:
     typedef int size_type;
     inline bool empty() const { return isEmpty(); }
     QPair<iterator, iterator> equal_range(const Key &akey);
+    QPair<const_iterator, const_iterator> equal_range(const Key &akey) const;
 
 #ifdef Q_MAP_DEBUG
     void dump() const;
@@ -862,6 +863,15 @@ QPair<typename QMap<Key, T>::iterator, typename QMap<Key, T>::iterator> QMap<Key
     Node *firstNode, *lastNode;
     d->nodeRange(akey, &firstNode, &lastNode);
     return QPair<iterator, iterator>(iterator(firstNode), iterator(lastNode));
+}
+
+template <class Key, class T>
+QPair<typename QMap<Key, T>::const_iterator, typename QMap<Key, T>::const_iterator>
+QMap<Key, T>::equal_range(const Key &akey) const
+{
+    Node *firstNode, *lastNode;
+    d->nodeRange(akey, &firstNode, &lastNode);
+    return qMakePair(const_iterator(firstNode), const_iterator(lastNode));
 }
 
 #ifdef Q_MAP_DEBUG

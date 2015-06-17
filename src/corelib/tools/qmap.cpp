@@ -1161,6 +1161,12 @@ void QMapDataBase::freeData(QMapDataBase *d)
   are stored under \a key.
 */
 
+/*!
+    \fn QPair<const_iterator, const_iterator> QMap::equal_range(const Key &key) const
+    \overload
+    \since 5.6
+*/
+
 
 /*! \class QMap::iterator
     \inmodule QtCore
