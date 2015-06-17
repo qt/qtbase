@@ -527,7 +527,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     int fileChangedSpyCount = fileChangedSpy.count();
-#ifdef Q_OS_WIN64
+#ifdef Q_OS_WIN
     if (fileChangedSpyCount != 0)
         QEXPECT_FAIL("", "See QTBUG-30943", Continue);
 #endif
