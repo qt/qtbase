@@ -159,5 +159,13 @@
         WINRT_MANIFEST.$${ICON_NAME} = assets/$$basename(ICON_FILE)
     }
 
+    !contains(TEMPLATE, "vc.*") {
+        winrt_manifest_install.files = $$manifest_file.output
+        winrt_manifest_install.path = $$target.path
+        winrt_assets_install.files = $$BUILD_DIR/assets/*
+        winrt_assets_install.path = $$target.path/assets
+        INSTALLS += winrt_manifest_install winrt_assets_install
+    }
+
     QMAKE_SUBSTITUTES += manifest_file
 }
