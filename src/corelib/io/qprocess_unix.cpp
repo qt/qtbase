@@ -203,8 +203,8 @@ bool QProcessPrivate::openChannel(Channel &channel)
             channel.pipe[1] = -1;
             if ( (channel.pipe[0] = qt_safe_open(fname, O_RDONLY)) != -1)
                 return true;    // success
-
-            q->setErrorString(QProcess::tr("Could not open input redirection for reading"));
+            setErrorAndEmit(QProcess::FailedToStart,
+                            QProcess::tr("Could not open input redirection for reading"));
         } else {
             int mode = O_WRONLY | O_CREAT;
             if (channel.append)
@@ -216,12 +216,9 @@ bool QProcessPrivate::openChannel(Channel &channel)
             if ( (channel.pipe[1] = qt_safe_open(fname, mode, 0666)) != -1)
                 return true; // success
 
-            q->setErrorString(QProcess::tr("Could not open output redirection for writing"));
+            setErrorAndEmit(QProcess::FailedToStart,
+                            QProcess::tr("Could not open input redirection for reading"));
         }
-
-        // could not open file
-        processError = QProcess::FailedToStart;
-        emit q->error(processError);
         cleanup();
         return false;
     } else {
@@ -330,9 +327,7 @@ void QProcessPrivate::startProcess()
         !openChannel(stdoutChannel) ||
         !openChannel(stderrChannel) ||
         qt_create_pipe(childStartedPipe) != 0) {
-        processError = QProcess::FailedToStart;
-        q->setErrorString(qt_error_string(errno));
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::FailedToStart, qt_error_string(errno));
         cleanup();
         return;
     }
@@ -458,9 +453,8 @@ void QProcessPrivate::startProcess()
         qDebug("fork failed: %s", qPrintable(qt_error_string(lastForkErrno)));
 #endif
         q->setProcessState(QProcess::NotRunning);
-        processError = QProcess::FailedToStart;
-        q->setErrorString(QProcess::tr("Resource error (fork failure): %1").arg(qt_error_string(lastForkErrno)));
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::FailedToStart,
+                        QProcess::tr("Resource error (fork failure): %1").arg(qt_error_string(lastForkErrno)));
         cleanup();
         return;
     }
@@ -808,8 +802,6 @@ void QProcessPrivate::killProcess()
 
 bool QProcessPrivate::waitForStarted(int msecs)
 {
-    Q_Q(QProcess);
-
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::waitForStarted(%d) waiting for child to start (fd = %d)", msecs,
            childStartedPipe[0]);
@@ -819,8 +811,7 @@ bool QProcessPrivate::waitForStarted(int msecs)
     FD_ZERO(&fds);
     FD_SET(childStartedPipe[0], &fds);
     if (qt_select_msecs(childStartedPipe[0] + 1, &fds, 0, msecs) == 0) {
-        processError = QProcess::Timedout;
-        q->setErrorString(QProcess::tr("Process operation timed out"));
+        setError(QProcess::Timedout);
 #if defined (QPROCESS_DEBUG)
         qDebug("QProcessPrivate::waitForStarted(%d) == false (timed out)", msecs);
 #endif
@@ -847,7 +838,6 @@ QList<QSocketNotifier *> QProcessPrivate::defaultNotifiers() const
 
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
-    Q_Q(QProcess);
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::waitForReadyRead(%d)", msecs);
 #endif
@@ -890,8 +880,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             break;
         }
         if (ret == 0) {
-            processError = QProcess::Timedout;
-            q->setErrorString(QProcess::tr("Process operation timed out"));
+            setError(QProcess::Timedout);
             return false;
         }
 
@@ -927,7 +916,6 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 
 bool QProcessPrivate::waitForBytesWritten(int msecs)
 {
-    Q_Q(QProcess);
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::waitForBytesWritten(%d)", msecs);
 #endif
@@ -972,8 +960,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
         }
 
         if (ret == 0) {
-            processError = QProcess::Timedout;
-            q->setErrorString(QProcess::tr("Process operation timed out"));
+            setError(QProcess::Timedout);
             return false;
         }
 
@@ -1002,7 +989,6 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
 
 bool QProcessPrivate::waitForFinished(int msecs)
 {
-    Q_Q(QProcess);
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
 #endif
@@ -1046,8 +1032,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
             break;
         }
         if (ret == 0) {
-            processError = QProcess::Timedout;
-            q->setErrorString(QProcess::tr("Process operation timed out"));
+            setError(QProcess::Timedout);
             return false;
         }
 

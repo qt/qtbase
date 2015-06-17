@@ -217,7 +217,8 @@ bool QProcessPrivate::openChannel(Channel &channel)
             if (channel.pipe[0] != INVALID_Q_PIPE)
                 return true;
 
-            q->setErrorString(QProcess::tr("Could not open input redirection for reading"));
+            setErrorAndEmit(QProcess::FailedToStart,
+                            QProcess::tr("Could not open input redirection for reading"));
         } else {
             // open in write mode
             channel.pipe[0] = INVALID_Q_PIPE;
@@ -237,12 +238,9 @@ bool QProcessPrivate::openChannel(Channel &channel)
                 return true;
             }
 
-            q->setErrorString(QProcess::tr("Could not open output redirection for writing"));
+            setErrorAndEmit(QProcess::FailedToStart,
+                            QProcess::tr("Could not open output redirection for writing"));
         }
-
-        // could not open file
-        processError = QProcess::FailedToStart;
-        emit q->error(processError);
         cleanup();
         return false;
     } else {
@@ -504,9 +502,10 @@ void QProcessPrivate::startProcess()
                             environment.isEmpty() ? 0 : envlist.data(),
                             workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
                             &startupInfo, pid);
+    QString errorString;
     if (!success) {
         // Capture the error string before we do CloseHandle below
-        q->setErrorString(QProcess::tr("Process failed to start: %1").arg(qt_error_string()));
+        errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
     }
 
     if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
@@ -524,8 +523,7 @@ void QProcessPrivate::startProcess()
 
     if (!success) {
         cleanup();
-        processError = QProcess::FailedToStart;
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::FailedToStart, errorString);
         q->setProcessState(QProcess::NotRunning);
         return;
     }
@@ -595,16 +593,13 @@ void QProcessPrivate::killProcess()
 
 bool QProcessPrivate::waitForStarted(int)
 {
-    Q_Q(QProcess);
-
     if (processStarted())
         return true;
 
     if (processError == QProcess::FailedToStart)
         return false;
 
-    processError = QProcess::Timedout;
-    q->setErrorString(QProcess::tr("Process operation timed out"));
+    setError(QProcess::Timedout);
     return false;
 }
 
@@ -636,8 +631,6 @@ bool QProcessPrivate::drainOutputPipes()
 
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
-    Q_Q(QProcess);
-
     QIncrementalSleepTimer timer(msecs);
 
     forever {
@@ -663,15 +656,12 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             break;
     }
 
-    processError = QProcess::Timedout;
-    q->setErrorString(QProcess::tr("Process operation timed out"));
+    setError(QProcess::Timedout);
     return false;
 }
 
 bool QProcessPrivate::waitForBytesWritten(int msecs)
 {
-    Q_Q(QProcess);
-
     QIncrementalSleepTimer timer(msecs);
 
     forever {
@@ -731,14 +721,12 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             break;
     }
 
-    processError = QProcess::Timedout;
-    q->setErrorString(QProcess::tr("Process operation timed out"));
+    setError(QProcess::Timedout);
     return false;
 }
 
 bool QProcessPrivate::waitForFinished(int msecs)
 {
-    Q_Q(QProcess);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
 #endif
@@ -770,8 +758,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
             break;
     }
 
-    processError = QProcess::Timedout;
-    q->setErrorString(QProcess::tr("Process operation timed out"));
+    setError(QProcess::Timedout);
     return false;
 }
 
@@ -814,13 +801,10 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 
 bool QProcessPrivate::waitForWrite(int msecs)
 {
-    Q_Q(QProcess);
-
     if (!stdinChannel.writer || stdinChannel.writer->waitForWrite(msecs))
         return true;
 
-    processError = QProcess::Timedout;
-    q->setErrorString(QProcess::tr("Process operation timed out"));
+    setError(QProcess::Timedout);
     return false;
 }
 

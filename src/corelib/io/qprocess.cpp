@@ -897,6 +897,48 @@ void QProcessPrivate::cleanup()
 
 /*!
     \internal
+*/
+void QProcessPrivate::setError(QProcess::ProcessError error, const QString &description)
+{
+    processError = error;
+    if (description.isEmpty()) {
+        switch (error) {
+        case QProcess::FailedToStart:
+            errorString = QProcess::tr("Process failed to start");
+        case QProcess::Crashed:
+            errorString = QProcess::tr("Process crashed");
+            break;
+        case QProcess::Timedout:
+            errorString = QProcess::tr("Process operation timed out");
+            break;
+        case QProcess::ReadError:
+            errorString = QProcess::tr("Error reading from process");
+            break;
+        case QProcess::WriteError:
+            errorString = QProcess::tr("Error writing to process");
+            break;
+        case QProcess::UnknownError:
+            errorString.clear();
+            break;
+        }
+    } else {
+        errorString = description;
+    }
+}
+
+/*!
+    \internal
+*/
+void QProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QString &description)
+{
+    Q_Q(QProcess);
+    Q_ASSERT(error != QProcess::UnknownError);
+    setError(error, description);
+    emit q->error(processError);
+}
+
+/*!
+    \internal
     Returns true if we emitted readyRead().
 */
 bool QProcessPrivate::tryReadFromChannel(Channel *channel)
@@ -918,9 +960,7 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
         return false;
     }
     if (readBytes == -1) {
-        processError = QProcess::ReadError;
-        q->setErrorString(QProcess::tr("Error reading from process"));
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::ReadError);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::tryReadFromChannel(%d), failed to read from the process", channel - &stdinChannel);
 #endif
@@ -1004,9 +1044,7 @@ bool QProcessPrivate::_q_canWrite()
                                       stdinChannel.buffer.nextDataBlockSize());
     if (written < 0) {
         closeChannel(&stdinChannel);
-        processError = QProcess::WriteError;
-        q->setErrorString(QProcess::tr("Error writing to process"));
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::WriteError);
         return false;
     }
 
@@ -1075,9 +1113,7 @@ bool QProcessPrivate::_q_processDied()
 
     if (crashed) {
         exitStatus = QProcess::CrashExit;
-        processError = QProcess::Crashed;
-        q->setErrorString(QProcess::tr("Process crashed"));
-        emit q->error(processError);
+        setErrorAndEmit(QProcess::Crashed);
     } else {
 #ifdef QPROCESS_USE_SPAWN
         // if we're using posix_spawn, waitForStarted always succeeds.
@@ -1085,8 +1121,8 @@ bool QProcessPrivate::_q_processDied()
         // 127 if anything prevents the target program from starting.
         // http://pubs.opengroup.org/onlinepubs/009695399/functions/posix_spawn.html
         if (exitStatus == QProcess::NormalExit && exitCode == 127) {
-            processError = QProcess::FailedToStart;
-            q->setErrorString(QProcess::tr("Process failed to start (spawned process exited with code 127)"));
+            setError(QProcess::FailedToStart,
+                     QProcess::tr("Process failed to start (spawned process exited with code 127)"));
         }
 #endif
     }
@@ -1130,8 +1166,7 @@ bool QProcessPrivate::_q_startupNotification()
     }
 
     q->setProcessState(QProcess::NotRunning);
-    processError = QProcess::FailedToStart;
-    emit q->error(processError);
+    setErrorAndEmit(QProcess::FailedToStart);
 #ifdef Q_OS_UNIX
     // make sure the process manager removes this entry
     waitForDeadChild();
@@ -1939,9 +1974,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 #if defined(Q_OS_WINCE)
     Q_UNUSED(data);
     Q_UNUSED(len);
-    d->processError = QProcess::WriteError;
-    setErrorString(tr("Error writing to process"));
-    emit error(d->processError);
+    d->setErrorAndEmit(QProcess::WriteError);
     return -1;
 #endif
 
@@ -2220,9 +2253,7 @@ void QProcess::start(const QString &command, OpenMode mode)
     QStringList args = parseCombinedArgString(command);
     if (args.isEmpty()) {
         Q_D(QProcess);
-        d->processError = QProcess::FailedToStart;
-        setErrorString(tr("No program defined"));
-        emit error(d->processError);
+        d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
         return;
     }
 
