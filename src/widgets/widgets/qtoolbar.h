@@ -34,6 +34,7 @@
 #ifndef QDYNAMICTOOLBAR_H
 #define QDYNAMICTOOLBAR_H
 
+#include <QtWidgets/qaction.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
@@ -92,6 +93,51 @@ public:
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);
     QAction *addAction(const QIcon &icon, const QString &text,
                        const QObject *receiver, const char* member);
+#ifdef Q_QDOC
+    QAction *addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method);
+    QAction *addAction(const QString &text, Functor functor);
+    QAction *addAction(const QString &text, const QObject *context, Functor functor);
+    QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method);
+    QAction *addAction(const QIcon &icon, const QString &text, Functor functor);
+    QAction *addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor);
+#else
+    // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)
+    template<class Obj, typename Func1>
+    inline typename QtPrivate::QEnableIf<!QtPrivate::is_same<const char*, Func1>::value
+        && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::Type
+        addAction(const QString &text, const Obj *object, Func1 slot)
+    {
+        QAction *result = addAction(text);
+        connect(result, &QAction::triggered, object, slot);
+        return result;
+    }
+    // addAction(QString): Connect to a functor or function pointer (without context)
+    template <typename Func1>
+    inline QAction *addAction(const QString &text, Func1 slot)
+    {
+        QAction *result = addAction(text);
+        connect(result, &QAction::triggered, slot);
+        return result;
+    }
+    // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)
+    template<class Obj, typename Func1>
+    inline typename QtPrivate::QEnableIf<!QtPrivate::is_same<const char*, Func1>::value
+        && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::Type
+        addAction(const QIcon &actionIcon, const QString &text, const Obj *object, Func1 slot)
+    {
+        QAction *result = addAction(actionIcon, text);
+        connect(result, &QAction::triggered, object, slot);
+        return result;
+    }
+    // addAction(QIcon, QString): Connect to a functor or function pointer (without context)
+    template <typename Func1>
+    inline QAction *addAction(const QIcon &actionIcon, const QString &text, Func1 slot)
+    {
+        QAction *result = addAction(actionIcon, text);
+        connect(result, &QAction::triggered, slot);
+        return result;
+    }
+#endif // !Q_QDOC
 
     QAction *addSeparator();
     QAction *insertSeparator(QAction *before);

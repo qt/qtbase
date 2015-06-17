@@ -78,6 +78,7 @@ public slots:
 private slots:
     void getSetCheck();
     void addActionsAndClear();
+    void addActionsConnect();
 
     void keyboardNavigation_data();
     void keyboardNavigation();
@@ -262,6 +263,34 @@ void tst_QMenu::addActionsAndClear()
     QCOMPARE(menus[0]->actions().count(), 8);
     menus[0]->clear();
     QCOMPARE(menus[0]->actions().count(), 0);
+}
+
+static void testFunction() { }
+
+void tst_QMenu::addActionsConnect()
+{
+    QMenu menu;
+    const QString text = QLatin1String("bla");
+    const QIcon icon;
+    menu.addAction(text, &menu, SLOT(deleteLater()));
+    menu.addAction(text, &menu, &QMenu::deleteLater);
+    menu.addAction(text, testFunction);
+    menu.addAction(text, &menu, testFunction);
+    menu.addAction(icon, text, &menu, SLOT(deleteLater()));
+    menu.addAction(icon, text, &menu, &QMenu::deleteLater);
+    menu.addAction(icon, text, testFunction);
+    menu.addAction(icon, text, &menu, testFunction);
+#ifndef QT_NO_SHORTCUT
+    const QKeySequence keySequence(Qt::CTRL + Qt::Key_C);
+    menu.addAction(text, &menu, SLOT(deleteLater()), keySequence);
+    menu.addAction(text, &menu, &QMenu::deleteLater, keySequence);
+    menu.addAction(text, testFunction, keySequence);
+    menu.addAction(text, &menu, testFunction, keySequence);
+    menu.addAction(icon, text, &menu, SLOT(deleteLater()), keySequence);
+    menu.addAction(icon, text, &menu, &QMenu::deleteLater, keySequence);
+    menu.addAction(icon, text, testFunction, keySequence);
+    menu.addAction(icon, text, &menu, testFunction, keySequence);
+#endif // !QT_NO_SHORTCUT
 }
 
 // We have a separate mouseActivation test for Windows mobile
