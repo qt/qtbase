@@ -86,7 +86,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_orientation(Qt::PrimaryOrientation)
     , m_refreshRate(60)
     , m_forcedDpi(-1)
-    , m_devicePixelRatio(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
     , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
@@ -107,21 +106,14 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         updateGeometry(output ? output->timestamp : 0);
     }
 
-    const int dpr = int(devicePixelRatio());
     if (m_geometry.isEmpty()) {
-        m_geometry = QRect(QPoint(), m_virtualSize/dpr);
+        m_geometry = QRect(QPoint(), m_virtualSize);
         m_nativeGeometry = QRect(QPoint(), m_virtualSize);
     }
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = m_geometry;
 
     readXResources();
-
-    // disable font hinting when we do UI scaling
-    static bool dpr_scaling_enabled = (qgetenv("QT_DEVICE_PIXEL_RATIO").toInt() > 1
-                           || qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto");
-    if (dpr_scaling_enabled)
-        m_noFontHinting = true;
 
     QScopedPointer<xcb_get_window_attributes_reply_t, QScopedPointerPodDeleter> rootAttribs(
         xcb_get_window_attributes_reply(xcb_connection(),
@@ -201,9 +193,8 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
 {
     xcb_window_t root = screen()->root;
 
-    int dpr = int(devicePixelRatio());
-    int x = p.x() / dpr;
-    int y = p.y() / dpr;
+    int x = p.x();
+    int y = p.y();
 
     xcb_window_t parent = root;
     xcb_window_t child = root;
@@ -235,43 +226,6 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     } while (parent != child);
 
     return 0;
-}
-
-
-QPoint QXcbScreen::mapToNative(const QPoint &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
-}
-
-QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
-}
-
-QPointF QXcbScreen::mapToNative(const QPointF &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
-}
-
-QPointF QXcbScreen::mapFromNative(const QPointF &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
-}
-
-QRect QXcbScreen::mapToNative(const QRect &rect) const
-{
-    const int dpr = int(devicePixelRatio());
-    return QRect(mapToNative(rect.topLeft()), rect.size() * dpr);
-}
-
-QRect QXcbScreen::mapFromNative(const QRect &rect) const
-{
-    const int dpr = int(devicePixelRatio());
-    return QRect(mapFromNative(rect.topLeft()), rect.size() / dpr);
 }
 
 void QXcbScreen::windowShown(QXcbWindow *window)
@@ -335,29 +289,17 @@ QDpi QXcbScreen::virtualDpi() const
                 Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
+
 QDpi QXcbScreen::logicalDpi() const
 {
     static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
     if (overrideDpi)
         return QDpi(overrideDpi, overrideDpi);
 
-    int primaryDpr = int(connection()->screens().at(0)->devicePixelRatio());
-    if (m_forcedDpi > 0)
-        return QDpi(m_forcedDpi/primaryDpr, m_forcedDpi/primaryDpr);
-    QDpi vDpi = virtualDpi();
-    return QDpi(vDpi.first/primaryDpr, vDpi.second/primaryDpr);
-}
-
-
-qreal QXcbScreen::devicePixelRatio() const
-{
-    static int override_dpr = qEnvironmentVariableIntValue("QT_DEVICE_PIXEL_RATIO");
-    static bool auto_dpr = qgetenv("QT_DEVICE_PIXEL_RATIO").toLower() == "auto";
-    if (override_dpr > 0)
-        return override_dpr;
-    if (auto_dpr)
-        return m_devicePixelRatio;
-    return 1.0;
+    if (m_forcedDpi > 0) {
+        return QDpi(m_forcedDpi, m_forcedDpi);
+    }
+    return virtualDpi();
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -515,12 +457,9 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     }
     free(workArea);
 
-    qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
-    m_devicePixelRatio = qRound(dpi/96);
-    const int dpr = int(devicePixelRatio()); // we may override m_devicePixelRatio
-    m_geometry = QRect(xGeometry.topLeft(), xGeometry.size()/dpr);
+    m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
-    m_availableGeometry = QRect(mapFromNative(xAvailableGeometry.topLeft()), xAvailableGeometry.size()/dpr);
+    m_availableGeometry = QRect(xAvailableGeometry.topLeft(), xAvailableGeometry.size());
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
 }
 

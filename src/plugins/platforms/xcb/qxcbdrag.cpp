@@ -76,7 +76,6 @@ static inline xcb_window_t xcb_window(QWindow *w)
     return static_cast<QXcbWindow *>(w->handle())->xcb_window();
 }
 
-
 static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
 {
     xcb_window_t proxy = XCB_NONE;
@@ -303,7 +302,6 @@ void QXcbDrag::move(const QMouseEvent *me)
     // We do not know which window that was at this point, so we just use the device pixel ratio
     // of the QGuiApplication. This will break once we support screens with different DPR. Fixing
     // this properly requires some redesign of the drag and drop architecture.
-    static const int dpr = int(qApp->devicePixelRatio());
     QBasicDrag::move(me);
     QPoint globalPos = me->globalPos();
 
@@ -318,6 +316,7 @@ void QXcbDrag::move(const QMouseEvent *me)
             break;
         }
     }
+
     if (screen != current_screen) {
         // ### need to recreate the shaped pixmap window?
 //    int screen = QCursor::x11Screen();
@@ -340,7 +339,7 @@ void QXcbDrag::move(const QMouseEvent *me)
 //    qt_xdnd_current_screen = screen;
     xcb_window_t rootwin = current_screen->root();
     xcb_translate_coordinates_reply_t *translate =
-            ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x() * dpr, globalPos.y() * dpr);
+            ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x(), globalPos.y());
     if (!translate)
         return;
 
@@ -463,7 +462,7 @@ void QXcbDrag::move(const QMouseEvent *me)
         move.type = atom(QXcbAtom::XdndPosition);
         move.data.data32[0] = connection()->clipboard()->owner();
         move.data.data32[1] = 0; // flags
-        move.data.data32[2] = (globalPos.x() * dpr << 16) + globalPos.y() * dpr;
+        move.data.data32[2] = (globalPos.x() << 16) + globalPos.y();
         move.data.data32[3] = connection()->time();
         move.data.data32[4] = toXdndAction(defaultAction(currentDrag()->supportedActions(), QGuiApplication::keyboardModifiers()));
         DEBUG() << "sending Xdnd position source=" << move.data.data32[0] << "target=" << move.window;
@@ -710,9 +709,6 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
     QPoint p((e->data.data32[2] & 0xffff0000) >> 16, e->data.data32[2] & 0x0000ffff);
     Q_ASSERT(w);
     QRect geometry = w->geometry();
-    const int dpr = int(w->handle()->devicePixelRatio());
-
-    p /= dpr;
     p -= geometry.topLeft();
 
     if (!w || (w->type() == Qt::Desktop))
@@ -831,12 +827,10 @@ void QXcbDrag::handle_xdnd_status(const xcb_client_message_event_t *event)
         updateCursor(Qt::IgnoreAction);
     }
 
-    static const int dpr = int(qApp->devicePixelRatio());
-
     if ((event->data.data32[1] & 2) == 0) {
         QPoint p((event->data.data32[2] & 0xffff0000) >> 16, event->data.data32[2] & 0x0000ffff);
         QSize s((event->data.data32[3] & 0xffff0000) >> 16, event->data.data32[3] & 0x0000ffff);
-        source_sameanswer = QRect(p / dpr, s / dpr);
+        source_sameanswer = QRect(p, s);
     } else {
         source_sameanswer = QRect();
     }

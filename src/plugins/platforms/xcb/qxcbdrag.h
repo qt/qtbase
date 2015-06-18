@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QMouseEvent;
 class QWindow;
+class QPlatformWindow;
 class QXcbConnection;
 class QXcbWindow;
 class QXcbDropData;

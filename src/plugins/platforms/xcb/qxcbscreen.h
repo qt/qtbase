@@ -96,7 +96,6 @@ public:
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi virtualDpi() const;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
@@ -139,13 +138,6 @@ public:
 
     QXcbXSettings *xSettings() const;
 
-    QPoint mapToNative(const QPoint &pos) const;
-    QPoint mapFromNative(const QPoint &pos) const;
-    QPointF mapToNative(const QPointF &pos) const;
-    QPointF mapFromNative(const QPointF &pos) const;
-    QRect mapToNative(const QRect &rect) const;
-    QRect mapFromNative(const QRect &rect) const;
-
 private:
     static bool xResource(const QByteArray &identifier,
                           const QByteArray &expectedIdentifier,
@@ -176,7 +168,6 @@ private:
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
-    int m_devicePixelRatio;
     QFontEngine::HintStyle m_hintStyle;
     bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;

@@ -163,8 +163,6 @@ public:
     void postSyncWindowRequest();
     void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
 
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-
     QXcbScreen *xcbScreen() const;
 
     virtual void create();
@@ -180,10 +178,6 @@ protected:
     virtual void *createVisual() { return Q_NULLPTR; }
     virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
 
-    QPoint mapToNative(const QPoint &pos, const QXcbScreen *screen) const;
-    QPoint mapFromNative(const QPoint &pos, const QXcbScreen *screen) const;
-    QRect mapToNative(const QRect &rect, const QXcbScreen *screen) const;
-    QRect mapFromNative(const QRect &rect, const QXcbScreen *screen) const;
     QXcbScreen *parentScreen();
 
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
