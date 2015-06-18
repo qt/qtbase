@@ -163,6 +163,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
             // Whatever the current first responder is, let's give it a chance
             // and do not touch the Qt's focusObject (which is different from some native view
             // having a focus inside NSSave/OpenPanel.
+            *target = nil;
+            *action = menuItem.action;
             return YES;
         }
 
