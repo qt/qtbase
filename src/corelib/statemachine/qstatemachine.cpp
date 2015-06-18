@@ -406,13 +406,6 @@ QStateMachinePrivate::~QStateMachinePrivate()
     qDeleteAll(externalEventQueue);
 }
 
-QStateMachinePrivate *QStateMachinePrivate::get(QStateMachine *q)
-{
-    if (q)
-        return q->d_func();
-    return 0;
-}
-
 QState *QStateMachinePrivate::rootState() const
 {
     return const_cast<QStateMachine*>(q_func());

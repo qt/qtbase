@@ -59,7 +59,8 @@ class QHistoryStatePrivate : public QAbstractStatePrivate
 public:
     QHistoryStatePrivate();
 
-    static QHistoryStatePrivate *get(QHistoryState *q);
+    static QHistoryStatePrivate *get(QHistoryState *q)
+    { return q->d_func(); }
 
     QAbstractState *defaultState;
     QHistoryState::HistoryType historyType;

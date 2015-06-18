@@ -118,11 +118,6 @@ QHistoryStatePrivate::QHistoryStatePrivate()
 {
 }
 
-QHistoryStatePrivate *QHistoryStatePrivate::get(QHistoryState *q)
-{
-    return q->d_func();
-}
-
 /*!
   Constructs a new shallow history state with the given \a parent state.
 */

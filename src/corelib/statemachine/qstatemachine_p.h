@@ -99,7 +99,8 @@ public:
     QStateMachinePrivate();
     ~QStateMachinePrivate();
 
-    static QStateMachinePrivate *get(QStateMachine *q);
+    static QStateMachinePrivate *get(QStateMachine *q)
+    { return q ? q->d_func() : 0; }
 
     QState *findLCA(const QList<QAbstractState*> &states, bool onlyCompound = false) const;
     QState *findLCCA(const QList<QAbstractState*> &states) const;

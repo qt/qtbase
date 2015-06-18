@@ -66,8 +66,10 @@ public:
 
     QAbstractStatePrivate(StateType type);
 
-    static QAbstractStatePrivate *get(QAbstractState *q);
-    static const QAbstractStatePrivate *get(const QAbstractState *q);
+    static QAbstractStatePrivate *get(QAbstractState *q)
+    { return q->d_func(); }
+    static const QAbstractStatePrivate *get(const QAbstractState *q)
+    { return q->d_func(); }
 
     QStateMachine *machine() const;
 

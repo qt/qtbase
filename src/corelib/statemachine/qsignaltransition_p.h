@@ -56,7 +56,8 @@ class QSignalTransitionPrivate : public QAbstractTransitionPrivate
 public:
     QSignalTransitionPrivate();
 
-    static QSignalTransitionPrivate *get(QSignalTransition *q);
+    static QSignalTransitionPrivate *get(QSignalTransition *q)
+    { return q->d_func(); }
 
     void unregister();
     void maybeRegister();

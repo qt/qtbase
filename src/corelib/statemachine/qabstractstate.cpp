@@ -85,16 +85,6 @@ QAbstractStatePrivate::QAbstractStatePrivate(StateType type)
 {
 }
 
-QAbstractStatePrivate *QAbstractStatePrivate::get(QAbstractState *q)
-{
-    return q->d_func();
-}
-
-const QAbstractStatePrivate *QAbstractStatePrivate::get(const QAbstractState *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractStatePrivate::machine() const
 {
     QObject *par = parent;

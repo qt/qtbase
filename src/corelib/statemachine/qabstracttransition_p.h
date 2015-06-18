@@ -65,7 +65,8 @@ class Q_CORE_EXPORT QAbstractTransitionPrivate
 public:
     QAbstractTransitionPrivate();
 
-    static QAbstractTransitionPrivate *get(QAbstractTransition *q);
+    static QAbstractTransitionPrivate *get(QAbstractTransition *q)
+    { return q->d_func(); }
 
     bool callEventTest(QEvent *e);
     virtual void callOnTransition(QEvent *e);

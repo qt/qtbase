@@ -133,11 +133,6 @@ QAbstractTransitionPrivate::QAbstractTransitionPrivate()
 {
 }
 
-QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
     QState *source = sourceState();
