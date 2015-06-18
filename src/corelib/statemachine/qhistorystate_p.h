@@ -47,11 +47,12 @@
 
 #include "private/qabstractstate_p.h"
 
+#include <QtCore/qabstracttransition.h>
+#include <QtCore/qhistorystate.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-class QHistoryState;
 class QHistoryStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QHistoryState)
@@ -62,9 +63,26 @@ public:
     static QHistoryStatePrivate *get(QHistoryState *q)
     { return q->d_func(); }
 
-    QAbstractState *defaultState;
+    QAbstractTransition *defaultTransition;
     QHistoryState::HistoryType historyType;
     QList<QAbstractState*> configuration;
+};
+
+class DefaultStateTransition: public QAbstractTransition
+{
+    Q_OBJECT
+
+public:
+    DefaultStateTransition(QHistoryState *source, QAbstractState *target);
+
+protected:
+    // It doesn't matter whether this transition matches any event or not. It is always associated
+    // with a QHistoryState, and as soon as the state-machine detects that it enters a history
+    // state, it will handle this transition as a special case. The history state itself is never
+    // entered either: either the stored configuration will be used, or the target(s) of this
+    // transition are used.
+    virtual bool eventTest(QEvent *event) { Q_UNUSED(event); return false; }
+    virtual void onTransition(QEvent *event) { Q_UNUSED(event); }
 };
 
 QT_END_NAMESPACE

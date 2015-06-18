@@ -37,6 +37,7 @@
 
 #include "qabstracttransition_p.h"
 #include "qabstractstate.h"
+#include "qhistorystate.h"
 #include "qstate.h"
 #include "qstatemachine.h"
 
@@ -135,10 +136,12 @@ QAbstractTransitionPrivate::QAbstractTransitionPrivate()
 
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
-    QState *source = sourceState();
-    if (!source)
-        return 0;
-    return source->machine();
+    if (QState *source = sourceState())
+        return source->machine();
+    Q_Q(const QAbstractTransition);
+    if (QHistoryState *parent = qobject_cast<QHistoryState *>(q->parent()))
+        return parent->machine();
+    return 0;
 }
 
 bool QAbstractTransitionPrivate::callEventTest(QEvent *e)

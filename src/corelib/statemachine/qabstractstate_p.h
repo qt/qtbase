@@ -46,12 +46,13 @@
 //
 
 #include <private/qobject_p.h>
+#include <QtCore/qabstractstate.h>
 
 QT_BEGIN_NAMESPACE
 
 class QStateMachine;
 
-class QAbstractState;
+class QState;
 class QAbstractStatePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractState)

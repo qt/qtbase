@@ -250,6 +250,7 @@ private slots:
     void internalTransition();
     void conflictingTransition();
     void qtbug_46059();
+    void qtbug_46703();
 };
 
 class TestState : public QState
@@ -6481,6 +6482,60 @@ void tst_QStateMachine::qtbug_46059()
     QTRY_COMPARE(machine.configuration().contains(&c), false);
     QTRY_COMPARE(machine.configuration().contains(&failure), false);
     QTRY_COMPARE(machine.configuration().contains(&success), true);
+
+    QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::qtbug_46703()
+{
+    QStateMachine machine;
+    QState root(&machine);
+        QHistoryState h(&root);
+        QState p(QState::ParallelStates, &root);
+            QState a(&p);
+                QState a1(&a);
+                QState a2(&a);
+                QState a3(&a);
+            QState b(&p);
+                QState b1(&b);
+                QState b2(&b);
+
+    machine.setObjectName("machine");
+    root.setObjectName("root");
+    h.setObjectName("h");
+    p.setObjectName("p");
+    a.setObjectName("a");
+    a1.setObjectName("a1");
+    a2.setObjectName("a2");
+    a3.setObjectName("a3");
+    b.setObjectName("b");
+    b1.setObjectName("b1");
+    b2.setObjectName("b2");
+
+    machine.setInitialState(&root);
+    root.setInitialState(&h);
+    a.setInitialState(&a3);
+    b.setInitialState(&b1);
+    struct : public QAbstractTransition {
+        virtual bool eventTest(QEvent *) { return false; }
+        virtual void onTransition(QEvent *) {}
+    } defaultTransition;
+    defaultTransition.setTargetStates(QList<QAbstractState*>() << &a2 << &b2);
+    h.setDefaultTransition(&defaultTransition);
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(machine.configuration().contains(&root), true);
+    QTRY_COMPARE(machine.configuration().contains(&h), false);
+    QTRY_COMPARE(machine.configuration().contains(&p), true);
+    QTRY_COMPARE(machine.configuration().contains(&a), true);
+    QTRY_COMPARE(machine.configuration().contains(&a1), false);
+    QTRY_COMPARE(machine.configuration().contains(&a2), true);
+    QTRY_COMPARE(machine.configuration().contains(&a3), false);
+    QTRY_COMPARE(machine.configuration().contains(&b), true);
+    QTRY_COMPARE(machine.configuration().contains(&b1), false);
+    QTRY_COMPARE(machine.configuration().contains(&b2), true);
 
     QVERIFY(machine.isRunning());
 }

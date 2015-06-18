@@ -365,9 +365,9 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
             if (!historyConfiguration.isEmpty()) {
                 // There is a saved history, so apply that.
                 targets.unite(historyConfiguration.toSet());
-            } else if (QAbstractState *defaultState = historyState->defaultState()) {
-                // Qt does not support initial transitions, but uses the default state of the history state for this.
-                targets.insert(defaultState);
+            } else if (QAbstractTransition *defaultTransition = historyState->defaultTransition()) {
+                // No saved history, take all default transition targets.
+                targets.unite(defaultTransition->targetStates().toSet());
             } else {
                 // Woops, we found a history state without a default state. That's not valid!
                 QStateMachinePrivate *m = QStateMachinePrivate::get(historyState->machine());
@@ -978,9 +978,16 @@ void QStateMachinePrivate::enterStates(QEvent *event, const QList<QAbstractState
 
         QAbstractStatePrivate::get(s)->callOnEntry(event);
         QAbstractStatePrivate::get(s)->emitEntered();
-        if (statesForDefaultEntry.contains(s)) {
-            // ### executeContent(s.initial.transition.children())
-        }
+
+        // FIXME:
+        // See the "initial transitions" comment in addDescendantStatesToEnter first, then implement:
+//        if (statesForDefaultEntry.contains(s)) {
+//            // ### executeContent(s.initial.transition.children())
+//        }
+        Q_UNUSED(statesForDefaultEntry);
+
+        if (QHistoryState *h = toHistoryState(s))
+            QAbstractTransitionPrivate::get(h->defaultTransition())->callOnTransition(event);
 
         // Emit propertiesAssigned signal if the state has no animated properties.
         {
@@ -1091,8 +1098,8 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
 #endif
         } else {
             QList<QAbstractState*> defaultHistoryContent;
-            if (QHistoryStatePrivate::get(h)->defaultState)
-                defaultHistoryContent.append(QHistoryStatePrivate::get(h)->defaultState);
+            if (QAbstractTransition *t = QHistoryStatePrivate::get(h)->defaultTransition)
+                defaultHistoryContent = t->targetStates();
 
             if (defaultHistoryContent.isEmpty()) {
                 setError(QStateMachine::NoDefaultStateInHistoryStateError, h);
@@ -1118,8 +1125,10 @@ void QStateMachinePrivate::addDescendantStatesToEnter(QAbstractState *state,
             if (QAbstractState *initial = toStandardState(state)->initialState()) {
                 Q_ASSERT(initial->machine() == q_func());
 
+                // FIXME:
                 // Qt does not support initial transitions (which is a problem for parallel states).
                 // The way it simulates this for other states, is by having a single initial state.
+                // See also the FIXME in enterStates.
                 statesForDefaultEntry.insert(initial);
 
                 addDescendantStatesToEnter(initial, statesToEnter, statesForDefaultEntry);

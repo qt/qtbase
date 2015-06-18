@@ -41,11 +41,13 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_STATEMACHINE
 
+class QAbstractTransition;
 class QHistoryStatePrivate;
 class Q_CORE_EXPORT QHistoryState : public QAbstractState
 {
     Q_OBJECT
     Q_PROPERTY(QAbstractState* defaultState READ defaultState WRITE setDefaultState NOTIFY defaultStateChanged)
+    Q_PROPERTY(QAbstractTransition* defaultTransition READ defaultTransition WRITE setDefaultTransition NOTIFY defaultTransitionChanged)
     Q_PROPERTY(HistoryType historyType READ historyType WRITE setHistoryType NOTIFY historyTypeChanged)
 public:
     enum HistoryType {
@@ -58,6 +60,9 @@ public:
     QHistoryState(HistoryType type, QState *parent = Q_NULLPTR);
     ~QHistoryState();
 
+    QAbstractTransition *defaultTransition() const;
+    void setDefaultTransition(QAbstractTransition *transition);
+
     QAbstractState *defaultState() const;
     void setDefaultState(QAbstractState *state);
 
@@ -65,6 +70,7 @@ public:
     void setHistoryType(HistoryType type);
 
 Q_SIGNALS:
+    void defaultTransitionChanged(QPrivateSignal);
     void defaultStateChanged(QPrivateSignal);
     void historyTypeChanged(QPrivateSignal);
 

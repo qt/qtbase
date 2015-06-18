@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
   A history state is a pseudo-state that represents the child state that the
   parent state was in the last time the parent state was exited. A transition
-  with a history state as its target is in fact a transition to one of the
+  with a history state as its target is in fact a transition to one or more
   other child states of the parent state. QHistoryState is part of \l{The
   State Machine Framework}.
 
@@ -79,8 +79,19 @@ QT_BEGIN_NAMESPACE
   s1->addTransition(button, SIGNAL(clicked()), s1h);
   \endcode
 
+  If more than one default state has to be entered, or if the transition to the default state(s)
+  has to be acted upon, the defaultTransition should be set instead. Note that the eventTest()
+  method of that transition will never be called: the selection and execution of the transition is
+  done automatically when entering the history state.
+
   By default a history state is shallow, meaning that it won't remember nested
   states. This can be configured through the historyType property.
+*/
+
+/*!
+  \property QHistoryState::defaultTransition
+
+  \brief the default transition of this history state
 */
 
 /*!
@@ -113,9 +124,17 @@ QT_BEGIN_NAMESPACE
 */
 
 QHistoryStatePrivate::QHistoryStatePrivate()
-    : QAbstractStatePrivate(HistoryState),
-      defaultState(0), historyType(QHistoryState::ShallowHistory)
+    : QAbstractStatePrivate(HistoryState)
+    , defaultTransition(0)
+    , historyType(QHistoryState::ShallowHistory)
 {
+}
+
+DefaultStateTransition::DefaultStateTransition(QHistoryState *source, QAbstractState *target)
+    : QAbstractTransition()
+{
+    setParent(source);
+    setTargetState(target);
 }
 
 /*!
@@ -144,13 +163,40 @@ QHistoryState::~QHistoryState()
 }
 
 /*!
+  Returns this history state's default transition. The default transition is
+  taken when the history state has never been entered before. The target states
+  of the default transition therefore make up the default state.
+*/
+QAbstractTransition *QHistoryState::defaultTransition() const
+{
+    Q_D(const QHistoryState);
+    return d->defaultTransition;
+}
+
+/*!
+  Sets this history state's default transition to be the given \a transition.
+  This will set the source state of the \a transition to the history state.
+
+  Note that the eventTest method of the \a transition will never be called.
+*/
+void QHistoryState::setDefaultTransition(QAbstractTransition *transition)
+{
+    Q_D(QHistoryState);
+    if (d->defaultTransition != transition) {
+        d->defaultTransition = transition;
+        transition->setParent(this);
+        emit defaultTransitionChanged(QHistoryState::QPrivateSignal());
+    }
+}
+
+/*!
   Returns this history state's default state.  The default state indicates the
   state to transition to if the parent state has never been entered before.
 */
 QAbstractState *QHistoryState::defaultState() const
 {
     Q_D(const QHistoryState);
-    return d->defaultState;
+    return d->defaultTransition ? d->defaultTransition->targetState() : Q_NULLPTR;
 }
 
 /*!
@@ -168,8 +214,15 @@ void QHistoryState::setDefaultState(QAbstractState *state)
                  "to this history state's group (%p)", state, parentState());
         return;
     }
-    if (d->defaultState != state) {
-        d->defaultState = state;
+    if (!d->defaultTransition
+            || d->defaultTransition->targetStates().size() != 1
+            || d->defaultTransition->targetStates().first() != state) {
+        if (!d->defaultTransition || !qobject_cast<DefaultStateTransition*>(d->defaultTransition)) {
+            d->defaultTransition = new DefaultStateTransition(this, state);
+            emit defaultTransitionChanged(QHistoryState::QPrivateSignal());
+        } else {
+            d->defaultTransition->setTargetState(state);
+        }
         emit defaultStateChanged(QHistoryState::QPrivateSignal());
     }
 }
