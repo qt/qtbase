@@ -1,6 +1,6 @@
 {
     "name": "Qt built-in GPU driver blacklist",
-    "version": "5.5",
+    "version": "5.6",
     "entries": [
         {
             "id": 1,
@@ -17,6 +17,16 @@
             "features": [
                 "disable_desktopgl"
             ]
+        },
+        {
+            "id": 2,
+            "description": "Disable D3D9 and 11, and rely on software-only D3D in VMs",
+            "driver_description": "VMware SVGA 3D",
+            "features": [
+                "disable_d3d9",
+                "disable_d3d11"
+            ]
         }
+
     ]
 }

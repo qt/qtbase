@@ -141,6 +141,7 @@ static inline QString vendorIdKey()      { return QStringLiteral("vendor_id"); }
 static inline QString glVendorKey()      { return QStringLiteral("gl_vendor"); }
 static inline QString deviceIdKey()      { return QStringLiteral("device_id"); }
 static inline QString driverVersionKey() { return QStringLiteral("driver_version"); }
+static inline QString driverDescriptionKey() { return QStringLiteral("driver_description"); }
 static inline QString featuresKey()      { return QStringLiteral("features"); }
 static inline QString idKey()            { return QStringLiteral("id"); }
 static inline QString descriptionKey()   { return QStringLiteral("description"); }
@@ -336,6 +337,15 @@ static bool matches(const QJsonObject &object,
                                     QLatin1String("Driver version must be of type object."));
         }
     }
+
+    if (!gpu.driverDescription.isEmpty()) {
+        const QJsonValue driverDescriptionV = object.value(driverDescriptionKey());
+        if (driverDescriptionV.isString()) {
+            if (!gpu.driverDescription.contains(driverDescriptionV.toString().toUtf8()))
+                return false;
+        }
+    }
+
     return true;
 }
 
