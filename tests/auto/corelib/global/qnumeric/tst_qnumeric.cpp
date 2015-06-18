@@ -107,13 +107,7 @@ void tst_QNumeric::qNan()
     QVERIFY(qIsInf(-inf));
     QVERIFY(qIsInf(2*inf));
     QCOMPARE(1/inf, 0.0);
-#ifdef Q_CC_INTEL
-    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
-#endif
     QVERIFY(qIsNaN(0*nan));
-#ifdef Q_CC_INTEL
-    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
-#endif
     QVERIFY(qIsNaN(0*inf));
     QVERIFY(qFuzzyCompare(1/inf, 0.0));
 }
