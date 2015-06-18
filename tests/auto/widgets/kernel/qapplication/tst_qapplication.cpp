@@ -62,6 +62,7 @@
 #endif
 
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include "../../../qtest-config.h"
 
@@ -2002,8 +2003,10 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
-        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
-        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        const QPoint deviceGlobalPos =
+            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(0, 0)), window.windowHandle()->screen());
+        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,
@@ -2056,8 +2059,10 @@ void tst_QApplication::touchEventPropagation()
         widget.setObjectName("2. widget");
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
-        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(50, 50)));
-        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(50, 50)));
+        const QPoint deviceGlobalPos =
+            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 50)), window.windowHandle()->screen());
+        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,

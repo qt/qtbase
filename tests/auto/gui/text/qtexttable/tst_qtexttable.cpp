@@ -1086,6 +1086,8 @@ public:
     {
         if (PdmDevicePixelRatio == metric)
             return 1;
+        if (PdmDevicePixelRatioScaled == metric)
+            return 1 * QPaintDevice::devicePixelRatioFScale();
         if (PdmDpiY == metric)
             return 96;
         if (PdmDpiX == metric)

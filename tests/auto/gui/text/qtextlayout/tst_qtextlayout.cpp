@@ -1653,6 +1653,7 @@ void tst_QTextLayout::testTabDPIScale()
             case QPaintDevice::PdmPhysicalDpiY:
                 return 72;
             case QPaintDevice::PdmDevicePixelRatio:
+            case QPaintDevice::PdmDevicePixelRatioScaled:
                 ; // fall through
             }
             return 0;
