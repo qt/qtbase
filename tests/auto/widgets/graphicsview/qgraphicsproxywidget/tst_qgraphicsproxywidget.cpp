@@ -3670,6 +3670,14 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
     QTRY_COMPARE(scene.hoverButton->hoverLeaveReceived, true);
 }
 
+static QByteArray msgPointMismatch(const QPoint &actual, const QPoint &expected)
+{
+    QString result;
+    QDebug(&result) << actual << " != " << expected << " manhattanLength="
+        << (expected - actual).manhattanLength();
+    return result.toLocal8Bit();
+}
+
 void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
 {
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
@@ -3681,20 +3689,29 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     view.move(availableGeometry.bottomRight() - QPoint(size.width(), size.height()) - QPoint(100, 100));
     QWidget *embeddedWidget = new QWidget;
     embeddedWidget->setFixedSize(size / 2);
+    QWidget *childWidget = new QWidget(embeddedWidget);
+    childWidget->setStyleSheet(QLatin1String("background-color: \"red\"; "));
+    childWidget->resize(embeddedWidget->size() / 2);
+    childWidget->move(embeddedWidget->width() / 4, embeddedWidget->height() / 4); // center in embeddedWidget
     scene.addWidget(embeddedWidget);
     QApplication::setActiveWindow(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    const QPoint embeddedCenter = embeddedWidget->geometry().center();
+    const QPoint embeddedCenter = embeddedWidget->rect().center();
     const QPoint embeddedCenterGlobal = embeddedWidget->mapToGlobal(embeddedCenter);
     QCOMPARE(embeddedWidget->mapFromGlobal(embeddedCenterGlobal), embeddedCenter);
     // This should be equivalent to the view center give or take rounding
     // errors due to odd window margins
     const QPoint viewCenter = view.geometry().center();
     QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 2,
-             qPrintable(QStringLiteral("%1, %2 != %3, %4")
-                        .arg(viewCenter.x()).arg(viewCenter.y())
-                        .arg(embeddedCenterGlobal.x()).arg(embeddedCenterGlobal.y())));
+             msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
+
+    // Same test with child centered on embeddedWidget
+    const QPoint childCenter = childWidget->rect().center();
+    const QPoint childCenterGlobal = childWidget->mapToGlobal(childCenter);
+    QCOMPARE(childWidget->mapFromGlobal(childCenterGlobal), childCenter);
+    QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= 4,
+             msgPointMismatch(childCenterGlobal, viewCenter).constData());
 }
 
 void tst_QGraphicsProxyWidget::mapToGlobalWithoutScene() // QTBUG-44509
