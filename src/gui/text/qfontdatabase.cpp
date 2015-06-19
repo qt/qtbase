@@ -1358,22 +1358,30 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems() const
 
     QT_PREPEND_NAMESPACE(load)();
 
-    QList<WritingSystem> list;
+    quint64 writingSystemsFound = 0;
+    Q_STATIC_ASSERT(WritingSystemsCount < 64);
+
     for (int i = 0; i < d->count; ++i) {
         QtFontFamily *family = d->families[i];
         family->ensurePopulated();
 
         if (family->count == 0)
             continue;
-        for (int x = Latin; x < WritingSystemsCount; ++x) {
-            const WritingSystem writingSystem = WritingSystem(x);
-            if (!(family->writingSystems[writingSystem] & QtFontFamily::Supported))
-                continue;
-            if (!list.contains(writingSystem))
-                list.append(writingSystem);
+        for (uint x = Latin; x < uint(WritingSystemsCount); ++x) {
+            if (family->writingSystems[x] & QtFontFamily::Supported)
+                writingSystemsFound |= quint64(1) << x;
         }
     }
-    std::sort(list.begin(), list.end());
+
+    // mutex protection no longer needed - just working on local data now:
+    locker.unlock();
+
+    QList<WritingSystem> list;
+    list.reserve(qPopulationCount(writingSystemsFound));
+    for (uint x = Latin ; x < uint(WritingSystemsCount); ++x) {
+        if (writingSystemsFound & (quint64(1) << x))
+            list.push_back(WritingSystem(x));
+    }
     return list;
 }
 
