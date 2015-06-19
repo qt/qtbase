@@ -518,6 +518,14 @@ QState::ChildMode QState::childMode() const
 void QState::setChildMode(ChildMode mode)
 {
     Q_D(QState);
+
+    if (mode == QState::ParallelStates && d->initialState) {
+        qWarning("QState::setChildMode: setting the child-mode of state %p to "
+                 "parallel removes the initial state", this);
+        d->initialState = Q_NULLPTR;
+        emit initialStateChanged(QState::QPrivateSignal());
+    }
+
     if (d->childMode != mode) {
         d->childMode = mode;
         emit childModeChanged(QState::QPrivateSignal());

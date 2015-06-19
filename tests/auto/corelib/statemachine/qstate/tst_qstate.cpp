@@ -47,6 +47,7 @@ private slots:
     void historyInitialState();
     void transitions();
     void privateSignals();
+    void parallelStateAndInitialState();
 };
 
 class TestClass: public QObject
@@ -342,6 +343,36 @@ void tst_QState::privateSignals()
     QVERIFY(s2Tester.testPassed);
     QVERIFY(t1Tester.testPassed);
 
+}
+
+void tst_QState::parallelStateAndInitialState()
+{
+    QStateMachine machine;
+
+    { // setting an initial state on a parallel state:
+        QState a(QState::ParallelStates, &machine);
+        QState b(&a);
+        QVERIFY(!a.initialState());
+        const QString warning
+            = QString::asprintf("QState::setInitialState: ignoring attempt to set initial state of parallel state group %p", &a);
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+        a.setInitialState(&b); // should produce a warning and do nothing.
+        QVERIFY(!a.initialState());
+    }
+
+    { // setting the child-mode from ExclusiveStates to ParallelStates should remove the initial state:
+        QState a(QState::ExclusiveStates, &machine);
+        QState b(&a);
+        a.setInitialState(&b);
+        QCOMPARE(a.initialState(), &b);
+        const QString warning
+            = QString::asprintf("QState::setChildMode: setting the child-mode of state %p to "
+                                "parallel removes the initial state", &a);
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+        a.setChildMode(QState::ParallelStates); // should produce a warning and remove the initial state
+        QVERIFY(!a.initialState());
+        QCOMPARE(a.childMode(), QState::ParallelStates);
+    }
 }
 
 QTEST_MAIN(tst_QState)
