@@ -41,9 +41,9 @@
 #include "qdebug.h"
 #include "qdir.h"
 
-#ifndef QT_NO_LIBRARY
-
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_LIBRARY
 
 /*!
     \class QPluginLoader
@@ -382,9 +382,6 @@ QString QPluginLoader::errorString() const
     return (!d || d->errorString.isEmpty()) ? tr("Unknown error") : d->errorString;
 }
 
-typedef QVector<QStaticPlugin> StaticPluginList;
-Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
-
 /*! \since 4.4
 
     \property QPluginLoader::loadHints
@@ -412,6 +409,11 @@ QLibrary::LoadHints QPluginLoader::loadHints() const
 {
     return d ? d->loadHints() : QLibrary::LoadHints();
 }
+
+#endif // QT_NO_LIBRARY
+
+typedef QVector<QStaticPlugin> StaticPluginList;
+Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
 
 /*!
     \relates QPluginLoader
@@ -465,9 +467,8 @@ QVector<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
-    return QLibraryPrivate::fromRawMetaData(rawMetaData()).object();
+    return qJsonFromRawLibraryMetaData(rawMetaData()).object();
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_LIBRARY

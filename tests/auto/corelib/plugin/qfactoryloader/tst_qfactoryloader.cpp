@@ -38,6 +38,11 @@
 #include "plugin1/plugininterface1.h"
 #include "plugin2/plugininterface2.h"
 
+#ifdef QT_NO_LIBRARY
+Q_IMPORT_PLUGIN(Plugin1)
+Q_IMPORT_PLUGIN(Plugin2)
+#endif
+
 class tst_QFactoryLoader : public QObject
 {
     Q_OBJECT
@@ -54,8 +59,9 @@ void tst_QFactoryLoader::initTestCase()
 {
     const QString binFolder = QFINDTESTDATA(binFolderC);
     QVERIFY2(!binFolder.isEmpty(), "Unable to locate 'bin' folder");
-
+#ifndef QT_NO_LIBRARY
     QCoreApplication::setLibraryPaths(QStringList(QFileInfo(binFolder).absolutePath()));
+#endif
 }
 
 void tst_QFactoryLoader::usingTwoFactoriesFromSameDir()

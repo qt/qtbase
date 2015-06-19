@@ -33,7 +33,7 @@
 
 #include "qfactoryloader_p.h"
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_QOBJECT
 #include "qfactoryinterface.h"
 #include "qmap.h"
 #include <qdir.h>
@@ -66,6 +66,7 @@ class QFactoryLoaderPrivate : public QObjectPrivate
 public:
     QFactoryLoaderPrivate(){}
     QByteArray iid;
+#ifndef QT_NO_LIBRARY
     ~QFactoryLoaderPrivate();
     mutable QMutex mutex;
     QList<QLibraryPrivate*> libraryList;
@@ -73,7 +74,10 @@ public:
     QString suffix;
     Qt::CaseSensitivity cs;
     QStringList loadedPaths;
+#endif
 };
+
+#ifndef QT_NO_LIBRARY
 
 Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
@@ -226,6 +230,8 @@ void QFactoryLoader::refreshAll()
     }
 }
 
+#endif // QT_NO_LIBRARY
+
 QFactoryLoader::QFactoryLoader(const char *iid,
                                const QString &suffix,
                                Qt::CaseSensitivity cs)
@@ -234,21 +240,28 @@ QFactoryLoader::QFactoryLoader(const char *iid,
     moveToThread(QCoreApplicationPrivate::mainThread());
     Q_D(QFactoryLoader);
     d->iid = iid;
+#ifndef QT_NO_LIBRARY
     d->cs = cs;
     d->suffix = suffix;
 
     QMutexLocker locker(qt_factoryloader_mutex());
     update();
     qt_factory_loaders()->append(this);
+#else
+    Q_UNUSED(suffix);
+    Q_UNUSED(cs);
+#endif
 }
 
 QList<QJsonObject> QFactoryLoader::metaData() const
 {
     Q_D(const QFactoryLoader);
     QList<QJsonObject> metaData;
+#ifndef QT_NO_LIBRARY
     QMutexLocker locker(&d->mutex);
     for (int i = 0; i < d->libraryList.size(); ++i)
         metaData.append(d->libraryList.at(i)->metaData);
+#endif
 
     foreach (const QStaticPlugin &plugin, QPluginLoader::staticPlugins()) {
         const QJsonObject object = plugin.metaData();
@@ -265,6 +278,7 @@ QObject *QFactoryLoader::instance(int index) const
     if (index < 0)
         return 0;
 
+#ifndef QT_NO_LIBRARY
     if (index < d->libraryList.size()) {
         QLibraryPrivate *library = d->libraryList.at(index);
         if (library->instance || library->loadPlugin()) {
@@ -280,6 +294,7 @@ QObject *QFactoryLoader::instance(int index) const
         return 0;
     }
     index -= d->libraryList.size();
+#endif
 
     QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
@@ -330,4 +345,4 @@ int QFactoryLoader::indexOf(const QString &needle) const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_QOBJECT

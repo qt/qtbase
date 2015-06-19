@@ -20,3 +20,8 @@ win32 {
 
 mac: CONFIG -= app_bundle
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+load(qfeatures)
+contains(QT_DISABLED_FEATURES, library) {
+    LIBS += -L ../bin/ -lplugin1 -lplugin2
+}

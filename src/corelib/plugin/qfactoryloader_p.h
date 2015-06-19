@@ -45,17 +45,18 @@
 // We mean it.
 //
 
+#include "QtCore/qglobal.h"
+#ifndef QT_NO_QOBJECT
+
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qjsonobject.h"
 #include "QtCore/qmap.h"
 #include "private/qlibrary_p.h"
-#ifndef QT_NO_LIBRARY
 
 QT_BEGIN_NAMESPACE
 
 class QFactoryLoaderPrivate;
-
 class Q_CORE_EXPORT QFactoryLoader : public QObject
 {
     Q_OBJECT
@@ -65,21 +66,23 @@ public:
     explicit QFactoryLoader(const char *iid,
                    const QString &suffix = QString(),
                    Qt::CaseSensitivity = Qt::CaseSensitive);
+
+#ifndef QT_NO_LIBRARY
     ~QFactoryLoader();
 
-    QList<QJsonObject> metaData() const;
-    QObject *instance(int index) const;
+    void update();
+    static void refreshAll();
 
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
     QLibraryPrivate *library(const QString &key) const;
-#endif
+#endif // Q_OS_UNIX && !Q_OS_MAC
+#endif // !QT_NO_LIBRARY
 
     QMultiMap<int, QString> keyMap() const;
     int indexOf(const QString &needle) const;
 
-    void update();
-
-    static void refreshAll();
+    QList<QJsonObject> metaData() const;
+    QObject *instance(int index) const;
 };
 
 template <class PluginInterface, class FactoryInterface>
@@ -112,6 +115,6 @@ PluginInterface *qLoadPlugin1(const QFactoryLoader *loader,
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_QOBJECT
 
 #endif // QFACTORYLOADER_P_H

@@ -37,9 +37,9 @@
 #include <QtCore/qlibrary.h>
 #include <QtCore/qplugin.h>
 
-#ifndef QT_NO_LIBRARY
-
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_LIBRARY
 
 class QLibraryPrivate;
 class QJsonObject;
@@ -78,8 +78,17 @@ private:
     Q_DISABLE_COPY(QPluginLoader)
 };
 
-QT_END_NAMESPACE
+#else
+
+class Q_CORE_EXPORT QPluginLoader
+{
+public:
+    static QObjectList staticInstances();
+    static QVector<QStaticPlugin> staticPlugins();
+};
 
 #endif // QT_NO_LIBRARY
+
+QT_END_NAMESPACE
 
 #endif //QPLUGINLOADER_H
