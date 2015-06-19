@@ -473,7 +473,7 @@ QFontEngine::SubpixelAntialiasingType QPlatformFontDatabase::subpixelAntialiasin
 // ### copied to tools/makeqpf/qpf2.cpp
 
 // see the Unicode subset bitfields in the MSDN docs
-static const ushort requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
+static const quint8 requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
     { 127, 127 }, // Any
     { 0, 127 },   // Latin
     { 7, 127 },   // Greek
