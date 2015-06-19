@@ -458,6 +458,9 @@ int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
     case QPaintDevice::PdmDevicePixelRatio:
         return 1;
 
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        return QPaintDevice::devicePixelRatioFScale();
+
     default:
         qWarning("QGLPixelBuffer::metric(), Unhandled metric type: %d\n", metric);
         break;

@@ -1972,7 +1972,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         }
     }
 
-    int devicePixelRatio = p->device()->devicePixelRatio();
+    int devicePixelRatio = p->device()->devicePixelRatioF();
     int width = devicePixelRatio * (int(macRect.size.width) + extraWidth);
     int height = devicePixelRatio * (int(macRect.size.height) + extraHeight);
 
@@ -7199,7 +7199,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         }
 
         CGContextTranslateCTM(ret, 0, pm->height());
-        int devicePixelRatio = pdev->devicePixelRatio();
+        qreal devicePixelRatio = pdev->devicePixelRatioF();
         CGContextScaleCTM(ret, devicePixelRatio, devicePixelRatio);
         CGContextScaleCTM(ret, 1, -1);
         return ret;

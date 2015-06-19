@@ -3891,6 +3891,10 @@ int QImage::metric(PaintDeviceMetric metric) const
         return d->devicePixelRatio;
         break;
 
+    case PdmDevicePixelRatioScaled:
+        return d->devicePixelRatio * QPaintDevice::devicePixelRatioFScale();
+        break;
+
     default:
         qWarning("QImage::metric(): Unhandled metric type %d", metric);
         break;

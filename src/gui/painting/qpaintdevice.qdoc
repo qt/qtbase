@@ -286,3 +286,24 @@
     Common values are 1 for normal-dpi displays and 2 for high-dpi
     "retina" displays.
 */
+
+/*!
+    \fn qreal QPaintDevice::devicePixelRatioF() const
+
+    Returns the device pixel ratio for the device as a floating point number.
+
+    \since 5.6
+*/
+
+/*!
+    \fn qreal QPaintDevice::devicePixelRatioFScale()
+
+    \internal
+
+    Returns the scaling factor used for \c PdmDevicePixelRatioScaled. Classes
+    that are not QPaintDevice subclasses are implementing metric(), and need to
+    access this constant. Since it's a qreal, it cannot be an enum, and an inline
+    function is more efficient than a static member variable.
+
+    \since 5.6
+*/

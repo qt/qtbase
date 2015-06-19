@@ -62,6 +62,8 @@ int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
     case PdmDevicePixelRatio:
         return 1;
+    case PdmDevicePixelRatioScaled:
+        return 1 * QPaintDevice::devicePixelRatioFScale();
     default:
         qWarning("QGLPaintDevice::metric() - metric %d not known", metric);
         return 0;

@@ -2035,7 +2035,7 @@ void QWidgetPrivate::setSystemClip(QPaintDevice *paintDevice, const QRegion &reg
 // Transform the system clip region from device-independent pixels to device pixels
     QPaintEngine *paintEngine = paintDevice->paintEngine();
     QTransform scaleTransform;
-    const qreal devicePixelRatio = paintDevice->devicePixelRatio();
+    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
     scaleTransform.scale(devicePixelRatio, devicePixelRatio);
     paintEngine->d_func()->systemClip = scaleTransform.map(region);
 }
@@ -5361,7 +5361,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
         if (size.isNull())
             return;
 
-        const qreal pixmapDevicePixelRatio = qreal(painter->device()->devicePixelRatio());
+        const qreal pixmapDevicePixelRatio = painter->device()->devicePixelRatioF();
         QPixmap pixmap(size * pixmapDevicePixelRatio);
         pixmap.setDevicePixelRatio(pixmapDevicePixelRatio);
 
@@ -11833,13 +11833,11 @@ void QWidgetPrivate::updateFrameStrut()
     Q_Q(QWidget);
     if (q->data->fstrut_dirty) {
         if (QTLWExtra *te = maybeTopData()) {
-            if (te->window) {
-                if (const QPlatformWindow *pw = te->window->handle()) {
-                    const QMargins margins = pw->frameMargins();
-                    if (!margins.isNull()) {
-                        te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
-                        q->data->fstrut_dirty = false;
-                    }
+            if (te->window && te->window->handle()) {
+                const QMargins margins = te->window->frameMargins();
+                if (!margins.isNull()) {
+                    te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+                    q->data->fstrut_dirty = false;
                 }
             }
         }
@@ -12658,6 +12656,9 @@ int QWidget::metric(PaintDeviceMetric m) const
         return qRound(screen->physicalDotsPerInchY());
     } else if (m == PdmDevicePixelRatio) {
         return topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio();
+    } else if (m == PdmDevicePixelRatioScaled) {
+        return (QPaintDevice::devicePixelRatioFScale() *
+                (topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio()));
     } else {
         val = QPaintDevice::metric(m);// XXX
     }
@@ -12873,7 +12874,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
                                        frameGeometry.bottom() - geometry.bottom());
                 debug << ", margins=" << margins;
             }
-            debug << ", devicePixelRatio=" << widget->devicePixelRatio();
+            debug << ", devicePixelRatio=" << widget->devicePixelRatioF();
             if (const WId wid = widget->internalWinId())
                 debug << ", winId=0x" << hex << wid << dec;
         }

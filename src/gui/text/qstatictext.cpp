@@ -558,6 +558,9 @@ namespace {
             case PdmDevicePixelRatio:
                 val = 1;
                 break;
+            case PdmDevicePixelRatioScaled:
+                val = devicePixelRatioFScale();
+                break;
             default:
                 val = 0;
                 qWarning("DrawTextItemDevice::metric: Invalid metric command");

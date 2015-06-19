@@ -79,7 +79,13 @@ Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice
 
 int QPaintDevice::metric(PaintDeviceMetric m) const
 {
+    // Fallback: A subclass has not implemented PdmDevicePixelRatioScaled but might
+    // have implemented PdmDevicePixelRatio.
+    if (m == PdmDevicePixelRatioScaled)
+        return this->metric(PdmDevicePixelRatio) * devicePixelRatioFScale();
+
     qWarning("QPaintDevice::metrics: Device has no metric information");
+
     if (m == PdmDpiX) {
         return 72;
     } else if (m == PdmDpiY) {

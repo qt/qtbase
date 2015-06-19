@@ -1285,6 +1285,9 @@ int QGLFramebufferObject::metric(PaintDeviceMetric metric) const
     case QPaintDevice::PdmDevicePixelRatio:
         return 1;
 
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        return 1 * QPaintDevice::devicePixelRatioFScale();
+
     default:
         qWarning("QGLFramebufferObject::metric(), Unhandled metric type: %d.\n", metric);
         break;

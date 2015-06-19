@@ -1318,6 +1318,9 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
     case QPaintDevice::PdmDevicePixelRatio:
         val = 1;
         break;
+    case QPaintDevice::PdmDevicePixelRatioScaled:
+        val = 1 * QPaintDevice::devicePixelRatioFScale();
+        break;
     default:
         qWarning("QPdfWriter::metric: Invalid metric command");
         return 0;
