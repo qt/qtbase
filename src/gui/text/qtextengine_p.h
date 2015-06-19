@@ -400,6 +400,7 @@ public:
     };
 
     struct ItemDecoration {
+        ItemDecoration() {} // for QVector, don't use
         ItemDecoration(qreal x1, qreal x2, qreal y, const QPen &pen):
             x1(x1), x2(x2), y(y), pen(pen) {}
 
@@ -409,7 +410,7 @@ public:
         QPen pen;
     };
 
-    typedef QList<ItemDecoration> ItemDecorationList;
+    typedef QVector<ItemDecoration> ItemDecorationList;
 
     QTextEngine();
     QTextEngine(const QString &str, const QFont &f);
@@ -643,6 +644,7 @@ public:
     LayoutData _layoutData;
     void *_memory[MemSize];
 };
+Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_MOVABLE_TYPE);
 
 struct QTextLineItemIterator
 {
