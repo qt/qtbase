@@ -265,11 +265,19 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
         } else if (screen) {
             // Screen has been disabled -> remove
             if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
-                qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
-                m_screens.removeOne(screen);
-                foreach (QXcbScreen *otherScreen, m_screens)
-                    otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
-                QXcbIntegration::instance()->destroyScreen(screen);
+                xcb_randr_get_output_info_cookie_t outputInfoCookie =
+                    xcb_randr_get_output_info(xcb_connection(), output.output, output.config_timestamp);
+                QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
+                    xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
+                if (outputInfo->crtc == XCB_NONE) {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
+                    m_screens.removeOne(screen);
+                    foreach (QXcbScreen *otherScreen, m_screens)
+                        otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
+                    QXcbIntegration::instance()->destroyScreen(screen);
+                } else {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been temporarily disabled for the mode switch";
+                }
             } else {
                 // Just update existing screen
                 screen->updateGeometry(output.config_timestamp);
