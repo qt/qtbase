@@ -46,7 +46,6 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusReply>
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -556,4 +555,3 @@ void QConnmanEngine::reEvaluateCellular()
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT

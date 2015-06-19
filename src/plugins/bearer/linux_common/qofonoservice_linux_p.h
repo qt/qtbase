@@ -57,7 +57,6 @@
 #include <QtDBus/QDBusContext>
 #include <QMap>
 
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 #define OFONO_SERVICE                            "org.ofono"
@@ -193,6 +192,5 @@ private slots:
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QOFONOSERVICE_H

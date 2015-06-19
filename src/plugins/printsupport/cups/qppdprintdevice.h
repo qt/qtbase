@@ -47,8 +47,6 @@
 
 #include <qpa/qplatformprintdevice.h>
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
-
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmargins.h>
@@ -111,5 +109,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
 #endif // QPPDPRINTDEVICE_H

@@ -34,8 +34,6 @@
 
 #include "qcupsprintersupport_p.h"
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
-
 #include "qcupsprintengine_p.h"
 #include "qppdprintdevice.h"
 #include <private/qprinterinfo_p.h>
@@ -109,5 +107,3 @@ QString QCupsPrinterSupport::defaultPrintDeviceId() const
 }
 
 QT_END_NAMESPACE
-
-#endif // !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)

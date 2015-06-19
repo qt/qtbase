@@ -54,7 +54,6 @@
 #include <QMap>
 #include <QVariant>
 
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -150,7 +149,6 @@ private:
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT
 
 #endif
 

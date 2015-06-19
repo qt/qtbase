@@ -37,8 +37,6 @@
 
 #include <QtCore/qdebug.h>
 
-#ifndef QT_NO_BEARERMANAGEMENT
-
 QT_BEGIN_NAMESPACE
 
 class QGenericEnginePlugin : public QBearerEnginePlugin
@@ -72,5 +70,3 @@ QBearerEngine *QGenericEnginePlugin::create(const QString &key) const
 QT_END_NAMESPACE
 
 #include "main.moc"
-
-#endif // QT_NO_BEARERMANAGEMENT

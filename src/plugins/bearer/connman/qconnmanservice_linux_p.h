@@ -58,7 +58,6 @@
 #include <QtDBus/QDBusContext>
 #include <QMap>
 
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 #ifndef __CONNMAN_DBUS_H
@@ -219,6 +218,5 @@ private:
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QCONNMANSERVICE_H

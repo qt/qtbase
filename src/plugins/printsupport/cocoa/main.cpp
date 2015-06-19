@@ -38,8 +38,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_PRINTER
-
 class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
@@ -66,8 +64,6 @@ QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
         return 0;
     return platformPrinterSupport;
 }
-
-#endif
 
 QT_END_NAMESPACE
 

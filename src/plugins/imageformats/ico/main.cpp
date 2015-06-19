@@ -33,8 +33,6 @@
 
 #include "main.h"
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-
 QT_BEGIN_NAMESPACE
 
 QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const QByteArray &format) const
@@ -63,5 +61,3 @@ QImageIOHandler *QICOPlugin::create(QIODevice *device, const QByteArray &format)
 }
 
 QT_END_NAMESPACE
-
-#endif /* QT_NO_IMAGEFORMATPLUGIN */

@@ -33,8 +33,6 @@
 
 #include "qcupsprintengine_p.h"
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
-
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
 
@@ -315,5 +313,3 @@ void QCupsPrintEnginePrivate::setPageSize(const QPageSize &pageSize)
 }
 
 QT_END_NAMESPACE
-
-#endif // !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)

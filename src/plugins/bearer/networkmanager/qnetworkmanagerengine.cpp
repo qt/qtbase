@@ -49,7 +49,6 @@
 #include <QDBusReply>
 #include "../linux_common/qofonoservice_linux_p.h"
 
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -1129,4 +1128,3 @@ void QNetworkManagerEngine::ofonoUnRegistered(const QString &)
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT

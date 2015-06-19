@@ -41,8 +41,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_PRINTER
-
 QT_WARNING_DISABLE_GCC("-Wsign-compare")
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
@@ -470,7 +468,5 @@ QString QWindowsPrintDevice::defaultPrintDeviceId()
     GetDefaultPrinter(name.data(), &size);
     return QString::fromWCharArray(name.data());
 }
-
-#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

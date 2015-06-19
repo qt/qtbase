@@ -50,8 +50,6 @@
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
 #include <QtNetwork/private/qnetworksession_p.h>
 
-#ifndef QT_NO_BEARERMANAGEMENT
-
 QT_BEGIN_NAMESPACE
 
 class QBearerEngineImpl;
@@ -122,7 +120,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_BEARERMANAGEMENT
 
 #endif // QNETWORKSESSION_IMPL_H

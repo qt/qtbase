@@ -45,7 +45,6 @@
 
 #include "qofonoservice_linux_p.h"
 
-#ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QDBusArgument &operator<<(QDBusArgument &argument, const ObjectPathProperties &item)
@@ -382,4 +381,3 @@ QString QOfonoConnectionContextInterface::name()
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
-#endif // QT_NO_BEARERMANAGEMENT
