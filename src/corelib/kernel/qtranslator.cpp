@@ -723,7 +723,7 @@ static QString find_translation(const QLocale & locale,
 
     For example, an application running in the \a locale with the following
     \l{QLocale::uiLanguages()}{ui languages} - "es", "fr-CA", "de" might call
-    load(QLocale::system(), "foo", ".", "/opt/foolib", ".qm"). load() would
+    load(QLocale(), "foo", ".", "/opt/foolib", ".qm"). load() would
     replace '-' (dash) with '_' (underscore) in the ui language and then try to
     open the first existing readable file from this list:
 
