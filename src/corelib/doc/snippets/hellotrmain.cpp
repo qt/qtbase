@@ -44,10 +44,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QTranslator translator;
-    translator.load("hellotr_la");
-    app.installTranslator(&translator);
+    // look up e.g. :/translations/myapp_de.qm
+    if (translator.load(QLocale(), QLatin1String("myapp"), QLatin1String("_"), QLatin1String(":/translations")))
+        app.installTranslator(&translator);
 
-    QPushButton hello(QPushButton::tr("Hello world!"));
+    QPushButton hello(QCoreApplication::translate("main", "Hello world!"));
     hello.resize(100, 30);
 
     hello.show();
