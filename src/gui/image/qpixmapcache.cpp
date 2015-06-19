@@ -179,7 +179,6 @@ public:
 
     static QPixmapCache::KeyData* getKeyData(QPixmapCache::Key *key);
 
-    QList< QPair<QString,QPixmap> > allPixmaps() const;
     bool flushDetachedPixmaps(bool nt);
 
 private:
@@ -423,20 +422,6 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
     return key->d;
 }
 
-QList< QPair<QString,QPixmap> > QPMCache::allPixmaps() const
-{
-    QList< QPair<QString,QPixmap> > r;
-    QHash<QString, QPixmapCache::Key>::const_iterator it = cacheKeys.begin();
-    while (it != cacheKeys.end()) {
-        QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(it.value());
-        if (ptr)
-            r.append(QPair<QString,QPixmap>(it.key(),*ptr));
-        ++it;
-    }
-    return r;
-}
-
-
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
 
 int Q_AUTOTEST_EXPORT q_QPixmapCache_keyHashSize()
@@ -654,11 +639,6 @@ void QPixmapCache::flushDetachedPixmaps()
 int QPixmapCache::totalUsed()
 {
     return (pm_cache()->totalCost()+1023) / 1024;
-}
-
-QList< QPair<QString,QPixmap> > QPixmapCache::allPixmaps()
-{
-    return pm_cache()->allPixmaps();
 }
 
 QT_END_NAMESPACE

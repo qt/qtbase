@@ -36,10 +36,6 @@
 
 #include <QtGui/qpixmap.h>
 
-#ifdef Q_TEST_QPIXMAPCACHE
-#include <QtCore/qpair.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
@@ -80,7 +76,6 @@ public:
 #ifdef Q_TEST_QPIXMAPCACHE
     static void flushDetachedPixmaps();
     static int totalUsed();
-    static QList< QPair<QString,QPixmap> > allPixmaps();
 #endif
 };
 
