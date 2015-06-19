@@ -13,7 +13,8 @@ equals(TEMPLATE, app): TEMPLATE = aux
 
 isEmpty(TARGETPATH): error("Must set TARGETPATH (QML import name)")
 
-fq_qml_files = $$_PRO_FILE_PWD_/qmldir
+qmldir_file = $$_PRO_FILE_PWD_/qmldir
+fq_qml_files = $$qmldir_file
 
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 
@@ -25,6 +26,8 @@ qml1_target: \
 else: \
     instbase = $$[QT_INSTALL_QML]
 
+!qml1_target:static: CONFIG += builtin_resources
+
 !force_independent:if(!debug_and_release|!build_all|CONFIG(release, debug|release)) {
     # These bizarre rules copy the files to the qtbase build directory
 
@@ -32,7 +35,8 @@ else: \
         return($$relative_path($$1, $$_PRO_FILE_PWD_))
     }
 
-    qmlfiles2build.input = fq_qml_files
+    !builtin_resources: qmlfiles2build.input = fq_qml_files
+    else: qmlfiles2build.input = qmldir_file
     qmlfiles2build.output = $$instbase/$$TARGETPATH/${QMAKE_FUNC_FILE_IN_qmlModStripSrcDir}
     !contains(TEMPLATE, vc.*): qmlfiles2build.variable_out = PRE_TARGETDEPS
     qmlfiles2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
@@ -42,8 +46,18 @@ else: \
     QMAKE_EXTRA_COMPILERS += qmlfiles2build
 }
 
+builtin_resources {
+    URITARGET = $$replace(URI, "\\.", "_")
+    # Ensure the qml files are included in the resources
+    $${URITARGET}.files = $$fq_qml_files
+    # qt-project.org/imports is the path used for locating imports inside the resources
+    $${URITARGET}.prefix = /qt-project.org/imports/$$TARGETPATH
+    RESOURCES += $${URITARGET}
+}
+
 # Install rules
 qmldir.base = $$_PRO_FILE_PWD_
-qmldir.files = $$fq_qml_files
+!builtin_resources: qmldir.files = $$fq_qml_files
+else: qmldir.files = $$qmldir_file
 qmldir.path = $$instbase/$$TARGETPATH
 INSTALLS += qmldir
