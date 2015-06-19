@@ -917,7 +917,6 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             channels[i].resendCurrent = false;
-            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 
             // if this is not possible, error will be emitted and connection terminated
             if (!channels[i].resetUploadData())

@@ -1051,7 +1051,7 @@ protected:
         // clean up QAbstractSocket's residue:
         while (client->bytesToWrite() > 0) {
             qDebug() << "Still having" << client->bytesToWrite() << "bytes to write, doing that now";
-            if (!client->waitForBytesWritten(2000)) {
+            if (!client->waitForBytesWritten(10000)) {
                 qDebug() << "ERROR: FastSender:" << client->error() << "cleaning up residue";
                 return;
             }
@@ -1071,7 +1071,7 @@ protected:
             measuredSentBytes += writeNextData(client, bytesToWrite);
 
             while (client->bytesToWrite() > 0) {
-                if (!client->waitForBytesWritten(2000)) {
+                if (!client->waitForBytesWritten(10000)) {
                     qDebug() << "ERROR: FastSender:" << client->error() << "during blocking write";
                     return;
                 }
@@ -7946,7 +7946,7 @@ public slots:
         m_receivedData += data;
         if (!m_parsedHeaders && m_receivedData.contains("\r\n\r\n")) {
             m_parsedHeaders = true;
-            QTimer::singleShot(qrand()%10, this, SLOT(closeDelayed())); // simulate random network latency
+            QTimer::singleShot(qrand()%60, this, SLOT(closeDelayed())); // simulate random network latency
             // This server simulates a web server connection closing, e.g. because of Apaches MaxKeepAliveRequests or KeepAliveTimeout
             // In this case QNAM needs to re-send the upload data but it had a bug which then corrupts the upload
             // This test catches that.
@@ -8052,11 +8052,12 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
 
             // get the request started and the incoming socket connected
             QTestEventLoop::instance().enterLoop(10);
+            QVERIFY(!QTestEventLoop::instance().timeout());
 
             //qDebug() << "correct=" << server.m_correctUploads << "corrupt=" << server.m_corruptUploads << "expected=" <<numUploads;
 
             // Sanity check because ecause of 9c2ecf89 most replies will error out but we want to make sure at least some of them worked
-            QVERIFY(server.m_correctUploads > 5);
+            QVERIFY(server.m_correctUploads > 2);
             // Because actually important is that we don't get any corruption:
             QCOMPARE(server.m_corruptUploads, 0);
 

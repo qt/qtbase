@@ -169,6 +169,7 @@ public:
 
     void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
+    void resendCurrentRequest();
 
     bool isSocketBusy() const;
     bool isSocketWriting() const;

@@ -768,6 +768,7 @@ bool QAbstractSocketPrivate::canReadNotification()
 void QAbstractSocketPrivate::canCloseNotification()
 {
     Q_Q(QAbstractSocket);
+    // Note that this method is only called on Windows. Other platforms close in the canReadNotification()
 
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::canCloseNotification()");
@@ -777,7 +778,11 @@ void QAbstractSocketPrivate::canCloseNotification()
     if (isBuffered) {
         // Try to read to the buffer, if the read fail we can close the socket.
         newBytes = buffer.size();
-        if (!readFromSocket()) {
+        qint64 oldReadBufferMaxSize = readBufferMaxSize;
+        readBufferMaxSize = 0; // temporarily disable max read buffer, we want to empty the OS buffer
+        bool hadReadFromSocket = readFromSocket();
+        readBufferMaxSize = oldReadBufferMaxSize;
+        if (!hadReadFromSocket) {
             q->disconnectFromHost();
             return;
         }

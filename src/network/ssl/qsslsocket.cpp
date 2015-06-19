@@ -2294,6 +2294,14 @@ void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
     qCDebug(lcSsl) << "\tstate =" << q->state();
     qCDebug(lcSsl) << "\terrorString =" << q->errorString();
 #endif
+    // this moves encrypted bytes from plain socket into our buffer
+    if (plainSocket->bytesAvailable()) {
+        qint64 tmpReadBufferMaxSize = readBufferMaxSize;
+        readBufferMaxSize = 0; // reset temporarily so the plain sockets completely drained drained
+        transmit();
+        readBufferMaxSize = tmpReadBufferMaxSize;
+    }
+
     q->setSocketError(plainSocket->error());
     q->setErrorString(plainSocket->errorString());
     emit q->error(error);
