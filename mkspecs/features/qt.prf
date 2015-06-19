@@ -252,7 +252,10 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
             # if the plugin is linked statically there is no need to deploy it
             DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY
         }
-        isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:if(wince*|winrt): {
+
+        # The following block is currently broken, because qt_plugin_XXX.prf files
+        # are not generated for dynamic builds.
+        false:isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:if(wince*|winrt) {
             QT_ITEM =
             debug: QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll
