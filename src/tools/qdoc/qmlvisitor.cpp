@@ -119,7 +119,7 @@ QmlDocVisitor::~QmlDocVisitor()
  */
 QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
-    QListIterator<QQmlJS::AST::SourceLocation> it(engine->comments());
+    QVectorIterator<QQmlJS::AST::SourceLocation> it(engine->comments());
     it.toBack();
 
     while (it.hasPrevious()) {

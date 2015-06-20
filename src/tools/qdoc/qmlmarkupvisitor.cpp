@@ -42,7 +42,7 @@
 QT_BEGIN_NAMESPACE
 
 QmlMarkupVisitor::QmlMarkupVisitor(const QString &source,
-                                   const QList<QQmlJS::AST::SourceLocation> &pragmas,
+                                   const QVector<QQmlJS::AST::SourceLocation> &pragmas,
                                    QQmlJS::Engine *engine)
 {
     this->source = source;
@@ -54,7 +54,7 @@ QmlMarkupVisitor::QmlMarkupVisitor(const QString &source,
     // Merge the lists of locations of pragmas and comments in the source code.
     int i = 0;
     int j = 0;
-    const QList<QQmlJS::AST::SourceLocation> comments = engine->comments();
+    const QVector<QQmlJS::AST::SourceLocation> comments = engine->comments();
     while (i < comments.size() && j < pragmas.length()) {
         if (comments[i].offset < pragmas[j].offset) {
             extraTypes.append(Comment);

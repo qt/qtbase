@@ -37,6 +37,7 @@
 #include "qqmljsglobal_p.h"
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtypeinfo.h>
 
 //
 //  W A R N I N G
@@ -52,27 +53,6 @@
 QT_QML_BEGIN_NAMESPACE
 
 namespace QQmlJS { namespace AST {
-
-class SourceLocation
-{
-public:
-    explicit SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
-        : offset(offset), length(length),
-          startLine(line), startColumn(column)
-    { }
-
-    bool isValid() const { return length != 0; }
-
-    quint32 begin() const { return offset; }
-    quint32 end() const { return offset + length; }
-
-// attributes
-    // ### encode
-    quint32 offset;
-    quint32 length;
-    quint32 startLine;
-    quint32 startColumn;
-};
 
 class Visitor;
 class Node;
@@ -176,7 +156,30 @@ class UiQualifiedId;
 class UiQualifiedPragmaId;
 class UiHeaderItemList;
 
+class SourceLocation
+{
+public:
+    explicit SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
+        : offset(offset), length(length),
+          startLine(line), startColumn(column)
+    { }
+
+    bool isValid() const { return length != 0; }
+
+    quint32 begin() const { return offset; }
+    quint32 end() const { return offset + length; }
+
+// attributes
+    // ### encode
+    quint32 offset;
+    quint32 length;
+    quint32 startLine;
+    quint32 startColumn;
+};
+
 } } // namespace AST
+
+Q_DECLARE_TYPEINFO(QQmlJS::AST::SourceLocation, Q_PRIMITIVE_TYPE);
 
 QT_QML_END_NAMESPACE
 

@@ -125,7 +125,7 @@ void Engine::setCode(const QString &code)
 void Engine::addComment(int pos, int len, int line, int col)
 { if (len > 0) _comments.append(QQmlJS::AST::SourceLocation(pos, len, line, col)); }
 
-QList<QQmlJS::AST::SourceLocation> Engine::comments() const
+QVector<QQmlJS::AST::SourceLocation> Engine::comments() const
 { return _comments; }
 
 Lexer *Engine::lexer() const

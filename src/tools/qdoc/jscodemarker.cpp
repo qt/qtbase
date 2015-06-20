@@ -68,7 +68,7 @@ bool JsCodeMarker::recognizeCode(const QString &code)
     QQmlJS::Parser parser(&engine);
 
     QString newCode = code;
-    QList<QQmlJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
+    QVector<QQmlJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
     lexer.setCode(newCode, 1);
 
     return parser.parseProgram();
@@ -115,7 +115,7 @@ QString JsCodeMarker::addMarkUp(const QString &code,
     QQmlJS::Lexer lexer(&engine);
 
     QString newCode = code;
-    QList<QQmlJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
+    QVector<QQmlJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
     lexer.setCode(newCode, 1);
 
     QQmlJS::Parser parser(&engine);
