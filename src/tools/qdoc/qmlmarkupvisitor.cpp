@@ -54,21 +54,22 @@ QmlMarkupVisitor::QmlMarkupVisitor(const QString &source,
     // Merge the lists of locations of pragmas and comments in the source code.
     int i = 0;
     int j = 0;
-    while (i < engine->comments().length() && j < pragmas.length()) {
-        if (engine->comments()[i].offset < pragmas[j].offset) {
+    const QList<QQmlJS::AST::SourceLocation> comments = engine->comments();
+    while (i < comments.size() && j < pragmas.length()) {
+        if (comments[i].offset < pragmas[j].offset) {
             extraTypes.append(Comment);
-            extraLocations.append(engine->comments()[i]);
+            extraLocations.append(comments[i]);
             ++i;
         } else {
             extraTypes.append(Pragma);
-            extraLocations.append(engine->comments()[j]);
+            extraLocations.append(comments[j]);
             ++j;
         }
     }
 
-    while (i < engine->comments().length()) {
+    while (i < comments.size()) {
         extraTypes.append(Comment);
-        extraLocations.append(engine->comments()[i]);
+        extraLocations.append(comments[i]);
         ++i;
     }
 
