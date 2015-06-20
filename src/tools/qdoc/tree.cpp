@@ -1142,18 +1142,15 @@ const DocumentNode* Tree::findDocumentNodeByTitle(const QString& title) const
         DocumentNodeMultiMap::const_iterator j = i;
         ++j;
         if (j != docNodesByTitle_.constEnd() && j.key() == i.key()) {
-            QList<Location> internalLocations;
             while (j != docNodesByTitle_.constEnd()) {
                 if (j.key() == i.key() && j.value()->url().isEmpty()) {
-                    internalLocations.append(j.value()->location());
                     break; // Just report one duplicate for now.
                 }
                 ++j;
             }
-            if (internalLocations.size() > 0) {
+            if (j != docNodesByTitle_.cend()) {
                 i.value()->location().warning("This page title exists in more than one file: " + title);
-                foreach (const Location &location, internalLocations)
-                    location.warning("[It also exists here]");
+                j.value()->location().warning("[It also exists here]");
             }
         }
         return i.value();
