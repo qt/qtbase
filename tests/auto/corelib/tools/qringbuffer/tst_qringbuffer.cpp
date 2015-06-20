@@ -88,7 +88,7 @@ void tst_QRingBuffer::readPointerAtPositionReadTooMuch()
     qint64 length;
     const char *buf = ringBuffer.readPointerAtPosition(42, length);
     QVERIFY(buf == 0);
-    QVERIFY(length == 0);
+    QCOMPARE(length, Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::readPointerAtPositionWithHead()
@@ -104,8 +104,8 @@ void tst_QRingBuffer::readPointerAtPositionWithHead()
     const char* buf2 = ringBuffer.readPointerAtPosition(0, length);
 
     QCOMPARE(length, Q_INT64_C(2));
-    QVERIFY(*buf2 == '2');
-    QVERIFY(*(buf2+1) == '3');
+    QCOMPARE(*buf2, '2');
+    QCOMPARE(*(buf2 + 1), '3');
 
     // advance 2 more, ringBuffer should be empty then
     ringBuffer.free(2);
@@ -128,7 +128,7 @@ void tst_QRingBuffer::readPointerAtPositionEmptyRead()
     qint64 length;
     const char *buf = ringBuffer.readPointerAtPosition(0, length);
     QVERIFY(buf == 0);
-    QVERIFY(length == 0);
+    QCOMPARE(length, Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::readPointerAtPositionWriteRead()
@@ -215,9 +215,9 @@ void tst_QRingBuffer::reserveAndRead()
         ba.resize(i);
         qint64 thisRead = ringBuffer.read(ba.data(), i);
         QCOMPARE(thisRead, qint64(i));
-        QVERIFY(ba.count(char(i)) == i);
+        QCOMPARE(ba.count(char(i)), i);
     }
-    QVERIFY(ringBuffer.size() == 0);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::reserveFrontAndRead()
@@ -237,9 +237,9 @@ void tst_QRingBuffer::reserveFrontAndRead()
         ba.resize(i);
         qint64 thisRead = ringBuffer.read(ba.data(), i);
         QCOMPARE(thisRead, qint64(i));
-        QVERIFY(ba.count(char(i)) == i);
+        QCOMPARE(ba.count(char(i)), i);
     }
-    QVERIFY(ringBuffer.size() == 0);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }
 
 void tst_QRingBuffer::chop()
@@ -268,7 +268,7 @@ void tst_QRingBuffer::ungetChar()
 
     for (int i = 1; i < 31; ++i) {
         int c = ringBuffer.getChar();
-        QVERIFY(c == 1);
+        QCOMPARE(c, 1);
         ringBuffer.getChar();
         ringBuffer.ungetChar(char(c)); // unget first char
     }
@@ -283,9 +283,9 @@ void tst_QRingBuffer::indexOf()
 
     for (int i = 1; i < 256; ++i) {
         qint64 index = ringBuffer.indexOf(char(i));
-        QCOMPARE(qint64(i - 1), index);
-        QCOMPARE(index, ringBuffer.indexOf(char(i), i));
-        QVERIFY(ringBuffer.indexOf(char(i), i - 1) == -1); // test for absent char
+        QCOMPARE(index, qint64(i - 1));
+        QCOMPARE(ringBuffer.indexOf(char(i), i), index);
+        QCOMPARE(ringBuffer.indexOf(char(i), i - 1), -1); // test for absent char
     }
 }
 
@@ -299,9 +299,9 @@ void tst_QRingBuffer::appendAndRead()
     ringBuffer.append(ba2);
     ringBuffer.append(ba3);
 
-    QVERIFY(ringBuffer.read() == ba1);
-    QVERIFY(ringBuffer.read() == ba2);
-    QVERIFY(ringBuffer.read() == ba3);
+    QCOMPARE(ringBuffer.read(), ba1);
+    QCOMPARE(ringBuffer.read(), ba2);
+    QCOMPARE(ringBuffer.read(), ba3);
 }
 
 void tst_QRingBuffer::peek()
@@ -326,7 +326,7 @@ void tst_QRingBuffer::peek()
         QCOMPARE(thisPeek, qint64(i));
         resultBuffer.prepend(ba);
     }
-    QCOMPARE(testBuffer, resultBuffer);
+    QCOMPARE(resultBuffer, testBuffer);
 }
 
 void tst_QRingBuffer::readLine()
@@ -342,18 +342,18 @@ void tst_QRingBuffer::readLine()
 
     char stringBuf[102];
     stringBuf[101] = 0; // non-crash terminator
-    QVERIFY(ringBuffer.readLine(stringBuf, sizeof(stringBuf) - 2) == ba1.size());
-    QVERIFY(QByteArray(stringBuf, int(strlen(stringBuf))) == ba1);
+    QCOMPARE(ringBuffer.readLine(stringBuf, sizeof(stringBuf) - 2), qint64(ba1.size()));
+    QCOMPARE(QByteArray(stringBuf, int(strlen(stringBuf))), ba1);
 
     // check first empty string reading
     stringBuf[0] = char(0xFF);
     QCOMPARE(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2), qint64(ba2.size()));
-    QVERIFY(stringBuf[0] == ba2[0]);
+    QCOMPARE(stringBuf[0], ba2.at(0));
 
-    QVERIFY(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2) == (ba3.size() + ba4.size()
-        + ba2.size()));
-    QVERIFY(QByteArray(stringBuf, int(strlen(stringBuf))) == (ba3 + ba4 + ba2));
-    QVERIFY(ringBuffer.size() == 0);
+    QCOMPARE(ringBuffer.readLine(stringBuf, int(sizeof(stringBuf)) - 2),
+             qint64(ba3.size() + ba4.size() + ba2.size()));
+    QCOMPARE(QByteArray(stringBuf, int(strlen(stringBuf))), ba3 + ba4 + ba2);
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }
 
 QTEST_APPLESS_MAIN(tst_QRingBuffer)
