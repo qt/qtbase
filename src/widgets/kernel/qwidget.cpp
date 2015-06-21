@@ -1543,8 +1543,12 @@ QWidget::~QWidget()
 #endif
 
 #ifndef QT_NO_GESTURES
-    foreach (Qt::GestureType type, d->gestureContext.keys())
-        ungrabGesture(type);
+    if (QGestureManager *manager = QGestureManager::instance()) {
+        // \forall Qt::GestureType type : ungrabGesture(type) (inlined)
+        for (auto it = d->gestureContext.keyBegin(), end = d->gestureContext.keyEnd(); it != end; ++it)
+            manager->cleanupCachedGestures(this, *it);
+    }
+    d->gestureContext.clear();
 #endif
 
     // force acceptDrops false before winId is destroyed.
@@ -12253,6 +12257,7 @@ void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 */
 void QWidget::ungrabGesture(Qt::GestureType gesture)
 {
+    // if you modify this function, check the inlined version in ~QWidget, too
     Q_D(QWidget);
     if (d->gestureContext.remove(gesture)) {
         if (QGestureManager *manager = QGestureManager::instance())
