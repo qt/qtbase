@@ -569,13 +569,13 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
     }
 
     // for each gesture type
-    foreach (Qt::GestureType type, gestureByTypes.keys()) {
-        QHash<QWidget *, QGesture *> gestures = gestureByTypes.value(type);
+    for (GestureByTypes::const_iterator git = gestureByTypes.cbegin(), gend = gestureByTypes.cend(); git != gend; ++git) {
+        const QHash<QWidget *, QGesture *> &gestures = git.value();
         foreach (QWidget *widget, gestures.keys()) {
             QWidget *w = widget->parentWidget();
             while (w) {
                 QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator it
-                        = w->d_func()->gestureContext.constFind(type);
+                        = w->d_func()->gestureContext.constFind(git.key());
                 if (it != w->d_func()->gestureContext.constEnd()) {
                     // i.e. 'w' listens to gesture 'type'
                     if (!(it.value() & Qt::DontStartGestureOnChildren) && w != widget) {
