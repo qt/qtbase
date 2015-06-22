@@ -2719,9 +2719,9 @@ bool QString::operator<(QLatin1String other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
+/*! \fn bool operator<=(const QString &s1, const QString &s2)
 
-    \relates Qstring
+    \relates QString
 
     Returns \c true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
@@ -2767,7 +2767,7 @@ bool QString::operator<(QLatin1String other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator>(const QString &s1, const QString &s2)
+/*! \fn bool operator>(const QString &s1, const QString &s2)
     \relates QString
 
     Returns \c true if string \a s1 is lexically greater than string \a s2;
