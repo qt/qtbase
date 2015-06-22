@@ -1183,8 +1183,11 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
     QList<QPair<QFileSystemModelPrivate::QFileSystemNode*, int> > oldNodes;
-    for (int i = 0; i < oldList.count(); ++i) {
-        QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldList.at(i)), oldList.at(i).column());
+    const int nodeCount = oldList.count();
+    oldNodes.reserve(nodeCount);
+    for (int i = 0; i < nodeCount; ++i) {
+        const QModelIndex &oldNode = oldList.at(i);
+        QPair<QFileSystemModelPrivate::QFileSystemNode*, int> pair(d->node(oldNode), oldNode.column());
         oldNodes.append(pair);
     }
 
@@ -1197,9 +1200,10 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     d->sortOrder = order;
 
     QModelIndexList newList;
-    for (int i = 0; i < oldNodes.count(); ++i) {
-        QModelIndex idx = d->index(oldNodes.at(i).first);
-        idx = idx.sibling(idx.row(), oldNodes.at(i).second);
+    for (int i = 0; i < nodeCount; ++i) {
+        const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &oldNode = oldNodes.at(i);
+        QModelIndex idx = d->index(oldNode.first);
+        idx = idx.sibling(idx.row(), oldNode.second);
         newList.append(idx);
     }
     changePersistentIndexList(oldList, newList);
@@ -1648,7 +1652,9 @@ QStringList QFileSystemModel::nameFilters() const
     Q_D(const QFileSystemModel);
     QStringList filters;
 #ifndef QT_NO_REGEXP
-    for (int i = 0; i < d->nameFilters.size(); ++i) {
+    const int numNameFilters = d->nameFilters.size();
+    filters.reserve(numNameFilters);
+    for (int i = 0; i < numNameFilters; ++i) {
          filters << d->nameFilters.at(i).pattern();
     }
 #endif

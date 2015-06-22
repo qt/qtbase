@@ -2439,10 +2439,13 @@ QList<QTextEdit::ExtraSelection> QWidgetTextControl::extraSelections() const
 {
     Q_D(const QWidgetTextControl);
     QList<QTextEdit::ExtraSelection> selections;
-    for (int i = 0; i < d->extraSelections.count(); ++i) {
+    const int numExtraSelections = d->extraSelections.count();
+    selections.reserve(numExtraSelections);
+    for (int i = 0; i < numExtraSelections; ++i) {
         QTextEdit::ExtraSelection sel;
-        sel.cursor = d->extraSelections.at(i).cursor;
-        sel.format = d->extraSelections.at(i).format;
+        const QAbstractTextDocumentLayout::Selection &sel2 = d->extraSelections.at(i);
+        sel.cursor = sel2.cursor;
+        sel.format = sel2.format;
         selections.append(sel);
     }
     return selections;

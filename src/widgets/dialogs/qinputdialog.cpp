@@ -791,6 +791,7 @@ QStringList QInputDialog::comboBoxItems() const
     QStringList result;
     if (d->comboBox) {
         const int count = d->comboBox->count();
+        result.reserve(count);
         for (int i = 0; i < count; ++i)
             result.append(d->comboBox->itemText(i));
     }

@@ -2263,6 +2263,7 @@ void QComboBox::insertItems(int index, const QStringList &list)
     // construct a QStandardItem, reducing the number of expensive signals from the model
     if (QStandardItemModel *m = qobject_cast<QStandardItemModel*>(d->model)) {
         QList<QStandardItem *> items;
+        items.reserve(insertCount);
         QStandardItem *hiddenRoot = m->invisibleRootItem();
         for (int i = 0; i < insertCount; ++i)
             items.append(new QStandardItem(list.at(i)));

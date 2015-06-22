@@ -1189,12 +1189,17 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
     if (!usingWidgets())
         return addDefaultSuffixToUrls(selectedFiles_sys());
 
-    foreach (const QModelIndex &index, qFileDialogUi->listView->selectionModel()->selectedRows())
+    const QModelIndexList selectedRows = qFileDialogUi->listView->selectionModel()->selectedRows();
+    files.reserve(selectedRows.size());
+    foreach (const QModelIndex &index, selectedRows)
         files.append(QUrl::fromLocalFile(index.data(QFileSystemModel::FilePathRole).toString()));
 
-    if (files.isEmpty() && !lineEdit()->text().isEmpty())
-        foreach (const QString &path, typedFiles())
+    if (files.isEmpty() && !lineEdit()->text().isEmpty()) {
+        const QStringList typedFilesList = typedFiles();
+        files.reserve(typedFilesList.size());
+        foreach (const QString &path, typedFilesList)
             files.append(QUrl::fromLocalFile(path));
+    }
 
     return files;
 }
@@ -1228,7 +1233,9 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList &files
 QList<QUrl> QFileDialogPrivate::addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const
 {
     QList<QUrl> urls;
-    for (int i=0; i<urlsToFix.size(); ++i) {
+    const int numUrlsToFix = urlsToFix.size();
+    urls.reserve(numUrlsToFix);
+    for (int i = 0; i < numUrlsToFix; ++i) {
         QUrl url = urlsToFix.at(i);
         // if the filename has no suffix, add the default suffix
         const QString defaultSuffix = options->defaultSuffix();
@@ -1252,7 +1259,9 @@ QStringList QFileDialog::selectedFiles() const
     Q_D(const QFileDialog);
 
     QStringList files;
-    foreach (const QUrl &file, d->userSelectedFiles())
+    const QList<QUrl> userSelectedFiles = d->userSelectedFiles();
+    files.reserve(userSelectedFiles.size());
+    foreach (const QUrl &file, userSelectedFiles)
         files.append(file.toLocalFile());
     if (files.isEmpty() && d->usingWidgets()) {
         const FileMode fm = fileMode();
@@ -1277,7 +1286,9 @@ QList<QUrl> QFileDialog::selectedUrls() const
         return d->userSelectedFiles();
     } else {
         QList<QUrl> urls;
-        foreach (const QString &file, selectedFiles())
+        const QStringList selectedFileList = selectedFiles();
+        urls.reserve(selectedFileList.size());
+        foreach (const QString &file, selectedFileList)
             urls.append(QUrl::fromLocalFile(file));
         return urls;
     }
@@ -1356,7 +1367,9 @@ QStringList qt_strip_filters(const QStringList &filters)
 {
     QStringList strippedFilters;
     QRegExp r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    for (int i = 0; i < filters.count(); ++i) {
+    const int numFilters = filters.count();
+    strippedFilters.reserve(numFilters);
+    for (int i = 0; i < numFilters; ++i) {
         QString filterName;
         int index = r.indexIn(filters[i]);
         if (index >= 0)
@@ -1391,7 +1404,9 @@ void QFileDialog::setNameFilters(const QStringList &filters)
     Q_D(QFileDialog);
     d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
     QStringList cleanedFilters;
-    for (int i = 0; i < filters.count(); ++i) {
+    const int numFilters = filters.count();
+    cleanedFilters.reserve(numFilters);
+    for (int i = 0; i < numFilters; ++i) {
         cleanedFilters << filters[i].simplified();
     }
     d->options->setNameFilters(cleanedFilters);
@@ -2186,6 +2201,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     const QStringList schemes = QStringList(QStringLiteral("file"));
     const QList<QUrl> selectedUrls = getOpenFileUrls(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
     QStringList fileNames;
+    fileNames.reserve(selectedUrls.size());
     foreach (const QUrl &url, selectedUrls)
         fileNames << url.toLocalFile();
     return fileNames;
@@ -2662,7 +2678,9 @@ void QFileDialogPrivate::saveSettings()
         settings.setValue(QLatin1String("treeViewHeader"), qFileDialogUi->treeView->header()->saveState());
     }
     QStringList historyUrls;
-    foreach (const QString &path, q->history())
+    const QStringList history = q->history();
+    historyUrls.reserve(history.size());
+    foreach (const QString &path, history)
         historyUrls << QUrl::fromLocalFile(path).toString();
     settings.setValue(QLatin1String("history"), historyUrls);
     settings.setValue(QLatin1String("lastVisited"), lastVisitedDir()->toString());

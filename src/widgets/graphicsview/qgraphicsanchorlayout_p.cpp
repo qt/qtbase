@@ -752,8 +752,10 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
     AnchorVertex *prev = before;
     QVector<AnchorData *> edges;
 
+    const int numVertices = vertices.count();
+    edges.reserve(numVertices + 1);
     // Take from the graph, the edges that will be simplificated
-    for (int i = 0; i < vertices.count(); ++i) {
+    for (int i = 0; i < numVertices; ++i) {
         AnchorVertex *next = vertices.at(i);
         AnchorData *ad = graph->takeEdge(prev, next);
         Q_ASSERT(ad);
@@ -2569,6 +2571,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
     if (!remainingConstraints.isEmpty()) {
         QList<QSimplexConstraint *> nonTrunkConstraints;
+        nonTrunkConstraints.reserve(remainingConstraints.size());
         QLinkedList<QSimplexConstraint *>::iterator it = remainingConstraints.begin();
         while (it != remainingConstraints.end()) {
             nonTrunkConstraints += *it;

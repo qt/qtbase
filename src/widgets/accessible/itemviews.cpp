@@ -198,7 +198,9 @@ QList<QAccessibleInterface *> QAccessibleTable::selectedCells() const
     QList<QAccessibleInterface*> cells;
     if (!view()->selectionModel())
         return cells;
-    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedIndexes())
+    const QModelIndexList selectedIndexes = view()->selectionModel()->selectedIndexes();
+    cells.reserve(selectedIndexes.size());
+    Q_FOREACH (const QModelIndex &index, selectedIndexes)
         cells.append(child(logicalIndex(index)));
     return cells;
 }
@@ -208,9 +210,11 @@ QList<int> QAccessibleTable::selectedColumns() const
     if (!view()->selectionModel())
         return QList<int>();
     QList<int> columns;
-    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedColumns()) {
+    const QModelIndexList selectedColumns = view()->selectionModel()->selectedColumns();
+    columns.reserve(selectedColumns.size());
+    Q_FOREACH (const QModelIndex &index, selectedColumns)
         columns.append(index.column());
-    }
+
     return columns;
 }
 
@@ -219,9 +223,11 @@ QList<int> QAccessibleTable::selectedRows() const
     if (!view()->selectionModel())
         return QList<int>();
     QList<int> rows;
-    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedRows()) {
+    const QModelIndexList selectedRows = view()->selectionModel()->selectedRows();
+    rows.reserve(selectedRows.size());
+    Q_FOREACH (const QModelIndex &index, selectedRows)
         rows.append(index.row());
-    }
+
     return rows;
 }
 

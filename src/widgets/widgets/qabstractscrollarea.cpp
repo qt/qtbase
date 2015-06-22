@@ -210,10 +210,12 @@ QWidgetList QAbstractScrollAreaScrollBarContainer::widgets(LogicalPosition posit
     QWidgetList list;
     const int scrollBarIndex = scrollBarLayoutIndex();
     if (position == LogicalLeft) {
+        list.reserve(scrollBarIndex);
         for (int i = 0; i < scrollBarIndex; ++i)
             list.append(layout->itemAt(i)->widget());
     } else if (position == LogicalRight) {
         const int layoutItemCount = layout->count();
+        list.reserve(layoutItemCount - (scrollBarIndex + 1));
         for (int i = scrollBarIndex + 1; i < layoutItemCount; ++i)
             list.append(layout->itemAt(i)->widget());
     }

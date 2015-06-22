@@ -2211,8 +2211,10 @@ QSet<QTabBar*> QDockAreaLayoutInfo::usedTabBars() const
 QSet<QWidget*> QDockAreaLayoutInfo::usedSeparatorWidgets() const
 {
     QSet<QWidget*> result;
+    const int numSeparatorWidgets = separatorWidgets.count();
+    result.reserve(numSeparatorWidgets);
 
-    for (int i = 0; i < separatorWidgets.count(); ++i)
+    for (int i = 0; i < numSeparatorWidgets; ++i)
         result << separatorWidgets.at(i);
 
     for (int i = 0; i < item_list.count(); ++i) {

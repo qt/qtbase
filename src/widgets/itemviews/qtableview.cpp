@@ -1884,6 +1884,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
                     break;
             }
         } while (expanded);
+         selection.reserve((right - left + 1) * (bottom - top + 1));
          for (int horizontal = left; horizontal <= right; ++horizontal) {
              int column = d->logicalColumn(horizontal);
              for (int vertical = top; vertical <= bottom; ++vertical) {
@@ -1897,6 +1898,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
          int left = d->visualColumn(tl.column());
          int bottom = d->visualRow(br.row());
          int right = d->visualColumn(br.column());
+         selection.reserve((right - left + 1) * (bottom - top + 1));
          for (int horizontal = left; horizontal <= right; ++horizontal) {
              int column = d->logicalColumn(horizontal);
              for (int vertical = top; vertical <= bottom; ++vertical) {
@@ -1908,6 +1910,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
     } else if (horizontalMoved) {
         int left = d->visualColumn(tl.column());
         int right = d->visualColumn(br.column());
+        selection.reserve(right - left + 1);
         for (int visual = left; visual <= right; ++visual) {
             int column = d->logicalColumn(visual);
             QModelIndex topLeft = d->model->index(tl.row(), column, d->root);
@@ -1917,6 +1920,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
     } else if (verticalMoved) {
         int top = d->visualRow(tl.row());
         int bottom = d->visualRow(br.row());
+        selection.reserve(bottom - top + 1);
         for (int visual = top; visual <= bottom; ++visual) {
             int row = d->logicalRow(visual);
             QModelIndex topLeft = d->model->index(row, tl.column(), d->root);
