@@ -44,6 +44,7 @@
 
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtGui/qguiapplication.h>
 
@@ -553,10 +554,8 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
-    if (QGuiApplication::platformNativeInterface()->nativeResourceForScreen("nofonthinting",
-                         QGuiApplication::primaryScreen())) {
+    if (QHighDpiScaling::isActive())
         return QFontEngine::HintNone;
-    }
 
     int hint_style = 0;
     if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultMatch) {
