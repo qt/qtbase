@@ -42,11 +42,13 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
+
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QPlatformIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
+#endif // !QT_NO_LIBRARY
 
 static inline QPlatformIntegration *loadIntegration(QFactoryLoader *loader, const QString &key, const QStringList &parameters, int &argc, char ** argv)
 {
@@ -59,8 +61,6 @@ static inline QPlatformIntegration *loadIntegration(QFactoryLoader *loader, cons
     return 0;
 }
 
-#endif // !QT_NO_LIBRARY
-
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platform, const QStringList &paramList, int &argc, char **argv, const QString &platformPluginPath)
 {
 #ifndef QT_NO_LIBRARY
@@ -70,16 +70,10 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
         if (QPlatformIntegration *ret = loadIntegration(directLoader(), platform, paramList, argc, argv))
             return ret;
     }
-    if (QPlatformIntegration *ret = loadIntegration(loader(), platform, paramList, argc, argv))
-        return ret;
 #else
-    Q_UNUSED(platform);
-    Q_UNUSED(paramList);
-    Q_UNUSED(argc);
-    Q_UNUSED(argv);
     Q_UNUSED(platformPluginPath);
 #endif
-    return 0;
+    return loadIntegration(loader(), platform, paramList, argc, argv);
 }
 
 /*!
