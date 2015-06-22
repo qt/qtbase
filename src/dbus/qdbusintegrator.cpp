@@ -952,14 +952,19 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     }
 
     // output arguments
+    const int numMetaTypes = metaTypes.count();
     QVariantList outputArgs;
     void *null = 0;
     if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
+        outputArgs.reserve(numMetaTypes - i + 1);
         QVariant arg(metaTypes[0], null);
         outputArgs.append( arg );
         params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
+    } else {
+        outputArgs.reserve(numMetaTypes - i);
     }
-    for ( ; i < metaTypes.count(); ++i) {
+
+    for ( ; i < numMetaTypes; ++i) {
         QVariant arg(metaTypes[i], null);
         outputArgs.append( arg );
         params.append(const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData()));
