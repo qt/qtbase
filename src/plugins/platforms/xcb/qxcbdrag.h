@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DRAGANDDROP
 
-class QMouseEvent;
 class QWindow;
 class QPlatformWindow;
 class QXcbConnection;
@@ -73,14 +72,14 @@ public:
 
     void startDrag() Q_DECL_OVERRIDE;
     void cancel() Q_DECL_OVERRIDE;
-    void move(const QMouseEvent *me) Q_DECL_OVERRIDE;
-    void drop(const QMouseEvent *me) Q_DECL_OVERRIDE;
+    void move(const QPoint &globalPos) Q_DECL_OVERRIDE;
+    void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
     void endDrag() Q_DECL_OVERRIDE;
 
-    void handleEnter(QWindow *window, const xcb_client_message_event_t *event);
-    void handlePosition(QWindow *w, const xcb_client_message_event_t *event);
-    void handleLeave(QWindow *w, const xcb_client_message_event_t *event);
-    void handleDrop(QWindow *, const xcb_client_message_event_t *event);
+    void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event);
+    void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
+    void handleLeave(QPlatformWindow *w, const xcb_client_message_event_t *event);
+    void handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event);
 
     void handleStatus(const xcb_client_message_event_t *event);
     void handleSelectionRequest(const xcb_selection_request_event_t *event);
@@ -100,7 +99,7 @@ private:
 
     void init();
 
-    void handle_xdnd_position(QWindow *w, const xcb_client_message_event_t *event);
+    void handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handle_xdnd_status(const xcb_client_message_event_t *event);
     void send_leave();
 
@@ -147,7 +146,7 @@ private:
         xcb_timestamp_t timestamp;
         xcb_window_t target;
         xcb_window_t proxy_target;
-        QWindow *targetWindow;
+        QPlatformWindow *targetWindow;
 //        QWidget *embedding_widget;
         QPointer<QDrag> drag;
         QTime time;
