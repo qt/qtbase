@@ -39,6 +39,9 @@ information about a particular change.
  - [QTBUG-25121] The usage of the QStyleOptionProgressBar::orientation
    member has been deprecated.
 
+ - QLibraryInfo::buildDate() was deprecated and will return a constant
+   date now.
+
 ****************************************************************************
 *                        Important Behavior Changes                        *
 ****************************************************************************
@@ -108,10 +111,17 @@ information about a particular change.
      primary screen.
 
  - qmake:
+   * For commercial builds, qmake now checks for a valid Qt license. This
+     requires setting up a Qt Account (or .qt-license file) on the
+     development machine.
    * Qt configure and qmake used with a MinGW spec will no longer emulate
      MSVC by picking up the INCLUDE and LIB environment variables. Use the
      -I/-L configure options to pass additional paths, as you would under
      Unix.
+   * A lot of quoting issues have been fixed. As a side effect, qmake
+     has become more sensitive to over-quoted file names in project
+     files.
+   * qmake is now stricter about syntax errors in project files.
 
 ****************************************************************************
 *                               Library                                    *
@@ -472,6 +482,10 @@ Android
  - QtWidgets:
    * Enable QDockWidget window decorations.
 
+ - The QtDBus module is now disabled by default.
+
+ - Added support for arm64-v8a, x86_64, and mips64 with gcc 4.9.
+
 OS X
 ----
 
@@ -526,22 +540,45 @@ X11/XCB
 *                                Tools                                     *
 ****************************************************************************
 
-configure
----------
+configure & build system
+------------------------
 
- - Added support for GCC/Clang -fsanitize= options
+ - Added support for VS2015.
+ - [QTBUG-31814][OS X/iOS] Qt is now built with a relative RPATH.
+ - [VS2012+] Qt is now always built with C++11 with these compilers.
+ - [Windows] Added -static-runtime option.
+ - Added support for GCC/Clang -fsanitize= options.
+ - Enabled tslib autodetection by default.
+ - Added configure-time check for IPC support.
+ - [QTBUG-44690][QNX] Fixed NEON detection when cross-compiling on Windows.
+ - On-device compilation should work better on RaspPi and some other
+   devices now (use linux-g++ mkspec).
+ - configure -redo and config.status support spaces in arguments now.
+ - Qt can be now built in and installed to directories with spaces.
+   Note that source directories with spaces are still not supported.
 
 qmake
 -----
 
- - For commercial builds, qmake now checks for a valid Qt license. This
-   requires setting up a Qt Account (or .qt-license file) on the
-   development machine.
-
- - Important Behavior Changes:
-   * A lot of quoting issues have been fixed. As a side effect, qmake
-     has become more sensitive to over-quoted file names in project
-     files.
+ - [QTBUG-3069][Linux] Building with -rpath will now create DT_RUNPATH tags
+   instead of DT_RPATH, allowing LD_LIBRARY_PATH to override the rpath.
+ - [QTBUG-41917][VS] Fixed project generation when PRECOMPILED_SOURCE is
+   in a different directory than PRECOMPILED_HEADER.
+ - [QTBUG-42454][MinGW] Added handling of QMAKE_MANIFEST.
+ - [QTBUG-13496][MSVC] CONFIG+=no_batch is now automatically added when
+   multiple sources with the same base name exist.
+ - Added $$[QT_INSTALL_PREFIX/dev], etc. properties which reflect the
+   on-device locations of Qt (the -prefix, etc. passed to configure).
+ - Building under MSys is less problematic now.
+ - [QTBUG-37269] Fixed cross-compilation for Unix on Windows/MinGW.
+ - [QTBUG-8202][QTBUG-20566][QTBUG-44685] Fixed distclean targets.
+ - [QTBUG-43162][VS] Added DISTFILES support for Visual Studio projects.
+ - [QTBUG-41753][VS][WinPhone] Fixed MdilXapCompile deployment step.
+ - [QTBUG-44960][VS] Reworked .dll deployment. Added $$QMAKE_DLL_PATHS.
+ - [QTBUG-44823][MSVC] Fixed unreasonable values being passed in /VERSION.
+   Added $$VERSION_PE_HEADER to override the value.
+ - [WinRT] The icon handling was reworked/extended.
+ - [QTBUG-12711] Fixed infinite recursion on malformed .prl files.
 
 ****************************************************************************
 *                          Third-party libraries                           *
