@@ -465,15 +465,18 @@ QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines() const
 void QNetworkConfigurationManagerPrivate::startPolling()
 {
     QMutexLocker locker(&mutex);
-
-    if(!pollTimer) {
+    if (!pollTimer) {
         pollTimer = new QTimer(this);
-        pollTimer->setInterval(10000);
+        bool ok;
+        int interval = qgetenv("QT_BEARER_POLL_TIMEOUT").toInt(&ok);
+        if (!ok)
+            interval = 10000;//default 10 seconds
+        pollTimer->setInterval(interval);
         pollTimer->setSingleShot(true);
         connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollEngines()));
     }
 
-    if(pollTimer->isActive())
+    if (pollTimer->isActive())
         return;
 
     foreach (QBearerEngine *engine, sessionEngines) {
@@ -482,6 +485,7 @@ void QNetworkConfigurationManagerPrivate::startPolling()
             break;
         }
     }
+    performAsyncConfigurationUpdate();
 }
 
 void QNetworkConfigurationManagerPrivate::pollEngines()
