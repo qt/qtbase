@@ -430,7 +430,8 @@ void *QWindowsEGLStaticContext::createWindowSurface(void *nativeWindow, void *na
                                                        (EGLNativeWindowType) nativeWindow, 0);
     if (surface == EGL_NO_SURFACE) {
         *err = libEGL.eglGetError();
-        qWarning("%s: Could not create the EGL window surface: 0x%x\n", Q_FUNC_INFO, *err);
+        if (*err != EGL_CONTEXT_LOST)
+            qWarning("%s: Could not create the EGL window surface: 0x%x\n", Q_FUNC_INFO, *err);
     }
 
     return surface;
