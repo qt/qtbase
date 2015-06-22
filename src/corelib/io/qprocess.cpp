@@ -905,6 +905,7 @@ void QProcessPrivate::setError(QProcess::ProcessError error, const QString &desc
         switch (error) {
         case QProcess::FailedToStart:
             errorString = QProcess::tr("Process failed to start");
+            break;
         case QProcess::Crashed:
             errorString = QProcess::tr("Process crashed");
             break;
