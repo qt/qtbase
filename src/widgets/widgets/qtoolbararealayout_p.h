@@ -132,10 +132,12 @@ public:
     int preferredSize;
     bool gap;
 };
+Q_DECLARE_TYPEINFO(QToolBarAreaLayoutItem, Q_PRIMITIVE_TYPE);
 
 class QToolBarAreaLayoutLine
 {
 public:
+    QToolBarAreaLayoutLine() {} // for QVector, don't use
     QToolBarAreaLayoutLine(Qt::Orientation orientation);
 
     QSize sizeHint() const;
@@ -147,15 +149,14 @@ public:
     QRect rect;
     Qt::Orientation o;
 
-    QList<QToolBarAreaLayoutItem> toolBarItems;
+    QVector<QToolBarAreaLayoutItem> toolBarItems;
 };
+Q_DECLARE_TYPEINFO(QToolBarAreaLayoutLine, Q_MOVABLE_TYPE);
 
 class QToolBarAreaLayoutInfo
 {
 public:
     QToolBarAreaLayoutInfo(QInternal::DockPosition pos = QInternal::TopDock);
-
-    QList<QToolBarAreaLayoutLine> lines;
 
     QSize sizeHint() const;
     QSize minimumSize() const;
@@ -175,11 +176,13 @@ public:
     QRect itemRect(const QList<int> &path) const;
     int distance(const QPoint &pos) const;
 
+    QVector<QToolBarAreaLayoutLine> lines;
     QRect rect;
     Qt::Orientation o;
     QInternal::DockPosition dockPos;
     bool dirty;
 };
+Q_DECLARE_TYPEINFO(QToolBarAreaLayoutInfo, Q_MOVABLE_TYPE);
 
 class QToolBarAreaLayout
 {
