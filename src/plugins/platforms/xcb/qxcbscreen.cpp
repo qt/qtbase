@@ -44,6 +44,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qmath_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +87,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_orientation(Qt::PrimaryOrientation)
     , m_refreshRate(60)
     , m_forcedDpi(-1)
+    , m_pixelDensity(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
     , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
@@ -302,6 +304,11 @@ QDpi QXcbScreen::logicalDpi() const
     return virtualDpi();
 }
 
+qreal QXcbScreen::pixelDensity() const
+{
+    return m_pixelDensity;
+}
+
 QPlatformCursor *QXcbScreen::cursor() const
 {
     return m_cursor;
@@ -457,6 +464,8 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     }
     free(workArea);
 
+    qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
+    m_pixelDensity = qRound(dpi/96);
     m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = QRect(xAvailableGeometry.topLeft(), xAvailableGeometry.size());

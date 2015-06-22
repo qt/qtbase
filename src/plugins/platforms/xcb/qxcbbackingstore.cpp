@@ -49,6 +49,7 @@
 #include <qdebug.h>
 #include <qpainter.h>
 #include <qscreen.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <qpa/qplatformgraphicsbuffer.h>
 
 #include <algorithm>
@@ -365,7 +366,7 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     QSize imageSize = m_image->size();
 
     QRegion clipped = region;
-    clipped &= QRect(QPoint(), window->size());
+    clipped &= QRect(QPoint(), QHighDpi::toNativePixels(window->size(), window));
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
     QRect bounds = clipped.boundingRect();

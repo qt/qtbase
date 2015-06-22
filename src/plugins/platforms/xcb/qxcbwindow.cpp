@@ -37,6 +37,7 @@
 #include <QScreen>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include "qxcbintegration.h"
 #include "qxcbconnection.h"
@@ -320,7 +321,7 @@ void QXcbWindow::create()
     Qt::WindowType type = window()->type();
 
     QXcbScreen *currentScreen = xcbScreen();
-    QRect rect = window()->geometry();
+    QRect rect = windowGeometry();
     QXcbScreen *platformScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     m_xcbScreen = platformScreen;
@@ -363,15 +364,15 @@ void QXcbWindow::create()
     if (platformScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), platformScreen->QPlatformScreen::screen());
 
-    QSize minimumSize = window()->minimumSize();
+    const QSize minimumSize = windowMinimumSize();
     if (rect.width() > 0 || rect.height() > 0) {
         rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
         rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
     } else {
-        rect.setWidth(defaultWindowWidth);
-        rect.setHeight(defaultWindowHeight);
+        rect.setWidth(QHighDpi::toNativePixels(int(defaultWindowWidth), platformScreen->QPlatformScreen::screen()));
+        rect.setHeight(QHighDpi::toNativePixels(int(defaultWindowHeight), platformScreen->QPlatformScreen::screen()));
     }
 
     xcb_window_t xcb_parent_id = platformScreen->root();
@@ -641,11 +642,11 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
     propagateSizeHints();
 
-    QXcbScreen *currentScreen = xcbScreen();
+    QXcbScreen *currentScreen = m_xcbScreen;
     QXcbScreen *newScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     if (!newScreen)
-        newScreen = currentScreen;
+        newScreen = xcbScreen();
 
     m_xcbScreen = newScreen;
     const QRect wmGeometry = windowToWmGeometry(rect);
@@ -1260,7 +1261,7 @@ void QXcbWindow::updateMotifWmHintsBeforeMap()
         mwmhints.flags &= ~MWM_HINTS_INPUT_MODE;
     }
 
-    if (window()->minimumSize() == window()->maximumSize()) {
+    if (windowMinimumSize() == windowMaximumSize()) {
         // fixed size, remove the resize handle (since mwm/dtwm
         // isn't smart enough to do it itself)
         mwmhints.flags |= MWM_HINTS_FUNCTIONS;
@@ -1556,10 +1557,10 @@ void QXcbWindow::propagateSizeHints()
         xcb_size_hints_set_size(&hints, true, xRect.width(), xRect.height());
     xcb_size_hints_set_win_gravity(&hints, m_gravity);
 
-    QSize minimumSize = window()->minimumSize();
-    QSize maximumSize = window()->maximumSize();
-    QSize baseSize = window()->baseSize();
-    QSize sizeIncrement = window()->sizeIncrement();
+    QSize minimumSize = windowMinimumSize();
+    QSize maximumSize = windowMaximumSize();
+    QSize baseSize = windowBaseSize();
+    QSize sizeIncrement = windowSizeIncrement();
 
     if (minimumSize.width() > 0 || minimumSize.height() > 0)
         xcb_size_hints_set_min_size(&hints,
@@ -1951,13 +1952,13 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         }
 #ifndef QT_NO_DRAGANDDROP
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
-        connection()->drag()->handleEnter(window(), event);
+        connection()->drag()->handleEnter(this, event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {
-        connection()->drag()->handlePosition(window(), event);
+        connection()->drag()->handlePosition(this, event);
     } else if (event->type == atom(QXcbAtom::XdndLeave)) {
-        connection()->drag()->handleLeave(window(), event);
+        connection()->drag()->handleLeave(this, event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
-        connection()->drag()->handleDrop(window(), event);
+        connection()->drag()->handleDrop(this, event);
 #endif
     } else if (event->type == atom(QXcbAtom::_XEMBED)) {
         handleXEmbedMessage(event);
