@@ -103,17 +103,6 @@
             ]
         },
         {
-            "id": 7,
-            "description": "driver description test",
-            "driver_description": "Test",
-            "os": {
-                "type": "win"
-            },
-            "features": [
-                "feature2"
-            ]
-        },
-        {
             "id": 128,
             "description": "check for matching GL_VENDOR",
             "gl_vendor": "The Qt Company",

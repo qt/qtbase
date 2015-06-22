@@ -224,7 +224,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
 #elif defined(Q_OS_WINCE)
     return QWindowsOpenGLTester::Gles;
 #else
-    QOpenGLConfig::Gpu qgpu = QOpenGLConfig::Gpu::fromDevice(gpu.deviceId, gpu.vendorId, gpu.driverVersion, gpu.description);
+    QOpenGLConfig::Gpu qgpu = QOpenGLConfig::Gpu::fromDevice(gpu.deviceId, gpu.vendorId, gpu.driverVersion);
     SupportedRenderersCache *srCache = supportedRenderersCache();
     SupportedRenderersCache::const_iterator it = srCache->find(qgpu);
     if (it != srCache->cend())

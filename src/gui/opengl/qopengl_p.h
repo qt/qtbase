@@ -79,21 +79,19 @@ public:
         bool isValid() const { return deviceId || !glVendor.isEmpty(); }
         bool equals(const Gpu &other) const {
             return vendorId == other.vendorId && deviceId == other.deviceId && driverVersion == other.driverVersion
-                && driverDescription == other.driverDescription && glVendor == other.glVendor;
+                && glVendor == other.glVendor;
         }
 
         uint vendorId;
         uint deviceId;
         QVersionNumber driverVersion;
-        QByteArray driverDescription;
         QByteArray glVendor;
 
-        static Gpu fromDevice(uint vendorId, uint deviceId, QVersionNumber driverVersion, const QByteArray &driverDescription) {
+        static Gpu fromDevice(uint vendorId, uint deviceId, QVersionNumber driverVersion) {
             Gpu gpu;
             gpu.vendorId = vendorId;
             gpu.deviceId = deviceId;
             gpu.driverVersion = driverVersion;
-            gpu.driverDescription = driverDescription;
             return gpu;
         }
 

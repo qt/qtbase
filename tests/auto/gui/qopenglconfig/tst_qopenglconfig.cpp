@@ -244,17 +244,10 @@ void tst_QOpenGlConfig::testBugList()
     expectedFeatures << "feature1";
 
     QVersionNumber driverVersion(QVector<int>() << 9 << 18 << 13 << 4460);
-    QOpenGLConfig::Gpu gpu = QOpenGLConfig::Gpu::fromDevice(0x10DE, 0x0DE9, driverVersion, QByteArrayLiteral("Unknown"));
+    QOpenGLConfig::Gpu gpu = QOpenGLConfig::Gpu::fromDevice(0x10DE, 0x0DE9, driverVersion);
 
     QSet<QString> actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),
                                                               QVersionNumber(6, 3), fileName);
-    QVERIFY2(expectedFeatures == actualFeatures,
-             msgSetMismatch(expectedFeatures, actualFeatures));
-
-    gpu = QOpenGLConfig::Gpu::fromDevice(0xDEAD, 0xBEEF, driverVersion, QByteArrayLiteral("Test"));
-    actualFeatures = QOpenGLConfig::gpuFeatures(gpu, QStringLiteral("win"),
-                                                QVersionNumber(6, 3), fileName);
-    expectedFeatures = QSet<QString>() << "feature2";
     QVERIFY2(expectedFeatures == actualFeatures,
              msgSetMismatch(expectedFeatures, actualFeatures));
 
