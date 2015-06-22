@@ -959,8 +959,10 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     QList<QScreen *>::const_iterator end = screens.constEnd();
 
     while (screen != end) {
-        if ((*screen)->geometry().contains(pos))
-            return (*screen)->handle()->topLevelAt(pos);
+        if ((*screen)->geometry().contains(pos)) {
+            const QPoint devicePosition = QHighDpi::toNativePixels(pos, *screen);
+            return (*screen)->handle()->topLevelAt(devicePosition);
+        }
         ++screen;
     }
     return 0;
@@ -1116,6 +1118,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // this flag.
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
+
+    QHighDpiScaling::initHighDpiScaling();
+
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
@@ -1178,6 +1183,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
+
+    QHighDpiScaling::updateHighDpiScaling();
 }
 
 /*!
@@ -1822,7 +1829,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
@@ -2032,6 +2039,11 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             window->d_func()->setTopLevelScreen(screen, false /* recreate */);
         else // Fall back to default behavior, and try to find some appropriate screen
             window->setScreen(0);
+        // we may have changed scaling, so trigger resize event if needed
+        if (window->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());
+            processGeometryChangeEvent(&gce);
+        }
     }
 }
 

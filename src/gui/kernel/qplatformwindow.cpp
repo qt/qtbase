@@ -39,7 +39,9 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
+#include <private/qhighdpiscaling_p.h>
 #include <private/qwindow_p.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -481,13 +483,25 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) const
 {
     QPlatformScreen *currentScreen = screen();
-    if (!parent() && currentScreen && !currentScreen->geometry().intersects(newGeometry)) {
+    QPlatformScreen *fallback = currentScreen;
+    QPoint center = newGeometry.center();
+    if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
-            if (screen->geometry().intersects(newGeometry))
+            if (screen->geometry().contains(center))
                 return screen;
+            if (screen->geometry().intersects(newGeometry))
+                fallback = screen;
         }
     }
-    return currentScreen;
+    return fallback;
+}
+
+/*!
+    Returns a size with both dimensions bounded to [0, QWINDOWSIZE_MAX]
+*/
+QSize QPlatformWindow::constrainWindowSize(const QSize &size)
+{
+    return size.expandedTo(QSize(0, 0)).boundedTo(QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX));
 }
 
 /*!
@@ -565,7 +579,7 @@ void QPlatformWindow::invalidateSurface()
 QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
-    QRect rect(initialGeometry);
+    QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (rect.width() == 0) {
         const int minWidth = w->minimumWidth();
         rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
@@ -593,7 +607,7 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
             }
         }
     }
-    return rect;
+    return QHighDpi::toNativePixels(rect, w);
 }
 
 /*!
@@ -624,6 +638,69 @@ void QPlatformWindow::requestUpdate()
     QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(w);
     Q_ASSERT(wp->updateTimer == 0);
     wp->updateTimer = w->startTimer(timeout, Qt::PreciseTimer);
+}
+
+/*!
+    Returns the QWindow minimum size.
+*/
+QSize QPlatformWindow::windowMinimumSize() const
+{
+    return constrainWindowSize(QHighDpi::toNativePixels(window()->minimumSize(), window()));
+}
+
+/*!
+    Returns the QWindow maximum size.
+*/
+QSize QPlatformWindow::windowMaximumSize() const
+{
+    return constrainWindowSize(QHighDpi::toNativePixels(window()->maximumSize(), window()));
+}
+
+/*!
+    Returns the QWindow base size.
+*/
+QSize QPlatformWindow::windowBaseSize() const
+{
+    return QHighDpi::toNativePixels(window()->baseSize(), window());
+}
+
+/*!
+    Returns the QWindow size increment.
+*/
+QSize QPlatformWindow::windowSizeIncrement() const
+{
+    QSize increment = window()->sizeIncrement();
+    if (!QHighDpiScaling::isActive())
+        return increment;
+
+    // Normalize the increment. If not set the increment can be
+    // (-1, -1) or (0, 0). Make that (1, 1) which is scalable.
+    if (increment.isEmpty())
+        increment = QSize(1, 1);
+
+    return QHighDpi::toNativePixels(increment, window());
+}
+
+/*!
+    Returns the QWindow geometry.
+*/
+QRect QPlatformWindow::windowGeometry() const
+{
+    return QHighDpi::toNativePixels(window()->geometry(), window());
+}
+
+/*!
+    Returns the closest acceptable geometry for a given geometry before
+    a resize/move event for platforms that support it, for example to
+    implement heightForWidth().
+*/
+QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+{
+    QWindow *qWindow = window();
+    const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
+    const QRectF correctedGeometryF = qt_window_private(qWindow)->closestAcceptableGeometry(rectF);
+    return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
+        ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
 }
 
 /*!

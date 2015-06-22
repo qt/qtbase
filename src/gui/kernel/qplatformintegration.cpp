@@ -39,7 +39,6 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
-#include <qpa/qplatformscreen_p.h>
 #include <private/qdnd_p.h>
 #include <private/qsimpledrag_p.h>
 
@@ -450,7 +449,7 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
 void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 {
     QScreen *screen = new QScreen(ps);
-    ps->d_func()->screen = screen;
+
     if (isPrimary) {
         QGuiApplicationPrivate::screen_list.prepend(screen);
     } else {
@@ -469,8 +468,9 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 */
 void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
 {
-    QGuiApplicationPrivate::screen_list.removeOne(screen->d_func()->screen);
-    delete screen->d_func()->screen;
+    QScreen *qScreen = screen->screen();
+    QGuiApplicationPrivate::screen_list.removeOne(qScreen);
+    delete qScreen;
     delete screen;
 }
 

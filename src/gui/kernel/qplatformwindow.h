@@ -130,9 +130,20 @@ public:
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 
     virtual void requestUpdate();
+
+    // Window property accessors. Platform plugins should use these
+    // instead of accessing QWindow directly.
+    QSize windowMinimumSize() const;
+    QSize windowMaximumSize() const;
+    QSize windowBaseSize() const;
+    QSize windowSizeIncrement() const;
+    QRect windowGeometry() const;
+    QRectF windowClosestAcceptableGeometry(const QRectF &nativeRect) const;
+
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);
     QPlatformScreen *screenForGeometry(const QRect &newGeometry) const;
+    static QSize constrainWindowSize(const QSize &size);
 
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:

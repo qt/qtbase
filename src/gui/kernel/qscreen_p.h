@@ -47,6 +47,7 @@
 
 #include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
+#include "qhighdpiscaling_p.h"
 
 #include <QtCore/private/qobject_p.h>
 
@@ -54,25 +55,19 @@ QT_BEGIN_NAMESPACE
 
 class QScreenPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QScreen)
 public:
-    QScreenPrivate(QPlatformScreen *screen)
-        : platformScreen(screen)
+    QScreenPrivate()
+        : platformScreen(0)
         , orientationUpdateMask(0)
     {
-        orientation = platformScreen->orientation();
-        geometry = platformScreen->geometry();
-        availableGeometry = platformScreen->availableGeometry();
-        logicalDpi = platformScreen->logicalDpi();
-        refreshRate = platformScreen->refreshRate();
-        // safeguard ourselves against buggy platform behavior...
-        if (refreshRate < 1.0)
-            refreshRate = 60.0;
+    }
 
-        updatePrimaryOrientation();
-
-        filteredOrientation = orientation;
-        if (filteredOrientation == Qt::PrimaryOrientation)
-            filteredOrientation = primaryOrientation;
+    void setPlatformScreen(QPlatformScreen *screen);
+    void updateHighDpi()
+    {
+        geometry = platformScreen->deviceIndependentGeometry();
+        availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
     }
 
     void updatePrimaryOrientation();

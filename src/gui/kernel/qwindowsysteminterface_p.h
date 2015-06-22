@@ -488,7 +488,12 @@ public:
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
 
-    static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
+    static QList<QTouchEvent::TouchPoint>
+        fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
+                              const QWindow *window, QEvent::Type *type = Q_NULLPTR);
+    static QList<QWindowSystemInterface::TouchPoint>
+        toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
+                            const QWindow *window);
 
     static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
     static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);

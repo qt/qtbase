@@ -36,6 +36,7 @@
 #include "qpixmap.h"
 #include "qguiapplication_p.h"
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformscreen_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/private/qobject_p.h>
@@ -63,8 +64,33 @@ QT_BEGIN_NAMESPACE
 */
 
 QScreen::QScreen(QPlatformScreen *screen)
-    : QObject(*new QScreenPrivate(screen), 0)
+    : QObject(*new QScreenPrivate(), 0)
 {
+    Q_D(QScreen);
+    d->setPlatformScreen(screen);
+}
+
+void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
+{
+    Q_Q(QScreen);
+    platformScreen = screen;
+    platformScreen->d_func()->screen = q;
+    orientation = platformScreen->orientation();
+    geometry = platformScreen->deviceIndependentGeometry();
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+    logicalDpi = platformScreen->logicalDpi();
+    refreshRate = platformScreen->refreshRate();
+    // safeguard ourselves against buggy platform behavior...
+    if (refreshRate < 1.0)
+        refreshRate = 60.0;
+
+    updatePrimaryOrientation();
+
+    filteredOrientation = orientation;
+    if (filteredOrientation == Qt::PrimaryOrientation)
+        filteredOrientation = primaryOrientation;
+
+    updateHighDpi();
 }
 
 
@@ -208,6 +234,8 @@ qreal QScreen::physicalDotsPerInch() const
 qreal QScreen::logicalDotsPerInchX() const
 {
     Q_D(const QScreen);
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::logicalDpi().first;
     return d->logicalDpi.first;
 }
 
@@ -222,6 +250,8 @@ qreal QScreen::logicalDotsPerInchX() const
 qreal QScreen::logicalDotsPerInchY() const
 {
     Q_D(const QScreen);
+    if (QHighDpiScaling::isActive())
+        return QHighDpiScaling::logicalDpi().second;
     return d->logicalDpi.second;
 }
 
@@ -240,7 +270,7 @@ qreal QScreen::logicalDotsPerInchY() const
 qreal QScreen::logicalDotsPerInch() const
 {
     Q_D(const QScreen);
-    QDpi dpi = d->logicalDpi;
+    QDpi dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi() : d->logicalDpi;
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 
@@ -259,7 +289,7 @@ qreal QScreen::logicalDotsPerInch() const
 qreal QScreen::devicePixelRatio() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->devicePixelRatio();
+    return d->platformScreen->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
 /*!

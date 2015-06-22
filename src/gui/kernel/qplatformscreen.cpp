@@ -40,6 +40,7 @@
 #include <qpa/qplatformintegration.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,6 +96,23 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 
     return 0;
 }
+
+/*!
+  Find the sibling screen corresponding to \a globalPos.
+
+  Returns this screen if no suitable screen is found at the position.
+ */
+const QPlatformScreen *QPlatformScreen::screenForPosition(const QPoint &point) const
+{
+    if (!geometry().contains(point)) {
+        Q_FOREACH (const QPlatformScreen* screen, virtualSiblings()) {
+            if (screen->geometry().contains(point))
+                return screen;
+        }
+    }
+    return this;
+}
+
 
 /*!
     Returns a list of all the platform screens that are part of the same
@@ -156,13 +174,33 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
-    Reimplement this function in subclass to return the device pixel
-    ratio for the screen. This is the ratio between physical pixels
-    and device-independent pixels.
+    Reimplement this function in subclass to return the device pixel ratio
+    for the screen. This is the ratio between physical pixels and the
+    device-independent pixels of the windowing system. The default
+    implementation returns 1.0.
 
-    \sa QPlatformWindow::devicePixelRatio();
+    \sa QPlatformWindow::devicePixelRatio()
+    \sa QPlatformScreen::pixelDensity()
 */
 qreal QPlatformScreen::devicePixelRatio() const
+{
+    return 1.0;
+}
+
+/*!
+    Reimplement this function in subclass to return the pixel density of the
+    screen. This is the scale factor needed to make a low-dpi application
+    usable on this screen. The default implementation returns 1.0.
+
+    Returning something else than 1.0 from this function causes Qt to
+    apply the scale factor to the application's coordinate system.
+    This is different from devicePixelRatio, which reports a scale
+    factor already applied by the windowing system. A platform plugin
+    typically implements one (or none) of these two functions.
+
+    \sa QPlatformWindow::devicePixelRatio()
+*/
+qreal QPlatformScreen::pixelDensity()  const
 {
     return 1.0;
 }
@@ -290,8 +328,8 @@ void QPlatformScreen::resizeMaximizedWindows()
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
     const QRect oldGeometry = screen()->geometry();
     const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = geometry();
-    const QRect newAvailableGeometry = availableGeometry();
+    const QRect newGeometry = deviceIndependentGeometry();
+    const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
     // make sure maximized and fullscreen windows are updated
     for (int i = 0; i < windows.size(); ++i) {
@@ -391,6 +429,13 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     }
 
     return rect;
+}
+
+QRect QPlatformScreen::deviceIndependentGeometry() const
+{
+    qreal scaleFactor = QHighDpiScaling::factor(this);
+    QRect nativeGeometry = geometry();
+    return QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
 }
 
 /*!

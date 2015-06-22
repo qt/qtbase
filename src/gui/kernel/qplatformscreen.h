@@ -103,6 +103,7 @@ public:
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;
     virtual qreal devicePixelRatio() const;
+    virtual qreal pixelDensity()  const;
 
     virtual qreal refreshRate() const;
 
@@ -112,6 +113,7 @@ public:
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
     virtual QList<QPlatformScreen *> virtualSiblings() const;
+    const QPlatformScreen *screenForPosition(const QPoint &point) const;
 
     QScreen *screen() const;
 
@@ -131,6 +133,9 @@ public:
     static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
     static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
 
+    // The platform screen's geometry in device independent coordinates
+    QRect deviceIndependentGeometry() const;
+
 protected:
     void resizeMaximizedWindows();
 
@@ -139,7 +144,7 @@ protected:
 private:
     Q_DISABLE_COPY(QPlatformScreen)
 
-    friend class QPlatformIntegration;
+    friend class QScreenPrivate;
 };
 
 QT_END_NAMESPACE

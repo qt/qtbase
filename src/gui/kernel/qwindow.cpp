@@ -47,6 +47,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #  include "qaccessible.h"
 #endif
+#include "qhighdpiscaling_p.h"
 
 #include <private/qevent_p.h>
 
@@ -1085,13 +1086,13 @@ qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
 
-    // If there is no platform window, do the second best thing and
-    // return the app global devicePixelRatio. This is the highest
-    // devicePixelRatio found on the system screens, and will be
-    // correct for single-display systems (a very common case).
+    // If there is no platform window use the app global devicePixelRatio,
+    // which is the the highest devicePixelRatio found on the system
+    // screens, and will be correct for single-display systems (a very common case).
     if (!d->platformWindow)
         return qApp->devicePixelRatio();
-    return d->platformWindow->devicePixelRatio();
+
+    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
 /*!
@@ -1431,7 +1432,13 @@ void QWindow::setGeometry(const QRect &rect)
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(rect);
+        QRect nativeRect;
+        QScreen *newScreen = d->screenForGeometry(rect);
+        if (newScreen && isTopLevel())
+            nativeRect = QHighDpi::toNativePixels(rect, newScreen);
+        else
+            nativeRect = QHighDpi::toNativePixels(rect, this);
+        d->platformWindow->setGeometry(nativeRect);
     } else {
         d->geometry = rect;
 
@@ -1446,6 +1453,30 @@ void QWindow::setGeometry(const QRect &rect)
     }
 }
 
+/*
+  This is equivalent to QPlatformWindow::screenForGeometry, but in platform
+  independent coordinates. The duplication is unfortunate, but there is a
+  chicken and egg problem here: we cannot convert to native coordinates
+  before we know which screen we are on.
+*/
+QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
+{
+    Q_Q(QWindow);
+    QScreen *currentScreen = q->screen();
+    QScreen *fallback = currentScreen;
+    QPoint center = newGeometry.center();
+    if (!q->parent() && currentScreen && !currentScreen->geometry().contains(center)) {
+        Q_FOREACH (QScreen* screen, currentScreen->virtualSiblings()) {
+            if (screen->geometry().contains(center))
+                return screen;
+            if (screen->geometry().intersects(newGeometry))
+                fallback = screen;
+        }
+    }
+    return fallback;
+}
+
+
 /*!
     Returns the geometry of the window, excluding its window frame.
 
@@ -1455,7 +1486,7 @@ QRect QWindow::geometry() const
 {
     Q_D(const QWindow);
     if (d->platformWindow)
-        return d->platformWindow->geometry();
+        return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this);
     return d->geometry;
 }
 
@@ -1468,7 +1499,7 @@ QMargins QWindow::frameMargins() const
 {
     Q_D(const QWindow);
     if (d->platformWindow)
-        return d->platformWindow->frameMargins();
+        return QHighDpi::fromNativePixels(d->platformWindow->frameMargins(), this);
     return QMargins();
 }
 
@@ -1482,7 +1513,7 @@ QRect QWindow::frameGeometry() const
     Q_D(const QWindow);
     if (d->platformWindow) {
         QMargins m = frameMargins();
-        return d->platformWindow->geometry().adjusted(-m.left(), -m.top(), m.right(), m.bottom());
+        return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this).adjusted(-m.left(), -m.top(), m.right(), m.bottom());
     }
     return d->geometry;
 }
@@ -1499,7 +1530,7 @@ QPoint QWindow::framePosition() const
     Q_D(const QWindow);
     if (d->platformWindow) {
         QMargins margins = frameMargins();
-        return d->platformWindow->geometry().topLeft() - QPoint(margins.left(), margins.top());
+        return QHighDpi::fromNativePixels(d->platformWindow->geometry().topLeft(), this) - QPoint(margins.left(), margins.top());
     }
     return d->geometry.topLeft();
 }
@@ -1515,7 +1546,7 @@ void QWindow::setFramePosition(const QPoint &point)
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
     d->positionAutomatic = false;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QRect(point, size()));
+        d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(point, size()), this));
     } else {
         d->geometry.moveTopLeft(point);
     }
@@ -1575,7 +1606,7 @@ void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QRect(position(), newSize));
+        d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
     } else {
         const QSize oldSize = d->geometry.size();
         d->geometry.setSize(newSize);
