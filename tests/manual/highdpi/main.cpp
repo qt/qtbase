@@ -53,6 +53,7 @@
 #include <QFile>
 #include <QMouseEvent>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QDebug>
@@ -904,6 +905,135 @@ private:
     qreal scaleFactor;
 };
 
+class PhysicalSizeTest : public QWidget
+{
+Q_OBJECT
+public:
+    PhysicalSizeTest() : QWidget(), m_ignoreResize(false) {}
+    void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *) {
+        qreal ppi = window()->windowHandle()->screen()->physicalDotsPerInchX();
+        QSizeF s = size();
+        if (!m_ignoreResize)
+            m_physicalSize = s / ppi;
+    }
+    bool event(QEvent *event) {
+        if (event->type() == QEvent::ScreenChangeInternal) {
+            // we will get resize events when the scale factor changes
+            m_ignoreResize = true;
+            QTimer::singleShot(100, this, SLOT(handleScreenChange()));
+        }
+        return QWidget::event(event);
+    }
+public slots:
+    void handleScreenChange() {
+        qreal ppi = window()->windowHandle()->screen()->physicalDotsPerInchX();
+        QSizeF newSize = m_physicalSize * ppi;
+        resize(newSize.toSize());
+        m_ignoreResize = false;
+    }
+private:
+    QSizeF m_physicalSize;
+    bool m_ignoreResize;
+};
+
+void PhysicalSizeTest::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    qreal ppi = window()->windowHandle()->screen()->physicalDotsPerInchX();
+    qreal ppmm = ppi / 25.4;
+    qreal h = 15 * ppmm;
+    QRectF rulerRect(0,0, width(), h);
+    rulerRect.moveCenter(rect().center());
+
+    QFont f = font();
+    f.setPixelSize(18);
+    p.setFont(f);
+
+    // draw a rectangle in (Qt) pixel coordinates, for comparison
+    QRect pixelRect(0, 0, 300, 50);
+    pixelRect.moveTopLeft(QPoint(5 * ppmm, rulerRect.bottom() + 5 * ppmm));
+    p.fillRect(pixelRect, QColor(199,222,255));
+    p.drawText(pixelRect, "This rectangle is 300x50 pixels");
+
+    f.setPixelSize(4 * ppmm);
+    p.setFont(f);
+
+    QRectF topRect(0, 0, width(), rulerRect.top());
+    p.drawText(topRect, Qt::AlignCenter, "The ruler is drawn in physical units.\nThis window tries to keep its physical size\nwhen moved between screens.");
+
+    // draw a ruler in real physical coordinates
+
+    p.fillRect(rulerRect, QColor(255, 222, 111));
+
+    QPen linePen(Qt::black, 0.3 * ppmm);
+    p.setPen(linePen);
+    f.setBold(true);
+    p.setFont(f);
+
+    qreal vCenter = rulerRect.center().y();
+    p.drawLine(0, vCenter, width(), vCenter);
+
+    // cm
+    for (int i = 0;;) {
+        i++;
+        qreal x = i * ppmm;
+        if (x > width())
+            break;
+        qreal y = rulerRect.bottom();
+        qreal len;
+        if (i % 5)
+            len = 2 * ppmm;
+        else if (i % 10)
+            len = 3 * ppmm;
+        else
+            len = h / 2;
+
+        p.drawLine(QPointF(x, y), QPointF(x, y - len));
+        if (i % 10 == 5) {
+            QRectF textR(0, 0, 5 * ppmm, h / 2 - 2 * ppmm);
+            textR.moveTopLeft(QPointF(x, vCenter));
+            int n = i / 10 + 1;
+            if (n % 10 == 0)
+                p.setPen(Qt::red);
+            p.drawText(textR, Qt::AlignCenter, QString::number(n));
+            p.setPen(linePen);
+        }
+    }
+
+    //inches
+    for (int i = 0;;) {
+        i++;
+        qreal x = i * ppi / 16;
+        if (x > width())
+            break;
+        qreal y = rulerRect.top();
+
+        qreal d = h / 10;
+        qreal len;
+        if (i % 2)
+            len = 1 * d;
+        else if (i % 4)
+            len = 2 * d;
+        else if (i % 8)
+            len = 3 * d;
+        else if (i % 16)
+            len = 4 * d;
+        else
+            len = h / 2;
+
+        p.drawLine(QPointF(x, y), QPointF(x, y + len));
+        if (i % 16 == 12) {
+            QRectF textR(0, 0, 0.25 * ppi, h / 2 - 2 * d);
+            textR.moveBottomLeft(QPointF(x, vCenter));
+            p.drawText(textR, Qt::AlignCenter, QString::number(1 + i/16));
+        }
+    }
+
+}
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -937,6 +1067,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<DragWidget>("draganddrop", "Test drag and drop");
     demoList << new DemoContainer<CursorTester>("cursorpos", "Test cursor and window positioning");
     demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
+    demoList << new DemoContainer<PhysicalSizeTest>("physicalsize", "Test manual highdpi support using physicalDotsPerInch");
 
 
     foreach (DemoContainerBase *demo, demoList)
