@@ -919,6 +919,7 @@ QNetworkHeadersPrivate::RawHeadersList QNetworkHeadersPrivate::allRawHeaders() c
 QList<QByteArray> QNetworkHeadersPrivate::rawHeadersKeys() const
 {
     QList<QByteArray> result;
+    result.reserve(rawHeaders.size());
     RawHeadersList::ConstIterator it = rawHeaders.constBegin(),
                                  end = rawHeaders.constEnd();
     for ( ; it != end; ++it)

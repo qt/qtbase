@@ -464,8 +464,9 @@ QList<QSslCertificateExtension> QSslCertificate::extensions() const
         return result;
 
     int count = q_X509_get_ext_count(d->x509);
+    result.reserve(count);
 
-    for (int i=0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         X509_EXTENSION *ext = q_X509_get_ext(d->x509, i);
         result << QSslCertificatePrivate::convertExtension(ext);
     }

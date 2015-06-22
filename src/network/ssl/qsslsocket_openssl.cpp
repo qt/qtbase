@@ -1199,7 +1199,9 @@ bool QSslSocketBackendPrivate::startHandshake()
     }
 
     // Translate errors from the error list into QSslErrors.
-    for (int i = 0; i < errorList.size(); ++i) {
+    const int numErrors = errorList.size();
+    errors.reserve(errors.size() + numErrors);
+    for (int i = 0; i < numErrors; ++i) {
         const QPair<int, int> &errorAndDepth = errorList.at(i);
         int err = errorAndDepth.first;
         int depth = errorAndDepth.second;
@@ -1761,7 +1763,9 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     // Translate errors from the error list into QSslErrors.
-    for (int i = 0; i < errorList.size(); ++i) {
+    const int numErrors = errorList.size();
+    errors.reserve(errors.size() + numErrors);
+    for (int i = 0; i < numErrors; ++i) {
         const QPair<int, int> &errorAndDepth = errorList.at(i);
         int err = errorAndDepth.first;
         int depth = errorAndDepth.second;
