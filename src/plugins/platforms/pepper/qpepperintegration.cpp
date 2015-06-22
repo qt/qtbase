@@ -108,6 +108,16 @@ QPepperIntegration::~QPepperIntegration()
     delete m_fontDatabase;
 }
 
+bool QPepperIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedOpenGL:
+        return true;
+    default:
+        return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPlatformWindow *QPepperIntegration::createPlatformWindow(QWindow *window) const
 {
     QPepperWindow *platformWindow = new QPepperWindow(window);

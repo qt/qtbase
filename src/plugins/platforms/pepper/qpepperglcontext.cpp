@@ -46,6 +46,9 @@
 #include <ppapi/cpp/graphics_3d_client.h>
 #include <ppapi/gles2/gl2ext_ppapi.h>
 
+#include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
+
 Q_LOGGING_CATEGORY(QT_PLATFORM_PEPPER_GLCONTEXT, "qt.platform.pepper.glcontext")
 
 QPepperGLContext::QPepperGLContext()
@@ -82,6 +85,11 @@ void QPepperGLContext::swapBuffers(QPlatformSurface *surface)
 
     m_pendingFlush = true;
     m_context.SwapBuffers(m_callbackFactory.NewCallback(&QPepperGLContext::flushCallback));
+    bool qtOnSecondaryThread = QPepperInstancePrivate::get()->m_runQtOnThread;
+    while (qtOnSecondaryThread && m_pendingFlush) {
+        QCoreApplication::processEvents();
+        QThread::msleep(1);
+    }
 }
 
 bool QPepperGLContext::makeCurrent(QPlatformSurface *surface)
@@ -127,7 +135,11 @@ QFunctionPointer QPepperGLContext::getProcAddress(const QByteArray &procName)
     return 0;
 }
 
-void QPepperGLContext::flushCallback(int32_t) { m_pendingFlush = false; }
+void QPepperGLContext::flushCallback(int32_t)
+{
+    qCDebug(QT_PLATFORM_PEPPER_GLCONTEXT) << "swapBuffers callback";
+    m_pendingFlush = false;
+}
 
 bool QPepperGLContext::initGl()
 {

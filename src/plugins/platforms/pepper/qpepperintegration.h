@@ -72,6 +72,8 @@ public:
     QPepperIntegration();
     ~QPepperIntegration();
 
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
