@@ -62,6 +62,7 @@ private slots:
     void compare();
     void compare2();
     void iterators(); // sligthly modified from tst_QMap
+    void keyIterator();
     void keys_values_uniqueKeys(); // slightly modified from tst_QMap
     void noNeedlessRehashes();
 
@@ -963,6 +964,34 @@ void tst_QHash::iterators()
         QVERIFY(javaIt.value() == testString1);
         QCOMPARE(javaIt.peekNext().value(), testString1);
     }
+}
+
+void tst_QHash::keyIterator()
+{
+    QHash<int, int> hash;
+
+    for (int i = 0; i < 100; ++i)
+        hash.insert(i, i*100);
+
+    QHash<int, int>::key_iterator key_it = hash.keyBegin();
+    QHash<int, int>::const_iterator it = hash.cbegin();
+    for (int i = 0; i < 100; ++i) {
+        QCOMPARE(*key_it, it.key());
+        key_it++;
+        it++;
+    }
+
+    key_it = std::find(hash.keyBegin(), hash.keyEnd(), 50);
+    it = std::find(hash.cbegin(), hash.cend(), 50 * 100);
+
+    QVERIFY(key_it != hash.keyEnd());
+    QCOMPARE(*key_it, it.key());
+    QCOMPARE(*(key_it++), (it++).key());
+    QCOMPARE(*(key_it--), (it--).key());
+    QCOMPARE(*(++key_it), (++it).key());
+    QCOMPARE(*(--key_it), (--it).key());
+
+    QCOMPARE(std::count(hash.keyBegin(), hash.keyEnd(), 99), 1);
 }
 
 void tst_QHash::rehash_isnt_quadratic()
