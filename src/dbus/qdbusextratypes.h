@@ -67,6 +67,9 @@ public:
 private:
     void doCheck();
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_TYPEINFO(QDBusObjectPath, Q_MOVABLE_TYPE);
+#endif
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : m_path(QString::fromLatin1(objectPath))
@@ -114,6 +117,9 @@ public:
 private:
     void doCheck();
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_TYPEINFO(QDBusSignature, Q_MOVABLE_TYPE);
+#endif
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : m_signature(QString::fromLatin1(dBusSignature))
@@ -154,6 +160,9 @@ public:
     inline QVariant variant() const
     { return m_variant; }
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_TYPEINFO(QDBusVariant, Q_MOVABLE_TYPE);
+#endif
 
 inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
     : m_variant(dBusVariant) { }
