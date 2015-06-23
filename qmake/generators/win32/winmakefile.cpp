@@ -98,13 +98,10 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
 
 ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
-    if (lib.startsWith('/')) {
-        if (lib.startsWith("/LIBPATH:"))
-            return QLatin1String("/LIBPATH:")
-                    + escapeFilePath(Option::fixPathToTargetOS(lib.mid(9).toQString(), false));
-        // This appears to be a user-supplied flag. Assume sufficient quoting.
-        return lib;
-    }
+    if (lib.startsWith("/LIBPATH:"))
+        return QLatin1String("/LIBPATH:")
+                + escapeFilePath(Option::fixPathToTargetOS(lib.mid(9).toQString(), false));
+
     // This must be a fully resolved library path.
     return escapeFilePath(Option::fixPathToTargetOS(lib.toQString(), false));
 }
@@ -218,7 +215,7 @@ Win32MakefileGenerator::processPrlFiles()
                 QMakeLocalFileName l(opt.mid(libArg.length()));
                 if (!libdirs.contains(l))
                     libdirs.append(l);
-            } else if (!opt.startsWith("/")) {
+            } else {
                 if (!processPrlFile(opt) && (QDir::isRelativePath(opt) || opt.startsWith("-l"))) {
                     QString tmp;
                     if (opt.startsWith("-l"))
