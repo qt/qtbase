@@ -96,30 +96,39 @@ private:
     QCommandLineOption m_option;
 };
 
-class LabelSlider : public QWidget
+class LabelSlider : public QObject
 {
 Q_OBJECT
 public:
-    LabelSlider(const QString &text) {
-        QHBoxLayout *row = new QHBoxLayout(this);
-        QLabel *label = new QLabel(text);
-        QSlider *slider = new QSlider();
-        slider->setOrientation(Qt::Horizontal);
-        slider->setMinimum(1);
-        slider->setMaximum(40);
-        slider->setValue(10);
-        slider->setTracking(false);
-        slider->setTickInterval(5);
-        slider->setTickPosition(QSlider::TicksBelow);
-        QLabel *scaleFactorLabel = new QLabel("1.0");
+    LabelSlider(QObject *parent, const QString &text, QGridLayout *layout, int row)
+        : QObject(parent)
+    {
+        QLabel *textLabel = new QLabel(text);
+        m_slider = new QSlider();
+        m_slider->setOrientation(Qt::Horizontal);
+        m_slider->setMinimum(1);
+        m_slider->setMaximum(40);
+        m_slider->setValue(10);
+        m_slider->setTracking(false);
+        m_slider->setTickInterval(5);
+        m_slider->setTickPosition(QSlider::TicksBelow);
+        m_label = new QLabel("1.0");
 
         // set up layouts
-        row->addWidget(label);
-        row->addWidget(slider);
-        row->addWidget(scaleFactorLabel);
+        layout->addWidget(textLabel, row, 0);
+        layout->addWidget(m_slider, row, 1);
+        layout->addWidget(m_label, row, 2);
 
         // handle slider position change
-        connect(slider, &QSlider::sliderMoved, [scaleFactorLabel](int scaleFactor){
+        connect(m_slider, &QSlider::sliderMoved, this, &LabelSlider::updateLabel);
+        connect(m_slider, &QSlider::valueChanged, this, &LabelSlider::valueChanged);
+    }
+    void setValue(int scaleFactor) {
+        m_slider->setValue(scaleFactor);
+        updateLabel(scaleFactor);
+    }
+private slots:
+    void updateLabel(int scaleFactor) {
             // slider value is scale factor times ten;
             qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
@@ -127,14 +136,28 @@ public:
             QString number = QString::number(scalefactorF);
             if (!number.contains("."))
                 number.append(".0");
-            scaleFactorLabel->setText(number);
-            });
-        connect(slider, &QSlider::valueChanged, this, &LabelSlider::valueChanged);
-        setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+            m_label->setText(number);
     }
 signals:
     void valueChanged(int scaleFactor);
+private:
+    QSlider *m_slider;
+    QLabel *m_label;
 };
+
+static qreal getScreenFactorWithoutPixelDensity(const QScreen *screen)
+{
+    // this is a hack that relies on knowing the internals of QHighDpiScaling
+    static const char *scaleFactorProperty = "_q_scaleFactor";
+    QVariant screenFactor = screen->property(scaleFactorProperty);
+    return screenFactor.isValid() ? screenFactor.toReal() : 1.0;
+}
+
+static inline qreal getGlobalScaleFactor()
+{
+    QScreen *noScreen = 0;
+    return QHighDpiScaling::factor(noScreen);
+}
 
 class DemoController : public QWidget
 {
@@ -155,17 +178,18 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
     setWindowTitle("screen scale factors");
     setObjectName("controller"); // make WindowScaleFactorSetter skip this window
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QGridLayout *layout = new QGridLayout;
     setLayout(layout);
 
-    LabelSlider *globalScaleSlider = new LabelSlider("Global scale factor");
+    int layoutRow = 0;
+    LabelSlider *globalScaleSlider = new LabelSlider(this, "Global scale factor", layout, layoutRow++);
+    globalScaleSlider->setValue(int(getGlobalScaleFactor() * 10));
      connect(globalScaleSlider, &LabelSlider::valueChanged, [](int scaleFactor){
             // slider value is scale factor times ten;
             qreal scalefactorF = qreal(scaleFactor) / 10.0;
             QHighDpiScaling::setGlobalFactor(scalefactorF);
          });
-     layout->addWidget(globalScaleSlider);
-     layout->addStretch();
+
     // set up one scale control line per screen
     QList<QScreen *> screens = QGuiApplication::screens();
     foreach (QScreen *screen, screens) {
@@ -173,8 +197,8 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
         QSize screenSize = screen->geometry().size();
         QString screenId = screen->name() + " " + QString::number(screenSize.width())
                                           + " " + QString::number(screenSize.height());
-        LabelSlider *slider = new LabelSlider(screenId);
-        layout->addWidget(slider);
+        LabelSlider *slider = new LabelSlider(this, screenId, layout, layoutRow++);
+        slider->setValue(getScreenFactorWithoutPixelDensity(screen) * 10);
 
         // handle slider value change
         connect(slider, &LabelSlider::valueChanged, [screen](int scaleFactor){
@@ -198,7 +222,7 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
         QPushButton *button = new QPushButton(demo->name());
         button->setToolTip(demo->option().description());
         button->setCheckable(true);
-        layout->addWidget(button);
+        layout->addWidget(button, layoutRow++, 0, 1, -1);
         m_group->addButton(button, i);
 
         if (parser->isSet(demo->option())) {
