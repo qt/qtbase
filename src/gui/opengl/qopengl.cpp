@@ -135,20 +135,42 @@ static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
 static inline QString valueKey()         { return QStringLiteral("value"); }
 static inline QString opKey()            { return QStringLiteral("op"); }
 static inline QString versionKey()       { return QStringLiteral("version"); }
+static inline QString releaseKey()       { return QStringLiteral("release"); }
 static inline QString typeKey()          { return QStringLiteral("type"); }
 static inline QString osKey()            { return QStringLiteral("os"); }
 static inline QString vendorIdKey()      { return QStringLiteral("vendor_id"); }
 static inline QString glVendorKey()      { return QStringLiteral("gl_vendor"); }
 static inline QString deviceIdKey()      { return QStringLiteral("device_id"); }
 static inline QString driverVersionKey() { return QStringLiteral("driver_version"); }
+static inline QString driverDescriptionKey() { return QStringLiteral("driver_description"); }
 static inline QString featuresKey()      { return QStringLiteral("features"); }
 static inline QString idKey()            { return QStringLiteral("id"); }
 static inline QString descriptionKey()   { return QStringLiteral("description"); }
 static inline QString exceptionsKey()    { return QStringLiteral("exceptions"); }
 
+typedef QJsonArray::ConstIterator JsonArrayConstIt;
+
+static inline bool contains(const QJsonArray &haystack, unsigned needle)
+{
+    for (JsonArrayConstIt it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
+        if (needle == it->toString().toUInt(Q_NULLPTR, /* base */ 0))
+            return true;
+    }
+    return false;
+}
+
+static inline bool contains(const QJsonArray &haystack, const QString &needle)
+{
+    for (JsonArrayConstIt it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
+        if (needle == it->toString())
+            return true;
+    }
+    return false;
+}
+
 namespace {
 // VersionTerm describing a version term consisting of number and operator
-// found in "os", "driver_version", "gl_version".
+// found in os.version and driver_version.
 struct VersionTerm {
     VersionTerm() : op(NotEqual) {}
     static VersionTerm fromJson(const QJsonValue &v);
@@ -206,9 +228,38 @@ struct OsTypeTerm
     static OsTypeTerm fromJson(const QJsonValue &v);
     static QString hostOs();
     static QVersionNumber hostKernelVersion() { return QVersionNumber::fromString(QSysInfo::kernelVersion()); }
+    static QString hostOsRelease() {
+        QString ver;
+#ifdef Q_OS_WIN
+        switch (QSysInfo::windowsVersion()) {
+        case QSysInfo::WV_XP:
+        case QSysInfo::WV_2003:
+            ver = QStringLiteral("xp");
+            break;
+        case QSysInfo::WV_VISTA:
+            ver = QStringLiteral("vista");
+            break;
+        case QSysInfo::WV_WINDOWS7:
+            ver = QStringLiteral("7");
+            break;
+        case QSysInfo::WV_WINDOWS8:
+            ver = QStringLiteral("8");
+            break;
+        case QSysInfo::WV_WINDOWS8_1:
+            ver = QStringLiteral("8.1");
+            break;
+        case QSysInfo::WV_WINDOWS10:
+            ver = QStringLiteral("10");
+            break;
+        default:
+            break;
+        }
+#endif
+        return ver;
+    }
 
     bool isNull() const { return type.isEmpty(); }
-    bool matches(const QString &osName, const QVersionNumber &kernelVersion) const
+    bool matches(const QString &osName, const QVersionNumber &kernelVersion, const QString &osRelease) const
     {
         if (isNull() || osName.isEmpty() || kernelVersion.isNull()) {
             qWarning() << Q_FUNC_INFO << "called with invalid parameters";
@@ -216,11 +267,17 @@ struct OsTypeTerm
         }
         if (type != osName)
             return false;
-        return versionTerm.isNull() || versionTerm.matches(kernelVersion);
+        if (!versionTerm.isNull() && !versionTerm.matches(kernelVersion))
+            return false;
+        // release is a list of Windows versions where the rule should match
+        if (!release.isEmpty() && !contains(release, osRelease))
+            return false;
+        return true;
     }
 
     QString type;
     VersionTerm versionTerm;
+    QJsonArray release;
 };
 
 OsTypeTerm OsTypeTerm::fromJson(const QJsonValue &v)
@@ -231,6 +288,7 @@ OsTypeTerm OsTypeTerm::fromJson(const QJsonValue &v)
     const QJsonObject o = v.toObject();
     result.type = o.value(typeKey()).toString();
     result.versionTerm = VersionTerm::fromJson(o.value(versionKey()));
+    result.release = o.value(releaseKey()).toArray();
     return result;
 }
 
@@ -251,17 +309,6 @@ QString OsTypeTerm::hostOs()
 }
 } // anonymous namespace
 
-typedef QJsonArray::ConstIterator JsonArrayConstIt;
-
-static inline bool contains(const QJsonArray &a, unsigned needle)
-{
-    for (JsonArrayConstIt it = a.constBegin(), cend = a.constEnd(); it != cend; ++it) {
-        if (needle == it->toString().toUInt(Q_NULLPTR, /* base */ 0))
-            return true;
-    }
-    return false;
-}
-
 static QString msgSyntaxWarning(const QJsonObject &object, const QString &what)
 {
     QString result;
@@ -277,17 +324,18 @@ static QString msgSyntaxWarning(const QJsonObject &object, const QString &what)
 static bool matches(const QJsonObject &object,
                     const QString &osName,
                     const QVersionNumber &kernelVersion,
+                    const QString &osRelease,
                     const QOpenGLConfig::Gpu &gpu)
 {
     const OsTypeTerm os = OsTypeTerm::fromJson(object.value(osKey()));
-    if (!os.isNull() && !os.matches(osName, kernelVersion))
+    if (!os.isNull() && !os.matches(osName, kernelVersion, osRelease))
         return false;
 
     const QJsonValue exceptionsV = object.value(exceptionsKey());
     if (exceptionsV.isArray()) {
         const QJsonArray exceptionsA = exceptionsV.toArray();
         for (JsonArrayConstIt it = exceptionsA.constBegin(), cend = exceptionsA.constEnd(); it != cend; ++it) {
-            if (matches(it->toObject(), osName, kernelVersion, gpu))
+            if (matches(it->toObject(), osName, kernelVersion, osRelease, gpu))
                 return false;
         }
     }
@@ -336,12 +384,22 @@ static bool matches(const QJsonObject &object,
                                     QLatin1String("Driver version must be of type object."));
         }
     }
+
+    if (!gpu.driverDescription.isEmpty()) {
+        const QJsonValue driverDescriptionV = object.value(driverDescriptionKey());
+        if (driverDescriptionV.isString()) {
+            if (!gpu.driverDescription.contains(driverDescriptionV.toString().toUtf8()))
+                return false;
+        }
+    }
+
     return true;
 }
 
 static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
                             const QString &osName,
                             const QVersionNumber &kernelVersion,
+                            const QString &osRelease,
                             const QJsonDocument &doc,
                             QSet<QString> *result,
                             QString *errorMessage)
@@ -358,7 +416,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
     for (JsonArrayConstIt eit = entriesA.constBegin(), ecend = entriesA.constEnd(); eit != ecend; ++eit) {
         if (eit->isObject()) {
             const QJsonObject object = eit->toObject();
-            if (matches(object, osName, kernelVersion, gpu)) {
+            if (matches(object, osName, kernelVersion, osRelease, gpu)) {
                 const QJsonValue featuresListV = object.value(featuresKey());
                 if (featuresListV.isArray()) {
                     const QJsonArray featuresListA = featuresListV.toArray();
@@ -374,6 +432,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
 static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
                             const QString &osName,
                             const QVersionNumber &kernelVersion,
+                            const QString &osRelease,
                             const QByteArray &jsonAsciiData,
                             QSet<QString> *result, QString *errorMessage)
 {
@@ -389,12 +448,13 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
             << error.offset << ").";
         return false;
     }
-    return readGpuFeatures(gpu, osName, kernelVersion, document, result, errorMessage);
+    return readGpuFeatures(gpu, osName, kernelVersion, osRelease, document, result, errorMessage);
 }
 
 static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
                             const QString &osName,
                             const QVersionNumber &kernelVersion,
+                            const QString &osRelease,
                             const QString &fileName,
                             QSet<QString> *result, QString *errorMessage)
 {
@@ -407,7 +467,7 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
             << file.errorString();
         return false;
     }
-    const bool success = readGpuFeatures(gpu, osName, kernelVersion, file.readAll(), result, errorMessage);
+    const bool success = readGpuFeatures(gpu, osName, kernelVersion, osRelease, file.readAll(), result, errorMessage);
     if (!success) {
         errorMessage->prepend(QLatin1String("Error reading \"")
                               + QDir::toNativeSeparators(fileName)
@@ -417,37 +477,39 @@ static bool readGpuFeatures(const QOpenGLConfig::Gpu &gpu,
 }
 
 QSet<QString> QOpenGLConfig::gpuFeatures(const QOpenGLConfig::Gpu &gpu,
-                                                  const QString &osName,
-                                                  const QVersionNumber &kernelVersion,
-                                                  const QJsonDocument &doc)
+                                         const QString &osName,
+                                         const QVersionNumber &kernelVersion,
+                                         const QString &osRelease,
+                                         const QJsonDocument &doc)
 {
     QSet<QString> result;
     QString errorMessage;
-    if (!readGpuFeatures(gpu, osName, kernelVersion, doc, &result, &errorMessage))
+    if (!readGpuFeatures(gpu, osName, kernelVersion, osRelease, doc, &result, &errorMessage))
         qWarning().noquote() << errorMessage;
     return result;
 }
 
 QSet<QString> QOpenGLConfig::gpuFeatures(const QOpenGLConfig::Gpu &gpu,
-                                                  const QString &osName,
-                                                  const QVersionNumber &kernelVersion,
-                                                  const QString &fileName)
+                                         const QString &osName,
+                                         const QVersionNumber &kernelVersion,
+                                         const QString &osRelease,
+                                         const QString &fileName)
 {
     QSet<QString> result;
     QString errorMessage;
-    if (!readGpuFeatures(gpu, osName, kernelVersion, fileName, &result, &errorMessage))
+    if (!readGpuFeatures(gpu, osName, kernelVersion, osRelease, fileName, &result, &errorMessage))
         qWarning().noquote() << errorMessage;
     return result;
 }
 
 QSet<QString> QOpenGLConfig::gpuFeatures(const Gpu &gpu, const QJsonDocument &doc)
 {
-    return gpuFeatures(gpu, OsTypeTerm::hostOs(), OsTypeTerm::hostKernelVersion(), doc);
+    return gpuFeatures(gpu, OsTypeTerm::hostOs(), OsTypeTerm::hostKernelVersion(), OsTypeTerm::hostOsRelease(), doc);
 }
 
 QSet<QString> QOpenGLConfig::gpuFeatures(const Gpu &gpu, const QString &fileName)
 {
-    return gpuFeatures(gpu, OsTypeTerm::hostOs(), OsTypeTerm::hostKernelVersion(), fileName);
+    return gpuFeatures(gpu, OsTypeTerm::hostOs(), OsTypeTerm::hostKernelVersion(), OsTypeTerm::hostOsRelease(), fileName);
 }
 
 QOpenGLConfig::Gpu QOpenGLConfig::Gpu::fromContext()

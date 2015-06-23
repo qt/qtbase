@@ -79,19 +79,21 @@ public:
         bool isValid() const { return deviceId || !glVendor.isEmpty(); }
         bool equals(const Gpu &other) const {
             return vendorId == other.vendorId && deviceId == other.deviceId && driverVersion == other.driverVersion
-                && glVendor == other.glVendor;
+                && driverDescription == other.driverDescription && glVendor == other.glVendor;
         }
 
         uint vendorId;
         uint deviceId;
         QVersionNumber driverVersion;
+        QByteArray driverDescription;
         QByteArray glVendor;
 
-        static Gpu fromDevice(uint vendorId, uint deviceId, QVersionNumber driverVersion) {
+        static Gpu fromDevice(uint vendorId, uint deviceId, QVersionNumber driverVersion, const QByteArray &driverDescription) {
             Gpu gpu;
             gpu.vendorId = vendorId;
             gpu.deviceId = deviceId;
             gpu.driverVersion = driverVersion;
+            gpu.driverDescription = driverDescription;
             return gpu;
         }
 
@@ -105,10 +107,10 @@ public:
     };
 
     static QSet<QString> gpuFeatures(const Gpu &gpu,
-                                     const QString &osName, const QVersionNumber &kernelVersion,
+                                     const QString &osName, const QVersionNumber &kernelVersion, const QString &osVersion,
                                      const QJsonDocument &doc);
     static QSet<QString> gpuFeatures(const Gpu &gpu,
-                                     const QString &osName, const QVersionNumber &kernelVersion,
+                                     const QString &osName, const QVersionNumber &kernelVersion, const QString &osVersion,
                                      const QString &fileName);
     static QSet<QString> gpuFeatures(const Gpu &gpu, const QJsonDocument &doc);
     static QSet<QString> gpuFeatures(const Gpu &gpu, const QString &fileName);
