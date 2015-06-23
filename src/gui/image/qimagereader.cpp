@@ -252,7 +252,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
 #ifdef QIMAGEREADER_DEBUG
     qDebug() << "QImageReader::createReadHandler( device =" << (void *)device << ", format =" << format << "),"
-             << keyMap.values().size() << "plugins available: " << keyMap.values();
+             << keyMap.size() << "plugins available: " << keyMap.values();
 #endif
 
     int suffixPluginIndex = -1;
@@ -312,7 +312,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         const qint64 pos = device ? device->pos() : 0;
 
         if (autoDetectImageFormat) {
-            const int keyCount = keyMap.keys().size();
+            const int keyCount = keyMap.size();
             for (int i = 0; i < keyCount; ++i) {
                 if (i != suffixPluginIndex) {
                     QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
@@ -392,7 +392,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     if (!handler && (autoDetectImageFormat || ignoresFormatAndExtension)) {
         // check if any of our plugins recognize the file from its contents.
         const qint64 pos = device ? device->pos() : 0;
-        const int keyCount = keyMap.keys().size();
+        const int keyCount = keyMap.size();
         for (int i = 0; i < keyCount; ++i) {
             if (i != suffixPluginIndex) {
                 QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
