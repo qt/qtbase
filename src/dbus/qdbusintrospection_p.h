@@ -46,7 +46,7 @@
 //
 
 #include <QtCore/qstring.h>
-#include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qpair.h>
@@ -71,7 +71,7 @@ public:
 
     // typedefs
     typedef QMap<QString, QString> Annotations;
-    typedef QList<Argument> Arguments;
+    typedef QVector<Argument> Arguments;
     typedef QMultiMap<QString, Method> Methods;
     typedef QMultiMap<QString, Signal> Signals;
     typedef QMap<QString, Property> Properties;
@@ -158,6 +158,7 @@ public:
 private:
     QDBusIntrospection();
 };
+Q_DECLARE_TYPEINFO(QDBusIntrospection::Argument, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
