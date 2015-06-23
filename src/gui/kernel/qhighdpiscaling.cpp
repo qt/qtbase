@@ -54,6 +54,7 @@ Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
 static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
 static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
+static const char screenFactorsEnvVar[] = "QT_SCREEN_SCALE_FACTORS";
 
 static inline qreal initialScaleFactor()
 {
@@ -113,6 +114,11 @@ static inline qreal initialScaleFactor()
           Setting this to a true-ish value will make QHighDpiScaling
           call QPlatformScreen::pixelDensity()
         - QHighDpiScaling::setScreenFactor(screen, factor);
+        - QT_SCREEN_SCALE_FACTORS (environment variable)
+        Set this to a semicolon-separated list of scale factors
+        (matching the order of QGuiApplications::screens()),
+        or to a list of name=value pairs (where name matches
+        QScreen::name()).
 
     All scale factors are of type qreal.
 
@@ -157,6 +163,38 @@ void QHighDpiScaling::updateHighDpiScaling()
                 m_pixelDensityScalingActive = true;
                 break;
             }
+        }
+    }
+    if (qEnvironmentVariableIsSet(screenFactorsEnvVar)) {
+        int i = 0;
+        Q_FOREACH (QByteArray spec, qgetenv(screenFactorsEnvVar).split(';')) {
+            QScreen *screen = 0;
+            int equalsPos = spec.lastIndexOf('=');
+            double factor = 0;
+            if (equalsPos > 0) {
+                // support "name=factor"
+                QByteArray name = spec.mid(0, equalsPos);
+                QByteArray f = spec.mid(equalsPos + 1);
+                bool ok;
+                factor = f.toDouble(&ok);
+                if (ok) {
+                    Q_FOREACH (QScreen *s, QGuiApplication::screens()) {
+                        if (s->name() == QString::fromLocal8Bit(name)) {
+                            screen = s;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // listing screens in order
+                bool ok;
+                factor = spec.toDouble(&ok);
+                if (ok && i < QGuiApplication::screens().count())
+                    screen = QGuiApplication::screens().at(i);
+            }
+            if (screen)
+                setScreenFactor(screen, factor);
+            ++i;
         }
     }
     m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
