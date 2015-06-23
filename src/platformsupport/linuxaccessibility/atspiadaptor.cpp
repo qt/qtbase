@@ -1431,7 +1431,9 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
                       QSpiObjectReference(connection, QDBusObjectPath(QSPI_OBJECT_PATH_ROOT))));
     } else if (function == QLatin1String("GetChildren")) {
         QSpiObjectReferenceArray children;
-        for (int i = 0; i < interface->childCount(); ++i) {
+        const int numChildren = interface->childCount();
+        children.reserve(numChildren);
+        for (int i = 0; i < numChildren; ++i) {
             QString childPath = pathForInterface(interface->child(i));
             QSpiObjectReference ref(connection, QDBusObjectPath(childPath));
             children << ref;
@@ -1747,7 +1749,9 @@ QSpiActionArray AtSpiAdaptor::getActions(QAccessibleInterface *interface) const
 {
     QAccessibleActionInterface *actionInterface = interface->actionInterface();
     QSpiActionArray actions;
-    Q_FOREACH (const QString &actionName, QAccessibleBridgeUtils::effectiveActionNames(interface)) {
+    const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
+    actions.reserve(actionNames.size());
+    Q_FOREACH (const QString &actionName, actionNames) {
         QSpiAction action;
         QStringList keyBindings;
 

@@ -317,6 +317,7 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
         return;
 
     QList<QWindowSystemInterface::TouchPoint> tpl;
+    tpl.reserve(m_activeCursors.size() + m_deadCursors.size());
 
     foreach (const QTuioCursor &tc, m_activeCursors) {
         QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);

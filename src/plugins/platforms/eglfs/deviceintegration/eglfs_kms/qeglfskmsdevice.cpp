@@ -208,6 +208,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     }
 
     QList<drmModeModeInfo> modes;
+    modes.reserve(connector->count_modes);
     qCDebug(qLcEglfsKmsDebug) << connectorName << "mode count:" << connector->count_modes;
     for (int i = 0; i < connector->count_modes; i++) {
         const drmModeModeInfo &mode = connector->modes[i];

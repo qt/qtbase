@@ -225,9 +225,10 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &at
 QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
 {
     QHash<QPair<int, int>, QTextCharFormat> rangeAttrs;
+    const int numAttributes = attributes.size();
 
     // Merge text fomats for identical ranges into a single QTextFormat.
-    for (int i = 0; i < attributes.size(); ++i) {
+    for (int i = 0; i < numAttributes; ++i) {
         const QIBusAttribute &attr = attributes.at(i);
         const QTextCharFormat &format = attr.format();
 
@@ -239,8 +240,9 @@ QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
 
     // Assemble list in original attribute order.
     QList<QInputMethodEvent::Attribute> imAttrs;
+    imAttrs.reserve(numAttributes);
 
-    for (int i = 0; i < attributes.size(); ++i) {
+    for (int i = 0; i < numAttributes; ++i) {
         const QIBusAttribute &attr = attributes.at(i);
         const QTextFormat &format = attr.format();
 

@@ -78,6 +78,7 @@ QStringList QCupsPrinterSupport::availablePrintDeviceIds() const
     QStringList list;
     cups_dest_t *dests;
     int count = cupsGetDests(&dests);
+    list.reserve(count);
     for (int i = 0; i < count; ++i) {
         QString printerId = QString::fromLocal8Bit(dests[i].name);
         if (dests[i].instance)

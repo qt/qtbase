@@ -224,7 +224,9 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             it += 2;
         }
 
-        for (int c = 0; c < options.size(); ++c) {
+        const int numOptions = options.size();
+        cupsOptStruct.reserve(numOptions);
+        for (int c = 0; c < numOptions; ++c) {
             cups_option_t opt;
             opt.name = options[c].first.data();
             opt.value = options[c].second.data();

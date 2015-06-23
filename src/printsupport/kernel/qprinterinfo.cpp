@@ -316,7 +316,9 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     Q_D(const QPrinterInfo);
     QList<QPrinter::PaperSize> list;
-    foreach (const QPageSize &pageSize, d->m_printDevice.supportedPageSizes())
+    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
+    list.reserve(supportedPageSizes.size());
+    foreach (const QPageSize &pageSize, supportedPageSizes)
         list.append(QPrinter::PaperSize(pageSize.id()));
     return list;
 }
@@ -336,7 +338,9 @@ QList<QPair<QString, QSizeF> > QPrinterInfo::supportedSizesWithNames() const
 {
     Q_D(const QPrinterInfo);
     QList<QPair<QString, QSizeF> > list;
-    foreach (const QPageSize &pageSize, d->m_printDevice.supportedPageSizes())
+    const QList<QPageSize> supportedPageSizes = d->m_printDevice.supportedPageSizes();
+    list.reserve(supportedPageSizes.size());
+    foreach (const QPageSize &pageSize, supportedPageSizes)
         list.append(qMakePair(pageSize.name(), pageSize.size(QPageSize::Millimeter)));
     return list;
 }
@@ -376,7 +380,9 @@ QList<QPrinter::DuplexMode> QPrinterInfo::supportedDuplexModes() const
 {
     Q_D(const QPrinterInfo);
     QList<QPrinter::DuplexMode> list;
-    foreach (QPrint::DuplexMode mode, d->m_printDevice.supportedDuplexModes())
+    const QList<QPrint::DuplexMode> supportedDuplexModes = d->m_printDevice.supportedDuplexModes();
+    list.reserve(supportedDuplexModes.size());
+    foreach (QPrint::DuplexMode mode, supportedDuplexModes)
         list << QPrinter::DuplexMode(mode);
     return list;
 }
@@ -416,7 +422,9 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
     QList<QPrinterInfo> list;
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
-        foreach (const QString &id, ps->availablePrintDeviceIds())
+        const QStringList availablePrintDeviceIds = ps->availablePrintDeviceIds();
+        list.reserve(availablePrintDeviceIds.size());
+        foreach (const QString &id, availablePrintDeviceIds)
             list.append(QPrinterInfo(id));
     }
     return list;

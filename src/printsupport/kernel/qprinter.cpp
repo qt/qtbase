@@ -1934,7 +1934,9 @@ QList<int> QPrinter::supportedResolutions() const
     QList<QVariant> varlist
         = d->printEngine->property(QPrintEngine::PPK_SupportedResolutions).toList();
     QList<int> intlist;
-    for (int i=0; i<varlist.size(); ++i)
+    const int numSupportedResolutions = varlist.size();
+    intlist.reserve(numSupportedResolutions);
+    for (int i = 0; i < numSupportedResolutions; ++i)
         intlist << varlist.at(i).toInt();
     return intlist;
 }

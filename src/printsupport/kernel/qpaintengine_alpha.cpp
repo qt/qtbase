@@ -178,7 +178,8 @@ void QAlphaPaintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
     Q_D(QAlphaPaintEngine);
 
     QPolygonF poly;
-    for (int i=0; i<pointCount; ++i)
+    poly.reserve(pointCount);
+    for (int i = 0; i < pointCount; ++i)
         poly.append(points[i]);
 
     QPainterPath path;

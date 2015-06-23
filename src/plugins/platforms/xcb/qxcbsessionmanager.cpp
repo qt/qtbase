@@ -134,6 +134,7 @@ static void sm_setProperty(const QString &name, const QStringList &value)
     SmPropValue *prop = new SmPropValue[value.count()];
     int count = 0;
     QList<QByteArray> vl;
+    vl.reserve(value.size());
     for (QStringList::ConstIterator it = value.begin(); it != value.end(); ++it) {
       prop[count].length = (*it).length();
       vl.append((*it).toUtf8());
