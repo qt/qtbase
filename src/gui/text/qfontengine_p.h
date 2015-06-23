@@ -49,6 +49,7 @@
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/QLinkedList>
+#include <QtCore/qhashfunctions.h>
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
@@ -328,12 +329,18 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)
 
 inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId &f2)
 {
-    return (f1.index == f2.index) && (f1.encoding == f2.encoding) && (f1.filename == f2.filename);
+    return f1.index == f2.index && f1.encoding == f2.encoding && f1.filename == f2.filename && f1.uuid == f2.uuid;
 }
 
-inline uint qHash(const QFontEngine::FaceId &f)
+inline uint qHash(const QFontEngine::FaceId &f, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(f.filename)))
 {
-    return qHash((f.index << 16) + f.encoding) + qHash(f.filename + f.uuid);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, f.filename);
+    seed = hash(seed, f.uuid);
+    seed = hash(seed, f.index);
+    seed = hash(seed, f.encoding);
+    return seed;
 }
 
 
