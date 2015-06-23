@@ -84,6 +84,7 @@ public:
     static int totalUsed();
 #endif
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPixmapCache::Key)
 
 QT_END_NAMESPACE
 
