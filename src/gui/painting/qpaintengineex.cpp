@@ -182,12 +182,11 @@ void QPaintEngineExPrivate::replayClipOperations()
     if (!p || !p->d_ptr)
         return;
 
-    QList<QPainterClipInfo> clipInfo = p->d_ptr->state->clipInfo;
+    const QVector<QPainterClipInfo> &clipInfo = p->d_ptr->state->clipInfo;
 
     QTransform transform = q->state()->matrix;
 
-    for (int i = 0; i <  clipInfo.size(); ++i) {
-        const QPainterClipInfo &info = clipInfo.at(i);
+    for (const QPainterClipInfo &info : clipInfo) {
 
         if (info.matrix != q->state()->matrix) {
             q->state()->matrix = info.matrix;
@@ -233,9 +232,7 @@ bool QPaintEngineExPrivate::hasClipOperations() const
     if (!p || !p->d_ptr)
         return false;
 
-    QList<QPainterClipInfo> clipInfo = p->d_ptr->state->clipInfo;
-
-    return !clipInfo.isEmpty();
+    return !p->d_ptr->state->clipInfo.isEmpty();
 }
 
 /*******************************************************************************

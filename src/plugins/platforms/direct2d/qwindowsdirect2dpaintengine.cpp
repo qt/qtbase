@@ -1687,7 +1687,7 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
         p.setPen(state()->pen);
 
         QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
-        foreach (const QPainterClipInfo &info, state()->clipInfo) {
+        for (const QPainterClipInfo &info : qAsConst(state()->clipInfo)) {
             extended->state()->matrix = info.matrix;
             extended->transformChanged();
 
