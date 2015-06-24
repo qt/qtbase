@@ -58,6 +58,8 @@ private slots:
 
     void type_data();
     void type();
+
+    void taskQTBUG_46755_QFileIconEngine_crash();
 };
 
 // Subclass that exposes the protected functions.
@@ -165,6 +167,21 @@ void tst_QFileIconProvider::type()
     QFETCH(QFileInfo, info);
     SubQFileIconProvider provider;
     QVERIFY(!provider.type(info).isEmpty());
+}
+
+static QIcon getIcon()
+{
+    QFileIconProvider fip;
+    return fip.icon(QDir::currentPath());
+}
+
+void tst_QFileIconProvider::taskQTBUG_46755_QFileIconEngine_crash()
+{
+    const QIcon &icon = getIcon();
+    foreach (const QSize &size, icon.availableSizes())
+        icon.pixmap(size);
+
+    // No crash, all good.
 }
 
 QTEST_MAIN(tst_QFileIconProvider)
