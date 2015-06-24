@@ -45,10 +45,10 @@ private:
     bool registerableMetaType(const QByteArray &propertyType);
     void registerClassInfoStrings();
     void generateClassInfos();
-    void registerFunctionStrings(const QList<FunctionDef> &list);
-    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
-    void generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype);
-    void generateFunctionParameters(const QList<FunctionDef> &list, const char *functype);
+    void registerFunctionStrings(const QVector<FunctionDef> &list);
+    void generateFunctions(const QVector<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
+    void generateFunctionRevisions(const QVector<FunctionDef> &list, const char *functype);
+    void generateFunctionParameters(const QVector<FunctionDef> &list, const char *functype);
     void generateTypeInfo(const QByteArray &typeName, bool allowEmptyName = false);
     void registerEnumStrings();
     void generateEnums(int index);
@@ -59,7 +59,7 @@ private:
     void generateSignal(FunctionDef *def, int index);
     void generatePluginMetaData();
     QMultiMap<QByteArray, int> automaticPropertyMetaTypesHelper();
-    QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypesHelper(const QList<FunctionDef> &methodList);
+    QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypesHelper(const QVector<FunctionDef> &methodList);
 
     void strreg(const QByteArray &); // registers a string
     int stridx(const QByteArray &); // returns a string's id

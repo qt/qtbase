@@ -121,7 +121,7 @@ int Generator::stridx(const QByteArray &s)
 // Returns the sum of all parameters (including return type) for the given
 // \a list of methods. This is needed for calculating the size of the methods'
 // parameter type/name meta-data.
-static int aggregateParameterCount(const QList<FunctionDef> &list)
+static int aggregateParameterCount(const QVector<FunctionDef> &list)
 {
     int sum = 0;
     for (int i = 0; i < list.count(); ++i)
@@ -194,7 +194,7 @@ void Generator::generateCode()
 
     // filter out undeclared enumerators and sets
     {
-        QList<EnumDef> enumList;
+        QVector<EnumDef> enumList;
         for (int i = 0; i < cdef->enumList.count(); ++i) {
             EnumDef def = cdef->enumList.at(i);
             if (cdef->enumDeclarations.contains(def.name)) {
@@ -571,7 +571,7 @@ void Generator::generateCode()
                 cname, cname, cdef->classname.constData());
     }
     for (int i = 0; i < cdef->interfaceList.size(); ++i) {
-        const QList<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
+        const QVector<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
         for (int j = 0; j < iface.size(); ++j) {
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
@@ -628,7 +628,7 @@ void Generator::generateClassInfos()
     }
 }
 
-void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
+void Generator::registerFunctionStrings(const QVector<FunctionDef>& list)
 {
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
@@ -648,7 +648,7 @@ void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
     }
 }
 
-void Generator::generateFunctions(const QList<FunctionDef>& list, const char *functype, int type, int &paramsIndex)
+void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *functype, int type, int &paramsIndex)
 {
     if (list.isEmpty())
         return;
@@ -694,7 +694,7 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
     }
 }
 
-void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionRevisions(const QVector<FunctionDef>& list, const char *functype)
 {
     if (list.count())
         fprintf(out, "\n // %ss: revision\n", functype);
@@ -704,7 +704,7 @@ void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const 
     }
 }
 
-void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionParameters(const QVector<FunctionDef>& list, const char *functype)
 {
     if (list.isEmpty())
         return;
@@ -917,7 +917,7 @@ void Generator::generateMetacall()
     fprintf(out, "    ");
 
     bool needElse = false;
-    QList<FunctionDef> methodList;
+    QVector<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
     methodList += cdef->methodList;
@@ -1079,7 +1079,7 @@ QMultiMap<QByteArray, int> Generator::automaticPropertyMetaTypesHelper()
     return automaticPropertyMetaTypes;
 }
 
-QMap<int, QMultiMap<QByteArray, int> > Generator::methodsWithAutomaticTypesHelper(const QList<FunctionDef> &methodList)
+QMap<int, QMultiMap<QByteArray, int> > Generator::methodsWithAutomaticTypesHelper(const QVector<FunctionDef> &methodList)
 {
     QMap<int, QMultiMap<QByteArray, int> > methodsWithAutomaticTypes;
     for (int i = 0; i < methodList.size(); ++i) {
@@ -1133,7 +1133,7 @@ void Generator::generateStaticMetacall()
         isUsed_a = true;
     }
 
-    QList<FunctionDef> methodList;
+    QVector<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
     methodList += cdef->methodList;

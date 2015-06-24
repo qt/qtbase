@@ -127,7 +127,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
             return QString();           // wasn't a valid type
         }
     }
-    QList<ArgumentDef> names = mm.arguments;
+    QVector<ArgumentDef> names = mm.arguments;
     QVector<int> types;
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
         args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);
 
-    QList<ClassDef> classes;
+    QVector<ClassDef> classes;
 
     for (int i = 0; i < args.count(); ++i) {
         const QString arg = args.at(i);

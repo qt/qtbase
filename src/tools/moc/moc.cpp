@@ -538,7 +538,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 
 void Moc::parse()
 {
-    QList<NamespaceDef> namespaceList;
+    QVector<NamespaceDef> namespaceList;
     bool templateClass = false;
     while (hasNext()) {
         Token t = next();
@@ -801,7 +801,7 @@ void Moc::parse()
     }
 }
 
-static bool any_type_contains(const QList<PropertyDef> &properties, const QByteArray &pattern)
+static bool any_type_contains(const QVector<PropertyDef> &properties, const QByteArray &pattern)
 {
     for (const auto &p : properties) {
         if (p.type.contains(pattern))
@@ -810,7 +810,7 @@ static bool any_type_contains(const QList<PropertyDef> &properties, const QByteA
     return false;
 }
 
-static bool any_arg_contains(const QList<FunctionDef> &functions, const QByteArray &pattern)
+static bool any_arg_contains(const QVector<FunctionDef> &functions, const QByteArray &pattern)
 {
     for (const auto &f : functions) {
         for (const auto &arg : f.arguments) {
@@ -835,7 +835,7 @@ static QByteArrayList make_candidates()
     return result;
 }
 
-static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
+static QByteArrayList requiredQtContainers(const QVector<ClassDef> &classes)
 {
     static const QByteArrayList candidates = make_candidates();
 
@@ -1319,7 +1319,7 @@ void Moc::parseInterfaces(ClassDef *def)
 {
     next(LPAREN);
     while (test(IDENTIFIER)) {
-        QList<ClassDef::Interface> iface;
+        QVector<ClassDef::Interface> iface;
         iface += ClassDef::Interface(lexem());
         while (test(SCOPE)) {
             iface.last().className += lexem();
