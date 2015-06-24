@@ -127,10 +127,6 @@ public:
     // The platform screen's geometry in device independent coordinates
     QRect deviceIndependentGeometry() const;
 
-    // Accessors for QScreen geometry in native coordinates. Platform plugins should use these
-    // instead of accessing QScreen directly.
-    QRect screenGeometry() const;
-    QRect screenAvailableGeometry() const;
 protected:
     void resizeMaximizedWindows();
 

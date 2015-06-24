@@ -449,19 +449,6 @@ QRect QPlatformScreen::deviceIndependentGeometry() const
     return QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
 }
 
-
-QRect QPlatformScreen::screenGeometry() const
-{
-    qreal scaleFactor = QHighDpiScaling::factor(this);
-    QRect geometry = screen()->geometry();
-    return QRect(geometry.topLeft(), QHighDpi::toNative(geometry.size(), scaleFactor));
-}
-
-QRect QPlatformScreen::screenAvailableGeometry() const
-{
-    return QHighDpi::toNativePixels(screen()->availableGeometry(), this);
-}
-
 /*!
   Returns a hint about this screen's subpixel layout structure.
 
