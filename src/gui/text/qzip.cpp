@@ -322,6 +322,7 @@ enum HostOS {
     HostOS400    = 18,
     HostOSX      = 19
 };
+Q_DECLARE_TYPEINFO(HostOS, Q_PRIMITIVE_TYPE);
 
 enum GeneralPurposeFlag {
     Encrypted = 0x01,
@@ -333,6 +334,7 @@ enum GeneralPurposeFlag {
     Utf8Names = 0x0800,
     CentralDirectoryEncrypted = 0x2000
 };
+Q_DECLARE_TYPEINFO(GeneralPurposeFlag, Q_PRIMITIVE_TYPE);
 
 enum CompressionMethod {
     CompressionMethodStored = 0,
@@ -359,6 +361,7 @@ enum CompressionMethod {
     CompressionMethodPPMd = 98,
     CompressionMethodWzAES = 99
 };
+Q_DECLARE_TYPEINFO(CompressionMethod, Q_PRIMITIVE_TYPE);
 
 struct LocalFileHeader
 {
@@ -373,6 +376,7 @@ struct LocalFileHeader
     uchar file_name_length[2];
     uchar extra_field_length[2];
 };
+Q_DECLARE_TYPEINFO(LocalFileHeader, Q_PRIMITIVE_TYPE);
 
 struct DataDescriptor
 {
@@ -380,6 +384,7 @@ struct DataDescriptor
     uchar compressed_size[4];
     uchar uncompressed_size[4];
 };
+Q_DECLARE_TYPEINFO(DataDescriptor, Q_PRIMITIVE_TYPE);
 
 struct CentralFileHeader
 {
@@ -401,6 +406,7 @@ struct CentralFileHeader
     uchar offset_local_header[4];
     LocalFileHeader toLocalHeader() const;
 };
+Q_DECLARE_TYPEINFO(CentralFileHeader, Q_PRIMITIVE_TYPE);
 
 struct EndOfDirectory
 {
@@ -413,6 +419,7 @@ struct EndOfDirectory
     uchar dir_start_offset[4];
     uchar comment_length[2];
 };
+Q_DECLARE_TYPEINFO(EndOfDirectory, Q_PRIMITIVE_TYPE);
 
 struct FileHeader
 {
@@ -421,6 +428,7 @@ struct FileHeader
     QByteArray extra_field;
     QByteArray file_comment;
 };
+Q_DECLARE_TYPEINFO(FileHeader, Q_MOVABLE_TYPE);
 
 QZipReader::FileInfo::FileInfo()
     : isDir(false), isFile(false), isSymLink(false), crc(0), size(0)
