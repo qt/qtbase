@@ -460,7 +460,6 @@ class QRenderRule
 public:
     QRenderRule() : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0) { }
     QRenderRule(const QVector<QCss::Declaration> &, const QObject *);
-    ~QRenderRule() { }
 
     QRect borderRect(const QRect &r) const;
     QRect outlineRect(const QRect &r) const;
