@@ -411,38 +411,6 @@ struct FileHeader
 };
 Q_DECLARE_TYPEINFO(FileHeader, Q_MOVABLE_TYPE);
 
-QZipReader::FileInfo::FileInfo()
-    : isDir(false), isFile(false), isSymLink(false), crc(0), size(0)
-{
-}
-
-QZipReader::FileInfo::~FileInfo()
-{
-}
-
-QZipReader::FileInfo::FileInfo(const FileInfo &other)
-{
-    operator=(other);
-}
-
-QZipReader::FileInfo& QZipReader::FileInfo::operator=(const FileInfo &other)
-{
-    filePath = other.filePath;
-    isDir = other.isDir;
-    isFile = other.isFile;
-    isSymLink = other.isSymLink;
-    permissions = other.permissions;
-    crc = other.crc;
-    size = other.size;
-    lastModified = other.lastModified;
-    return *this;
-}
-
-bool QZipReader::FileInfo::isValid() const
-{
-    return isDir || isFile || isSymLink;
-}
-
 class QZipPrivate
 {
 public:

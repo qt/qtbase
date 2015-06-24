@@ -70,13 +70,14 @@ public:
     bool isReadable() const;
     bool exists() const;
 
-    struct Q_GUI_EXPORT FileInfo
+    struct FileInfo
     {
-        FileInfo();
-        FileInfo(const FileInfo &other);
-        ~FileInfo();
-        FileInfo &operator=(const FileInfo &other);
-        bool isValid() const;
+        FileInfo() Q_DECL_NOTHROW
+            : isDir(false), isFile(false), isSymLink(false), crc(0), size(0)
+        {}
+
+        bool isValid() const Q_DECL_NOTHROW { return isDir || isFile || isSymLink; }
+
         QString filePath;
         uint isDir : 1;
         uint isFile : 1;
@@ -85,7 +86,6 @@ public:
         uint crc;
         qint64 size;
         QDateTime lastModified;
-        void *d;
     };
 
     QList<FileInfo> fileInfoList() const;
