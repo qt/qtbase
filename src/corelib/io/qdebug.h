@@ -45,6 +45,12 @@
 #include <QtCore/qset.h>
 #include <QtCore/qcontiguouscache.h>
 
+// all these have already been included by various headers above, but don't rely on indirect includes:
+#include <vector>
+#include <list>
+#include <map>
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -192,28 +198,63 @@ inline QDebug &QDebug::operator=(const QDebug &other)
     return *this;
 }
 
-template <class T>
-inline QDebug operator<<(QDebug debug, const QList<T> &list)
+namespace QtPrivate {
+
+template <typename SequentialContainer>
+inline QDebug printSequentialContainer(QDebug debug, const char *which, const SequentialContainer &c)
 {
     const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << '(';
-    for (typename QList<T>::size_type i = 0; i < list.count(); ++i) {
-        if (i)
-            debug << ", ";
-        debug << list.at(i);
+    debug.nospace() << which << '(';
+    typename SequentialContainer::const_iterator it = c.begin(), end = c.end();
+    if (it != end) {
+        debug << *it;
+        ++it;
+    }
+    while (it != end) {
+        debug << ", " << *it;
+        ++it;
     }
     debug << ')';
     debug.setAutoInsertSpaces(oldSetting);
     return debug.maybeSpace();
 }
 
+} // namespace QtPrivate
+
+template <class T>
+inline QDebug operator<<(QDebug debug, const QList<T> &list)
+{
+    return QtPrivate::printSequentialContainer(debug, "" /*for historical reasons*/, list);
+}
+
 template <typename T>
 inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QVector";
-    debug.setAutoInsertSpaces(oldSetting);
-    return operator<<(debug, vec.toList());
+    return QtPrivate::printSequentialContainer(debug, "QVector", vec);
+}
+
+template <typename T, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
+{
+    return QtPrivate::printSequentialContainer(debug, "std::vector", vec);
+}
+
+template <typename T, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec)
+{
+    return QtPrivate::printSequentialContainer(debug, "std::list", vec);
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
+{
+    return QtPrivate::printSequentialContainer(debug, "std::map", map); // yes, sequential: *it is std::pair
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+inline QDebug operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
+{
+    return QtPrivate::printSequentialContainer(debug, "std::multimap", map); // yes, sequential: *it is std::pair
 }
 
 template <class Key, class T>
@@ -252,13 +293,19 @@ inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
     return debug.maybeSpace();
 }
 
+template <class T1, class T2>
+inline QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
+{
+    const bool oldSetting = debug.autoInsertSpaces();
+    debug.nospace() << "std::pair(" << pair.first << ',' << pair.second << ')';
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
+}
+
 template <typename T>
 inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QSet";
-    debug.setAutoInsertSpaces(oldSetting);
-    return operator<<(debug, set.toList());
+    return QtPrivate::printSequentialContainer(debug, "QSet", set);
 }
 
 template <class T>
