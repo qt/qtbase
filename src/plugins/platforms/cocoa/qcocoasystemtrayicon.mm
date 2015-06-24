@@ -252,6 +252,7 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
     }
 
     NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(fullHeightPixmap));
+    [nsimage setTemplate:icon.isMask()];
     [(NSImageView*)[[m_sys->item item] view] setImage: nsimage];
     [nsimage release];
 }

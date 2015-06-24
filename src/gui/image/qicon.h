@@ -102,6 +102,9 @@ public:
 
     QList<QSize> availableSizes(Mode mode = Normal, State state = Off) const;
 
+    void setIsMask(bool isMask);
+    bool isMask() const;
+
     static QIcon fromTheme(const QString &name, const QIcon &fallback = QIcon());
     static bool hasThemeIcon(const QString &name);
 

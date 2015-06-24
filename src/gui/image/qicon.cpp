@@ -129,7 +129,8 @@ static qreal qt_effective_device_pixel_ratio(QWindow *window = 0)
 QIconPrivate::QIconPrivate()
     : engine(0), ref(1),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
-    detach_no(0)
+    detach_no(0),
+    is_mask(false)
 {
 }
 
@@ -1196,6 +1197,31 @@ bool QIcon::hasThemeIcon(const QString &name)
     return icon.name() == name;
 }
 
+/*!
+    \since 5.6
+
+    Indicate that this icon is a mask image, and hence can potentially
+    be modified based on where it's displayed.
+    \sa isMask()
+*/
+void QIcon::setIsMask(bool isMask)
+{
+    d->is_mask = isMask;
+}
+
+/*!
+    \since 5.6
+
+    Returns \c true if this icon has been marked as a mask image.
+    Certain platforms render mask icons differently (for example,
+    menu icons on OS X).
+
+    \sa setIsMask()
+*/
+bool QIcon::isMask() const
+{
+    return d->is_mask;
+}
 
 /*****************************************************************************
   QIcon stream functions
