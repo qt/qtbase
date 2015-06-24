@@ -586,6 +586,7 @@ public:
     int clipset;
     QPainterPath clipPath;
 };
+Q_DECLARE_TYPEINFO(QRenderRule, Q_MOVABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static const char *const knownStyleHints[] = {
@@ -730,6 +731,7 @@ namespace {
         int width;
     };
 }
+template <> class QTypeInfo<ButtonInfo> : public QTypeInfoMerger<ButtonInfo, QRenderRule, int> {};
 
 QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget *w, const QStyleOptionTitleBar *tb) const
 {
