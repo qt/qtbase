@@ -669,6 +669,62 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn QDebug operator<<(QDebug stream, const QList<T> &list)
+    \relates QDebug
+
+    Writes the contents of \a list to \a stream. \c T needs to
+    support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QVector<T> &vector)
+    \relates QDebug
+
+    Writes the contents of \a vector to \a stream. \c T needs to
+    support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QSet<T> &set)
+    \relates QDebug
+
+    Writes the contents of \a set to \a stream. \c T needs to
+    support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QMap<Key, T> &map)
+    \relates QDebug
+
+    Writes the contents of \a map to \a stream. Both \c Key and
+    \c T need to support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QHash<Key, T> &hash)
+    \relates QDebug
+
+    Writes the contents of \a hash to \a stream. Both \c Key and
+    \c T need to support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QPair<T1, T2> &pair)
+    \relates QDebug
+
+    Writes the contents of \a pair to \a stream. Both \c T1 and
+    \c T2 need to support streaming into QDebug.
+*/
+
+/*!
+    \fn QDebug operator<<(QDebug stream, const QFlags<T> &flag)
+    \relates QDebug
+    \since 4.7
+
+    Writes \a flag to \a stream.
+*/
+
+/*!
     \class QDebugStateSaver
 
     \brief Convenience class for custom QDebug operators
