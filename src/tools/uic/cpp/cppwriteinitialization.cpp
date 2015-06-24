@@ -1277,7 +1277,8 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         case DomProperty::Cstring:
             if (propertyName == QLatin1String("buddy") && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QLabel"))) {
-                m_buddies.append(Buddy(varName, p->elementCstring()));
+                Buddy buddy = { varName, p->elementCstring() };
+                m_buddies.append(std::move(buddy));
             } else {
                 if (stdset)
                     propertyValue = fixString(p->elementCstring(), m_dindent);

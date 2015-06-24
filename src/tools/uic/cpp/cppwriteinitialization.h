@@ -251,16 +251,15 @@ private:
 
     struct Buddy
     {
-        Buddy(const QString &oN, const QString &b)
-            : objName(oN), buddy(b) {}
         QString objName;
         QString buddy;
     };
+    friend class QTypeInfo<Buddy>;
 
     QStack<DomWidget*> m_widgetChain;
     QStack<DomLayout*> m_layoutChain;
     QStack<DomActionGroup*> m_actionGroupChain;
-    QList<Buddy> m_buddies;
+    QVector<Buddy> m_buddies;
 
     QSet<QString> m_buttonGroups;
     QHash<QString, DomWidget*> m_registeredWidgets;
@@ -322,6 +321,8 @@ private:
 };
 
 } // namespace CPP
+
+Q_DECLARE_TYPEINFO(CPP::WriteInitialization::Buddy, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
