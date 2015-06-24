@@ -39,9 +39,6 @@
 class tst_QZip : public QObject
 {
     Q_OBJECT
-public slots:
-    void init();
-    void cleanup();
 
 private slots:
     void basicUnpack();
@@ -49,14 +46,6 @@ private slots:
     void readTest();
     void createArchive();
 };
-
-void tst_QZip::init()
-{
-}
-
-void tst_QZip::cleanup()
-{
-}
 
 void tst_QZip::basicUnpack()
 {
