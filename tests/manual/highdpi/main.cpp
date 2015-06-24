@@ -64,10 +64,14 @@
 class DemoContainerBase
 {
 public:
+    DemoContainerBase() : m_widget(0) {}
     virtual ~DemoContainerBase() {}
     QString name() { return option().names().first(); }
     virtual QCommandLineOption &option() = 0;
-    virtual void makeVisible(bool visible) = 0;
+    virtual void makeVisible(bool visible, QWidget *parent) = 0;
+    QWidget *widget() { return m_widget; }
+protected:
+    QWidget *m_widget;
 };
 
 typedef QList<DemoContainerBase*> DemoContainerList ;
@@ -78,21 +82,22 @@ class DemoContainer : public DemoContainerBase
 {
 public:
     DemoContainer(const QString &optionName, const QString &description)
-        : m_widget(0), m_option(optionName, description)
+        : m_option(optionName, description)
     {
     }
     ~DemoContainer() { delete m_widget; }
 
     QCommandLineOption &option() { return m_option; }
 
-    void makeVisible(bool visible) {
-        if (visible && !m_widget)
+    void makeVisible(bool visible, QWidget *parent) {
+        if (visible && !m_widget) {
             m_widget = new T;
+            m_widget->installEventFilter(parent);
+        }
         if (m_widget)
             m_widget->setVisible(visible);
     }
 private:
-    QWidget *m_widget;
     QCommandLineOption m_option;
 };
 
@@ -165,6 +170,9 @@ Q_OBJECT
 public:
     DemoController(DemoContainerList *demos, QCommandLineParser *parser);
     ~DemoController();
+protected:
+    bool eventFilter(QObject *object, QEvent *event);
+    void closeEvent(QCloseEvent *) { qApp->quit(); }
 private slots:
     void handleButton(int id, bool toggled);
 private:
@@ -226,7 +234,7 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
         m_group->addButton(button, i);
 
         if (parser->isSet(demo->option())) {
-            demo->makeVisible(true);
+            demo->makeVisible(true, this);
             button->setChecked(true);
         }
     }
@@ -238,9 +246,23 @@ DemoController::~DemoController()
     qDeleteAll(*m_demos);
 }
 
+bool DemoController::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::Close) {
+        for (int i = 0; i < m_demos->size(); ++i) {
+            DemoContainerBase *demo = m_demos->at(i);
+            if (demo->widget() == object) {
+                m_group->button(i)->setChecked(false);
+                break;
+            }
+        }
+    }
+    return false;
+}
+
 void DemoController::handleButton(int id, bool toggled)
 {
-    m_demos->at(id)->makeVisible(toggled);
+    m_demos->at(id)->makeVisible(toggled, this);
 }
 
 class PixmapPainter : public QWidget
