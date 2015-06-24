@@ -419,21 +419,22 @@ void NmakeMakefileGenerator::init()
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
     }
 
-    ProString version = project->first("TARGET_VERSION_EXT");
+    ProString tgt = project->first("DESTDIR")
+                    + project->first("TARGET") + project->first("TARGET_VERSION_EXT");
     if(project->isActiveConfig("shared")) {
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
-        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".lib");
+        project->values("QMAKE_CLEAN").append(tgt + ".exp");
+        project->values("QMAKE_DISTCLEAN").append(tgt + ".lib");
     }
     if (project->isActiveConfig("debug_info")) {
-        QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";
+        QString pdbfile = tgt + ".pdb";
         QString escapedPdbFile = escapeFilePath(pdbfile);
         project->values("QMAKE_CFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_CXXFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_DISTCLEAN").append(pdbfile);
     }
     if (project->isActiveConfig("debug")) {
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".ilk");
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".idb");
+        project->values("QMAKE_CLEAN").append(tgt + ".ilk");
+        project->values("QMAKE_CLEAN").append(tgt + ".idb");
     } else {
         ProStringList &defines = project->values("DEFINES");
         if (!defines.contains("NDEBUG"))
