@@ -425,7 +425,7 @@ public:
             delete device;
     }
 
-    void fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const;
+    QZipReader::FileInfo fillFileInfo(int index) const;
 
     QIODevice *device;
     bool ownDevice;
@@ -435,8 +435,9 @@ public:
     uint start_of_directory;
 };
 
-void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
+QZipReader::FileInfo QZipPrivate::fillFileInfo(int index) const
 {
+    QZipReader::FileInfo fileInfo;
     FileHeader header = fileHeaders.at(index);
     quint32 mode = readUInt(header.h.external_file_attributes);
     const HostOS hostOS = HostOS(readUShort(header.h.version_made) >> 8);
@@ -478,7 +479,7 @@ void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
         break;
     default:
         qWarning("QZip: Zip entry format at %d is not supported.", index);
-        return; // we don't support anything else
+        return fileInfo; // we don't support anything else
     }
 
     ushort general_purpose_bits = readUShort(header.h.general_purpose_bits);
@@ -495,6 +496,8 @@ void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
         fileInfo.filePath = fileInfo.filePath.mid(1);
     while (!fileInfo.filePath.isEmpty() && fileInfo.filePath.at(fileInfo.filePath.size() - 1) == QLatin1Char('/'))
         fileInfo.filePath.chop(1);
+
+    return fileInfo;
 }
 
 class QZipReaderPrivate : public QZipPrivate
@@ -895,11 +898,8 @@ QVector<QZipReader::FileInfo> QZipReader::fileInfoList() const
     QVector<FileInfo> files;
     const int numFileHeaders = d->fileHeaders.size();
     files.reserve(numFileHeaders);
-    for (int i = 0; i < numFileHeaders; ++i) {
-        QZipReader::FileInfo fi;
-        d->fillFileInfo(i, fi);
-        files.append(fi);
-    }
+    for (int i = 0; i < numFileHeaders; ++i)
+        files.append(d->fillFileInfo(i));
     return files;
 
 }
@@ -923,10 +923,9 @@ int QZipReader::count() const
 QZipReader::FileInfo QZipReader::entryInfoAt(int index) const
 {
     d->scanFiles();
-    QZipReader::FileInfo fi;
     if (index >= 0 && index < d->fileHeaders.count())
-        d->fillFileInfo(index, fi);
-    return fi;
+        return d->fillFileInfo(index);
+    return QZipReader::FileInfo();
 }
 
 /*!
