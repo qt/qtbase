@@ -746,14 +746,15 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
     enum Where { Left, Right, Center, NoWhere } where = Left;
     QList<ButtonInfo> infos;
     for (int i = 0; i < layout.count(); i++) {
-        ButtonInfo info;
-        info.element = layout[i].toInt();
-        if (info.element == '(') {
+        const int element = layout[i].toInt();
+        if (element == '(') {
             where = Center;
-        } else if (info.element == ')') {
+        } else if (element == ')') {
             where = Right;
         } else {
-            switch (info.element) {
+            ButtonInfo info;
+            info.element = element;
+            switch (element) {
             case PseudoElement_TitleBar:
                 if (!(tb->titleBarFlags & (Qt::WindowTitleHint | Qt::WindowSystemMenuHint)))
                     continue;
