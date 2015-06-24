@@ -558,16 +558,22 @@ public:
         return csz;
     }
 
+    bool hasStyleHint(const QString &sh) const { return styleHints.contains(sh); }
+    QVariant styleHint(const QString &sh) const { return styleHints.value(sh); }
+
+    void fixupBorder(int);
+
+    // Shouldn't be here
+    void setClip(QPainter *p, const QRect &rect);
+    void unsetClip(QPainter *);
+
+public:
     int features;
     QBrush defaultBackground;
     QFont font;
     bool hasFont;
 
     QHash<QString, QVariant> styleHints;
-    bool hasStyleHint(const QString& sh) const { return styleHints.contains(sh); }
-    QVariant styleHint(const QString& sh) const { return styleHints.value(sh); }
-
-    void fixupBorder(int);
 
     QSharedDataPointer<QStyleSheetPaletteData> pal;
     QSharedDataPointer<QStyleSheetBoxData> b;
@@ -578,9 +584,6 @@ public:
     QSharedDataPointer<QStyleSheetPositionData> p;
     QSharedDataPointer<QStyleSheetImageData> img;
 
-    // Shouldn't be here
-    void setClip(QPainter *p, const QRect &rect);
-    void unsetClip(QPainter *);
     int clipset;
     QPainterPath clipPath;
 };
