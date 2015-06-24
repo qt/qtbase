@@ -1227,12 +1227,22 @@ void **QListData::erase(void **xi)
     not be empty. If the list can be empty, call isEmpty() before
     calling this function.
 
-    \sa last(), isEmpty()
+    \sa constFirst(), last(), isEmpty()
 */
 
 /*! \fn const T& QList::first() const
 
     \overload
+*/
+
+/*! \fn const T& QList::constFirst() const
+    \since 5.6
+
+    Returns a const reference to the first item in the list. The list must
+    not be empty. If the list can be empty, call isEmpty() before
+    calling this function.
+
+    \sa constLast(), isEmpty(), first()
 */
 
 /*! \fn T& QList::last()
@@ -1241,12 +1251,22 @@ void **QListData::erase(void **xi)
     not be empty. If the list can be empty, call isEmpty() before
     calling this function.
 
-    \sa first(), isEmpty()
+    \sa constLast(), first(), isEmpty()
 */
 
 /*! \fn const T& QList::last() const
 
     \overload
+*/
+
+/*! \fn const T& QList::constLast() const
+    \since 5.6
+
+    Returns a reference to the last item in the list. The list must
+    not be empty. If the list can be empty, call isEmpty() before
+    calling this function.
+
+    \sa constFirst(), isEmpty(), last()
 */
 
 /*! \fn void QList::removeFirst()

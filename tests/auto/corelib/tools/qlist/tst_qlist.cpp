@@ -313,6 +313,8 @@ private slots:
     void lastOptimal() const;
     void lastMovable() const;
     void lastComplex() const;
+    void constFirst() const;
+    void constLast() const;
     void beginOptimal() const;
     void beginMovable() const;
     void beginComplex() const;
@@ -727,6 +729,140 @@ void tst_QList::firstComplex() const
     const int liveCount = Complex::getLiveCount();
     first<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
+}
+
+void tst_QList::constFirst() const
+{
+    // Based on tst_QVector::constFirst()
+    QList<int> list;
+    list << 69 << 42 << 3;
+
+    // test it starts ok
+    QCOMPARE(list.constFirst(), 69);
+    QVERIFY(list.isDetached());
+
+    QList<int> listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constFirst(), 69);
+    QCOMPARE(listCopy.constFirst(), 69);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    // test removal changes
+    list.removeAt(0);
+    QVERIFY(list.isDetached());
+    QVERIFY(!list.isSharedWith(listCopy));
+    QCOMPARE(list.constFirst(), 42);
+    QCOMPARE(listCopy.constFirst(), 69);
+
+    listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constFirst(), 42);
+    QCOMPARE(listCopy.constFirst(), 42);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    // test prepend changes
+    list.prepend(23);
+    QVERIFY(list.isDetached());
+    QVERIFY(!list.isSharedWith(listCopy));
+    QCOMPARE(list.constFirst(), 23);
+    QCOMPARE(listCopy.constFirst(), 42);
+
+    listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constFirst(), 23);
+    QCOMPARE(listCopy.constFirst(), 23);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+}
+
+void tst_QList::constLast() const
+{
+    // Based on tst_QVector::constLast()
+    QList<int> list;
+    list << 69 << 42 << 3;
+
+    // test it starts ok
+    QCOMPARE(list.constLast(), 3);
+    QVERIFY(list.isDetached());
+
+    QList<int> listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constLast(), 3);
+    QCOMPARE(listCopy.constLast(), 3);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    // test removal changes
+    list.removeLast();
+    QVERIFY(list.isDetached());
+    QVERIFY(!list.isSharedWith(listCopy));
+    QCOMPARE(list.constLast(), 42);
+    QCOMPARE(listCopy.constLast(), 3);
+
+    listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constLast(), 42);
+    QCOMPARE(listCopy.constLast(), 42);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    // test prepend changes
+    list.append(23);
+    QVERIFY(list.isDetached());
+    QVERIFY(!list.isSharedWith(listCopy));
+    QCOMPARE(list.constLast(), 23);
+    QCOMPARE(listCopy.constLast(), 42);
+
+    listCopy = list;
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
+
+    QCOMPARE(list.constLast(), 23);
+    QCOMPARE(listCopy.constLast(), 23);
+
+    QVERIFY(!list.isDetached());
+    QVERIFY(!listCopy.isDetached());
+    QVERIFY(list.isSharedWith(listCopy));
+    QVERIFY(listCopy.isSharedWith(list));
 }
 
 template<typename T>

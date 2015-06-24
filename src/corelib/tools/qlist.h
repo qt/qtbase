@@ -331,9 +331,11 @@ public:
     inline int count() const { return p.size(); }
     inline int length() const { return p.size(); } // Same as count()
     inline T& first() { Q_ASSERT(!isEmpty()); return *begin(); }
+    inline const T& constFirst() const { return first(); }
     inline const T& first() const { Q_ASSERT(!isEmpty()); return at(0); }
     T& last() { Q_ASSERT(!isEmpty()); return *(--end()); }
     const T& last() const { Q_ASSERT(!isEmpty()); return at(count() - 1); }
+    inline const T& constLast() const { return last(); }
     inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(begin()); }
     inline void removeLast() { Q_ASSERT(!isEmpty()); erase(--end()); }
     inline bool startsWith(const T &t) const { return !isEmpty() && first() == t; }
