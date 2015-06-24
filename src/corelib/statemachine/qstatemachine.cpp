@@ -383,10 +383,6 @@ static QList<QAbstractState *> getEffectiveTargetStates(QAbstractTransition *tra
     return targetsList;
 }
 
-template <class T>
-static uint qHash(const QPointer<T> &p)
-{ return qHash(p.data()); }
-
 QStateMachinePrivate::QStateMachinePrivate()
 {
     isMachine = true;
