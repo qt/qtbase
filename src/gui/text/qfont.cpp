@@ -549,7 +549,7 @@ QFont::QFont(const QFont &font, QPaintDevice *pd)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d.data();
+        d = font.d;
     }
 }
 
@@ -654,7 +654,7 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     Constructs a font that is a copy of \a font.
 */
 QFont::QFont(const QFont &font)
-    : d(font.d.data()), resolve_mask(font.resolve_mask)
+    : d(font.d), resolve_mask(font.resolve_mask)
 {
 }
 
@@ -670,7 +670,7 @@ QFont::~QFont()
 */
 QFont &QFont::operator=(const QFont &font)
 {
-    d = font.d.data();
+    d = font.d;
     resolve_mask = font.resolve_mask;
     return *this;
 }
@@ -1647,8 +1647,8 @@ bool QFont::operator<(const QFont &f) const
 {
     if (f.d == d) return false;
     // the < operator for fontdefs ignores point sizes.
-    QFontDef &r1 = f.d->request;
-    QFontDef &r2 = d->request;
+    const QFontDef &r1 = f.d->request;
+    const QFontDef &r2 = d->request;
     if (r1.pointSize != r2.pointSize) return r1.pointSize < r2.pointSize;
     if (r1.pixelSize != r2.pixelSize) return r1.pixelSize < r2.pixelSize;
     if (r1.weight != r2.weight) return r1.weight < r2.weight;
@@ -2386,7 +2386,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     that is not screen-compatible.
 */
 QFontInfo::QFontInfo(const QFont &font)
-    : d(font.d.data())
+    : d(font.d)
 {
 }
 
@@ -2394,7 +2394,7 @@ QFontInfo::QFontInfo(const QFont &font)
     Constructs a copy of \a fi.
 */
 QFontInfo::QFontInfo(const QFontInfo &fi)
-    : d(fi.d.data())
+    : d(fi.d)
 {
 }
 
@@ -2410,7 +2410,7 @@ QFontInfo::~QFontInfo()
 */
 QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 {
-    d = fi.d.data();
+    d = fi.d;
     return *this;
 }
 

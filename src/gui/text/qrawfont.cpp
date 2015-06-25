@@ -688,7 +688,7 @@ extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSyst
 QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writingSystem)
 {
     QRawFont rawFont;
-    QFontPrivate *font_d = QFontPrivate::get(font);
+    const QFontPrivate *font_d = QFontPrivate::get(font);
     int script = qt_script_for_writing_system(writingSystem);
     QFontEngine *fe = font_d->engineForScript(script);
 

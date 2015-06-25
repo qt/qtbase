@@ -145,7 +145,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     metrics that are compatible with a certain paint device.
 */
 QFontMetrics::QFontMetrics(const QFont &font)
-    : d(font.d.data())
+    : d(font.d)
 {
 }
 
@@ -171,7 +171,7 @@ QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d.data();
+        d = font.d;
     }
 
 }
@@ -180,7 +180,7 @@ QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
     Constructs a copy of \a fm.
 */
 QFontMetrics::QFontMetrics(const QFontMetrics &fm)
-    : d(fm.d.data())
+    : d(fm.d)
 {
 }
 
@@ -197,7 +197,7 @@ QFontMetrics::~QFontMetrics()
 */
 QFontMetrics &QFontMetrics::operator=(const QFontMetrics &fm)
 {
-    d = fm.d.data();
+    d = fm.d;
     return *this;
 }
 
@@ -995,7 +995,7 @@ int QFontMetrics::lineWidth() const
     from the given \a fontMetrics object.
 */
 QFontMetricsF::QFontMetricsF(const QFontMetrics &fontMetrics)
-    : d(fontMetrics.d.data())
+    : d(fontMetrics.d)
 {
 }
 
@@ -1006,7 +1006,7 @@ QFontMetricsF::QFontMetricsF(const QFontMetrics &fontMetrics)
 */
 QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
 {
-    d = other.d.data();
+    d = other.d;
     return *this;
 }
 
@@ -1034,7 +1034,7 @@ QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
     metrics that are compatible with a certain paint device.
 */
 QFontMetricsF::QFontMetricsF(const QFont &font)
-    : d(font.d.data())
+    : d(font.d)
 {
 }
 
@@ -1060,7 +1060,7 @@ QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d.data();
+        d = font.d;
     }
 
 }
@@ -1069,7 +1069,7 @@ QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
     Constructs a copy of \a fm.
 */
 QFontMetricsF::QFontMetricsF(const QFontMetricsF &fm)
-    : d(fm.d.data())
+    : d(fm.d)
 {
 }
 
@@ -1086,7 +1086,7 @@ QFontMetricsF::~QFontMetricsF()
 */
 QFontMetricsF &QFontMetricsF::operator=(const QFontMetricsF &fm)
 {
-    d = fm.d.data();
+    d = fm.d;
     return *this;
 }
 
