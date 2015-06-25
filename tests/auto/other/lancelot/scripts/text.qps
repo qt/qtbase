@@ -160,3 +160,10 @@ save
   setPen black
   drawText 0 70 "testing glyph cache textures"
 restore
+
+translate 0 75
+save
+  setPen black
+  setFont "sansserif" 16 normal
+  drawText 0 40 "e😃m😇o😍j😜i😸!"
+restore
