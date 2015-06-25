@@ -45,7 +45,6 @@
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
 #include <QtCore/QSettings>
-#include <QtGui/QGuiApplication>
 #include <QtCore/QtEndian>
 #ifndef QT_NO_FREETYPE
 #include <QtGui/private/qfontengine_ft_p.h>
@@ -399,16 +398,13 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     }
 #endif
 
+    // Since we do not pass in the destination DPI to CoreText when making
+    // the font, we need to pass in a point size which is scaled to include
+    // the DPI. The default DPI for the screen is 72, thus the scale factor
+    // is destinationDpi / 72, but since pixelSize = pointSize / 72 * dpi,
+    // the pixelSize is actually the scaled point size for the destination
+    // DPI, and we can use that directly.
     qreal scaledPointSize = f.pixelSize;
-
-    // When 96 DPI is forced, the Mac plugin will use DPI 72 for some
-    // fonts (hardcoded in qcocoaintegration.mm) and 96 for others. This
-    // discrepancy makes it impossible to find the correct point size
-    // here without having the DPI used for the font. Until a proper
-    // solution (requiring API change) can be made, we simply fall back
-    // to passing in the point size to retain old behavior.
-    if (QGuiApplication::testAttribute(Qt::AA_Use96Dpi))
-        scaledPointSize = f.pointSize;
 
     CGAffineTransform matrix = qt_transform_from_fontdef(f);
     CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, &matrix);
