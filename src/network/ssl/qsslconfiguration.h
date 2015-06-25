@@ -71,9 +71,12 @@ public:
     QSslConfiguration();
     QSslConfiguration(const QSslConfiguration &other);
     ~QSslConfiguration();
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSslConfiguration &operator=(QSslConfiguration &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
-    inline void swap(QSslConfiguration &other)
+    void swap(QSslConfiguration &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
 
     bool operator==(const QSslConfiguration &other) const;

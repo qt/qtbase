@@ -52,14 +52,10 @@ public:
     QSslPreSharedKeyAuthenticator &operator=(const QSslPreSharedKeyAuthenticator &authenticator);
 
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QSslPreSharedKeyAuthenticator &operator=(QSslPreSharedKeyAuthenticator &&authenticator)
-    { d.swap(authenticator.d); return *this; }
+    QSslPreSharedKeyAuthenticator &operator=(QSslPreSharedKeyAuthenticator &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
 
-    void swap(QSslPreSharedKeyAuthenticator &authenticator)
-    {
-        d.swap(authenticator.d);
-    }
+    void swap(QSslPreSharedKeyAuthenticator &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     QByteArray identityHint() const;
 
