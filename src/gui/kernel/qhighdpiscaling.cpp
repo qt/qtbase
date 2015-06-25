@@ -142,6 +142,11 @@ QDpi QHighDpiScaling::m_logicalDpi; // The scaled logical DPI of the primary scr
 */
 void QHighDpiScaling::initHighDpiScaling()
 {
+    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling)) {
+        m_factor = 1;
+        m_active = false;
+        return;
+    }
     m_factor = initialScaleFactor();
     bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet(autoScreenEnvVar)
                                          || qgetenv(legacyDevicePixelEnvVar).toLower() == "auto";
@@ -157,6 +162,9 @@ void QHighDpiScaling::initHighDpiScaling()
 
 void QHighDpiScaling::updateHighDpiScaling()
 {
+    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling))
+        return;
+
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {
         Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
             if (!qFuzzyCompare(screenSubfactor(screen->handle()), qreal(1))) {
