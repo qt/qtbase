@@ -180,10 +180,10 @@ public:
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QKeySequence &operator=(QKeySequence &&other)
-    { qSwap(d, other.d); return *this; }
+    QKeySequence &operator=(QKeySequence &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
-    inline void swap(QKeySequence &other) { qSwap(d, other.d); }
+    void swap(QKeySequence &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+
     bool operator==(const QKeySequence &other) const;
     inline bool operator!= (const QKeySequence &other) const
     { return !(*this == other); }

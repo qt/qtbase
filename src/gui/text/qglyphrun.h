@@ -59,9 +59,13 @@ public:
 
     QGlyphRun();
     QGlyphRun(const QGlyphRun &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QGlyphRun &operator=(QGlyphRun &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QGlyphRun &operator=(const QGlyphRun &other);
     ~QGlyphRun();
 
-    void swap(QGlyphRun &other) { qSwap(d, other.d); }
+    void swap(QGlyphRun &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     QRawFont rawFont() const;
     void setRawFont(const QRawFont &rawFont);
@@ -77,8 +81,6 @@ public:
     void setPositions(const QVector<QPointF> &positions);
 
     void clear();
-
-    QGlyphRun &operator=(const QGlyphRun &other);
 
     bool operator==(const QGlyphRun &other) const;
     inline bool operator!=(const QGlyphRun &other) const

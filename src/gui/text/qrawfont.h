@@ -72,13 +72,15 @@ public:
              qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QRawFont &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QRawFont &operator=(QRawFont &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QRawFont &operator=(const QRawFont &other);
     ~QRawFont();
 
+    void swap(QRawFont &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+
     bool isValid() const;
-
-    QRawFont &operator=(const QRawFont &other);
-
-    void swap(QRawFont &other) { qSwap(d, other.d); }
 
     bool operator==(const QRawFont &other) const;
     inline bool operator!=(const QRawFont &other) const

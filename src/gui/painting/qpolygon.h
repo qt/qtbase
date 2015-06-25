@@ -56,7 +56,11 @@ public:
     inline /*implicit*/ QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);
-    inline void swap(QPolygon &other) { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
+#ifdef Q_COMPILER_RVALUE_REFS
+    QPolygon &operator=(QPolygon &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QPolygon &operator=(const QPolygon &other) { QVector<QPoint>::operator=(other); return *this; }
+    void swap(QPolygon &other) Q_DECL_NOTHROW { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
 
     operator QVariant() const;
 
@@ -130,6 +134,10 @@ public:
     inline /*implicit*/ QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
     QPolygonF(const QRectF &r);
     /*implicit*/ QPolygonF(const QPolygon &a);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QPolygonF &operator=(QPolygonF &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QPolygonF &operator=(const QPolygonF &other) { QVector<QPointF>::operator=(other); return *this; }
     inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
 
     operator QVariant() const;
