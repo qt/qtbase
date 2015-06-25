@@ -69,11 +69,10 @@ public:
     inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QVector(QVector<T> &&other) : d(other.d) { other.d = Data::sharedNull(); }
-    inline QVector<T> operator=(QVector<T> &&other)
-    { qSwap(d, other.d); return *this; }
+    QVector(QVector<T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
+    QVector<T> operator=(QVector<T> &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
-    inline void swap(QVector<T> &other) { qSwap(d, other.d); }
+    void swap(QVector<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
 #endif

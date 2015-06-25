@@ -101,11 +101,10 @@ public:
     QDir &operator=(const QDir &);
     QDir &operator=(const QString &path);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QDir &operator=(QDir &&other)
-    { qSwap(d_ptr, other.d_ptr); return *this; }
+    QDir &operator=(QDir &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
 
-    inline void swap(QDir &other)
+    void swap(QDir &other) Q_DECL_NOTHROW
     { qSwap(d_ptr, other.d_ptr); }
 
     void setPath(const QString &path);

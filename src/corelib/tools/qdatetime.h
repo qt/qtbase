@@ -222,9 +222,12 @@ public:
     QDateTime(const QDateTime &other);
     ~QDateTime();
 
+#ifdef Q_COMPILER_RVALUE_REFS
+    QDateTime &operator=(QDateTime &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QDateTime &operator=(const QDateTime &other);
 
-    inline void swap(QDateTime &other) { qSwap(d, other.d); }
+    void swap(QDateTime &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool isNull() const;
     bool isValid() const;

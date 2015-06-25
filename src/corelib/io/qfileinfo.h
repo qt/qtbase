@@ -62,11 +62,10 @@ public:
 
     QFileInfo &operator=(const QFileInfo &fileinfo);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QFileInfo&operator=(QFileInfo &&other)
-    { qSwap(d_ptr, other.d_ptr); return *this; }
+    QFileInfo &operator=(QFileInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
 
-    inline void swap(QFileInfo &other)
+    void swap(QFileInfo &other) Q_DECL_NOTHROW
     { qSwap(d_ptr, other.d_ptr); }
 
     bool operator==(const QFileInfo &fileinfo) const;

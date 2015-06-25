@@ -56,8 +56,7 @@ public:
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QUrlQuery &operator=(QUrlQuery &&other)
-    { qSwap(d, other.d); return *this; }
+    QUrlQuery &operator=(QUrlQuery &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
     ~QUrlQuery();
 
@@ -65,7 +64,7 @@ public:
     bool operator!=(const QUrlQuery &other) const
     { return !(*this == other); }
 
-    void swap(QUrlQuery &other) { qSwap(d, other.d); }
+    void swap(QUrlQuery &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool isEmpty() const;
     bool isDetached() const;
