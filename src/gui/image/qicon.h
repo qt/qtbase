@@ -56,8 +56,8 @@ public:
     QIcon(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     QIcon(QIcon &&other) Q_DECL_NOEXCEPT
-        : d(0)
-    { qSwap(d, other.d); }
+        : d(other.d)
+    { other.d = Q_NULLPTR; }
 #endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
@@ -65,7 +65,7 @@ public:
     QIcon &operator=(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QIcon &operator=(QIcon &&other) Q_DECL_NOEXCEPT
-    { qSwap(d, other.d); return *this; }
+    { swap(other); return *this; }
 #endif
     inline void swap(QIcon &other) Q_DECL_NOEXCEPT
     { qSwap(d, other.d); }
