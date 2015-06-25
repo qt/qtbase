@@ -2965,11 +2965,21 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     if [ $UNAME_SYSTEM = "Linux" ]; then
-        if file -L /bin/sh | grep -q "64-bit" ; then
-            Licheck=licheck64
-        else
+        case "$PLATFORM" in
+        *-32)
             Licheck=licheck32
-        fi
+            ;;
+        *-64)
+            Licheck=licheck64
+            ;;
+        *)
+            if file -L /bin/sh | grep -q "64-bit" ; then
+                Licheck=licheck64
+            else
+                Licheck=licheck32
+            fi
+            ;;
+        esac
     elif [ $UNAME_SYSTEM = "Darwin" ]; then
         Licheck=licheck_mac
     else
