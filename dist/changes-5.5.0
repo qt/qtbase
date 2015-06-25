@@ -20,27 +20,58 @@ information about a particular change.
 ****************************************************************************
 
  - Support for the following platforms or toolchains is deprecated in Qt
-   5.5 and may be removed or stop compiling in a future version of Qt:
+   5.5 and will be removed as of Qt 5.6:
    * Apple OS X builds using GNU libstdc++
    * BlackBerry 10
-   * GNU Compiler Collection (GCC) versions 4.6 and earlier
    * QNX 6.5
+
+   The following platforms or toolchains are deprecated and will be
+   removed as of Qt 5.7:
+   * Apple OS X 10.7 (Lion)
+   * GNU Compiler Collection (GCC) versions 4.6 and earlier
    * Microsoft Visual Studio compiler versions 2008 and 2010
    * Microsoft Windows XP, Windows Vista
    * Microsoft Windows Embedded Compact 7
-   Note: QNX 6.6 continues to be supported.
 
- - The QtWebKit, QtScript modules and support for the QML 1 language and
-   QtQuick 1 is deprecated and Qt 5.5 will be the last release to
-   include them. Starting with Qt 5.6, the source code for those modules
-   will not be included in Qt's packaging. Compiling the 5.5 release of
-   those modules along with other, updated Qt 5.6 modules should work.
+   Deprecated platforms and toolchains continue to work until removed.
+
+ - The QtWebKit and QtQuick1 modules and support for the QML 1 language
+   are deprecated and Qt 5.5 will be the last release to include
+   them. Starting with Qt 5.6, the source code for those modules will
+   not be included in Qt's packaging. Compiling the 5.5 release of
+   QtWebKit modules along with Qt 5.6 or future versions should
+   work. QtQuick1 is not guaranteed to work in future versions after
+   Qt 5.6.
+
+ - The QtScript module is deprecated and will be removed from Qt's
+   packaging starting with version 5.7. The 5.5 and 5.6 releases of
+   QtScript should continue to work along with Qt 5.7 and future
+   versions.
 
  - [QTBUG-25121] The usage of the QStyleOptionProgressBar::orientation
    member has been deprecated.
 
  - QLibraryInfo::buildDate() was deprecated and will return a constant
    date now.
+
+****************************************************************************
+*                          Future Direction Notice                         *
+****************************************************************************
+
+ - In Qt 6, QCoreApplication::notify() will not be called for events being
+   delivered to objects outside the main thread. The reason for that is
+   that the main application object may begin destruction while those
+   threads are still delivering events, which is undefined behavior.
+   Applications that currently override notify() and use that function
+   outside the main thread are advised to find other solutions in the mean
+   time.
+
+ - Qt 5.7 will begin requiring certain C++11 features in order to
+   compile. The minimum compiler versions for that release will be:
+   * Clang 3.2 (included in XCode 5.0)
+   * GCC 4.7
+   * Intel C++ Composer XE 2013 SP1 (compiler version 14.0)
+   * Microsoft Visual Studio 2012 (compiler version 17.0)
 
 ****************************************************************************
 *                        Important Behavior Changes                        *
