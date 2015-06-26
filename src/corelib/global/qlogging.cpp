@@ -87,6 +87,10 @@
 #  endif
 #endif
 
+#if defined(QT_USE_SLOG2)
+extern char *__progname;
+#endif
+
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
 #  include <sys/syscall.h>
 static long qt_gettid()
@@ -1172,8 +1176,6 @@ void QMessagePattern::setPattern(const QString &pattern)
 #ifndef QT_LOG_CODE
 #define QT_LOG_CODE 9000
 #endif
-
-extern char *__progname;
 
 static void slog2_default_handler(QtMsgType msgType, const char *message)
 {
