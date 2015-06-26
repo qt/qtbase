@@ -137,9 +137,7 @@ public:
     static void setDefaultSupportedCiphers(const QList<QSslCipher> &ciphers);
     static void resetDefaultCiphers();
 
-    static QVector<QSslEllipticCurve> defaultEllipticCurves();
     static QVector<QSslEllipticCurve> supportedEllipticCurves();
-    static void setDefaultEllipticCurves(const QVector<QSslEllipticCurve> &curves);
     static void setDefaultSupportedEllipticCurves(const QVector<QSslEllipticCurve> &curves);
     static void resetDefaultEllipticCurves();
 

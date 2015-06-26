@@ -263,21 +263,23 @@ private slots:
 
 private:
     const QString m_currentDir;
-    QString m_dataPath;
     QString m_sourceFile;
     QString m_proFile;
     QString m_resourcesDir;
     QTemporaryDir m_dir;
+    QSharedPointer<QTemporaryDir> m_dataDir;
 };
 
 void tst_QFileInfo::initTestCase()
 {
-    m_dataPath = QEXTRACTTESTDATA("/testdata");
-    QVERIFY(!m_dataPath.isEmpty());
+    m_dataDir = QEXTRACTTESTDATA("/testdata");
+    QVERIFY(m_dataDir);
+    const QString dataPath = m_dataDir->path();
+    QVERIFY(!dataPath.isEmpty());
 
-    m_sourceFile = m_dataPath + QStringLiteral("/tst_qfileinfo.cpp");
-    m_resourcesDir = m_dataPath + QStringLiteral("/resources");
-    m_proFile = m_dataPath + QStringLiteral("/tst_qfileinfo.pro");
+    m_sourceFile = dataPath + QLatin1String("/tst_qfileinfo.cpp");
+    m_resourcesDir = dataPath + QLatin1String("/resources");
+    m_proFile = dataPath + QLatin1String("/tst_qfileinfo.pro");
 
     QVERIFY(m_dir.isValid());
     QVERIFY(QDir::setCurrent(m_dir.path()));
@@ -286,7 +288,6 @@ void tst_QFileInfo::initTestCase()
 void tst_QFileInfo::cleanupTestCase()
 {
     QDir::setCurrent(m_currentDir); // Release temporary directory so that it can be deleted on Windows
-    QDir(m_dataPath).removeRecursively();
 }
 
 // Testing get/set functions

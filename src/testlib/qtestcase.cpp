@@ -2812,36 +2812,39 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
 #endif
 
 /*!
-    Extract a directory from resources to disk. The content is extracted
-    recursively to a temporary folder. The extracted content is not removed
-    automatically.
+    Extracts a directory from resources to disk. The content is extracted
+    recursively to a temporary folder. The extracted content is removed
+    automatically once the last reference to the return value goes out of scope.
 
     \a dirName is the name of the directory to extract from resources.
 
-    Returns the path where the data was extracted or an empty string in case of
+    Returns the temporary directory where the data was extracted or null in case of
     errors.
  */
-QString QTest::qExtractTestData(const QString &dirName)
+QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 {
-      QTemporaryDir temporaryDir;
-      temporaryDir.setAutoRemove(false);
+      QSharedPointer<QTemporaryDir> result; // null until success, then == tempDir
 
-      if (!temporaryDir.isValid())
-          return QString();
+      QSharedPointer<QTemporaryDir> tempDir = QSharedPointer<QTemporaryDir>::create();
 
-      const QString dataPath = temporaryDir.path();
+      tempDir->setAutoRemove(true);
+
+      if (!tempDir->isValid())
+          return result;
+
+      const QString dataPath = tempDir->path();
       const QString resourcePath = QLatin1Char(':') + dirName;
       const QFileInfo fileInfo(resourcePath);
 
       if (!fileInfo.isDir()) {
           qWarning("Resource path '%s' is not a directory.", qPrintable(resourcePath));
-          return QString();
+          return result;
       }
 
       QDirIterator it(resourcePath, QDirIterator::Subdirectories);
       if (!it.hasNext()) {
           qWarning("Resource directory '%s' is empty.", qPrintable(resourcePath));
-          return QString();
+          return result;
       }
 
       while (it.hasNext()) {
@@ -2850,21 +2853,23 @@ QString QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.fileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourcePath.length());
+              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().midRef(resourcePath.length());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {
                   qWarning("Failed to copy '%s'.", qPrintable(fileInfo.filePath()));
-                  return QString();
+                  return result;
               }
               if (!QFile::setPermissions(destination, QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
                   qWarning("Failed to set permissions on '%s'.", qPrintable(destination));
-                  return QString();
+                  return result;
               }
           }
       }
 
-      return dataPath;
+      result = qMove(tempDir);
+
+      return result;
 }
 
 /*! \internal

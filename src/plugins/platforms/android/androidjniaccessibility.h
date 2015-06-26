@@ -40,6 +40,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtAndroidAccessibility
 {
+    void initialize();
     bool registerNatives(JNIEnv *env);
 }
 
