@@ -47,6 +47,7 @@
 #include <qitemdelegate.h>
 #include <qtreewidget.h>
 #include <qdebug.h>
+#include <qscreen.h>
 
 typedef QList<int> IntList;
 
@@ -235,6 +236,7 @@ private slots:
     void resizeToContentTest();
     void testStreamWithHide();
     void testStylePosition();
+    void stretchAndRestoreLastSection();
 
     void sizeHintCrash();
 
@@ -554,7 +556,7 @@ void tst_QHeaderView::hidden()
 
 void tst_QHeaderView::stretch()
 {
-    // Show before resize and setStrechLastSection
+    // Show before resize and setStretchLastSection
 #if defined(Q_OS_WINCE)
     QSize viewSize(200,300);
 #else
@@ -2889,6 +2891,125 @@ void tst_QHeaderView::sizeHintCrash()
     treeView.setModel(model);
     treeView.header()->sizeHintForColumn(0);
     treeView.header()->sizeHintForRow(0);
+}
+
+void tst_QHeaderView::stretchAndRestoreLastSection()
+{
+    QStandardItemModel m(10, 10);
+    QTableView tv;
+    tv.setModel(&m);
+    tv.showMaximized();
+
+    const int defaultSectionSize = 30;
+    const int someOtherSectionSize = 40;
+    const int biggerSizeThanAnySection = 50;
+
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+
+    QHeaderView &header = *tv.horizontalHeader();
+    header.setDefaultSectionSize(defaultSectionSize);
+    header.resizeSection(9, someOtherSectionSize);
+    header.setStretchLastSection(true);
+
+    // Default last section is larger
+    QCOMPARE(header.sectionSize(8), defaultSectionSize);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+
+    // Moving last section away (restore old last section 9 - and make 8 larger)
+    header.swapSections(9, 8);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
+    QVERIFY(header.sectionSize(8) >= biggerSizeThanAnySection);
+
+    // Make section 9 the large one again
+    header.hideSection(8);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+
+    // Show section 8 again - and make that one the last one.
+    header.showSection(8);
+    QVERIFY(header.sectionSize(8) > biggerSizeThanAnySection);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
+
+    // Swap the sections so the logical indexes are equal to visible indexes again.
+    header.moveSection(9, 8);
+    QCOMPARE(header.sectionSize(8), defaultSectionSize);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+
+    // Append sections
+    m.setColumnCount(15);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
+    QVERIFY(header.sectionSize(14) >= biggerSizeThanAnySection);
+
+    // Truncate sections (remove sections with the last section)
+    m.setColumnCount(10);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    for (int u = 0; u < 9; ++u)
+        QCOMPARE(header.sectionSize(u), defaultSectionSize);
+
+    // Insert sections
+    m.insertColumns(2, 2);
+    QCOMPARE(header.sectionSize(9), defaultSectionSize);
+    QCOMPARE(header.sectionSize(10), defaultSectionSize);
+    QVERIFY(header.sectionSize(11) >= biggerSizeThanAnySection);
+
+    // Append an extra section and check restore
+    m.setColumnCount(m.columnCount() + 1);
+    QCOMPARE(header.sectionSize(11), someOtherSectionSize);
+    QVERIFY(header.sectionSize(12) >= biggerSizeThanAnySection);
+
+    // Remove some sections but not the last one.
+    m.removeColumns(2, 2);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
+    QVERIFY(header.sectionSize(10) >= biggerSizeThanAnySection);
+    for (int u = 0; u < 9; ++u)
+        QCOMPARE(header.sectionSize(u), defaultSectionSize);
+
+    // Empty the header and start over with some more tests
+    m.setColumnCount(0);
+    m.setColumnCount(10);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+
+    // Check resize of the last section
+    header.resizeSection(9, someOtherSectionSize);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection); // It should still be stretched
+    header.swapSections(9, 8);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
+
+    // Restore the order
+    header.swapSections(9, 8);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+
+    // Hide the last 3 sections and test stretch last section on swap/move
+    // when hidden sections with a larger visual index exists.
+    header.hideSection(7);
+    header.hideSection(8);
+    header.hideSection(9);
+    QVERIFY(header.sectionSize(6) >= biggerSizeThanAnySection);
+    header.moveSection(2, 7);
+    QVERIFY(header.sectionSize(2) >= biggerSizeThanAnySection);
+    header.swapSections(1, 8);
+    QCOMPARE(header.sectionSize(2), defaultSectionSize);
+    QVERIFY(header.sectionSize(1) >= biggerSizeThanAnySection);
+
+    // Inserting sections 2
+    m.setColumnCount(0);
+    m.setColumnCount(10);
+    header.resizeSection(1, someOtherSectionSize);
+    header.swapSections(1, 9);
+    m.insertColumns(9, 2);
+    header.swapSections(1, 11);
+    QCOMPARE(header.sectionSize(1), someOtherSectionSize);
+
+    // Test import/export of the original (not stretched) sectionSize.
+    m.setColumnCount(0);
+    m.setColumnCount(10);
+    header.resizeSection(9, someOtherSectionSize);
+    QVERIFY(header.sectionSize(9) >= biggerSizeThanAnySection);
+    QByteArray b = header.saveState();
+    m.setColumnCount(0);
+    m.setColumnCount(10);
+    header.restoreState(b);
+    header.setStretchLastSection(false);
+    QCOMPARE(header.sectionSize(9), someOtherSectionSize);
 }
 
 QTEST_MAIN(tst_QHeaderView)

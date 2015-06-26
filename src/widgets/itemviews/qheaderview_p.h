@@ -90,6 +90,7 @@ public:
           minimumSectionSize(-1),
           maximumSectionSize(-1),
           lastSectionSize(0),
+          lastSectionLogicalIdx(-1), // Only trust when we stretch last section
           sectionIndicatorOffset(0),
           sectionIndicator(0),
           globalResizeMode(QHeaderView::Interactive),
@@ -99,6 +100,9 @@ public:
 
 
     int lastVisibleVisualIndex() const;
+    void restoreSizeOnPrevLastSection();
+    void setNewLastSection(int visualIndexForLastSection);
+    void maybeRestorePrevLastSectionAndStretchLast();
     int sectionHandleAt(int position);
     void setupSectionIndicator(int section, int position);
     void updateSectionIndicator(int section, int position);
@@ -281,7 +285,8 @@ public:
     int defaultSectionSize;
     int minimumSectionSize;
     int maximumSectionSize;
-    int lastSectionSize; // $$$
+    int lastSectionSize;
+    int lastSectionLogicalIdx; // Only trust if we stretch LastSection
     int sectionIndicatorOffset;
     Qt::Alignment defaultAlignment;
     QLabel *sectionIndicator;
