@@ -40,6 +40,9 @@
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
 
+#include <algorithm>
+#include <iterator>
+
 QT_BEGIN_NAMESPACE
 
 void qt_registerFont(const QString &familyname, const QString &stylename,
@@ -452,11 +455,11 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
  QList<int> QPlatformFontDatabase::standardSizes() const
 {
     QList<int> ret;
-    static const unsigned short standard[] =
-        { 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72, 0 };
-    ret.reserve(int(sizeof(standard) / sizeof(standard[0])));
-    const unsigned short *sizes = standard;
-    while (*sizes) ret << *sizes++;
+    static const quint8 standard[] =
+        { 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72 };
+    static const int num_standards = int(sizeof standard / sizeof *standard);
+    ret.reserve(num_standards);
+    std::copy(standard, standard + num_standards, std::back_inserter(ret));
     return ret;
 }
 
