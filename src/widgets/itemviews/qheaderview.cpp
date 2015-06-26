@@ -2450,7 +2450,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
         case QHeaderViewPrivate::SelectSections: {
             int logical = logicalIndexAt(qMax(-d->offset, pos));
             if (logical == -1 && pos > 0)
-                logical = d->lastVisibleVisualIndex();
+                logical = logicalIndex(d->lastVisibleVisualIndex());
             if (logical == d->pressed)
                 return; // nothing to do
             else if (d->pressed != -1)
