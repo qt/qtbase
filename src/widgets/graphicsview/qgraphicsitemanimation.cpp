@@ -116,7 +116,6 @@ public:
     qreal step;
 
     struct Pair {
-        Pair(qreal a, qreal b) : step(a), value(b) {}
         bool operator <(const Pair &other) const
         { return step < other.step; }
         bool operator==(const Pair &other) const
@@ -174,7 +173,7 @@ void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QV
     if (!check_step_valid(step, method))
         return;
 
-    Pair pair(step, value);
+    const Pair pair = { step, value };
 
     const QVector<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
     if ((result != binList->end()) && !(pair < *result))
