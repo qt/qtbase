@@ -591,7 +591,7 @@ public:
     inline bool operator !() const { return isNull(); }
     inline T *data() const { return d == 0 || d->strongref.load() == 0 ? 0 : value; }
 
-    Q_DECL_CONSTEXPR inline QWeakPointer() : d(0), value(0) { }
+    inline QWeakPointer() : d(0), value(0) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
 #ifndef QT_NO_QOBJECT
