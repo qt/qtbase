@@ -250,7 +250,7 @@ namespace {
         typedef bool result_type;
         typedef QString argument_type;
 
-        result_type operator()(const QString &name) const Q_DECL_NOTHROW
+        result_type operator()(const QString &name) const Q_DECL_NOEXCEPT
         {
             if (name.isEmpty()) {
                 qWarning("QCommandLineOption: Option names cannot be empty");
