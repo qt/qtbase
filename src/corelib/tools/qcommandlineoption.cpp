@@ -252,23 +252,23 @@ namespace {
 
         result_type operator()(const QString &name) const Q_DECL_NOEXCEPT
         {
-            if (name.isEmpty()) {
-                qWarning("QCommandLineOption: Option names cannot be empty");
-                return true;
-            } else {
-                const QChar c = name.at(0);
-                if (c == QLatin1Char('-')) {
-                    qWarning("QCommandLineOption: Option names cannot start with a '-'");
-                    return true;
-                } else if (c == QLatin1Char('/')) {
-                    qWarning("QCommandLineOption: Option names cannot start with a '/'");
-                    return true;
-                } else if (name.contains(QLatin1Char('='))) {
-                    qWarning("QCommandLineOption: Option names cannot contain a '='");
-                    return true;
-                }
-            }
+            if (name.isEmpty())
+                return warn("be empty");
+
+            const QChar c = name.at(0);
+            if (c == QLatin1Char('-'))
+                return warn("start with a '-'");
+            if (c == QLatin1Char('/'))
+                return warn("start with a '/'");
+            if (name.contains(QLatin1Char('=')))
+                return warn("contain a '='");
+
             return false;
+        }
+        static bool warn(const char *what) Q_DECL_NOEXCEPT
+        {
+            qWarning("QCommandLineOption: Option names cannot %s", what);
+            return true;
         }
     };
 } // unnamed namespace
