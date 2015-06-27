@@ -597,7 +597,7 @@ public:
     inline bool operator !() const { return isNull(); }
     inline T *data() const { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
 
-    inline QWeakPointer() : d(Q_NULLPTR), value(Q_NULLPTR) { }
+    inline QWeakPointer() Q_DECL_NOTHROW : d(Q_NULLPTR), value(Q_NULLPTR) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
 #ifndef QT_NO_QOBJECT
@@ -615,15 +615,16 @@ public:
     { return *this = QWeakPointer(ptr); }
 #endif
 
-    inline QWeakPointer(const QWeakPointer &o) : d(o.d), value(o.value)
+    QWeakPointer(const QWeakPointer &other) Q_DECL_NOTHROW : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
-    inline QWeakPointer &operator=(const QWeakPointer &o)
+    QWeakPointer &operator=(const QWeakPointer &other) Q_DECL_NOTHROW
     {
-        internalSet(o.d, o.value);
+        QWeakPointer copy(other);
+        swap(copy);
         return *this;
     }
 
-    inline void swap(QWeakPointer &other)
+    void swap(QWeakPointer &other) Q_DECL_NOTHROW
     {
         qSwap(this->d, other.d);
         qSwap(this->value, other.value);
