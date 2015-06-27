@@ -467,9 +467,9 @@ public:
 private:
     explicit QSharedPointer(Qt::Initialization) {}
 
-    inline void deref()
+    void deref() Q_DECL_NOTHROW
     { deref(d); }
-    static inline void deref(Data *d)
+    static void deref(Data *d) Q_DECL_NOTHROW
     {
         if (!d) return;
         if (!d->strongref.deref()) {
@@ -522,7 +522,7 @@ private:
         deref(o);
     }
 
-    inline void internalSwap(QSharedPointer &other)
+    void internalSwap(QSharedPointer &other) Q_DECL_NOTHROW
     {
         qSwap(d, other.d);
         qSwap(this->value, other.value);
@@ -535,7 +535,7 @@ public:
     template <class X> friend class QWeakPointer;
     template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
-    inline void ref() const { d->weakref.ref(); d->strongref.ref(); }
+    void ref() const Q_DECL_NOTHROW { d->weakref.ref(); d->strongref.ref(); }
 
     inline void internalSet(Data *o, T *actual)
     {
