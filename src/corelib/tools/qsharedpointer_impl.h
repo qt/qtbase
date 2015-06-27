@@ -306,7 +306,7 @@ public:
     inline T &operator*() const { return *data(); }
     inline T *operator->() const { return data(); }
 
-    QSharedPointer() : value(Q_NULLPTR), d(Q_NULLPTR) { }
+    QSharedPointer() Q_DECL_NOTHROW : value(Q_NULLPTR), d(Q_NULLPTR) {}
     ~QSharedPointer() { deref(); }
 
     inline explicit QSharedPointer(T *ptr) : value(ptr) // noexcept
@@ -316,22 +316,22 @@ public:
     inline QSharedPointer(T *ptr, Deleter deleter) : value(ptr) // throws
     { internalConstruct(ptr, deleter); }
 
-    inline QSharedPointer(const QSharedPointer &other) : value(other.value), d(other.d)
+    QSharedPointer(const QSharedPointer &other) Q_DECL_NOTHROW : value(other.value), d(other.d)
     { if (d) ref(); }
-    inline QSharedPointer &operator=(const QSharedPointer &other)
+    QSharedPointer &operator=(const QSharedPointer &other) Q_DECL_NOTHROW
     {
         QSharedPointer copy(other);
         swap(copy);
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QSharedPointer(QSharedPointer &&other)
+    QSharedPointer(QSharedPointer &&other) Q_DECL_NOTHROW
         : value(other.value), d(other.d)
     {
         other.d = Q_NULLPTR;
         other.value = Q_NULLPTR;
     }
-    inline QSharedPointer &operator=(QSharedPointer &&other)
+    QSharedPointer &operator=(QSharedPointer &&other) Q_DECL_NOTHROW
     {
         QSharedPointer moved(std::move(other));
         swap(moved);
