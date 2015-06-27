@@ -176,12 +176,10 @@ void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QV
     const Pair pair = { step, value };
 
     const QVector<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
-    if ((result != binList->end()) && !(pair < *result))
+    if (result == binList->end() || pair < *result)
+        binList->insert(result, pair);
+    else
         result->value = value;
-    else {
-        *binList << pair;
-        std::sort(binList->begin(), binList->end());
-    }
 }
 
 /*!
