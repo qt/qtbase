@@ -336,6 +336,23 @@ public:
         swap(moved);
         return *this;
     }
+
+    template <class X>
+    QSharedPointer(QSharedPointer<X> &&other) Q_DECL_NOTHROW
+        : value(other.value), d(other.d)
+    {
+        other.d = Q_NULLPTR;
+        other.value = Q_NULLPTR;
+    }
+
+    template <class X>
+    QSharedPointer &operator=(QSharedPointer<X> &&other) Q_DECL_NOTHROW
+    {
+        QSharedPointer moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
+
 #endif
 
     template <class X>
