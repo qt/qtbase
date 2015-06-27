@@ -250,6 +250,7 @@ namespace {
         typedef bool result_type;
         typedef QString argument_type;
 
+        Q_NEVER_INLINE
         result_type operator()(const QString &name) const Q_DECL_NOEXCEPT
         {
             if (Q_UNLIKELY(name.isEmpty()))
