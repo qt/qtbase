@@ -362,8 +362,8 @@ public:
     template <class X>
     inline QSharedPointer &operator=(const QSharedPointer<X> &other)
     {
-        QSHAREDPOINTER_VERIFY_AUTO_CAST(T, X); // if you get an error in this line, the cast is invalid
-        internalCopy(other);
+        QSharedPointer copy(other);
+        swap(copy);
         return *this;
     }
 
@@ -525,18 +525,6 @@ private:
 #endif
         d->setQObjectShared(ptr, true);
         enableSharedFromThis(ptr);
-    }
-
-    template <class X>
-    inline void internalCopy(const QSharedPointer<X> &other)
-    {
-        Data *o = other.d;
-        T *actual = other.value;
-        if (o)
-            other.ref();
-        qSwap(d, o);
-        qSwap(this->value, actual);
-        deref(o);
     }
 
     void internalSwap(QSharedPointer &other) Q_DECL_NOTHROW
