@@ -1443,7 +1443,7 @@ void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpN
         // but that does not matter because the signal will ultimately be emitted
         // by the QNetworkAccessManager.
         Q_ASSERT(chan->spdyRequestsToSend.count() > 0);
-        reply = chan->spdyRequestsToSend.values().first().second;
+        reply = chan->spdyRequestsToSend.cbegin().value().second;
     } else { // HTTP
 #endif // QT_NO_SSL
         reply = chan->reply;
