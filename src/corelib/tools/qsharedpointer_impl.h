@@ -332,7 +332,8 @@ public:
     }
     inline QSharedPointer &operator=(QSharedPointer &&other)
     {
-        swap(other);
+        QSharedPointer moved(std::move(other));
+        swap(moved);
         return *this;
     }
 #endif
