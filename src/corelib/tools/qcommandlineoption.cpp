@@ -265,6 +265,8 @@ namespace {
 
             return false;
         }
+
+        Q_NEVER_INLINE
         static bool warn(const char *what) Q_DECL_NOEXCEPT
         {
             qWarning("QCommandLineOption: Option names cannot %s", what);
