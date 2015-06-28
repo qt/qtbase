@@ -43,13 +43,13 @@ QT_BEGIN_NAMESPACE
 
 class QSslPreSharedKeyAuthenticatorPrivate;
 
-class Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator
+class QSslPreSharedKeyAuthenticator
 {
 public:
-    QSslPreSharedKeyAuthenticator();
-    ~QSslPreSharedKeyAuthenticator();
-    QSslPreSharedKeyAuthenticator(const QSslPreSharedKeyAuthenticator &authenticator);
-    QSslPreSharedKeyAuthenticator &operator=(const QSslPreSharedKeyAuthenticator &authenticator);
+    Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator();
+    Q_NETWORK_EXPORT ~QSslPreSharedKeyAuthenticator();
+    Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator(const QSslPreSharedKeyAuthenticator &authenticator);
+    Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator &operator=(const QSslPreSharedKeyAuthenticator &authenticator);
 
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QSslPreSharedKeyAuthenticator &operator=(QSslPreSharedKeyAuthenticator &&authenticator)
@@ -61,15 +61,15 @@ public:
         d.swap(authenticator.d);
     }
 
-    QByteArray identityHint() const;
+    Q_NETWORK_EXPORT QByteArray identityHint() const;
 
-    void setIdentity(const QByteArray &identity);
-    QByteArray identity() const;
-    int maximumIdentityLength() const;
+    Q_NETWORK_EXPORT void setIdentity(const QByteArray &identity);
+    Q_NETWORK_EXPORT QByteArray identity() const;
+    Q_NETWORK_EXPORT int maximumIdentityLength() const;
 
-    void setPreSharedKey(const QByteArray &preSharedKey);
-    QByteArray preSharedKey() const;
-    int maximumPreSharedKeyLength() const;
+    Q_NETWORK_EXPORT void setPreSharedKey(const QByteArray &preSharedKey);
+    Q_NETWORK_EXPORT QByteArray preSharedKey() const;
+    Q_NETWORK_EXPORT int maximumPreSharedKeyLength() const;
 
 private:
     friend Q_NETWORK_EXPORT bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs);

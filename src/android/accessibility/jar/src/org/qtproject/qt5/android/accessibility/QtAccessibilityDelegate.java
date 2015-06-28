@@ -107,10 +107,6 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             if (m_manager.isEnabled())
                 accServiceListener.onAccessibilityStateChanged(true);
         }
-
-
-        // Enable Qt Accessibility so that notifications are enabled
-        QtNativeAccessibility.setActive(true);
     }
 
     private class AccessibilityManagerListener implements AccessibilityManager.AccessibilityStateChangeListener
@@ -119,8 +115,6 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         public void onAccessibilityStateChanged(boolean enabled)
         {
             if (enabled) {
-                // The accessibility code depends on android API level 16, so dynamically resolve it
-                if (android.os.Build.VERSION.SDK_INT >= 16) {
                     try {
                         View view = m_view;
                         if (view == null) {
@@ -147,13 +141,14 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
                         // Unknown exception means something went wrong.
                         Log.w("Qt A11y", "Unknown exception: " + e.toString());
                     }
-                }
             } else {
                 if (m_view != null) {
                     m_layout.removeView(m_view);
                     m_view = null;
                 }
             }
+
+            QtNativeAccessibility.setActive(enabled);
         }
     }
 

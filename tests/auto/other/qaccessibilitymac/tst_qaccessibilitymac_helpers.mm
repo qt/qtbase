@@ -129,7 +129,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
 - (AXUIElementRef) ref { return reference; }
 - (void) print {
-    NSLog(@"Accessible Object role: '%@', title: '%@', description: '%@', value: '%@', rect: '%@'", self.role, self.title, self.description, self.value, NSStringFromRect(self.rect));
+    NSLog(@"Accessible Object role: '%@', title: '%@', description: '%@', value: '%@', rect: '%@'", self.role, self.title, self.description, self.value, NSStringFromRect(NSRectFromCGRect(self.rect)));
     NSLog(@"    Children: %ld", [[self childList] count]);
 }
 

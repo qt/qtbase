@@ -51,7 +51,6 @@ public:
     virtual ~QCocoaFileDialogHelper();
 
     void exec() Q_DECL_OVERRIDE;
-    void execModalForWindow(QWindow *parent) Q_DECL_OVERRIDE;
 
     bool defaultNameFilterDisables() const Q_DECL_OVERRIDE;
 

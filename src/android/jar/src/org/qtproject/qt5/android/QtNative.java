@@ -571,6 +571,16 @@ public class QtNative
         });
     }
 
+    private static void initializeAccessibility()
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.initializeAccessibility();
+            }
+        });
+    }
+
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                                                 int screenHeightPixels,

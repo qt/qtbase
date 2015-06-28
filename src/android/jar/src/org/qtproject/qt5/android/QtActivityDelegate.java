@@ -794,23 +794,6 @@ public class QtActivityDelegate
         m_surfaces =  new HashMap<Integer, QtSurface>();
         m_nativeViews = new HashMap<Integer, View>();
         m_activity.registerForContextMenu(m_layout);
-
-        // Initialize accessibility
-        try {
-            final String a11yDelegateClassName = "org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate";
-            Class<?> qtDelegateClass = Class.forName(a11yDelegateClassName);
-            Constructor constructor = qtDelegateClass.getConstructor(android.app.Activity.class,
-                                                                     android.view.ViewGroup.class,
-                                                                     this.getClass());
-            Object accessibilityDelegate = constructor.newInstance(m_activity, m_layout, this);
-        } catch (ClassNotFoundException e) {
-            // Class not found is fine since we are compatible with Android API < 16, but the function will
-            // only be available with that API level.
-        } catch (Exception e) {
-            // Unknown exception means something went wrong.
-            Log.w("Qt A11y", "Unknown exception: " + e.toString());
-        }
-
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
@@ -826,6 +809,25 @@ public class QtActivityDelegate
 
         QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         m_currentRotation = rotation;
+    }
+
+    public void initializeAccessibility()
+    {
+        // Initialize accessibility
+        try {
+            final String a11yDelegateClassName = "org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate";
+            Class<?> qtDelegateClass = Class.forName(a11yDelegateClassName);
+            Constructor constructor = qtDelegateClass.getConstructor(android.app.Activity.class,
+                                                                     android.view.ViewGroup.class,
+                                                                     this.getClass());
+            Object accessibilityDelegate = constructor.newInstance(m_activity, m_layout, this);
+        } catch (ClassNotFoundException e) {
+            // Class not found is fine since we are compatible with Android API < 16, but the function will
+            // only be available with that API level.
+        } catch (Exception e) {
+            // Unknown exception means something went wrong.
+            Log.w("Qt A11y", "Unknown exception: " + e.toString());
+        }
     }
 
     public void onConfigurationChanged(Configuration configuration)
