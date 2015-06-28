@@ -139,35 +139,35 @@ public:
     QVector<Pair> xTranslation;
     QVector<Pair> yTranslation;
 
-    qreal linearValueForStep(qreal step, QVector<Pair> *source, qreal defaultValue = 0);
+    qreal linearValueForStep(qreal step, const QVector<Pair> &source, qreal defaultValue = 0);
     void insertUniquePair(qreal step, qreal value, QVector<Pair> *binList, const char* method);
 };
 Q_DECLARE_TYPEINFO(QGraphicsItemAnimationPrivate::Pair, Q_PRIMITIVE_TYPE);
 
-qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, QVector<Pair> *source, qreal defaultValue)
+qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, const QVector<Pair> &source, qreal defaultValue)
 {
-    if (source->isEmpty())
+    if (source.isEmpty())
         return defaultValue;
     step = qMin<qreal>(qMax<qreal>(step, 0), 1);
 
     if (step == 1)
-        return source->last().value;
+        return source.back().value;
 
     qreal stepBefore = 0;
     qreal stepAfter = 1;
-    qreal valueBefore = source->first().step == 0 ? source->first().value : defaultValue;
-    qreal valueAfter = source->last().value;
+    qreal valueBefore = source.front().step == 0 ? source.front().value : defaultValue;
+    qreal valueAfter = source.back().value;
 
     // Find the closest step and value before the given step.
-    for (int i = 0; i < source->size() && step >= source->at(i).step; ++i) {
-        stepBefore = source->at(i).step;
-        valueBefore = source->at(i).value;
+    for (int i = 0; i < source.size() && step >= source[i].step; ++i) {
+        stepBefore = source[i].step;
+        valueBefore = source[i].value;
     }
 
     // Find the closest step and value after the given step.
-    for (int j = source->size() - 1; j >= 0 && step < source->at(j).step; --j) {
-        stepAfter = source->at(j).step;
-        valueAfter = source->at(j).value;
+    for (int i = source.size() - 1; i >= 0 && step < source[i].step; --i) {
+        stepAfter = source[i].step;
+        valueAfter = source[i].value;
     }
 
     // Do a simple linear interpolation.
@@ -263,8 +263,8 @@ void QGraphicsItemAnimation::setTimeLine(QTimeLine *timeLine)
 QPointF QGraphicsItemAnimation::posAt(qreal step) const
 {
     check_step_valid(step, "posAt");
-    return QPointF(d->linearValueForStep(step, &d->xPosition, d->startPos.x()),
-                   d->linearValueForStep(step, &d->yPosition, d->startPos.y()));
+    return QPointF(d->linearValueForStep(step, d->xPosition, d->startPos.x()),
+                   d->linearValueForStep(step, d->yPosition, d->startPos.y()));
 }
 
 /*!
@@ -323,7 +323,7 @@ QMatrix QGraphicsItemAnimation::matrixAt(qreal step) const
 qreal QGraphicsItemAnimation::rotationAt(qreal step) const
 {
     check_step_valid(step, "rotationAt");
-    return d->linearValueForStep(step, &d->rotation);
+    return d->linearValueForStep(step, d->rotation);
 }
 
 /*!
@@ -360,7 +360,7 @@ QList<QPair<qreal, qreal> > QGraphicsItemAnimation::rotationList() const
 qreal QGraphicsItemAnimation::xTranslationAt(qreal step) const
 {
     check_step_valid(step, "xTranslationAt");
-    return d->linearValueForStep(step, &d->xTranslation);
+    return d->linearValueForStep(step, d->xTranslation);
 }
 
 /*!
@@ -371,7 +371,7 @@ qreal QGraphicsItemAnimation::xTranslationAt(qreal step) const
 qreal QGraphicsItemAnimation::yTranslationAt(qreal step) const
 {
     check_step_valid(step, "yTranslationAt");
-    return d->linearValueForStep(step, &d->yTranslation);
+    return d->linearValueForStep(step, d->yTranslation);
 }
 
 /*!
@@ -411,7 +411,7 @@ qreal QGraphicsItemAnimation::verticalScaleAt(qreal step) const
 {
     check_step_valid(step, "verticalScaleAt");
 
-    return d->linearValueForStep(step, &d->verticalScale, 1);
+    return d->linearValueForStep(step, d->verticalScale, 1);
 }
 
 /*!
@@ -422,7 +422,7 @@ qreal QGraphicsItemAnimation::verticalScaleAt(qreal step) const
 qreal QGraphicsItemAnimation::horizontalScaleAt(qreal step) const
 {
     check_step_valid(step, "horizontalScaleAt");
-    return d->linearValueForStep(step, &d->horizontalScale, 1);
+    return d->linearValueForStep(step, d->horizontalScale, 1);
 }
 
 /*!
@@ -461,7 +461,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
 qreal QGraphicsItemAnimation::verticalShearAt(qreal step) const
 {
     check_step_valid(step, "verticalShearAt");
-    return d->linearValueForStep(step, &d->verticalShear, 0);
+    return d->linearValueForStep(step, d->verticalShear, 0);
 }
 
 /*!
@@ -472,7 +472,7 @@ qreal QGraphicsItemAnimation::verticalShearAt(qreal step) const
 qreal QGraphicsItemAnimation::horizontalShearAt(qreal step) const
 {
     check_step_valid(step, "horizontalShearAt");
-    return d->linearValueForStep(step, &d->horizontalShear, 0);
+    return d->linearValueForStep(step, d->horizontalShear, 0);
 }
 
 /*!
