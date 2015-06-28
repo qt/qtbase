@@ -1954,11 +1954,14 @@ void QWidgetPrivate::propagatePaletteChange()
     }
     int mask = data.pal.resolve() | inheritedPaletteResolveMask;
 
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
     QEvent pc(QEvent::PaletteChange);
     QApplication::sendEvent(q, &pc);
     for (int i = 0; i < children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget*>(children.at(i));
-        if (w && !w->testAttribute(Qt::WA_StyleSheet)
+        if (w && (!w->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
             && (!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))) {
             QWidgetPrivate *wd = w->d_func();
             wd->inheritedPaletteResolveMask = mask;
@@ -4543,15 +4546,19 @@ void QWidget::setPalette(const QPalette &palette)
 QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
 {
     Q_Q(const QWidget);
+
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
     QPalette naturalPalette = QApplication::palette(q);
-    if (!q->testAttribute(Qt::WA_StyleSheet)
+    if ((!q->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
         && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
 #ifndef QT_NO_GRAPHICSVIEW
             || (extra && extra->proxyWidget)
 #endif //QT_NO_GRAPHICSVIEW
             )) {
         if (QWidget *p = q->parentWidget()) {
-            if (!p->testAttribute(Qt::WA_StyleSheet)) {
+            if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
                 if (!naturalPalette.isCopyOf(QApplication::palette())) {
                     QPalette inheritedPalette = p->palette();
                     inheritedPalette.resolve(inheritedMask);
@@ -4687,15 +4694,19 @@ void QWidget::setFont(const QFont &font)
 QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
 {
     Q_Q(const QWidget);
+
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
     QFont naturalFont = QApplication::font(q);
-    if (!q->testAttribute(Qt::WA_StyleSheet)
+    if ((!q->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
         && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
 #ifndef QT_NO_GRAPHICSVIEW
             || (extra && extra->proxyWidget)
 #endif //QT_NO_GRAPHICSVIEW
             )) {
         if (QWidget *p = q->parentWidget()) {
-            if (!p->testAttribute(Qt::WA_StyleSheet)) {
+            if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
                 if (!naturalFont.isCopyOf(QApplication::font())) {
                     QFont inheritedFont = p->font();
                     inheritedFont.resolve(inheritedMask);
@@ -4747,6 +4758,8 @@ void QWidgetPrivate::updateFont(const QFont &font)
 #ifndef QT_NO_STYLE_STYLESHEET
     const QStyleSheetStyle* cssStyle;
     cssStyle = extra ? qobject_cast<const QStyleSheetStyle*>(extra->style) : 0;
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 #endif
 
     data.fnt = QFont(font, q);
@@ -4771,7 +4784,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
         if (w) {
             if (0) {
 #ifndef QT_NO_STYLE_STYLESHEET
-            } else if (w->testAttribute(Qt::WA_StyleSheet)) {
+            } else if (!useStyleSheetPropagationInWidgetStyles && w->testAttribute(Qt::WA_StyleSheet)) {
                 // Style sheets follow a different font propagation scheme.
                 if (cssStyle)
                     cssStyle->updateStyleSheetFont(w);
@@ -4786,7 +4799,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     }
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (cssStyle) {
+    if (!useStyleSheetPropagationInWidgetStyles && cssStyle) {
         cssStyle->updateStyleSheetFont(q);
     }
 #endif
@@ -10442,7 +10455,11 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     d->reparentFocusWidgets(oldtlw);
     setAttribute(Qt::WA_Resized, resized);
-    if (!testAttribute(Qt::WA_StyleSheet)
+
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
+    if (!useStyleSheetPropagationInWidgetStyles && !testAttribute(Qt::WA_StyleSheet)
         && (!parent || !parent->testAttribute(Qt::WA_StyleSheet))) {
         d->resolveFont();
         d->resolvePalette();

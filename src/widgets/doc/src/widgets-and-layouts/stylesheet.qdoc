@@ -492,9 +492,9 @@
     \section1 Inheritance
 
     In classic CSS, when font and color of an item is not explicitly set,
-    it gets automatically inherited from the parent. When using Qt Style Sheets,
-    a widget does \b{not} automatically inherit its font and color setting
-    from its parent widget.
+    it gets automatically inherited from the parent. By default, when using
+    Qt Style Sheets, a widget does \b{not} automatically inherit its font
+    and color setting from its parent widget.
 
     For example, consider a QPushButton inside a QGroupBox:
 
@@ -507,8 +507,22 @@
 
     \snippet code/doc_src_stylesheet.cpp 25
 
-    In contrast, setting a font and propagate using QWidget::setFont() and
+    In contrast, setting a font and palette using QWidget::setFont() and
     QWidget::setPalette() propagates to child widgets.
+
+    If you would prefer that the font and palette propagate to child widgets,
+    you can set the Qt::AA_UseStyleSheetPropagationInWidgetStyles flag, like
+    this:
+
+    Usage:
+    \snippet code/doc_src_stylesheet.cpp 96
+
+    When the widget-style font and palette propagation is enabled, font and
+    palette changes made through Qt Style Sheets will behave as though the
+    user had manually called the corresponding QWidget::setPalette() and
+    QWidget::setFont() methods on all of the QWidgets targeted by the style
+    sheet.  If this would have caused propagation in C++, it will cause
+    propagation in style sheets and visa versa.
 
     \section1 Widgets Inside C++ Namespaces
 

@@ -213,6 +213,13 @@
            so this does not guarantee that QPaintDevice::devicePixelRatio() will
            be equal to 1. This value has been added in Qt 5.6.
 
+    \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
+           disable regular QWidget palette and font propagation. When this flag
+           is enabled, font and palette changes propagate as though the user had
+           manually called the corresponding QWidget methods. See
+           \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
+           for more details. This value has been added in Qt 5.7.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

@@ -149,6 +149,7 @@ private:
     void unsetPalette(QWidget *);
     void setProperties(QWidget *);
     void setGeometry(QWidget *);
+    void unsetStyleSheetFont(QWidget *) const;
     QVector<QCss::StyleRule> styleRules(const QObject *obj) const;
     bool hasStyleRule(const QObject *obj, int part) const;
 
@@ -178,9 +179,12 @@ public:
     QHash<const QObject *, QHash<int, bool> > hasStyleRuleCache;
     typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
     QHash<const QObject *, QRenderRules> renderRulesCache;
-    QHash<const QWidget *, QPalette> customPaletteWidgets; // widgets whose palette we tampered
     QHash<const void *, QCss::StyleSheet> styleSheetCache; // parsed style sheets
     QSet<const QWidget *> autoFillDisabledWidgets;
+    // widgets whose palettes and fonts we have tampered. stored value pair is
+    // QPair<old widget value, resolve mask of stylesheet value>
+    QHash<const QWidget *, QPair<QPalette, uint> > customPaletteWidgets;
+    QHash<const QWidget *, QPair<QFont, uint> > customFontWidgets;
 };
 
 

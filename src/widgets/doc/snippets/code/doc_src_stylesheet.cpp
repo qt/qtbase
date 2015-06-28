@@ -138,3 +138,7 @@ emailEdit->setProperty("mandatoryField", true);
 QSpinBox *ageSpinBox = new QSpinBox(this);
 ageSpinBox->setProperty("mandatoryField", true);
 //! [95]
+
+//! [96]
+qApp->setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
+//! [97]

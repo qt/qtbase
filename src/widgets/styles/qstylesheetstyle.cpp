@@ -2556,7 +2556,13 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         { PseudoClass_Enabled, QPalette::Inactive }
     };
 
-    QPalette p = w->palette();
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
+    QPalette p;
+    if (!useStyleSheetPropagationInWidgetStyles)
+        p = w->palette();
+
     QWidget *ew = embeddedWidget(w);
 
     for (int i = 0; i < 3; i++) {
@@ -2573,29 +2579,81 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         rule.configurePalette(&p, map[i].group, ew, ew != w);
     }
 
-    styleSheetCaches->customPaletteWidgets.insert(w, w->palette());
-    w->setPalette(p);
-    if (ew != w)
-        ew->setPalette(p);
+    if (!useStyleSheetPropagationInWidgetStyles || p.resolve() != 0) {
+        QPalette wp = w->palette();
+        styleSheetCaches->customPaletteWidgets.insert(w, qMakePair(wp, p.resolve()));
+
+        if (useStyleSheetPropagationInWidgetStyles) {
+            p = p.resolve(wp);
+            p.resolve(p.resolve() | wp.resolve());
+        }
+
+        w->setPalette(p);
+        if (ew != w)
+            ew->setPalette(p);
+    }
 }
 
 void QStyleSheetStyle::unsetPalette(QWidget *w)
 {
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
+
     if (styleSheetCaches->customPaletteWidgets.contains(w)) {
-        QPalette p = styleSheetCaches->customPaletteWidgets.value(w);
-        w->setPalette(p);
+        QPair<QPalette, uint> p = styleSheetCaches->customPaletteWidgets.value(w);
+        styleSheetCaches->customPaletteWidgets.remove(w);
+
+        QPalette original = p.first;
+
+        if (useStyleSheetPropagationInWidgetStyles) {
+            original.resolve(original.resolve() & p.second);
+
+            QPalette wp = w->palette();
+            wp.resolve(wp.resolve() & ~p.second);
+            wp.resolve(original);
+            wp.resolve(wp.resolve() | original.resolve());
+            original = wp;
+        }
+
+        w->setPalette(original);
         QWidget *ew = embeddedWidget(w);
         if (ew != w)
-            ew->setPalette(p);
-        styleSheetCaches->customPaletteWidgets.remove(w);
+            ew->setPalette(original);
     }
-    QVariant oldFont = w->property("_q_styleSheetWidgetFont");
-    if (oldFont.isValid()) {
-        w->setFont(qvariant_cast<QFont>(oldFont));
+
+    if (useStyleSheetPropagationInWidgetStyles) {
+        unsetStyleSheetFont(w);
+        QWidget *ew = embeddedWidget(w);
+        if (ew != w)
+            unsetStyleSheetFont(ew);
+    } else {
+        QVariant oldFont = w->property("_q_styleSheetWidgetFont");
+        if (oldFont.isValid()) {
+            w->setFont(qvariant_cast<QFont>(oldFont));
+        }
     }
+
     if (styleSheetCaches->autoFillDisabledWidgets.contains(w)) {
         embeddedWidget(w)->setAutoFillBackground(true);
         styleSheetCaches->autoFillDisabledWidgets.remove(w);
+    }
+}
+
+void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
+{
+    if (styleSheetCaches->customFontWidgets.contains(w)) {
+        QPair<QFont, uint> f = styleSheetCaches->customFontWidgets.value(w);
+        styleSheetCaches->customFontWidgets.remove(w);
+
+        QFont original = f.first;
+        original.resolve(original.resolve() & f.second);
+
+        QFont font = w->font();
+        font.resolve(font.resolve() & ~f.second);
+        font.resolve(original);
+        font.resolve(font.resolve() | original.resolve());
+
+        w->setFont(font);
     }
 }
 
@@ -2658,6 +2716,7 @@ void QStyleSheetStyleCaches::objectDestroyed(QObject *o)
     hasStyleRuleCache.remove(o);
     renderRulesCache.remove(o);
     customPaletteWidgets.remove((const QWidget *)o);
+    customFontWidgets.remove(static_cast<QWidget *>(o));
     styleSheetCache.remove(o);
     autoFillDisabledWidgets.remove((const QWidget *)o);
 }
@@ -5846,24 +5905,42 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
     // we should never override it.
     if (w->objectName() == QLatin1String("qt_fontDialog_sampleEdit"))
         return;
+
     QWidget *container = containerWidget(w);
     QRenderRule rule = renderRule(container, PseudoElement_None,
             PseudoClass_Active | PseudoClass_Enabled | extendedPseudoClass(container));
-    QFont font = rule.font.resolve(w->font());
 
-    if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
-        && isNaturalChild(w) && qobject_cast<QWidget *>(w->parent())) {
+    const bool useStyleSheetPropagationInWidgetStyles =
+        QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 
-        font = font.resolve(static_cast<QWidget *>(w->parent())->font());
+    if (useStyleSheetPropagationInWidgetStyles) {
+        unsetStyleSheetFont(w);
+
+        if (rule.font.resolve()) {
+            QFont wf = w->font();
+            styleSheetCaches->customFontWidgets.insert(w, qMakePair(wf, rule.font.resolve()));
+
+            QFont font = rule.font.resolve(wf);
+            font.resolve(wf.resolve() | rule.font.resolve());
+            w->setFont(font);
+        }
+    } else {
+        QFont font = rule.font.resolve(w->font());
+
+        if ((!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
+            && isNaturalChild(w) && qobject_cast<QWidget *>(w->parent())) {
+
+            font = font.resolve(static_cast<QWidget *>(w->parent())->font());
+        }
+
+        if (w->data->fnt == font)
+            return;
+
+        w->data->fnt = font;
+
+        QEvent e(QEvent::FontChange);
+        QApplication::sendEvent(w, &e);
     }
-
-    if (w->data->fnt == font)
-        return;
-
-    w->data->fnt = font;
-
-    QEvent e(QEvent::FontChange);
-    QApplication::sendEvent(w, &e);
 }
 
 void QStyleSheetStyle::saveWidgetFont(QWidget* w, const QFont& font) const

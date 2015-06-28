@@ -498,6 +498,7 @@ public:
         AA_ShareOpenGLContexts = 18,
         AA_SetPalette = 19,
         AA_NoHighDpiScaling = 20,
+        AA_UseStyleSheetPropagationInWidgetStyles = 21, // ### Qt 6: remove me
 
         // Add new attributes before this line
         AA_AttributeCount
