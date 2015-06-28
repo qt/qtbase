@@ -51,7 +51,7 @@ MainWindow::MainWindow()
     QAction *addNew = new QAction(menuWindow);
     addNew->setText(tr("Add new"));
     menuWindow->addAction(addNew);
-    connect(addNew, SIGNAL(triggered()), this, SLOT(onAddNew()));
+    connect(addNew, &QAction::triggered, this, &MainWindow::onAddNew);
     setMenuBar(menuBar);
 
     onAddNew();
