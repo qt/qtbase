@@ -541,19 +541,19 @@ public:
             font.setPointSize(fontSize);
             QString string = QString(QStringLiteral("This text is in point size %1")).arg(fontSize);
             painter.setFont(font);
+            y += (painter.fontMetrics().lineSpacing());
             painter.drawText(10, y, string);
-            y += (fontSize  * 2.5);
         }
 
         // Pixels
-        y = 160;
+        y += painter.fontMetrics().lineSpacing();
         for (int fontSize = 6; fontSize < 18; fontSize += 2) {
             QFont font;
             font.setPixelSize(fontSize);
             QString string = QString(QStringLiteral("This text is in pixel size %1")).arg(fontSize);
             painter.setFont(font);
+            y += (painter.fontMetrics().lineSpacing());
             painter.drawText(10, y, string);
-            y += (fontSize  * 2.5);
         }
     }
 };
