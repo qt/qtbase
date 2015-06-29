@@ -58,6 +58,7 @@ HTML.footer += \
     "    <li id=\"menu-item-1985\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1985\"><a href=\"http://qt.io/buy-professional-step-2/\">Professional</a></li>\n" \
     "    <li id=\"menu-item-3346\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3346\"><a href=\"http://qt.io/buy-indiemobile-step-2/\">Indie Mobile</a></li>\n" \
     "    <li id=\"menu-item-3343\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-3343\"><a href=\"http://qt.io/download-open-source/\">Community</a></li>\n" \
+"    <li id=\"menu-item-14184\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-14184\"><a href=\"http://qt.io/FAQ/\">Legal | Licensing FAQ</a></li>\n" \
     "    <li id=\"menu-item-1415\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1415\"><a href=\"http://qt.io/terms-conditions/\">Legal | Terms &amp; Conditions</a></li>\n" \
     "</ul>\n" \
     "</li>\n" \
@@ -65,7 +66,7 @@ HTML.footer += \
     "<a href=\"http://qt.io/about-us/\" target=\"_blank\" class=\"theqtcompany\"></a>\n" \
     "    <div class=\"footer-social clearfix\">\n" \
     "        <div class=\"facebook\">\n" \
-    "            <iframe scrolling=\"no\" frameborder=\"0\" allowTransparency=\"true\" src=\"//www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fqt&amp;width&amp;layout=button_count&amp;action=like&amp;show_faces=true&amp;share=false&amp;height=21\" style=\"border:none;overflow:hidden;height:21px;\"></iframe>\n" \
+    "            <iframe scrolling=\"no\" frameborder=\"0\" allowTransparency=\"true\" src=\"http://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fqt&amp;width&amp;layout=button_count&amp;action=like&amp;show_faces=true&amp;share=false&amp;height=21\" style=\"border:none;overflow:hidden;height:21px;\"></iframe>\n" \
     "        </div>\n" \
     "        <div class=\"twitter\">\n" \
     "            <iframe id=\"twitter-widget-0\" scrolling=\"no\" frameborder=\"0\" allowtransparency=\"true\" src=\"http://platform.twitter.com/widgets/follow_button.33b190ea0cba008796487b65df7f6d8e.en.html#_=1414403615717&amp;id=twitter-widget-0&amp;lang=en&amp;screen_name=qtproject&amp;show_count=true&amp;show_screen_name=false&amp;size=m\" class=\"twitter-follow-button twitter-follow-button\" title=\"Twitter Follow Button\" data-twttr-rendered=\"true\" style=\"width: 160px; height: 20px;\"></iframe>\n" \
