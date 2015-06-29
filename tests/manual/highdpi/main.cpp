@@ -921,14 +921,16 @@ public:
 
         p.fillRect(rect(), Qt::black);
         p.scale(scaleFactor, scaleFactor);
+        p.translate(-total.topLeft());
         p.setPen(QPen(Qt::white, 10));
         p.setBrush(Qt::gray);
-        QFont f = font();
-        f.setPixelSize(height());
-        p.setFont(f);
+
 
         foreach (QScreen *screen, screens) {
             p.drawRect(screen->geometry());
+            QFont f = font();
+            f.setPixelSize(screen->geometry().height() / 8);
+            p.setFont(f);
             p.drawText(screen->geometry(), Qt::AlignCenter, screen->name());
         }
         p.setBrush(QColor(200,220,255,127));
