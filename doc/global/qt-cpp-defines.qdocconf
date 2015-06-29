@@ -37,6 +37,8 @@ Cpp.ignoretokens        += \
                           Q_DECL_NOTHROW \
                           Q_DECL_PURE_FUNCTION \
                           Q_DECL_UNUSED \
+                          Q_DECL_CF_RETURNS_RETAINED \
+                          Q_DECL_NS_RETURNS_AUTORELEASED \
                           Q_DECLARATIVE_EXPORT \
                           Q_EXPLICIT \
                           Q_EXPORT \
