@@ -56,6 +56,7 @@
 #   include <cstdio>
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
 #   include <sys/user.h>
+#   include <libutil.h>
 #endif
 
 QT_BEGIN_NAMESPACE
