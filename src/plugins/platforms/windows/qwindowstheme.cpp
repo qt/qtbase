@@ -67,6 +67,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPixmapCache>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 
 #include <algorithm>
@@ -494,7 +495,8 @@ static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
 
 QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
-    const int scaleFactor = 1; // HIGDPI Fixme: ?
+    const QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    const int scaleFactor = primaryScreen ? qRound(QHighDpiScaling::factor(primaryScreen)) : 1;
     const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
     LPCTSTR iconName = 0;

@@ -38,6 +38,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtCore/QDebug>
 
@@ -82,8 +83,8 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     const Qt::WindowFlags flags = window->flags();
     if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, hasAlpha, rw->opacity()) && hasAlpha) {
         // Windows with alpha: Use blend function to update.
-        QRect r = window->frameGeometry();
-        QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
+        QRect r = QHighDpi::toNativePixels(window->frameGeometry(), window);
+        QPoint frameOffset(QHighDpi::toNativePixels(QPoint(window->frameMargins().left(), window->frameMargins().top()), window));
         QRect dirtyRect = br.translated(offset + frameOffset);
 
         SIZE size = {r.width(), r.height()};

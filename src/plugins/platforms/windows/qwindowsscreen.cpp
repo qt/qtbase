@@ -43,6 +43,7 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 #include <QtGui/QScreen>
 
 #include <QtCore/QDebug>
@@ -285,6 +286,12 @@ QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
         if (QPlatformScreen *ppscr = ps->handle())
             return static_cast<QWindowsScreen *>(ppscr);
     return 0;
+}
+
+qreal QWindowsScreen::pixelDensity() const
+{
+    const qreal physicalDpi = m_data.geometry.width() / m_data.physicalSizeMM.width() * qreal(25.4);
+    return qRound(physicalDpi / 96);
 }
 
 /*!
