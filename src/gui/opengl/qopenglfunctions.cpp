@@ -419,11 +419,14 @@ static int qt_gl_resolve_extensions()
         // We don't match GL_APPLE_texture_format_BGRA8888 here because it has different semantics.
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
-
         if (extensionMatcher.match("GL_EXT_discard_framebuffer"))
             extensions |= QOpenGLExtensions::DiscardFramebuffer;
+        if (extensionMatcher.match("GL_EXT_texture_norm16"))
+            extensions |= QOpenGLExtensions::Sized16Formats;
     } else {
-        extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
+        extensions |= QOpenGLExtensions::ElementIndexUint
+            | QOpenGLExtensions::MapBuffer
+            | QOpenGLExtensions::Sized16Formats;
 
         if (format.version() >= qMakePair(1, 2))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
