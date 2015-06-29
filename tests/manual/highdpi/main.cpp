@@ -539,7 +539,7 @@ public:
         for (int fontSize = 6; fontSize < 18; fontSize += 2) {
             QFont font;
             font.setPointSize(fontSize);
-            QString string = QString(QStringLiteral("%1 The quick brown fox jumped over the lazy Doug.")).arg(fontSize);
+            QString string = QString(QStringLiteral("This text is in point size %1")).arg(fontSize);
             painter.setFont(font);
             painter.drawText(10, y, string);
             y += (fontSize  * 2.5);
@@ -550,7 +550,7 @@ public:
         for (int fontSize = 6; fontSize < 18; fontSize += 2) {
             QFont font;
             font.setPixelSize(fontSize);
-            QString string = QString(QStringLiteral("%1 The quick brown fox jumped over the lazy Doug.")).arg(fontSize);
+            QString string = QString(QStringLiteral("This text is in pixel size %1")).arg(fontSize);
             painter.setFont(font);
             painter.drawText(10, y, string);
             y += (fontSize  * 2.5);
