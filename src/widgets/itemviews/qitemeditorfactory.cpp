@@ -47,6 +47,7 @@
 #include <qapplication.h>
 #include <qdebug.h>
 
+#include <algorithm>
 QT_BEGIN_NAMESPACE
 
 
@@ -202,7 +203,7 @@ void QItemEditorFactory::registerEditor(int userType, QItemEditorCreatorBase *cr
         QItemEditorCreatorBase *oldCreator = it.value();
         Q_ASSERT(oldCreator);
         creatorMap.erase(it);
-        if (!creatorMap.values().contains(oldCreator))
+        if (std::find(creatorMap.cbegin(), creatorMap.cend(), oldCreator) == creatorMap.cend())
             delete oldCreator; // if it is no more in use we can delete it
     }
 
