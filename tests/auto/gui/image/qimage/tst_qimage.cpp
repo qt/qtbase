@@ -185,6 +185,7 @@ private slots:
     void exifOrientation();
 
     void exif_QTBUG45865();
+    void exif_invalid_data_QTBUG46870();
 
     void cleanupFunctions();
 
@@ -2870,6 +2871,13 @@ void tst_QImage::exif_QTBUG45865()
     QByteArray byteArray = file.readAll();
     QImage image = QImage::fromData(byteArray);
     QCOMPARE(image.size(), QSize(5, 8));
+}
+
+void tst_QImage::exif_invalid_data_QTBUG46870()
+{
+    QImage image;
+    QVERIFY(image.load(m_prefix + "jpeg_exif_invalid_data_QTBUG-46870.jpg"));
+    QVERIFY(!image.isNull());
 }
 
 static void cleanupFunction(void* info)
