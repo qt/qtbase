@@ -41,11 +41,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "5.5.0"
+#define QT_VERSION_STR   "5.5.1"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x050500
+#define QT_VERSION 0x050501
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
