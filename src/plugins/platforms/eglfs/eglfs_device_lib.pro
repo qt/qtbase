@@ -26,6 +26,7 @@ DEFINES += QT_BUILD_EGL_DEVICE_LIB
 SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfswindow.cpp \
             $$PWD/qeglfsscreen.cpp \
+            $$PWD/qeglfscursor.cpp \
             $$PWD/qeglfshooks.cpp \
             $$PWD/qeglfscontext.cpp \
             $$PWD/qeglfsoffscreenwindow.cpp \
@@ -34,6 +35,7 @@ SOURCES +=  $$PWD/qeglfsintegration.cpp \
 HEADERS +=  $$PWD/qeglfsintegration.h \
             $$PWD/qeglfswindow.h \
             $$PWD/qeglfsscreen.h \
+            $$PWD/qeglfscursor.h \
             $$PWD/qeglfshooks.h \
             $$PWD/qeglfscontext.h \
             $$PWD/qeglfsoffscreenwindow.h \

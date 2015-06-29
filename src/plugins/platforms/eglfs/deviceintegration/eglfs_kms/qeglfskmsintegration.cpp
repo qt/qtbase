@@ -36,8 +36,8 @@
 #include "qeglfskmsdevice.h"
 #include "qeglfskmsscreen.h"
 #include "qeglfskmscursor.h"
+#include "qeglfscursor.h"
 
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QJsonDocument>
@@ -176,7 +176,7 @@ QPlatformCursor *QEglFSKmsIntegration::createCursor(QPlatformScreen *screen) con
     if (m_hwCursor)
         return Q_NULLPTR;
     else
-        return new QEGLPlatformCursor(screen);
+        return new QEglFSCursor(screen);
 }
 
 void QEglFSKmsIntegration::waitForVSync(QPlatformSurface *surface) const

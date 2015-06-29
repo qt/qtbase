@@ -33,8 +33,8 @@
 
 #include "qeglfsdeviceintegration.h"
 #include "qeglfsintegration.h"
+#include "qeglfscursor.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include <QScreen>
@@ -286,7 +286,7 @@ bool QEGLDeviceIntegration::hasCapability(QPlatformIntegration::Capability cap) 
 
 QPlatformCursor *QEGLDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
-    return new QEGLPlatformCursor(screen);
+    return new QEglFSCursor(screen);
 }
 
 void QEGLDeviceIntegration::waitForVSync(QPlatformSurface *surface) const

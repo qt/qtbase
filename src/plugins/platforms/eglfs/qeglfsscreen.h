@@ -35,7 +35,6 @@
 #define QEGLFSSCREEN_H
 
 #include "qeglfsglobal.h"
-#include <QtPlatformSupport/private/qeglplatformscreen_p.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -43,7 +42,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSWindow;
 class QOpenGLContext;
 
-class Q_EGLFS_EXPORT QEglFSScreen : public QEGLPlatformScreen
+class Q_EGLFS_EXPORT QEglFSScreen : public QPlatformScreen
 {
 public:
     QEglFSScreen(EGLDisplay display);
@@ -62,16 +61,23 @@ public:
 
     qreal refreshRate() const Q_DECL_OVERRIDE;
 
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+
     EGLSurface primarySurface() const { return m_surface; }
 
-protected:
-    void setPrimarySurface(EGLSurface surface);
+    EGLDisplay display() const { return m_dpy; }
+
+    void handleCursorMove(const QPoint &pos);
 
 private:
-    friend class QEglFSWindow;
+    void setPrimarySurface(EGLSurface surface);
 
+    EGLDisplay m_dpy;
+    QWindow *m_pointerWindow;
     EGLSurface m_surface;
     QPlatformCursor *m_cursor;
+
+    friend class QEglFSWindow;
 };
 
 QT_END_NAMESPACE

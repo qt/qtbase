@@ -35,11 +35,11 @@
 #include "qeglfskmsscreen.h"
 #include "qeglfskmsdevice.h"
 #include "qeglfskmscursor.h"
+#include "qeglfsintegration.h"
 
 #include <QtCore/QLoggingCategory>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtPlatformSupport/private/qeglplatformintegration_p.h>
 #include <QtPlatformSupport/private/qfbvthandler_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -50,7 +50,7 @@ class QEglFSKmsInterruptHandler : public QObject
 {
 public:
     QEglFSKmsInterruptHandler(QEglFSKmsScreen *screen) : m_screen(screen) {
-        m_vtHandler = static_cast<QEGLPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration())->vtHandler();
+        m_vtHandler = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->vtHandler();
         connect(m_vtHandler, &QFbVtHandler::interrupted, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
         connect(m_vtHandler, &QFbVtHandler::suspendRequested, this, &QEglFSKmsInterruptHandler::handleSuspendRequest);
     }

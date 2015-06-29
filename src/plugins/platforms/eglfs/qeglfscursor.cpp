@@ -31,33 +31,24 @@
 **
 ****************************************************************************/
 
+#include "qeglfscursor.h"
+#include "qeglfsintegration.h"
+#include "qeglfsscreen.h"
+
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
-#include <QtDebug>
 
 #include <QtGui/private/qguiapplication_p.h>
 
-#include "qeglplatformcursor_p.h"
-#include "qeglplatformintegration_p.h"
-#include "qeglplatformscreen_p.h"
-
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QEGLPlatformCursor
-    \brief Mouse cursor implementation using OpenGL.
-    \since 5.2
-    \internal
-    \ingroup qpa
- */
-
-QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
+QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
     : m_visible(true),
-      m_screen(static_cast<QEGLPlatformScreen *>(screen)),
+      m_screen(static_cast<QEglFSScreen *>(screen)),
       m_program(0),
       m_vertexCoordEntry(0),
       m_textureCoordEntry(0),
@@ -81,35 +72,35 @@ QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
     setCurrentCursor(&cursor);
 #endif
 
-    m_deviceListener = new QEGLPlatformCursorDeviceListener(this);
+    m_deviceListener = new QEglFSCursorDeviceListener(this);
     connect(QGuiApplicationPrivate::inputDeviceManager(), &QInputDeviceManager::deviceListChanged,
-            m_deviceListener, &QEGLPlatformCursorDeviceListener::onDeviceListChanged);
+            m_deviceListener, &QEglFSCursorDeviceListener::onDeviceListChanged);
     updateMouseStatus();
 }
 
-QEGLPlatformCursor::~QEGLPlatformCursor()
+QEglFSCursor::~QEglFSCursor()
 {
     resetResources();
     delete m_deviceListener;
 }
 
-void QEGLPlatformCursor::updateMouseStatus()
+void QEglFSCursor::updateMouseStatus()
 {
     m_visible = m_deviceListener->hasMouse();
 }
 
-bool QEGLPlatformCursorDeviceListener::hasMouse() const
+bool QEglFSCursorDeviceListener::hasMouse() const
 {
     return QGuiApplicationPrivate::inputDeviceManager()->deviceCount(QInputDeviceManager::DeviceTypePointer) > 0;
 }
 
-void QEGLPlatformCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::DeviceType type)
+void QEglFSCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::DeviceType type)
 {
     if (type == QInputDeviceManager::DeviceTypePointer)
         m_cursor->updateMouseStatus();
 }
 
-void QEGLPlatformCursor::resetResources()
+void QEglFSCursor::resetResources()
 {
     if (QOpenGLContext::currentContext()) {
         delete m_program;
@@ -122,7 +113,7 @@ void QEGLPlatformCursor::resetResources()
     m_cursorAtlas.texture = 0;
 }
 
-void QEGLPlatformCursor::createShaderPrograms()
+void QEglFSCursor::createShaderPrograms()
 {
     static const char *textureVertexProgram =
         "attribute highp vec2 vertexCoordEntry;\n"
@@ -150,7 +141,7 @@ void QEGLPlatformCursor::createShaderPrograms()
     m_textureEntry = m_program->uniformLocation("texture");
 }
 
-void QEGLPlatformCursor::createCursorTexture(uint *texture, const QImage &image)
+void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 {
     if (!*texture)
         glGenTextures(1, texture);
@@ -164,7 +155,7 @@ void QEGLPlatformCursor::createCursorTexture(uint *texture, const QImage &image)
                  GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
 }
 
-void QEGLPlatformCursor::initCursorAtlas()
+void QEglFSCursor::initCursorAtlas()
 {
     static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
     if (json.isEmpty())
@@ -202,7 +193,7 @@ void QEGLPlatformCursor::initCursorAtlas()
 }
 
 #ifndef QT_NO_CURSOR
-void QEGLPlatformCursor::changeCursor(QCursor *cursor, QWindow *window)
+void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     Q_UNUSED(window);
     const QRect oldCursorRect = cursorRect();
@@ -210,7 +201,7 @@ void QEGLPlatformCursor::changeCursor(QCursor *cursor, QWindow *window)
         update(oldCursorRect | cursorRect());
 }
 
-bool QEGLPlatformCursor::setCurrentCursor(QCursor *cursor)
+bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 {
     if (!m_visible)
         return false;
@@ -263,7 +254,7 @@ private:
     QRegion m_region;
 };
 
-bool QEGLPlatformCursor::event(QEvent *e)
+bool QEglFSCursor::event(QEvent *e)
 {
     if (e->type() == QEvent::User + 1) {
         CursorUpdateEvent *ev = static_cast<CursorUpdateEvent *>(e);
@@ -275,7 +266,7 @@ bool QEGLPlatformCursor::event(QEvent *e)
     return QPlatformCursor::event(e);
 }
 
-void QEGLPlatformCursor::update(const QRegion &rgn)
+void QEglFSCursor::update(const QRegion &rgn)
 {
     if (!m_updateRequested) {
         // Must not flush the window system events directly from here since we are likely to
@@ -286,17 +277,17 @@ void QEGLPlatformCursor::update(const QRegion &rgn)
     }
 }
 
-QRect QEGLPlatformCursor::cursorRect() const
+QRect QEglFSCursor::cursorRect() const
 {
     return QRect(m_cursor.pos - m_cursor.hotSpot, m_cursor.size);
 }
 
-QPoint QEGLPlatformCursor::pos() const
+QPoint QEglFSCursor::pos() const
 {
     return m_cursor.pos;
 }
 
-void QEGLPlatformCursor::setPos(const QPoint &pos)
+void QEglFSCursor::setPos(const QPoint &pos)
 {
     QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
     const QRect oldCursorRect = cursorRect();
@@ -305,7 +296,7 @@ void QEGLPlatformCursor::setPos(const QPoint &pos)
     m_screen->handleCursorMove(m_cursor.pos);
 }
 
-void QEGLPlatformCursor::pointerEvent(const QMouseEvent &event)
+void QEglFSCursor::pointerEvent(const QMouseEvent &event)
 {
     if (event.type() != QEvent::MouseMove)
         return;
@@ -315,7 +306,7 @@ void QEGLPlatformCursor::pointerEvent(const QMouseEvent &event)
     m_screen->handleCursorMove(m_cursor.pos);
 }
 
-void QEGLPlatformCursor::paintOnScreen()
+void QEglFSCursor::paintOnScreen()
 {
     if (!m_visible)
         return;
@@ -331,7 +322,7 @@ void QEGLPlatformCursor::paintOnScreen()
     draw(r);
 }
 
-void QEGLPlatformCursor::draw(const QRectF &r)
+void QEglFSCursor::draw(const QRectF &r)
 {
     if (!m_program) {
         // one time initialization

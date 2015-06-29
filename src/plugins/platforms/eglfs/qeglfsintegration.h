@@ -34,41 +34,72 @@
 #ifndef QEGLFSINTEGRATION_H
 #define QEGLFSINTEGRATION_H
 
-#include <QtPlatformSupport/private/qeglplatformintegration_p.h>
+#include <QtCore/QVariant>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
 #include <EGL/egl.h>
 #include "qeglfsglobal.h"
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSIntegration : public QEGLPlatformIntegration
+class QEglFSWindow;
+class QEglFSContext;
+class QFbVtHandler;
+class QEvdevKeyboardManager;
+
+class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
     QEglFSIntegration();
 
-    void addScreen(QPlatformScreen *screen);
-    void removeScreen(QPlatformScreen *screen);
-
     void initialize() Q_DECL_OVERRIDE;
     void destroy() Q_DECL_OVERRIDE;
 
+    EGLDisplay display() const { return m_display; }
+
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
+
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+
+    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
+
+    // QPlatformNativeInterface
+    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
+
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
+    QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
+
+    void addScreen(QPlatformScreen *screen);
+    void removeScreen(QPlatformScreen *screen);
 
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 
-protected:
-    QEGLPlatformWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QEGLPlatformContext *createContext(const QSurfaceFormat &format,
-                                       QPlatformOpenGLContext *shareContext,
-                                       EGLDisplay display,
-                                       QVariant *nativeHandle) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
-                                                      const QSurfaceFormat &format,
-                                                      QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
-    EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
-
 private:
-    bool mDisableInputHandlers;
+    EGLNativeDisplayType nativeDisplay() const;
+    void createInputHandlers();
+    static void loadKeymapStatic(const QString &filename);
+
+    EGLDisplay m_display;
+    QPlatformInputContext *m_inputContext;
+    QScopedPointer<QPlatformFontDatabase> m_fontDb;
+    QScopedPointer<QPlatformServices> m_services;
+    QScopedPointer<QFbVtHandler> m_vtHandler;
+    QEvdevKeyboardManager *m_kbdMgr;
+    bool m_disableInputHandlers;
 };
 
 QT_END_NAMESPACE

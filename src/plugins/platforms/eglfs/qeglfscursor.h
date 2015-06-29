@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLPLATFORMCURSOR_H
-#define QEGLPLATFORMCURSOR_H
+#ifndef QEGLFSCURSOR_H
+#define QEGLFSCURSOR_H
 
 //
 //  W A R N I N G
@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include "qeglfsglobal.h"
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/QOpenGLFunctions>
@@ -53,30 +54,30 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
-class QEGLPlatformCursor;
-class QEGLPlatformScreen;
+class QEglFSCursor;
+class QEglFSScreen;
 
-class QEGLPlatformCursorDeviceListener : public QObject
+class QEglFSCursorDeviceListener : public QObject
 {
     Q_OBJECT
 
 public:
-    QEGLPlatformCursorDeviceListener(QEGLPlatformCursor *cursor) : m_cursor(cursor) { }
+    QEglFSCursorDeviceListener(QEglFSCursor *cursor) : m_cursor(cursor) { }
     bool hasMouse() const;
 
 public slots:
     void onDeviceListChanged(QInputDeviceManager::DeviceType type);
 
 private:
-    QEGLPlatformCursor *m_cursor;
+    QEglFSCursor *m_cursor;
 };
 
-class QEGLPlatformCursor : public QPlatformCursor, protected QOpenGLFunctions
+class Q_EGLFS_EXPORT QEglFSCursor : public QPlatformCursor, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    QEGLPlatformCursor(QPlatformScreen *screen);
-    ~QEGLPlatformCursor();
+    QEglFSCursor(QPlatformScreen *screen);
+    ~QEglFSCursor();
 
 #ifndef QT_NO_CURSOR
     void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
@@ -128,15 +129,15 @@ private:
     } m_cursorAtlas;
 
     bool m_visible;
-    QEGLPlatformScreen *m_screen;
+    QEglFSScreen *m_screen;
     QOpenGLShaderProgram *m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_textureEntry;
-    QEGLPlatformCursorDeviceListener *m_deviceListener;
+    QEglFSCursorDeviceListener *m_deviceListener;
     bool m_updateRequested;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLPLATFORMCURSOR_H
+#endif // QEGLFSCURSOR_H

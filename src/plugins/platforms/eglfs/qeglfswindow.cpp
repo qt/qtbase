@@ -37,21 +37,23 @@
 #include <private/qguiapplication_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLContext>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include "qeglfswindow.h"
+#include "qeglfscursor.h"
 #include "qeglfshooks.h"
-
-#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
 QEglFSWindow::QEglFSWindow(QWindow *w)
-    : QEGLPlatformWindow(w)
-    , m_surface(0)
-    , m_window(0)
-    , m_flags(0)
+    : QPlatformWindow(w),
+      m_backingStore(0),
+      m_raster(false),
+      m_winId(0),
+      m_surface(0),
+      m_window(0),
+      m_flags(0)
 {
 }
 
@@ -60,12 +62,34 @@ QEglFSWindow::~QEglFSWindow()
     destroy();
 }
 
+static WId newWId()
+{
+    static WId id = 0;
+
+    if (id == std::numeric_limits<WId>::max())
+        qWarning("QEGLPlatformWindow: Out of window IDs");
+
+    return ++id;
+}
+
 void QEglFSWindow::create()
 {
     if (m_flags.testFlag(Created))
         return;
 
-    QEGLPlatformWindow::create();
+    m_winId = newWId();
+
+    // Save the original surface type before changing to OpenGLSurface.
+    m_raster = (window()->surfaceType() == QSurface::RasterSurface);
+    if (m_raster) // change to OpenGL, but not for RasterGLSurface
+        window()->setSurfaceType(QSurface::OpenGLSurface);
+
+    if (window()->type() == Qt::Desktop) {
+        QRect fullscreenRect(QPoint(), screen()->availableGeometry().size());
+        QPlatformWindow::setGeometry(fullscreenRect);
+        QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
+        return;
+    }
 
     m_flags = Created;
 
@@ -120,7 +144,7 @@ void QEglFSWindow::destroy()
 {
     QEglFSScreen *screen = this->screen();
     if (m_flags.testFlag(HasNativeWindow)) {
-        QEGLPlatformCursor *cursor = qobject_cast<QEGLPlatformCursor *>(screen->cursor());
+        QEglFSCursor *cursor = qobject_cast<QEglFSCursor *>(screen->cursor());
         if (cursor)
             cursor->resetResources();
 
@@ -263,6 +287,43 @@ EGLNativeWindowType QEglFSWindow::eglWindow() const
 QEglFSScreen *QEglFSWindow::screen() const
 {
     return static_cast<QEglFSScreen *>(QPlatformWindow::screen());
+}
+
+bool QEglFSWindow::isRaster() const
+{
+    return m_raster || window()->surfaceType() == QSurface::RasterGLSurface;
+}
+
+QWindow *QEglFSWindow::sourceWindow() const
+{
+    return window();
+}
+
+const QPlatformTextureList *QEglFSWindow::textures() const
+{
+    if (m_backingStore)
+        return m_backingStore->textures();
+
+    return 0;
+}
+
+void QEglFSWindow::endCompositing()
+{
+    if (m_backingStore)
+        m_backingStore->notifyComposited();
+}
+
+WId QEglFSWindow::winId() const
+{
+    return m_winId;
+}
+
+void QEglFSWindow::setOpacity(qreal)
+{
+    if (!isRaster())
+        qWarning("QEglFSWindow: Cannot set opacity for non-raster windows");
+
+    // Nothing to do here. The opacity is stored in the QWindow.
 }
 
 QT_END_NAMESPACE
