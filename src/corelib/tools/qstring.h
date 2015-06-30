@@ -594,16 +594,16 @@ public:
     static int localeAwareCompare(const QString& s1, const QStringRef& s2);
 
     // ### Qt6: make inline except for the long long versions
-    short  toShort(bool *ok=0, int base=10) const;
-    ushort toUShort(bool *ok=0, int base=10) const;
-    int toInt(bool *ok=0, int base=10) const;
-    uint toUInt(bool *ok=0, int base=10) const;
-    long toLong(bool *ok=0, int base=10) const;
-    ulong toULong(bool *ok=0, int base=10) const;
-    qlonglong toLongLong(bool *ok=0, int base=10) const;
-    qulonglong toULongLong(bool *ok=0, int base=10) const;
-    float toFloat(bool *ok=0) const;
-    double toDouble(bool *ok=0) const;
+    short  toShort(bool *ok=Q_NULLPTR, int base=10) const;
+    ushort toUShort(bool *ok=Q_NULLPTR, int base=10) const;
+    int toInt(bool *ok=Q_NULLPTR, int base=10) const;
+    uint toUInt(bool *ok=Q_NULLPTR, int base=10) const;
+    long toLong(bool *ok=Q_NULLPTR, int base=10) const;
+    ulong toULong(bool *ok=Q_NULLPTR, int base=10) const;
+    qlonglong toLongLong(bool *ok=Q_NULLPTR, int base=10) const;
+    qulonglong toULongLong(bool *ok=Q_NULLPTR, int base=10) const;
+    float toFloat(bool *ok=Q_NULLPTR) const;
+    double toDouble(bool *ok=Q_NULLPTR) const;
 
     QString &setNum(short, int base=10);
     QString &setNum(ushort, int base=10);
@@ -1350,7 +1350,7 @@ public:
     typedef QString::const_reference const_reference;
 
     // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
-    inline QStringRef():m_string(0), m_position(0), m_size(0){}
+    inline QStringRef() : m_string(Q_NULLPTR), m_position(0), m_size(0) {}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
 
@@ -1434,10 +1434,10 @@ public:
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
-    inline void clear() { m_string = 0; m_position = m_size = 0; }
+    inline void clear() { m_string = Q_NULLPTR; m_position = m_size = 0; }
     QString toString() const;
     inline bool isEmpty() const { return m_size == 0; }
-    inline bool isNull() const { return m_string == 0 || m_string->isNull(); }
+    inline bool isNull() const { return m_string == Q_NULLPTR || m_string->isNull(); }
 
     QStringRef appendTo(QString *string) const;
 
@@ -1470,16 +1470,16 @@ public:
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
 
     QStringRef trimmed() const Q_REQUIRED_RESULT;
-    short  toShort(bool *ok = 0, int base = 10) const;
-    ushort toUShort(bool *ok = 0, int base = 10) const;
-    int toInt(bool *ok = 0, int base = 10) const;
-    uint toUInt(bool *ok = 0, int base = 10) const;
-    long toLong(bool *ok = 0, int base = 10) const;
-    ulong toULong(bool *ok = 0, int base = 10) const;
-    qlonglong toLongLong(bool *ok = 0, int base = 10) const;
-    qulonglong toULongLong(bool *ok = 0, int base = 10) const;
-    float toFloat(bool *ok = 0) const;
-    double toDouble(bool *ok = 0) const;
+    short  toShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    ushort toUShort(bool *ok = Q_NULLPTR, int base = 10) const;
+    int toInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    uint toUInt(bool *ok = Q_NULLPTR, int base = 10) const;
+    long toLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    ulong toULong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qlonglong toLongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    qulonglong toULongLong(bool *ok = Q_NULLPTR, int base = 10) const;
+    float toFloat(bool *ok = Q_NULLPTR) const;
+    double toDouble(bool *ok = Q_NULLPTR) const;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 

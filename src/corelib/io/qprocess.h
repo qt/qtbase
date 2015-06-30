@@ -143,7 +143,7 @@ public:
     };
     Q_ENUM(ExitStatus)
 
-    explicit QProcess(QObject *parent = 0);
+    explicit QProcess(QObject *parent = Q_NULLPTR);
     virtual ~QProcess();
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
@@ -222,7 +222,7 @@ public:
 #if defined(Q_QDOC)
                               = QString()
 #endif
-                              , qint64 *pid = 0);
+                              , qint64 *pid = Q_NULLPTR);
 #if !defined(Q_QDOC)
     static bool startDetached(const QString &program, const QStringList &arguments); // ### Qt6: merge overloads
 #endif

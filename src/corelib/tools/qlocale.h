@@ -871,23 +871,23 @@ public:
     QString nativeLanguageName() const;
     QString nativeCountryName() const;
 
-    short toShort(const QString &s, bool *ok = 0) const;
-    ushort toUShort(const QString &s, bool *ok = 0) const;
-    int toInt(const QString &s, bool *ok = 0) const;
-    uint toUInt(const QString &s, bool *ok = 0) const;
-    qlonglong toLongLong(const QString &s, bool *ok = 0) const;
-    qulonglong toULongLong(const QString &s, bool *ok = 0) const;
-    float toFloat(const QString &s, bool *ok = 0) const;
-    double toDouble(const QString &s, bool *ok = 0) const;
+    short toShort(const QString &s, bool *ok = Q_NULLPTR) const;
+    ushort toUShort(const QString &s, bool *ok = Q_NULLPTR) const;
+    int toInt(const QString &s, bool *ok = Q_NULLPTR) const;
+    uint toUInt(const QString &s, bool *ok = Q_NULLPTR) const;
+    qlonglong toLongLong(const QString &s, bool *ok = Q_NULLPTR) const;
+    qulonglong toULongLong(const QString &s, bool *ok = Q_NULLPTR) const;
+    float toFloat(const QString &s, bool *ok = Q_NULLPTR) const;
+    double toDouble(const QString &s, bool *ok = Q_NULLPTR) const;
 
-    short toShort(const QStringRef &s, bool *ok = 0) const;
-    ushort toUShort(const QStringRef &s, bool *ok = 0) const;
-    int toInt(const QStringRef &s, bool *ok = 0) const;
-    uint toUInt(const QStringRef &s, bool *ok = 0) const;
-    qlonglong toLongLong(const QStringRef &s, bool *ok = 0) const;
-    qulonglong toULongLong(const QStringRef &s, bool *ok = 0) const;
-    float toFloat(const QStringRef &s, bool *ok = 0) const;
-    double toDouble(const QStringRef &s, bool *ok = 0) const;
+    short toShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    ushort toUShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    int toInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    uint toUInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    qlonglong toLongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    qulonglong toULongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    float toFloat(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    double toDouble(const QStringRef &s, bool *ok = Q_NULLPTR) const;
 
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;

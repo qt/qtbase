@@ -229,7 +229,7 @@ struct AbstractDebugStreamFunction
 {
     typedef void (*Stream)(const AbstractDebugStreamFunction *, QDebug&, const void *);
     typedef void (*Destroy)(AbstractDebugStreamFunction *);
-    explicit AbstractDebugStreamFunction(Stream s = 0, Destroy d = 0)
+    explicit AbstractDebugStreamFunction(Stream s = Q_NULLPTR, Destroy d = Q_NULLPTR)
         : stream(s), destroy(d) {}
     Q_DISABLE_COPY(AbstractDebugStreamFunction)
     Stream stream;
@@ -259,7 +259,7 @@ struct AbstractComparatorFunction
     typedef bool (*LessThan)(const AbstractComparatorFunction *, const void *, const void *);
     typedef bool (*Equals)(const AbstractComparatorFunction *, const void *, const void *);
     typedef void (*Destroy)(AbstractComparatorFunction *);
-    explicit AbstractComparatorFunction(LessThan lt = 0, Equals e = 0, Destroy d = 0)
+    explicit AbstractComparatorFunction(LessThan lt = Q_NULLPTR, Equals e = Q_NULLPTR, Destroy d = Q_NULLPTR)
         : lessThan(lt), equals(e), destroy(d) {}
     Q_DISABLE_COPY(AbstractComparatorFunction)
     LessThan lessThan;
@@ -296,7 +296,7 @@ template<typename T>
 struct BuiltInEqualsComparatorFunction : public AbstractComparatorFunction
 {
     BuiltInEqualsComparatorFunction()
-        : AbstractComparatorFunction(0, equals, destroy) {}
+        : AbstractComparatorFunction(Q_NULLPTR, equals, destroy) {}
     static bool equals(const AbstractComparatorFunction *, const void *l, const void *r)
     {
         const T *lhs = static_cast<const T *>(l);
@@ -313,7 +313,7 @@ struct BuiltInEqualsComparatorFunction : public AbstractComparatorFunction
 struct AbstractConverterFunction
 {
     typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
-    explicit AbstractConverterFunction(Converter c = 0)
+    explicit AbstractConverterFunction(Converter c = Q_NULLPTR)
         : convert(c) {}
     Q_DISABLE_COPY(AbstractConverterFunction)
     Converter convert;
@@ -510,9 +510,9 @@ public:
     static TypeFlags typeFlags(int type);
     static const QMetaObject *metaObjectForType(int type);
     static bool isRegistered(int type);
-    static void *create(int type, const void *copy = 0);
+    static void *create(int type, const void *copy = Q_NULLPTR);
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static void *construct(int type, const void *copy = 0)
+    QT_DEPRECATED static void *construct(int type, const void *copy = Q_NULLPTR)
     { return create(type, copy); }
 #endif
     static void destroy(int type, void *data);
@@ -533,9 +533,9 @@ public:
     inline TypeFlags flags() const;
     inline const QMetaObject *metaObject() const;
 
-    inline void *create(const void *copy = 0) const;
+    inline void *create(const void *copy = Q_NULLPTR) const;
     inline void destroy(void *data) const;
-    inline void *construct(void *where, const void *copy = 0) const;
+    inline void *construct(void *where, const void *copy = Q_NULLPTR) const;
     inline void destruct(void *data) const;
 
 public:
@@ -611,7 +611,7 @@ public:
         return registerConverterFunction(&f, fromTypeId, toTypeId);
     }
 
-    // member function as in "double QString::toDouble(bool *ok = 0) const"
+    // member function as in "double QString::toDouble(bool *ok = Q_NULLPTR) const"
     template<typename From, typename To>
     static bool registerConverter(To(From::*function)(bool*) const)
     {
@@ -674,9 +674,9 @@ private:
     uint sizeExtended() const;
     QMetaType::TypeFlags flagsExtended() const;
     const QMetaObject *metaObjectExtended() const;
-    void *createExtended(const void *copy = 0) const;
+    void *createExtended(const void *copy = Q_NULLPTR) const;
     void destroyExtended(void *data) const;
-    void *constructExtended(void *where, const void *copy = 0) const;
+    void *constructExtended(void *where, const void *copy = Q_NULLPTR) const;
     void destructExtended(void *data) const;
 
     static bool registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int type);
@@ -771,7 +771,7 @@ struct QMetaTypeFunctionHelper {
 template <typename T>
 struct QMetaTypeFunctionHelper<T, /* Accepted */ false> {
     static void Destruct(void *) {}
-    static void *Construct(void *, const void *) { return 0; }
+    static void *Construct(void *, const void *) { return Q_NULLPTR; }
 #ifndef QT_NO_DATASTREAM
     static void Save(QDataStream &, const void *) {}
     static void Load(QDataStream &, void *) {}
@@ -1009,7 +1009,7 @@ public:
 public:
     template<class T> QSequentialIterableImpl(const T*p)
       : _iterable(p)
-      , _iterator(0)
+      , _iterator(Q_NULLPTR)
       , _metaType_id(qMetaTypeId<typename T::value_type>())
       , _metaType_flags(QTypeInfo<typename T::value_type>::isPointer)
       , _iteratorCapabilities(ContainerAPI<T>::IteratorCapabilities)
@@ -1026,20 +1026,20 @@ public:
     }
 
     QSequentialIterableImpl()
-      : _iterable(0)
-      , _iterator(0)
+      : _iterable(Q_NULLPTR)
+      , _iterator(Q_NULLPTR)
       , _metaType_id(QMetaType::UnknownType)
       , _metaType_flags(0)
       , _iteratorCapabilities(0)
-      , _size(0)
-      , _at(0)
-      , _moveToBegin(0)
-      , _moveToEnd(0)
-      , _advance(0)
-      , _get(0)
-      , _destroyIter(0)
-      , _equalIter(0)
-      , _copyIter(0)
+      , _size(Q_NULLPTR)
+      , _at(Q_NULLPTR)
+      , _moveToBegin(Q_NULLPTR)
+      , _moveToEnd(Q_NULLPTR)
+      , _advance(Q_NULLPTR)
+      , _get(Q_NULLPTR)
+      , _destroyIter(Q_NULLPTR)
+      , _equalIter(Q_NULLPTR)
+      , _copyIter(Q_NULLPTR)
     {
     }
 
@@ -1195,21 +1195,21 @@ public:
     }
 
     QAssociativeIterableImpl()
-      : _iterable(0)
+      : _iterable(Q_NULLPTR)
       , _metaType_id_key(QMetaType::UnknownType)
       , _metaType_flags_key(0)
       , _metaType_id_value(QMetaType::UnknownType)
       , _metaType_flags_value(0)
-      , _size(0)
-      , _find(0)
-      , _begin(0)
-      , _end(0)
-      , _advance(0)
-      , _getKey(0)
-      , _getValue(0)
-      , _destroyIter(0)
-      , _equalIter(0)
-      , _copyIter(0)
+      , _size(Q_NULLPTR)
+      , _find(Q_NULLPTR)
+      , _begin(Q_NULLPTR)
+      , _end(Q_NULLPTR)
+      , _advance(Q_NULLPTR)
+      , _getKey(Q_NULLPTR)
+      , _getValue(Q_NULLPTR)
+      , _destroyIter(Q_NULLPTR)
+      , _equalIter(Q_NULLPTR)
+      , _copyIter(Q_NULLPTR)
     {
     }
 
@@ -1277,9 +1277,9 @@ public:
     }
 
     QPairVariantInterfaceImpl()
-      : _pair(0)
-      , _getFirst(0)
-      , _getSecond(0)
+      : _pair(Q_NULLPTR)
+      , _getFirst(Q_NULLPTR)
+      , _getSecond(Q_NULLPTR)
     {
     }
 
@@ -1354,7 +1354,7 @@ namespace QtPrivate
 #endif
         static no_type checkType(...);
         Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
-        enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
+        enum { Value = sizeof(checkType(static_cast<T*>(Q_NULLPTR))) == sizeof(yes_type) };
     };
 
     template<typename T, typename Enable = void>
@@ -1391,7 +1391,7 @@ QT_WARNING_POP
     template<typename T, typename Enable = void>
     struct MetaObjectForType
     {
-        static inline const QMetaObject *value() { return 0; }
+        static inline const QMetaObject *value() { return Q_NULLPTR; }
     };
     template<>
     struct MetaObjectForType<void>
@@ -1692,7 +1692,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 template <typename T>
 int qRegisterMetaType(const char *typeName
 #ifndef Q_QDOC
-    , T * dummy = 0
+    , T * dummy = Q_NULLPTR
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
 )
@@ -1709,7 +1709,7 @@ int qRegisterMetaType(const char *typeName
 template <typename T>
 void qRegisterMetaTypeStreamOperators(const char *typeName
 #ifndef Q_QDOC
-    , T * /* dummy */ = 0
+    , T * /* dummy */ = Q_NULLPTR
 #endif
 )
 {
@@ -2095,7 +2095,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
     , m_loadOp(loadOp)
     , m_constructor(constructor)
     , m_destructor(destructor)
-    , m_extension(0)
+    , m_extension(Q_NULLPTR)
     , m_size(size)
     , m_typeFlags(theTypeFlags)
     , m_extensionFlags(extensionFlags)

@@ -49,7 +49,7 @@ class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    Q_DECL_CONSTEXPR inline QModelIndex() Q_DECL_NOTHROW : r(-1), c(-1), i(0), m(0) {}
+    Q_DECL_CONSTEXPR inline QModelIndex() Q_DECL_NOTHROW : r(-1), c(-1), i(0), m(Q_NULLPTR) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
     Q_DECL_CONSTEXPR inline int row() const Q_DECL_NOTHROW { return r; }
     Q_DECL_CONSTEXPR inline int column() const Q_DECL_NOTHROW { return c; }
@@ -61,7 +61,7 @@ public:
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
     Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const Q_DECL_NOTHROW { return m; }
-    Q_DECL_CONSTEXPR inline bool isValid() const Q_DECL_NOTHROW { return (r >= 0) && (c >= 0) && (m != 0); }
+    Q_DECL_CONSTEXPR inline bool isValid() const Q_DECL_NOTHROW { return (r >= 0) && (c >= 0) && (m != Q_NULLPTR); }
     Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const Q_DECL_NOTHROW
         { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
     Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const Q_DECL_NOTHROW
@@ -161,7 +161,7 @@ class Q_CORE_EXPORT QAbstractItemModel : public QObject
     friend class QIdentityProxyModel;
 public:
 
-    explicit QAbstractItemModel(QObject *parent = 0);
+    explicit QAbstractItemModel(QObject *parent = Q_NULLPTR);
     virtual ~QAbstractItemModel();
 
     Q_INVOKABLE bool hasIndex(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -276,9 +276,9 @@ protected Q_SLOTS:
     void resetInternalData();
 
 protected:
-    QAbstractItemModel(QAbstractItemModelPrivate &dd, QObject *parent = 0);
+    QAbstractItemModel(QAbstractItemModelPrivate &dd, QObject *parent = Q_NULLPTR);
 
-    inline QModelIndex createIndex(int row, int column, void *data = 0) const;
+    inline QModelIndex createIndex(int row, int column, void *data = Q_NULLPTR) const;
     inline QModelIndex createIndex(int row, int column, quintptr id) const;
 
     void encodeData(const QModelIndexList &indexes, QDataStream &stream) const;
@@ -357,7 +357,7 @@ class Q_CORE_EXPORT QAbstractTableModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit QAbstractTableModel(QObject *parent = 0);
+    explicit QAbstractTableModel(QObject *parent = Q_NULLPTR);
     ~QAbstractTableModel();
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -383,7 +383,7 @@ class Q_CORE_EXPORT QAbstractListModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit QAbstractListModel(QObject *parent = 0);
+    explicit QAbstractListModel(QObject *parent = Q_NULLPTR);
     ~QAbstractListModel();
 
     QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;

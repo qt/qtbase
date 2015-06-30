@@ -132,7 +132,7 @@ struct QTypedArrayData
         typedef T *pointer;
         typedef T &reference;
 
-        inline iterator() : i(0) {}
+        inline iterator() : i(Q_NULLPTR) {}
         inline iterator(T *n) : i(n) {}
         inline iterator(const iterator &o): i(o.i){} // #### Qt 6: remove, the implicit version is fine
         inline T &operator*() const { return *i; }
@@ -166,7 +166,7 @@ struct QTypedArrayData
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() : i(0) {}
+        inline const_iterator() : i(Q_NULLPTR) {}
         inline const_iterator(const T *n) : i(n) {}
         inline const_iterator(const const_iterator &o): i(o.i) {} // #### Qt 6: remove, the default version is fine
         inline explicit const_iterator(const iterator &o): i(o.i) {}

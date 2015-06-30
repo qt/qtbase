@@ -54,8 +54,8 @@ public:
     };
     Q_ENUM(HistoryType)
 
-    QHistoryState(QState *parent = 0);
-    QHistoryState(HistoryType type, QState *parent = 0);
+    QHistoryState(QState *parent = Q_NULLPTR);
+    QHistoryState(HistoryType type, QState *parent = Q_NULLPTR);
     ~QHistoryState();
 
     QAbstractState *defaultState() const;

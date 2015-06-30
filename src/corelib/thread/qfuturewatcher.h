@@ -52,7 +52,7 @@ class Q_CORE_EXPORT QFutureWatcherBase : public QObject
     Q_DECLARE_PRIVATE(QFutureWatcherBase)
 
 public:
-    explicit QFutureWatcherBase(QObject *parent = 0);
+    explicit QFutureWatcherBase(QObject *parent = Q_NULLPTR);
     // de-inline dtor
 
     int progressValue() const;
@@ -179,7 +179,7 @@ template <>
 class QFutureWatcher<void> : public QFutureWatcherBase
 {
 public:
-    explicit QFutureWatcher(QObject *_parent = 0)
+    explicit QFutureWatcher(QObject *_parent = Q_NULLPTR)
         : QFutureWatcherBase(_parent)
     { }
     ~QFutureWatcher()

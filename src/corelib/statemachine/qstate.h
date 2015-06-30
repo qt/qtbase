@@ -66,8 +66,8 @@ public:
     };
     Q_ENUM(RestorePolicy)
 
-    QState(QState *parent = 0);
-    QState(ChildMode childMode, QState *parent = 0);
+    QState(QState *parent = Q_NULLPTR);
+    QState(ChildMode childMode, QState *parent = Q_NULLPTR);
     ~QState();
 
     QAbstractState *errorState() const;

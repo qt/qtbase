@@ -84,7 +84,7 @@ class Base;
 class Q_CORE_EXPORT ExceptionHolder
 {
 public:
-    ExceptionHolder(QException *exception = 0);
+    ExceptionHolder(QException *exception = Q_NULLPTR);
     ExceptionHolder(const ExceptionHolder &other);
     void operator=(const ExceptionHolder &other);
     ~ExceptionHolder();

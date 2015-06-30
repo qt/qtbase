@@ -76,7 +76,7 @@ public:
         DeleteWhenStopped
     };
 
-    QAbstractAnimation(QObject *parent = 0);
+    QAbstractAnimation(QObject *parent = Q_NULLPTR);
     virtual ~QAbstractAnimation();
 
     State state() const;
@@ -111,7 +111,7 @@ public Q_SLOTS:
     void setCurrentTime(int msecs);
 
 protected:
-    QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent = 0);
+    QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent = Q_NULLPTR);
     bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     virtual void updateCurrentTime(int currentTime) = 0;
@@ -130,7 +130,7 @@ class Q_CORE_EXPORT QAnimationDriver : public QObject
     Q_DECLARE_PRIVATE(QAnimationDriver)
 
 public:
-    QAnimationDriver(QObject *parent = 0);
+    QAnimationDriver(QObject *parent = Q_NULLPTR);
     ~QAnimationDriver();
 
     virtual void advance();
@@ -156,7 +156,7 @@ protected:
     virtual void start();
     virtual void stop();
 
-    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
+    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = Q_NULLPTR);
 
 private:
     friend class QUnifiedTimer;

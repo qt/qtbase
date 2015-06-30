@@ -68,8 +68,8 @@ public:
         UnknownError
     };
 
-    QSharedMemory(QObject *parent = 0);
-    QSharedMemory(const QString &key, QObject *parent = 0);
+    QSharedMemory(QObject *parent = Q_NULLPTR);
+    QSharedMemory(const QString &key, QObject *parent = Q_NULLPTR);
     ~QSharedMemory();
 
     void setKey(const QString &key);

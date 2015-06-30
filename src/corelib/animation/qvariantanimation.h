@@ -59,7 +59,7 @@ public:
     typedef QPair<qreal, QVariant> KeyValue;
     typedef QVector<KeyValue> KeyValues;
 
-    QVariantAnimation(QObject *parent = 0);
+    QVariantAnimation(QObject *parent = Q_NULLPTR);
     ~QVariantAnimation();
 
     QVariant startValue() const;
@@ -88,7 +88,7 @@ Q_SIGNALS:
     void valueChanged(const QVariant &value);
 
 protected:
-    QVariantAnimation(QVariantAnimationPrivate &dd, QObject *parent = 0);
+    QVariantAnimation(QVariantAnimationPrivate &dd, QObject *parent = Q_NULLPTR);
     bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     void updateCurrentTime(int) Q_DECL_OVERRIDE;
