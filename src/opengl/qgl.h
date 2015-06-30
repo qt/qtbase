@@ -235,7 +235,7 @@ public:
     QGLContext(const QGLFormat& format);
     virtual ~QGLContext();
 
-    virtual bool create(const QGLContext* shareContext = 0);
+    virtual bool create(const QGLContext* shareContext = Q_NULLPTR);
     bool isValid() const;
     bool isSharing() const;
     void reset();
@@ -303,7 +303,7 @@ public:
     QOpenGLContext *contextHandle() const;
 
 protected:
-    virtual bool chooseContext(const QGLContext* shareContext = 0);
+    virtual bool chooseContext(const QGLContext* shareContext = Q_NULLPTR);
 
     bool deviceIsPixmap() const;
     bool windowCreated() const;
@@ -380,7 +380,7 @@ public:
     void setFormat(const QGLFormat& format);
 
     QGLContext* context() const;
-    void setContext(QGLContext* context, const QGLContext* shareContext = 0,
+    void setContext(QGLContext* context, const QGLContext* shareContext = Q_NULLPTR,
                     bool deleteOldContext = true);
 
     QPixmap renderPixmap(int w = 0, int h = 0, bool useContext = false);

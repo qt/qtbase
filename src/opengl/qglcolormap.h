@@ -63,7 +63,7 @@ public:
     int    findNearest(QRgb color) const;
 
 protected:
-    Qt::HANDLE handle() { return d ? d->cmapHandle : 0; }
+    Qt::HANDLE handle() { return d ? d->cmapHandle : Q_NULLPTR; }
     void setHandle(Qt::HANDLE ahandle) { d->cmapHandle = ahandle; }
 
 private:
