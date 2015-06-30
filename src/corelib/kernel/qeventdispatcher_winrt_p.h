@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-int qt_msectime();
+quint64 qt_msectime();
 
 class QEventDispatcherWinRTPrivate;
 
