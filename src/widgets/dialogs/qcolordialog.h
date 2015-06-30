@@ -83,7 +83,7 @@ public:
     static QColor getColor(const QColor &initial = Qt::white,
                            QWidget *parent = Q_NULLPTR,
                            const QString &title = QString(),
-                           ColorDialogOptions options = 0);
+                           ColorDialogOptions options = ColorDialogOptions());
 
     // obsolete
     static QRgb getRgba(QRgb rgba = 0xffffffff, bool *ok = Q_NULLPTR, QWidget *parent = Q_NULLPTR);

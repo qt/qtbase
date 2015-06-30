@@ -374,7 +374,7 @@ public:
     inline void drawPixmap(int x, int y, int w, int h, const QPixmap &pm);
 
     void drawPixmapFragments(const PixmapFragment *fragments, int fragmentCount,
-                             const QPixmap &pixmap, PixmapFragmentHints hints = 0);
+                             const QPixmap &pixmap, PixmapFragmentHints hints = PixmapFragmentHints());
 
     void drawImage(const QRectF &targetRect, const QImage &image, const QRectF &sourceRect,
                    Qt::ImageConversionFlags flags = Qt::AutoColor);

@@ -205,14 +205,14 @@ public:
                                    const QString &dir = QString(),
                                    const QString &filter = QString(),
                                    QString *selectedFilter = Q_NULLPTR,
-                                   Options options = 0);
+                                   Options options = Options());
 
     static QUrl getOpenFileUrl(QWidget *parent = Q_NULLPTR,
                                const QString &caption = QString(),
                                const QUrl &dir = QUrl(),
                                const QString &filter = QString(),
                                QString *selectedFilter = Q_NULLPTR,
-                               Options options = 0,
+                               Options options = Options(),
                                const QStringList &supportedSchemes = QStringList());
 
     static QString getSaveFileName(QWidget *parent = Q_NULLPTR,
@@ -220,14 +220,14 @@ public:
                                    const QString &dir = QString(),
                                    const QString &filter = QString(),
                                    QString *selectedFilter = Q_NULLPTR,
-                                   Options options = 0);
+                                   Options options = Options());
 
     static QUrl getSaveFileUrl(QWidget *parent = Q_NULLPTR,
                                const QString &caption = QString(),
                                const QUrl &dir = QUrl(),
                                const QString &filter = QString(),
                                QString *selectedFilter = Q_NULLPTR,
-                               Options options = 0,
+                               Options options = Options(),
                                const QStringList &supportedSchemes = QStringList());
 
     static QString getExistingDirectory(QWidget *parent = Q_NULLPTR,
@@ -246,14 +246,14 @@ public:
                                         const QString &dir = QString(),
                                         const QString &filter = QString(),
                                         QString *selectedFilter = Q_NULLPTR,
-                                        Options options = 0);
+                                        Options options = Options());
 
     static QList<QUrl> getOpenFileUrls(QWidget *parent = Q_NULLPTR,
                                        const QString &caption = QString(),
                                        const QUrl &dir = QUrl(),
                                        const QString &filter = QString(),
                                        QString *selectedFilter = Q_NULLPTR,
-                                       Options options = 0,
+                                       Options options = Options(),
                                        const QStringList &supportedSchemes = QStringList());
 
 

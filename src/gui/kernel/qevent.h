@@ -878,7 +878,7 @@ public:
     explicit QTouchEvent(QEvent::Type eventType,
                          QTouchDevice *device = Q_NULLPTR,
                          Qt::KeyboardModifiers modifiers = Qt::NoModifier,
-                         Qt::TouchPointStates touchPointStates = 0,
+                         Qt::TouchPointStates touchPointStates = Qt::TouchPointStates(),
                          const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 

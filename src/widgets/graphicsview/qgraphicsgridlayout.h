@@ -51,8 +51,8 @@ public:
     virtual ~QGraphicsGridLayout();
 
     void addItem(QGraphicsLayoutItem *item, int row, int column, int rowSpan, int columnSpan,
-                   Qt::Alignment alignment = 0);
-    inline void addItem(QGraphicsLayoutItem *item, int row, int column, Qt::Alignment alignment = 0);
+                 Qt::Alignment alignment = Qt::Alignment());
+    inline void addItem(QGraphicsLayoutItem *item, int row, int column, Qt::Alignment alignment = Qt::Alignment());
 
     void setHorizontalSpacing(qreal spacing);
     qreal horizontalSpacing() const;

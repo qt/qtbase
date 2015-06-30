@@ -145,7 +145,7 @@ Q_WIDGETS_EXPORT void qDrawBorderPixmap(QPainter *painter,
                                     const QMargins &sourceMargins,
                                     const QTileRules &rules = QTileRules()
 #ifndef Q_QDOC
-                                    , QDrawBorderPixmap::DrawingHints hints = 0
+                                    , QDrawBorderPixmap::DrawingHints hints = QDrawBorderPixmap::DrawingHints()
 #endif
                                     );
 

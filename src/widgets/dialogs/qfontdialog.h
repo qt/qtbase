@@ -86,7 +86,7 @@ public:
 
     static QFont getFont(bool *ok, QWidget *parent = Q_NULLPTR);
     static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = Q_NULLPTR, const QString &title = QString(),
-                         FontDialogOptions options = 0);
+                         FontDialogOptions options = FontDialogOptions());
 
 Q_SIGNALS:
     void currentFontChanged(const QFont &font);

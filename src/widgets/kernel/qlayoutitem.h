@@ -53,7 +53,7 @@ class QSize;
 class Q_WIDGETS_EXPORT QLayoutItem
 {
 public:
-    inline explicit QLayoutItem(Qt::Alignment alignment = 0);
+    inline explicit QLayoutItem(Qt::Alignment alignment = Qt::Alignment());
     virtual ~QLayoutItem();
     virtual QSize sizeHint() const = 0;
     virtual QSize minimumSize() const = 0;
