@@ -273,7 +273,9 @@ static sljit_si cpu_has_sse2 = -1;
 #endif
 static sljit_si cpu_has_cmov = -1;
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef _WIN32_WCE
+#include <cmnintrin.h>
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
 #include <intrin.h>
 #endif
 
