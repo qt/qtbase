@@ -50,8 +50,8 @@ class Q_TESTLIB_EXPORT QTestEventLoop : public QObject
     Q_OBJECT
 
 public:
-    inline QTestEventLoop(QObject *aParent = 0)
-        : QObject(aParent), inLoop(false), _timeout(false), timerId(-1), loop(0) {}
+    inline QTestEventLoop(QObject *aParent = Q_NULLPTR)
+        : QObject(aParent), inLoop(false), _timeout(false), timerId(-1), loop(Q_NULLPTR) {}
 
     inline void enterLoopMSecs(int ms);
     inline void enterLoop(int secs) { enterLoopMSecs(secs * 1000); }
@@ -97,7 +97,7 @@ inline void QTestEventLoop::enterLoopMSecs(int ms)
 
     loop = &l;
     l.exec();
-    loop = 0;
+    loop = Q_NULLPTR;
 }
 
 inline void QTestEventLoop::exitLoop()

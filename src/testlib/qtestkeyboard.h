@@ -97,7 +97,7 @@ namespace QTest
 
         if (action == Press) {
             if (modifier & Qt::ShiftModifier)
-                simulateEvent(window, true, Qt::Key_Shift, 0, QString(), false, delay);
+                simulateEvent(window, true, Qt::Key_Shift, Qt::KeyboardModifiers(), QString(), false, delay);
 
             if (modifier & Qt::ControlModifier)
                 simulateEvent(window, true, Qt::Key_Control, modifier & Qt::ShiftModifier, QString(), false, delay);
@@ -220,7 +220,7 @@ namespace QTest
 
         if (action == Press) {
             if (modifier & Qt::ShiftModifier)
-                simulateEvent(widget, true, Qt::Key_Shift, 0, QString(), false, delay);
+                simulateEvent(widget, true, Qt::Key_Shift, Qt::KeyboardModifiers(), QString(), false, delay);
 
             if (modifier & Qt::ControlModifier)
                 simulateEvent(widget, true, Qt::Key_Control, modifier & Qt::ShiftModifier, QString(), false, delay);

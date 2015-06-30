@@ -133,20 +133,24 @@ namespace QTest
         waitForEvents();
     }
 
-    inline void mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mousePress(QWindow *window, Qt::MouseButton button,
+                           Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MousePress, window, button, stateKey, pos, delay); }
-    inline void mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseRelease(QWindow *window, Qt::MouseButton button,
+                             Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                              QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseRelease, window, button, stateKey, pos, delay); }
-    inline void mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseClick(QWindow *window, Qt::MouseButton button,
+                           Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseClick, window, button, stateKey, pos, delay); }
-    inline void mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseDClick(QWindow *window, Qt::MouseButton button,
+                            Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                             QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseDClick, window, button, stateKey, pos, delay); }
     inline void mouseMove(QWindow *window, QPoint pos = QPoint(), int delay=-1)
-    { mouseEvent(MouseMove, window, Qt::NoButton, 0, pos, delay); }
+    { mouseEvent(MouseMove, window, Qt::NoButton, Qt::KeyboardModifiers(), pos, delay); }
 
 #ifdef QT_WIDGETS_LIB
     static void mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button,
@@ -186,7 +190,7 @@ namespace QTest
                 me = QMouseEvent(QEvent::MouseButtonPress, pos, widget->mapToGlobal(pos), button, button, stateKey);
                 break;
             case MouseRelease:
-                me = QMouseEvent(QEvent::MouseButtonRelease, pos, widget->mapToGlobal(pos), button, 0, stateKey);
+                me = QMouseEvent(QEvent::MouseButtonRelease, pos, widget->mapToGlobal(pos), button, Qt::MouseButton(), stateKey);
                 break;
             case MouseDClick:
                 me = QMouseEvent(QEvent::MouseButtonDblClick, pos, widget->mapToGlobal(pos), button, button, stateKey);
@@ -212,20 +216,24 @@ namespace QTest
 #endif
     }
 
-    inline void mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mousePress(QWidget *widget, Qt::MouseButton button,
+                           Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MousePress, widget, button, stateKey, pos, delay); }
-    inline void mouseRelease(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseRelease(QWidget *widget, Qt::MouseButton button,
+                             Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                              QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseRelease, widget, button, stateKey, pos, delay); }
-    inline void mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseClick(QWidget *widget, Qt::MouseButton button,
+                           Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseClick, widget, button, stateKey, pos, delay); }
-    inline void mouseDClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void mouseDClick(QWidget *widget, Qt::MouseButton button,
+                            Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                             QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseDClick, widget, button, stateKey, pos, delay); }
     inline void mouseMove(QWidget *widget, QPoint pos = QPoint(), int delay=-1)
-    { mouseEvent(MouseMove, widget, Qt::NoButton, 0, pos, delay); }
+    { mouseEvent(MouseMove, widget, Qt::NoButton, Qt::KeyboardModifiers(), pos, delay); }
 #endif // QT_WIDGETS_LIB
 }
 

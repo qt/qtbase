@@ -185,20 +185,20 @@ public:
     inline void addKeyEvent(QTest::KeyAction action, char ascii, Qt::KeyboardModifiers modifiers = Qt::NoModifier, int msecs = -1)
     { append(new QTestKeyEvent(action, ascii, modifiers, msecs)); }
 
-    inline void addMousePress(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void addMousePress(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                               QPoint pos = QPoint(), int delay=-1)
     { append(new QTestMouseEvent(QTest::MousePress, button, stateKey, pos, delay)); }
-    inline void addMouseRelease(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void addMouseRelease(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                                 QPoint pos = QPoint(), int delay=-1)
     { append(new QTestMouseEvent(QTest::MouseRelease, button, stateKey, pos, delay)); }
-    inline void addMouseClick(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void addMouseClick(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                               QPoint pos = QPoint(), int delay=-1)
     { append(new QTestMouseEvent(QTest::MouseClick, button, stateKey, pos, delay)); }
-    inline void addMouseDClick(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+    inline void addMouseDClick(Qt::MouseButton button, Qt::KeyboardModifiers stateKey = Qt::KeyboardModifiers(),
                             QPoint pos = QPoint(), int delay=-1)
     { append(new QTestMouseEvent(QTest::MouseDClick, button, stateKey, pos, delay)); }
     inline void addMouseMove(QPoint pos = QPoint(), int delay=-1)
-    { append(new QTestMouseEvent(QTest::MouseMove, Qt::NoButton, 0, pos, delay)); }
+    { append(new QTestMouseEvent(QTest::MouseMove, Qt::NoButton, Qt::KeyboardModifiers(), pos, delay)); }
 #endif //QT_GUI_LIB
 
     inline void addDelay(int msecs)
