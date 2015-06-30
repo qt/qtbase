@@ -300,12 +300,12 @@ public:
 
     inline T *data() const { return value; }
     inline bool isNull() const { return !data(); }
-    inline operator RestrictedBool() const { return isNull() ? 0 : &QSharedPointer::value; }
+    inline operator RestrictedBool() const { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
     inline bool operator !() const { return isNull(); }
     inline T &operator*() const { return *data(); }
     inline T *operator->() const { return data(); }
 
-    QSharedPointer() : value(0), d(0) { }
+    QSharedPointer() : value(Q_NULLPTR), d(Q_NULLPTR) { }
     ~QSharedPointer() { deref(); }
 
     inline explicit QSharedPointer(T *ptr) : value(ptr) // noexcept
@@ -327,8 +327,8 @@ public:
     inline QSharedPointer(QSharedPointer &&other)
         : value(other.value), d(other.d)
     {
-        other.d = 0;
-        other.value = 0;
+        other.d = Q_NULLPTR;
+        other.value = Q_NULLPTR;
     }
     inline QSharedPointer &operator=(QSharedPointer &&other)
     {
@@ -351,7 +351,7 @@ public:
     }
 
     template <class X>
-    inline QSharedPointer(const QWeakPointer<X> &other) : value(0), d(0)
+    inline QSharedPointer(const QWeakPointer<X> &other) : value(Q_NULLPTR), d(Q_NULLPTR)
     { *this = other; }
 
     template <class X>
@@ -491,7 +491,7 @@ private:
     inline void internalConstruct(T *ptr, Deleter deleter)
     {
         if (!ptr) {
-            d = 0;
+            d = Q_NULLPTR;
             return;
         }
 
@@ -554,14 +554,14 @@ public:
                 o->weakref.ref();
             } else {
                 o->checkQObjectShared(actual);
-                o = 0;
+                o = Q_NULLPTR;
             }
         }
 
         qSwap(d, o);
         qSwap(this->value, actual);
         if (!d || d->strongref.load() == 0)
-            this->value = 0;
+            this->value = Q_NULLPTR;
 
         // dereference saved data
         deref(o);
@@ -586,19 +586,19 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    inline bool isNull() const { return d == 0 || d->strongref.load() == 0 || value == 0; }
-    inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
+    inline bool isNull() const { return d == Q_NULLPTR || d->strongref.load() == 0 || value == Q_NULLPTR; }
+    inline operator RestrictedBool() const { return isNull() ? Q_NULLPTR : &QWeakPointer::value; }
     inline bool operator !() const { return isNull(); }
-    inline T *data() const { return d == 0 || d->strongref.load() == 0 ? 0 : value; }
+    inline T *data() const { return d == Q_NULLPTR || d->strongref.load() == 0 ? Q_NULLPTR : value; }
 
-    inline QWeakPointer() : d(0), value(0) { }
+    inline QWeakPointer() : d(Q_NULLPTR), value(Q_NULLPTR) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
 #ifndef QT_NO_QOBJECT
     // special constructor that is enabled only if X derives from QObject
 #if QT_DEPRECATED_SINCE(5, 0)
     template <class X>
-    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : 0), value(ptr)
+    QT_DEPRECATED inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : Q_NULLPTR), value(ptr)
     { }
 #endif
 #endif
@@ -632,7 +632,7 @@ public:
     }
 
     template <class X>
-    inline QWeakPointer(const QWeakPointer<X> &o) : d(0), value(0)
+    inline QWeakPointer(const QWeakPointer<X> &o) : d(Q_NULLPTR), value(Q_NULLPTR)
     { *this = o; }
 
     template <class X>
@@ -653,7 +653,7 @@ public:
     { return !(*this == o); }
 
     template <class X>
-    inline QWeakPointer(const QSharedPointer<X> &o) : d(0), value(0)
+    inline QWeakPointer(const QSharedPointer<X> &o) : d(Q_NULLPTR), value(Q_NULLPTR)
     { *this = o; }
 
     template <class X>
@@ -697,7 +697,7 @@ public:
 
 #ifndef QT_NO_QOBJECT
     template <class X>
-    inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : 0), value(ptr)
+    inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : Q_NULLPTR), value(ptr)
     { }
 #endif
 
