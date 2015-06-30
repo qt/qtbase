@@ -53,8 +53,8 @@ class Q_PRINTSUPPORT_EXPORT QPrintDialog : public QAbstractPrintDialog
     Q_PROPERTY(PrintDialogOptions options READ options WRITE setOptions)
 
 public:
-    explicit QPrintDialog(QPrinter *printer, QWidget *parent = 0);
-    explicit QPrintDialog(QWidget *parent = 0);
+    explicit QPrintDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);
+    explicit QPrintDialog(QWidget *parent = Q_NULLPTR);
     ~QPrintDialog();
 
     int exec() Q_DECL_OVERRIDE;

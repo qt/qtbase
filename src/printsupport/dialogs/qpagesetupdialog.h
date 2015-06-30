@@ -51,8 +51,8 @@ class Q_PRINTSUPPORT_EXPORT QPageSetupDialog : public QDialog
     Q_DECLARE_PRIVATE(QPageSetupDialog)
 
 public:
-    explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = 0);
-    explicit QPageSetupDialog(QWidget *parent = 0);
+    explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);
+    explicit QPageSetupDialog(QWidget *parent = Q_NULLPTR);
     ~QPageSetupDialog();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
