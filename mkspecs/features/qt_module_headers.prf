@@ -187,6 +187,16 @@ headersclean:!internal_module {
 
             !contains(QT_ARCH, arm):!contains(QT_ARCH, mips): \
                 hcleanFLAGS += -Wcast-align
+
+            !clang {
+                # options accepted only by GCC
+
+                c++11 {
+                    # only enabled for actual c++11 builds due to
+                    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52806
+                    hcleanFLAGS += -Wzero-as-null-pointer-constant
+                }
+            }
         }
 
         # Use strict mode C++11 or C++98, with no GNU extensions (see -pedantic-errors above).
