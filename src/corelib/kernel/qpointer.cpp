@@ -128,7 +128,7 @@
 */
 
 /*!
-    \fn void QPointer::swap(QPointer<T> &other)
+    \fn void QPointer::swap(QPointer &other)
     \since 5.6
 
     Swaps the contents of this QPointer with the contents of \a other.

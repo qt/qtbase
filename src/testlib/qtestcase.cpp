@@ -1318,7 +1318,7 @@ static void stackTrace()
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)
+    \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit)
     \since 5.0
 
     Creates and returns a QTouchEventSequence for the \a device to
@@ -1335,7 +1335,7 @@ static void stackTrace()
 */
 
 /*!
-    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)
+    \fn QTouchEventSequence QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit)
 
     Creates and returns a QTouchEventSequence for the \a device to
     simulate events for \a widget.

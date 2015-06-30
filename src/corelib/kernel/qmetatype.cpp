@@ -1178,12 +1178,6 @@ bool QMetaType::isRegistered(int type)
     return ((type >= User) && (ct && ct->count() > type - User) && !ct->at(type - User).typeName.isEmpty());
 }
 
-/*!
-    \fn int qMetaTypeTypeImpl(const char *typeName, int length)
-    \internal
-
-    Implementation of QMetaType::type().
-*/
 template <bool tryNormalizedType>
 static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 {
