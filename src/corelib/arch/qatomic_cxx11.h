@@ -144,7 +144,7 @@ template <typename X> struct QAtomicOps
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
 
     template <typename T>
-    static bool testAndSetRelaxed(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
+    static bool testAndSetRelaxed(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
         bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
         if (currentValue)
@@ -153,7 +153,7 @@ template <typename X> struct QAtomicOps
     }
 
     template <typename T>
-    static bool testAndSetAcquire(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
+    static bool testAndSetAcquire(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
         bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
         if (currentValue)
@@ -162,7 +162,7 @@ template <typename X> struct QAtomicOps
     }
 
     template <typename T>
-    static bool testAndSetRelease(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
+    static bool testAndSetRelease(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
         bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
         if (currentValue)
@@ -171,7 +171,7 @@ template <typename X> struct QAtomicOps
     }
 
     template <typename T>
-    static bool testAndSetOrdered(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
+    static bool testAndSetOrdered(std::atomic<T> &_q_value, T expectedValue, T newValue, T *currentValue = Q_NULLPTR) Q_DECL_NOTHROW
     {
         bool tmp = _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
         if (currentValue)

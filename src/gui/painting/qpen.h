@@ -65,7 +65,7 @@ public:
     QPen &operator=(const QPen &pen) Q_DECL_NOTHROW;
 #ifdef Q_COMPILER_RVALUE_REFS
     QPen(QPen &&other) Q_DECL_NOTHROW
-        : d(other.d) { other.d = 0; }
+        : d(other.d) { other.d = Q_NULLPTR; }
     QPen &operator=(QPen &&other) Q_DECL_NOTHROW
     { qSwap(d, other.d); return *this; }
 #endif

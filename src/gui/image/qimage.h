@@ -138,7 +138,7 @@ public:
     QImage(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QImage(QImage &&other) Q_DECL_NOEXCEPT
-        : QPaintDevice(), d(0)
+        : QPaintDevice(), d(Q_NULLPTR)
     { qSwap(d, other.d); }
 #endif
     ~QImage();

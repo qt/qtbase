@@ -404,7 +404,7 @@ public:
     void glVertexBindingDivisor(GLuint bindingindex, GLuint divisor);
 
 private:
-    static bool isInitialized(const QOpenGLExtraFunctionsPrivate *d) { return d != 0; }
+    static bool isInitialized(const QOpenGLExtraFunctionsPrivate *d) { return d != Q_NULLPTR; }
 };
 
 class QOpenGLExtraFunctionsPrivate : public QOpenGLFunctionsPrivate
