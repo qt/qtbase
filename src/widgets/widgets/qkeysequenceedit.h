@@ -48,8 +48,8 @@ class Q_WIDGETS_EXPORT QKeySequenceEdit : public QWidget
     Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)
 
 public:
-    explicit QKeySequenceEdit(QWidget *parent = 0);
-    explicit QKeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = 0);
+    explicit QKeySequenceEdit(QWidget *parent = Q_NULLPTR);
+    explicit QKeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = Q_NULLPTR);
     ~QKeySequenceEdit();
 
     QKeySequence keySequence() const;

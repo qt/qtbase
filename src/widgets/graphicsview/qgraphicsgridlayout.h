@@ -47,7 +47,7 @@ class QGraphicsGridLayoutPrivate;
 class Q_WIDGETS_EXPORT QGraphicsGridLayout : public QGraphicsLayout
 {
 public:
-    QGraphicsGridLayout(QGraphicsLayoutItem *parent = 0);
+    QGraphicsGridLayout(QGraphicsLayoutItem *parent = Q_NULLPTR);
     virtual ~QGraphicsGridLayout();
 
     void addItem(QGraphicsLayoutItem *item, int row, int column, int rowSpan, int columnSpan,

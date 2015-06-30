@@ -48,9 +48,9 @@ class Q_WIDGETS_EXPORT QKeyEventTransition : public QEventTransition
     Q_PROPERTY(int key READ key WRITE setKey)
     Q_PROPERTY(Qt::KeyboardModifiers modifierMask READ modifierMask WRITE setModifierMask)
 public:
-    QKeyEventTransition(QState *sourceState = 0);
+    QKeyEventTransition(QState *sourceState = Q_NULLPTR);
     QKeyEventTransition(QObject *object, QEvent::Type type, int key,
-                        QState *sourceState = 0);
+                        QState *sourceState = Q_NULLPTR);
     ~QKeyEventTransition();
 
     int key() const;

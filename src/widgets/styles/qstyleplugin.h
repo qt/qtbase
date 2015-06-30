@@ -48,7 +48,7 @@ class Q_WIDGETS_EXPORT QStylePlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QStylePlugin(QObject *parent = 0);
+    explicit QStylePlugin(QObject *parent = Q_NULLPTR);
     ~QStylePlugin();
 
     virtual QStyle *create(const QString &key) = 0;

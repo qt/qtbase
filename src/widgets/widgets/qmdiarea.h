@@ -79,7 +79,7 @@ public:
     };
     Q_ENUM(ViewMode)
 
-    QMdiArea(QWidget *parent = 0);
+    QMdiArea(QWidget *parent = Q_NULLPTR);
     ~QMdiArea();
 
     QSize sizeHint() const Q_DECL_OVERRIDE;

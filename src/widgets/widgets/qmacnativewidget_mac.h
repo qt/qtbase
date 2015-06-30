@@ -45,7 +45,7 @@ class Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QMacNativeWidget(NSView *parentView = 0);
+    QMacNativeWidget(NSView *parentView = Q_NULLPTR);
     ~QMacNativeWidget();
 
     QSize sizeHint() const;

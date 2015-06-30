@@ -734,12 +734,12 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWidget::RenderFlags)
 #ifndef Q_QDOC
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
-    if (!o || !o->isWidgetType()) return 0;
+    if (!o || !o->isWidgetType()) return Q_NULLPTR;
     return static_cast<QWidget*>(o);
 }
 template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
 {
-    if (!o || !o->isWidgetType()) return 0;
+    if (!o || !o->isWidgetType()) return Q_NULLPTR;
     return static_cast<const QWidget*>(o);
 }
 #endif // !Q_QDOC

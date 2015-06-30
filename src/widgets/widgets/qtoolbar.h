@@ -69,8 +69,8 @@ class Q_WIDGETS_EXPORT QToolBar : public QWidget
     Q_PROPERTY(bool floatable READ isFloatable WRITE setFloatable)
 
 public:
-    explicit QToolBar(const QString &title, QWidget *parent = 0);
-    explicit QToolBar(QWidget *parent = 0);
+    explicit QToolBar(const QString &title, QWidget *parent = Q_NULLPTR);
+    explicit QToolBar(QWidget *parent = Q_NULLPTR);
     ~QToolBar();
 
     void setMovable(bool movable);

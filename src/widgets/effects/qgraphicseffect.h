@@ -72,7 +72,7 @@ public:
         PadToEffectiveBoundingRect
     };
 
-    QGraphicsEffect(QObject *parent = 0);
+    QGraphicsEffect(QObject *parent = Q_NULLPTR);
     virtual ~QGraphicsEffect();
 
     virtual QRectF boundingRectFor(const QRectF &sourceRect) const;
@@ -88,7 +88,7 @@ Q_SIGNALS:
     void enabledChanged(bool enabled);
 
 protected:
-    QGraphicsEffect(QGraphicsEffectPrivate &d, QObject *parent = 0);
+    QGraphicsEffect(QGraphicsEffectPrivate &d, QObject *parent = Q_NULLPTR);
     virtual void draw(QPainter *painter) = 0;
     virtual void sourceChanged(ChangeFlags flags);
     void updateBoundingRect();
@@ -97,7 +97,7 @@ protected:
     QRectF sourceBoundingRect(Qt::CoordinateSystem system = Qt::LogicalCoordinates) const;
     void drawSource(QPainter *painter);
     QPixmap sourcePixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
-                         QPoint *offset = 0,
+                         QPoint *offset = Q_NULLPTR,
                          PixmapPadMode mode = PadToEffectiveBoundingRect) const;
 
 private:
@@ -122,7 +122,7 @@ class Q_WIDGETS_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
-    QGraphicsColorizeEffect(QObject *parent = 0);
+    QGraphicsColorizeEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
@@ -159,7 +159,7 @@ public:
     };
     Q_DECLARE_FLAGS(BlurHints, BlurHint)
 
-    QGraphicsBlurEffect(QObject *parent = 0);
+    QGraphicsBlurEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsBlurEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const Q_DECL_OVERRIDE;
@@ -194,7 +194,7 @@ class Q_WIDGETS_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
     Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
-    QGraphicsDropShadowEffect(QObject *parent = 0);
+    QGraphicsDropShadowEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsDropShadowEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const Q_DECL_OVERRIDE;
@@ -247,7 +247,7 @@ class Q_WIDGETS_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
     Q_PROPERTY(QBrush opacityMask READ opacityMask WRITE setOpacityMask NOTIFY opacityMaskChanged)
 public:
-    QGraphicsOpacityEffect(QObject *parent = 0);
+    QGraphicsOpacityEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsOpacityEffect();
 
     qreal opacity() const;

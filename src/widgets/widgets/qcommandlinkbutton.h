@@ -49,9 +49,9 @@ class Q_WIDGETS_EXPORT QCommandLinkButton: public QPushButton
     Q_PROPERTY(bool flat READ isFlat WRITE setFlat DESIGNABLE false)
 
 public:
-    explicit QCommandLinkButton(QWidget *parent=0);
-    explicit QCommandLinkButton(const QString &text, QWidget *parent=0);
-    explicit QCommandLinkButton(const QString &text, const QString &description, QWidget *parent=0);
+    explicit QCommandLinkButton(QWidget *parent = Q_NULLPTR);
+    explicit QCommandLinkButton(const QString &text, QWidget *parent = Q_NULLPTR);
+    explicit QCommandLinkButton(const QString &text, const QString &description, QWidget *parent = Q_NULLPTR);
     ~QCommandLinkButton();
 
     QString description() const;

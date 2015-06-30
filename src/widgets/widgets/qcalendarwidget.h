@@ -83,7 +83,7 @@ public:
     };
     Q_ENUM(SelectionMode)
 
-    explicit QCalendarWidget(QWidget *parent = 0);
+    explicit QCalendarWidget(QWidget *parent = Q_NULLPTR);
     ~QCalendarWidget();
 
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;

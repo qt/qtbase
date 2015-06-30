@@ -61,8 +61,8 @@ public:
     };
     Q_ENUM(TickPosition)
 
-    explicit QSlider(QWidget *parent = 0);
-    explicit QSlider(Qt::Orientation orientation, QWidget *parent = 0);
+    explicit QSlider(QWidget *parent = Q_NULLPTR);
+    explicit QSlider(Qt::Orientation orientation, QWidget *parent = Q_NULLPTR);
 
     ~QSlider();
 

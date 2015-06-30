@@ -65,7 +65,7 @@ class Q_WIDGETS_EXPORT QTabBar: public QWidget
     Q_PROPERTY(bool changeCurrentOnDrag READ changeCurrentOnDrag WRITE setChangeCurrentOnDrag)
 
 public:
-    explicit QTabBar(QWidget* parent=0);
+    explicit QTabBar(QWidget *parent = Q_NULLPTR);
     ~QTabBar();
 
     enum Shape { RoundedNorth, RoundedSouth, RoundedWest, RoundedEast,

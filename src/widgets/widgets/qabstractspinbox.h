@@ -64,7 +64,7 @@ class Q_WIDGETS_EXPORT QAbstractSpinBox : public QWidget
     Q_PROPERTY(bool keyboardTracking READ keyboardTracking WRITE setKeyboardTracking)
     Q_PROPERTY(bool showGroupSeparator READ isGroupSeparatorShown WRITE setGroupSeparatorShown)
 public:
-    explicit QAbstractSpinBox(QWidget *parent = 0);
+    explicit QAbstractSpinBox(QWidget *parent = Q_NULLPTR);
     ~QAbstractSpinBox();
 
     enum StepEnabledFlag { StepNone = 0x00, StepUpEnabled = 0x01,
@@ -154,7 +154,7 @@ protected:
 Q_SIGNALS:
     void editingFinished();
 protected:
-    QAbstractSpinBox(QAbstractSpinBoxPrivate &dd, QWidget *parent = 0);
+    QAbstractSpinBox(QAbstractSpinBoxPrivate &dd, QWidget *parent = Q_NULLPTR);
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_editorTextChanged(const QString &))

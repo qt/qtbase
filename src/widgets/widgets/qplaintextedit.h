@@ -82,8 +82,8 @@ public:
     };
     Q_ENUM(LineWrapMode)
 
-    explicit QPlainTextEdit(QWidget *parent = 0);
-    explicit QPlainTextEdit(const QString &text, QWidget *parent = 0);
+    explicit QPlainTextEdit(QWidget *parent = Q_NULLPTR);
+    explicit QPlainTextEdit(const QString &text, QWidget *parent = Q_NULLPTR);
     virtual ~QPlainTextEdit();
 
     void setDocument(QTextDocument *document);
