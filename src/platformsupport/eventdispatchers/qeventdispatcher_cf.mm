@@ -41,8 +41,6 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/private/qthread_p.h>
 
-#include <qpa/qwindowsysteminterface.h>
-
 #include <limits>
 
 #include <UIKit/UIApplication.h>
@@ -169,6 +167,7 @@ static const CFTimeInterval kCFTimeIntervalDistantFuture = std::numeric_limits<C
 
 QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     : QAbstractEventDispatcher(parent)
+    , m_processEvents(QEventLoop::EventLoopExec)
     , m_postedEventsRunLoopSource(this, &QEventDispatcherCoreFoundation::processPostedEvents)
     , m_runLoopActivityObserver(this, &QEventDispatcherCoreFoundation::handleRunLoopActivity,
 #if DEBUG_EVENT_DISPATCHER
@@ -181,7 +180,6 @@ QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     , m_runLoopTimer(0)
     , m_blockedRunLoopTimer(0)
     , m_overdueTimerScheduled(false)
-    , m_processEvents(QEventLoop::EventLoopExec)
 {
     m_cfSocketNotifier.setHostEventDispatcher(this);
 
@@ -371,11 +369,11 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
     return eventsProcessed;
 }
 
-void QEventDispatcherCoreFoundation::processPostedEvents()
+bool QEventDispatcherCoreFoundation::processPostedEvents()
 {
     if (m_processEvents.processedPostedEvents && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
         qEventDispatcherDebug() << "Already processed events this pass";
-        return;
+        return false;
     }
 
     m_processEvents.processedPostedEvents = true;
@@ -384,9 +382,7 @@ void QEventDispatcherCoreFoundation::processPostedEvents()
     QCoreApplication::sendPostedEvents();
     qUnIndent();
 
-    qEventDispatcherDebug() << "Sending window system events for " << m_processEvents.flags; qIndent();
-    QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
-    qUnIndent();
+    return true;
 }
 
 void QEventDispatcherCoreFoundation::processTimers(CFRunLoopTimerRef timer)

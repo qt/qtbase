@@ -101,7 +101,7 @@ template <class T = QEventDispatcherCoreFoundation>
 class RunLoopSource
 {
 public:
-    typedef void (T::*CallbackFunction) ();
+    typedef bool (T::*CallbackFunction)();
 
     enum { kHighestPriority = 0 } RunLoopSourcePriority;
 
@@ -221,18 +221,8 @@ public:
     void interrupt();
     void flush();
 
-private:
-    RunLoopSource<> m_postedEventsRunLoopSource;
-    RunLoopObserver<> m_runLoopActivityObserver;
-
-    RunLoopModeTracker *m_runLoopModeTracker;
-
-    QTimerInfoList m_timerInfoList;
-    CFRunLoopTimerRef m_runLoopTimer;
-    CFRunLoopTimerRef m_blockedRunLoopTimer;
-    bool m_overdueTimerScheduled;
-
-    QCFSocketNotifier m_cfSocketNotifier;
+protected:
+    virtual bool processPostedEvents();
 
     struct ProcessEventsState
     {
@@ -251,7 +241,19 @@ private:
 
     ProcessEventsState m_processEvents;
 
-    void processPostedEvents();
+private:
+    RunLoopSource<> m_postedEventsRunLoopSource;
+    RunLoopObserver<> m_runLoopActivityObserver;
+
+    RunLoopModeTracker *m_runLoopModeTracker;
+
+    QTimerInfoList m_timerInfoList;
+    CFRunLoopTimerRef m_runLoopTimer;
+    CFRunLoopTimerRef m_blockedRunLoopTimer;
+    bool m_overdueTimerScheduled;
+
+    QCFSocketNotifier m_cfSocketNotifier;
+
     void processTimers(CFRunLoopTimerRef);
 
     void handleRunLoopActivity(CFRunLoopActivity activity);

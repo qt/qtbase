@@ -39,6 +39,8 @@
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
 
+#include <qpa/qwindowsysteminterface.h>
+
 #import <Foundation/NSArray.h>
 #import <Foundation/NSString.h>
 #import <Foundation/NSProcessInfo.h>
@@ -459,6 +461,25 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
     --m_processEventLevel;
 
     return processedEvents;
+}
+
+/*!
+    Override of the CoreFoundation posted events runloop source callback
+    so that we can send window system (QPA) events in addition to sending
+    normal Qt events.
+*/
+bool QIOSEventDispatcher::processPostedEvents()
+{
+    // Don't send window system events if the base CF dispatcher has determined
+    // that events should not be sent for this pass of the runloop source.
+    if (!QEventDispatcherCoreFoundation::processPostedEvents())
+        return false;
+
+    qEventDispatcherDebug() << "Sending window system events for " << m_processEvents.flags; qIndent();
+    QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
+    qUnIndent();
+
+    return true;
 }
 
 void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
