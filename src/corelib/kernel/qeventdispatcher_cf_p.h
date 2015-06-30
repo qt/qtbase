@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -83,8 +83,8 @@
 
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
+#include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/qdebug.h>
-#include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 #include <CoreFoundation/CoreFoundation.h>
 
 #ifdef __OBJC__
@@ -196,7 +196,7 @@ private:
     CFRunLoopObserverRef m_observer;
 };
 
-class QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
+class Q_CORE_EXPORT QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
 {
     Q_OBJECT
 

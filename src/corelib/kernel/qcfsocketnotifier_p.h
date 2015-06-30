@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -75,7 +75,7 @@ typedef void (*MaybeCancelWaitForMoreEventsFn)(QAbstractEventDispatcher *hostEve
 // setHostEventDispatcher() should be called at startup.
 // removeSocketNotifiers() should be called at shutdown.
 //
-class QCFSocketNotifier
+class Q_CORE_EXPORT QCFSocketNotifier
 {
 public:
     QCFSocketNotifier();

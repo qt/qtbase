@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "qcfsocketnotifier_p.h"
-#include <QtGui/qguiapplication.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qsocketnotifier.h>
 #include <QtCore/qthread.h>
 
@@ -57,12 +57,12 @@ void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CF
     if (callbackType == kCFSocketReadCallBack) {
         if (socketInfo->readNotifier && socketInfo->readEnabled) {
             socketInfo->readEnabled = false;
-            QGuiApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
+            QCoreApplication::sendEvent(socketInfo->readNotifier, &notifierEvent);
         }
     } else if (callbackType == kCFSocketWriteCallBack) {
         if (socketInfo->writeNotifier && socketInfo->writeEnabled) {
             socketInfo->writeEnabled = false;
-            QGuiApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
+            QCoreApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
         }
     }
 

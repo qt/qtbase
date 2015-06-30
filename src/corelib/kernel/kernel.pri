@@ -100,9 +100,11 @@ winrt {
 
 mac {
     HEADERS += \
+        kernel/qcfsocketnotifier_p.h \
         kernel/qcore_mac_p.h
 
     SOURCES += \
+        kernel/qcfsocketnotifier.cpp \
         kernel/qcoreapplication_mac.cpp \
         kernel/qcore_mac.cpp
 
@@ -113,8 +115,15 @@ mac {
 
     osx: LIBS_PRIVATE += -framework CoreServices
 
-    # We need UIKit for UIDevice
-    ios: LIBS_PRIVATE += -framework UIKit
+    ios {
+        OBJECTIVE_SOURCES += \
+                kernel/qeventdispatcher_cf.mm
+        HEADERS += \
+                kernel/qeventdispatcher_cf_p.h
+
+        # We need UIKit for UIDevice
+        LIBS_PRIVATE += -framework UIKit
+    }
 }
 
 nacl {
