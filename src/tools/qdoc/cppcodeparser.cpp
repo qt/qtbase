@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 /* qmake ignore Q_OBJECT */
 
 static bool inMacroCommand_ = false;
+static bool parsingHeaderFile_ = false;
 QStringList CppCodeParser::exampleFiles;
 QStringList CppCodeParser::exampleDirs;
 
@@ -166,7 +167,9 @@ void CppCodeParser::parseHeaderFile(const Location& location, const QString& fil
     Tokenizer fileTokenizer(fileLocation, in);
     tokenizer = &fileTokenizer;
     readToken();
+    parsingHeaderFile_ = true;
     matchDeclList(qdb_->primaryTreeRoot());
+    parsingHeaderFile_ = false;
     if (!fileTokenizer.version().isEmpty())
         qdb_->setVersion(fileTokenizer.version());
     in.close();
@@ -1076,8 +1079,7 @@ bool CppCodeParser::match(int target)
         readToken();
         return true;
     }
-    else
-        return false;
+    return false;
 }
 
 /*!
@@ -1216,8 +1218,9 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
                     dataType->append(previousLexeme());
             }
             else if (match(Tok_void) || match(Tok_int) || match(Tok_char) ||
-                     match(Tok_double) || match(Tok_Ellipsis))
+                     match(Tok_double) || match(Tok_Ellipsis)) {
                 dataType->append(previousLexeme());
+            }
             else {
                 return false;
             }
@@ -1303,34 +1306,69 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
     return true;
 }
 
-bool CppCodeParser::matchParameter(FunctionNode *func)
+/*!
+  Parse the next function parameter, if there is one, and
+  append it to parameter list \a p. Return true if a parameter
+  is parsed and appended to \a p. Otherwise return false.
+ */
+bool CppCodeParser::matchParameter(ParsedParameterList& pplist)
 {
-    CodeChunk dataType;
-    QString name;
-    CodeChunk defaultValue;
-
+    ParsedParameter pp;
     if (match(Tok_QPrivateSignal)) {
-        func->setPrivateSignal();
+        pp.qPrivateSignal_ = true;
+        pplist.append(pp);
         return true;
     }
 
-    if (!matchDataType(&dataType, &name)) {
+    CodeChunk chunk;
+    if (!matchDataType(&chunk, &pp.name_)) {
         return false;
     }
+    pp.dataType_ = chunk.toString();
+    chunk.clear();
     match(Tok_Comment);
     if (match(Tok_Equal)) {
-        int parenDepth0 = tokenizer->parenDepth();
-
-        while (tokenizer->parenDepth() >= parenDepth0 &&
-               (tok != Tok_Comma ||
-                tokenizer->parenDepth() > parenDepth0) &&
+        int pdepth = tokenizer->parenDepth();
+        while (tokenizer->parenDepth() >= pdepth &&
+               (tok != Tok_Comma || (tokenizer->parenDepth() > pdepth)) &&
                tok != Tok_Eoi) {
-            defaultValue.append(lexeme());
+            chunk.append(lexeme());
             readToken();
         }
     }
-    func->addParameter(Parameter(dataType.toString(), "", name, defaultValue.toString())); // ###
+    pp.defaultValue_ = chunk.toString();
+    pplist.append(pp);
     return true;
+}
+
+/*!
+  If the current token is any of several function modifiers,
+  return that token value after reading the next token. If it
+  is not one of the function modieifer tokens, return -1 but
+  don\t read the next token.
+ */
+int CppCodeParser::matchFunctionModifier()
+{
+    switch (tok) {
+    case Tok_friend:
+    case Tok_inline:
+    case Tok_explicit:
+    case Tok_static:
+    case Tok_QT_DEPRECATED:
+        readToken();
+        return tok;
+    case Tok_QT_COMPAT:
+    case Tok_QT_COMPAT_CONSTRUCTOR:
+    case Tok_QT_MOC_COMPAT:
+    case Tok_QT3_SUPPORT:
+    case Tok_QT3_SUPPORT_CONSTRUCTOR:
+    case Tok_QT3_MOC_SUPPORT:
+        readToken();
+        return Tok_QT_COMPAT;
+    default:
+        break;
+    }
+    return -1;
 }
 
 bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
@@ -1342,25 +1380,44 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
     CodeChunk returnType;
     QStringList parentPath;
     QString name;
-    bool compat = false;
 
-    if (match(Tok_friend)) {
-        return false;
+    bool matched_QT_DEPRECATED = false;
+    bool matched_friend = false;
+    bool matched_static = false;
+    bool matched_inline = false;
+    bool matched_explicit = false;
+    bool matched_compat = false;
+
+    int token = tok;
+    while (token != -1) {
+        switch (token) {
+        case Tok_friend:
+            matched_friend = true;
+            break;
+        case Tok_inline:
+            matched_inline = true;
+            break;
+        case Tok_explicit:
+            matched_explicit = true;
+            break;
+        case Tok_static:
+            matched_static = true;
+            break;
+        case Tok_QT_DEPRECATED:
+            // no break here.
+            matched_QT_DEPRECATED = true;
+        case Tok_QT_COMPAT:
+            matched_compat = true;
+            break;
+        }
+        token = matchFunctionModifier();
     }
-    match(Tok_explicit);
-    if (matchCompat())
-        compat = true;
-    bool sta = false;
-    if (match(Tok_static)) {
-        sta = true;
-        if (matchCompat())
-            compat = true;
-    }
-    FunctionNode::Virtualness vir = FunctionNode::NonVirtual;
+
+    FunctionNode::Virtualness virtuality = FunctionNode::NonVirtual;
     if (match(Tok_virtual)) {
-        vir = FunctionNode::NormalVirtual;
-        if (matchCompat())
-            compat = true;
+        virtuality = FunctionNode::NormalVirtual;
+        if (!matched_compat)
+            matched_compat = matchCompat();
     }
 
     if (!matchDataType(&returnType)) {
@@ -1377,8 +1434,8 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
     if (returnType.toString() == "QBool")
         returnType = CodeChunk("bool");
 
-    if (matchCompat())
-        compat = true;
+    if (!matched_compat)
+        matched_compat = matchCompat();
 
     if (tok == Tok_operator &&
             (returnType.toString().isEmpty() ||
@@ -1417,12 +1474,10 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
     else {
         while (match(Tok_Ident)) {
             name = previousLexeme();
-
             /*
               This is a hack to let QML module identifiers through.
              */
             matchModuleQualifier(name);
-
             matchTemplateAngles();
 
             if (match(Tok_Gulbrandsen))
@@ -1476,67 +1531,104 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
             var->setLocation(location());
             var->setLeftType(returnType.left());
             var->setRightType(returnType.right());
-            if (compat)
+            if (matched_compat)
                 var->setStatus(Node::Compat);
-            var->setStatic(sta);
+            var->setStatic(matched_static);
             return false;
         }
-        if (tok != Tok_LeftParen) {
+        if (tok != Tok_LeftParen)
             return false;
-        }
     }
     readToken();
 
-    FunctionNode *func = new FunctionNode(extra.type, parent, name, extra.isAttached);
-    func->setAccess(access);
-    func->setLocation(location());
-    func->setReturnType(returnType.toString());
-    func->setParentPath(parentPath);
-    func->setTemplateStuff(templateStuff);
-    if (compat)
-        func->setStatus(Node::Compat);
-
-    func->setMetaness(metaness_);
-    if (parent) {
-        if (name == parent->name()) {
-            func->setMetaness(FunctionNode::Ctor);
-        } else if (name.startsWith(QLatin1Char('~')))  {
-            func->setMetaness(FunctionNode::Dtor);
-        }
-    }
-    func->setStatic(sta);
-
+    // A left paren was seen. Parse the parameters
+    ParsedParameterList pplist;
     if (tok != Tok_RightParen) {
         do {
-            if (!matchParameter(func)) {
+            if (!matchParameter(pplist))
                 return false;
-            }
         } while (match(Tok_Comma));
     }
-    if (!match(Tok_RightParen)) {
+    // The parameters must end with a right paren
+    if (!match(Tok_RightParen))
         return false;
-    }
 
-    func->setConst(match(Tok_const));
+    // look for const
+    bool matchedConst = match(Tok_const);
 
+    // look for 0 indicating pure virtual
     if (match(Tok_Equal) && match(Tok_Number))
-        vir = FunctionNode::PureVirtual;
-    func->setVirtualness(vir);
+        virtuality = FunctionNode::PureVirtual;
 
+    // look for colon indicating ctors which must be skipped
     if (match(Tok_Colon)) {
         while (tok != Tok_LeftBrace && tok != Tok_Eoi)
             readToken();
     }
 
+    // If no ';' expect a body, which must be skipped.
+    bool body_expected = false;
+    bool body_present = false;
     if (!match(Tok_Semicolon) && tok != Tok_Eoi) {
-        int braceDepth0 = tokenizer->braceDepth();
-
-        if (!match(Tok_LeftBrace)) {
+        body_expected = true;
+        int nesting = tokenizer->braceDepth();
+        if (!match(Tok_LeftBrace))
             return false;
-        }
-        while (tokenizer->braceDepth() >= braceDepth0 && tok != Tok_Eoi)
+        // skip the body
+        while (tokenizer->braceDepth() >= nesting && tok != Tok_Eoi)
             readToken();
+        body_present = true;
         match(Tok_RightBrace);
+    }
+
+    FunctionNode *func = 0;
+    bool createFunctionNode = false;
+    if (parsingHeaderFile_) {
+        if (matched_friend) {
+            if (body_present) {
+                createFunctionNode = true;
+                if (parent && parent->parent())
+                    parent = parent->parent();
+                else
+                    return false;
+            }
+        }
+        else
+            createFunctionNode = true;
+    }
+    else
+        createFunctionNode = true;
+
+    if (createFunctionNode) {
+        func = new FunctionNode(extra.type, parent, name, extra.isAttached);
+        func->setAccess(access);
+        func->setLocation(location());
+        func->setReturnType(returnType.toString());
+        func->setParentPath(parentPath);
+        func->setTemplateStuff(templateStuff);
+        if (matched_compat)
+            func->setStatus(Node::Compat);
+        if (matched_QT_DEPRECATED)
+            func->setStatus(Node::Deprecated);
+        if (matched_explicit) { /* What can be done? */ }
+        func->setMetaness(metaness_);
+        if (parent) {
+            if (name == parent->name())
+                func->setMetaness(FunctionNode::Ctor);
+            else if (name.startsWith(QLatin1Char('~')))
+                func->setMetaness(FunctionNode::Dtor);
+        }
+        func->setStatic(matched_static);
+        func->setConst(matchedConst);
+        func->setVirtualness(virtuality);
+        if (!pplist.isEmpty()) {
+            foreach (const ParsedParameter& pp, pplist) {
+                if (pp.qPrivateSignal_)
+                    func->setPrivateSignal();
+                else
+                    func->addParameter(Parameter(pp.dataType_, "", pp.name_, pp.defaultValue_));
+            }
+        }
     }
     if (parentPathPtr != 0)
         *parentPathPtr = parentPath;

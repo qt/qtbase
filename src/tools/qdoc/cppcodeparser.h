@@ -51,6 +51,15 @@ class CppCodeParser : public CodeParser
 {
     Q_DECLARE_TR_FUNCTIONS(QDoc::CppCodeParser)
 
+    struct ParsedParameter {
+        bool qPrivateSignal_;
+        QString dataType_;
+        QString name_;
+        QString defaultValue_;
+      ParsedParameter() : qPrivateSignal_(false) { }
+    };
+    typedef QList<ParsedParameter> ParsedParameterList;
+
     struct ExtraFuncData {
         Aggregate* root; // Used as the parent.
         Node::NodeType type; // The node type: Function, etc.
@@ -116,7 +125,7 @@ protected:
     bool matchTemplateAngles(CodeChunk *type = 0);
     bool matchTemplateHeader();
     bool matchDataType(CodeChunk *type, QString *var = 0);
-    bool matchParameter(FunctionNode *func);
+    bool matchParameter(ParsedParameterList& pplist);
     bool matchFunctionDecl(Aggregate *parent,
                            QStringList *parentPathPtr,
                            FunctionNode **funcPtr,
@@ -149,6 +158,7 @@ protected:
                                   const QString &includeFile,
                                   const QString &macroDef);
     void createExampleFileNodes(DocumentNode *dn);
+    int matchFunctionModifier();
 
  protected:
     QMap<QString, Node::NodeType> nodeTypeMap;
