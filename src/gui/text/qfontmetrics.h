@@ -93,11 +93,11 @@ public:
     QRect boundingRect(QChar) const;
 
     QRect boundingRect(const QString &text) const;
-    QRect boundingRect(const QRect &r, int flags, const QString &text, int tabstops=0, int *tabarray=0) const;
+    QRect boundingRect(const QRect &r, int flags, const QString &text, int tabstops = 0, int *tabarray = Q_NULLPTR) const;
     inline QRect boundingRect(int x, int y, int w, int h, int flags, const QString &text,
-                              int tabstops=0, int *tabarray=0) const
+                              int tabstops = 0, int *tabarray = Q_NULLPTR) const
         { return boundingRect(QRect(x, y, w, h), flags, text, tabstops, tabarray); }
-    QSize size(int flags, const QString& str, int tabstops=0, int *tabarray=0) const;
+    QSize size(int flags, const QString& str, int tabstops = 0, int *tabarray = Q_NULLPTR) const;
 
     QRect tightBoundingRect(const QString &text) const;
 
@@ -161,8 +161,8 @@ public:
 
     QRectF boundingRect(const QString &string) const;
     QRectF boundingRect(QChar) const;
-    QRectF boundingRect(const QRectF &r, int flags, const QString& string, int tabstops=0, int *tabarray=0) const;
-    QSizeF size(int flags, const QString& str, int tabstops=0, int *tabarray=0) const;
+    QRectF boundingRect(const QRectF &r, int flags, const QString& string, int tabstops = 0, int *tabarray = Q_NULLPTR) const;
+    QSizeF size(int flags, const QString& str, int tabstops = 0, int *tabarray = Q_NULLPTR) const;
 
     QRectF tightBoundingRect(const QString &text) const;
 

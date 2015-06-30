@@ -51,7 +51,7 @@ class Q_GUI_EXPORT QOffscreenSurface : public QObject, public QSurface
 
 public:
 
-    explicit QOffscreenSurface(QScreen *screen = 0);
+    explicit QOffscreenSurface(QScreen *screen = Q_NULLPTR);
     virtual ~QOffscreenSurface();
 
     SurfaceType surfaceType() const Q_DECL_OVERRIDE;

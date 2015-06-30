@@ -156,7 +156,7 @@ public:
     };
     Q_ENUM(LoggingMode)
 
-    explicit QOpenGLDebugLogger(QObject *parent = 0);
+    explicit QOpenGLDebugLogger(QObject *parent = Q_NULLPTR);
     ~QOpenGLDebugLogger();
 
     bool initialize();

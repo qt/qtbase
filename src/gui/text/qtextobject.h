@@ -190,7 +190,7 @@ class Q_GUI_EXPORT QTextBlock
     friend class QSyntaxHighlighter;
 public:
     inline QTextBlock(QTextDocumentPrivate *priv, int b) : p(priv), n(b) {}
-    inline QTextBlock() : p(0), n(0) {}
+    inline QTextBlock() : p(Q_NULLPTR), n(0) {}
     inline QTextBlock(const QTextBlock &o) : p(o.p), n(o.n) {}
     inline QTextBlock &operator=(const QTextBlock &o) { p = o.p; n = o.n; return *this; }
 
@@ -247,7 +247,7 @@ public:
         friend class QTextBlock;
         iterator(const QTextDocumentPrivate *priv, int begin, int end, int f) : p(priv), b(begin), e(end), n(f) {}
     public:
-        iterator() : p(0), b(0), e(0), n(0) {}
+        iterator() : p(Q_NULLPTR), b(0), e(0), n(0) {}
         iterator(const iterator &o) : p(o.p), b(o.b), e(o.e), n(o.n) {}
 
         QTextFragment fragment() const;
@@ -289,7 +289,7 @@ class Q_GUI_EXPORT QTextFragment
 {
 public:
     inline QTextFragment(const QTextDocumentPrivate *priv, int f, int fe) : p(priv), n(f), ne(fe) {}
-    inline QTextFragment() : p(0), n(0), ne(0) {}
+    inline QTextFragment() : p(Q_NULLPTR), n(0), ne(0) {}
     inline QTextFragment(const QTextFragment &o) : p(o.p), n(o.n), ne(o.ne) {}
     inline QTextFragment &operator=(const QTextFragment &o) { p = o.p; n = o.n; ne = o.ne; return *this; }
 

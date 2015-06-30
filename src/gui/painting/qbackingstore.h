@@ -61,7 +61,7 @@ public:
 
     // 'window' can be a child window, in which case 'region' is in child window coordinates and
     // offset is the (child) window's offset in relation to the window surface.
-    void flush(const QRegion &region, QWindow *window = 0, const QPoint &offset = QPoint());
+    void flush(const QRegion &region, QWindow *window = Q_NULLPTR, const QPoint &offset = QPoint());
 
     void resize(const QSize &size);
     QSize size() const;

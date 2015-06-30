@@ -102,10 +102,10 @@ public:
     void setGreenF(qreal green);
     void setBlueF(qreal blue);
 
-    void getRgb(int *r, int *g, int *b, int *a = 0) const;
+    void getRgb(int *r, int *g, int *b, int *a = Q_NULLPTR) const;
     void setRgb(int r, int g, int b, int a = 255);
 
-    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = 0) const;
+    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = Q_NULLPTR) const;
     void setRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
 
     QRgb rgba() const;
@@ -129,10 +129,10 @@ public:
     qreal hsvSaturationF() const;
     qreal valueF() const;
 
-    void getHsv(int *h, int *s, int *v, int *a = 0) const;
+    void getHsv(int *h, int *s, int *v, int *a = Q_NULLPTR) const;
     void setHsv(int h, int s, int v, int a = 255);
 
-    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = 0) const;
+    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = Q_NULLPTR) const;
     void setHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
 
     int cyan() const;
@@ -145,10 +145,10 @@ public:
     qreal yellowF() const;
     qreal blackF() const;
 
-    void getCmyk(int *c, int *m, int *y, int *k, int *a = 0);
+    void getCmyk(int *c, int *m, int *y, int *k, int *a = Q_NULLPTR);
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = 0);
+    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = Q_NULLPTR);
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
     int hslHue() const; // 0 <= hue < 360
@@ -159,10 +159,10 @@ public:
     qreal hslSaturationF() const;
     qreal lightnessF() const;
 
-    void getHsl(int *h, int *s, int *l, int *a = 0) const;
+    void getHsl(int *h, int *s, int *l, int *a = Q_NULLPTR) const;
     void setHsl(int h, int s, int l, int a = 255);
 
-    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = 0) const;
+    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = Q_NULLPTR) const;
     void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
     QColor toRgb() const;

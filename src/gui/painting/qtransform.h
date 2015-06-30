@@ -96,7 +96,7 @@ public:
                    qreal m21, qreal m22, qreal m23,
                    qreal m31, qreal m32, qreal m33);
 
-    QTransform inverted(bool *invertible = 0) const Q_REQUIRED_RESULT;
+    QTransform inverted(bool *invertible = Q_NULLPTR) const Q_REQUIRED_RESULT;
     QTransform adjoint() const Q_REQUIRED_RESULT;
     QTransform transposed() const Q_REQUIRED_RESULT;
 

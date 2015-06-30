@@ -66,7 +66,7 @@ public:
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
-    explicit QOpenGLShader(QOpenGLShader::ShaderType type, QObject *parent = 0);
+    explicit QOpenGLShader(QOpenGLShader::ShaderType type, QObject *parent = Q_NULLPTR);
     virtual ~QOpenGLShader();
 
     QOpenGLShader::ShaderType shaderType() const;
@@ -83,7 +83,7 @@ public:
 
     GLuint shaderId() const;
 
-    static bool hasOpenGLShaders(ShaderType type, QOpenGLContext *context = 0);
+    static bool hasOpenGLShaders(ShaderType type, QOpenGLContext *context = Q_NULLPTR);
 
 private:
     friend class QOpenGLShaderProgram;
@@ -101,7 +101,7 @@ class Q_GUI_EXPORT QOpenGLShaderProgram : public QObject
 {
     Q_OBJECT
 public:
-    explicit QOpenGLShaderProgram(QObject *parent = 0);
+    explicit QOpenGLShaderProgram(QObject *parent = Q_NULLPTR);
     virtual ~QOpenGLShaderProgram();
 
     bool addShader(QOpenGLShader *shader);
@@ -288,7 +288,7 @@ public:
     void setUniformValueArray(const char *name, const QMatrix4x3 *values, int count);
     void setUniformValueArray(const char *name, const QMatrix4x4 *values, int count);
 
-    static bool hasOpenGLShaderPrograms(QOpenGLContext *context = 0);
+    static bool hasOpenGLShaderPrograms(QOpenGLContext *context = Q_NULLPTR);
 
 private Q_SLOTS:
     void shaderDestroyed();

@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QAccessibleBridgePlugin(QObject *parent = 0);
+    explicit QAccessibleBridgePlugin(QObject *parent = Q_NULLPTR);
     ~QAccessibleBridgePlugin();
 
     virtual QAccessibleBridge *create(const QString &key) = 0;

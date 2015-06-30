@@ -62,7 +62,7 @@ class Q_GUI_EXPORT QTextInlineObject
 {
 public:
     QTextInlineObject(int i, QTextEngine *e) : itm(i), eng(e) {}
-    inline QTextInlineObject() : itm(0), eng(0) {}
+    inline QTextInlineObject() : itm(0), eng(Q_NULLPTR) {}
     inline bool isValid() const { return eng; }
 
     QRectF rect() const;
@@ -100,7 +100,7 @@ public:
     // does itemization
     QTextLayout();
     QTextLayout(const QString& text);
-    QTextLayout(const QString& text, const QFont &font, QPaintDevice *paintdevice = 0);
+    QTextLayout(const QString& text, const QFont &font, QPaintDevice *paintdevice = Q_NULLPTR);
     QTextLayout(const QTextBlock &b);
     ~QTextLayout();
 
@@ -202,7 +202,7 @@ private:
 class Q_GUI_EXPORT QTextLine
 {
 public:
-    inline QTextLine() : index(0), eng(0) {}
+    inline QTextLine() : index(0), eng(Q_NULLPTR) {}
     inline bool isValid() const { return eng; }
 
     QRectF rect() const;
@@ -247,7 +247,7 @@ public:
 
     int lineNumber() const { return index; }
 
-    void draw(QPainter *p, const QPointF &point, const QTextLayout::FormatRange *selection = 0) const;
+    void draw(QPainter *p, const QPointF &point, const QTextLayout::FormatRange *selection = Q_NULLPTR) const;
 
 #if !defined(QT_NO_RAWFONT)
     QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
