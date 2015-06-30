@@ -90,7 +90,7 @@ public:
     };
 #endif
 
-    explicit QNetworkAccessManager(QObject *parent = 0);
+    explicit QNetworkAccessManager(QObject *parent = Q_NULLPTR);
     ~QNetworkAccessManager();
 
     // ### Qt 6: turn into virtual
@@ -120,7 +120,7 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
-    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = 0);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = Q_NULLPTR);
 
 #ifndef QT_NO_BEARERMANAGEMENT
     void setConfiguration(const QNetworkConfiguration &config);
@@ -157,7 +157,7 @@ Q_SIGNALS:
 
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
-                                         QIODevice *outgoingData = 0);
+                                         QIODevice *outgoingData = Q_NULLPTR);
 
 protected Q_SLOTS:
     QStringList supportedSchemesImplementation() const;

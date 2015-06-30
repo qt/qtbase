@@ -211,9 +211,9 @@ public:
     };
     Q_ENUM(Type)
 
-    explicit QDnsLookup(QObject *parent = 0);
-    QDnsLookup(Type type, const QString &name, QObject *parent = 0);
-    QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent = 0);
+    explicit QDnsLookup(QObject *parent = Q_NULLPTR);
+    QDnsLookup(Type type, const QString &name, QObject *parent = Q_NULLPTR);
+    QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent = Q_NULLPTR);
     ~QDnsLookup();
 
     Error error() const;

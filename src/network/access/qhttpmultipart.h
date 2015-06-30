@@ -91,8 +91,8 @@ public:
         AlternativeType
     };
 
-    explicit QHttpMultiPart(QObject *parent = 0);
-    explicit QHttpMultiPart(ContentType contentType, QObject *parent = 0);
+    explicit QHttpMultiPart(QObject *parent = Q_NULLPTR);
+    explicit QHttpMultiPart(ContentType contentType, QObject *parent = Q_NULLPTR);
     ~QHttpMultiPart();
 
     void append(const QHttpPart &httpPart);
