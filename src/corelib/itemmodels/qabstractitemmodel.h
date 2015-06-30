@@ -420,7 +420,7 @@ inline QVariant QModelIndex::data(int arole) const
 { return m ? m->data(*this, arole) : QVariant(); }
 
 inline Qt::ItemFlags QModelIndex::flags() const
-{ return m ? m->flags(*this) : Qt::ItemFlags(0); }
+{ return m ? m->flags(*this) : Qt::ItemFlags(); }
 
 inline uint qHash(const QModelIndex &index) Q_DECL_NOTHROW
 { return uint((index.row() << 4) + index.column() + index.internalId()); }
