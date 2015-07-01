@@ -136,12 +136,6 @@ QVariant  QPlatformDialogHelper::defaultStyleHint(QPlatformDialogHelper::StyleHi
     return QVariant();
 }
 
-void QPlatformDialogHelper::execModalForWindow(QWindow *parent)
-{
-    Q_UNUSED(parent);
-    exec();
-}
-
 // Font dialog
 
 class QFontDialogOptionsPrivate : public QSharedData

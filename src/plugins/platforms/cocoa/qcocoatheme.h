@@ -46,25 +46,25 @@ public:
     QCocoaTheme();
     ~QCocoaTheme();
 
-    virtual QPlatformMenuItem* createPlatformMenuItem() const;
-    virtual QPlatformMenu* createPlatformMenu() const;
-    virtual QPlatformMenuBar* createPlatformMenuBar() const;
+    QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
+    QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar* createPlatformMenuBar() const Q_DECL_OVERRIDE;
 
 #ifndef QT_NO_SYSTEMTRAYICON
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
 #endif
 
-    bool usePlatformNativeDialog(DialogType dialogType) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
+    bool usePlatformNativeDialog(DialogType dialogType) const Q_DECL_OVERRIDE;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const Q_DECL_OVERRIDE;
 
-    const QPalette *palette(Palette type = SystemPalette) const;
-    const QFont *font(Font type = SystemFont) const;
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE;
+    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
     QPixmap fileIconPixmap(const QFileInfo &fileInfo,
                            const QSizeF &size,
-                           QPlatformTheme::IconOptions options = 0) const;
+                           QPlatformTheme::IconOptions options = 0) const Q_DECL_OVERRIDE;
 
-    QVariant themeHint(ThemeHint hint) const;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     static const char *name;

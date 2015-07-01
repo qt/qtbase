@@ -2192,7 +2192,7 @@ void tst_QFile::removeOpenFile()
         bool opened = f.open(QIODevice::ReadOnly);
         QVERIFY(opened);
         f.readAll();
-        // this used to only fail on FreeBSD (and Mac OS X)
+        // this used to only fail on FreeBSD (and OS X)
         QVERIFY(f.flush());
         bool removed = f.remove(); // remove should both close and remove the file
         QVERIFY(removed);

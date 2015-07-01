@@ -28,7 +28,7 @@
 
 /*!
     \class QMacStyle
-    \brief The QMacStyle class provides a Mac OS X style using the Apple Appearance Manager.
+    \brief The QMacStyle class provides a OS X style using the Apple Appearance Manager.
 
     \ingroup appearance
     \inmodule QtWidgets
@@ -36,10 +36,10 @@
 
     This class is implemented as a wrapper to the HITheme
     APIs, allowing applications to be styled according to the current
-    theme in use on Mac OS X. This is done by having primitives
-    in QStyle implemented in terms of what Mac OS X would normally theme.
+    theme in use on OS X. This is done by having primitives
+    in QStyle implemented in terms of what OS X would normally theme.
 
-    \warning This style is only available on Mac OS X because it relies on the
+    \warning This style is only available on OS X because it relies on the
     HITheme APIs.
 
     There are additional issues that should be taken
@@ -56,7 +56,7 @@
     involve horizontal and vertical widget alignment and widget size
     (covered below).
 
-    \li Widget size - Mac OS X allows widgets to have specific fixed sizes.  Qt
+    \li Widget size - OS X allows widgets to have specific fixed sizes.  Qt
     does not fully implement this behavior so as to maintain cross-platform
     compatibility. As a result some widgets sizes may be inappropriate (and
     subsequently not rendered correctly by the HITheme APIs).The
@@ -75,7 +75,7 @@
     There are other issues that need to be considered in the feel of
     your application (including the general color scheme to match the
     Aqua colors). The Guidelines mentioned above will remain current
-    with new advances and design suggestions for Mac OS X.
+    with new advances and design suggestions for OS X.
 
     Note that the functions provided by QMacStyle are
     reimplementations of QStyle functions; see QStyle for their

@@ -143,6 +143,8 @@ public:
 
     QPoint mapToNative(const QPoint &pos) const;
     QPoint mapFromNative(const QPoint &pos) const;
+    QPointF mapToNative(const QPointF &pos) const;
+    QPointF mapFromNative(const QPointF &pos) const;
     QRect mapToNative(const QRect &rect) const;
     QRect mapFromNative(const QRect &rect) const;
 

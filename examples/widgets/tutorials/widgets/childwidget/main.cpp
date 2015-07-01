@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QWidget window;
     window.resize(320, 240);
-    window.setWindowTitle(QApplication::translate("childwidget", "Child widget"));
+    window.setWindowTitle
+          (QApplication::translate("childwidget", "Child widget"));
     window.show();
 
 //! [create, position and show]

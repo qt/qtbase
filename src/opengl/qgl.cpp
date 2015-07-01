@@ -3687,7 +3687,7 @@ void QGLContext::doneCurrent()
     QGLWidget. This will side-step the issue altogether, and is what
     we recommend for users that need this kind of functionality.
 
-    On Mac OS X, when Qt is built with Cocoa support, a QGLWidget
+    On OS X, when Qt is built with Cocoa support, a QGLWidget
     can't have any sibling widgets placed ontop of itself. This is due
     to limitations in the Cocoa API and is not supported by Apple.
 

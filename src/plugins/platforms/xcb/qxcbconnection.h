@@ -609,7 +609,6 @@ private:
 #endif
     QXcbEventReader *m_reader;
 #if defined(XCB_USE_XINPUT2)
-    QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
     QHash<int, XInput2TouchDeviceData*> m_touchDevices;
 #endif
 #ifdef Q_XCB_DEBUG

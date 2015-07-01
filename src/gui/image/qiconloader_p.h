@@ -173,6 +173,7 @@ public:
     void updateSystemTheme();
     void invalidateKey() { m_themeKey++; }
     void ensureInitialized();
+    bool hasUserTheme() const { return !m_userTheme.isEmpty(); }
 
 private:
     QThemeIconInfo findIconHelper(const QString &themeName,

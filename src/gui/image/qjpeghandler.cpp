@@ -929,8 +929,6 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
             if (!exifData.isEmpty()) {
                 // Exif data present
                 int exifOrientation = getExifOrientation(exifData);
-                if (exifOrientation == -1)
-                    return false;
                 if (exifOrientation > 0)
                     transformation = exif2Qt(exifOrientation);
             }

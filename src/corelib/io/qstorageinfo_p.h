@@ -53,7 +53,7 @@ class QStorageInfoPrivate : public QSharedData
 {
 public:
     inline QStorageInfoPrivate() : QSharedData(),
-        bytesTotal(0), bytesFree(0), bytesAvailable(0),
+        bytesTotal(-1), bytesFree(-1), bytesAvailable(-1),
         readOnly(false), ready(false), valid(false)
     {}
 

@@ -1170,7 +1170,8 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         icon = *qtIconCache()->object(name);
     } else {
         QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
-        QIconEngine * const engine = platformTheme ? platformTheme->createIconEngine(name)
+        bool hasUserTheme = QIconLoader::instance()->hasUserTheme();
+        QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
         QIcon *cachedIcon  = new QIcon(engine);
         icon = *cachedIcon;

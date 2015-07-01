@@ -7,7 +7,7 @@ QT += gui-private
 
 SOURCES  += tst_qpixmapfilter.cpp
 
-wince*: {
+wince {
     addFiles.files = noise.png
     addFiles.path = .
     DEPLOYMENT += addFiles

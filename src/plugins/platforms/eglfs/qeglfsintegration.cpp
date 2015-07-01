@@ -106,8 +106,11 @@ void QEglFSIntegration::initialize()
 
 void QEglFSIntegration::destroy()
 {
+    foreach (QWindow *w, qGuiApp->topLevelWindows())
+        w->destroy();
     qt_egl_device_integration()->screenDestroy();
-    QEGLPlatformIntegration::destroy();
+    if (display() != EGL_NO_DISPLAY)
+        eglTerminate(display());
     qt_egl_device_integration()->platformDestroy();
 }
 

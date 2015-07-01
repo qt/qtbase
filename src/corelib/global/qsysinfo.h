@@ -137,6 +137,7 @@ public:
         MV_10_8 = Q_MV_OSX(10, 8),
         MV_10_9 = Q_MV_OSX(10, 9),
         MV_10_10 = Q_MV_OSX(10, 10),
+        MV_10_11 = Q_MV_OSX(10, 11),
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -150,6 +151,7 @@ public:
         MV_MOUNTAINLION = MV_10_8,
         MV_MAVERICKS = MV_10_9,
         MV_YOSEMITE = MV_10_10,
+        MV_ELCAPITAN = MV_10_11,
 
         /* iOS */
         MV_IOS     = 1 << 8,
@@ -163,7 +165,9 @@ public:
         MV_IOS_8_0 = Q_MV_IOS(8, 0),
         MV_IOS_8_1 = Q_MV_IOS(8, 1),
         MV_IOS_8_2 = Q_MV_IOS(8, 2),
-        MV_IOS_8_3 = Q_MV_IOS(8, 3)
+        MV_IOS_8_3 = Q_MV_IOS(8, 3),
+        MV_IOS_8_4 = Q_MV_IOS(8, 4),
+        MV_IOS_9_0 = Q_MV_IOS(9, 0)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

@@ -56,26 +56,27 @@ static void resolveLibrary()
 #endif
 
         if (!triedResolve.load()) {
+            QLibrary wlanapiLib(QLatin1String("wlanapi"));
             local_WlanOpenHandle = (WlanOpenHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanOpenHandle");
+                wlanapiLib.resolve("WlanOpenHandle");
             local_WlanRegisterNotification = (WlanRegisterNotificationProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanRegisterNotification");
+                wlanapiLib.resolve("WlanRegisterNotification");
             local_WlanEnumInterfaces = (WlanEnumInterfacesProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanEnumInterfaces");
+                wlanapiLib.resolve("WlanEnumInterfaces");
             local_WlanGetAvailableNetworkList = (WlanGetAvailableNetworkListProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanGetAvailableNetworkList");
+                wlanapiLib.resolve("WlanGetAvailableNetworkList");
             local_WlanQueryInterface = (WlanQueryInterfaceProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanQueryInterface");
+                wlanapiLib.resolve("WlanQueryInterface");
             local_WlanConnect = (WlanConnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanConnect");
+                wlanapiLib.resolve("WlanConnect");
             local_WlanDisconnect = (WlanDisconnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanDisconnect");
+                wlanapiLib.resolve("WlanDisconnect");
             local_WlanScan = (WlanScanProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanScan");
+                wlanapiLib.resolve("WlanScan");
             local_WlanFreeMemory = (WlanFreeMemoryProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanFreeMemory");
+                wlanapiLib.resolve("WlanFreeMemory");
             local_WlanCloseHandle = (WlanCloseHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanCloseHandle");
+                wlanapiLib.resolve("WlanCloseHandle");
 
             triedResolve.storeRelease(true);
         }

@@ -155,7 +155,9 @@
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
 #      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
-#      if __apple_build_version__ >= 6000051
+#      if __apple_build_version__ >= 7000053
+#        define Q_CC_CLANG 306
+#      elif __apple_build_version__ >= 6000051
 #        define Q_CC_CLANG 305
 #      elif __apple_build_version__ >= 5030038
 #        define Q_CC_CLANG 304
@@ -556,7 +558,10 @@
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
-#      define Q_COMPILER_THREAD_LOCAL
+#      ifndef Q_OS_OSX
+//       C++11 thread_local is broken on OS X (Clang doesn't support it either)
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
 #      define Q_COMPILER_UDL
 #    endif
 #  endif
@@ -613,7 +618,7 @@
 #    if __has_feature(cxx_strong_enums)
 #      define Q_COMPILER_CLASS_ENUM
 #    endif
-#    if __has_feature(cxx_constexpr)
+#    if __has_feature(cxx_constexpr) && Q_CC_CLANG > 302 /* CLANG 3.2 has bad/partial support */
 #      define Q_COMPILER_CONSTEXPR
 #    endif
 #    if __has_feature(cxx_decltype) /* && __has_feature(cxx_decltype_incomplete_return_types) */

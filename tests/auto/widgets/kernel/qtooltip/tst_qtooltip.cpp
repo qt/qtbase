@@ -103,6 +103,10 @@ void tst_QToolTip::task183679()
 
     Widget_task183679 widget;
     widget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(50, 50));
+    // Ensure cursor is not over tooltip, which causes it to hide
+#ifndef QT_NO_CURSOR
+    QCursor::setPos(widget.geometry().topRight() + QPoint(-50, 50));
+#endif
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction())
                           + QLatin1Char(' ') + QLatin1String(QTest::currentDataTag()));
     widget.show();

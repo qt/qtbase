@@ -269,7 +269,7 @@ MacMainWindow::MacMainWindow()
     textedit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     textedit->setText("<br><br><br><br><br><br><center><b>This demo shows how to create a \
                        Qt main window application that has the same appearance as other \
-                       Mac OS X applications such as Mail or iTunes. This includes \
+                       OS X applications such as Mail or iTunes. This includes \
                        customizing the item views and QSplitter and wrapping native widgets \
                        such as the search field.</b></center>");
 

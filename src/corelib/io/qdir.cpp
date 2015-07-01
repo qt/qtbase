@@ -777,6 +777,8 @@ QString QDir::relativeFilePath(const QString &fileName) const
             result += QLatin1Char('/');
     }
 
+    if (result.isEmpty())
+        return QLatin1String(".");
     return result;
 }
 

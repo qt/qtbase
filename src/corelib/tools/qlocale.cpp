@@ -3522,7 +3522,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
     \since 4.8
 
     Returns an ordered list of locale names for translation purposes in
-    preference order (like "en", "en-US", "en-Latn-US").
+    preference order (like "en-Latn-US", "en-US", "en").
 
     The return value represents locale names that the user expects to see the
     UI translation in.

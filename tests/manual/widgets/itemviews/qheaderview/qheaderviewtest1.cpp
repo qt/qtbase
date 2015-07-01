@@ -140,10 +140,12 @@ private:
     QTableView *setupTableView()
     {
         tableView = new QTableView;
-        m.setRowCount(500);
+        const int rowCount = 200;
+        m.setRowCount(rowCount);
         m.setColumnCount(250);
         tableView->setSelectionMode(QAbstractItemView::SingleSelection);
         tableView->setModel(&m);
+        tableView->verticalHeader()->swapSections(rowCount - 1, 5);
         return tableView;
     }
 

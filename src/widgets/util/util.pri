@@ -27,7 +27,7 @@ SOURCES += \
         util/qundostack.cpp \
         util/qundoview.cpp
 
-win32:!wince*:!winrt {
+win32:!wince:!winrt {
     SOURCES += util/qsystemtrayicon_win.cpp
 } else:contains(QT_CONFIG, xcb) {
     SOURCES += util/qsystemtrayicon_x11.cpp

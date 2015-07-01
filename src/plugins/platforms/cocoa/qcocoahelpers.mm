@@ -775,7 +775,7 @@ QString qt_mac_removeAmpersandEscapes(QString s)
  returned if it can't be obtained. It is the caller's responsibility to
  CGContextRelease the context when finished using it.
 
- \warning This function is only available on Mac OS X.
+ \warning This function is only available on OS X.
  \warning This function is duplicated in qmacstyle_mac.mm
  */
 CGContextRef qt_mac_cg_context(QPaintDevice *pdev)

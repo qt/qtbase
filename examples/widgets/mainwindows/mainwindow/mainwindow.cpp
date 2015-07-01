@@ -68,7 +68,7 @@ static const char * const message =
     "(right-click) menu.</p>"
 
 #ifdef Q_OS_MAC
-    "<p>On Mac OS X, the \"Black\" dock widget has been created as a "
+    "<p>On OS X, the \"Black\" dock widget has been created as a "
     "<em>Drawer</em>, which is a special kind of QDockWidget.</p>"
 #endif
     ;

@@ -63,8 +63,8 @@ static bool isCacheable(const QFileInfo &fi);
 class QFileIconEngine : public QPixmapIconEngine
 {
 public:
-    QFileIconEngine(const QFileIconProvider *fip, const QFileInfo &info)
-        : QPixmapIconEngine(), m_fileIconProvider(fip), m_fileInfo(info)
+    QFileIconEngine(const QFileInfo &info, QFileIconProvider::Options opts)
+        : QPixmapIconEngine(), m_fileInfo(info), m_fipOpts(opts)
     { }
 
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE
@@ -90,7 +90,7 @@ public:
         }
 
         QPlatformTheme::IconOptions iconOptions;
-        if (m_fileIconProvider->options() & QFileIconProvider::DontUseCustomDirectoryIcons)
+        if (m_fipOpts & QFileIconProvider::DontUseCustomDirectoryIcons)
             iconOptions |= QPlatformTheme::DontUseCustomDirectoryIcons;
 
         pixmap = theme->fileIconPixmap(m_fileInfo, size, iconOptions);
@@ -153,8 +153,8 @@ public:
     }
 
 private:
-    const QFileIconProvider *m_fileIconProvider;
     QFileInfo m_fileInfo;
+    QFileIconProvider::Options m_fipOpts;
 };
 
 
@@ -347,8 +347,7 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
     if (sizes.isEmpty())
         return QIcon();
 
-    Q_Q(const QFileIconProvider);
-    return QIcon(new QFileIconEngine(q, fi));
+    return QIcon(new QFileIconEngine(fi, options));
 }
 
 /*!
@@ -446,7 +445,7 @@ QString QFileIconProvider::type(const QFileInfo &info) const
 
     if (info.isSymLink())
 #ifdef Q_OS_MAC
-        return QApplication::translate("QFileDialog", "Alias", "Mac OS X Finder");
+        return QApplication::translate("QFileDialog", "Alias", "OS X Finder");
 #else
         return QApplication::translate("QFileDialog", "Shortcut", "All other platforms");
 #endif

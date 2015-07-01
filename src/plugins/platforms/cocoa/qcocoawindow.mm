@@ -749,7 +749,7 @@ void QCocoaWindow::setVisible(bool visible)
         }
         removeMonitor();
 
-        if (window()->type() == Qt::Popup)
+        if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
             QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {

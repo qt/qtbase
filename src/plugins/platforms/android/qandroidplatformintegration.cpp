@@ -148,6 +148,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidSystemLocale = new QAndroidSystemLocale;
 
+#ifndef QT_NO_ACCESSIBILITY
+        m_accessibility = new QAndroidPlatformAccessibility();
+#endif // QT_NO_ACCESSIBILITY
+
     QJNIObjectPrivate javaActivity(QtAndroid::activity());
     if (javaActivity.isValid()) {
         QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
@@ -348,8 +352,6 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 #ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 {
-    if (!m_accessibility)
-        m_accessibility = new QAndroidPlatformAccessibility();
     return m_accessibility;
 }
 #endif

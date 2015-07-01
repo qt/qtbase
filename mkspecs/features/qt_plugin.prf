@@ -89,5 +89,5 @@ CONFIG += create_cmake
 load(qt_targets)
 load(qt_common)
 
-wince*:LIBS += $$QMAKE_LIBS_GUI
+wince: LIBS += $$QMAKE_LIBS_GUI
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF

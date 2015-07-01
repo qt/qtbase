@@ -231,6 +231,9 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                             << kitDir + QStringLiteral("/include/shared")
                             << kitDir + QStringLiteral("/include/winrt");
                 }
+
+                binDirs << vcInstallDir + QStringLiteral("/bin");
+
                 // Inherit PATH
                 binDirs << QString::fromLocal8Bit(qgetenv("PATH")).split(QLatin1Char(';'));
 

@@ -145,7 +145,6 @@ public:
     virtual QVariant styleHint(StyleHint hint) const;
 
     virtual void exec() = 0;
-    virtual void execModalForWindow(QWindow *parent);
     virtual bool show(Qt::WindowFlags windowFlags,
                           Qt::WindowModality windowModality,
                           QWindow *parent) = 0;

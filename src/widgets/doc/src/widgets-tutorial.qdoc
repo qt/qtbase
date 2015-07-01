@@ -110,7 +110,7 @@
        make sure that the executable is on your path, or enter its
        full location.
 
-    \li On Linux/Unix and Mac OS X, type \c make and press
+    \li On Linux/Unix and OS X, type \c make and press
        \uicontrol{Return}; on Windows with Visual Studio, type \c nmake and
        press \uicontrol{Return}.
 
@@ -160,6 +160,7 @@
     \table
     \row
     \li \snippet tutorials/widgets/childwidget/main.cpp main program
+    \row
     \li \inlineimage widgets-tutorial-childwidget.png
     \endtable
     \enddiv
@@ -182,6 +183,7 @@
     \table
     \row
     \li \snippet tutorials/widgets/windowlayout/main.cpp main program
+    \row
     \li \inlineimage widgets-tutorial-windowlayout.png
     \endtable
     \enddiv

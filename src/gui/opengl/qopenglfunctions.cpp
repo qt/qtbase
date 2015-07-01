@@ -289,8 +289,12 @@ static int qt_gl_resolve_features()
         if (extensions.match("GL_OES_texture_npot"))
             features |= QOpenGLFunctions::NPOTTextures |
                 QOpenGLFunctions::NPOTTextureRepeat;
-        if (ctx->format().majorVersion() >= 3 || extensions.match("GL_EXT_texture_rg"))
-            features |= QOpenGLFunctions::TextureRGFormats;
+        if (ctx->format().majorVersion() >= 3 || extensions.match("GL_EXT_texture_rg")) {
+            // Mesa's GLES implementation (as of 10.6.0) is unable to handle this, even though it provides 3.0.
+            const char *renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
+            if (!(renderer && strstr(renderer, "Mesa")))
+                features |= QOpenGLFunctions::TextureRGFormats;
+        }
         return features;
     } else {
         // OpenGL
@@ -3221,7 +3225,11 @@ bool QOpenGLES3Helper::init()
     m_gl.setFileName(QStringLiteral("libGLESv2d"));
 #  endif
 # else
+#  ifdef Q_OS_ANDROID
     m_gl.setFileName(QStringLiteral("GLESv2"));
+#  else
+    m_gl.setFileNameAndVersion(QStringLiteral("GLESv2"), 2);
+#  endif
 # endif // Q_OS_WIN
     return m_gl.load();
 #else

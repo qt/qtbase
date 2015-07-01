@@ -42,6 +42,7 @@
 #include "QtGui/qaccessible.h"
 #include <QtCore/qmath.h>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/private/qjni_p.h>
 
 #include "qdebug.h"
 
@@ -65,6 +66,15 @@ namespace QtAndroidAccessibility
     static jmethodID m_setTextSelectionMethodID = 0;
     static jmethodID m_setVisibleToUserMethodID = 0;
 
+    void initialize()
+    {
+        // API level > 16 is required.
+        if (QtAndroidPrivate::androidSdkVersion() < 16)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(QtAndroid::applicationClass(),
+                                                  "initializeAccessibility");
+    }
 
     static void setActive(JNIEnv */*env*/, jobject /*thiz*/, jboolean active)
     {

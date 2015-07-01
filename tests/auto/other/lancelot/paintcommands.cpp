@@ -2383,7 +2383,10 @@ void PaintCommands::command_surface_begin(QRegExp re)
         m_surface_glbuffer->bind();
         m_surface_glpaintdevice = new QOpenGLPaintDevice(qRound(w), qRound(h));
         m_painter = new QPainter(m_surface_glpaintdevice);
+        m_painter->save();
+        m_painter->setCompositionMode(QPainter::CompositionMode_Clear);
         m_painter->fillRect(QRect(0, 0, qRound(w), qRound(h)), Qt::transparent);
+        m_painter->restore();
 #endif
 #ifdef Q_DEAD_CODE_FROM_QT4_X11
     } else if (m_type == WidgetType) {

@@ -400,7 +400,7 @@ void tst_QKeySequence::keyBindings()
 void tst_QKeySequence::mnemonic_data()
 {
 #ifdef Q_OS_MAC
-    QSKIP("Test not applicable to Mac OS X");
+    QSKIP("Test not applicable to OS X");
 #endif
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("key");

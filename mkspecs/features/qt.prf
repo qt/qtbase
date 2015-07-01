@@ -67,7 +67,7 @@ qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
 }
 qtAddRpathLink($$QT $$QT_PRIVATE)
 
-wince*:static:gui {
+wince:static:gui {
    QTLIB += qmenu_wce.res
 }
 

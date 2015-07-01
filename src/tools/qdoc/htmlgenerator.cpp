@@ -1978,6 +1978,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
 
     navigationLinks.clear();
+    refMap.clear();
 
     if (node && !node->links().empty()) {
         QPair<QString,QString> linkPair;
@@ -4449,6 +4450,7 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
     writer.writeAttribute("module", project);
     writer.writeStartElement(manifest);
 
+    QStringList usedAttributes;
     i = exampleNodeMap.begin();
     while (i != exampleNodeMap.end()) {
         const ExampleNode* en = i.value();
@@ -4462,6 +4464,10 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
             ++i;
             continue;
         }
+        // attributes that are always written for the element
+        usedAttributes.clear();
+        usedAttributes << "name" << "docUrl" << "projectPath";
+
         writer.writeStartElement(element);
         writer.writeAttribute("name", en->title());
         QString docUrl = manifestDir + fileBase(en) + ".html";
@@ -4495,8 +4501,10 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
                     writer.writeAttribute("projectPath", examplesPath + proFiles[0]);
             }
         }
-        if (!en->imageFileName().isEmpty())
+        if (!en->imageFileName().isEmpty()) {
             writer.writeAttribute("imageUrl", manifestDir + en->imageFileName());
+            usedAttributes << "imageUrl";
+        }
 
         QString fullName = project + QLatin1Char('/') + en->title();
         QSet<QString> tags;
@@ -4522,7 +4530,10 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
                         if (attrList.count() == 1)
                             attrList.append(QStringLiteral("true"));
                         QString attrName = attrList.takeFirst();
-                        writer.writeAttribute(attrName, attrList.join(div));
+                        if (!usedAttributes.contains(attrName)) {
+                            writer.writeAttribute(attrName, attrList.join(div));
+                            usedAttributes << attrName;
+                        }
                     }
                 }
             }

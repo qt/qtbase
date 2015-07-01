@@ -59,7 +59,7 @@ public:
         StandaloneFormat
     };
 private:
-    Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
+    explicit Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
 public:
     Q_DECL_CONSTEXPR QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
@@ -138,7 +138,7 @@ Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
 class Q_CORE_EXPORT QTime
 {
-    Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
+    explicit Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
 #if defined(Q_OS_WINCE)
         , startTick(NullTime)
 #endif

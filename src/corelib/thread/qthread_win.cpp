@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 //#define WINVER 0x0500
-#if (_WIN32_WINNT < 0x0400)
+#if !defined Q_OS_WINRT && (_WIN32_WINNT < 0x0400)
 #define _WIN32_WINNT 0x0400
 #endif
 
@@ -46,18 +46,25 @@
 #include <qpointer.h>
 
 #include <private/qcoreapplication_p.h>
+#ifndef Q_OS_WINRT
 #include <private/qeventdispatcher_win_p.h>
+#else
+#include <private/qeventdispatcher_winrt_p.h>
+#endif
 
 #include <qt_windows.h>
 
+#ifndef Q_OS_WINRT
 #ifndef Q_OS_WINCE
 #ifndef _MT
 #define _MT
-#endif
+#endif // _MT
 #include <process.h>
-#else
+#else   // !Q_OS_WINCE
 #include "qfunctions_wince.h"
-#endif
+#endif // Q_OS_WINCE
+#else // !Q_OS_WINRT
+#endif // Q_OS_WINRT
 
 #ifndef QT_NO_THREAD
 QT_BEGIN_NAMESPACE
@@ -171,7 +178,11 @@ void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread)
     // Start watcher thread if it is not already running.
     if (qt_adopted_thread_watcher_id == 0) {
         if (qt_adopted_thread_wakeup == 0) {
+#ifndef Q_OS_WINRT
             qt_adopted_thread_wakeup = CreateEvent(0, false, false, 0);
+#else
+            qt_adopted_thread_wakeup = CreateEventEx(0, NULL, 0, EVENT_ALL_ACCESS);
+#endif
             qt_adopted_thread_handles.prepend(qt_adopted_thread_wakeup);
         }
 
@@ -210,13 +221,21 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
             // no need to loop, no timeout
             offset = 0;
             count = handlesCopy.count();
+#ifndef Q_OS_WINRT
             ret = WaitForMultipleObjects(handlesCopy.count(), handlesCopy.constData(), false, INFINITE);
+#else
+            ret = WaitForMultipleObjectsEx(handlesCopy.count(), handlesCopy.constData(), false, INFINITE, false);
+#endif
         } else {
             int loop = 0;
             do {
                 offset = loop * MAXIMUM_WAIT_OBJECTS;
                 count = qMin(handlesCopy.count() - offset, MAXIMUM_WAIT_OBJECTS);
+#ifndef Q_OS_WINRT
                 ret = WaitForMultipleObjects(count, handlesCopy.constData() + offset, false, 100);
+#else
+                ret = WaitForMultipleObjectsEx(count, handlesCopy.constData() + offset, false, 100, false);
+#endif
                 loop = (loop + 1) % loops;
             } while (ret == WAIT_TIMEOUT);
         }
@@ -263,7 +282,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
     return 0;
 }
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
 #ifndef Q_OS_WIN64
 #  define ULONG_PTR DWORD
@@ -293,7 +312,7 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
     {
     }
 }
-#endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINCE
+#endif // !QT_NO_DEBUG && Q_CC_MSVC && !Q_OS_WINCE && !Q_OS_WINRT
 
 /**************************************************************************
  ** QThreadPrivate
@@ -303,7 +322,11 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
+#ifndef Q_OS_WINRT
     QEventDispatcherWin32 *theEventDispatcher = new QEventDispatcherWin32;
+#else
+    QEventDispatcherWinRT *theEventDispatcher = new QEventDispatcherWinRT;
+#endif
     data->eventDispatcher.storeRelease(theEventDispatcher);
     theEventDispatcher->startingUp();
 }
@@ -331,7 +354,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     else
         createEventDispatcher(data);
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
+#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     // sets the name of the current thread.
     QByteArray objectName = thr->objectName().toLocal8Bit();
     qt_set_thread_name((HANDLE)-1,
@@ -396,13 +419,17 @@ Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 int QThread::idealThreadCount() Q_DECL_NOTHROW
 {
     SYSTEM_INFO sysinfo;
+#ifndef Q_OS_WINRT
     GetSystemInfo(&sysinfo);
+#else
+    GetNativeSystemInfo(&sysinfo);
+#endif
     return sysinfo.dwNumberOfProcessors;
 }
 
 void QThread::yieldCurrentThread()
 {
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     SwitchToThread();
 #else
     ::Sleep(0);
@@ -444,6 +471,7 @@ void QThread::start(Priority priority)
     d->returnCode = 0;
     d->interruptionRequested = false;
 
+#ifndef Q_OS_WINRT
     /*
       NOTE: we create the thread in the suspended state, set the
       priority and then resume the thread.
@@ -456,6 +484,10 @@ void QThread::start(Priority priority)
     */
     d->handle = (Qt::HANDLE) _beginthreadex(NULL, d->stackSize, QThreadPrivate::start,
                                             this, CREATE_SUSPENDED, &(d->id));
+#else // !Q_OS_WINRT
+    d->handle = (Qt::HANDLE) CreateThread(NULL, d->stackSize, (LPTHREAD_START_ROUTINE)QThreadPrivate::start,
+                                            this, CREATE_SUSPENDED, reinterpret_cast<LPDWORD>(&d->id));
+#endif // Q_OS_WINRT
 
     if (!d->handle) {
         qErrnoWarning(errno, "QThread::start: Failed to create thread");
@@ -521,7 +553,10 @@ void QThread::terminate()
         return;
     }
 
+    // Calling ExitThread() in setTerminationEnabled is all we can do on WinRT
+#ifndef Q_OS_WINRT
     TerminateThread(d->handle, 0);
+#endif
     QThreadPrivate::finish(this, false);
 }
 
@@ -541,7 +576,11 @@ bool QThread::wait(unsigned long time)
     locker.mutex()->unlock();
 
     bool ret = false;
+#ifndef Q_OS_WINRT
     switch (WaitForSingleObject(d->handle, time)) {
+#else
+    switch (WaitForSingleObjectEx(d->handle, time, false)) {
+#endif
     case WAIT_OBJECT_0:
         ret = true;
         break;
@@ -582,7 +621,11 @@ void QThread::setTerminationEnabled(bool enabled)
     if (enabled && d->terminatePending) {
         QThreadPrivate::finish(thr, false);
         locker.unlock(); // don't leave the mutex locked!
+#ifndef Q_OS_WINRT
         _endthreadex(0);
+#else
+        ExitThread(0);
+#endif
     }
 }
 

@@ -1473,8 +1473,6 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     }
 
     QString string = lookupString(xkb_state, code);
-    int count = string.size();
-    string.truncate(count);
 
     // Ιf control modifier is set we should prefer latin character, this is
     // used for standard shortcuts in checks like "key == QKeySequence::Copy",
@@ -1506,7 +1504,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
 
     bool filtered = false;
     if (inputContext) {
-        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string, isAutoRepeat, count);
+        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
         event.setTimestamp(time);
         filtered = inputContext->filterEvent(&event);
     }
@@ -1535,7 +1533,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
         }
 
         if (!filtered && inputContext) {
-            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string, isAutoRepeat, count);
+            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
             event.setTimestamp(time);
             filtered = inputContext->filterEvent(&event);
         }

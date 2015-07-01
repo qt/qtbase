@@ -2299,7 +2299,7 @@ void QTabBar::setMovable(bool movable)
     \since 4.5
 
     This property is used as a hint for styles to draw the tabs in a different
-    way then they would normally look in a tab widget.  On Mac OS X this will
+    way then they would normally look in a tab widget.  On OS X this will
     look similar to the tabs in Safari or Leopard's Terminal.app.
 
     \sa QTabWidget::documentMode

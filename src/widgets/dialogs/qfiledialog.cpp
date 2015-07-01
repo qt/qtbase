@@ -2054,7 +2054,7 @@ QString QFileDialog::labelText(DialogLabel label) const
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -2166,7 +2166,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -2295,12 +2295,12 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified,
     a default caption will be used.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not 0 then it will position the
-    dialog just below the parent's title bar. On Mac OS X, with its native file
+    dialog just below the parent's title bar. On OS X, with its native file
     dialog, the filter argument is ignored.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
@@ -2404,7 +2404,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     pass. To ensure a native file dialog, \l{QFileDialog::}{ShowDirsOnly} must
     be set.
 
-    On Windows, and Mac OS X, this static function will use the
+    On Windows, and OS X, this static function will use the
     native file dialog and not a QFileDialog. On Windows CE, if the device has
     no native file dialog, a QFileDialog will be used.
 

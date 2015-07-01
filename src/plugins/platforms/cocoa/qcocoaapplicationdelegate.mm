@@ -131,8 +131,8 @@ QT_END_NAMESPACE
     @synchronized(self) {
         if (sharedCocoaApplicationDelegate == nil) {
             sharedCocoaApplicationDelegate = [super allocWithZone:zone];
-            return sharedCocoaApplicationDelegate;
             qAddPostRoutine(cleanupCocoaApplicationDelegate);
+            return sharedCocoaApplicationDelegate;
         }
     }
     return nil;

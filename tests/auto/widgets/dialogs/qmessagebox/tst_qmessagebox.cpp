@@ -363,7 +363,7 @@ void tst_QMessageBox::statics()
     }
 }
 
-// shortcuts are not used on MAC OS X
+// shortcuts are not used on OS X
 #ifndef Q_OS_MAC
 void tst_QMessageBox::shortcut()
 {
@@ -483,7 +483,7 @@ void tst_QMessageBox::instanceSourceCompat()
     QCOMPARE(exec(&mb, Qt::Key_Enter), int(QMessageBox::Yes));
     QCOMPARE(exec(&mb, Qt::Key_Escape), int(QMessageBox::Cancel));
 #ifndef Q_OS_MAC
-    // mnemonics are not used on Mac OS X
+    // mnemonics are not used on OS X
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_R), 0);
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_Z), 1);
 #endif

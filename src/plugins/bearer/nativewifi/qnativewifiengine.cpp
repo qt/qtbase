@@ -606,7 +606,7 @@ bool QNativeWifiEngine::requiresPolling() const
 {
     // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
     // We need to poll for changes in available wireless networks.
-    return true;
+    return QSysInfo::WindowsVersion <= QSysInfo::WV_2003;
 }
 
 QT_END_NAMESPACE

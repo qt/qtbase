@@ -60,7 +60,7 @@
        an OpenGL texture.} The texture is then updated automatically
        when the pbuffer contents change, eliminating the need for
        additional copy operations. This is supported only on Windows
-       and Mac OS X systems that provide the \c render_texture
+       and OS X systems that provide the \c render_texture
        extension. Note that under Windows, a multi-sampled pbuffer
        can't be used in conjunction with the \c render_texture
        extension. If a multi-sampled pbuffer is requested under
@@ -287,7 +287,7 @@ QGLContext *QGLPixelBuffer::context() const
     pbuffer contents to a texture using updateDynamicTexture().
 
     \warning For the bindToDynamicTexture() call to succeed on the
-    Mac OS X, the pbuffer needs a shared context, i.e. the
+    OS X, the pbuffer needs a shared context, i.e. the
     QGLPixelBuffer must be created with a share widget.
 
     \sa generateDynamicTexture(), releaseFromDynamicTexture()
@@ -316,7 +316,7 @@ QGLContext *QGLPixelBuffer::context() const
 
     \snippet code/src_opengl_qglpixelbuffer.cpp 1
 
-    An alternative on Windows and Mac OS X systems that support the
+    An alternative on Windows and OS X systems that support the
     \c render_texture extension is to use bindToDynamicTexture() to
     get dynamic updates of the texture.
 

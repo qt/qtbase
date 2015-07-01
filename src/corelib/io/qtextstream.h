@@ -124,7 +124,7 @@ public:
     void skipWhiteSpace();
 
     QString readLine(qint64 maxlen = 0);
-    bool readLine(QString *line, qint64 maxlen = 0);
+    bool readLineInto(QString *line, qint64 maxlen = 0);
     QString readAll();
     QString read(qint64 maxlen);
 

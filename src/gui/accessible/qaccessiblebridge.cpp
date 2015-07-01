@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
     \ingroup accessibility
     \inmodule QtWidgets
 
-    Qt supports Microsoft Active Accessibility (MSAA), Mac OS X
+    Qt supports Microsoft Active Accessibility (MSAA), OS X
     Accessibility, and the Unix/X11 AT-SPI standard. By subclassing
     QAccessibleBridge, you can support other backends than the
     predefined ones.

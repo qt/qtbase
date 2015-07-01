@@ -263,21 +263,23 @@ private slots:
 
 private:
     const QString m_currentDir;
-    QString m_dataPath;
     QString m_sourceFile;
     QString m_proFile;
     QString m_resourcesDir;
     QTemporaryDir m_dir;
+    QSharedPointer<QTemporaryDir> m_dataDir;
 };
 
 void tst_QFileInfo::initTestCase()
 {
-    m_dataPath = QEXTRACTTESTDATA("/testdata");
-    QVERIFY(!m_dataPath.isEmpty());
+    m_dataDir = QEXTRACTTESTDATA("/testdata");
+    QVERIFY(m_dataDir);
+    const QString dataPath = m_dataDir->path();
+    QVERIFY(!dataPath.isEmpty());
 
-    m_sourceFile = m_dataPath + QStringLiteral("/tst_qfileinfo.cpp");
-    m_resourcesDir = m_dataPath + QStringLiteral("/resources");
-    m_proFile = m_dataPath + QStringLiteral("/tst_qfileinfo.pro");
+    m_sourceFile = dataPath + QLatin1String("/tst_qfileinfo.cpp");
+    m_resourcesDir = dataPath + QLatin1String("/resources");
+    m_proFile = dataPath + QLatin1String("/tst_qfileinfo.pro");
 
     QVERIFY(m_dir.isValid());
     QVERIFY(QDir::setCurrent(m_dir.path()));
@@ -286,7 +288,6 @@ void tst_QFileInfo::initTestCase()
 void tst_QFileInfo::cleanupTestCase()
 {
     QDir::setCurrent(m_currentDir); // Release temporary directory so that it can be deleted on Windows
-    QDir(m_dataPath).removeRecursively();
 }
 
 // Testing get/set functions
@@ -609,6 +610,16 @@ void tst_QFileInfo::canonicalPath()
     QCOMPARE(fi.canonicalPath(), QFileInfo(QDir::tempPath()).canonicalFilePath());
 }
 
+class FileDeleter {
+    Q_DISABLE_COPY(FileDeleter)
+public:
+    explicit FileDeleter(const QString fileName) : m_fileName(fileName) {}
+    ~FileDeleter() { QFile::remove(m_fileName); }
+
+private:
+    const QString m_fileName;
+};
+
 void tst_QFileInfo::canonicalFilePath()
 {
     const QString fileName("tmp.canon");
@@ -639,9 +650,13 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+
+    const QString dirSymLinkName = QLatin1String("tst_qfileinfo")
+        + QDateTime::currentDateTime().toString(QLatin1String("yyMMddhhmmss"));
+    const QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName);
+    FileDeleter dirSymLinkDeleter(link);
+
     {
-        const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
-        QFile::remove(link);
         QFile file(QDir::currentPath());
         if (file.link(link)) {
             QFile tempfile("tempfile.txt");
@@ -666,12 +681,12 @@ void tst_QFileInfo::canonicalFilePath()
         }
     }
     {
-        QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo"
-                     + QDir::separator() + "link_to_tst_qfileinfo");
+        QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName
+                     + "/link_to_tst_qfileinfo");
         QFile::remove(link);
 
-        QFile file(QDir::tempPath() + QDir::separator() + "tst_qfileinfo"
-                   + QDir::separator() + "tst_qfileinfo.cpp");
+        QFile file(QDir::tempPath() + QLatin1Char('/') +  dirSymLinkName
+                   + "tst_qfileinfo.cpp");
         if (file.link(link))
         {
             QFileInfo info1("tst_qfileinfo.cpp");
@@ -1266,7 +1281,7 @@ void tst_QFileInfo::isHidden_data()
 #endif
 
 #if defined(Q_OS_MAC)
-    // /bin has the hidden attribute on Mac OS X
+    // /bin has the hidden attribute on OS X
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
 #elif !defined(Q_OS_WIN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;

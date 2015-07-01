@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     to replace or extend the default behavior of the static functions
     in QAccessible.
 
-    Qt supports Microsoft Active Accessibility (MSAA), Mac OS X
+    Qt supports Microsoft Active Accessibility (MSAA), OS X
     Accessibility, and the Unix/X11 AT-SPI standard. Other backends
     can be supported using QAccessibleBridge.
 
@@ -2833,7 +2833,7 @@ const QString &QAccessibleActionInterface::toggleAction()
     Returns the name of the scroll left default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::scrollLeftAction()
+QString QAccessibleActionInterface::scrollLeftAction()
 {
     return accessibleActionStrings()->scrollLeftAction;
 }
@@ -2842,7 +2842,7 @@ const QString &QAccessibleActionInterface::scrollLeftAction()
     Returns the name of the scroll right default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::scrollRightAction()
+QString QAccessibleActionInterface::scrollRightAction()
 {
     return accessibleActionStrings()->scrollRightAction;
 }
@@ -2851,7 +2851,7 @@ const QString &QAccessibleActionInterface::scrollRightAction()
     Returns the name of the scroll up default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::scrollUpAction()
+QString QAccessibleActionInterface::scrollUpAction()
 {
     return accessibleActionStrings()->scrollUpAction;
 }
@@ -2860,7 +2860,7 @@ const QString &QAccessibleActionInterface::scrollUpAction()
     Returns the name of the scroll down default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::scrollDownAction()
+QString QAccessibleActionInterface::scrollDownAction()
 {
     return accessibleActionStrings()->scrollDownAction;
 }
@@ -2869,7 +2869,7 @@ const QString &QAccessibleActionInterface::scrollDownAction()
     Returns the name of the previous page default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::previousPageAction()
+QString QAccessibleActionInterface::previousPageAction()
 {
     return accessibleActionStrings()->previousPageAction;
 }
@@ -2878,7 +2878,7 @@ const QString &QAccessibleActionInterface::previousPageAction()
     Returns the name of the next page default action.
     \sa actionNames(), localizedActionName()
   */
-const QString &QAccessibleActionInterface::nextPageAction()
+QString QAccessibleActionInterface::nextPageAction()
 {
     return accessibleActionStrings()->nextPageAction;
 }

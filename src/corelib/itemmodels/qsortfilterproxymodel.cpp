@@ -2646,9 +2646,12 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QMode
     Q_D(const QSortFilterProxyModel);
     QVariant l = (source_left.model() ? source_left.model()->data(source_left, d->sort_role) : QVariant());
     QVariant r = (source_right.model() ? source_right.model()->data(source_right, d->sort_role) : QVariant());
+    // Duplicated in QStandardItem::operator<()
+    if (l.userType() == QVariant::Invalid)
+        return false;
+    if (r.userType() == QVariant::Invalid)
+        return true;
     switch (l.userType()) {
-    case QVariant::Invalid:
-        return (r.type() != QVariant::Invalid);
     case QVariant::Int:
         return l.toInt() < r.toInt();
     case QVariant::UInt:

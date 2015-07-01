@@ -2086,7 +2086,7 @@ QByteArray QProcess::readAllStandardError()
     printed at the console, and the existing process will continue running
     unaffected.
 
-    \sa pid(), started(), waitForStarted(), setNativeArguments()
+    \sa processId(), started(), waitForStarted(), setNativeArguments()
 */
 void QProcess::start(const QString &program, const QStringList &arguments, OpenMode mode)
 {

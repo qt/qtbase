@@ -532,9 +532,14 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     QStringList glIntegrationNames;
     glIntegrationNames << QStringLiteral("xcb_glx") << QStringLiteral("xcb_egl");
     QString glIntegrationName = QString::fromLocal8Bit(qgetenv("QT_XCB_GL_INTEGRATION"));
-    if (glIntegrationName.size()) {
-        glIntegrationNames.removeAll(glIntegrationName);
-        glIntegrationNames.prepend(glIntegrationName);
+    if (!glIntegrationName.isEmpty()) {
+        qCDebug(QT_XCB_GLINTEGRATION) << "QT_XCB_GL_INTEGRATION is set to" << glIntegrationName;
+        if (glIntegrationName != QStringLiteral("none")) {
+            glIntegrationNames.removeAll(glIntegrationName);
+            glIntegrationNames.prepend(glIntegrationName);
+        } else {
+            glIntegrationNames.clear();
+        }
     }
 
     qCDebug(QT_XCB_GLINTEGRATION) << "Choosing xcb gl-integration based on following priority\n" << glIntegrationNames;
