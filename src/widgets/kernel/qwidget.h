@@ -203,7 +203,7 @@ public:
     };
     Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
 
-    explicit QWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    explicit QWidget(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~QWidget();
 
     int devType() const Q_DECL_OVERRIDE;
@@ -593,7 +593,7 @@ public:
 
     QWindow *windowHandle() const;
 
-    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=0, Qt::WindowFlags flags=0);
+    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=Q_NULLPTR, Qt::WindowFlags flags=Qt::WindowFlags());
 
     friend class QDesktopScreenWidget;
 

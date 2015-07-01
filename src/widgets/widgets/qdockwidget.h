@@ -58,8 +58,9 @@ class Q_WIDGETS_EXPORT QDockWidget : public QWidget
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle DESIGNABLE true)
 
 public:
-    explicit QDockWidget(const QString &title, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    explicit QDockWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QDockWidget(const QString &title, QWidget *parent = Q_NULLPTR,
+                         Qt::WindowFlags flags = Qt::WindowFlags());
+    explicit QDockWidget(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QDockWidget();
 
     QWidget *widget() const;

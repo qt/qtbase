@@ -57,7 +57,7 @@ public:
         PartialUpdate
     };
 
-    explicit QOpenGLWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    explicit QOpenGLWidget(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~QOpenGLWidget();
 
     void setUpdateBehavior(UpdateBehavior updateBehavior);

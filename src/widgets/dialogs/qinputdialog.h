@@ -83,7 +83,7 @@ public:
         DoubleInput
     };
 
-    QInputDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    QInputDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QInputDialog();
 
     void setInputMode(InputMode mode);
@@ -153,27 +153,29 @@ public:
 
     static QString getText(QWidget *parent, const QString &title, const QString &label,
                            QLineEdit::EchoMode echo = QLineEdit::Normal,
-                           const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
+                           const QString &text = QString(), bool *ok = Q_NULLPTR,
+                           Qt::WindowFlags flags = Qt::WindowFlags(),
                            Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
     static QString getMultiLineText(QWidget *parent, const QString &title, const QString &label,
-                           const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
-                           Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
+                                    const QString &text = QString(), bool *ok = Q_NULLPTR,
+                                    Qt::WindowFlags flags = Qt::WindowFlags(),
+                                    Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
     static QString getItem(QWidget *parent, const QString &title, const QString &label,
                            const QStringList &items, int current = 0, bool editable = true,
-                           bool *ok = 0, Qt::WindowFlags flags = 0,
+                           bool *ok = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags(),
                            Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
 
     static int getInt(QWidget *parent, const QString &title, const QString &label, int value = 0,
                       int minValue = -2147483647, int maxValue = 2147483647,
-                      int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
+                      int step = 1, bool *ok = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     static double getDouble(QWidget *parent, const QString &title, const QString &label, double value = 0,
                             double minValue = -2147483647, double maxValue = 2147483647,
-                            int decimals = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
+                            int decimals = 1, bool *ok = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline int getInteger(QWidget *parent, const QString &title, const QString &label, int value = 0,
                           int minValue = -2147483647, int maxValue = 2147483647,
-                          int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0)
+                          int step = 1, bool *ok = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags())
     {
         return getInt(parent, title, label, value, minValue, maxValue, step, ok, flags);
     }

@@ -356,12 +356,12 @@ class Q_OPENGL_EXPORT QGLWidget : public QWidget
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGLWidget)
 public:
-    explicit QGLWidget(QWidget* parent=0,
-                       const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-    explicit QGLWidget(QGLContext *context, QWidget* parent=0,
-                       const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-    explicit QGLWidget(const QGLFormat& format, QWidget* parent=0,
-                       const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
+    explicit QGLWidget(QWidget* parent=Q_NULLPTR,
+                       const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
+    explicit QGLWidget(QGLContext *context, QWidget* parent=Q_NULLPTR,
+                       const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
+    explicit QGLWidget(const QGLFormat& format, QWidget* parent=Q_NULLPTR,
+                       const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
     ~QGLWidget();
 
     void qglColor(const QColor& c) const;
@@ -442,9 +442,9 @@ protected:
 
     QGLWidget(QGLWidgetPrivate &dd,
               const QGLFormat &format = QGLFormat(),
-              QWidget *parent = 0,
-              const QGLWidget* shareWidget = 0,
-              Qt::WindowFlags f = 0);
+              QWidget *parent = Q_NULLPTR,
+              const QGLWidget* shareWidget = Q_NULLPTR,
+              Qt::WindowFlags f = Qt::WindowFlags());
 private:
     Q_DISABLE_COPY(QGLWidget)
 
