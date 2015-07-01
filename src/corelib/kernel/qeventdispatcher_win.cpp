@@ -561,6 +561,17 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     return wnd;
 }
 
+static void calculateNextTimeout(WinTimerInfo *t, quint64 currentTime)
+{
+    uint interval = t->interval;
+    if ((interval >= 20000u && t->timerType != Qt::PreciseTimer) || t->timerType == Qt::VeryCoarseTimer) {
+        // round the interval, VeryCoarseTimers only have full second accuracy
+        interval = ((interval + 500)) / 1000 * 1000;
+    }
+    t->interval = interval;
+    t->timeout = currentTime + interval;
+}
+
 void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
 {
     Q_ASSERT(internalHwnd);
@@ -568,6 +579,7 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     int ok = 0;
+    calculateNextTimeout(t, qt_msectime());
     uint interval = t->interval;
     if (interval == 0u) {
         // optimization for single-shot-zero-timer
@@ -576,16 +588,12 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     } else if ((interval < 20u || t->timerType == Qt::PreciseTimer) && qtimeSetEvent) {
         ok = t->fastTimerId = qtimeSetEvent(interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
                                             TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-    } else if (interval >= 20000u || t->timerType == Qt::VeryCoarseTimer) {
-        // round the interval, VeryCoarseTimers only have full second accuracy
-        interval = ((interval + 500)) / 1000 * 1000;
     }
+
     if (ok == 0) {
         // user normal timers for (Very)CoarseTimers, or if no more multimedia timers available
         ok = SetTimer(internalHwnd, t->timerId, interval, 0);
     }
-
-    t->timeout = qt_msectime() + interval;
 
     if (ok == 0)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
@@ -610,6 +618,9 @@ void QEventDispatcherWin32Private::sendTimerEvent(int timerId)
     if (t && !t->inTimerEvent) {
         // send event, but don't allow it to recurse
         t->inTimerEvent = true;
+
+        // recalculate next emission
+        calculateNextTimeout(t, qt_msectime());
 
         QTimerEvent e(t->timerId);
         QCoreApplication::sendEvent(t->obj, &e);

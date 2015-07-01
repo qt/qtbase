@@ -54,6 +54,8 @@ private slots:
     void singleShotTimeout();
     void timeout();
     void remainingTime();
+    void remainingTimeDuringActivation_data();
+    void remainingTimeDuringActivation();
     void livelock_data();
     void livelock();
     void timerInfiniteRecursion_data();
@@ -79,19 +81,27 @@ class TimerHelper : public QObject
 {
     Q_OBJECT
 public:
-    TimerHelper() : QObject(), count(0)
+    TimerHelper() : QObject(), count(0), remainingTime(-1)
     {
     }
 
     int count;
+    int remainingTime;
 
 public slots:
     void timeout();
+    void fetchRemainingTime();
 };
 
 void TimerHelper::timeout()
 {
     ++count;
+}
+
+void TimerHelper::fetchRemainingTime()
+{
+    QTimer *timer = static_cast<QTimer *>(sender());
+    remainingTime = timer->remainingTime();
 }
 
 void tst_QTimer::zeroTimer()
@@ -158,6 +168,53 @@ void tst_QTimer::remainingTime()
 
     int remainingTime = timer.remainingTime();
     QVERIFY2(qAbs(remainingTime - 150) < 50, qPrintable(QString::number(remainingTime)));
+
+    // wait for the timer to actually fire now
+    connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(helper.count, 1);
+
+    // the timer is still active, so it should have a non-zero remaining time
+    remainingTime = timer.remainingTime();
+    QVERIFY2(remainingTime > 150, qPrintable(QString::number(remainingTime)));
+}
+
+void tst_QTimer::remainingTimeDuringActivation_data()
+{
+    QTest::addColumn<bool>("singleShot");
+    QTest::newRow("repeating") << true;
+    QTest::newRow("single-shot") << true;
+}
+
+void tst_QTimer::remainingTimeDuringActivation()
+{
+    QFETCH(bool, singleShot);
+
+    TimerHelper helper;
+    QTimer timer;
+
+    const int timeout = 20;     // 20 ms is short enough and should not round down to 0 in any timer mode
+
+    connect(&timer, SIGNAL(timeout()), &helper, SLOT(fetchRemainingTime()));
+    connect(&timer, SIGNAL(timeout()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    timer.start(timeout);
+    timer.setSingleShot(singleShot);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    if (singleShot)
+        QCOMPARE(helper.remainingTime, -1);     // timer not running
+    else
+        QCOMPARE(helper.remainingTime, timeout);
+
+    if (!singleShot) {
+        // do it again - see QTBUG-46940
+        helper.remainingTime = -1;
+        QTestEventLoop::instance().enterLoop(5);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QCOMPARE(helper.remainingTime, timeout);
+    }
 }
 
 void tst_QTimer::livelock_data()
