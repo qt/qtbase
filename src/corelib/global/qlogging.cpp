@@ -1359,8 +1359,9 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             } else if (pattern->timeFormat == QLatin1String("boot")) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
-                pattern->timer.elapsed();
-                uint ms = pattern->timer.msecsSinceReference();
+                QElapsedTimer now;
+                now.start();
+                uint ms = now.msecsSinceReference();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (pattern->timeFormat.isEmpty()) {
                 message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
