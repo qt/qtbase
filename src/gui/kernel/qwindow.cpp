@@ -1453,8 +1453,12 @@ void QWindow::setGeometry(const QRect &rect)
     }
 }
 
-//######### This logic duplicated three times!!!!!
-// equivalent to QPlatformWindow::screenForGeometry, but in platform independent coordinates
+/*
+  This is equivalent to QPlatformWindow::screenForGeometry, but in platform
+  independent coordinates. The duplication is unfortunate, but there is a
+  chicken and egg problem here: we cannot convert to native coordinates
+  before we know which screen we are on.
+*/
 QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
 {
     Q_Q(QWindow);

@@ -93,16 +93,6 @@ private:
 
 namespace QHighDpi {
 
-// inline QRect fromNativeGeometry(const QRect &pixelRect, const QPlatformScreen *platformScreen)
-// {
-//     return QRect(pixelRect.topLeft(), pixelRect.size() / QHighDpiScaling::factor(platformScreen));
-// }
-
-// inline QRect toNativeGeometry(const QRect &pointRect, const QPlatformScreen *platformScreen)
-// {
-//     return QRect(pointRect.topLeft(), pointRect.size() * QHighDpiScaling::factor(platformScreen));
-// }
-
 inline QPoint fromNative(const QPoint &pos, qreal scaleFactor, const QPoint &origin)
 {
      return (pos - origin) / scaleFactor + origin;
@@ -347,8 +337,7 @@ inline QMargins toNativePixels(const QMargins &pointMargins, const QWindow *wind
     return QMargins(pointMargins.left() * scaleFactor, pointMargins.top() * scaleFactor,
                     pointMargins.right() * scaleFactor, pointMargins.bottom() * scaleFactor);
 }
-#if 1
-    //############## expose regions need special handling
+
 inline QRegion fromNativeLocalRegion(const QRegion &pixelRegion, const QWindow *window)
 {
     if (!QHighDpiScaling::isActive())
@@ -374,7 +363,7 @@ inline QRegion toNativeLocalRegion(const QRegion &pointRegion, const QWindow *wi
                              toNative(rect.size(), scaleFactor));
     return pixelRegon;
 }
-#endif
+
 // Any T that has operator/()
 template <typename T>
 T fromNativePixels(const T &pixelValue, const QWindow *window)
@@ -443,23 +432,6 @@ QVector<T> toNativePixels(const QVector<T> &pointValues, const QWindow *window)
     return pixelValues;
 }
 
-#if 0
-// Any QPair<T, U> where T and U has operator/()
-template <typename T, typename U>
-QPair<T, U> fromNativePixels(const QPair<T, U> &pixelPair, const QWindow *window)
-{
-    return qMakePair(fromNativePixels(pixelPair.first, window),
-                     fromNativePixels(pixelPair.second, window));
-}
-
-// Any QPair<T, U> where T and U has operator*()
-template <typename T, typename U>
-QPair<T, U> toNativePixels(const QPair<T, U> &pointPair, const QWindow *window)
-{
-    return qMakePair(QHighDpi::toNativePixels(pointPair.first, window),
-                     QHighDpi::toNativePixels(pointPair.second, window));
-}
-#endif
 }
 
 QT_END_NAMESPACE

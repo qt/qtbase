@@ -242,28 +242,10 @@ void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
     m_active = true;
     screen->setProperty(scaleFactorProperty, QVariant(factor));
 
-    //### dirty hack to force re-evaluation of screen geometry
+    // hack to force re-evaluation of screen geometry
     if (screen->handle())
-        screen->d_func()->setPlatformScreen(screen->handle()); // update geometries based on scale factor
+        screen->d_func()->setPlatformScreen(screen->handle()); // updates geometries based on scale factor
 }
-
-/*
-
-QPoint QXcbScreen::mapToNative(const QPoint &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
-}
-
-QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
-{
-    const int dpr = int(devicePixelRatio());
-    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
-}
-
-
- */
-
 
 QPoint QHighDpiScaling::mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen)
 {

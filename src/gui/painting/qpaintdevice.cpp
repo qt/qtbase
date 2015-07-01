@@ -103,5 +103,4 @@ int QPaintDevice::metric(PaintDeviceMetric m) const
     }
 }
 
-
 QT_END_NAMESPACE
