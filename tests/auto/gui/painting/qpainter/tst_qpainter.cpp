@@ -4877,17 +4877,17 @@ void tst_QPainter::blendARGBonRGB_data()
     QTest::newRow("ARGB_PM source-in RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32_Premultiplied
                                               << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 125;
     QTest::newRow("ARGB over RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
-                                     << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+                                     << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM over RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
-                                        << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+                                        << QPainter::CompositionMode_SourceOver << qRgba(85, 0, 0, 85) << 85;
     QTest::newRow("ARGB source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
-                                       << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 127;
+                                       << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM source RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
-                                          << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 127;
+                                          << QPainter::CompositionMode_Source << qRgba(85, 0, 0, 85) << 85;
     QTest::newRow("ARGB source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32
-                                          << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
+                                          << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 85) << 85;
     QTest::newRow("ARGB_PM source-in RGB30") << QImage::Format_RGB30 << QImage::Format_ARGB32_Premultiplied
-                                             << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
+                                             << QPainter::CompositionMode_SourceIn << qRgba(85, 0, 0, 85) << 85;
 }
 
 void tst_QPainter::blendARGBonRGB()
