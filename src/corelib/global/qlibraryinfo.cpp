@@ -650,11 +650,9 @@ void qt_core_boilerplate()
            "Copyright (C) 2015 The Qt Company Ltd.\n"
            "Contact: http://www.qt.io/licensing/\n"
            "\n"
-           "Build date:          %s\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"
            "Include path:        %s\n",
-           qt_configure_installation + 12,
            qt_configure_prefix_path_str + 12,
            qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
            qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath - 1]);
