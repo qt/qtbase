@@ -70,6 +70,9 @@
 #    include "qeventdispatcher_blackberry_p.h"
 #    include <process.h>
 #    include <unistd.h>
+#  elif defined(Q_OS_OSX)
+#    include "qeventdispatcher_cf_p.h"
+#    include "qeventdispatcher_unix_p.h"
 #  else
 #    if !defined(QT_NO_GLIB)
 #      include "qeventdispatcher_glib_p.h"
@@ -505,12 +508,19 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #if defined(Q_OS_UNIX)
 #  if defined(Q_OS_BLACKBERRY)
     eventDispatcher = new QEventDispatcherBlackberry(q);
-#  else
-#  if !defined(QT_NO_GLIB)
+#  elif defined(Q_OS_OSX)
+    bool ok = false;
+    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
+    if (ok && value > 0)
+        eventDispatcher = new QEventDispatcherCoreFoundation(q);
+    else
+        eventDispatcher = new QEventDispatcherUNIX(q);
+#  elif !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
-#  endif
+        eventDispatcher = new QEventDispatcherUNIX(q);
+#  else
         eventDispatcher = new QEventDispatcherUNIX(q);
 #  endif
 #elif defined(Q_OS_WINRT)
