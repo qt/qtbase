@@ -167,7 +167,7 @@ void QDocForest::setSearchOrder(QStringList& t)
     forest_.remove(primaryName);
 
     QMap<QString, Tree*>::iterator i;
-    foreach (QString m, t) {
+    foreach (const QString &m, t) {
         if (primaryName != m) {
             i = forest_.find(m);
             if (i != forest_.end()) {
@@ -1296,7 +1296,7 @@ void QDocDatabase::resolveNamespaces()
         t = forest_.nextTree();
     }
     QList<QString> keys = nmm_.uniqueKeys();
-    foreach (QString s, keys) {
+    foreach (const QString &s, keys) {
         NamespaceNode* ns = 0;
         QList<Node*> nodes = nmm_.values(s);
         int count = nmm_.remove(s);

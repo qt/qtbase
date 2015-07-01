@@ -97,7 +97,7 @@ QStringList QOfonoManagerInterface::getModems()
         QDBusPendingReply<PathPropertiesList> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetModems"), argumentList);
         reply.waitForFinished();
         if (!reply.isError()) {
-            foreach (ObjectPathProperties modem, reply.value()) {
+            foreach (const ObjectPathProperties &modem, reply.value()) {
                 modemList << modem.path.path();
             }
         }
@@ -260,7 +260,7 @@ QStringList QOfonoDataConnectionManagerInterface::contexts()
         QDBusPendingReply<PathPropertiesList > reply = call(QLatin1String("GetContexts"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            foreach (ObjectPathProperties context, reply.value()) {
+            foreach (const ObjectPathProperties &context, reply.value()) {
                 contextList << context.path.path();
             }
         }

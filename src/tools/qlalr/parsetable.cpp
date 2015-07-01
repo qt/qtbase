@@ -91,7 +91,7 @@ void ParseTable::operator () (Automaton *aut)
 
           first = false;
 
-          foreach (Name la, aut->lookaheads.value (item))
+          foreach (const Name &la, aut->lookaheads.value (item))
             out << "    " << *la << " reduce using rule " << aut->id (item->rule) << " (" << *item->rule->lhs << ")" << endl;
         }
 

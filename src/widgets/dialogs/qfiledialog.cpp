@@ -2972,7 +2972,7 @@ void QFileDialogPrivate::createWidgets()
     q->setHistory(options->history());
     if (options->initiallySelectedFiles().count() == 1)
         q->selectFile(options->initiallySelectedFiles().first().fileName());
-    foreach (QUrl url, options->initiallySelectedFiles())
+    foreach (const QUrl &url, options->initiallySelectedFiles())
         q->selectUrl(url);
     lineEdit()->selectAll();
     _q_updateOkButton();

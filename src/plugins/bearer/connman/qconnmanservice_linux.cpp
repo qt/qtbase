@@ -174,11 +174,10 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
 
 void QConnmanManagerInterface::onServicesChanged(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
 {
-    ConnmanMap connmanobj;
     servicesList.clear(); //connman list changes order
-    Q_FOREACH (connmanobj, changed) {
+    Q_FOREACH (const ConnmanMap &connmanobj, changed) {
         const QString svcPath(connmanobj.objectPath.path());
-            servicesList << svcPath;
+        servicesList << svcPath;
     }
 
    Q_EMIT servicesChanged(changed, removed);
@@ -220,7 +219,7 @@ QStringList QConnmanManagerInterface::getTechnologies()
         QDBusPendingReply<ConnmanMapList> reply = call(QLatin1String("GetTechnologies"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            Q_FOREACH (ConnmanMap map, reply.value()) {
+            Q_FOREACH (const ConnmanMap &map, reply.value()) {
                 if (!technologiesMap.contains(map.objectPath.path())) {
                     technologyAdded(map.objectPath, map.propertyMap);
                 }
@@ -236,7 +235,7 @@ QStringList QConnmanManagerInterface::getServices()
         QDBusPendingReply<ConnmanMapList> reply = call(QLatin1String("GetServices"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            Q_FOREACH (ConnmanMap map, reply.value()) {
+            Q_FOREACH (const ConnmanMap &map, reply.value()) {
                 servicesList << map.objectPath.path();
             }
         }

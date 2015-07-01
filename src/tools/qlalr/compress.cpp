@@ -183,7 +183,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
 
   index.fill (-999999, row_count);
 
-  foreach (UncompressedRow row, sortedTable)
+  foreach (const UncompressedRow &row, sortedTable)
     {
       int first_token = std::distance (row.begin (), row.beginNonZeros ());
       QVector<int>::iterator pos = info.begin ();
