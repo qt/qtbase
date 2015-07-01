@@ -202,13 +202,6 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         nodes.append(node);
         if (topicsUsed.size() > 0) {
             for (int i=0; i<topicsUsed.size(); ++i) {
-                if ((topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) ||
-                    (topicsUsed.at(i).topic == COMMAND_JSPROPERTYGROUP)) {
-                    qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
-                    break;
-                }
-            }
-            for (int i=0; i<topicsUsed.size(); ++i) {
                 QString topic = topicsUsed.at(i).topic;
                 QString args = topicsUsed.at(i).args;
                 if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY) ||
