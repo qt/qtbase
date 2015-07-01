@@ -314,7 +314,7 @@
          \li All platforms
     \row \li CPU tick counter
          \li -tickcounter
-         \li Windows, Mac OS X, Linux, many UNIX-like systems.
+         \li Windows, OS X, Linux, many UNIX-like systems.
     \row \li Event Counter
          \li -eventcounter
          \li All platforms

@@ -1739,7 +1739,7 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     \value DefaultItem A menu item that is the default action as specified with \l QMenu::defaultAction().
     \value Separator A menu separator.
     \value SubMenu Indicates the menu item points to a sub-menu.
-    \value Scroller A popup menu scroller (currently only used on Mac OS X).
+    \value Scroller A popup menu scroller (currently only used on OS X).
     \value TearOff A tear-off handle for the menu.
     \value Margin The margin of the menu.
     \value EmptyArea The empty area of the menu.

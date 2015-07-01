@@ -354,7 +354,7 @@
     the above code indicates, we need to supply more information when obtaining
     a model index.
 
-    \table
+    \table 70%
     \row \li \inlineimage modelview-tablemodel.png
     \li \b{Rows and columns}
 
@@ -386,7 +386,7 @@
 
     \snippet code/doc_src_model-view-programming.cpp 3
 
-    \table
+    \table 70%
     \row \li \inlineimage modelview-treemodel.png
     \li \b{Parents, rows, and columns}
 
@@ -417,7 +417,7 @@
 
     \snippet code/doc_src_model-view-programming.cpp 6
 
-    \table
+    \table 70%
     \row \li \inlineimage modelview-roles.png
     \li \b{Item roles}
 
@@ -902,7 +902,7 @@
     The table below highlights the differences between current item and
     selected items.
 
-    \table
+    \table 70%
     \header
         \li  Current Item
         \li  Selected Items
@@ -1557,7 +1557,7 @@
     of items. The selection mode works in the same way for all of the
     above widgets.
 
-    \table
+    \table 70%
     \row
     \li \image selection-single.png
     \li \b{Single item selections:}
@@ -1957,7 +1957,7 @@
     To provide read-only access to data provided by a model, the following functions
     \e{must} be implemented in the model's subclass:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::flags()}{flags()}
          \li Used by other components to obtain information about each item provided by
             the model. In many models, the combination of flags should include
@@ -1982,7 +1982,7 @@
     Additionally, the following functions \e{must} be implemented in direct subclasses
     of QAbstractTableModel and QAbstractItemModel:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::columnCount()}{columnCount()}
          \li Provides the number of columns of data exposed by the model. List models do not
             provide this function because it is already implemented in QAbstractListModel.
@@ -1994,7 +1994,7 @@
     functions to allow rows and columns to be inserted and removed. To enable
     editing, the following functions must be implemented correctly:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::flags()}{flags()}
          \li Must return an appropriate combination of flags for each item. In particular,
             the value returned by this function must include \l{Qt::ItemIsEditable} in
@@ -2024,7 +2024,7 @@
     ensure that the appropriate functions are called to notify attached views and
     delegates:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::insertRows()}{insertRows()}
          \li Used to add new rows and items of data to all types of model.
             Implementations must call
@@ -2119,7 +2119,7 @@
     structure, it is up to each model subclass to create its own model indexes
     by providing implementations of the following functions:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::index()}{index()}
          \li Given a model index for a parent item, this function allows views and delegates
             to access children of that item. If no valid child item - corresponding to the
@@ -2164,7 +2164,7 @@
     The following types are used to store information about
     each item as it is streamed into a QByteArray and stored in a QMimeData object:
 
-    \table 90%
+    \table 70%
     \header \li Description \li Type
     \row \li Row \li int
     \row \li Column \li int
@@ -2180,7 +2180,7 @@
     export items of data in specialized formats by reimplementing the following
     function:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::mimeData()}{mimeData()}
          \li This function can be reimplemented to return data in formats other
             than the default \c{application/x-qabstractitemmodeldatalist} internal
@@ -2215,7 +2215,7 @@
     To take advantage of QAbstractItemModel's default implementation for the built-in
     MIME type, new models must provide reimplementations of the following functions:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::insertRows()}{insertRows()}
          \li {1, 2} These functions enable the model to automatically insert new data using
             the existing implementation provided by QAbstractItemModel::dropMimeData().
@@ -2228,7 +2228,7 @@
 
     To accept other forms of data, these functions must be reimplemented:
 
-    \table 90%
+    \table 70%
     \row \li \l{QAbstractItemModel::supportedDropActions()}{supportedDropActions()}
          \li Used to return a combination of \l{Qt::DropActions}{drop actions},
             indicating the types of drag and drop operations that the model accepts.

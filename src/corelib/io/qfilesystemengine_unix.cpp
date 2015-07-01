@@ -662,17 +662,11 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
 {
     mode_t mode = 0;
-    if (permissions & QFile::ReadOwner)
+    if (permissions & (QFile::ReadOwner | QFile::ReadUser))
         mode |= S_IRUSR;
-    if (permissions & QFile::WriteOwner)
+    if (permissions & (QFile::WriteOwner | QFile::WriteUser))
         mode |= S_IWUSR;
-    if (permissions & QFile::ExeOwner)
-        mode |= S_IXUSR;
-    if (permissions & QFile::ReadUser)
-        mode |= S_IRUSR;
-    if (permissions & QFile::WriteUser)
-        mode |= S_IWUSR;
-    if (permissions & QFile::ExeUser)
+    if (permissions & (QFile::ExeOwner | QFile::ExeUser))
         mode |= S_IXUSR;
     if (permissions & QFile::ReadGroup)
         mode |= S_IRGRP;

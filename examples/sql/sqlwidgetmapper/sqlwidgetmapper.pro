@@ -7,6 +7,6 @@ QT += sql widgets
 target.path = $$[QT_INSTALL_EXAMPLES]/sql/sqlwidgetmapper
 INSTALLS += target
 
-wince*: DEPLOYMENT_PLUGIN += qsqlite
+wince: DEPLOYMENT_PLUGIN += qsqlite
 
 

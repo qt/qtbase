@@ -59,7 +59,7 @@ class Q_CORE_EXPORT QAbstractTransition : public QObject
     Q_PROPERTY(QState* sourceState READ sourceState)
     Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState NOTIFY targetStateChanged)
     Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates NOTIFY targetStatesChanged)
-    Q_PROPERTY(TransitionType transitionType READ transitionType WRITE setTransitionType)
+    Q_PROPERTY(TransitionType transitionType READ transitionType WRITE setTransitionType REVISION 1)
 public:
     enum TransitionType {
         ExternalTransition,

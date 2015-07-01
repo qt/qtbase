@@ -51,14 +51,10 @@ HINSTANCE qt_wince_ShellExecute(HWND hwnd, LPCWSTR, LPCWSTR file, LPCWSTR params
 }
 #endif
 
-#ifndef SPI_GETPLATFORMTYPE
-#define SPI_GETPLATFORMTYPE 257
-#endif
-
 // Internal Qt -----------------------------------------------------
 bool qt_wince_is_platform(const QString &platformString) {
     wchar_t tszPlatform[64];
-    if (SystemParametersInfo(SPI_GETPLATFORMTYPE, sizeof(tszPlatform) / sizeof(wchar_t), tszPlatform, 0))
+    if (SystemParametersInfo(SPI_GETPLATFORMNAME, sizeof(tszPlatform) / sizeof(wchar_t), tszPlatform, 0))
         if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
             return true;
     return false;

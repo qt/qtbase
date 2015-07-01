@@ -5966,8 +5966,17 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
     \endtable
 
     The \a boundingRect (if not null) is set to the what the bounding rectangle
-    should be in order to enclose the whole text. The \a flags argument is a bitwise
-    OR of the following flags:
+    should be in order to enclose the whole text. For example, in the following
+    image, the dotted line represents \a boundingRect as calculated by the
+    function, and the dashed line represents \a rectangle:
+
+    \table 100%
+    \row
+    \li \inlineimage qpainter-text-bounds.png
+    \li \snippet code/src_gui_painting_qpainter.cpp drawText
+    \endtable
+
+    The \a flags argument is a bitwise OR of the following flags:
 
     \list
     \li Qt::AlignLeft
@@ -6016,8 +6025,18 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     \overload
 
     Draws the given \a text within the provided \a rectangle according
-    to the specified \a flags. The \a boundingRect (if not null) is set to
-    the what the bounding rectangle should be in order to enclose the whole text.
+    to the specified \a flags.
+
+    The \a boundingRect (if not null) is set to the what the bounding rectangle
+    should be in order to enclose the whole text. For example, in the following
+    image, the dotted line represents \a boundingRect as calculated by the
+    function, and the dashed line represents \a rectangle:
+
+    \table 100%
+    \row
+    \li \inlineimage qpainter-text-bounds.png
+    \li \snippet code/src_gui_painting_qpainter.cpp drawText
+    \endtable
 
     By default, QPainter draws text anti-aliased.
 
@@ -6050,9 +6069,19 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     Draws the given \a text within the rectangle with origin (\a{x},
     \a{y}), \a width and \a height.
 
-    The \a boundingRect (if not null) is set to the actual bounding
-    rectangle of the output.  The \a flags argument is a bitwise OR of
-    the following flags:
+    The \a boundingRect (if not null) is set to the what the bounding rectangle
+    should be in order to enclose the whole text. For example, in the following
+    image, the dotted line represents \a boundingRect as calculated by the
+    function, and the dashed line represents the rectangle defined by
+    \a x, \a y, \a width and \a height:
+
+    \table 100%
+    \row
+    \li \inlineimage qpainter-text-bounds.png
+    \li \snippet code/src_gui_painting_qpainter.cpp drawText
+    \endtable
+
+    The \a flags argument is a bitwise OR of the following flags:
 
     \list
     \li Qt::AlignLeft
@@ -6177,7 +6206,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
         QPen wavePen = pen;
         wavePen.setCapStyle(Qt::SquareCap);
 
-        // This is to protect against making the line too fat, as happens on Mac OS X
+        // This is to protect against making the line too fat, as happens on OS X
         // due to it having a rather thick width for the regular underline.
         const qreal maxPenWidth = .8 * radius;
         if (wavePen.widthF() > maxPenWidth)

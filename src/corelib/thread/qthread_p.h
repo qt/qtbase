@@ -171,19 +171,10 @@ public:
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
-#  ifndef Q_OS_WINRT
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
-#  else
-    HRESULT start(ABI::Windows::Foundation::IAsyncAction *);
-    void finish(bool lockAnyway = true);
-#  endif
 
-#  ifndef Q_OS_WINRT
     Qt::HANDLE handle;
-#  else
-    ABI::Windows::Foundation::IAsyncAction *handle;
-#  endif
     unsigned int id;
     int waiters;
     bool terminationEnabled, terminatePending;

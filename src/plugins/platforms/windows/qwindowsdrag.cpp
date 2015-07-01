@@ -626,7 +626,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     const QPlatformDropQtResponse response =
         QWindowSystemInterface::handleDrop(m_window, windowsDrag->dropData(),
                                            m_lastPoint / QWindowsScaling::factor(),
-                                           translateToQDragDropActions(m_chosenEffect));
+                                           translateToQDragDropActions(*pdwEffect));
 
     if (response.isAccepted()) {
         const Qt::DropAction action = response.acceptedAction();

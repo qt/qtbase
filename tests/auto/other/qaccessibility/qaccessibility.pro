@@ -7,7 +7,7 @@ HEADERS += accessiblewidgets.h
 
 unix:!mac:!haiku:LIBS+=-lm
 
-wince*: {
+wince {
 	accessneeded.files = $$QT_BUILD_TREE\\plugins\\accessible\\*.dll
 	accessneeded.path = accessible
 	DEPLOYMENT += accessneeded

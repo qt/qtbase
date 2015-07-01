@@ -86,7 +86,9 @@ public:
     int width(const QString &, int len, int flags) const;
 
     int width(QChar) const;
-    int charWidth(const QString &str, int pos) const;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QT_DEPRECATED int charWidth(const QString &str, int pos) const;
+#endif
 
     QRect boundingRect(QChar) const;
 

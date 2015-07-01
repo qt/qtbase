@@ -43,7 +43,7 @@ win32:!winrt:SOURCES += socket/qnativesocketengine_win.cpp \
                 socket/qlocalsocket_win.cpp \
                 socket/qlocalserver_win.cpp
 
-win32:!wince*:!winrt:LIBS_PRIVATE += -ladvapi32
+win32:!wince:!winrt:LIBS_PRIVATE += -ladvapi32
 
 winrt {
     SOURCES += socket/qnativesocketengine_winrt.cpp \
@@ -54,7 +54,7 @@ winrt {
     DEFINES += QT_LOCALSOCKET_TCP
 }
 
-wince*: {
+wince {
     SOURCES -= socket/qlocalsocket_win.cpp \
                socket/qlocalserver_win.cpp
     SOURCES += socket/qlocalsocket_tcp.cpp \

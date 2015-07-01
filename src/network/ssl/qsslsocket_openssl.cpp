@@ -1671,7 +1671,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
     }
 
-    foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {
+    foreach (const QSslCertificate &caCertificate, QSslConfiguration::defaultConfiguration().caCertificates()) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
         // If several CA certificates matching the name, key identifier, and

@@ -491,7 +491,7 @@
           not supported. For example, you can create decorated windows by
           passing the Qt::Window window flag to QGraphicsWidget's constructor,
           but Graphics View currently doesn't support the Qt::Sheet and
-          Qt::Drawer flags that are common on Mac OS X.
+          Qt::Drawer flags that are common on OS X.
 
           The capabilities of QGraphicsWidget are expected to grow depending
           on community feedback.

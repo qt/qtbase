@@ -60,19 +60,19 @@ public:
 
     // ----------------------------------------------------
     // Virtual methods overridden from QPlatformScreen
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-    QRect geometry() const { return m_geometry; }
-    QRect availableGeometry() const { return m_availableGeometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    qreal devicePixelRatio() const;
-    QSizeF physicalSize() const { return m_physicalSize; }
-    QDpi logicalDpi() const { return m_logicalDpi; }
-    qreal refreshRate() const { return m_refreshRate; }
-    QString name() const { return m_name; }
-    QPlatformCursor *cursor() const  { return m_cursor; }
-    QWindow *topLevelAt(const QPoint &point) const;
-    QList<QPlatformScreen *> virtualSiblings() const { return m_siblings; }
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
+    QRect availableGeometry() const Q_DECL_OVERRIDE { return m_availableGeometry; }
+    int depth() const Q_DECL_OVERRIDE { return m_depth; }
+    QImage::Format format() const Q_DECL_OVERRIDE { return m_format; }
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_physicalSize; }
+    QDpi logicalDpi() const Q_DECL_OVERRIDE { return m_logicalDpi; }
+    qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
+    QString name() const Q_DECL_OVERRIDE { return m_name; }
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return m_cursor; }
+    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
+    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
 
     // ----------------------------------------------------
     // Additional methods

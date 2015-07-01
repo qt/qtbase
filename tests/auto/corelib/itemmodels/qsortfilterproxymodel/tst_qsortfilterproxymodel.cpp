@@ -2529,16 +2529,16 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
     proxyModel.sort(0);
     QCOMPARE(proxyModel.sortColumn(), 0);
 
-    QList<QStandardItem *> items;
-    QStringList strings;
-    strings << "foo" << "bar" << "some" << "others" << "item" << "aa" << "zz";
-    foreach (QString s, strings)
-        items  << new QStandardItem(s);
+    QList<QStandardItem *> items; // Stable sorting: Items with invalid data should move to the end
+    items << new QStandardItem << new QStandardItem("foo") << new QStandardItem("bar")
+        << new QStandardItem("some") << new QStandardItem("others") << new QStandardItem("item")
+        << new QStandardItem("aa") << new QStandardItem("zz") << new QStandardItem;
 
     model.insertColumn(0,items);
     QCOMPARE(proxyModel.sortColumn(), 0);
     QCOMPARE(proxyModel.data(proxyModel.index(0,0)).toString(),QString::fromLatin1("aa"));
-    QCOMPARE(proxyModel.data(proxyModel.index(strings.count()-1,0)).toString(),QString::fromLatin1("zz"));
+    const int zzIndex = items.count() - 3; // 2 invalid at end.
+    QCOMPARE(proxyModel.data(proxyModel.index(zzIndex,0)).toString(),QString::fromLatin1("zz"));
 }
 
 void tst_QSortFilterProxyModel::sortStable()

@@ -216,6 +216,7 @@ void QDBusAbstractInterfacePrivate::_q_serviceOwnerChanged(const QString &name,
                                                            const QString &newOwner)
 {
     Q_UNUSED(oldOwner);
+    Q_UNUSED(name);
     //qDebug() << "QDBusAbstractInterfacePrivate serviceOwnerChanged" << name << oldOwner << newOwner;
     if (name == service) {
         currentOwner = newOwner;

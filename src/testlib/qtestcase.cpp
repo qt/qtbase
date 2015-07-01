@@ -2539,7 +2539,7 @@ FatalSignalHandler::FatalSignalHandler()
     sigemptyset(&handledSignals);
 
     const int fatalSignals[] = {
-         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
 
     struct sigaction act;
     memset(&act, 0, sizeof(act));
@@ -2549,6 +2549,24 @@ FatalSignalHandler::FatalSignalHandler()
 #if !defined(Q_OS_INTEGRITY)
     act.sa_flags = SA_RESETHAND;
 #endif
+
+#ifdef SA_ONSTACK
+    // Let the signal handlers use an alternate stack
+    // This is necessary if SIGSEGV is to catch a stack overflow
+#  if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+    // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
+    // interfere with normal .bss symbols
+    __attribute__((section(".lbss.altstack"), aligned(4096)))
+#  endif
+    static char alternate_stack[16 * 1024];
+    stack_t stack;
+    stack.ss_flags = 0;
+    stack.ss_size = sizeof alternate_stack;
+    stack.ss_sp = alternate_stack;
+    sigaltstack(&stack, 0);
+    act.sa_flags |= SA_ONSTACK;
+#endif
+
     // Block all fatal signals in our signal handler so we don't try to close
     // the testlog twice.
     sigemptyset(&act.sa_mask);
@@ -2894,36 +2912,39 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
 #endif
 
 /*!
-    Extract a directory from resources to disk. The content is extracted
-    recursively to a temporary folder. The extracted content is not removed
-    automatically.
+    Extracts a directory from resources to disk. The content is extracted
+    recursively to a temporary folder. The extracted content is removed
+    automatically once the last reference to the return value goes out of scope.
 
     \a dirName is the name of the directory to extract from resources.
 
-    Returns the path where the data was extracted or an empty string in case of
+    Returns the temporary directory where the data was extracted or null in case of
     errors.
  */
-QString QTest::qExtractTestData(const QString &dirName)
+QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 {
-      QTemporaryDir temporaryDir;
-      temporaryDir.setAutoRemove(false);
+      QSharedPointer<QTemporaryDir> result; // null until success, then == tempDir
 
-      if (!temporaryDir.isValid())
-          return QString();
+      QSharedPointer<QTemporaryDir> tempDir = QSharedPointer<QTemporaryDir>::create();
 
-      const QString dataPath = temporaryDir.path();
+      tempDir->setAutoRemove(true);
+
+      if (!tempDir->isValid())
+          return result;
+
+      const QString dataPath = tempDir->path();
       const QString resourcePath = QLatin1Char(':') + dirName;
       const QFileInfo fileInfo(resourcePath);
 
       if (!fileInfo.isDir()) {
           qWarning("Resource path '%s' is not a directory.", qPrintable(resourcePath));
-          return QString();
+          return result;
       }
 
       QDirIterator it(resourcePath, QDirIterator::Subdirectories);
       if (!it.hasNext()) {
           qWarning("Resource directory '%s' is empty.", qPrintable(resourcePath));
-          return QString();
+          return result;
       }
 
       while (it.hasNext()) {
@@ -2932,17 +2953,23 @@ QString QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.fileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourcePath.length());
+              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().midRef(resourcePath.length());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {
                   qWarning("Failed to copy '%s'.", qPrintable(fileInfo.filePath()));
-                  return QString();
+                  return result;
+              }
+              if (!QFile::setPermissions(destination, QFile::ReadUser | QFile::WriteUser | QFile::ReadGroup)) {
+                  qWarning("Failed to set permissions on '%s'.", qPrintable(destination));
+                  return result;
               }
           }
       }
 
-      return dataPath;
+      result = qMove(tempDir);
+
+      return result;
 }
 
 /*! \internal

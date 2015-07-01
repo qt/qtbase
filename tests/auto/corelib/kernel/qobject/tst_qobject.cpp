@@ -918,6 +918,8 @@ void tst_QObject::connectDisconnectNotifyPMF()
     QMetaObject::Connection conn = connect((SenderObject*)s, &SenderObject::signal1,
                                            (ReceiverObject*)r, &ReceiverObject::slot1);
 
+    QVERIFY(conn);
+
     // Test disconnectNotify when disconnecting by QMetaObject::Connection
     QVERIFY(QObject::disconnect(conn));
     // disconnectNotify() is not called, but it probably should be.
@@ -5751,7 +5753,6 @@ void tst_QObject::connectFunctorWithContext()
 {
     int status = 1;
     SenderObject obj;
-    QMetaObject::Connection handle;
     ContextObject *context = new ContextObject;
     QEventLoop e;
 
@@ -6058,7 +6059,11 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
             QVERIFY(c2);
             QCOMPARE(countedStructObjectsCount, 2);
             QVERIFY(QObject::disconnect(c1));
+            QVERIFY(!c1);
+            QVERIFY(!c2);
             // functor object has been destroyed
+            QCOMPARE(countedStructObjectsCount, 1);
+            QVERIFY(!QObject::disconnect(c2));
             QCOMPARE(countedStructObjectsCount, 1);
         }
         QCOMPARE(countedStructObjectsCount, 0);

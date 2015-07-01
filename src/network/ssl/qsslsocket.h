@@ -144,34 +144,33 @@ public:
     QSslKey privateKey() const;
 
     // Cipher settings.
-    QList<QSslCipher> ciphers() const;
-    void setCiphers(const QList<QSslCipher> &ciphers);
-    void setCiphers(const QString &ciphers);
-    static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
-    static QList<QSslCipher> defaultCiphers();
-    static QList<QSslCipher> supportedCiphers();
-
-    // EC settings.
-    QVector<QSslEllipticCurve> ellipticCurves() const;
-    void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);
-    static void setDefaultEllipticCurves(const QVector<QSslEllipticCurve> &curves);
-    static QVector<QSslEllipticCurve> defaultEllipticCurves();
-    static QVector<QSslEllipticCurve> supportedEllipticCurves();
+#if QT_DEPRECATED_SINCE(5, 5)
+    QT_DEPRECATED_X("Use QSslConfiguration::ciphers()") QList<QSslCipher> ciphers() const;
+    QT_DEPRECATED_X("Use QSslConfiguration::setCiphers()") void setCiphers(const QList<QSslCipher> &ciphers);
+    QT_DEPRECATED void setCiphers(const QString &ciphers);
+    QT_DEPRECATED static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
+    QT_DEPRECATED static QList<QSslCipher> defaultCiphers();
+    QT_DEPRECATED_X("Use QSslConfiguration::supportedCiphers()") static QList<QSslCipher> supportedCiphers();
+#endif // QT_DEPRECATED_SINCE(5, 5)
 
     // CA settings.
     bool addCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
                            QRegExp::PatternSyntax syntax = QRegExp::FixedString);
     void addCaCertificate(const QSslCertificate &certificate);
     void addCaCertificates(const QList<QSslCertificate> &certificates);
-    void setCaCertificates(const QList<QSslCertificate> &certificates);
-    QList<QSslCertificate> caCertificates() const;
+#if QT_DEPRECATED_SINCE(5, 5)
+    QT_DEPRECATED_X("Use QSslConfiguration::setCaCertificates()") void setCaCertificates(const QList<QSslCertificate> &certificates);
+    QT_DEPRECATED_X("Use QSslConfiguration::caCertificates()") QList<QSslCertificate> caCertificates() const;
+#endif // QT_DEPRECATED_SINCE(5, 5)
     static bool addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
                                          QRegExp::PatternSyntax syntax = QRegExp::FixedString);
     static void addDefaultCaCertificate(const QSslCertificate &certificate);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certificates);
-    static void setDefaultCaCertificates(const QList<QSslCertificate> &certificates);
-    static QList<QSslCertificate> defaultCaCertificates();
-    static QList<QSslCertificate> systemCaCertificates();
+#if QT_DEPRECATED_SINCE(5, 5)
+    QT_DEPRECATED static void setDefaultCaCertificates(const QList<QSslCertificate> &certificates);
+    QT_DEPRECATED static QList<QSslCertificate> defaultCaCertificates();
+    QT_DEPRECATED_X("Use QSslConfiguration::systemCaCertificates()") static QList<QSslCertificate> systemCaCertificates();
+#endif // QT_DEPRECATED_SINCE(5, 5)
 
     bool waitForConnected(int msecs = 30000) Q_DECL_OVERRIDE;
     bool waitForEncrypted(int msecs = 30000);

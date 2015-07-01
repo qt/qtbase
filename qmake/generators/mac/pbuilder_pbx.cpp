@@ -1408,6 +1408,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
+        // Bitcode is only supported with a deployment target >= iOS 6.0.
+        // Disable it for now, and consider switching it on when later
+        // bumping the deployment target.
+        settings.insert("ENABLE_BITCODE", "NO");
         settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
         if(!as_release)
             settings.insert("GCC_OPTIMIZATION_LEVEL", "0");

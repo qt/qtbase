@@ -248,6 +248,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                     // ###
                     files->removeAll(path);
                     directories->removeAll(path);
+                    it.remove();
 
                     if (h.isEmpty()) {
                         DEBUG() << "Closing handle" << handle.handle;
@@ -259,8 +260,6 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
 
                         thread->handleForDir.remove(QFileSystemWatcherPathKey(absolutePath));
                         // h is now invalid
-
-                        it.remove();
 
                         if (thread->handleForDir.isEmpty()) {
                             DEBUG() << "Stopping thread " << thread;

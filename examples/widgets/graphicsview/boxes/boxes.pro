@@ -25,6 +25,6 @@ RESOURCES += boxes.qrc
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/boxes
 INSTALLS += target
 
-wince*: {
+wince {
     DEPLOYMENT_PLUGIN += qjpeg
 }

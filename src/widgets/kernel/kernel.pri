@@ -69,7 +69,7 @@ macx: {
     SOURCES += kernel/qmacgesturerecognizer.cpp
 }
 
-wince*: {
+wince {
         HEADERS += \
                 ../corelib/kernel/qfunctions_wince.h \
                 kernel/qwidgetsfunctions_wince.h

@@ -232,7 +232,7 @@
 
     Just before we create the \uicontrol{Help} menu, we call
     QMenuBar::addSeparator(). This has no effect for most widget
-    styles (e.g., Windows and Mac OS X styles), but for some
+    styles (e.g., Windows and OS X styles), but for some
     styles this makes sure that \uicontrol{Help} is pushed to the right
     side of the menu bar.
 
@@ -258,7 +258,7 @@
     load the user's preferences and other application settings. The
     QSettings class provides a high-level interface for storing
     settings permanently on disk. On Windows, it uses the (in)famous
-    Windows registry; on Mac OS X, it uses the native XML-based
+    Windows registry; on OS X, it uses the native XML-based
     CFPreferences API; on Unix/X11, it uses text files.
 
     The QSettings constructor takes arguments that identify your
@@ -310,7 +310,7 @@
 
     We start by opening the file in read-only mode. The QFile::Text
     flag indicates that the file is a text file, not a binary file.
-    On Unix and Mac OS X, this makes no difference, but on Windows,
+    On Unix and OS X, this makes no difference, but on Windows,
     it ensures that the "\\r\\n" end-of-line sequence is converted to
     "\\n" when reading.
 

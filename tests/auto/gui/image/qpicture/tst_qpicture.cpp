@@ -133,10 +133,10 @@ void tst_QPicture::boundingRect()
     QRect r2( 10, 20, 100, 60 );
     QCOMPARE( p1.boundingRect(), r2 );
     QPicture p2( p1 );
-    QCOMPARE( p1.boundingRect(), r2 );
+    QCOMPARE( p2.boundingRect(), r2 );
     QPicture p3;
     p3 = p1;
-    QCOMPARE( p1.boundingRect(), r2 );
+    QCOMPARE( p3.boundingRect(), r2 );
 
     {
         QPicture p4;

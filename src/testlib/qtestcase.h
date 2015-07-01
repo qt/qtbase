@@ -41,6 +41,8 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qtypetraits.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qtemporarydir.h>
 
 #include <string.h>
 
@@ -267,7 +269,7 @@ namespace QTest
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 #endif
 
-    Q_TESTLIB_EXPORT QString qExtractTestData(const QString &dirName);
+    Q_TESTLIB_EXPORT QSharedPointer<QTemporaryDir> qExtractTestData(const QString &dirName);
     Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = 0, int line = 0, const char* builddir = 0);
     Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = 0, int line = 0, const char* builddir = 0);
 

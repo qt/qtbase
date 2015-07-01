@@ -3,7 +3,7 @@ CONFIG += testcase
 QT = core-private network-private testlib
 SOURCES += ../tst_qtcpsocket.cpp
 win32: {
-wince*: {
+wince {
 	LIBS += -lws2
 } else {
 	LIBS += -lws2_32

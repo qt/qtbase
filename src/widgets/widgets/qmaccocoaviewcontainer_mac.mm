@@ -43,7 +43,7 @@
     \class QMacCocoaViewContainer
     \since 4.5
 
-    \brief The QMacCocoaViewContainer class provides a widget for Mac OS X that can be used to wrap arbitrary
+    \brief The QMacCocoaViewContainer class provides a widget for OS X that can be used to wrap arbitrary
     Cocoa views (i.e., NSView subclasses) and insert them into Qt hierarchies.
 
     \ingroup advanced
@@ -61,7 +61,7 @@
     Cocoa. However, QCocoaContainerView requires Mac OS X 10.5 or better to be
     used with Carbon.
 
-    It should be also noted that at the low level on Mac OS X, there is a
+    It should be also noted that at the low level on OS X, there is a
     difference between windows (top-levels) and view (widgets that are inside a
     window). For this reason, make sure that the NSView that you are wrapping
     doesn't end up as a top-level. The best way to ensure this is to make sure

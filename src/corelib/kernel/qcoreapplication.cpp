@@ -1004,6 +1004,17 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   do not change the focus widget.
   \endlist
 
+  \b{Future direction:} This function will not be called for objects that live
+  outside the main thread in Qt 6. Applications that need that functionality
+  should find other solutions for their event inspection needs in the meantime.
+  The change may be extended to the main thread, causing this function to be
+  deprecated.
+
+  \warning If you override this function, you must ensure all threads that
+  process events stop doing so before your application object begins
+  destruction. This includes threads started by other libraries that you may be
+  using, but does not apply to Qt's own threads.
+
   \sa QObject::event(), installNativeEventFilter()
 */
 
@@ -2053,11 +2064,13 @@ QString QCoreApplication::applicationFilePath()
 
     QCoreApplicationPrivate *d = self->d_func();
 
-    static char *procName = d->argv[0];
-    if (qstrcmp(procName, d->argv[0]) != 0) {
-        // clear the cache if the procname changes, so we reprocess it.
-        QCoreApplicationPrivate::clearApplicationFilePath();
-        procName = d->argv[0];
+    if (d->argc) {
+        static const char *procName = d->argv[0];
+        if (qstrcmp(procName, d->argv[0]) != 0) {
+            // clear the cache if the procname changes, so we reprocess it.
+            QCoreApplicationPrivate::clearApplicationFilePath();
+            procName = d->argv[0];
+        }
     }
 
     if (QCoreApplicationPrivate::cachedApplicationFilePath)

@@ -282,6 +282,18 @@ QPoint QXcbScreen::mapFromNative(const QPoint &pos) const
     return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
 }
 
+QPointF QXcbScreen::mapToNative(const QPointF &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_geometry.topLeft()) * dpr + m_nativeGeometry.topLeft();
+}
+
+QPointF QXcbScreen::mapFromNative(const QPointF &pos) const
+{
+    const int dpr = int(devicePixelRatio());
+    return (pos - m_nativeGeometry.topLeft()) / dpr + m_geometry.topLeft();
+}
+
 QRect QXcbScreen::mapToNative(const QRect &rect) const
 {
     const int dpr = int(devicePixelRatio());
@@ -361,11 +373,11 @@ QDpi QXcbScreen::logicalDpi() const
     if (overrideDpi)
         return QDpi(overrideDpi, overrideDpi);
 
-    if (m_forcedDpi > 0) {
-        int primaryDpr = int(connection()->screens().at(0)->devicePixelRatio());
+    int primaryDpr = int(connection()->screens().at(0)->devicePixelRatio());
+    if (m_forcedDpi > 0)
         return QDpi(m_forcedDpi/primaryDpr, m_forcedDpi/primaryDpr);
-    }
-    return virtualDpi();
+    QDpi vDpi = virtualDpi();
+    return QDpi(vDpi.first/primaryDpr, vDpi.second/primaryDpr);
 }
 
 

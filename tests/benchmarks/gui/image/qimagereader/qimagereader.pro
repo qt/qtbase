@@ -9,7 +9,7 @@ SOURCES += tst_qimagereader.cpp
 !contains(QT_CONFIG, no-jpeg):DEFINES += QTEST_HAVE_JPEG
 QT += network
 
-wince*: {
+wince {
    addFiles.files = images
    addFiles.path = .
 

@@ -534,10 +534,7 @@ int QDialog::exec()
 
     QPointer<QDialog> guard = this;
     if (d->nativeDialogInUse) {
-        if (windowModality() == Qt::WindowModal)
-            d->platformHelper()->execModalForWindow(d->parentWindow());
-        else
-            d->platformHelper()->exec();
+        d->platformHelper()->exec();
     } else {
         QEventLoop eventLoop;
         d->eventLoop = &eventLoop;
@@ -720,13 +717,6 @@ void QDialog::setVisible(bool visible)
         if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
             return;
 
-        if (!testAttribute(Qt::WA_Moved)) {
-            Qt::WindowStates state = windowState();
-            adjustPosition(parentWidget());
-            setAttribute(Qt::WA_Moved, false); // not really an explicit position
-            if (state != windowState())
-                setWindowState(state);
-        }
         QWidget::setVisible(visible);
         showExtension(d->doShowExtension);
         QWidget *fw = window()->focusWidget();

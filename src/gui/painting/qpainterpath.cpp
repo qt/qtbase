@@ -218,7 +218,7 @@ static void qt_debug_path(const QPainterPath &path)
     Below is a code snippet that shows how a QPainterPath object can
     be used:
 
-    \table 100%
+    \table 70%
     \row
     \li \inlineimage qpainterpath-construction.png
     \li

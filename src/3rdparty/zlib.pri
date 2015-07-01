@@ -1,4 +1,4 @@
-wince*: DEFINES += NO_ERRNO_H
+wince: DEFINES += NO_ERRNO_H
 INCLUDEPATH = $$PWD/zlib $$INCLUDEPATH
 SOURCES+= \
     $$PWD/zlib/adler32.c \

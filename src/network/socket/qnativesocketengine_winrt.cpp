@@ -285,11 +285,23 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
         return false;
     }
     d->socketState = QAbstractSocket::ConnectingState;
-    hr = d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
-                                         d, &QNativeSocketEnginePrivate::handleConnectToHost).Get());
-    Q_ASSERT_SUCCEEDED(hr);
+    hr = QWinRTFunctions::await(d->connectOp);
+    RETURN_FALSE_IF_FAILED("Connection could not be established");
+    bool connectionErrors = false;
+    d->handleConnectionErrors(d->connectOp.Get(), &connectionErrors);
+    if (connectionErrors)
+        return false;
+    d->connectOp.Reset();
 
-    return d->socketState == QAbstractSocket::ConnectedState;
+    d->socketState = QAbstractSocket::ConnectedState;
+    emit connectionReady();
+
+    // Delay the reader so that the SSL socket can upgrade
+    if (d->sslSocket)
+        connect(d->sslSocket, SIGNAL(encrypted()), SLOT(establishRead()));
+    else
+        establishRead();
+    return true;
 }
 
 bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
@@ -1104,47 +1116,34 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     return S_OK;
 }
 
-HRESULT QNativeSocketEnginePrivate::handleConnectToHost(IAsyncAction *action, AsyncStatus)
+void QNativeSocketEnginePrivate::handleConnectionErrors(IAsyncAction *connectAction, bool *errorsOccured)
 {
-    Q_Q(QNativeSocketEngine);
-
-    HRESULT hr = action->GetResults();
-    if (wasDeleted || !connectOp) // Protect against a late callback
-        return S_OK;
-
-    connectOp.Reset();
+    bool error = true;
+    HRESULT hr = connectAction->GetResults();
     switch (hr) {
     case 0x8007274c: // A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
         setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
+        break;
     case 0x80072751: // A socket operation was attempted to an unreachable host.
         setError(QAbstractSocket::HostNotFoundError, HostUnreachableErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
+        break;
     case 0x8007274d: // No connection could be made because the target machine actively refused it.
         setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
         socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
+        break;
     default:
         if (FAILED(hr)) {
             setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
             socketState = QAbstractSocket::UnconnectedState;
-            return S_OK;
+        } else {
+            error = false;
         }
         break;
     }
-
-    socketState = QAbstractSocket::ConnectedState;
-    emit q->connectionReady();
-
-    // Delay the reader so that the SSL socket can upgrade
-    if (sslSocket)
-        q->connect(sslSocket, SIGNAL(encrypted()), SLOT(establishRead()));
-    else
-        q->establishRead();
-
-    return S_OK;
+    if (errorsOccured)
+        *errorsOccured = error;
 }
 
 HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *asyncInfo, AsyncStatus status)

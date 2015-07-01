@@ -7264,6 +7264,25 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
   difference if \a a1 contains e.g. \c{%1}:
 
   \snippet qstring/main.cpp 13
+
+  A similar problem occurs when the numbered place markers are not
+  white space separated:
+
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 97
+
+  Let's look at the substitutions:
+  \list
+  \li First, \c Hello replaces \c {%1} so the string becomes \c {"Hello%3%2"}.
+  \li Then, \c 20 replaces \c {%2} so the string becomes \c {"Hello%320"}.
+  \li Since the maximum numbered place marker value is 99, \c 50 replaces \c {%32}.
+  \endlist
+  Thus the string finally becomes \c {"Hello500"}.
+
+  In such cases, the following yields the expected results:
+
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 98
 */
 
 /*!

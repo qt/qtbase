@@ -77,7 +77,7 @@
     \target building
     \section1 Building the Drivers Using Configure
 
-    On Unix and Mac OS X, the Qt \c configure script tries to
+    On Unix and OS X, the Qt \c configure script tries to
     automatically detect the available client libraries on your
     machine. Run \c{configure -help} to see what drivers can be
     built. You should get an output similar to this:
@@ -139,7 +139,7 @@
     Please refer to the MySQL documentation, chapter "libmysqld, the Embedded
     MySQL Server Library" for more information about the MySQL embedded server.
 
-    \section3 How to Build the QMYSQL Plugin on Unix and Mac OS X
+    \section3 How to Build the QMYSQL Plugin on Unix and OS X
 
     You need the MySQL header files and as well as the shared library
     \c{libmysqlclient.so}. Depending on your Linux distribution you may
@@ -208,7 +208,7 @@
     BLOBs are bound to placeholders or QSqlTableModel, which uses a prepared
     query to do this internally.
 
-    \section3 How to Build the OCI Plugin on Unix and Mac OS X
+    \section3 How to Build the OCI Plugin on Unix and OS X
 
     For Oracle 10g, all you need is the "Instant Client Package - Basic" and
     "Instant Client Package - SDK". For Oracle prior to 10g, you require
@@ -343,7 +343,7 @@
     "SQL_WCHAR support" in the ODBC driver manager otherwise Oracle
     will convert all Unicode strings to local 8-bit.
 
-    \section3 How to Build the ODBC Plugin on Unix and Mac OS X
+    \section3 How to Build the ODBC Plugin on Unix and OS X
 
     It is recommended that you use unixODBC. You can find the latest
     version and ODBC drivers at \l http://www.unixodbc.org.
@@ -400,7 +400,7 @@
     Binary Large Objects are supported through the \c BYTEA field type in
     PostgreSQL server versions >= 7.1.
 
-    \section3 How to Build the QPSQL Plugin on Unix and Mac OS X
+    \section3 How to Build the QPSQL Plugin on Unix and OS X
 
     You need the PostgreSQL client library and headers installed.
 
@@ -440,7 +440,7 @@
     Sybase client library. Refer to the Sybase documentation for information on how to set up
     a Sybase client configuration file to enable connections to databases on non-default ports.
 
-    \section3 How to Build the QTDS Plugin on Unix and Mac OS X
+    \section3 How to Build the QTDS Plugin on Unix and OS X
 
     Under Unix, two libraries are available which support the TDS protocol:
 
@@ -493,7 +493,7 @@
     We suggest using a forward-only query when calling stored procedures
     in DB2 (see QSqlQuery::setForwardOnly()).
 
-    \section3 How to Build the QDB2 Plugin on Unix and Mac OS X
+    \section3 How to Build the QDB2 Plugin on Unix and OS X
 
     \snippet code/doc_src_sql-driver.qdoc 18
 
@@ -643,7 +643,7 @@
 
     \snippet code/doc_src_sql-driver.cpp 26
 
-    \section3 How to Build the QIBASE Plugin on Unix and Mac OS X
+    \section3 How to Build the QIBASE Plugin on Unix and OS X
 
     The following assumes InterBase or Firebird is installed in
     \c{/opt/interbase}:

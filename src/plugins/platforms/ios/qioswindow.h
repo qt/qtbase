@@ -80,6 +80,8 @@ public:
 
     void clearAccessibleCache();
 
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+
 private:
     void applicationStateChanged(Qt::ApplicationState state);
     void applyGeometry(const QRect &rect);

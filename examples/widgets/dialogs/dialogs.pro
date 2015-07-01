@@ -5,10 +5,13 @@ SUBDIRS       = classwizard \
                 tabdialog \
                 trivialwizard
 
-!wince*: SUBDIRS += licensewizard \
-                    extension \
-                    findfiles
+!wince {
+    SUBDIRS += \
+        licensewizard \
+        extension \
+        findfiles
+}
 
 !qtHaveModule(printsupport): SUBDIRS -= licensewizard
 contains(DEFINES, QT_NO_WIZARD): SUBDIRS -= trivialwizard licensewizard classwizard
-wince*: SUBDIRS += sipdialog
+wince: SUBDIRS += sipdialog

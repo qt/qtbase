@@ -58,6 +58,8 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     str << (w->testAttribute(Qt::WA_Mapped) ? "[mapped] " : "[not mapped] ");
     if (w->testAttribute(Qt::WA_DontCreateNativeAncestors))
         str << "[NoNativeAncestors] ";
+    if (const int states = w->windowState())
+        str << "windowState=" << hex << showbase << states << dec << noshowbase << ' ';
     formatRect(str, w->geometry());
     if (!(options & DontPrintWindowFlags)) {
         str << ' ';
