@@ -56,10 +56,6 @@
 #  include <immintrin.h>    // for _addcarry_u<nn>
 #endif
 
-#ifndef __has_builtin
-#  define __has_builtin(x)  0
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if !defined(Q_CC_MIPS)
@@ -230,28 +226,28 @@ mul_overflow(T v1, T v2, T *r)
 #endif
 
 // GCC 5 and Clang have builtins to detect overflows
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_uadd_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_uadd_overflow)
 template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
 { return __builtin_uadd_overflow(v1, v2, r); }
 #endif
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_uaddl_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_uaddl_overflow)
 template <> inline bool add_overflow(unsigned long v1, unsigned long v2, unsigned long *r)
 { return __builtin_uaddl_overflow(v1, v2, r); }
 #endif
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_uaddll_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_uaddll_overflow)
 template <> inline bool add_overflow(unsigned long long v1, unsigned long long v2, unsigned long long *r)
 { return __builtin_uaddll_overflow(v1, v2, r); }
 #endif
 
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_umul_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_umul_overflow)
 template <> inline bool mul_overflow(unsigned v1, unsigned v2, unsigned *r)
 { return __builtin_umul_overflow(v1, v2, r); }
 #endif
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_umull_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_umull_overflow)
 template <> inline bool mul_overflow(unsigned long v1, unsigned long v2, unsigned long *r)
 { return __builtin_umull_overflow(v1, v2, r); }
 #endif
-#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || __has_builtin(__builtin_umulll_overflow)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_umulll_overflow)
 template <> inline bool mul_overflow(unsigned long long v1, unsigned long long v2, unsigned long long *r)
 { return __builtin_umulll_overflow(v1, v2, r); }
 #  define HAVE_MUL64_OVERFLOW

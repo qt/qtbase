@@ -1110,6 +1110,37 @@
 #endif
 
 /*
+ * SG10's SD-6 feature detection and some useful extensions from Clang and GCC
+ * https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
+ * http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+ */
+#ifdef __has_builtin
+#  define QT_HAS_BUILTIN(x)             __has_builtin(x)
+#else
+#  define QT_HAS_BUILTIN(x)             0
+#endif
+#ifdef __has_attribute
+#  define QT_HAS_ATTRIBUTE(x)           __has_attribute(x)
+#else
+#  define QT_HAS_ATTRIBUTE(x)           0
+#endif
+#ifdef __has_cpp_attribute
+#  define QT_HAS_CPP_ATTRIBUTE(x)       __has_cpp_attribute(x)
+#else
+#  define QT_HAS_CPP_ATTRIBUTE(x)       0
+#endif
+#ifdef __has_include
+#  define QT_HAS_INCLUDE(x)             __has_include(x)
+#else
+#  define QT_HAS_INCLUDE(x)             0
+#endif
+#ifdef __has_include_next
+#  define QT_HAS_INCLUDE_NEXT(x)        __has_include_next(x)
+#else
+#  define QT_HAS_INCLUDE_NEXT(x)        0
+#endif
+
+/*
  * Warning/diagnostic handling
  */
 

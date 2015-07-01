@@ -75,17 +75,13 @@
 # include "private/qcore_unix_p.h"
 #endif
 
-#ifndef __has_include
-#  define __has_include(x) 0
-#endif
-
 #ifndef QT_BOOTSTRAPPED
 #if !defined QT_NO_REGULAREXPRESSION
 #  ifdef __UCLIBC__
 #    if __UCLIBC_HAS_BACKTRACE__
 #      define QLOGGING_HAVE_BACKTRACE
 #    endif
-#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
+#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (QT_HAS_INCLUDE(<cxxabi.h>) && QT_HAS_INCLUDE(<execinfo.h>))
 #    define QLOGGING_HAVE_BACKTRACE
 #  endif
 #endif
@@ -94,7 +90,7 @@
 extern char *__progname;
 #endif
 
-#if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
+#if defined(Q_OS_LINUX) && (defined(__GLIBC__) || QT_HAS_INCLUDE(<sys/syscall.h>))
 #  include <sys/syscall.h>
 static long qt_gettid()
 {
