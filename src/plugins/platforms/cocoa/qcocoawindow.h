@@ -237,7 +237,7 @@ protected:
 
     bool shouldUseNSPanel();
 
-    QRect windowGeometry() const;
+    QRect nativeWindowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
     void reinsertChildWindow(QCocoaWindow *child);
