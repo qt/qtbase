@@ -322,6 +322,46 @@
 
 // -------------------------------------------------------------------------
 
+- (void)sendKeyPressRelease:(Qt::Key)key modifiers:(Qt::KeyboardModifiers)modifiers
+{
+    QKeyEvent press(QEvent::KeyPress, key, modifiers);
+    QKeyEvent release(QEvent::KeyRelease, key, modifiers);
+    [self sendEventToFocusObject:press];
+    [self sendEventToFocusObject:release];
+}
+
+- (void)cut:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_X modifiers:Qt::ControlModifier];
+}
+
+- (void)copy:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_C modifiers:Qt::ControlModifier];
+}
+
+- (void)paste:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_V modifiers:Qt::ControlModifier];
+}
+
+- (void)selectAll:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_A modifiers:Qt::ControlModifier];
+}
+
+- (void)delete:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_Delete modifiers:Qt::ControlModifier];
+}
+
+// -------------------------------------------------------------------------
+
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties
 {
     // As documented, we should not report textWillChange/textDidChange unless the text
@@ -656,10 +696,7 @@
         return;
 
     if ([text isEqualToString:@"\n"]) {
-        QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-        QKeyEvent release(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
-        [self sendEventToFocusObject:press];
-        [self sendEventToFocusObject:release];
+        [self sendKeyPressRelease:Qt::Key_Return modifiers:Qt::NoModifier];
 
         if (self.returnKeyType == UIReturnKeyDone)
             [self resignFirstResponder];
@@ -677,10 +714,7 @@
     // Since we're posting im events directly to the focus object, we should do the
     // same for key events. Otherwise they might end up in a different place or out
     // of sync with im events.
-    QKeyEvent press(QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
-    QKeyEvent release(QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
-    [self sendEventToFocusObject:press];
-    [self sendEventToFocusObject:release];
+    [self sendKeyPressRelease:Qt::Key_Backspace modifiers:Qt::NoModifier];
 }
 
 @end
