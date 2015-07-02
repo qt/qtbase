@@ -138,10 +138,14 @@ char *QRingBuffer::reserveFront(qint64 bytes)
         if (tailBuffer == 0)
             tail -= head;
 
-        buffers.prepend(QByteArray());
         head = qMax(basicBlockSize, int(bytes));
+        if (bufferSize == 0) {
+            tail = head;
+        } else {
+            buffers.prepend(QByteArray());
+            ++tailBuffer;
+        }
         buffers.first().resize(head);
-        ++tailBuffer;
     }
 
     head -= int(bytes);
