@@ -39,11 +39,11 @@ class tst_QRingBuffer : public QObject
 {
     Q_OBJECT
 private slots:
+    void constructing();
     void readPointerAtPositionWriteRead();
     void readPointerAtPositionEmptyRead();
     void readPointerAtPositionWithHead();
     void readPointerAtPositionReadTooMuch();
-    void sizeWhenEmpty();
     void sizeWhenReservedAndChopped();
     void sizeWhenReserved();
     void free();
@@ -56,6 +56,23 @@ private slots:
     void peek();
     void readLine();
 };
+
+void tst_QRingBuffer::constructing()
+{
+    QRingBuffer ringBuffer;
+
+    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
+    QVERIFY(ringBuffer.isEmpty());
+    QCOMPARE(ringBuffer.nextDataBlockSize(), Q_INT64_C(0));
+    QVERIFY(ringBuffer.readPointer() == Q_NULLPTR);
+    QCOMPARE(ringBuffer.skip(5), Q_INT64_C(0));
+    QCOMPARE(ringBuffer.read(), QByteArray());
+    QCOMPARE(ringBuffer.getChar(), -1);
+    QVERIFY(!ringBuffer.canReadLine());
+
+    char buf[5];
+    QCOMPARE(ringBuffer.peek(buf, sizeof(buf)), Q_INT64_C(0));
+}
 
 void tst_QRingBuffer::sizeWhenReserved()
 {
@@ -70,13 +87,6 @@ void tst_QRingBuffer::sizeWhenReservedAndChopped()
     QRingBuffer ringBuffer;
     ringBuffer.reserve(31337);
     ringBuffer.chop(31337);
-
-    QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
-}
-
-void tst_QRingBuffer::sizeWhenEmpty()
-{
-    QRingBuffer ringBuffer;
 
     QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
 }

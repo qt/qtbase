@@ -54,9 +54,7 @@ class QRingBuffer
 {
 public:
     explicit inline QRingBuffer(int growth = 4096) :
-        head(0), tail(0), tailBuffer(0), basicBlockSize(growth), bufferSize(0) {
-        buffers.append(QByteArray());
-    }
+        head(0), tail(0), tailBuffer(0), basicBlockSize(growth), bufferSize(0) { }
 
     inline qint64 nextDataBlockSize() const {
         return (tailBuffer == 0 ? tail : buffers.first().size()) - head;

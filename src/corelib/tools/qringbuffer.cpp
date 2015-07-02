@@ -65,6 +65,8 @@ const char *QRingBuffer::readPointerAtPosition(qint64 pos, qint64 &length) const
 
 void QRingBuffer::free(qint64 bytes)
 {
+    Q_ASSERT(bytes <= bufferSize);
+
     while (bytes > 0) {
         const qint64 blockSize = buffers.first().size() - head;
 
@@ -100,20 +102,25 @@ char *QRingBuffer::reserve(qint64 bytes)
     if (bytes <= 0 || bytes >= MaxByteArraySize)
         return 0;
 
-    const qint64 newSize = bytes + tail;
-    // if need buffer reallocation
-    if (newSize > buffers.last().size()) {
-        if (newSize > buffers.last().capacity() && (tail >= basicBlockSize
-                || newSize >= MaxByteArraySize)) {
-            // shrink this buffer to its current size
-            buffers.last().resize(tail);
+    if (buffers.isEmpty()) {
+        buffers.append(QByteArray());
+        buffers.first().resize(qMax(basicBlockSize, int(bytes)));
+    } else {
+        const qint64 newSize = bytes + tail;
+        // if need buffer reallocation
+        if (newSize > buffers.last().size()) {
+            if (newSize > buffers.last().capacity() && (tail >= basicBlockSize
+                    || newSize >= MaxByteArraySize)) {
+                // shrink this buffer to its current size
+                buffers.last().resize(tail);
 
-            // create a new QByteArray
-            buffers.append(QByteArray());
-            ++tailBuffer;
-            tail = 0;
+                // create a new QByteArray
+                buffers.append(QByteArray());
+                ++tailBuffer;
+                tail = 0;
+            }
+            buffers.last().resize(qMax(basicBlockSize, tail + int(bytes)));
         }
-        buffers.last().resize(qMax(basicBlockSize, tail + int(bytes)));
     }
 
     char *writePtr = buffers.last().data() + tail;
@@ -134,9 +141,13 @@ char *QRingBuffer::reserveFront(qint64 bytes)
         return 0;
 
     if (head < bytes) {
-        buffers.first().remove(0, head);
-        if (tailBuffer == 0)
-            tail -= head;
+        if (buffers.isEmpty()) {
+            buffers.append(QByteArray());
+        } else {
+            buffers.first().remove(0, head);
+            if (tailBuffer == 0)
+                tail -= head;
+        }
 
         head = qMax(basicBlockSize, int(bytes));
         if (bufferSize == 0) {
@@ -155,6 +166,8 @@ char *QRingBuffer::reserveFront(qint64 bytes)
 
 void QRingBuffer::chop(qint64 bytes)
 {
+    Q_ASSERT(bytes <= bufferSize);
+
     while (bytes > 0) {
         if (tailBuffer == 0 || tail > bytes) {
             // keep a single block around if it does not exceed
@@ -185,6 +198,9 @@ void QRingBuffer::chop(qint64 bytes)
 
 void QRingBuffer::clear()
 {
+    if (buffers.isEmpty())
+        return;
+
     buffers.erase(buffers.begin() + 1, buffers.end());
     buffers.first().clear();
 
@@ -301,7 +317,10 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 void QRingBuffer::append(const QByteArray &qba)
 {
     if (tail == 0) {
-        buffers.last() = qba;
+        if (buffers.isEmpty())
+            buffers.append(qba);
+        else
+            buffers.last() = qba;
     } else {
         buffers.last().resize(tail);
         buffers.append(qba);
