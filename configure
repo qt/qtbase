@@ -2842,7 +2842,7 @@ if [ -z "$PLATFORM" ]; then
      Linux:*)
         PLATFORM=linux-g++
         PLATFORM_NOTES="
-            - Also available for Linux: linux-kcc linux-icc linux-cxx
+            - Also available for Linux: linux-clang linux-kcc linux-icc linux-cxx
         "
         ;;
      SunOS:5*)
