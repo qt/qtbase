@@ -6463,7 +6463,7 @@ fi
 
 # ### Vestige
 if [ "$CFG_QML_DEBUG" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_QML_DEBUGGER"
+    QT_CONFIG="$QT_CONFIG no-qml-debug"
 fi
 
 case "$QMAKE_CONF_COMPILER" in

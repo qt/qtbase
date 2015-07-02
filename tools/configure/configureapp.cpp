@@ -2909,6 +2909,9 @@ void Configure::generateOutputVars()
     if (dictionary["AUDIO_BACKEND"] == "yes")
         qtConfig += "audio-backend";
 
+    if (dictionary["QML_DEBUG"] == "no")
+        qtConfig += "no-qml-debug";
+
     if (dictionary["WMF_BACKEND"] == "yes")
         qtConfig += "wmf-backend";
 
@@ -3623,7 +3626,6 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
-        if (dictionary["QML_DEBUG"] == "no")         qconfigList += "QT_NO_QML_DEBUGGER";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
