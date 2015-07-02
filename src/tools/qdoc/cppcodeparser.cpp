@@ -1585,7 +1585,13 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
     bool createFunctionNode = false;
     if (parsingHeaderFile_) {
         if (matched_friend) {
+            if (matched_inline) {
+                // nothing yet
+            }
             if (body_present) {
+                if (body_expected) {
+                    // nothing yet
+                }
                 createFunctionNode = true;
                 if (parent && parent->parent())
                     parent = parent->parent();
@@ -1601,6 +1607,8 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
 
     if (createFunctionNode) {
         func = new FunctionNode(extra.type, parent, name, extra.isAttached);
+        if (matched_friend)
+            access = Node::Public;
         func->setAccess(access);
         func->setLocation(location());
         func->setReturnType(returnType.toString());
