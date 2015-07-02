@@ -546,7 +546,8 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
 
-        delete view;
+        if (isAncestorOf(view))
+            delete view;
         view = 0;
     }
 

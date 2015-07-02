@@ -164,6 +164,7 @@ private slots:
     void keyboardSelection();
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
+    void respectChangedOwnershipOfItemView();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -3168,6 +3169,28 @@ void tst_QComboBox::updateDelegateOnEditableChange()
         QCOMPARE(menuDelegateAfter, menuDelegateBefore);
     }
 }
+
+void tst_QComboBox::respectChangedOwnershipOfItemView()
+{
+    QComboBox box1;
+    QComboBox box2;
+    QTableView *v1 = new QTableView;
+    box1.setView(v1);
+
+    QSignalSpy spy1(v1, SIGNAL(destroyed()));
+    box2.setView(v1); // Ownership should now be transferred to box2
+
+
+    QTableView *v2 = new QTableView(&box1);
+    box1.setView(v2);  // Here we do not expect v1 to be deleted
+    QApplication::processEvents();
+    QCOMPARE(spy1.count(), 0);
+
+    QSignalSpy spy2(v2, SIGNAL(destroyed()));
+    box1.setView(v1);
+    QCOMPARE(spy2.count(), 1);
+}
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"
