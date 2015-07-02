@@ -196,6 +196,15 @@ void tst_QProcessEnvironment::insertEnv()
     QCOMPARE(e.value("Hello"), QString("Another World"));
     QCOMPARE(e.value("FOO2"), QString("bar2"));
     QCOMPARE(e.value("A2"), QString("bc2"));
+
+    QProcessEnvironment e3;
+    e3.insert("FOO2", "bar2");
+    e3.insert("A2", "bc2");
+    e3.insert("Hello", "Another World");
+
+    e3.insert(e3); // mustn't deadlock
+
+    QVERIFY(e3 == e2);
 }
 
 void tst_QProcessEnvironment::caseSensitivity()
