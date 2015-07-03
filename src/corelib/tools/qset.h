@@ -48,7 +48,7 @@ class QSet
     typedef QHash<T, QHashDummyValue> Hash;
 
 public:
-    inline QSet() {}
+    inline QSet() Q_DECL_NOTHROW {}
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
     {
@@ -60,7 +60,7 @@ public:
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated destructor is fine!
 
-    inline void swap(QSet<T> &other) { q_hash.swap(other.q_hash); }
+    inline void swap(QSet<T> &other) Q_DECL_NOTHROW { q_hash.swap(other.q_hash); }
 
     inline bool operator==(const QSet<T> &other) const
         { return q_hash == other.q_hash; }
