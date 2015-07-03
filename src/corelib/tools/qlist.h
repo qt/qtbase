@@ -144,7 +144,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QList(QList<T> &&other) : d(other.d) { other.d = const_cast<QListData::Data *>(&QListData::shared_null); }
     inline QList &operator=(QList<T> &&other)
-    { qSwap(d, other.d); return *this; }
+    { QList moved(std::move(other)); swap(moved); return *this; }
 #endif
     inline void swap(QList<T> &other) { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS

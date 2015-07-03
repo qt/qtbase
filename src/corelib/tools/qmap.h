@@ -344,7 +344,7 @@ public:
     }
 
     inline QMap<Key, T> &operator=(QMap<Key, T> &&other)
-    { qSwap(d, other.d); return *this; }
+    { QMap moved(std::move(other)); swap(moved); return *this; }
 #endif
     inline void swap(QMap<Key, T> &other) { qSwap(d, other.d); }
     explicit QMap(const typename std::map<Key, T> &other);

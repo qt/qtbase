@@ -88,7 +88,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QLinkedList(QLinkedList<T> &&other) : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
     inline QLinkedList<T> &operator=(QLinkedList<T> &&other)
-    { qSwap(d, other.d); return *this; }
+    { QLinkedList moved(std::move(other)); swap(moved); return *this; }
 #endif
     inline void swap(QLinkedList<T> &other) { qSwap(d, other.d); }
     bool operator==(const QLinkedList<T> &l) const;

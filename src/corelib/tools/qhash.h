@@ -249,7 +249,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     QHash(QHash &&other) Q_DECL_NOTHROW : d(other.d) { other.d = const_cast<QHashData *>(&QHashData::shared_null); }
     QHash &operator=(QHash &&other) Q_DECL_NOTHROW
-    { qSwap(d, other.d); return *this; }
+    { QHash moved(std::move(other)); swap(moved); return *this; }
 #endif
     void swap(QHash &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
