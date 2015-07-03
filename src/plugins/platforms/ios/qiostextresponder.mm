@@ -578,7 +578,7 @@
 
     if (cursorPos != int(r.location + r.length) || cursorPos != anchorPos) {
         attrs = QList<QInputMethodEvent::Attribute>();
-        attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, cursorPos, (cursorPos - anchorPos), 0);
+        attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, qMin(cursorPos, anchorPos), qAbs(cursorPos - anchorPos), 0);
         e = QInputMethodEvent(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
