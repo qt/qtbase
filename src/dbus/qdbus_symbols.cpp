@@ -144,7 +144,7 @@ void (*qdbus_resolve_me(const char *name))()
 #endif
 }
 
-#else  // QT_LINKED_LIBDBUS
+#else
 static void qdbus_unloadLibDBus()
 {
     if (qEnvironmentVariableIsSet("QDBUS_FORCE_SHUTDOWN"))
@@ -153,7 +153,7 @@ static void qdbus_unloadLibDBus()
 
 #endif // !QT_LINKED_LIBDBUS
 
-#ifndef QT_NO_LIBRARY
+#if defined(QT_LINKED_LIBDBUS) || !defined(QT_NO_LIBRARY)
 Q_DESTRUCTOR_FUNCTION(qdbus_unloadLibDBus)
 #endif
 
