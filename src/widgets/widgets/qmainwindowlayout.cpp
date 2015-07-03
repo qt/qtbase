@@ -2283,11 +2283,11 @@ void QMainWindowLayout::updateGapIndicator()
 #endif
 }
 
-QList<int> QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
+void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
 {
     if (!parentWidget()->isVisible() || parentWidget()->isMinimized()
         || pluggingWidget != 0 || widgetItem == 0)
-        return QList<int>();
+        return;
 
     QWidget *widget = widgetItem->widget();
     QPoint pos = parentWidget()->mapFromGlobal(mousePos);
@@ -2317,13 +2317,13 @@ QList<int> QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mouse
     }
 
     if (path == currentGapPos)
-        return currentGapPos; // the gap is already there
+        return; // the gap is already there
 
     currentGapPos = path;
     if (path.isEmpty()) {
         fixToolBarOrientation(widgetItem, 2); // 2 = top dock, ie. horizontal
         restore(true);
-        return QList<int>();
+        return;
     }
 
     fixToolBarOrientation(widgetItem, currentGapPos.at(1));
@@ -2332,7 +2332,7 @@ QList<int> QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mouse
 
     if (!newState.insertGap(path, widgetItem)) {
         restore(true); // not enough space
-        return QList<int>();
+        return;
     }
 
     QSize min = newState.minimumSize();
@@ -2340,7 +2340,7 @@ QList<int> QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mouse
 
     if (min.width() > size.width() || min.height() > size.height()) {
         restore(true);
-        return QList<int>();
+        return;
     }
 
     newState.fitLayout();
@@ -2354,8 +2354,6 @@ QList<int> QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mouse
     applyState(layoutState);
 
     updateGapIndicator();
-
-    return path;
 }
 
 QDockWidgetGroupWindow *QMainWindowLayout::createTabbedDockWindow()

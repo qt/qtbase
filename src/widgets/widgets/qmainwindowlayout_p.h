@@ -291,7 +291,7 @@ public:
     QRubberBand *gapIndicator;
 #endif
 
-    QList<int> hover(QLayoutItem *widgetItem, const QPoint &mousePos);
+    void hover(QLayoutItem *widgetItem, const QPoint &mousePos);
     bool plug(QLayoutItem *widgetItem);
     QLayoutItem *unplug(QWidget *widget, bool group = false);
     void revert(QLayoutItem *widgetItem);
