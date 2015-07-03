@@ -66,11 +66,19 @@ void tst_QProcessEnvironment::operator_eq()
     QVERIFY(e1 == e2);
 
     e1.clear();
-    QVERIFY(e1 != e2);
+    QVERIFY(e1 == e2);
 
     e2.clear();
-
     QVERIFY(e1 == e2);
+
+    e1.insert("FOO", "bar");
+    QVERIFY(e1 != e2);
+
+    e2.insert("FOO", "bar");
+    QVERIFY(e1 == e2);
+
+    e2.insert("FOO", "baz");
+    QVERIFY(e1 != e2);
 }
 
 void tst_QProcessEnvironment::clearAndIsEmpty()
