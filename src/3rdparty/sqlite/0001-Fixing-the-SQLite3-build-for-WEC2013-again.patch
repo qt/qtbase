@@ -1,0 +1,33 @@
+From c7bbe85015995c1e0627d88bac6fd5715b1338a0 Mon Sep 17 00:00:00 2001
+From: Bjoern Breitmeyer <bjoern.breitmeyer@kdab.com>
+Date: Fri, 3 Jul 2015 14:08:04 +0200
+Subject: [PATCH] Fixing the SQLite3 build for WEC2013 again.
+
+The new version broke the build again
+-> fix it again.
+
+Change-Id: I75761d134d97a2784f1de5076412aa814fdf9bcd
+---
+ src/3rdparty/sqlite/sqlite3.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/sqlite/sqlite3.c b/src/3rdparty/sqlite/sqlite3.c
+index 71f6c10..040a9e1 100644
+--- a/src/3rdparty/sqlite/sqlite3.c
++++ b/src/3rdparty/sqlite/sqlite3.c
+@@ -15474,9 +15474,11 @@ static void clearYMD_HMS_TZ(DateTime *p){
+ #define HAVE_LOCALTIME_S 1
+ #endif
+ 
+-#if defined(_WIN32_WCE)
++#if defined(_WIN32_WCE) && _WIN32_WCE < 0x800
+ #undef HAVE_LOCALTIME_S
+ struct tm *__cdecl localtime(const time_t *t);
++#elif defined(_WIN32_WCE) && _WIN32_WCE >= 0x800
++#  define SQLITE_MSVC_LOCALTIME_API 1
+ #endif
+ 
+ #ifndef SQLITE_OMIT_LOCALTIME
+-- 
+1.8.1.msysgit.1
+
