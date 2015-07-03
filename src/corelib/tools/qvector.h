@@ -70,7 +70,7 @@ public:
     QVector<T> &operator=(const QVector<T> &v);
 #ifdef Q_COMPILER_RVALUE_REFS
     QVector(QVector<T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
-    QVector<T> operator=(QVector<T> &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+    QVector<T> &operator=(QVector<T> &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
     void swap(QVector<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
