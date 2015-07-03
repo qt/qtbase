@@ -79,6 +79,11 @@ public:
         NativeFormat,
         IniFormat,
 
+#ifdef Q_OS_WIN
+        Registry32Format,
+        Registry64Format,
+#endif
+
         InvalidFormat = 16,
         CustomFormat1,
         CustomFormat2,

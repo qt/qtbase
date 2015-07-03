@@ -121,6 +121,7 @@ private slots:
     void testEmptyKey();
     void testResourceFiles();
     void testRegistryShortRootNames();
+    void testRegistry32And64Bit();
     void trailingWhitespace();
 #ifdef Q_OS_MAC
     void fileName();
@@ -2072,6 +2073,52 @@ void tst_QSettings::testRegistryShortRootNames()
     QVERIFY(QSettings("HKEY_LOCAL_MACHINE", QSettings::NativeFormat).childGroups() == QSettings("HKLM", QSettings::NativeFormat).childGroups());
     QVERIFY(QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat).childGroups() == QSettings("HKCR", QSettings::NativeFormat).childGroups());
     QVERIFY(QSettings("HKEY_USERS", QSettings::NativeFormat).childGroups() == QSettings("HKU", QSettings::NativeFormat).childGroups());
+#endif
+}
+
+void tst_QSettings::testRegistry32And64Bit()
+{
+#if !defined (Q_OS_WIN) || defined(Q_OS_WINRT)
+    QSKIP("This test is specific to the Windows registry.", SkipAll);
+#else
+
+    const QString key("HKEY_LOCAL_MACHINE\\Software");
+    const QString keyWow("HKEY_LOCAL_MACHINE\\Software\\Wow6432Node");
+
+#ifndef Q_OS_WIN64
+    // This branch is taken at compile time if targeting 32-bit; it does not
+    // necessarily mean that the OS running the test is 32-bit (it could be
+    // e.g. 64-bit).
+    QCOMPARE(QSettings(key, QSettings::NativeFormat).childGroups(),
+             QSettings(key, QSettings::Registry32Format).childGroups());
+
+    // Detect whether we are running under 64-bit Windows.
+    typedef BOOL (WINAPI *IsWow64ProcessPtr)(HANDLE hProcess, PBOOL Wow64Process);
+    IsWow64ProcessPtr IsWow64Process = (IsWow64ProcessPtr)QLibrary::resolve(
+                "kernel32.dll", "IsWow64Process");
+
+    if (IsWow64Process) {
+        BOOL IsWow64 = FALSE;
+        if (IsWow64Process(GetCurrentProcess(), &IsWow64) && IsWow64) {
+            // The 64-bit registry's "Wow6432Node" key should match the 32-bit registry.
+            // If we are not on 32-bit Windows, these should never be the same,
+            // because the 64-bit registry has a "Wow6432Node" key.
+            QCOMPARE(QSettings(keyWow, QSettings::Registry64Format).childGroups(),
+                     QSettings(key, QSettings::Registry32Format).childGroups());
+        }
+    }
+#else
+    // This branch is taken at compile time if targeting 64-bit; it does not
+    // necessarily mean that the OS running the test is 64-bit (it could be
+    // e.g. 128-bit).
+    QCOMPARE(QSettings(key, QSettings::NativeFormat).childGroups(),
+             QSettings(key, QSettings::Registry64Format).childGroups());
+
+    // The 64-bit registry's "Wow6432Node" key should match the 32-bit registry.
+    QCOMPARE(QSettings(keyWow, QSettings::Registry64Format).childGroups(),
+             QSettings(key, QSettings::Registry32Format).childGroups());
+#endif
+
 #endif
 }
 

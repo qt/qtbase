@@ -2393,14 +2393,24 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     This enum type specifies the storage format used by QSettings.
 
-    \value NativeFormat  Store the settings using the most
-                         appropriate storage format for the platform.
-                         On Windows, this means the system registry;
-                         on OS X and iOS, this means the CFPreferences
-                         API; on Unix, this means textual
-                         configuration files in INI format.
-    \value IniFormat  Store the settings in INI files.
-    \value InvalidFormat Special value returned by registerFormat().
+    \value NativeFormat     Store the settings using the most
+                            appropriate storage format for the platform.
+                            On Windows, this means the system registry;
+                            on OS X and iOS, this means the CFPreferences
+                            API; on Unix, this means textual
+                            configuration files in INI format.
+    \value Registry32Format Windows only: Explicitly access the 32-bit system registry
+                            from a 64-bit application running on 64-bit Windows.
+                            On 32-bit Windows or from a 32-bit application on 64-bit Windows,
+                            this works the same as specifying NativeFormat.
+                            This enum value was added in Qt 5.6.
+    \value Registry64Format Windows only: Explicitly access the 64-bit system registry
+                            from a 32-bit application running on 64-bit Windows.
+                            On 32-bit Windows or from a 64-bit application on 64-bit Windows,
+                            this works the same as specifying NativeFormat.
+                            This enum value was added in Qt 5.6.
+    \value IniFormat        Store the settings in INI files.
+    \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1
     \omitvalue CustomFormat2
     \omitvalue CustomFormat3
