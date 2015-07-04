@@ -54,3 +54,7 @@ journald {
     PKGCONFIG_PRIVATE += libsystemd-journal
     DEFINES += QT_USE_JOURNALD
 }
+
+syslog {
+    DEFINES += QT_USE_SYSLOG
+}

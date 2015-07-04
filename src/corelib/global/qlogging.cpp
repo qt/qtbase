@@ -65,6 +65,9 @@
 # include <systemd/sd-journal.h>
 # include <syslog.h>
 #endif
+#if defined(QT_USE_SYSLOG) && !defined(QT_BOOTSTRAPPED)
+# include <syslog.h>
+#endif
 #ifdef Q_OS_UNIX
 # include <sys/types.h>
 # include <sys/stat.h>
@@ -1436,6 +1439,32 @@ static void systemd_default_message_handler(QtMsgType type,
 }
 #endif
 
+#ifdef QT_USE_SYSLOG
+static void syslog_default_message_handler(QtMsgType type, const char *message)
+{
+    int priority = LOG_INFO; // Informational
+    switch (type) {
+    case QtDebugMsg:
+        priority = LOG_DEBUG; // Debug-level messages
+        break;
+    case QtInfoMsg:
+        priority = LOG_INFO; // Informational conditions
+        break;
+    case QtWarningMsg:
+        priority = LOG_WARNING; // Warning conditions
+        break;
+    case QtCriticalMsg:
+        priority = LOG_CRIT; // Critical conditions
+        break;
+    case QtFatalMsg:
+        priority = LOG_ALERT; // Action must be taken immediately
+        break;
+    }
+
+    syslog(priority, "%s", message);
+}
+#endif
+
 #ifdef Q_OS_ANDROID
 static void android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
@@ -1480,6 +1509,9 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         return;
 #elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
         systemd_default_message_handler(type, context, logMessage);
+        return;
+#elif defined(QT_USE_SYSLOG) && !defined(QT_BOOTSTRAPPED)
+        syslog_default_message_handler(type, logMessage.toUtf8().constData());
         return;
 #elif defined(Q_OS_ANDROID)
         android_default_message_handler(type, context, logMessage);
