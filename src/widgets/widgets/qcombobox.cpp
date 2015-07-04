@@ -2092,8 +2092,10 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         const QString newText = itemText(normalized);
         if (lineEdit->text() != newText) {
             lineEdit->setText(newText);
+#ifndef QT_NO_COMPLETER
             if (lineEdit->completer())
                 lineEdit->completer()->setCompletionPrefix(newText);
+#endif
         }
         updateLineEditGeometry();
     }
