@@ -126,6 +126,7 @@ public: // member variables
 private:
     static int relaySlotMethodIndex();
 };
+Q_DECLARE_TYPEINFO(QDBusAdaptorConnector::AdaptorData, Q_PRIMITIVE_TYPE);
 
 extern QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *object);
 extern QDBusAdaptorConnector *qDBusCreateAdaptorConnector(QObject *object);
