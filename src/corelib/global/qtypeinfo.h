@@ -194,6 +194,32 @@ Q_DECLARE_MOVABLE_CONTAINER(QSet);
 
 #undef Q_DECLARE_MOVABLE_CONTAINER
 
+/* These cannot be movable before ### Qt 6, for BC reasons */
+#define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
+template <typename K, typename V> class CONTAINER; \
+template <typename K, typename V> \
+class QTypeInfo< CONTAINER<K, V> > \
+{ \
+public: \
+    enum { \
+        isPointer = false, \
+        isIntegral = false, \
+        isComplex = true, \
+        isStatic = (QT_VERSION < QT_VERSION_CHECK(6, 0, 0)), \
+        isRelocatable = true, \
+        isLarge = (sizeof(CONTAINER<K, V>) > sizeof(void*)), \
+        isDummy = false, \
+        sizeOf = sizeof(CONTAINER<K, V>) \
+    }; \
+}
+
+Q_DECLARE_MOVABLE_CONTAINER(QMap);
+Q_DECLARE_MOVABLE_CONTAINER(QMultiMap);
+Q_DECLARE_MOVABLE_CONTAINER(QHash);
+Q_DECLARE_MOVABLE_CONTAINER(QMultiHash);
+
+#undef Q_DECLARE_MOVABLE_CONTAINER
+
 /*
    Specialize a specific type with:
 
