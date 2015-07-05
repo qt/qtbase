@@ -1880,13 +1880,14 @@ const char *QMetaMethod::typeName() const
     way in the function declaration:
 
     \code
+        // In the class MainWindow declaration
         #ifndef Q_MOC_RUN
-        // define the tag text
-        #  define THISISTESTTAG
+        // define the tag text as empty, so the compiler doesn't see it
+        #  define MY_CUSTOM_TAG
         #endif
         ...
         private slots:
-            THISISTESTTAG void testFunc();
+            MY_CUSTOM_TAG void testFunc();
     \endcode
 
     and the information can be accessed by using:
@@ -1896,12 +1897,14 @@ const char *QMetaMethod::typeName() const
         win.show();
 
         int functionIndex = win.metaObject()->indexOfSlot("testFunc()");
-        QMetaMethod mm = metaObject()->method(functionIndex);
-        qDebug() << mm.tag(); // prints THISISTESTTAG
+        QMetaMethod mm = win.metaObject()->method(functionIndex);
+        qDebug() << mm.tag(); // prints MY_CUSTOM_TAG
     \endcode
 
     For the moment, \c moc will extract and record all tags, but it will not
-    handle any of them specially.
+    handle any of them specially. You can use the tags to annotate your methods
+    differently, and treat them according to the specific needs of your
+    application.
 
     \note Since Qt 5.0, \c moc expands preprocessor macros, so it is necessary
     to surround the definition with \c #ifndef \c Q_MOC_RUN, as shown in the
