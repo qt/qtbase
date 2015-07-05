@@ -3337,6 +3337,8 @@ TO_STRING_IMPL(quint64, %llu)
 #endif
 TO_STRING_IMPL(bool, %d)
 TO_STRING_IMPL(char, %c)
+TO_STRING_IMPL(signed char, %hhd)
+TO_STRING_IMPL(unsigned char, %hhu)
 TO_STRING_IMPL(float, %g)
 TO_STRING_IMPL(double, %lg)
 

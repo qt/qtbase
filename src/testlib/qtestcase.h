@@ -340,6 +340,8 @@ namespace QTest
     QTEST_COMPARE_DECL(float)
     QTEST_COMPARE_DECL(double)
     QTEST_COMPARE_DECL(char)
+    QTEST_COMPARE_DECL(signed char)
+    QTEST_COMPARE_DECL(unsigned char)
     QTEST_COMPARE_DECL(bool)
 #endif
 
