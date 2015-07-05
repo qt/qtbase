@@ -3306,6 +3306,7 @@ struct QStringCapture
     int len;
     int no;
 };
+Q_DECLARE_TYPEINFO(QStringCapture, Q_PRIMITIVE_TYPE);
 #endif
 
 #ifndef QT_NO_REGEXP

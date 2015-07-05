@@ -252,6 +252,7 @@ public:
     Qt::TimeSpec spec; // spec if used by QDateTimeEdit
     Context context;
 };
+Q_DECLARE_TYPEINFO(QDateTimeParser::SectionNode, Q_PRIMITIVE_TYPE);
 
 Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::SectionNode &s2);
 

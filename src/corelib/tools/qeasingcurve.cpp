@@ -340,6 +340,7 @@ struct TCBPoint {
                 qFuzzyCompare(_b, other._b);
     }
 };
+Q_DECLARE_TYPEINFO(TCBPoint, Q_PRIMITIVE_TYPE);
 
 
 typedef QVector<TCBPoint> TCBPoints;

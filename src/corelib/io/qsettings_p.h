@@ -127,6 +127,7 @@ public:
     int num;
     int maxNum;
 };
+Q_DECLARE_TYPEINFO(QSettingsGroup, Q_MOVABLE_TYPE);
 
 inline QString QSettingsGroup::toString() const
 {
