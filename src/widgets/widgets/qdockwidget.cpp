@@ -760,7 +760,11 @@ void QDockWidgetPrivate::startDrag(bool group)
             QMainWindow::addDockWidget, so the QMainWindowLayout has no
             widget item for me. :( I have to create it myself, and then
             delete it if I don't get dropped into a dock area. */
-        state->widgetItem = new QDockWidgetItem(q);
+        QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
+        if (floatingTab && !q->isFloating())
+            state->widgetItem = new QDockWidgetGroupWindowItem(floatingTab);
+        else
+            state->widgetItem = new QDockWidgetItem(q);
         state->ownWidgetItem = true;
     }
 

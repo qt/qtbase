@@ -92,6 +92,20 @@ protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
 };
+
+// This item will be used in the layout for the gap item. We cannot use QWidgetItem directly
+// because QWidgetItem functions return an empty size for widgets that are are floating.
+class QDockWidgetGroupWindowItem : public QWidgetItem
+{
+public:
+    explicit QDockWidgetGroupWindowItem(QDockWidgetGroupWindow *parent) : QWidgetItem(parent) {}
+    QSize minimumSize() const Q_DECL_OVERRIDE { return lay()->minimumSize(); }
+    QSize maximumSize() const Q_DECL_OVERRIDE { return lay()->maximumSize(); }
+    QSize sizeHint() const Q_DECL_OVERRIDE { return lay()->sizeHint(); }
+
+private:
+    QLayout *lay() const { return const_cast<QDockWidgetGroupWindowItem *>(this)->widget()->layout(); }
+};
 #endif
 
 /* This data structure represents the state of all the tool-bars and dock-widgets. It's value based
@@ -288,7 +302,10 @@ public:
     QRect currentGapRect;
     QWidget *pluggingWidget;
 #ifndef QT_NO_RUBBERBAND
-    QRubberBand *gapIndicator;
+    QPointer<QRubberBand> gapIndicator;
+#endif
+#ifndef QT_NO_DOCKWIDGET
+    QPointer<QWidget> currentHoveredFloat; // set when dragging over a floating dock widget
 #endif
 
     void hover(QLayoutItem *widgetItem, const QPoint &mousePos);
