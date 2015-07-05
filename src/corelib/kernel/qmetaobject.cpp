@@ -1964,8 +1964,9 @@ int QMetaMethod::revision() const
     Returns the access specification of this method (private,
     protected, or public).
 
-    Signals are always protected, meaning that you can only emit them
-    from the class or from a subclass.
+    \note Signals are always public, but you should regard that as an
+    implementation detail. It is almost always a bad idea to emit a signal from
+    outside its class.
 
     \sa methodType()
 */
