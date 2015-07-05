@@ -1509,7 +1509,7 @@ QSpiRelationArray AtSpiAdaptor::relationSet(QAccessibleInterface *interface, con
     Q_FOREACH (const RelationPair &pair, relationInterfaces) {
 // FIXME: this loop seems a bit strange... "related" always have one item when we check.
 //And why is it a list, when it always have one item? And it seems to assume that the QAccessible::Relation enum maps directly to AtSpi
-        QList<QSpiObjectReference> related;
+        QSpiObjectReferenceArray related;
 
         QDBusObjectPath path = QDBusObjectPath(pathForInterface(pair.first));
         related.append(QSpiObjectReference(connection, path));
