@@ -1941,6 +1941,16 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
 
     QWidget *widget = widgetItem->widget();
 
+#ifndef QT_NO_DOCKWIDGET
+    // Let's remove the widget from any possible group window
+    foreach (QDockWidgetGroupWindow *dwgw,
+            parent()->findChildren<QDockWidgetGroupWindow*>(QString(), Qt::FindDirectChildrenOnly)) {
+        QList<int> path = dwgw->layoutInfo()->indexOf(widget);
+        if (!path.isEmpty())
+            dwgw->layoutInfo()->remove(path);
+    }
+#endif
+
     QList<int> previousPath = layoutState.indexOf(widget);
 
     const QLayoutItem *it = layoutState.plug(currentGapPos);
