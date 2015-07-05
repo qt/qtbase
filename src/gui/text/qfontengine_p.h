@@ -334,6 +334,7 @@ private:
     mutable qreal m_minRightBearing;
 
 };
+Q_DECLARE_TYPEINFO(QFontEngine::KernPair, Q_PRIMITIVE_TYPE);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)
 

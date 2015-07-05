@@ -575,8 +575,10 @@ private:
         Qt::InputMethodQuery query;
         QVariant value;
     };
+    friend QTypeInfo<QueryPair>;
     QVector<QueryPair> m_values;
 };
+Q_DECLARE_TYPEINFO(QInputMethodQueryEvent::QueryPair, Q_MOVABLE_TYPE);
 
 #endif // QT_NO_INPUTMETHOD
 

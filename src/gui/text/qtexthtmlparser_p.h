@@ -328,12 +328,14 @@ protected:
         QString url;
         QCss::StyleSheet sheet;
     };
+    friend class QTypeInfo<ExternalStyleSheet>;
     QVector<ExternalStyleSheet> externalStyleSheets;
     QVector<QCss::StyleSheet> inlineStyleSheets;
 #endif
 
     const QTextDocument *resourceProvider;
 };
+Q_DECLARE_TYPEINFO(QTextHtmlParser::ExternalStyleSheet, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

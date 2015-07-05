@@ -203,6 +203,7 @@ private:
                                QPainter *painter);
     QTextEngine *d;
 };
+Q_DECLARE_TYPEINFO(QTextLayout::FormatRange, Q_RELOCATABLE_TYPE);
 
 
 class Q_GUI_EXPORT QTextLine

@@ -1976,6 +1976,7 @@ struct QGradientBound {
     int function;
     bool reverse;
 };
+Q_DECLARE_TYPEINFO(QGradientBound, Q_PRIMITIVE_TYPE);
 
 int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha)
 {

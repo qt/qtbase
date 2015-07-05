@@ -1761,6 +1761,7 @@ struct QCrossingEdge
         return x < edge.x;
     }
 };
+Q_DECLARE_TYPEINFO(QCrossingEdge, Q_PRIMITIVE_TYPE);
 
 static bool bool_op(bool a, bool b, QPathClipper::Operation op)
 {

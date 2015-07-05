@@ -499,6 +499,7 @@ public:
 
     void invalidate();
 };
+Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_MOVABLE_TYPE);
 
 void QFontDatabasePrivate::invalidate()
 {
