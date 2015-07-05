@@ -82,8 +82,9 @@ struct ConnmanMap {
     QDBusObjectPath objectPath;
     QVariantMap propertyMap;
 };
-
-typedef QList< ConnmanMap > ConnmanMapList;
+Q_DECLARE_TYPEINFO(ConnmanMap, Q_MOVABLE_TYPE); // QDBusObjectPath is movable, but cannot be
+                                                // marked as such until Qt 6
+typedef QVector<ConnmanMap> ConnmanMapList;
 
 QT_END_NAMESPACE
 

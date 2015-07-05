@@ -83,7 +83,12 @@ struct ObjectPathProperties
     QDBusObjectPath path;
     QVariantMap properties;
 };
-typedef QList<ObjectPathProperties> PathPropertiesList;
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(ObjectPathProperties, Q_MOVABLE_TYPE); // QDBusObjectPath is movable, but cannot be
+                                                          // marked as such until Qt 6
+QT_END_NAMESPACE
+
+typedef QVector<ObjectPathProperties> PathPropertiesList;
 Q_DECLARE_METATYPE(ObjectPathProperties)
 Q_DECLARE_METATYPE (PathPropertiesList)
 
