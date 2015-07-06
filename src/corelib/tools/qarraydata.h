@@ -249,11 +249,13 @@ struct QTypedArrayData
         return allocate(/* capacity */ 0);
     }
 
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     static QTypedArrayData *unsharableEmpty()
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return allocate(/* capacity */ 0, Unsharable);
     }
+#endif
 };
 
 template <class T, size_t N>
