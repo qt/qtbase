@@ -700,8 +700,6 @@
     \l{threadsafe-command} {\\threadsafe}.
 */
 
-    / *!
-
 /*!
     \page 18-qdoc-commands-relating.html
     \previouspage Thread Support

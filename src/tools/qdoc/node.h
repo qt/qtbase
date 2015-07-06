@@ -255,6 +255,7 @@ public:
     virtual QString element() const { return QString(); }
     virtual Tree* tree() const;
     virtual void findChildren(const QString& , NodeList& nodes) const { nodes.clear(); }
+    virtual void setNoAutoList(bool ) { }
     bool isIndexNode() const { return indexNodeFlag_; }
     NodeType type() const { return (NodeType) nodeType_; }
     virtual DocSubtype docSubtype() const { return NoSubtype; }
@@ -1096,7 +1097,8 @@ class CollectionNode : public Aggregate
  CollectionNode(NodeType type,
                 Aggregate* parent,
                 const QString& name,
-                Genus genus) : Aggregate(type, parent, name), seen_(false)
+                Genus genus)
+     : Aggregate(type, parent, name), seen_(false), noAutoList_(false)
     {
         setPageType(Node::OverviewPage);
         setGenus(genus);
@@ -1139,9 +1141,12 @@ class CollectionNode : public Aggregate
 
     void markSeen() { seen_ = true; }
     void markNotSeen() { seen_ = false; }
+    bool noAutoList() const { return noAutoList_; }
+    virtual void setNoAutoList(bool b)  Q_DECL_OVERRIDE { noAutoList_ = b; }
 
  private:
     bool        seen_;
+    bool        noAutoList_;
     QString     title_;
     QString     subtitle_;
     NodeList    members_;

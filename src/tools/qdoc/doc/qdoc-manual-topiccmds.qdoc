@@ -851,6 +851,9 @@
 
            \endquotation
 
+    The \l {noautolist-command} {\\noautolist} command can be used here
+    to omit the automatically generated list of classes at the end.
+
     See also \l {inmodule-command} {\\inmodule}
 
     \target namespace-command
@@ -1371,6 +1374,9 @@
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
     QDoc commands to document QML types and QML modules.
+
+    The \l {noautolist-command} {\\noautolist} command can be used here
+    to omit the automatically generated list of types at the end.
 
     \target instantiates-command
     \section1 \\instantiates

@@ -89,6 +89,7 @@
     \li \l {namespace-command} {\\namespace}
     \li \l {nextpage-command} {\\nextpage}
     \li \l {newcode-command} {\\newcode}
+    \li \l {noautolist-command} {\\noautolist}
     \li \l {nonreentrant-command} {\\nonreentrant}
     \li \l {note-command} {\\note}
     \li \l {li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}

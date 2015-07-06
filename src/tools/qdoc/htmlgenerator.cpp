@@ -1796,10 +1796,12 @@ void HtmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marke
     generateAlsoList(cn, marker);
     generateExtractionMark(cn, EndMark);
 
-    if (cn->isGroup())
-        generateAnnotatedList(cn, marker, cn->members());
-    else if (cn->isQmlModule() || cn->isJsModule())
-        generateAnnotatedList(cn, marker, cn->members());
+    if (!cn->noAutoList()) {
+        if (cn->isGroup())
+            generateAnnotatedList(cn, marker, cn->members());
+        else if (cn->isQmlModule() || cn->isJsModule())
+            generateAnnotatedList(cn, marker, cn->members());
+    }
 
     sections = marker->sections(cn, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.constBegin();

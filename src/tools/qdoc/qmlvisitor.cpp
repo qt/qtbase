@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_PRELIMINARY             Doc::alias(QLatin1String("preliminary"))
 #define COMMAND_SINCE                   Doc::alias(QLatin1String("since"))
 #define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
+#define COMMAND_NOAUTOLIST              Doc::alias(QLatin1String("noautolist"))
 
 #define COMMAND_ABSTRACT                Doc::alias(QLatin1String("abstract"))
 #define COMMAND_QMLABSTRACT             Doc::alias(QLatin1String("qmlabstract"))

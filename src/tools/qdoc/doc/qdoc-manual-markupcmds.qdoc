@@ -67,6 +67,7 @@
     \li \l {li-command} {\\li} \span {class="newStuff"}
     \li \l {list-command} {\\list}
     \li \l {meta-command} {\\meta}
+    \li \l {noautolist-command} {\\noautolist}
     \li \l {newcode-command} {\\newcode}
     \li \l {li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
     \li \l {note-command} {\\note}
@@ -3880,6 +3881,28 @@
     In the example output, several values have been set using default
     values obtained from the QDoc configuration file. See \l
     {Generating DITA XML Output} for details.
+
+    \target noautolist-command
+    \section1 \\noautolist
+
+    The \\noautolist command indicates that the annotated list of C++
+    classes or QML types, which is automatically generated at the
+    bottom of the C++ or QML module page should be omitted, because
+    the classes or types have been listed manually. This command can
+    also be used with the \l {group-command}{\\group} command to omit
+    the list of group members, when they are listed manually.
+
+    The command must stand on its own line. See \l {Qt Sensors QML Types} for
+    an example. The page is generated from \c {qtsensors5.qdoc}. There you will
+    find a qdoc comment containing the \c{\qmlmodule} command for the QtSensors
+    module. The same qdoc comment contains two \c {\annotated-list} commands to
+    list the QML types in two separate groups. The QML types have been divided
+    into these two groups because it makes more sense to list them this way than
+    it does to list them in a single alphabetical list. At the bottom of the
+    comment, \c {\noautolist} has been used to tell qdoc not to generate the
+    automatic annotated list.
+
+    This command was introduced in QDoc 5.6.
 
     \target omit-command
     \section1 \\omit
