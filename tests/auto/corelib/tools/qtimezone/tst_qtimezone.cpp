@@ -823,6 +823,24 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
+
+    // Test TZ timezone vs UTC timezone for fractionary negative offset
+    QTzTimeZonePrivate  tztz1("America/Caracas");
+    QUtcTimeZonePrivate tzutc1("UTC-04:30");
+    QVERIFY(tztz1.isValid());
+    QVERIFY(tzutc1.isValid());
+    QTzTimeZonePrivate::Data datatz1 = tztz1.data(std);
+    QTzTimeZonePrivate::Data datautc1 = tzutc1.data(std);
+    QCOMPARE(datatz1.offsetFromUtc, datautc1.offsetFromUtc);
+
+    // Test TZ timezone vs UTC timezone for fractionary positive offset
+    QTzTimeZonePrivate  tztz2("Asia/Calcutta");
+    QUtcTimeZonePrivate tzutc2("UTC+05:30");
+    QVERIFY(tztz2.isValid());
+    QVERIFY(tzutc2.isValid());
+    QTzTimeZonePrivate::Data datatz2 = tztz2.data(std);
+    QTzTimeZonePrivate::Data datautc2 = tzutc2.data(std);
+    QCOMPARE(datatz2.offsetFromUtc, datautc2.offsetFromUtc);
 #endif // Q_OS_UNIX
 }
 

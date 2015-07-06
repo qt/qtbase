@@ -389,12 +389,19 @@ static int parsePosixOffset(const QByteArray &timeRule)
     // Format "[+|-]hh[:mm[:ss]]"
     QList<QByteArray> parts = timeRule.split(':');
     int count = parts.count();
-    if (count == 3)
-        return (parts.at(0).toInt() * -60 * 60) + (parts.at(1).toInt() * 60) + parts.at(2).toInt();
-    else if (count == 2)
-        return (parts.at(0).toInt() * -60 * 60) + (parts.at(1).toInt() * 60);
-    else if (count == 1)
-        return (parts.at(0).toInt() * -60 * 60);
+    if (count == 3) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * ((qAbs(hour) * 60 * 60) + (parts.at(1).toInt() * 60) + parts.at(2).toInt());
+    } else if (count == 2) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * ((qAbs(hour) * 60 * 60) + (parts.at(1).toInt() * 60));
+    } else if (count == 1) {
+        int hour = parts.at(0).toInt();
+        int sign = hour >= 0 ? -1 : 1;
+        return sign * (qAbs(hour) * 60 * 60);
+    }
     return 0;
 }
 
