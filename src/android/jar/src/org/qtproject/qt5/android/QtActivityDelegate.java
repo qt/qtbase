@@ -760,12 +760,6 @@ public class QtActivityDelegate
 
             if (null == m_surfaces)
                 onCreate(null);
-            String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
-            QtNative.startApplication(m_applicationParameters,
-                    m_environmentVariables,
-                    m_mainLib,
-                    nativeLibraryDir);
-            m_started = true;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -781,14 +775,26 @@ public class QtActivityDelegate
     public void onCreate(Bundle savedInstanceState)
     {
         m_quitApp = true;
+        Runnable startApplication = null;
         if (null == savedInstanceState) {
-            DisplayMetrics metrics = new DisplayMetrics();
-            m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels,
-                                                  0, 0,
-                                                  metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+            startApplication = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
+                        QtNative.startApplication(m_applicationParameters,
+                            m_environmentVariables,
+                            m_mainLib,
+                            nativeLibraryDir);
+                        m_started = true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        m_activity.finish();
+                    }
+                }
+            };
         }
-        m_layout = new QtLayout(m_activity);
+        m_layout = new QtLayout(m_activity, startApplication);
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
