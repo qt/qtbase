@@ -37,6 +37,9 @@
 #include <QtCore/qglobal.h>
 
 #ifdef Q_OS_WINCE
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -47,7 +50,12 @@
 #include <ctype.h>
 #include <time.h>
 #include <crtdefs.h>
-#include <altcecrt.h>
+#if _WIN32_WCE < 0x800
+#  include <altcecrt.h>
+#else
+#  include <fcntl.h>
+#  include <stat.h>
+#endif
 #include <winsock.h>
 #include <ceconfig.h>
 
@@ -101,6 +109,8 @@ struct tm {
 
 FILETIME qt_wince_time_tToFt( time_t tt );
 time_t qt_wince_ftToTime_t( const FILETIME ft );
+
+#if _WIN32_WCE < 0x800
 
 // File I/O ---------------------------------------------------------
 #define _O_RDONLY       0x0001
@@ -161,6 +171,7 @@ struct stat
 
 typedef int mode_t;
 extern int errno;
+#endif // _WIN32_WCE < 0x800
 
 int     qt_wince__getdrive( void );
 int     qt_wince__waccess( const wchar_t *path, int pmode );
@@ -437,8 +448,10 @@ generate_inline_return_func0(tmpfile, FILE *)
 generate_inline_return_func2(_rename, int, const char *, const char *)
 generate_inline_return_func1(_remove, int, const char *)
 generate_inline_return_func1(SetErrorMode, int, int)
+#if _WIN32_WCE < 0x800
 generate_inline_return_func2(_chmod, bool, const char *, int)
 generate_inline_return_func2(_wchmod, bool, const wchar_t *, int)
+#endif
 generate_inline_return_func7(CreateFileA, HANDLE, LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE)
 generate_inline_return_func4(SetWindowOrgEx, BOOL, HDC, int, int, LPPOINT)
 generate_inline_return_func2(calloc, void *, size_t, size_t)

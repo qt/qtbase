@@ -36,7 +36,11 @@
 #include <winbase.h>
 #include <kfuncs.h>
 #include <stdio.h>
-#include <altcecrt.h>
+#if _WIN32_WCE < 0x800
+#  include <altcecrt.h>
+#else
+#  include <fcntl.h>
+#endif
 
 #include "qplatformdefs.h"
 #include "qfunctions_wince.h"
@@ -93,7 +97,9 @@ FILETIME qt_wince_time_tToFt( time_t tt )
 }
 
 // File I/O ---------------------------------------------------------
+#if _WIN32_WCE < 0x800
 int errno = 0;
+#endif
 
 int qt_wince__getdrive( void )
 {
