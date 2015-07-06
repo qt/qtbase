@@ -948,6 +948,9 @@ public:
     // compiler-generated destructor is fine!
 
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
+#ifdef Q_COMPILER_RVALUE_REFS
+    QMultiHash(QHash<Key, T> &&other) Q_DECL_NOTHROW : QHash<Key, T>(std::move(other)) {}
+#endif
     void swap(QMultiHash &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)

@@ -1177,6 +1177,9 @@ public:
     }
 #endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
+#ifdef Q_COMPILER_RVALUE_REFS
+    QMultiMap(QMap<Key, T> &&other) Q_DECL_NOTHROW : QMap<Key, T>(std::move(other)) {}
+#endif
     inline void swap(QMultiMap<Key, T> &other) { QMap<Key, T>::swap(other); }
 
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)
