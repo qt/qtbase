@@ -916,6 +916,9 @@ public:
             insert(it->first, it->second);
     }
 #endif
+    // compiler-generated copy/move ctors/assignment operators are fine!
+    // compiler-generated destructor is fine!
+
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
     void swap(QMultiHash &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 

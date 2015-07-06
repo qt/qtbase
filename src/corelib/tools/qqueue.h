@@ -43,8 +43,7 @@ template <class T>
 class QQueue : public QList<T>
 {
 public:
-    inline QQueue() {}
-    inline ~QQueue() {}
+    // compiler-generated special member functions are fine!
     inline void swap(QQueue<T> &other) { QList<T>::swap(other); } // prevent QList<->QQueue swaps
 #ifndef Q_QDOC
     // bring in QList::swap(int, int). We cannot say using QList<T>::swap,

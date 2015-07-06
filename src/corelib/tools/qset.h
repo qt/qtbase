@@ -57,15 +57,9 @@ public:
             insert(*it);
     }
 #endif
-    inline QSet(const QSet<T> &other) : q_hash(other.q_hash) {}
+    // compiler-generated copy/move ctor/assignment operators are fine!
+    // compiler-generated destructor is fine!
 
-    inline QSet<T> &operator=(const QSet<T> &other)
-        { q_hash = other.q_hash; return *this; }
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QSet(QSet &&other) : q_hash(qMove(other.q_hash)) {}
-    inline QSet<T> &operator=(QSet<T> &&other)
-        { qSwap(q_hash, other.q_hash); return *this; }
-#endif
     inline void swap(QSet<T> &other) { q_hash.swap(other.q_hash); }
 
     inline bool operator==(const QSet<T> &other) const
