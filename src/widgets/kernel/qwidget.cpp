@@ -289,8 +289,15 @@ QWidgetPrivate::QWidgetPrivate(int version)
         return;
     }
 
+#ifdef QT_BUILD_INTERNAL
+    // Don't check the version parameter in internal builds.
+    // This allows incompatible versions to be loaded, possibly for testing.
+    Q_UNUSED(version);
+#else
     if (version != QObjectPrivateVersion)
-        qFatal("Cannot mix incompatible Qt libraries");
+        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
+                version, QObjectPrivateVersion);
+#endif
 
     isWidget = true;
     memset(high_attributes, 0, sizeof(high_attributes));
