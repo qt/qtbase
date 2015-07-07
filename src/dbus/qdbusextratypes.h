@@ -160,6 +160,9 @@ class QDBusVariant
 public:
     inline QDBusVariant() { }
     inline explicit QDBusVariant(const QVariant &variant);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusVariant(QVariant &&v) Q_DECL_NOTHROW : m_variant(std::move(v)) {}
+#endif
 
     inline void setVariant(const QVariant &variant);
 
