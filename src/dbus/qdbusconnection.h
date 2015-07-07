@@ -203,6 +203,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::RegisterOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::VirtualObjectRegisterOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::ConnectionCapabilities)
 
 QT_END_NAMESPACE
 
