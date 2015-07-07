@@ -92,10 +92,24 @@ public:
 #endif
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QDBusError(QDBusError &&other) Q_DECL_NOTHROW
+        : code(other.code), msg(std::move(other.msg)), nm(std::move(other.nm)), unused(other.unused)
+    { other.unused = Q_NULLPTR; }
+    QDBusError &operator=(QDBusError &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QDBusError &operator=(const QDBusError &other);
 #ifndef QT_BOOTSTRAPPED
     QDBusError &operator=(const QDBusMessage &msg);
 #endif
+
+    void swap(QDBusError &other) Q_DECL_NOTHROW
+    {
+        qSwap(code,   other.code);
+        qSwap(msg,    other.msg);
+        qSwap(nm,     other.nm);
+        qSwap(unused, other.unused);
+    }
 
     ErrorType type() const;
     QString name() const;
@@ -110,6 +124,7 @@ private:
     QString nm;
     void *unused;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusError)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
