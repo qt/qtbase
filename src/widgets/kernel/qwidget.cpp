@@ -2914,6 +2914,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 {
     Q_D(QWidget);
     Qt::WindowStates oldstate = windowState();
+    if (newstate.testFlag(Qt::WindowMinimized)) // QTBUG-46763
+       newstate.setFlag(Qt::WindowActive, false);
     if (oldstate == newstate)
         return;
     if (isWindow() && !testAttribute(Qt::WA_WState_Created))
