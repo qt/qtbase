@@ -100,6 +100,7 @@ public:
     static QString familyForStyleHint(QFont::StyleHint styleHint);
 
 private:
+    void populateFamily(const QString &familyName, bool registerAlias);
     void removeApplicationFonts();
 
     struct WinApplicationFont {

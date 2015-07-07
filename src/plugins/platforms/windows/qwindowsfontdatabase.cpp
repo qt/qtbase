@@ -933,7 +933,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
 }
 
 static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                                     int type, LPARAM)
+                                     int type, LPARAM registerAlias)
 {
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
     const uchar charSet = f->elfLogFont.lfCharSet;
@@ -943,13 +943,13 @@ static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetr
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, false);
+    addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type, registerAlias);
 
     // keep on enumerating
     return 1;
 }
 
-void QWindowsFontDatabase::populateFamily(const QString &familyName)
+void QWindowsFontDatabase::populateFamily(const QString &familyName, bool registerAlias)
 {
     qCDebug(lcQpaFonts) << familyName;
     if (familyName.size() >= LF_FACESIZE) {
@@ -962,8 +962,13 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName)
     familyName.toWCharArray(lf.lfFaceName);
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, 0, 0);
+    EnumFontFamiliesEx(dummy, &lf, (FONTENUMPROC)storeFont, (LPARAM)registerAlias, 0);
     ReleaseDC(0, dummy);
+}
+
+void QWindowsFontDatabase::populateFamily(const QString &familyName)
+{
+    populateFamily(familyName, false);
 }
 
 namespace {
@@ -1382,7 +1387,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
         // Fonts based on files are added via populate, as they will show up in font enumeration.
         for (int j = 0; j < families.count(); ++j)
-            populateFamily(families.at(j));
+            populateFamily(families.at(j), true);
     }
 
     m_applicationFonts << font;
