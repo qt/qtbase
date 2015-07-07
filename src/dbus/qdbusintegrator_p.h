@@ -76,10 +76,21 @@ struct QDBusSlotCache
         int flags;
         int slotIdx;
         QVector<int> metaTypes;
+
+        void swap(Data &other) Q_DECL_NOTHROW
+        {
+            qSwap(flags,     other.flags);
+            qSwap(slotIdx,   other.slotIdx);
+            qSwap(metaTypes, other.metaTypes);
+        }
     };
     typedef QMultiHash<QString, Data> Hash;
     Hash hash;
+
+    void swap(QDBusSlotCache &other) Q_DECL_NOTHROW { qSwap(hash, other.hash); }
 };
+Q_DECLARE_SHARED(QDBusSlotCache::Data)
+Q_DECLARE_SHARED(QDBusSlotCache)
 
 class QDBusCallDeliveryEvent: public QMetaCallEvent
 {
