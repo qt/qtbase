@@ -122,9 +122,14 @@ public:
 
     explicit QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QDBusConnection(QDBusConnection &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Q_NULLPTR; }
+    QDBusConnection &operator=(QDBusConnection &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QDBusConnection &operator=(const QDBusConnection &other);
     ~QDBusConnection();
 
-    QDBusConnection &operator=(const QDBusConnection &other);
+    void swap(QDBusConnection &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool isConnected() const;
     QString baseService() const;
@@ -200,6 +205,7 @@ private:
     friend class QDBusConnectionPrivate;
     QDBusConnectionPrivate *d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusConnection)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::RegisterOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::VirtualObjectRegisterOptions)
