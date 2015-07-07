@@ -99,11 +99,12 @@ public:
         ExportChildObjects = 0x1000
         // Reserved = 0xff000000
     };
+    Q_DECLARE_FLAGS(RegisterOptions, RegisterOption)
+
     enum UnregisterMode {
         UnregisterNode,
         UnregisterTree
     };
-    Q_DECLARE_FLAGS(RegisterOptions, RegisterOption)
 
     enum VirtualObjectRegisterOption {
         SingleNode = 0x0,
