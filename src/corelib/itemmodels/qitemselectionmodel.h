@@ -235,8 +235,11 @@ inline uint qHash(const QItemSelectionRange &) { return 0; }
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
-    QItemSelection() {}
+    QItemSelection() Q_DECL_NOTHROW : QList<QItemSelectionRange>() {}
     QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
+    // reusing QList::swap() here is OK!
+
     void select(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     bool contains(const QModelIndex &index) const;
     QModelIndexList indexes() const;
@@ -245,6 +248,7 @@ public:
                       const QItemSelectionRange &other,
                       QItemSelection *result);
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
