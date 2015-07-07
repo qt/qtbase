@@ -58,6 +58,9 @@ public:
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(QLatin1String path);
     inline explicit QDBusObjectPath(const QString &path);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
+#endif
 
     inline void setPath(const QString &path);
 
