@@ -2540,10 +2540,10 @@
 /*!
     \enum Qt::EnterKeyType
 
-    This can be used to alter the appearance of the Return key on an on screen keyboard.
+    This can be used to alter the appearance of the Return key on an on-screen keyboard.
 
     \note Not all of these values are supported on all platforms.
-    For unsuppoted values the default key will be used instead.
+    For unsupported values the default key will be used instead.
 
     \value EnterKeyDefault     The default Enter key.
                                This can either be a button closing the keyboard, or a Return button
