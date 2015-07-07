@@ -53,7 +53,9 @@ class Q_DBUS_EXPORT QDBusObjectPath
 {
     QString m_path;
 public:
-    inline QDBusObjectPath() { }
+    QDBusObjectPath() Q_DECL_NOTHROW : m_path() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
 
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(QLatin1String path);
@@ -61,6 +63,8 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusObjectPath(QString &&p) : m_path(std::move(p)) { doCheck(); }
 #endif
+
+    void swap(QDBusObjectPath &other) Q_DECL_NOTHROW { qSwap(m_path, other.m_path); }
 
     inline void setPath(const QString &path);
 
@@ -70,9 +74,7 @@ public:
 private:
     void doCheck();
 };
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_TYPEINFO(QDBusObjectPath, Q_MOVABLE_TYPE);
-#endif
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusObjectPath)
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : m_path(QString::fromLatin1(objectPath))
@@ -106,7 +108,9 @@ class Q_DBUS_EXPORT QDBusSignature
 {
     QString m_signature;
 public:
-    inline QDBusSignature() { }
+    QDBusSignature() Q_DECL_NOTHROW : m_signature() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
 
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(QLatin1String signature);
@@ -114,6 +118,8 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
 #endif
+
+    void swap(QDBusSignature &other) Q_DECL_NOTHROW { qSwap(m_signature, other.m_signature); }
 
     inline void setSignature(const QString &signature);
 
@@ -123,9 +129,7 @@ public:
 private:
     void doCheck();
 };
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_TYPEINFO(QDBusSignature, Q_MOVABLE_TYPE);
-#endif
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusSignature)
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : m_signature(QString::fromLatin1(dBusSignature))
@@ -158,20 +162,23 @@ class QDBusVariant
 {
     QVariant m_variant;
 public:
-    inline QDBusVariant() { }
+    QDBusVariant() Q_DECL_NOTHROW : m_variant() {}
+    // compiler-generated copy/move constructor/assignment operators are ok!
+    // compiler-generated destructor is ok!
+
     inline explicit QDBusVariant(const QVariant &variant);
 #ifdef Q_COMPILER_RVALUE_REFS
     explicit QDBusVariant(QVariant &&v) Q_DECL_NOTHROW : m_variant(std::move(v)) {}
 #endif
+
+    void swap(QDBusVariant &other) Q_DECL_NOTHROW { qSwap(m_variant, other.m_variant); }
 
     inline void setVariant(const QVariant &variant);
 
     inline QVariant variant() const
     { return m_variant; }
 };
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_TYPEINFO(QDBusVariant, Q_MOVABLE_TYPE);
-#endif
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusVariant)
 
 inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
     : m_variant(dBusVariant) { }
