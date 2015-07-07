@@ -892,7 +892,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
         QGuiApplication::sendSpontaneousEvent(qt_tablet_target, &ev);
     }
 
-    if (event->type() == QEvent::TabletRelease)
+    if (event->type() == QEvent::TabletRelease && event->buttons() == Qt::NoButton)
         qt_tablet_target = 0;
 }
 #endif // QT_NO_TABLETEVENT
