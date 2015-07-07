@@ -2858,7 +2858,7 @@ QTextStream &endl(QTextStream &stream)
 /*!
     \relates QTextStream
 
-    Calls \l{QTextStream::flush()}{flush()} on \a stream and returns \a stream.
+    Calls QTextStream::flush() on \a stream and returns \a stream.
 
     \sa endl(), reset(), {QTextStream manipulators}
 */

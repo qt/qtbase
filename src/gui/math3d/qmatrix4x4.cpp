@@ -148,8 +148,6 @@ QMatrix4x4::QMatrix4x4(const float *values)
     top-most 4 rows of \a matrix.  If \a matrix has less than 4 columns
     or rows, the remaining elements are filled with elements from the
     identity matrix.
-
-    \sa QMatrix4x4(const QGenericMatrix &)
 */
 
 /*!

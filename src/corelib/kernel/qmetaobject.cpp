@@ -1548,12 +1548,13 @@ bool QMetaObject::invokeMethod(QObject *obj,
 /*!
     \fn QMetaObject::Connection &QMetaObject::Connection::operator=(Connection &&other)
 
-    Move-assigns \a other to this object.
+    Move-assigns \a other to this object, and returns a reference.
 */
 /*!
     \fn QMetaObject::Connection::Connection(Connection &&o)
 
-    Move-constructs a Connection instance, making it point to the same object that \a o was pointing to.
+    Move-constructs a Connection instance, making it point to the same object
+    that \a o was pointing to.
 */
 
 /*!
