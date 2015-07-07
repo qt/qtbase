@@ -49,6 +49,7 @@ struct PropertyContainer
     QString value;
     QMap<QString, PropertyContainer> properties;
 };
+Q_DECLARE_TYPEINFO(PropertyContainer, Q_MOVABLE_TYPE);
 
 CeSdkInfo::CeSdkInfo() : m_major(0) , m_minor(0)
 {
