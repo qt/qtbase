@@ -108,6 +108,9 @@ public:
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(QLatin1String signature);
     inline explicit QDBusSignature(const QString &signature);
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QDBusSignature(QString &&sig) : m_signature(std::move(sig)) { doCheck(); }
+#endif
 
     inline void setSignature(const QString &signature);
 
