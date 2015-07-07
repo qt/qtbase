@@ -357,7 +357,8 @@ void tst_QWindow::positioning()
 void tst_QWindow::positioningDuringMinimized()
 {
     // QTBUG-39544, setting a geometry in minimized state should work as well.
-    if (QGuiApplication::platformName().compare("windows", Qt::CaseInsensitive))
+    if (QGuiApplication::platformName().compare("windows", Qt::CaseInsensitive) != 0
+        && QGuiApplication::platformName().compare("cocoa", Qt::CaseInsensitive) != 0)
         QSKIP("Not supported on this platform");
     Window window;
     window.setTitle(QStringLiteral("positioningDuringMinimized"));
