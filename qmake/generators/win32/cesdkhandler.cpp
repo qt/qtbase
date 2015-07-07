@@ -61,7 +61,7 @@ CeSdkHandler::CeSdkHandler()
 
 struct ContainsPathKey
 {
-    bool operator()(const QString &val)
+    bool operator()(const QString &val) const
     {
         return !(val.endsWith(QStringLiteral("MSBuildToolsPath"))
                  || val.endsWith(QStringLiteral("MSBuildToolsRoot")));
@@ -70,8 +70,8 @@ struct ContainsPathKey
 
 struct ValueFromKey
 {
-    ValueFromKey(const QSettings *settings) : settings(settings){}
-    QString operator()(const QString &key)
+    explicit ValueFromKey(const QSettings *settings) : settings(settings) {}
+    QString operator()(const QString &key) const
     {
         return settings->value(key).toString();
     }
