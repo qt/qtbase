@@ -689,7 +689,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildI
         return E_INVALIDARG;
 
     QAccessibleInterface *acc = childPointer(accessible, varChildID);
-    if (acc) {
+    if (acc && acc->isValid()) {
         *ppdispChild = QWindowsAccessibility::wrap(acc);
         return S_OK;
     }
@@ -778,7 +778,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accDescription(VARIANT var
     QString descr;
     if (varID.lVal) {
         QAccessibleInterface *child = childPointer(accessible, varID);
-        if (!child)
+        if (!child || !child->isValid())
             return E_FAIL;
         descr = child->text(QAccessible::Description);
     } else {
@@ -803,7 +803,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accHelp(VARIANT varID, BST
     QString help;
     if (varID.lVal) {
         QAccessibleInterface *child = childPointer(accessible, varID);
-        if (!child)
+        if (!child || !child->isValid())
             return E_FAIL;
         help = child->text(QAccessible::Help);
     } else {
@@ -862,7 +862,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accName(VARIANT varID, BST
     QString name;
     if (varID.lVal) {
         QAccessibleInterface *child = childPointer(accessible, varID);
-        if (!child)
+        if (!child || !child->isValid())
             return E_FAIL;
         name = child->text(QAccessible::Name);
         if (name.isEmpty()) {
@@ -910,7 +910,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accRole(VARIANT varID, VAR
     QAccessible::Role role;
     if (varID.lVal) {
         QAccessibleInterface *child = childPointer(accessible, varID);
-        if (!child)
+        if (!child || !child->isValid())
             return E_FAIL;
         role = child->role();
     } else {
@@ -947,7 +947,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accState(VARIANT varID, VA
     QAccessible::State state;
     if (varID.lVal) {
         QAccessibleInterface *child = childPointer(accessible, varID);
-        if (!child)
+        if (!child || !child->isValid())
             return E_FAIL;
         state = child->state();
     } else {
