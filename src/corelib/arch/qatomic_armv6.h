@@ -90,7 +90,10 @@ private:
 
 template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 {
-    typedef T Type;
+    // this is GCC or GCC-like, so we can use extensions:
+    // force the alignment to be the size of the type, as on some ABIs the alignment
+    // of 64-bit types is 32-bit. We need proper alignment for LDREX / STREX.
+    typedef __attribute__((__aligned__(sizeof(T)))) T Type;
 };
 
 #ifndef Q_CC_RVCT
