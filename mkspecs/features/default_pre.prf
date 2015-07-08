@@ -8,6 +8,8 @@ CONFIG = \
     testcase_targets import_plugins import_qpa_plugin \
     $$CONFIG
 
+contains(QT_CONFIG, c++11):lessThan(QT_COMPILER_STDCXX, 201103): CONFIG += c++11
+
 !build_pass:defined(QT_EDITION, var):!equals(QT_EDITION, "OpenSource"):!equals(QT_EDITION, "Preview") {
     #
     # call license checker (but cache result for one day)
