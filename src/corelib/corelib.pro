@@ -13,9 +13,6 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 CONFIG += optimize_full
 
-# otherwise mingw headers do not declare common functions like putenv
-mingw:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
-
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
 ANDROID_JAR_DEPENDENCIES = \
@@ -47,6 +44,9 @@ include(codecs/codecs.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
+
+# otherwise mingw headers do not declare common functions like putenv
+mingw: CONFIG -= strict_c++
 
 mac|darwin {
     !ios {
