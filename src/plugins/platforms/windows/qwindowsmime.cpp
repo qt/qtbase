@@ -995,6 +995,7 @@ QVector<FORMATETC> QWindowsMimeImage::formatsForMime(const QString &mimeType, co
         if (!image.isNull() && image.hasAlphaChannel())
             formatetcs += setCf(CF_DIBV5);
         formatetcs += setCf(CF_DIB);
+        formatetcs += setCf(CF_PNG); // QTBUG-86848, Paste into GIMP queries for PNG.
     }
     return formatetcs;
 }
@@ -1025,13 +1026,15 @@ bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMi
         return false;
     // QTBUG-11463, deny CF_DIB support for images with alpha to prevent loss of
     // transparency in conversion.
-    return cf == CF_DIBV5 || (cf == CF_DIB && !image.hasAlphaChannel());
+    return cf == CF_DIBV5
+        || (cf == CF_DIB && !image.hasAlphaChannel())
+        || cf == int(CF_PNG);
 }
 
 bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
 {
     int cf = getCf(formatetc);
-    if ((cf == CF_DIB || cf == CF_DIBV5) && mimeData->hasImage()) {
+    if ((cf == CF_DIB || cf == CF_DIBV5 || cf == int(CF_PNG)) && mimeData->hasImage()) {
         QImage img = qvariant_cast<QImage>(mimeData->imageData());
         if (img.isNull())
             return false;
@@ -1041,6 +1044,12 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
                 img = img.convertToFormat(QImage::Format_RGB32);
             const QByteArray ba = writeDib(img);
             if (!ba.isEmpty())
+                return setData(ba, pmedium);
+        } else if (cf == int(CF_PNG)) {
+            QBuffer buffer(&ba);
+            const bool written = buffer.open(QIODevice::WriteOnly) && img.save(&buffer, "PNG");
+            buffer.close();
+            if (written)
                 return setData(ba, pmedium);
         } else {
             QDataStream s(&ba, QIODevice::WriteOnly);
