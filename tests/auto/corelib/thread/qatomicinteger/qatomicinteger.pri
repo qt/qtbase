@@ -3,9 +3,9 @@ TYPE = $$basename(_PRO_FILE_PWD_)
 dn = $$dirname(_PRO_FILE_PWD_)
 FORCE = $$basename(dn)
 
-equals(FORCE, cxx11) {
-    suffix = Cxx11_$$TYPE
-    DEFINES += QT_ATOMIC_FORCE_CXX11
+equals(FORCE, no-cxx11) {
+    suffix = NoCxx11_$$TYPE
+    DEFINES += QT_ATOMIC_FORCE_NO_CXX11
 } else: equals(FORCE, gcc) {
     suffix = Gcc_$$TYPE
     DEFINES += QT_ATOMIC_FORCE_GCC
