@@ -1615,7 +1615,7 @@ void QPlainTextEdit::timerEvent(QTimerEvent *e)
 
     Note that the undo/redo history is cleared by this function.
 
-    \sa toText()
+    \sa toPlainText()
 */
 
 void QPlainTextEdit::setPlainText(const QString &text)

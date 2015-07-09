@@ -533,7 +533,7 @@ QTextOption QTextDocument::defaultTextOption() const
 /*!
     \since 4.3
 
-    Sets the default text option.
+    Sets the default text option to \a option.
 */
 void QTextDocument::setDefaultTextOption(const QTextOption &option)
 {
@@ -1464,7 +1464,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     Returns a cursor with the match selected if a match was found; otherwise
     returns a null cursor.
 
-    If the given \a from cursor has a selection, the search begins after the
+    If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
     By default the search is case-sensitive, and can match text anywhere in the

@@ -3263,7 +3263,7 @@ QStateMachine::WrappedEvent::~WrappedEvent()
   \fn QStateMachine::runningChanged(bool running)
   \since 5.4
 
-  This signal is emitted when the running property is changed.
+  This signal is emitted when the running property is changed with \a running as argument.
 
   \sa QStateMachine::running
 */

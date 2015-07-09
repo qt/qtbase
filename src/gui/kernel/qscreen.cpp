@@ -591,7 +591,7 @@ bool QScreen::isLandscape(Qt::ScreenOrientation o) const
     \fn void QScreen::orientationChanged(Qt::ScreenOrientation orientation)
 
     This signal is emitted when the orientation of the screen
-    changes.
+    changes with \a orientation as an argument.
 
     \sa orientation()
 */
@@ -600,7 +600,7 @@ bool QScreen::isLandscape(Qt::ScreenOrientation o) const
     \fn void QScreen::primaryOrientationChanged(Qt::ScreenOrientation orientation)
 
     This signal is emitted when the primary orientation of the screen
-    changes.
+    changes with \a orientation as an argument.
 
     \sa primaryOrientation()
 */

@@ -1266,7 +1266,8 @@ void QStandardItem::setCheckable(bool checkable)
 */
 
 /*!
-  Sets whether the item is tristate and controlled by QTreeWidget.
+  Determines that the item is tristate and controlled by QTreeWidget if \a tristate
+  is \c true.
   This enables automatic management of the state of parent items in QTreeWidget
   (checked if all children are checked, unchecked if all children are unchecked,
   or partially checked if only some children are checked).

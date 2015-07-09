@@ -621,7 +621,7 @@ bool QImageWriter::progressiveScanWrite() const
 /*!
     \since 5.5
 
-    Sets the image transformations metadata including orientation.
+    Sets the image transformations metadata including orientation to \a transform.
 
     If transformation metadata is not supported by the image format,
     the transform is applied before writing.

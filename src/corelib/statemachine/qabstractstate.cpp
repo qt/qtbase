@@ -217,7 +217,7 @@ bool QAbstractState::active() const
   \fn QAbstractState::activeChanged(bool active)
   \since 5.4
 
-  This signal is emitted when the active property is changed.
+  This signal is emitted when the active property is changed with \a active as argument.
 
   \sa QAbstractState::active, entered(), exited()
 */

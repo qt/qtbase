@@ -2544,7 +2544,7 @@ void QTableView::setColumnHidden(int column, bool hide)
 */
 
 /*!
-  If \a enabled true enables sorting for the table and immediately
+  If \a enable is true, enables sorting for the table and immediately
   trigger a call to sortByColumn() with the current sort section and
   order
  */

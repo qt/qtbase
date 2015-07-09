@@ -1764,7 +1764,7 @@ const QAbstractItemModel *QItemSelectionModel::model() const
 /*!
     \since 5.5
 
-    Sets the model. The modelChanged() signal will be emitted.
+    Sets the model to \a model. The modelChanged() signal will be emitted.
 
     \sa model(), modelChanged()
 */

@@ -4354,6 +4354,8 @@ void QGLWidget::resizeOverlayGL(int, int)
 {
 }
 
+/*!\reimp
+ */
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

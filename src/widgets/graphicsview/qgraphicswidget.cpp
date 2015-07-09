@@ -304,6 +304,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
 
 /*!
     \fn void QGraphicsWidget::resize(qreal w, qreal h)
+    \overload
 
     This convenience function is equivalent to calling resize(QSizeF(w, h)).
 
