@@ -74,7 +74,7 @@ typedef QHash<QWidget *, QPersistentModelIndex> QEditorIndexHash;
 typedef QHash<QPersistentModelIndex, QEditorInfo> QIndexEditorHash;
 
 typedef QPair<QRect, QModelIndex> QItemViewPaintPair;
-typedef QList<QItemViewPaintPair> QItemViewPaintPairs;
+typedef QVector<QItemViewPaintPair> QItemViewPaintPairs;
 
 class QEmptyModel : public QAbstractItemModel
 {
