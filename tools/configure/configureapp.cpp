@@ -4009,6 +4009,14 @@ void Configure::displayConfig()
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
     }
+    if (dictionary["C++STD"] == "c++98") {
+        sout << endl
+             << "NOTE: The -no-c++11 / -c++-level c++98 option is deprecated." << endl
+             << endl
+             << "Qt 5.7 will require C++11 support. The options are in effect for this" << endl
+             << "Qt 5.6 build, but you should update your build scripts to remove the" << endl
+             << "option and, if necessary, upgrade your compiler." << endl;
+    }
     if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
         sout << endl
              << dictionary["PREFIX_COMPLAINTS"] << endl

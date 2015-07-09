@@ -7498,6 +7498,20 @@ EOF
 fi
 
 #-------------------------------------------------------------------------------
+# check if the user passed the deprecated -no-c++11 / --c++-level=c++98 option
+#-------------------------------------------------------------------------------
+if [ "$CFG_STDCXX" = "c++98" ]; then
+cat <<EOF
+
+        NOTICE: The -no-c++11 / --c++-level=c++98 option is deprecated.
+
+        Qt 5.7 will require C++11 support. The options are in effect for this
+        Qt 5.6 build, but you should update your build scripts to remove the
+        option and, if necessary, upgrade your compiler.
+EOF
+fi
+
+#-------------------------------------------------------------------------------
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ `basename $0` != "config.status" ]; then
