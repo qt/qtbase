@@ -468,25 +468,21 @@ void Configure::parseCmdLine()
             dictionary[ "COMPILE_EXAMPLES" ] = "no";
         }
 
-        else if (configCmdLine.at(i) == "-c++11")
-            dictionary[ "C++STD" ] = "c++11";
-        else if (configCmdLine.at(i) == "-no-c++11")
-            dictionary[ "C++STD" ] = "c++98";
         else if (configCmdLine.at(i) == "-c++std") {
             ++i;
             if (i == argCount)
                 break;
 
             QString level = configCmdLine.at(i);
-            if (level == "c++98" || level == "c++11" || level == "c++14" || level == "c++1z"
+            if (level == "c++11" || level == "c++14" || level == "c++1z"
                     || level == "auto") {
                 dictionary[ "C++STD" ] = level;
-            } else if (level == "98" || level == "11" || level == "14" || level == "1z") {
+            } else if (level == "11" || level == "14" || level == "1z") {
                 dictionary[ "C++STD" ] = "c++" + level;
             } else {
                 dictionary[ "DONE" ] = "error";
                 cout << "ERROR: invalid C++ standard " << level
-                     << "; valid options are: c++98 c++11 c++14 c++1z auto" << endl;
+                     << "; valid options are: c++11 c++14 c++1z auto" << endl;
                 return;
             }
         }
@@ -1824,7 +1820,7 @@ bool Configure::displayHelp()
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
-        desc(        "-c++std <edition>",               "Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)\n"
+        desc(        "-c++std <edition>",               "Compile Qt with C++ standard edition (c++11, c++14, c++1z)\n"
                                                         "Default: highest supported. This option is not supported for MSVC.\n");
 
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
@@ -2401,7 +2397,10 @@ void Configure::autoDetection()
 
     if (dictionary["C++STD"] == "auto" && !dictionary["QMAKESPEC"].contains("msvc")) {
         if (!tryCompileProject("common/c++11")) {
-            dictionary["C++STD"] = "c++98";
+            dictionary["DONE"] = "error";
+            cout << "ERROR: Qt requires a C++11 compiler and yours does not seem to be that." << endl
+                 << "Please upgrade." << endl;
+            return;
         } else if (!tryCompileProject("common/c++14")) {
             dictionary["C++STD"] = "c++11";
         } else if (!tryCompileProject("common/c++1z")) {
@@ -4058,14 +4057,6 @@ void Configure::displayConfig()
              << "and " << dictionary["QT_HOST_ARCH"] << " for the host architecture (note that these two" << endl
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
-    }
-    if (dictionary["C++STD"] == "c++98") {
-        sout << endl
-             << "NOTE: The -no-c++11 / -c++-level c++98 option is deprecated." << endl
-             << endl
-             << "Qt 5.7 will require C++11 support. The options are in effect for this" << endl
-             << "Qt 5.6 build, but you should update your build scripts to remove the" << endl
-             << "option and, if necessary, upgrade your compiler." << endl;
     }
     if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
         sout << endl

@@ -2253,28 +2253,19 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    c++11)
-        if [ "$VAL" = "yes" ]; then
-            CFG_STDCXX="c++11"
-        elif [ "$VAL" = "no" ]; then
-            CFG_STDCXX="c++98"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     c++std)
         case "$VAL" in
-            c++98|c++11|c++14|c++1z|auto)
+            c++11|c++14|c++1z|auto)
                 CFG_STDCXX="$VAL"
                 ;;
-            98|11|14|1z)
+            11|14|1z)
                 CFG_STDCXX="c++$VAL"
                 ;;
             1y|c++1y)
                 CFG_STDCXX="c++14"
                 ;;
             *)
-                echo >&2 "Invalid C++ edition: $VAL; valid options are: c++98 c++11 c++14 c++1z auto"
+                echo >&2 "Invalid C++ edition: $VAL; valid options are: c++11 c++14 c++1z auto"
                 ERROR=yes
                 ;;
         esac
@@ -2450,7 +2441,7 @@ Configure options:
     -confirm-license ... Automatically acknowledge the license (use with
                          either -opensource or -commercial)
 
-    -c++std <edition> .. Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)
+    -c++std <edition> .. Compile Qt with C++ standard edition (c++11, c++14, c++1z)
                          Default: highest supported
 
  *  -shared ............ Create and use shared Qt libraries.
@@ -4411,20 +4402,11 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
 fi
 
 # Detect C++11 & up support
-# Configure detects compiler features based on cross compiler, so we need
-# to explicitly disable C++11 on Mac to avoid breaking builds where the
-# host compiler does not support it.
 stdcxx_error=false
-if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
-    CFG_STDCXX="c++98"
-elif [ "$CFG_STDCXX" = "c++98" ]; then
-    : # CFG_STDCXX is correct
-elif ! compileTest common/c++11 "C++11"; then
-    if [ "$CFG_STDCXX" != "auto" ]; then
-        stdcxx_error=true
-    else
-        CFG_STDCXX="c++98"
-    fi
+if ! compileTest common/c++11 "C++11"; then
+    echo "ERROR: Qt requires a C++11 compiler and yours does not seem to be that."
+    echo "Please upgrade."
+    exit 1
 elif [ "$CFG_STDCXX" = "c++11" ]; then
     : # CFG_STDCXX is correct
 elif ! compileTest common/c++14 "C++14"; then
@@ -6267,13 +6249,12 @@ fi
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
 
-if [ "$CFG_STDCXX" != "c++98" ]; then
-    QT_CONFIG="$QT_CONFIG c++11"
-    if [ "$CFG_STDCXX" != "c++11" ]; then
-        QT_CONFIG="$QT_CONFIG c++14"
-        if [ "$CFG_STDCXX" != "c++14" ]; then
-            QT_CONFIG="$QT_CONFIG c++1z"
-        fi
+# Set "c++11" unconditionally, as lots of code does contains(QT_CONFIG, c++11)
+QT_CONFIG="$QT_CONFIG c++11"
+if [ "$CFG_STDCXX" != "c++11" ]; then
+    QT_CONFIG="$QT_CONFIG c++14"
+    if [ "$CFG_STDCXX" != "c++14" ]; then
+        QT_CONFIG="$QT_CONFIG c++1z"
     fi
 fi
 
@@ -7607,20 +7588,6 @@ cat <<EOF
         output. Qt will be built using $CFG_ARCH for the target architecture
         and $CFG_HOST_ARCH for the host architecture (note that these two
         will be the same unless you are cross-compiling).
-EOF
-fi
-
-#-------------------------------------------------------------------------------
-# check if the user passed the deprecated -no-c++11 / --c++-level=c++98 option
-#-------------------------------------------------------------------------------
-if [ "$CFG_STDCXX" = "c++98" ]; then
-cat <<EOF
-
-        NOTICE: The -no-c++11 / --c++-level=c++98 option is deprecated.
-
-        Qt 5.7 will require C++11 support. The options are in effect for this
-        Qt 5.6 build, but you should update your build scripts to remove the
-        option and, if necessary, upgrade your compiler.
 EOF
 fi
 
