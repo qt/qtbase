@@ -36,7 +36,7 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QFlags>
-#include <private/qversionnumber_p.h>
+#include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
 

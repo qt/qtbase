@@ -75,7 +75,7 @@ HEADERS +=  \
         tools/qunicodetools_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
-        tools/qversionnumber_p.h
+        tools/qversionnumber.h
 
 
 SOURCES += \

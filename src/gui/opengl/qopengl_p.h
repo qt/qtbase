@@ -49,7 +49,7 @@
 #include <private/qopenglcontext_p.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstring.h>
-#include <private/qversionnumber_p.h>
+#include <QtCore/qversionnumber.h>
 
 QT_BEGIN_NAMESPACE
 

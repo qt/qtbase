@@ -33,7 +33,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <private/qversionnumber_p.h>
+#include <QtCore/qversionnumber.h>
 
 class tst_QVersionNumber : public QObject
 {

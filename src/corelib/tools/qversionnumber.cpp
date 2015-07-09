@@ -32,7 +32,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/private/qversionnumber_p.h>
+#include <QtCore/qversionnumber.h>
 #include <QtCore/qhash.h>
 #include <QtCore/private/qlocale_tools_p.h>
 #include <QtCore/qcollator.h>
@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVersionNumber
     \inmodule QtCore
-    \internal
     \since 5.4
     \brief The QVersionNumber class contains a version number with an arbitrary
            number of segments.
