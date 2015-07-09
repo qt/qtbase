@@ -43,6 +43,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QMap>
+#include <QtCore/private/qglobal_p.h>
 
 //
 //  W A R N I N G

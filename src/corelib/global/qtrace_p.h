@@ -116,7 +116,7 @@
  * qcoreapplication_baz above.
  */
 
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qscopeguard.h>
 
 QT_BEGIN_NAMESPACE

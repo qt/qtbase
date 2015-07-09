@@ -54,6 +54,7 @@
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
 #include <qpa/qplatformprintersupport.h>
+#include <private/qglobal_p.h>
 #ifndef QT_NO_PRINTER
 
 QT_BEGIN_NAMESPACE

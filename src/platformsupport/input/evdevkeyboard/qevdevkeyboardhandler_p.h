@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -54,6 +54,7 @@
 #include <qobject.h>
 #include <QTimer>
 #include <QDataStream>
+#include <private/qglobal_p.h>
 
 #include <memory>
 

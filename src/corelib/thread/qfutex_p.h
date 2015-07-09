@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <qglobal.h>
+#include <private/qglobal_p.h>
 
 #if (__has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && __has_include(<sanitizer/tsan_interface.h>)
 #  include <sanitizer/tsan_interface.h>

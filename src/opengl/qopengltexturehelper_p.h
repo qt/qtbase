@@ -52,6 +52,7 @@
 //
 
 #include <QtOpenGL/qtopenglglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #ifndef QT_NO_OPENGL
 

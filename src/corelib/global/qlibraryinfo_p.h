@@ -53,6 +53,7 @@
 //
 
 #include "QtCore/qlibraryinfo.h"
+#include "QtCore/private/qglobal_p.h"
 
 #if QT_CONFIG(settings)
 #    include "QtCore/qsettings.h"

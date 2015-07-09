@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtXml module of the Qt Toolkit.
@@ -40,7 +40,7 @@
 #define QDOMHELPERS_P_H
 
 #include <qcoreapplication.h>
-#include <qglobal.h>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

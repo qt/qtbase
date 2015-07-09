@@ -50,7 +50,7 @@
 // We mean it.
 //
 
-#include <qglobal.h>
+#include <private/qglobal_p.h>
 
 #if __has_include(<memory_resource>)
 #  include <unordered_set>

@@ -66,6 +66,7 @@
 #include <QtDBus/QDBusAbstractInterface>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusReply>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

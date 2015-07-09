@@ -55,6 +55,7 @@
 #include <QtCore/QString>
 #include <QtCore/QChar>
 #include <QtCore/QPoint>
+#include <QtCore/private/qglobal_p.h>
 
 #ifdef QT_GUI_LIB
 #include <QtGui/QGuiApplication>

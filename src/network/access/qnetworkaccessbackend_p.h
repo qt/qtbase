@@ -60,6 +60,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qbytearrayview.h>
+#include <QtCore/private/qglobal_p.h>
 
 #if QT_CONFIG(ssl)
 #include <QtNetwork/qsslconfiguration.h>

@@ -53,6 +53,7 @@
 //
 
 #include <QtCore/qmutex.h>
+#include <QtCore/private/qglobal_p.h>
 
 #include <mutex>
 

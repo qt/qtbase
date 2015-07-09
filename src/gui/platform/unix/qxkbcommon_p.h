@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -55,6 +55,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qlist.h>
+#include <QtCore/private/qglobal_p.h>
 
 #include <xkbcommon/xkbcommon.h>
 

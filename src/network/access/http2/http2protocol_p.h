@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -54,7 +54,7 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qmap.h>
 
 // Different HTTP/2 constants/values as defined by RFC 7540.

@@ -54,6 +54,7 @@
 #include <QtCore/qstack.h>
 
 #include "qtreewidgetitemiterator.h"
+#include "private/qglobal_p.h"
 #if QT_CONFIG(treewidget)
 
 QT_BEGIN_NAMESPACE

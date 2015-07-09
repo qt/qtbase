@@ -55,6 +55,7 @@
 #include <QtCore/QProperty>
 #include <QtTest/QSignalSpy>
 #include <QTest>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

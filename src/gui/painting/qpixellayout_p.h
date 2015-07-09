@@ -55,6 +55,7 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qrgba64.h>
 #include <QtGui/qrgbafloat.h>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

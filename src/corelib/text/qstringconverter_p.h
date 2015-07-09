@@ -55,6 +55,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qstringconverter.h>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

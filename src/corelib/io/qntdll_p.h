@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qglobal_p.h>
+
 #include <winternl.h>
 
 QT_BEGIN_NAMESPACE

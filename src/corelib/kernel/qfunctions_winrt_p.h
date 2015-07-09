@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
 

@@ -52,6 +52,7 @@
 //
 
 #include <QString>
+#include <private/qglobal_p.h>
 
 #include <vector>
 #include <memory>

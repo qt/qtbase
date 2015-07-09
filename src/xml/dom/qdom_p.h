@@ -41,7 +41,7 @@
 
 #include "qdom.h"
 
-#include <qglobal.h>
+#include <private/qglobal_p.h>
 #include <qhash.h>
 #include <qstring.h>
 #include <qlist.h>

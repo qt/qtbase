@@ -54,6 +54,7 @@
 #include <QtCore/QWaitCondition>
 #include <QtCore/QMutex>
 #include <QtCore/QDeadlineTimer>
+#include <QtCore/private/qglobal_p.h>
 
 #include <condition_variable>
 #include <mutex>

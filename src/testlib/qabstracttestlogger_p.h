@@ -52,6 +52,7 @@
 //
 
 #include <QtTest/qttestglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #include <stdio.h>
 #include <stdlib.h>

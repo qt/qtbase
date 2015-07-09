@@ -53,6 +53,7 @@
 
 #include <qpa/qplatformbackingstore.h>
 #include <QtCore/QMutex>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

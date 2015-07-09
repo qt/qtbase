@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins module of the Qt Toolkit.
@@ -52,6 +52,7 @@
 //
 
 #include <QObject>
+#include <private/qglobal_p.h>
 
 struct tsdev;
 

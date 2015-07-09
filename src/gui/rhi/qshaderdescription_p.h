@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Qt Gui module
@@ -54,6 +54,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QList>
+#include <QtCore/private/qglobal_p.h>
 #include <array>
 
 QT_BEGIN_NAMESPACE

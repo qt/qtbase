@@ -42,6 +42,7 @@
 #define QCBORCOMMON_P_H
 
 #include "qcborcommon.h"
+#include "private/qglobal_p.h"
 
 //
 //  W A R N I N G

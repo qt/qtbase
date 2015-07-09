@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -73,6 +73,7 @@
 #include <QDBusAbstractInterface>
 #include <QDBusPendingReply>
 #include <QDBusReply>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

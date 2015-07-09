@@ -52,6 +52,7 @@
 //
 
 #include <qpa/qplatformprintdevice.h>
+#include <private/qglobal_p.h>
 
 #ifndef QT_NO_PRINTER
 

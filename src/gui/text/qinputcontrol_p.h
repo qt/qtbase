@@ -53,6 +53,7 @@
 
 #include <QtCore/qobject.h>
 #include <qtguiglobal.h>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -54,6 +54,7 @@
 // q(data/text)stream.h must be included before any header file that defines Status
 #include <QtCore/qdatastream.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/private/qglobal_p.h>
 
 #ifdef QT_EGL_NO_X11
 # ifndef EGL_NO_X11

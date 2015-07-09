@@ -55,6 +55,7 @@
 #include <QString>
 #include <QStringList>
 #include <QStringView>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

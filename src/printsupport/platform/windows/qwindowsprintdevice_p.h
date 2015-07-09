@@ -56,6 +56,7 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtCore/qt_windows.h>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

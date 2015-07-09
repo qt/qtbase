@@ -40,7 +40,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM)
 #define SHOULD_CHECK_ARM_ON_X86

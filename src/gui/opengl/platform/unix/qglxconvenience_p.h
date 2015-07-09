@@ -53,6 +53,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtGui/qsurfaceformat.h>
+#include <QtCore/private/qglobal_p.h>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>

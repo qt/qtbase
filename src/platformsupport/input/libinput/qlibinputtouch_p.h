@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins module of the Qt Toolkit.
@@ -44,6 +44,7 @@
 #include <QtCore/QList>
 #include <QtCore/QPointer>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qglobal_p.h>
 
 //
 //  W A R N I N G

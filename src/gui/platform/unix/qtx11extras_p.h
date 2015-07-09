@@ -52,6 +52,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/private/qglobal_p.h>
 
 #include <xcb/xcb.h>
 

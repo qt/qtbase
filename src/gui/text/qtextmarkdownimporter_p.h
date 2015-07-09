@@ -58,6 +58,7 @@
 #include <QtGui/qtextlist.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qstack.h>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

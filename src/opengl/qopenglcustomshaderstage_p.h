@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -53,6 +53,7 @@
 
 #include <QtOpenGL/qtopenglglobal.h>
 #include <QOpenGLShaderProgram>
+#include <private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
