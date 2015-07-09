@@ -357,7 +357,7 @@ sub check_header {
                 print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
                 for my $trylib (keys(%modules)) {
                     if (-e "$out_basedir/include/$trylib/$include") {
-                        print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
+                        print STDERR "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
                     }
                 }
             }
@@ -376,15 +376,15 @@ sub check_header {
     if ($public_header) {
         if ($header_skip_qt_begin_namespace_test == 0 and $stop_processing == 0) {
             if ($qt_begin_namespace_found == 0) {
-                print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
+                print STDERR "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
             }
 
             if ($qt_begin_namespace_found && $qt_end_namespace_found == 0) {
-                print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
+                print STDERR "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
             }
         }
     } elsif ($private_header) {
-        print "$lib: WARNING: $iheader does not have the \"We mean it.\" warning\n" if (!$we_mean_it);
+        print STDERR "$lib: WARNING: $iheader does not have the \"We mean it.\" warning\n" if (!$we_mean_it);
     }
 
     close(F);
@@ -764,7 +764,7 @@ while ( @ARGV ) {
         $var = "version";
         $val = shift @ARGV;
     } elsif($arg =~/^-/) {
-        print "Unknown option: $arg\n\n" if(!$var);
+        print STDERR "Unknown option: $arg\n\n" if (!$var);
         showUsage();
     } else {
         $basedir = locateSyncProfile($arg);
@@ -777,7 +777,7 @@ while ( @ARGV ) {
 
     #do something
     if(!$var || $var eq "show_help") {
-        print "Unknown option: $arg\n\n" if(!$var);
+        print STDERR "Unknown option: $arg\n\n" if (!$var);
         showUsage();
     } elsif ($var eq "copy") {
         if($val eq "yes") {
