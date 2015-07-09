@@ -98,6 +98,21 @@ breakpad {
     !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP $$DEBUGFILENAME)
 }
 
+c++11|c++14|c++1z {
+    c++1z:       cxxstd = CXX1Z
+    else: c++14: cxxstd = CXX14
+    else:        cxxstd = CXX11
+
+    # Check if we should disable the GNU extensions or not
+    !strict_c++:!isEmpty(QMAKE_CXXFLAGS_GNU$$cxxstd): cxxstd = GNU$$cxxstd
+
+    QMAKE_CXXFLAGS += $$eval(QMAKE_CXXFLAGS_$$cxxstd)
+    QMAKE_OBJECTIVE_CFLAGS += $$eval(QMAKE_CXXFLAGS_$$cxxstd)
+    QMAKE_LFLAGS += $$eval(QMAKE_LFLAGS_$$cxxstd)
+
+    unset(cxxstd)
+}
+
 !precompile_header: SOURCES += $$NO_PCH_SOURCES
 
 QMAKE_INCDIR += $$QMAKE_INCDIR_POST

@@ -238,7 +238,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "COMPILE_EXAMPLES" ] = "yes";
 
-    dictionary[ "C++11" ]           = "auto";
+    dictionary[ "C++STD" ]          = "auto";
 
     dictionary[ "USE_GOLD_LINKER" ] = "no";
 
@@ -464,9 +464,29 @@ void Configure::parseCmdLine()
         }
 
         else if (configCmdLine.at(i) == "-c++11")
-            dictionary[ "C++11" ] = "yes";
+            dictionary[ "C++STD" ] = "c++11";
         else if (configCmdLine.at(i) == "-no-c++11")
-            dictionary[ "C++11" ] = "no";
+            dictionary[ "C++STD" ] = "c++98";
+        else if (configCmdLine.at(i) == "-c++std") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            QString level = configCmdLine.at(i);
+            if (level == "c++98" || level == "c++11" || level == "c++14" || level == "c++1z"
+                    || level == "auto") {
+                dictionary[ "C++STD" ] = level;
+            } else if (level == "98" || level == "11" || level == "14" || level == "1z") {
+                dictionary[ "C++STD" ] = "c++" + level;
+            } else {
+                dictionary[ "DONE" ] = "error";
+                cout << "ERROR: invalid C++ standard " << level
+                     << "; valid options are: c++98 c++11 c++14 c++1z auto" << endl;
+                return;
+            }
+        }
+
+
         else if (configCmdLine.at(i) == "-use-gold-linker")
             dictionary[ "USE_GOLD_LINKER" ] = "yes";
         else if (configCmdLine.at(i) == "-no-use-gold-linker")
@@ -1791,8 +1811,8 @@ bool Configure::displayHelp()
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
-        desc("C++11", "yes", "-c++11",                  "Compile Qt with C++11 support enabled.");
-        desc("C++11", "no", "-no-c++11",                "Do not compile Qt with C++11 support enabled.\n");
+        desc(        "-c++std <edition>",               "Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)\n"
+                                                        "Default: highest supported. This option is not supported for MSVC.\n");
 
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
         desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
@@ -2117,7 +2137,7 @@ QString Configure::defaultTo(const QString &option)
         return "no";
 
     // keep 'auto' default for msvc, since we can't set the language supported
-    if (option == "C++11"
+    if (option == "C++STD"
         && dictionary["QMAKESPEC"].contains("msvc"))
         return "auto";
 
@@ -2338,9 +2358,16 @@ void Configure::autoDetection()
     // Auto-detect CPU architectures.
     detectArch();
 
-    if (dictionary["C++11"] == "auto") {
-        if (!dictionary["QMAKESPEC"].contains("msvc"))
-            dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
+    if (dictionary["C++STD"] == "auto" && !dictionary["QMAKESPEC"].contains("msvc")) {
+        if (!tryCompileProject("common/c++11")) {
+            dictionary["C++STD"] = "c++98";
+        } else if (!tryCompileProject("common/c++14")) {
+            dictionary["C++STD"] = "c++11";
+        } else if (!tryCompileProject("common/c++1z")) {
+            dictionary["C++STD"] = "c++14";
+        } else {
+            dictionary["C++STD"] = "c++1z";
+        }
     }
 
     if (!dictionary["QMAKESPEC"].contains("msvc")) {
@@ -2544,16 +2571,11 @@ void Configure::autoDetection()
 bool Configure::verifyConfiguration()
 {
     bool prompt = false;
-    if (dictionary["C++11"] != "auto"
+    if (dictionary["C++STD"] != "auto"
             && dictionary["QMAKESPEC"].contains("msvc")) {
-        cout << "WARNING: Qt does not support disabling or enabling any existing C++11 support "
-                "with MSVC compilers.";
-        if (dictionary["C++11"] == "yes")
-            cout << "Therefore -c++11 is ignored." << endl << endl;
-        else
-            cout << "Therefore -no-c++11 is ignored." << endl << endl;
-
-        dictionary["C++11"] = "auto";
+        cout << "WARNING: It is not possible to change the C++ standard edition with MSVC compilers. "
+                "Therefore, the option -c++std " << dictionary["C++STD"] << " was ignored." << endl << endl;
+        dictionary["C++STD"] = "auto";
     }
 
     if (dictionary["STATIC_RUNTIME"] == "yes" && dictionary["SHARED"] == "yes") {
@@ -2695,8 +2717,12 @@ void Configure::generateOutputVars()
         qtConfig += "release";
     }
 
-    if (dictionary[ "C++11" ] == "yes")
+    if (dictionary[ "C++STD" ] == "c++11")
         qtConfig += "c++11";
+    else if (dictionary[ "C++STD" ] == "c++14")
+        qtConfig += "c++11 c++14";
+    else if (dictionary[ "C++STD" ] == "c++1z")
+        qtConfig += "c++11 c++14 c++1z";
     if (!dictionary[ "CFG_STDCXX_DEFAULT" ].isEmpty())
         qmakeVars += "QT_COMPILER_STDCXX = " + dictionary[ "CFG_STDCXX_DEFAULT" ];
 
@@ -3773,7 +3799,7 @@ void Configure::displayConfig()
     }
     if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
         sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
-    sout << "C++11 support..............." << dictionary[ "C++11" ] << endl;
+    sout << "C++ language standard......." << dictionary[ "C++STD" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;

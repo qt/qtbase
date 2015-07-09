@@ -769,7 +769,7 @@ CFG_SANITIZE_MEMORY=no
 CFG_SANITIZE_UNDEFINED=no
 CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
-CFG_CXX11=auto
+CFG_STDCXX=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
 CFG_HEADERSCLEAN=auto
@@ -935,6 +935,7 @@ while [ "$#" -gt 0 ]; do
     -sdk| \
     -arch| \
     -host-arch| \
+    -c++std | \
     -mysql_config| \
     -psql_config| \
     -qpa| \
@@ -2234,11 +2235,30 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     c++11)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_CXX11="$VAL"
+        if [ "$VAL" = "yes" ]; then
+            CFG_STDCXX="c++11"
+        elif [ "$VAL" = "no" ]; then
+            CFG_STDCXX="c++98"
         else
             UNKNOWN_OPT=yes
         fi
+        ;;
+    c++std)
+        case "$VAL" in
+            c++98|c++11|c++14|c++1z|auto)
+                CFG_STDCXX="$VAL"
+                ;;
+            98|11|14|1z)
+                CFG_STDCXX="c++$VAL"
+                ;;
+            1y|c++1y)
+                CFG_STDCXX="c++14"
+                ;;
+            *)
+                echo >&2 "Invalid C++ edition: $VAL; valid options are: c++98 c++11 c++14 c++1z auto"
+                ERROR=yes
+                ;;
+        esac
         ;;
     system-proxies)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2411,8 +2431,8 @@ Configure options:
     -confirm-license ... Automatically acknowledge the license (use with
                          either -opensource or -commercial)
 
-    -no-c++11 .......... Do not compile Qt with C++11 support enabled.
- +  -c++11 ............. Compile Qt with C++11 support enabled.
+    -c++std <edition> .. Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)
+                         Default: highest supported
 
  *  -shared ............ Create and use shared Qt libraries.
     -static ............ Create and use static Qt libraries.
@@ -4323,24 +4343,47 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     fi
 fi
 
-# Detect C++11 support
-if [ "$CFG_CXX11" != "no" ]; then
-    # Configure detects compiler features based on cross compiler, so we need
-    # to explicitly disable C++11 on Mac to avoid breaking builds where the
-    # host compiler does not support it.
-    if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
-        CFG_CXX11="no"
-    elif compileTest common/c++11 "C++11"; then
-        CFG_CXX11="yes"
-    elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-        echo "C++11 support cannot be enabled due to functionality tests!"
-        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-        echo " If you believe this message is in error you may use the continue"
-        echo " switch (-continue) to $0 to continue."
-        exit 101
+# Detect C++11 & up support
+# Configure detects compiler features based on cross compiler, so we need
+# to explicitly disable C++11 on Mac to avoid breaking builds where the
+# host compiler does not support it.
+stdcxx_error=false
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    CFG_STDCXX="c++98"
+elif [ "$CFG_STDCXX" = "c++98" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++11 "C++11"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
     else
-        CFG_CXX11="no"
+        CFG_STDCXX="c++98"
     fi
+elif [ "$CFG_STDCXX" = "c++11" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++14 "C++14"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
+    else
+        CFG_STDCXX="c++11"
+    fi
+elif [ "$CFG_STDCXX" = "c++14" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++1z "C++1z"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
+    else
+        CFG_STDCXX="c++14"
+    fi
+else
+    CFG_STDCXX="c++1z"
+fi
+
+if $stdcxx_error && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+    echo "$CFG_STDCXX support cannot be enabled due to functionality tests!"
+    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+    echo " If you believe this message is in error you may use the continue"
+    echo " switch (-continue) to $0 to continue."
+    exit 101
 fi
 
 # Detect which edition of the C++ standard the compiler defaults to
@@ -6086,7 +6129,15 @@ fi
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
 
-[ "$CFG_CXX11" = "yes" ] && QT_CONFIG="$QT_CONFIG c++11"
+if [ "$CFG_STDCXX" != "c++98" ]; then
+    QT_CONFIG="$QT_CONFIG c++11"
+    if [ "$CFG_STDCXX" != "c++11" ]; then
+        QT_CONFIG="$QT_CONFIG c++14"
+        if [ "$CFG_STDCXX" != "c++14" ]; then
+            QT_CONFIG="$QT_CONFIG c++1z"
+        fi
+    fi
+fi
 
 if [ "$CFG_SILENT" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG silent"
@@ -7104,7 +7155,7 @@ else
 fi
 unset build_mode release
 echo "  Using sanitizer(s)...... $CFG_SANITIZERS"
-echo "  Using C++11 ............ $CFG_CXX11"
+echo "  Using C++ standard ..... $CFG_STDCXX"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
 echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
