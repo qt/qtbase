@@ -1149,9 +1149,12 @@ if($check_includes) {
                         $header = 0 if($header eq $_);
                     }
                     if($header) {
+                        # We need both $public_header and $private_header because QPA headers count as neither
                         my $public_header = $header;
+                        my $private_header = 0;
                         if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                             $public_header = 0;
+                            $private_header = $header =~ /_p.h$/ && $subdir !~ /3rdparty/
                         } elsif (isQpaHeader($public_header)) {
                             $public_header = 0;
                         } else {
@@ -1169,43 +1172,50 @@ if($check_includes) {
                         }
 
                         my $iheader = $subdir . "/" . $header;
-                        if($public_header) {
-                            if(open(F, "<$iheader")) {
-                                my $qt_begin_namespace_found = 0;
-                                my $qt_end_namespace_found = 0;
-                                my $qt_namespace_suffix = "";
-                                my $line;
-                                my $stop_processing = 0;
-                                while($line = <F>) {
-                                    chomp $line;
-                                    my $output_line = 1;
-                                    if($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
-                                        $stop_processing = 1;
-                                        last;
-                                    } elsif($line =~ /^ *\# *include/) {
-                                        my $include = $line;
-                                        if($line =~ /<.*>/) {
-                                            $include =~ s,.*<(.*)>.*,$1,;
-                                        } elsif($line =~ /".*"/) {
-                                            $include =~ s,.*"(.*)".*,$1,;
-                                        } else {
-                                            $include = 0;
-                                        }
-                                        if($include) {
+                        if (open(F, "<$iheader")) {
+                            my $qt_begin_namespace_found = 0;
+                            my $qt_end_namespace_found = 0;
+                            my $qt_namespace_suffix = "";
+                            my $line;
+                            my $stop_processing = 0;
+                            my $we_mean_it = 0;
+                            while ($line = <F>) {
+                                chomp $line;
+                                my $output_line = 1;
+                                if ($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
+                                    $stop_processing = 1;
+                                    last;
+                                } elsif ($line =~ /^ *\# *include/) {
+                                    my $include = $line;
+                                    if ($line =~ /<.*>/) {
+                                        $include =~ s,.*<(.*)>.*,$1,;
+                                    } elsif ($line =~ /".*"/) {
+                                        $include =~ s,.*"(.*)".*,$1,;
+                                    } else {
+                                        $include = 0;
+                                    }
+                                    if ($include) {
+                                        if ($public_header) {
                                             for my $trylib (keys(%modules)) {
                                                 if(-e "$out_basedir/include/$trylib/$include") {
                                                     print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
                                                 }
                                             }
                                         }
-                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
+                                    }
+                                } elsif (!$private_header) {
+                                    if ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
                                         $qt_namespace_suffix = defined($1) ? $1 : "";
                                         $qt_begin_namespace_found = 1;
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE$qt_namespace_suffix\s*$/) {
                                         $qt_end_namespace_found = 1;
                                     }
+                                } elsif ($line =~ "^// We mean it.") {
+                                    ++$we_mean_it;
                                 }
+                            }
 
+                            if ($public_header) {
                                 if ($header_skip_qt_begin_namespace_test == 0 and $stop_processing  == 0) {
                                     if ($qt_begin_namespace_found == 0) {
                                         print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
@@ -1215,9 +1225,11 @@ if($check_includes) {
                                         print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
                                     }
                                 }
-
-                                close(F);
+                            } elsif ($private_header) {
+                                print "$lib: WARNING: $iheader does not have the \"We mean it.\" warning\n" if (!$we_mean_it);
                             }
+
+                            close(F);
                         }
                     }
                 }
