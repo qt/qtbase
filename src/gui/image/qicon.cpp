@@ -595,6 +595,8 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 
   \image icon.png QIcon
 
+  \note QIcon needs a QGuiApplication instance before the icon is created.
+
   \sa {fowler}{GUI Design Handbook: Iconic Label}, {Icons Example}
 */
 
@@ -1174,8 +1176,6 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         qtIconCache()->insert(name, cachedIcon);
     }
 
-    // Note the qapp check is to allow lazy loading of static icons
-    // Supporting fallbacks will not work for this case.
     if (qApp && icon.availableSizes().isEmpty())
         return fallback;
 

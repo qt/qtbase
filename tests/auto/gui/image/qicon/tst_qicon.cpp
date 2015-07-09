@@ -75,13 +75,7 @@ private:
     const QString m_pngImageFileName;
     const QString m_pngRectFileName;
     const QString m_sourceFileName;
-
-    const static QIcon staticIcon;
 };
-
-// Creating an icon statically should not cause a crash.
-// But we do not officially support this. See QTBUG-8666
-const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
 
 bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 {
