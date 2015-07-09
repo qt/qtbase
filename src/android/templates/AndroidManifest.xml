@@ -44,6 +44,10 @@
                           signal is sent! -->
             <meta-data android:name="android.app.background_running" android:value="false"/>
             <!-- Background running -->
+
+            <!-- auto screen scale factor -->
+            <meta-data android:name="android.app.auto_screen_scale_factor" android:value="false"/>
+            <!-- auto screen scale factor -->
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="14"/>

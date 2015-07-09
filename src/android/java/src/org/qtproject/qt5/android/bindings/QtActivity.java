@@ -897,6 +897,12 @@ public class QtActivity extends Activity
             } else {
                 ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
             }
+
+            if (m_activityInfo.metaData.containsKey("android.app.auto_screen_scale_factor")
+                && m_activityInfo.metaData.getBoolean("android.app.auto_screen_scale_factor")) {
+                ENVIRONMENT_VARIABLES += "QT_AUTO_SCREEN_SCALE_FACTOR=1\t";
+            }
+
             startApp(true);
         }
     }
