@@ -196,13 +196,7 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
 {
     QStringList details;
 
-    if (node->isQmlProperty() || node->isJsProperty()) {
-        // "name"
-        details << node->name();
-        // "id"
-        details << node->parent()->parent()->name()+"::"+node->name();
-    }
-    else if (node->parent() && !node->parent()->name().isEmpty()) {
+    if (node->parent() && !node->parent()->name().isEmpty()) {
         // "name"
         if (node->type() == Node::Enum || node->type() == Node::Typedef)
             details << node->parent()->name()+"::"+node->name();
