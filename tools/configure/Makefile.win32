@@ -4,7 +4,7 @@ CONFSRC = $(TOOLSRC)\configure
 
 PCH           = configure_pch.pch
 DEFINES       = -DUNICODE -DQT_NO_CODECS -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_COMPRESS -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DQT_BUILD_CONFIGURE -DQT_VERSION_STR=\"$(QTVERSION)\" -DQT_VERSION_MAJOR=$(QT_VERSION_MAJOR) -DQT_VERSION_MINOR=$(QT_VERSION_MINOR) -DQT_VERSION_PATCH=$(QT_VERSION_PATCH)
-INCPATH       = -I"..\..\include" -I"..\..\include\QtCore" -I"..\..\include\QtCore\$(QTVERSION)" -I"..\..\include\QtCore\$(QTVERSION)\QtCore" -I"$(TOOLSRC)\shared" -I"$(QTSRC)mkspecs\win32-msvc2008"
+INCPATH       = -I"..\..\include" -I"..\..\include\QtCore" -I"..\..\include\QtCore\$(QTVERSION)" -I"..\..\include\QtCore\$(QTVERSION)\QtCore" -I"$(TOOLSRC)\shared" -I"$(QTSRC)mkspecs\win32-msvc2012"
 CXXFLAGS_BARE = -nologo -Zc:wchar_t -W3 -GR -EHsc -w34100 -w34189 -wd4577 $(CFLAGS_CRT) $(EXTRA_CXXFLAGS) $(DEFINES) $(INCPATH)
 CXXFLAGS      = -FIconfigure_pch.h -Yuconfigure_pch.h -Fp$(PCH) -MP $(CXXFLAGS_BARE)
 LINK          = link
