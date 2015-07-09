@@ -1278,6 +1278,10 @@ public:
 
     QPairVariantInterfaceImpl()
       : _pair(Q_NULLPTR)
+      , _metaType_id_first(QMetaType::UnknownType)
+      , _metaType_flags_first(0)
+      , _metaType_id_second(QMetaType::UnknownType)
+      , _metaType_flags_second(0)
       , _getFirst(Q_NULLPTR)
       , _getSecond(Q_NULLPTR)
     {
