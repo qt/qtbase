@@ -740,6 +740,11 @@ ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
 
 }
 
+#define QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(C, F)  \
+    }                                               \
+    Q_DECLARE_TYPEINFO(QtMetaTypePrivate:: C, (F)); \
+    namespace QtMetaTypePrivate {
+
 namespace QtMetaTypePrivate {
 template <typename T, bool Accepted = true>
 struct QMetaTypeFunctionHelper {
@@ -1067,6 +1072,7 @@ public:
       _copyIter(&_iterator, &other._iterator);
     }
 };
+QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QSequentialIterableImpl, Q_MOVABLE_TYPE)
 
 template<typename From>
 struct QSequentialIterableConvertFunctor
@@ -1234,6 +1240,7 @@ public:
       _copyIter(&_iterator, &other._iterator);
     }
 };
+QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QAssociativeIterableImpl, Q_MOVABLE_TYPE)
 
 template<typename From>
 struct QAssociativeIterableConvertFunctor
@@ -1290,6 +1297,7 @@ public:
     inline VariantData first() const { return _getFirst(&_pair, _metaType_id_first, _metaType_flags_first); }
     inline VariantData second() const { return _getSecond(&_pair, _metaType_id_second, _metaType_flags_second); }
 };
+QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QPairVariantInterfaceImpl, Q_MOVABLE_TYPE)
 
 template<typename From>
 struct QPairVariantInterfaceConvertFunctor;
