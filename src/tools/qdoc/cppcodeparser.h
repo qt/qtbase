@@ -58,7 +58,8 @@ class CppCodeParser : public CodeParser
         QString defaultValue_;
       ParsedParameter() : qPrivateSignal_(false) { }
     };
-    typedef QList<ParsedParameter> ParsedParameterList;
+    friend class QTypeInfo<ParsedParameter>;
+    typedef QVector<ParsedParameter> ParsedParameterList;
 
     struct ExtraFuncData {
         Aggregate* root; // Used as the parent.
@@ -186,6 +187,7 @@ protected:
     QString exampleNameFilter;
     QString exampleImageFilter;
 };
+Q_DECLARE_TYPEINFO(CppCodeParser::ParsedParameter, Q_MOVABLE_TYPE);
 
 #define COMMAND_ABSTRACT                Doc::alias("abstract")
 #define COMMAND_CLASS                   Doc::alias("class")
