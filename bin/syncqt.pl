@@ -1190,6 +1190,7 @@ if($check_includes) {
                                     }
                                     if ($include) {
                                         if ($public_header) {
+                                            print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
                                             for my $trylib (keys(%modules)) {
                                                 if(-e "$out_basedir/include/$trylib/$include") {
                                                     print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
