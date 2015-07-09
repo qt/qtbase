@@ -74,6 +74,16 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
     }
 }
 
+template<typename T>
+static inline bool qSafeFromBigEndian(const uchar *source, const uchar *end, T *output)
+{
+    if (source + sizeof(T) > end)
+        return false;
+
+    *output = qFromBigEndian<T>(source);
+    return true;
+}
+
 // Harfbuzz helper functions
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
@@ -1044,26 +1054,38 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
         return;
 
     const uchar *table = reinterpret_cast<const uchar *>(tab.constData());
+    const uchar *end = table + tab.size();
 
-    unsigned short version = qFromBigEndian<quint16>(table);
+    quint16 version;
+    if (!qSafeFromBigEndian(table, end, &version))
+        return;
+
     if (version != 0) {
 //        qDebug("wrong version");
        return;
     }
 
-    unsigned short numTables = qFromBigEndian<quint16>(table + 2);
+    quint16 numTables;
+    if (!qSafeFromBigEndian(table + 2, end, &numTables))
+        return;
+
     {
         int offset = 4;
         for(int i = 0; i < numTables; ++i) {
-            if (offset + 6 > tab.size()) {
-//                qDebug("offset out of bounds");
-                goto end;
-            }
             const uchar *header = table + offset;
 
-            ushort version = qFromBigEndian<quint16>(header);
-            ushort length = qFromBigEndian<quint16>(header+2);
-            ushort coverage = qFromBigEndian<quint16>(header+4);
+            quint16 version;
+            if (!qSafeFromBigEndian(header, end, &version))
+                goto end;
+
+            quint16 length;
+            if (!qSafeFromBigEndian(header + 2, end, &length))
+                goto end;
+
+            quint16 coverage;
+            if (!qSafeFromBigEndian(header + 4, end, &coverage))
+                goto end;
+
 //            qDebug("subtable: version=%d, coverage=%x",version, coverage);
             if(version == 0 && coverage == 0x0001) {
                 if (offset + length > tab.size()) {
@@ -1072,7 +1094,10 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
                 }
                 const uchar *data = table + offset + 6;
 
-                ushort nPairs = qFromBigEndian<quint16>(data);
+                quint16 nPairs;
+                if (!qSafeFromBigEndian(data, end, &nPairs))
+                    goto end;
+
                 if(nPairs * 6 + 8 > length - 6) {
 //                    qDebug("corrupt table!");
                     // corrupt table
@@ -1082,8 +1107,21 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
                 int off = 8;
                 for(int i = 0; i < nPairs; ++i) {
                     QFontEngine::KernPair p;
-                    p.left_right = (((uint)qFromBigEndian<quint16>(data+off)) << 16) + qFromBigEndian<quint16>(data+off+2);
-                    p.adjust = QFixed(((int)(short)qFromBigEndian<quint16>(data+off+4))) / scalingFactor;
+
+                    quint16 tmp;
+                    if (!qSafeFromBigEndian(data + off, end, &tmp))
+                        goto end;
+
+                    p.left_right = uint(tmp) << 16;
+                    if (!qSafeFromBigEndian(data + off + 2, end, &tmp))
+                        goto end;
+
+                    p.left_right |= tmp;
+
+                    if (!qSafeFromBigEndian(data + off + 4, end, &tmp))
+                        goto end;
+
+                    p.adjust = QFixed(int(short(tmp))) / scalingFactor;
                     kerning_pairs.append(p);
                     off += 6;
                 }
@@ -1103,25 +1141,30 @@ int QFontEngine::glyphCount() const
     QByteArray maxpTable = getSfntTable(MAKE_TAG('m', 'a', 'x', 'p'));
     if (maxpTable.size() < 6)
         return 0;
-    return qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(maxpTable.constData() + 4));
+
+    const uchar *source = reinterpret_cast<const uchar *>(maxpTable.constData() + 4);
+    const uchar *end = source + maxpTable.size();
+
+    quint16 count = 0;
+    qSafeFromBigEndian(source, end, &count);
+    return count;
 }
 
 const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize)
 {
     const uchar *header = table;
-    if (tableSize < 4)
-        return 0;
-
     const uchar *endPtr = table + tableSize;
 
     // version check
-    if (qFromBigEndian<quint16>(header) != 0)
+    quint16 version;
+    if (!qSafeFromBigEndian(header, endPtr, &version) || version != 0)
         return 0;
 
-    unsigned short numTables = qFromBigEndian<quint16>(header + 2);
-    const uchar *maps = table + 4;
-    if (maps + 8 * numTables > endPtr)
+    quint16 numTables;
+    if (!qSafeFromBigEndian(header + 2, endPtr, &numTables))
         return 0;
+
+    const uchar *maps = table + 4;
 
     enum {
         Invalid,
@@ -1137,8 +1180,14 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
     int tableToUse = -1;
     int score = Invalid;
     for (int n = 0; n < numTables; ++n) {
-        const quint16 platformId = qFromBigEndian<quint16>(maps + 8 * n);
-        const quint16 platformSpecificId = qFromBigEndian<quint16>(maps + 8 * n + 2);
+        quint16 platformId;
+        if (!qSafeFromBigEndian(maps + 8 * n, endPtr, &platformId))
+            return 0;
+
+        quint16 platformSpecificId;
+        if (!qSafeFromBigEndian(maps + 8 * n + 2, endPtr, &platformSpecificId))
+            return 0;
+
         switch (platformId) {
         case 0: // Unicode
             if (score < Unicode &&
@@ -1192,20 +1241,30 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
 resolveTable:
     *isSymbolFont = (symbolTable > -1);
 
-    unsigned int unicode_table = qFromBigEndian<quint32>(maps + 8*tableToUse + 4);
+    quint32 unicode_table;
+    if (!qSafeFromBigEndian(maps + 8 * tableToUse + 4, endPtr, &unicode_table))
+        return 0;
 
-    if (!unicode_table || unicode_table + 8 > tableSize)
+    if (!unicode_table)
         return 0;
 
     // get the header of the unicode table
     header = table + unicode_table;
 
-    unsigned short format = qFromBigEndian<quint16>(header);
-    unsigned int length;
-    if(format < 8)
-        length = qFromBigEndian<quint16>(header + 2);
-    else
-        length = qFromBigEndian<quint32>(header + 4);
+    quint16 format;
+    if (!qSafeFromBigEndian(header, endPtr, &format))
+        return 0;
+
+    quint32 length;
+    if (format < 8) {
+        quint16 tmp;
+        if (!qSafeFromBigEndian(header + 2, endPtr, &tmp))
+            return 0;
+        length = tmp;
+    } else {
+        if (!qSafeFromBigEndian(header + 4, endPtr, &length))
+            return 0;
+    }
 
     if (table + unicode_table + length > endPtr)
         return 0;
@@ -1220,7 +1279,7 @@ resolveTable:
         // Check that none of the latin1 range are in the unicode table
         bool unicodeTableHasLatin1 = false;
         for (int uc=0x00; uc<0x100; ++uc) {
-            if (getTrueTypeGlyphIndex(selectedTable, uc) != 0) {
+            if (getTrueTypeGlyphIndex(selectedTable, length, uc) != 0) {
                 unicodeTableHasLatin1 = true;
                 break;
             }
@@ -1230,7 +1289,7 @@ resolveTable:
         bool unicodeTableHasSymbols = false;
         if (!unicodeTableHasLatin1) {
             for (int uc=0xf000; uc<0xf100; ++uc) {
-                if (getTrueTypeGlyphIndex(selectedTable, uc) != 0) {
+                if (getTrueTypeGlyphIndex(selectedTable, length, uc) != 0) {
                     unicodeTableHasSymbols = true;
                     break;
                 }
@@ -1248,12 +1307,17 @@ resolveTable:
     return table + unicode_table;
 }
 
-quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
+quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint unicode)
 {
-    unsigned short format = qFromBigEndian<quint16>(cmap);
+    const uchar *end = cmap + cmapSize;
+    quint16 format;
+    if (!qSafeFromBigEndian(cmap, end, &format))
+        return 0;
+
     if (format == 0) {
-        if (unicode < 256)
-            return (int) *(cmap+6+unicode);
+        const uchar *ptr = cmap + 6 + unicode;
+        if (unicode < 256 && ptr < end)
+            return quint32(*ptr);
     } else if (format == 4) {
         /* some fonts come with invalid cmap tables, where the last segment
            specified end = start = rangeoffset = 0xffff, delta = 0x0001
@@ -1262,25 +1326,49 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
         */
         if(unicode >= 0xffff)
             return 0;
-        quint16 segCountX2 = qFromBigEndian<quint16>(cmap + 6);
+
+        quint16 segCountX2;
+        if (!qSafeFromBigEndian(cmap + 6, end, &segCountX2))
+            return 0;
+
         const unsigned char *ends = cmap + 14;
+
         int i = 0;
-        for (; i < segCountX2/2 && qFromBigEndian<quint16>(ends + 2*i) < unicode; i++) {}
+        for (; i < segCountX2/2; ++i) {
+            quint16 codePoint;
+            if (!qSafeFromBigEndian(ends + 2 * i, end, &codePoint))
+                return 0;
+            if (codePoint >= unicode)
+                break;
+        }
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
-        quint16 startIndex = qFromBigEndian<quint16>(idx);
 
+        quint16 startIndex;
+        if (!qSafeFromBigEndian(idx, end, &startIndex))
+            return 0;
         if (startIndex > unicode)
             return 0;
 
         idx += segCountX2;
-        qint16 idDelta = (qint16)qFromBigEndian<quint16>(idx);
+
+        quint16 tmp;
+        if (!qSafeFromBigEndian(idx, end, &tmp))
+            return 0;
+        qint16 idDelta = qint16(tmp);
+
         idx += segCountX2;
-        quint16 idRangeoffset_t = (quint16)qFromBigEndian<quint16>(idx);
+
+        quint16 idRangeoffset_t;
+        if (!qSafeFromBigEndian(idx, end, &idRangeoffset_t))
+            return 0;
 
         quint16 glyphIndex;
         if (idRangeoffset_t) {
-            quint16 id = qFromBigEndian<quint16>(idRangeoffset_t + 2*(unicode - startIndex) + idx);
+            quint16 id;
+            if (!qSafeFromBigEndian(idRangeoffset_t + 2 * (unicode - startIndex) + idx, end, &id))
+                return 0;
+
             if (id)
                 glyphIndex = (idDelta + id) % 0x10000;
             else
@@ -1290,13 +1378,19 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
         }
         return glyphIndex;
     } else if (format == 6) {
-        quint16 tableSize = qFromBigEndian<quint16>(cmap + 2);
+        quint16 tableSize;
+        if (!qSafeFromBigEndian(cmap + 2, end, &tableSize))
+            return 0;
 
-        quint16 firstCode6 = qFromBigEndian<quint16>(cmap + 6);
+        quint16 firstCode6;
+        if (!qSafeFromBigEndian(cmap + 6, end, &firstCode6))
+            return 0;
         if (unicode < firstCode6)
             return 0;
 
-        quint16 entryCount6 = qFromBigEndian<quint16>(cmap + 8);
+        quint16 entryCount6;
+        if (!qSafeFromBigEndian(cmap + 8, end, &entryCount6))
+            return 0;
         if (entryCount6 * 2 + 10 > tableSize)
             return 0;
 
@@ -1305,9 +1399,14 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
             return 0;
 
         quint16 entryIndex6 = unicode - firstCode6;
-        return qFromBigEndian<quint16>(cmap + 10 + (entryIndex6 * 2));
+
+        quint16 index = 0;
+        qSafeFromBigEndian(cmap + 10 + (entryIndex6 * 2), end, &index);
+        return index;
     } else if (format == 12) {
-        quint32 nGroups = qFromBigEndian<quint32>(cmap + 12);
+        quint32 nGroups;
+        if (!qSafeFromBigEndian(cmap + 12, end, &nGroups))
+            return 0;
 
         cmap += 16; // move to start of groups
 
@@ -1315,13 +1414,24 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
         while (left <= right) {
             int middle = left + ( ( right - left ) >> 1 );
 
-            quint32 startCharCode = qFromBigEndian<quint32>(cmap + 12*middle);
+            quint32 startCharCode;
+            if (!qSafeFromBigEndian(cmap + 12 * middle, end, &startCharCode))
+                return 0;
+
             if(unicode < startCharCode)
                 right = middle - 1;
             else {
-                quint32 endCharCode = qFromBigEndian<quint32>(cmap + 12*middle + 4);
-                if(unicode <= endCharCode)
-                    return qFromBigEndian<quint32>(cmap + 12*middle + 8) + unicode - startCharCode;
+                quint32 endCharCode;
+                if (!qSafeFromBigEndian(cmap + 12 * middle + 4, end, &endCharCode))
+                    return 0;
+
+                if (unicode <= endCharCode) {
+                    quint32 index;
+                    if (!qSafeFromBigEndian(cmap + 12 * middle + 8, end, &index))
+                        return 0;
+
+                    return index + unicode - startCharCode;
+                }
                 left = middle + 1;
             }
         }

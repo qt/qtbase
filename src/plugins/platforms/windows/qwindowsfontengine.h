@@ -147,6 +147,7 @@ private:
     TEXTMETRIC  tm;
     int         lw;
     const unsigned char *cmap;
+    int cmapSize;
     QByteArray cmapTable;
     mutable qreal lbearing;
     mutable qreal rbearing;
