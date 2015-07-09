@@ -87,19 +87,11 @@ private:
     QPrinter printer;
 #endif
 
-    QAction *openAct;
     QAction *printAct;
-    QAction *exitAct;
     QAction *zoomInAct;
     QAction *zoomOutAct;
     QAction *normalSizeAct;
     QAction *fitToWindowAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
-
-    QMenu *fileMenu;
-    QMenu *viewMenu;
-    QMenu *helpMenu;
 };
 //! [0]
 

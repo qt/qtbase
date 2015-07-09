@@ -287,7 +287,8 @@
     \snippet widgets/imageviewer/imageviewer.cpp 18
 
     In the private \c createAction() function, we create the
-    actions providing the application features.
+    actions providing the application features and populate
+    a menu with them.
 
     We assign a short-cut key to each action and connect them to the
     appropriate slots. We only enable the \c openAct and \c exitAct at
@@ -295,16 +296,10 @@
     been loaded into the application. In addition we make the \c
     fitToWindowAct \l {QAction::checkable}{checkable}.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 19
-    \snippet widgets/imageviewer/imageviewer.cpp 20
-
-    In the private \c createMenu() function, we add the previously
-    created actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
-
     The QMenu class provides a menu widget for use in menu bars,
     context menus, and other popup menus. The QMenuBar class provides
     a horizontal menu bar that consists of a list of pull-down menu
-    items. So at the end we put the menus in the \c {ImageViewer}'s
+    items. So we put the menus in the \c {ImageViewer}'s
     menu bar which we retrieve with the QMainWindow::menuBar()
     function.
 
