@@ -708,8 +708,8 @@ void tst_Moc::oldStyleCasts()
     proc.closeWriteChannel();
 
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 0);
     QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
+    QCOMPARE(proc.exitCode(), 0);
 #else
     QSKIP("Only tested on linux/gcc");
 #endif

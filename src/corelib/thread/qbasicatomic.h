@@ -46,42 +46,16 @@
 #  include <QtCore/qatomic_bootstrap.h>
 
 // If C++11 atomics are supported, use them!
-#elif defined(Q_COMPILER_ATOMICS) && defined(Q_COMPILER_CONSTEXPR) && !defined(QT_ATOMIC_FORCE_NO_CXX11)
+#elif defined(Q_COMPILER_ATOMICS) && defined(Q_COMPILER_CONSTEXPR)
 #  include <QtCore/qatomic_cxx11.h>
 
-// The following is used for testing only.
-// Note that we don't check the compiler support -- you had better
-// know what you're doing if you set it
-#elif defined(QT_ATOMIC_FORCE_GCC)
-#  include <QtCore/qatomic_gcc.h>
-
-// Compiler dependent implementation
+// We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
 #elif defined(Q_CC_MSVC)
 #  include <QtCore/qatomic_msvc.h>
 
-// Processor dependent implementation
-#elif defined(Q_PROCESSOR_ARM_V7) && defined(Q_PROCESSOR_ARM_32)
-# include "QtCore/qatomic_armv7.h"
-#elif defined(Q_PROCESSOR_ARM_V6) && defined(Q_PROCESSOR_ARM_32)
-# include "QtCore/qatomic_armv6.h"
-#elif defined(Q_PROCESSOR_ARM_V5) && defined(Q_PROCESSOR_ARM_32)
-# include "QtCore/qatomic_armv5.h"
-#elif defined(Q_PROCESSOR_IA64)
-#  include "QtCore/qatomic_ia64.h"
-#elif defined(Q_PROCESSOR_X86)
-#  include <QtCore/qatomic_x86.h>
-
-// Fallback compiler dependent implementation
-#elif defined(Q_CC_GNU)
-#  include <QtCore/qatomic_gcc.h>
-
-// Fallback operating system dependent implementation
-#elif defined(Q_OS_UNIX)
-#  include <QtCore/qatomic_unix.h>
-
 // No fallback
 #else
-#  error "Qt has not been ported to this platform"
+#  error "Qt requires C++11 support"
 #endif
 
 QT_BEGIN_NAMESPACE
