@@ -4527,11 +4527,33 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 
 /*! \typedef QByteArray::const_iterator
-    \internal
+
+    This typedef provides an STL-style const iterator for QByteArray.
+
+    \sa QByteArray::const_reverse_iterator, QByteArray::iterator
 */
 
 /*! \typedef QByteArray::iterator
-    \internal
+
+    This typedef provides an STL-style non-const iterator for QByteArray.
+
+    \sa QByteArray::reverse_iterator, QByteArray::const_iterator
+*/
+
+/*! \typedef QByteArray::const_reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style const reverse iterator for QByteArray.
+
+    \sa QByteArray::reverse_iterator, QByteArray::const_iterator
+*/
+
+/*! \typedef QByteArray::reverse_iterator
+    \since 5.6
+
+    This typedef provides an STL-style non-const reverse iterator for QByteArray.
+
+    \sa QByteArray::const_reverse_iterator, QByteArray::iterator
 */
 
 /*! \typedef QByteArray::size_type
