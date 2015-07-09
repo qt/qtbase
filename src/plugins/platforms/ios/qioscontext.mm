@@ -48,9 +48,11 @@ QIOSContext::QIOSContext(QOpenGLContext *context)
     , m_format(context->format())
 {
     m_format.setRenderableType(QSurfaceFormat::OpenGLES);
-    m_eaglContext = [[EAGLContext alloc]
-            initWithAPI:EAGLRenderingAPI(m_format.majorVersion())
-            sharegroup:m_sharedContext ? [m_sharedContext->m_eaglContext sharegroup] : nil];
+    EAGLSharegroup *shareGroup = m_sharedContext ? [m_sharedContext->m_eaglContext sharegroup] : nil;
+    for (int version = m_format.majorVersion() == 1 ? kEAGLRenderingAPIOpenGLES1 : kEAGLRenderingAPIOpenGLES3;
+         version >= m_format.majorVersion() && !m_eaglContext; --version) {
+        m_eaglContext = [[EAGLContext alloc] initWithAPI:EAGLRenderingAPI(version) sharegroup:shareGroup];
+    }
 
     if (m_eaglContext != nil) {
         EAGLContext *originalContext = [EAGLContext currentContext];
