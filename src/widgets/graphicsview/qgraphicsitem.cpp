@@ -1425,10 +1425,13 @@ QGraphicsItem::~QGraphicsItem()
         QObjectPrivate *p = QObjectPrivate::get(o);
         p->wasDeleted = true;
         if (p->declarativeData) {
-            if (QAbstractDeclarativeData::destroyed)
-                QAbstractDeclarativeData::destroyed(p->declarativeData, o);
-            if (QAbstractDeclarativeData::destroyed_qml1)
-                QAbstractDeclarativeData::destroyed_qml1(p->declarativeData, o);
+            if (static_cast<QAbstractDeclarativeDataImpl*>(p->declarativeData)->ownedByQml1) {
+                if (QAbstractDeclarativeData::destroyed_qml1)
+                    QAbstractDeclarativeData::destroyed_qml1(p->declarativeData, o);
+            } else {
+                if (QAbstractDeclarativeData::destroyed)
+                    QAbstractDeclarativeData::destroyed(p->declarativeData, o);
+            }
             p->declarativeData = 0;
         }
     }
