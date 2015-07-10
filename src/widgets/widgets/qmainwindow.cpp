@@ -263,7 +263,14 @@ void QMainWindowPrivate::init()
 
     An example of how to create menus follows:
 
-    \snippet mainwindows/application/mainwindow.cpp 26
+    \code
+    void MainWindow::createMenus()
+    {
+        fileMenu = menuBar()->addMenu(tr("&File"));
+        fileMenu->addAction(newAct);
+        fileMenu->addAction(openAct);
+        fileMenu->addAction(saveAct);
+    \endcode
 
     The \c createPopupMenu() function creates popup menus when the
     main window receives context menu events.  The default
@@ -290,7 +297,12 @@ void QMainWindowPrivate::init()
 
     An example of toolbar creation follows:
 
-    \snippet mainwindows/application/mainwindow.cpp 29
+    \code
+    void MainWindow::createToolBars()
+    {
+        fileToolBar = addToolBar(tr("File"));
+        fileToolBar->addAction(newAct);
+    \endcode
 
     \section2 Creating Dock Widgets
 

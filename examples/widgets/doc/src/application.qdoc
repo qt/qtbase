@@ -96,8 +96,7 @@
     the widget that occupies the central area of the main window,
     between the toolbars and the status bar.
 
-    Then we call \c createActions(), \c createMenus(), \c
-    createToolBars(), and \c createStatusBar(), four private
+    Then we call \c createActions() and \c createStatusBar(), two private
     functions that set up the user interface. After that, we call \c
     readSettings() to restore the user's preferences.
 
@@ -184,7 +183,8 @@
     \snippet mainwindows/application/mainwindow.cpp 22
 
     The \c createActions() private function, which is called from the
-    \c MainWindow constructor, creates \l{QAction}s. The code is very
+    \c MainWindow constructor, creates \l{QAction}s and populates
+    the menus and two toolbars. The code is very
     repetitive, so we show only the actions corresponding to
     \uicontrol{File|New}, \uicontrol{File|Open}, and \uicontrol{Help|About Qt}.
 
@@ -198,13 +198,27 @@
     a "What's This?" text, and more. It emits a
     \l{QAction::triggered()}{triggered()} signal whenever the user
     invokes the action (e.g., by clicking the associated menu item or
-    toolbar button). We connect this signal to a slot that performs
-    the actual action.
+    toolbar button).
+
+    Instances of QAction can be created by passing a parent QObject or
+    by using one of the convenience functions of QMenu, QMenuBar or QToolBar.
+    We create the actions that are in a menu as well as in a toolbar
+    parented on the window to prevent ownership issues. For actions
+    that are only in the menu, we use the convenience function
+    QMenu::addAction(), which allows us to pass text, icon and the
+    target object and its slot member function.
+
+    Creating toolbars is very similar to creating menus. The same
+    actions that we put in the menus can be reused in the toolbars.
+    After creating the action, we add it to the toolbar using
+    QToolBar::addAction().
 
     The code above contains one more idiom that must be explained.
     For some of the actions, we specify an icon as a QIcon to the
-    QAction constructor. The QIcon constructor takes the file name
-    of an image that it tries to load. Here, the file name starts
+    QAction constructor. We use QIcon::fromTheme() to obtain
+    the correct standard icon from the underlying window system.
+    If that fails due to the platform not supporting it, we
+    pass a file name as fallback. Here, the file name starts
     with \c{:}. Such file names aren't ordinary file names, but
     rather path in the executable's stored resources. We'll come back
     to this when we review the \c application.qrc file that's part of
@@ -219,29 +233,11 @@
     the QAction::setEnabled() slot, ensuring that the actions are
     disabled when the text editor has no selection.
 
-    \snippet mainwindows/application/mainwindow.cpp 25
-    \snippet mainwindows/application/mainwindow.cpp 27
-
-    Creating actions isn't sufficient to make them available to the
-    user; we must also add them to the menu system. This is what \c
-    createMenus() does. We create a \uicontrol{File}, an \uicontrol{Edit}, and
-    a \uicontrol{Help} menu. QMainWindow::menuBar() lets us access the
-    window's menu bar widget. We don't have to worry about creating
-    the menu bar ourselves; the first time we call this function, the
-    QMenuBar is created.
-
     Just before we create the \uicontrol{Help} menu, we call
     QMenuBar::addSeparator(). This has no effect for most widget
     styles (e.g., Windows and OS X styles), but for some
     styles this makes sure that \uicontrol{Help} is pushed to the right
     side of the menu bar.
-
-    Let's now review the toolbars:
-
-    \snippet mainwindows/application/mainwindow.cpp 30
-
-    Creating toolbars is very similar to creating menus. The same
-    actions that we put in the menus can be reused in the toolbars.
 
     \snippet mainwindows/application/mainwindow.cpp 32
     \snippet mainwindows/application/mainwindow.cpp 33
@@ -265,15 +261,15 @@
     company and the name of the product. This ensures that the
     settings for different applications are kept separately.
 
-    We use QSettings::value() to extract the value of the "pos" and
-    "size" settings. The second argument to QSettings::value() is
+    We use QSettings::value() to extract the value of the geometry setting.
+    The second argument to QSettings::value() is
     optional and specifies a default value for the setting if there
     exists none. This value is used the first time the application is
     run.
 
-    When restoring the position and size of a window, it's important
-    to call QWidget::resize() before QWidget::move(). The reason why
-    is given in the \l{Window Geometry} overview.
+    We use QWidget::saveGeometry() and Widget::restoreGeometry() to
+    save the position. They use an opaque QByteArray to store
+    screen number, geometry and window state.
 
     \snippet mainwindows/application/mainwindow.cpp 37
     \snippet mainwindows/application/mainwindow.cpp 39
@@ -297,9 +293,9 @@
     QMessageBox::Escape flag.
 
     The \c maybeSave() function returns \c true in all cases, except
-    when the user clicks \uicontrol{Cancel}. The caller must check the
-    return value and stop whatever it was doing if the return value
-    is \c false.
+    when the user clicks \uicontrol{Cancel} or saving the file fails.
+    The caller must check the return value and stop whatever it was
+    doing if the return value is \c false.
 
     \snippet mainwindows/application/mainwindow.cpp 42
     \snippet mainwindows/application/mainwindow.cpp 43
@@ -360,6 +356,10 @@
     applications that contain one main window:
 
     \snippet mainwindows/application/main.cpp 0
+
+    The main function uses QCommandLineParser to check whether some file
+    argument was passed to the application and loads it via
+    MainWindow::loadFile().
 
     \section1 The Resource File
 
