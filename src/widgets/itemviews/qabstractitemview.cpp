@@ -4339,7 +4339,8 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
         const QModelIndex &index = indexes.at(i);
         const QRect current = q->visualRect(index);
         if (current.intersects(viewportRect)) {
-            ret += qMakePair(current, index);
+            QItemViewPaintPair p = { current, index };
+            ret += p;
             rect |= current;
         }
     }
@@ -4359,8 +4360,8 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     QStyleOptionViewItem option = viewOptionsV1();
     option.state |= QStyle::State_Selected;
     for (int j = 0; j < paintPairs.count(); ++j) {
-        option.rect = paintPairs.at(j).first.translated(-r->topLeft());
-        const QModelIndex &current = paintPairs.at(j).second;
+        option.rect = paintPairs.at(j).rect.translated(-r->topLeft());
+        const QModelIndex &current = paintPairs.at(j).index;
         adjustViewOptionsForIndex(&option, current);
         delegateForIndex(current)->paint(&painter, option, current);
     }

@@ -2155,9 +2155,9 @@ void tst_QListView::draggablePaintPairs()
     view.scrollTo(expectedIndex);
     QItemViewPaintPairs pairs = privateClass->draggablePaintPairs(indexList, &rect);
     QCOMPARE(indexList.size(), pairs.size());
-    foreach (const QItemViewPaintPair pair, pairs) {
-        QCOMPARE(rect, pair.first);
-        QCOMPARE(expectedIndex, pair.second);
+    foreach (const QItemViewPaintPair &pair, pairs) {
+        QCOMPARE(rect, pair.rect);
+        QCOMPARE(expectedIndex, pair.index);
     }
 }
 

@@ -654,7 +654,8 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
         const QModelIndex &index = indexes.at(i);
         if (visibleIndexes.contains(index)) {
             const QRect current = q->visualRect(index);
-            ret += qMakePair(current, index);
+            QItemViewPaintPair p = { current, index };
+            ret += p;
             rect |= current;
         }
     }
