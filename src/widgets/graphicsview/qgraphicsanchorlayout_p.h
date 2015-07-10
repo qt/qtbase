@@ -317,6 +317,7 @@ public:
     QSet<AnchorData *> positives;
     QSet<AnchorData *> negatives;
 };
+Q_DECLARE_TYPEINFO(GraphPath, Q_MOVABLE_TYPE);
 
 class QGraphicsAnchorLayoutPrivate;
 /*!

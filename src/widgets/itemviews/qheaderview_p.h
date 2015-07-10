@@ -369,6 +369,7 @@ public:
 #endif
 
 };
+Q_DECLARE_TYPEINFO(QHeaderViewPrivate::SectionItem, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 

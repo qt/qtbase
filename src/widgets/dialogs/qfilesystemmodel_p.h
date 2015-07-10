@@ -318,6 +318,7 @@ public:
     QList<Fetching> toFetch;
 
 };
+Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);
 #endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE

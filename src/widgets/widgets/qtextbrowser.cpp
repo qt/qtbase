@@ -139,6 +139,7 @@ public:
     int lastKeypadScrollValue;
 #endif
 };
+Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_MOVABLE_TYPE);
 
 QString QTextBrowserPrivate::findFile(const QUrl &name) const
 {

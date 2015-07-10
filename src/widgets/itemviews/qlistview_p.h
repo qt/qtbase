@@ -93,6 +93,7 @@ private:
     mutable int indexHint;
     uint visited;
 };
+Q_DECLARE_TYPEINFO(QListViewItem, Q_PRIMITIVE_TYPE);
 
 struct QListViewLayoutInfo
 {
@@ -105,6 +106,7 @@ struct QListViewLayoutInfo
     QListView::Flow flow;
     int max;
 };
+Q_DECLARE_TYPEINFO(QListViewLayoutInfo, Q_PRIMITIVE_TYPE);
 
 class QListView;
 class QListViewPrivate;
