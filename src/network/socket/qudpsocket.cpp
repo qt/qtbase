@@ -339,9 +339,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     if (sent >= 0) {
         emit bytesWritten(sent);
     } else {
-        d->socketError = d->socketEngine->error();
-        setErrorString(d->socketEngine->errorString());
-        emit error(d->socketError);
+        d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
     }
     return sent;
 }
@@ -394,11 +392,8 @@ qint64 QUdpSocket::readDatagram(char *data, qint64 maxSize, QHostAddress *addres
     }
 
     d_func()->socketEngine->setReadNotificationEnabled(true);
-    if (readBytes < 0) {
-        d->socketError = d->socketEngine->error();
-        setErrorString(d->socketEngine->errorString());
-        emit error(d->socketError);
-    }
+    if (readBytes < 0)
+        d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
     return readBytes;
 }
 #endif // QT_NO_UDPSOCKET

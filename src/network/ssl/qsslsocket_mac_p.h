@@ -101,13 +101,6 @@ private:
     bool checkSslErrors();
     bool startHandshake();
 
-    // Aux. function, sets:
-    //1) socket error code,
-    //2) error string (description)
-    //3) emits a signal.
-    void setError(const QString &errorString,
-                  QAbstractSocket::SocketError errorCode);
-
     mutable QCFType<SSLContextRef> context;
 
     Q_DISABLE_COPY(QSslSocketBackendPrivate);
