@@ -155,6 +155,20 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
 }
 
 /*!
+    \brief Cancels the currently active drag (only for drags of
+    the current application initiated by QPlatformDrag::drag()).
+
+    The default implementation does nothing.
+
+    \since 5.6
+ */
+
+void QPlatformDrag::cancelDrag()
+{
+    Q_UNIMPLEMENTED();
+}
+
+/*!
     \brief Called to notify QDrag about changes of the current action.
  */
 

@@ -191,6 +191,14 @@ Qt::DropAction QBasicDrag::drag(QDrag *o)
     return m_executed_drop_action;
 }
 
+void QBasicDrag::cancelDrag()
+{
+    if (m_eventLoop) {
+        cancel();
+        m_eventLoop->quit();
+    }
+}
+
 void QBasicDrag::restoreCursor()
 {
     if (m_restoreCursor) {

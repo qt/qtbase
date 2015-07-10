@@ -397,7 +397,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 {
     HRESULT hr = S_OK;
     do {
-        if (fEscapePressed) {
+        if (fEscapePressed || QWindowsDrag::isCanceled()) {
             hr = ResultFromScode(DRAGDROP_S_CANCEL);
             break;
         }
@@ -677,6 +677,8 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     \ingroup qt-lighthouse-win
 */
 
+bool QWindowsDrag::m_canceled = false;
+
 QWindowsDrag::QWindowsDrag() :
     m_dropDataObject(0), m_cachedDropTargetHelper(0)
 {
@@ -806,6 +808,7 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
     Qt::DropAction dragResult = Qt::IgnoreAction;
 
     DWORD resultEffect;
+    QWindowsDrag::m_canceled = false;
     QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource(this);
     windowDropSource->createCursors();
     QWindowsOleDataObject *dropDataObject = new QWindowsOleDataObject(dropData);

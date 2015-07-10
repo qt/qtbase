@@ -87,6 +87,8 @@ public:
     Qt::DropAction drag(QDrag *drag) Q_DECL_OVERRIDE;
 
     static QWindowsDrag *instance();
+    void cancelDrag() Q_DECL_OVERRIDE { QWindowsDrag::m_canceled = true; }
+    static bool isCanceled() { return QWindowsDrag::m_canceled; }
 
     IDataObject *dropDataObject() const             { return m_dropDataObject; }
     void setDropDataObject(IDataObject *dataObject) { m_dropDataObject = dataObject; }
@@ -98,6 +100,8 @@ public:
     QPixmap defaultCursor(Qt::DropAction action) const;
 
 private:
+    static bool m_canceled;
+
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject;
 

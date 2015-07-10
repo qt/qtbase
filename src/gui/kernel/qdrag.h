@@ -77,6 +77,8 @@ public:
     Qt::DropActions supportedActions() const;
     Qt::DropAction defaultAction() const;
 
+    static void cancel();
+
 Q_SIGNALS:
     void actionChanged(Qt::DropAction action);
     void targetChanged(QObject *newTarget);

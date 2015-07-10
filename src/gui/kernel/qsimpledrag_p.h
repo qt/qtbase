@@ -66,6 +66,7 @@ public:
     virtual ~QBasicDrag();
 
     virtual Qt::DropAction drag(QDrag *drag) Q_DECL_OVERRIDE;
+    void cancelDrag() Q_DECL_OVERRIDE;
 
     virtual bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
 

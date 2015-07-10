@@ -92,6 +92,7 @@ public:
     virtual QMimeData *platformDropData() = 0;
 
     virtual Qt::DropAction drag(QDrag *m_drag) = 0;
+    virtual void cancelDrag();
     void updateAction(Qt::DropAction action);
 
     virtual Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const;

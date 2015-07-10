@@ -33,6 +33,8 @@
 
 #include <qdrag.h>
 #include "private/qguiapplication_p.h"
+#include "qpa/qplatformintegration.h"
+#include "qpa/qplatformdrag.h"
 #include <qpixmap.h>
 #include <qpoint.h>
 #include "qdnd_p.h"
@@ -223,6 +225,8 @@ QObject *QDrag::target() const
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
     blocked during the operation.
+
+    \sa cancel()
 */
 
 Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
@@ -377,6 +381,21 @@ Qt::DropAction QDrag::defaultAction() const
     Q_D(const QDrag);
     return d->default_action;
 }
+
+/*!
+    Cancels a drag operation initiated by Qt.
+
+    \note This is currently implemented on Windows and X11.
+
+    \since 5.6
+    \sa exec()
+*/
+void QDrag::cancel()
+{
+    if (QPlatformDrag *platformDrag = QGuiApplicationPrivate::platformIntegration()->drag())
+        platformDrag->cancelDrag();
+}
+
 /*!
     \fn void QDrag::actionChanged(Qt::DropAction action)
 
