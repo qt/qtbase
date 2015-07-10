@@ -82,9 +82,9 @@ struct QDockAreaLayoutItem
 {
     enum ItemFlags { NoFlags = 0, GapItem = 1, KeepSize = 2 };
 
-    QDockAreaLayoutItem(QLayoutItem *_widgetItem = 0);
-    QDockAreaLayoutItem(QDockAreaLayoutInfo *_subinfo);
-    QDockAreaLayoutItem(QPlaceHolderItem *_placeHolderItem);
+    explicit QDockAreaLayoutItem(QLayoutItem *_widgetItem = 0);
+    explicit QDockAreaLayoutItem(QDockAreaLayoutInfo *_subinfo);
+    explicit QDockAreaLayoutItem(QPlaceHolderItem *_placeHolderItem);
     QDockAreaLayoutItem(const QDockAreaLayoutItem &other);
     ~QDockAreaLayoutItem();
 
@@ -109,7 +109,7 @@ class Q_AUTOTEST_EXPORT QPlaceHolderItem
 {
 public:
     QPlaceHolderItem() : hidden(false), window(false) {}
-    QPlaceHolderItem(QWidget *w);
+    explicit QPlaceHolderItem(QWidget *w);
 
     QString objectName;
     bool hidden, window;

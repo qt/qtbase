@@ -1677,9 +1677,9 @@ void QDockAreaLayoutInfo::tab(int index, QLayoutItem *dockWidgetItem)
         QDockAreaLayoutInfo *new_info
             = new QDockAreaLayoutInfo(sep, dockPos, o, tabBarShape, mainWindow);
         item_list[index].subinfo = new_info;
-        new_info->item_list.append(item_list.at(index).widgetItem);
+        new_info->item_list.append(QDockAreaLayoutItem(item_list.at(index).widgetItem));
         item_list[index].widgetItem = 0;
-        new_info->item_list.append(dockWidgetItem);
+        new_info->item_list.append(QDockAreaLayoutItem(dockWidgetItem));
         new_info->tabbed = true;
         new_info->updateTabBar();
         new_info->setCurrentTab(dockWidgetItem->widget());
@@ -1699,9 +1699,9 @@ void QDockAreaLayoutInfo::split(int index, Qt::Orientation orientation,
         QDockAreaLayoutInfo *new_info
             = new QDockAreaLayoutInfo(sep, dockPos, orientation, tabBarShape, mainWindow);
         item_list[index].subinfo = new_info;
-        new_info->item_list.append(item_list.at(index).widgetItem);
+        new_info->item_list.append(QDockAreaLayoutItem(item_list.at(index).widgetItem));
         item_list[index].widgetItem = 0;
-        new_info->item_list.append(dockWidgetItem);
+        new_info->item_list.append(QDockAreaLayoutItem(dockWidgetItem));
     }
 }
 
@@ -3081,8 +3081,8 @@ void QDockAreaLayout::addDockWidget(QInternal::DockPosition pos, QDockWidget *do
         int tbshape = 0;
 #endif
         QDockAreaLayoutInfo new_info(&sep, pos, orientation, tbshape, mainWindow);
-        new_info.item_list.append(new QDockAreaLayoutInfo(info));
-        new_info.item_list.append(dockWidgetItem);
+        new_info.item_list.append(QDockAreaLayoutItem(new QDockAreaLayoutInfo(info)));
+        new_info.item_list.append(QDockAreaLayoutItem(dockWidgetItem));
         info = new_info;
     }
 

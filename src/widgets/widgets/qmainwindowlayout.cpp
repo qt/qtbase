@@ -1945,7 +1945,7 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
                                         static_cast<QMainWindow*>(parentWidget()));
             info->tabbed = true;
             QLayout *parentLayout = currentHoveredFloat->parentWidget()->layout();
-            info->item_list.append(parentLayout->takeAt(parentLayout->indexOf(currentHoveredFloat)));
+            info->item_list.append(QDockAreaLayoutItem(parentLayout->takeAt(parentLayout->indexOf(currentHoveredFloat))));
 
             dropTo->setParent(floatingTabs);
             dropTo->show();

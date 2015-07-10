@@ -108,7 +108,7 @@ public:
     };
 
     struct SideWidgetEntry {
-        SideWidgetEntry(QWidget *w = 0, QAction *a = 0, int _flags = 0) : widget(w), action(a), flags(_flags) {}
+        explicit SideWidgetEntry(QWidget *w = 0, QAction *a = 0, int _flags = 0) : widget(w), action(a), flags(_flags) {}
 
         QWidget *widget;
         QAction *action;
