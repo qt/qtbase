@@ -2088,11 +2088,12 @@ void tst_QApplication::touchEventPropagation()
         window.resize(200, 200);
         window.setObjectName("2. window");
         TouchEventPropagationTestWidget widget(&window);
+        widget.resize(200, 200);
         widget.setObjectName("2. widget");
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
-        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
-        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(50, 50)));
+        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(50, 50)));
 
         QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
                                                  0,
@@ -2102,9 +2103,8 @@ void tst_QApplication::touchEventPropagation()
                                                  0,
                                                  device,
                                                  touchPointList(releasedTouchPoints));
-        QCoreApplication::processEvents();
+        QTRY_VERIFY(widget.seenMouseEvent);
         QVERIFY(!widget.seenTouchEvent);
-        QVERIFY(widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(window.seenMouseEvent);
 
