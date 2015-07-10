@@ -265,7 +265,7 @@ void QLoggingRegistry::init()
             envRules = parser.rules();
         }
     }
-    const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES");
+    const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES").replace(';', '\n');
     if (!rulesSrc.isEmpty()) {
          QTextStream stream(rulesSrc);
          QLoggingSettingsParser parser;
