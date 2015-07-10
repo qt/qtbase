@@ -2086,10 +2086,10 @@ bool QAbstractSocket::waitForConnected(int msecs)
 
     if ((timedOut && state() != ConnectedState) || state() == ConnectingState) {
         d->socketError = SocketTimeoutError;
+        setErrorString(tr("Socket operation timed out"));
         d->state = UnconnectedState;
         emit stateChanged(d->state);
         d->resetSocketLayer();
-        setErrorString(tr("Socket operation timed out"));
     }
 
 #if defined (QABSTRACTSOCKET_DEBUG)
