@@ -41,7 +41,7 @@ LIBS_PRIVATE += $$QMAKE_LIBS_EXECINFO
 if(linux*|hurd*):!cross_compile:!static:!*-armcc* {
    QMAKE_LFLAGS += -Wl,-e,qt_core_boilerplate
    prog=$$quote(if (/program interpreter: (.*)]/) { print $1; })
-   DEFINES += ELF_INTERPRETER=\\\"$$system(readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
+   DEFINES += ELF_INTERPRETER=\\\"$$system(LC_ALL=C readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
 slog2 {
