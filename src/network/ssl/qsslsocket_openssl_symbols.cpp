@@ -531,39 +531,33 @@ static QStringList libraryPathList()
     return paths;
 }
 
-
-static QStringList findAllLibSsl()
+Q_NEVER_INLINE
+static QStringList findAllLibs(QLatin1String filter)
 {
     QStringList paths = libraryPathList();
-    QStringList foundSsls;
+    QStringList found;
+    const QStringList filters((QString(filter)));
 
     foreach (const QString &path, paths) {
         QDir dir(path);
-        QStringList entryList = dir.entryList(QStringList() << QLatin1String("libssl.*"), QDir::Files);
+        QStringList entryList = dir.entryList(filters, QDir::Files);
 
         std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
         foreach (const QString &entry, entryList)
-            foundSsls << path + QLatin1Char('/') + entry;
+            found << path + QLatin1Char('/') + entry;
     }
 
-    return foundSsls;
+    return found;
+}
+
+static QStringList findAllLibSsl()
+{
+    return findAllLibs(QLatin1String("libssl.*"));
 }
 
 static QStringList findAllLibCrypto()
 {
-    QStringList paths = libraryPathList();
-
-    QStringList foundCryptos;
-    foreach (const QString &path, paths) {
-        QDir dir(path);
-        QStringList entryList = dir.entryList(QStringList() << QLatin1String("libcrypto.*"), QDir::Files);
-
-        std::sort(entryList.begin(), entryList.end(), LibGreaterThan());
-        foreach (const QString &entry, entryList)
-            foundCryptos << path + QLatin1Char('/') + entry;
-    }
-
-    return foundCryptos;
+    return findAllLibs(QLatin1String("libcrypto.*"));
 }
 # endif
 
