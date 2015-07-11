@@ -59,6 +59,10 @@
 #  define HAVE_WAITID   1
 #endif
 
+#if defined(__FreeBSD__)
+#  define HAVE_PIPE2    1
+#endif
+
 #if defined(__APPLE__)
 /* Up until OS X 10.7, waitid(P_ALL, ...) will return success, but will not
  * fill in the details of the dead child. That means waitid is not useful to us.
