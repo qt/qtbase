@@ -179,11 +179,7 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 // call qt_safe_pipe
 static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 {
-#ifdef O_CLOEXEC
-    Q_ASSERT((flags & ~(O_CLOEXEC | O_NONBLOCK)) == 0);
-#else
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
-#endif
 
     int ret;
 #if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
