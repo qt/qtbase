@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVersionNumber
     \inmodule QtCore
-    \since 5.4
+    \since 5.6
     \brief The QVersionNumber class contains a version number with an arbitrary
            number of segments.
 
@@ -458,7 +458,7 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 /*!
     \fn uint qHash(const QVersionNumber &key, uint seed)
     \relates QHash
-    \since 5.4
+    \since 5.6
 
     Returns the hash value for the \a key, using \a seed to seed the
     calculation.
