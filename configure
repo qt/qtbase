@@ -728,6 +728,7 @@ CFG_IPV6IFNAME=auto
 CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
 CFG_EVENTFD=auto
+CFG_CLOEXEC=no
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_USE_GOLD_LINKER=auto
@@ -5869,6 +5870,11 @@ if [ "$CFG_GETIFADDRS" != "no" ]; then
     fi
 fi
 
+# find if the platform provides thread-safe CLOEXEC support
+if compileTest unix/cloexec; then
+    CFG_CLOEXEC=yes
+fi
+
 # detect OpenSSL
 if [ "$CFG_OPENSSL" != "no" ]; then
     if compileTest unix/openssl "OpenSSL"; then
@@ -6146,6 +6152,9 @@ if [ "$CFG_INOTIFY" = "yes" ]; then
 fi
 if [ "$CFG_EVENTFD" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eventfd"
+fi
+if [ "$CFG_CLOEXEC" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG threadsafe-cloexec"
 fi
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
@@ -6627,6 +6636,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
 [ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
+[ "$CFG_CLOEXEC" = "yes" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_THREADSAFE_CLOEXEC=1"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"

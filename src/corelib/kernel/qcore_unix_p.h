@@ -67,24 +67,6 @@
 
 struct sockaddr;
 
-#if defined(Q_OS_LINUX) && defined(O_CLOEXEC)
-# define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 1
-QT_BEGIN_NAMESPACE
-namespace QtLibcSupplement {
-    inline int accept4(int, sockaddr *, QT_SOCKLEN_T *, int)
-    { errno = ENOSYS; return -1; }
-    inline int dup3(int, int, int)
-    { errno = ENOSYS; return -1; }
-    inline int pipe2(int [], int )
-    { errno = ENOSYS; return -1; }
-}
-QT_END_NAMESPACE
-using namespace QT_PREPEND_NAMESPACE(QtLibcSupplement);
-
-#else
-# define QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC 0
-#endif
-
 #define EINTR_LOOP(var, cmd)                    \
     do {                                        \
         var = cmd;                              \
@@ -181,16 +163,12 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
 {
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
-    int ret;
-#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
+#ifdef QT_THREADSAFE_CLOEXEC
     // use pipe2
     flags |= O_CLOEXEC;
-    ret = ::pipe2(pipefd, flags); // pipe2 is Linux-specific and is documented not to return EINTR
-    if (ret == 0 || errno != ENOSYS)
-        return ret;
-#endif
-
-    ret = ::pipe(pipefd);
+    return ::pipe2(pipefd, flags); // pipe2 is documented not to return EINTR
+#else
+    int ret = ::pipe(pipefd);
     if (ret == -1)
         return -1;
 
@@ -204,6 +182,7 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
     }
 
     return 0;
+#endif
 }
 
 #endif // Q_OS_VXWORKS
@@ -213,22 +192,19 @@ static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC
 {
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
-    int ret;
 #ifdef F_DUPFD_CLOEXEC
-    // use this fcntl
-    if (flags & FD_CLOEXEC) {
-        ret = ::fcntl(oldfd, F_DUPFD_CLOEXEC, atleast);
-        if (ret != -1 || errno != EINVAL)
-            return ret;
-    }
-#endif
-
+    int cmd = F_DUPFD;
+    if (flags & FD_CLOEXEC)
+        cmd = F_DUPFD_CLOEXEC;
+    return ::fcntl(oldfd, cmd, atleast);
+#else
     // use F_DUPFD
-    ret = ::fcntl(oldfd, F_DUPFD, atleast);
+    int ret = ::fcntl(oldfd, F_DUPFD, atleast);
 
     if (flags && ret != -1)
         ::fcntl(ret, F_SETFD, flags);
     return ret;
+#endif
 }
 
 // don't call dup2
@@ -238,14 +214,11 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
     int ret;
-#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
+#ifdef QT_THREADSAFE_CLOEXEC
     // use dup3
-    if (flags & FD_CLOEXEC) {
-        EINTR_LOOP(ret, ::dup3(oldfd, newfd, O_CLOEXEC));
-        if (ret == 0 || errno != ENOSYS)
-            return ret;
-    }
-#endif
+    EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
+    return ret;
+#else
     EINTR_LOOP(ret, ::dup2(oldfd, newfd));
     if (ret == -1)
         return -1;
@@ -253,6 +226,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
     if (flags)
         ::fcntl(newfd, F_SETFD, flags);
     return 0;
+#endif
 }
 
 static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)

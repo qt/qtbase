@@ -77,15 +77,13 @@ static inline int qt_safe_socket(int domain, int type, int protocol, int flags =
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
     int fd;
-#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
+#ifdef QT_THREADSAFE_CLOEXEC
     int newtype = type | SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)
         newtype |= SOCK_NONBLOCK;
     fd = ::socket(domain, newtype, protocol);
-    if (fd != -1 || errno != EINVAL)
-        return fd;
-#endif
-
+    return fd;
+#else
     fd = ::socket(domain, type, protocol);
     if (fd == -1)
         return -1;
@@ -97,6 +95,7 @@ static inline int qt_safe_socket(int domain, int type, int protocol, int flags =
         ::fcntl(fd, F_SETFL, ::fcntl(fd, F_GETFL) | O_NONBLOCK);
 
     return fd;
+#endif
 }
 
 // Tru64 redefines accept -> _accept with _XOPEN_SOURCE_EXTENDED
@@ -105,16 +104,14 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
     int fd;
-#if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
+#ifdef QT_THREADSAFE_CLOEXEC
     // use accept4
     int sockflags = SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)
         sockflags |= SOCK_NONBLOCK;
     fd = ::accept4(s, addr, static_cast<QT_SOCKLEN_T *>(addrlen), sockflags);
-    if (fd != -1 || !(errno == ENOSYS || errno == EINVAL))
-        return fd;
-#endif
-
+    return fd;
+#else
     fd = ::accept(s, addr, static_cast<QT_SOCKLEN_T *>(addrlen));
     if (fd == -1)
         return -1;
@@ -126,6 +123,7 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
         ::fcntl(fd, F_SETFL, ::fcntl(fd, F_GETFL) | O_NONBLOCK);
 
     return fd;
+#endif
 }
 
 // UnixWare 7 redefines listen -> _listen
