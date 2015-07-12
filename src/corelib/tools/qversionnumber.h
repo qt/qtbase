@@ -273,7 +273,7 @@ public:
     Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2) Q_REQUIRED_RESULT;
 
     Q_CORE_EXPORT QString toString() const Q_REQUIRED_RESULT;
-    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = 0) Q_REQUIRED_RESULT;
+    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = Q_NULLPTR) Q_REQUIRED_RESULT;
 
 private:
 #ifndef QT_NO_DATASTREAM
