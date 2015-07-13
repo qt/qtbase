@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="text/x-objcsrc">
+        <comment>Objective-C source code</comment>
+        <glob-deleteall/>
+    </mime-type>
+</mime-info>

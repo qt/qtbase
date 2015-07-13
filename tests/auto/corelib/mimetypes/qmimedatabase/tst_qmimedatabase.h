@@ -94,6 +94,7 @@ private:
     QString m_localMimeDir;
     QString m_yastMimeTypes;
     QString m_qmlAgainFileName;
+    QString m_textXObjCSrcFileName;
     QTemporaryDir m_temporaryDir;
     QString m_testSuite;
     bool m_isUsingCacheProvider;

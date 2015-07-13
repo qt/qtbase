@@ -47,6 +47,7 @@
 
 static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
 static const char qmlAgainFileName[] ="qml-again.xml";
+static const char textXObjCSrcFileName[] ="text-x-objcsrc.xml";
 #define RESOURCE_PREFIX ":/qt-project.org/qmime/"
 
 void initializeLang()
@@ -152,6 +153,8 @@ void tst_QMimeDatabase::initTestCase()
     QVERIFY2(QFile::exists(m_yastMimeTypes), qPrintable(errorMessage.arg(yastFileName)));
     m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
     QVERIFY2(QFile::exists(m_qmlAgainFileName), qPrintable(errorMessage.arg(qmlAgainFileName)));
+    m_textXObjCSrcFileName = QLatin1String(RESOURCE_PREFIX) + textXObjCSrcFileName;
+    QVERIFY2(QFile::exists(m_textXObjCSrcFileName), qPrintable(errorMessage.arg(textXObjCSrcFileName)));
 
     initTestCaseInternal();
     m_isUsingCacheProvider = !qEnvironmentVariableIsSet("QT_NO_MIME_CACHE");
@@ -880,6 +883,8 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QFile::remove(destFile);
     const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
     QFile::remove(destQmlFile);
+    const QString destTextXObjCSrcFile = destDir + QLatin1String(textXObjCSrcFileName);
+    QFile::remove(destTextXObjCSrcFile);
     //qDebug() << destFile;
 
     if (!QFileInfo(destDir).isDir())
@@ -887,6 +892,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QString errorMessage;
     QVERIFY2(copyResourceFile(m_yastMimeTypes, destFile, &errorMessage), qPrintable(errorMessage));
     QVERIFY2(copyResourceFile(m_qmlAgainFileName, destQmlFile, &errorMessage), qPrintable(errorMessage));
+    QVERIFY2(copyResourceFile(m_textXObjCSrcFileName, destTextXObjCSrcFile, &errorMessage), qPrintable(errorMessage));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
@@ -903,9 +909,17 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
+    // ensure we can access the empty glob list
+    {
+        QMimeType objcsrc = db.mimeTypeForName(QStringLiteral("text/x-objcsrc"));
+        QVERIFY(objcsrc.isValid());
+        qDebug() << objcsrc.globPatterns();
+    }
+
     // Now test removing it again
     QVERIFY(QFile::remove(destFile));
     QVERIFY(QFile::remove(destQmlFile));
+    QVERIFY(QFile::remove(destTextXObjCSrcFile));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
