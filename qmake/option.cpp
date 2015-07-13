@@ -172,6 +172,7 @@ bool usage(const char *a0)
             "  -set <prop> <value> Set persistent property\n"
             "  -unset <prop>  Unset persistent property\n"
             "  -query <prop>  Query persistent property. Show all if <prop> is empty.\n"
+            "  -qtconf file   Use file instead of looking for qt.conf\n"
             "  -cache file    Use file as cache           [makefile mode only]\n"
             "  -spec spec     Use spec as QMAKESPEC       [makefile mode only]\n"
             "  -nocache       Don't use a cache file      [makefile mode only]\n"
@@ -642,6 +643,8 @@ qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
 
 QString qmake_libraryInfoFile()
 {
+    if (!Option::globals->qtconf.isEmpty())
+        return Option::globals->qtconf;
     if (!Option::globals->qmake_abslocation.isEmpty())
         return QDir(QFileInfo(Option::globals->qmake_abslocation).absolutePath()).filePath("qt.conf");
     return QString();

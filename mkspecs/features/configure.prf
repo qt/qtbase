@@ -67,7 +67,9 @@ defineTest(qtCompileTest) {
 
     mkpath($$test_out_dir)|error("Aborting.")
 
-    qtRunLoggedCommand("$$test_cmd_base $$system_quote($$system_path($$QMAKE_QMAKE)) -spec $$QMAKESPEC $$qmake_configs $$shell_quote($$test_dir)") {
+    !isEmpty (QMAKE_QTCONF): qtconfarg = -qtconf $$QMAKE_QTCONF
+
+    qtRunLoggedCommand("$$test_cmd_base $$system_quote($$system_path($$QMAKE_QMAKE)) $$qtconfarg -spec $$QMAKESPEC $$qmake_configs $$shell_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE") {
             log("yes$$escape_expand(\\n)")
             msg = "test $$1 succeeded"
