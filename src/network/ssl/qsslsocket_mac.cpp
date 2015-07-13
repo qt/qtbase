@@ -387,7 +387,12 @@ void QSslSocketBackendPrivate::transmit()
             size_t readBytes = 0;
             data.resize(4096);
             const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
-            if (err != noErr && err != errSSLWouldBlock) {
+            if (err == errSSLClosedGraceful) {
+                shutdown = true; // the other side shut down, make sure we do not send shutdown ourselves
+                setError(QSslSocket::tr("The TLS/SSL connection has been closed"),
+                         QAbstractSocket::RemoteHostClosedError);
+                break;
+            } else if (err != noErr && err != errSSLWouldBlock) {
                 qWarning() << Q_FUNC_INFO << "SSLRead failed with:" << int(err);
                 setError("SSL read failed", QAbstractSocket::SslInternalError);
                 break;
