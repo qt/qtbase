@@ -62,6 +62,7 @@ class QScreen;
 class QPlatformScreen;
 typedef QPair<qreal, qreal> QDpi;
 
+#ifndef QT_NO_HIGHDPISCALING
 class Q_GUI_EXPORT QHighDpiScaling {
 public:
     static void initHighDpiScaling();
@@ -464,7 +465,50 @@ QVector<T> toNativePixels(const QVector<T> &pointValues, const QWindow *window)
 }
 
 } // namespace QHighDpi
+#else // QT_NO_HIGHDPISCALING
+class Q_GUI_EXPORT QHighDpiScaling {
+public:
+    static inline void initHighDpiScaling() {}
+    static inline void updateHighDpiScaling() {}
+    static inline void setGlobalFactor(qreal) {}
+    static inline void setScreenFactor(QScreen *, qreal) {}
 
+    static inline bool isActive() { return false; }
+    static inline qreal factor(const QWindow *) { return 1.0; }
+    static inline qreal factor(const QScreen *) { return 1.0; }
+    static inline qreal factor(const QPlatformScreen *) { return 1.0; }
+    static inline QPoint origin(const QScreen *) { return QPoint(); }
+    static inline QPoint origin(const QPlatformScreen *) { return QPoint(); }
+    static inline QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
+    static inline QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
+    static inline QDpi logicalDpi() { return QDpi(-1,-1); }
+};
+
+namespace QHighDpi {
+    template <typename T> inline
+    T toNative(const T &value, ...) { return value; }
+    template <typename T> inline
+    T fromNative(const T &value, ...) { return value; }
+
+    template <typename T> inline
+    T fromNativeLocalPosition(const T &value, ...) { return value; }
+    template <typename T> inline
+    T toNativeLocalPosition(const T &value, ...) { return value; }
+
+    template <typename T> inline
+    T fromNativeLocalRegion(const T &value, ...) { return value; }
+    template <typename T> inline
+    T toNativeLocalRegion(const T &value, ...) { return value; }
+
+    template <typename T> inline
+    T fromNativeScreenGeometry(const T &value, ...) { return value; }
+
+    template <typename T, typename U> inline
+    T toNativePixels(const T &value, const U*) {return value;}
+    template <typename T, typename U> inline
+    T fromNativePixels(const T &value, const U*) {return value;}
+}
+#endif // QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE
 
 #endif // QHIGHDPISCALING_P_H

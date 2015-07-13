@@ -43,6 +43,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
+#ifndef QT_NO_HIGHDPISCALING
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
 static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
 static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
@@ -317,4 +318,5 @@ QPoint QHighDpiScaling::origin(const QPlatformScreen *platformScreen)
     return platformScreen->geometry().topLeft();
 }
 
+#endif //QT_NO_HIGHDPISCALING
 QT_END_NAMESPACE
