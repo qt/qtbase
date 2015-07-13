@@ -147,7 +147,9 @@ public:
     virtual ~QProcess();
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
+#if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
     void start(const QString &command, OpenMode mode = ReadWrite);
+#endif
     void start(OpenMode mode = ReadWrite);
     bool open(OpenMode mode = ReadWrite) Q_DECL_OVERRIDE;
 

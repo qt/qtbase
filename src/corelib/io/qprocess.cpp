@@ -101,6 +101,19 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 
 /*!
+    \since 5.6
+
+    \macro QT_NO_PROCESS_COMBINED_ARGUMENT_START
+    \relates QProcess
+
+    Disables the QProcess::start() overload taking a single string.
+    In most cases where it is used, the user intends for the first argument
+    to be treated atomically as per the other overload.
+
+    \sa start()
+*/
+
+/*!
     \class QProcessEnvironment
     \inmodule QtCore
 
@@ -2262,7 +2275,20 @@ static QStringList parseCombinedArgString(const QString &program)
     After the \a command string has been split and unquoted, this function
     behaves like the overload which takes the arguments as a string list.
 
+    You can disable this overload by defining \c
+    QT_NO_PROCESS_COMBINED_ARGUMENT_START when you compile your applications.
+    This can be useful if you want to ensure that you are not splitting arguments
+    unintentionally, for example. In virtually all cases, using the other overload
+    is the preferred method.
+
+    On operating systems where the system API for passing command line
+    arguments to a subprocess natively uses a single string (Windows), one can
+    conceive command lines which cannot be passed via QProcess's portable
+    list-based API. In these rare cases you need to use setProgram() and
+    setNativeArguments() instead of this function.
+
 */
+#if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
 void QProcess::start(const QString &command, OpenMode mode)
 {
     QStringList args = parseCombinedArgString(command);
@@ -2277,6 +2303,7 @@ void QProcess::start(const QString &command, OpenMode mode)
 
     start(prog, args, mode);
 }
+#endif
 
 /*!
     \since 5.0
