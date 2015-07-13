@@ -93,6 +93,7 @@ void tst_QTemporaryDir::construction()
     QCOMPARE(dir.path().left(tmp.size()), tmp);
     QVERIFY(dir.path().contains("tst_qtemporarydir"));
     QVERIFY(QFileInfo(dir.path()).isDir());
+    QCOMPARE(dir.errorString(), QString());
 }
 
 // Testing get/set functions
@@ -251,6 +252,7 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
     QTemporaryDir dir("tempXXXXXX");
     dir.setAutoRemove(true);
     QVERIFY(!dir.isValid());
+    QVERIFY(!dir.errorString().isEmpty());
     QVERIFY(dir.path().isEmpty());
 #endif
 }
@@ -287,7 +289,11 @@ void tst_QTemporaryDir::stressTest()
     for (int i = 0; i < iterations; ++i) {
         QTemporaryDir dir(pattern);
         dir.setAutoRemove(false);
-        QVERIFY2(dir.isValid(), qPrintable(QString::fromLatin1("Failed to create #%1 under %2.").arg(i).arg(QDir::toNativeSeparators(pattern))));
+        QVERIFY2(dir.isValid(),
+                 qPrintable(QString::fromLatin1("Failed to create #%1 under %2: %3.")
+                            .arg(i)
+                            .arg(QDir::toNativeSeparators(pattern))
+                            .arg(dir.errorString())));
         QVERIFY(!names.contains(dir.path()));
         names.insert(dir.path());
     }

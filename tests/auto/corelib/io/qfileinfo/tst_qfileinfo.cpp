@@ -281,7 +281,8 @@ void tst_QFileInfo::initTestCase()
     m_resourcesDir = dataPath + QLatin1String("/resources");
     m_proFile = dataPath + QLatin1String("/tst_qfileinfo.pro");
 
-    QVERIFY(m_dir.isValid());
+    QVERIFY2(m_dir.isValid(),
+             ("Failed to create temporary dir: " + m_dir.errorString()).toUtf8());
     QVERIFY(QDir::setCurrent(m_dir.path()));
 }
 

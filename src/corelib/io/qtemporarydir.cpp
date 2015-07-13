@@ -38,6 +38,7 @@
 #include "qdiriterator.h"
 #include "qplatformdefs.h"
 #include <QDebug>
+#include <QPair>
 
 #if defined(QT_BUILD_CORE_LIB)
 #include "qcoreapplication.h"
@@ -59,7 +60,7 @@ public:
 
     void create(const QString &templateName);
 
-    QString path;
+    QString pathOrError;
     bool autoRemove;
     bool success;
 };
@@ -97,7 +98,7 @@ static int nextRand(int &v)
     return r;
 }
 
-static char *q_mkdtemp(char *templateName)
+QPair<QString, bool> q_mkdtemp(char *templateName)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -105,8 +106,7 @@ static char *q_mkdtemp(char *templateName)
 
     char *XXXXXX = templateName + length - 6;
 
-    if ((length < 6u) || strncmp(XXXXXX, "XXXXXX", 6))
-        return 0;
+    Q_ASSERT((length >= 6u) && strncmp(XXXXXX, "XXXXXX", 6) == 0);
 
     for (int i = 0; i < 256; ++i) {
         int v = qrand();
@@ -133,17 +133,18 @@ static char *q_mkdtemp(char *templateName)
                     qWarning() << "Unable to remove unused directory" << templateNameStr;
                 continue;
             }
-            return templateName;
+            return qMakePair(QFile::decodeName(templateName), true);
         }
     }
-    return 0;
+    return qMakePair(qt_error_string(), false);
 }
 
 #else // defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
 
-static char *q_mkdtemp(char *templateName)
+QPair<QString, bool> q_mkdtemp(char *templateName)
 {
-   return mkdtemp(templateName);
+    bool ok = (mkdtemp(templateName) != 0);
+    return qMakePair(ok ? QFile::decodeName(templateName) : qt_error_string(), ok);
 }
 
 #endif
@@ -153,10 +154,9 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     QByteArray buffer = QFile::encodeName(templateName);
     if (!buffer.endsWith("XXXXXX"))
         buffer += "XXXXXX";
-    if (q_mkdtemp(buffer.data())) { // modifies buffer
-        success = true;
-        path = QFile::decodeName(buffer.constData());
-    }
+    QPair<QString, bool> result = q_mkdtemp(buffer.data()); // modifies buffer
+    pathOrError = result.first;
+    success = result.second;
 }
 
 //************* QTemporaryDir
@@ -256,12 +256,24 @@ bool QTemporaryDir::isValid() const
 }
 
 /*!
+   \since 5.6
+
+   If isValid() returns \c false, this function returns the error string that
+   explains why the creation of the temporary directory failed. Otherwise, this
+   function return an empty string.
+*/
+QString QTemporaryDir::errorString() const
+{
+    return d_ptr->success ? QString() : d_ptr->pathOrError;
+}
+
+/*!
    Returns the path to the temporary directory.
    Empty if the QTemporaryDir could not be created.
 */
 QString QTemporaryDir::path() const
 {
-    return d_ptr->path;
+    return d_ptr->success ? d_ptr->pathOrError : QString();
 }
 
 /*!

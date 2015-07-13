@@ -82,7 +82,8 @@ tst_QMimeDatabase::tst_QMimeDatabase()
 
 void tst_QMimeDatabase::initTestCase()
 {
-    QVERIFY(m_temporaryDir.isValid());
+    QVERIFY2(m_temporaryDir.isValid(),
+             ("Could not create temporary subdir: " + m_temporaryDir.errorString()).toUtf8());
 
     // Create a "global" and a "local" XDG data dir, right here.
     // The local dir will be empty initially, while the global dir will contain a copy of freedesktop.org.xml
