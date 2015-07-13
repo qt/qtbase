@@ -135,6 +135,15 @@ QPair<QString, bool> q_mkdtemp(char *templateName)
             }
             return qMakePair(QFile::decodeName(templateName), true);
         }
+#  ifdef Q_OS_WIN
+        const int exists = ERROR_ALREADY_EXISTS;
+        int code = GetLastError();
+#  else
+        const int exists = EEXIST;
+        int code = errno;
+#  endif
+        if (code != exists)
+            return qMakePair(qt_error_string(code), false);
     }
     return qMakePair(qt_error_string(), false);
 }
