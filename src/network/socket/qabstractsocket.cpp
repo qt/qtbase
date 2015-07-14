@@ -2373,7 +2373,7 @@ bool QAbstractSocket::isSequential() const
  */
 bool QAbstractSocket::atEnd() const
 {
-    return QIODevice::atEnd() && (!isOpen() || d_func()->buffer.isEmpty());
+    return QIODevice::atEnd();
 }
 
 /*!

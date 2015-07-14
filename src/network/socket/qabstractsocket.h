@@ -176,7 +176,7 @@ public:
     // from QIODevice
     void close() Q_DECL_OVERRIDE;
     bool isSequential() const Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
+    bool atEnd() const Q_DECL_OVERRIDE; // ### Qt6: remove me
     bool flush();
 
     // for synchronous access
