@@ -78,6 +78,8 @@ public:
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
+    static bool tryHandleShortcutOverrideEvent(QWindow *w, QKeyEvent *ev);
+
     static bool tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                   const QString & text = QString(), bool autorep = false, ushort count = 1);
     static bool tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
