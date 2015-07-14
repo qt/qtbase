@@ -1023,9 +1023,15 @@
 // Also disable <atomic>, since it's clearly not there
 #  undef Q_COMPILER_ATOMICS
 # endif
-# if defined(_LIBCPP_VERSION)
+# if defined(Q_CC_CLANG) && defined(Q_CC_INTEL) && Q_CC_INTEL >= 1500
+// ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode
+// (probably because libc++'s <atomic> on OS X failed to compile), but they're missing some
+// critical definitions. (Reported as Intel Issue ID 6000117277)
+#  define __USE_CONSTEXPR 1
+#  define __USE_NOEXCEPT 1
+# elif defined(_LIBCPP_VERSION)
 // libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
-// doesn't support it. That's required for the Intel compiler on OS X, for example.
+// doesn't support it. That's required for the Intel compiler 14.x or earlier on OS X, for example.
 #  if !__has_feature(cxx_atomic)
 #   undef Q_COMPILER_ATOMICS
 #  endif
