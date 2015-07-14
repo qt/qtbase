@@ -35,6 +35,7 @@
 
 #include "qstandardpaths.h"
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
@@ -765,16 +766,20 @@ static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDa
         return false;
     }
 
+    QElapsedTimer timer;
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels); // silence output
+    qDebug().noquote() << "runUpdateMimeDatabase: running" << umd << path << "...";
+    timer.start();
     proc.start(umd, QStringList(path));
     if (!proc.waitForStarted()) {
         qWarning("Cannot start %s: %s",
                  qPrintable(umd), qPrintable(proc.errorString()));
         return false;
     }
-    proc.waitForFinished();
-    //qDebug() << "runUpdateMimeDatabase" << path;
+    const bool success = proc.waitForFinished();
+    qDebug().noquote() << "runUpdateMimeDatabase: done,"
+        << success << timer.elapsed() << "ms";
     return true;
 }
 
