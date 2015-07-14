@@ -72,6 +72,34 @@ static inline QString testSuiteWarning()
     return result;
 }
 
+static bool copyResourceFile(const QString &sourceFileName, const QString &targetFileName,
+                             QString *errorMessage)
+{
+
+    QFile sourceFile(sourceFileName);
+    if (!sourceFile.exists()) {
+        *errorMessage = QDir::toNativeSeparators(sourceFileName) + QLatin1String(" does not exist.");
+        return false;
+    }
+    if (!sourceFile.copy(targetFileName)) {
+        *errorMessage = QLatin1String("Cannot copy ")
+            + QDir::toNativeSeparators(sourceFileName) + QLatin1String(" to ")
+            + QDir::toNativeSeparators(targetFileName) + QLatin1String(": ")
+            + sourceFile.errorString();
+        return false;
+    }
+    // QFile::copy() sets the permissions of the source file which are read-only for
+    // resource files. Set write permission to enable deletion of the temporary directory.
+    QFile targetFile(targetFileName);
+    if (!targetFile.setPermissions(targetFile.permissions() | QFileDevice::WriteUser)) {
+        *errorMessage = QLatin1String("Cannot set write permission on ")
+            + QDir::toNativeSeparators(targetFileName) + QLatin1String(": ")
+            + targetFile.errorString();
+        return false;
+    }
+    return true;
+}
+
 // Set LANG before QCoreApplication is created
 Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
@@ -101,15 +129,15 @@ void tst_QMimeDatabase::initTestCase()
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
     const QString xmlFileName = QLatin1String(RESOURCE_PREFIX) + freeDesktopXml;
-    QVERIFY2(QFileInfo(xmlFileName).exists(), qPrintable(xmlFileName + QStringLiteral(" does not exist")));
-    QFile xml(xmlFileName);
-    QVERIFY(xml.copy(globalPackageDir + '/' + freeDesktopXml));
+    const QString xmlTargetFileName = globalPackageDir + QLatin1Char('/') + freeDesktopXml;
+    QString errorMessage;
+    QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
 
     m_testSuite = QFINDTESTDATA("testfiles");
     if (m_testSuite.isEmpty())
         qWarning("%s", qPrintable(testSuiteWarning()));
 
-    const QString errorMessage = QString::fromLatin1("Cannot find '%1'");
+    errorMessage = QString::fromLatin1("Cannot find '%1'");
     m_yastMimeTypes = QLatin1String(RESOURCE_PREFIX) + yastFileName;
     QVERIFY2(QFile::exists(m_yastMimeTypes), qPrintable(errorMessage.arg(yastFileName)));
     m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
@@ -830,8 +858,9 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
 
     if (!QFileInfo(destDir).isDir())
         QVERIFY(QDir(m_globalXdgDir).mkpath(destDir));
-    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
-    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
+    QString errorMessage;
+    QVERIFY2(copyResourceFile(m_yastMimeTypes, destFile, &errorMessage), qPrintable(errorMessage));
+    QVERIFY2(copyResourceFile(m_qmlAgainFileName, destQmlFile, &errorMessage), qPrintable(errorMessage));
     if (!waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
@@ -876,8 +905,9 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QFile::remove(destFile);
     const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
     QFile::remove(destQmlFile);
-    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
-    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
+    QString errorMessage;
+    QVERIFY2(copyResourceFile(m_yastMimeTypes, destFile, &errorMessage), qPrintable(errorMessage));
+    QVERIFY2(copyResourceFile(m_qmlAgainFileName, destQmlFile, &errorMessage), qPrintable(errorMessage));
     if (!runUpdateMimeDatabase(mimeDir)) {
         const QString skipWarning = QStringLiteral("shared-mime-info not found, skipping mime.cache test (")
                                     + QDir::toNativeSeparators(mimeDir) + QLatin1Char(')');
