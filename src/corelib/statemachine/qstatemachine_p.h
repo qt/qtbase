@@ -155,9 +155,6 @@ public:
     void addDescendantStatesToEnter(QAbstractState *state,
                                     QSet<QAbstractState*> &statesToEnter,
                                     QSet<QAbstractState*> &statesForDefaultEntry);
-    void addStatesToEnter(QAbstractState *s, QState *root,
-                          QSet<QAbstractState*> &statesToEnter,
-                          QSet<QAbstractState*> &statesForDefaultEntry);
     void addAncestorStatesToEnter(QAbstractState *s, QAbstractState *ancestor,
                                   QSet<QAbstractState*> &statesToEnter,
                                   QSet<QAbstractState*> &statesForDefaultEntry);
