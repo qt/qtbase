@@ -50,10 +50,12 @@
 #include <QtGui/qguiapplication.h>
 
 #include "qwindowsaccessibility.h"
-#ifdef Q_CC_MINGW
-# include "qwindowsmsaaaccessible.h"
-#else
-# include "iaccessible2.h"
+#if !defined(Q_OS_WINCE)
+# ifdef Q_CC_MINGW
+#  include "qwindowsmsaaaccessible.h"
+# else
+#  include "iaccessible2.h"
+# endif
 #endif
 #include "comutils.h"
 
@@ -68,8 +70,9 @@
 #if !defined(WINABLEAPI)
 #  if defined(Q_OS_WINCE)
 #    include <bldver.h>
+#  else
+#    include <winable.h>
 #  endif
-#  include <winable.h>
 #endif
 
 #include <servprov.h>
@@ -193,6 +196,11 @@ QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
 */
 IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 {
+#if defined(Q_OS_WINCE)
+    Q_UNUSED(acc);
+
+    return 0;
+#else
     if (!acc)
         return 0;
 
@@ -200,14 +208,15 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
     if (!QAccessible::uniqueId(acc))
         QAccessible::registerAccessibleInterface(acc);
 
-#ifdef Q_CC_MINGW
+# ifdef Q_CC_MINGW
     QWindowsMsaaAccessible *wacc = new QWindowsMsaaAccessible(acc);
-#else
+# else
     QWindowsIA2Accessible *wacc = new QWindowsIA2Accessible(acc);
-#endif
+# endif
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, (void**)&iacc);
     return iacc;
+#endif // defined(Q_OS_WINCE)
 }
 
 /*
@@ -230,6 +239,7 @@ void QWindowsAccessibility::cleanup()
 
 bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
 {
+#if !defined(Q_OS_WINCE)
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
     } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
@@ -248,9 +258,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 
         if (!oleaccChecked) {
             oleaccChecked = true;
-#if !defined(Q_OS_WINCE)
             ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
-#endif
         }
 
         if (ptrLresultFromObject) {
@@ -269,6 +277,12 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
             }
         }
     }
+#else
+    Q_UNUSED(hwnd);
+    Q_UNUSED(wParam);
+    Q_UNUSED(lParam);
+    Q_UNUSED(lResult);
+#endif // !defined(Q_OS_WINCE)
     return false;
 }
 
