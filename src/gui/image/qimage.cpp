@@ -4134,9 +4134,6 @@ QImage QImage::alphaChannel() const
     if (!d)
         return QImage();
 
-    if (d->format == QImage::Format_Alpha8)
-        return *this;
-
     int w = d->width;
     int h = d->height;
 
@@ -4166,6 +4163,10 @@ QImage QImage::alphaChannel() const
             src_data += d->bytes_per_line;
             dest_data += image.d->bytes_per_line;
         }
+    } else if (d->format == Format_Alpha8) {
+        const uchar *src_data = d->data;
+        uchar *dest_data = image.d->data;
+        memcpy(dest_data, src_data, d->bytes_per_line * h);
     } else {
         QImage alpha32 = *this;
         bool canSkipConversion = (d->format == Format_ARGB32 || d->format == Format_ARGB32_Premultiplied);
