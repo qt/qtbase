@@ -1503,11 +1503,19 @@ bool QDir::removeRecursively()
     while (di.hasNext()) {
         di.next();
         const QFileInfo& fi = di.fileInfo();
+        const QString &filePath = di.filePath();
         bool ok;
-        if (fi.isDir() && !fi.isSymLink())
-            ok = QDir(di.filePath()).removeRecursively(); // recursive
-        else
-            ok = QFile::remove(di.filePath());
+        if (fi.isDir() && !fi.isSymLink()) {
+            ok = QDir(filePath).removeRecursively(); // recursive
+        } else {
+            ok = QFile::remove(filePath);
+            if (!ok) { // Read-only files prevent directory deletion on Windows, retry with Write permission.
+                const QFile::Permissions permissions = QFile::permissions(filePath);
+                if (!(permissions & QFile::WriteUser))
+                    ok = QFile::setPermissions(filePath, permissions | QFile::WriteUser)
+                        && QFile::remove(filePath);
+            }
+        }
         if (!ok)
             success = false;
     }
