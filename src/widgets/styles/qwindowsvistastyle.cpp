@@ -657,6 +657,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 newStyle = !qobject_cast<const QTableView*>(view);
                 selectionBehavior = view->selectionBehavior();
                 selectionMode = view->selectionMode();
+            } else if (!widget) {
+                newStyle = !QStyleHelper::hasAncestor(option->styleObject, QAccessible::MenuItem) ;
             }
 
             if (newStyle && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
