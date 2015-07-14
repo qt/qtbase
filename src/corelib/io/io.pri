@@ -160,6 +160,7 @@ win32 {
             } else:ios {
                 OBJECTIVE_SOURCES += io/qstandardpaths_ios.mm
                 SOURCES += io/qstorageinfo_mac.cpp
+                LIBS += -framework MobileCoreServices
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
             }
