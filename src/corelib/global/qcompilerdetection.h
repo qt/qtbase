@@ -564,6 +564,16 @@
 #      endif
 #      define Q_COMPILER_UDL
 #    endif
+#    ifdef _MSC_VER
+#      if _MSC_VER == 1700
+//       <initializer_list> is missing with MSVC 2012 (it's present in 2010, 2013 and up)
+#        undef Q_COMPILER_INITIALIZER_LISTS
+#      endif
+#      if _MSC_VER < 1900
+//       ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
+#        undef Q_COMPILER_UNICODE_STRINGS
+#      endif
+#    endif
 #  endif
 #endif
 
