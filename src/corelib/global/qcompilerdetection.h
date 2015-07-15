@@ -890,7 +890,8 @@
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_REF_QUALIFIERS
 #      define Q_COMPILER_THREAD_LOCAL
-#      define Q_COMPILER_THREADSAFE_STATICS
+// Broken, see QTBUG-47224 and https://connect.microsoft.com/VisualStudio/feedback/details/1549785
+//#      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UDL
 #      define Q_COMPILER_UNICODE_STRINGS
 // Uniform initialization is not working yet -- build errors with QUuid
