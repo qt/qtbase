@@ -1736,6 +1736,13 @@ static bool fuzzyRectCompare(const QRect &a, const QRect &b)
            && qAbs(delta.right()) <= MAX_ACCEPTABLE_DELTA && qAbs(delta.bottom()) <= MAX_ACCEPTABLE_DELTA;
 }
 
+static QByteArray msgRectMismatch(const QRect &a, const QRect &b)
+{
+    QString result;
+    QDebug(&result) << a << "!=" << b;
+    return result.toLocal8Bit();
+}
+
 void tst_QAccessibility::textEditTest()
 {
     for (int pass = 0; pass < 2; ++pass) {
@@ -1781,16 +1788,24 @@ void tst_QAccessibility::textEditTest()
 
         int offset = 10;
         QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("d"));
-        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
+        const QRect actual10 = textIface->characterRect(offset);
+        const QRect expected10 = characterRect(edit, offset);
+        QVERIFY2(fuzzyRectCompare(actual10, expected10), msgRectMismatch(actual10, expected10).constData());
         offset = 13;
         QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("H"));
-        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
+        const QRect actual13 = textIface->characterRect(offset);
+        const QRect expected13 = characterRect(edit, offset);
+        QVERIFY2(fuzzyRectCompare(actual13, expected13), msgRectMismatch(actual13, expected13).constData());
         offset = 21;
         QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("y"));
-        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
+        const QRect actual21 = textIface->characterRect(offset);
+        const QRect expected21 = characterRect(edit, offset);
+        QVERIFY2(fuzzyRectCompare(actual21, expected21), msgRectMismatch(actual21, expected21).constData());
         offset = 32;
         QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("I"));
-        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
+        const QRect actual32 = textIface->characterRect(offset);
+        const QRect expected32 = characterRect(edit, offset);
+        QVERIFY2(fuzzyRectCompare(actual32, expected32), msgRectMismatch(actual32, expected32).constData());
 
         QTestAccessibility::clearEvents();
 
