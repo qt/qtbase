@@ -1810,12 +1810,12 @@ QString QAbstractSocket::peerName() const
 */
 bool QAbstractSocket::canReadLine() const
 {
-    bool hasLine = d_func()->buffer.canReadLine();
+    bool hasLine = QIODevice::canReadLine();
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::canReadLine() == %s, buffer size = %lld, size = %lld",
            hasLine ? "true" : "false", d_func()->buffer.size(), d_func()->buffer.size());
 #endif
-    return hasLine || QIODevice::canReadLine();
+    return hasLine;
 }
 
 /*!
