@@ -3636,9 +3636,6 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
     else
         QT_INSTALL_PREFIX="/usr/local/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Qt-$QT_VERSION
     fi
-    HAVE_INSTALL_PATH=false
-else
-    HAVE_INSTALL_PATH=true
 fi
 QT_INSTALL_PREFIX=`makeabs "$QT_INSTALL_PREFIX"`
 
