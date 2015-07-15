@@ -56,8 +56,8 @@ void MdiChild::newFile()
     curFile = tr("document%1.txt").arg(sequenceNumber++);
     setWindowTitle(curFile + "[*]");
 
-    connect(document(), SIGNAL(contentsChanged()),
-            this, SLOT(documentWasModified()));
+    connect(document(), &QTextDocument::contentsChanged,
+            this, &MdiChild::documentWasModified);
 }
 
 bool MdiChild::loadFile(const QString &fileName)
@@ -78,8 +78,8 @@ bool MdiChild::loadFile(const QString &fileName)
 
     setCurrentFile(fileName);
 
-    connect(document(), SIGNAL(contentsChanged()),
-            this, SLOT(documentWasModified()));
+    connect(document(), &QTextDocument::contentsChanged,
+            this, &MdiChild::documentWasModified);
 
     return true;
 }
@@ -109,8 +109,7 @@ bool MdiChild::saveFile(const QString &fileName)
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("MDI"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
         return false;
     }
 
@@ -144,18 +143,22 @@ void MdiChild::documentWasModified()
 
 bool MdiChild::maybeSave()
 {
-    if (document()->isModified()) {
-        QMessageBox::StandardButton ret;
-        ret = QMessageBox::warning(this, tr("MDI"),
-                     tr("'%1' has been modified.\n"
-                        "Do you want to save your changes?")
-                     .arg(userFriendlyCurrentFile()),
-                     QMessageBox::Save | QMessageBox::Discard
-                     | QMessageBox::Cancel);
-        if (ret == QMessageBox::Save)
-            return save();
-        else if (ret == QMessageBox::Cancel)
-            return false;
+    if (!document()->isModified())
+        return true;
+    const QMessageBox::StandardButton ret
+            = QMessageBox::warning(this, tr("MDI"),
+                                   tr("'%1' has been modified.\n"
+                                      "Do you want to save your changes?")
+                                   .arg(userFriendlyCurrentFile()),
+                                   QMessageBox::Save | QMessageBox::Discard
+                                   | QMessageBox::Cancel);
+    switch (ret) {
+    case QMessageBox::Save:
+        return save();
+    case QMessageBox::Cancel:
+        return false;
+    default:
+        break;
     }
     return true;
 }
