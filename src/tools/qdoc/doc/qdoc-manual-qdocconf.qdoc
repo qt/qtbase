@@ -113,6 +113,8 @@
     \li \l {manifestmeta-variable} {manifestmeta}
     \li \l {outputdir-variable} {outputdir}
     \li \l {outputformats-variable} {outputformats}
+    \li \l {outputprefixes-variable} {outputprefixes}
+    \li \l {outputsuffixes-variable} {outputsuffixes}
     \li \l {sourcedirs-variable} {sourcedirs}
     \li \l {sources-variable} {sources}
     \li \l {sources.fileextensions-variable} {sources.fileextensions}
@@ -814,21 +816,48 @@
     Currently, QDoc only supports the HTML format. It is also
     the default format, and doesn't need to be specified.
 
-    \target outputprefixes
+    \target outputprefixes-variable
     \section1 outputprefixes
 
     The \c outputprefixes variable specifies a mapping between types of files
     and the prefixes to prepend to the HTML file names in the generated
     documentation.
 
-    \code
-        outputprefixes = QML
+    \badcode
+        outputprefixes     = QML JS
         outputprefixes.QML = uicomponents-
+        outputprefixes.JS  = uicomponents-
     \endcode
 
     By default, files containing the API documentation for QML types
-    are prefixed with "qml-". In the above example, the
-    prefix \c "uicomponents" is used instead.
+    are prefixed with "qml-", and javaScript types with "js-". In the
+    above example, the prefix \c "uicomponents" is used instead for
+    both.
+
+    The output prefix is applied to file names for documentation on
+    QML and JS types.
+
+    \target outputsuffixes-variable
+    \section1 outputsuffixes
+
+    The \c outputsuffixes variable specifies a mapping between types of
+    files and module name suffixes to append to the HTML file names.
+
+    \badcode
+        outputsuffixes     = QML
+        outputsuffixes.QML = -tp
+    \endcode
+
+    Given a QML module name \e FooBar and the default
+    \l {outputprefixes-variable}{output prefix} ("qml-"), the file name of
+    the generated HTML page for a QML type \e FooWidget would be
+    \c qml-foobar-tp-foowidget.html.
+
+    By default, no suffix is used. The output suffix, if defined, is applied
+    to file names for documentation on QML and JS types, and their respective
+    module pages.
+
+    The \c outputsuffixes variable was introduced in QDoc 5.6.
 
     \target qhp-variable
     \section1 qhp

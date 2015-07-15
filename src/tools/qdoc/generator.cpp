@@ -63,6 +63,7 @@ QString Generator::outSubdir_;
 QStringList Generator::outFileNames_;
 QSet<QString> Generator::outputFormats;
 QHash<QString, QString> Generator::outputPrefixes;
+QHash<QString, QString> Generator::outputSuffixes;
 QString Generator::project_;
 QStringList Generator::scriptDirs;
 QStringList Generator::scriptFiles;
@@ -329,21 +330,21 @@ QString Generator::fileBase(const Node *node) const
     else if (node->isQmlType() || node->isQmlBasicType() ||
              node->isJsType() || node->isJsBasicType()) {
         base = node->name();
-        if (!node->logicalModuleName().isEmpty()) {
-            base.prepend(node->logicalModuleName() + QLatin1Char('-'));
-        }
         /*
           To avoid file name conflicts in the html directory,
-          we prepend a prefix (by default, "qml-") to the file name of QML
-          element doc files.
+          we prepend a prefix (by default, "qml-") and an optional suffix
+          to the file name. The suffix, if one exists, is appended to the
+          module name.
         */
-        if (node->isQmlType() || node->isQmlBasicType())
-            base.prepend(outputPrefix(QLatin1String("QML")));
-        else
-            base.prepend(outputPrefix(QLatin1String("JS")));
+        if (!node->logicalModuleName().isEmpty()) {
+            base.prepend(node->logicalModuleName()
+                         + outputSuffix(node)
+                         + QLatin1Char('-'));
+        }
+        base.prepend(outputPrefix(node));
     }
     else if (node->isCollectionNode()) {
-        base = node->name();
+        base = node->name() + outputSuffix(node);
         if (base.endsWith(".html"))
             base.truncate(base.length() - 5);
 
@@ -356,7 +357,7 @@ QString Generator::fileBase(const Node *node) const
         else if (node->isModule()) {
             base.append("-module");
         }
-        // Why not add "-group" for gropup pages?
+        // Why not add "-group" for group pages?
     }
     else {
         const Node *p = node;
@@ -519,9 +520,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
     else if (node->isQmlType() || node->isQmlBasicType() ||
              node->isJsType() || node->isJsBasicType()) {
         QString fb = fileBase(node);
-        if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
-            return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
-        else if (fb.startsWith(Generator::outputPrefix(QLatin1String("JS"))))
+        if (fb.startsWith(outputPrefix(node)))
             return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
         else {
             QString mq;
@@ -529,10 +528,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
                 mq = node->logicalModuleName().replace(QChar('.'),QChar('-'));
                 mq = mq.toLower() + QLatin1Char('-');
             }
-            QLatin1String prefix = QLatin1String("QML");
-            if (node->isJsType() || node->isJsBasicType())
-                prefix = QLatin1String("JS");
-            return fdl+ Generator::outputPrefix(prefix) + mq + fileBase(node) +
+            return fdl + outputPrefix(node) + mq + fileBase(node) +
                 QLatin1Char('.') + currentGenerator()->fileExtension();
         }
     }
@@ -1804,15 +1800,24 @@ void Generator::initialize(const Config &config)
 
     project_ = config.getString(CONFIG_PROJECT);
 
-    QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
-    if (!prefixes.isEmpty()) {
-        foreach (const QString &prefix, prefixes)
+    outputPrefixes.clear();
+    QStringList items = config.getStringList(CONFIG_OUTPUTPREFIXES);
+    if (!items.isEmpty()) {
+        foreach (const QString &prefix, items)
             outputPrefixes[prefix] = config.getString(CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
     }
     else {
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
         outputPrefixes[QLatin1String("JS")] = QLatin1String("js-");
     }
+
+    outputSuffixes.clear();
+    items = config.getStringList(CONFIG_OUTPUTSUFFIXES);
+    if (!items.isEmpty()) {
+        foreach (const QString &suffix, items)
+            outputSuffixes[suffix] = config.getString(CONFIG_OUTPUTSUFFIXES + Config::dot + suffix);
+    }
+
     noLinkErrors_ = config.getBool(CONFIG_NOLINKERRORS);
     autolinkErrors_ = config.getBool(CONFIG_AUTOLINKERRORS);
 }
@@ -1862,9 +1867,25 @@ QString Generator::outFileName()
     return QFileInfo(static_cast<QFile*>(out().device())->fileName()).fileName();
 }
 
-QString Generator::outputPrefix(const QString &nodeType)
+QString Generator::outputPrefix(const Node *node)
 {
-    return outputPrefixes[nodeType];
+    // Prefix is applied to QML and JS types
+    if (node->isQmlType() || node->isQmlBasicType())
+        return outputPrefixes[QLatin1String("QML")];
+    if (node->isJsType() || node->isJsBasicType())
+        return outputPrefixes[QLatin1String("JS")];
+    return QString();
+}
+
+QString Generator::outputSuffix(const Node *node)
+{
+    // Suffix is applied to QML and JS types, as
+    // well as module pages.
+    if (node->isQmlModule() || node->isQmlType() || node->isQmlBasicType())
+        return outputSuffixes[QLatin1String("QML")];
+    if (node->isJsModule() || node->isJsType() || node->isJsBasicType())
+        return outputSuffixes[QLatin1String("JS")];
+    return QString();
 }
 
 bool Generator::parseArg(const QString& src,

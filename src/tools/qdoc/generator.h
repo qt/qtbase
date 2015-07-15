@@ -135,7 +135,8 @@ protected:
     virtual QString typeString(const Node *node);
 
     static bool matchAhead(const Atom *atom, Atom::AtomType expectedAtomType);
-    static QString outputPrefix(const QString &nodeType);
+    static QString outputPrefix(const Node* node);
+    static QString outputSuffix(const Node* node);
     static void singularPlural(Text& text, const NodeList& nodes);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
     static QString trimmedTrailing(const QString &string);
@@ -214,6 +215,7 @@ private:
     static QStringList outFileNames_;
     static QSet<QString> outputFormats;
     static QHash<QString, QString> outputPrefixes;
+    static QHash<QString, QString> outputSuffixes;
     static QStringList scriptDirs;
     static QStringList scriptFiles;
     static QStringList styleDirs;
