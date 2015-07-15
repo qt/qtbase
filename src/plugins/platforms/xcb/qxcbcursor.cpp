@@ -336,8 +336,10 @@ QXcbCursor::~QXcbCursor()
     if (!--cursorCount)
         xcb_close_font(conn, cursorFont);
 
+#ifndef QT_NO_CURSOR
     foreach (xcb_cursor_t cursor, m_cursorHash)
         xcb_free_cursor(conn, cursor);
+#endif
 }
 
 #ifndef QT_NO_CURSOR
