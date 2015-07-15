@@ -226,7 +226,11 @@
     We create a toolbar as a child of the main window, and add the desired
     actions to it:
 
-    \snippet mainwindows/sdi/mainwindow.cpp 0
+    \code
+    fileToolBar = addToolBar(tr("File"));
+    fileToolBar->addAction(newAct);
+    fileToolBar->addAction(openAct);
+    \endcode
     \dots
     \snippet code/doc_src_qt4-mainwindow.cpp 1
 

@@ -42,6 +42,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -57,7 +58,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
 //! [class definition with macro]
-    MainWindow(const QString &fileName);
+    explicit MainWindow(const QString &fileName);
+
+    void tile(const QMainWindow *previous);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -73,8 +76,6 @@ private slots:
 private:
     void init();
     void createActions();
-    void createMenus();
-    void createToolBars();
     void createStatusBar();
     void readSettings();
     void writeSettings();
@@ -82,29 +83,12 @@ private:
     void loadFile(const QString &fileName);
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
-    QString strippedName(const QString &fullFileName);
-    MainWindow *findMainWindow(const QString &fileName);
+    static QString strippedName(const QString &fullFileName);
+    MainWindow *findMainWindow(const QString &fileName) const;
 
     QTextEdit *textEdit;
     QString curFile;
     bool isUntitled;
-
-    QMenu *fileMenu;
-    QMenu *editMenu;
-    QMenu *helpMenu;
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
-    QAction *newAct;
-    QAction *openAct;
-    QAction *saveAct;
-    QAction *saveAsAct;
-    QAction *closeAct;
-    QAction *exitAct;
-    QAction *cutAct;
-    QAction *copyAct;
-    QAction *pasteAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
 };
 
 #endif
