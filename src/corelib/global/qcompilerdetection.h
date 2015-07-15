@@ -97,7 +97,7 @@
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL  __INTEL_COMPILER
 #  endif
 
 /* only defined for MSVC since that's the only compiler that actually optimizes for this */
