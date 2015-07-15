@@ -55,7 +55,6 @@
 
 #include <algorithm>
 
-#include <dlfcn.h>
 #include <stdio.h>
 #include <errno.h>
 #include <xcb/shm.h>
@@ -77,6 +76,14 @@
 #include <xcb/render.h>
 #endif
 
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+static xcb_generic_event_t *local_xcb_poll_for_queued_event(xcb_connection_t *c)
+    __attribute__((weakref("xcb_poll_for_queued_event")));
+
+static inline void checkXcbPollForQueuedEvent()
+{ }
+#else
+#include <dlfcn.h>
 typedef xcb_generic_event_t * (*XcbPollForQueuedEventFunctionPointer)(xcb_connection_t *c);
 static XcbPollForQueuedEventFunctionPointer local_xcb_poll_for_queued_event;
 
@@ -85,12 +92,8 @@ static inline void checkXcbPollForQueuedEvent()
 #ifdef RTLD_DEFAULT
     local_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
 #endif
-
-#ifdef Q_XCB_DEBUG
-    if (local_xcb_poll_for_queued_event)
-        qDebug("Using threaded event reader with xcb_poll_for_queued_event");
-#endif
 }
+#endif
 
 QT_BEGIN_NAMESPACE
 
