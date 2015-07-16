@@ -17,6 +17,31 @@
             "features": [
                 "disable_desktopgl"
             ]
-        }
+        },
+        {
+            "id": 2,
+            "description": "Intel Q965/Q963 - GMA 3000 has insufficient support of opengl and directx",
+            "vendor_id": "0x8086",
+            "device_id": [ "0x2992" ],
+            "os": {
+                "type": "win"
+            },
+            "features": [
+                "disable_desktopgl",
+                "disable_angle"
+            ]
+       },
+       {
+           "id": 3,
+           "description": "No OpenGL on Intel G33/G31 (QTBUG-47522)",
+           "vendor_id": "0x8086",
+           "device_id": [ "0x29C2" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_desktopgl",
+           ]
+       }
     ]
 }
