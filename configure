@@ -4236,7 +4236,7 @@ compileTestWithPkgConfig()
         libdir_mod=`echo $libdir_raw | sed -e 's,^-L,,g' -e 's, -L, ,g'`
         has_used_pkg_config="yes"
     fi
-    if compileTest $configtest $configtest_name $libdir_raw $incdir_raw $libs $cflags "$@"; then
+    if compileTest $configtest "$configtest_name" $libdir_raw $incdir_raw $libs $cflags "$@"; then
         if [ "$has_used_pkg_config" = "yes" ] && [ -n "$qmake_postfix" ]; then
             QMakeVar set QMAKE_INCDIR_$qmake_postfix "`shellArgumentListToQMakeList $incdir_mod`"
             QMakeVar set QMAKE_LIBDIR_$qmake_postfix "`shellArgumentListToQMakeList $libdir_mod`"
