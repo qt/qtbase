@@ -106,16 +106,6 @@ QStringList files = QFileDialog::getOpenFileNames(
 //! [9]
 
 
-//! [10]
-QStringList list = files;
-QStringList::Iterator it = list.begin();
-while(it != list.end()) {
-    myProcessing(*it);
-    ++it;
-}
-//! [10]
-
-
 //! [11]
 QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
                            "/home/jana/untitled.png",

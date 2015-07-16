@@ -2197,11 +2197,6 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     see the QFileDialog::Option enum for more information on the flags you can
     pass.
 
-    \note If you want to iterate over the list of files, you should iterate
-    over a copy. For example:
-
-    \snippet code/src_gui_dialogs_qfiledialog.cpp 10
-
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
     QFileDialog constructors.
