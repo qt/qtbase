@@ -70,6 +70,8 @@ class Q_AUTOTEST_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPriva
     Q_DECLARE_PUBLIC(QFileSystemModel)
 
 public:
+    enum { NumColumns = 4 };
+
     class QFileSystemNode
     {
     public:

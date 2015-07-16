@@ -643,7 +643,7 @@ int QFileSystemModel::rowCount(const QModelIndex &parent) const
 */
 int QFileSystemModel::columnCount(const QModelIndex &parent) const
 {
-    return (parent.column() > 0) ? 0 : 4;
+    return (parent.column() > 0) ? 0 : QFileSystemModelPrivate::NumColumns;
 }
 
 /*!
