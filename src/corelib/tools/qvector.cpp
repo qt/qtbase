@@ -45,34 +45,42 @@
     stores its items in adjacent memory locations and provides fast
     index-based access.
 
-    QList\<T\>, QLinkedList\<T\>, and QVarLengthArray\<T\> provide
-    similar functionality. Here's an overview:
+    QList\<T\>, QLinkedList\<T\>, QVector\<T\>, and QVarLengthArray\<T\>
+    provide similar APIs and functionality. They are often interchangeable,
+    but there are performance consequences. Here is an overview of use cases:
 
     \list
-    \li For most purposes, QList is the right class to use. Operations
-       like prepend() and insert() are usually faster than with
-       QVector because of the way QList stores its items in memory
-       (see \l{Algorithmic Complexity} for details),
-       and its index-based API is more convenient than QLinkedList's
-       iterator-based API. It also expands to less code in your
-       executable.
-    \li If you need a real linked list, with guarantees of \l{constant
-       time} insertions in the middle of the list and iterators to
-       items rather than indexes, use QLinkedList.
-    \li If you want the items to occupy adjacent memory positions, or
-       if your items are larger than a pointer and you want to avoid
-       the overhead of allocating them on the heap individually at
-       insertion time, then use QVector.
-    \li If you want a low-level variable-size array, QVarLengthArray
-       may be sufficient.
+    \li QVector should be your default first choice.
+        QVector\<T\> will usually give better performance than QList\<T\>,
+        because QVector\<T\> always stores its items sequentially in memory,
+        where QList\<T\> will allocate its items on the heap unless
+        \c {sizeof(T) <= sizeof(void*)} and T has been declared to be
+        either a \c{Q_MOVABLE_TYPE} or a \c{Q_PRIMITIVE_TYPE} using
+        \l {Q_DECLARE_TYPEINFO}. See the \l {Pros and Cons of Using QList}
+        for an explanation.
+    \li However, QList is used throughout the Qt APIs for passing
+        parameters and for returning values. Use QList to interface with
+        those APIs.
+    \li If you need a real linked list, which guarantees
+        \l{Algorithmic Complexity}{constant time} insertions mid-list and
+        uses iterators to items rather than indexes, use QLinkedList.
     \endlist
+
+    \note QVector and QVarLengthArray both guarantee C-compatible
+    array layout. QList does not. This might be important if your
+    application must interface with a C API.
+
+    \note Iterators into a QLinkedList and references into
+    heap-allocating QLists remain valid long as the referenced items
+    remain in the container. This is not true for iterators and
+    references into a QVector and non-heap-allocating QLists.
 
     Here's an example of a QVector that stores integers and a QVector
     that stores QString values:
 
     \snippet code/src_corelib_tools_qvector.cpp 0
 
-    QVector stores a vector (or array) of items. Typically, vectors
+    QVector stores its items in a vector (array). Typically, vectors
     are created with an initial size. For example, the following code
     constructs a QVector with 200 elements:
 
@@ -166,6 +174,11 @@
     with references to its own values. Doing so will cause your application to
     abort with an error message.
 
+    \section2 More Information on Using Qt Containers
+
+    For a detailed discussion comparing Qt containers with each other and
+    with STL containers, see \l {Understand the Qt Containers}.
+
     \sa QVectorIterator, QMutableVectorIterator, QList, QLinkedList
 */
 
@@ -218,10 +231,11 @@
 
     Constructs a copy of \a other.
 
-    This operation takes \l{constant time}, because QVector is
-    \l{implicitly shared}. This makes returning a QVector from a
-    function very fast. If a shared instance is modified, it will be
-    copied (copy-on-write), and that takes \l{linear time}.
+    This operation takes \l{Algorithmic Complexity}{constant time},
+    because QVector is \l{implicitly shared}. This makes returning
+    a QVector from a function very fast. If a shared instance is
+    modified, it will be copied (copy-on-write), and that takes
+    \l{Algorithmic Complexity}{linear time}.
 
     \sa operator=()
 */

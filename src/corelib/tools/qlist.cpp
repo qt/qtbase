@@ -332,41 +332,56 @@ void **QListData::erase(void **xi)
     \reentrant
 
     QList\<T\> is one of Qt's generic \l{container classes}. It
-    stores a list of values and provides fast index-based access as
-    well as fast insertions and removals.
+    stores items in a list that provides fast index-based access
+    and index-based insertions and removals.
 
     QList\<T\>, QLinkedList\<T\>, and QVector\<T\> provide similar
-    functionality. Here's an overview:
+    APIs and functionality. They are often interchangeable, but there
+    are performance consequences. Here is an overview of use cases:
 
     \list
-    \li For most purposes, QList is the right class to use. Its
-       index-based API is more convenient than QLinkedList's
-       iterator-based API, and it is usually faster than
-       QVector because of the way it stores its items in
-       memory. It also expands to less code in your executable.
-    \li If you need a real linked list, with guarantees of \l{constant
-       time} insertions in the middle of the list and iterators to
-       items rather than indexes, use QLinkedList.
-    \li If you want the items to occupy adjacent memory positions,
-       use QVector.
+    \li QVector should be your default first choice.
+        QVector\<T\> will usually give better performance than QList\<T\>,
+        because QVector\<T\> always stores its items sequentially in memory,
+        where QList\<T\> will allocate its items on the heap unless
+        \c {sizeof(T) <= sizeof(void*)} and T has been declared to be
+        either a \c{Q_MOVABLE_TYPE} or a \c{Q_PRIMITIVE_TYPE} using
+        \l {Q_DECLARE_TYPEINFO}. See the \l {Pros and Cons of Using QList}
+        for an explanation.
+    \li However, QList is used throughout the Qt APIs for passing
+        parameters and for returning values. Use QList to interface with
+        those APIs.
+    \li If you need a real linked list, which guarantees
+        \l {Algorithmic Complexity}{constant time} insertions mid-list and
+        uses iterators to items rather than indexes, use QLinkedList.
     \endlist
 
+    \note QVector and QVarLengthArray both guarantee C-compatible
+    array layout. QList does not. This might be important if your
+    application must interface with a C API.
 
-    Internally, QList\<T\> is represented as an array of pointers to
-    items of type T. If T is itself a pointer type or a basic type
-    that is no larger than a pointer, or if T is one of Qt's \l{shared
-    classes}, then QList\<T\> stores the items directly in the pointer
-    array. For lists under a thousand items, this array representation
-    allows for very fast insertions in the middle, and it allows
-    index-based access. Furthermore, operations like prepend() and
-    append() are very fast, because QList preallocates memory at both
+    \note Iterators into a QLinkedList and references into
+    heap-allocating QLists remain valid long as the referenced items
+    remain in the container. This is not true for iterators and
+    references into a QVector and non-heap-allocating QLists.
+
+    Internally, QList\<T\> is represented as an array of T if
+    If \c{sizeof(T) <= sizeof(void*)} and T has been declared to be
+    either a \c{Q_MOVABLE_TYPE} or a \c{Q_PRIMITIVE_TYPE} using
+    \l {Q_DECLARE_TYPEINFO}. Otherwise, QList\<T\> is represented
+    as an array of T* and the items are allocated on the heap.
+
+    The array representation allows very fast insertions and
+    index-based access. The prepend() and append() operations are
+    also very fast because QList preallocates memory at both
     ends of its internal array. (See \l{Algorithmic Complexity} for
-    details.) Note, however, that for unshared list items that are
-    larger than a pointer, each append or insert of a new item
-    requires allocating the new item on the heap, and this per item
-    allocation might make QVector a better choice in cases that do
-    lots of appending or inserting, since QVector allocates memory for
-    its items in a single heap allocation.
+    details.
+
+    Note, however, that when the conditions specified above are not met,
+    each append or insert of a new item requires allocating the new item
+    on the heap, and this per item allocation will make QVector a better
+    choice for use cases that do a lot of appending or inserting, because
+    QVector can allocate memory for many items in a single heap allocation.
 
     Note that the internal array only ever gets bigger over the life
     of the list. It never shrinks. The internal array is deallocated
@@ -401,9 +416,10 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 2
 
-    Because QList is implemented as an array of pointers, this
-    operation is very fast (\l{constant time}). For read-only access,
-    an alternative syntax is to use at():
+    Because QList is implemented as an array of pointers for types
+    that are larger than a pointer or are not movable, this operation
+    requires (\l{Algorithmic Complexity}{constant time}). For read-only
+    access, an alternative syntax is to use at():
 
     \snippet code/src_corelib_tools_qlistdata.cpp 3
 
@@ -417,10 +433,10 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 4
 
-    Inserting and removing items at either ends of the list is very
-    fast (\l{constant time} in most cases), because QList
-    preallocates extra space on both sides of its internal buffer to
-    allow for fast growth at both ends of the list.
+    Inserting and removing items at either end of the list is very
+    fast (\l{Algorithmic Complexity}{constant time} in most cases),
+    because QList preallocates extra space on both sides of its
+    internal buffer to allow for fast growth at both ends of the list.
 
     If you want to find all occurrences of a particular value in a
     list, use indexOf() or lastIndexOf(). The former searches forward
@@ -481,6 +497,11 @@ void **QListData::erase(void **xi)
     \l{QStringList::removeDuplicates()}{removeDuplicates},
     \l{QStringList::sort()}{sort}.
 
+    \section1 More Information on Using Qt Containers
+
+    For a detailed discussion comparing Qt containers with each other and
+    with STL containers, see \l {Understand the Qt Containers}.
+
     \sa QListIterator, QMutableListIterator, QLinkedList, QVector
 */
 
@@ -512,10 +533,11 @@ void **QListData::erase(void **xi)
 
     Constructs a copy of \a other.
 
-    This operation takes \l{constant time}, because QList is
-    \l{implicitly shared}. This makes returning a QList from a
-    function very fast. If a shared instance is modified, it will be
-    copied (copy-on-write), and that takes \l{linear time}.
+    This operation takes \l{Algorithmic Complexity}{constant time},
+    because QList is \l{implicitly shared}. This makes returning a
+    QList from a function very fast. If a shared instance is modified,
+    it will be copied (copy-on-write), and that takes
+    \l{Algorithmic Complexity}{linear time}.
 
     \sa operator=()
 */
@@ -700,7 +722,7 @@ void **QListData::erase(void **xi)
     Returns the item at index position \a i in the list. \a i must be
     a valid index position in the list (i.e., 0 <= \a i < size()).
 
-    This function is very fast (\l{constant time}).
+    This function is very fast (\l{Algorithmic Complexity}{constant time}).
 
     \sa value(), operator[]()
 */
@@ -713,8 +735,8 @@ void **QListData::erase(void **xi)
 
     If this function is called on a list that is currently being shared, it
     will trigger a copy of all elements. Otherwise, this function runs in
-    \l{constant time}. If you do not want to modify the list you should use
-    QList::at().
+    \l{Algorithmic Complexity}{constant time}. If you do not want to modify
+    the list you should use QList::at().
 
     \sa at(), value()
 */
@@ -723,7 +745,7 @@ void **QListData::erase(void **xi)
 
     \overload
 
-    Same as at(). This function runs in \l{constant time}.
+    Same as at(). This function runs in \l{Algorithmic Complexity}{constant time}.
 */
 
 /*! \fn QList::reserve(int alloc)
@@ -749,9 +771,9 @@ void **QListData::erase(void **xi)
     This is the same as list.insert(size(), \a value).
 
     If this list is not shared, this operation is typically
-    very fast (amortized \l{constant time}), because QList
-    preallocates extra space on both sides of its internal
-    buffer to allow for fast growth at both ends of the list.
+    very fast (amortized \l{Algorithmic Complexity}{constant time}),
+    because QList preallocates extra space on both sides of its
+    internal buffer to allow for fast growth at both ends of the list.
 
     \sa operator<<(), prepend(), insert()
 */
@@ -777,9 +799,9 @@ void **QListData::erase(void **xi)
     This is the same as list.insert(0, \a value).
 
     If this list is not shared, this operation is typically
-    very fast (amortized \l{constant time}), because QList
-    preallocates extra space on both sides of its internal
-    buffer to allow for fast growth at both ends of the list.
+    very fast (amortized \l{Algorithmic Complexity}{constant time}),
+    because QList preallocates extra space on both sides of its
+    internal buffer to allow for fast growth at both ends of the list.
 
     \sa append(), insert()
 */
@@ -870,7 +892,8 @@ void **QListData::erase(void **xi)
     same as takeAt(0). This function assumes the list is not empty. To
     avoid failure, call isEmpty() before calling this function.
 
-    If this list is not shared, this operation takes \l{constant time}.
+    If this list is not shared, this operation takes
+    \l {Algorithmic Complexity}{constant time}.
 
     If you don't use the return value, removeFirst() is more
     efficient.
@@ -885,7 +908,8 @@ void **QListData::erase(void **xi)
     not empty. To avoid failure, call isEmpty() before calling this
     function.
 
-    If this list is not shared, this operation takes \l{constant time}.
+    If this list is not shared, this operation takes
+    \l {Algorithmic Complexity}{constant time}.
 
     If you don't use the return value, removeLast() is more
     efficient.
