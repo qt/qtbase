@@ -479,34 +479,34 @@ void tst_QAtomicInt::testAndSet_data()
     QTest::addColumn<int>("value");
     QTest::addColumn<int>("expected");
     QTest::addColumn<int>("newval");
-    QTest::addColumn<int>("result");
+    QTest::addColumn<bool>("result");
 
     // these should succeed
-    QTest::newRow("success0") <<         0 <<         0 <<         0 << 1;
-    QTest::newRow("success1") <<         0 <<         0 <<         1 << 1;
-    QTest::newRow("success2") <<         0 <<         0 <<        -1 << 1;
-    QTest::newRow("success3") <<         1 <<         1 <<         0 << 1;
-    QTest::newRow("success4") <<         1 <<         1 <<         1 << 1;
-    QTest::newRow("success5") <<         1 <<         1 <<        -1 << 1;
-    QTest::newRow("success6") <<        -1 <<        -1 <<         0 << 1;
-    QTest::newRow("success7") <<        -1 <<        -1 <<         1 << 1;
-    QTest::newRow("success8") <<        -1 <<        -1 <<        -1 << 1;
-    QTest::newRow("success9") << INT_MIN+1 << INT_MIN+1 << INT_MIN+1 << 1;
-    QTest::newRow("successA") << INT_MIN+1 << INT_MIN+1 <<         1 << 1;
-    QTest::newRow("successB") << INT_MIN+1 << INT_MIN+1 <<        -1 << 1;
-    QTest::newRow("successC") << INT_MAX   << INT_MAX   << INT_MAX   << 1;
-    QTest::newRow("successD") << INT_MAX   << INT_MAX   <<         1 << 1;
-    QTest::newRow("successE") << INT_MAX   << INT_MAX   <<        -1 << 1;
+    QTest::newRow("success0") <<         0 <<         0 <<         0 << true;
+    QTest::newRow("success1") <<         0 <<         0 <<         1 << true;
+    QTest::newRow("success2") <<         0 <<         0 <<        -1 << true;
+    QTest::newRow("success3") <<         1 <<         1 <<         0 << true;
+    QTest::newRow("success4") <<         1 <<         1 <<         1 << true;
+    QTest::newRow("success5") <<         1 <<         1 <<        -1 << true;
+    QTest::newRow("success6") <<        -1 <<        -1 <<         0 << true;
+    QTest::newRow("success7") <<        -1 <<        -1 <<         1 << true;
+    QTest::newRow("success8") <<        -1 <<        -1 <<        -1 << true;
+    QTest::newRow("success9") << INT_MIN+1 << INT_MIN+1 << INT_MIN+1 << true;
+    QTest::newRow("successA") << INT_MIN+1 << INT_MIN+1 <<         1 << true;
+    QTest::newRow("successB") << INT_MIN+1 << INT_MIN+1 <<        -1 << true;
+    QTest::newRow("successC") << INT_MAX   << INT_MAX   << INT_MAX   << true;
+    QTest::newRow("successD") << INT_MAX   << INT_MAX   <<         1 << true;
+    QTest::newRow("successE") << INT_MAX   << INT_MAX   <<        -1 << true;
 
     // these should fail
-    QTest::newRow("failure0") <<       0   <<       1   <<        ~0 << 0;
-    QTest::newRow("failure1") <<       0   <<      -1   <<        ~0 << 0;
-    QTest::newRow("failure2") <<       1   <<       0   <<        ~0 << 0;
-    QTest::newRow("failure3") <<      -1   <<       0   <<        ~0 << 0;
-    QTest::newRow("failure4") <<       1   <<      -1   <<        ~0 << 0;
-    QTest::newRow("failure5") <<      -1   <<       1   <<        ~0 << 0;
-    QTest::newRow("failure6") << INT_MIN+1 << INT_MAX   <<        ~0 << 0;
-    QTest::newRow("failure7") << INT_MAX   << INT_MIN+1 <<        ~0 << 0;
+    QTest::newRow("failure0") <<       0   <<       1   <<        ~0 << false;
+    QTest::newRow("failure1") <<       0   <<      -1   <<        ~0 << false;
+    QTest::newRow("failure2") <<       1   <<       0   <<        ~0 << false;
+    QTest::newRow("failure3") <<      -1   <<       0   <<        ~0 << false;
+    QTest::newRow("failure4") <<       1   <<      -1   <<        ~0 << false;
+    QTest::newRow("failure5") <<      -1   <<       1   <<        ~0 << false;
+    QTest::newRow("failure6") << INT_MIN+1 << INT_MAX   <<        ~0 << false;
+    QTest::newRow("failure7") << INT_MAX   << INT_MIN+1 <<        ~0 << false;
 }
 
 void tst_QAtomicInt::testAndSet()
@@ -517,26 +517,26 @@ void tst_QAtomicInt::testAndSet()
 
     {
         QAtomicInt atomic = value;
-        QTEST(atomic.testAndSetRelaxed(expected, newval) ? 1 : 0, "result");
+        QTEST(atomic.testAndSetRelaxed(expected, newval), "result");
     }
 
     {
         QAtomicInt atomic = value;
-        QTEST(atomic.testAndSetAcquire(expected, newval) ? 1 : 0, "result");
+        QTEST(atomic.testAndSetAcquire(expected, newval), "result");
     }
 
     {
         QAtomicInt atomic = value;
-        QTEST(atomic.testAndSetRelease(expected, newval) ? 1 : 0, "result");
+        QTEST(atomic.testAndSetRelease(expected, newval), "result");
     }
 
     {
         QAtomicInt atomic = value;
-        QTEST(atomic.testAndSetOrdered(expected, newval) ? 1 : 0, "result");
+        QTEST(atomic.testAndSetOrdered(expected, newval), "result");
     }
 
 #ifdef Q_ATOMIC_INT32_IS_SUPPORTED
-    QFETCH(int, result);
+    QFETCH(bool, result);
     // the new implementation has the version that loads the current value
 
     {

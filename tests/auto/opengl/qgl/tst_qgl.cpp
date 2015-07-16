@@ -2115,25 +2115,25 @@ void tst_QGL::qglContextDefaultBindTexture()
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     // Make sure the texture IDs returned are valid:
-    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_TRUE);
-    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_TRUE);
+    QCOMPARE(funcs->glIsTexture(boundImageTextureId), GLboolean(GL_TRUE));
+    QCOMPARE(funcs->glIsTexture(boundPixmapTextureId), GLboolean(GL_TRUE));
 
     // Make sure the textures are still valid after we delete the image/pixmap:
     // Also check that although the textures are left intact, the cache entries are removed:
     delete boundImage;
     boundImage = 0;
-    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_TRUE);
+    QCOMPARE(funcs->glIsTexture(boundImageTextureId), GLboolean(GL_TRUE));
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
     delete boundPixmap;
     boundPixmap = 0;
-    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_TRUE);
+    QCOMPARE(funcs->glIsTexture(boundPixmapTextureId), GLboolean(GL_TRUE));
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
 
     // Finally, make sure QGLContext::deleteTexture deletes the texture IDs:
     ctx->deleteTexture(boundImageTextureId);
     ctx->deleteTexture(boundPixmapTextureId);
-    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_FALSE);
-    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_FALSE);
+    QCOMPARE(funcs->glIsTexture(boundImageTextureId), GLboolean(GL_FALSE));
+    QCOMPARE(funcs->glIsTexture(boundPixmapTextureId), GLboolean(GL_FALSE));
 }
 #endif
 
