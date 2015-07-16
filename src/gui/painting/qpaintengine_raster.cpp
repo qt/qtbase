@@ -4132,7 +4132,7 @@ class QGradientCache
     struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
-            stops(s), opacity(op), interpolationMode(mode) {}
+            stops(qMove(s)), opacity(op), interpolationMode(mode) {}
         QRgba64 buffer[GRADIENT_STOPTABLE_SIZE];
         QGradientStops stops;
         int opacity;

@@ -59,7 +59,7 @@ class QOpenGL2GradientCache : public QOpenGLSharedResource
     struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, qreal op, QGradient::InterpolationMode mode) :
-            stops(s), opacity(op), interpolationMode(mode) {}
+            stops(qMove(s)), opacity(op), interpolationMode(mode) {}
 
         GLuint texId;
         QGradientStops stops;

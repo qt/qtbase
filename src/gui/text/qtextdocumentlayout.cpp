@@ -467,9 +467,9 @@ public:
     void drawFlow(const QPointF &offset, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &context,
                   QTextFrame::Iterator it, const QList<QTextFrame *> &floats, QTextBlock *cursorBlockNeedingRepaint) const;
     void drawBlock(const QPointF &offset, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &context,
-                   QTextBlock bl, bool inRootFrame) const;
+                   const QTextBlock &bl, bool inRootFrame) const;
     void drawListItem(const QPointF &offset, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &context,
-                      QTextBlock bl, const QTextCharFormat *selectionFormat) const;
+                      const QTextBlock &bl, const QTextCharFormat *selectionFormat) const;
     void drawTableCell(const QRectF &cellRect, QPainter *painter, const QAbstractTextDocumentLayout::PaintContext &cell_context,
                        QTextTable *table, QTextTableData *td, int r, int c,
                        QTextBlock *cursorBlockNeedingRepaint, QPointF *cursorBlockOffset) const;
@@ -487,7 +487,7 @@ public:
     HitPoint hitTest(QTextFrame::Iterator it, HitPoint hit, const QFixedPoint &p,
                      int *position, QTextLayout **l, Qt::HitTestAccuracy accuracy) const;
     HitPoint hitTest(QTextTable *table, const QFixedPoint &point, int *position, QTextLayout **l, Qt::HitTestAccuracy accuracy) const;
-    HitPoint hitTest(QTextBlock bl, const QFixedPoint &point, int *position, QTextLayout **l, Qt::HitTestAccuracy accuracy) const;
+    HitPoint hitTest(const QTextBlock &bl, const QFixedPoint &point, int *position, QTextLayout **l, Qt::HitTestAccuracy accuracy) const;
 
     QTextLayoutStruct layoutCell(QTextTable *t, const QTextTableCell &cell, QFixed width,
                                  int layoutFrom, int layoutTo, QTextTableData *tableData, QFixed absoluteTableY,
@@ -749,7 +749,7 @@ QTextDocumentLayoutPrivate::hitTest(QTextTable *table, const QFixedPoint &point,
 }
 
 QTextDocumentLayoutPrivate::HitPoint
-QTextDocumentLayoutPrivate::hitTest(QTextBlock bl, const QFixedPoint &point, int *position, QTextLayout **l,
+QTextDocumentLayoutPrivate::hitTest(const QTextBlock &bl, const QFixedPoint &point, int *position, QTextLayout **l,
                                     Qt::HitTestAccuracy accuracy) const
 {
     QTextLayout *tl = bl.layout();
@@ -1285,7 +1285,7 @@ void QTextDocumentLayoutPrivate::drawFlow(const QPointF &offset, QPainter *paint
 
 void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *painter,
                                            const QAbstractTextDocumentLayout::PaintContext &context,
-                                           QTextBlock bl, bool inRootFrame) const
+                                           const QTextBlock &bl, bool inRootFrame) const
 {
     const QTextLayout *tl = bl.layout();
     QRectF r = tl->boundingRect();
@@ -1379,7 +1379,7 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
 
 void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *painter,
                                               const QAbstractTextDocumentLayout::PaintContext &context,
-                                              QTextBlock bl, const QTextCharFormat *selectionFormat) const
+                                              const QTextBlock &bl, const QTextCharFormat *selectionFormat) const
 {
     Q_Q(const QTextDocumentLayout);
     const QTextBlockFormat blockFormat = bl.blockFormat();

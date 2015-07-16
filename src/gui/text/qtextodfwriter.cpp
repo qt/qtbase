@@ -396,7 +396,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
     writer.writeEndElement(); // frame
 }
 
-void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, QSet<int> formats) const
+void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &formats) const
 {
     writer.writeStartElement(officeNS, QString::fromLatin1("automatic-styles"));
     QVector<QTextFormat> allStyles = m_document->allFormats();
