@@ -409,14 +409,6 @@ namespace QTest
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
 
-    // NokiaX86 and RVCT do not like implicitly comparing bool with int
-    inline bool qCompare(bool const &t1, int const &t2,
-                    const char *actual, const char *expected, const char *file, int line)
-    {
-        return qCompare(int(t1), t2, actual, expected, file, line);
-    }
-
-
     template <class T>
     inline bool qTest(const T& actual, const char *elementName, const char *actualStr,
                      const char *expected, const char *file, int line)
