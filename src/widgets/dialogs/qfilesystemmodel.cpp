@@ -1197,7 +1197,9 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     d->sortOrder = order;
 
     QModelIndexList newList;
-    for (int i = 0; i < nodeCount; ++i) {
+    const int numOldNodes = oldNodes.size();
+    newList.reserve(numOldNodes);
+    for (int i = 0; i < numOldNodes; ++i) {
         const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &oldNode = oldNodes.at(i);
         newList.append(d->index(oldNode.first, oldNode.second));
     }
