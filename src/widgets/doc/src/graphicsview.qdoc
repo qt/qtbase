@@ -493,9 +493,6 @@
           but Graphics View currently doesn't support the Qt::Sheet and
           Qt::Drawer flags that are common on OS X.
 
-          The capabilities of QGraphicsWidget are expected to grow depending
-          on community feedback.
-
         \section3 QGraphicsLayout
 
           QGraphicsLayout is part of a second-generation layout framework

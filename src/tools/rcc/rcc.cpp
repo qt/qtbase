@@ -693,7 +693,8 @@ QStringList RCCResourceLibrary::dataFiles() const
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
-            ret.append(child->m_fileInfo.filePath());
+            else
+                ret.append(child->m_fileInfo.filePath());
         }
     }
     return ret;

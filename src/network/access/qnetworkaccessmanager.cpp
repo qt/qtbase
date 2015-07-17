@@ -472,11 +472,11 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
         // the QNetworkSession's signals
         connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
                 SLOT(_q_onlineStateChanged(bool)));
-        // we would need all active configurations to check for
-        // d->networkConfigurationManager.isOnline(), which is asynchronous
-        // and potentially expensive. We can just check the configuration here
-        d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
     }
+    // we would need all active configurations to check for
+    // d->networkConfigurationManager.isOnline(), which is asynchronous
+    // and potentially expensive. We can just check the configuration here
+    d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
 #endif
 }
 
@@ -946,6 +946,7 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility accessible)
 {
     Q_D(QNetworkAccessManager);
+    d->defaultAccessControl = false;
 
     if (d->networkAccessible != accessible) {
         NetworkAccessibility previous = networkAccessible();
@@ -964,7 +965,6 @@ void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkA
 QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccessible() const
 {
     Q_D(const QNetworkAccessManager);
-
     if (d->networkSessionRequired) {
         QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
         if (networkSession) {
@@ -975,7 +975,13 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
                 return NotAccessible;
         } else {
             // Network accessibility is either disabled or unknown.
-            return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
+            if (d->defaultAccessControl) {
+                if (d->online)
+                    return d->networkAccessible;
+                else
+                    return NotAccessible;
+            }
+            return (d->networkAccessible);
         }
     } else {
         if (d->online)
@@ -1568,7 +1574,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
     if (!networkSessionStrongRef) {
         online = false;
 
-        if (networkAccessible == QNetworkAccessManager::NotAccessible)
+        if (networkAccessible == QNetworkAccessManager::NotAccessible || !online)
             emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
         else
             emit q->networkAccessibleChanged(QNetworkAccessManager::UnknownAccessibility);
@@ -1616,11 +1622,14 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;
-            emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
+            networkAccessible = QNetworkAccessManager::NotAccessible;
+            emit q->networkAccessibleChanged(networkAccessible);
         }
     } else {
         if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
             online = true;
+            if (defaultAccessControl)
+                networkAccessible = QNetworkAccessManager::Accessible;
             emit q->networkAccessibleChanged(networkAccessible);
         }
     }

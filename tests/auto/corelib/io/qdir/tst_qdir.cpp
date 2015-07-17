@@ -470,21 +470,22 @@ void tst_QDir::removeRecursivelyFailure()
 #ifdef Q_OS_UNIX
     QFile dirAsFile(path); // yay, I have to use QFile to change a dir's permissions...
     QVERIFY(dirAsFile.setPermissions(QFile::Permissions(0))); // no permissions
-#else
-    QVERIFY(file.setPermissions(QFile::ReadOwner));
-#endif
+
     QVERIFY(!QDir().rmdir(path));
     QDir dir(path);
     QVERIFY(!dir.removeRecursively()); // didn't work
     QVERIFY(dir.exists()); // still exists
 
-#ifdef Q_OS_UNIX
     QVERIFY(dirAsFile.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner)));
-#else
-    QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
-#endif
     QVERIFY(dir.removeRecursively());
     QVERIFY(!dir.exists());
+#else // Q_OS_UNIX
+    QVERIFY(file.setPermissions(QFile::ReadOwner));
+    QVERIFY(!QDir().rmdir(path));
+    QDir dir(path);
+    QVERIFY(dir.removeRecursively());
+    QVERIFY(!dir.exists());
+#endif // !Q_OS_UNIX
 }
 
 void tst_QDir::removeRecursivelySymlink()

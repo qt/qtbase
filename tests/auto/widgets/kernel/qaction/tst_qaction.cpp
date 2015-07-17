@@ -69,6 +69,7 @@ private slots:
     void task200823_tooltip();
     void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
+    void repeat();
 
 private:
     int m_lastEventType;
@@ -378,6 +379,43 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
     // check that both the group and the action have emitted the signal
     QCOMPARE(actionGroupSpy.count(), 1);
     QCOMPARE(actionSpy.count(), 1);
+}
+
+void tst_QAction::repeat()
+{
+    QWidget *wid = m_tstWidget;
+    QAction act(wid);
+    wid->addAction(&act);
+    act.setShortcut(QKeySequence(Qt::Key_F));
+    QSignalSpy spy(&act, SIGNAL(triggered()));
+
+    act.setAutoRepeat(true);
+    QTest::keyPress(wid, Qt::Key_F);
+    QTest::keyRelease(wid, Qt::Key_F);
+    QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    QTest::keyPress(wid, Qt::Key_F);
+    // repeat event
+    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(wid, Qt::Key_F);
+    QCOMPARE(spy.count(), 3);
+
+    spy.clear();
+    act.setAutoRepeat(false);
+    QTest::keyPress(wid, Qt::Key_F);
+    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(wid, Qt::Key_F);
+    QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    act.setAutoRepeat(true);
+    QTest::keyPress(wid, Qt::Key_F);
+    QTest::simulateEvent(wid, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
+    QTest::keyRelease(wid, Qt::Key_F);
+    QCOMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QAction)

@@ -215,7 +215,8 @@ bool QSaveFile::open(OpenMode mode)
             d->finalFileName = existingFile.filePath();
     }
 
-    d->fileEngine = new QTemporaryFileEngine(d->finalFileName, 0666);
+    d->fileEngine = new QTemporaryFileEngine;
+    static_cast<QTemporaryFileEngine *>(d->fileEngine)->initialize(d->finalFileName, 0666);
     // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (!d->fileEngine->open(mode | QIODevice::Unbuffered)) {
         QFileDevice::FileError err = d->fileEngine->error();

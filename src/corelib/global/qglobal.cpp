@@ -2262,7 +2262,8 @@ static bool readEtcRedHatRelease(QUnixOSVersion &v)
     int releaseIndex = line.indexOf(keyword);
     v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(QLatin1Char(' '));
     int spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
-    v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword), spaceIndex > -1 ? spaceIndex - releaseIndex - strlen(keyword) : -1));
+    v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword),
+                                                    spaceIndex > -1 ? spaceIndex - releaseIndex - int(strlen(keyword)) : -1));
     return true;
 }
 

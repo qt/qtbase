@@ -202,9 +202,8 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     to draw every one, QDial will skip notches to try and draw a uniform
     set (e.g. by drawing every second or third notch).
 
-    Like the slider, the dial makes the QAbstractSlider functions
-    setValue(), addLine(), subtractLine(), addPage() and
-    subtractPage() available as slots.
+    Like the slider, the dial makes the QAbstractSlider function setValue()
+    available as a slot.
 
     The dial's keyboard interface is fairly simple: The
     \uicontrol{left}/\uicontrol{up} and \uicontrol{right}/\uicontrol{down} arrow keys adjust

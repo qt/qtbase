@@ -215,6 +215,8 @@ void tst_QTemporaryDir::autoRemove()
         QFile file(dirName + "/dir1/file");
         QVERIFY(file.open(QIODevice::WriteOnly));
         QCOMPARE(file.write("Hello"), 5LL);
+        file.close();
+        QVERIFY(file.setPermissions(QFile::ReadUser));
     }
 #ifdef Q_OS_WIN
     QTRY_VERIFY(!QDir(dirName).exists());

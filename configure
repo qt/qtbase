@@ -682,6 +682,9 @@ CFG_XCB=auto
 CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
+CFG_EGLFS_BRCM=no
+CFG_EGLFS_MALI=no
+CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
@@ -2697,7 +2700,7 @@ MacOS/iOS options:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
-    -secure-transport .. Use SecureTransport instead of OpenSSL (requires -no-openssl)
+    -securetransport ... Use SecureTransport instead of OpenSSL (requires -no-openssl)
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
                          one of the available SDKs as listed by 'xcodebuild -showsdks'.
@@ -2842,7 +2845,7 @@ if [ -z "$PLATFORM" ]; then
      Linux:*)
         PLATFORM=linux-g++
         PLATFORM_NOTES="
-            - Also available for Linux: linux-kcc linux-icc linux-cxx
+            - Also available for Linux: linux-clang linux-kcc linux-icc linux-cxx
         "
         ;;
      SunOS:5*)
@@ -4236,7 +4239,7 @@ compileTestWithPkgConfig()
         libdir_mod=`echo $libdir_raw | sed -e 's,^-L,,g' -e 's, -L, ,g'`
         has_used_pkg_config="yes"
     fi
-    if compileTest $configtest $configtest_name $libdir_raw $incdir_raw $libs $cflags "$@"; then
+    if compileTest $configtest "$configtest_name" $libdir_raw $incdir_raw $libs $cflags "$@"; then
         if [ "$has_used_pkg_config" = "yes" ] && [ -n "$qmake_postfix" ]; then
             QMakeVar set QMAKE_INCDIR_$qmake_postfix "`shellArgumentListToQMakeList $incdir_mod`"
             QMakeVar set QMAKE_LIBDIR_$qmake_postfix "`shellArgumentListToQMakeList $libdir_mod`"

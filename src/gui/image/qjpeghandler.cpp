@@ -710,6 +710,7 @@ public:
     enum State {
         Ready,
         ReadHeader,
+        ReadingEnd,
         Error
     };
 
@@ -958,7 +959,7 @@ bool QJpegHandlerPrivate::read(QImage *image)
             for (int i = 0; i < readTexts.size()-1; i+=2)
                 image->setText(readTexts.at(i), readTexts.at(i+1));
 
-            state = Ready;
+            state = ReadingEnd;
             return true;
         }
 
@@ -1006,7 +1007,7 @@ bool QJpegHandler::canRead() const
     if(d->state == QJpegHandlerPrivate::Ready && !canRead(device()))
         return false;
 
-    if (d->state != QJpegHandlerPrivate::Error) {
+    if (d->state != QJpegHandlerPrivate::Error && d->state != QJpegHandlerPrivate::ReadingEnd) {
         setFormat("jpeg");
         return true;
     }

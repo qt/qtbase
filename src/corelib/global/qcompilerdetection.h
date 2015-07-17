@@ -97,7 +97,7 @@
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
-#    define Q_CC_INTEL
+#    define Q_CC_INTEL  __INTEL_COMPILER
 #  endif
 
 /* only defined for MSVC since that's the only compiler that actually optimizes for this */
@@ -564,6 +564,16 @@
 #      endif
 #      define Q_COMPILER_UDL
 #    endif
+#    ifdef _MSC_VER
+#      if _MSC_VER == 1700
+//       <initializer_list> is missing with MSVC 2012 (it's present in 2010, 2013 and up)
+#        undef Q_COMPILER_INITIALIZER_LISTS
+#      endif
+#      if _MSC_VER < 1900
+//       ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
+#        undef Q_COMPILER_UNICODE_STRINGS
+#      endif
+#    endif
 #  endif
 #endif
 
@@ -890,7 +900,8 @@
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_REF_QUALIFIERS
 #      define Q_COMPILER_THREAD_LOCAL
-#      define Q_COMPILER_THREADSAFE_STATICS
+// Broken, see QTBUG-47224 and https://connect.microsoft.com/VisualStudio/feedback/details/1549785
+//#      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UDL
 #      define Q_COMPILER_UNICODE_STRINGS
 // Uniform initialization is not working yet -- build errors with QUuid

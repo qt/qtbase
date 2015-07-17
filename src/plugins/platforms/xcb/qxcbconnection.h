@@ -194,6 +194,7 @@ namespace QXcbAtom {
         _KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
 
         _KDE_NET_WM_FRAME_STRUT,
+        _NET_FRAME_EXTENTS,
 
         _NET_STARTUP_INFO,
         _NET_STARTUP_INFO_BEGIN,
@@ -402,6 +403,7 @@ public:
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
     xcb_window_t rootWindow();
+    xcb_window_t clientLeader();
 
     bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
     xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
@@ -641,6 +643,7 @@ private:
 
     QXcbWindow *m_focusWindow;
 
+    xcb_window_t m_clientLeader;
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker;
     QXcbGlIntegration *m_glIntegration;

@@ -623,7 +623,7 @@ void QXcbWindow::create()
 
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
-    xcb_window_t leader = platformScreen->clientLeader();
+    xcb_window_t leader = connection()->clientLeader();
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
                                    1, &leader));
@@ -746,6 +746,22 @@ void QXcbWindow::setGeometry(const QRect &rect)
 QMargins QXcbWindow::frameMargins() const
 {
     if (m_dirtyFrameMargins) {
+        if (connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_FRAME_EXTENTS))) {
+            xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, m_window,
+                                                                atom(QXcbAtom::_NET_FRAME_EXTENTS), XCB_ATOM_CARDINAL, 0, 4);
+            QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
+                xcb_get_property_reply(xcb_connection(), cookie, NULL));
+            if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 4) {
+                quint32 *data = (quint32 *)xcb_get_property_value(reply.data());
+                // _NET_FRAME_EXTENTS format is left, right, top, bottom
+                m_frameMargins = QMargins(data[0], data[2], data[1], data[3]);
+                m_dirtyFrameMargins = false;
+                return m_frameMargins;
+            }
+        }
+
+        // _NET_FRAME_EXTENTS property is not available, so
+        // walk up the window tree to get the frame parent
         xcb_window_t window = m_window;
         xcb_window_t parent = m_window;
 
@@ -859,7 +875,7 @@ void QXcbWindow::show()
             // Default to client leader if there is no transient parent, else modal dialogs can
             // be hidden by their parents.
             if (!transientXcbParent)
-                transientXcbParent = xcbScreen()->clientLeader();
+                transientXcbParent = connection()->clientLeader();
             if (transientXcbParent) { // ICCCM 4.1.2.6
                 Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
@@ -2446,6 +2462,8 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             m_windowState = newState;
         }
         return;
+    } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
+        m_dirtyFrameMargins = true;
     } else if (event->atom == atom(QXcbAtom::_NET_WORKAREA) && xcbScreen() && event->window == xcbScreen()->root()) {
         xcbScreen()->updateGeometry(event->time);
     }

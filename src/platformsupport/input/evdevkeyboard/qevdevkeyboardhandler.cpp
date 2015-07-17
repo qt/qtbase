@@ -379,17 +379,20 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         }
 
         if (!skip) {
-            qCDebug(qLcEvdevKeyMap, "Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode & ~modmask, (qtcode & modmask));
-            //If NumLockOff and keypad key pressed remap event sent
-            if (!m_locks[1] &&
-                 (qtcode & Qt::KeypadModifier) &&
+            // Up until now qtcode contained both the key and modifiers. Split it.
+            Qt::KeyboardModifiers qtmods = Qt::KeyboardModifiers(qtcode & modmask);
+            qtcode &= ~modmask;
+
+            qCDebug(qLcEvdevKeyMap, "Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode, int(qtmods));
+
+            // If NumLockOff and keypad key pressed remap event sent
+            if (!m_locks[1] && (qtmods & Qt::KeypadModifier) &&
                  keycode >= 71 &&
                  keycode <= 83 &&
                  keycode != 74 &&
                  keycode != 78) {
 
                 unicode = 0xffff;
-                int oldMask = (qtcode & modmask);
                 switch (keycode) {
                 case 71: //7 --> Home
                     qtcode = Qt::Key_Home;
@@ -425,11 +428,14 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
                     qtcode = Qt::Key_Delete;
                     break;
                 }
-                qtcode ^= oldMask;
             }
 
-            // send the result to the server
-            processKeyEvent(keycode, unicode, qtcode & ~modmask, Qt::KeyboardModifiers(qtcode & modmask), pressed, autorepeat);
+            // Map SHIFT + Tab to SHIFT + Backtab, QShortcutMap knows about this translation
+            if (qtcode == Qt::Key_Tab && (qtmods & Qt::ShiftModifier) == Qt::ShiftModifier)
+                qtcode = Qt::Key_Backtab;
+
+            // Generate the QPA event.
+            processKeyEvent(keycode, unicode, qtcode, qtmods, pressed, autorepeat);
         }
     }
     return result;

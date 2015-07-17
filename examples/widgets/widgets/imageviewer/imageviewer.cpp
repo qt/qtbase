@@ -69,7 +69,9 @@ ImageViewer::ImageViewer()
 
 bool ImageViewer::loadFile(const QString &fileName)
 {
-    QImage image(fileName);
+    QImageReader reader(fileName);
+    reader.setAutoTransform(true);
+    const QImage image = reader.read();
     if (image.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot load %1.").arg(QDir::toNativeSeparators(fileName)));

@@ -306,6 +306,7 @@ void tst_QListView::init()
 
 void tst_QListView::cleanup()
 {
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 
@@ -791,14 +792,31 @@ void tst_QListView::hideFirstRow()
     QTest::qWait(10);
 }
 
+static int modelIndexCount(const QAbstractItemView *view)
+{
+    QBitArray ba;
+    for (int y = 0, height = view->height(); y < height; ++y) {
+        const QModelIndex idx = view->indexAt( QPoint(1, y) );
+        if (!idx.isValid())
+            break;
+        if (idx.row() >= ba.size())
+            ba.resize(idx.row() + 1);
+        ba.setBit(idx.row(), true);
+    }
+    return ba.size();
+}
+
 void tst_QListView::batchedMode()
 {
+    const int rowCount = 3;
+
     QStringList items;
-    for (int i=0; i <3; ++i)
-        items << "item";
+    for (int i = 0; i < rowCount; ++i)
+        items << QLatin1String("item ") + QString::number(i);
     QStringListModel model(items);
 
     QListView view;
+    view.setWindowTitle(QTest::currentTestFunction());
     view.setModel(&model);
     view.setUniformItemSizes(true);
     view.setViewMode(QListView::ListMode);
@@ -807,22 +825,8 @@ void tst_QListView::batchedMode()
     view.resize(200,400);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTest::qWait(100);
 
-#if defined(Q_OS_WINCE)
-    QTest::qWait(2000);
-#endif
-    QBitArray ba;
-    for (int y = 0; y < view.height(); ++y) {
-        QModelIndex idx = view.indexAt( QPoint(1, y) );
-        if (!idx.isValid())
-            break;
-        if (idx.row() >= ba.size())
-            ba.resize(idx.row() + 1);
-        ba.setBit(idx.row(), true);
-    }
-    QCOMPARE(ba.size(), 3);
-
+    QTRY_COMPARE(modelIndexCount(&view), rowCount);
 
     // Test the dynamic listview too.
     view.setViewMode(QListView::IconMode);
@@ -830,22 +834,7 @@ void tst_QListView::batchedMode()
     view.setFlow(QListView::TopToBottom);
     view.setBatchSize(2);
 
-#if !defined(Q_OS_WINCE)
-    QTest::qWait(100);
-#else
-    QTest::qWait(2000);
-#endif
-
-    ba.clear();
-    for (int y = 0; y < view.height(); ++y) {
-        QModelIndex idx = view.indexAt( QPoint(1, y) );
-        if (!idx.isValid())
-            break;
-        if (idx.row() >= ba.size())
-            ba.resize(idx.row() + 1);
-        ba.setBit(idx.row(), true);
-    }
-    QCOMPARE(ba.size(), 3);
+    QTRY_COMPARE(modelIndexCount(&view), rowCount);
 }
 
 void tst_QListView::setCurrentIndex()

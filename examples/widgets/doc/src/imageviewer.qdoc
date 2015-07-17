@@ -124,10 +124,16 @@
 
     \snippet widgets/imageviewer/imageviewer.cpp 2
 
-    In the \c loadFile() function, we check if the file's
-    format is an image format by constructing a QImage which tries to
-    load the image from the file. If the constructor returns a null
-    image, we use a QMessageBox to alert the user.
+    In the \c loadFile() function, we instantiate a QImageReader
+    and enable automatic transformations by calling
+    QImageReader::setAutoTransform(). For files in JPEG format,
+    this ensures that portrait mode images of digital cameras are shown
+    correctly by applying the appropriate orientation read from the
+    EXIF meta data stored in the image file.
+
+    We then load the image using QImageReader::read(). If this returns
+    a null image, indicating that the file is not an image file,
+    we use a QMessageBox to alert the user.
 
     The QMessageBox class provides a modal dialog with a short
     message, an icon, and some buttons. As with QFileDialog the

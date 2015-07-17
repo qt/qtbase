@@ -392,7 +392,7 @@ static bool quitLockRefEnabled = true;
 // GUI apps or when using MinGW due to its globbing.
 static inline bool isArgvModified(int argc, char **argv)
 {
-    if (__argc != argc)
+    if (__argc != argc || !__argv /* wmain() */)
         return true;
     if (__argv == argv)
         return false;

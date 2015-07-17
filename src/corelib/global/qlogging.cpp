@@ -87,6 +87,10 @@
 #  endif
 #endif
 
+#if defined(QT_USE_SLOG2)
+extern char *__progname;
+#endif
+
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
 #  include <sys/syscall.h>
 static long qt_gettid()
@@ -1173,8 +1177,6 @@ void QMessagePattern::setPattern(const QString &pattern)
 #define QT_LOG_CODE 9000
 #endif
 
-extern char *__progname;
-
 static void slog2_default_handler(QtMsgType msgType, const char *message)
 {
     if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
@@ -1357,8 +1359,9 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             } else if (pattern->timeFormat == QLatin1String("boot")) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
-                pattern->timer.elapsed();
-                uint ms = pattern->timer.msecsSinceReference();
+                QElapsedTimer now;
+                now.start();
+                uint ms = now.msecsSinceReference();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (pattern->timeFormat.isEmpty()) {
                 message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
