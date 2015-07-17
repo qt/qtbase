@@ -4142,7 +4142,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     switch (pe) {
 
     case PE_FrameStatusBar: {
-        QRenderRule subRule = renderRule(w->parentWidget(), opt, PseudoElement_Item);
+        QRenderRule subRule = renderRule(w ? w->parentWidget() : Q_NULLPTR, opt, PseudoElement_Item);
         if (subRule.hasDrawable()) {
             subRule.drawRule(p, opt->rect);
             return;
