@@ -122,9 +122,8 @@ private slots:
     void removeFileWhileProcessIsRunning();
     void fileWriterProcess();
     void switchReadChannels();
-#ifdef Q_OS_WIN
     void setWorkingDirectory();
-#endif // Q_OS_WIN
+    void setNonExistentWorkingDirectory();
 #endif // not Q_OS_WINCE
 
     void exitStatus_data();
@@ -2192,18 +2191,41 @@ void tst_QProcess::switchReadChannels()
 #endif
 
 //-----------------------------------------------------------------------------
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#ifndef Q_OS_WINCE
 // Q_OS_WIN - setWorkingDirectory will chdir before starting the process on unices
 // Windows CE does not support working directory logic
 void tst_QProcess::setWorkingDirectory()
 {
     process = new QProcess;
     process->setWorkingDirectory("test");
-    process->start("testSetWorkingDirectory/testSetWorkingDirectory");
-    QVERIFY(process->waitForFinished());
+
+    // use absolute path because on Windows, the executable is relative to the parent's CWD
+    // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
+    process->start(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
+
+    QVERIFY2(process->waitForFinished(), process->errorString().toLocal8Bit());
 
     QByteArray workingDir = process->readAllStandardOutput();
     QCOMPARE(QDir("test").canonicalPath(), QDir(workingDir.constData()).canonicalPath());
+
+    delete process;
+    process = 0;
+}
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::setNonExistentWorkingDirectory()
+{
+    process = new QProcess;
+    process->setWorkingDirectory("this/directory/should/not/exist/for/sure");
+
+    // use absolute path because on Windows, the executable is relative to the parent's CWD
+    // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
+    process->start(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
+    QVERIFY(!process->waitForFinished());
+#ifdef QPROCESS_USE_SPAWN
+    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
+#endif
+    QCOMPARE(int(process->error()), int(QProcess::FailedToStart));
 
     delete process;
     process = 0;

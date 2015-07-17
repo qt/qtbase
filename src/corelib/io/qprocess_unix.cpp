@@ -672,9 +672,9 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     qt_safe_close(childStartedPipe[0]);
 
     // enter the working directory
-    if (workingDir) {
-        if (QT_CHDIR(workingDir) == -1)
-            qWarning("QProcessPrivate::execChild() failed to chdir to %s", workingDir);
+    if (workingDir && QT_CHDIR(workingDir) == -1) {
+        // failed, stop the process
+        goto report_errno;
     }
 
     // this is a virtual call, and it base behavior is to do nothing.
@@ -703,6 +703,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     }
 
     // notify failure
+report_errno:
     QString error = qt_error_string(errno);
 #if defined (QPROCESS_DEBUG)
     fprintf(stderr, "QProcessPrivate::execChild() failed (%s), notifying parent process\n", qPrintable(error));
