@@ -1169,23 +1169,19 @@ QT_WARNING_POP
         CustomFontFileLoader fontFileLoader;
         fontFileLoader.addKey(this, fontData);
 
-        IDWriteFactory *factory = 0;
-        HRESULT hres = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-                                           __uuidof(IDWriteFactory),
-                                           reinterpret_cast<IUnknown **>(&factory));
-        if (FAILED(hres)) {
-            qErrnoWarning(hres, "%s: DWriteCreateFactory failed", __FUNCTION__);
+        QSharedPointer<QWindowsFontEngineData> fontEngineData = sharedFontData();
+        if (!initDirectWrite(fontEngineData.data()))
             return 0;
-        }
 
         IDWriteFontFile *fontFile = 0;
         void *key = this;
 
-        hres = factory->CreateCustomFontFileReference(&key, sizeof(void *),
-                                                      fontFileLoader.loader(), &fontFile);
+        HRESULT hres = fontEngineData->directWriteFactory->CreateCustomFontFileReference(&key,
+                                                                                         sizeof(void *),
+                                                                                         fontFileLoader.loader(),
+                                                                                         &fontFile);
         if (FAILED(hres)) {
             qErrnoWarning(hres, "%s: CreateCustomFontFileReference failed", __FUNCTION__);
-            factory->Release();
             return 0;
         }
 
@@ -1196,30 +1192,31 @@ QT_WARNING_POP
         fontFile->Analyze(&isSupportedFontType, &fontFileType, &fontFaceType, &numberOfFaces);
         if (!isSupportedFontType) {
             fontFile->Release();
-            factory->Release();
             return 0;
         }
 
         IDWriteFontFace *directWriteFontFace = 0;
-        hres = factory->CreateFontFace(fontFaceType, 1, &fontFile, 0, DWRITE_FONT_SIMULATIONS_NONE,
-                                       &directWriteFontFace);
+        hres = fontEngineData->directWriteFactory->CreateFontFace(fontFaceType,
+                                                                  1,
+                                                                  &fontFile,
+                                                                  0,
+                                                                  DWRITE_FONT_SIMULATIONS_NONE,
+                                                                  &directWriteFontFace);
         if (FAILED(hres)) {
             qErrnoWarning(hres, "%s: CreateFontFace failed", __FUNCTION__);
             fontFile->Release();
-            factory->Release();
             return 0;
         }
 
         fontFile->Release();
 
         fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace, pixelSize,
-                                                       sharedFontData());
+                                                       fontEngineData);
 
         // Get font family from font data
         fontEngine->fontDef.family = font.familyName();
 
         directWriteFontFace->Release();
-        factory->Release();
     }
 #endif
 

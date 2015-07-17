@@ -273,9 +273,9 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
     //  that they are doing the right thing. Inverting the arguments in the
     //  instruction does cause a bunch of test failures.
 
-    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
     const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
-    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
+    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8,
+            _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK);
 
     // replace the non-Latin 1 characters in the chunk with question marks
     chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);

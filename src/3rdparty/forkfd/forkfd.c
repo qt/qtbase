@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,8 @@
 #include "forkfd.h"
 
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <sys/wait.h>
 #include <assert.h>
 #include <errno.h>
@@ -38,6 +40,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifdef __linux__
@@ -78,6 +81,12 @@
     do {                      \
         ret = call;           \
     } while (ret == -1 && errno == EINTR)
+
+struct pipe_payload
+{
+    struct forkfd_info info;
+    struct rusage rusage;
+};
 
 typedef struct process_info
 {
@@ -179,33 +188,43 @@ static int isChildReady(pid_t pid, siginfo_t *info)
 }
 #endif
 
-static int tryReaping(pid_t pid, siginfo_t *info)
+static int tryReaping(pid_t pid, struct pipe_payload *payload)
 {
     /* reap the child */
 #ifdef HAVE_WAITID
     if (waitid_works) {
         // we have waitid(2), which fills in siginfo_t for us
-        info->si_pid = 0;
-        return waitid(P_PID, pid, info, WEXITED | WNOHANG) == 0 && info->si_pid == pid;
+        siginfo_t info;
+        info.si_pid = 0;
+        int ret = waitid(P_PID, pid, &info, WEXITED | WNOHANG) == 0 && info.si_pid == pid;
+        if (!ret)
+            return ret;
+
+        payload->info.code = info.si_code;
+        payload->info.status = info.si_status;
+#  ifdef __linux__
+        payload->rusage.ru_utime.tv_sec = info.si_utime / CLOCKS_PER_SEC;
+        payload->rusage.ru_utime.tv_usec = info.si_utime % CLOCKS_PER_SEC;
+        payload->rusage.ru_stime.tv_sec = info.si_stime / CLOCKS_PER_SEC;
+        payload->rusage.ru_stime.tv_usec = info.si_stime % CLOCKS_PER_SEC;
+#  endif
+        return 1;
     }
 #endif
-
     int status;
     if (waitpid(pid, &status, WNOHANG) <= 0)
         return 0;     // child did not change state
 
-    info->si_signo = SIGCHLD;
-    info->si_pid = pid;
     if (WIFEXITED(status)) {
-        info->si_code = CLD_EXITED;
-        info->si_status = WEXITSTATUS(status);
+        payload->info.code = CLD_EXITED;
+        payload->info.status = WEXITSTATUS(status);
     } else if (WIFSIGNALED(status)) {
-        info->si_code = CLD_KILLED;
+        payload->info.code = CLD_KILLED;
 #  ifdef WCOREDUMP
         if (WCOREDUMP(status))
-            info->si_code = CLD_DUMPED;
+            payload->info.code = CLD_DUMPED;
 #  endif
-        info->si_status = WTERMSIG(status);
+        payload->info.status = WTERMSIG(status);
     }
 
     return 1;
@@ -220,10 +239,11 @@ static void freeInfo(Header *header, ProcessInfo *entry)
     assert(header->busyCount >= 0);
 }
 
-static void notifyAndFreeInfo(Header *header, ProcessInfo *entry, siginfo_t *info)
+static void notifyAndFreeInfo(Header *header, ProcessInfo *entry,
+                              const struct pipe_payload *payload)
 {
     ssize_t ret;
-    EINTR_LOOP(ret, write(entry->deathPipe, info, sizeof(*info)));
+    EINTR_LOOP(ret, write(entry->deathPipe, payload, sizeof(*payload)));
     EINTR_LOOP(ret, close(entry->deathPipe));
 
     freeInfo(header, entry);
@@ -243,9 +263,11 @@ static void sigchld_handler(int signum)
         /* is this one of our children? */
         BigArray *array;
         siginfo_t info;
+        struct pipe_payload payload;
         int i;
 
         memset(&info, 0, sizeof info);
+        memset(&payload, 0, sizeof payload);
 
 #ifdef HAVE_WAITID
         if (!waitid_works)
@@ -275,8 +297,8 @@ search_next_child:
                                             FFD_ATOMIC_ACQUIRE, FFD_ATOMIC_RELAXED)) {
                 /* this is our child, send notification and free up this entry */
                 /* ### FIXME: what if tryReaping returns false? */
-                if (tryReaping(pid, &info))
-                    notifyAndFreeInfo(&children.header, &children.entries[i], &info);
+                if (tryReaping(pid, &payload))
+                    notifyAndFreeInfo(&children.header, &children.entries[i], &payload);
                 goto search_next_child;
             }
         }
@@ -290,8 +312,8 @@ search_next_child:
                                                 FFD_ATOMIC_ACQUIRE, FFD_ATOMIC_RELAXED)) {
                     /* this is our child, send notification and free up this entry */
                     /* ### FIXME: what if tryReaping returns false? */
-                    if (tryReaping(pid, &info))
-                        notifyAndFreeInfo(&array->header, &array->entries[i], &info);
+                    if (tryReaping(pid, &payload))
+                        notifyAndFreeInfo(&array->header, &array->entries[i], &payload);
                     goto search_next_child;
                 }
             }
@@ -321,9 +343,9 @@ search_arrays:
                     continue;
             }
 #endif
-            if (tryReaping(pid, &info)) {
+            if (tryReaping(pid, &payload)) {
                 /* this is our child, send notification and free up this entry */
-                notifyAndFreeInfo(&children.header, &children.entries[i], &info);
+                notifyAndFreeInfo(&children.header, &children.entries[i], &payload);
             }
         }
 
@@ -344,9 +366,9 @@ search_arrays:
                         continue;
                 }
 #endif
-                if (tryReaping(pid, &info)) {
+                if (tryReaping(pid, &payload)) {
                     /* this is our child, send notification and free up this entry */
-                    notifyAndFreeInfo(&array->header, &array->entries[i], &info);
+                    notifyAndFreeInfo(&array->header, &array->entries[i], &payload);
                 }
             }
 
@@ -626,7 +648,7 @@ int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_act
 {
     Header *header;
     ProcessInfo *info;
-    siginfo_t si;
+    struct pipe_payload payload;
     pid_t pid;
     int death_pipe[2];
     int ret = -1;
@@ -664,8 +686,8 @@ int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_act
     ffd_atomic_store(&info->pid, pid, FFD_ATOMIC_RELEASE);
 
     /* check if the child has already exited */
-    if (tryReaping(pid, &si))
-        notifyAndFreeInfo(header, info, &si);
+    if (tryReaping(pid, &payload))
+        notifyAndFreeInfo(header, info, &payload);
 
     ret = death_pipe[0];
     return ret;
@@ -682,3 +704,28 @@ out:
     return -1;
 }
 #endif // _POSIX_SPAWN && !FORKFD_NO_SPAWNFD
+
+
+int forkfd_wait(int ffd, forkfd_info *info, struct rusage *rusage)
+{
+    struct pipe_payload payload;
+    int ret;
+
+    ret = read(ffd, &payload, sizeof(payload));
+    if (ret == -1)
+        return ret;     /* pass errno, probably EINTR, EBADF or EWOULDBLOCK */
+
+    assert(ret == sizeof(payload));
+    if (info)
+        *info = payload.info;
+    if (rusage)
+        *rusage = payload.rusage;
+
+    return 0;           /* success */
+}
+
+
+int forkfd_close(int ffd)
+{
+    return close(ffd);
+}

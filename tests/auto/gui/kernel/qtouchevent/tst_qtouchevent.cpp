@@ -170,7 +170,10 @@ public:
     }
 
     QRectF boundingRect() const Q_DECL_OVERRIDE { return QRectF(0, 0, 10, 10); }
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE { }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE
+    {
+        painter->fillRect(QRectF(QPointF(0, 0), boundingRect().size()), Qt::yellow);
+    }
 
     bool sceneEvent(QEvent *event) Q_DECL_OVERRIDE
     {
@@ -1446,6 +1449,7 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowTitle(QTest::currentTestFunction());
     QScopedPointer<tst_QTouchEventGraphicsItem> root(new tst_QTouchEventGraphicsItem);
     root->setAcceptTouchEvents(true);
     scene.addItem(root.data());
@@ -1454,10 +1458,13 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
     glassWidget->setMinimumSize(100, 100);
     scene.addItem(glassWidget.data());
 
-    view.resize(200, 200);
+    view.setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    view.resize(availableGeometry.size() - QSize(100, 100));
+    view.move(availableGeometry.topLeft() + QPoint(50, 50));
+    view.fitInView(scene.sceneRect());
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.fitInView(scene.sceneRect());
 
     QTest::touchEvent(&view, touchScreenDevice)
             .press(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport());

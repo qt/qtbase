@@ -48,10 +48,10 @@ warnings_are_errors:warning_clean {
     # compiler.
     clang {
         # Apple clang 4.0-4.2,5.0-5.1
-        # Regular clang 3.3 & 3.4
+        # Regular clang 3.3-3.6
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]")|contains(reg_ver, "3\\.[34]") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]")|contains(reg_ver, "3\\.[3-6]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
@@ -67,9 +67,9 @@ warnings_are_errors:warning_clean {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -ww177,1224,1478,1881 $$WERROR
         }
     } else:gcc:!clang:!intel_icc {
-        # GCC 4.6-4.9
+        # GCC 4.6-4.9, 5.x
         ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
-        contains(ver, "4\\.[6789]") {
+        contains(ver, "(4\\.[6789]|5\\..)") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=cpp -Wno-error=deprecated-declarations $$WERROR
 
             # GCC prints this bogus warning, after it has inlined a lot of code

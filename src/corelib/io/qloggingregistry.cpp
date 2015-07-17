@@ -210,20 +210,23 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
 
         if (_section == QLatin1String("Rules")) {
             int equalPos = line.indexOf(QLatin1Char('='));
-            if ((equalPos != -1)
-                    && (line.lastIndexOf(QLatin1Char('=')) == equalPos)) {
-                const QStringRef pattern = line.leftRef(equalPos);
-                const QStringRef valueStr = line.midRef(equalPos + 1);
-                int value = -1;
-                if (valueStr == QLatin1String("true"))
-                    value = 1;
-                else if (valueStr == QLatin1String("false"))
-                    value = 0;
-                QLoggingRule rule(pattern, (value == 1));
-                if (rule.flags != 0 && (value != -1))
-                    _rules.append(rule);
-                else
+            if (equalPos != -1) {
+                if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
+                    const QStringRef pattern = line.leftRef(equalPos);
+                    const QStringRef valueStr = line.midRef(equalPos + 1);
+                    int value = -1;
+                    if (valueStr == QLatin1String("true"))
+                        value = 1;
+                    else if (valueStr == QLatin1String("false"))
+                        value = 0;
+                    QLoggingRule rule(pattern, (value == 1));
+                    if (rule.flags != 0 && (value != -1))
+                        _rules.append(rule);
+                    else
+                        warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
+                } else {
                     warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
+                }
             }
         }
     }

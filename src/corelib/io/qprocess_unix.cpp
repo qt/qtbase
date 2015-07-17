@@ -1075,20 +1075,17 @@ bool QProcessPrivate::waitForDeadChild()
         return true; // child has already exited
 
     // read the process information from our fd
-    siginfo_t info;
-    qint64 ret = qt_safe_read(forkfd, &info, sizeof info);
-    Q_ASSERT(ret == sizeof info);
-    Q_UNUSED(ret);
+    forkfd_info info;
+    int ret;
+    EINTR_LOOP(ret, forkfd_wait(forkfd, &info, Q_NULLPTR));
 
-    Q_ASSERT(info.si_pid == pid_t(pid));
-
-    exitCode = info.si_status;
-    crashed = info.si_code != CLD_EXITED;
+    exitCode = info.status;
+    crashed = info.code != CLD_EXITED;
 
     delete deathNotifier;
     deathNotifier = 0;
 
-    qt_safe_close(forkfd);
+    EINTR_LOOP(ret, forkfd_close(forkfd));
     forkfd = -1; // Child is dead, don't try to kill it anymore
 
 #if defined QPROCESS_DEBUG

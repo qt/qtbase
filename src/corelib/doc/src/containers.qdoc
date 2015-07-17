@@ -601,6 +601,13 @@
     container. It only affects the copy, which is probably not what you
     want.
 
+    An alternative to Qt's \c foreach loop is the range-based \c for that is
+    part of C++ 11 and newer. However, keep in mind that the range-based
+    \c for might force a Qt container to \l{Implicit Sharing}{detach}, whereas
+    \c foreach would not. But using \c foreach always copies the container,
+    which is usually not cheap for STL containers. If in doubt, prefer
+    \c foreach for Qt containers, and range based \c for for STL ones.
+
     In addition to \c foreach, Qt also provides a \c forever
     pseudo-keyword for infinite loops:
 
