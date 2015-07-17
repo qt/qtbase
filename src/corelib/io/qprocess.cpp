@@ -1194,7 +1194,7 @@ bool QProcessPrivate::_q_startupNotification()
     }
 
     q->setProcessState(QProcess::NotRunning);
-    setErrorAndEmit(QProcess::FailedToStart);
+    setErrorAndEmit(QProcess::FailedToStart, errorString); // the error string was already set
 #ifdef Q_OS_UNIX
     // make sure the process manager removes this entry
     waitForDeadChild();

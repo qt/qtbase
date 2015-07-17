@@ -672,6 +672,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     qt_safe_close(childStartedPipe[0]);
 
     // enter the working directory
+    const char *callthatfailed = "chdir: ";
     if (workingDir && QT_CHDIR(workingDir) == -1) {
         // failed, stop the process
         goto report_errno;
@@ -683,6 +684,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     // execute the process
     if (!envp) {
         qt_safe_execvp(argv[0], argv);
+        callthatfailed = "execvp: ";
     } else {
         if (path) {
             char **arg = path;
@@ -700,15 +702,19 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
 #endif
             qt_safe_execve(argv[0], argv, envp);
         }
+        callthatfailed = "execve: ";
     }
 
     // notify failure
+    // we're running in the child process, so we don't need to be thread-safe;
+    // we can use strerror
 report_errno:
-    QString error = qt_error_string(errno);
+    const char *msg = strerror(errno);
 #if defined (QPROCESS_DEBUG)
-    fprintf(stderr, "QProcessPrivate::execChild() failed (%s), notifying parent process\n", qPrintable(error));
+    fprintf(stderr, "QProcessPrivate::execChild() failed (%s), notifying parent process\n", msg);
 #endif
-    qt_safe_write(childStartedPipe[1], error.data(), error.length() * sizeof(QChar));
+    qt_safe_write(childStartedPipe[1], callthatfailed, strlen(callthatfailed));
+    qt_safe_write(childStartedPipe[1], msg, strlen(msg));
     qt_safe_close(childStartedPipe[1]);
     childStartedPipe[1] = -1;
 }
@@ -716,8 +722,15 @@ report_errno:
 
 bool QProcessPrivate::processStarted()
 {
-    ushort buf[errorBufferMax];
-    int i = qt_safe_read(childStartedPipe[0], &buf, sizeof buf);
+    char buf[errorBufferMax];
+    int i = 0;
+    int ret;
+    do {
+        ret = qt_safe_read(childStartedPipe[0], buf + i, sizeof buf - i);
+        if (ret > 0)
+            i += ret;
+    } while (ret > 0 && i < int(sizeof buf));
+
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
         startupSocketNotifier->deleteLater();
@@ -732,7 +745,7 @@ bool QProcessPrivate::processStarted()
 
     // did we read an error message?
     if (i > 0)
-        q_func()->setErrorString(QString((const QChar *)buf, i / sizeof(QChar)));
+        q_func()->setErrorString(QString::fromLocal8Bit(buf, i));
 
     return i <= 0;
 }
