@@ -73,6 +73,7 @@
  *  SSE4_2   | x86  | I & C | I & C    | I only |
  *  AVX      | x86  | I & C | I & C    | I & C  |
  *  AVX2     | x86  | I & C | I & C    | I only |
+ *  AVX512xx | x86  | I & C | I & C    | I only |
  * I = intrinsics; C = code generation
  *
  * Code can use the following constructs to determine compiler support & status:

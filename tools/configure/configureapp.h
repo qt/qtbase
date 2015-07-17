@@ -92,6 +92,7 @@ public:
 
 private:
     bool checkAngleAvailability(QString *errorMessage = 0) const;
+    QString checkAvx512Availability();
 
     // Our variable dictionaries
     QMap<QString,QString> dictionary;

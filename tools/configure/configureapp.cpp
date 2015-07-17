@@ -160,6 +160,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SSE4_2" ]          = "auto";
     dictionary[ "AVX" ]             = "auto";
     dictionary[ "AVX2" ]            = "auto";
+    dictionary[ "AVX512" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
@@ -885,6 +886,10 @@ void Configure::parseCmdLine()
             dictionary[ "AVX2" ] = "no";
         else if (configCmdLine.at(i) == "-avx2")
             dictionary[ "AVX2" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-avx512")
+            dictionary[ "AVX512" ] = "";
+        else if (configCmdLine.at(i) == "-avx512")
+            dictionary[ "AVX512" ] = "auto";
 
         else if (configCmdLine.at(i) == "-no-ssl") {
             dictionary[ "SSL"] = "no";
@@ -1699,6 +1704,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "SSE4_2" ]              = "no";
         dictionary[ "AVX" ]                 = "no";
         dictionary[ "AVX2" ]                = "no";
+        dictionary[ "AVX512" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
@@ -2014,6 +2020,8 @@ bool Configure::displayHelp()
         desc("AVX", "yes",      "-avx",                 "Compile with use of AVX instructions.");
         desc("AVX2", "no",      "-no-avx2",             "Do not compile with use of AVX2 instructions.");
         desc("AVX2", "yes",     "-avx2",                "Compile with use of AVX2 instructions.\n");
+        desc("AVX512", "no",    "-no-avx512",           "Do not compile with use of AVX512 instructions.");
+        desc("AVX512", "yes",   "-avx512",              "Compile with use of AVX512 instructions.\n");
         desc("SSL", "no",        "-no-ssl",             "Do not compile support for SSL.");
         desc("SSL", "yes",       "-ssl",                "Enable run-time SSL support.");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile support for OpenSSL.");
@@ -2199,6 +2207,24 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
         return false;
     }
     return true;
+}
+
+QString Configure::checkAvx512Availability()
+{
+    static const char avx512features[][5] = { "cd", "er", "pf", "bw", "dq", "vl", "ifma", "vbmi" };
+
+    // try AVX512 Foundation. No Foundation, nothing else works.
+    if (!tryCompileProject("common/avx512", "AVX512=F"))
+        return QString();
+
+    QString available = "avx512f";
+    for (int i = 0; i < sizeof(avx512features)/sizeof(avx512features[0]); ++i) {
+        if (tryCompileProject("common/avx512", QStringLiteral("AVX512=%0").arg(avx512features[i]).toUpper())) {
+            available += " avx512";
+            available += avx512features[i];
+        }
+    }
+    return available;
 }
 
 /*!
@@ -2476,6 +2502,8 @@ void Configure::autoDetection()
         dictionary["AVX"] = checkAvailability("AVX") ? "yes" : "no";
     if (dictionary["AVX2"] == "auto")
         dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
+    if (dictionary["AVX512"] == "auto")
+        dictionary["AVX512"] = checkAvx512Availability();
     if (dictionary["NEON"] == "auto")
         dictionary["NEON"] = checkAvailability("NEON") ? "yes" : "no";
     if (dictionary["SSL"] == "auto") {
@@ -3194,6 +3222,8 @@ void Configure::generateCachefile()
             moduleStream << " avx";
         if (dictionary[ "AVX2" ] == "yes")
             moduleStream << " avx2";
+        if (!dictionary[ "AVX512" ].isEmpty())
+            moduleStream << ' ' << dictionary[ "AVX512" ];
         if (dictionary[ "NEON" ] == "yes")
             moduleStream << " neon";
         if (dictionary[ "LARGE_FILE" ] == "yes")
@@ -3659,6 +3689,8 @@ void Configure::generateConfigfiles()
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX 1" << endl;
         if (dictionary[ "AVX2" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2 1" << endl;
+        foreach (const QString &avx512feature, dictionary[ "AVX512" ].split(' ', QString::SkipEmptyParts))
+            tmpStream << "#define QT_COMPILER_SUPPRTS_" << avx512feature.toUpper() << " 1" << endl;
 
         if (dictionary["QREAL"] != "double") {
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;
@@ -3831,6 +3863,8 @@ void Configure::displayConfig()
     sout << "SSE4.2 support.............." << dictionary[ "SSE4_2" ] << endl;
     sout << "AVX support................." << dictionary[ "AVX" ] << endl;
     sout << "AVX2 support................" << dictionary[ "AVX2" ] << endl;
+    sout << "AVX512 support.............."
+         << (dictionary[ "AVX512" ].isEmpty() ? QString("<none>") : dictionary[ "AVX512" ].toUpper()) << endl;
     sout << "NEON support................" << dictionary[ "NEON" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
     sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;

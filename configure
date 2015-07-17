@@ -716,6 +716,7 @@ CFG_SSE4_1=auto
 CFG_SSE4_2=auto
 CFG_AVX=auto
 CFG_AVX2=auto
+CFG_AVX512=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
 CFG_ACCESSIBILITY_ATSPI_BRIDGE=no # will be enabled depending on dbus and accessibility being enabled
@@ -1640,6 +1641,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    avx512)
+        if [  "$VAL" = "no" ]; then
+            CFG_AVX512=""
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     mips_dsp)
         if [ "$VAL" = "no" ]; then
             CFG_MIPS_DSP="$VAL"
@@ -2463,6 +2471,7 @@ Configure options:
     -no-sse4.2 ......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-avx2 ........... Do not compile with use of AVX2 instructions.
+    -no-avx512 ......... Do not compile with use of AVX512 instructions.
     -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
     -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
 
@@ -4498,6 +4507,31 @@ if [ "${CFG_AVX2}" = "auto" ]; then
     fi
 fi
 
+# detect avx512 support
+if [ "${CFG_AVX512}" == "auto" ]; then
+    # First, test for AVX-512 Foundation
+    if compileTest common/avx512 "avx512f" AVX512=F; then
+        # Test for the sub-features
+        CFG_AVX512=f
+        CFG_AVX512_UPPER=AVX512F
+        for feature in er cd pf dq bw vl ifma vbmi; do
+            if [ -n "BASH_VERSION" ] && [ "${BASH_VERSION%%.*}" -gt 3 ]; then
+                upper=${feature^^*}
+            elif [ -n "$ZSH_VERSION" ]; then
+                upper=${(U)feature}
+            else
+                upper=`echo $feature | tr a-z A-Z`
+            fi
+            if compileTest common/avx512 "avx512$feature" AVX512=$upper; then
+                CFG_AVX512="$CFG_AVX512 $feature"
+                CFG_AVX512_UPPER="$CFG_AVX512_UPPER AVX512$upper"
+            fi
+        done
+    else
+        CFG_AVX512=
+    fi
+fi
+
 # check Neon support
 if [ "$CFG_NEON" = "auto" ]; then
     # no compile test, just check what the compiler has
@@ -6246,6 +6280,9 @@ fi
 [ "$CFG_SSE4_2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_2"
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
+for feature in $CFG_AVX512; do
+    QMAKE_CONFIG="$QMAKE_CONFIG avx512$feature"
+done
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
     [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
@@ -6715,6 +6752,9 @@ for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
             ;;
     esac
 done
+for feature in $CFG_AVX512_UPPER; do
+    echo "#define QT_COMPILER_SUPPORTS_$feature 1"  >>"$outpath/src/corelib/global/qconfig.h.new"
+done
 
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
@@ -7167,6 +7207,7 @@ if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "    SSE2/SSE3/SSSE3 ...... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
     echo "    SSE4.1/SSE4.2 ........ ${CFG_SSE4_1}/${CFG_SSE4_2}"
     echo "    AVX/AVX2 ............. ${CFG_AVX}/${CFG_AVX2}"
+    echo "    AVX512 ............... ${CFG_AVX512_UPPER:-<none>}"
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "    Neon ................. ${CFG_NEON}"
 elif [ "$CFG_ARCH" = "mips" ]; then

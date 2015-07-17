@@ -95,6 +95,47 @@ addSimdCompiler(sse4_1)
 addSimdCompiler(sse4_2)
 addSimdCompiler(avx)
 addSimdCompiler(avx2)
+addSimdCompiler(avx512f)
+addSimdCompiler(avx512cd)
+addSimdCompiler(avx512er)
+addSimdCompiler(avx512pf)
+addSimdCompiler(avx512dq)
+addSimdCompiler(avx512bw)
+addSimdCompiler(avx512vl)
+addSimdCompiler(avx512ifma)
+addSimdCompiler(avx512vbmi)
 addSimdCompiler(neon)
 addSimdCompiler(mips_dsp)
 addSimdCompiler(mips_dspr2)
+
+# Follow the Intel compiler's lead and define profiles of AVX512 instructions
+defineTest(addAvx512Profile) {
+    name = $$1
+    dependencies = $$2
+    upname = $$upper($$name)
+    varname = QMAKE_CFLAGS_$$upname
+
+    cpu_features_missing =
+    cflags = $$QMAKE_CFLAGS_AVX512F
+    for(part, dependencies) {
+        !CONFIG($$part): return()           # Profile isn't supported by the compiler
+
+        uppart = $$upper($$part)
+        cflags *= $$eval(QMAKE_CFLAGS_$${uppart})
+        !contains(QT_CPU_FEATURES, $$uppart): cpu_features_missing += $$uppart
+    }
+
+    CONFIG += $$name
+    isEmpty(cpu_features_missing): QT_CPU_FEATURES += $$name
+    $$varname = $$cflags
+
+    export(QT_CPU_FEATURES)
+    export(CONFIG)
+    export($$varname)
+    addSimdCompiler($$name)
+}
+addAvx512Profile(avx512common, avx512cd)
+addAvx512Profile(avx512mic, avx512cd avx512er avx512pf)
+addAvx512Profile(avx512core, avx512cd avx512bw avx512dq avx512vl)
+addAvx512Profile(avx512ifmavl, avx512ifma avx512vl)
+addAvx512Profile(avx512vbmivl, avx512vbmi avx512vl)
