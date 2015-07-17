@@ -205,21 +205,24 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
 inline void __cpuidex(int info[4], int, __int64) { memset(info, 0, 4*sizeof(int));}
 #endif
 
-static void cpuidFeatures07_00(uint &ebx)
+static void cpuidFeatures07_00(uint &ebx, uint &ecx)
 {
 #if defined(Q_CC_GNU)
     qregisteruint rbx; // in case it's 64-bit
+    qregisteruint rcx = 0;
     asm ("xchg " PICreg", %0\n"
          "cpuid\n"
          "xchg " PICreg", %0\n"
-        : "=&r" (rbx)
-        : "a" (7), "c" (0)
+        : "=&r" (rbx), "+&c" (rcx)
+        : "a" (7)
         : "%edx");
     ebx = rbx;
+    ecx = rcx;
 #elif defined(Q_OS_WIN)
     int info[4];
     __cpuidex(info, 7, 0);
     ebx = info[1];
+    ecx = info[2];
 #endif
 }
 
@@ -257,7 +260,12 @@ static quint64 detectProcessorFeatures()
         AVXState        = XMM0_15 | YMM0_15Hi128,
         AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
     };
-    static const quint64 AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2);
+    static const quint64 AllAVX512 = (Q_UINT64_C(1) << CpuFeatureAVX512F) | (Q_UINT64_C(1) << CpuFeatureAVX512CD) |
+            (Q_UINT64_C(1) << CpuFeatureAVX512ER) | (Q_UINT64_C(1) << CpuFeatureAVX512PF) |
+            (Q_UINT64_C(1) << CpuFeatureAVX512BW) | (Q_UINT64_C(1) << CpuFeatureAVX512DQ) |
+            (Q_UINT64_C(1) << CpuFeatureAVX512VL) |
+            (Q_UINT64_C(1) << CpuFeatureAVX512IFMA) | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI);
+    static const quint64 AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2) | AllAVX512;
     static const quint64 AllAVX = (Q_UINT64_C(1) << CpuFeatureAVX) | AllAVX2;
 
     quint64 features = 0;
@@ -295,8 +303,9 @@ static quint64 detectProcessorFeatures()
     }
 
     uint cpuid0700EBX = 0;
+    uint cpuid0700ECX = 0;
     if (cpuidLevel >= 7) {
-        cpuidFeatures07_00(cpuid0700EBX);
+        cpuidFeatures07_00(cpuid0700EBX, cpuid0700ECX);
 
         // the high 32-bits of features is cpuid0700EBX
         features |= quint64(cpuid0700EBX) << 32;
@@ -305,6 +314,15 @@ static quint64 detectProcessorFeatures()
     if ((xgetbvA & AVXState) != AVXState) {
         // support for YMM registers is disabled, disable all AVX
         features &= ~AllAVX;
+    } else if ((xgetbvA & AVX512State) != AVX512State) {
+        // support for ZMM registers or mask registers is disabled, disable all AVX512
+        features &= ~AllAVX512;
+    } else {
+        // this feature is out of order
+        if (cpuid0700ECX & (1u << 1))
+            features |= Q_UINT64_C(1) << CpuFeatureAVX512VBMI;
+        else
+            features &= ~(Q_UINT64_C(1) << CpuFeatureAVX512VBMI);
     }
 
     return features;
@@ -484,7 +502,7 @@ static const int features_indices[] = {
 /* Data:
  sse3
  sse2
-
+ avx512vbmi
 
 
 
@@ -526,10 +544,31 @@ static const int features_indices[] = {
 
 
  rtm
+
+
+
+
+ avx512f
+ avx512dq
+ rdseed
+
+
+ avx512ifma
+
+
+
+
+ avx512pf
+ avx512er
+ avx512cd
+ sha
+ avx512bw
+ avx512vl
  */
 static const char features_string[] =
     " sse3\0"
     " sse2\0"
+    " avx512vbmi\0"
     " ssse3\0"
     " fma\0"
     " cmpxchg16b\0"
@@ -546,15 +585,27 @@ static const char features_string[] =
     " avx2\0"
     " bmi2\0"
     " rtm\0"
+    " avx512f\0"
+    " avx512dq\0"
+    " rdseed\0"
+    " avx512ifma\0"
+    " avx512pf\0"
+    " avx512er\0"
+    " avx512cd\0"
+    " sha\0"
+    " avx512bw\0"
+    " avx512vl\0"
     "\0";
 
 static const quint8 features_indices[] = {
-       0,    6,    5,    5,    5,    5,    5,    5,
-       5,   12,    5,    5,   19,   24,    5,    5,
-       5,    5,    5,   36,   44,    5,   52,   59,
-       5,   67,    5,    5,   72,   77,   83,    5,
-       5,    5,    5,   91,   96,  101,    5,    5,
-     107,    5,    5,  113
+    0,    6,   12,    5,    5,    5,    5,    5,
+    5,   24,    5,    5,   31,   36,    5,    5,
+    5,    5,    5,   48,   56,    5,   64,   71,
+    5,   79,    5,    5,   84,   89,   95,    5,
+    5,    5,    5,  103,  108,  113,    5,    5,
+  119,    5,    5,  125,    5,    5,    5,    5,
+  130,  139,  149,    5,    5,  157,    5,    5,
+    5,    5,  169,  179,  189,  199,  204,  214
 };
 #else
 static const char features_string[] = "";

@@ -218,6 +218,23 @@
 #  endif
 #endif
 
+#define QT_FUNCTION_TARGET_STRING_AVX512F       "avx512f"
+#define QT_FUNCTION_TARGET_STRING_AVX512CD      "avx512cd"
+#define QT_FUNCTION_TARGET_STRING_AVX512ER      "avx512er"
+#define QT_FUNCTION_TARGET_STRING_AVX512PF      "avx512pf"
+#define QT_FUNCTION_TARGET_STRING_AVX512BW      "avx512bw"
+#define QT_FUNCTION_TARGET_STRING_AVX512DQ      "avx512dq"
+#define QT_FUNCTION_TARGET_STRING_AVX512VL      "avx512vl"
+#define QT_FUNCTION_TARGET_STRING_AVX512IFMA    "avx512ifma"
+#define QT_FUNCTION_TARGET_STRING_AVX512VBMI    "avx512vbmi"
+
+#define QT_FUNCTION_TARGET_STRING_F16C          "f16c"
+#define QT_FUNCTION_TARGET_STRING_RDRAND        "rdrnd"
+#define QT_FUNCTION_TARGET_STRING_BMI           "bmi"
+#define QT_FUNCTION_TARGET_STRING_BMI2          "bmi2"
+#define QT_FUNCTION_TARGET_STRING_RDSEED        "rdseed"
+#define QT_FUNCTION_TARGET_STRING_SHA           "sha"
+
 // other x86 intrinsics
 #if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (Q_CC_GNU >= 404)) \
     || (defined(Q_CC_CLANG) && (Q_CC_CLANG >= 208)) \
@@ -260,22 +277,96 @@ enum CPUFeatures {
     CpuFeatureSSSE3         = (0 + 9),
     CpuFeatureSSE4_1        = (0 + 19),
     CpuFeatureSSE4_2        = (0 + 20),
+    CpuFeatureMOVBE         = (0 + 22),
+    CpuFeaturePOPCNT        = (0 + 23),
     CpuFeatureAES           = (0 + 25),
     CpuFeatureAVX           = (0 + 28),
+    CpuFeatureF16C          = (0 + 29),
+    CpuFeatureRDRAND        = (0 + 30),
+    // 31 is always zero and we've used it for the QSimdInitialized
 
     // in level 7, leaf 0, EBX
+    CpuFeatureBMI           = (32 + 3),
     CpuFeatureHLE           = (32 + 4),
     CpuFeatureAVX2          = (32 + 5),
+    CpuFeatureBMI2          = (32 + 8),
     CpuFeatureRTM           = (32 + 11),
+    CpuFeatureAVX512F       = (32 + 16),
+    CpuFeatureAVX512DQ      = (32 + 17),
+    CpuFeatureRDSEED        = (32 + 18),
+    CpuFeatureAVX512IFMA    = (32 + 21),
+    CpuFeatureAVX512PF      = (32 + 26),
+    CpuFeatureAVX512ER      = (32 + 27),
+    CpuFeatureAVX512CD      = (32 + 28),
+    CpuFeatureSHA           = (32 + 29),
+    CpuFeatureAVX512BW      = (32 + 30),
+    CpuFeatureAVX512VL      = (32 + 31),
+
+    // in level 7, leaf 0, ECX (out of order, for now)
+    CpuFeatureAVX512VBMI    = 2,                       // uses the bit for DTES64
 #endif
 
     // used only to indicate that the CPU detection was initialised
     QSimdInitialized = 0x80000000
 };
 
-static const uint qCompilerCpuFeatures = 0
+static const quint64 qCompilerCpuFeatures = 0
+#if defined __SHA__
+        | (Q_UINT64_C(1) << CpuFeatureSHA)
+#endif
+#if defined __AES__
+        | (Q_UINT64_C(1) << CpuFeatureAES)
+#endif
 #if defined __RTM__
         | (Q_UINT64_C(1) << CpuFeatureRTM)
+#endif
+#ifdef __RDRND__
+        | (Q_UINT64_C(1) << CpuFeatureRDRAND)
+#endif
+#ifdef __RDSEED__
+        | (Q_UINT64_C(1) << CpuFeatureRDSEED)
+#endif
+#if defined __BMI__
+        | (Q_UINT64_C(1) << CpuFeatureBMI)
+#endif
+#if defined __BMI2__
+        | (Q_UINT64_C(1) << CpuFeatureBMI2)
+#endif
+#if defined __F16C__
+        | (Q_UINT64_C(1) << CpuFeatureF16C)
+#endif
+#if defined __POPCNT__
+        | (Q_UINT64_C(1) << CpuFeaturePOPCNT)
+#endif
+#if defined __MOVBE__           // GCC and Clang don't seem to define this
+        | (Q_UINT64_C(1) << CpuFeatureMOVBE)
+#endif
+#if defined __AVX512F__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512F)
+#endif
+#if defined __AVX512CD__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512CD)
+#endif
+#if defined __AVX512ER__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512ER)
+#endif
+#if defined __AVX512PF__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512PF)
+#endif
+#if defined __AVX512BW__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512BW)
+#endif
+#if defined __AVX512DQ__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512DQ)
+#endif
+#if defined __AVX512VL__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512VL)
+#endif
+#if defined __AVX512IFMA__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512IFMA)
+#endif
+#if defined __AVX512VBMI__
+        | (Q_UINT64_C(1) << CpuFeatureAVX512VBMI)
 #endif
 #if defined __AVX2__
         | (Q_UINT64_C(1) << CpuFeatureAVX2)
