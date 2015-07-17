@@ -42,6 +42,7 @@
 #include <QImage>
 #include <QColor>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QGridLayout>
 #include <QSpinBox>
 #include <QLabel>
@@ -57,15 +58,15 @@ QColor bgColorForName(const QString &name)
 {
     if (name == "Black")
         return QColor("#D8D8D8");
-    else if (name == "White")
+    if (name == "White")
         return QColor("#F1F1F1");
-    else if (name == "Red")
+    if (name == "Red")
         return QColor("#F1D8D8");
-    else if (name == "Green")
+    if (name == "Green")
         return QColor("#D8E4D8");
-    else if (name == "Blue")
+    if (name == "Blue")
         return QColor("#D8D8F1");
-    else if (name == "Yellow")
+    if (name == "Yellow")
         return QColor("#F1F0D8");
     return QColor(name).light(110);
 }
@@ -74,15 +75,15 @@ QColor fgColorForName(const QString &name)
 {
     if (name == "Black")
         return QColor("#6C6C6C");
-    else if (name == "White")
+    if (name == "White")
         return QColor("#F8F8F8");
-    else if (name == "Red")
+    if (name == "Red")
         return QColor("#F86C6C");
-    else if (name == "Green")
+    if (name == "Green")
         return QColor("#6CB26C");
-    else if (name == "Blue")
+    if (name == "Blue")
         return QColor("#6C6CF8");
-    else if (name == "Yellow")
+    if (name == "Yellow")
         return QColor("#F8F76C");
     return QColor(name);
 }
@@ -91,10 +92,10 @@ class ColorDock : public QFrame
 {
     Q_OBJECT
 public:
-    ColorDock(const QString &c, QWidget *parent);
+    explicit ColorDock(const QString &c, QWidget *parent);
 
-    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
-    virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE { return szHint; }
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE { return minSzHint; }
 
     void setCustomSizeHint(const QSize &size);
 
@@ -103,28 +104,22 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    QString color;
-    QSize szHint, minSzHint;
+
+private:
+    const QString color;
+    QSize szHint;
+    QSize minSzHint;
 };
 
 ColorDock::ColorDock(const QString &c, QWidget *parent)
-    : QFrame(parent) , color(c)
+    : QFrame(parent)
+    , color(c)
+    , szHint(-1, -1)
+    , minSzHint(125, 75)
 {
     QFont font = this->font();
     font.setPointSize(8);
     setFont(font);
-    szHint = QSize(-1, -1);
-    minSzHint = QSize(125, 75);
-}
-
-QSize ColorDock::sizeHint() const
-{
-    return szHint;
-}
-
-QSize ColorDock::minimumSizeHint() const
-{
-    return minSzHint;
 }
 
 void ColorDock::paintEvent(QPaintEvent *)
@@ -178,6 +173,7 @@ static QSpinBox *createSpinBox(int value, QWidget *parent, int max = 1000)
 void ColorDock::changeSizeHints()
 {
     QDialog dialog(this);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     dialog.setWindowTitle(color);
 
     QVBoxLayout *topLayout = new QVBoxLayout(&dialog);
@@ -188,7 +184,7 @@ void ColorDock::changeSizeHints()
     inputLayout->addWidget(new QLabel(tr("Size Hint:"), &dialog), 0, 0);
     inputLayout->addWidget(new QLabel(tr("Min Size Hint:"), &dialog), 1, 0);
     inputLayout->addWidget(new QLabel(tr("Max Size:"), &dialog), 2, 0);
-    inputLayout->addWidget(new QLabel(tr("Dockwgt Max Size:"), &dialog), 3, 0);
+    inputLayout->addWidget(new QLabel(tr("Dock Widget Max Size:"), &dialog), 3, 0);
 
     QSpinBox *szHintW = createSpinBox(szHint.width(), &dialog);
     inputLayout->addWidget(szHintW, 0, 1);
@@ -217,19 +213,13 @@ void ColorDock::changeSizeHints()
 
     topLayout->addStretch();
 
-    QHBoxLayout *buttonBox = new QHBoxLayout();
-    topLayout->addLayout(buttonBox);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::reject);
 
-    QPushButton *okButton = new QPushButton(tr("Ok"), &dialog);
-    QPushButton *cancelButton = new QPushButton(tr("Cancel"), &dialog);
-    connect(okButton, SIGNAL(clicked()), &dialog, SLOT(accept()));
-    connect(cancelButton, SIGNAL(clicked()), &dialog, SLOT(reject()));
-    buttonBox->addStretch();
-    buttonBox->addWidget(cancelButton);
-    buttonBox->addWidget(okButton);
+    topLayout->addWidget(buttonBox);
 
-
-    if (!dialog.exec())
+    if (dialog.exec() != QDialog::Accepted)
         return;
 
     szHint = QSize(szHintW->value(), szHintH->value());
@@ -244,8 +234,10 @@ void ColorDock::changeSizeHints()
 
 void ColorDock::setCustomSizeHint(const QSize &size)
 {
-    szHint = size;
-    updateGeometry();
+    if (szHint != size) {
+        szHint = size;
+        updateGeometry();
+    }
 }
 
 ColorSwatch::ColorSwatch(const QString &colorName, QMainWindow *parent, Qt::WindowFlags flags)
@@ -254,53 +246,50 @@ ColorSwatch::ColorSwatch(const QString &colorName, QMainWindow *parent, Qt::Wind
     setObjectName(colorName + QLatin1String(" Dock Widget"));
     setWindowTitle(objectName() + QLatin1String(" [*]"));
 
-    QFrame *swatch = new ColorDock(colorName, this);
+    ColorDock *swatch = new ColorDock(colorName, this);
     swatch->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
     setWidget(swatch);
 
-    changeSizeHintsAction = new QAction(tr("Change Size Hints"), this);
-    connect(changeSizeHintsAction, SIGNAL(triggered()), swatch, SLOT(changeSizeHints()));
-
     closableAction = new QAction(tr("Closable"), this);
     closableAction->setCheckable(true);
-    connect(closableAction, SIGNAL(triggered(bool)), SLOT(changeClosable(bool)));
+    connect(closableAction, &QAction::triggered, this, &ColorSwatch::changeClosable);
 
     movableAction = new QAction(tr("Movable"), this);
     movableAction->setCheckable(true);
-    connect(movableAction, SIGNAL(triggered(bool)), SLOT(changeMovable(bool)));
+    connect(movableAction, &QAction::triggered, this, &ColorSwatch::changeMovable);
 
     floatableAction = new QAction(tr("Floatable"), this);
     floatableAction->setCheckable(true);
-    connect(floatableAction, SIGNAL(triggered(bool)), SLOT(changeFloatable(bool)));
+    connect(floatableAction, &QAction::triggered, this, &ColorSwatch::changeFloatable);
 
     verticalTitleBarAction = new QAction(tr("Vertical title bar"), this);
     verticalTitleBarAction->setCheckable(true);
-    connect(verticalTitleBarAction, SIGNAL(triggered(bool)),
-            SLOT(changeVerticalTitleBar(bool)));
+    connect(verticalTitleBarAction, &QAction::triggered,
+            this, &ColorSwatch::changeVerticalTitleBar);
 
     floatingAction = new QAction(tr("Floating"), this);
     floatingAction->setCheckable(true);
-    connect(floatingAction, SIGNAL(triggered(bool)), SLOT(changeFloating(bool)));
+    connect(floatingAction, &QAction::triggered, this, &ColorSwatch::changeFloating);
 
     allowedAreasActions = new QActionGroup(this);
     allowedAreasActions->setExclusive(false);
 
     allowLeftAction = new QAction(tr("Allow on Left"), this);
     allowLeftAction->setCheckable(true);
-    connect(allowLeftAction, SIGNAL(triggered(bool)), SLOT(allowLeft(bool)));
+    connect(allowLeftAction, &QAction::triggered, this, &ColorSwatch::allowLeft);
 
     allowRightAction = new QAction(tr("Allow on Right"), this);
     allowRightAction->setCheckable(true);
-    connect(allowRightAction, SIGNAL(triggered(bool)), SLOT(allowRight(bool)));
+    connect(allowRightAction, &QAction::triggered, this, &ColorSwatch::allowRight);
 
     allowTopAction = new QAction(tr("Allow on Top"), this);
     allowTopAction->setCheckable(true);
-    connect(allowTopAction, SIGNAL(triggered(bool)), SLOT(allowTop(bool)));
+    connect(allowTopAction, &QAction::triggered, this, &ColorSwatch::allowTop);
 
     allowBottomAction = new QAction(tr("Allow on Bottom"), this);
     allowBottomAction->setCheckable(true);
-    connect(allowBottomAction, SIGNAL(triggered(bool)), SLOT(allowBottom(bool)));
+    connect(allowBottomAction, &QAction::triggered, this, &ColorSwatch::allowBottom);
 
     allowedAreasActions->addAction(allowLeftAction);
     allowedAreasActions->addAction(allowRightAction);
@@ -312,56 +301,56 @@ ColorSwatch::ColorSwatch(const QString &colorName, QMainWindow *parent, Qt::Wind
 
     leftAction = new QAction(tr("Place on Left") , this);
     leftAction->setCheckable(true);
-    connect(leftAction, SIGNAL(triggered(bool)), SLOT(placeLeft(bool)));
+    connect(leftAction, &QAction::triggered, this, &ColorSwatch::placeLeft);
 
     rightAction = new QAction(tr("Place on Right") , this);
     rightAction->setCheckable(true);
-    connect(rightAction, SIGNAL(triggered(bool)), SLOT(placeRight(bool)));
+    connect(rightAction, &QAction::triggered, this, &ColorSwatch::placeRight);
 
     topAction = new QAction(tr("Place on Top") , this);
     topAction->setCheckable(true);
-    connect(topAction, SIGNAL(triggered(bool)), SLOT(placeTop(bool)));
+    connect(topAction, &QAction::triggered, this, &ColorSwatch::placeTop);
 
     bottomAction = new QAction(tr("Place on Bottom") , this);
     bottomAction->setCheckable(true);
-    connect(bottomAction, SIGNAL(triggered(bool)), SLOT(placeBottom(bool)));
+    connect(bottomAction, &QAction::triggered, this, &ColorSwatch::placeBottom);
 
     areaActions->addAction(leftAction);
     areaActions->addAction(rightAction);
     areaActions->addAction(topAction);
     areaActions->addAction(bottomAction);
 
-    connect(movableAction, SIGNAL(triggered(bool)), areaActions, SLOT(setEnabled(bool)));
+    connect(movableAction, &QAction::triggered, areaActions, &QActionGroup::setEnabled);
 
-    connect(movableAction, SIGNAL(triggered(bool)), allowedAreasActions, SLOT(setEnabled(bool)));
+    connect(movableAction, &QAction::triggered, allowedAreasActions, &QActionGroup::setEnabled);
 
-    connect(floatableAction, SIGNAL(triggered(bool)), floatingAction, SLOT(setEnabled(bool)));
+    connect(floatableAction, &QAction::triggered, floatingAction, &QAction::setEnabled);
 
-    connect(floatingAction, SIGNAL(triggered(bool)), floatableAction, SLOT(setDisabled(bool)));
-    connect(movableAction, SIGNAL(triggered(bool)), floatableAction, SLOT(setEnabled(bool)));
+    connect(floatingAction, &QAction::triggered, floatableAction, &QAction::setDisabled);
+    connect(movableAction, &QAction::triggered, floatableAction, &QAction::setEnabled);
 
     tabMenu = new QMenu(this);
     tabMenu->setTitle(tr("Tab into"));
-    connect(tabMenu, SIGNAL(triggered(QAction*)), this, SLOT(tabInto(QAction*)));
+    connect(tabMenu, &QMenu::triggered, this, &ColorSwatch::tabInto);
 
     splitHMenu = new QMenu(this);
     splitHMenu->setTitle(tr("Split horizontally into"));
-    connect(splitHMenu, SIGNAL(triggered(QAction*)), this, SLOT(splitInto(QAction*)));
+    connect(splitHMenu, &QMenu::triggered, this, &ColorSwatch::splitInto);
 
     splitVMenu = new QMenu(this);
     splitVMenu->setTitle(tr("Split vertically into"));
-    connect(splitVMenu, SIGNAL(triggered(QAction*)), this, SLOT(splitInto(QAction*)));
+    connect(splitVMenu, &QMenu::triggered, this, &ColorSwatch::splitInto);
 
-    windowModifiedAction = new QAction(tr("Modified"), this);
+    QAction *windowModifiedAction = new QAction(tr("Modified"), this);
     windowModifiedAction->setCheckable(true);
     windowModifiedAction->setChecked(false);
-    connect(windowModifiedAction, SIGNAL(toggled(bool)), this, SLOT(setWindowModified(bool)));
+    connect(windowModifiedAction, &QAction::toggled, this, &QWidget::setWindowModified);
 
     menu = new QMenu(colorName, this);
     menu->addAction(toggleViewAction());
-    QAction *action = menu->addAction(tr("Raise"));
-    connect(action, SIGNAL(triggered()), this, SLOT(raise()));
-    menu->addAction(changeSizeHintsAction);
+    menu->addAction(tr("Raise"), this, &QWidget::raise);
+    menu->addAction(tr("Change Size Hints..."), swatch, &ColorDock::changeSizeHints);
+
     menu->addSeparator();
     menu->addAction(closableAction);
     menu->addAction(movableAction);
@@ -379,12 +368,12 @@ ColorSwatch::ColorSwatch(const QString &colorName, QMainWindow *parent, Qt::Wind
     menu->addSeparator();
     menu->addAction(windowModifiedAction);
 
-    connect(menu, SIGNAL(aboutToShow()), this, SLOT(updateContextMenu()));
+    connect(menu, &QMenu::aboutToShow, this, &ColorSwatch::updateContextMenu);
 
-    if(colorName == "Black") {
-        leftAction->setShortcut(Qt::CTRL|Qt::Key_W);
-        rightAction->setShortcut(Qt::CTRL|Qt::Key_E);
-        toggleViewAction()->setShortcut(Qt::CTRL|Qt::Key_R);
+    if (colorName == QLatin1String("Black")) {
+        leftAction->setShortcut(Qt::CTRL | Qt::Key_W);
+        rightAction->setShortcut(Qt::CTRL | Qt::Key_E);
+        toggleViewAction()->setShortcut(Qt::CTRL | Qt::Key_R);
     }
 }
 
@@ -447,46 +436,36 @@ void ColorSwatch::updateContextMenu()
     splitVMenu->clear();
     QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     foreach (ColorSwatch *dock, dock_list) {
-//        if (!dock->isVisible() || dock->isFloating())
-//            continue;
         tabMenu->addAction(dock->objectName());
         splitHMenu->addAction(dock->objectName());
         splitVMenu->addAction(dock->objectName());
     }
 }
 
+static ColorSwatch *findByName(const QMainWindow *mainWindow, const QString &name)
+{
+    foreach (ColorSwatch *dock, mainWindow->findChildren<ColorSwatch*>()) {
+        if (name == dock->objectName())
+            return dock;
+    }
+    return Q_NULLPTR;
+}
+
 void ColorSwatch::splitInto(QAction *action)
 {
-    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
-    ColorSwatch *target = 0;
-    foreach (ColorSwatch *dock, dock_list) {
-        if (action->text() == dock->objectName()) {
-            target = dock;
-            break;
-        }
-    }
-    if (target == 0)
+    ColorSwatch *target = findByName(mainWindow, action->text());
+    if (!target)
         return;
 
-    Qt::Orientation o = action->parent() == splitHMenu
-                        ? Qt::Horizontal : Qt::Vertical;
+    const Qt::Orientation o = action->parent() == splitHMenu
+        ? Qt::Horizontal : Qt::Vertical;
     mainWindow->splitDockWidget(target, this, o);
 }
 
 void ColorSwatch::tabInto(QAction *action)
 {
-    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
-    ColorSwatch *target = 0;
-    foreach (ColorSwatch *dock, dock_list) {
-        if (action->text() == dock->objectName()) {
-            target = dock;
-            break;
-        }
-    }
-    if (target == 0)
-        return;
-
-    mainWindow->tabifyDockWidget(target, this);
+    if (ColorSwatch *target = findByName(mainWindow, action->text()))
+        mainWindow->tabifyDockWidget(target, this);
 }
 
 void ColorSwatch::contextMenuEvent(QContextMenuEvent *event)
@@ -502,7 +481,6 @@ void ColorSwatch::resizeEvent(QResizeEvent *e)
 
     QDockWidget::resizeEvent(e);
 }
-
 
 void ColorSwatch::allow(Qt::DockWidgetArea area, bool a)
 {
@@ -520,7 +498,8 @@ void ColorSwatch::allow(Qt::DockWidgetArea area, bool a)
 
 void ColorSwatch::place(Qt::DockWidgetArea area, bool p)
 {
-    if (!p) return;
+    if (!p)
+        return;
 
     mainWindow->addDockWidget(area, this);
 
@@ -592,10 +571,10 @@ QSize BlueTitleBar::minimumSizeHint() const
 
 BlueTitleBar::BlueTitleBar(QWidget *parent)
     : QWidget(parent)
+    , leftPm(QPixmap(":/res/titlebarLeft.png"))
+    , centerPm(QPixmap(":/res/titlebarCenter.png"))
+    , rightPm(QPixmap(":/res/titlebarRight.png"))
 {
-    leftPm = QPixmap(":/res/titlebarLeft.png");
-    centerPm = QPixmap(":/res/titlebarCenter.png");
-    rightPm = QPixmap(":/res/titlebarRight.png");
 }
 
 void BlueTitleBar::paintEvent(QPaintEvent*)
@@ -683,7 +662,7 @@ void BlueTitleBar::updateMask()
     {
         QPainter painter(&bitmap);
 
-        ///initialize to transparent
+        // initialize to transparent
         painter.fillRect(rect, Qt::color0);
 
         QRect contents = rect;
@@ -692,10 +671,7 @@ void BlueTitleBar::updateMask()
         contents.setBottom(contents.bottom()-y());
         painter.fillRect(contents, Qt::color1);
 
-
-
-        //let's pait the titlebar
-
+        // let's paint the titlebar
         QRect titleRect = this->geometry();
 
         if (dw->features() & QDockWidget::DockWidgetVerticalTitleBar) {
@@ -717,7 +693,6 @@ void BlueTitleBar::updateMask()
         contents.setBottom(rect.bottom()-y());
 
         QRect rect = titleRect;
-
 
         painter.drawPixmap(rect.topLeft(), leftPm.mask());
         painter.fillRect(rect.left() + leftPm.width(), rect.top(),

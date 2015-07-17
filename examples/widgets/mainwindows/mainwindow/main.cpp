@@ -37,9 +37,10 @@
 #include <QPainterPath>
 #include <QPainter>
 #include <QMap>
-#include <qdebug.h>
+#include <QDebug>
 
-void render_qt_text(QPainter *painter, int w, int h, const QColor &color) {
+void render_qt_text(QPainter *painter, int w, int h, const QColor &color)
+{
     QPainterPath path;
     path.moveTo(-0.083695, 0.283849);
     path.cubicTo(-0.049581, 0.349613, -0.012720, 0.397969, 0.026886, 0.428917);
@@ -108,47 +109,67 @@ void render_qt_text(QPainter *painter, int w, int h, const QColor &color) {
     painter->drawPath(path);
 }
 
-void usage()
+static void usage()
 {
     qWarning() << "Usage: mainwindow [-SizeHint<color> <width>x<height>] ...";
     exit(1);
 }
 
-QMap<QString, QSize> parseCustomSizeHints(int argc, char **argv)
+enum ParseCommandLineArgumentsResult {
+    CommandLineArgumentsOk,
+    CommandLineArgumentsError,
+    HelpRequested
+};
+
+static ParseCommandLineArgumentsResult
+    parseCustomSizeHints(const QStringList &arguments, MainWindow::CustomSizeHintMap *result)
 {
-    QMap<QString, QSize> result;
-
-    for (int i = 1; i < argc; ++i) {
-        QString arg = QString::fromLocal8Bit(argv[i]);
-
+    result->clear();
+    const int argumentCount = arguments.size();
+    for (int i = 1; i < argumentCount; ++i) {
+        const QString &arg = arguments.at(i);
         if (arg.startsWith(QLatin1String("-SizeHint"))) {
-            QString name = arg.mid(9);
+            const QString name = arg.mid(9);
             if (name.isEmpty())
-                usage();
-            if (++i == argc)
-                usage();
-            QString sizeStr = QString::fromLocal8Bit(argv[i]);
-            int idx = sizeStr.indexOf(QLatin1Char('x'));
+                return CommandLineArgumentsError;
+            if (++i == argumentCount)
+                return CommandLineArgumentsError;
+            const QString sizeStr = arguments.at(i);
+            const int idx = sizeStr.indexOf(QLatin1Char('x'));
             if (idx == -1)
-                usage();
+                return CommandLineArgumentsError;
             bool ok;
-            int w = sizeStr.left(idx).toInt(&ok);
+            const int w = sizeStr.leftRef(idx).toInt(&ok);
             if (!ok)
-                usage();
-            int h = sizeStr.mid(idx + 1).toInt(&ok);
+                return CommandLineArgumentsError;
+            const int h = sizeStr.midRef(idx + 1).toInt(&ok);
             if (!ok)
-                usage();
-            result[name] = QSize(w, h);
+                return CommandLineArgumentsError;
+            result->insert(name, QSize(w, h));
+        } else if (arg == QLatin1String("-h") || arg == QLatin1String("--help")) {
+            return HelpRequested;
+        } else {
+            return CommandLineArgumentsError;
         }
     }
 
-    return result;
+    return CommandLineArgumentsOk;
 }
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    QMap<QString, QSize> customSizeHints = parseCustomSizeHints(argc, argv);
+    MainWindow::CustomSizeHintMap customSizeHints;
+    switch (parseCustomSizeHints(QCoreApplication::arguments(), &customSizeHints)) {
+    case CommandLineArgumentsOk:
+        break;
+    case CommandLineArgumentsError:
+        usage();
+        return -1;
+    case HelpRequested:
+        usage();
+        return 0;
+    }
     MainWindow mainWin(customSizeHints);
     mainWin.resize(800, 600);
     mainWin.show();

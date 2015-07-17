@@ -40,49 +40,15 @@ QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QActionGroup)
 QT_FORWARD_DECLARE_CLASS(QMenu)
 QT_FORWARD_DECLARE_CLASS(QSpinBox)
-QT_FORWARD_DECLARE_CLASS(QLabel)
 
 class ToolBar : public QToolBar
 {
     Q_OBJECT
 
-    QSpinBox *spinbox;
-    QAction *spinboxAction;
-
-    QAction *orderAction;
-    QAction *randomizeAction;
-    QAction *addSpinBoxAction;
-    QAction *removeSpinBoxAction;
-
-    QAction *movableAction;
-
-    QActionGroup *allowedAreasActions;
-    QAction *allowLeftAction;
-    QAction *allowRightAction;
-    QAction *allowTopAction;
-    QAction *allowBottomAction;
-
-    QActionGroup *areaActions;
-    QAction *leftAction;
-    QAction *rightAction;
-    QAction *topAction;
-    QAction *bottomAction;
-
-    QAction *toolBarBreakAction;
-
 public:
-    ToolBar(const QString &title, QWidget *parent);
+    explicit ToolBar(const QString &title, QWidget *parent);
 
-    QMenu *menu;
-
-protected:
-    void enterEvent(QEvent*) Q_DECL_OVERRIDE;
-    void leaveEvent(QEvent*) Q_DECL_OVERRIDE;
-
-private:
-    void allow(Qt::ToolBarArea area, bool allow);
-    void place(Qt::ToolBarArea area, bool place);
-    QLabel *tip;
+    QMenu *toolbarMenu() const { return menu; }
 
 private slots:
     void order();
@@ -105,6 +71,32 @@ private slots:
     void updateMenu();
     void insertToolBarBreak();
 
+private:
+    void allow(Qt::ToolBarArea area, bool allow);
+    void place(Qt::ToolBarArea area, bool place);
+
+    QSpinBox *spinbox;
+    QAction *spinboxAction;
+
+    QMenu *menu;
+    QAction *orderAction;
+    QAction *randomizeAction;
+    QAction *addSpinBoxAction;
+    QAction *removeSpinBoxAction;
+
+    QAction *movableAction;
+
+    QActionGroup *allowedAreasActions;
+    QAction *allowLeftAction;
+    QAction *allowRightAction;
+    QAction *allowTopAction;
+    QAction *allowBottomAction;
+
+    QActionGroup *areaActions;
+    QAction *leftAction;
+    QAction *rightAction;
+    QAction *topAction;
+    QAction *bottomAction;
 };
 
-#endif
+#endif // TOOLBAR_H

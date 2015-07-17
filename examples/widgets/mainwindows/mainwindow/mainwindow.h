@@ -35,37 +35,25 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTextEdit>
 
 class ToolBar;
 QT_FORWARD_DECLARE_CLASS(QMenu)
-QT_FORWARD_DECLARE_CLASS(QSignalMapper)
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    QTextEdit *center;
-    QList<ToolBar*> toolBars;
-    QMenu *dockWidgetMenu;
-    QMenu *mainWindowMenu;
-    QSignalMapper *mapper;
-    QList<QDockWidget*> extraDockWidgets;
-    QAction *createDockWidgetAction;
-    QMenu *destroyDockWidgetMenu;
-
 public:
-    MainWindow(const QMap<QString, QSize> &customSizeHints,
-                QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    typedef QMap<QString, QSize> CustomSizeHintMap;
 
-protected:
-    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+    explicit MainWindow(const CustomSizeHintMap &customSizeHints,
+                        QWidget *parent = Q_NULLPTR,
+                        Qt::WindowFlags flags = 0);
 
 public slots:
     void actionTriggered(QAction *action);
     void saveLayout();
     void loadLayout();
-    void setCorner(int id);
     void switchLayoutDirection();
     void setDockOptions();
 
@@ -75,8 +63,13 @@ public slots:
 private:
     void setupToolBar();
     void setupMenuBar();
-    void setupDockWidgets(const QMap<QString, QSize> &customSizeHints);
+    void setupDockWidgets(const CustomSizeHintMap &customSizeHints);
+
+    QList<ToolBar*> toolBars;
+    QMenu *dockWidgetMenu;
+    QMenu *mainWindowMenu;
+    QList<QDockWidget *> extraDockWidgets;
+    QMenu *destroyDockWidgetMenu;
 };
 
-
-#endif
+#endif // MAINWINDOW_H
