@@ -258,8 +258,12 @@ static inline uint detectProcessorFeatures()
 
     uint features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
+#if Q_PROCESSOR_X86 < 5
     if (cpuidLevel < 1)
         return 0;
+#else
+    Q_ASSERT(cpuidLevel >= 1);
+#endif
 
     uint cpuid01ECX = 0, cpuid01EDX = 0;
     cpuidFeatures01(cpuid01ECX, cpuid01EDX);
