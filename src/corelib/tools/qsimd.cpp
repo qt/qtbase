@@ -240,7 +240,7 @@ static void xgetbv(uint in, uint &eax, uint &edx)
 #endif
 }
 
-static inline uint detectProcessorFeatures()
+static quint64 detectProcessorFeatures()
 {
     // Flags from the CR0 / XCR0 state register
     enum XCR0Flags {
@@ -258,7 +258,7 @@ static inline uint detectProcessorFeatures()
         AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
     };
 
-    uint features = 0;
+    quint64 features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
 #if Q_PROCESSOR_X86 < 5
     if (cpuidLevel < 1)
@@ -505,27 +505,35 @@ static const int features_indices[] = {
 static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
 
 // record what CPU features were enabled by default in this Qt build
-static const uint minFeature = qCompilerCpuFeatures;
+static const quint64 minFeature = qCompilerCpuFeatures;
 
 #ifdef Q_OS_WIN
 #if defined(Q_CC_GNU)
-#  define ffs __builtin_ffs
+#  define ffsll __builtin_ffsll
 #else
-int ffs(int i)
+int ffsll(quint64 i)
 {
-#ifndef Q_OS_WINCE
+#if defined(Q_OS_WIN64)
     unsigned long result;
-    return _BitScanForward(&result, i) ? result : 0;
+    return _BitScanForward64(&result, i) ? result : 0;
+#elif !defined(Q_OS_WINCE)
+    unsigned long result;
+    return _BitScanForward(&result, i) ? result :
+                                         _BitScanForward(&result, i >> 32) ? result + 32 : 0;
 #else
     return 0;
 #endif
 }
 #endif
-#elif defined(Q_OS_ANDROID)
-# define ffs __builtin_ffs
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_QNX)
+# define ffsll __builtin_ffsll
 #endif
 
-QBasicAtomicInt qt_cpu_features = Q_BASIC_ATOMIC_INITIALIZER(0);
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
+Q_CORE_EXPORT QBasicAtomicInteger<quint64> qt_cpu_features[1] = { Q_BASIC_ATOMIC_INITIALIZER(0) };
+#else
+Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
+#endif
 
 void qDetectCpuFeatures()
 {
@@ -547,11 +555,11 @@ void qDetectCpuFeatures()
     // contains all the features that the code required. Qt 4 ran for years
     // like that, so it shouldn't be a problem.
 
-    qt_cpu_features.store(minFeature | QSimdInitialized);
+    qt_cpu_features.store(minFeature | quint32(QSimdInitialized));
     return;
 # endif
 #endif
-    uint f = detectProcessorFeatures();
+    quint64 f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
     if (!disable.isEmpty()) {
         disable.prepend(' ');
@@ -567,29 +575,32 @@ void qDetectCpuFeatures()
     bool runningOnValgrind = false;
 #endif
     if (!runningOnValgrind && (minFeature != 0 && (f & minFeature) != minFeature)) {
-        uint missing = minFeature & ~f;
+        quint64 missing = minFeature & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (int i = 0; i < features_count; ++i) {
-            if (missing & (1 << i))
+            if (missing & (Q_UINT64_C(1) << i))
                 fprintf(stderr, "%s", features_string + features_indices[i]);
         }
         fprintf(stderr, "\n");
         fflush(stderr);
-        qFatal("Aborted. Incompatible processor: missing feature 0x%x -%s.", missing,
-               features_string + features_indices[ffs(missing) - 1]);
+        qFatal("Aborted. Incompatible processor: missing feature 0x%llx -%s.", missing,
+               features_string + features_indices[ffsll(missing) - 1]);
     }
 
-    qt_cpu_features.store(f | QSimdInitialized);
+    qt_cpu_features[0].store(f | quint32(QSimdInitialized));
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    qt_cpu_features[1].store(f >> 32);
+#endif
 }
 
 void qDumpCPUFeatures()
 {
-    uint features = qCpuFeatures();
+    quint64 features = qCpuFeatures() & ~quint64(QSimdInitialized);
     printf("Processor features: ");
     for (int i = 0; i < features_count; ++i) {
-        if (features & (1 << i))
+        if (features & (Q_UINT64_C(1) << i))
             printf("%s%s", features_string + features_indices[i],
-                   minFeature & (1 << i) ? "[required]" : "");
+                   minFeature & (Q_UINT64_C(1) << i) ? "[required]" : "");
     }
     puts("");
 }
