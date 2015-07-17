@@ -499,8 +499,7 @@ static const int features_indices[] = {
 static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
 
 // record what CPU features were enabled by default in this Qt build
-// don't define for HLE, since the HLE prefix can be run on older CPUs
-static const uint minFeature = qCompilerCpuFeatures & ~HLE;
+static const uint minFeature = qCompilerCpuFeatures;
 
 #ifdef Q_OS_WIN
 #if defined(Q_CC_GNU)
