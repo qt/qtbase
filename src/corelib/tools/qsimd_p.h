@@ -245,18 +245,29 @@ QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
-    NEON        = 0x2,  ARM_NEON = NEON,
-    SSE2        = 0x4,
-    SSE3        = 0x8,
-    SSSE3       = 0x10,
-    SSE4_1      = 0x20,
-    SSE4_2      = 0x40,
-    AVX         = 0x80,
-    AVX2        = 0x100,
-    HLE         = 0x200,
-    RTM         = 0x400,
-    DSP         = 0x800,
-    DSPR2       = 0x1000,
+#if defined(Q_PROCESSOR_ARM)
+    CpuFeatureNEON          = 0,
+    CpuFeatureARM_NEON      = CpuFeatureNEON,
+#elif defined(Q_PROCESSOR_MIPS)
+    CpuFeatureDSP           = 0,
+    CpuFeatureDSPR2         = 1,
+#elif defined(Q_PROCESSOR_X86)
+    // The order of the flags is jumbled so it matches most closely the bits in CPUID
+    // Out of order:
+    CpuFeatureSSE2          = 1,                       // uses the bit for PCLMULQDQ
+    // in level 1, ECX
+    CpuFeatureSSE3          = (0 + 0),
+    CpuFeatureSSSE3         = (0 + 9),
+    CpuFeatureSSE4_1        = (0 + 19),
+    CpuFeatureSSE4_2        = (0 + 20),
+    CpuFeatureAES           = (0 + 25),
+    CpuFeatureAVX           = (0 + 28),
+
+    // in level 7, leaf 0, EBX
+    CpuFeatureHLE           = (32 + 4),
+    CpuFeatureAVX2          = (32 + 5),
+    CpuFeatureRTM           = (32 + 11),
+#endif
 
     // used only to indicate that the CPU detection was initialised
     QSimdInitialized = 0x80000000
@@ -264,37 +275,37 @@ enum CPUFeatures {
 
 static const uint qCompilerCpuFeatures = 0
 #if defined __RTM__
-        | RTM
+        | (Q_UINT64_C(1) << CpuFeatureRTM)
 #endif
 #if defined __AVX2__
-        | AVX2
+        | (Q_UINT64_C(1) << CpuFeatureAVX2)
 #endif
 #if defined __AVX__
-        | AVX
+        | (Q_UINT64_C(1) << CpuFeatureAVX)
 #endif
 #if defined __SSE4_2__
-        | SSE4_2
+        | (Q_UINT64_C(1) << CpuFeatureSSE4_2)
 #endif
 #if defined __SSE4_1__
-        | SSE4_1
+        | (Q_UINT64_C(1) << CpuFeatureSSE4_1)
 #endif
 #if defined __SSSE3__
-        | SSSE3
+        | (Q_UINT64_C(1) << CpuFeatureSSSE3)
 #endif
 #if defined __SSE3__
-        | SSE3
+        | (Q_UINT64_C(1) << CpuFeatureSSE3)
 #endif
 #if defined __SSE2__
-        | SSE2
+        | (Q_UINT64_C(1) << CpuFeatureSSE2)
 #endif
 #if defined __ARM_NEON__
-        | NEON
+        | (Q_UINT64_C(1) << CpuFeatureNEON)
 #endif
 #if defined __mips_dsp
-        | DSP
+        | (Q_UINT64_C(1) << CpuFeatureDSP)
 #endif
 #if defined __mips_dspr2
-        | DSPR2
+        | (Q_UINT64_C(1) << CpuFeatureDSPR2)
 #endif
         ;
 
@@ -322,7 +333,8 @@ static inline quint64 qCpuFeatures()
     return features;
 }
 
-#define qCpuHasFeature(feature)  ((qCompilerCpuFeatures & (feature)) || (qCpuFeatures() & (feature)))
+#define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
+                                     || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))
 
 #ifdef Q_PROCESSOR_X86
 // Bit scan functions for x86

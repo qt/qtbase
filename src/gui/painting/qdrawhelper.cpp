@@ -6326,8 +6326,6 @@ template<QtPixelOrder> const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM_sse4
 
 void qInitDrawhelperAsm()
 {
-    const uint features = qCpuFeatures();
-    Q_UNUSED(features);
 #ifdef __SSE2__
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6372,7 +6370,7 @@ void qInitDrawhelperAsm()
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
 
 #ifdef QT_COMPILER_SUPPORTS_SSSE3
-    if (features & SSSE3) {
+    if (qCpuHasFeature(SSSE3)) {
         extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
                                                     const uchar *srcPixels, int sbpl,
                                                     int w, int h,
@@ -6466,7 +6464,7 @@ void qInitDrawhelperAsm()
 #endif // Q_PROCESSOR_MIPS_32
 
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-    if (features & (DSP | DSPR2)) {
+    if (qCpuHasFeature(DSP) && qCpuHasFeature(DSPR2)) {
         // Composition functions are all DSP r1
         qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;

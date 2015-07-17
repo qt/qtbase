@@ -78,28 +78,28 @@ static inline uint detectProcessorFeatures()
     return 0;
 }
 #elif defined (Q_OS_WINCE)
-static inline uint detectProcessorFeatures()
+static inline quint64 detectProcessorFeatures()
 {
-    uint features = 0;
+    quint64 features = 0;
 
 #if defined (ARM)
 #  ifdef PF_ARM_NEON
     if (IsProcessorFeaturePresent(PF_ARM_NEON))
-        features |= ARM_NEON;
+        features |= Q_UINT64_C(1) << CpuFeatureNEON;
 #  endif
 #elif defined(_X86_)
     if (IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE))
-        features |= SSE2;
+        features |= Q_UINT64_C(1) << CpuFeatureSSE2;
     if (IsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE))
-        features |= SSE3;
+        features |= Q_UINT64_C(1) << CpuFeatureSSE3;
 #endif
     return features;
 }
 
 #elif defined(Q_PROCESSOR_ARM)
-static inline uint detectProcessorFeatures()
+static inline quint64 detectProcessorFeatures()
 {
-    uint features = 0;
+    quint64 features = 0;
 
 #if defined(Q_OS_LINUX)
     int auxv = qt_safe_open("/proc/self/auxv", O_RDONLY);
@@ -117,7 +117,7 @@ static inline uint detectProcessorFeatures()
             for (int i = 0; i < max; i += 2)
                 if (vector[i] == AT_HWCAP) {
                     if (vector[i+1] & HWCAP_NEON)
-                        features |= NEON;
+                        features |= Q_UINT64_C(1) << CpuFeatureNEON;
                     break;
                 }
         }
@@ -129,7 +129,7 @@ static inline uint detectProcessorFeatures()
 #endif
 
 #if defined(__ARM_NEON__)
-    features = NEON;
+    features = Q_UINT64_C(1) << CpuFeatureNEON;
 #endif
 
     return features;
@@ -257,6 +257,8 @@ static quint64 detectProcessorFeatures()
         AVXState        = XMM0_15 | YMM0_15Hi128,
         AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
     };
+    static const quint64 AllAVX2 = (Q_UINT64_C(1) << CpuFeatureAVX2);
+    static const quint64 AllAVX = (Q_UINT64_C(1) << CpuFeatureAVX) | AllAVX2;
 
     quint64 features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
@@ -269,27 +271,22 @@ static quint64 detectProcessorFeatures()
 
     uint cpuid01ECX = 0, cpuid01EDX = 0;
     cpuidFeatures01(cpuid01ECX, cpuid01EDX);
+
+    // the low 32-bits of features is cpuid01ECX
+    // note: we need to check OS support for saving the AVX register state
+    features = cpuid01ECX;
+
 #if defined(Q_PROCESSOR_X86_32)
     // x86 might not have SSE2 support
     if (cpuid01EDX & (1u << 26))
-        features |= SSE2;
+        features |= Q_UINT64_C(1) << CpuFeatureSSE2;
+    else
+        features &= ~(Q_UINT64_C(1) << CpuFeatureSSE2);
     // we should verify that the OS enabled saving of the SSE state...
 #else
     // x86-64 or x32
-    features = SSE2;
+    features |= Q_UINT64_C(1) << CpuFeatureSSE2;
 #endif
-
-    // common part between 32- and 64-bit
-    if (cpuid01ECX & (1u))
-        features |= SSE3;
-    if (cpuid01ECX & (1u << 9))
-        features |= SSSE3;
-    if (cpuid01ECX & (1u << 19))
-        features |= SSE4_1;
-    if (cpuid01ECX & (1u << 20))
-        features |= SSE4_2;
-    if (cpuid01ECX & (1u << 25))
-        features |= 0; // AES, enable if needed
 
     uint xgetbvA = 0, xgetbvD = 0;
     if (cpuid01ECX & (1u << 27)) {
@@ -298,22 +295,17 @@ static quint64 detectProcessorFeatures()
     }
 
     uint cpuid0700EBX = 0;
-    if (cpuidLevel >= 7)
+    if (cpuidLevel >= 7) {
         cpuidFeatures07_00(cpuid0700EBX);
 
-    if ((xgetbvA & AVXState) == AVXState) {
-        // support for YMM and XMM registers is enabled
-        if (cpuid01ECX & (1u << 28))
-            features |= AVX;
-
-        if (cpuid0700EBX & (1u << 5))
-            features |= AVX2;
+        // the high 32-bits of features is cpuid0700EBX
+        features |= quint64(cpuid0700EBX) << 32;
     }
 
-    if (cpuid0700EBX & (1u << 4))
-        features |= HLE; // Hardware Lock Ellision
-    if (cpuid0700EBX & (1u << 11))
-        features |= RTM; // Restricted Transactional Memory
+    if ((xgetbvA & AVXState) != AVXState) {
+        // support for YMM registers is disabled, disable all AVX
+        features &= ~AllAVX;
+    }
 
     return features;
 }
@@ -430,24 +422,24 @@ static bool procCpuinfoContains(const char *prefix, const char *string)
 }
 #endif
 
-static inline uint detectProcessorFeatures()
+static inline quint64 detectProcessorFeatures()
 {
     // NOTE: MIPS 74K cores are the only ones supporting DSPr2.
-    uint flags = 0;
+    quint64 flags = 0;
 
 #if defined __mips_dsp
-    flags |= DSP;
+    flags |= Q_UINT64_C(1) << CpuFeatureDSP;
 #  if defined __mips_dsp_rev && __mips_dsp_rev >= 2
-    flags |= DSPR2;
+    flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
 #  elif defined(Q_OS_LINUX)
     if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
-        flags |= DSPR2;
+        flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
 #  endif
 #elif defined(Q_OS_LINUX)
     if (procCpuinfoContains("ASEs implemented", "dsp")) {
-        flags |= DSP;
+        flags |= Q_UINT64_C(1) << CpuFeatureDSP;
         if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
-            flags |= DSPR2;
+            flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
     }
 #endif
 
@@ -462,47 +454,115 @@ static inline uint detectProcessorFeatures()
 #endif
 
 /*
- * Use kdesdk/scripts/generate_string_table.pl to update the table below.
- * Here's the data (don't forget the ONE leading space):
-
- neon
- sse2
- sse3
- ssse3
- sse4.1
- sse4.2
- avx
- avx2
- hle
- rtm
- dsp
- dspr2
-  */
+ * Use kdesdk/scripts/generate_string_table.pl to update the table below. Note
+ * that the x86 version has a lot of blanks that must be kept and that the
+ * offset table's type is changed to make the table smaller. We also remove the
+ * terminating -1 that the script adds.
+ */
 
 // begin generated
+#if defined(Q_PROCESSOR_ARM)
+/* Data:
+ neon
+ */
+static const char features_string[] = " neon\0";
+static const int features_indices[] = { 0 };
+#elif defined(Q_PROCESSOR_MIPS)
+/* Data:
+ dsp
+ dspr2
+*/
 static const char features_string[] =
-    "\0"
-    " neon\0"
-    " sse2\0"
-    " sse3\0"
-    " ssse3\0"
-    " sse4.1\0"
-    " sse4.2\0"
-    " avx\0"
-    " avx2\0"
-    " hle\0"
-    " rtm\0"
     " dsp\0"
     " dspr2\0"
     "\0";
 
 static const int features_indices[] = {
-    0,    1,    7,   13,   19,   26,   34,   42,
-   47,   53,   58,   63,   68,   -1
+       0,    5
 };
+#elif defined(Q_PROCESSOR_X86)
+/* Data:
+ sse3
+ sse2
+
+
+
+
+
+
+
+ ssse3
+
+
+ fma
+ cmpxchg16b
+
+
+
+
+
+ sse4.1
+ sse4.2
+
+ movbe
+ popcnt
+
+ aes
+
+
+ avx
+ f16c
+ rdrand
+
+
+
+
+ bmi
+ hle
+ avx2
+
+
+ bmi2
+
+
+ rtm
+ */
+static const char features_string[] =
+    " sse3\0"
+    " sse2\0"
+    " ssse3\0"
+    " fma\0"
+    " cmpxchg16b\0"
+    " sse4.1\0"
+    " sse4.2\0"
+    " movbe\0"
+    " popcnt\0"
+    " aes\0"
+    " avx\0"
+    " f16c\0"
+    " rdrand\0"
+    " bmi\0"
+    " hle\0"
+    " avx2\0"
+    " bmi2\0"
+    " rtm\0"
+    "\0";
+
+static const quint8 features_indices[] = {
+       0,    6,    5,    5,    5,    5,    5,    5,
+       5,   12,    5,    5,   19,   24,    5,    5,
+       5,    5,    5,   36,   44,    5,   52,   59,
+       5,   67,    5,    5,   72,   77,   83,    5,
+       5,    5,    5,   91,   96,  101,    5,    5,
+     107,    5,    5,  113
+};
+#else
+static const char features_string[] = "";
+static const int features_indices[] = { };
+#endif
 // end generated
 
-static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+static const int features_count = (sizeof features_indices) / (sizeof features_indices[0]);
 
 // record what CPU features were enabled by default in this Qt build
 static const quint64 minFeature = qCompilerCpuFeatures;
