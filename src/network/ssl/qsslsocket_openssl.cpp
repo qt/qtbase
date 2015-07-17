@@ -1530,6 +1530,13 @@ void QSslSocketBackendPrivate::disconnected()
 {
     if (plainSocket->bytesAvailable() <= 0)
         destroySslContext();
+    else {
+        // Move all bytes into the plain buffer
+        qint64 tmpReadBufferMaxSize = readBufferMaxSize;
+        readBufferMaxSize = 0; // reset temporarily so the plain socket buffer is completely drained
+        transmit();
+        readBufferMaxSize = tmpReadBufferMaxSize;
+    }
     //if there is still buffered data in the plain socket, don't destroy the ssl context yet.
     //it will be destroyed when the socket is deleted.
 }

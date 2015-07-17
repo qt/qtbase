@@ -191,7 +191,7 @@ QByteArray QHttpNetworkReply::readAny()
         return QByteArray();
 
     // we'll take the last buffer, so schedule another read from http
-    if (d->downstreamLimited && d->responseData.bufferCount() == 1)
+    if (d->downstreamLimited && d->responseData.bufferCount() == 1 && !isFinished())
         d->connection->d_func()->readMoreLater(this);
     return d->responseData.read();
 }

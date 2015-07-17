@@ -2605,6 +2605,7 @@
            (checked if all children are checked, unchecked if all children are unchecked,
            or partially checked if only some children are checked).
     \value ItemNeverHasChildren The item never has child items.
+           This is used for optimization purposes only.
     \value ItemIsUserTristate The user can cycle through three separate states.
            This value has been added in Qt 5.5.
 
