@@ -17,6 +17,7 @@ CFLAGS="$SYSROOT_FLAG"
 CXXFLAGS="$SYSROOT_FLAG"
 MAC_ARCH_CXXFLAGS=""
 MAC_ARCH_LFLAGS=""
+QMAKE_ARGS=
 while [ "$#" -gt 0 ]; do
     PARAM=$1
     case $PARAM in
@@ -56,7 +57,9 @@ while [ "$#" -gt 0 ]; do
 	CXXFLAGS="$CXXFLAGS $PARAM \"$2\""
 	shift
 	;;
-    *)  ;;
+    *)
+        QMAKE_ARGS="$QMAKE_ARGS $PARAM"
+        ;;
     esac
     shift
 done
@@ -83,6 +86,7 @@ set -- \
      "QMAKE_CFLAGS+=$MAC_ARCH_CFLAGS" \
      "QMAKE_CXXFLAGS*=$CXXFLAGS" \
      "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" \
+     $QMAKE_ARGS \
      "$SRCDIR/$TEST/$EXE.pro" \
      -o "$OUTDIR/$TEST/Makefile"
 if [ "$VERBOSE" = "yes" ]; then
