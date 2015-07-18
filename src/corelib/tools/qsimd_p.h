@@ -54,9 +54,9 @@
  * for the x86 and ARM intrinsics:
  *  - GCC: the -mXXX or march=YYY flag is necessary before #include
  *    up to 4.8; GCC >= 4.9 can include unconditionally
+ *  - Clang: same as GCC, with unconditional inclusion with version 3.7
  *  - Intel CC: #include can happen unconditionally
  *  - MSVC: #include can happen unconditionally
- *  - RVCT: ???
  *
  * We will try to include all headers possible under this configuration.
  *
@@ -138,7 +138,8 @@
 #define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
 
 #if (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
-    || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
+    || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409) \
+    || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 307)) \
     && !defined(QT_BOOTSTRAPPED)
 #  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
 #  define QT_COMPILER_SUPPORTS_HERE(x)    QT_COMPILER_SUPPORTS(x)
