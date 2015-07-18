@@ -975,7 +975,7 @@ void QTextLayout::setFlags(int flags)
 }
 
 static void addSelectedRegionsToPath(QTextEngine *eng, int lineNumber, const QPointF &pos, QTextLayout::FormatRange *selection,
-                                     QPainterPath *region, QRectF boundingRect)
+                                     QPainterPath *region, const QRectF &boundingRect)
 {
     const QScriptLine &line = eng->lines[lineNumber];
 

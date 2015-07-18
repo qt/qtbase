@@ -3141,7 +3141,7 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
     html += QLatin1String("</table>");
 }
 
-void QTextHtmlExporter::emitFrame(QTextFrame::Iterator frameIt)
+void QTextHtmlExporter::emitFrame(const QTextFrame::Iterator &frameIt)
 {
     if (!frameIt.atEnd()) {
         QTextFrame::Iterator next = frameIt;

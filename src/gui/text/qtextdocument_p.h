@@ -378,7 +378,7 @@ private:
     enum StyleMode { EmitStyleTag, OmitStyleTag };
     enum FrameType { TextFrame, TableFrame, RootFrame };
 
-    void emitFrame(QTextFrame::Iterator frameIt);
+    void emitFrame(const QTextFrame::Iterator &frameIt);
     void emitTextFrame(const QTextFrame *frame);
     void emitBlock(const QTextBlock &block);
     void emitTable(const QTextTable *table);

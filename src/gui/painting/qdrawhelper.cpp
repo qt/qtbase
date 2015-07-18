@@ -4026,7 +4026,7 @@ template<typename T>
 struct QBlendBase
 {
     typedef T BlendType;
-    QBlendBase(QSpanData *d, Operator o)
+    QBlendBase(QSpanData *d, const Operator &o)
         : data(d)
         , op(o)
         , dest(0)
@@ -4045,7 +4045,7 @@ struct QBlendBase
 class BlendSrcGeneric : public QBlendBase<uint>
 {
 public:
-    BlendSrcGeneric(QSpanData *d, Operator o)
+    BlendSrcGeneric(QSpanData *d, const Operator &o)
         : QBlendBase<uint>(d, o)
     {
     }
@@ -4071,7 +4071,7 @@ public:
 class BlendSrcGenericRGB64 : public QBlendBase<QRgba64>
 {
 public:
-    BlendSrcGenericRGB64(QSpanData *d, Operator o)
+    BlendSrcGenericRGB64(QSpanData *d, const Operator &o)
         : QBlendBase<QRgba64>(d, o)
     {
     }

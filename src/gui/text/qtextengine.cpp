@@ -843,7 +843,7 @@ enum JustificationClass {
     Adds an inter character justification opportunity after the number or letter
     character and a space justification opportunity after the space character.
 */
-static inline void qt_getDefaultJustificationOpportunities(const ushort *string, int length, QGlyphLayout g, ushort *log_clusters, int spaceAs)
+static inline void qt_getDefaultJustificationOpportunities(const ushort *string, int length, const QGlyphLayout &g, ushort *log_clusters, int spaceAs)
 {
     int str_pos = 0;
     while (str_pos < length) {
@@ -877,7 +877,7 @@ static inline void qt_getDefaultJustificationOpportunities(const ushort *string,
     }
 }
 
-static inline void qt_getJustificationOpportunities(const ushort *string, int length, const QScriptItem &si, QGlyphLayout g, ushort *log_clusters)
+static inline void qt_getJustificationOpportunities(const ushort *string, int length, const QScriptItem &si, const QGlyphLayout &g, ushort *log_clusters)
 {
     Q_ASSERT(length > 0 && g.numGlyphs > 0);
 
@@ -3509,7 +3509,7 @@ QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex,
 }
 
 
-QTransform qt_true_matrix(qreal w, qreal h, QTransform x)
+QTransform qt_true_matrix(qreal w, qreal h, const QTransform &x)
 {
     QRectF rect = x.mapRect(QRectF(0, 0, w, h));
     return x * QTransform::fromTranslate(-rect.x(), -rect.y());
