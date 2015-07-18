@@ -48,18 +48,18 @@ warnings_are_errors:warning_clean {
     # If the module declares that it has does its clean-up of warnings, enable -Werror.
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
-    clang {
-        # Apple clang 4.0-4.2,5.0-5.1
-        # Regular clang 3.3-3.6
+    clang:!ios {
+        # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4
+        # Regular clang 3.3-3.7
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]")|contains(reg_ver, "3\\.[3-6]") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]")|contains(reg_ver, "3\\.[3-7]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
-        # Intel CC 13.0 - 15.0, on Linux only
+        # Intel CC 13.0 - 16.0, on Linux only
         ver = $${QT_ICC_MAJOR_VERSION}.$${QT_ICC_MINOR_VERSION}
-        linux:contains(ver, "(1[34]\\.|15\\.0)") {
+        linux:contains(ver, "(1[345]\\.|16\\.0)") {
             # 177: function "entity" was declared but never referenced
             #      (too aggressive; ICC reports even for functions created due to template instantiation)
             # 1224: #warning directive
