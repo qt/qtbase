@@ -9,9 +9,9 @@
 
 
     isEmpty(QMAKE_YACCFLAGS_MANGLE) {
-        QMAKE_YACCFLAGS_MANGLE = -p ${QMAKE_FILE_BASE}
-        QMAKE_YACC_HEADER      = y.tab.h
-        QMAKE_YACC_SOURCE      = y.tab.c
+        QMAKE_YACCFLAGS_MANGLE = -p ${QMAKE_FILE_BASE} -b ${QMAKE_FILE_BASE}
+        QMAKE_YACC_HEADER      = ${QMAKE_FILE_BASE}.tab.h
+        QMAKE_YACC_SOURCE      = ${QMAKE_FILE_BASE}.tab.c
     } else {
         QMAKE_YACCFLAGS_MANGLE ~= s/\\$base/${QMAKE_FILE_BASE}/g #backwards compat
         QMAKE_YACC_HEADER      ~= s/\\$base/${QMAKE_FILE_BASE}/g
@@ -21,10 +21,10 @@
     !yacc_no_name_mangle:QMAKE_YACCDECLFLAGS += $$QMAKE_YACCFLAGS_MANGLE
 
     yacc_decl.commands = \
+        -$(DEL_FILE) $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_H)} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_CPP)}$$escape_expand(\\n\\t) \
         $$QMAKE_YACC $$QMAKE_YACCDECLFLAGS ${QMAKE_FILE_IN}$$escape_expand(\\n\\t) \
-        $$QMAKE_DEL_FILE $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_H)} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_CPP)}$$escape_expand(\\n\\t) \
-        $$QMAKE_MOVE $${QMAKE_YACC_HEADER} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_H)}$$escape_expand(\\n\\t) \
-        $$QMAKE_MOVE $${QMAKE_YACC_SOURCE} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_CPP)}$$escape_expand(\\n\\t)
+        $(MOVE) $${QMAKE_YACC_HEADER} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_H)}$$escape_expand(\\n\\t) \
+        $(MOVE) $${QMAKE_YACC_SOURCE} $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_CPP)}$$escape_expand(\\n\\t)
     yacc_decl.output = $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_yacc$${first(QMAKE_EXT_H)}
 
     silent:yacc_decl.commands = @echo Yacc ${QMAKE_FILE_IN} && $$yacc_decl.commands
