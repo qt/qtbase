@@ -67,8 +67,19 @@ public:
     QColor(QRgba64 rgba64);
     QColor(const QString& name);
     QColor(const char *name);
-    QColor(const QColor &color); // ### Qt 6: remove, the trivial one is fine.
     QColor(Spec spec);
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QColor(const QColor &color); // ### Qt 6: remove all of these, the trivial ones are fine.
+# ifdef Q_COMPILER_RVALUE_REFS
+    QColor(QColor &&other) Q_DECL_NOTHROW : cspec(other.cspec), ct(other.ct) {}
+    QColor &operator=(QColor &&other) Q_DECL_NOTHROW
+    { cspec = other.cspec; ct = other.ct; return *this; }
+# endif
+    QColor &operator=(const QColor &);
+#endif // Qt < 6
+
+    QColor &operator=(Qt::GlobalColor color);
 
     bool isValid() const;
 
@@ -195,9 +206,6 @@ public:
     QColor dark(int f = 200) const Q_REQUIRED_RESULT;
     QColor darker(int f = 200) const Q_REQUIRED_RESULT;
 
-    QColor &operator=(const QColor &);
-    QColor &operator=(Qt::GlobalColor color);
-
     bool operator==(const QColor &c) const;
     bool operator!=(const QColor &c) const;
 
@@ -262,9 +270,11 @@ inline QColor::QColor(const char *aname)
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 inline QColor::QColor(const QColor &acolor)
     : cspec(acolor.cspec)
 { ct.argb = acolor.ct.argb; }
+#endif
 
 inline bool QColor::isValid() const
 { return cspec != Invalid; }
