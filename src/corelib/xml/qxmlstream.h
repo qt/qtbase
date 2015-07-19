@@ -99,13 +99,16 @@ class QXmlStreamReaderPrivate;
 class QXmlStreamAttributes;
 class Q_CORE_EXPORT QXmlStreamAttribute {
     QXmlStreamStringRef m_name, m_namespaceUri, m_qualifiedName, m_value;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void *reserved;
+#endif
     uint m_isDefault : 1;
     friend class QXmlStreamReaderPrivate;
     friend class QXmlStreamAttributes;
 public:
     QXmlStreamAttribute();
     QXmlStreamAttribute(const QString &qualifiedName, const QString &value);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value);
     QXmlStreamAttribute(const QXmlStreamAttribute &);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -132,6 +135,8 @@ public:
 #endif
     QXmlStreamAttribute& operator=(const QXmlStreamAttribute &);
     ~QXmlStreamAttribute();
+#endif // < Qt 6
+
     inline QStringRef namespaceUri() const { return m_namespaceUri; }
     inline QStringRef name() const { return m_name; }
     inline QStringRef qualifiedName() const { return m_qualifiedName; }
@@ -185,15 +190,34 @@ public:
 
 class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
     QXmlStreamStringRef m_prefix, m_namespaceUri;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void *reserved;
+#endif
 
     friend class QXmlStreamReaderPrivate;
 public:
     QXmlStreamNamespaceDeclaration();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlStreamNamespaceDeclaration(const QXmlStreamNamespaceDeclaration &);
+    QXmlStreamNamespaceDeclaration(QXmlStreamNamespaceDeclaration &&other) Q_DECL_NOTHROW // = default
+        : m_prefix(std::move(other.m_prefix)),
+          m_namespaceUri(std::move(other.m_namespaceUri)),
+          reserved(other.reserved)
+    {
+        other.reserved = nullptr;
+    }
+    QXmlStreamNamespaceDeclaration &operator=(QXmlStreamNamespaceDeclaration &&other) Q_DECL_NOTHROW // = default
+    {
+        m_prefix = std::move(other.m_prefix);
+        m_namespaceUri = std::move(other.m_namespaceUri);
+        qSwap(reserved, other.reserved);
+        return *this;
+    }
     QXmlStreamNamespaceDeclaration(const QString &prefix, const QString &namespaceUri);
     ~QXmlStreamNamespaceDeclaration();
     QXmlStreamNamespaceDeclaration& operator=(const QXmlStreamNamespaceDeclaration &);
+#endif // < Qt 6
+
     inline QStringRef prefix() const { return m_prefix; }
     inline QStringRef namespaceUri() const { return m_namespaceUri; }
     inline bool operator==(const QXmlStreamNamespaceDeclaration &other) const {
@@ -208,14 +232,35 @@ typedef QVector<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
     QXmlStreamStringRef m_name, m_systemId, m_publicId;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void *reserved;
+#endif
 
     friend class QXmlStreamReaderPrivate;
 public:
     QXmlStreamNotationDeclaration();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     ~QXmlStreamNotationDeclaration();
     QXmlStreamNotationDeclaration(const QXmlStreamNotationDeclaration &);
+    QXmlStreamNotationDeclaration(QXmlStreamNotationDeclaration &&other) Q_DECL_NOTHROW // = default
+        : m_name(std::move(other.m_name)),
+          m_systemId(std::move(other.m_systemId)),
+          m_publicId(std::move(other.m_publicId)),
+          reserved(other.reserved)
+    {
+        other.reserved = nullptr;
+    }
     QXmlStreamNotationDeclaration& operator=(const QXmlStreamNotationDeclaration &);
+    QXmlStreamNotationDeclaration &operator=(QXmlStreamNotationDeclaration &&other) Q_DECL_NOTHROW // = default
+    {
+        m_name = std::move(other.m_name);
+        m_systemId = std::move(other.m_systemId);
+        m_publicId = std::move(other.m_publicId);
+        qSwap(reserved, other.reserved);
+        return *this;
+    }
+#endif // < Qt 6
+
     inline QStringRef name() const { return m_name; }
     inline QStringRef systemId() const { return m_systemId; }
     inline QStringRef publicId() const { return m_publicId; }
@@ -232,14 +277,39 @@ typedef QVector<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
     QXmlStreamStringRef m_name, m_notationName, m_systemId, m_publicId, m_value;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void *reserved;
+#endif
 
     friend class QXmlStreamReaderPrivate;
 public:
     QXmlStreamEntityDeclaration();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     ~QXmlStreamEntityDeclaration();
     QXmlStreamEntityDeclaration(const QXmlStreamEntityDeclaration &);
+    QXmlStreamEntityDeclaration(QXmlStreamEntityDeclaration &&other) Q_DECL_NOTHROW // = default
+        : m_name(std::move(other.m_name)),
+          m_notationName(std::move(other.m_notationName)),
+          m_systemId(std::move(other.m_systemId)),
+          m_publicId(std::move(other.m_publicId)),
+          m_value(std::move(other.m_value)),
+          reserved(other.reserved)
+    {
+        other.reserved = nullptr;
+    }
     QXmlStreamEntityDeclaration& operator=(const QXmlStreamEntityDeclaration &);
+    QXmlStreamEntityDeclaration &operator=(QXmlStreamEntityDeclaration &&other) Q_DECL_NOTHROW // = default
+    {
+        m_name = std::move(other.m_name);
+        m_notationName = std::move(other.m_notationName);
+        m_systemId = std::move(other.m_systemId);
+        m_publicId = std::move(other.m_publicId);
+        m_value = std::move(other.m_value);
+        qSwap(reserved, other.reserved);
+        return *this;
+    }
+#endif // < Qt 6
+
     inline QStringRef name() const { return m_name; }
     inline QStringRef notationName() const { return m_notationName; }
     inline QStringRef systemId() const { return m_systemId; }
