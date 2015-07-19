@@ -522,7 +522,7 @@ public:
 
     // Linear Programming solver methods
     bool solveMinMax(const QList<QSimplexConstraint *> &constraints,
-                     GraphPath path, qreal *min, qreal *max);
+                     const GraphPath &path, qreal *min, qreal *max);
     bool solvePreferred(const QList<QSimplexConstraint *> &constraints,
                         const QList<AnchorData *> &variables);
     bool hasConflicts() const;

@@ -93,7 +93,7 @@ public:
 
 
     HistoryEntry createHistoryEntry() const;
-    void restoreHistoryEntry(const HistoryEntry entry);
+    void restoreHistoryEntry(const HistoryEntry &entry);
 
     QStack<HistoryEntry> stack;
     QStack<HistoryEntry> forwardStack;
@@ -554,7 +554,7 @@ QTextBrowserPrivate::HistoryEntry QTextBrowserPrivate::createHistoryEntry() cons
     return entry;
 }
 
-void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry entry)
+void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry &entry)
 {
     setSource(entry.url);
     hbar->setValue(entry.hpos);

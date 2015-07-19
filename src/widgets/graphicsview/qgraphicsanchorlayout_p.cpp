@@ -2796,7 +2796,7 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorDat
 }
 
 bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *> &constraints,
-                                               GraphPath path, qreal *min, qreal *max)
+                                               const GraphPath &path, qreal *min, qreal *max)
 {
     QSimplex simplex;
     bool feasible = simplex.setConstraints(constraints);

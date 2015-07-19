@@ -3326,7 +3326,11 @@ void QWidget::insertAction(QAction *before, QAction *action)
 
     \sa removeAction(), QMenu, insertAction(), contextMenuPolicy
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void QWidget::insertActions(QAction *before, const QList<QAction*> &actions)
+#else
 void QWidget::insertActions(QAction *before, QList<QAction*> actions)
+#endif
 {
     for(int i = 0; i < actions.count(); ++i)
         insertAction(before, actions.at(i));
@@ -5018,7 +5022,7 @@ void QWidgetPrivate::unsetCursor_sys()
     qt_qpa_set_cursor(q, false);
 }
 
-static inline void applyCursor(QWidget *w, QCursor c)
+static inline void applyCursor(QWidget *w, const QCursor &c)
 {
     if (QWindow *window = w->windowHandle())
         window->setCursor(c);

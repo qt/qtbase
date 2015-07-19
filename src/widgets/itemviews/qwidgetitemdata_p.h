@@ -53,7 +53,7 @@ class QWidgetItemData
 {
 public:
     inline QWidgetItemData() : role(-1) {}
-    inline QWidgetItemData(int r, QVariant v) : role(r), value(v) {}
+    inline QWidgetItemData(int r, const QVariant &v) : role(r), value(v) {}
     int role;
     QVariant value;
     inline bool operator==(const QWidgetItemData &other) const { return role == other.role && value == other.value; }

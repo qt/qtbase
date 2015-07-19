@@ -354,7 +354,7 @@ public:
 
     struct ExtraStruct {
         ExtraStruct() {} // for QVector, don't use
-        ExtraStruct(Extra type, QVariant value)
+        ExtraStruct(Extra type, const QVariant &value)
             : type(type), value(value)
         { }
 
