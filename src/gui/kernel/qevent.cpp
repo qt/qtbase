@@ -1996,6 +1996,16 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
 */
 
 /*!
+    \fn QInputMethodEvent::Attribute::Attribute(AttributeType type, int start, int length)
+    \overload
+    \since 5.7
+
+    Constructs an input method attribute with no value. \a type
+    specifies the type of attribute, and \a start and \a length
+    the position of the attribute.
+*/
+
+/*!
     Constructs an event of type QEvent::InputMethod. The
     attributes(), preeditString(), commitString(), replacementStart(),
     and replacementLength() are initialized to default values.

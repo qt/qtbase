@@ -640,7 +640,7 @@ jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPos
                                     : localPos - text.length() + newCursorPosition;
             //move the cursor
             attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection,
-                                                           newLocalPos, 0, QVariant()));
+                                                           newLocalPos, 0));
         }
     }
     m_blockUpdateSelection = updateSelectionWasBlocked;
@@ -686,7 +686,7 @@ jboolean QAndroidInputContext::finishComposingText()
 
     // Moving Qt's cursor to where the preedit cursor used to be
     QList<QInputMethodEvent::Attribute> attributes;
-    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, localCursorPos, 0, QVariant()));
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, localCursorPos, 0));
 
     QInputMethodEvent event(QString(), attributes);
     event.setCommitString(m_composingText);
@@ -843,8 +843,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     QList<QInputMethodEvent::Attribute> attributes;
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
                                                    newCursorPosition,
-                                                   1,
-                                                   QVariant()));
+                                                   1));
     // Show compose text underlined
     QTextCharFormat underlined;
     underlined.setFontUnderline(true);
@@ -916,7 +915,7 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
                                                    QVariant(underlined)));
 
     // Keep the cursor position unchanged (don't move to end of preedit)
-    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, currentCursor - start, 1, QVariant()));
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, currentCursor - start, 1));
 
     QInputMethodEvent event(m_composingText, attributes);
     event.setCommitString(QString(), relativeStart, length);
@@ -950,7 +949,7 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
         // preedit cursor
         int localOldPos = query->value(Qt::ImCursorPosition).toInt();
         int pos = localCursorPos - localOldPos;
-        attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, pos, 1, QVariant()));
+        attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, pos, 1));
 
         //but we have to tell Qt about the compose text all over again
 
@@ -965,8 +964,7 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
         // actually changing the selection
         attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection,
                                                        localCursorPos,
-                                                       end - start,
-                                                       QVariant()));
+                                                       end - start));
     }
     QInputMethodEvent event(m_composingText, attributes);
     sendInputMethodEventThreadSafe(&event);

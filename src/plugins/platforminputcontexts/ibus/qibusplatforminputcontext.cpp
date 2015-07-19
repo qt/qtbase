@@ -278,7 +278,7 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
 
     QList<QInputMethodEvent::Attribute> attributes = t.attributes.imAttributes();
     if (!t.text.isEmpty())
-        attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
+        attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0);
 
     QInputMethodEvent event(t.text, attributes);
     QCoreApplication::sendEvent(input, &event);

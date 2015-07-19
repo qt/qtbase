@@ -528,8 +528,9 @@ public:
     class Attribute {
     public:
         Attribute(AttributeType t, int s, int l, QVariant val) : type(t), start(s), length(l), value(qMove(val)) {}
-        AttributeType type;
+        Attribute(AttributeType t, int s, int l) : type(t), start(s), length(l), value() {}
 
+        AttributeType type;
         int start;
         int length;
         QVariant value;
