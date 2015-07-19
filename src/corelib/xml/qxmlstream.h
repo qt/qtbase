@@ -75,6 +75,28 @@ public:
     QXmlStreamAttribute(const QString &qualifiedName, const QString &value);
     QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value);
     QXmlStreamAttribute(const QXmlStreamAttribute &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QXmlStreamAttribute(QXmlStreamAttribute &&other) Q_DECL_NOTHROW // = default;
+        : m_name(std::move(other.m_name)),
+          m_namespaceUri(std::move(other.m_namespaceUri)),
+          m_qualifiedName(std::move(other.m_qualifiedName)),
+          m_value(std::move(other.m_value)),
+          reserved(other.reserved),
+          m_isDefault(other.m_isDefault)
+    {
+        other.reserved = Q_NULLPTR;
+    }
+    QXmlStreamAttribute &operator=(QXmlStreamAttribute &&other) Q_DECL_NOTHROW // = default;
+    {
+        m_name = std::move(other.m_name);
+        m_namespaceUri = std::move(other.m_namespaceUri);
+        m_qualifiedName = std::move(other.m_qualifiedName);
+        m_value = std::move(other.m_value);
+        qSwap(reserved, other.reserved);
+        m_isDefault = other.m_isDefault;
+        return *this;
+    }
+#endif
     QXmlStreamAttribute& operator=(const QXmlStreamAttribute &);
     ~QXmlStreamAttribute();
     inline QStringRef namespaceUri() const { return m_namespaceUri; }
