@@ -1177,7 +1177,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on Darwin-based operating systems distributed by Apple, which
-    currently includes OS X and iOS, but not the open source version.
+    currently includes OS X and iOS, but not the open source versions of Darwin.
  */
 
 /*!
