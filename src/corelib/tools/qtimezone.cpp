@@ -312,7 +312,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \typedef QTimeZone::OffsetDataList
     \relates QTimeZone
 
-    Synonym for QList<OffsetData>.
+    Synonym for QVector<OffsetData>.
 */
 
 /*!
