@@ -1025,9 +1025,6 @@ class QRegExpCharClass
 {
 public:
     QRegExpCharClass();
-    inline QRegExpCharClass(const QRegExpCharClass &cc) { operator=(cc); }
-
-    QRegExpCharClass &operator=(const QRegExpCharClass &cc);
 
     void clear();
     bool negative() const { return n; }
@@ -2323,17 +2320,6 @@ QRegExpCharClass::QRegExpCharClass()
 #ifndef QT_NO_REGEXP_OPTIM
     occ1.fill(NoOccurrence, NumBadChars);
 #endif
-}
-
-QRegExpCharClass &QRegExpCharClass::operator=(const QRegExpCharClass &cc)
-{
-    c = cc.c;
-    r = cc.r;
-    n = cc.n;
-#ifndef QT_NO_REGEXP_OPTIM
-    occ1 = cc.occ1;
-#endif
-    return *this;
 }
 
 void QRegExpCharClass::clear()
