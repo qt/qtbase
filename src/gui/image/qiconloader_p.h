@@ -76,7 +76,7 @@ struct QIconDirInfo
     short maxSize;
     short minSize;
     short threshold;
-    Type type : 4;
+    Type type;
 };
 Q_DECLARE_TYPEINFO(QIconDirInfo, Q_MOVABLE_TYPE);
 
