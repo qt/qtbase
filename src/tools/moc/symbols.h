@@ -133,6 +133,7 @@ struct SafeSymbols {
     QSet<QByteArray> excludedSymbols;
     int index;
 };
+Q_DECLARE_TYPEINFO(SafeSymbols, Q_MOVABLE_TYPE);
 
 class SymbolStack : public QStack<SafeSymbols>
 {

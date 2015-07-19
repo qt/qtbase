@@ -164,6 +164,7 @@ private:
     quint32 cursor;
     int extraIndex;
 };
+Q_DECLARE_TYPEINFO(QmlMarkupVisitor::ExtraType, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 

@@ -396,6 +396,9 @@ public:
   StatePointer state;
   Name nt;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(OrderedSet<Node<Read> >::const_iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 class Include
 {
@@ -417,6 +420,9 @@ public:
   StatePointer state;
   Name nt;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(OrderedSet<Node<Include> >::const_iterator, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 class Automaton
 {

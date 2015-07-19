@@ -188,6 +188,7 @@ private:
     DocPrivate *priv;
     static const Config* config_;
 };
+Q_DECLARE_TYPEINFO(Doc, Q_MOVABLE_TYPE);
 typedef QList<Doc> DocList;
 
 QT_END_NAMESPACE

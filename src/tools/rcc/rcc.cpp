@@ -366,6 +366,7 @@ enum RCCXmlTag {
     ResourceTag,
     FileTag
 };
+Q_DECLARE_TYPEINFO(RCCXmlTag, Q_PRIMITIVE_TYPE);
 
 bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     const QString &fname, QString currentPath, bool ignoreErrors)

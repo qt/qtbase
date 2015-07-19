@@ -366,6 +366,7 @@ private:
     static int propertyGroupCount_;
     static QMap<QString,Node::NodeType> goals_;
 };
+Q_DECLARE_TYPEINFO(Node::DocSubtype, Q_PRIMITIVE_TYPE);
 
 class Aggregate : public Node
 {
