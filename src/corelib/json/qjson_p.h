@@ -144,6 +144,13 @@ public:
         return *this;
     }
 };
+} // namespace QJsonPrivate
+
+template <typename T>
+class QTypeInfo<QJsonPrivate::q_littleendian<T> >
+    : public QTypeInfoMerger<QJsonPrivate::q_littleendian<T>, T> {};
+
+namespace QJsonPrivate {
 
 typedef q_littleendian<short> qle_short;
 typedef q_littleendian<unsigned short> qle_ushort;
