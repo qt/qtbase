@@ -49,8 +49,19 @@ class Q_CORE_EXPORT QItemSelectionRange
 
 public:
     inline QItemSelectionRange() : tl(), br() {}
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // ### Qt 6: remove them all, the compiler-generated ones are fine
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
+# ifdef Q_COMPILER_RVALUE_REFS
+    QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
+        : tl(std::move(other.tl)), br(std::move(other.br)) {}
+    QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
+    { tl = std::move(other.tl); br = std::move(other.br); return *this; }
+# endif
+    QItemSelectionRange &operator=(const QItemSelectionRange &other)
+    { tl = other.tl; br = other.br; return *this; }
+#endif // Qt < 6
     QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
     explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
 
