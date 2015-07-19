@@ -103,6 +103,17 @@ private:
     friend class QGenericMatrix;
 #endif
 };
+template <int N, int M, typename T>
+class QTypeInfo<QGenericMatrix<N, M, T> >
+    : public QTypeInfoMerger<QGenericMatrix<N, M, T>, T>
+{
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+public:
+    enum {
+        isStatic = true,
+    }; // at least Q_RELOCATABLE_TYPE, for BC during Qt 5
+#endif
+};
 
 template <int N, int M, typename T>
 Q_INLINE_TEMPLATE QGenericMatrix<N, M, T>::QGenericMatrix()
