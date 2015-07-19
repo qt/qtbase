@@ -202,7 +202,7 @@ QVector<int> QVersionNumber::segments() const
     Returns an equivalent version number but with all trailing zeros removed.
 
     To check if two numbers are equivalent, use normalized() on both version
-    numbers before perforing the compare.
+    numbers before performing the compare.
 
     \snippet qversionnumber/main.cpp 4
  */
