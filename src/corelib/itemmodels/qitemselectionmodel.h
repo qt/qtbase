@@ -55,6 +55,12 @@ public:
     explicit inline QItemSelectionRange(const QModelIndex &index)
         { tl = index; br = tl; }
 
+    void swap(QItemSelectionRange &other) Q_DECL_NOTHROW
+    {
+        qSwap(tl, other.tl);
+        qSwap(br, other.br);
+    }
+
     inline int top() const { return tl.row(); }
     inline int left() const { return tl.column(); }
     inline int bottom() const { return br.row(); }

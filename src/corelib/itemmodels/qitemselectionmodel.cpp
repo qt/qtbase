@@ -104,6 +104,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QItemSelectionRange::swap(QItemSelectionRange &other)
+    \since 5.6
+
+    Swaps this selection range's contents with \a other.
+    This function is very fast and never fails.
+*/
+
+/*!
     \fn int QItemSelectionRange::top() const
 
     Returns the row index corresponding to the uppermost selected row in the
