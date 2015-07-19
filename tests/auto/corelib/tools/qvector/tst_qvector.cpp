@@ -190,6 +190,7 @@ private slots:
     void appendInt() const;
     void appendMovable() const;
     void appendCustom() const;
+    void appendRvalue() const;
     void at() const;
     void capacityInt() const;
     void capacityMovable() const;
@@ -636,6 +637,21 @@ void tst_QVector::appendCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     append<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+void tst_QVector::appendRvalue() const
+{
+#ifdef Q_COMPILER_RVALUE_REFS
+    QVector<QString> v;
+    v.append("hello");
+    QString world = "world";
+    v.append(std::move(world));
+    QVERIFY(world.isEmpty());
+    QCOMPARE(v.front(), QString("hello"));
+    QCOMPARE(v.back(),  QString("world"));
+#else
+    QSKIP("This test requires that C++11 move semantics support is enabled in the compiler");
+#endif
 }
 
 void tst_QVector::at() const

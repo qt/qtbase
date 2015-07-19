@@ -522,6 +522,16 @@
     \sa operator<<(), prepend(), insert()
 */
 
+/*!
+    \fn void QVector::append(T &&value)
+    \since 5.6
+
+    \overload
+
+    Example:
+    \snippet code/src_corelib_tools_qvector.cpp move-append
+*/
+
 /*! \fn void QVector::append(const QVector<T> &value)
 
     \overload
@@ -1024,6 +1034,11 @@
 
     This function is provided for STL compatibility. It is equivalent
     to append(\a value).
+*/
+
+/*! \fn void QVector::push_back(T &&value)
+    \since 5.6
+    \overload
 */
 
 /*! \fn void QVector::push_front(const T &value)

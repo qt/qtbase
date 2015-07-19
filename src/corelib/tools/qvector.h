@@ -129,6 +129,9 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
+#ifdef Q_COMPILER_RVALUE_REFS
+    void append(T &&t);
+#endif
     inline void append(const QVector<T> &l) { *this += l; }
     void prepend(const T &t);
     void insert(int i, const T &t);
@@ -247,6 +250,9 @@ public:
     typedef const_iterator ConstIterator;
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
+#ifdef Q_COMPILER_RVALUE_REFS
+    void push_back(T &&t) { append(std::move(t)); }
+#endif
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
@@ -642,6 +648,22 @@ void QVector<T>::append(const T &t)
     }
     ++d->size;
 }
+
+#ifdef Q_COMPILER_RVALUE_REFS
+template <typename T>
+void QVector<T>::append(T &&t)
+{
+    const bool isTooSmall = uint(d->size + 1) > d->alloc;
+    if (!isDetached() || isTooSmall) {
+        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+        reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+    }
+
+    new (d->end()) T(std::move(t));
+
+    ++d->size;
+}
+#endif
 
 template <typename T>
 void QVector<T>::removeLast()
