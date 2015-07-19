@@ -1363,23 +1363,27 @@ public:
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
 
-    // ### Qt 6: remove this copy constructor, the implicit one is fine
-    inline QStringRef(const QStringRef &other)
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // ### Qt 6: remove all of these, the implicit ones are fine
+    QStringRef(const QStringRef &other) Q_DECL_NOTHROW
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
-
-    // ### Qt 6: remove this destructor, the implicit one is fine
+#ifdef Q_COMPILER_RVALUE_REFS
+    QStringRef(QStringRef &&other) Q_DECL_NOTHROW : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
+    QStringRef &operator=(QStringRef &&other) Q_DECL_NOTHROW { return *this = other; }
+#endif
+    QStringRef &operator=(const QStringRef &other) Q_DECL_NOTHROW {
+        m_string = other.m_string; m_position = other.m_position;
+        m_size = other.m_size; return *this;
+    }
     inline ~QStringRef(){}
+#endif // Qt < 6.0.0
+
     inline const QString *string() const { return m_string; }
     inline int position() const { return m_position; }
     inline int size() const { return m_size; }
     inline int count() const { return m_size; }
     inline int length() const { return m_size; }
-
-    inline QStringRef &operator=(const QStringRef &other) {
-        m_string = other.m_string; m_position = other.m_position;
-        m_size = other.m_size; return *this;
-    }
 
     int indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(QChar ch, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
