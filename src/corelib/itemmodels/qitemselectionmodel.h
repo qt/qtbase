@@ -48,12 +48,11 @@ class Q_CORE_EXPORT QItemSelectionRange
 {
 
 public:
-    inline QItemSelectionRange() {}
+    inline QItemSelectionRange() : tl(), br() {}
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
-    inline QItemSelectionRange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    explicit inline QItemSelectionRange(const QModelIndex &index)
-        { tl = index; br = tl; }
+    QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
+    explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
 
     void swap(QItemSelectionRange &other) Q_DECL_NOTHROW
     {
@@ -138,10 +137,6 @@ private:
     QPersistentModelIndex tl, br;
 };
 Q_DECLARE_TYPEINFO(QItemSelectionRange, Q_MOVABLE_TYPE);
-
-inline QItemSelectionRange::QItemSelectionRange(const QModelIndex &atopLeft,
-                                                const QModelIndex &abottomRight)
-{ tl = atopLeft; br = abottomRight; }
 
 class QItemSelection;
 class QItemSelectionModelPrivate;
