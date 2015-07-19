@@ -168,7 +168,7 @@ public:
     bool hasKeywords() const;
     bool hasTargets() const;
     const QList<Atom *> &tableOfContents() const;
-    const QList<int> &tableOfContentsLevels() const;
+    const QVector<int> &tableOfContentsLevels() const;
     const QList<Atom *> &keywords() const;
     const QList<Atom *> &targets() const;
     const QStringMultiMap &metaTagMap() const;

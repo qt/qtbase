@@ -157,7 +157,7 @@ private:
     QString sourceText(QQmlJS::AST::SourceLocation &location);
 
     QQmlJS::Engine *engine;
-    QList<ExtraType> extraTypes;
+    QVector<ExtraType> extraTypes;
     QVector<QQmlJS::AST::SourceLocation> extraLocations;
     QString source;
     QString output;

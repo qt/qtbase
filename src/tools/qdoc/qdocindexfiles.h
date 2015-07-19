@@ -74,8 +74,8 @@ class QDocIndexFiles
     QDocDatabase* qdb_;
     Generator* gen_;
     QString project_;
-    QList<QPair<ClassNode*,QString> > basesList_;
-    QList<QPair<FunctionNode*,QString> > relatedList_;
+    QVector<QPair<ClassNode*,QString> > basesList_;
+    QVector<QPair<FunctionNode*,QString> > relatedList_;
 };
 
 QT_END_NAMESPACE
