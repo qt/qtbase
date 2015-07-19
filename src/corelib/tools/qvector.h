@@ -625,14 +625,14 @@ void QVector<T>::append(const T &t)
 {
     const bool isTooSmall = uint(d->size + 1) > d->alloc;
     if (!isDetached() || isTooSmall) {
-        const T copy(t);
+        T copy(t);
         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
 
         if (QTypeInfo<T>::isComplex)
-            new (d->end()) T(copy);
+            new (d->end()) T(qMove(copy));
         else
-            *d->end() = copy;
+            *d->end() = qMove(copy);
 
     } else {
         if (QTypeInfo<T>::isComplex)
