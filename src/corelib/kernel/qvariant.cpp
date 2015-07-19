@@ -3832,7 +3832,11 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 /*!
     \internal
 */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QSequentialIterable::QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl)
+#else
+QSequentialIterable::QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl)
+#endif
   : m_impl(impl)
 {
 }
@@ -4140,7 +4144,11 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 /*!
     \internal
 */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QAssociativeIterable::QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl)
+#else
+QAssociativeIterable::QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl)
+#endif
   : m_impl(impl)
 {
 }

@@ -607,7 +607,11 @@ public:
 
     friend struct const_iterator;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     explicit QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl);
+#else
+    explicit QSequentialIterable(const QtMetaTypePrivate::QSequentialIterableImpl &impl);
+#endif
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -660,7 +664,11 @@ public:
 
     friend struct const_iterator;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     explicit QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl);
+#else
+    explicit QAssociativeIterable(const QtMetaTypePrivate::QAssociativeIterableImpl &impl);
+#endif
 
     const_iterator begin() const;
     const_iterator end() const;
