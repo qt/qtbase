@@ -141,7 +141,7 @@ private:
 #endif
 };
 
-Q_DECLARE_TYPEINFO(QVector3D, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVector3D, Q_PRIMITIVE_TYPE);
 
 Q_DECL_CONSTEXPR inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
 
