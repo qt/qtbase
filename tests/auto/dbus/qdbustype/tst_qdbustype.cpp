@@ -94,7 +94,11 @@ static void addFixedTypes()
     // the library recognizes this as valid type first.
     // The following function was added for Unix FD support, so if it is
     // present, so is support for Unix FDs.
+#    ifndef QT_NO_LIBRARY
     bool supportsUnixFds = qdbus_resolve_conditionally("dbus_connection_can_send_type");
+#    else
+    bool supportsUnixFds = false;
+#    endif
 #  else
     bool supportsUnixFds = true;
 #  endif
