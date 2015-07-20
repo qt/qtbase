@@ -49,13 +49,11 @@
 
 //! [1]
 MainWindow::MainWindow()
+    : textEdit(new QTextEdit)
 {
-    textEdit = new QTextEdit;
     setCentralWidget(textEdit);
 
     createActions();
-    createMenus();
-    createToolBars();
     createStatusBar();
     createDockWindows();
 
@@ -135,17 +133,17 @@ void MainWindow::print()
 //! [4]
 void MainWindow::save()
 {
+    QMimeDatabase mimeDatabase;
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Choose a file name"), ".",
-                        tr("HTML (*.html *.htm)"));
+                        mimeDatabase.mimeTypeForName("text/html").filterString());
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("Dock Widgets"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
         return;
     }
 
@@ -222,71 +220,60 @@ void MainWindow::about()
 
 void MainWindow::createActions()
 {
-    newLetterAct = new QAction(QIcon(":/images/new.png"), tr("&New Letter"),
-                               this);
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QToolBar *fileToolBar = addToolBar(tr("File"));
+
+    const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
+    QAction *newLetterAct = new QAction(newIcon, tr("&New Letter"), this);
     newLetterAct->setShortcuts(QKeySequence::New);
     newLetterAct->setStatusTip(tr("Create a new form letter"));
-    connect(newLetterAct, SIGNAL(triggered()), this, SLOT(newLetter()));
+    connect(newLetterAct, &QAction::triggered, this, &MainWindow::newLetter);
+    fileMenu->addAction(newLetterAct);
+    fileToolBar->addAction(newLetterAct);
 
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
+    const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
+    QAction *saveAct = new QAction(saveIcon, tr("&Save..."), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the current form letter"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAct, &QAction::triggered, this, &MainWindow::save);
+    fileMenu->addAction(saveAct);
+    fileToolBar->addAction(saveAct);
 
-    printAct = new QAction(QIcon(":/images/print.png"), tr("&Print..."), this);
+    const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(":/images/print.png"));
+    QAction *printAct = new QAction(printIcon, tr("&Print..."), this);
     printAct->setShortcuts(QKeySequence::Print);
     printAct->setStatusTip(tr("Print the current form letter"));
-    connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
+    connect(printAct, &QAction::triggered, this, &MainWindow::print);
+    fileMenu->addAction(printAct);
+    fileToolBar->addAction(printAct);
 
-    undoAct = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
-    undoAct->setShortcuts(QKeySequence::Undo);
-    undoAct->setStatusTip(tr("Undo the last editing action"));
-    connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
+    fileMenu->addSeparator();
 
-    quitAct = new QAction(tr("&Quit"), this);
+    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
     quitAct->setShortcuts(QKeySequence::Quit);
     quitAct->setStatusTip(tr("Quit the application"));
-    connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    aboutAct = new QAction(tr("&About"), this);
-    aboutAct->setStatusTip(tr("Show the application's About box"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-}
-
-void MainWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newLetterAct);
-    fileMenu->addAction(saveAct);
-    fileMenu->addAction(printAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(quitAct);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
+    QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+    QToolBar *editToolBar = addToolBar(tr("Edit"));
+    const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon(":/images/undo.png"));
+    QAction *undoAct = new QAction(undoIcon, tr("&Undo"), this);
+    undoAct->setShortcuts(QKeySequence::Undo);
+    undoAct->setStatusTip(tr("Undo the last editing action"));
+    connect(undoAct, &QAction::triggered, this, &MainWindow::undo);
     editMenu->addAction(undoAct);
+    editToolBar->addAction(undoAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
 
     menuBar()->addSeparator();
 
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-}
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
-void MainWindow::createToolBars()
-{
-    fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(newLetterAct);
-    fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(printAct);
+    QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    aboutAct->setStatusTip(tr("Show the application's About box"));
 
-    editToolBar = addToolBar(tr("Edit"));
-    editToolBar->addAction(undoAct);
+    QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
 //! [8]
@@ -337,9 +324,9 @@ void MainWindow::createDockWindows()
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-    connect(customerList, SIGNAL(currentTextChanged(QString)),
-            this, SLOT(insertCustomer(QString)));
-    connect(paragraphsList, SIGNAL(currentTextChanged(QString)),
-            this, SLOT(addParagraph(QString)));
+    connect(customerList, &QListWidget::currentTextChanged,
+            this, &MainWindow::insertCustomer);
+    connect(paragraphsList, &QListWidget::currentTextChanged,
+            this, &MainWindow::addParagraph);
 }
 //! [9]
