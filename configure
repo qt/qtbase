@@ -5871,7 +5871,7 @@ if [ "$CFG_GETIFADDRS" != "no" ]; then
 fi
 
 # find if the platform provides thread-safe CLOEXEC support
-if compileTest unix/cloexec; then
+if compileTest unix/cloexec "cloexec"; then
     CFG_CLOEXEC=yes
 fi
 
