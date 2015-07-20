@@ -18,3 +18,11 @@ SUBDIRS       = \
 contains(DEFINES, QT_NO_TRANSLATION): SUBDIRS -= i18n
 
 plugandpaint.depends = plugandpaintplugins
+
+load(qfeatures)
+contains(QT_DISABLED_FEATURES, library) {
+    SUBDIRS -= \
+        echoplugin \
+        plugandpaintplugins \
+        plugandpaint
+}

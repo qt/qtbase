@@ -1,7 +1,10 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qfactoryloader \
-    qlibrary \
-    qplugin \
-    qpluginloader \
     quuid
+
+load(qfeatures)
+!contains(QT_DISABLED_FEATURES, library): SUBDIRS += \
+    qpluginloader \
+    qplugin \
+    qlibrary

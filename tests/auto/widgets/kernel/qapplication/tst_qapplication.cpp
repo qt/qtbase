@@ -133,9 +133,11 @@ private slots:
     void testDeleteLater();
     void testDeleteLaterProcessEvents();
 
+#ifndef QT_NO_LIBRARY
     void libraryPaths();
     void libraryPaths_qt_plugin_path();
     void libraryPaths_qt_plugin_path_2();
+#endif
 
     void sendPostedEvents();
 
@@ -909,6 +911,7 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
     return j == r.count();
 }
 
+#ifndef QT_NO_LIBRARY
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
@@ -1114,6 +1117,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         qputenv("QT_PLUGIN_PATH", QByteArray());
     }
 }
+#endif
 
 class SendPostedEventsTester : public QObject
 {
