@@ -472,12 +472,11 @@ bool QWindowsMouseHandler::translateScrollEvent(QWindow *window, HWND,
 }
 
 // from bool QApplicationPrivate::translateTouchEvent()
-bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
+bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
                                                QtWindows::WindowsEventType,
                                                MSG msg, LRESULT *)
 {
 #ifndef Q_OS_WINCE
-    Q_UNUSED(hwnd);
     typedef QWindowSystemInterface::TouchPoint QTouchPoint;
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
@@ -545,8 +544,24 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,
                                              touchPoints);
+#else // !Q_OS_WINCE
+    Q_UNUSED(window)
+    Q_UNUSED(msg)
+#endif
     return true;
-#else //Q_OS_WINCE
+
+}
+
+bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
+                                                 QtWindows::WindowsEventType,
+                                                 MSG msg, LRESULT *)
+{
+#ifndef Q_OS_WINCE
+    Q_UNUSED(window)
+    Q_UNUSED(hwnd)
+    Q_UNUSED(msg)
+    return false;
+#else // !Q_OS_WINCE
     GESTUREINFO gi;
     memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
@@ -625,9 +640,8 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND hwnd,
             QWindowSystemInterface::handleEnterEvent(window);
         m_windowUnderMouse = window;
     }
-
     return true;
-#endif
+#endif // Q_OS_WINCE
 }
 
 QT_END_NAMESPACE

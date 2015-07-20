@@ -919,7 +919,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::InputMethodRequest:
         return QWindowsInputContext::instance()->handleIME_Request(wParam, lParam, result);
     case QtWindows::GestureEvent:
-        return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
+#else
+        return d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
+#endif
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.
