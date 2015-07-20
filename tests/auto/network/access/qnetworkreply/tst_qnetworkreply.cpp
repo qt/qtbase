@@ -7738,6 +7738,7 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
 #ifdef QT_BUILD_INTERNAL
 void tst_QNetworkReply::backgroundRequest_data()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<bool>("background");
     QTest::addColumn<int>("policy");
@@ -7763,7 +7764,7 @@ void tst_QNetworkReply::backgroundRequest_data()
     QTest::newRow("ftp, bg, normal") << ftpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
     QTest::newRow("ftp, fg, nobg") << ftpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
     QTest::newRow("ftp, bg, nobg") << ftpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
-
+#endif // !QT_NO_BEARERMANAGEMENT
 }
 #endif
 
