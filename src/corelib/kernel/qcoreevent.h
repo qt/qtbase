@@ -276,6 +276,8 @@ public:
 
         PlatformSurface = 217,                  // Platform surface created or about to be destroyed
 
+        Pointer = 218,                          // QQuickPointerEvent; ### Qt 6: QPointerEvent
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
