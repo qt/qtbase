@@ -200,13 +200,6 @@
 
     We also update the total number of files found.
 
-    \snippet dialogs/findfiles/window.cpp 9
-
-    The private \c createButton() function is called from the
-    constructor. We create a QPushButton with the provided text,
-    connect it to the provided slot, and return a pointer to the
-    button.
-
     \snippet dialogs/findfiles/window.cpp 10
 
     The private \c createComboBox() function is also called from the

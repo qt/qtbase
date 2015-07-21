@@ -252,8 +252,8 @@ ClassInfoPage::ClassInfoPage(QWidget *parent)
 
     defaultCtorRadioButton->setChecked(true);
 
-    connect(defaultCtorRadioButton, SIGNAL(toggled(bool)),
-            copyCtorCheckBox, SLOT(setEnabled(bool)));
+    connect(defaultCtorRadioButton, &QAbstractButton::toggled,
+            copyCtorCheckBox, &QWidget::setEnabled);
 
 //! [11] //! [12]
     registerField("className*", classNameLineEdit);
@@ -311,14 +311,14 @@ CodeStylePage::CodeStylePage(QWidget *parent)
     baseIncludeLineEdit = new QLineEdit;
     baseIncludeLabel->setBuddy(baseIncludeLineEdit);
 
-    connect(protectCheckBox, SIGNAL(toggled(bool)),
-            macroNameLabel, SLOT(setEnabled(bool)));
-    connect(protectCheckBox, SIGNAL(toggled(bool)),
-            macroNameLineEdit, SLOT(setEnabled(bool)));
-    connect(includeBaseCheckBox, SIGNAL(toggled(bool)),
-            baseIncludeLabel, SLOT(setEnabled(bool)));
-    connect(includeBaseCheckBox, SIGNAL(toggled(bool)),
-            baseIncludeLineEdit, SLOT(setEnabled(bool)));
+    connect(protectCheckBox, &QAbstractButton::toggled,
+            macroNameLabel, &QWidget::setEnabled);
+    connect(protectCheckBox, &QAbstractButton::toggled,
+            macroNameLineEdit, &QWidget::setEnabled);
+    connect(includeBaseCheckBox, &QAbstractButton::toggled,
+            baseIncludeLabel, &QWidget::setEnabled);
+    connect(includeBaseCheckBox, &QAbstractButton::toggled,
+            baseIncludeLineEdit, &QWidget::setEnabled);
 
     registerField("comment", commentCheckBox);
     registerField("protect", protectCheckBox);

@@ -70,7 +70,7 @@ LicenseWizard::LicenseWizard(QWidget *parent)
     setPixmap(QWizard::LogoPixmap, QPixmap(":/images/logo.png"));
 
 //! [7]
-    connect(this, SIGNAL(helpRequested()), this, SLOT(showHelp()));
+    connect(this, &QWizard::helpRequested, this, &LicenseWizard::showHelp);
 //! [7]
 
     setWindowTitle(tr("License Wizard"));
@@ -339,13 +339,13 @@ void ConclusionPage::setVisible(bool visible)
 //! [29]
         wizard()->setButtonText(QWizard::CustomButton1, tr("&Print"));
         wizard()->setOption(QWizard::HaveCustomButton1, true);
-        connect(wizard(), SIGNAL(customButtonClicked(int)),
-                this, SLOT(printButtonClicked()));
+        connect(wizard(), &QWizard::customButtonClicked,
+                this, &ConclusionPage::printButtonClicked);
 //! [29]
     } else {
         wizard()->setOption(QWizard::HaveCustomButton1, false);
-        disconnect(wizard(), SIGNAL(customButtonClicked(int)),
-                   this, SLOT(printButtonClicked()));
+        disconnect(wizard(), &QWizard::customButtonClicked,
+                   this, &ConclusionPage::printButtonClicked);
     }
 }
 //! [28]

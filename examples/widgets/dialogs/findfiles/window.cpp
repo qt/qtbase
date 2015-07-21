@@ -46,8 +46,10 @@
 Window::Window(QWidget *parent)
     : QWidget(parent)
 {
-    browseButton = createButton(tr("&Browse..."), SLOT(browse()));
-    findButton = createButton(tr("&Find"), SLOT(find()));
+    browseButton = new QPushButton(tr("&Browse..."), this);
+    connect(browseButton, &QAbstractButton::clicked, this, &Window::browse);
+    findButton = new QPushButton(tr("&Find"), this);
+    connect(findButton, &QAbstractButton::clicked, this, &Window::find);
 
     fileComboBox = createComboBox(tr("*"));
     textComboBox = createComboBox();
@@ -195,15 +197,6 @@ void Window::showFiles(const QStringList &files)
 }
 //! [8]
 
-//! [9]
-QPushButton *Window::createButton(const QString &text, const char *member)
-{
-    QPushButton *button = new QPushButton(text);
-    connect(button, SIGNAL(clicked()), this, member);
-    return button;
-}
-//! [9]
-
 //! [10]
 QComboBox *Window::createComboBox(const QString &text)
 {
@@ -228,8 +221,8 @@ void Window::createFilesTable()
     filesTable->verticalHeader()->hide();
     filesTable->setShowGrid(false);
 
-    connect(filesTable, SIGNAL(cellActivated(int,int)),
-            this, SLOT(openFileOfItem(int,int)));
+    connect(filesTable, &QTableWidget::cellActivated,
+            this, &Window::openFileOfItem);
 }
 //! [11]
 
