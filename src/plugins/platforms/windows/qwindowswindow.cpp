@@ -2271,6 +2271,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
 #ifdef QT_NO_OPENGL
+    Q_UNUSED(err)
     Q_UNUSED(nativeConfig)
     return 0;
 #else
