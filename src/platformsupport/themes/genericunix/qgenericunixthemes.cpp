@@ -678,7 +678,7 @@ QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 #endif
     if (name == QLatin1String(QGnomeTheme::name))
         return new QGnomeTheme;
-    return new QGenericUnixTheme;
+    return Q_NULLPTR;
 }
 
 QStringList QGenericUnixTheme::themeNames()
@@ -710,8 +710,7 @@ QStringList QGenericUnixTheme::themeNames()
         if (!session.isEmpty() && session != QLatin1String("default") && !result.contains(session))
             result.push_back(session);
     } // desktopSettingsAware
-    if (result.isEmpty())
-        result.push_back(QLatin1String(QGenericUnixTheme::name));
+    result.append(QLatin1String(QGenericUnixTheme::name));
     return result;
 }
 
