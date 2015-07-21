@@ -158,6 +158,15 @@ do { \
 
 #define QTRY_VERIFY(__expr) QTRY_VERIFY_WITH_TIMEOUT((__expr), 5000)
 
+// Will try to wait for the expression to become true while allowing event processing
+#define QTRY_VERIFY2_WITH_TIMEOUT(__expr, __messageExpression, __timeout) \
+do { \
+    QTRY_IMPL((__expr), __timeout);\
+    QVERIFY2(__expr, __messageExpression); \
+} while (0)
+
+#define QTRY_VERIFY2(__expr, __messageExpression) QTRY_VERIFY2_WITH_TIMEOUT((__expr), (__messageExpression), 5000)
+
 // Will try to wait for the comparison to become successful while allowing event processing
 #define QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, __timeout) \
 do { \

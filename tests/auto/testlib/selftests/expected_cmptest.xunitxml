@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="22" tests="12" name="tst_Cmptest">
+<testsuite errors="0" failures="26" tests="16" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -83,6 +83,18 @@
    Actual   (opA): 6
    Expected (opB): 3" result="fail"/>
     <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="verify">
+    <failure message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="verify2">
+    <failure message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. (42)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="tryVerify">
+    <failure message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="tryVerify2">
+    <failure message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. (42)" result="fail"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err/>

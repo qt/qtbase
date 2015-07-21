@@ -247,7 +247,7 @@ static void stackTrace()
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY(), QTRY_VERIFY2_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
 */
 
 
@@ -261,7 +261,47 @@ static void stackTrace()
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+*/
+
+/*! \macro QTRY_VERIFY2_WITH_TIMEOUT(condition, message, timeout)
+   \since 5.6
+
+   \relates QTest
+
+   The QTRY_VERIFY2_WITH_TIMEOUT macro is similar to QTRY_VERIFY_WITH_TIMEOUT()
+   except that it outputs a verbose \a message when \a condition is still false
+   after the specified timeout. The \a message is a plain C string.
+
+   Example:
+   \code
+   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData(), 10000);
+   \endcode
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QTRY_VERIFY(), QTRY_VERIFY_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+*/
+
+/*! \macro QTRY_VERIFY2(condition, message)
+   \since 5.6
+
+   \relates QTest
+
+   Checks the \a condition by invoking QTRY_VERIFY2_WITH_TIMEOUT() with a timeout
+   of five seconds. If \a condition is then still false, \a message is output.
+   The \a message is a plain C string.
+
+   Example:
+   \code
+   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData());
+   \endcode
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QTRY_VERIFY2_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
 */
 
 /*! \macro QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)
