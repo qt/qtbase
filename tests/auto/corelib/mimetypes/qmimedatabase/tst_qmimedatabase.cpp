@@ -904,8 +904,8 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
              QString::fromLatin1("text/x-qml"));
 
     // Now test removing it again
-    QFile::remove(destFile);
-    QFile::remove(destQmlFile);
+    QVERIFY(QFile::remove(destFile));
+    QVERIFY(QFile::remove(destQmlFile));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
@@ -953,8 +953,8 @@ void tst_QMimeDatabase::installNewLocalMimeType()
              QString::fromLatin1("text/x-qml"));
 
     // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
-    QFile::remove(destFile);
-    QFile::remove(destQmlFile);
+    QVERIFY(QFile::remove(destFile));
+    QVERIFY(QFile::remove(destQmlFile));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
