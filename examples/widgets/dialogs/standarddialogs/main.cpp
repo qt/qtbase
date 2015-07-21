@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QTranslator>
 #include <QLocale>
 #include <QLibraryInfo>
@@ -58,6 +59,10 @@ int main(int argc, char *argv[])
 #endif
 
     Dialog dialog;
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&dialog);
+    dialog.resize(availableGeometry.width() / 3, availableGeometry.height() * 2 / 3);
+    dialog.move((availableGeometry.width() - dialog.width()) / 2,
+                (availableGeometry.height() - dialog.height()) / 2);
     dialog.show();
 
     return app.exec();
