@@ -82,19 +82,24 @@ void MainWindow::newFile()
 
 void MainWindow::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty()) {
-        if (QMdiSubWindow *existing = findMdiChild(fileName)) {
-            mdiArea->setActiveSubWindow(existing);
-            return;
-        }
-
-        if (openFile(fileName))
-            statusBar()->showMessage(tr("File loaded"), 2000);
-    }
+    const QString fileName = QFileDialog::getOpenFileName(this);
+    if (!fileName.isEmpty())
+        openFile(fileName);
 }
 
 bool MainWindow::openFile(const QString &fileName)
+{
+    if (QMdiSubWindow *existing = findMdiChild(fileName)) {
+        mdiArea->setActiveSubWindow(existing);
+        return true;
+    }
+    const bool succeeded = loadFile(fileName);
+    if (succeeded)
+        statusBar()->showMessage(tr("File loaded"), 2000);
+    return succeeded;
+}
+
+bool MainWindow::loadFile(const QString &fileName)
 {
     MdiChild *child = createMdiChild();
     const bool succeeded = child->loadFile(fileName);
@@ -102,7 +107,85 @@ bool MainWindow::openFile(const QString &fileName)
         child->show();
     else
         child->close();
+    MainWindow::prependToRecentFiles(fileName);
     return succeeded;
+}
+
+static inline QString recentFilesKey() { return QStringLiteral("recentFileList"); }
+static inline QString fileKey() { return QStringLiteral("file"); }
+
+static QStringList readRecentFiles(QSettings &settings)
+{
+    QStringList result;
+    const int count = settings.beginReadArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        result.append(settings.value(fileKey()).toString());
+    }
+    settings.endArray();
+    return result;
+}
+
+static void writeRecentFiles(const QStringList &files, QSettings &settings)
+{
+    const int count = files.size();
+    settings.beginWriteArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue(fileKey(), files.at(i));
+    }
+    settings.endArray();
+}
+
+bool MainWindow::hasRecentFiles()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    const int count = settings.beginReadArray(recentFilesKey());
+    settings.endArray();
+    return count > 0;
+}
+
+void MainWindow::prependToRecentFiles(const QString &fileName)
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList oldRecentFiles = readRecentFiles(settings);
+    QStringList recentFiles = oldRecentFiles;
+    recentFiles.removeAll(fileName);
+    recentFiles.prepend(fileName);
+    if (oldRecentFiles != recentFiles)
+        writeRecentFiles(recentFiles, settings);
+
+    setRecentFilesVisible(!recentFiles.isEmpty());
+}
+
+void MainWindow::setRecentFilesVisible(bool visible)
+{
+    recentFileSubMenuAct->setVisible(visible);
+    recentFileSeparator->setVisible(visible);
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList recentFiles = readRecentFiles(settings);
+    const int count = qMin(int(MaxRecentFiles), recentFiles.size());
+    int i = 0;
+    for ( ; i < count; ++i) {
+        const QString fileName = QFileInfo(recentFiles.at(i)).fileName();
+        recentFileActs[i]->setText(tr("&%1 %2").arg(i + 1).arg(fileName));
+        recentFileActs[i]->setData(recentFiles.at(i));
+        recentFileActs[i]->setVisible(true);
+    }
+    for ( ; i < MaxRecentFiles; ++i)
+        recentFileActs[i]->setVisible(false);
+}
+
+void MainWindow::openRecentFile()
+{
+    if (const QAction *action = qobject_cast<const QAction *>(sender()))
+        openFile(action->data().toString());
 }
 
 void MainWindow::save()
@@ -113,8 +196,11 @@ void MainWindow::save()
 
 void MainWindow::saveAs()
 {
-    if (activeMdiChild() && activeMdiChild()->saveAs())
+    MdiChild *child = activeMdiChild();
+    if (child && child->saveAs()) {
         statusBar()->showMessage(tr("File saved"), 2000);
+        MainWindow::prependToRecentFiles(child->currentFile());
+    }
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -262,7 +348,22 @@ void MainWindow::createActions()
 
     fileMenu->addSeparator();
 
+    QMenu *recentMenu = fileMenu->addMenu(tr("Recent..."));
+    connect(recentMenu, &QMenu::aboutToShow, this, &MainWindow::updateRecentFileActions);
+    recentFileSubMenuAct = recentMenu->menuAction();
+
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActs[i] = recentMenu->addAction(QString(), this, &MainWindow::openRecentFile);
+        recentFileActs[i]->setVisible(false);
+    }
+
+    recentFileSeparator = fileMenu->addSeparator();
+
+    setRecentFilesVisible(MainWindow::hasRecentFiles());
+
     fileMenu->addAction(tr("Switch layout direction"), this, &MainWindow::switchLayoutDirection);
+
+    fileMenu->addSeparator();
 
 //! [0]
     const QIcon exitIcon = QIcon::fromTheme("application-exit");

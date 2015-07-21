@@ -4,5 +4,4 @@ SUBDIRS       = application \
                 mainwindow \
                 mdi \
                 menus \
-                recentfiles \
                 sdi

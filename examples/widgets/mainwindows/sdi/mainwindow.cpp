@@ -74,9 +74,12 @@ void MainWindow::newFile()
 void MainWindow::open()
 {
     const QString fileName = QFileDialog::getOpenFileName(this);
-    if (fileName.isEmpty())
-        return;
+    if (!fileName.isEmpty())
+        openFile(fileName);
+}
 
+void MainWindow::openFile(const QString &fileName)
+{
     MainWindow *existing = findMainWindow(fileName);
     if (existing) {
         existing->show();
@@ -195,6 +198,19 @@ void MainWindow::createActions()
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
     fileMenu->addSeparator();
+
+    QMenu *recentMenu = fileMenu->addMenu(tr("Recent..."));
+    connect(recentMenu, &QMenu::aboutToShow, this, &MainWindow::updateRecentFileActions);
+    recentFileSubMenuAct = recentMenu->menuAction();
+
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActs[i] = recentMenu->addAction(QString(), this, &MainWindow::openRecentFile);
+        recentFileActs[i]->setVisible(false);
+    }
+
+    recentFileSeparator = fileMenu->addSeparator();
+
+    setRecentFilesVisible(MainWindow::hasRecentFiles());
 
     QAction *closeAct = fileMenu->addAction(tr("&Close"), this, &QWidget::close);
     closeAct->setShortcut(tr("Ctrl+W"));
@@ -316,6 +332,83 @@ void MainWindow::loadFile(const QString &fileName)
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
+void MainWindow::setRecentFilesVisible(bool visible)
+{
+    recentFileSubMenuAct->setVisible(visible);
+    recentFileSeparator->setVisible(visible);
+}
+
+static inline QString recentFilesKey() { return QStringLiteral("recentFileList"); }
+static inline QString fileKey() { return QStringLiteral("file"); }
+
+static QStringList readRecentFiles(QSettings &settings)
+{
+    QStringList result;
+    const int count = settings.beginReadArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        result.append(settings.value(fileKey()).toString());
+    }
+    settings.endArray();
+    return result;
+}
+
+static void writeRecentFiles(const QStringList &files, QSettings &settings)
+{
+    const int count = files.size();
+    settings.beginWriteArray(recentFilesKey());
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue(fileKey(), files.at(i));
+    }
+    settings.endArray();
+}
+
+bool MainWindow::hasRecentFiles()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    const int count = settings.beginReadArray(recentFilesKey());
+    settings.endArray();
+    return count > 0;
+}
+
+void MainWindow::prependToRecentFiles(const QString &fileName)
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList oldRecentFiles = readRecentFiles(settings);
+    QStringList recentFiles = oldRecentFiles;
+    recentFiles.removeAll(fileName);
+    recentFiles.prepend(fileName);
+    if (oldRecentFiles != recentFiles)
+        writeRecentFiles(recentFiles, settings);
+
+    setRecentFilesVisible(!recentFiles.isEmpty());
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    const QStringList recentFiles = readRecentFiles(settings);
+    const int count = qMin(int(MaxRecentFiles), recentFiles.size());
+    int i = 0;
+    for ( ; i < count; ++i) {
+        const QString fileName = MainWindow::strippedName(recentFiles.at(i));
+        recentFileActs[i]->setText(tr("&%1 %2").arg(i + 1).arg(fileName));
+        recentFileActs[i]->setData(recentFiles.at(i));
+        recentFileActs[i]->setVisible(true);
+    }
+    for ( ; i < MaxRecentFiles; ++i)
+        recentFileActs[i]->setVisible(false);
+}
+
+void MainWindow::openRecentFile()
+{
+    if (const QAction *action = qobject_cast<const QAction *>(sender()))
+        openFile(action->data().toString());
+}
+
 bool MainWindow::saveFile(const QString &fileName)
 {
     QFile file(fileName);
@@ -349,6 +442,10 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
     textEdit->document()->setModified(false);
     setWindowModified(false);
+
+    if (!isUntitled && windowFilePath() != curFile)
+        MainWindow::prependToRecentFiles(curFile);
+
     setWindowFilePath(curFile);
 }
 

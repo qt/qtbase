@@ -68,6 +68,8 @@ private slots:
     void open();
     void save();
     void saveAs();
+    void updateRecentFileActions();
+    void openRecentFile();
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
@@ -80,10 +82,16 @@ private slots:
     void switchLayoutDirection();
 
 private:
+    enum { MaxRecentFiles = 5 };
+
     void createActions();
     void createStatusBar();
     void readSettings();
     void writeSettings();
+    bool loadFile(const QString &fileName);
+    static bool hasRecentFiles();
+    void prependToRecentFiles(const QString &fileName);
+    void setRecentFilesVisible(bool visible);
     MdiChild *activeMdiChild() const;
     QMdiSubWindow *findMdiChild(const QString &fileName) const;
 
@@ -93,6 +101,9 @@ private:
     QAction *newAct;
     QAction *saveAct;
     QAction *saveAsAct;
+    QAction *recentFileActs[MaxRecentFiles];
+    QAction *recentFileSeparator;
+    QAction *recentFileSubMenuAct;
 #ifndef QT_NO_CLIPBOARD
     QAction *cutAct;
     QAction *copyAct;
