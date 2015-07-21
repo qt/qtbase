@@ -27,6 +27,11 @@ class EventFilter (eventfilter.h):
   An event filter that logs Qt events to qDebug() depending on
   configured categories (for example mouse, keyboard, etc).
 
+class DebugProxyStyle (debugproxystyle.h)
+  A proxy style that wraps around an existing style and outputs
+  the parameters and return values of its function calls, useful
+  for debugging QStyle.
+
 function glInfo() (glinfo.h):
   Returns a string describing the Open GL configuration (obtained
   by querying GL_VENDOR and GL_RENDERER). Available only

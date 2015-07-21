@@ -3,12 +3,14 @@ SOURCES += \
     $$PWD/textdump.cpp \
     $$PWD/eventfilter.cpp \
     $$PWD/qwindowdump.cpp \
+    $$PWD/debugproxystyle.cpp
 
 HEADERS += \
     $$PWD/textdump.h \
     $$PWD/eventfilter.h \
     $$PWD/qwindowdump.h \
-    $$PWD/nativewindowdump.h
+    $$PWD/nativewindowdump.h \
+    $$PWD/debugproxystyle.h
 
 win32 {
     SOURCES += $$PWD/nativewindowdump_win.cpp
