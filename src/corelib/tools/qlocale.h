@@ -866,9 +866,13 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QLocale &operator=(QLocale &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
+    QLocale &operator=(const QLocale &other);
     ~QLocale();
 
-    QLocale &operator=(const QLocale &other);
+    void swap(QLocale &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     Language language() const;
     Script script() const;
@@ -994,7 +998,7 @@ private:
 
     QSharedDataPointer<QLocalePrivate> d;
 };
-Q_DECLARE_TYPEINFO(QLocale, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QLocale)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)
 
 inline QString QLocale::toString(short i) const
