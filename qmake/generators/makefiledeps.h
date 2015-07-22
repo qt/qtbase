@@ -41,10 +41,10 @@ struct SourceDependChildren;
 class SourceFiles;
 
 class QMakeLocalFileName {
-    uint is_null : 1;
+    bool is_null;
     mutable QString real_name, local_name;
 public:
-    QMakeLocalFileName() : is_null(1) { }
+    QMakeLocalFileName() : is_null(true) {}
     QMakeLocalFileName(const QString &);
     bool isNull() const { return is_null; }
     inline const QString &real() const { return real_name; }
