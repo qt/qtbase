@@ -929,8 +929,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             } else if (keywords.contains(ident)) {
                 tag = QStringLiteral("keyword");
             } else if (braceDepth == 0 && parenDepth == 0) {
-                if (QString(code.unicode() + i - 1, code.length() - (i - 1))
-                        .indexOf(findFunctionRegExp) == 0)
+                if (code.indexOf(findFunctionRegExp, i - 1) == i - 1)
                     tag = QStringLiteral("func");
                 target = true;
             }
@@ -1083,7 +1082,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             out += QStringLiteral(">");
         }
 
-        out += protect(text);
+        appendProtectedString(&out, text);
 
         if (!tag.isEmpty()) {
             out += QStringLiteral("</@");
@@ -1093,7 +1092,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     }
 
     if (start < code.length()) {
-        out += protect(code.midRef(start));
+        appendProtectedString(&out, code.midRef(start));
     }
 
     return out;

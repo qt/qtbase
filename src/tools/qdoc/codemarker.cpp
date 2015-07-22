@@ -194,22 +194,20 @@ QString CodeMarker::protect(const QString& str)
     return marked;
 }
 
-QString CodeMarker::protect(const QStringRef& str)
+void CodeMarker::appendProtectedString(QString *output, const QStringRef &str)
 {
     int n = str.length();
-    QString marked;
-    marked.reserve(n * 2 + 30);
+    output->reserve(output->size() + n * 2 + 30);
     const QChar *data = str.constData();
     for (int i = 0; i != n; ++i) {
         switch (data[i].unicode()) {
-        case '&': marked += samp;  break;
-        case '<': marked += slt;   break;
-        case '>': marked += sgt;   break;
-        case '"': marked += squot; break;
-        default : marked += data[i];
+        case '&': *output += samp;  break;
+        case '<': *output += slt;   break;
+        case '>': *output += sgt;   break;
+        case '"': *output += squot; break;
+        default : *output += data[i];
         }
     }
-    return marked;
 }
 
 QString CodeMarker::typified(const QString &string)
