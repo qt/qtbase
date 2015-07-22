@@ -71,19 +71,6 @@
 */
 
 /*!
-    \fn QStack::QStack()
-
-    Constructs an empty stack.
-*/
-
-/*!
-    \fn QStack::~QStack()
-
-    Destroys the stack. References to the values in the stack, and all
-    iterators over this stack, become invalid.
-*/
-
-/*!
     \fn void QStack::swap(QStack<T> &other)
     \since 4.8
 
