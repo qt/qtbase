@@ -1979,8 +1979,8 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         if (reflect && step % 2) {
             for (int i = stops.size() - 1; i > 0; --i) {
                 QGradientBound b;
-                b.start = step + 1 - qBound(0., stops.at(i).first, 1.);
-                b.stop = step + 1 - qBound(0., stops.at(i - 1).first, 1.);
+                b.start = step + 1 - qBound(qreal(0.), stops.at(i).first, qreal(1.));
+                b.stop = step + 1 - qBound(qreal(0.), stops.at(i - 1).first, qreal(1.));
                 b.function = functions.at(i - 1);
                 b.reverse = true;
                 gradientBounds << b;
@@ -1988,8 +1988,8 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         } else {
             for (int i = 0; i < stops.size() - 1; ++i) {
                 QGradientBound b;
-                b.start = step + qBound(0., stops.at(i).first, 1.);
-                b.stop = step + qBound(0., stops.at(i + 1).first, 1.);
+                b.start = step + qBound(qreal(0.), stops.at(i).first, qreal(1.));
+                b.stop = step + qBound(qreal(0.), stops.at(i + 1).first, qreal(1.));
                 b.function = functions.at(i);
                 b.reverse = false;
                 gradientBounds << b;
