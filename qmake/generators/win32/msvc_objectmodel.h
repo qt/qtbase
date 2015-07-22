@@ -936,7 +936,6 @@ class VCFilter
 public:
     // Functions
     VCFilter();
-    ~VCFilter(){}
 
     void addFile(const QString& filename);
     void addFile(const VCFilterFile& fileInfo);
