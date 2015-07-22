@@ -38,11 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
 
-#include "mainwindow.h"
+#include "glwindow.h"
 
 // This example demonstrates easy, cross-platform usage of OpenGL ES 3.0 functions via
 // QOpenGLExtraFunctions in an application that works identically on desktop platforms
@@ -69,10 +69,10 @@ int main(int argc, char *argv[])
 
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
-    MainWindow mainWindow;
-    mainWindow.showMaximized();
+    GLWindow glWindow;
+    glWindow.showMaximized();
 
     return app.exec();
 }

@@ -38,21 +38,61 @@
 **
 ****************************************************************************/
 
-#include "mainwindow.h"
-#include "glwidget.h"
-#include <QApplication>
-#include <QMenuBar>
-#include <QMenu>
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
 
-MainWindow::MainWindow()
+#include <QOpenGLWindow>
+#include <QMatrix4x4>
+#include <QVector3D>
+#include "../hellogl2/logo.h"
+
+class QOpenGLTexture;
+class QOpenGLShaderProgram;
+class QOpenGLBuffer;
+class QOpenGLVertexArrayObject;
+
+class GLWindow : public QOpenGLWindow
 {
-    QMenuBar *menuBar = new QMenuBar;
-    QMenu *menuWindow = menuBar->addMenu(tr("&File"));
-    QAction *exitAction = new QAction(menuWindow);
-    exitAction->setText(tr("E&xit"));
-    menuWindow->addAction(exitAction);
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    setMenuBar(menuBar);
+    Q_OBJECT
+    Q_PROPERTY(float z READ z WRITE setZ)
+    Q_PROPERTY(float r READ r WRITE setR)
+    Q_PROPERTY(float r2 READ r2 WRITE setR2)
 
-    setCentralWidget(new GLWidget);
-}
+public:
+    GLWindow();
+    ~GLWindow();
+
+    void initializeGL();
+    void resizeGL(int w, int h);
+    void paintGL();
+
+    float z() const { return m_eye.z(); }
+    void setZ(float v);
+
+    float r() const { return m_r; }
+    void setR(float v);
+    float r2() const { return m_r2; }
+    void setR2(float v);
+private slots:
+    void startSecondStage();
+private:
+    QOpenGLTexture *m_texture;
+    QOpenGLShaderProgram *m_program;
+    QOpenGLBuffer *m_vbo;
+    QOpenGLVertexArrayObject *m_vao;
+    Logo m_logo;
+    int m_projMatrixLoc;
+    int m_camMatrixLoc;
+    int m_worldMatrixLoc;
+    int m_myMatrixLoc;
+    int m_lightPosLoc;
+    QMatrix4x4 m_proj;
+    QMatrix4x4 m_world;
+    QVector3D m_eye;
+    QVector3D m_target;
+    bool m_uniformsDirty;
+    float m_r;
+    float m_r2;
+};
+
+#endif

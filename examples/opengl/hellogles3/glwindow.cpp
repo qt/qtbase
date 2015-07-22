@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include "glwidget.h"
+#include "glwindow.h"
 #include <QImage>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
@@ -49,14 +49,17 @@
 #include <QPropertyAnimation>
 #include <QPauseAnimation>
 #include <QSequentialAnimationGroup>
+#include <QTimer>
 
-GLWidget::GLWidget()
+GLWindow::GLWindow()
     : m_texture(0),
       m_program(0),
       m_vbo(0),
       m_vao(0),
       m_target(0, 0, -1),
-      m_uniformsDirty(true)
+      m_uniformsDirty(true),
+      m_r(0),
+      m_r2(0)
 {
     m_world.setToIdentity();
     m_world.translate(0, 0, -1);
@@ -65,25 +68,34 @@ GLWidget::GLWidget()
     QSequentialAnimationGroup *animGroup = new QSequentialAnimationGroup(this);
     animGroup->setLoopCount(-1);
     QPropertyAnimation *zAnim0 = new QPropertyAnimation(this, QByteArrayLiteral("z"));
-    zAnim0->setStartValue(0.0f);
-    zAnim0->setEndValue(1.0f);
+    zAnim0->setStartValue(1.5f);
+    zAnim0->setEndValue(10.0f);
     zAnim0->setDuration(2000);
     animGroup->addAnimation(zAnim0);
     QPropertyAnimation *zAnim1 = new QPropertyAnimation(this, QByteArrayLiteral("z"));
-    zAnim1->setStartValue(0.0f);
-    zAnim1->setEndValue(70.0f);
+    zAnim1->setStartValue(10.0f);
+    zAnim1->setEndValue(50.0f);
     zAnim1->setDuration(4000);
     zAnim1->setEasingCurve(QEasingCurve::OutElastic);
     animGroup->addAnimation(zAnim1);
     QPropertyAnimation *zAnim2 = new QPropertyAnimation(this, QByteArrayLiteral("z"));
-    zAnim2->setStartValue(70.0f);
-    zAnim2->setEndValue(0.0f);
+    zAnim2->setStartValue(50.0f);
+    zAnim2->setEndValue(1.5f);
     zAnim2->setDuration(2000);
     animGroup->addAnimation(zAnim2);
     animGroup->start();
+
+    QPropertyAnimation* rAnim = new QPropertyAnimation(this, QByteArrayLiteral("r"));
+    rAnim->setStartValue(0.0f);
+    rAnim->setEndValue(360.0f);
+    rAnim->setDuration(2000);
+    rAnim->setLoopCount(-1);
+    rAnim->start();
+
+    QTimer::singleShot(4000, this, SLOT(startSecondStage()));
 }
 
-GLWidget::~GLWidget()
+GLWindow::~GLWindow()
 {
     makeCurrent();
     delete m_texture;
@@ -92,9 +104,33 @@ GLWidget::~GLWidget()
     delete m_vao;
 }
 
-void GLWidget::setZ(float v)
+void GLWindow::startSecondStage()
+{
+    QPropertyAnimation* r2Anim = new QPropertyAnimation(this, QByteArrayLiteral("r2"));
+    r2Anim->setStartValue(0.0f);
+    r2Anim->setEndValue(360.0f);
+    r2Anim->setDuration(20000);
+    r2Anim->setLoopCount(-1);
+    r2Anim->start();
+}
+
+void GLWindow::setZ(float v)
 {
     m_eye.setZ(v);
+    m_uniformsDirty = true;
+    update();
+}
+
+void GLWindow::setR(float v)
+{
+    m_r = v;
+    m_uniformsDirty = true;
+    update();
+}
+
+void GLWindow::setR2(float v)
+{
+    m_r2 = v;
     m_uniformsDirty = true;
     update();
 }
@@ -108,11 +144,13 @@ static const char *vertexShaderSource =
     "uniform mat4 projMatrix;\n"
     "uniform mat4 camMatrix;\n"
     "uniform mat4 worldMatrix;\n"
+    "uniform mat4 myMatrix;\n"
     "uniform sampler2D sampler;\n"
     "void main() {\n"
     "   ivec2 pos = ivec2(gl_InstanceID % 32, gl_InstanceID / 32);\n"
-    "   vec2 t = vec2(-16 + pos.x, -18 + pos.y);\n"
-    "   mat4 wm = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, t.x, t.y, 0, 1) * worldMatrix;\n"
+    "   vec2 t = vec2(float(-16 + pos.x) * 0.8, float(-18 + pos.y) * 0.6);\n"
+    "   float val = 2.0 * length(texelFetch(sampler, pos, 0).rgb);\n"
+    "   mat4 wm = myMatrix * mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, t.x, t.y, val, 1) * worldMatrix;\n"
     "   color = texelFetch(sampler, pos, 0).rgb * vec3(0.4, 1.0, 0.0);\n"
     "   vert = vec3(wm * vertex);\n"
     "   vertNormal = mat3(transpose(inverse(wm))) * normal;\n"
@@ -145,7 +183,7 @@ QByteArray versionedShaderCode(const char *src)
     return versionedSrc;
 }
 
-void GLWidget::initializeGL()
+void GLWindow::initializeGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
 
@@ -171,6 +209,7 @@ void GLWidget::initializeGL()
     m_projMatrixLoc = m_program->uniformLocation("projMatrix");
     m_camMatrixLoc = m_program->uniformLocation("camMatrix");
     m_worldMatrixLoc = m_program->uniformLocation("worldMatrix");
+    m_myMatrixLoc = m_program->uniformLocation("myMatrix");
     m_lightPosLoc = m_program->uniformLocation("lightPos");
 
     // Create a VAO. Not strictly required for ES 3, but it is for plain OpenGL.
@@ -201,14 +240,14 @@ void GLWidget::initializeGL()
     f->glEnable(GL_CULL_FACE);
 }
 
-void GLWidget::resizeGL(int w, int h)
+void GLWindow::resizeGL(int w, int h)
 {
     m_proj.setToIdentity();
     m_proj.perspective(45.0f, GLfloat(w) / h, 0.01f, 100.0f);
     m_uniformsDirty = true;
 }
 
-void GLWidget::paintGL()
+void GLWindow::paintGL()
 {
     // Now use QOpenGLExtraFunctions instead of QOpenGLFunctions as we want to
     // do more than what GL(ES) 2.0 offers.
@@ -226,7 +265,13 @@ void GLWidget::paintGL()
         camera.lookAt(m_eye, m_eye + m_target, QVector3D(0, 1, 0));
         m_program->setUniformValue(m_projMatrixLoc, m_proj);
         m_program->setUniformValue(m_camMatrixLoc, camera);
-        m_program->setUniformValue(m_worldMatrixLoc, m_world);
+        QMatrix4x4 wm = m_world;
+        wm.rotate(m_r, 1, 1, 0);
+        m_program->setUniformValue(m_worldMatrixLoc, wm);
+        QMatrix4x4 mm;
+        mm.setToIdentity();
+        mm.rotate(-m_r2, 1, 0, 0);
+        m_program->setUniformValue(m_myMatrixLoc, mm);
         m_program->setUniformValue(m_lightPosLoc, QVector3D(0, 0, 70));
     }
 
