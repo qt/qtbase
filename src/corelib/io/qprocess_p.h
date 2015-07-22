@@ -56,7 +56,6 @@
 #include "QtCore/qstringlist.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qshareddata.h"
-#include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
 #ifdef Q_OS_UNIX
 #include <QtCore/private/qorderedmutexlocker_p.h>
@@ -293,7 +292,6 @@ public:
             QWindowsPipeWriter *writer;
         };
 #endif
-        QRingBuffer buffer;
         Q_PIPE pipe[2];
 
         unsigned type : 2;
@@ -311,7 +309,6 @@ public:
     bool _q_startupNotification();
     bool _q_processDied();
 
-    QProcess::ProcessChannel processChannel;
     QProcess::ProcessChannelMode processChannelMode;
     QProcess::InputChannelMode inputChannelMode;
     QProcess::ProcessError processError;

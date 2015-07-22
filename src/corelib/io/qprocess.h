@@ -235,12 +235,12 @@ public:
     QProcess::ExitStatus exitStatus() const;
 
     // QIODevice
-    qint64 bytesAvailable() const Q_DECL_OVERRIDE;
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
     bool isSequential() const Q_DECL_OVERRIDE;
-    bool canReadLine() const Q_DECL_OVERRIDE;
+    bool canReadLine() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
     void close() Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
+    bool atEnd() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
 
     static int execute(const QString &program, const QStringList &arguments);
     static int execute(const QString &command);

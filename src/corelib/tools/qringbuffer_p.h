@@ -56,10 +56,14 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QRINGBUFFER_CHUNKSIZE
+#define QRINGBUFFER_CHUNKSIZE 4096
+#endif
+
 class QRingBuffer
 {
 public:
-    explicit inline QRingBuffer(int growth = 4096) :
+    explicit inline QRingBuffer(int growth = QRINGBUFFER_CHUNKSIZE) :
         head(0), tail(0), tailBuffer(0), basicBlockSize(growth), bufferSize(0) { }
 
     inline qint64 nextDataBlockSize() const {

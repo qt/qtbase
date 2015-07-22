@@ -493,9 +493,11 @@ void tst_QProcess::echoTest2()
     QCOMPARE(process.error(), QProcess::Timedout);
 
     process.write("Hello");
+    QSignalSpy spy0(&process, &QProcess::channelReadyRead);
     QSignalSpy spy1(&process, &QProcess::readyReadStandardOutput);
     QSignalSpy spy2(&process, &QProcess::readyReadStandardError);
 
+    QVERIFY(spy0.isValid());
     QVERIFY(spy1.isValid());
     QVERIFY(spy2.isValid());
 
@@ -514,6 +516,7 @@ void tst_QProcess::echoTest2()
             break;
     }
 
+    QVERIFY(spy0.count() > 0);
     QVERIFY(spy1.count() > 0);
     QVERIFY(spy2.count() > 0);
 
@@ -985,6 +988,9 @@ public:
                     this, &SoftExitProcess::terminateSlot);
             break;
         case 4:
+            setReadChannelMode(QProcess::MergedChannels);
+            connect(this, SIGNAL(channelReadyRead(int)), this, SLOT(terminateSlot()));
+            break;
         default:
             connect(this, &QProcess::stateChanged,
                     this, &SoftExitProcess::terminateSlot);
@@ -1057,7 +1063,7 @@ void tst_QProcess::softExitInSlots()
 {
     QFETCH(QString, appName);
 
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         SoftExitProcess proc(i);
         proc.writeAfterStart("OLEBOLE", 8); // include the \0
         proc.start(appName);

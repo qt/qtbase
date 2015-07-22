@@ -866,7 +866,8 @@ void QProcessPrivate::Channel::clear()
 */
 QProcessPrivate::QProcessPrivate()
 {
-    processChannel = QProcess::StandardOutput;
+    readBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
+    writeBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
     processChannelMode = QProcess::SeparateChannels;
     inputChannelMode = QProcess::ManagedInputChannel;
     processError = QProcess::UnknownError;
@@ -1017,10 +1018,15 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     if (available == 0)
         available = 1;      // always try to read at least one byte
 
-    char *ptr = channel->buffer.reserve(available);
+    QProcess::ProcessChannel channelIdx = (channel == &stdoutChannel
+                                           ? QProcess::StandardOutput
+                                           : QProcess::StandardError);
+    Q_ASSERT(readBuffers.size() > int(channelIdx));
+    QRingBuffer &readBuffer = readBuffers[int(channelIdx)];
+    char *ptr = readBuffer.reserve(available);
     qint64 readBytes = readFromChannel(channel, ptr, available);
     if (readBytes <= 0)
-        channel->buffer.chop(available);
+        readBuffer.chop(available);
     if (readBytes == -2) {
         // EWOULDBLOCK
         return false;
@@ -1048,18 +1054,17 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 #endif
 
     if (channel->closed) {
-        channel->buffer.chop(readBytes);
+        readBuffer.chop(readBytes);
         return false;
     }
 
-    channel->buffer.chop(available - readBytes);
+    readBuffer.chop(available - readBytes);
 
     bool didRead = false;
-    bool isStdout = channel == &stdoutChannel;
     if (readBytes == 0) {
         if (channel->notifier)
             channel->notifier->setEnabled(false);
-    } else if ((processChannel == QProcess::StandardOutput) == isStdout) {
+    } else if (currentReadChannel == channelIdx) {
         didRead = true;
         if (!emittedReadyRead) {
             emittedReadyRead = true;
@@ -1067,7 +1072,8 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
             emittedReadyRead = false;
         }
     }
-    if (isStdout)
+    emit q->channelReadyRead(int(channelIdx));
+    if (channelIdx == QProcess::StandardOutput)
         emit q->readyReadStandardOutput(QProcess::QPrivateSignal());
     else
         emit q->readyReadStandardError(QProcess::QPrivateSignal());
@@ -1099,15 +1105,14 @@ bool QProcessPrivate::_q_canWrite()
     if (stdinChannel.notifier)
         stdinChannel.notifier->setEnabled(false);
 
-    if (stdinChannel.buffer.isEmpty()) {
+    if (writeBuffer.isEmpty()) {
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
 #endif
         return false;
     }
 
-    qint64 written = writeToStdin(stdinChannel.buffer.readPointer(),
-                                      stdinChannel.buffer.nextDataBlockSize());
+    qint64 written = writeToStdin(writeBuffer.readPointer(), writeBuffer.nextDataBlockSize());
     if (written < 0) {
         closeChannel(&stdinChannel);
         setErrorAndEmit(QProcess::WriteError);
@@ -1119,16 +1124,17 @@ bool QProcessPrivate::_q_canWrite()
 #endif
 
     if (written != 0) {
-        stdinChannel.buffer.free(written);
+        writeBuffer.free(written);
         if (!emittedBytesWritten) {
             emittedBytesWritten = true;
             emit q->bytesWritten(written);
             emittedBytesWritten = false;
         }
+        emit q->channelBytesWritten(0, written);
     }
-    if (stdinChannel.notifier && !stdinChannel.buffer.isEmpty())
+    if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);
-    if (stdinChannel.buffer.isEmpty() && stdinChannel.closed)
+    if (writeBuffer.isEmpty() && stdinChannel.closed)
         closeWriteChannel();
     return true;
 }
@@ -1387,7 +1393,7 @@ void QProcess::setInputChannelMode(InputChannelMode mode)
 QProcess::ProcessChannel QProcess::readChannel() const
 {
     Q_D(const QProcess);
-    return d->processChannel;
+    return ProcessChannel(d->currentReadChannel);
 }
 
 /*!
@@ -1400,20 +1406,7 @@ QProcess::ProcessChannel QProcess::readChannel() const
 */
 void QProcess::setReadChannel(ProcessChannel channel)
 {
-    Q_D(QProcess);
-
-    if (d->transactionStarted) {
-        qWarning("QProcess::setReadChannel: Failed due to the active read transaction");
-        return;
-    }
-
-    if (d->processChannel != channel) {
-        QRingBuffer *buffer = (d->processChannel == QProcess::StandardOutput)
-                              ? &d->stdoutChannel.buffer
-                              : &d->stderrChannel.buffer;
-        d->buffer.read(buffer->reserveFront(d->buffer.size()), d->buffer.size());
-    }
-    d->processChannel = channel;
+    QIODevice::setCurrentReadChannel(int(channel));
 }
 
 /*!
@@ -1458,7 +1451,7 @@ void QProcess::closeWriteChannel()
 {
     Q_D(QProcess);
     d->stdinChannel.closed = true; // closing
-    if (d->stdinChannel.buffer.isEmpty())
+    if (d->writeBuffer.isEmpty())
         d->closeWriteChannel();
 }
 
@@ -1719,11 +1712,7 @@ qint64 QProcess::processId() const
 */
 bool QProcess::canReadLine() const
 {
-    Q_D(const QProcess);
-    const QRingBuffer *readBuffer = (d->processChannel == QProcess::StandardError)
-                                    ? &d->stderrChannel.buffer
-                                    : &d->stdoutChannel.buffer;
-    return readBuffer->canReadLine() || QIODevice::canReadLine();
+    return QIODevice::canReadLine();
 }
 
 /*!
@@ -1733,11 +1722,13 @@ bool QProcess::canReadLine() const
 */
 void QProcess::close()
 {
+    Q_D(QProcess);
     emit aboutToClose();
     while (waitForBytesWritten(-1))
         ;
     kill();
     waitForFinished(-1);
+    d->setWriteChannelCount(0);
     QIODevice::close();
 }
 
@@ -1748,11 +1739,7 @@ void QProcess::close()
 */
 bool QProcess::atEnd() const
 {
-    Q_D(const QProcess);
-    const QRingBuffer *readBuffer = (d->processChannel == QProcess::StandardError)
-                                    ? &d->stderrChannel.buffer
-                                    : &d->stdoutChannel.buffer;
-    return QIODevice::atEnd() && (!isOpen() || readBuffer->isEmpty());
+    return QIODevice::atEnd();
 }
 
 /*! \reimp
@@ -1766,25 +1753,16 @@ bool QProcess::isSequential() const
 */
 qint64 QProcess::bytesAvailable() const
 {
-    Q_D(const QProcess);
-    const QRingBuffer *readBuffer = (d->processChannel == QProcess::StandardError)
-                                    ? &d->stderrChannel.buffer
-                                    : &d->stdoutChannel.buffer;
-#if defined QPROCESS_DEBUG
-    qDebug("QProcess::bytesAvailable() == %i (%s)", readBuffer->size(),
-           (d->processChannel == QProcess::StandardError) ? "stderr" : "stdout");
-#endif
-    return readBuffer->size() + QIODevice::bytesAvailable();
+    return QIODevice::bytesAvailable();
 }
 
 /*! \reimp
 */
 qint64 QProcess::bytesToWrite() const
 {
-    Q_D(const QProcess);
-    qint64 size = d->stdinChannel.buffer.size();
+    qint64 size = QIODevice::bytesToWrite();
 #ifdef Q_OS_WIN
-    size += d->pipeWriterBytesToWrite();
+    size += d_func()->pipeWriterBytesToWrite();
 #endif
     return size;
 }
@@ -1923,9 +1901,9 @@ bool QProcess::waitForReadyRead(int msecs)
 
     if (d->processState == QProcess::NotRunning)
         return false;
-    if (d->processChannel == QProcess::StandardOutput && d->stdoutChannel.closed)
+    if (d->currentReadChannel == QProcess::StandardOutput && d->stdoutChannel.closed)
         return false;
-    if (d->processChannel == QProcess::StandardError && d->stderrChannel.closed)
+    if (d->currentReadChannel == QProcess::StandardError && d->stderrChannel.closed)
         return false;
     return d->waitForReadyRead(msecs);
 }
@@ -2024,47 +2002,12 @@ void QProcess::setupChildProcess()
 qint64 QProcess::readData(char *data, qint64 maxlen)
 {
     Q_D(QProcess);
+    Q_UNUSED(data);
     if (!maxlen)
         return 0;
-    QRingBuffer *readBuffer = (d->processChannel == QProcess::StandardError)
-                              ? &d->stderrChannel.buffer
-                              : &d->stdoutChannel.buffer;
-
-    if (maxlen == 1 && !readBuffer->isEmpty()) {
-        int c = readBuffer->getChar();
-        if (c == -1) {
-#if defined QPROCESS_DEBUG
-            qDebug("QProcess::readData(%p \"%s\", %d) == -1",
-                   data, qt_prettyDebug(data, 1, maxlen).constData(), 1);
-#endif
-            return -1;
-        }
-        *data = (char) c;
-#if defined QPROCESS_DEBUG
-        qDebug("QProcess::readData(%p \"%s\", %d) == 1",
-               data, qt_prettyDebug(data, 1, maxlen).constData(), 1);
-#endif
-        return 1;
-    }
-
-    qint64 bytesToRead = qMin(readBuffer->size(), maxlen);
-    qint64 readSoFar = 0;
-    while (readSoFar < bytesToRead) {
-        const char *ptr = readBuffer->readPointer();
-        qint64 bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
-                                               readBuffer->nextDataBlockSize());
-        memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
-        readSoFar += bytesToReadFromThisBlock;
-        readBuffer->free(bytesToReadFromThisBlock);
-    }
-
-#if defined QPROCESS_DEBUG
-    qDebug("QProcess::readData(%p \"%s\", %lld) == %lld",
-           data, qt_prettyDebug(data, readSoFar, 16).constData(), maxlen, readSoFar);
-#endif
-    if (!readSoFar && d->processState == QProcess::NotRunning)
+    if (d->processState == QProcess::NotRunning)
         return -1;              // EOF
-    return readSoFar;
+    return 0;
 }
 
 /*! \reimp
@@ -2098,7 +2041,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 #endif
 
     if (len == 1) {
-        d->stdinChannel.buffer.putChar(*data);
+        d->writeBuffer.putChar(*data);
 #ifdef Q_OS_WIN
         if (!d->stdinWriteTrigger->isActive())
             d->stdinWriteTrigger->start();
@@ -2113,7 +2056,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
         return 1;
     }
 
-    char *dest = d->stdinChannel.buffer.reserve(len);
+    char *dest = d->writeBuffer.reserve(len);
     memcpy(dest, data, len);
 #ifdef Q_OS_WIN
     if (!d->stdinWriteTrigger->isActive())
@@ -2271,10 +2214,6 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
     qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
 
-    stdinChannel.buffer.clear();
-    stdoutChannel.buffer.clear();
-    stderrChannel.buffer.clear();
-
     if (stdinChannel.type != QProcessPrivate::Channel::Normal)
         mode &= ~QIODevice::WriteOnly;     // not open for writing
     if (stdoutChannel.type != QProcessPrivate::Channel::Normal &&
@@ -2294,6 +2233,9 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
 #endif
 
     q->QIODevice::open(mode);
+
+    if (q->isReadable() && processChannelMode != QProcess::MergedChannels)
+        setReadChannelCount(2);
 
     stdinChannel.closed = false;
     stdoutChannel.closed = false;

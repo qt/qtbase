@@ -877,7 +877,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (stderrChannel.pipe[0] != -1)
             add_fd(nfds, stderrChannel.pipe[0], &fdread);
 
-        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
@@ -899,12 +899,12 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         bool readyReadEmitted = false;
         if (stdoutChannel.pipe[0] != -1 && FD_ISSET(stdoutChannel.pipe[0], &fdread)) {
             bool canRead = _q_canReadStandardOutput();
-            if (processChannel == QProcess::StandardOutput && canRead)
+            if (currentReadChannel == QProcess::StandardOutput && canRead)
                 readyReadEmitted = true;
         }
         if (stderrChannel.pipe[0] != -1 && FD_ISSET(stderrChannel.pipe[0], &fdread)) {
             bool canRead = _q_canReadStandardError();
-            if (processChannel == QProcess::StandardError && canRead)
+            if (currentReadChannel == QProcess::StandardError && canRead)
                 readyReadEmitted = true;
         }
         if (readyReadEmitted)
@@ -930,7 +930,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
-    while (!stdinChannel.buffer.isEmpty()) {
+    while (!writeBuffer.isEmpty()) {
         fd_set fdread;
         fd_set fdwrite;
 
@@ -949,7 +949,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             add_fd(nfds, stderrChannel.pipe[0], &fdread);
 
 
-        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
@@ -1015,7 +1015,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
         if (processState == QProcess::Running && forkfd != -1)
             add_fd(nfds, forkfd, &fdread);
 
-        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
