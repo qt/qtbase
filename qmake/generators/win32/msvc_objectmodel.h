@@ -860,7 +860,6 @@ class VCConfiguration
 public:
     // Functions
     VCConfiguration();
-    ~VCConfiguration(){}
 
     bool                    suppressUnknownOptionWarnings;
     DotNET                  CompilerVersion;
