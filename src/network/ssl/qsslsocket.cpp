@@ -1312,8 +1312,8 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
 /*!
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
-  database. \a path can be explicit, or it can contain wildcards in
-  the format specified by \a syntax. Returns \c true if one or more
+  database. \a path must be a file or a pattern matching one or more
+  files, as specified by \a syntax. Returns \c true if one or more
   certificates are added to the socket's CA certificate database;
   otherwise returns \c false.
 
