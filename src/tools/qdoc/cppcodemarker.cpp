@@ -893,8 +893,8 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     ch = (i < (int)code.length()) ? code[i++].cell() : EOF
 
     QString code = in;
-    QStringList out;
-    QString text;
+    QString out;
+    QStringRef text;
     int braceDepth = 0;
     int parenDepth = 0;
     int i = 0;
@@ -1069,27 +1069,34 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             }
         }
 
-        text = code.mid(start, finish - start);
+        text = code.midRef(start, finish - start);
         start = finish;
 
         if (!tag.isEmpty()) {
-            out << QStringLiteral("<@") << tag;
-            if (target)
-                out << QStringLiteral(" target=\"") << text << QStringLiteral("()\"");
-            out << QStringLiteral(">");
+            out += QStringLiteral("<@");
+            out += tag;
+            if (target) {
+                out += QStringLiteral(" target=\"");
+                out += text;
+                out += QStringLiteral("()\"");
+            }
+            out += QStringLiteral(">");
         }
 
-        out << protect(text);
+        out += protect(text);
 
-        if (!tag.isEmpty())
-            out << QStringLiteral("</@") << tag << QStringLiteral(">");
+        if (!tag.isEmpty()) {
+            out += QStringLiteral("</@");
+            out += tag;
+            out += QStringLiteral(">");
+        }
     }
 
     if (start < code.length()) {
-        out << protect(code.mid(start));
+        out += protect(code.midRef(start));
     }
 
-    return out.join(QString());
+    return out;
 }
 
 /*!
