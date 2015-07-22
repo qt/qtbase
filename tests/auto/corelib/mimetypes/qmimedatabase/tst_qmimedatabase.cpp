@@ -37,6 +37,8 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QStandardPaths>
+#include <QtCore/QTemporaryDir>
 #include <QtCore/QTextStream>
 #include <QFutureSynchronizer>
 #include <QtConcurrent/QtConcurrentRun>
@@ -116,29 +118,30 @@ tst_QMimeDatabase::tst_QMimeDatabase()
 
 void tst_QMimeDatabase::initTestCase()
 {
+    QStandardPaths::setTestModeEnabled(true);
+    m_localMimeDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/mime";
+    if (QDir(m_localMimeDir).exists()) {
+        QVERIFY2(QDir(m_localMimeDir).removeRecursively(), qPrintable(m_localMimeDir + ": " + qt_error_string()));
+    }
+    QString errorMessage;
+
+#ifdef USE_XDG_DATA_DIRS
+    // Create a temporary "global" XDG data dir for later use
+    // It will initially contain a copy of freedesktop.org.xml
     QVERIFY(m_temporaryDir.isValid());
-
-    // Create a "global" and a "local" XDG data dir, right here.
-    // The local dir will be empty initially, while the global dir will contain a copy of freedesktop.org.xml
-
     const QDir here = QDir(m_temporaryDir.path());
-
     m_globalXdgDir = m_temporaryDir.path() + QStringLiteral("/global");
-    m_localXdgDir = m_temporaryDir.path() + QStringLiteral("/local");
-
     const QString globalPackageDir = m_globalXdgDir + QStringLiteral("/mime/packages");
-    QVERIFY(here.mkpath(globalPackageDir) && here.mkpath(m_localXdgDir));
+    QVERIFY(here.mkpath(globalPackageDir));
 
     qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalXdgDir));
-    qputenv("XDG_DATA_HOME", QFile::encodeName(m_localXdgDir));
-    qDebug() << "\nLocal XDG_DATA_HOME: " << m_localXdgDir
-             << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
+    qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
     const QString xmlFileName = QLatin1String(RESOURCE_PREFIX) + freeDesktopXml;
     const QString xmlTargetFileName = globalPackageDir + QLatin1Char('/') + freeDesktopXml;
-    QString errorMessage;
     QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
+#endif
 
     m_testSuite = QFINDTESTDATA("testfiles");
     if (m_testSuite.isEmpty())
@@ -150,7 +153,19 @@ void tst_QMimeDatabase::initTestCase()
     m_qmlAgainFileName = QLatin1String(RESOURCE_PREFIX) + qmlAgainFileName;
     QVERIFY2(QFile::exists(m_qmlAgainFileName), qPrintable(errorMessage.arg(qmlAgainFileName)));
 
-    init();
+    initTestCaseInternal();
+    m_isUsingCacheProvider = !qEnvironmentVariableIsSet("QT_NO_MIME_CACHE");
+}
+
+void tst_QMimeDatabase::init()
+{
+    // clean up local data from previous runs
+    QDir(m_localMimeDir).removeRecursively();
+}
+
+void tst_QMimeDatabase::cleanupTestCase()
+{
+    QDir(m_localMimeDir).removeRecursively();
 }
 
 void tst_QMimeDatabase::mimeTypeForName()
@@ -847,6 +862,10 @@ QT_END_NAMESPACE
 
 void tst_QMimeDatabase::installNewGlobalMimeType()
 {
+#if !defined(USE_XDG_DATA_DIRS)
+    QSKIP("This test requires XDG_DATA_DIRS");
+#endif
+
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
 #else
@@ -868,7 +887,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QString errorMessage;
     QVERIFY2(copyResourceFile(m_yastMimeTypes, destFile, &errorMessage), qPrintable(errorMessage));
     QVERIFY2(copyResourceFile(m_qmlAgainFileName, destQmlFile, &errorMessage), qPrintable(errorMessage));
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
@@ -887,7 +906,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     // Now test removing it again
     QFile::remove(destFile);
     QFile::remove(destQmlFile);
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
@@ -905,8 +924,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QMimeDatabase db;
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
-    const QString mimeDir = m_localXdgDir + QLatin1String("/mime");
-    const QString destDir = mimeDir + QLatin1String("/packages/");
+    const QString destDir = m_localMimeDir + QLatin1String("/packages/");
     QDir().mkpath(destDir);
     const QString destFile = destDir + QLatin1String(yastFileName);
     QFile::remove(destFile);
@@ -915,9 +933,9 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QString errorMessage;
     QVERIFY2(copyResourceFile(m_yastMimeTypes, destFile, &errorMessage), qPrintable(errorMessage));
     QVERIFY2(copyResourceFile(m_qmlAgainFileName, destQmlFile, &errorMessage), qPrintable(errorMessage));
-    if (!runUpdateMimeDatabase(mimeDir)) {
+    if (m_isUsingCacheProvider && !runUpdateMimeDatabase(m_localMimeDir)) {
         const QString skipWarning = QStringLiteral("shared-mime-info not found, skipping mime.cache test (")
-                                    + QDir::toNativeSeparators(mimeDir) + QLatin1Char(')');
+                                    + QDir::toNativeSeparators(m_localMimeDir) + QLatin1Char(')');
         QSKIP(qPrintable(skipWarning));
     }
 
@@ -937,14 +955,14 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
     QFile::remove(destFile);
     QFile::remove(destQmlFile);
-    if (!waitAndRunUpdateMimeDatabase(mimeDir))
+    if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
     // And now the user goes wild and uses rm -rf
-    QFile::remove(mimeDir + QString::fromLatin1("/mime.cache"));
+    QFile::remove(m_localMimeDir + QString::fromLatin1("/mime.cache"));
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
