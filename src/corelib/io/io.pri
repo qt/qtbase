@@ -149,19 +149,12 @@ win32 {
         }
         freebsd: LIBS_PRIVATE += -lutil         # qlockfile_unix.cpp requires this
         mac {
+            SOURCES += io/qstorageinfo_mac.cpp
+            OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
             osx {
                 OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
                 HEADERS += io/qfilesystemwatcher_fsevents_p.h
-            }
-            macx {
-                SOURCES += io/qstorageinfo_mac.cpp
-                OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
                 LIBS += -framework DiskArbitration -framework IOKit
-            } else:ios {
-                OBJECTIVE_SOURCES += io/qstandardpaths_ios.mm
-                SOURCES += io/qstorageinfo_mac.cpp
-            } else {
-                SOURCES += io/qstandardpaths_unix.cpp
             }
         } else:blackberry {
             SOURCES += \

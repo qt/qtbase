@@ -277,13 +277,13 @@ QT_BEGIN_NAMESPACE
     \header \li Path type \li Android \li iOS
     \row \li DesktopLocation
          \li "<APPROOT>/files"
-         \li "<APPROOT>/<APPDIR>" (not writable)
+         \li "<APPROOT>/Documents/Desktop"
     \row \li DocumentsLocation
          \li "<USER>/Documents", "<USER>/<APPNAME>/Documents"
          \li "<APPROOT>/Documents"
     \row \li FontsLocation
          \li "/system/fonts" (not writable)
-         \li "<APPROOT>/Documents/.fonts"
+         \li "<APPROOT>/Library/Fonts"
     \row \li ApplicationsLocation
          \li not supported (directory not readable)
          \li not supported
@@ -301,7 +301,7 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/tmp"
     \row \li HomeLocation
          \li "<APPROOT>/files"
-         \li "<APPROOT>/<APPDIR>" (not writable)
+         \li "<APPROOT>" (not writable)
     \row \li DataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"
@@ -316,13 +316,13 @@ QT_BEGIN_NAMESPACE
          \li not supported
     \row \li ConfigLocation
          \li "<APPROOT>/files/settings"
-         \li "<APPROOT>/Documents"
+         \li "<APPROOT>/Library/Preferences"
     \row \li GenericConfigLocation
          \li "<APPROOT>/files/settings" (there is no shared settings)
-         \li "<APPROOT>/Documents"
+         \li "<APPROOT>/Library/Preferences"
     \row \li DownloadLocation
          \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
-         \li "<APPROOT>/Documents/Download"
+         \li "<APPROOT>/Documents/Downloads"
     \row \li GenericCacheLocation
          \li "<APPROOT>/cache" (there is no shared cache)
          \li "<APPROOT>/Library/Caches"
@@ -331,7 +331,7 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/Library/Application Support"
     \row \li AppConfigLocation
          \li "<APPROOT>/files/settings"
-         \li "<APPROOT>/Documents"
+         \li "<APPROOT>/Library/Preferences/<APPNAME>"
     \row \li AppLocalDataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"
@@ -555,7 +555,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     an empty QString if no relevant location can be found.
 */
 
-#if !defined(Q_OS_OSX) && !defined(QT_BOOTSTRAPPED)
+#if !defined(Q_OS_MAC) && !defined(QT_BOOTSTRAPPED)
 QString QStandardPaths::displayName(StandardLocation type)
 {
     switch (type) {
