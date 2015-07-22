@@ -974,9 +974,6 @@ public:
         Resources,
         Extras
     };
-    // Functions
-    VCProjectSingleConfig(){}
-    ~VCProjectSingleConfig(){}
 
     // Variables
     QString                 Name;
