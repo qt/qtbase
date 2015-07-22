@@ -31,7 +31,6 @@
 **
 ****************************************************************************/
 
-#include "qdom.h"
 #include "qxmlstream.h"
 #include "qdocindexfiles.h"
 #include "qdoctagfiles.h"
@@ -117,72 +116,83 @@ static bool readingRoot = true;
 void QDocIndexFiles::readIndexFile(const QString& path)
 {
     QFile file(path);
-    if (file.open(QFile::ReadOnly)) {
-        QDomDocument document;
-        document.setContent(&file);
-        file.close();
-
-        QDomElement indexElement = document.documentElement();
-
-        // Generate a relative URL between the install dir and the index file
-        // when the -installdir command line option is set.
-        QString indexUrl;
-        if (Config::installDir.isEmpty()) {
-            indexUrl = indexElement.attribute("url", QString());
-        }
-        else {
-            // Use a fake directory, since we will copy the output to a sub directory of
-            // installDir when using "make install". This is just for a proper relative path.
-            //QDir installDir(path.section('/', 0, -3) + "/outputdir");
-            QDir installDir(path.section('/', 0, -3) + '/' + Generator::outputSubdir());
-            indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
-        }
-        project_ = indexElement.attribute("project", QString());
-
-        basesList_.clear();
-        relatedList_.clear();
-
-        readingRoot = true;
-        NamespaceNode* root = qdb_->newIndexTree(project_);
-
-        // Scan all elements in the XML file, constructing a map that contains
-        // base classes for each class found.
-        QDomElement child = indexElement.firstChildElement();
-        while (!child.isNull()) {
-            readIndexSection(child, root, indexUrl);
-            child = child.nextSiblingElement();
-            readingRoot = true;
-        }
-
-        // Now that all the base classes have been found for this index,
-        // arrange them into an inheritance hierarchy.
-        resolveIndex();
+    if (!file.open(QFile::ReadOnly)) {
+        qWarning() << "Could not read index file" << path;
+        return;
     }
+
+    QXmlStreamReader reader(&file);
+    reader.setNamespaceProcessing(false);
+
+    if (!reader.readNextStartElement())
+        return;
+
+    if (reader.name() != QLatin1String("INDEX"))
+        return;
+
+    QXmlStreamAttributes attrs = reader.attributes();
+
+    // Generate a relative URL between the install dir and the index file
+    // when the -installdir command line option is set.
+    QString indexUrl;
+    if (Config::installDir.isEmpty()) {
+        indexUrl = attrs.value(QLatin1String("url")).toString();
+    }
+    else {
+        // Use a fake directory, since we will copy the output to a sub directory of
+        // installDir when using "make install". This is just for a proper relative path.
+        //QDir installDir(path.section('/', 0, -3) + "/outputdir");
+        QDir installDir(path.section('/', 0, -3) + '/' + Generator::outputSubdir());
+        indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
+    }
+    project_ = attrs.value(QLatin1String("project")).toString();
+
+    basesList_.clear();
+    relatedList_.clear();
+
+    NamespaceNode* root = qdb_->newIndexTree(project_);
+
+    // Scan all elements in the XML file, constructing a map that contains
+    // base classes for each class found.
+    while (reader.readNextStartElement()) {
+        readingRoot = true;
+        readIndexSection(reader, root, indexUrl);
+    }
+
+    // Now that all the base classes have been found for this index,
+    // arrange them into an inheritance hierarchy.
+    resolveIndex();
 }
 
 /*!
   Read a <section> element from the index file and create the
   appropriate node(s).
  */
-void QDocIndexFiles::readIndexSection(const QDomElement& element,
+void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
                                       Node* current,
                                       const QString& indexUrl)
 {
-    QString name = element.attribute("name");
-    QString href = element.attribute("href");
+    QXmlStreamAttributes attributes = reader.attributes();
+    QStringRef elementName = reader.name();
+
+    QString name = attributes.value(QLatin1String("name")).toString();
+    QString href = attributes.value(QLatin1String("href")).toString();
     Node* node;
     Location location;
     Aggregate* parent = 0;
+
+    bool hasReadChildren = false;
+
     if (current->isAggregate())
         parent = static_cast<Aggregate*>(current);
 
     QString filePath;
     int lineNo = 0;
-    if (element.hasAttribute("filepath")) {
-        filePath = element.attribute("filepath", QString());
-        lineNo = element.attribute("lineno", QString()).toInt();
+    if (attributes.hasAttribute(QLatin1String("filepath"))) {
+        filePath = attributes.value(QLatin1String("filepath")).toString();
+        lineNo = attributes.value("lineno").toInt();
     }
-    if (element.nodeName() == "namespace") {
+    if (elementName == QLatin1String("namespace")) {
         node = new NamespaceNode(parent, name);
 
         if (!indexUrl.isEmpty())
@@ -191,10 +201,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(name.toLower() + ".html");
 
     }
-    else if (element.nodeName() == "class") {
+    else if (elementName == QLatin1String("class")) {
         node = new ClassNode(parent, name);
-        if (element.hasAttribute("bases")) {
-            QString bases = element.attribute("bases");
+        if (attributes.hasAttribute(QLatin1String("bases"))) {
+            QString bases = attributes.value(QLatin1String("bases")).toString();
             if (!bases.isEmpty())
                 basesList_.append(QPair<ClassNode*,QString>(static_cast<ClassNode*>(node), bases));
         }
@@ -203,108 +213,108 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else if (!indexUrl.isNull())
             location = Location(name.toLower() + ".html");
         bool abstract = false;
-        if (element.attribute("abstract") == "true")
+        if (attributes.value(QLatin1String("abstract")) == QLatin1String("true"))
             abstract = true;
         node->setAbstract(abstract);
     }
-    else if (element.nodeName() == "qmlclass") {
+    else if (elementName == QLatin1String("qmlclass")) {
         QmlTypeNode* qcn = new QmlTypeNode(parent, name);
-        qcn->setTitle(element.attribute("title"));
-        QString logicalModuleName = element.attribute("qml-module-name");
+        qcn->setTitle(attributes.value(QLatin1String("title")).toString());
+        QString logicalModuleName = attributes.value(QLatin1String("qml-module-name")).toString();
         if (!logicalModuleName.isEmpty())
             qdb_->addToQmlModule(logicalModuleName, qcn);
         bool abstract = false;
-        if (element.attribute("abstract") == "true")
+        if (attributes.value(QLatin1String("abstract")) == QLatin1String("true"))
             abstract = true;
         qcn->setAbstract(abstract);
-        QString qmlFullBaseName = element.attribute("qml-base-type");
+        QString qmlFullBaseName = attributes.value(QLatin1String("qml-base-type")).toString();
         if (!qmlFullBaseName.isEmpty()) {
             qcn->setQmlBaseName(qmlFullBaseName);
         }
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qcn;
     }
-    else if (element.nodeName() == "jstype") {
+    else if (elementName == QLatin1String("jstype")) {
         QmlTypeNode* qcn = new QmlTypeNode(parent, name);
         qcn->setGenus(Node::JS);
-        qcn->setTitle(element.attribute("title"));
-        QString logicalModuleName = element.attribute("js-module-name");
+        qcn->setTitle(attributes.value(QLatin1String("title")).toString());
+        QString logicalModuleName = attributes.value(QLatin1String("js-module-name")).toString();
         if (!logicalModuleName.isEmpty())
             qdb_->addToQmlModule(logicalModuleName, qcn);
         bool abstract = false;
-        if (element.attribute("abstract") == "true")
+        if (attributes.value(QLatin1String("abstract")) == QLatin1String("true"))
             abstract = true;
         qcn->setAbstract(abstract);
-        QString qmlFullBaseName = element.attribute("js-base-type");
+        QString qmlFullBaseName = attributes.value(QLatin1String("js-base-type")).toString();
         if (!qmlFullBaseName.isEmpty()) {
             qcn->setQmlBaseName(qmlFullBaseName);
         }
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qcn;
     }
-    else if (element.nodeName() == "qmlbasictype") {
+    else if (elementName == QLatin1String("qmlbasictype")) {
         QmlBasicTypeNode* qbtn = new QmlBasicTypeNode(parent, name);
-        qbtn->setTitle(element.attribute("title"));
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        qbtn->setTitle(attributes.value(QLatin1String("title")).toString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qbtn;
     }
-    else if (element.nodeName() == "jsbasictype") {
+    else if (elementName == QLatin1String("jsbasictype")) {
         QmlBasicTypeNode* qbtn = new QmlBasicTypeNode(parent, name);
         qbtn->setGenus(Node::JS);
-        qbtn->setTitle(element.attribute("title"));
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        qbtn->setTitle(attributes.value(QLatin1String("title")).toString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qbtn;
     }
-    else if (element.nodeName() == "qmlpropertygroup") {
+    else if (elementName == QLatin1String("qmlpropertygroup")) {
         QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
         QmlPropertyGroupNode* qpgn = new QmlPropertyGroupNode(qcn, name);
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qpgn;
     }
-    else if (element.nodeName() == "jspropertygroup") {
+    else if (elementName == QLatin1String("jspropertygroup")) {
         QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
         QmlPropertyGroupNode* qpgn = new QmlPropertyGroupNode(qcn, name);
         qpgn->setGenus(Node::JS);
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value("location").toString();
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qpgn;
     }
-    else if (element.nodeName() == "qmlproperty") {
-        QString type = element.attribute("type");
+    else if (elementName == QLatin1String("qmlproperty")) {
+        QString type = attributes.value(QLatin1String("type")).toString();
         bool attached = false;
-        if (element.attribute("attached") == "true")
+        if (attributes.value(QLatin1String("attached")) == QLatin1String("true"))
             attached = true;
         bool readonly = false;
-        if (element.attribute("writable") == "false")
+        if (attributes.value(QLatin1String("writable")) == QLatin1String("false"))
             readonly = true;
         QmlPropertyNode* qpn = 0;
         if (parent->isQmlType()) {
@@ -318,13 +328,13 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         qpn->setReadOnly(readonly);
         node = qpn;
     }
-    else if (element.nodeName() == "jsproperty") {
-        QString type = element.attribute("type");
+    else if (elementName == QLatin1String("jsproperty")) {
+        QString type = attributes.value(QLatin1String("type")).toString();
         bool attached = false;
-        if (element.attribute("attached") == "true")
+        if (attributes.value(QLatin1String("attached")) == QLatin1String("true"))
             attached = true;
         bool readonly = false;
-        if (element.attribute("writable") == "false")
+        if (attributes.value(QLatin1String("writable")) == QLatin1String("false"))
             readonly = true;
         QmlPropertyNode* qpn = 0;
         if (parent->isJsType()) {
@@ -339,103 +349,103 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         qpn->setReadOnly(readonly);
         node = qpn;
     }
-    else if ((element.nodeName() == "qmlmethod") ||
-             (element.nodeName() == "qmlsignal") ||
-             (element.nodeName() == "qmlsignalhandler")) {
+    else if ((elementName == QLatin1String("qmlmethod")) ||
+             (elementName == QLatin1String("qmlsignal")) ||
+             (elementName == QLatin1String("qmlsignalhandler"))) {
         Node::NodeType t = Node::QmlMethod;
-        if (element.nodeName() == "qmlsignal")
+        if (elementName == QLatin1String("qmlsignal"))
             t = Node::QmlSignal;
-        else if (element.nodeName() == "qmlsignalhandler")
+        else if (elementName == QLatin1String("qmlsignalhandler"))
             t = Node::QmlSignalHandler;
         bool attached = false;
         FunctionNode* fn = new FunctionNode(t, parent, name, attached);
         node = fn;
     }
-    else if ((element.nodeName() == "jsmethod") ||
-             (element.nodeName() == "jssignal") ||
-             (element.nodeName() == "jssignalhandler")) {
+    else if ((elementName == QLatin1String("jsmethod")) ||
+             (elementName == QLatin1String("jssignal")) ||
+             (elementName == QLatin1String("jssignalhandler"))) {
         Node::NodeType t = Node::QmlMethod;
-        if (element.nodeName() == "jssignal")
+        if (elementName == QLatin1String("jssignal"))
             t = Node::QmlSignal;
-        else if (element.nodeName() == "jssignalhandler")
+        else if (elementName == QLatin1String("jssignalhandler"))
             t = Node::QmlSignalHandler;
         bool attached = false;
         FunctionNode* fn = new FunctionNode(t, parent, name, attached);
         fn->setGenus(Node::JS);
         node = fn;
     }
-    else if (element.nodeName() == "group") {
+    else if (elementName == QLatin1String("group")) {
         CollectionNode* cn = qdb_->addGroup(name);
-        cn->setTitle(element.attribute("title"));
-        cn->setSubTitle(element.attribute("subtitle"));
-        if (element.attribute("seen") == "true")
+        cn->setTitle(attributes.value(QLatin1String("title")).toString());
+        cn->setSubTitle(attributes.value(QLatin1String("subtitle")).toString());
+        if (attributes.value(QLatin1String("seen")) == QLatin1String("true"))
             cn->markSeen();
         node = cn;
     }
-    else if (element.nodeName() == "module") {
+    else if (elementName == QLatin1String("module")) {
         CollectionNode* cn = qdb_->addModule(name);
-        cn->setTitle(element.attribute("title"));
-        cn->setSubTitle(element.attribute("subtitle"));
-        if (element.attribute("seen") == "true")
+        cn->setTitle(attributes.value(QLatin1String("title")).toString());
+        cn->setSubTitle(attributes.value(QLatin1String("subtitle")).toString());
+        if (attributes.value(QLatin1String("seen")) == QLatin1String("true"))
             cn->markSeen();
         node = cn;
     }
-    else if (element.nodeName() == "qmlmodule") {
-        QString t = element.attribute("qml-module-name");
+    else if (elementName == QLatin1String("qmlmodule")) {
+        QString t = attributes.value(QLatin1String("qml-module-name")).toString();
         CollectionNode* cn = qdb_->addQmlModule(t);
         QStringList info;
-        info << t << element.attribute("qml-module-version");
+        info << t << attributes.value(QLatin1String("qml-module-version")).toString();
         cn->setLogicalModuleInfo(info);
-        cn->setTitle(element.attribute("title"));
-        cn->setSubTitle(element.attribute("subtitle"));
-        if (element.attribute("seen") == "true")
+        cn->setTitle(attributes.value(QLatin1String("title")).toString());
+        cn->setSubTitle(attributes.value(QLatin1String("subtitle")).toString());
+        if (attributes.value(QLatin1String("seen")) == QLatin1String("true"))
             cn->markSeen();
         node = cn;
     }
-    else if (element.nodeName() == "jsmodule") {
-        QString t = element.attribute("js-module-name");
+    else if (elementName == QLatin1String("jsmodule")) {
+        QString t = attributes.value(QLatin1String("js-module-name")).toString();
         CollectionNode* cn = qdb_->addJsModule(t);
         QStringList info;
-        info << t << element.attribute("js-module-version");
+        info << t << attributes.value(QLatin1String("js-module-version")).toString();
         cn->setLogicalModuleInfo(info);
-        cn->setTitle(element.attribute("title"));
-        cn->setSubTitle(element.attribute("subtitle"));
-        if (element.attribute("seen") == "true")
+        cn->setTitle(attributes.value(QLatin1String("title")).toString());
+        cn->setSubTitle(attributes.value(QLatin1String("subtitle")).toString());
+        if (attributes.value(QLatin1String("seen")) == QLatin1String("true"))
             cn->markSeen();
         node = cn;
     }
-    else if (element.nodeName() == "page") {
+    else if (elementName == QLatin1String("page")) {
         Node::DocSubtype subtype;
         Node::PageType ptype = Node::NoPageType;
-        QString attr = element.attribute("subtype");
-        if (attr == "example") {
+        QString attr = attributes.value(QLatin1String("subtype")).toString();
+        if (attr == QLatin1String("example")) {
             subtype = Node::Example;
             ptype = Node::ExamplePage;
         }
-        else if (attr == "header") {
+        else if (attr == QLatin1String("header")) {
             subtype = Node::HeaderFile;
             ptype = Node::ApiPage;
         }
-        else if (attr == "file") {
+        else if (attr == QLatin1String("file")) {
             subtype = Node::File;
             ptype = Node::NoPageType;
         }
-        else if (attr == "page") {
+        else if (attr == QLatin1String("page")) {
             subtype = Node::Page;
             ptype = Node::ArticlePage;
         }
-        else if (attr == "externalpage") {
+        else if (attr == QLatin1String("externalpage")) {
             subtype = Node::ExternalPage;
             ptype = Node::ArticlePage;
         }
         else
-            return;
+            goto done;
 
         DocumentNode* docNode = new DocumentNode(parent, name, subtype, ptype);
-        docNode->setTitle(element.attribute("title"));
+        docNode->setTitle(attributes.value(QLatin1String("title")).toString());
 
-        if (element.hasAttribute("location"))
-            name = element.attribute("location", QString());
+        if (attributes.hasAttribute(QLatin1String("location")))
+            name = attributes.value(QLatin1String("location")).toString();
 
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name);
@@ -445,7 +455,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node = docNode;
 
     }
-    else if (element.nodeName() == "enum") {
+    else if (elementName == QLatin1String("enum")) {
         EnumNode* enumNode = new EnumNode(parent, name);
 
         if (!indexUrl.isEmpty())
@@ -453,17 +463,20 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else if (!indexUrl.isNull())
             location = Location(parent->name().toLower() + ".html");
 
-        QDomElement child = element.firstChildElement("value");
-        while (!child.isNull()) {
-            EnumItem item(child.attribute("name"), child.attribute("value"));
-            enumNode->addItem(item);
-            child = child.nextSiblingElement("value");
+        while (reader.readNextStartElement()) {
+            if (reader.name() == QLatin1String("value")) {
+                QXmlStreamAttributes childAttributes = reader.attributes();
+                EnumItem item(childAttributes.value(QLatin1String("name")).toString(), childAttributes.value(QLatin1String("value")).toString());
+                enumNode->addItem(item);
+            }
+            reader.skipCurrentElement();
         }
 
         node = enumNode;
 
+        hasReadChildren = true;
     }
-    else if (element.nodeName() == "typedef") {
+    else if (elementName == QLatin1String("typedef")) {
         node = new TypedefNode(parent, name);
 
         if (!indexUrl.isEmpty())
@@ -472,7 +485,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(parent->name().toLower() + ".html");
 
     }
-    else if (element.nodeName() == "property") {
+    else if (elementName == QLatin1String("property")) {
         node = new PropertyNode(parent, name);
 
         if (!indexUrl.isEmpty())
@@ -481,74 +494,76 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(parent->name().toLower() + ".html");
 
     }
-    else if (element.nodeName() == "function") {
+    else if (elementName == QLatin1String("function")) {
         FunctionNode::Virtualness virt;
-        QString t = element.attribute("virtual");
-        if (t == "non")
+        QString t = attributes.value(QLatin1String("virtual")).toString();
+        if (t == QLatin1String("non"))
             virt = FunctionNode::NonVirtual;
-        else if (t == "virtual")
+        else if (t == QLatin1String("virtual"))
             virt = FunctionNode::NormalVirtual;
-        else if (t == "pure")
+        else if (t == QLatin1String("pure"))
             virt = FunctionNode::PureVirtual;
         else
-            return;
+            goto done;
 
-        t = element.attribute("meta");
+        t = attributes.value(QLatin1String("meta")).toString();
         FunctionNode::Metaness meta;
-        if (t == "plain")
+        if (t == QLatin1String("plain"))
             meta = FunctionNode::Plain;
-        else if (t == "signal")
+        else if (t == QLatin1String("signal"))
             meta = FunctionNode::Signal;
-        else if (t == "slot")
+        else if (t == QLatin1String("slot"))
             meta = FunctionNode::Slot;
-        else if (t == "constructor")
+        else if (t == QLatin1String("constructor"))
             meta = FunctionNode::Ctor;
-        else if (t == "destructor")
+        else if (t == QLatin1String("destructor"))
             meta = FunctionNode::Dtor;
-        else if (t == "macro")
+        else if (t == QLatin1String("macro"))
             meta = FunctionNode::MacroWithParams;
-        else if (t == "macrowithparams")
+        else if (t == QLatin1String("macrowithparams"))
             meta = FunctionNode::MacroWithParams;
-        else if (t == "macrowithoutparams")
+        else if (t == QLatin1String("macrowithoutparams"))
             meta = FunctionNode::MacroWithoutParams;
         else
-            return;
+            goto done;
 
         FunctionNode* functionNode = new FunctionNode(parent, name);
-        functionNode->setReturnType(element.attribute("return"));
+        functionNode->setReturnType(attributes.value(QLatin1String("return")).toString());
         functionNode->setVirtualness(virt);
         functionNode->setMetaness(meta);
-        functionNode->setConst(element.attribute("const") == "true");
-        functionNode->setStatic(element.attribute("static") == "true");
-        if (element.attribute("overload") == "true") {
+        functionNode->setConst(attributes.value(QLatin1String("const")) == QLatin1String("true"));
+        functionNode->setStatic(attributes.value(QLatin1String("static")) == QLatin1String("true"));
+        if (attributes.value(QLatin1String("overload")) == QLatin1String("true")) {
             functionNode->setOverloadFlag(true);
-            functionNode->setOverloadNumber(element.attribute("overload-number").toUInt());
+            functionNode->setOverloadNumber(attributes.value(QLatin1String("overload-number")).toUInt());
         }
         else {
             functionNode->setOverloadFlag(false);
             functionNode->setOverloadNumber(0);
         }
-        if (element.hasAttribute("relates")
-                && element.attribute("relates") != parent->name()) {
+        if (attributes.hasAttribute(QLatin1String("relates"))
+                && attributes.value(QLatin1String("relates")) != parent->name()) {
             relatedList_.append(
                         QPair<FunctionNode*,QString>(functionNode,
-                                                     element.attribute("relates")));
+                                                     attributes.value(QLatin1String("relates")).toString()));
         }
         /*
           Note: The "signature" attribute was written to the
           index file, but it is not read back in. Is that ok?
          */
 
-        QDomElement child = element.firstChildElement("parameter");
-        while (!child.isNull()) {
-            // Do not use the default value for the parameter; it is not
-            // required, and has been known to cause problems.
-            Parameter parameter(child.attribute("left"),
-                                child.attribute("right"),
-                                child.attribute("name"),
-                                QString()); // child.attribute("default")
-            functionNode->addParameter(parameter);
-            child = child.nextSiblingElement("parameter");
+        while (reader.readNextStartElement()) {
+            if (reader.name() == QLatin1String("parameter")) {
+                QXmlStreamAttributes childAttributes = reader.attributes();
+                // Do not use the default value for the parameter; it is not
+                // required, and has been known to cause problems.
+                Parameter parameter(childAttributes.value(QLatin1String("left")).toString(),
+                                    childAttributes.value(QLatin1String("right")).toString(),
+                                    childAttributes.value(QLatin1String("name")).toString(),
+                                    QString()); // childAttributes.value(QLatin1String("default"))
+                functionNode->addParameter(parameter);
+            }
+            reader.skipCurrentElement();
         }
 
         node = functionNode;
@@ -556,125 +571,134 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location =  Location(indexUrl + QLatin1Char('/') + parent->name().toLower() + ".html");
         else if (!indexUrl.isNull())
             location = Location(parent->name().toLower() + ".html");
+
+        hasReadChildren = true;
     }
-    else if (element.nodeName() == "variable") {
+    else if (elementName == QLatin1String("variable")) {
         node = new VariableNode(parent, name);
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + parent->name().toLower() + ".html");
         else if (!indexUrl.isNull())
             location = Location(parent->name().toLower() + ".html");
     }
-    else if (element.nodeName() == "keyword") {
-        QString title = element.attribute("title");
+    else if (elementName == QLatin1String("keyword")) {
+        QString title = attributes.value(QLatin1String("title")).toString();
         qdb_->insertTarget(name, title, TargetRec::Keyword, current, 1);
-        return;
+        goto done;
     }
-    else if (element.nodeName() == "target") {
-        QString title = element.attribute("title");
+    else if (elementName == QLatin1String("target")) {
+        QString title = attributes.value(QLatin1String("title")).toString();
         qdb_->insertTarget(name, title, TargetRec::Target, current, 2);
-        return;
+        goto done;
     }
-    else if (element.nodeName() == "contents") {
-        QString title = element.attribute("title");
+    else if (elementName == QLatin1String("contents")) {
+        QString title = attributes.value(QLatin1String("title")).toString();
         qdb_->insertTarget(name, title, TargetRec::Contents, current, 3);
-        return;
+        goto done;
     }
     else
-        return;
+        goto done;
 
-    QString access = element.attribute("access");
-    if (access == "public")
-        node->setAccess(Node::Public);
-    else if (access == "protected")
-        node->setAccess(Node::Protected);
-    else if ((access == "private") || (access == "internal"))
-        node->setAccess(Node::Private);
-    else
-        node->setAccess(Node::Public);
+    {
+        QString access = attributes.value(QLatin1String("access")).toString();
+        if (access == "public")
+            node->setAccess(Node::Public);
+        else if (access == "protected")
+            node->setAccess(Node::Protected);
+        else if ((access == "private") || (access == "internal"))
+            node->setAccess(Node::Private);
+        else
+            node->setAccess(Node::Public);
 
-    if ((element.nodeName() != "page") &&
-            (element.nodeName() != "qmlclass") &&
-            (element.nodeName() != "qmlbasictype") &&
-            (element.nodeName() != "jstype") &&
-            (element.nodeName() != "jsbasictype")) {
-        QString threadSafety = element.attribute("threadsafety");
-        if (threadSafety == "non-reentrant")
-            node->setThreadSafeness(Node::NonReentrant);
-        else if (threadSafety == "reentrant")
-            node->setThreadSafeness(Node::Reentrant);
-        else if (threadSafety == "thread safe")
-            node->setThreadSafeness(Node::ThreadSafe);
+        if ((elementName != QLatin1String("page")) &&
+                (elementName != QLatin1String("qmlclass")) &&
+                (elementName != QLatin1String("qmlbasictype")) &&
+                (elementName != QLatin1String("jstype")) &&
+                (elementName != QLatin1String("jsbasictype"))) {
+            QString threadSafety = attributes.value(QLatin1String("threadsafety")).toString();
+            if (threadSafety == QLatin1String("non-reentrant"))
+                node->setThreadSafeness(Node::NonReentrant);
+            else if (threadSafety == QLatin1String("reentrant"))
+                node->setThreadSafeness(Node::Reentrant);
+            else if (threadSafety == QLatin1String("thread safe"))
+                node->setThreadSafeness(Node::ThreadSafe);
+            else
+                node->setThreadSafeness(Node::UnspecifiedSafeness);
+        }
         else
             node->setThreadSafeness(Node::UnspecifiedSafeness);
-    }
-    else
-        node->setThreadSafeness(Node::UnspecifiedSafeness);
 
-    QString status = element.attribute("status");
-    if (status == "compat")
-        node->setStatus(Node::Compat);
-    else if (status == "obsolete")
-        node->setStatus(Node::Obsolete);
-    else if (status == "deprecated")
-        node->setStatus(Node::Obsolete);
-    else if (status == "preliminary")
-        node->setStatus(Node::Preliminary);
-    else if (status == "active")
-        node->setStatus(Node::Active);
-    else if (status == "internal")
-        node->setStatus(Node::Internal);
-    else
-        node->setStatus(Node::Active);
+        QString status = attributes.value(QLatin1String("status")).toString();
+        if (status == QLatin1String("compat"))
+            node->setStatus(Node::Compat);
+        else if (status == QLatin1String("obsolete"))
+            node->setStatus(Node::Obsolete);
+        else if (status == QLatin1String("deprecated"))
+            node->setStatus(Node::Obsolete);
+        else if (status == QLatin1String("preliminary"))
+            node->setStatus(Node::Preliminary);
+        else if (status == QLatin1String("active"))
+            node->setStatus(Node::Active);
+        else if (status == QLatin1String("internal"))
+            node->setStatus(Node::Internal);
+        else
+            node->setStatus(Node::Active);
 
-    QString physicalModuleName = element.attribute("module");
-    if (!physicalModuleName.isEmpty())
-        qdb_->addToModule(physicalModuleName, node);
-    if (!href.isEmpty()) {
-        if (node->isExternalPage())
-            node->setUrl(href);
-        else if (!indexUrl.isEmpty())
-            node->setUrl(indexUrl + QLatin1Char('/') + href);
-    }
+        QString physicalModuleName = attributes.value(QLatin1String("module")).toString();
+        if (!physicalModuleName.isEmpty())
+            qdb_->addToModule(physicalModuleName, node);
+        if (!href.isEmpty()) {
+            if (node->isExternalPage())
+                node->setUrl(href);
+            else if (!indexUrl.isEmpty())
+                node->setUrl(indexUrl + QLatin1Char('/') + href);
+        }
 
-    QString since = element.attribute("since");
-    if (!since.isEmpty()) {
-        node->setSince(since);
-    }
+        QString since = attributes.value(QLatin1String("since")).toString();
+        if (!since.isEmpty()) {
+            node->setSince(since);
+        }
 
-    QString groupsAttr = element.attribute("groups");
-    if (!groupsAttr.isEmpty()) {
-        QStringList groupNames = groupsAttr.split(",");
-        foreach (const QString &name, groupNames) {
-            qdb_->addToGroup(name, node);
+        QString groupsAttr = attributes.value(QLatin1String("groups")).toString();
+        if (!groupsAttr.isEmpty()) {
+            QStringList groupNames = groupsAttr.split(",");
+            foreach (const QString &name, groupNames) {
+                qdb_->addToGroup(name, node);
+            }
+        }
+
+        // Create some content for the node.
+        QSet<QString> emptySet;
+        Location t(filePath);
+        if (!filePath.isEmpty()) {
+            t.setLineNo(lineNo);
+            node->setLocation(t);
+            location = t;
+        }
+        Doc doc(location, location, " ", emptySet, emptySet); // placeholder
+        node->setDoc(doc);
+        node->setIndexNodeFlag();
+        node->setOutputSubdirectory(project_.toLower());
+        QString briefAttr = attributes.value(QLatin1String("brief")).toString();
+        if (!briefAttr.isEmpty()) {
+            node->setReconstitutedBrief(briefAttr);
+        }
+
+        if (!hasReadChildren) {
+            bool useParent = (elementName == QLatin1String("namespace") && name.isEmpty());
+            while (reader.readNextStartElement()) {
+                if (useParent)
+                    readIndexSection(reader, parent, indexUrl);
+                else
+                    readIndexSection(reader, node, indexUrl);
+            }
         }
     }
 
-    // Create some content for the node.
-    QSet<QString> emptySet;
-    Location t(filePath);
-    if (!filePath.isEmpty()) {
-        t.setLineNo(lineNo);
-        node->setLocation(t);
-        location = t;
-    }
-    Doc doc(location, location, " ", emptySet, emptySet); // placeholder
-    node->setDoc(doc);
-    node->setIndexNodeFlag();
-    node->setOutputSubdirectory(project_.toLower());
-    QString briefAttr = element.attribute("brief");
-    if (!briefAttr.isEmpty()) {
-        node->setReconstitutedBrief(briefAttr);
-    }
-
-    bool useParent = (element.nodeName() == "namespace" && name.isEmpty());
-    if (element.hasChildNodes()) {
-        QDomElement child = element.firstChildElement();
-        while (!child.isNull()) {
-            if (useParent)
-                readIndexSection(child, parent, indexUrl);
-            else
-                readIndexSection(child, node, indexUrl);
-            child = child.nextSiblingElement();
+  done:
+    while (!reader.isEndElement()) {
+        if (reader.readNext() == QXmlStreamReader::Invalid) {
+            break;
         }
     }
 }

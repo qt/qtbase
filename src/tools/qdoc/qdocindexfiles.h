@@ -42,7 +42,6 @@ class Atom;
 class Generator;
 class QStringList;
 class QDocDatabase;
-class QDomElement;
 class QXmlStreamWriter;
 
 class QDocIndexFiles
@@ -64,7 +63,7 @@ class QDocIndexFiles
                        bool generateInternalNodes = false);
 
     void readIndexFile(const QString& path);
-    void readIndexSection(const QDomElement& element, Node* current, const QString& indexUrl);
+    void readIndexSection(QXmlStreamReader &reader, Node* current, const QString& indexUrl);
     void resolveIndex();
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
