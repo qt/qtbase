@@ -1083,42 +1083,106 @@
 
     \section1 Overview
 
-    Starting with Qt 4.4, Qt Assistant uses a different system for managing
-    Qt documentation that requires QDoc to generate inventories of files in a
-    format that is similar to the old style DCF format, but with additional
-    features.
+    Qt Assistant uses a system for managing Qt documentation that requires
+    QDoc to generate inventories of files in a format that is similar to the
+    old style DCF format, but with additional features.
 
-    Instead of hard-coding information about the documentation sets for Qt,
     QDoc allows configuration variables to be used to specify which pages are
     to be used in each documentation set it generates. These are specified as
-    subvariables of the \c qch variable with each set declared using a unique
+    subvariables of the \c qhp variable with each set declared using a unique
     identifier as a subvariable.
 
-    For example, the configuration file for the Qt documentation defines a
-    \c Qt documentation set by specifying information about the set as
-    subvariables with the \c{qhp.Qt} prefix:
+    For example, the configuration file for the Qt Quick documentation set
+    specifies information about the set as subvariables with the
+    \c{qhp.QtQuick} prefix:
 
-    \code
-    qhp.Qt.file                = qt.qhp
-    qhp.Qt.namespace           = org.qt-project.qtcore.$QT_VERSION_TAG
-    qhp.Qt.virtualFolder       = qdoc
-    qhp.Qt.indexTitle          = Qt Reference Documentation
-    qhp.Qt.indexRoot           =
-    qhp.Qt.extraFiles          = classic.css images/qt-logo.png
-    qhp.Qt.filterAttributes    = qt 4.4.0 qtrefdoc
-    qhp.Qt.customFilters.Qt.name = Qt 4.4.0
-    qhp.Qt.customFilters.Qt.filterAttributes = qt 4.4.0
-    qhp.Qt.subprojects         = classes overviews examples
-    qhp.Qt.subprojects.classes.title = Classes
-    qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
-    qhp.Qt.subprojects.classes.selectors = class
-    qhp.Qt.subprojects.overviews.title = Overviews
-    qhp.Qt.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-    qhp.Qt.subprojects.overviews.selectors = fake:page,group,module
-    qhp.Qt.subprojects.examples.title = Tutorials and Examples
-    qhp.Qt.subprojects.examples.indexTitle = Qt Examples
-    qhp.Qt.subprojects.examples.selectors = fake:example
+    \badcode
+    qhp.projects = QtQuick
+
+    qhp.QtQuick.file                = qtquick.qhp
+    qhp.QtQuick.namespace           = org.qt-project.qtquick.$QT_VERSION_TAG
+    qhp.QtQuick.virtualFolder       = qtquick
+    qhp.QtQuick.indexTitle          = Qt Quick
+    qhp.QtQuick.indexRoot           =
+
+    qhp.QtQuick.filterAttributes    = qtquick $QT_VERSION qtrefdoc
+    qhp.QtQuick.customFilters.Qt.name = QtQuick $QT_VERSION
+    qhp.QtQuick.customFilters.Qt.filterAttributes = qtquick $QT_VERSION
+
+    qhp.QtQuick.subprojects         = qmltypes classes examples
+
+    qhp.QtQuick.subprojects.qmltypes.title = QML Types
+    qhp.QtQuick.subprojects.qmltypes.indexTitle = Qt Quick QML Types
+    qhp.QtQuick.subprojects.qmltypes.selectors = qmlclass
+    qhp.QtQuick.subprojects.qmltypes.sortPages = true
+
+    qhp.QtQuick.subprojects.classes.title = Classes
+    qhp.QtQuick.subprojects.classes.title = C++ Classes
+    qhp.QtQuick.subprojects.classes.indexTitle = Qt Quick C++ Classes
+    qhp.QtQuick.subprojects.classes.selectors = class fake:headerfile
+    qhp.QtQuick.subprojects.classes.sortPages = true
+
+    qhp.QtQuick.subprojects.examples.title = Examples
+    qhp.QtQuick.subprojects.examples.indexTitle = Qt Quick Examples and Tutorials
+    qhp.QtQuick.subprojects.examples.selectors = fake:example
     \endcode
+
+    The documentation set may include one or more subprojects, which are added
+    to the table of contents under the name specified by \c title. The page
+    in the documentation referred to by the \c indexTitle acts as the index page
+    for the subproject. The page types to list under the subproject are specified
+    by \c selectors. The entries are alphabetically sorted if \c sortPages is set
+    to \c true.
+
+    \section2 Using Selectors
+
+    The \c selectors property specifies which page types are listed under the
+    table of contents entry for a subproject. Multiple selectors can be listed,
+    separated by whitespace.
+
+    \table
+    \header \li Selector             \li Description
+    \row    \li \c namespace         \li Namespaces
+    \row    \li \c class             \li Classes
+    \row    \li \c qmltype           \li QML Types
+    \row    \li \c qmlclass          \li Alias for \c qmltype.
+    \row    \li \c module            \li C++ Modules
+    \row    \li \c qmlmodule         \li QML Modules
+    \row    \li \c doc[:subtype]     \li Documentation pages with a specified
+                                         \c subtype. Multiple subtypes can be
+                                         listed as a comma-separated list.
+    \row    \li \c fake              \li Alias for \c doc.
+    \row    \li \c group[:groupname] \li Documentation pages for members of a
+                                         specified group, as added using the
+                                         \l {ingroup-command}
+                                         {\\ingroup} groupname command.
+                                         Multiple group names can be listed as
+                                         a comma-separated list.
+                                         (Introduced in QDoc 5.6).
+    \endtable
+
+    Available subtypes for the \c doc selector:
+
+    \table
+    \header \li Subtype              \li Description
+    \row    \li \c example           \li Examples
+    \row    \li \c headerfile        \li Header files
+    \row    \li \c page              \li Documentation pages defined with the
+                                         \l {page-command} {\\page} command.
+    \endtable
+
+    For example, the following configuration would select example pages and
+    pages that include the \c {\ingroup tutorials} command:
+
+    \badcode
+    qhp.QtQuickControls.subprojects = examples
+    qhp.QtQuickControls.subprojects.examples.title = Examples and Tutorials
+    qhp.QtQuickControls.subprojects.examples.indexTitle = Qt Quick Controls Examples
+    qhp.QtQuickControls.subprojects.examples.selectors = doc:example group:tutorials
+    qhp.QtQuickControls.subprojects.examples.sortPages = true
+    \endcode
+
+    \section2 Adding Table of Contents
 
     To create a table of contents for a manual, create a subproject with
     a \c{type} property and set it to \c{manual}. The page in the documentation
@@ -1130,7 +1194,7 @@
     subproject for its documentation, including all the documentation in a
     single manual:
 
-    \code
+    \badcode
     qhp.QtCreator.subprojects = manual
     qhp.QtCreator.subprojects.manual.title = Qt Creator Manual
     qhp.QtCreator.subprojects.manual.indexTitle = Qt Creator Manual

@@ -54,6 +54,7 @@ struct SubProject
     bool sortPages;
     QString type;
     QHash<QString, const Node *> nodes;
+    QStringList groups;
 };
 
 struct HelpProject

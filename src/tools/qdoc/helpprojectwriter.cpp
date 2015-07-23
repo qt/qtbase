@@ -125,7 +125,8 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     QHash<QString, Node::NodeType> typeHash;
     typeHash["namespace"] = Node::Namespace;
     typeHash["class"] = Node::Class;
-    typeHash["fake"] = Node::Document;
+    typeHash["doc"] = Node::Document;
+    typeHash["fake"] = Node::Document; // Legacy alias for 'doc'
     typeHash["enum"] = Node::Enum;
     typeHash["typedef"] = Node::Typedef;
     typeHash["function"] = Node::Function;
@@ -139,7 +140,8 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["qmlsignalhandler"] = Node::QmlSignalHandler;
     typeHash["qmlmethod"] = Node::QmlMethod;
     typeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
-    typeHash["qmlclass"] = Node::QmlType;
+    typeHash["qmlclass"] = Node::QmlType; // Legacy alias for 'qmltype'
+    typeHash["qmltype"] = Node::QmlType;
     typeHash["qmlbasictype"] = Node::QmlBasicType;
 
     QHash<QString, Node::DocSubtype> docSubtypeHash;
@@ -158,16 +160,20 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
             if (typeHash.contains(lower))
                 subproject.selectors[typeHash[lower]] = allSubTypes;
         } else if (pieces.size() >= 2) {
-            QString lower = pieces[0].toLower();
+            QString docType = pieces[0].toLower();
             pieces = pieces[1].split(QLatin1Char(','));
-            if (typeHash.contains(lower)) {
+            if (typeHash.contains(docType)) {
                 QSet<Node::DocSubtype> docSubtypes;
                 for (int i = 0; i < pieces.size(); ++i) {
-                    QString lower = pieces[i].toLower();
-                    if (docSubtypeHash.contains(lower))
-                        docSubtypes.insert(docSubtypeHash[lower]);
+                    QString piece = pieces[i].toLower();
+                    if (typeHash[docType] == Node::Group) {
+                        subproject.groups << piece;
+                        continue;
+                    }
+                    if (docSubtypeHash.contains(piece))
+                        docSubtypes.insert(docSubtypeHash[piece]);
                 }
-                subproject.selectors[typeHash[lower]] = docSubtypes;
+                subproject.selectors[typeHash[docType]] = docSubtypes;
             }
         }
     }
@@ -249,14 +255,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     if (!docPath.isEmpty() && project.excluded.contains(docPath))
         return false;
 
-    QString objName;
-    if (node->isDocumentNode()) {
-        const DocumentNode *fake = static_cast<const DocumentNode *>(node);
-        objName = fake->fullTitle();
-    }
-    else
-        objName = node->fullDocumentName();
-
+    QString objName = node->isDocumentNode() ? node->fullTitle() : node->fullDocumentName();
     // Only add nodes to the set for each subproject if they match a selector.
     // Those that match will be listed in the table of contents.
 
@@ -267,11 +266,22 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             project.subprojects[i].nodes[objName] = node;
         }
         else if (subproject.selectors.contains(node->type())) {
+            // Add all group members for 'group:name' selector
+            if (node->isGroup()) {
+                if (project.subprojects[i].groups.contains(node->name())) {
+                    const CollectionNode* cn = static_cast<const CollectionNode*>(node);
+                    foreach (const Node* m, cn->members()) {
+                        QString memberName = m->isDocumentNode()
+                                ? m->fullTitle() : m->fullDocumentName();
+                        project.subprojects[i].nodes[memberName] = m;
+                    }
+                }
+            }
             // Accept only the node types in the selectors hash.
-            if (node->type() != Node::Document)
+            else if (node->type() != Node::Document)
                 project.subprojects[i].nodes[objName] = node;
             else {
-                // Accept only fake nodes with subtypes contained in the selector's
+                // Accept only doc nodes with subtypes contained in the selector's
                 // mask.
                 const DocumentNode *docNode = static_cast<const DocumentNode *>(node);
                 if (subproject.selectors[node->type()].contains(docNode->docSubtype()) &&
