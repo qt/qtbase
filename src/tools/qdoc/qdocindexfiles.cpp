@@ -1190,9 +1190,13 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("relates", functionNode->relates()->name());
             }
             if (functionNode->hasAssociatedProperties()) {
+                QString associatedProperties;
                 foreach (PropertyNode* pn, functionNode->associatedProperties()) {
-                    writer.writeAttribute("associated-property", pn->name());
+                    if (!associatedProperties.isEmpty())
+                        associatedProperties += QLatin1String(", ");
+                    associatedProperties += pn->name();
                 }
+                writer.writeAttribute("associated-property", associatedProperties);
             }
             writer.writeAttribute("type", functionNode->returnType());
             if (!brief.isEmpty())
