@@ -2062,6 +2062,13 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
         qWarning("QProcess::start: Process is already running");
         return;
     }
+    if (program.isEmpty()) {
+        Q_D(QProcess);
+        d->processError = QProcess::FailedToStart;
+        setErrorString(tr("No program defined"));
+        emit error(d->processError);
+        return;
+    }
 
     d->program = program;
     d->arguments = arguments;
@@ -2086,7 +2093,10 @@ void QProcess::start(OpenMode mode)
         return;
     }
     if (d->program.isEmpty()) {
-        qWarning("QProcess::start: program not set");
+        Q_D(QProcess);
+        d->processError = QProcess::FailedToStart;
+        setErrorString(tr("No program defined"));
+        emit error(d->processError);
         return;
     }
 

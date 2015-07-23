@@ -156,6 +156,8 @@ private slots:
     void failToStart();
     void failToStartWithWait();
     void failToStartWithEventLoop();
+    void failToStartEmptyArgs_data();
+    void failToStartEmptyArgs();
 
 protected slots:
     void readFromProcess();
@@ -1670,6 +1672,42 @@ void tst_QProcess::failToStartWithEventLoop()
         QCOMPARE(finishedSpy.count(), 0);
         QCOMPARE(finishedSpy2.count(), 0);
     }
+}
+
+void tst_QProcess::failToStartEmptyArgs_data()
+{
+    QTest::addColumn<int>("startOverload");
+    QTest::newRow("start(QString, QStringList, OpenMode)") << 0;
+    QTest::newRow("start(QString, OpenMode)") << 1;
+    QTest::newRow("start(OpenMode)") << 2;
+}
+
+void tst_QProcess::failToStartEmptyArgs()
+{
+    QFETCH(int, startOverload);
+    qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+
+    QProcess process;
+    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QVERIFY(errorSpy.isValid());
+
+    switch (startOverload) {
+    case 0:
+        process.start(QString(), QStringList(), QIODevice::ReadWrite);
+        break;
+    case 1:
+        process.start(QString(), QIODevice::ReadWrite);
+        break;
+    case 2:
+        process.start(QIODevice::ReadWrite);
+        break;
+    default:
+        QFAIL("Unhandled QProcess::start overload.");
+    };
+
+    QVERIFY(!process.waitForStarted());
+    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
 }
 
 //-----------------------------------------------------------------------------
