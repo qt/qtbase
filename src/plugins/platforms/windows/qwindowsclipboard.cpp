@@ -69,25 +69,28 @@ static const char formatTextHtmlC[] = "text/html";
     \ingroup qt-lighthouse-win
 */
 
-QDebug operator<<(QDebug d, const QMimeData &m)
+static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    const QStringList formats = m.formats();
-    d << "QMimeData: " << formats.join(QStringLiteral(", ")) << '\n'
-            << "  Text=" << m.hasText() << " HTML=" << m.hasHtml()
-            << " Color=" << m.hasColor() << " Image=" << m.hasImage()
-            << " URLs=" << m.hasUrls() << '\n';
-    if (m.hasText())
-        d << "  Text: '" << m.text() << "'\n";
-    if (m.hasHtml())
-        d << "  HTML: '" << m.html() << "'\n";
-    if (m.hasColor())
-        d << "  Color: " << qvariant_cast<QColor>(m.colorData()) << '\n';
-    if (m.hasImage())
-        d << "  Image: " << qvariant_cast<QImage>(m.imageData()).size() << '\n';
-    if (m.hasUrls())
-        d << "  URLs: " << m.urls() << '\n';
+    d << "QMimeData(";
+    if (mimeData) {
+        const QStringList formats = mimeData->formats();
+        d << "formats=" << formats.join(QStringLiteral(", "));
+        if (mimeData->hasText())
+            d << ", text=" << mimeData->text();
+        if (mimeData->hasHtml())
+            d << ", html=" << mimeData->html();
+        if (mimeData->hasColor())
+            d << ", colorData=" << qvariant_cast<QColor>(mimeData->colorData());
+        if (mimeData->hasImage())
+            d << ", imageData=" << qvariant_cast<QImage>(mimeData->imageData());
+        if (mimeData->hasUrls())
+             d << ", urls=" << mimeData->urls();
+    } else {
+        d << '0';
+    }
+    d << ')';
     return d;
 }
 
@@ -297,7 +300,7 @@ QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
 
 void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
-    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << *mimeData;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << mimeData;
     if (mode != QClipboard::Clipboard)
         return;
 
