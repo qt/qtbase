@@ -146,7 +146,7 @@ void tst_MacGui::splashScreenModality()
     connect(wn.getWidget(interface), SIGNAL(clicked()), SLOT(exitLoopSlot()));
     const int timeout = 4;
     QTestEventLoop::instance().enterLoop(timeout);
-    QVERIFY(QTestEventLoop::instance().timeout() == false);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 class PrimaryWindowDialog : public QDialog

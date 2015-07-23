@@ -1026,7 +1026,7 @@ void tst_QSqlRelationalTableModel::invalidData()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
     //try to set data in non valid index
-    QVERIFY(model.setData(model.index(0,10),5) == false);
+    QVERIFY(!model.setData(model.index(0,10),5));
 
     //same test with LeftJoin mode
     model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
@@ -1037,7 +1037,7 @@ void tst_QSqlRelationalTableModel::invalidData()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
     //try to set data in non valid index
-    QVERIFY(model.setData(model.index(0,10),5) == false);
+    QVERIFY(!model.setData(model.index(0,10),5));
 }
 
 void tst_QSqlRelationalTableModel::relationModel()

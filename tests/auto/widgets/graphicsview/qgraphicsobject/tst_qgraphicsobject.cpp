@@ -210,36 +210,36 @@ void tst_QGraphicsObject::enabled()
 {
     MyGraphicsObject object;
     QSignalSpy spy(&object, SIGNAL(enabledChanged()));
-    QVERIFY(object.isEnabled() == true);
+    QVERIFY(object.isEnabled());
     object.setEnabled(false);
     QCOMPARE(spy.count(), 1);
 
-    QVERIFY(object.isEnabled() == false);
+    QVERIFY(!object.isEnabled());
 
     object.setEnabled(false);
     QCOMPARE(spy.count(), 1);
 
     object.setProperty("enabled", true);
     QCOMPARE(spy.count(), 2);
-    QVERIFY(object.property("enabled") == true);
+    QVERIFY(object.property("enabled").toBool());
 }
 
 void tst_QGraphicsObject::visible()
 {
     MyGraphicsObject object;
     QSignalSpy spy(&object, SIGNAL(visibleChanged()));
-    QVERIFY(object.isVisible() == true);
+    QVERIFY(object.isVisible());
     object.setVisible(false);
     QCOMPARE(spy.count(), 1);
 
-    QVERIFY(object.isVisible() == false);
+    QVERIFY(!object.isVisible());
 
     object.setVisible(false);
     QCOMPARE(spy.count(), 1);
 
     object.setProperty("visible", true);
     QCOMPARE(spy.count(), 2);
-    QVERIFY(object.property("visible") == true);
+    QVERIFY(object.property("visible").toBool());
 }
 
 class DeleteTester : public QGraphicsObject

@@ -743,7 +743,7 @@ void tst_QFutureWatcher::finishedState()
 
     iface.reportFinished();
     QVERIFY(future.isFinished());
-    QVERIFY(watcher.isFinished() == false);
+    QVERIFY(!watcher.isFinished());
 
     QTest::qWait(10);
     QVERIFY(watcher.isFinished());
@@ -761,18 +761,18 @@ void tst_QFutureWatcher::throttling()
     QFutureWatcher<int> watcher;
     watcher.setFuture(future);
 
-    QVERIFY(iface.isThrottled() == false);
+    QVERIFY(!iface.isThrottled());
 
     for (int i = 0; i < 1000; ++i) {
         int result = 0;
         iface.reportResult(result);
     }
 
-    QVERIFY(iface.isThrottled() == true);
+    QVERIFY(iface.isThrottled());
 
     QTest::qWait(100); // process events.
 
-    QVERIFY(iface.isThrottled() == false);
+    QVERIFY(!iface.isThrottled());
 
     iface.reportFinished();
 }

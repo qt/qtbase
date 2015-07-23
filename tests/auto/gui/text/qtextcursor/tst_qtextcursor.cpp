@@ -497,7 +497,7 @@ void tst_QTextCursor::navigation10()
     QVERIFY(ok);
     QCOMPARE(cursor.position(), 99);
     ok = cursor.movePosition(QTextCursor::NextCell);
-    QVERIFY(ok == false);
+    QVERIFY(!ok);
     QCOMPARE(cursor.position(), 99); // didn't move.
     QVERIFY(cursor.currentTable());
 

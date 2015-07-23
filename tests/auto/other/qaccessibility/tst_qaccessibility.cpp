@@ -1303,7 +1303,7 @@ void tst_QAccessibility::tabTest()
     QCOMPARE(child1->text(QAccessible::Description), QLatin1String("Cool tool tip"));
     QCOMPARE(child1->text(QAccessible::Help), QLatin1String("I don't know"));
 
-    QVERIFY((child1->state().invisible) == false);
+    QVERIFY(!(child1->state().invisible));
     tabBar->hide();
 
     QCoreApplication::processEvents();

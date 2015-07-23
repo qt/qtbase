@@ -544,7 +544,7 @@ void tst_QMenu::onStatusTipTimer()
     menu->close(); //goes out of the menu
 
     QCOMPARE(st, QString("sub action"));
-    QVERIFY(menu->isVisible() == false);
+    QVERIFY(!menu->isVisible());
     m_onStatusTipTimerExecuted = true;
 }
 

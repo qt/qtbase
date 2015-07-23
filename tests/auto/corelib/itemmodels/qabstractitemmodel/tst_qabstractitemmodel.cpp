@@ -379,7 +379,7 @@ void tst_QAbstractItemModel::hasChildren()
 {
     QtTestModel model(1, 1);
     QModelIndex idx = model.index(0, 0, QModelIndex());
-    QVERIFY(model.hasChildren(idx) == false);
+    QVERIFY(!model.hasChildren(idx));
 }
 
 void tst_QAbstractItemModel::data()

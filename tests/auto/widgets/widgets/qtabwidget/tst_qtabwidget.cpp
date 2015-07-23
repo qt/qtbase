@@ -238,7 +238,7 @@ void tst_QTabWidget::tabPosition()
 void tst_QTabWidget::tabEnabled()
 {
     // Test bad arguments
-    QVERIFY(tw->isTabEnabled(-1) == false);
+    QVERIFY(!tw->isTabEnabled(-1));
     tw->setTabEnabled(-1, false);
 
     int index = addPage();

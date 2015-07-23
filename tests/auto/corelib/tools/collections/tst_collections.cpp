@@ -2235,7 +2235,7 @@ void tst_Collections::qstring()
 void tst_Collections::bitArray()
 {
     QBitArray ba(20);
-    QVERIFY(ba.testBit(17) == false);
+    QVERIFY(!ba.testBit(17));
     ba.setBit(17);
     QVERIFY(ba.size() == 20);
     QVERIFY(ba.testBit(17)==true);

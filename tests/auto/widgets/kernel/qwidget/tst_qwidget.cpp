@@ -3079,12 +3079,12 @@ void tst_QWidget::saveRestoreGeometry()
         const QByteArray four("abca");
         const QByteArray garbage("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc");
 
-        QVERIFY(widget.restoreGeometry(empty) == false);
-        QVERIFY(widget.restoreGeometry(one) == false);
-        QVERIFY(widget.restoreGeometry(two) == false);
-        QVERIFY(widget.restoreGeometry(three) == false);
-        QVERIFY(widget.restoreGeometry(four) == false);
-        QVERIFY(widget.restoreGeometry(garbage) == false);
+        QVERIFY(!widget.restoreGeometry(empty));
+        QVERIFY(!widget.restoreGeometry(one));
+        QVERIFY(!widget.restoreGeometry(two));
+        QVERIFY(!widget.restoreGeometry(three));
+        QVERIFY(!widget.restoreGeometry(four));
+        QVERIFY(!widget.restoreGeometry(garbage));
 
         QVERIFY(widget.restoreGeometry(savedGeometry));
         widget.showNormal();
@@ -4496,7 +4496,7 @@ void tst_QWidget::qobject_castInDestroyedSlot()
     QObject::connect(widget, SIGNAL(destroyed(QObject*)), &checker, SLOT(destroyedSlot(QObject*)));
     delete widget;
 
-    QVERIFY(checker.wasQWidget == true);
+    QVERIFY(checker.wasQWidget);
 }
 
 // Since X11 WindowManager operations are all async, and we have no way to know if the window

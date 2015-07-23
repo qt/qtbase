@@ -653,7 +653,7 @@ void tst_QGraphicsAnchorLayout::snake()
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
-    QVERIFY(layoutHasConflict(l) == false);
+    QVERIFY(!layoutHasConflict(l));
 
     // Test QSizePolicy::ExpandFlag, it shouldn't change the extreme
     // points of the layout...

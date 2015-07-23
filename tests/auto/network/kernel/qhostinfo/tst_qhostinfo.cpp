@@ -561,13 +561,13 @@ void tst_QHostInfo::cache()
     QHostInfo result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(valid == false);
+    QVERIFY(!valid);
     QVERIFY(result.addresses().isEmpty());
 
     // loopkup second time, result should come directly
     valid = false;
     result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
-    QVERIFY(valid == true);
+    QVERIFY(valid);
     QVERIFY(!result.addresses().isEmpty());
 
     // clear the cache
@@ -578,7 +578,7 @@ void tst_QHostInfo::cache()
     result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(valid == false);
+    QVERIFY(!valid);
     QVERIFY(result.addresses().isEmpty());
 
     // the slot should have been called 2 times.

@@ -1128,7 +1128,7 @@ void tst_QSslCertificate::extensions()
 
     QVariantMap basicValue = basic.value().toMap();
     QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
-    QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
+    QVERIFY(!basicValue[QStringLiteral("ca")].toBool());
 
     // Subject key identifier
     QSslCertificateExtension subjectKey = extensions[subject_key_idx];
@@ -1185,7 +1185,7 @@ void tst_QSslCertificate::extensionsCritical()
 
     QVariantMap basicValue = basic.value().toMap();
     QCOMPARE(basicValue.keys(), QList<QString>() << QStringLiteral("ca"));
-    QVERIFY(basicValue[QStringLiteral("ca")].toBool() == false);
+    QVERIFY(!basicValue[QStringLiteral("ca")].toBool());
 
     // Key Usage
     QSslCertificateExtension keyUsage = extensions[key_usage_idx];

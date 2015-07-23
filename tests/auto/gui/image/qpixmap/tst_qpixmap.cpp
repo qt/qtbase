@@ -743,7 +743,7 @@ void tst_QPixmap::isNull()
 {
     {
         QPixmap pixmap(1,1);
-        QVERIFY(pixmap.isNull() == false);
+        QVERIFY(!pixmap.isNull());
     }
     {
         QPixmap pixmap(0,0);

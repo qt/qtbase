@@ -1560,7 +1560,7 @@ void tst_QPlainTextEdit::findWithRegExp()
 
     bool found = ed->find(rx);
 
-    QVERIFY(found == true);
+    QVERIFY(found);
     QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
 }
 
@@ -1574,7 +1574,7 @@ void tst_QPlainTextEdit::findBackwardWithRegExp()
 
     bool found = ed->find(rx, QTextDocument::FindBackward);
 
-    QVERIFY(found == true);
+    QVERIFY(found);
     QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("arbit"));
 }
 
@@ -1586,7 +1586,7 @@ void tst_QPlainTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
 
     bool found = ed->find(rx);
 
-    QVERIFY(found == false);
+    QVERIFY(!found);
     QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
 }
 #endif

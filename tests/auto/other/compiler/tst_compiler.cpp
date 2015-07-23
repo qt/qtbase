@@ -336,17 +336,17 @@ struct Qxxx {};
 
 void tst_Compiler::detectDataStream()
 {
-    QVERIFY(QtTestInternal::DataStreamChecker<int>::HasDataStream == true);
-    QVERIFY(QtTestInternal::DataStreamChecker<uint>::HasDataStream == true);
+    QVERIFY(QtTestInternal::DataStreamChecker<int>::HasDataStream);
+    QVERIFY(QtTestInternal::DataStreamChecker<uint>::HasDataStream);
     QVERIFY(QtTestInternal::DataStreamChecker<char *>::HasDataStream == true);
     QVERIFY(QtTestInternal::DataStreamChecker<const int>::HasInDataStream == true);
     QVERIFY(QtTestInternal::DataStreamChecker<const int>::HasOutDataStream == false);
     QVERIFY(QtTestInternal::DataStreamChecker<const int>::HasDataStream == false);
-    QVERIFY(QtTestInternal::DataStreamChecker<double>::HasDataStream == true);
+    QVERIFY(QtTestInternal::DataStreamChecker<double>::HasDataStream);
 
-    QVERIFY(QtTestInternal::DataStreamChecker<QString>::HasDataStream == true);
-    QVERIFY(QtTestInternal::DataStreamChecker<MyString>::HasDataStream == true);
-    QVERIFY(QtTestInternal::DataStreamChecker<Qxxx>::HasDataStream == false);
+    QVERIFY(QtTestInternal::DataStreamChecker<QString>::HasDataStream);
+    QVERIFY(QtTestInternal::DataStreamChecker<MyString>::HasDataStream);
+    QVERIFY(!QtTestInternal::DataStreamChecker<Qxxx>::HasDataStream);
 
     QVERIFY(QtTestInternal::getSaveOperator<int>() != 0);
     QVERIFY(QtTestInternal::getSaveOperator<uint>() != 0);

@@ -873,7 +873,7 @@ void tst_QTextDocumentFragment::hrefAnchor()
         setHtml(QString::fromLatin1(html));
         QVERIFY(doc->begin().begin().fragment().charFormat().isAnchor());
         QCOMPARE(doc->begin().begin().fragment().charFormat().anchorHref(), QString::fromLatin1("test"));
-        QVERIFY(doc->begin().begin().fragment().charFormat().fontUnderline() == true);
+        QVERIFY(doc->begin().begin().fragment().charFormat().fontUnderline());
     }
 
     {
@@ -881,7 +881,7 @@ void tst_QTextDocumentFragment::hrefAnchor()
         const char html[] = "<a>blah</a>";
         setHtml(QString::fromLatin1(html));
         QVERIFY(doc->begin().begin().fragment().charFormat().isAnchor());
-        QVERIFY(doc->begin().begin().fragment().charFormat().fontUnderline() == false);
+        QVERIFY(!doc->begin().begin().fragment().charFormat().fontUnderline());
     }
 }
 
@@ -901,7 +901,7 @@ void tst_QTextDocumentFragment::namedAnchorFragments()
     // the 'a'
     QVERIFY(it.fragment().isValid());
     QCOMPARE(it.fragment().text(), QString::fromLatin1("a"));
-    QVERIFY(it.fragment().charFormat().isAnchor() == false);
+    QVERIFY(!it.fragment().charFormat().isAnchor());
 
     // the 'b' of 'blah' as separate fragment with the anchor attribute
     ++it;
@@ -913,7 +913,7 @@ void tst_QTextDocumentFragment::namedAnchorFragments()
     ++it;
     QVERIFY(it.fragment().isValid());
     QVERIFY(it.fragment().text().startsWith("lah"));
-    QVERIFY(it.fragment().charFormat().isAnchor() == false);
+    QVERIFY(!it.fragment().charFormat().isAnchor());
 }
 
 void tst_QTextDocumentFragment::namedAnchorFragments2()
@@ -1837,7 +1837,7 @@ void tst_QTextDocumentFragment::html_doNotInheritBackground()
 
     for (QTextBlock block = doc->begin();
          block.isValid(); block = block.next()) {
-        QVERIFY(block.blockFormat().hasProperty(QTextFormat::BackgroundBrush) == false);
+        QVERIFY(!block.blockFormat().hasProperty(QTextFormat::BackgroundBrush));
     }
 
     QVERIFY(doc->rootFrame()->frameFormat().hasProperty(QTextFormat::BackgroundBrush));

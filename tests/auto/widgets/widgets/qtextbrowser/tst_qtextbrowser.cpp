@@ -168,12 +168,12 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(!forwardEmissions.isEmpty());
     QVariant val = forwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == false);
+    QVERIFY(!val.toBool());
 
     QVERIFY(!backwardEmissions.isEmpty());
     val = backwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == false);
+    QVERIFY(!val.toBool());
 
     QVERIFY(browser->historyTitle(-1).isEmpty());
     QCOMPARE(browser->historyUrl(0), QUrl::fromLocalFile("pagewithbg.html"));
@@ -186,12 +186,12 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(!forwardEmissions.isEmpty());
     val = forwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == false);
+    QVERIFY(!val.toBool());
 
     QVERIFY(!backwardEmissions.isEmpty());
     val = backwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == true);
+    QVERIFY(val.toBool());
 
     QCOMPARE(browser->historyTitle(-1), QString("Page With BG"));
     QCOMPARE(browser->historyTitle(0), QString("Sample Anchor"));
@@ -202,12 +202,12 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(!forwardEmissions.isEmpty());
     val = forwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == true);
+    QVERIFY(val.toBool());
 
     QVERIFY(!backwardEmissions.isEmpty());
     val = backwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == false);
+    QVERIFY(!val.toBool());
 
     QVERIFY(browser->historyTitle(-1).isEmpty());
     QCOMPARE(browser->historyTitle(0), QString("Page With BG"));
@@ -218,12 +218,12 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(!forwardEmissions.isEmpty());
     val = forwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == false);
+    QVERIFY(!val.toBool());
 
     QVERIFY(!backwardEmissions.isEmpty());
     val = backwardEmissions.takeLast()[0];
     QVERIFY(val.type() == QVariant::Bool);
-    QVERIFY(val.toBool() == true);
+    QVERIFY(val.toBool());
 }
 
 void tst_QTextBrowser::viewportPositionInHistory()
