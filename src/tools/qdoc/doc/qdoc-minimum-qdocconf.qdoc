@@ -27,7 +27,7 @@
 /*!
 \page qdoc-minimum-qdocconf.html
 \target minimal-qdocconf
-\title A minimal qdocconf file
+\title A Minimal qdocconf File
 
 \brief Describes a minimal .qdocconf file
 
@@ -37,8 +37,8 @@ will discuss every statement in the qdocconf file.
 Each line from the qdocconf file is first quoted. Below each statement you will
 find the meaning.
 
-\code
-   #include(compat.qdocconf)
+\badcode
+   include(compat.qdocconf)
    outputdir   = html
    headerdirs  = .
    sourcedirs  = .
@@ -46,10 +46,10 @@ find the meaning.
    imagedirs   = ./images
 \endcode
 
-\title Notes
+\b Notes:
 
-\code
-   #include(compat.qdocconf)
+\badcode
+   include(compat.qdocconf)
 \endcode
 
 For compatibility with older versions of Qt, it is recommended
@@ -61,32 +61,29 @@ to include compat.qdocconf.
 
 QDoc will put the documentation generated in the html directory.
 
-\code
+\badcode
    headerdirs  = .
 \endcode
 
 The header file associated with the \e .cpp source files can be found in the
 current directory.
 
-\code
+\badcode
    sourcedirs  = .
 \endcode
 
 The current directory is the directory containing the source files: the \e .cpp
 and \e .qdoc files used in the documentation.
 
-\code
+\badcode
    exampledirs = .
 \endcode
 
 The source code of the example files can be found in the current directory.
 
-\code
+\badcode
    imagedirs   = ./images
 \endcode
 
-The image files can be found in the underlying directory "images".
-
-\note Please take care with this minimal qdocconf file.  Using it in the wrong directory
-could cause qdoc to include a large number of files.
+The image files can be found in the underlying directory \c images.
 */

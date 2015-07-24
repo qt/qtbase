@@ -77,7 +77,7 @@
     \page 15-qdoc-commands-navigation.html
     \previouspage Context Commands
     \contentspage QDoc Manual
-    \nextpage Reporting Status
+    \nextpage Status
 
     \title Document Navigation
 
@@ -522,7 +522,7 @@
 
 /*!
     \page 17-qdoc-commands-thread.html
-    \previouspage Reporting Status
+    \previouspage Status
     \contentspage QDoc Manual
     \nextpage Relating Things
 

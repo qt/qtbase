@@ -30,20 +30,20 @@
 \page qtgui-qdocconf.html
 \title qtgui.qdocconf with Comments
 
-\brief A walkthrough of a typical qdocconf file
+\brief A walkthrough of a typical qdocconf file.
 
 This document goes through a typical Qt 5 qdocconf file. The contents is taken from
 Qt GUI's \e qtgui.qdocconf file.
 
-Below you will find the full contents of qtgui.qdocconf. The subsequent section will discuss
+Below you will find the full contents of \c qtgui.qdocconf. The subsequent section will discuss
 every statement in the qdocconf file.
 
-\code
+\badcode
    include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
    project                 = QtGui
    description             = Qt GUI Reference Documentation
-   url                     = http://doc.qt.io/qt-$QT_VER/qtgui-index.html
+   url                     = http://doc.qt.io/qt-5
    version                 = $QT_VERSION
 
    examplesinstallpath     = gui
@@ -95,20 +95,20 @@ every statement in the qdocconf file.
 
 \title Qtgui.qdocconf with notes
 
-\code
+\badcode
    include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 \endcode
 
 QDoc inherits the default templates, macros, and settings from the directory
 specified from the \c $QT_INSTALL_DOCS variable. \c qmake prints the value of
 the variable.
-\code
+\badcode
    qmake -query
 \endcode
 
-\sa include
+\b {See also}: \l {include}.
 
-\code
+\badcode
    project                 = QtGui
 \endcode
 
@@ -116,22 +116,22 @@ The \c project variable sets the name of the QDoc build. This name is also
 used to form the index file, which, in this case, will be \e qtgui.index. The
 name of the index file doesn't adopt the uppercase letters of the project name.
 
-\sa project
+\b {See also}: \l {project}.
 
-\code
+\badcode
    description             = Qt GUI Reference Documentation
 \endcode
 
 A short description of the project concerned.
 
-\code
-   url                     = http://doc.qt.io/qt-$QT_VER/qtgui-index.html
+\badcode
+   url                     = http://doc.qt.io/qt-5
 \endcode
 
 The \c url variable holds the base url of the project.
 
 The URL is stored in the generated index file for the project.
-QDoc will use this as the base URL when constructing links
+QDoc will use this as the base URL when constructing external links
 to content listed in the index.
 
 \note QDoc omits this value when the -installdir argument
@@ -139,27 +139,29 @@ is specified when running QDoc.
 
 \keyword examplesinstallpath
 
-\code
+\badcode
    examplesinstallpath     = gui
 \endcode
 
-This \e examplesinstallpath variable indicates that the examples will be installed
-in the \e gui directory under the parent examples directory (for Qt, this is
-$QT_INSTALL_EXAMPLES).
+This \c examplesinstallpath variable indicates that the examples will be
+installed in the \e gui directory under the parent examples directory
+(for Qt, this is $QT_INSTALL_EXAMPLES).
 
-\note The examplepath variable has to match the example directory specified in exampledirs.
-\sa exampledirs
+\note The examplepath variable has to match the example directory specified in
+      \c exampledirs.
 
-\code
+\b {See also}: \l {exampledirs}.
+
+\badcode
    qhp.projects    = QtGui
    qhp.QtGui.file  = qtgui.qhp
 \endcode
 
-The following parameters are for creating a QHP file (\e .qhp). The qhelpgenerator
-program can convert the QHP file into a QCH file (\e .qch), which can be opened in
-Qt Assistant or Qt Creator.
+The following parameters are for creating a QHP file (\e .qhp). The
+\e qhelpgenerator program can convert the QHP file into a QCH file (\e .qch),
+which can be opened in Qt Assistant or Qt Creator.
 
-\code
+\badcode
    qhp.QtGui.namespace           = org.qt-project.qtgui.$QT_VERSION_TAG
 \endcode
 
@@ -167,32 +169,32 @@ A unique identifier which enables QHelpEngine to retrieve the helpfile
 from a given link. This namespace is also used as a base url for links
 to the helpfile.
 
-\code
+\badcode
    qhp.QtGui.virtualFolder       = qtgui
 \endcode
 
 Virtual folders group documentation together into a single location. A
-virtual folder will become the root directory of all files referenced in a
-compressed help file.
+virtual folder will become the root directory of all files referenced in
+a compressed help file.
 
-When two manuals are located in the same virtual folder, it is possible to refer
- to sections of the other manual using relative paths.
-The virtual folder tag is mandatory and the folder must not contain any '/'.
+When two manuals are located in the same virtual folder, it is possible to
+refer to sections of the other manual using relative paths. The virtual
+folder tag is mandatory and the folder must not contain any '/'.
 
-\code
-   qhp.QtGui.indexTitle          = Qt GUI  the title of the page that has the contents
+\badcode
+   qhp.QtGui.indexTitle          = Qt GUI
 \endcode
 
 This is the title of the page that has the contents.
 
-\code
-   qhp.QtGui.indexRoot           =  to be checked
+\badcode
+   qhp.QtGui.indexRoot           =
 \endcode
 
 Specifies the title of the root (namespace) page to generate the documentation for.
 Typically defined as an empty string.
 
-\code
+\badcode
    qhp.QtGui.filterAttributes    = qtgui $QT_VERSION qtrefdoc
    qhp.QtGui.customFilters.Qt.name = QtGui $QT_VERSION
    qhp.QtGui.customFilters.Qt.filterAttributes = qtgui $QT_VERSION
@@ -206,7 +208,7 @@ filter in its \gui{Filtered by} drop-down list. Only the documentation sets
 that have their filter attributes match the attributes of the selected
 custom filter will be shown.
 
-\code
+\badcode
    qhp.QtGui.subprojects         = classes
    qhp.QtGui.subprojects.classes.title = C++ Classes
    qhp.QtGui.subprojects.classes.indexTitle = Qt GUI C++ Classes
@@ -216,34 +218,22 @@ for this project.  In this example, the subproject, which is displayed in
 the Assistant's sidebar, is named "C++ Classes" and its index is the page
 titled "QT GUI C++ Classes".
 
-\code
+\badcode
    qhp.QtGui.subprojects.classes.selectors = class fake:headerfile
 \endcode
 
-Lists all headerfiles.
+Lists all C++ classes and header files.
 
-A ‘fake’ type specifies a generic documentation node, and is followed by
-a c\ : and a \e subtype specifier.
+See \l {Creating Help Project Files} for more information.
 
-Possible values:
-\code
-    example
-    headerfile
-    file
-    group
-    module
-    page
-    externalpage
-    qmlclass
-    qmlpropertygroup
-    qmlbasictype
+\badcode
+    tagfile                 = ../../../doc/qtgui/qtgui.tags
 \endcode
 
-tagfile                 = ../../../doc/qtgui/qtgui.tags
 This specifies the Doxygen tag file that needs to be written when the html is generated
 by QDoc.
 
-\code
+\badcode
 depends += \
    qtcore \
    qtnetwork \
@@ -259,14 +249,14 @@ Specifies the modules QDoc needs to load for generating output for Qt GUI.
 QDoc loads the index files for all modules listed in the depends statement in
 order to enable linking to pages in these modules.
 
-\code
+\badcode
    headerdirs  += ..
 \endcode
 
 Add the parent directory to the list of directories containing the header files
 associated with the \e .cpp source files.
 
-\code
+\badcode
    sourcedirs  += .. \
                   ../../../examples/gui/doc/src
 \endcode
@@ -274,7 +264,7 @@ associated with the \e .cpp source files.
 Add the specified directories to the list of directories containing the \e .cpp and
 \e .qdoc files used in the documentation.
 
-\code
+\badcode
    excludedirs  = ../../../examples/gui/doc/src/tmp
 \endcode
 
@@ -283,14 +273,13 @@ by qdoc, even if the same directories are included by the \c sourcedirs or \c he
 variables.
 
 When executed, QDoc will ignore the directories listed.
-\sa excludefiles
+\b {See also}: \l {excludefiles}.
 
-\code
+\badcode
    exampledirs += ../../../examples/gui \
                   snippets
 \endcode
-\sa {examples-variable}{examples}
-\sa examplesinstallpath
+\b {See also}: \l {examples-variable}{examples}, \l {examplesinstallpath}.
 
 Add the two directories specified to the list of directories containing the source
 code of the example files.
@@ -299,7 +288,7 @@ If QDoc encounters both \c exampledirs and \c examples, it will look first in th
 \c examples directory.  QDoc will accept the first matching file it finds. QDoc will
 search in the directories specified, not in their subdirectories.
 
-\code
+\badcode
    imagedirs   += images \
                   ../../../examples/gui/doc/images \
                   ../../../doc/src/images \

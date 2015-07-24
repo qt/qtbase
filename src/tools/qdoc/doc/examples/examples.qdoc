@@ -89,10 +89,9 @@
     \title UI Components
     \brief Basic set of UI components
 
-    This is a listing of a list of UI components implemented by QML types. These
-
-    files are available for general import and they are based off the \l{Qt
-    Quick Code Samples}.
+    This is a listing of a list of UI components implemented by QML types.
+    These files are available for general import and they are based off the
+    \e {Qt Quick Code Samples}.
 
     This module is part of the \l{componentset}{UIComponents} example.
 */

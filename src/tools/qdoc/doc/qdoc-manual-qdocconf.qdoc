@@ -69,14 +69,14 @@
     you to use special characters like '=' and ' \" ' within the value
     string, for example:
 
-    \code
+    \badcode
     HTML.postheader = "<a href=\"index.html\">Home</a>"
     \endcode
 
     If an entry spans many lines, use a backslash at the end of every
     line but the last:
 
-    \code
+    \badcode
     sourcedirs = kernel \
                  tools \
                  widgets
@@ -163,7 +163,7 @@
     The general syntax is \tt {alias.\e{original-command-name} = \e
     temporary-command-name}.
 
-    \code
+    \badcode
         alias.e = i
     \endcode
 
@@ -200,7 +200,7 @@
     for details). By default, no symbol is defined, meaning that code
     protected with #ifdef...#endif will be ignored.
 
-    \code
+    \badcode
         defines = Q_QDOC \
                   QT_.*_SUPPORT \
                   QT_.*_LIB \
@@ -228,7 +228,7 @@
     You can also define preprocessor symbols manually on the command
     line using the -D option. For example:
 
-    \code
+    \badcode
         currentdirectory$ qdoc -Dconsoleedition qtgui.qdocconf
     \endcode
 
@@ -251,7 +251,7 @@
     The \c edition variable is always used with a particular edition
     name to define the modules for that edition:
 
-    \code
+    \badcode
         edition.Console      = QtCore QtNetwork QtSql QtXml
         edition.Desktop      = QtCore QtGui QtNetwork QtOpenGL QtSql QtXml \
                                QtDesigner QtAssistant Qt3Support QAxContainer \
@@ -265,7 +265,7 @@
     {generatelist} command is used to generate a list of classes for
     this edition:
 
-    \code
+    \badcode
         \generatelist{classesbyedition Console}
     \endcode
 
@@ -288,7 +288,7 @@
     and accept the first matching file it finds. It will only search
     in the specified directories, \e not in subdirectories.
 
-    \code
+    \badcode
         exampledirs = $QTDIR/doc/src \
                       $QTDIR/examples \
                       $QTDIR \
@@ -299,7 +299,7 @@
 
     When processing
 
-    \code
+    \badcode
         \quotefromfile widgets/calculator/calculator.cpp
     \endcode
 
@@ -308,13 +308,13 @@
     there isn't, it will search in the \c exampledirs variable, and
     first see if there exists a file called
 
-    \code
+    \badcode
         $QTDIR/doc/src/widgets/calculator/calculator.cpp
     \endcode
 
     If it doesn't, QDoc will continue looking for a file called
 
-    \code
+    \badcode
         $QTDIR/examples/widgets/calculator/calculator.cpp
     \endcode
 
@@ -345,7 +345,7 @@
     exampledirs} command. But note that if you know the file is listed
     in the \c examples variable, you don't need to specify its path:
 
-    \code
+    \badcode
         \quotefromfile calculator.cpp
     \endcode
 
@@ -364,7 +364,7 @@
     The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
-    \code
+    \badcode
         examples.fileextensions += *.qrc
     \endcode
 
@@ -380,7 +380,7 @@
 
     For example:
 
-    \code
+    \badcode
         sourcedirs =  src/corelib
         excludedirs = src/corelib/tmp
     \endcode
@@ -397,7 +397,7 @@
     The \c excludefiles variable allows you to specify individual files
     that should \e{not} be processed by qdoc.
 
-    \code
+    \badcode
     excludefiles += $QT_CORE_SOURCES/../../src/widgets/kernel/qwidget.h \
                     $QT_CORE_SOURCES/../../src/widgets/kernel/qwidget.cpp
     \endcode
@@ -429,7 +429,7 @@
     reason, these images are specified using the \c extraimages
     variable:
 
-    \code
+    \badcode
         extraimages.HTML = qt-logo
     \endcode
 
@@ -470,7 +470,7 @@
     preprocessor symbol is specified within the \c falsehoods variable
     entry:
 
-    \code
+    \badcode
         falsehoods = NOTYET
     \endcode
 
@@ -496,7 +496,7 @@
     the header files associated with the \c .cpp source files used in
     the documentation.
 
-    \code
+    \badcode
         headerdirs = $QTDIR/src \
                      $QTDIR/extensions/activeqt \
                      $QTDIR/extensions/motif \
@@ -538,7 +538,7 @@
     files in addition to those located in the directories specified by
     the \l {headerdirs} {\c headerdirs} variable.
 
-    \code
+    \badcode
         headers = $QTDIR/src/gui/widgets/qlineedit.h \
                   $QTDIR/src/gui/widgets/qpushbutton.h
     \endcode
@@ -568,7 +568,7 @@
     The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
-    \code
+    \badcode
         header.fileextensions += *.H
     \endcode
 
@@ -592,7 +592,7 @@
     and accept the first matching file it finds. It will only search
     in the specified directories, \e not in subdirectories.
 
-    \code
+    \badcode
         imagedirs = $QTDIR/doc/src/images \
                     $QTDIR/examples
 
@@ -601,7 +601,7 @@
 
     When processing
 
-    \code
+    \badcode
         \image calculator-example.png
     \endcode
 
@@ -610,13 +610,13 @@
     variable. If there isn't, it will search in the \c imagedirs
     variable for:
 
-    \code
+    \badcode
         $QTDIR/doc/src/images/calculator-example.png
     \endcode
 
     If the file doesn't exist, QDoc will look for a file called
 
-    \code
+    \badcode
         $QTDIR/examples/calculator-example.png
     \endcode
 
@@ -638,7 +638,7 @@
     files in addition to those located in the directories specified by
     the \l {imagedirs} {\c imagedirs} variable.
 
-    \code
+    \badcode
         images = $QTDIR/doc/src/images/calculator-example.png
     \endcode
 
@@ -662,7 +662,7 @@
     The idea is to enable different image format for different output
     format.
 
-    \code
+    \badcode
         images.fileextensions.HTML = *.png
         images.fileextensions.LOUT = *.eps
     \endcode
@@ -681,7 +681,7 @@
     You can add a file extension to the filter using '+='. For
     example:
 
-    \code
+    \badcode
         images.fileextensions.HTML += *.eps
     \endcode
 
@@ -698,7 +698,7 @@
     specified. However, a possible example of a language variable
     statement:
 
-    \code
+    \badcode
         language = Cpp
     \endcode
 
@@ -717,7 +717,7 @@
     appending \c {.DITAXML} to the macro name, the macro is only used
     when generating DITA XML.
 
-    \code
+    \badcode
         macro.gui              = "\\b"
         macro.raisedaster.HTML = "<sup>*</sup>"
     \endcode
@@ -743,7 +743,7 @@
     The \c naturallanguage variable specifies the natural language
     used for the documentation generated by qdoc.
 
-    \code
+    \badcode
         naturallanguage = zh-Hans
     \endcode
 
@@ -766,7 +766,7 @@
     The \c outputdir variable specifies the directory where QDoc will
     put the generated documentation.
 
-    \code
+    \badcode
         outputdir = $QTDIR/doc/html
     \endcode
 
@@ -774,7 +774,7 @@
     $QTDIR/doc/html. For example, the documentation of the QWidget
     class is located in
 
-    \code
+    \badcode
         $QTDIR/doc/html/qwidget.html
     \endcode
 
@@ -789,7 +789,7 @@
     The \c outputencoding variable specifies the encoding used for the
     documentation generated by qdoc.
 
-    \code
+    \badcode
         outputencoding = UTF-8
     \endcode
 
@@ -874,7 +874,7 @@
     The \c sourcedirs variable specifies the directories containing
     the \c .cpp or \c .qdoc files used in the documentation.
 
-    \code
+    \badcode
         sourcedirs  += .. \
                        ../../../examples/gui/doc/src
     \endcode
@@ -910,7 +910,7 @@
     The \c sourceencoding variable specifies the encoding used for the
     source code and documentation.
 
-    \code
+    \badcode
         sourceencoding = UTF-8
     \endcode
 
@@ -935,7 +935,7 @@
     files in addition to those located in the directories specified by
     the \l {sourcedirs-variable} {sourcedirs} variable.
 
-    \code
+    \badcode
         sources = $QTDIR/src/gui/widgets/qlineedit.cpp \
                   $QTDIR/src/gui/widgets/qpushbutton.cpp
     \endcode
@@ -964,7 +964,7 @@
     The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
-    \code
+    \badcode
         sources.fileextensions += *.CC
     \endcode
 
@@ -981,7 +981,7 @@
     output. The warnings are specified using standard wildcard
     expressions.
 
-    \code
+    \badcode
         spurious = "Cannot find .*" \
         "Missing .*"
     \endcode
@@ -990,8 +990,8 @@
     will not be part of the output when running QDoc. For example
     would the following warning be omitted from the output:
 
-    \code
-        qt-4.0/src/opengl/qgl_mac.cpp:156: Missing parameter name
+    \badcode
+        src/opengl/qgl_mac.cpp:156: Missing parameter name
     \endcode
 
     \target syntaxhighlighting
@@ -1001,7 +1001,7 @@
     perform syntax highlighting on source code quoted in the
     documentation it generates.
 
-    \code
+    \badcode
         syntaxhighlighting = true
     \endcode
 
@@ -1013,7 +1013,7 @@
 
     The \c tabsize variable defines the size of a tab character.
 
-    \code
+    \badcode
     tabsize = 4
     \endcode
 
@@ -1032,8 +1032,8 @@
     The \c version variable specifies the version number of the
     documented software.
 
-    \code
-        version = 4.0.1
+    \badcode
+        version = 5.6.0
     \endcode
 
     When a version number is specified (using the \tt{\l version} or
@@ -1052,13 +1052,13 @@
     The \c versionsym variable specifies a C++ preprocessor symbol
     that defines the version number of the documented software.
 
-    \code
+    \badcode
         versionsym = QT_VERSION_STR
     \endcode
 
     QT_VERSION_STR is defined in qglobal.h as follows
 
-    \code
+    \badcode
         #define QT_VERSION_STR   "4.0.1"
     \endcode
 
@@ -1226,7 +1226,7 @@
     Cpp.ignoredirectives} variables, non-standard constructs
     (typically macros) can result in erroneous documentation.
 
-    \code
+    \badcode
     Cpp.ignoredirectives = Q_DECLARE_INTERFACE \
                            Q_DECLARE_OPERATORS_FOR_FLAGS \
                            Q_DECLARE_PRIVATE \
@@ -1280,7 +1280,7 @@
 
     In \l qtgui.qdocconf:
 
-    \code
+    \badcode
     Cpp.ignoretokens = QAXFACTORY_EXPORT \
                        QM_EXPORT_CANVAS \
                        ...
@@ -1343,14 +1343,11 @@
     quotation marks. Note that if the value spans several lines, each
     line needs to be enclosed by quotation marks.
 
-    \code
+    \badcode
         HTML.footer = "<p /><address><hr /><div align=\"center\">\n" \
                       ...
                       "</tr></table></div></address>"
     \endcode
-
-    The complete variable entry provides the standard footer of the
-    \l {http://doc.qt.digia.com/4.0/index.html} {Qt Reference Documentation}.
 
     \target HTML.postheader-variable
     \section1 HTML.postheader
@@ -1365,7 +1362,7 @@
     marks. Note that if the value spans several lines, each line needs
     to be enclosed by quotation marks.
 
-    \code
+    \badcode
      HTML.postheader = "<table border=\"0\"..." \
                        ...
                        "<img src=\"images/qt-logo.png\" \
@@ -1389,7 +1386,7 @@
     marks. Note that if the value spans several lines, each line needs
     to be enclosed by quotation marks.
 
-    \code
+    \badcode
     HTML.style = "h3.fn,span.fn" \
                  "{ margin-left: 1cm; text-indent: -1cm; }\n" \
                  "a:link { color: #004faf; text-decoration: none }\n" \
@@ -1399,10 +1396,6 @@
                  "tr.address { font-family: sans-serif }\n" \
                  "body { background: #ffffff; color: black; }"
     \endcode
-
-    provides the HTML style for the \l
-    {http://doc.qt.digia.com/4.0/index.html} {Qt Reference
-    Documentation}.
 
     \target HTML.stylesheets-variable
     \section1 HTML.stylesheets
@@ -1415,7 +1408,7 @@
     has been generated. Typically, it is only necessary to define a
     single stylesheet for any set of documentation; for example:
 
-    \code
+    \badcode
     HTML.stylesheets = classic.css
     \endcode
 
@@ -1464,7 +1457,7 @@
     Reference documentation, you need to specify the associated index
     file:
 
-    \code
+    \badcode
         indexes = $QTDIR/doc/html/qt.index
     \endcode
 
@@ -1479,7 +1472,7 @@
     The project's name is used to form a file name for the associated
     project's \e index file.
 
-    \code
+    \badcode
         project = QtCreator
     \endcode
 
@@ -1499,7 +1492,7 @@
     the base URL when constructing links to classes, functions, and
     other things listed in the index.
 
-    \code
+    \badcode
     project     = Qt
     description = Qt Reference Documentation
     url         = http://doc.qt.io/qt-4.8/
@@ -1522,7 +1515,7 @@
     For example, \l qtgui.qdocconf (the configuration file for Qt)
     contains the following variable definitions:
 
-    \code
+    \badcode
         project     = Qt
         description = Qt Reference Documentation
         url         = http://doc.qt.io/qt-4.8/
@@ -1554,7 +1547,7 @@
 
     A manifest file has the following structure:
 
-    \code
+    \badcode
     <?xml version="1.0" encoding="UTF-8"?>
     <instructionals module="QtGui">
         <examples>
@@ -1596,7 +1589,7 @@
 
     Example:
 
-    \code
+    \badcode
     manifestmeta.filters                = highlighted sql webkit global
 
     manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
@@ -1632,7 +1625,7 @@
     In your configuration file, set your \c {outputformats} variable
     to \c {DITAXML}, and send the output to an appropriate directory:
 
-    \code
+    \badcode
     outputdir                  = $QTDIR/doc/ditaxml
     outputformats              = DITAXML
     \endcode
@@ -1640,7 +1633,7 @@
     And include these macros in your configuration file to prevent
     QDoc from doing some escaping that doesn't validate in XML:
 
-    \code
+    \badcode
     macro.aacute.DITAXML       = "&aacute;"
     macro.Aring.DITAXML        = "&Aring;"
     macro.aring.DITAXML        = "&aring;"
@@ -1664,7 +1657,7 @@
     You can also set default values for some of the tags in the DITA
     \c {<prolog>} and \c {<metadata>} elements:
 
-    \code
+    \badcode
     dita.metadata.default.author      = Qt Development Frameworks
     dita.metadata.default.permissions = all
     dita.metadata.default.publisher   = Qt Project

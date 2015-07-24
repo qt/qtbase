@@ -112,7 +112,7 @@
     Specifying the path to the source directories allow QDoc to find sources and
     generate documentation.
 
-    \code
+    \badcode
         sourcedirs = <path to source code>
         exampledirs = <path to examples directory>
         imagedirs = <path to image directory>
@@ -129,7 +129,7 @@
     Likewise, QDoc needs the path to the output directory. The \c outputformats
     variable determines the type of documentation. These variables should be
     in separate configuration files to modularize the documentation build.
-    \code
+    \badcode
         outputdir  =    $SAMPLE_PROJECT/doc/html
         outputformats = HTML
     \endcode
@@ -144,8 +144,8 @@
     the  \l{Input and Output Directories}{output} directory. It is also possible
     to specify extra files that QDoc should export.
 
-    \code
-        extraimages.HTML = extraImage.png \
+    \badcode
+        HTML.extraimages = extraImage.png \
                            extraImage2.png
     \endcode
 
@@ -169,7 +169,7 @@
     generated documentation into the directory specified by the \c outputdir
     variable.
 
-    \code
+    \badcode
         outputformats = HTML
         outputdir =  <path to output directory>
     \endcode
@@ -178,12 +178,12 @@
     are located. Typically, the templates directory contains a \c scripts,
     \c images, and a \c style directory, containing scripts and CSS files.
 
-    \code
+    \badcode
         HTML.templatedir = <path to templates>
     \endcode
 
     The main configuration variables are:
-    \code
+    \badcode
         HTML.postheader
         HTML.postpostheader
         HTML.postheader
@@ -210,7 +210,7 @@
     documentation, QDoc does not need HTML style templates for generating
     documentation in DITA XML format.
 
-    \code
+    \badcode
         outputformats = DITAXML
         outputdir
     \endcode
@@ -222,7 +222,7 @@
     the articles. Other projects can use the links in the index file so that
     they can link to other articles and API documentation within Qt.
 
-    \code
+    \badcode
         indexes = $QT_INSTALL_DOCS/html/qt.index $OTHER_PROJECT/html/qt.index
     \endcode
     It is possible to specify multiple index files from several projects.
@@ -232,7 +232,7 @@
     Macros for substituting HTML characters exist and are helpful for generating
     specific HTML-valid characters.
 
-    \code
+    \badcode
     macro.pi.HTML         = "&Pi;"
     \endcode
     The snippet code will replace any instances of \c{\\pi} with \c &Pi; in the
@@ -245,18 +245,17 @@
     with the QML extension, \c{.qml}, if the extension type is included in the
     \l{Input and Output Directories}{fileextensions} variable.
 
-    Also, the generated HTML files can have a prefix, specified in the QDoc
-    configuration file.
-    \code
+    Also, the generated HTML files can have a prefix and a suffix following the
+    QML module name, specified in the QDoc configuration file.
+    \badcode
     outputprefixes = QML
     outputprefixes.QML = uicomponents-
+    outputsuffixes = QML
+    outputsuffixes.QML = -tp
     \endcode
-    The outputprefixes will, for example, prefix QML type HTML filenames.
-    \code
-    files:
-        uicomponents-button.html
-        uicomponents-scrollbar.html
-    \endcode
+
+    \b {See also}: \l {outputprefixes-variable}{outputprefixes},
+                   \l {outputsuffixes-variable}{outputsuffixes}.
 
 */
 
