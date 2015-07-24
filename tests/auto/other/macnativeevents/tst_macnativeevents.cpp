@@ -457,8 +457,8 @@ void tst_MacNativeEvents::testModifierCtrl()
     QWidget w;
     w.show();
 
-    QVERIFY(kControlUnicode == QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText)[0]);
-    QVERIFY(kCommandUnicode == QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText)[0]);
+    QCOMPARE(ushort(kControlUnicode), QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText).at(0).unicode());
+    QCOMPARE(ushort(kCommandUnicode), QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText).at(0).unicode());
 
     NativeEventList native;
     native.append(new QNativeModifierEvent(Qt::ControlModifier));
@@ -490,8 +490,8 @@ void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
     QWidget w;
     w.show();
 
-    QVERIFY(kCommandUnicode == QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText)[0]);
-    QVERIFY(kControlUnicode == QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText)[0]);
+    QCOMPARE(ushort(kCommandUnicode), QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText).at(0).unicode());
+    QCOMPARE(ushort(kControlUnicode), QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText).at(0).unicode());
 
     NativeEventList native;
     native.append(new QNativeModifierEvent(Qt::ControlModifier));

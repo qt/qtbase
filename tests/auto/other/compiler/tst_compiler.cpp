@@ -354,7 +354,7 @@ void tst_Compiler::detectDataStream()
     QVERIFY(QtTestInternal::getSaveOperator<double>() != 0);
     QVERIFY(QtTestInternal::getSaveOperator<QString>() != 0);
     QVERIFY(QtTestInternal::getSaveOperator<MyString>() != 0);
-    QVERIFY(QtTestInternal::getSaveOperator<Qxxx>() == 0);
+    QVERIFY(!QtTestInternal::getSaveOperator<Qxxx>());
 }
 #else
 void tst_Compiler::detectDataStream()
@@ -637,7 +637,7 @@ void tst_Compiler::cxx11_alignas()
     QSKIP("Compiler does not support C++11 feature");
 #else
     alignas(double) char c;
-    QVERIFY(Q_ALIGNOF(c) == Q_ALIGNOF(double));
+    QCOMPARE(Q_ALIGNOF(c), Q_ALIGNOF(double));
 #endif
 }
 

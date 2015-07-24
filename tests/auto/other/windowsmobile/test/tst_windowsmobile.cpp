@@ -132,7 +132,7 @@ void compareScreenshots(const QString &image1, const QString &image2)
     //screenShot.save("scr2.png", "PNG");
     //original.save("orig1.png", "PNG");
 
-    QVERIFY(original == screenShot);
+    QCOMPARE(original, screenShot);
 }
 
 void takeScreenShot(const QString filename)

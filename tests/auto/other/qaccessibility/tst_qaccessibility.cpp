@@ -452,15 +452,15 @@ void tst_QAccessibility::statesStructTest()
     QVERIFY(s1.modal == 0);
 
     QAccessible::State s2;
-    QVERIFY(s2 == s1);
+    QCOMPARE(s2, s1);
     s2.busy = true;
     QVERIFY(!(s2 == s1));
     s1.busy = true;
-    QVERIFY(s2 == s1);
+    QCOMPARE(s2, s1);
     s1 = QAccessible::State();
     QVERIFY(!(s2 == s1));
     s1 = s2;
-    QVERIFY(s2 == s1);
+    QCOMPARE(s2, s1);
     QVERIFY(s1.busy == 1);
 }
 
@@ -523,9 +523,9 @@ void tst_QAccessibility::navigateHierarchy()
     QVERIFY(ifaceW->isValid());
 
     QAccessibleInterface *target = ifaceW->child(14);
-    QVERIFY(target == 0);
+    QVERIFY(!target);
     target = ifaceW->child(-1);
-    QVERIFY(target == 0);
+    QVERIFY(!target);
     target = ifaceW->child(0);
     QAccessibleInterface *interfaceW1(ifaceW->child(0));
     QVERIFY(target);
@@ -541,7 +541,7 @@ void tst_QAccessibility::navigateHierarchy()
     QCOMPARE(target->object(), (QObject*)w3);
 
     QAccessibleInterface *child = target->child(1);
-    QVERIFY(child == 0);
+    QVERIFY(!child);
     child = target->child(0);
     QVERIFY(child != 0);
     QVERIFY(child->isValid());
@@ -959,7 +959,7 @@ void tst_QAccessibility::mainWindowTest()
     QWindow window;
     window.setGeometry(80, 80, 40, 40);
     window.show();
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
 
     // We currently don't have an accessible interface for QWindow
     // the active state is either in the QMainWindow or QQuickView
@@ -1650,7 +1650,7 @@ void tst_QAccessibility::spinBoxTest()
     // make sure that the line edit is not there
     const int numChildren = interface->childCount();
     QCOMPARE(numChildren, 0);
-    QVERIFY(interface->child(0) == Q_NULLPTR);
+    QVERIFY(!interface->child(0));
 
     QVERIFY(interface->valueInterface());
     QCOMPARE(interface->valueInterface()->currentValue().toInt(), 3);
@@ -2486,7 +2486,7 @@ void tst_QAccessibility::groupBoxTest()
     QCOMPARE(iface->text(QAccessible::Name), QLatin1String("Test QGroupBox"));
     QCOMPARE(iface->text(QAccessible::Description), QLatin1String("This group box will be used to test accessibility"));
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations = rButtonIface->relations();
-    QVERIFY(relations.size() == 1);
+    QCOMPARE(relations.size(), 1);
     QPair<QAccessibleInterface*, QAccessible::Relation> relation = relations.first();
     QCOMPARE(relation.first->object(), groupBox);
     QCOMPARE(relation.second, QAccessible::Label);
@@ -3531,13 +3531,13 @@ void tst_QAccessibility::dockWidgetTest()
     QPoint buttonPoint = pb2->mapToGlobal(QPoint(pb2->width()/2, pb2->height()/2));
     QAccessibleInterface *childAt = accDock2->childAt(buttonPoint.x(), buttonPoint.y());
     QVERIFY(childAt);
-    QVERIFY(childAt->object() == pb2);
+    QCOMPARE(childAt->object(), pb2);
 
     QWidget *close1 = qobject_cast<QWidget*>(dock1Close->object());
     QPoint close1ButtonPoint = close1->mapToGlobal(QPoint(close1->width()/2, close1->height()/2));
     QAccessibleInterface *childAt2 = accDock1->childAt(close1ButtonPoint.x(), close1ButtonPoint.y());
     QVERIFY(childAt2);
-    QVERIFY(childAt2->object() == close1);
+    QCOMPARE(childAt2->object(), close1);
 
     // custom title bar widget
     QDockWidget *dock3 = new QDockWidget(mw);

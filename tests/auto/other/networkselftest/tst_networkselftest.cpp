@@ -462,7 +462,7 @@ void tst_NetworkSelfTest::remotePortsOpen()
         else
             QFAIL(QString("Error connecting to server on port %1: %2").arg(portNumber).arg(socket.errorString()).toLocal8Bit());
     }
-    QVERIFY(socket.state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
 }
 
 static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
