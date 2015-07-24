@@ -115,4 +115,11 @@
     return YES;
 }
 
+- (void)windowWillClose:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (m_cocoaWindow)
+        m_cocoaWindow->windowWillClose();
+}
+
 @end

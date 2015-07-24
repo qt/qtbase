@@ -219,6 +219,7 @@ public:
     void windowDidResize();
     void windowDidEndLiveResize();
     bool windowShouldClose();
+    void windowWillClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
     void setSynchedWindowStateFromWindow();

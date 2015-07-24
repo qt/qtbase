@@ -78,6 +78,14 @@ static bool isMouseEvent(NSEvent *ev)
     }
 }
 
+static void qt_closePopups()
+{
+    while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
+        QWindowSystemInterface::handleCloseEvent(popup->window());
+        QWindowSystemInterface::flushWindowSystemEvents();
+    }
+}
+
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
@@ -1220,10 +1228,7 @@ void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
-    while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
-        QWindowSystemInterface::handleCloseEvent(popup->window());
-        QWindowSystemInterface::flushWindowSystemEvents();
-    }
+    qt_closePopups();
 }
 
 void QCocoaWindow::windowDidMove()
@@ -1265,6 +1270,13 @@ bool QCocoaWindow::windowShouldClose()
     QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();
     return accepted;
+}
+
+void QCocoaWindow::windowWillClose()
+{
+    // Close any open popups on window closing.
+    if (window() && !windowIsPopupType(window()->type()))
+        qt_closePopups();
 }
 
 void QCocoaWindow::setSynchedWindowStateFromWindow()
