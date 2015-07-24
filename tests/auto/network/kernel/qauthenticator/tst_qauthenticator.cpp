@@ -82,7 +82,7 @@ void tst_QAuthenticator::basicAuth()
     QAuthenticator auth;
     auth.detach();
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
-    QVERIFY(priv->phase == QAuthenticatorPrivate::Start);
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
     QList<QPair<QByteArray, QByteArray> > headers;
     headers << qMakePair<QByteArray, QByteArray>(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
@@ -94,7 +94,7 @@ void tst_QAuthenticator::basicAuth()
     auth.setUser(user);
     auth.setPassword(password);
 
-    QVERIFY(priv->phase == QAuthenticatorPrivate::Start);
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
     QCOMPARE(priv->calculateResponse("GET", "/").constData(), QByteArray("Basic " + expectedReply).constData());
 }
@@ -125,7 +125,7 @@ void tst_QAuthenticator::ntlmAuth()
 
     auth.detach();
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
-    QVERIFY(priv->phase == QAuthenticatorPrivate::Start);
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
     QList<QPair<QByteArray, QByteArray> > headers;
 

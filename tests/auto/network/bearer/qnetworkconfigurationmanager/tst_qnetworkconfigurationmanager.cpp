@@ -168,7 +168,7 @@ void tst_QNetworkConfigurationManager::defaultConfiguration()
         QVERIFY(!defaultConfig.isRoamingAvailable());
         QCOMPARE(defaultConfig.state(), QNetworkConfiguration::Discovered);
         QNetworkConfiguration copy = manager.configurationFromIdentifier(defaultConfig.identifier());
-        QVERIFY(copy == defaultConfig);
+        QCOMPARE(copy, defaultConfig);
     }
 }
 
@@ -190,7 +190,7 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
 
         QNetworkConfiguration direct = manager.configurationFromIdentifier(c.identifier());
         QVERIFY(direct.isValid());
-        QVERIFY(direct == c);
+        QCOMPARE(direct, c);
     }
 
     //assume that there is no item with identifier 'FooBar'

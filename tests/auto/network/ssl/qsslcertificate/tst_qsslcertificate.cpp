@@ -767,7 +767,7 @@ void tst_QSslCertificate::certInfo()
     QVERIFY(cert.expiryDate() < QDateTime::currentDateTime());   // cert has expired
 
     QSslCertificate copy = cert;
-    QVERIFY(cert == copy);
+    QCOMPARE(cert, copy);
     QVERIFY(!(cert != copy));
 
     QCOMPARE(cert, QSslCertificate(pem, QSsl::Pem));
@@ -1061,7 +1061,7 @@ void tst_QSslCertificate::extensions()
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
-    QVERIFY(extensions.count() == 9);
+    QCOMPARE(extensions.count(), 9);
 
     int unknown_idx = -1;
     int authority_info_idx = -1;
@@ -1093,8 +1093,8 @@ void tst_QSslCertificate::extensions()
 
     // Unknown
     QSslCertificateExtension unknown = extensions[unknown_idx];
-    QVERIFY(unknown.oid() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
-    QVERIFY(unknown.name() == QStringLiteral("1.3.6.1.5.5.7.1.12"));
+    QCOMPARE(unknown.oid(), QStringLiteral("1.3.6.1.5.5.7.1.12"));
+    QCOMPARE(unknown.name(), QStringLiteral("1.3.6.1.5.5.7.1.12"));
     QVERIFY(!unknown.isCritical());
     QVERIFY(!unknown.isSupported());
 
@@ -1106,8 +1106,8 @@ void tst_QSslCertificate::extensions()
 
     // Authority Info Access
     QSslCertificateExtension aia = extensions[authority_info_idx];
-    QVERIFY(aia.oid() == QStringLiteral("1.3.6.1.5.5.7.1.1"));
-    QVERIFY(aia.name() == QStringLiteral("authorityInfoAccess"));
+    QCOMPARE(aia.oid(), QStringLiteral("1.3.6.1.5.5.7.1.1"));
+    QCOMPARE(aia.name(), QStringLiteral("authorityInfoAccess"));
     QVERIFY(!aia.isCritical());
     QVERIFY(aia.isSupported());
 
@@ -1116,13 +1116,13 @@ void tst_QSslCertificate::extensions()
     QString ocsp = aiaValue[QStringLiteral("OCSP")].toString();
     QString caIssuers = aiaValue[QStringLiteral("caIssuers")].toString();
 
-    QVERIFY(ocsp == QStringLiteral("http://EVIntl-ocsp.verisign.com"));
-    QVERIFY(caIssuers == QStringLiteral("http://EVIntl-aia.verisign.com/EVIntl2006.cer"));
+    QCOMPARE(ocsp, QStringLiteral("http://EVIntl-ocsp.verisign.com"));
+    QCOMPARE(caIssuers, QStringLiteral("http://EVIntl-aia.verisign.com/EVIntl2006.cer"));
 
     // Basic constraints
     QSslCertificateExtension basic = extensions[basic_constraints_idx];
-    QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
-    QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QCOMPARE(basic.oid(), QStringLiteral("2.5.29.19"));
+    QCOMPARE(basic.name(), QStringLiteral("basicConstraints"));
     QVERIFY(!basic.isCritical());
     QVERIFY(basic.isSupported());
 
@@ -1132,16 +1132,16 @@ void tst_QSslCertificate::extensions()
 
     // Subject key identifier
     QSslCertificateExtension subjectKey = extensions[subject_key_idx];
-    QVERIFY(subjectKey.oid() == QStringLiteral("2.5.29.14"));
-    QVERIFY(subjectKey.name() == QStringLiteral("subjectKeyIdentifier"));
+    QCOMPARE(subjectKey.oid(), QStringLiteral("2.5.29.14"));
+    QCOMPARE(subjectKey.name(), QStringLiteral("subjectKeyIdentifier"));
     QVERIFY(!subjectKey.isCritical());
     QVERIFY(subjectKey.isSupported());
-    QVERIFY(subjectKey.value().toString() == QStringLiteral("5F:90:23:CD:24:CA:52:C9:36:29:F0:7E:9D:B1:FE:08:E0:EE:69:F0"));
+    QCOMPARE(subjectKey.value().toString(), QStringLiteral("5F:90:23:CD:24:CA:52:C9:36:29:F0:7E:9D:B1:FE:08:E0:EE:69:F0"));
 
     // Authority key identifier
     QSslCertificateExtension authKey = extensions[auth_key_idx];
-    QVERIFY(authKey.oid() == QStringLiteral("2.5.29.35"));
-    QVERIFY(authKey.name() == QStringLiteral("authorityKeyIdentifier"));
+    QCOMPARE(authKey.oid(), QStringLiteral("2.5.29.35"));
+    QCOMPARE(authKey.name(), QStringLiteral("authorityKeyIdentifier"));
     QVERIFY(!authKey.isCritical());
     QVERIFY(authKey.isSupported());
 
@@ -1159,7 +1159,7 @@ void tst_QSslCertificate::extensionsCritical()
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
-    QVERIFY(extensions.count() == 9);
+    QCOMPARE(extensions.count(), 9);
 
     int basic_constraints_idx = -1;
     int key_usage_idx = -1;
@@ -1178,8 +1178,8 @@ void tst_QSslCertificate::extensionsCritical()
 
     // Basic constraints
     QSslCertificateExtension basic = extensions[basic_constraints_idx];
-    QVERIFY(basic.oid() == QStringLiteral("2.5.29.19"));
-    QVERIFY(basic.name() == QStringLiteral("basicConstraints"));
+    QCOMPARE(basic.oid(), QStringLiteral("2.5.29.19"));
+    QCOMPARE(basic.name(), QStringLiteral("basicConstraints"));
     QVERIFY(basic.isCritical());
     QVERIFY(basic.isSupported());
 
@@ -1189,8 +1189,8 @@ void tst_QSslCertificate::extensionsCritical()
 
     // Key Usage
     QSslCertificateExtension keyUsage = extensions[key_usage_idx];
-    QVERIFY(keyUsage.oid() == QStringLiteral("2.5.29.15"));
-    QVERIFY(keyUsage.name() == QStringLiteral("keyUsage"));
+    QCOMPARE(keyUsage.oid(), QStringLiteral("2.5.29.15"));
+    QCOMPARE(keyUsage.name(), QStringLiteral("keyUsage"));
     QVERIFY(keyUsage.isCritical());
     QVERIFY(!keyUsage.isSupported());
 }
@@ -1249,21 +1249,21 @@ void tst_QSslCertificate::threadSafeConstMethods()
     t2.start();
     QVERIFY(t1.wait(5000));
     QVERIFY(t2.wait(5000));
-    QVERIFY(t1.cert == t2.cert);
-    QVERIFY(t1.effectiveDate == t2.effectiveDate);
-    QVERIFY(t1.expiryDate == t2.expiryDate);
+    QCOMPARE(t1.cert, t2.cert);
+    QCOMPARE(t1.effectiveDate, t2.effectiveDate);
+    QCOMPARE(t1.expiryDate, t2.expiryDate);
     //QVERIFY(t1.extensions == t2.extensions); // no equality operator, so not tested
-    QVERIFY(t1.isBlacklisted == t2.isBlacklisted);
-    QVERIFY(t1.issuerInfo == t2.issuerInfo);
-    QVERIFY(t1.issuerInfoAttributes == t2.issuerInfoAttributes);
-    QVERIFY(t1.publicKey == t2.publicKey);
-    QVERIFY(t1.serialNumber == t2.serialNumber);
-    QVERIFY(t1.subjectInfo == t2.subjectInfo);
-    QVERIFY(t1.subjectInfoAttributes == t2.subjectInfoAttributes);
-    QVERIFY(t1.toDer == t2.toDer);
-    QVERIFY(t1.toPem == t2.toPem);
-    QVERIFY(t1.toText == t2.toText);
-    QVERIFY(t1.version == t2.version);
+    QCOMPARE(t1.isBlacklisted, t2.isBlacklisted);
+    QCOMPARE(t1.issuerInfo, t2.issuerInfo);
+    QCOMPARE(t1.issuerInfoAttributes, t2.issuerInfoAttributes);
+    QCOMPARE(t1.publicKey, t2.publicKey);
+    QCOMPARE(t1.serialNumber, t2.serialNumber);
+    QCOMPARE(t1.subjectInfo, t2.subjectInfo);
+    QCOMPARE(t1.subjectInfoAttributes, t2.subjectInfoAttributes);
+    QCOMPARE(t1.toDer, t2.toDer);
+    QCOMPARE(t1.toPem, t2.toPem);
+    QCOMPARE(t1.toText, t2.toText);
+    QCOMPARE(t1.version, t2.version);
 
 }
 
