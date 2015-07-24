@@ -112,7 +112,7 @@ public:
     static id menuActionTarget() { return m_currentMenu ? m_currentMenu->m_menuController : 0; }
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     quintptr m_tag;

@@ -54,29 +54,29 @@ public:
     explicit QIOSWindow(QWindow *window);
     ~QIOSWindow();
 
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
 
-    void setWindowState(Qt::WindowState state);
-    void setParent(const QPlatformWindow *window);
-    void handleContentOrientationChange(Qt::ScreenOrientation orientation);
-    void setVisible(bool visible);
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
+    void handleContentOrientationChange(Qt::ScreenOrientation orientation) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
     void setOpacity(qreal level) Q_DECL_OVERRIDE;
 
     bool isExposed() const Q_DECL_OVERRIDE;
     void propagateSizeHints() Q_DECL_OVERRIDE {}
 
-    void raise() { raiseOrLower(true); }
-    void lower() { raiseOrLower(false); }
+    void raise() Q_DECL_OVERRIDE{ raiseOrLower(true); }
+    void lower() Q_DECL_OVERRIDE { raiseOrLower(false); }
 
     bool shouldAutoActivateWindow() const;
-    void requestActivateWindow();
+    void requestActivateWindow() Q_DECL_OVERRIDE;
 
-    qreal devicePixelRatio() const;
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
 
-    bool setMouseGrabEnabled(bool grab) { return grab; }
-    bool setKeyboardGrabEnabled(bool grab) { return grab; }
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE { return grab; }
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE { return grab; }
 
-    WId winId() const { return WId(m_view); };
+    WId winId() const Q_DECL_OVERRIDE { return WId(m_view); }
 
     void clearAccessibleCache();
 

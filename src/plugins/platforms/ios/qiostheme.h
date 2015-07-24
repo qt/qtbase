@@ -47,7 +47,7 @@ public:
     ~QIOSTheme();
 
     const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint hint) const;
+    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
     QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
     QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
@@ -55,7 +55,7 @@ public:
     bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
 
-    const QFont *font(Font type = SystemFont) const;
+    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE;
 
     static const char *name;
 
