@@ -65,6 +65,7 @@ private slots:
     void take();
 
     void iterators();
+    void keyIterator();
     void keys_values_uniqueKeys();
     void qmultimap_specific();
 
@@ -833,6 +834,34 @@ void tst_QMap::iterators()
         javaIt.previous();
         QVERIFY(javaIt.value() == testString.arg(i));
     }
+}
+
+void tst_QMap::keyIterator()
+{
+    QMap<int, int> map;
+
+    for (int i = 0; i < 100; ++i)
+        map.insert(i, i*100);
+
+    QMap<int, int>::key_iterator key_it = map.keyBegin();
+    QMap<int, int>::const_iterator it = map.cbegin();
+    for (int i = 0; i < 100; ++i) {
+        QCOMPARE(*key_it, it.key());
+        ++key_it;
+        ++it;
+    }
+
+    key_it = std::find(map.keyBegin(), map.keyEnd(), 50);
+    it = std::find(map.cbegin(), map.cend(), 50 * 100);
+
+    QVERIFY(key_it != map.keyEnd());
+    QCOMPARE(*key_it, it.key());
+    QCOMPARE(*(key_it++), (it++).key());
+    QCOMPARE(*(key_it--), (it--).key());
+    QCOMPARE(*(++key_it), (++it).key());
+    QCOMPARE(*(--key_it), (--it).key());
+
+    QCOMPARE(std::count(map.keyBegin(), map.keyEnd(), 99), 1);
 }
 
 void tst_QMap::keys_values_uniqueKeys()

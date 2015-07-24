@@ -311,3 +311,22 @@ while (i != map.end() && i.key() == "plenty") {
     ++i;
 }
 //! [27]
+
+//! [keyiterator1]
+for (QMap<int, QString>::const_iterator it = map.cbegin(), end = map.cend(); it != end; ++it) {
+    cout << "The key: " << it.key() << endl
+    cout << "The value: " << it.value() << endl;
+    cout << "Also the value: " << (*it) << endl;
+}
+//! [keyiterator1]
+
+//! [keyiterator2]
+// Inefficient, keys() is expensive
+QList<int> keys = map.keys();
+int numPrimes = std::count_if(map.cbegin(), map.cend(), isPrimeNumber);
+qDeleteAll(map2.keys());
+
+// Efficient, no memory allocation needed
+int numPrimes = std::count_if(map.keyBegin(), map.keyEnd(), isPrimeNumber);
+qDeleteAll(map2.keyBegin(), map2.keyEnd());
+//! [keyiterator2]

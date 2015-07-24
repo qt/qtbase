@@ -858,6 +858,15 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa begin(), constEnd()
 */
 
+/*! \fn QMap::key_iterator QMap::keyBegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first key
+    in the map.
+
+    \sa keyEnd(), firstKey()
+*/
+
 /*! \fn QMap::iterator QMap::end()
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
@@ -888,6 +897,15 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa constBegin(), end()
 */
 
+/*! \fn QMap::key_iterator QMap::keyEnd() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    item after the last key in the map.
+
+    \sa keyBegin(), lastKey()
+*/
+
 /*! \fn const Key &QMap::firstKey() const
     \since 5.2
 
@@ -896,7 +914,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     This executes in \l{constant time}.
 
-    \sa lastKey(), first(), isEmpty()
+    \sa lastKey(), first(), keyBegin(), isEmpty()
 */
 
 /*! \fn const Key &QMap::lastKey() const
@@ -907,7 +925,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     This executes in \l{logarithmic time}.
 
-    \sa firstKey(), last(), isEmpty()
+    \sa firstKey(), last(), keyEnd(), isEmpty()
 */
 
 /*! \fn T &QMap::first()
@@ -1235,7 +1253,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMap::const_iterator, QMutableMapIterator
+    \sa QMap::const_iterator, QMap::key_iterator, QMutableMapIterator
 */
 
 /*! \typedef QMap::iterator::difference_type
@@ -1458,7 +1476,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMap::iterator, QMapIterator
+    \sa QMap::iterator, QMap::key_iterator, QMapIterator
 */
 
 /*! \typedef QMap::const_iterator::difference_type
@@ -1632,6 +1650,134 @@ void QMapDataBase::freeData(QMapDataBase *d)
     This operation can be slow for large \a j values.
 
     \sa operator+=(), operator-()
+*/
+
+/*! \class QMap::key_iterator
+    \inmodule QtCore
+    \since 5.6
+    \brief The QMap::key_iterator class provides an STL-style const iterator for QMap and QMultiMap keys.
+
+    QMap::key_iterator is essentially the same as QMap::const_iterator
+    with the difference that operator*() and operator->() return a key
+    instead of a value.
+
+    For most uses QMap::iterator and QMap::const_iterator should be used,
+    you can easily access the key by calling QMap::iterator::key():
+
+    \snippet code/src_corelib_tools_qmap.cpp keyiterator1
+
+    However, to have interoperability between QMap's keys and STL-style
+    algorithms we need an iterator that dereferences to a key instead
+    of a value. With QMap::key_iterator we can apply an algorithm to a
+    range of keys without having to call QMap::keys(), which is inefficient
+    as it costs one QMap iteration and memory allocation to create a temporary
+    QList.
+
+    \snippet code/src_corelib_tools_qmap.cpp keyiterator2
+
+    QMap::key_iterator is const, it's not possible to modify the key.
+
+    The default QMap::key_iterator constructor creates an uninitialized
+    iterator. You must initialize it using a QMap function like
+    QMap::keyBegin() or QMap::keyEnd().
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
+    \sa QMap::const_iterator, QMap::iterator
+*/
+
+/*! \typedef QMap::key_iterator::difference_type
+    \internal
+*/
+
+/*! \typedef QMap::key_iterator::iterator_category
+    \internal
+*/
+
+/*! \typedef QMap::key_iterator::pointer
+    \internal
+*/
+
+/*! \typedef QMap::key_iterator::reference
+    \internal
+*/
+
+/*! \typedef QMap::key_iterator::value_type
+    \internal
+*/
+
+/*! \fn const T &QMap::key_iterator::operator*() const
+
+    Returns the current item's key.
+*/
+
+/*! \fn const T *QMap::key_iterator::operator->() const
+
+    Returns a pointer to the current item's key.
+*/
+
+/*! \fn bool QMap::key_iterator::operator==(key_iterator other)
+
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
+
+    \sa operator!=()
+*/
+
+/*! \fn bool QMap::key_iterator::operator!=(key_iterator other)
+
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
+
+    \sa operator==()
+*/
+
+/*!
+    \fn QMap::key_iterator &QMap::key_iterator::operator++()
+
+    The prefix ++ operator (\c{++i}) advances the iterator to the
+    next item in the hash and returns an iterator to the new current
+    item.
+
+    Calling this function on QMap::keyEnd() leads to undefined results.
+
+    \sa operator--()
+*/
+
+/*! \fn QMap::key_iterator QMap::key_iterator::operator++(int)
+
+    \overload
+
+    The postfix ++ operator (\c{i++}) advances the iterator to the
+    next item in the hash and returns an iterator to the previous
+    item.
+*/
+
+/*! \fn QMap::key_iterator &QMap::key_iterator::operator--()
+
+    The prefix -- operator (\c{--i}) makes the preceding item
+    current and returns an iterator pointing to the new current item.
+
+    Calling this function on QMap::keyBegin() leads to undefined
+    results.
+
+    \sa operator++()
+*/
+
+/*! \fn QMap::key_iterator QMap::key_iterator::operator--(int)
+
+    \overload
+
+    The postfix -- operator (\c{i--}) makes the preceding item
+    current and returns an iterator pointing to the previous
+    item.
+*/
+
+/*! \fn const_iterator QMap::key_iterator::base() const
+    Returns the underlying const_iterator this key_iterator is based on.
 */
 
 /*! \fn QDataStream &operator<<(QDataStream &out, const QMap<Key, T> &map)
