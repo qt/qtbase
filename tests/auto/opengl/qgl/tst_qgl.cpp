@@ -459,113 +459,113 @@ void tst_QGL::getSetCheck()
     QGLFormat format1;
     QGLFormat format2;
 
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
     format1.setDoubleBuffer(false);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setDoubleBuffer(false);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setDepthBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setDepthBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setAccumBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setAccumBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setRedBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setRedBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setGreenBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setGreenBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setBlueBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setBlueBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setAlphaBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setAlphaBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setStencilBufferSize(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setStencilBufferSize(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setSamples(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setSamples(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setSwapInterval(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setSwapInterval(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setPlane(8);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setPlane(8);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setVersion(3, 2);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setVersion(3, 2);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setProfile(QGLFormat::CoreProfile);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setProfile(QGLFormat::CoreProfile);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     format1.setOption(QGL::NoDeprecatedFunctions);
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setOption(QGL::NoDeprecatedFunctions);
-    QVERIFY(format1 == format2);
+    QCOMPARE(format1, format2);
     QVERIFY(!(format1 != format2));
 
     // Copy constructor and assignment for QGLFormat.
     QGLFormat format3(format1);
     QGLFormat format4;
-    QVERIFY(format1 == format3);
+    QCOMPARE(format1, format3);
     QVERIFY(format1 != format4);
     format4 = format1;
-    QVERIFY(format1 == format4);
+    QCOMPARE(format1, format4);
 
     // Check that modifying a copy doesn't affect the original.
     format3.setRedBufferSize(16);
@@ -584,15 +584,15 @@ void tst_QGL::getSetCheck()
     QCOMPARE(format5.plane(), 3);
 
     // The default format should be the same as QGLFormat().
-    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+    QCOMPARE(QGLFormat::defaultFormat(), QGLFormat());
 
     // Modify the default format and check that it was changed.
     QGLFormat::setDefaultFormat(format1);
-    QVERIFY(QGLFormat::defaultFormat() == format1);
+    QCOMPARE(QGLFormat::defaultFormat(), format1);
 
     // Restore the default format.
     QGLFormat::setDefaultFormat(QGLFormat());
-    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+    QCOMPARE(QGLFormat::defaultFormat(), QGLFormat());
 
     // Check the default overlay format's expected values.
     QGLFormat overlay(QGLFormat::defaultOverlayFormat());
@@ -618,11 +618,11 @@ void tst_QGL::getSetCheck()
 
     // Modify the default overlay format and check that it was changed.
     QGLFormat::setDefaultOverlayFormat(format1);
-    QVERIFY(QGLFormat::defaultOverlayFormat() == format1);
+    QCOMPARE(QGLFormat::defaultOverlayFormat(), format1);
 
     // Restore the default overlay format.
     QGLFormat::setDefaultOverlayFormat(overlay);
-    QVERIFY(QGLFormat::defaultOverlayFormat() == overlay);
+    QCOMPARE(QGLFormat::defaultOverlayFormat(), overlay);
 
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
@@ -1512,9 +1512,9 @@ void tst_QGL::colormap()
     QGLColormap cmap1;
     QVERIFY(cmap1.isEmpty());
     QCOMPARE(cmap1.size(), 0);
-    QVERIFY(cmap1.entryRgb(0) == 0);
-    QVERIFY(cmap1.entryRgb(-1) == 0);
-    QVERIFY(cmap1.entryRgb(100) == 0);
+    QCOMPARE(cmap1.entryRgb(0), QRgb(0));
+    QCOMPARE(cmap1.entryRgb(-1), QRgb(0));
+    QCOMPARE(cmap1.entryRgb(100), QRgb(0));
     QVERIFY(!cmap1.entryColor(0).isValid());
     QVERIFY(!cmap1.entryColor(-1).isValid());
     QVERIFY(!cmap1.entryColor(100).isValid());
@@ -1529,7 +1529,7 @@ void tst_QGL::colormap()
     // not to detect when it is empty!
     QVERIFY(cmap1.isEmpty());
     QCOMPARE(cmap1.size(), 256);
-    QVERIFY(cmap1.entryRgb(0) == 0);
+    QCOMPARE(cmap1.entryRgb(0), QRgb(0));
     QVERIFY(cmap1.entryColor(0) == QColor(0, 0, 0, 255));
     QVERIFY(cmap1.entryRgb(56) == qRgb(255, 0, 0));
     QVERIFY(cmap1.entryColor(56) == QColor(255, 0, 0, 255));
@@ -1611,7 +1611,7 @@ void tst_QGL::colormap()
     QVERIFY(cmap4.isEmpty());
     QCOMPARE(cmap4.size(), 256);
     cmap4.setHandle(Qt::HANDLE(42));
-    QVERIFY(cmap4.handle() == Qt::HANDLE(42));
+    QCOMPARE(cmap4.handle(), Qt::HANDLE(42));
     QVERIFY(!cmap4.isEmpty());
     QCOMPARE(cmap4.size(), 256);
 }
@@ -1629,7 +1629,7 @@ void tst_QGL::fboFormat()
     // Check the initial conditions.
     QGLFramebufferObjectFormat format1;
     QCOMPARE(format1.samples(), 0);
-    QVERIFY(format1.attachment() == QGLFramebufferObject::NoAttachment);
+    QCOMPARE(format1.attachment(), QGLFramebufferObject::NoAttachment);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
     int expectedFormat =
 #ifdef QT_OPENGL_ES_2
@@ -1645,7 +1645,7 @@ void tst_QGL::fboFormat()
     format1.setTextureTarget(GL_TEXTURE_3D);
     format1.setInternalTextureFormat(GL_RGB16);
     QCOMPARE(format1.samples(), 8);
-    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(format1.attachment(), QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
 
@@ -1653,12 +1653,12 @@ void tst_QGL::fboFormat()
     QGLFramebufferObjectFormat format2(format1);
     QGLFramebufferObjectFormat format3;
     QCOMPARE(format2.samples(), 8);
-    QVERIFY(format2.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(format2.attachment(), QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format2.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format2.internalTextureFormat()), int(GL_RGB16));
     format3 = format1;
     QCOMPARE(format3.samples(), 8);
-    QVERIFY(format3.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(format3.attachment(), QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format3.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format3.internalTextureFormat()), int(GL_RGB16));
 
@@ -1666,7 +1666,7 @@ void tst_QGL::fboFormat()
     format2.setSamples(9);
     format3.setTextureTarget(GL_TEXTURE_2D);
     QCOMPARE(format1.samples(), 8);
-    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(format1.attachment(), QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
 
@@ -1674,39 +1674,39 @@ void tst_QGL::fboFormat()
     QGLFramebufferObjectFormat format1c;
     QGLFramebufferObjectFormat format2c;
 
-    QVERIFY(format1c == format2c);
+    QCOMPARE(format1c, format2c);
     QVERIFY(!(format1c != format2c));
     format1c.setSamples(8);
     QVERIFY(!(format1c == format2c));
     QVERIFY(format1c != format2c);
     format2c.setSamples(8);
-    QVERIFY(format1c == format2c);
+    QCOMPARE(format1c, format2c);
     QVERIFY(!(format1c != format2c));
 
     format1c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
     QVERIFY(!(format1c == format2c));
     QVERIFY(format1c != format2c);
     format2c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-    QVERIFY(format1c == format2c);
+    QCOMPARE(format1c, format2c);
     QVERIFY(!(format1c != format2c));
 
     format1c.setTextureTarget(GL_TEXTURE_3D);
     QVERIFY(!(format1c == format2c));
     QVERIFY(format1c != format2c);
     format2c.setTextureTarget(GL_TEXTURE_3D);
-    QVERIFY(format1c == format2c);
+    QCOMPARE(format1c, format2c);
     QVERIFY(!(format1c != format2c));
 
     format1c.setInternalTextureFormat(GL_RGB16);
     QVERIFY(!(format1c == format2c));
     QVERIFY(format1c != format2c);
     format2c.setInternalTextureFormat(GL_RGB16);
-    QVERIFY(format1c == format2c);
+    QCOMPARE(format1c, format2c);
     QVERIFY(!(format1c != format2c));
 
     QGLFramebufferObjectFormat format3c(format1c);
     QGLFramebufferObjectFormat format4c;
-    QVERIFY(format1c == format3c);
+    QCOMPARE(format1c, format3c);
     QVERIFY(!(format1c != format3c));
     format3c.setInternalTextureFormat(
 #ifdef QT_OPENGL_ES_2
@@ -1719,7 +1719,7 @@ void tst_QGL::fboFormat()
     QVERIFY(format1c != format3c);
 
     format4c = format1c;
-    QVERIFY(format1c == format4c);
+    QCOMPARE(format1c, format4c);
     QVERIFY(!(format1c != format4c));
     format4c.setInternalTextureFormat(
 #ifdef QT_OPENGL_ES_2
@@ -1947,7 +1947,7 @@ void tst_QGL::destroyFBOAfterContext()
     delete glw;
 
     // The handle should now be zero.
-    QVERIFY(fbo->handle() == 0);
+    QVERIFY(!fbo->handle());
     QVERIFY(!fbo->isValid());
 
     delete fbo;
@@ -1984,14 +1984,14 @@ void tst_QGL::shareRegister()
 
     // Create a guard for the first context.
     QOpenGLSharedResourceGuard guard(glw1->context()->contextHandle());
-    QVERIFY(guard.id() == 0);
+    QCOMPARE(guard.id(), 0);
     guard.setId(3);
-    QVERIFY(guard.id() == 3);
+    QCOMPARE(guard.id(), 3);
 
     // Request a tst_QGLResource object for the first context.
     tst_QGLResource *res1 = qt_shared_test()->value(glw1->context()->contextHandle());
     QVERIFY(res1);
-    QVERIFY(qt_shared_test()->value(glw1->context()->contextHandle()) == res1);
+    QCOMPARE(qt_shared_test()->value(glw1->context()->contextHandle()), res1);
 
     // Create another context that shares with the first.
     QVERIFY(!glw1->isSharing());
@@ -2005,12 +2005,12 @@ void tst_QGL::shareRegister()
     QVERIFY(glw1->context() != glw2->context());
 
     // Check that the first context's resource is also on the second.
-    QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
-    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
+    QCOMPARE(qt_shared_test()->value(glw1->context()), res1);
+    QCOMPARE(qt_shared_test()->value(glw2->context()), res1);
 
     // Guard should still be the same.
-    QVERIFY(guard.context() == glw1->context());
-    QVERIFY(guard.id() == 3);
+    QCOMPARE(guard.context(), glw1->context());
+    QCOMPARE(guard.id(), 3);
 
     // Check the sharing relationships.
     QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
@@ -2032,9 +2032,9 @@ void tst_QGL::shareRegister()
     // Request a resource to the third context.
     tst_QGLResource *res3 = qt_shared_test()->value(glw3->context());
     QVERIFY(res3);
-    QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
-    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
-    QVERIFY(qt_shared_test()->value(glw3->context()) == res3);
+    QCOMPARE(qt_shared_test()->value(glw1->context()), res1);
+    QCOMPARE(qt_shared_test()->value(glw2->context()), res1);
+    QCOMPARE(qt_shared_test()->value(glw3->context()), res3);
 
     // Check the sharing relationships again.
     QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
@@ -2053,8 +2053,8 @@ void tst_QGL::shareRegister()
     QVERIFY(!QGLContext::areSharing(0, 0));
 
     // Shared guard should still be the same.
-    QVERIFY(guard.context() == glw1->context());
-    QVERIFY(guard.id() == 3);
+    QCOMPARE(guard.context(), glw1->context());
+    QCOMPARE(guard.id(), 3);
 
     // Delete the first context.
     delete glw1;
@@ -2064,14 +2064,14 @@ void tst_QGL::shareRegister()
 
     // The first context's resource should transfer to the second context.
     QCOMPARE(tst_QGLResource::deletions, 0);
-    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
-    QVERIFY(qt_shared_test()->value(glw3->context()) == res3);
+    QCOMPARE(qt_shared_test()->value(glw2->context()), res1);
+    QCOMPARE(qt_shared_test()->value(glw3->context()), res3);
 
     // Shared guard should now be the second context, with the id the same.
-    QVERIFY(guard.context() == glw2->context());
-    QVERIFY(guard.id() == 3);
-    QVERIFY(guard3.context() == glw3->context());
-    QVERIFY(guard3.id() == 5);
+    QCOMPARE(guard.context(), glw2->context());
+    QCOMPARE(guard.id(), 3);
+    QCOMPARE(guard3.context(), glw3->context());
+    QCOMPARE(guard3.id(), 5);
 
     // Clean up and check that the resources are properly deleted.
     delete glw2;

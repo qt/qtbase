@@ -514,7 +514,7 @@ void tst_QOpenGL::fboTextureOwnership()
     // pull out the texture
     GLuint texture = fbo->takeTexture();
     QVERIFY(texture != 0);
-    QVERIFY(fbo->texture() == 0);
+    QCOMPARE(fbo->texture(), GLuint(0));
 
     // verify that the next bind() creates a new texture
     fbo->bind();
@@ -1174,18 +1174,18 @@ void tst_QOpenGL::textureblitterPartTargetRectTransform()
 void tst_QOpenGL::defaultSurfaceFormat()
 {
     QSurfaceFormat fmt;
-    QVERIFY(QSurfaceFormat::defaultFormat() == fmt);
+    QCOMPARE(QSurfaceFormat::defaultFormat(), fmt);
 
     fmt.setDepthBufferSize(16);
     QSurfaceFormat::setDefaultFormat(fmt);
-    QVERIFY(QSurfaceFormat::defaultFormat() == fmt);
+    QCOMPARE(QSurfaceFormat::defaultFormat(), fmt);
     QCOMPARE(QSurfaceFormat::defaultFormat().depthBufferSize(), 16);
 
     QScopedPointer<QWindow> window(new QWindow);
-    QVERIFY(window->requestedFormat() == fmt);
+    QCOMPARE(window->requestedFormat(), fmt);
 
     QScopedPointer<QOpenGLContext> context(new QOpenGLContext);
-    QVERIFY(context->format() == fmt);
+    QCOMPARE(context->format(), fmt);
 }
 
 #ifdef USE_GLX
@@ -1214,7 +1214,7 @@ void tst_QOpenGL::glxContextWrap()
     QOpenGLContext *ctx = new QOpenGLContext;
     ctx->setNativeHandle(QVariant::fromValue<QGLXNativeContext>(QGLXNativeContext(context)));
     QVERIFY(ctx->create());
-    QVERIFY(ctx->nativeHandle().value<QGLXNativeContext>().context() == context);
+    QCOMPARE(ctx->nativeHandle().value<QGLXNativeContext>().context(), context);
     QVERIFY(nativeIf->nativeResourceForContext(QByteArrayLiteral("glxcontext"), ctx) == (void *) context);
 
     QVERIFY(ctx->makeCurrent(window));
