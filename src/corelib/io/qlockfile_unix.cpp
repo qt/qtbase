@@ -57,6 +57,8 @@
 #elif defined(Q_OS_LINUX)
 #   include <unistd.h>
 #   include <cstdio>
+#elif defined(Q_OS_HAIKU)
+#   include <kernel/OS.h>
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
 #   include <sys/user.h>
 # if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
@@ -251,6 +253,11 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     }
     buf[len] = 0;
     return QFileInfo(QFile::decodeName(buf)).fileName();
+#elif defined(Q_OS_HAIKU)
+    thread_info info;
+    if (get_thread_info(pid, &info) != B_OK)
+        return QString();
+    return QFile::decodeName(info.name);
 #elif defined(Q_OS_BSD4) && !defined(Q_OS_IOS)
 # if defined(__GLIBC__) && defined(__FreeBSD_kernel__)
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
