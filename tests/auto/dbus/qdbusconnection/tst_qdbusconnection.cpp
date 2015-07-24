@@ -168,7 +168,7 @@ void tst_QDBusConnection::noConnection()
     QVERIFY(con.callWithCallback(msg, &spy, SLOT(asyncReply)) == 0);
 
     QDBusMessage reply = con.call(msg);
-    QVERIFY(reply.type() == QDBusMessage::ErrorMessage);
+    QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
 
     QDBusReply<void> voidreply(reply);
     QVERIFY(!voidreply.isValid());
@@ -1041,14 +1041,14 @@ void tst_QDBusConnection::callSelfByAnotherName()
         break;
 
     case 1:
-        QVERIFY(con.interface()->registerService(sname).value() == QDBusConnectionInterface::ServiceRegistered);
+        QCOMPARE(con.interface()->registerService(sname).value(), QDBusConnectionInterface::ServiceRegistered);
         break;
 
     case 2: {
             // flag is DBUS_NAME_FLAG_DO_NOT_QUEUE = 0x04
             // reply is DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER = 1
             QDBusReply<uint> reply = con.interface()->call("RequestName", sname, 4u);
-            QVERIFY(reply.value() == 1);
+            QCOMPARE(reply.value(), uint(1));
         }
     }
 
@@ -1071,7 +1071,7 @@ void tst_QDBusConnection::callSelfByAnotherName()
                                                       QString(), "test0");
     QDBusMessage reply = con.call(msg, QDBus::Block, 1000);
 
-    QVERIFY(reply.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 }
 
 void tst_QDBusConnection::multipleInterfacesInQObject()
@@ -1087,7 +1087,7 @@ void tst_QDBusConnection::multipleInterfacesInQObject()
                                                       "local.BaseObject", "anotherMethod");
     QDBusMessage reply = con.call(msg, QDBus::Block);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
-    QVERIFY(reply.arguments().count() == 0);
+    QCOMPARE(reply.arguments().count(), 0);
 }
 
 void tst_QDBusConnection::slotsWithLessParameters()

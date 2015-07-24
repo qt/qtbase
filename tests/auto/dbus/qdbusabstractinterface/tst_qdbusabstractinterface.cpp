@@ -247,7 +247,7 @@ void tst_QDBusAbstractInterface::initTestCase()
     // get peer server address
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
     QDBusMessage rpl = con.call(req);
-    QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(rpl.type(), QDBusMessage::ReplyMessage);
     peerAddress = rpl.arguments().at(0).toString();
 }
 
@@ -283,7 +283,7 @@ void tst_QDBusAbstractInterface::cleanup()
     targetObj.m_complexProp = RegisteredType();
 
     QDBusMessage resetCall = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "reset");
-    QVERIFY(QDBusConnection::sessionBus().call(resetCall).type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(QDBusConnection::sessionBus().call(resetCall).type(), QDBusMessage::ReplyMessage);
 }
 
 void tst_QDBusAbstractInterface::makeVoidCall()
@@ -441,7 +441,7 @@ void tst_QDBusAbstractInterface::makeAsyncStringCallPeer()
     QVERIFY2(p, "Not connected to D-Bus");
 
     QDBusMessage reply = p->call(QDBus::BlockWithGui, QLatin1String("voidMethod"));
-    QVERIFY(reply.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
     QDBusPendingReply<QString> r = p->stringMethod();
     r.waitForFinished();
@@ -622,7 +622,7 @@ void tst_QDBusAbstractInterface::complexPropRead()
 
     RegisteredType expectedValue = targetObj.m_complexProp = RegisteredType("This is a test");
     QVariant v = p->property("complexProp");
-    QVERIFY(v.userType() == qMetaTypeId<RegisteredType>());
+    QCOMPARE(v.userType(), qMetaTypeId<RegisteredType>());
     QCOMPARE(v.value<RegisteredType>(), targetObj.m_complexProp);
 }
 
@@ -694,7 +694,7 @@ void tst_QDBusAbstractInterface::complexPropReadPeer()
 
     RegisteredType expectedValue = RegisteredType("This is a test");
     QVariant v = p->property("complexProp");
-    QVERIFY(v.userType() == qMetaTypeId<RegisteredType>());
+    QCOMPARE(v.userType(), qMetaTypeId<RegisteredType>());
     QCOMPARE(v.value<RegisteredType>(), expectedValue);
 }
 
@@ -861,8 +861,8 @@ void tst_QDBusAbstractInterface::getVoidSignal()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s.at(0).size() == 0);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s.at(0).size(), 0);
 }
 
 void tst_QDBusAbstractInterface::getStringSignal_data()
@@ -886,8 +886,8 @@ void tst_QDBusAbstractInterface::getStringSignal()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s[0].size() == 1);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s[0].size(), 1);
     QCOMPARE(s[0][0].userType(), int(QVariant::String));
     QCOMPARE(s[0][0].toString(), expectedValue);
 }
@@ -913,8 +913,8 @@ void tst_QDBusAbstractInterface::getComplexSignal()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s[0].size() == 1);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s[0].size(), 1);
     QCOMPARE(s[0][0].userType(), qMetaTypeId<RegisteredType>());
     QCOMPARE(s[0][0].value<RegisteredType>(), expectedValue);
 }
@@ -942,8 +942,8 @@ void tst_QDBusAbstractInterface::getVoidSignalPeer()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s.at(0).size() == 0);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s.at(0).size(), 0);
 }
 
 void tst_QDBusAbstractInterface::getStringSignalPeer_data()
@@ -968,8 +968,8 @@ void tst_QDBusAbstractInterface::getStringSignalPeer()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s[0].size() == 1);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s[0].size(), 1);
     QCOMPARE(s[0][0].userType(), int(QVariant::String));
     QCOMPARE(s[0][0].toString(), expectedValue);
 }
@@ -996,8 +996,8 @@ void tst_QDBusAbstractInterface::getComplexSignalPeer()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QVERIFY(s.size() == 1);
-    QVERIFY(s[0].size() == 1);
+    QCOMPARE(s.size(), 1);
+    QCOMPARE(s[0].size(), 1);
     QCOMPARE(s[0][0].userType(), qMetaTypeId<RegisteredType>());
     QCOMPARE(s[0][0].value<RegisteredType>(), expectedValue);
 }
@@ -1039,7 +1039,7 @@ void tst_QDBusAbstractInterface::followSignal()
 
     // now the signal must have been received:
     QCOMPARE(s.size(), 1);
-    QVERIFY(s.at(0).size() == 0);
+    QCOMPARE(s.at(0).size(), 0);
 
     // cleanup:
     con.interface()->unregisterService(serviceToFollow);

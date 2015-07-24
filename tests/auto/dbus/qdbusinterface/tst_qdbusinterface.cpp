@@ -283,7 +283,7 @@ void tst_QDBusInterface::initTestCase()
     // get peer server address
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
     QDBusMessage rpl = con.call(req);
-    QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(rpl.type(), QDBusMessage::ReplyMessage);
     QString address = rpl.arguments().at(0).toString();
 
     // connect to peer server
@@ -292,7 +292,7 @@ void tst_QDBusInterface::initTestCase()
 
     QDBusMessage req2 = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "waitForConnected");
     QDBusMessage rpl2 = con.call(req2);
-    QVERIFY(rpl2.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(rpl2.type(), QDBusMessage::ReplyMessage);
     QVERIFY2(rpl2.type() == QDBusMessage::ReplyMessage, rpl2.errorMessage().toLatin1());
 }
 
@@ -348,7 +348,7 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
 
     QTestEventLoop::instance().connect(connIface, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
                                        SLOT(exitLoop()));
-    QVERIFY(connIface->registerService("com.example.Test") == QDBusConnectionInterface::ServiceRegistered);
+    QCOMPARE(connIface->registerService("com.example.Test").value(), QDBusConnectionInterface::ServiceRegistered);
 
     QTestEventLoop::instance().enterLoop(5);
 

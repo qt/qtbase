@@ -507,7 +507,7 @@ void tst_QDBusAbstractAdaptor::initTestCase()
     // get peer server address
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
     QDBusMessage rpl = QDBusConnection::sessionBus().call(req);
-    QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(rpl.type(), QDBusMessage::ReplyMessage);
     QString address = rpl.arguments().at(0).toString();
 
     // connect to peer server
@@ -1870,7 +1870,7 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValue()
 
     QDBusInterface remote(con.baseService(), "/", "local.Interface3", con);
     QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
-    QVERIFY(reply.arguments().count() == 2);
+    QCOMPARE(reply.arguments().count(), 2);
 
     QDBusReply<int> intreply = reply;
     QVERIFY(intreply.isValid());
@@ -1892,7 +1892,7 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValuePeer()
 
     QDBusInterface remote(QString(), "/", "local.Interface3", con);
     QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
-    QVERIFY(reply.arguments().count() == 2);
+    QCOMPARE(reply.arguments().count(), 2);
 
     QDBusReply<int> intreply = reply;
     QVERIFY(intreply.isValid());

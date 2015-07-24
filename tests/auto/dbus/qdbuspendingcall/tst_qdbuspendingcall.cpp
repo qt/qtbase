@@ -174,14 +174,14 @@ void tst_QDBusPendingCall::waitForFinished()
     QDBusPendingCall ac = sendMessage();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
     QVERIFY(!ac.isError());
 
     const QDBusMessage reply = ac.reply();
-    QVERIFY(reply.type() == QDBusMessage::ReplyMessage);
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
     QCOMPARE(reply.signature(), QString("as"));
 
     const QVariantList args = ac.reply().arguments();
@@ -197,7 +197,7 @@ void tst_QDBusPendingCall::waitForFinished_error()
     QDBusPendingCall ac = sendError();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
@@ -256,7 +256,7 @@ void tst_QDBusPendingCall::watcher()
     QDBusPendingCall ac = sendMessage();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     callCount = 0;
     watchArgument = 0;
@@ -286,7 +286,7 @@ void tst_QDBusPendingCall::watcher_error()
     QDBusPendingCall ac = sendError();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     callCount = 0;
     watchArgument = 0;
@@ -314,7 +314,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished()
     QDBusPendingCall ac = sendMessage();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     callCount = 0;
     watchArgument = 0;
@@ -353,7 +353,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
             QDBusPendingCall ac = tst->sendMessage();
 //            QVERIFY(!ac.isFinished());
 //            QVERIFY(!ac.isError());
-//            QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+//            QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
             QDBusPendingCallWatcher watch(ac);
             tst->connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -363,7 +363,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
 
 //            QVERIFY(!ac.isFinished());
 //            QVERIFY(!ac.isError());
-//            QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+//            QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
             QCOMPARE(tst->callCount, 0);
             QCOMPARE(tst->slotCalled, 0);
 
@@ -393,7 +393,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished()
     QDBusPendingCall ac = sendMessage();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
@@ -427,7 +427,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_alreadyFinished_eventLoop()
     QDBusPendingCall ac = sendMessage();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     ac.waitForFinished();
     QVERIFY(ac.isFinished());
@@ -464,7 +464,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_error()
     QDBusPendingCall ac = sendError();
     QVERIFY(!ac.isFinished());
     QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
+    QCOMPARE(ac.reply().type(), QDBusMessage::InvalidMessage);
 
     callCount = 0;
     watchArgument = 0;
