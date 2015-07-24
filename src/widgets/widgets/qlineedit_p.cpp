@@ -343,7 +343,7 @@ void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 void QLineEditIconButton::updateCursor()
 {
 #ifndef QT_NO_CURSOR
-    setCursor(qFuzzyCompare(m_opacity, 1.0) || !parentWidget() ? QCursor(Qt::ArrowCursor) : parentWidget()->cursor());
+    setCursor(qFuzzyCompare(m_opacity, qreal(1.0)) || !parentWidget() ? QCursor(Qt::ArrowCursor) : parentWidget()->cursor());
 #endif
 }
 

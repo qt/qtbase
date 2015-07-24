@@ -2103,9 +2103,9 @@ int QPdfEnginePrivate::generateLinearGradientShader(const QLinearGradient *gradi
 int QPdfEnginePrivate::generateRadialGradientShader(const QRadialGradient *gradient, const QTransform &matrix, bool alpha)
 {
     QPointF p1 = gradient->center();
-    double r1 = gradient->centerRadius();
+    qreal r1 = gradient->centerRadius();
     QPointF p0 = gradient->focalPoint();
-    double r0 = gradient->focalRadius();
+    qreal r0 = gradient->focalRadius();
 
     Q_ASSERT(gradient->coordinateMode() == QGradient::LogicalMode);
 
