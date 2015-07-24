@@ -829,11 +829,15 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 
             if (!reply->d_func()->expectContent()) {
                 // No content expected, this is a valid way to have the connection closed by the server
+                // We need to invoke this asynchronously to make sure the state() of the socket is on QAbstractSocket::UnconnectedState
+                QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
                 return;
             }
             if (reply->contentLength() == -1 && !reply->d_func()->isChunked()) {
                 // There was no content-length header and it's not chunked encoding,
                 // so this is a valid way to have the connection closed by the server
+                // We need to invoke this asynchronously to make sure the state() of the socket is on QAbstractSocket::UnconnectedState
+                QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
                 return;
             }
             // ok, we got a disconnect even though we did not expect it
