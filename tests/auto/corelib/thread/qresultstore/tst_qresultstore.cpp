@@ -80,9 +80,9 @@ void tst_QtConcurrentResultStore::iterators()
 {
     {
         ResultStore<int> store;
-        QVERIFY(store.begin() == store.end());
-        QVERIFY(store.resultAt(0) == store.end());
-        QVERIFY(store.resultAt(1) == store.end());
+        QCOMPARE(store.begin(), store.end());
+        QCOMPARE(store.resultAt(0), store.end());
+        QCOMPARE(store.resultAt(1), store.end());
     }
     {
         ResultStoreBase storebase;
@@ -90,7 +90,7 @@ void tst_QtConcurrentResultStore::iterators()
         storebase.addResult(1, &int1);  // ResultStoreBase does not take ownership, only ResultStore<> does.
         ResultIteratorBase it = storebase.begin();
         QCOMPARE(it.resultIndex(), 0);
-        QVERIFY(it == storebase.begin());
+        QCOMPARE(it, storebase.begin());
         QVERIFY(it != storebase.end());
 
         ++it;
@@ -100,7 +100,7 @@ void tst_QtConcurrentResultStore::iterators()
 
         ++it;
         QVERIFY(it != storebase.begin());
-        QVERIFY(it == storebase.end());
+        QCOMPARE(it, storebase.end());
     }
 }
 
@@ -160,7 +160,7 @@ void tst_QtConcurrentResultStore::addResults()
     store.addResults(-1, &vec1, 2, 2);
     ResultIteratorBase it = store.begin();
     QCOMPARE(it.resultIndex(), 0);
-    QVERIFY(it == store.begin());
+    QCOMPARE(it, store.begin());
     QVERIFY(it != store.end());
 
     ++it;
@@ -175,7 +175,7 @@ void tst_QtConcurrentResultStore::addResults()
     QCOMPARE(it.resultIndex(), 3);
 
     ++it;
-    QVERIFY(it == store.end());
+    QCOMPARE(it, store.end());
 }
 
 void tst_QtConcurrentResultStore::resultIndex()

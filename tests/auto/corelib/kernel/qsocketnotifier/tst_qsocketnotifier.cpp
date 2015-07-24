@@ -129,7 +129,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     readEnd1.initialize(QAbstractSocket::TcpSocket);
     readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.waitForWrite());
-    QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(readEnd1.state(), QAbstractSocket::ConnectedState);
     QVERIFY(server.waitForNewConnection());
     QTcpSocket *writeEnd1 = server.nextPendingConnection();
     QVERIFY(writeEnd1 != 0);
@@ -138,7 +138,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     readEnd2.initialize(QAbstractSocket::TcpSocket);
     readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.waitForWrite());
-    QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(readEnd2.state(), QAbstractSocket::ConnectedState);
     QVERIFY(server.waitForNewConnection());
     QTcpSocket *writeEnd2 = server.nextPendingConnection();
     QVERIFY(writeEnd2 != 0);
@@ -164,8 +164,8 @@ void tst_QSocketNotifier::unexpectedDisconnection()
         QVERIFY(timer.isActive()); //escape if test would hang
     }  while(tester.sequence <= 0);
 
-    QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
+    QCOMPARE(readEnd1.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(readEnd2.state(), QAbstractSocket::ConnectedState);
 
     QCOMPARE(tester.sequence, 2);
 

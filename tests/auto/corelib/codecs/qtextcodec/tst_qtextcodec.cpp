@@ -156,7 +156,7 @@ void tst_QTextCodec::codecForName()
 
     QTextCodec *codec = QTextCodec::codecForName(hint.toLatin1());
     if (actualCodecName.isEmpty()) {
-        QVERIFY(codec == 0);
+        QVERIFY(!codec);
     } else {
         QVERIFY(codec != 0);
         QCOMPARE(QString(codec->name()), actualCodecName);
@@ -2075,7 +2075,7 @@ void tst_QTextCodec::codecForUtfText()
     if (detected)
         QCOMPARE(codec->mibEnum(), mib);
     else
-        QVERIFY(codec == 0);
+        QVERIFY(!codec);
 }
 
 #if defined(Q_OS_UNIX)

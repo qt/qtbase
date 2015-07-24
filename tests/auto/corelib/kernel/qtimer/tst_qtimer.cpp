@@ -528,7 +528,7 @@ void tst_QTimer::restartedTimerFiresTooSoon()
 {
     RestartedTimerFiresTooSoonObject object;
     object.timerFired();
-    QVERIFY(object.eventLoop.exec() == 0);
+    QCOMPARE(object.eventLoop.exec(), 0);
 }
 
 class LongLastingSlotClass : public QObject

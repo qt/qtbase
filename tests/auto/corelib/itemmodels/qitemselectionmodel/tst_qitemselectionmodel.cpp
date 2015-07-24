@@ -1757,7 +1757,7 @@ void tst_QItemSelectionModel::modelLayoutChanged()
     // verify that selection is as expected
     QItemSelection selection = selectionModel.selection();
     QCOMPARE(selection.count(), expectedSelectedRanges.count());
-    QVERIFY(selectionModel.hasSelection() == !expectedSelectedRanges.isEmpty());
+    QCOMPARE(selectionModel.hasSelection(), !expectedSelectedRanges.isEmpty());
 
     for (int i = 0; i < expectedSelectedRanges.count(); ++i) {
         IntPairPair expectedRange = expectedSelectedRanges.at(i);
@@ -2214,7 +2214,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     QSignalSpy deselectSpy(&selectionModel, &QItemSelectionModel::selectionChanged);
     QVERIFY(deselectSpy.isValid());
     model.removeRows(0, 1, root);
-    QVERIFY(deselectSpy.count() == 1);
+    QCOMPARE(deselectSpy.count(), 1);
 
     // More testing stress for the patch.
     model.clear();
@@ -2242,7 +2242,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     QVERIFY(selectionModel.selection().contains(sel2));
     deselectSpy.clear();
     model.removeRow(0, model.index(0, 0));
-    QVERIFY(deselectSpy.count() == 1);
+    QCOMPARE(deselectSpy.count(), 1);
     QVERIFY(!selectionModel.selection().contains(sel));
     QVERIFY(selectionModel.selection().contains(sel2));
 }
@@ -2372,7 +2372,7 @@ public slots:
         foreach(const QModelIndex &index, deselected.indexes()) {
             QVERIFY(!m_itemSelectionModel->selection().contains(index));
         }
-        QVERIFY(m_itemSelectionModel->selection().size() == 2);
+        QCOMPARE(m_itemSelectionModel->selection().size(), 2);
     }
 };
 
@@ -2390,7 +2390,7 @@ void tst_QItemSelectionModel::deselectRemovedMiddleRange()
 
     selModel.select(QItemSelection(model.index(3, 0), model.index(6, 0)), QItemSelectionModel::Select);
 
-    QVERIFY(selModel.selection().size() == 1);
+    QCOMPARE(selModel.selection().size(), 1);
 
     RemovalObserver ro(&selModel);
 
@@ -2399,7 +2399,7 @@ void tst_QItemSelectionModel::deselectRemovedMiddleRange()
     bool ok = model.removeRows(4, 2);
 
     QVERIFY(ok);
-    QVERIFY(spy.size() == 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 static QStandardItemModel* getModel(QObject *parent)
@@ -2710,8 +2710,8 @@ void tst_QItemSelectionModel::testChainedSelectionClear()
         QModelIndexList selectedIndexes = selectionModel.selection().indexes();
         QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
 
-        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
-        QVERIFY(selectedIndexes.size() == 1);
+        QCOMPARE(selectedIndexes.size(), duplicatedIndexes.size());
+        QCOMPARE(selectedIndexes.size(), 1);
         QVERIFY(selectedIndexes.first() == model.index(0, 0));
     }
 
@@ -2721,18 +2721,18 @@ void tst_QItemSelectionModel::testChainedSelectionClear()
         QModelIndexList selectedIndexes = selectionModel.selection().indexes();
         QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
 
-        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
-        QVERIFY(selectedIndexes.size() == 0);
+        QCOMPARE(selectedIndexes.size(), duplicatedIndexes.size());
+        QCOMPARE(selectedIndexes.size(), 0);
     }
 
     duplicate.setCurrentIndex(model.index(0, 0), QItemSelectionModel::NoUpdate);
 
-    QVERIFY(selectionModel.currentIndex() == duplicate.currentIndex());
+    QCOMPARE(selectionModel.currentIndex(), duplicate.currentIndex());
 
     duplicate.clearCurrentIndex();
 
     QVERIFY(!duplicate.currentIndex().isValid());
-    QVERIFY(selectionModel.currentIndex() == duplicate.currentIndex());
+    QCOMPARE(selectionModel.currentIndex(), duplicate.currentIndex());
 }
 
 void tst_QItemSelectionModel::testClearCurrentIndex()
@@ -2747,13 +2747,13 @@ void tst_QItemSelectionModel::testClearCurrentIndex()
     QModelIndex firstIndex = model.index(0, 0);
     QVERIFY(firstIndex.isValid());
     selectionModel.setCurrentIndex(firstIndex, QItemSelectionModel::NoUpdate);
-    QVERIFY(selectionModel.currentIndex() == firstIndex);
-    QVERIFY(currentIndexSpy.size() == 1);
+    QCOMPARE(selectionModel.currentIndex(), firstIndex);
+    QCOMPARE(currentIndexSpy.size(), 1);
 
     selectionModel.clearCurrentIndex();
 
-    QVERIFY(selectionModel.currentIndex() == QModelIndex());
-    QVERIFY(currentIndexSpy.size() == 2);
+    QCOMPARE(selectionModel.currentIndex(), QModelIndex());
+    QCOMPARE(currentIndexSpy.size(), 2);
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

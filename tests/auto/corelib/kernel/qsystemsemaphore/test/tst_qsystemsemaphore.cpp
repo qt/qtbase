@@ -191,13 +191,13 @@ void tst_QSystemSemaphore::basicProcesses()
     acquire.start(m_helperBinary, QStringList("acquire"));
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
-    QVERIFY(acquire.state() == QProcess::Running);
+    QCOMPARE(acquire.state(), QProcess::Running);
     acquire.kill();
     release.start(m_helperBinary, QStringList("release"));
     QVERIFY2(release.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     release.waitForFinished(HELPERWAITTIME);
-    QVERIFY(acquire.state() == QProcess::NotRunning);
+    QCOMPARE(acquire.state(), QProcess::NotRunning);
 #endif
 }
 

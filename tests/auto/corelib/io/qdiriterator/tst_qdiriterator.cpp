@@ -538,7 +538,7 @@ void tst_QDirIterator::recurseWithFilters() const
     QVERIFY(it.hasNext());
     it.next();
     actualEntries.insert(it.fileInfo().filePath());
-    QVERIFY(actualEntries == expectedEntries);
+    QCOMPARE(actualEntries, expectedEntries);
 
     QVERIFY(!it.hasNext());
 }

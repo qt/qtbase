@@ -851,11 +851,11 @@ void tst_QProcess::openModes()
 {
     QProcess proc;
     QVERIFY(!proc.isOpen());
-    QVERIFY(proc.openMode() == QProcess::NotOpen);
+    QCOMPARE(proc.openMode(), QProcess::NotOpen);
     proc.start("testProcessEcho3/testProcessEcho3");
     QVERIFY(proc.waitForStarted(5000));
     QVERIFY(proc.isOpen());
-    QVERIFY(proc.openMode() == QProcess::ReadWrite);
+    QCOMPARE(proc.openMode(), QProcess::ReadWrite);
     QVERIFY(proc.isReadable());
     QVERIFY(proc.isWritable());
 
@@ -864,7 +864,7 @@ void tst_QProcess::openModes()
     proc.closeWriteChannel();
 
     QVERIFY(proc.isWritable());
-    QVERIFY(proc.openMode() == QProcess::ReadWrite);
+    QCOMPARE(proc.openMode(), QProcess::ReadWrite);
 
     while (proc.bytesAvailable() < 4 && proc.waitForReadyRead(5000))
     { }
@@ -873,12 +873,12 @@ void tst_QProcess::openModes()
 
     proc.closeReadChannel(QProcess::StandardOutput);
 
-    QVERIFY(proc.openMode() == QProcess::ReadWrite);
+    QCOMPARE(proc.openMode(), QProcess::ReadWrite);
     QVERIFY(proc.isReadable());
 
     proc.closeReadChannel(QProcess::StandardError);
 
-    QVERIFY(proc.openMode() == QProcess::ReadWrite);
+    QCOMPARE(proc.openMode(), QProcess::ReadWrite);
     QVERIFY(proc.isReadable());
 
     proc.close();

@@ -176,20 +176,20 @@ void tst_QUrlQuery::constructing()
         QUrlQuery copy(empty);
         QVERIFY(copy.isEmpty());
         QVERIFY(!copy.isDetached());
-        QVERIFY(copy == empty);
+        QCOMPARE(copy, empty);
         QCOMPARE(qHash(copy), qHash(empty));
         QVERIFY(!(copy != empty));
 
         copy = empty;
-        QVERIFY(copy == empty);
+        QCOMPARE(copy, empty);
 
         copy = QUrlQuery();
-        QVERIFY(copy == empty);
+        QCOMPARE(copy, empty);
         QCOMPARE(qHash(copy), qHash(empty));
     }
     {
         QUrlQuery copy(emptyQuery());
-        QVERIFY(copy == empty);
+        QCOMPARE(copy, empty);
     }
 
     QVERIFY(!empty.hasQueryItem("a"));
@@ -214,7 +214,7 @@ void tst_QUrlQuery::constructing()
     QVERIFY(!(other == empty));
 
     QUrlQuery copy(other);
-    QVERIFY(copy == other);
+    QCOMPARE(copy, other);
 
     copy.clear();
     QVERIFY(copy.isEmpty());
@@ -222,7 +222,7 @@ void tst_QUrlQuery::constructing()
 
     copy = other;
     QVERIFY(!copy.isEmpty());
-    QVERIFY(copy == other);
+    QCOMPARE(copy, other);
 
     copy = QUrlQuery();
     QVERIFY(copy.isEmpty());
@@ -298,7 +298,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(allItems.at(0).first, QString("a"));
         QCOMPARE(allItems.at(0).second, QString("b"));
 
-        QVERIFY(query == original);
+        QCOMPARE(query, original);
         QVERIFY(!(query != original));
         QCOMPARE(qHash(query), qHash(original));
     }
@@ -346,7 +346,7 @@ void tst_QUrlQuery::multiAddRemove()
         QVERIFY(query.hasQueryItem("a"));
 
         // returns the first one
-        QVERIFY(query.queryItemValue("a") == "b");
+        QCOMPARE(query.queryItemValue("a"), QLatin1String("b"));
 
         // order is the order we set them in
         QVERIFY(query.allQueryItemValues("a") == QStringList() << "b" << "c");
@@ -359,9 +359,9 @@ void tst_QUrlQuery::multiAddRemove()
         QVERIFY(query.hasQueryItem("A"));
         QVERIFY(query.hasQueryItem("a"));
 
-        QVERIFY(query.queryItemValue("a") == "b");
+        QCOMPARE(query.queryItemValue("a"), QLatin1String("b"));
         QVERIFY(query.allQueryItemValues("a") == QStringList() << "b" << "c");
-        QVERIFY(query.queryItemValue("A") == "B");
+        QCOMPARE(query.queryItemValue("A"), QLatin1String("B"));
         QVERIFY(query.allQueryItemValues("A") == QStringList() << "B" << "C");
     }
 
@@ -371,7 +371,7 @@ void tst_QUrlQuery::multiAddRemove()
         QVERIFY(query.hasQueryItem("a"));
 
         // it must have removed the first one
-        QVERIFY(query.queryItemValue("a") == "c");
+        QCOMPARE(query.queryItemValue("a"), QLatin1String("c"));
     }
 
     {
@@ -720,7 +720,7 @@ void tst_QUrlQuery::old_queryItems()
     QVERIFY(!url.isEmpty());
 
     QList<QPair<QString, QString> > setItems = url.queryItems();
-    QVERIFY(newItems == setItems);
+    QCOMPARE(newItems, setItems);
 
     url.addQueryItem("1", "z");
 

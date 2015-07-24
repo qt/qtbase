@@ -101,7 +101,7 @@ void tst_QMimeData::data() const
     // set text, verify
     mimeData.setData("text/plain", "pirates");
     QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates"));
-    QVERIFY(mimeData.data("text/html").length() == 0);
+    QCOMPARE(mimeData.data("text/html").length(), 0);
 
     // html time
     mimeData.setData("text/html", "ninjas");

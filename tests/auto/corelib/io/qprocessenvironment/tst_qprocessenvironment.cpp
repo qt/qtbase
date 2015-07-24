@@ -57,25 +57,25 @@ private slots:
 void tst_QProcessEnvironment::operator_eq()
 {
     QProcessEnvironment e1;
-    QVERIFY(e1 == e1);
+    QCOMPARE(e1, e1);
     e1.clear();
-    QVERIFY(e1 == e1);
+    QCOMPARE(e1, e1);
 
     e1 = QProcessEnvironment();
     QProcessEnvironment e2;
-    QVERIFY(e1 == e2);
+    QCOMPARE(e1, e2);
 
     e1.clear();
-    QVERIFY(e1 == e2);
+    QCOMPARE(e1, e2);
 
     e2.clear();
-    QVERIFY(e1 == e2);
+    QCOMPARE(e1, e2);
 
     e1.insert("FOO", "bar");
     QVERIFY(e1 != e2);
 
     e2.insert("FOO", "bar");
-    QVERIFY(e1 == e2);
+    QCOMPARE(e1, e2);
 
     e2.insert("FOO", "baz");
     QVERIFY(e1 != e2);
@@ -212,7 +212,7 @@ void tst_QProcessEnvironment::insertEnv()
 
     e3.insert(e3); // mustn't deadlock
 
-    QVERIFY(e3 == e2);
+    QCOMPARE(e3, e2);
 }
 
 void tst_QProcessEnvironment::caseSensitivity()

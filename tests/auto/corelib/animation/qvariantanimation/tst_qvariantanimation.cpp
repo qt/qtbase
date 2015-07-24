@@ -77,9 +77,9 @@ void tst_QVariantAnimation::currentValue()
 void tst_QVariantAnimation::easingCurve()
 {
     TestableQVariantAnimation anim;
-    QVERIFY(anim.easingCurve() == QEasingCurve::Linear);
+    QCOMPARE(anim.easingCurve().type(), QEasingCurve::Linear);
     anim.setEasingCurve(QEasingCurve::InQuad);
-    QVERIFY(anim.easingCurve() == QEasingCurve::InQuad);
+    QCOMPARE(anim.easingCurve().type(), QEasingCurve::InQuad);
 }
 
 void tst_QVariantAnimation::endValue()

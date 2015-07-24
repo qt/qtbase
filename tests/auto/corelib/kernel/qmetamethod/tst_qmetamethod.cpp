@@ -599,8 +599,8 @@ void tst_QMetaMethod::method()
     QFETCH(QMetaMethod::MethodType, methodType);
     QFETCH(QMetaMethod::Access, access);
 
-    QVERIFY(parameterTypes.size() == parameterTypeNames.size());
-    QVERIFY(parameterTypes.size() == parameterNames.size());
+    QCOMPARE(parameterTypes.size(), parameterTypeNames.size());
+    QCOMPARE(parameterTypes.size(), parameterNames.size());
 
     const QMetaObject *mo = &MethodTestObject::staticMetaObject;
     int index = (methodType == QMetaMethod::Constructor)

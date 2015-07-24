@@ -811,7 +811,7 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 
 void tst_QMetaObject::qtMetaObjectInheritance()
 {
-    QVERIFY(QObject::staticMetaObject.superClass() == 0);
+    QVERIFY(!QObject::staticMetaObject.superClass());
     QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("Qt::CaseSensitivity"), -1);
     QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("CaseSensitivity"), -1);
     int indexOfSortCaseSensitivity = QSortFilterProxyModel::staticMetaObject.indexOfProperty("sortCaseSensitivity");
@@ -878,7 +878,7 @@ void tst_QMetaObject::invokeMetaConstructor()
     const QMetaObject *mo = &QtTestObject::staticMetaObject;
     {
         QObject *obj = mo->newInstance();
-        QVERIFY(obj == 0);
+        QVERIFY(!obj);
     }
     {
         QtTestObject obj;

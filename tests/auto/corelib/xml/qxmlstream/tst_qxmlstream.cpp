@@ -877,13 +877,13 @@ void tst_QXmlStream::testFalsePrematureError() const
         while (!xml.atEnd()) {
             xml.readNext();
         }
-        QVERIFY(xml.error() == QXmlStreamReader::PrematureEndOfDocumentError);
+        QCOMPARE(xml.error(), QXmlStreamReader::PrematureEndOfDocumentError);
         QCOMPARE(xml.errorString(), QLatin1String("Premature end of document."));
         xml.addData(legal_start);
         while (!xml.atEnd()) {
             xml.readNext();
         }
-        QVERIFY(xml.error() == QXmlStreamReader::PrematureEndOfDocumentError);
+        QCOMPARE(xml.error(), QXmlStreamReader::PrematureEndOfDocumentError);
         QCOMPARE(xml.errorString(), QLatin1String("Premature end of document."));
         xml.addData(end);
         while (!xml.atEnd()) {
@@ -898,7 +898,7 @@ void tst_QXmlStream::testFalsePrematureError() const
         }
         QVERIFY(xml.hasError());
         QCOMPARE(xml.errorString(), QLatin1String("Start tag expected."));
-        QVERIFY(xml.error() == QXmlStreamReader::NotWellFormedError);
+        QCOMPARE(xml.error(), QXmlStreamReader::NotWellFormedError);
     }
 }
 

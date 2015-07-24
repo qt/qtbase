@@ -84,9 +84,9 @@ void tst_QFuture::resultStore()
 
     {
         QtPrivate::ResultStore<int> store;
-        QVERIFY(store.begin() == store.end());
-        QVERIFY(store.resultAt(0) == store.end());
-        QVERIFY(store.resultAt(1) == store.end());
+        QCOMPARE(store.begin(), store.end());
+        QCOMPARE(store.resultAt(0), store.end());
+        QCOMPARE(store.resultAt(1), store.end());
     }
 
 
@@ -118,7 +118,7 @@ void tst_QFuture::resultStore()
         store.addResults(-1, &vec1, 2, 2);
         QtPrivate::ResultIteratorBase it = store.begin();
         QCOMPARE(it.resultIndex(), 0);
-        QVERIFY(it == store.begin());
+        QCOMPARE(it, store.begin());
         QVERIFY(it != store.end());
 
         ++it;
@@ -133,7 +133,7 @@ void tst_QFuture::resultStore()
         QCOMPARE(it.resultIndex(), 3);
 
         ++it;
-        QVERIFY(it == store.end());
+        QCOMPARE(it, store.end());
     }
     {
         QtPrivate::ResultStoreBase store;
@@ -1012,14 +1012,14 @@ void tst_QFuture::iterators()
         QFuture<int>::const_iterator i1 = f.begin(), i2 = i1 + 1;
         QFuture<int>::const_iterator c1 = i1, c2 = c1 + 1;
 
-        QVERIFY(i1 == i1);
-        QVERIFY(i1 == c1);
-        QVERIFY(c1 == i1);
-        QVERIFY(c1 == c1);
-        QVERIFY(i2 == i2);
-        QVERIFY(i2 == c2);
-        QVERIFY(c2 == i2);
-        QVERIFY(c2 == c2);
+        QCOMPARE(i1, i1);
+        QCOMPARE(i1, c1);
+        QCOMPARE(c1, i1);
+        QCOMPARE(c1, c1);
+        QCOMPARE(i2, i2);
+        QCOMPARE(i2, c2);
+        QCOMPARE(c2, i2);
+        QCOMPARE(c2, c2);
 
         QVERIFY(i1 != i2);
         QVERIFY(i1 != c2);
@@ -1061,14 +1061,14 @@ void tst_QFuture::iterators()
         QFuture<QString>::const_iterator i1 = f.begin(), i2 = i1 + 1;
         QFuture<QString>::const_iterator c1 = i1, c2 = c1 + 1;
 
-        QVERIFY(i1 == i1);
-        QVERIFY(i1 == c1);
-        QVERIFY(c1 == i1);
-        QVERIFY(c1 == c1);
-        QVERIFY(i2 == i2);
-        QVERIFY(i2 == c2);
-        QVERIFY(c2 == i2);
-        QVERIFY(c2 == c2);
+        QCOMPARE(i1, i1);
+        QCOMPARE(i1, c1);
+        QCOMPARE(c1, i1);
+        QCOMPARE(c1, c1);
+        QCOMPARE(i2, i2);
+        QCOMPARE(i2, c2);
+        QCOMPARE(c2, i2);
+        QCOMPARE(c2, c2);
 
         QVERIFY(i1 != i2);
         QVERIFY(i1 != c2);

@@ -823,7 +823,7 @@ void tst_QFile::readAll()
 
     QByteArray a = file.readAll();
     file.reset();
-    QVERIFY(file.pos() == 0);
+    QCOMPARE(file.pos(), 0);
 
     QVERIFY(file.bytesAvailable() > 7);
     QByteArray b = file.read(1);
@@ -1145,7 +1145,7 @@ void tst_QFile::append()
     f.close();
 
     QVERIFY(f.open(QIODevice::Append));
-    QVERIFY(f.pos() == 1);
+    QCOMPARE(f.pos(), 1);
     f.putChar('a');
     f.close();
     QCOMPARE(int(f.size()), 2);
@@ -2171,7 +2171,7 @@ void tst_QFile::removeOpenFile()
         QVERIFY(removed);
         QVERIFY(!f.isOpen());
         QVERIFY(!f.exists());
-        QVERIFY(f.error() == QFile::NoError);
+        QCOMPARE(f.error(), QFile::NoError);
     }
 
     {
@@ -2198,7 +2198,7 @@ void tst_QFile::removeOpenFile()
         QVERIFY(removed);
         QVERIFY(!f.isOpen());
         QVERIFY(!f.exists());
-        QVERIFY(f.error() == QFile::NoError);
+        QCOMPARE(f.error(), QFile::NoError);
     }
 }
 
@@ -2765,13 +2765,13 @@ void tst_QFile::readEof()
         char buf[10];
         int ret = file.read(buf, sizeof buf);
         QCOMPARE(ret, 0);
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         ret = file.read(buf, sizeof buf);
         QCOMPARE(ret, 0);
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
     }
 
@@ -2786,13 +2786,13 @@ void tst_QFile::readEof()
 
         QByteArray ret = file.read(10);
         QVERIFY(ret.isEmpty());
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         ret = file.read(10);
         QVERIFY(ret.isEmpty());
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
     }
 
@@ -2808,13 +2808,13 @@ void tst_QFile::readEof()
         char buf[10];
         int ret = file.readLine(buf, sizeof buf);
         QCOMPARE(ret, -1);
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         ret = file.readLine(buf, sizeof buf);
         QCOMPARE(ret, -1);
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
     }
 
@@ -2829,13 +2829,13 @@ void tst_QFile::readEof()
 
         QByteArray ret = file.readLine();
         QVERIFY(ret.isNull());
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         ret = file.readLine();
         QVERIFY(ret.isNull());
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
     }
 
@@ -2850,12 +2850,12 @@ void tst_QFile::readEof()
 
         char c;
         QVERIFY(!file.getChar(&c));
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         QVERIFY(!file.getChar(&c));
-        QVERIFY(file.error() == QFile::NoError);
+        QCOMPARE(file.error(), QFile::NoError);
         QVERIFY(file.atEnd());
     }
 }
@@ -2943,7 +2943,7 @@ void tst_QFile::map()
     memory = file.map(offset, size);
     QCOMPARE(file.error(), QFile::NoError);
     QVERIFY(memory);
-    QVERIFY(memory[0] == 'Q');
+    QCOMPARE(memory[0], uchar('Q'));
     QVERIFY(file.unmap(memory));
     QCOMPARE(file.error(), QFile::NoError);
 

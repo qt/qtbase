@@ -199,7 +199,7 @@ void tst_QWinOverlappedIoNotifier::waitForAnyNotified()
                               NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
     notifier.setHandle(hFile);
     notifier.setEnabled(true);
-    QVERIFY(notifier.waitForAnyNotified(100) == 0);
+    QVERIFY(!notifier.waitForAnyNotified(100));
 
     OVERLAPPED overlapped1;
     ZeroMemory(&overlapped1, sizeof(OVERLAPPED));
@@ -224,7 +224,7 @@ void tst_QWinOverlappedIoNotifier::waitForAnyNotified()
 
     CloseHandle(hFile);
     QVERIFY(overlappedObjects.isEmpty());
-    QVERIFY(notifier.waitForAnyNotified(100) == 0);
+    QVERIFY(!notifier.waitForAnyNotified(100));
 }
 
 void tst_QWinOverlappedIoNotifier::brokenPipe()

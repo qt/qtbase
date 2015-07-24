@@ -138,14 +138,14 @@ void tst_QMetaObjectBuilder::create()
 {
     QMetaObjectBuilder builder;
     QVERIFY(builder.className().isEmpty());
-    QVERIFY(builder.superClass() == &QObject::staticMetaObject);
+    QCOMPARE(builder.superClass(), &QObject::staticMetaObject);
     QCOMPARE(builder.methodCount(), 0);
     QCOMPARE(builder.constructorCount(), 0);
     QCOMPARE(builder.propertyCount(), 0);
     QCOMPARE(builder.enumeratorCount(), 0);
     QCOMPARE(builder.classInfoCount(), 0);
     QCOMPARE(builder.relatedMetaObjectCount(), 0);
-    QVERIFY(builder.staticMetacallFunction() == 0);
+    QVERIFY(!builder.staticMetacallFunction());
 }
 
 void tst_QMetaObjectBuilder::className()
@@ -174,17 +174,17 @@ void tst_QMetaObjectBuilder::superClass()
 
     // Change the super class.
     builder.setSuperClass(&QObject::staticMetaObject);
-    QVERIFY(builder.superClass() == &QObject::staticMetaObject);
+    QCOMPARE(builder.superClass(), &QObject::staticMetaObject);
 
     // Change it again.
     builder.setSuperClass(&staticMetaObject);
-    QVERIFY(builder.superClass() == &staticMetaObject);
+    QCOMPARE(builder.superClass(), &staticMetaObject);
 
     // Clone the super class off a static QMetaObject.
     builder.addMetaObject(&QObject::staticMetaObject, QMetaObjectBuilder::SuperClass);
-    QVERIFY(builder.superClass() == 0);
+    QVERIFY(!builder.superClass());
     builder.addMetaObject(&staticMetaObject, QMetaObjectBuilder::SuperClass);
-    QVERIFY(builder.superClass() == staticMetaObject.superClass());
+    QCOMPARE(builder.superClass(), staticMetaObject.superClass());
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::SuperClass));
@@ -195,11 +195,11 @@ void tst_QMetaObjectBuilder::flags()
     QMetaObjectBuilder builder;
 
     // Check default
-    QVERIFY(builder.flags() == 0);
+    QCOMPARE(builder.flags(), 0);
 
     // Set flags
     builder.setFlags(QMetaObjectBuilder::DynamicMetaObject);
-    QVERIFY(builder.flags() == QMetaObjectBuilder::DynamicMetaObject);
+    QCOMPARE(builder.flags(), QMetaObjectBuilder::DynamicMetaObject);
 }
 
 void tst_QMetaObjectBuilder::method()
@@ -209,12 +209,12 @@ void tst_QMetaObjectBuilder::method()
     // Check null method
     QMetaMethodBuilder nullMethod;
     QCOMPARE(nullMethod.signature(), QByteArray());
-    QVERIFY(nullMethod.methodType() == QMetaMethod::Method);
+    QCOMPARE(nullMethod.methodType(), QMetaMethod::Method);
     QVERIFY(nullMethod.returnType().isEmpty());
     QVERIFY(nullMethod.parameterTypes().isEmpty());
     QVERIFY(nullMethod.parameterNames().isEmpty());
     QVERIFY(nullMethod.tag().isEmpty());
-    QVERIFY(nullMethod.access() == QMetaMethod::Public);
+    QCOMPARE(nullMethod.access(), QMetaMethod::Public);
     QCOMPARE(nullMethod.attributes(), 0);
     QCOMPARE(nullMethod.revision(), 0);
     QCOMPARE(nullMethod.index(), 0);
@@ -222,12 +222,12 @@ void tst_QMetaObjectBuilder::method()
     // Add a method and check its attributes.
     QMetaMethodBuilder method1 = builder.addMethod("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(method1.methodType() == QMetaMethod::Method);
+    QCOMPARE(method1.methodType(), QMetaMethod::Method);
     QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
-    QVERIFY(method1.access() == QMetaMethod::Public);
+    QCOMPARE(method1.access(), QMetaMethod::Public);
     QCOMPARE(method1.attributes(), 0);
     QCOMPARE(method1.revision(), 0);
     QCOMPARE(method1.index(), 0);
@@ -236,12 +236,12 @@ void tst_QMetaObjectBuilder::method()
     // Add another method and check again.
     QMetaMethodBuilder method2 = builder.addMethod("bar(QString)", "int");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Method);
+    QCOMPARE(method2.methodType(), QMetaMethod::Method);
     QCOMPARE(method2.returnType(), QByteArray("int"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
-    QVERIFY(method2.access() == QMetaMethod::Public);
+    QCOMPARE(method2.access(), QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.revision(), 0);
     QCOMPARE(method2.index(), 1);
@@ -262,22 +262,22 @@ void tst_QMetaObjectBuilder::method()
 
     // Check that method1 is changed, but method2 is not.
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(method1.methodType() == QMetaMethod::Method);
+    QCOMPARE(method1.methodType(), QMetaMethod::Method);
     QCOMPARE(method1.returnType(), QByteArray("int"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QCOMPARE(method1.parameterNames(), QList<QByteArray>() << "a" << "b");
     QCOMPARE(method1.tag(), QByteArray("tag"));
-    QVERIFY(method1.access() == QMetaMethod::Private);
+    QCOMPARE(method1.access(), QMetaMethod::Private);
     QCOMPARE(method1.attributes(), 42);
     QCOMPARE(method1.revision(), 123);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Method);
+    QCOMPARE(method2.methodType(), QMetaMethod::Method);
     QCOMPARE(method2.returnType(), QByteArray("int"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
-    QVERIFY(method2.access() == QMetaMethod::Public);
+    QCOMPARE(method2.access(), QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.revision(), 0);
     QCOMPARE(method2.index(), 1);
@@ -293,22 +293,22 @@ void tst_QMetaObjectBuilder::method()
 
     // This time check that only method2 changed.
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(method1.methodType() == QMetaMethod::Method);
+    QCOMPARE(method1.methodType(), QMetaMethod::Method);
     QCOMPARE(method1.returnType(), QByteArray("int"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QCOMPARE(method1.parameterNames(), QList<QByteArray>() << "a" << "b");
     QCOMPARE(method1.tag(), QByteArray("tag"));
-    QVERIFY(method1.access() == QMetaMethod::Private);
+    QCOMPARE(method1.access(), QMetaMethod::Private);
     QCOMPARE(method1.attributes(), 42);
     QCOMPARE(method1.revision(), 123);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Method);
+    QCOMPARE(method2.methodType(), QMetaMethod::Method);
     QCOMPARE(method2.returnType(), QByteArray("QString"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QCOMPARE(method2.parameterNames(), QList<QByteArray>() << "c");
     QCOMPARE(method2.tag(), QByteArray("Q_FOO"));
-    QVERIFY(method2.access() == QMetaMethod::Protected);
+    QCOMPARE(method2.access(), QMetaMethod::Protected);
     QCOMPARE(method2.attributes(), 24);
     QCOMPARE(method2.revision(), 321);
     QCOMPARE(method2.index(), 1);
@@ -319,12 +319,12 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(builder.methodCount(), 1);
     method2 = builder.method(0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Method);
+    QCOMPARE(method2.methodType(), QMetaMethod::Method);
     QCOMPARE(method2.returnType(), QByteArray("QString"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QCOMPARE(method2.parameterNames(), QList<QByteArray>() << "c");
     QCOMPARE(method2.tag(), QByteArray("Q_FOO"));
-    QVERIFY(method2.access() == QMetaMethod::Protected);
+    QCOMPARE(method2.access(), QMetaMethod::Protected);
     QCOMPARE(method2.attributes(), 24);
     QCOMPARE(method2.revision(), 321);
     QCOMPARE(method2.index(), 0);
@@ -347,12 +347,12 @@ void tst_QMetaObjectBuilder::slot()
     // Add a slot and check its attributes.
     QMetaMethodBuilder method1 = builder.addSlot("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(method1.methodType() == QMetaMethod::Slot);
+    QCOMPARE(method1.methodType(), QMetaMethod::Slot);
     QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
-    QVERIFY(method1.access() == QMetaMethod::Public);
+    QCOMPARE(method1.access(), QMetaMethod::Public);
     QCOMPARE(method1.attributes(), 0);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(builder.methodCount(), 1);
@@ -360,12 +360,12 @@ void tst_QMetaObjectBuilder::slot()
     // Add another slot and check again.
     QMetaMethodBuilder method2 = builder.addSlot("bar(QString)");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Slot);
+    QCOMPARE(method2.methodType(), QMetaMethod::Slot);
     QCOMPARE(method2.returnType(), QByteArray("void"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
-    QVERIFY(method2.access() == QMetaMethod::Public);
+    QCOMPARE(method2.access(), QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
@@ -386,12 +386,12 @@ void tst_QMetaObjectBuilder::signal()
     // Add a signal and check its attributes.
     QMetaMethodBuilder method1 = builder.addSignal("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(method1.methodType() == QMetaMethod::Signal);
+    QCOMPARE(method1.methodType(), QMetaMethod::Signal);
     QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
-    QVERIFY(method1.access() == QMetaMethod::Public);
+    QCOMPARE(method1.access(), QMetaMethod::Public);
     QCOMPARE(method1.attributes(), 0);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(builder.methodCount(), 1);
@@ -399,12 +399,12 @@ void tst_QMetaObjectBuilder::signal()
     // Add another signal and check again.
     QMetaMethodBuilder method2 = builder.addSignal("bar(QString)");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(method2.methodType() == QMetaMethod::Signal);
+    QCOMPARE(method2.methodType(), QMetaMethod::Signal);
     QCOMPARE(method2.returnType(), QByteArray("void"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
-    QVERIFY(method2.access() == QMetaMethod::Public);
+    QCOMPARE(method2.access(), QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
@@ -425,12 +425,12 @@ void tst_QMetaObjectBuilder::constructor()
     // Add a constructor and check its attributes.
     QMetaMethodBuilder ctor1 = builder.addConstructor("foo(const QString&, int)");
     QCOMPARE(ctor1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(ctor1.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor1.methodType(), QMetaMethod::Constructor);
     QVERIFY(ctor1.returnType().isEmpty());
     QCOMPARE(ctor1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(ctor1.parameterNames().isEmpty());
     QVERIFY(ctor1.tag().isEmpty());
-    QVERIFY(ctor1.access() == QMetaMethod::Public);
+    QCOMPARE(ctor1.access(), QMetaMethod::Public);
     QCOMPARE(ctor1.attributes(), 0);
     QCOMPARE(ctor1.index(), 0);
     QCOMPARE(builder.constructorCount(), 1);
@@ -438,12 +438,12 @@ void tst_QMetaObjectBuilder::constructor()
     // Add another constructor and check again.
     QMetaMethodBuilder ctor2 = builder.addConstructor("bar(QString)");
     QCOMPARE(ctor2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(ctor2.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor2.methodType(), QMetaMethod::Constructor);
     QVERIFY(ctor2.returnType().isEmpty());
     QCOMPARE(ctor2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(ctor2.parameterNames().isEmpty());
     QVERIFY(ctor2.tag().isEmpty());
-    QVERIFY(ctor2.access() == QMetaMethod::Public);
+    QCOMPARE(ctor2.access(), QMetaMethod::Public);
     QCOMPARE(ctor2.attributes(), 0);
     QCOMPARE(ctor2.index(), 1);
     QCOMPARE(builder.constructorCount(), 2);
@@ -464,21 +464,21 @@ void tst_QMetaObjectBuilder::constructor()
 
     // Check that ctor1 is changed, but ctor2 is not.
     QCOMPARE(ctor1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(ctor1.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor1.methodType(), QMetaMethod::Constructor);
     QCOMPARE(ctor1.returnType(), QByteArray("int"));
     QCOMPARE(ctor1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QCOMPARE(ctor1.parameterNames(), QList<QByteArray>() << "a" << "b");
     QCOMPARE(ctor1.tag(), QByteArray("tag"));
-    QVERIFY(ctor1.access() == QMetaMethod::Private);
+    QCOMPARE(ctor1.access(), QMetaMethod::Private);
     QCOMPARE(ctor1.attributes(), 42);
     QCOMPARE(ctor1.index(), 0);
     QCOMPARE(ctor2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(ctor2.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor2.methodType(), QMetaMethod::Constructor);
     QVERIFY(ctor2.returnType().isEmpty());
     QCOMPARE(ctor2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(ctor2.parameterNames().isEmpty());
     QVERIFY(ctor2.tag().isEmpty());
-    QVERIFY(ctor2.access() == QMetaMethod::Public);
+    QCOMPARE(ctor2.access(), QMetaMethod::Public);
     QCOMPARE(ctor2.attributes(), 0);
     QCOMPARE(ctor2.index(), 1);
     QCOMPARE(builder.constructorCount(), 2);
@@ -492,21 +492,21 @@ void tst_QMetaObjectBuilder::constructor()
 
     // This time check that only ctor2 changed.
     QCOMPARE(ctor1.signature(), QByteArray("foo(QString,int)"));
-    QVERIFY(ctor1.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor1.methodType(), QMetaMethod::Constructor);
     QCOMPARE(ctor1.returnType(), QByteArray("int"));
     QCOMPARE(ctor1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QCOMPARE(ctor1.parameterNames(), QList<QByteArray>() << "a" << "b");
     QCOMPARE(ctor1.tag(), QByteArray("tag"));
-    QVERIFY(ctor1.access() == QMetaMethod::Private);
+    QCOMPARE(ctor1.access(), QMetaMethod::Private);
     QCOMPARE(ctor1.attributes(), 42);
     QCOMPARE(ctor1.index(), 0);
     QCOMPARE(ctor2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(ctor2.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor2.methodType(), QMetaMethod::Constructor);
     QCOMPARE(ctor2.returnType(), QByteArray("QString"));
     QCOMPARE(ctor2.parameterTypes(), QList<QByteArray>() << "QString");
     QCOMPARE(ctor2.parameterNames(), QList<QByteArray>() << "c");
     QCOMPARE(ctor2.tag(), QByteArray("Q_FOO"));
-    QVERIFY(ctor2.access() == QMetaMethod::Protected);
+    QCOMPARE(ctor2.access(), QMetaMethod::Protected);
     QCOMPARE(ctor2.attributes(), 24);
     QCOMPARE(ctor2.index(), 1);
     QCOMPARE(builder.constructorCount(), 2);
@@ -516,12 +516,12 @@ void tst_QMetaObjectBuilder::constructor()
     QCOMPARE(builder.constructorCount(), 1);
     ctor2 = builder.constructor(0);
     QCOMPARE(ctor2.signature(), QByteArray("bar(QString)"));
-    QVERIFY(ctor2.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(ctor2.methodType(), QMetaMethod::Constructor);
     QCOMPARE(ctor2.returnType(), QByteArray("QString"));
     QCOMPARE(ctor2.parameterTypes(), QList<QByteArray>() << "QString");
     QCOMPARE(ctor2.parameterNames(), QList<QByteArray>() << "c");
     QCOMPARE(ctor2.tag(), QByteArray("Q_FOO"));
-    QVERIFY(ctor2.access() == QMetaMethod::Protected);
+    QCOMPARE(ctor2.access(), QMetaMethod::Protected);
     QCOMPARE(ctor2.attributes(), 24);
     QCOMPARE(ctor2.index(), 0);
 
@@ -536,10 +536,10 @@ void tst_QMetaObjectBuilder::constructor()
     QCOMPARE(builder.constructorCount(), 2);
 
     QCOMPARE(prototypeConstructor.signature(), QByteArray("SomethingOfEverything()"));
-    QVERIFY(prototypeConstructor.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(prototypeConstructor.methodType(), QMetaMethod::Constructor);
     QCOMPARE(prototypeConstructor.returnType(), QByteArray());
     QVERIFY(prototypeConstructor.parameterTypes().isEmpty());
-    QVERIFY(prototypeConstructor.access() == QMetaMethod::Public);
+    QCOMPARE(prototypeConstructor.access(), QMetaMethod::Public);
     QCOMPARE(prototypeConstructor.index(), 1);
 
     // Check that nothing else changed.
@@ -967,13 +967,13 @@ void tst_QMetaObjectBuilder::relatedMetaObject()
     // Add two related meta objects and check their attributes.
     QCOMPARE(builder.addRelatedMetaObject(&QObject::staticMetaObject), 0);
     QCOMPARE(builder.addRelatedMetaObject(&staticMetaObject), 1);
-    QVERIFY(builder.relatedMetaObject(0) == &QObject::staticMetaObject);
-    QVERIFY(builder.relatedMetaObject(1) == &staticMetaObject);
+    QCOMPARE(builder.relatedMetaObject(0), &QObject::staticMetaObject);
+    QCOMPARE(builder.relatedMetaObject(1), &staticMetaObject);
     QCOMPARE(builder.relatedMetaObjectCount(), 2);
 
     // Remove the first one and check again.
     builder.removeRelatedMetaObject(0);
-    QVERIFY(builder.relatedMetaObject(0) == &staticMetaObject);
+    QCOMPARE(builder.relatedMetaObject(0), &staticMetaObject);
     QCOMPARE(builder.relatedMetaObjectCount(), 1);
 
     // Check that nothing else changed.
@@ -1617,7 +1617,7 @@ void tst_QMetaObjectBuilder::usage_slot()
     QVERIFY(index != -1);
     QMetaMethod voidSlotInt = testObject->metaObject()->method(index);
 
-    QVERIFY(testObject->voidSlotIntArgument() == -1);
+    QCOMPARE(testObject->voidSlotIntArgument(), -1);
     QVERIFY(voidSlotInt.invoke(testObject.data(), Q_ARG(int, 123)));
     QCOMPARE(testObject->voidSlotIntArgument(), 123);
 }
@@ -1658,7 +1658,7 @@ void tst_QMetaObjectBuilder::usage_connect()
     QVERIFY(QObject::connect(testObject.data(), SIGNAL(intPropChanged(int)),
                              testObject.data(), SLOT(voidSlotInt(int))));
 
-    QVERIFY(testObject->voidSlotIntArgument() == -1);
+    QCOMPARE(testObject->voidSlotIntArgument(), -1);
     testObject->setProperty("intProp", 123);
     QCOMPARE(testObject->voidSlotIntArgument(), 123);
 
@@ -1674,7 +1674,7 @@ void tst_QMetaObjectBuilder::usage_templateConnect()
                                                    testObject.data(), &TestObject::voidSlotInt);
     QVERIFY(con);
 
-    QVERIFY(testObject->voidSlotIntArgument() == -1);
+    QCOMPARE(testObject->voidSlotIntArgument(), -1);
     testObject->setProperty("intProp", 123);
     QCOMPARE(testObject->voidSlotIntArgument(), 123);
 

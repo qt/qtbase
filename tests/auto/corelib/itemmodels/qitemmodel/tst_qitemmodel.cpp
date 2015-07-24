@@ -351,7 +351,7 @@ void tst_QItemModel::index()
     // Make sure that the same index is always returned
     QModelIndex a = currentModel->index(0,0);
     QModelIndex b = currentModel->index(0,0);
-    QVERIFY(a == b);
+    QCOMPARE(a, b);
 
     // index is tested more extensivly more later in checkChildren(),
     // but this catches the big mistakes
@@ -415,7 +415,7 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
             // Make sure we get the same index if we request it twice in a row
             QModelIndex a = currentModel->index(r, c, parent);
             QModelIndex b = currentModel->index(r, c, parent);
-            QVERIFY(a == b);
+            QCOMPARE(a, b);
 
             {
                 const QModelIndex sibling = currentModel->sibling( r, c, topLeftChild );
@@ -427,7 +427,7 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
             }
 
             // Some basic checking on the index that is returned
-            QVERIFY(index.model() == currentModel);
+            QCOMPARE(index.model(), currentModel);
             QCOMPARE(index.row(), r);
             QCOMPARE(index.column(), c);
             QCOMPARE(currentModel->data(index, Qt::DisplayRole).isValid(), true);

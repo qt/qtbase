@@ -61,9 +61,9 @@ void tst_QStorageInfo::defaultValues()
     QVERIFY(!storage.isRoot());
     QVERIFY(storage.device().isEmpty());
     QVERIFY(storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() == -1);
-    QVERIFY(storage.bytesFree() == -1);
-    QVERIFY(storage.bytesAvailable() == -1);
+    QCOMPARE(storage.bytesTotal(), -1);
+    QCOMPARE(storage.bytesFree(), -1);
+    QCOMPARE(storage.bytesAvailable(), -1);
 }
 
 void tst_QStorageInfo::operatorEqual()
@@ -71,19 +71,19 @@ void tst_QStorageInfo::operatorEqual()
     {
         QStorageInfo storage1 = QStorageInfo::root();
         QStorageInfo storage2(QDir::rootPath());
-        QVERIFY(storage1 == storage2);
+        QCOMPARE(storage1, storage2);
     }
 
     {
         QStorageInfo storage1(QCoreApplication::applicationDirPath());
         QStorageInfo storage2(QCoreApplication::applicationFilePath());
-        QVERIFY(storage1 == storage2);
+        QCOMPARE(storage1, storage2);
     }
 
     {
         QStorageInfo storage1;
         QStorageInfo storage2;
-        QVERIFY(storage1 == storage2);
+        QCOMPARE(storage1, storage2);
     }
 }
 
@@ -184,15 +184,15 @@ void tst_QStorageInfo::caching()
 
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
-    QVERIFY(free == storage2.bytesFree());
+    QCOMPARE(free, storage2.bytesFree());
 
     file.write(QByteArray(1024*1024, '\0'));
     file.flush();
 
-    QVERIFY(free == storage1.bytesFree());
-    QVERIFY(free == storage2.bytesFree());
+    QCOMPARE(free, storage1.bytesFree());
+    QCOMPARE(free, storage2.bytesFree());
     storage2.refresh();
-    QVERIFY(storage1 == storage2);
+    QCOMPARE(storage1, storage2);
     QVERIFY(free != storage2.bytesFree());
 }
 #endif

@@ -163,7 +163,7 @@ void tst_QThreadOnce::nesting()
         }
     }
 
-    QVERIFY(variable == 1);
+    QCOMPARE(variable, 1);
 }
 
 static void reentrant(int control, int &counter)

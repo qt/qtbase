@@ -351,13 +351,13 @@ void tst_QVariant::constructor_invalid()
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(typeId, /* copy */ 0);
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
 }
 
@@ -901,7 +901,7 @@ void tst_QVariant::toFloat()
     bool ok;
     float d = value.toFloat(&ok);
     QCOMPARE(d, result);
-    QVERIFY(ok == valueOK);
+    QCOMPARE(ok, valueOK);
 }
 
 void tst_QVariant::toLongLong_data()
@@ -1323,9 +1323,9 @@ void tst_QVariant::writeToReadFromDataStream()
                 // the uninitialized float can be NaN (observed on Windows Mobile 5 ARMv4i)
                 float readFloat = qvariant_cast<float>(readVariant);
                 float writtenFloat = qvariant_cast<float>(writeVariant);
-                QVERIFY(qIsNaN(readFloat) == qIsNaN(writtenFloat));
+                QCOMPARE(qIsNaN(readFloat), qIsNaN(writtenFloat));
                 if (!qIsNaN(readFloat))
-                    QVERIFY(readFloat == writtenFloat);
+                    QCOMPARE(readFloat, writtenFloat);
             }
             break;
         }
@@ -2115,7 +2115,7 @@ void tst_QVariant::userType()
             QVERIFY(!userVar.canConvert(QVariant::String));
 
             QVariant userVar2(userVar);
-            QVERIFY(userVar == userVar2);
+            QCOMPARE(userVar, userVar2);
 
             userVar2.setValue(data2);
             QVERIFY(userVar != userVar2);
@@ -2129,7 +2129,7 @@ void tst_QVariant::userType()
             userVar3.setValue(data2);
 
             userVar3 = userVar2;
-            QVERIFY(userVar2 == userVar3);
+            QCOMPARE(userVar2, userVar3);
         }
         // At this point all QVariants got destroyed but we have 2 MyType instances.
         QCOMPARE(instanceCount, 2);
@@ -2144,7 +2144,7 @@ void tst_QVariant::userType()
             QVERIFY(!userVar.canConvert(QVariant::String));
 
             QVariant userVar2(userVar);
-            QVERIFY(userVar == userVar2);
+            QCOMPARE(userVar, userVar2);
 
             userVar2.setValue(&data2);
             QVERIFY(userVar != userVar2);
@@ -2158,10 +2158,10 @@ void tst_QVariant::userType()
 
             /* This check is correct now. userVar2 contains a pointer to data2 and so
              * does userVar3. */
-            QVERIFY(userVar2 == userVar3);
+            QCOMPARE(userVar2, userVar3);
 
             userVar3 = userVar2;
-            QVERIFY(userVar2 == userVar3);
+            QCOMPARE(userVar2, userVar3);
         }
 
         QCOMPARE(instanceCount, 2);
@@ -2446,7 +2446,7 @@ void tst_QVariant::saveLoadCustomTypes()
     qRegisterMetaTypeStreamOperators<Blah>("Blah");
 
     QCOMPARE(v.userType(), tp);
-    QVERIFY(v.type() == QVariant::UserType);
+    QCOMPARE(v.type(), QVariant::UserType);
     {
         QDataStream stream(&data, QIODevice::WriteOnly);
         stream << v;
@@ -2610,7 +2610,7 @@ void tst_QVariant::qvariant_cast_QObject_derived()
     {
         CustomQObjectDerivedNoMetaType *object = new CustomQObjectDerivedNoMetaType(this);
         QVariant data = QVariant::fromValue(object);
-        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerivedNoMetaType*>());
+        QCOMPARE(data.userType(), qMetaTypeId<CustomQObjectDerivedNoMetaType*>());
         QCOMPARE(data.value<QObject *>(), object);
         QCOMPARE(data.value<CustomQObjectDerivedNoMetaType *>(), object);
         QCOMPARE(data.value<CustomQObject *>(), object);
@@ -2619,7 +2619,7 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         CustomQObjectDerived *object = new CustomQObjectDerived(this);
         QVariant data = QVariant::fromValue(object);
 
-        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerived*>());
+        QCOMPARE(data.userType(), qMetaTypeId<CustomQObjectDerived*>());
 
         QCOMPARE(data.value<QObject *>(), object);
         QCOMPARE(data.value<CustomQObjectDerived *>(), object);
@@ -2886,10 +2886,10 @@ void tst_QVariant::voidStar() const
     QVariant v1, v2;
     v1 = QVariant::fromValue(p1);
     v2 = v1;
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
 
     v2 = QVariant::fromValue(p2);
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
 
     p2 = 0;
     v2 = QVariant::fromValue(p2);
@@ -2906,10 +2906,10 @@ void tst_QVariant::dataStar() const
     QCOMPARE(qvariant_cast<Data*>(v1), p1);
 
     QVariant v2 = v1;
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
 
     v2 = QVariant::fromValue(p1);
-    QVERIFY(v1 == v2);
+    QCOMPARE(v1, v2);
     delete p1;
 }
 
@@ -3081,8 +3081,8 @@ void tst_QVariant::compareCustomTypes() const
 
     /* We compare pointers. */
     QVERIFY(variant1 != variant2);
-    QVERIFY(variant1 == variant1);
-    QVERIFY(variant2 == variant2);
+    QCOMPARE(variant1, variant1);
+    QCOMPARE(variant2, variant2);
 }
 
 void tst_QVariant::timeToDateTime() const
@@ -3289,7 +3289,7 @@ void tst_QVariant::toIntFromQString() const
 void tst_QVariant::toIntFromDouble() const
 {
     double d = 2147483630;  // max int 2147483647
-    QVERIFY((int)d == 2147483630);
+    QCOMPARE((int)d, 2147483630);
 
     QVariant var(d);
     QVERIFY( var.canConvert( QVariant::Int ) );
@@ -4119,7 +4119,7 @@ void tst_QVariant::saveInvalid()
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream.setVersion(version);
     stream << QVariant();
-    QVERIFY(stream.status() == QDataStream::Ok);
+    QCOMPARE(stream.status(), QDataStream::Ok);
     QVERIFY(data.size() >= 4);
     QCOMPARE(int(data.constData()[0]), 0);
     QCOMPARE(int(data.constData()[1]), 0);
@@ -4133,7 +4133,7 @@ void tst_QVariant::saveNewBuiltinWithOldStream()
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_3_1);
     stream << QVariant::fromValue<QJsonValue>(123); // QJsonValue class was introduced in Qt5
-    QVERIFY(stream.status() == QDataStream::Ok);
+    QCOMPARE(stream.status(), QDataStream::Ok);
     QVERIFY(data.size() >= 4);
     QCOMPARE(int(data.constData()[0]), 0);
     QCOMPARE(int(data.constData()[1]), 0);

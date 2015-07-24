@@ -527,7 +527,7 @@ void tst_QDataStream::readQRegExp(QDataStream *s)
     *s >> R;
     QCOMPARE(R, test);
     *s >> V;
-    QVERIFY(V.type() == QVariant::RegExp);
+    QCOMPARE(V.type(), QVariant::RegExp);
     QCOMPARE(V.toRegExp(), test);
 }
 
@@ -795,7 +795,7 @@ void tst_QDataStream::readbool(QDataStream *s)
 
     bool d1;
     *s >> d1;
-    QVERIFY(d1 == expected);
+    QCOMPARE(d1, expected);
 }
 
 // ************************************
@@ -858,7 +858,7 @@ void tst_QDataStream::readQBitArray(QDataStream *s)
 
     QBitArray d1;
     *s >> d1;
-    QVERIFY(d1 == expected);
+    QCOMPARE(d1, expected);
 }
 
 // ************************************
@@ -917,7 +917,7 @@ void tst_QDataStream::readQBrush(QDataStream *s)
     *s >> d2;
 
     QBrush brush = qBrushData(dataIndex(QTest::currentDataTag()));
-    QVERIFY(d2 == brush);
+    QCOMPARE(d2, brush);
 }
 
 // ************************************
@@ -959,7 +959,7 @@ void tst_QDataStream::readQColor(QDataStream *s)
     QColor test(QColorData(dataIndex(QTest::currentDataTag())));
     QColor d3;
     *s >> d3;
-    QVERIFY(d3 == test);
+    QCOMPARE(d3, test);
 }
 
 
@@ -1055,7 +1055,7 @@ void tst_QDataStream::readQCursor(QDataStream *s)
     *s >> d5;
 
     QVERIFY(d5.shape() == test.shape()); //## lacks operator==
-    QVERIFY(d5.hotSpot() == test.hotSpot());
+    QCOMPARE(d5.hotSpot(), test.hotSpot());
     QVERIFY((d5.bitmap() != 0 && test.bitmap() != 0) || (d5.bitmap() == 0 && test.bitmap() == 0));
     if (d5.bitmap() != 0) {
         QPixmap actual = *(d5.bitmap());
@@ -1118,7 +1118,7 @@ void tst_QDataStream::readQDate(QDataStream *s)
     QDate test(qDateData(dataIndex(QTest::currentDataTag())));
     QDate d6;
     *s >> d6;
-    QVERIFY(d6 == test);
+    QCOMPARE(d6, test);
 }
 
 // ************************************
@@ -1212,7 +1212,7 @@ void tst_QDataStream::readQTime(QDataStream *s)
     QTime test = qTimeData(dataIndex(QTest::currentDataTag()));
     QTime d7;
     *s >> d7;
-    QVERIFY(d7 == test);
+    QCOMPARE(d7, test);
 }
 
 // ************************************
@@ -1262,7 +1262,7 @@ void tst_QDataStream::readQDateTime(QDataStream *s)
     QDateTime test(qDateTimeData(dataIndex(QTest::currentDataTag())));
     QDateTime d8;
     *s >> d8;
-    QVERIFY(d8 == test);
+    QCOMPARE(d8, test);
 }
 
 // ************************************
@@ -1413,16 +1413,16 @@ void tst_QDataStream::readQImage(QDataStream *s)
 
     QImage d12;
     *s >> d12;
-    QVERIFY(d12 == ref);
+    QCOMPARE(d12, ref);
 
     // do some extra neurotic tests
-    QVERIFY(d12.size() == ref.size());
-    QVERIFY(d12.isNull() == ref.isNull());
-    QVERIFY(d12.width() == ref.width());
-    QVERIFY(d12.height() == ref.height());
-    QVERIFY(d12.depth() == ref.depth());
-    QVERIFY(d12.colorCount() == ref.colorCount());
-    QVERIFY(d12.hasAlphaChannel() == ref.hasAlphaChannel());
+    QCOMPARE(d12.size(), ref.size());
+    QCOMPARE(d12.isNull(), ref.isNull());
+    QCOMPARE(d12.width(), ref.width());
+    QCOMPARE(d12.height(), ref.height());
+    QCOMPARE(d12.depth(), ref.depth());
+    QCOMPARE(d12.colorCount(), ref.colorCount());
+    QCOMPARE(d12.hasAlphaChannel(), ref.hasAlphaChannel());
 }
 
 // ************************************
@@ -1516,9 +1516,9 @@ void tst_QDataStream::readQPen(QDataStream *s)
     QCOMPARE(d15.style(), origPen.style());
     QCOMPARE(d15.width(), origPen.width());
     QCOMPARE(d15.color(), origPen.color());
-    QVERIFY(d15.capStyle() == origPen.capStyle());
-    QVERIFY(d15.joinStyle() == origPen.joinStyle());
-    QVERIFY(d15 == origPen);
+    QCOMPARE(d15.capStyle(), origPen.capStyle());
+    QCOMPARE(d15.joinStyle(), origPen.joinStyle());
+    QCOMPARE(d15, origPen);
 }
 
 // ************************************
@@ -1566,11 +1566,11 @@ void tst_QDataStream::readQPixmap(QDataStream *s)
     QPixmap d16;
     *s >> d16;
     QVERIFY(!d16.isNull() && !pm.isNull());
-    QVERIFY(d16.width() == pm.width());
-    QVERIFY(d16.height() == pm.height());
-    QVERIFY(d16.size() == pm.size());
-    QVERIFY(d16.rect() == pm.rect());
-    QVERIFY(d16.depth() == pm.depth());
+    QCOMPARE(d16.width(), pm.width());
+    QCOMPARE(d16.height(), pm.height());
+    QCOMPARE(d16.size(), pm.size());
+    QCOMPARE(d16.rect(), pm.rect());
+    QCOMPARE(d16.depth(), pm.depth());
 }
 
 void tst_QDataStream::writeQIcon(QDataStream *s)
@@ -1637,11 +1637,11 @@ void tst_QDataStream::readQPoint(QDataStream *s)
     QPoint ref(qPointData(dataIndex(QTest::currentDataTag())));
     QPoint d17;
     *s >> d17;
-    QVERIFY(d17 == ref);
+    QCOMPARE(d17, ref);
 
     QPointF d17f;
     *s >> d17f;
-    QVERIFY(d17f == QPointF(ref));
+    QCOMPARE(d17f, QPointF(ref));
 }
 
 // ************************************
@@ -1689,11 +1689,11 @@ void tst_QDataStream::readQRect(QDataStream *s)
     QRect ref(qRectData(dataIndex(QTest::currentDataTag())));
     QRect d18;
     *s >> d18;
-    QVERIFY(d18 == ref);
+    QCOMPARE(d18, ref);
 
     QRectF d18f;
     *s >> d18f;
-    QVERIFY(d18f == QRectF(ref));
+    QCOMPARE(d18f, QRectF(ref));
 }
 
 // ************************************
@@ -1802,11 +1802,11 @@ void tst_QDataStream::readQPolygon(QDataStream *s)
     QPolygon ref(qPolygonData(dataIndex(QTest::currentDataTag())));
     QPolygon d19;
     *s >> d19;
-    QVERIFY(d19 == ref);
+    QCOMPARE(d19, ref);
 
     QPolygonF d19f;
     *s >> d19f;
-    QVERIFY(d19f == QPolygonF(ref));
+    QCOMPARE(d19f, QPolygonF(ref));
 }
 
 // ************************************
@@ -1866,7 +1866,7 @@ void tst_QDataStream::readQRegion(QDataStream *s)
     QRegion ref(qRegionData(dataIndex(QTest::currentDataTag())));
     QRegion r;
     *s >> r;
-    QVERIFY(r == ref);
+    QCOMPARE(r, ref);
 }
 
 // ************************************
@@ -1914,11 +1914,11 @@ void tst_QDataStream::readQSize(QDataStream *s)
     QSize ref(qSizeData(dataIndex(QTest::currentDataTag())));
     QSize d21;
     *s >> d21;
-    QVERIFY(d21 == ref);
+    QCOMPARE(d21, ref);
 
     QSizeF d21f;
     *s >> d21f;
-    QVERIFY(d21f == QSizeF(ref));
+    QCOMPARE(d21f, QSizeF(ref));
 }
 
 // *********************** atEnd ******************************
@@ -2094,13 +2094,13 @@ void tst_QDataStream::setVersion()
         QDataStream in(&ba1, QIODevice::ReadOnly);
         in.setVersion(vers);
         in >> keyseq1 >> keyseq2 >> deadbeef;
-        QVERIFY(keyseq1 == QKeySequence(Qt::Key_A));
+        QCOMPARE(keyseq1, QKeySequence(Qt::Key_A));
         if (vers >= 5) {
             QVERIFY(keyseq2 == QKeySequence(Qt::Key_B, Qt::Key_C));
         } else {
-            QVERIFY(keyseq2 == QKeySequence(Qt::Key_B));
+            QCOMPARE(keyseq2, QKeySequence(Qt::Key_B));
         }
-        QVERIFY(deadbeef == 0xDEADBEEF);
+        QCOMPARE(deadbeef, 0xDEADBEEF);
     }
 
     /*
@@ -2109,7 +2109,7 @@ void tst_QDataStream::setVersion()
 
     // revise the test if new color roles or color groups are added
     QVERIFY(QPalette::NColorRoles == QPalette::ToolTipText + 1);
-    QVERIFY(QPalette::NColorGroups == 3);
+    QCOMPARE(int(QPalette::NColorGroups), 3);
 
     QByteArray ba2;
     QPalette pal1, pal2;
@@ -2174,8 +2174,8 @@ void tst_QDataStream::setVersion()
                     }
                 }
             }
-            QVERIFY(pal1 == inPal1);
-            QVERIFY(pal2 == inPal2);
+            QCOMPARE(pal1, inPal1);
+            QCOMPARE(pal2, inPal2);
         }
     }
 }
@@ -3060,9 +3060,9 @@ void tst_QDataStream::compatibility_Qt3()
             in >> in_palette;
             in >> in_brush;
         }
-        QVERIFY(in_brush.style() == Qt::NoBrush);
-        QVERIFY(in_palette.brush(QPalette::Button).style() == Qt::NoBrush);
-        QVERIFY(in_palette.color(QPalette::Light) == Qt::green);
+        QCOMPARE(in_brush.style(), Qt::NoBrush);
+        QCOMPARE(in_palette.brush(QPalette::Button).style(), Qt::NoBrush);
+        QCOMPARE(in_palette.color(QPalette::Light), QColor(Qt::green));
     }
 }
 
@@ -3092,9 +3092,9 @@ void tst_QDataStream::compatibility_Qt2()
         in >> in_palette;
         in >> in_brush;
     }
-    QVERIFY(in_brush.style() == Qt::NoBrush);
-    QVERIFY(in_palette.brush(QPalette::Button).style() == Qt::NoBrush);
-    QVERIFY(in_palette.color(QPalette::Light) == Qt::green);
+    QCOMPARE(in_brush.style(), Qt::NoBrush);
+    QCOMPARE(in_palette.brush(QPalette::Button).style(), Qt::NoBrush);
+    QCOMPARE(in_palette.color(QPalette::Light), QColor(Qt::green));
 }
 
 void tst_QDataStream::floatingPointNaN()

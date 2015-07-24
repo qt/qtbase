@@ -2394,8 +2394,8 @@ void tst_QMetaType::compareCustomEqualOnlyType()
     QVERIFY(variant50 != variant100x);
     QVERIFY(variant100 != variant50);
     QVERIFY(variant100x != variant50);
-    QVERIFY(variant100 == variant100x);
-    QVERIFY(variant100 == variant100);
+    QCOMPARE(variant100, variant100x);
+    QCOMPARE(variant100, variant100);
 
     // compare always fails
     QVERIFY(!(variant50 < variant50));

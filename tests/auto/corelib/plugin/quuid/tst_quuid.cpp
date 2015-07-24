@@ -223,11 +223,11 @@ void tst_QUuid::equal()
     QVERIFY( !(uuidA == uuidB) );
 
     QUuid copy(uuidA);
-    QVERIFY(uuidA == copy);
+    QCOMPARE(uuidA, copy);
 
     QUuid assigned;
     assigned = uuidA;
-    QVERIFY(uuidA == assigned);
+    QCOMPARE(uuidA, assigned);
 }
 
 

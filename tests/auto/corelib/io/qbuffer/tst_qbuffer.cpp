@@ -378,7 +378,7 @@ void tst_QBuffer::read_rawdata()
     for (int i = 0; i < (int)sizeof(mydata); ++i) {
         QVERIFY(!buffer.atEnd());
         in >> ch;
-        QVERIFY(ch == (quint8)mydata[i]);
+        QCOMPARE(ch, (quint8)mydata[i]);
     }
     QVERIFY(buffer.atEnd());
 }

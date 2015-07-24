@@ -3035,7 +3035,7 @@ void tst_QStateMachine::graphicsSceneEventTransitions()
     QVERIFY(runningSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
-    QVERIFY(finishedSpy.count() == 0);
+    QCOMPARE(finishedSpy.count(), 0);
     TEST_RUNNING_CHANGED(true);
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     scene.sendEvent(textItem, &mouseEvent);
@@ -6157,26 +6157,26 @@ void tst_QStateMachine::childModeConstructor()
     {
         QStateMachine machine(QState::ExclusiveStates);
         QCOMPARE(machine.childMode(), QState::ExclusiveStates);
-        QVERIFY(machine.parent() == 0);
-        QVERIFY(machine.parentState() == 0);
+        QVERIFY(!machine.parent());
+        QVERIFY(!machine.parentState());
     }
     {
         QStateMachine machine(QState::ParallelStates);
         QCOMPARE(machine.childMode(), QState::ParallelStates);
-        QVERIFY(machine.parent() == 0);
-        QVERIFY(machine.parentState() == 0);
+        QVERIFY(!machine.parent());
+        QVERIFY(!machine.parentState());
     }
     {
         QStateMachine machine(QState::ExclusiveStates, this);
         QCOMPARE(machine.childMode(), QState::ExclusiveStates);
         QCOMPARE(machine.parent(), static_cast<QObject *>(this));
-        QVERIFY(machine.parentState() == 0);
+        QVERIFY(!machine.parentState());
     }
     {
         QStateMachine machine(QState::ParallelStates, this);
         QCOMPARE(machine.childMode(), QState::ParallelStates);
         QCOMPARE(machine.parent(), static_cast<QObject *>(this));
-        QVERIFY(machine.parentState() == 0);
+        QVERIFY(!machine.parentState());
     }
     QState state;
     {

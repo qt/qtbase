@@ -351,7 +351,7 @@ static void verifySubSetOf(const QHash<int, QByteArray> &superSet, const QHash<i
     const QHash<int, QByteArray>::const_iterator end = subSet.constEnd();
     for ( ; it != end; ++it ) {
         QVERIFY(superSet.contains(it.key()));
-        QVERIFY(it.value() == superSet.value(it.key()));
+        QCOMPARE(it.value(), superSet.value(it.key()));
     }
 }
 

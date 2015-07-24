@@ -916,7 +916,7 @@ void tst_QSequentialAnimationGroup::startDelay()
     QTest::qWait(500);
 
     QTRY_COMPARE(group.state(), QAnimationGroup::Stopped);
-    QVERIFY(group.currentLoopTime() == 375);
+    QCOMPARE(group.currentLoopTime(), 375);
 }
 
 void tst_QSequentialAnimationGroup::clearGroup()
@@ -1518,7 +1518,7 @@ void tst_QSequentialAnimationGroup::addRemoveAnimation()
 void tst_QSequentialAnimationGroup::currentAnimation()
 {
     QSequentialAnimationGroup group;
-    QVERIFY(group.currentAnimation() == 0);
+    QVERIFY(!group.currentAnimation());
 
     QPropertyAnimation anim;
     anim.setDuration(0);
@@ -1529,7 +1529,7 @@ void tst_QSequentialAnimationGroup::currentAnimation()
 void tst_QSequentialAnimationGroup::currentAnimationWithZeroDuration()
 {
     QSequentialAnimationGroup group;
-    QVERIFY(group.currentAnimation() == 0);
+    QVERIFY(!group.currentAnimation());
 
     QPropertyAnimation zero1;
     zero1.setDuration(0);

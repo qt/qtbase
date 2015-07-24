@@ -145,7 +145,7 @@ void tst_QSharedMemory::init()
 {
     existingSharedMemory = new QSharedMemory(EXISTING_SHARE);
     if (!existingSharedMemory->create(EXISTING_SIZE)) {
-        QVERIFY(existingSharedMemory->error() == QSharedMemory::AlreadyExists);
+        QCOMPARE(existingSharedMemory->error(), QSharedMemory::AlreadyExists);
     }
 }
 
@@ -244,10 +244,10 @@ void tst_QSharedMemory::constructor()
     QSharedMemory sm;
     QCOMPARE(sm.key(), QString());
     QVERIFY(!sm.isAttached());
-    QVERIFY(sm.data() == 0);
+    QVERIFY(!sm.data());
     QCOMPARE(sm.size(), 0);
     QCOMPARE(sm.error(), QSharedMemory::NoError);
-    QVERIFY(sm.errorString() == QString());
+    QCOMPARE(sm.errorString(), QString());
 }
 
 void tst_QSharedMemory::key_data()
@@ -288,8 +288,8 @@ void tst_QSharedMemory::key()
     QCOMPARE(sm.isAttached(), false);
 
     QCOMPARE(sm.error(), QSharedMemory::NoError);
-    QVERIFY(sm.errorString() == QString());
-    QVERIFY(sm.data() == 0);
+    QCOMPARE(sm.errorString(), QString());
+    QVERIFY(!sm.data());
     QCOMPARE(sm.size(), 0);
 
     QCOMPARE(sm.detach(), false);
@@ -328,11 +328,11 @@ void tst_QSharedMemory::create()
         qDebug() << sm.errorString();
     QCOMPARE(sm.key(), key);
     if (canCreate) {
-        QVERIFY(sm.errorString() == QString());
+        QCOMPARE(sm.errorString(), QString());
         QVERIFY(sm.data() != 0);
         QVERIFY(sm.size() != 0);
     } else {
-        QVERIFY(sm.data() == 0);
+        QVERIFY(!sm.data());
         QVERIFY(sm.errorString() != QString());
     }
 }
@@ -377,10 +377,10 @@ void tst_QSharedMemory::attach()
         QVERIFY(sm.size() != 0);
         QVERIFY(sm.detach());
         QCOMPARE(sm.size(), 0);
-        QVERIFY(sm.data() == 0);
+        QVERIFY(!sm.data());
     } else {
-        QVERIFY(sm.data() == 0);
-        QVERIFY(sm.size() == 0);
+        QVERIFY(!sm.data());
+        QCOMPARE(sm.size(), 0);
         QVERIFY(sm.errorString() != QString());
         QVERIFY(!sm.detach());
     }
@@ -498,7 +498,7 @@ void tst_QSharedMemory::useTooMuchMemory()
             QVERIFY(!sm->isAttached());
             QCOMPARE(sm->key(), key);
             QCOMPARE(sm->size(), 0);
-            QVERIFY(sm->data() == 0);
+            QVERIFY(!sm->data());
             if (sm->error() != QSharedMemory::OutOfResources)
                 qDebug() << sm->error() << sm->errorString();
             // ### Linux won't return OutOfResources if there are not enough semaphores to use.
@@ -535,7 +535,7 @@ void tst_QSharedMemory::attachTooMuch()
             QVERIFY(!war->isAttached());
             QCOMPARE(war->key(), government.key());
             QCOMPARE(war->size(), 0);
-            QVERIFY(war->data() == 0);
+            QVERIFY(!war->data());
             QCOMPARE(war->error(), QSharedMemory::OutOfResources);
             QVERIFY(war->errorString() != QString());
             QVERIFY(!war->detach());

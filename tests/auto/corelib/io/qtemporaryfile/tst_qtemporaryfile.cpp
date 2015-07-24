@@ -697,7 +697,7 @@ void tst_QTemporaryFile::createNativeFile()
         f.seek(currentPos);
     }
     QTemporaryFile *tempFile = QTemporaryFile::createNativeFile(f);
-    QVERIFY(valid == (bool)tempFile);
+    QCOMPARE(valid, (bool)tempFile);
     if (currentPos != -1)
         QCOMPARE(currentPos, f.pos());
     if (valid) {

@@ -226,7 +226,7 @@ void tst_QUrl::constructing()
     QVERIFY(url.isEmpty());
     QCOMPARE(url.port(), -1);
     QCOMPARE(url.toString(), QString());
-    QVERIFY(url == url);
+    QCOMPARE(url, url);
     QVERIFY(!(url < url));
 
     QUrl fromLocal = QUrl::fromLocalFile(QString());
@@ -254,7 +254,7 @@ void tst_QUrl::hashInPath()
     QCOMPARE(withHashInPath.toDisplayString(QUrl::PreferLocalFile), QString("hi%23mum.txt"));
 
     QUrl fromHashInPath = QUrl::fromEncoded(withHashInPath.toEncoded());
-    QVERIFY(withHashInPath == fromHashInPath);
+    QCOMPARE(withHashInPath, fromHashInPath);
 
     const QUrl localWithHash = QUrl::fromLocalFile("/hi#mum.txt");
     QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
@@ -284,7 +284,7 @@ void tst_QUrl::assignment()
     QUrl copy;
     copy = url;
 
-    QVERIFY(url == copy);
+    QCOMPARE(url, copy);
 }
 
 void tst_QUrl::comparison()
@@ -295,7 +295,7 @@ void tst_QUrl::comparison()
     QUrl url2("http://qt-project.org/");
     QVERIFY(url2.isValid());
 
-    QVERIFY(url1 == url2);
+    QCOMPARE(url1, url2);
     QVERIFY(!(url1 < url2));
     QVERIFY(!(url2 < url1));
     QVERIFY(url1.matches(url2, QUrl::None));
@@ -329,7 +329,7 @@ void tst_QUrl::comparison()
     url5.setEncodedQuery("a=%2a");
     QUrl url6;
     url6.setEncodedQuery("a=%2A");
-    QVERIFY(url5 == url6);
+    QCOMPARE(url5, url6);
 
     QUrl url7;
     url7.setEncodedQuery("a=C");
@@ -366,7 +366,7 @@ void tst_QUrl::comparison()
 
     QUrl hostUrl1("file:/foo");
     QUrl hostUrl2("file:///foo");
-    QVERIFY(hostUrl1 == hostUrl2);
+    QCOMPARE(hostUrl1, hostUrl2);
     QVERIFY(hostUrl1.matches(hostUrl2, QUrl::None));
     QVERIFY(hostUrl1.matches(hostUrl2, QUrl::RemoveAuthority));
 
@@ -460,7 +460,7 @@ void tst_QUrl::copying()
 
     QUrl copy(url);
 
-    QVERIFY(url == copy);
+    QCOMPARE(url, copy);
 }
 
 void tst_QUrl::setUrl()
@@ -1635,9 +1635,9 @@ void tst_QUrl::percentEncoding()
     QFETCH(QByteArray, encoded);
 
     QCOMPARE(QUrl(original).toEncoded().constData(), encoded.constData());
-    QVERIFY(QUrl::fromEncoded(QUrl(original).toEncoded()) == QUrl(original));
+    QCOMPARE(QUrl::fromEncoded(QUrl(original).toEncoded()), QUrl(original));
     QCOMPARE(QUrl::fromEncoded(QUrl(original).toEncoded()).toString(), original);
-    QVERIFY(QUrl::fromEncoded(encoded) == QUrl(original));
+    QCOMPARE(QUrl::fromEncoded(encoded), QUrl(original));
     QCOMPARE(QUrl(QUrl(original).toString()).toString(), original);
 }
 
@@ -3167,7 +3167,7 @@ void tst_QUrl::acceptEmptyAuthoritySegments()
     // However, file:/bar is the same as file:///bar
     QString file_triple_bar("file:///bar"), file_uni_bar("file:/bar");
 
-    QVERIFY(QUrl(file_triple_bar) == QUrl(file_uni_bar));
+    QCOMPARE(QUrl(file_triple_bar), QUrl(file_uni_bar));
 
     QCOMPARE(QUrl(file_uni_bar).toString(), file_triple_bar);
     QCOMPARE(QUrl(file_uni_bar, QUrl::StrictMode).toString(), file_triple_bar);

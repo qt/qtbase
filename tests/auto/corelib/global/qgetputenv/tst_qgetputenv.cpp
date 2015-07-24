@@ -80,7 +80,7 @@ void tst_QGetPutEnv::getSetCheck()
     QCOMPARE(qEnvironmentVariableIntValue(varName, &ok), 0);
     QVERIFY(!ok);
     result = qgetenv(varName);
-    QVERIFY(result == "supervalue");
+    QCOMPARE(result, QByteArrayLiteral("supervalue"));
 
     qputenv(varName,QByteArray());
 

@@ -447,14 +447,14 @@ public slots:
     void threadProgress(int v)
     {
         ++count;
-        QVERIFY(v == count);
+        QCOMPARE(v, count);
 
         QCoreApplication::postEvent(this, new QEvent(QEvent::MaxUser), -1);
     }
 
     void threadFinished()
     {
-        QVERIFY(count == 7);
+        QCOMPARE(count, 7);
         count = 0;
         thread->deleteLater();
 
@@ -927,7 +927,7 @@ void tst_QCoreApplication::addRemoveLibPaths()
     QStringList replace;
     replace << currentDir << paths[0];
     QCoreApplication::setLibraryPaths(replace);
-    QVERIFY(QCoreApplication::libraryPaths() == replace);
+    QCOMPARE(QCoreApplication::libraryPaths(), replace);
 }
 
 static void createQObjectOnDestruction()

@@ -2038,57 +2038,57 @@ void tst_QObject::metamethod()
 
     m = mobj->method(mobj->indexOfMethod("invoke1()"));
     QVERIFY(m.methodSignature() == "invoke1()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Public);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke1()"));
     QVERIFY(m.methodSignature() == "sinvoke1()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Public);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Public);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke2()"));
     QVERIFY(m.methodSignature() == "invoke2()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Protected);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Protected);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke2()"));
     QVERIFY(m.methodSignature() == "sinvoke2()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Protected);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Protected);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke3()"));
     QVERIFY(m.methodSignature() == "invoke3()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Private);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Private);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke3()"));
     QVERIFY(m.methodSignature() == "sinvoke3()");
-    QVERIFY(m.methodType() == QMetaMethod::Method);
-    QVERIFY(m.access() == QMetaMethod::Private);
+    QCOMPARE(m.methodType(), QMetaMethod::Method);
+    QCOMPARE(m.access(), QMetaMethod::Private);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("signal5()"));
     QVERIFY(m.methodSignature() == "signal5()");
-    QVERIFY(m.methodType() == QMetaMethod::Signal);
-    QVERIFY(m.access() == QMetaMethod::Public);
+    QCOMPARE(m.methodType(), QMetaMethod::Signal);
+    QCOMPARE(m.access(), QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("aPublicSlot()"));
     QVERIFY(m.methodSignature() == "aPublicSlot()");
-    QVERIFY(m.methodType() == QMetaMethod::Slot);
-    QVERIFY(m.access() == QMetaMethod::Public);
+    QCOMPARE(m.methodType(), QMetaMethod::Slot);
+    QCOMPARE(m.access(), QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
@@ -2360,7 +2360,7 @@ void tst_QObject::testUserData()
         int id = user_data_ids[i];
         CustomData *data = static_cast<CustomData *>(my_test_object.userData(id));
         QVERIFY(data != 0);
-        QVERIFY(data->id == id);
+        QCOMPARE(data->id, id);
     }
 }
 
@@ -2902,12 +2902,12 @@ void tst_QObject::floatProperty()
     QVERIFY(idx > 0);
     QMetaProperty prop = obj.metaObject()->property(idx);
     QVERIFY(prop.isValid());
-    QVERIFY(prop.type() == uint(QMetaType::type("float")));
+    QCOMPARE(int(prop.type()), QMetaType::type("float"));
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
     QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
     QVariant v = prop.read(&obj);
-    QVERIFY(int(v.userType()) == QMetaType::Float);
-    QVERIFY(qvariant_cast<float>(v) == 128.0f);
+    QCOMPARE(v.userType(), int(QMetaType::Float));
+    QCOMPARE(qvariant_cast<float>(v), 128.0f);
 }
 
 void tst_QObject::qrealProperty()
@@ -2917,18 +2917,18 @@ void tst_QObject::qrealProperty()
     QVERIFY(idx > 0);
     QMetaProperty prop = obj.metaObject()->property(idx);
     QVERIFY(prop.isValid());
-    QVERIFY(prop.type() == uint(QMetaType::type("qreal")));
+    QCOMPARE(int(prop.type()), QMetaType::type("qreal"));
     QVERIFY(!prop.write(&obj, QVariant("Hello")));
 
     QVERIFY(prop.write(&obj, QVariant::fromValue(128.0f)));
     QVariant v = prop.read(&obj);
     QCOMPARE(v.userType(), qMetaTypeId<qreal>());
-    QVERIFY(qvariant_cast<qreal>(v) == 128.0);
+    QCOMPARE(qvariant_cast<qreal>(v), 128.0);
 
     QVERIFY(prop.write(&obj, QVariant::fromValue(double(127))));
     v = prop.read(&obj);
     QCOMPARE(v.userType(), qMetaTypeId<qreal>());
-    QVERIFY(qvariant_cast<qreal>(v) == 127.0);
+    QCOMPARE(qvariant_cast<qreal>(v), 127.0);
 }
 
 class DynamicPropertyObject : public PropertyObject
@@ -2994,7 +2994,7 @@ void tst_QObject::recursiveSignalEmission()
     proc.start(path);
     QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
     QVERIFY(proc.waitForFinished());
-    QVERIFY(proc.exitStatus() == QProcess::NormalExit);
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
 #endif
 }

@@ -291,8 +291,8 @@ void tst_QSettings::initTestCase()
                                                           , Qt::CaseInsensitive
 #endif
                                                           );
-    QVERIFY(custom1 == QSettings::CustomFormat1);
-    QVERIFY(custom2 == QSettings::CustomFormat2);
+    QCOMPARE(custom1, QSettings::CustomFormat1);
+    QCOMPARE(custom2, QSettings::CustomFormat2);
 }
 
 void tst_QSettings::init()
@@ -391,27 +391,27 @@ void tst_QSettings::ctor()
         QSettings settings8(format, QSettings::SystemScope, "software.org");
 
         // test QSettings::format() while we're at it
-        QVERIFY(settings1.format() == format);
-        QVERIFY(settings2.format() == format);
-        QVERIFY(settings3.format() == format);
-        QVERIFY(settings4.format() == format);
+        QCOMPARE(settings1.format(), format);
+        QCOMPARE(settings2.format(), format);
+        QCOMPARE(settings3.format(), format);
+        QCOMPARE(settings4.format(), format);
 
         // test QSettings::scope() while we're at it
-        QVERIFY(settings1.scope() == QSettings::UserScope);
-        QVERIFY(settings2.scope() == QSettings::UserScope);
-        QVERIFY(settings3.scope() == QSettings::SystemScope);
-        QVERIFY(settings4.scope() == QSettings::SystemScope);
+        QCOMPARE(settings1.scope(), QSettings::UserScope);
+        QCOMPARE(settings2.scope(), QSettings::UserScope);
+        QCOMPARE(settings3.scope(), QSettings::SystemScope);
+        QCOMPARE(settings4.scope(), QSettings::SystemScope);
 
         // test QSettings::organizationName() while we're at it
-        QVERIFY(settings1.organizationName() == "software.org");
-        QVERIFY(settings2.organizationName() == "software.org");
-        QVERIFY(settings3.organizationName() == "software.org");
-        QVERIFY(settings4.organizationName() == "software.org");
+        QCOMPARE(settings1.organizationName(), QLatin1String("software.org"));
+        QCOMPARE(settings2.organizationName(), QLatin1String("software.org"));
+        QCOMPARE(settings3.organizationName(), QLatin1String("software.org"));
+        QCOMPARE(settings4.organizationName(), QLatin1String("software.org"));
 
         // test QSettings::applicationName() while we're at it
         QCOMPARE(settings1.applicationName(), QString("KillerAPP"));
         QVERIFY(settings2.applicationName().isEmpty());
-        QVERIFY(settings3.applicationName() == "KillerAPP");
+        QCOMPARE(settings3.applicationName(), QLatin1String("KillerAPP"));
         QVERIFY(settings4.applicationName().isEmpty());
 
 #if !defined(Q_OS_BLACKBERRY)
@@ -587,7 +587,7 @@ void tst_QSettings::ctor()
         settings1.endGroup();
 
         // test QSettings::scope() while we're at it
-        QVERIFY(settings1.scope() == QSettings::UserScope);
+        QCOMPARE(settings1.scope(), QSettings::UserScope);
 
         // test QSettings::organizationName() while we're at it
         QVERIFY(settings1.organizationName().isEmpty());
@@ -662,20 +662,20 @@ void tst_QSettings::ctor()
         QCOMPARE(settings2.status(), QSettings::NoError);
 
         // test QSettings::format() while we're at it
-        QVERIFY(settings.format() == format);
-        QVERIFY(settings2.format() == format);
+        QCOMPARE(settings.format(), format);
+        QCOMPARE(settings2.format(), format);
 
         // test QSettings::scope() while we're at it
-        QVERIFY(settings.scope() == QSettings::UserScope);
-        QVERIFY(settings2.scope() == QSettings::UserScope);
+        QCOMPARE(settings.scope(), QSettings::UserScope);
+        QCOMPARE(settings2.scope(), QSettings::UserScope);
 
         // test QSettings::organizationName() while we're at it
         QVERIFY(settings.organizationName().isEmpty());
-        QVERIFY(settings2.organizationName() == "software.org");
+        QCOMPARE(settings2.organizationName(), QLatin1String("software.org"));
 
         // test QSettings::applicationName() while we're at it
         QVERIFY(settings.applicationName().isEmpty());
-        QVERIFY(settings2.applicationName() == "KillerAPP");
+        QCOMPARE(settings2.applicationName(), QLatin1String("KillerAPP"));
     }
 }
 
@@ -1533,7 +1533,7 @@ void tst_QSettings::contains()
     }
 
     settings1.endGroup();
-    QVERIFY(settings1.group() == "alpha");
+    QCOMPARE(settings1.group(), QLatin1String("alpha"));
     keys = settings1.allKeys();
     QCOMPARE(keys.size(), expectedResult.size() + 3);
     for (i = 0; i < keys.size(); ++i) {
@@ -1825,26 +1825,26 @@ void tst_QSettings::testUpdateRequestEvent()
 
     QSettings settings1("foo", QSettings::IniFormat);
     QVERIFY(!QFile::exists("foo"));
-    QVERIFY(QFileInfo("foo").size() == 0);
+    QCOMPARE(QFileInfo("foo").size(), qint64(0));
     settings1.setValue("key1", 1);
-    QVERIFY(QFileInfo("foo").size() == 0);
+    QCOMPARE(QFileInfo("foo").size(), qint64(0));
 
     QTRY_VERIFY(QFileInfo("foo").size() > 0);
 
     settings1.remove("key1");
     QVERIFY(QFileInfo("foo").size() > 0);
 
-    QTRY_VERIFY(QFileInfo("foo").size() == 0);
+    QTRY_COMPARE(QFileInfo("foo").size(), qint64(0));
 
     settings1.setValue("key2", 2);
-    QVERIFY(QFileInfo("foo").size() == 0);
+    QCOMPARE(QFileInfo("foo").size(), qint64(0));
 
     QTRY_VERIFY(QFileInfo("foo").size() > 0);
 
     settings1.clear();
     QVERIFY(QFileInfo("foo").size() > 0);
 
-    QTRY_VERIFY(QFileInfo("foo").size() == 0);
+    QTRY_COMPARE(QFileInfo("foo").size(), qint64(0));
 
 #ifdef Q_OS_WINRT
     QDir::setCurrent(oldCur);
@@ -1991,7 +1991,7 @@ void tst_QSettings::testEmptyData()
         settings.setValue("vList", vList);
         settings.setValue("vList2", vList2);
         settings.setValue("vList3", vList3);
-        QVERIFY(settings.status() == QSettings::NoError);
+        QCOMPARE(settings.status(), QSettings::NoError);
     }
     {
         QSettings settings(filename, QSettings::IniFormat);
@@ -2004,7 +2004,7 @@ void tst_QSettings::testEmptyData()
         QCOMPARE(settings.value("vList").toList(), vList);
         QCOMPARE(settings.value("vList2").toList(), vList2);
         QCOMPARE(settings.value("vList3").toList(), vList3);
-        QVERIFY(settings.status() == QSettings::NoError);
+        QCOMPARE(settings.status(), QSettings::NoError);
     }
 
     {
@@ -2018,7 +2018,7 @@ void tst_QSettings::testEmptyData()
         settings.setValue("vList", vList);
         settings.setValue("vList2", vList2);
         settings.setValue("vList3", vList3);
-        QVERIFY(settings.status() == QSettings::NoError);
+        QCOMPARE(settings.status(), QSettings::NoError);
     }
     {
         QSettings settings("QtProject", "tst_qsettings");
@@ -2031,7 +2031,7 @@ void tst_QSettings::testEmptyData()
         QCOMPARE(settings.value("vList").toList(), vList);
         QCOMPARE(settings.value("vList2").toList(), vList2);
         QCOMPARE(settings.value("vList3").toList(), vList3);
-        QVERIFY(settings.status() == QSettings::NoError);
+        QCOMPARE(settings.status(), QSettings::NoError);
     }
     QFile::remove(filename);
 }
@@ -2049,17 +2049,17 @@ void tst_QSettings::testEmptyKey()
 void tst_QSettings::testResourceFiles()
 {
     QSettings settings(":/resourcefile.ini", QSettings::IniFormat);
-    QVERIFY(settings.status() == QSettings::NoError);
+    QCOMPARE(settings.status(), QSettings::NoError);
     QVERIFY(!settings.isWritable());
     QCOMPARE(settings.value("Field 1/Bottom").toInt(), 89);
     settings.setValue("Field 1/Bottom", 90);
 
     // the next two lines check the statu quo; another behavior would be possible
-    QVERIFY(settings.status() == QSettings::NoError);
+    QCOMPARE(settings.status(), QSettings::NoError);
     QCOMPARE(settings.value("Field 1/Bottom").toInt(), 90);
 
     settings.sync();
-    QVERIFY(settings.status() == QSettings::AccessError);
+    QCOMPARE(settings.status(), QSettings::AccessError);
     QCOMPARE(settings.value("Field 1/Bottom").toInt(), 90);
 }
 
@@ -3164,7 +3164,7 @@ void tst_QSettings::registerFormat()
     // so we can test error handling
 
     QSettings::Format custom3 = QSettings::registerFormat("custom3", readCustom3File, writeCustom3File);
-    QVERIFY(custom3 == QSettings::CustomFormat3);
+    QCOMPARE(custom3, QSettings::CustomFormat3);
 
     QDir dir(settingsPath());
     QVERIFY(dir.mkpath("someDir"));
@@ -3256,23 +3256,23 @@ void tst_QSettings::setPath()
 
 void tst_QSettings::setDefaultFormat()
 {
-    QVERIFY(QSettings::defaultFormat() == QSettings::NativeFormat);
+    QCOMPARE(QSettings::defaultFormat(), QSettings::NativeFormat);
 
     QSettings::setDefaultFormat(QSettings::CustomFormat1);
     QSettings settings1("org", "app");
     QSettings settings2(QSettings::SystemScope, "org", "app");
     QSettings settings3;
 
-    QVERIFY(settings1.format() == QSettings::NativeFormat);
-    QVERIFY(settings2.format() == QSettings::NativeFormat);
-    QVERIFY(settings3.format() == QSettings::CustomFormat1);
+    QCOMPARE(settings1.format(), QSettings::NativeFormat);
+    QCOMPARE(settings2.format(), QSettings::NativeFormat);
+    QCOMPARE(settings3.format(), QSettings::CustomFormat1);
 
     QSettings::setDefaultFormat(QSettings::NativeFormat);
-    QVERIFY(QSettings::defaultFormat() == QSettings::NativeFormat);
+    QCOMPARE(QSettings::defaultFormat(), QSettings::NativeFormat);
 
-    QVERIFY(settings1.format() == QSettings::NativeFormat);
-    QVERIFY(settings2.format() == QSettings::NativeFormat);
-    QVERIFY(settings3.format() == QSettings::CustomFormat1);
+    QCOMPARE(settings1.format(), QSettings::NativeFormat);
+    QCOMPARE(settings2.format(), QSettings::NativeFormat);
+    QCOMPARE(settings3.format(), QSettings::CustomFormat1);
 }
 
 void tst_QSettings::dontCreateNeedlessPaths()
@@ -3333,7 +3333,7 @@ void tst_QSettings::dontReorderIniKeysNeedlessly()
     outFile.close();
 
     QSettings settings(outFileName, QSettings::IniFormat);
-    QVERIFY(settings.status() == QSettings::NoError);
+    QCOMPARE(settings.status(), QSettings::NoError);
     QVERIFY(settings.isWritable());
 
     settings.setValue("Field 1/Bottom", 90);

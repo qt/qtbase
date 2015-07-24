@@ -111,25 +111,25 @@ void tst_QIdentityProxyModel::verifyIdentity(QAbstractItemModel *model, const QM
     const int columns = model->columnCount(parent);
     const QModelIndex proxyParent = m_proxy->mapFromSource(parent);
 
-    QVERIFY(m_proxy->mapToSource(proxyParent) == parent);
-    QVERIFY(rows == m_proxy->rowCount(proxyParent));
-    QVERIFY(columns == m_proxy->columnCount(proxyParent));
+    QCOMPARE(m_proxy->mapToSource(proxyParent), parent);
+    QCOMPARE(rows, m_proxy->rowCount(proxyParent));
+    QCOMPARE(columns, m_proxy->columnCount(proxyParent));
 
     for (int row = 0; row < rows; ++row) {
         for (int column = 0; column < columns; ++column) {
             const QModelIndex idx = model->index(row, column, parent);
             const QModelIndex proxyIdx = m_proxy->mapFromSource(idx);
-            QVERIFY(proxyIdx.model() == m_proxy);
-            QVERIFY(m_proxy->mapToSource(proxyIdx) == idx);
+            QCOMPARE(proxyIdx.model(), m_proxy);
+            QCOMPARE(m_proxy->mapToSource(proxyIdx), idx);
             QVERIFY(proxyIdx.isValid());
-            QVERIFY(proxyIdx.row() == row);
-            QVERIFY(proxyIdx.column() == column);
-            QVERIFY(proxyIdx.parent() == proxyParent);
-            QVERIFY(proxyIdx.data() == idx.data());
-            QVERIFY(proxyIdx.flags() == idx.flags());
+            QCOMPARE(proxyIdx.row(), row);
+            QCOMPARE(proxyIdx.column(), column);
+            QCOMPARE(proxyIdx.parent(), proxyParent);
+            QCOMPARE(proxyIdx.data(), idx.data());
+            QCOMPARE(proxyIdx.flags(), idx.flags());
             const int childCount = m_proxy->rowCount(proxyIdx);
             const bool hasChildren = m_proxy->hasChildren(proxyIdx);
-            QVERIFY(model->hasChildren(idx) == hasChildren);
+            QCOMPARE(model->hasChildren(idx), hasChildren);
             QVERIFY((childCount > 0) == hasChildren);
 
             if (hasChildren)
@@ -171,13 +171,13 @@ void tst_QIdentityProxyModel::insertRows()
     QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
     QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
 
-    QVERIFY(modelBeforeSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelBeforeSpy.first().at(1) == proxyBeforeSpy.first().at(1));
-    QVERIFY(modelBeforeSpy.first().at(2) == proxyBeforeSpy.first().at(2));
+    QCOMPARE(modelBeforeSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(1), proxyBeforeSpy.first().at(1));
+    QCOMPARE(modelBeforeSpy.first().at(2), proxyBeforeSpy.first().at(2));
 
-    QVERIFY(modelAfterSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelAfterSpy.first().at(1) == proxyAfterSpy.first().at(1));
-    QVERIFY(modelAfterSpy.first().at(2) == proxyAfterSpy.first().at(2));
+    QCOMPARE(modelAfterSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(1), proxyAfterSpy.first().at(1));
+    QCOMPARE(modelAfterSpy.first().at(2), proxyAfterSpy.first().at(2));
 
     verifyIdentity(m_model);
 }
@@ -216,13 +216,13 @@ void tst_QIdentityProxyModel::removeRows()
     QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
     QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
 
-    QVERIFY(modelBeforeSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelBeforeSpy.first().at(1) == proxyBeforeSpy.first().at(1));
-    QVERIFY(modelBeforeSpy.first().at(2) == proxyBeforeSpy.first().at(2));
+    QCOMPARE(modelBeforeSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(1), proxyBeforeSpy.first().at(1));
+    QCOMPARE(modelBeforeSpy.first().at(2), proxyBeforeSpy.first().at(2));
 
-    QVERIFY(modelAfterSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelAfterSpy.first().at(1) == proxyAfterSpy.first().at(1));
-    QVERIFY(modelAfterSpy.first().at(2) == proxyAfterSpy.first().at(2));
+    QCOMPARE(modelAfterSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(1), proxyAfterSpy.first().at(1));
+    QCOMPARE(modelAfterSpy.first().at(2), proxyAfterSpy.first().at(2));
 
     verifyIdentity(m_model);
 }
@@ -271,17 +271,17 @@ void tst_QIdentityProxyModel::moveRows()
     QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
     QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
 
-    QVERIFY(modelBeforeSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelBeforeSpy.first().at(1) == proxyBeforeSpy.first().at(1));
-    QVERIFY(modelBeforeSpy.first().at(2) == proxyBeforeSpy.first().at(2));
-    QVERIFY(modelBeforeSpy.first().at(3).value<QModelIndex>() == m_proxy->mapToSource(proxyBeforeSpy.first().at(3).value<QModelIndex>()));
-    QVERIFY(modelBeforeSpy.first().at(4) == proxyBeforeSpy.first().at(4));
+    QCOMPARE(modelBeforeSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(1), proxyBeforeSpy.first().at(1));
+    QCOMPARE(modelBeforeSpy.first().at(2), proxyBeforeSpy.first().at(2));
+    QCOMPARE(modelBeforeSpy.first().at(3).value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().at(3).value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(4), proxyBeforeSpy.first().at(4));
 
-    QVERIFY(modelAfterSpy.first().first().value<QModelIndex>() == m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
-    QVERIFY(modelAfterSpy.first().at(1) == proxyAfterSpy.first().at(1));
-    QVERIFY(modelAfterSpy.first().at(2) == proxyAfterSpy.first().at(2));
-    QVERIFY(modelAfterSpy.first().at(3).value<QModelIndex>() == m_proxy->mapToSource(proxyAfterSpy.first().at(3).value<QModelIndex>()));
-    QVERIFY(modelAfterSpy.first().at(4) == proxyAfterSpy.first().at(4));
+    QCOMPARE(modelAfterSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(1), proxyAfterSpy.first().at(1));
+    QCOMPARE(modelAfterSpy.first().at(2), proxyAfterSpy.first().at(2));
+    QCOMPARE(modelAfterSpy.first().at(3).value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().at(3).value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(4), proxyAfterSpy.first().at(4));
 
     verifyIdentity(&model);
 
@@ -352,7 +352,7 @@ void tst_QIdentityProxyModel::dataChanged()
     model.changeData();
 
     QCOMPARE(modelSpy.first().at(2).value<QVector<int> >(), QVector<int>() << 1);
-    QVERIFY(modelSpy.first().at(2) == proxySpy.first().at(2));
+    QCOMPARE(modelSpy.first().at(2), proxySpy.first().at(2));
 
     verifyIdentity(&model);
     m_proxy->setSourceModel(0);

@@ -369,7 +369,7 @@ void tst_QPropertyAnimation::deletion2()
     QTimer::singleShot(0, object, SLOT(deleteLater()));
     QTest::qWait(50);
 
-    QVERIFY(anim->targetObject() == 0);
+    QVERIFY(!anim->targetObject());
 }
 
 void tst_QPropertyAnimation::deletion3()

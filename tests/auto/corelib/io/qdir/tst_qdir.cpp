@@ -611,7 +611,7 @@ void tst_QDir::compare()
     dir.makeAbsolute();
     QVERIFY(dir == QDir::currentPath());
 
-    QVERIFY(QDir() == QDir(QDir::currentPath()));
+    QCOMPARE(QDir(), QDir(QDir::currentPath()));
     QVERIFY(QDir("../") == QDir(QDir::currentPath() + "/.."));
 }
 
@@ -1041,7 +1041,7 @@ void tst_QDir::current()
     if (!path.isEmpty()) {
         bool b = QDir::setCurrent(path);
         // If path is non existent, then setCurrent should be false (currentDir is empty in testData)
-        QVERIFY(b == !currentDir.isEmpty());
+        QCOMPARE(b, !currentDir.isEmpty());
     }
     if (!currentDir.isEmpty()) {
         QDir newCurrent = QDir::current();
@@ -1678,7 +1678,7 @@ void tst_QDir::searchPaths()
         QDir::setSearchPaths(searchPathPrefixList.at(i), searchPathsList.at(i).split(","));
     }
     for (int i = 0; i < searchPathPrefixList.count(); ++i) {
-        QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)) == searchPathsList.at(i).split(","));
+        QCOMPARE(QDir::searchPaths(searchPathPrefixList.at(i)), searchPathsList.at(i).split(","));
     }
 
     QCOMPARE(QFile(filename).exists(), exists);
@@ -1701,7 +1701,7 @@ void tst_QDir::searchPaths()
         }
     }
     for (int i = 0; i < searchPathPrefixList.count(); ++i) {
-        QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)) == searchPathsList.at(i).split(","));
+        QCOMPARE(QDir::searchPaths(searchPathPrefixList.at(i)), searchPathsList.at(i).split(","));
     }
 
     QCOMPARE(QFile(filename).exists(), exists);

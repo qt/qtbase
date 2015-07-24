@@ -491,7 +491,7 @@ void tst_QParallelAnimationGroup::deleteChildrenWithRunningGroup()
     QVERIFY(group.currentLoopTime() > 0);
 
     delete anim1;
-    QVERIFY(group.animationCount() == 0);
+    QCOMPARE(group.animationCount(), 0);
     QCOMPARE(group.duration(), 0);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     QCOMPARE(group.currentLoopTime(), 0); //that's the invariant

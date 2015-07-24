@@ -97,16 +97,16 @@ void tst_QSignalMapper::mapped()
     connect(&mapper, SIGNAL(mapped(QString)), &target, SLOT(myslot(QString)));
 
     src1.emit_mysignal(20);
-    QVERIFY(target.id == 1);
+    QCOMPARE(target.id, 1);
     QVERIFY(target.str.isEmpty());
 
     src2.emit_mysignal(20);
-    QVERIFY(target.id == 2);
-    QVERIFY(target.str == "two");
+    QCOMPARE(target.id, 2);
+    QCOMPARE(target.str, QLatin1String("two"));
 
     src3.emit_mysignal(20);
-    QVERIFY(target.id == 2);
-    QVERIFY(target.str == "three");
+    QCOMPARE(target.id, 2);
+    QCOMPARE(target.str, QLatin1String("three"));
 }
 
 QTEST_MAIN(tst_QSignalMapper)

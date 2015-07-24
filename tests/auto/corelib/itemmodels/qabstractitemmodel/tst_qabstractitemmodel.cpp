@@ -1699,8 +1699,8 @@ void tst_QAbstractItemModel::testMoveToDescendants()
             moveCommand->setDestRow(row);
             moveCommand->doCommand();
 
-            QVERIFY(beforeSpy.size() == 0);
-            QVERIFY(afterSpy.size() == 0);
+            QCOMPARE(beforeSpy.size(), 0);
+            QCOMPARE(afterSpy.size(), 0);
         }
     }
 }
@@ -1757,8 +1757,8 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange()
     moveCommand->setDestRow(destRow);
     moveCommand->doCommand();
 
-    QVERIFY(beforeSpy.size() == 0);
-    QVERIFY(afterSpy.size() == 0);
+    QCOMPARE(beforeSpy.size(), 0);
+    QCOMPARE(afterSpy.size(), 0);
 }
 
 class ListenerObject : public QObject
@@ -1823,7 +1823,7 @@ void ListenerObject::slotAboutToBeReset()
     // Nothing has been changed yet. All indexes should be the same.
     for (int i = 0; i < m_persistentIndexes.size(); ++i) {
         QModelIndex idx = m_persistentIndexes.at(i);
-        QVERIFY(idx == m_nonPersistentIndexes.at(i));
+        QCOMPARE(idx, m_nonPersistentIndexes.at(i));
         QVERIFY(m_model->mapToSource(idx).isValid());
     }
 }
@@ -1859,13 +1859,13 @@ void tst_QAbstractItemModel::testReset()
     resetCommand->doCommand();
 
     // Verify that the correct signals were emitted
-    QVERIFY(beforeResetSpy.size() == 1);
-    QVERIFY(afterResetSpy.size() == 1);
+    QCOMPARE(beforeResetSpy.size(), 1);
+    QCOMPARE(afterResetSpy.size(), 1);
 
     // Verify that the move actually happened.
-    QVERIFY(m_model->rowCount() == 9);
+    QCOMPARE(m_model->rowCount(), 9);
     QModelIndex destIndex = m_model->index(4, 0);
-    QVERIFY(m_model->rowCount(destIndex) == 11);
+    QCOMPARE(m_model->rowCount(destIndex), 11);
 
     // Delete it because its slots test things which are not true after this point.
     delete listener;
@@ -1877,14 +1877,14 @@ void tst_QAbstractItemModel::testReset()
     QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
 
     nullProxy->setSourceModel(new ModelWithCustomRole(this));
-    QVERIFY(proxyBeforeResetSpy.size() == 1);
-    QVERIFY(proxyAfterResetSpy.size() == 1);
+    QCOMPARE(proxyBeforeResetSpy.size(), 1);
+    QCOMPARE(proxyAfterResetSpy.size(), 1);
 
     QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray("custom"));
 
     nullProxy->setSourceModel(m_model);
-    QVERIFY(proxyBeforeResetSpy.size() == 2);
-    QVERIFY(proxyAfterResetSpy.size() == 2);
+    QCOMPARE(proxyBeforeResetSpy.size(), 2);
+    QCOMPARE(proxyAfterResetSpy.size(), 2);
 
     // After being reset the proxy must be queried again.
     QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
@@ -2055,10 +2055,10 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
         QVERIFY(afterParents.contains(p2));
 
         // The first will be the last, and the lest will be the first.
-        QVERIFY(p1FirstPersistent.row() == 1);
-        QVERIFY(p1LastPersistent.row() == 0);
-        QVERIFY(p2FirstPersistent.row() == 9);
-        QVERIFY(p2LastPersistent.row() == 8);
+        QCOMPARE(p1FirstPersistent.row(), 1);
+        QCOMPARE(p1LastPersistent.row(), 0);
+        QCOMPARE(p2FirstPersistent.row(), 9);
+        QCOMPARE(p2LastPersistent.row(), 8);
     }
 
     insertCommand = new ModelInsertCommand(&model, this);
@@ -2115,8 +2115,8 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
         QCOMPARE(beforeSignal.size(), 2);
         QCOMPARE(afterSignal.size(), 2);
 
-        QVERIFY(p1FirstPersistent.row() == 1);
-        QVERIFY(p1LastPersistent.row() == 0);
+        QCOMPARE(p1FirstPersistent.row(), 1);
+        QCOMPARE(p1LastPersistent.row(), 0);
         QCOMPARE(p2FirstPersistent.row(), 9);
         QCOMPARE(p2LastPersistent.row(), 8);
     }
