@@ -5,6 +5,7 @@ PLUGIN_CLASS_NAME = QGifPlugin
 load(qt_plugin)
 
 include(../../../gui/image/qgifhandler.pri)
+INCLUDEPATH += ../../../gui/image
 SOURCES += $$PWD/main.cpp
 HEADERS += $$PWD/main.h
 OTHER_FILES += gif.json

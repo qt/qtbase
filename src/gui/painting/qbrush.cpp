@@ -35,7 +35,7 @@
 #include "qpixmap.h"
 #include "qbitmap.h"
 #include "qpixmapcache.h"
-#include "qplatformpixmap.h"
+#include <qpa/qplatformpixmap.h>
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qline.h"
