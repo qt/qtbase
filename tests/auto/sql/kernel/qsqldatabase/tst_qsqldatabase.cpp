@@ -1569,11 +1569,11 @@ void tst_QSqlDatabase::ibase_numericFields()
         QCOMPARE(q.value(2).toString(), QString("%1").arg(num2));
         QCOMPARE(QString("%1").arg(q.value(3).toDouble()), QString("%1").arg(num3));
         QCOMPARE(QString("%1").arg(q.value(4).toDouble()), QString("%1").arg(num4));
-        QVERIFY(q.value(0).type() == QVariant::Int);
-        QVERIFY(q.value(1).type() == QVariant::Double);
-        QVERIFY(q.value(2).type() == QVariant::Double);
-        QVERIFY(q.value(3).type() == QVariant::Double);
-        QVERIFY(q.value(4).type() == QVariant::Double);
+        QCOMPARE(q.value(0).type(), QVariant::Int);
+        QCOMPARE(q.value(1).type(), QVariant::Double);
+        QCOMPARE(q.value(2).type(), QVariant::Double);
+        QCOMPARE(q.value(3).type(), QVariant::Double);
+        QCOMPARE(q.value(4).type(), QVariant::Double);
 
         QCOMPARE(q.record().field(1).length(), 2);
         QCOMPARE(q.record().field(1).precision(), 1);
@@ -1583,16 +1583,16 @@ void tst_QSqlDatabase::ibase_numericFields()
         QCOMPARE(q.record().field(3).precision(), 3);
         QCOMPARE(q.record().field(4).length(), 18);
         QCOMPARE(q.record().field(4).precision(), 4);
-        QVERIFY(q.record().field(0).requiredStatus() == QSqlField::Required);
-        QVERIFY(q.record().field(1).requiredStatus() == QSqlField::Optional);
+        QCOMPARE(q.record().field(0).requiredStatus(), QSqlField::Required);
+        QCOMPARE(q.record().field(1).requiredStatus(), QSqlField::Optional);
     }
 
     QSqlRecord r = db.record(tableName);
-    QVERIFY(r.field(0).type() == QVariant::Int);
-    QVERIFY(r.field(1).type() == QVariant::Double);
-    QVERIFY(r.field(2).type() == QVariant::Double);
-    QVERIFY(r.field(3).type() == QVariant::Double);
-    QVERIFY(r.field(4).type() == QVariant::Double);
+    QCOMPARE(r.field(0).type(), QVariant::Int);
+    QCOMPARE(r.field(1).type(), QVariant::Double);
+    QCOMPARE(r.field(2).type(), QVariant::Double);
+    QCOMPARE(r.field(3).type(), QVariant::Double);
+    QCOMPARE(r.field(4).type(), QVariant::Double);
     QCOMPARE(r.field(1).length(), 2);
     QCOMPARE(r.field(1).precision(), 1);
     QCOMPARE(r.field(2).length(), 5);
@@ -1601,8 +1601,8 @@ void tst_QSqlDatabase::ibase_numericFields()
     QCOMPARE(r.field(3).precision(), 3);
     QCOMPARE(r.field(4).length(), 18);
     QCOMPARE(r.field(4).precision(), 4);
-    QVERIFY(r.field(0).requiredStatus() == QSqlField::Required);
-    QVERIFY(r.field(1).requiredStatus() == QSqlField::Optional);
+    QCOMPARE(r.field(0).requiredStatus(), QSqlField::Required);
+    QCOMPARE(r.field(1).requiredStatus(), QSqlField::Optional);
 }
 
 void tst_QSqlDatabase::ibase_fetchBlobs()
@@ -2086,7 +2086,7 @@ void tst_QSqlDatabase::eventNotificationIBase()
 
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toString() == procedureName);
+    QCOMPARE(arguments.at(0).toString(), procedureName);
     QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
     q.exec(QString("DROP PROCEDURE %1").arg(procedureName));
 }

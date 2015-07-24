@@ -858,7 +858,7 @@ static void testRevert(QSqlRelationalTableModel &model)
 
     /* Now revert the newly inserted rows */
     model.revertAll();
-    QVERIFY(model.rowCount() == initialRowCount);
+    QCOMPARE(model.rowCount(), initialRowCount);
 
     /* Insert rows again */
     QVERIFY(model.insertRows(4, 4));
@@ -1051,20 +1051,20 @@ void tst_QSqlRelationalTableModel::relationModel()
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
 
-    QVERIFY(model.relationModel(0) == NULL);
-    QVERIFY(model.relationModel(1) == NULL);
+    QVERIFY(!model.relationModel(0));
+    QVERIFY(!model.relationModel(1));
     QVERIFY(model.relationModel(2) != NULL);
-    QVERIFY(model.relationModel(3) == NULL);
-    QVERIFY(model.relationModel(4) == NULL);
+    QVERIFY(!model.relationModel(3));
+    QVERIFY(!model.relationModel(4));
 
     model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
     QVERIFY_SQL(model, select());
 
-    QVERIFY(model.relationModel(0) == NULL);
-    QVERIFY(model.relationModel(1) == NULL);
+    QVERIFY(!model.relationModel(0));
+    QVERIFY(!model.relationModel(1));
     QVERIFY(model.relationModel(2) != NULL);
     QVERIFY(model.relationModel(3) != NULL);
-    QVERIFY(model.relationModel(4) == NULL);
+    QVERIFY(!model.relationModel(4));
 
     QSqlTableModel *rel_model = model.relationModel(2);
     QCOMPARE(rel_model->data(rel_model->index(0,1)).toString(), QString("herr"));
@@ -1073,11 +1073,11 @@ void tst_QSqlRelationalTableModel::relationModel()
     model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
     QVERIFY_SQL(model, select());
 
-    QVERIFY(model.relationModel(0) == NULL);
-    QVERIFY(model.relationModel(1) == NULL);
+    QVERIFY(!model.relationModel(0));
+    QVERIFY(!model.relationModel(1));
     QVERIFY(model.relationModel(2) != NULL);
     QVERIFY(model.relationModel(3) != NULL);
-    QVERIFY(model.relationModel(4) == NULL);
+    QVERIFY(!model.relationModel(4));
 
     QSqlTableModel *rel_model2 = model.relationModel(2);
     QCOMPARE(rel_model2->data(rel_model->index(0,1)).toString(), QString("herr"));
@@ -1487,13 +1487,13 @@ void tst_QSqlRelationalTableModel::selectAfterUpdate()
     model.setTable(reltest1);
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     QVERIFY_SQL(model, select());
-    QVERIFY(model.relationModel(2)->rowCount() == 2);
+    QCOMPARE(model.relationModel(2)->rowCount(), 2);
     {
         QSqlQuery q(db);
         QVERIFY_SQL(q, exec("insert into " + reltest2 + " values(3, 'mrs')"));
         model.relationModel(2)->select();
     }
-    QVERIFY(model.relationModel(2)->rowCount() == 3);
+    QCOMPARE(model.relationModel(2)->rowCount(), 3);
     QVERIFY(model.setData(model.index(0,2), 3));
     QVERIFY(model.submitAll());
     QCOMPARE(model.data(model.index(0,2)), QVariant("mrs"));

@@ -160,7 +160,7 @@ void tst_QSqlError::operators()
    error2.setType(QSqlError::NoError);
    error3.setType(QSqlError::UnknownError);
 
-   QVERIFY(error1 == error2);
+   QCOMPARE(error1, error2);
    QVERIFY(error1 != error3);
 }
 
