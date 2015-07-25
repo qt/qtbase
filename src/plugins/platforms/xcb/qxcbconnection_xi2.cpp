@@ -457,17 +457,6 @@ static inline qreal fixed1616ToReal(FP1616 val)
 }
 #endif // defined(XCB_USE_XINPUT21) || !defined(QT_NO_TABLETEVENT)
 
-#if defined(XCB_USE_XINPUT21)
-static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
-{
-    if (value > vci->max)
-        value = vci->max;
-    if (value < vci->min)
-        value = vci->min;
-    return (value - vci->min) / (vci->max - vci->min);
-}
-#endif // XCB_USE_XINPUT21
-
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     if (xi2PrepareXIGenericDeviceEvent(event, m_xiOpCode)) {
@@ -480,9 +469,11 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         case XI_ButtonPress:
         case XI_ButtonRelease:
         case XI_Motion:
+#ifdef XCB_USE_XINPUT22
         case XI_TouchBegin:
         case XI_TouchUpdate:
         case XI_TouchEnd:
+#endif
         {
             xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
             eventListener = windowEventListenerFromId(xiDeviceEvent->event);
@@ -547,6 +538,15 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 }
 
 #ifdef XCB_USE_XINPUT22
+static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
+{
+    if (value > vci->max)
+        value = vci->max;
+    if (value < vci->min)
+        value = vci->min;
+    return (value - vci->min) / (vci->max - vci->min);
+}
+
 void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow)
 {
     xXIDeviceEvent *xiDeviceEvent = static_cast<xXIDeviceEvent *>(xiDevEvent);
@@ -976,6 +976,8 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
     // the pen on the XI 2.2+ path.
     if (xi2MouseEvents() && eventListener)
         eventListener->handleXIMouseEvent(reinterpret_cast<xcb_ge_event_t *>(event));
+#else
+    Q_UNUSED(eventListener);
 #endif
 
     switch (xiEvent->evtype) {
