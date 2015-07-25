@@ -69,6 +69,19 @@ public:
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
                    const QByteArray &mask, QString *errorString);
 
+    void swap(QMimeMagicRule &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_type,          other.m_type);
+        qSwap(m_value,         other.m_value);
+        qSwap(m_startPos,      other.m_startPos);
+        qSwap(m_endPos,        other.m_endPos);
+        qSwap(m_mask,          other.m_mask);
+        qSwap(m_pattern,       other.m_pattern);
+        qSwap(m_number,        other.m_number);
+        qSwap(m_numberMask,    other.m_numberMask);
+        qSwap(m_matchFunction, other.m_matchFunction);
+    }
+
     bool operator==(const QMimeMagicRule &other) const;
 
     Type type() const { return m_type; }
@@ -108,7 +121,7 @@ private:
     template <typename T>
     bool matchNumber(const QByteArray &data) const;
 };
-Q_DECLARE_TYPEINFO(QMimeMagicRule, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QMimeMagicRule)
 
 QT_END_NAMESPACE
 
