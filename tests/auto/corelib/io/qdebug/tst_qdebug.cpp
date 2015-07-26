@@ -625,5 +625,14 @@ void tst_QDebug::threadSafety() const
     }
 }
 
+// Should compile: instentiation of unrelated operator<< should not cause cause compilation
+// error in QDebug operators (QTBUG-47375)
+class TestClassA {};
+class TestClassB {};
+
+template <typename T>
+TestClassA& operator<< (TestClassA& s, T&) { return s; };
+template<> TestClassA& operator<< <TestClassB>(TestClassA& s, TestClassB& l);
+
 QTEST_MAIN(tst_QDebug);
 #include "tst_qdebug.moc"
