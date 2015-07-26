@@ -283,13 +283,30 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         selected_mode,
         false,
         drmModeGetCrtc(m_dri_fd, crtc_id),
-        modes
+        modes,
+        connectorProperty(connector, QByteArrayLiteral("DPMS"))
     };
 
     m_crtc_allocator |= (1 << output.crtc_id);
     m_connector_allocator |= (1 << output.connector_id);
 
     return new QEglFSKmsScreen(m_integration, this, output, pos);
+}
+
+drmModePropertyPtr QEglFSKmsDevice::connectorProperty(drmModeConnectorPtr connector, const QByteArray &name)
+{
+    drmModePropertyPtr prop;
+
+    for (int i = 0; i < connector->count_props; i++) {
+        prop = drmModeGetProperty(m_dri_fd, connector->props[i]);
+        if (!prop)
+            continue;
+        if (strcmp(prop->name, name.constData()) == 0)
+            return prop;
+        drmModeFreeProperty(prop);
+    }
+
+    return Q_NULLPTR;
 }
 
 void QEglFSKmsDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)

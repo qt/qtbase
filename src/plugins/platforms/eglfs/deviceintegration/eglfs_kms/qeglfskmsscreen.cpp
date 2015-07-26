@@ -119,6 +119,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
     , m_output(output)
     , m_pos(position)
     , m_cursor(Q_NULLPTR)
+    , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
     m_siblings << this;
@@ -126,6 +127,10 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
 {
+    if (m_output.dpms_prop) {
+        drmModeFreeProperty(m_output.dpms_prop);
+        m_output.dpms_prop = Q_NULLPTR;
+    }
     restoreMode();
     if (m_output.saved_crtc) {
         drmModeFreeCrtc(m_output.saved_crtc);
@@ -266,10 +271,12 @@ void QEglFSKmsScreen::flip()
                                  &m_output.connector_id, 1,
                                  &m_output.modes[m_output.mode]);
 
-        if (ret)
+        if (ret) {
             qErrnoWarning("Could not set DRM mode!");
-        else
+        } else {
             m_output.mode_set = true;
+            setPowerState(PowerStateOn);
+        }
     }
 
     int ret = drmModePageFlip(m_device->fd(),
@@ -312,6 +319,21 @@ qreal QEglFSKmsScreen::refreshRate() const
 {
     quint32 refresh = m_output.modes[m_output.mode].vrefresh;
     return refresh > 0 ? refresh : 60;
+}
+
+QPlatformScreen::PowerState QEglFSKmsScreen::powerState() const
+{
+    return m_powerState;
+}
+
+void QEglFSKmsScreen::setPowerState(QPlatformScreen::PowerState state)
+{
+    if (!m_output.dpms_prop)
+        return;
+
+    drmModeConnectorSetProperty(m_device->fd(), m_output.connector_id,
+                                m_output.dpms_prop->prop_id, (int)state);
+    m_powerState = state;
 }
 
 QT_END_NAMESPACE

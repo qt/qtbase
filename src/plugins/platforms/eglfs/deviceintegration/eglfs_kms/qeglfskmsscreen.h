@@ -60,6 +60,7 @@ struct QEglFSKmsOutput
     bool mode_set;
     drmModeCrtcPtr saved_crtc;
     QList<drmModeModeInfo> modes;
+    drmModePropertyPtr dpms_prop;
 };
 
 class QEglFSKmsScreen : public QEglFSScreen
@@ -103,6 +104,9 @@ public:
     QEglFSKmsOutput &output() { return m_output; }
     void restoreMode();
 
+    QPlatformScreen::PowerState powerState() const Q_DECL_OVERRIDE;
+    void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;
+
 private:
     QEglFSKmsIntegration *m_integration;
     QEglFSKmsDevice *m_device;
@@ -116,6 +120,8 @@ private:
     QScopedPointer<QEglFSKmsCursor> m_cursor;
 
     QList<QPlatformScreen *> m_siblings;
+
+    PowerState m_powerState;
 
     struct FrameBuffer {
         FrameBuffer() : fb(0) {}
