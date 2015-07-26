@@ -420,4 +420,22 @@ QPlatformScreen::SubpixelAntialiasingType QPlatformScreen::subpixelAntialiasingT
     return static_cast<QPlatformScreen::SubpixelAntialiasingType>(type);
 }
 
+/*!
+  Returns the current power state.
+
+  The default implementation always returns PowerStateOn.
+*/
+QPlatformScreen::PowerState QPlatformScreen::powerState() const
+{
+    return PowerStateOn;
+}
+
+/*!
+  Sets the power state for this screen.
+*/
+void QPlatformScreen::setPowerState(PowerState state)
+{
+    Q_UNUSED(state);
+}
+
 QT_END_NAMESPACE

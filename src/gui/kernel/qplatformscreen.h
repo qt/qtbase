@@ -82,6 +82,13 @@ public:
         Subpixel_VBGR
     };
 
+    enum PowerState {
+        PowerStateOn,
+        PowerStateStandby,
+        PowerStateSuspend,
+        PowerStateOff
+    };
+
     QPlatformScreen();
     virtual ~QPlatformScreen();
 
@@ -116,6 +123,9 @@ public:
 
     virtual QPlatformCursor *cursor() const;
     virtual SubpixelAntialiasingType subpixelAntialiasingTypeHint() const;
+
+    virtual PowerState powerState() const;
+    virtual void setPowerState(PowerState state);
 
     static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
     static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
