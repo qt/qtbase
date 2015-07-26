@@ -602,9 +602,32 @@ QTextDocument *QAbstractTextDocumentLayout::document() const
 */
 QString QAbstractTextDocumentLayout::anchorAt(const QPointF& pos) const
 {
+    QTextCharFormat fmt = formatAt(pos).toCharFormat();
+    return fmt.anchorHref();
+}
+
+/*!
+    \since 5.8
+
+    Returns the source of the image at the given position \a pos, or an empty
+    string if no image exists at that point.
+*/
+QString QAbstractTextDocumentLayout::imageAt(const QPointF &pos) const
+{
+    QTextImageFormat fmt = formatAt(pos).toImageFormat();
+    return fmt.name();
+}
+
+/*!
+    \since 5.8
+
+    Returns the text format at the given position \a pos.
+*/
+QTextFormat QAbstractTextDocumentLayout::formatAt(const QPointF &pos) const
+{
     int cursorPos = hitTest(pos, Qt::ExactHit);
     if (cursorPos == -1)
-        return QString();
+        return QTextFormat();
 
     // compensate for preedit in the hit text block
     QTextBlock block = document()->firstBlock();
@@ -623,8 +646,7 @@ QString QAbstractTextDocumentLayout::anchorAt(const QPointF& pos) const
 
     QTextDocumentPrivate *pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
     QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
-    QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);
-    return fmt.anchorHref();
+    return pieceTable->formatCollection()->format(it->format);
 }
 
 /*!

@@ -48,6 +48,8 @@ private slots:
     void getSetCheck();
     void maximumBlockCount();
     void anchorAt();
+    void imageAt();
+    void formatAt();
 };
 
 tst_QAbstractTextDocumentLayout::tst_QAbstractTextDocumentLayout()
@@ -169,6 +171,62 @@ void tst_QAbstractTextDocumentLayout::anchorAt()
     preeditBr = metrics.boundingRect("xx");
     preeditPoint = QPointF(preeditBr.width() + blockStart.x(), (preeditBr.height() / 2) + blockStart.y());
     QCOMPARE(documentLayout->anchorAt(preeditPoint), QString());
+}
+
+void tst_QAbstractTextDocumentLayout::imageAt()
+{
+    QTextDocument doc;
+    doc.setHtml("foo<a href=\"link\"><img src=\"image\" width=\"50\" height=\"50\"/></a>");
+    QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
+    QTextBlock firstBlock = doc.begin();
+    QTextLayout *layout = firstBlock.layout();
+    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+
+    doc.setPageSize(QSizeF(1000, 1000));
+    QFontMetrics metrics(layout->font());
+    QPointF blockStart = documentLayout->blockBoundingRect(firstBlock).topLeft();
+
+    QRect fooBr = metrics.boundingRect("foo");
+    QPointF imagePoint(fooBr.width() + blockStart.x() + 25, blockStart.y() + 25);
+    // imageAt on image returns source
+    QCOMPARE(documentLayout->imageAt(imagePoint), QString("image"));
+    // anchorAt on image returns link
+    QCOMPARE(documentLayout->anchorAt(imagePoint), QString("link"));
+
+    // imageAt on start returns nothing (there's the "foo" text)
+    QPointF fooPoint(fooBr.width() + blockStart.x(), (fooBr.height() / 2) + blockStart.y());
+    QCOMPARE(documentLayout->imageAt(fooPoint), QString());
+}
+
+void tst_QAbstractTextDocumentLayout::formatAt()
+{
+    QTextDocument doc;
+    doc.setHtml("foo<i><a href=\"link\"><img src=\"image\" width=\"50\" height=\"50\"/></a></i>");
+    QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
+    QTextBlock firstBlock = doc.begin();
+    QTextLayout *layout = firstBlock.layout();
+    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+
+    doc.setPageSize(QSizeF(1000, 1000));
+    QFontMetrics metrics(layout->font());
+    QPointF blockStart = documentLayout->blockBoundingRect(firstBlock).topLeft();
+
+    QRect fooBr = metrics.boundingRect("foo");
+    QPointF imagePoint(fooBr.width() + blockStart.x() + 25, blockStart.y() + 25);
+
+    QTextFormat format = documentLayout->formatAt(imagePoint);
+    QVERIFY(format.isCharFormat());
+    QVERIFY(format.toCharFormat().isAnchor());
+    QVERIFY(format.toCharFormat().fontItalic());
+    QVERIFY(format.isImageFormat());
+
+    // move over the unformatted "foo" text)
+    QPointF fooPoint(fooBr.width() + blockStart.x(), (fooBr.height() / 2) + blockStart.y());
+    format = documentLayout->formatAt(fooPoint);
+    QVERIFY(format.isCharFormat());
+    QVERIFY(!format.toCharFormat().isAnchor());
+    QVERIFY(!format.toCharFormat().fontItalic());
+    QVERIFY(!format.isImageFormat());
 }
 
 QTEST_MAIN(tst_QAbstractTextDocumentLayout)

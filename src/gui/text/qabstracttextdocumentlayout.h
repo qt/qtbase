@@ -82,7 +82,10 @@ public:
 
     virtual void draw(QPainter *painter, const PaintContext &context) = 0;
     virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const = 0;
+
     QString anchorAt(const QPointF& pos) const;
+    QString imageAt(const QPointF &pos) const;
+    QTextFormat formatAt(const QPointF &pos) const;
 
     virtual int pageCount() const = 0;
     virtual QSizeF documentSize() const = 0;
