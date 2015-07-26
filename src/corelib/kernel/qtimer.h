@@ -102,12 +102,16 @@ public:
     }
     // singleShot to a functor or function pointer (without context)
     template <typename Func1>
-    static inline void singleShot(int msec, Func1 slot)
+    static inline typename QtPrivate::QEnableIf<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
+                                                !QtPrivate::is_same<const char*, Func1>::value, void>::Type
+            singleShot(int msec, Func1 slot)
     {
         singleShot(msec, msec >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer, Q_NULLPTR, slot);
     }
     template <typename Func1>
-    static inline void singleShot(int msec, Qt::TimerType timerType, Func1 slot)
+    static inline typename QtPrivate::QEnableIf<!QtPrivate::FunctionPointer<Func1>::IsPointerToMemberFunction &&
+                                                !QtPrivate::is_same<const char*, Func1>::value, void>::Type
+            singleShot(int msec, Qt::TimerType timerType, Func1 slot)
     {
         singleShot(msec, timerType, Q_NULLPTR, slot);
     }
