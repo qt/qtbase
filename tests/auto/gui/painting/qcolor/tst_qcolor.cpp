@@ -107,6 +107,7 @@ private slots:
     void premultiply();
     void unpremultiply_sse4();
     void qrgba64();
+    void qrgba64MemoryLayout();
     void qrgba64Premultiply();
     void qrgba64Equivalence();
 
@@ -1493,6 +1494,24 @@ void tst_QColor::qrgba64()
     QCOMPARE(rgb64.red(), quint16(0x1111));
     QCOMPARE(rgb64.blue(), quint16(0x2222));
     QCOMPARE(rgb64.green(), quint16(0x4422));
+}
+
+void tst_QColor::qrgba64MemoryLayout()
+{
+    QRgba64 rgb64 = QRgba64::fromRgba64(0x0123, 0x4567, 0x89ab, 0xcdef);
+    QCOMPARE(rgb64.red(), quint16(0x0123));
+    QCOMPARE(rgb64.green(), quint16(0x4567));
+    QCOMPARE(rgb64.blue(), quint16(0x89ab));
+    QCOMPARE(rgb64.alpha(), quint16(0xcdef));
+
+    // Check in-memory order, so it can be used by things like SSE
+    Q_STATIC_ASSERT(sizeof(QRgba64) == sizeof(quint64));
+    quint16 memory[4];
+    memcpy(memory, &rgb64, sizeof(QRgba64));
+    QCOMPARE(memory[0], quint16(0x0123));
+    QCOMPARE(memory[1], quint16(0x4567));
+    QCOMPARE(memory[2], quint16(0x89ab));
+    QCOMPARE(memory[3], quint16(0xcdef));
 }
 
 void tst_QColor::qrgba64Premultiply()

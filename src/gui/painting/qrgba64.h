@@ -40,35 +40,43 @@
 QT_BEGIN_NAMESPACE
 
 class QRgba64 {
-    struct qrgba_t {
-        quint16 red;
-        quint16 green;
-        quint16 blue;
-        quint16 alpha;
+    quint64 rgba;
+
+    // Make sure that the representation always has the order: red green blue alpha, independent
+    // of byte order. This way, vector operations that assume 4 16-bit values see the correct ones.
+    enum {
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        RedShift = 48,
+        GreenShift = 32,
+        BlueShift = 16,
+        AlphaShift = 0
+#else // little endian:
+        RedShift = 0,
+        GreenShift = 16,
+        BlueShift = 32,
+        AlphaShift = 48
+#endif
     };
 
-    union {
-        struct qrgba_t c;
-        quint64 rgba;
-    };
 public:
     // No constructors are allowed, since this needs to be usable in a union in no-c++11 mode.
     // When c++11 is mandatory, we can add all but a copy constructor.
-    Q_DECL_RELAXED_CONSTEXPR static QRgba64 fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
+    Q_DECL_RELAXED_CONSTEXPR static
+    QRgba64 fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
     {
         QRgba64 rgba64
 #ifdef Q_COMPILER_UNIFORM_INIT
             = {}
 #endif
         ;
-
-        rgba64.c.red = red;
-        rgba64.c.green = green;
-        rgba64.c.blue = blue;
-        rgba64.c.alpha = alpha;
+        rgba64.rgba = quint64(red)   << RedShift
+                    | quint64(green) << GreenShift
+                    | quint64(blue)  << BlueShift
+                    | quint64(alpha) << AlphaShift;
         return rgba64;
     }
-    Q_DECL_RELAXED_CONSTEXPR static QRgba64 fromRgba64(quint64 c)
+    Q_DECL_RELAXED_CONSTEXPR static
+    QRgba64 fromRgba64(quint64 c)
     {
         QRgba64 rgba64
 #ifdef Q_COMPILER_UNIFORM_INIT
@@ -85,42 +93,49 @@ public:
         rgb64.rgba |= rgb64.rgba << 8;
         return rgb64;
     }
-    Q_DECL_RELAXED_CONSTEXPR static QRgba64 fromArgb32(uint rgb)
+    Q_DECL_RELAXED_CONSTEXPR static
+    QRgba64 fromArgb32(uint rgb)
     {
         return fromRgba(rgb >> 16, rgb >> 8, rgb, rgb >> 24);
     }
 
-    Q_DECL_CONSTEXPR bool isOpaque() const { return c.alpha == 0xffff; }
-    Q_DECL_CONSTEXPR bool isTransparent() const { return c.alpha == 0; }
+    Q_DECL_CONSTEXPR bool isOpaque() const
+    {
+        return (rgba & alphaMask()) == alphaMask();
+    }
+    Q_DECL_CONSTEXPR bool isTransparent() const
+    {
+        return (rgba & alphaMask()) == 0;
+    }
 
-    Q_DECL_CONSTEXPR quint16 red()   const { return c.red; }
-    Q_DECL_CONSTEXPR quint16 green() const { return c.green; }
-    Q_DECL_CONSTEXPR quint16 blue()  const { return c.blue; }
-    Q_DECL_CONSTEXPR quint16 alpha() const { return c.alpha; }
-    void setRed(quint16 _red) { c.red = _red; }
-    void setGreen(quint16 _green) { c.green = _green; }
-    void setBlue(quint16 _blue) { c.blue = _blue; }
-    void setAlpha(quint16 _alpha) { c.alpha = _alpha; }
+    Q_DECL_CONSTEXPR quint16 red()   const { return rgba >> RedShift;   }
+    Q_DECL_CONSTEXPR quint16 green() const { return rgba >> GreenShift; }
+    Q_DECL_CONSTEXPR quint16 blue()  const { return rgba >> BlueShift;  }
+    Q_DECL_CONSTEXPR quint16 alpha() const { return rgba >> AlphaShift; }
+    void setRed(quint16 _red)     { *this = fromRgba64(_red, green(), blue(), alpha()); }
+    void setGreen(quint16 _green) { *this = fromRgba64(red(), _green, blue(), alpha()); }
+    void setBlue(quint16 _blue)   { *this = fromRgba64(red(), green(), _blue, alpha()); }
+    void setAlpha(quint16 _alpha) { *this = fromRgba64(red(), green(), blue(), _alpha); }
 
-    Q_DECL_CONSTEXPR quint8 red8()   const { return div_257(c.red); }
-    Q_DECL_CONSTEXPR quint8 green8() const { return div_257(c.green); }
-    Q_DECL_CONSTEXPR quint8 blue8()  const { return div_257(c.blue); }
-    Q_DECL_CONSTEXPR quint8 alpha8() const { return div_257(c.alpha); }
+    Q_DECL_CONSTEXPR quint8 red8()   const { return div_257(red()); }
+    Q_DECL_CONSTEXPR quint8 green8() const { return div_257(green()); }
+    Q_DECL_CONSTEXPR quint8 blue8()  const { return div_257(blue()); }
+    Q_DECL_CONSTEXPR quint8 alpha8() const { return div_257(alpha()); }
     Q_DECL_CONSTEXPR uint toArgb32() const
     {
         return (alpha8() << 24) | (red8() << 16) | (green8() << 8) | blue8();
     }
     Q_DECL_CONSTEXPR ushort toRgb16() const
     {
-        return (c.red & 0xf800) | ((c.green >> 10) << 5) | (c.blue >> 11);
+        return (red() & 0xf800) | ((green() >> 10) << 5) | (blue() >> 11);
     }
 
     Q_DECL_RELAXED_CONSTEXPR QRgba64 premultiplied() const
     {
-        const quint32 a = c.alpha;
-        const quint16 r = div_65535(c.red   * a);
-        const quint16 g = div_65535(c.green * a);
-        const quint16 b = div_65535(c.blue  * a);
+        const quint32 a = alpha();
+        const quint16 r = div_65535(red()   * a);
+        const quint16 g = div_65535(green() * a);
+        const quint16 b = div_65535(blue()  * a);
         return fromRgba64(r, g, b, a);
     }
 
@@ -145,27 +160,31 @@ public:
     }
 
 private:
+    static Q_DECL_CONSTEXPR quint64 alphaMask() { return quint64(0xffff) << AlphaShift; }
+
     static Q_DECL_CONSTEXPR uint div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
     static Q_DECL_CONSTEXPR uint div_257(uint x) { return div_257_floor(x + 128); }
     static Q_DECL_CONSTEXPR uint div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
     Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_32bit() const
     {
-        if (c.alpha == 0xffff || c.alpha == 0)
+        const quint16 a = alpha();
+        if (a == 0xffff || a == 0)
             return *this;
-        const quint16 r = (quint32(c.red) * 0xffff + c.alpha/2) / c.alpha;
-        const quint16 g = (quint32(c.green) * 0xffff + c.alpha/2) / c.alpha;
-        const quint16 b = (quint32(c.blue) * 0xffff + c.alpha/2) / c.alpha;
-        return fromRgba64(r, g, b, c.alpha);
+        const quint16 r = (quint32(red())   * 0xffff + a/2) / a;
+        const quint16 g = (quint32(green()) * 0xffff + a/2) / a;
+        const quint16 b = (quint32(blue())  * 0xffff + a/2) / a;
+        return fromRgba64(r, g, b, a);
     }
     Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_64bit() const
     {
-        if (c.alpha == 0xffff || c.alpha == 0)
+        const quint16 a = alpha();
+        if (a == 0xffff || a == 0)
             return *this;
-        const quint64 fa = (Q_UINT64_C(0xffff00008000) + c.alpha/2) / c.alpha;
-        const quint16 r = (c.red   * fa + 0x80000000) >> 32;
-        const quint16 g = (c.green * fa + 0x80000000) >> 32;
-        const quint16 b = (c.blue  * fa + 0x80000000) >> 32;
-        return fromRgba64(r, g, b, c.alpha);
+        const quint64 fa = (Q_UINT64_C(0xffff00008000) + a/2) / a;
+        const quint16 r = (red()   * fa + 0x80000000) >> 32;
+        const quint16 g = (green() * fa + 0x80000000) >> 32;
+        const quint16 b = (blue()  * fa + 0x80000000) >> 32;
+        return fromRgba64(r, g, b, a);
     }
 };
 
