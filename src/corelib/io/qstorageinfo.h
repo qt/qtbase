@@ -72,6 +72,7 @@ public:
     qint64 bytesTotal() const;
     qint64 bytesFree() const;
     qint64 bytesAvailable() const;
+    int blockSize() const;
 
     inline bool isRoot() const;
     bool isReadOnly() const;
