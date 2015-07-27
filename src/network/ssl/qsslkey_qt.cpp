@@ -59,6 +59,47 @@ static const quint8 bits_table[256] = {
     8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
 };
 
+// OIDs of named curves allowed in TLS as per RFCs 4492 and 7027,
+// see also https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
+
+typedef QMap<QByteArray, int> OidLengthMap;
+static OidLengthMap createOidMap()
+{
+    OidLengthMap oids;
+    oids.insert(oids.cend(), QByteArrayLiteral("1.2.840.10045.3.1.1"), 192); // secp192r1 a.k.a prime192v1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.2.840.10045.3.1.7"), 256); // secp256r1 a.k.a prime256v1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.1"), 193); // sect193r2
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.10"), 256); // secp256k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.16"), 283); // sect283k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.17"), 283); // sect283r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.26"), 233); // sect233k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.27"), 233); // sect233r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.3"), 239); // sect239k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.30"), 160); // secp160r2
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.31"), 192); // secp192k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.32"), 224); // secp224k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.33"), 224); // secp224r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.34"), 384); // secp384r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.35"), 521); // secp521r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.36"), 409); // sect409k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.37"), 409); // sect409r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.38"), 571); // sect571k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.39"), 571); // sect571r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.8"), 160); // secp160r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.132.0.9"), 160); // secp160k1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.36.3.3.2.8.1.1.11"), 384); // brainpoolP384r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.36.3.3.2.8.1.1.13"), 521); // brainpoolP512r1
+    oids.insert(oids.cend(), QByteArrayLiteral("1.3.36.3.3.2.8.1.1.7"), 256); // brainpoolP256r1
+    return oids;
+}
+Q_GLOBAL_STATIC_WITH_ARGS(OidLengthMap, oidLengthMap, (createOidMap()))
+
+static int curveBits(const QByteArray &oid)
+{
+    const int length = oidLengthMap->value(oid);
+    return length ? length : -1;
+}
+
 static int numberOfBits(const QByteArray &modulus)
 {
     int bits = modulus.size() * 8;
@@ -146,6 +187,12 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
             if (params.isEmpty() || params[0].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(params[0].value());
+        } else if (algorithm == QSsl::Ec) {
+            if (infoItems[0].toObjectId() != EC_ENCRYPTION_OID)
+                return;
+            if (infoItems[1].type() != QAsn1Element::ObjectIdentifierType)
+                return;
+            keyLength = curveBits(infoItems[1].toObjectId());
         }
 
     } else {
@@ -154,17 +201,35 @@ void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
             return;
 
         // version
-        if (items[0].type() != QAsn1Element::IntegerType || items[0].value().toHex() != "00")
+        if (items[0].type() != QAsn1Element::IntegerType)
             return;
+        const QByteArray versionHex = items[0].value().toHex();
 
         if (algorithm == QSsl::Rsa) {
+            if (versionHex != "00")
+                return;
             if (items.size() != 9 || items[1].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(items[1].value());
         } else if (algorithm == QSsl::Dsa) {
+            if (versionHex != "00")
+                return;
             if (items.size() != 6 || items[1].type() != QAsn1Element::IntegerType)
                 return;
             keyLength = numberOfBits(items[1].value());
+        } else if (algorithm == QSsl::Ec) {
+            if (versionHex != "01")
+                return;
+            if (items.size() != 4
+               || items[1].type() != QAsn1Element::OctetStringType
+               || items[2].type() != QAsn1Element::Context0Type
+               || items[3].type() != QAsn1Element::Context1Type)
+                return;
+            QAsn1Element oidElem;
+            if (!oidElem.read(items[2].value())
+                || oidElem.type() != QAsn1Element::ObjectIdentifierType)
+                return;
+            keyLength = curveBits(oidElem.toObjectId());
         }
     }
 

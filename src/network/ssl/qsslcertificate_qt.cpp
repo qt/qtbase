@@ -368,6 +368,8 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
         publicKeyAlgorithm = QSsl::Rsa;
     else if (oid == DSA_ENCRYPTION_OID)
         publicKeyAlgorithm = QSsl::Dsa;
+    else if (oid == EC_ENCRYPTION_OID)
+        publicKeyAlgorithm = QSsl::Ec;
     else
         publicKeyAlgorithm = QSsl::Opaque;
 
