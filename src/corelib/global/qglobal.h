@@ -496,10 +496,13 @@ typedef qptrdiff qintptr;
 
 #ifdef Q_CC_MSVC
 #  define Q_NEVER_INLINE __declspec(noinline)
+#  define Q_ALWAYS_INLINE __forceinline
 #elif defined(Q_CC_GNU)
 #  define Q_NEVER_INLINE __attribute__((noinline))
+#  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #else
 #  define Q_NEVER_INLINE
+#  define Q_ALWAYS_INLINE inline
 #endif
 
 //defines the type for the WNDPROC on windows
