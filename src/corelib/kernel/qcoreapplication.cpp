@@ -2541,17 +2541,6 @@ QStringList QCoreApplication::libraryPaths()
 
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
-        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
-        if (QFile::exists(installPathPlugins)) {
-            // Make sure we convert from backslashes to slashes.
-            installPathPlugins = QDir(installPathPlugins).canonicalPath();
-            if (!app_libpaths->contains(installPathPlugins))
-                app_libpaths->append(installPathPlugins);
-        }
-
-        // If QCoreApplication is not yet instantiated,
-        // make sure we add the application path when we construct the QCoreApplication
-        if (self) self->d_func()->appendApplicationPathToLibraryPaths();
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
@@ -2564,6 +2553,18 @@ QStringList QCoreApplication::libraryPaths()
                 }
             }
         }
+
+        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        if (QFile::exists(installPathPlugins)) {
+            // Make sure we convert from backslashes to slashes.
+            installPathPlugins = QDir(installPathPlugins).canonicalPath();
+            if (!app_libpaths->contains(installPathPlugins))
+                app_libpaths->append(installPathPlugins);
+        }
+
+        // If QCoreApplication is not yet instantiated,
+        // make sure we add the application path when we construct the QCoreApplication
+        if (self) self->d_func()->appendApplicationPathToLibraryPaths();
     }
     return *(coreappdata()->app_libpaths);
 }
