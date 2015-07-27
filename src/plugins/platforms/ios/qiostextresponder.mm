@@ -199,6 +199,8 @@
         self.keyboardType = UIKeyboardTypePhonePad;
     else if (hints & Qt::ImhLatinOnly)
         self.keyboardType = UIKeyboardTypeASCIICapable;
+    else if (hints & Qt::ImhPreferNumbers)
+        self.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
     else
         self.keyboardType = UIKeyboardTypeDefault;
 
