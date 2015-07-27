@@ -61,7 +61,7 @@ class TabletCanvas : public QWidget
     Q_OBJECT
 
 public:
-    enum AlphaChannelType { AlphaPressure, AlphaTilt, NoAlpha };
+    enum AlphaChannelType { AlphaPressure, AlphaTangentialPressure, AlphaTilt, NoAlpha };
     enum ColorSaturationType { SaturationVTilt, SaturationHTilt,
                                SaturationPressure, NoSaturation };
     enum LineWidthType { LineWidthPressure, LineWidthTilt, NoLineWidth };
@@ -107,7 +107,11 @@ private:
     QBrush myBrush;
     QPen myPen;
     bool deviceDown;
-    QPoint polyLine[3];
+
+    struct Point {
+        QPointF pos;
+        qreal rotation;
+    } lastPoint;
 };
 //! [0]
 

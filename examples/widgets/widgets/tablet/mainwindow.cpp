@@ -52,7 +52,7 @@ MainWindow::MainWindow(TabletCanvas *canvas)
 
     myCanvas->setColor(Qt::red);
     myCanvas->setLineWidthType(TabletCanvas::LineWidthPressure);
-    myCanvas->setAlphaChannelType(TabletCanvas::NoAlpha);
+    myCanvas->setAlphaChannelType(TabletCanvas::AlphaTangentialPressure);
     myCanvas->setColorSaturationType(TabletCanvas::NoSaturation);
 
     setWindowTitle(tr("Tablet Example"));
@@ -75,6 +75,8 @@ void MainWindow::alphaActionTriggered(QAction *action)
 {
     if (action == alphaChannelPressureAction) {
         myCanvas->setAlphaChannelType(TabletCanvas::AlphaPressure);
+    } else if (action == alphaChannelTangentialPressureAction) {
+        myCanvas->setAlphaChannelType(TabletCanvas::AlphaTangentialPressure);
     } else if (action == alphaChannelTiltAction) {
         myCanvas->setAlphaChannelType(TabletCanvas::AlphaTilt);
     } else {
@@ -157,15 +159,19 @@ void MainWindow::createActions()
     alphaChannelPressureAction = new QAction(tr("&Pressure"), this);
     alphaChannelPressureAction->setCheckable(true);
 
+    alphaChannelTangentialPressureAction = new QAction(tr("T&angential Pressure"), this);
+    alphaChannelTangentialPressureAction->setCheckable(true);
+    alphaChannelTangentialPressureAction->setChecked(true);
+
     alphaChannelTiltAction = new QAction(tr("&Tilt"), this);
     alphaChannelTiltAction->setCheckable(true);
 
     noAlphaChannelAction = new QAction(tr("No Alpha Channel"), this);
     noAlphaChannelAction->setCheckable(true);
-    noAlphaChannelAction->setChecked(true);
 
     alphaChannelGroup = new QActionGroup(this);
     alphaChannelGroup->addAction(alphaChannelPressureAction);
+    alphaChannelGroup->addAction(alphaChannelTangentialPressureAction);
     alphaChannelGroup->addAction(alphaChannelTiltAction);
     alphaChannelGroup->addAction(noAlphaChannelAction);
     connect(alphaChannelGroup, SIGNAL(triggered(QAction*)),
@@ -259,6 +265,7 @@ void MainWindow::createMenus()
 
     alphaChannelMenu = tabletMenu->addMenu(tr("&Alpha Channel"));
     alphaChannelMenu->addAction(alphaChannelPressureAction);
+    alphaChannelMenu->addAction(alphaChannelTangentialPressureAction);
     alphaChannelMenu->addAction(alphaChannelTiltAction);
     alphaChannelMenu->addAction(noAlphaChannelAction);
 
