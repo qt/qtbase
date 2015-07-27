@@ -103,6 +103,8 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             }
             break;
         case QEvent::TabletMove:
+            if (event->device() == QTabletEvent::RotationStylus)
+                updateCursor(event);
             if (deviceDown) {
                 updateBrush(event);
                 QPainter painter(&pixmap);
@@ -201,7 +203,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 //! [5]
 
 //! [7]
-void TabletCanvas::updateBrush(QTabletEvent *event)
+void TabletCanvas::updateBrush(const QTabletEvent *event)
 {
     int hue, saturation, value, alpha;
     myColor.getHsv(&hue, &saturation, &value, &alpha);
@@ -265,6 +267,46 @@ void TabletCanvas::updateBrush(QTabletEvent *event)
     }
 }
 //! [11]
+
+void TabletCanvas::updateCursor(const QTabletEvent *event)
+{
+    QCursor cursor;
+    if (event->type() != QEvent::TabletLeaveProximity) {
+        if (event->pointerType() == QTabletEvent::Eraser) {
+            cursor = QCursor(QPixmap(":/images/cursor-eraser.png"), 3, 28);
+        } else {
+            switch (event->device()) {
+            case QTabletEvent::Stylus:
+                cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
+                break;
+            case QTabletEvent::Airbrush:
+                cursor = QCursor(QPixmap(":/images/cursor-airbrush.png"), 3, 4);
+                break;
+            case QTabletEvent::RotationStylus: {
+                QImage origImg(QLatin1String(":/images/cursor-felt-marker.png"));
+                QImage img(32, 32, QImage::Format_ARGB32);
+                QColor solid = myColor;
+                solid.setAlpha(255);
+                img.fill(solid);
+                QPainter painter(&img);
+                QTransform transform = painter.transform();
+                transform.translate(16, 16);
+                transform.rotate(-event->rotation());
+                painter.setTransform(transform);
+                painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                painter.drawImage(-24, -24, origImg);
+                painter.setCompositionMode(QPainter::CompositionMode_HardLight);
+                painter.drawImage(-24, -24, origImg);
+                painter.end();
+                cursor = QCursor(QPixmap::fromImage(img), 16, 16);
+            } break;
+            default:
+                break;
+            }
+        }
+    }
+    setCursor(cursor);
+}
 
 void TabletCanvas::resizeEvent(QResizeEvent *)
 {
