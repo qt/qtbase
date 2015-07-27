@@ -196,24 +196,24 @@ macx-xcode {
 
     # Set up default 4-inch iPhone/iPod launch image so that our apps
     # support the full screen resolution of those devices.
-    launch_image = Default-568h@2x.png
-    copy_image.input = $$QMAKESPEC/$$launch_image
-    copy_image.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$launch_image
-    copy_image.CONFIG = verbatim
-    QMAKE_SUBSTITUTES += copy_image
-    launch_images.files = $$copy_image.output
-    QMAKE_BUNDLE_DATA += launch_images
+    qmake_launch_image = Default-568h@2x.png
+    qmake_copy_image.input = $$QMAKESPEC/$$qmake_launch_image
+    qmake_copy_image.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$qmake_launch_image
+    qmake_copy_image.CONFIG = verbatim
+    QMAKE_SUBSTITUTES += qmake_copy_image
+    qmake_launch_images.files = $$qmake_copy_image.output
+    QMAKE_BUNDLE_DATA += qmake_launch_images
 
     lessThan(QMAKE_XCODE_VERSION, "6.0") {
         warning("You need to update Xcode to version 6 or newer to fully support iPhone6/6+")
     } else {
         # Set up default LaunchScreen to support iPhone6/6+
-        launch_screen = LaunchScreen.xib
-        copy_launch_screen.input = $$QMAKESPEC/$$launch_screen
-        copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$launch_screen
-        QMAKE_SUBSTITUTES += copy_launch_screen
-        launch_screens.files = $$copy_launch_screen.output
-        QMAKE_BUNDLE_DATA += launch_screens
+        qmake_launch_screen = LaunchScreen.xib
+        qmake_copy_launch_screen.input = $$QMAKESPEC/$$qmake_launch_screen
+        qmake_copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$qmake_launch_screen
+        QMAKE_SUBSTITUTES += qmake_copy_launch_screen
+        qmake_launch_screens.files = $$qmake_copy_launch_screen.output
+        QMAKE_BUNDLE_DATA += qmake_launch_screens
     }
 }
 
