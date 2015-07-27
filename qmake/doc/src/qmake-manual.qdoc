@@ -2264,6 +2264,10 @@
 
     \snippet code/doc_src_qmake-manual.pro 47
 
+    If your project is a \QD plugin, use the value \c uiplugin to specify that
+    the project is to be built as a library, but with specific plugin support
+    for \QD. For more information, see \l {Building and Installing the Plugin}.
+
     \section1 QTPLUGIN
 
     Specifies a list of names of static Qt plugins that are to be
