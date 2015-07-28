@@ -301,6 +301,8 @@ private:
     friend class QWidgetPrivate;
     friend class QWidget;
     friend class QBackingStore;
+
+    Q_DISABLE_COPY(QWidgetBackingStore)
 };
 
 QT_END_NAMESPACE

@@ -763,9 +763,8 @@ QWidgetBackingStore::~QWidgetBackingStore()
 
 #ifndef QT_NO_OPENGL
     delete widgetTextures;
-    delete dirtyOnScreenWidgets;
 #endif
-    dirtyOnScreenWidgets = 0;
+    delete dirtyOnScreenWidgets;
 }
 
 //parent's coordinates; move whole rect; update parent and widget
