@@ -704,13 +704,15 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             return true;
 
         // If we wouldn't write anything, check if we can read stdout.
-        if (bytesAvailableInChannel(&stdoutChannel) != 0) {
+        if (stdoutChannel.pipe[0] != INVALID_Q_PIPE
+                && bytesAvailableInChannel(&stdoutChannel) != 0) {
             tryReadFromChannel(&stdoutChannel);
             timer.resetIncrements();
         }
 
         // Check if we can read stderr.
-        if (bytesAvailableInChannel(&stderrChannel) != 0) {
+        if (stderrChannel.pipe[0] != INVALID_Q_PIPE
+                && bytesAvailableInChannel(&stderrChannel) != 0) {
             tryReadFromChannel(&stderrChannel);
             timer.resetIncrements();
         }

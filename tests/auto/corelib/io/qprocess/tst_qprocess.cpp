@@ -118,6 +118,7 @@ private slots:
     void setStandardOutputFile_data();
     void setStandardOutputFile();
     void setStandardOutputFile2();
+    void setStandardOutputFileAndWaitForBytesWritten();
     void setStandardOutputProcess_data();
     void setStandardOutputProcess();
     void removeFileWhileProcessIsRunning();
@@ -2068,6 +2069,26 @@ void tst_QProcess::setStandardOutputFile()
 
     QCOMPARE(all.size(), expectedsize);
 }
+
+void tst_QProcess::setStandardOutputFileAndWaitForBytesWritten()
+{
+    static const char testdata[] = "Test data.";
+
+    QFile file("data");
+    QProcess process;
+    process.setStandardOutputFile(file.fileName());
+    process.start("testProcessEcho2/testProcessEcho2");
+    process.write(testdata, sizeof testdata);
+    process.waitForBytesWritten();
+    QPROCESS_VERIFY(process, waitForFinished());
+
+    // open the file again and verify the data
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QByteArray all = file.readAll();
+    file.close();
+
+    QCOMPARE(all, QByteArray::fromRawData(testdata, sizeof testdata - 1));
+}
 #endif
 
 //-----------------------------------------------------------------------------
@@ -2076,17 +2097,19 @@ void tst_QProcess::setStandardOutputFile()
 void tst_QProcess::setStandardOutputProcess_data()
 {
     QTest::addColumn<bool>("merged");
-    QTest::newRow("separate") << false;
-    QTest::newRow("merged") << true;
+    QTest::addColumn<bool>("waitForBytesWritten");
+    QTest::newRow("separate") << false << false;
+    QTest::newRow("separate with waitForBytesWritten") << false << true;
+    QTest::newRow("merged") << true << false;
 }
 
 void tst_QProcess::setStandardOutputProcess()
 {
-
     QProcess source;
     QProcess sink;
 
     QFETCH(bool, merged);
+    QFETCH(bool, waitForBytesWritten);
     source.setReadChannelMode(merged ? QProcess::MergedChannels : QProcess::SeparateChannels);
     source.setStandardOutputProcess(&sink);
 
@@ -2095,6 +2118,8 @@ void tst_QProcess::setStandardOutputProcess()
 
     QByteArray data("Hello, World");
     source.write(data);
+    if (waitForBytesWritten)
+        source.waitForBytesWritten();
     source.closeWriteChannel();
     QPROCESS_VERIFY(source, waitForFinished());
     QPROCESS_VERIFY(sink, waitForFinished());
