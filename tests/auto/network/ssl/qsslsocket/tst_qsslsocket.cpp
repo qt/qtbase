@@ -71,7 +71,7 @@ Q_DECLARE_METATYPE(QSslSocket::PeerVerifyMode);
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 
 // Non-OpenSSL backends are not able to report a specific error code
-// for self-signed certificate for certificates.
+// for self-signed certificates.
 #ifndef QT_NO_OPENSSL
 #define FLUKE_CERTIFICATE_ERROR QSslError::SelfSignedCertificate
 #else
