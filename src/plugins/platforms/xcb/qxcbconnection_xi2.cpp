@@ -306,14 +306,13 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     const bool pointerSelected = isAtLeastXI22() && xi2MouseEvents();
     QSet<int> tabletDevices;
 #ifndef QT_NO_TABLETEVENT
-    if (!m_tabletData.isEmpty() && !pointerSelected) {
+    if (!m_tabletData.isEmpty()) {
         unsigned int tabletBitMask;
         unsigned char *xiTabletBitMask = reinterpret_cast<unsigned char *>(&tabletBitMask);
         QVector<XIEventMask> xiEventMask(m_tabletData.count());
-        tabletBitMask = XI_ButtonPressMask;
-        tabletBitMask |= XI_ButtonReleaseMask;
-        tabletBitMask |= XI_MotionMask;
-        tabletBitMask |= XI_PropertyEventMask;
+        tabletBitMask = XI_PropertyEventMask;
+        if (!pointerSelected)
+            tabletBitMask |= XI_ButtonPressMask | XI_ButtonReleaseMask | XI_MotionMask;
         for (int i = 0; i < m_tabletData.count(); ++i) {
             int deviceId = m_tabletData.at(i).deviceId;
             tabletDevices.insert(deviceId);
