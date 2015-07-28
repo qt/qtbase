@@ -97,8 +97,8 @@ private slots:
     void paint_2();
     void setWidget_data();
     void setWidget();
-    void eventFilter_data();
-    void eventFilter();
+    void testEventFilter_data();
+    void testEventFilter();
     void focusInEvent_data();
     void focusInEvent();
     void focusInEventNoWidget();
@@ -533,7 +533,7 @@ void tst_QGraphicsProxyWidget::setWidget()
 }
 
 Q_DECLARE_METATYPE(QEvent::Type)
-void tst_QGraphicsProxyWidget::eventFilter_data()
+void tst_QGraphicsProxyWidget::testEventFilter_data()
 {
     QTest::addColumn<QEvent::Type>("eventType");
     QTest::addColumn<bool>("fromObject"); // big grin evil
@@ -552,7 +552,7 @@ void tst_QGraphicsProxyWidget::eventFilter_data()
 }
 
 // protected bool eventFilter(QObject* object, QEvent* event)
-void tst_QGraphicsProxyWidget::eventFilter()
+void tst_QGraphicsProxyWidget::testEventFilter()
 {
     QFETCH(QEvent::Type, eventType);
     QFETCH(bool, fromObject);
