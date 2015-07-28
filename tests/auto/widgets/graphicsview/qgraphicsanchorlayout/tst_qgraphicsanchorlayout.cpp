@@ -133,7 +133,6 @@ static bool checkReverseDirection(QGraphicsWidget *widget)
     layout->getContentsMargins(&left, &top, &right, &bottom);
     widget->setLayoutDirection(Qt::LeftToRight);
     QApplication::processEvents();
-    const QRectF layoutGeometry = layout->geometry();
     QMap<QGraphicsLayoutItem *, QRectF> geometries;
     for (int i = 0; i < layout->count(); ++i) {
         QGraphicsLayoutItem *item = layout->itemAt(i);
@@ -141,7 +140,7 @@ static bool checkReverseDirection(QGraphicsWidget *widget)
     }
     widget->setLayoutDirection(Qt::RightToLeft);
     QApplication::processEvents();
-    layoutGeometry.adjusted(+right, +top, -left, -bottom);
+    const QRectF layoutGeometry = layout->geometry().adjusted(+right, +top, -left, -bottom);
     for (int i = 0; i < layout->count(); ++i) {
         QGraphicsLayoutItem *item = layout->itemAt(i);
         const QRectF rightToLeftGeometry = item->geometry();
