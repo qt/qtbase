@@ -4270,8 +4270,8 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     Returns a substring that contains the \a n leftmost characters
     of the string.
 
-    The entire string is returned if \a n is greater than size() or
-    less than zero.
+    The entire string is returned if \a n is greater than or equal
+    to size(), or less than zero.
 
     \snippet qstring/main.cpp 31
 
@@ -4288,8 +4288,8 @@ QString QString::left(int n)  const
     Returns a substring that contains the \a n rightmost characters
     of the string.
 
-    The entire string is returned if \a n is greater than size() or
-    less than zero.
+    The entire string is returned if \a n is greater than or equal
+    to size(), or less than zero.
 
     \snippet qstring/main.cpp 48
 
@@ -4956,7 +4956,8 @@ void QString::truncate(int pos)
 /*!
     Removes \a n characters from the end of the string.
 
-    If \a n is greater than size(), the result is an empty string.
+    If \a n is greater than or equal to size(), the result is an
+    empty string.
 
     Example:
     \snippet qstring/main.cpp 15
@@ -9315,8 +9316,8 @@ QString &QString::append(const QStringRef &str)
     Returns a substring reference to the \a n leftmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \sa right(), mid(), startsWith()
 */
@@ -9333,8 +9334,8 @@ QStringRef QStringRef::left(int n) const
     Returns a substring reference to the \a n leftmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \snippet qstring/main.cpp leftRef
 
@@ -9354,8 +9355,8 @@ QStringRef QString::leftRef(int n)  const
     Returns a substring reference to the \a n rightmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \sa left(), mid(), endsWith()
 */
@@ -9372,8 +9373,8 @@ QStringRef QStringRef::right(int n) const
     Returns a substring reference to the \a n rightmost characters
     of the string.
 
-    If \a n is greater than size() or less than zero, a reference to the entire
-    string is returned.
+    If \a n is greater than or equal to size(), or less than zero,
+    a reference to the entire string is returned.
 
     \snippet qstring/main.cpp rightRef
 
