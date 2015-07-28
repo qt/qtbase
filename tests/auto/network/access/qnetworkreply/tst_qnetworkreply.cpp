@@ -88,6 +88,14 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 #include "../../../network-settings.h"
 
+// Non-OpenSSL backends are not able to report a specific error code
+// for self-signed certificates.
+#ifndef QT_NO_OPENSSL
+#define FLUKE_CERTIFICATE_ERROR QSslError::SelfSignedCertificate
+#else
+#define FLUKE_CERTIFICATE_ERROR QSslError::CertificateUntrusted
+#endif
+
 Q_DECLARE_METATYPE(QAuthenticator*)
 #ifndef QT_NO_NETWORKPROXY
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
@@ -6027,8 +6035,8 @@ void tst_QNetworkReply::ignoreSslErrorsList_data()
 
     QList<QSslError> expectedSslErrors;
     QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
-    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
-    QSslError wrongError(QSslError::SelfSignedCertificate);
+    QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
+    QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
 
     QTest::newRow("SSL-failure-empty-list") << "https://" + QtNetworkSettings::serverName() + "/index.html" << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
     expectedSslErrors.append(wrongError);
