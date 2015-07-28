@@ -316,7 +316,7 @@ void tst_QHostAddress::compare_data()
     QTest::newRow("6") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::LocalHostIPv6) << false;
     QTest::newRow("7") << QHostAddress() << QHostAddress(QHostAddress::LocalHostIPv6) << false;
 
-    Q_IPV6ADDR localhostv4mapped = { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 255, 255,  127, 0, 0, 1 };
+    Q_IPV6ADDR localhostv4mapped = { { 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 255, 255,  127, 0, 0, 1 } };
     QTest::newRow("v4-v4mapped") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("::ffff:127.0.0.1") << false;
     QTest::newRow("v4-v4mapped-2") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(localhostv4mapped) << false;
 }
