@@ -242,7 +242,6 @@ private:
 
     mutable int proxyAuthCalled;
 
-    int numConnections;
     static int loopLevel;
 
     SocketPair *earlyConstructedSockets;
@@ -1831,7 +1830,6 @@ private slots:
     }
 #endif // !QT_NO_NETWORKPROXY
 private:
-    int exitCode;
     QTcpSocket *socket;
     QByteArray socketData;
 };

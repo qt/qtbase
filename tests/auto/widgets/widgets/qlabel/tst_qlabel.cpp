@@ -111,7 +111,6 @@ private:
     QLabel *testWidget;
     QPointer<Widget> test_box;
     QPointer<QLabel> test_label;
-    QLineEdit *test_edit;
 };
 
 // Testing get/set functions
@@ -196,7 +195,7 @@ void tst_QLabel::setBuddy()
     test_box = new Widget;
     test_label= new QLabel( test_box );
     test_label->setText( "&Test with a buddy" );
-    test_edit = new QLineEdit( test_box );
+    QWidget *test_edit = new QLineEdit( test_box );
     QVBoxLayout *layout = new QVBoxLayout(test_box);
     layout->addWidget(test_label);
     layout->addWidget(test_edit);
