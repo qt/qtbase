@@ -117,7 +117,7 @@ private slots:
     void setStandardInputFile();
     void setStandardOutputFile_data();
     void setStandardOutputFile();
-    void setStandardOutputFile2();
+    void setStandardOutputFileNullDevice();
     void setStandardOutputFileAndWaitForBytesWritten();
     void setStandardOutputProcess_data();
     void setStandardOutputProcess();
@@ -2005,22 +2005,6 @@ void tst_QProcess::setStandardOutputFile_data()
 }
 
 //-----------------------------------------------------------------------------
-#ifndef Q_OS_WINCE
-void tst_QProcess::setStandardOutputFile2()
-{
-    static const char testdata[] = "Test data.";
-
-    QProcess process;
-    process.setStandardOutputFile(QProcess::nullDevice());
-    process.start("testProcessEcho2/testProcessEcho2");
-    process.write(testdata, sizeof testdata);
-    QPROCESS_VERIFY(process,waitForFinished());
-    QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
-
-    QVERIFY(!QFileInfo(QProcess::nullDevice()).isFile());
-}
-#endif
-
 void tst_QProcess::setStandardOutputFile()
 {
     static const char data[] = "Original data. ";
@@ -2068,6 +2052,20 @@ void tst_QProcess::setStandardOutputFile()
     }
 
     QCOMPARE(all.size(), expectedsize);
+}
+
+void tst_QProcess::setStandardOutputFileNullDevice()
+{
+    static const char testdata[] = "Test data.";
+
+    QProcess process;
+    process.setStandardOutputFile(QProcess::nullDevice());
+    process.start("testProcessEcho2/testProcessEcho2");
+    process.write(testdata, sizeof testdata);
+    QPROCESS_VERIFY(process,waitForFinished());
+    QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
+
+    QVERIFY(!QFileInfo(QProcess::nullDevice()).isFile());
 }
 
 void tst_QProcess::setStandardOutputFileAndWaitForBytesWritten()
