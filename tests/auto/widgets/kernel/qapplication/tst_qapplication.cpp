@@ -162,9 +162,6 @@ private slots:
 
     void setAttribute();
 
-    void windowsCommandLine_data();
-    void windowsCommandLine();
-
     void touchEventPropagation();
 
     void qtbug_12673();
@@ -1931,39 +1928,6 @@ void tst_QApplication::setAttribute()
     w = new QWidget;
     QVERIFY(!w->testAttribute(Qt::WA_WState_Created));
     delete w;
-}
-
-void tst_QApplication::windowsCommandLine_data()
-{
-#if defined(Q_OS_WIN)
-    QTest::addColumn<QString>("args");
-    QTest::addColumn<QString>("expected");
-
-    QTest::newRow("hello world")
-        << QString("Hello \"World\"")
-        << QString("Hello \"World\"");
-    QTest::newRow("sql")
-        << QString("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PNR' AND TABLE_TYPE = 'VIEW' ORDER BY TABLE_NAME")
-        << QString("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PNR' AND TABLE_TYPE = 'VIEW' ORDER BY TABLE_NAME");
-#endif
-}
-
-void tst_QApplication::windowsCommandLine()
-{
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-    QFETCH(QString, args);
-    QFETCH(QString, expected);
-
-    QProcess testProcess;
-    const QString path = QStringLiteral("wincmdline/wincmdline");
-    testProcess.start(path, QStringList(args));
-    QVERIFY2(testProcess.waitForStarted(),
-             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
-    QVERIFY(testProcess.waitForFinished(10000));
-    QByteArray error = testProcess.readAllStandardError();
-    QString procError(error);
-    QCOMPARE(procError, expected);
-#endif
 }
 
 class TouchEventPropagationTestWidget : public QWidget
