@@ -34,7 +34,8 @@
 
 # This script generates digital certificates of different types.
 
-#--- Certificates ---------------------------------------------------------------------------
+#--- RSA Certificates -----------------------------------------------------------------------
+
 echo -e "\ngenerating 1024-bit RSA private key to PEM file ..."
 openssl genrsa -out rsa-pri-1024.pem 1024
 
@@ -57,6 +58,38 @@ openssl x509 -req -in req.pem -out cert.pem -CA ca-cert.pem -set_serial 17
 echo -e "\n generating a certifificate signed by a dummy CA to DER file ..."
 openssl x509 -req -in req.pem -out cert.der -CA ca-cert.pem -set_serial 17 -outform der
 
+#--- DSA Certificates -----------------------------------------------------------------------
+echo -e "\ngenerating DSA parameters to PEM file ..."
+openssl dsaparam -out dsapar-1024.pem 1024
+
+echo -e "\ngenerating DSA private key to PEM file ..."
+openssl gendsa dsapar-1024.pem -out dsa-pri-1024.pem
+/bin/rm dsapar-1024.pem
+
+echo -e "\ngenerating DSA public key to PEM and DER file ..."
+openssl dsa -in dsa-pri-1024.pem -pubout -out dsa-pub-1024.pem
+openssl dsa -in dsa-pri-1024.pem -pubout -out dsa-pub-1024.der -outform der
+
+echo -e "\ngenerating certificate signing request (CSR) ..."
+openssl req -out req.pem -new -key dsa-pri-1024.pem -subj "/CN=name\/with\/slashes/C=NO"
+
+echo -e "\n generating a self-signed certifificate to PEM file ..."
+openssl x509 -req -in req.pem -out dsa-cert-ss.pem -signkey dsa-pri-1024.pem
+
+#--- EC Certificates ------------------------------------------------------------------------
+echo -e "\ngenerating EC private key to PEM file ..."
+openssl ecparam -name secp384r1 -genkey -noout -out ec-pri-384.pem
+
+echo -e "\ngenerating EC public key to PEM and DER file ..."
+openssl ec -in ec-pri-384.pem -pubout -out ec-pub-384.pem
+openssl ec -in ec-pri-384.pem -pubout -out ec-pub-384.der -outform DER
+
+echo -e "\ngenerating certificate signing request (CSR) ..."
+openssl req -out req.pem -new -key ec-pri-384.pem -subj "/CN=name\/with\/slashes/C=NO"
+
+echo -e "\n generating a self-signed certifificate to PEM file ..."
+openssl x509 -req -in req.pem -out ec-cert-ss.pem -signkey ec-pri-384.pem
+
 #--- Public keys --------------------------------------------------------------------------------
 echo -e "\n associate public keys with all certificates ..."
 # Note: For now, there is only one public key (encoded in both PEM and DER), but that could change.
@@ -64,6 +97,10 @@ echo -e "\n associate public keys with all certificates ..."
 /bin/cp rsa-pub-1024.der cert-ss.der.pubkey
 /bin/cp rsa-pub-1024.pem cert.pem.pubkey
 /bin/cp rsa-pub-1024.der cert.der.pubkey
+/bin/cp dsa-pub-1024.pem dsa-cert-ss.pem.pubkey
+/bin/cp dsa-pub-1024.der dsa-cert-ss.der.pubkey
+/bin/cp ec-pub-384.pem ec-cert-ss.pem.pubkey
+/bin/cp ec-pub-384.der ec-cert-ss.der.pubkey
 
 #--- Digests --------------------------------------------------------------------------------
 echo -e "\n generating md5 and sha1 digests of all certificates ..."
@@ -72,6 +109,8 @@ do
   openssl x509 -in ca-cert.pem -noout -fingerprint -$digest > ca-cert.pem.digest-$digest
   openssl x509 -in cert-ss.pem -noout -fingerprint -$digest > cert-ss.pem.digest-$digest
   openssl x509 -in cert.pem -noout -fingerprint -$digest > cert.pem.digest-$digest
+  openssl x509 -in dsa-cert-ss.pem -noout -fingerprint -$digest > dsa-cert-ss.pem.digest-$digest
+  openssl x509 -in ec-cert-ss.pem -noout -fingerprint -$digest > ec-cert-ss.pem.digest-$digest
 done
 
 #--- Subjet Alternative Name extension ----------------------------------------------------
@@ -93,4 +132,7 @@ openssl req -x509 -in req-san.pem -out $outname -key rsa-pri-1024.pem \
 /bin/cp san.cnf $outname.san
 
 echo -e "\n cleaning up ..."
-/bin/rm rsa-pri-1024.pem rsa-pub-1024.* req*.pem
+/bin/rm rsa-pri-1024.pem rsa-pub-1024.*
+/bin/rm dsa-pri-1024.pem dsa-pub-1024.*
+/bin/rm ec-pri-384.pem ec-pub-384.*
+/bin/rm req*.pem
