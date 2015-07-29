@@ -553,7 +553,8 @@ public:
           hasBeenComposed(false),
           flushPending(false),
           paintDevice(0),
-          updateBehavior(QOpenGLWidget::NoPartialUpdate)
+          updateBehavior(QOpenGLWidget::NoPartialUpdate),
+          requestedSamples(0)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -595,6 +596,7 @@ public:
     QOpenGLPaintDevice *paintDevice;
     QSurfaceFormat requestedFormat;
     QOpenGLWidget::UpdateBehavior updateBehavior;
+    int requestedSamples;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -686,7 +688,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
     delete resolvedFbo;
     resolvedFbo = 0;
 
-    int samples = context->format().samples();
+    int samples = requestedSamples;
     QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
     if (!extfuncs->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
         samples = 0;
@@ -741,6 +743,13 @@ void QOpenGLWidgetPrivate::initialize()
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
     }
+
+    // Do not include the sample count. Requesting a multisampled context is not necessary
+    // since we render into an FBO, never to an actual surface. What's more, attempting to
+    // create a pbuffer with a multisampled config crashes certain implementations. Just
+    // avoid the entire hassle, the result is the same.
+    requestedSamples = requestedFormat.samples();
+    requestedFormat.setSamples(0);
 
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
     ctx->setShareContext(shareContext);
