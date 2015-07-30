@@ -45,10 +45,10 @@ class QCocoaAccessibility : public QPlatformAccessibility
 public:
     QCocoaAccessibility();
     ~QCocoaAccessibility();
-    void notifyAccessibilityUpdate(QAccessibleEvent *event);
-    void setRootObject(QObject *o);
-    void initialize();
-    void cleanup();
+    void notifyAccessibilityUpdate(QAccessibleEvent *event) Q_DECL_OVERRIDE;
+    void setRootObject(QObject *o) Q_DECL_OVERRIDE;
+    void initialize() Q_DECL_OVERRIDE;
+    void cleanup() Q_DECL_OVERRIDE;
 };
 
 namespace QCocoaAccessible {

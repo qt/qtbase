@@ -45,13 +45,13 @@ public:
     QCocoaFontDialogHelper();
     ~QCocoaFontDialogHelper();
 
-    void exec();
+    void exec() Q_DECL_OVERRIDE;
 
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
-    void hide();
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
+    void hide() Q_DECL_OVERRIDE;
 
-    void setCurrentFont(const QFont &);
-    QFont currentFont() const;
+    void setCurrentFont(const QFont &) Q_DECL_OVERRIDE;
+    QFont currentFont() const Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

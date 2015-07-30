@@ -51,17 +51,17 @@ class Q_GUI_EXPORT QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
 public:
     QCocoaSystemTrayIcon() : m_sys(0) {}
 
-    virtual void init();
-    virtual void cleanup();
-    virtual void updateIcon(const QIcon &icon);
-    virtual void updateToolTip(const QString &toolTip);
-    virtual void updateMenu(QPlatformMenu *menu);
-    virtual QRect geometry() const;
-    virtual void showMessage(const QString &title, const QString &msg,
-                             const QIcon& icon, MessageIcon iconType, int secs);
+    void init() Q_DECL_OVERRIDE;
+    void cleanup() Q_DECL_OVERRIDE;
+    void updateIcon(const QIcon &icon) Q_DECL_OVERRIDE;
+    void updateToolTip(const QString &toolTip) Q_DECL_OVERRIDE;
+    void updateMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    void showMessage(const QString &title, const QString &msg,
+                     const QIcon& icon, MessageIcon iconType, int secs) Q_DECL_OVERRIDE;
 
-    virtual bool isSystemTrayAvailable() const;
-    virtual bool supportsMessages() const;
+    bool isSystemTrayAvailable() const Q_DECL_OVERRIDE;
+    bool supportsMessages() const Q_DECL_OVERRIDE;
 
 private:
     QSystemTrayIconSys *m_sys;

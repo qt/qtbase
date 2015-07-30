@@ -48,13 +48,13 @@ class QCocoaMenuBar : public QPlatformMenuBar
     Q_OBJECT
 public:
     QCocoaMenuBar();
-    virtual ~QCocoaMenuBar();
+    ~QCocoaMenuBar();
 
-    virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu* before);
-    virtual void removeMenu(QPlatformMenu *menu);
-    virtual void syncMenu(QPlatformMenu *menuItem);
-    virtual void handleReparent(QWindow *newParentWindow);
-    virtual QPlatformMenu *menuForTag(quintptr tag) const;
+    void insertMenu(QPlatformMenu *menu, QPlatformMenu* before) Q_DECL_OVERRIDE;
+    void removeMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
+    void syncMenu(QPlatformMenu *menuItem) Q_DECL_OVERRIDE;
+    void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
+    QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
 
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }

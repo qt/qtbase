@@ -49,29 +49,29 @@ public:
     QCocoaMenu();
     ~QCocoaMenu();
 
-    inline virtual void setTag(quintptr tag)
-        { m_tag = tag; }
-    inline virtual quintptr tag() const
-        { return m_tag; }
+    void setTag(quintptr tag) Q_DECL_OVERRIDE
+    { m_tag = tag; }
+    quintptr tag() const Q_DECL_OVERRIDE
+    { return m_tag; }
 
-    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before);
-    void removeMenuItem(QPlatformMenuItem *menuItem);
-    void syncMenuItem(QPlatformMenuItem *menuItem);
-    void setEnabled(bool enabled);
-    bool isEnabled() const;
-    void setVisible(bool visible);
-    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item);
-    void dismiss();
+    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
+    void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
+    void syncMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
+    void setEnabled(bool enabled) Q_DECL_OVERRIDE;
+    bool isEnabled() const Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE;
+    void dismiss() Q_DECL_OVERRIDE;
 
-    void syncSeparatorsCollapsible(bool enable);
+    void syncSeparatorsCollapsible(bool enable) Q_DECL_OVERRIDE;
 
     void syncModalState(bool modal);
 
-    virtual void setIcon(const QIcon &icon) { Q_UNUSED(icon) }
+    void setIcon(const QIcon &icon) Q_DECL_OVERRIDE { Q_UNUSED(icon) }
 
-    void setText(const QString &text);
-    void setMinimumWidth(int width);
-    void setFont(const QFont &font);
+    void setText(const QString &text) Q_DECL_OVERRIDE;
+    void setMinimumWidth(int width) Q_DECL_OVERRIDE;
+    void setFont(const QFont &font) Q_DECL_OVERRIDE;
 
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }
@@ -80,8 +80,8 @@ public:
 
     inline bool isVisible() const { return m_visible; }
 
-    virtual QPlatformMenuItem *menuItemAt(int position) const;
-    virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const;
+    QPlatformMenuItem *menuItemAt(int position) const Q_DECL_OVERRIDE;
+    QPlatformMenuItem *menuItemForTag(quintptr tag) const Q_DECL_OVERRIDE;
 
     QList<QCocoaMenuItem *> items() const;
     QList<QCocoaMenuItem *> merged() const;
