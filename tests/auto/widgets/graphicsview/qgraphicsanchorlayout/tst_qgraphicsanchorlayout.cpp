@@ -2040,9 +2040,9 @@ void tst_QGraphicsAnchorLayout::graphicsAnchorHandling()
     QGraphicsAnchor *invalidAnchor = l->anchor(a, Qt::AnchorTop, l, Qt::AnchorBottom);
 
     // Ensure none of these anchors are accessible.
-    QVERIFY(layoutAnchor == 0);
-    QVERIFY(itemAnchor == 0);
-    QVERIFY(invalidAnchor == 0);
+    QVERIFY(!layoutAnchor);
+    QVERIFY(!itemAnchor);
+    QVERIFY(!invalidAnchor);
 
     // Hook the anchors to a QObject
     QObject object;

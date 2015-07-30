@@ -1668,7 +1668,7 @@ void tst_QLineEdit::displayText()
     testWidget->setEchoMode(mode);
     testWidget->setText(insertString);
     QCOMPARE(testWidget->displayText(), expectedString);
-    QVERIFY(testWidget->echoMode() == mode);
+    QCOMPARE(testWidget->echoMode(), mode);
 }
 
 void tst_QLineEdit::passwordEchoOnEdit()
@@ -1838,9 +1838,9 @@ void tst_QLineEdit::maxLength()
 
         // Make sure that the textChanged is not emitted unless the text is actually changed
         if (insertString == expectedString) {
-            QVERIFY(changed_count == 0);
+            QCOMPARE(changed_count, 0);
         } else {
-            QVERIFY(changed_count == 1);
+            QCOMPARE(changed_count, 1);
         }
     }
 
@@ -1961,7 +1961,7 @@ void tst_QLineEdit::psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardMo
 void tst_QLineEdit::cursorPosition()
 {
     QLineEdit *testWidget = ensureTestWidget();
-    QVERIFY(testWidget->cursorPosition() == 0);
+    QCOMPARE(testWidget->cursorPosition(), 0);
 
     // start with a basic text
     QTest::keyClicks(testWidget, "The");
@@ -2207,7 +2207,7 @@ void tst_QLineEdit::selectedText()
     testWidget->cursorForward(true, 9);
     QVERIFY(testWidget->hasSelectedText());
     QCOMPARE(testWidget->selectedText(), QString("Abc defg "));
-    QVERIFY(selection_count == 1);
+    QCOMPARE(selection_count, 1);
 
     // reset selection
     testWidget->home(false);
@@ -2263,19 +2263,19 @@ void tst_QLineEdit::textChangedAndTextEdited()
     QLineEdit *testWidget = ensureTestWidget();
     QTest::keyClick(testWidget, Qt::Key_A);
     QCOMPARE(changed_count, 1);
-    QVERIFY(edited_count == changed_count);
+    QCOMPARE(edited_count, changed_count);
     QTest::keyClick(testWidget, 'b');
     QCOMPARE(changed_count, 2);
-    QVERIFY(edited_count == changed_count);
+    QCOMPARE(edited_count, changed_count);
     QTest::keyClick(testWidget, 'c');
     QCOMPARE(changed_count, 3);
-    QVERIFY(edited_count == changed_count);
+    QCOMPARE(edited_count, changed_count);
     QTest::keyClick(testWidget, ' ');
     QCOMPARE(changed_count, 4);
-    QVERIFY(edited_count == changed_count);
+    QCOMPARE(edited_count, changed_count);
     QTest::keyClick(testWidget, 'd');
     QCOMPARE(changed_count, 5);
-    QVERIFY(edited_count == changed_count);
+    QCOMPARE(edited_count, changed_count);
 
     changed_count = 0;
     edited_count = 0;
@@ -2321,27 +2321,27 @@ void tst_QLineEdit::returnPressed()
 
     QLineEdit *testWidget = ensureTestWidget();
     QTest::keyClick(testWidget, Qt::Key_Return);
-    QVERIFY(return_count == 1);
+    QCOMPARE(return_count, 1);
     return_count = 0;
 
     QTest::keyClick(testWidget, 'A');
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, 'b');
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, 'c');
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, ' ');
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, 'd');
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     psKeyClick(testWidget, Qt::Key_Home);
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     psKeyClick(testWidget, Qt::Key_End);
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, Qt::Key_Escape);
-    QVERIFY(return_count == 0);
+    QCOMPARE(return_count, 0);
     QTest::keyClick(testWidget, Qt::Key_Return);
-    QVERIFY(return_count == 1);
+    QCOMPARE(return_count, 1);
 }
 
 // int validator that fixes all !isNumber to '0'
@@ -2497,14 +2497,14 @@ void tst_QLineEdit::setValidator()
     QCOMPARE(testWidget->validator(), static_cast<const QValidator*>(&iv1));
 
     testWidget->setValidator(0);
-    QVERIFY(testWidget->validator() == 0);
+    QVERIFY(!testWidget->validator());
 
     QIntValidator iv2(0, 99, 0);
     testWidget->setValidator(&iv2);
     QCOMPARE(testWidget->validator(), static_cast<const QValidator *>(&iv2));
 
     testWidget->setValidator(0);
-    QVERIFY(testWidget->validator() == 0);
+    QVERIFY(!testWidget->validator());
 }
 
 void tst_QLineEdit::setValidator_QIntValidator_data()
@@ -2746,7 +2746,7 @@ void tst_QLineEdit::setAlignment()
     QTEST(testWidget, "left");
 #endif
 #endif
-    QVERIFY(testWidget->alignment() == Qt::AlignLeft);
+    QCOMPARE(testWidget->alignment(), Qt::AlignLeft);
 
     testWidget->setText("hcenter");
     testWidget->setAlignment(Qt::AlignHCenter);
@@ -2755,7 +2755,7 @@ void tst_QLineEdit::setAlignment()
     QTEST(testWidget, "hcenter");
 #endif
 #endif
-    QVERIFY(testWidget->alignment() == Qt::AlignHCenter);
+    QCOMPARE(testWidget->alignment(), Qt::AlignHCenter);
 
     testWidget->setText("right");
     testWidget->setAlignment(Qt::AlignRight);
@@ -2764,16 +2764,16 @@ void tst_QLineEdit::setAlignment()
     QTEST(testWidget, "right");
 #endif
 #endif
-    QVERIFY(testWidget->alignment() == Qt::AlignRight);
+    QCOMPARE(testWidget->alignment(), Qt::AlignRight);
 
     testWidget->setAlignment(Qt::AlignTop);
-    QVERIFY(testWidget->alignment() == Qt::AlignTop);
+    QCOMPARE(testWidget->alignment(), Qt::AlignTop);
 
     testWidget->setAlignment(Qt::AlignBottom);
-    QVERIFY(testWidget->alignment() == Qt::AlignBottom);
+    QCOMPARE(testWidget->alignment(), Qt::AlignBottom);
 
     testWidget->setAlignment(Qt::AlignCenter);
-    QVERIFY(testWidget->alignment() == Qt::AlignCenter);
+    QCOMPARE(testWidget->alignment(), Qt::AlignCenter);
 }
 
 void tst_QLineEdit::isModified()
@@ -3081,10 +3081,10 @@ void tst_QLineEdit::maxLengthAndInputMask()
     QLineEdit *testWidget = ensureTestWidget();
     QVERIFY(testWidget->inputMask().isNull());
     testWidget->setMaxLength(10);
-    QVERIFY(testWidget->maxLength() == 10);
+    QCOMPARE(testWidget->maxLength(), 10);
     testWidget->setInputMask(QString::null);
     QVERIFY(testWidget->inputMask().isNull());
-    QVERIFY(testWidget->maxLength() == 10);
+    QCOMPARE(testWidget->maxLength(), 10);
 }
 
 
@@ -4415,7 +4415,7 @@ void tst_QLineEdit::QTBUG1266_setInputMaskEmittingTextEdited()
     QSignalSpy spy(&lineEdit, SIGNAL(textEdited(QString)));
     lineEdit.setInputMask("AAAA");
     lineEdit.setInputMask(QString());
-    QVERIFY(spy.count() == 0);
+    QCOMPARE(spy.count(), 0);
 }
 
 QTEST_MAIN(tst_QLineEdit)

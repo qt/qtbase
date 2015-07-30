@@ -321,7 +321,7 @@ void tst_QLabel::eventPropagation()
     test_label->setText(text);
     test_box->events.clear();
     test_label->setTextInteractionFlags(Qt::TextInteractionFlags(textInteractionFlags));
-    QVERIFY(int(test_label->focusPolicy()) == focusPolicy);
+    QCOMPARE(int(test_label->focusPolicy()), focusPolicy);
     QTest::mousePress(test_label, Qt::LeftButton);
     QVERIFY(test_box->events.contains(QEvent::MouseButtonPress) == propagation); // should have propagated!
 }

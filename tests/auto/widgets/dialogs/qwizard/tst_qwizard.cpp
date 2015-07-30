@@ -400,7 +400,7 @@ void tst_QWizard::setButton()
 
     // revert to default button
     wizard.setButton(QWizard::NextButton, 0);
-    QVERIFY(toolButton == 0);
+    QVERIFY(toolButton.isNull());
     QVERIFY(qobject_cast<QPushButton *>(wizard.button(QWizard::NextButton)));
     QVERIFY(wizard.button(QWizard::NextButton)->text().contains("Next"));
 }
@@ -408,16 +408,16 @@ void tst_QWizard::setButton()
 void tst_QWizard::setTitleFormatEtc()
 {
     QWizard wizard;
-    QVERIFY(wizard.titleFormat() == Qt::AutoText);
-    QVERIFY(wizard.subTitleFormat() == Qt::AutoText);
+    QCOMPARE(wizard.titleFormat(), Qt::AutoText);
+    QCOMPARE(wizard.subTitleFormat(), Qt::AutoText);
 
     wizard.setTitleFormat(Qt::RichText);
-    QVERIFY(wizard.titleFormat() == Qt::RichText);
-    QVERIFY(wizard.subTitleFormat() == Qt::AutoText);
+    QCOMPARE(wizard.titleFormat(), Qt::RichText);
+    QCOMPARE(wizard.subTitleFormat(), Qt::AutoText);
 
     wizard.setSubTitleFormat(Qt::PlainText);
-    QVERIFY(wizard.titleFormat() == Qt::RichText);
-    QVERIFY(wizard.subTitleFormat() == Qt::PlainText);
+    QCOMPARE(wizard.titleFormat(), Qt::RichText);
+    QCOMPARE(wizard.subTitleFormat(), Qt::PlainText);
 }
 
 void tst_QWizard::setPixmap()
@@ -459,20 +459,20 @@ void tst_QWizard::setPixmap()
 
     page->setPixmap(QWizard::LogoPixmap, p5);
 
-    QVERIFY(wizard.pixmap(QWizard::BannerPixmap).size() == p1.size());
-    QVERIFY(wizard.pixmap(QWizard::LogoPixmap).size() == p2.size());
-    QVERIFY(wizard.pixmap(QWizard::WatermarkPixmap).size() == p3.size());
-    QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).size() == p4.size());
+    QCOMPARE(wizard.pixmap(QWizard::BannerPixmap).size(), p1.size());
+    QCOMPARE(wizard.pixmap(QWizard::LogoPixmap).size(), p2.size());
+    QCOMPARE(wizard.pixmap(QWizard::WatermarkPixmap).size(), p3.size());
+    QCOMPARE(wizard.pixmap(QWizard::BackgroundPixmap).size(), p4.size());
 
-    QVERIFY(page->pixmap(QWizard::BannerPixmap).size() == p1.size());
-    QVERIFY(page->pixmap(QWizard::LogoPixmap).size() == p5.size());
-    QVERIFY(page->pixmap(QWizard::WatermarkPixmap).size() == p3.size());
-    QVERIFY(page->pixmap(QWizard::BackgroundPixmap).size() == p4.size());
+    QCOMPARE(page->pixmap(QWizard::BannerPixmap).size(), p1.size());
+    QCOMPARE(page->pixmap(QWizard::LogoPixmap).size(), p5.size());
+    QCOMPARE(page->pixmap(QWizard::WatermarkPixmap).size(), p3.size());
+    QCOMPARE(page->pixmap(QWizard::BackgroundPixmap).size(), p4.size());
 
-    QVERIFY(page2->pixmap(QWizard::BannerPixmap).size() == p1.size());
-    QVERIFY(page2->pixmap(QWizard::LogoPixmap).size() == p2.size());
-    QVERIFY(page2->pixmap(QWizard::WatermarkPixmap).size() == p3.size());
-    QVERIFY(page2->pixmap(QWizard::BackgroundPixmap).size() == p4.size());
+    QCOMPARE(page2->pixmap(QWizard::BannerPixmap).size(), p1.size());
+    QCOMPARE(page2->pixmap(QWizard::LogoPixmap).size(), p2.size());
+    QCOMPARE(page2->pixmap(QWizard::WatermarkPixmap).size(), p3.size());
+    QCOMPARE(page2->pixmap(QWizard::BackgroundPixmap).size(), p4.size());
 }
 
 class MyPage1 : public QWizardPage
@@ -571,7 +571,7 @@ void tst_QWizard::addPage()
     }
 
     for (int i = 0; i < N; ++i) {
-        QVERIFY(pages[i] == wizard.page(i));
+        QCOMPARE(pages[i], wizard.page(i));
     }
     QVERIFY(!wizard.page(-1));
     QVERIFY(!wizard.page(N));
@@ -667,7 +667,7 @@ void tst_QWizard::setPage()
     QCOMPARE(wizard.page(-2), page);
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == page);
+    QCOMPARE(wizard.currentPage(), page);
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -2);
 
@@ -679,14 +679,14 @@ void tst_QWizard::setPage()
     QCOMPARE(wizard.page(2), page);
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -2);
 
     wizard.restart();
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -2);
 
@@ -698,28 +698,28 @@ void tst_QWizard::setPage()
     QCOMPARE(wizard.page(-3), page);
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -2);
 
     wizard.restart();
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), -3);
-    QVERIFY(wizard.currentPage() == wizard.page(-3));
+    QCOMPARE(wizard.currentPage(), wizard.page(-3));
     QCOMPARE(wizard.nextId(), -2);
     CHECK_VISITED(wizard, QList<int>() << -3);
 
     wizard.next();
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -3 << -2);
 
     wizard.next();
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), 0);
-    QVERIFY(wizard.currentPage() == wizard.page(0));
+    QCOMPARE(wizard.currentPage(), wizard.page(0));
     QCOMPARE(wizard.nextId(), 2);
     CHECK_VISITED(wizard, QList<int>() << -3 << -2 << 0);
 
@@ -727,7 +727,7 @@ void tst_QWizard::setPage()
         wizard.next();
         QCOMPARE(wizard.startId(), -3);
         QCOMPARE(wizard.currentId(), 2);
-        QVERIFY(wizard.currentPage() == wizard.page(2));
+        QCOMPARE(wizard.currentPage(), wizard.page(2));
         QCOMPARE(wizard.nextId(), -1);
         CHECK_VISITED(wizard, QList<int>() << -3 << -2 << 0 << 2);
     }
@@ -735,14 +735,14 @@ void tst_QWizard::setPage()
     wizard.back();
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), 0);
-    QVERIFY(wizard.currentPage() == wizard.page(0));
+    QCOMPARE(wizard.currentPage(), wizard.page(0));
     QCOMPARE(wizard.nextId(), 2);
     CHECK_VISITED(wizard, QList<int>() << -3 << -2 << 0);
 
     wizard.back();
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
     CHECK_VISITED(wizard, QList<int>() << -3 << -2);
 
@@ -750,7 +750,7 @@ void tst_QWizard::setPage()
         wizard.back();
         QCOMPARE(wizard.startId(), -3);
         QCOMPARE(wizard.currentId(), -3);
-        QVERIFY(wizard.currentPage() == wizard.page(-3));
+        QCOMPARE(wizard.currentPage(), wizard.page(-3));
         QCOMPARE(wizard.nextId(), -2);
         CHECK_VISITED(wizard, QList<int>() << -3);
     }
@@ -759,7 +759,7 @@ void tst_QWizard::setPage()
         wizard.restart();
         QCOMPARE(wizard.startId(), -3);
         QCOMPARE(wizard.currentId(), -3);
-        QVERIFY(wizard.currentPage() == wizard.page(-3));
+        QCOMPARE(wizard.currentPage(), wizard.page(-3));
         QCOMPARE(wizard.nextId(), -2);
         CHECK_VISITED(wizard, QList<int>() << -3);
     }
@@ -808,31 +808,31 @@ void tst_QWizard::setStartId()
     wizard.restart();
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), -2);
-    QVERIFY(wizard.currentPage() == wizard.page(-2));
+    QCOMPARE(wizard.currentPage(), wizard.page(-2));
     QCOMPARE(wizard.nextId(), 0);
 
     wizard.next();
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), 0);
-    QVERIFY(wizard.currentPage() == wizard.page(0));
+    QCOMPARE(wizard.currentPage(), wizard.page(0));
     QCOMPARE(wizard.nextId(), 1);
 
     wizard.setStartId(INT_MIN);
     QCOMPARE(wizard.startId(), INT_MIN);
     QCOMPARE(wizard.currentId(), 0);
-    QVERIFY(wizard.currentPage() == wizard.page(0));
+    QCOMPARE(wizard.currentPage(), wizard.page(0));
     QCOMPARE(wizard.nextId(), 1);
 
     wizard.next();
     QCOMPARE(wizard.startId(), INT_MIN);
     QCOMPARE(wizard.currentId(), 1);
-    QVERIFY(wizard.currentPage() == wizard.page(1));
+    QCOMPARE(wizard.currentPage(), wizard.page(1));
     QCOMPARE(wizard.nextId(), INT_MAX);
 
     wizard.next();
     QCOMPARE(wizard.startId(), INT_MIN);
     QCOMPARE(wizard.currentId(), INT_MAX);
-    QVERIFY(wizard.currentPage() == wizard.page(INT_MAX));
+    QCOMPARE(wizard.currentPage(), wizard.page(INT_MAX));
     QCOMPARE(wizard.nextId(), -1);
     CHECK_VISITED(wizard, QList<int>() << -2 << 0 << 1 << INT_MAX);
 }
@@ -1143,12 +1143,12 @@ void tst_QWizard::setOption_ExtendedWatermarkPixmap()
         }
 
         if (wizard1.wizardStyle() == QWizard::MacStyle) {
-            QVERIFY(i1[0] == i1[1]);
-            QVERIFY(i2[0] == i2[1]);
-            QVERIFY(i1[0] == i2[0]);
+            QCOMPARE(i1[0], i1[1]);
+            QCOMPARE(i2[0], i2[1]);
+            QCOMPARE(i1[0], i2[0]);
         } else {
             QVERIFY(i1[0] != i1[1]);
-            QVERIFY(i2[0] == i2[1]);
+            QCOMPARE(i2[0], i2[1]);
             QVERIFY(i1[0] != i2[0]);
             QVERIFY(i1[1] != i2[1]);
         }
@@ -2425,19 +2425,19 @@ void tst_QWizard::sideWidget()
     QWizard wizard;
 
     wizard.setSideWidget(0);
-    QVERIFY(wizard.sideWidget() == 0);
+    QVERIFY(!wizard.sideWidget());
     QScopedPointer<QWidget> w1(new QWidget(&wizard));
     wizard.setSideWidget(w1.data());
     QCOMPARE(wizard.sideWidget(), w1.data());
     QWidget *w2 = new QWidget(&wizard);
     wizard.setSideWidget(w2);
-    QVERIFY(wizard.sideWidget() == w2);
+    QCOMPARE(wizard.sideWidget(), w2);
     QVERIFY(w1->parent() != 0);
     QCOMPARE(w1->window(), static_cast<QWidget *>(&wizard));
     QCOMPARE(w2->window(), static_cast<QWidget *>(&wizard));
     w1->setParent(0);
     wizard.setSideWidget(0);
-    QVERIFY(wizard.sideWidget() == 0);
+    QVERIFY(!wizard.sideWidget());
 }
 
 void tst_QWizard::objectNames_data()
@@ -2558,7 +2558,7 @@ void tst_QWizard::task183550_stretchFactor()
     page2->disableVerticalExpansion();
     wizard.next();
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage*>(page2));
-    QVERIFY(page2->treeWidgetHeight() == page2->treeWidgetSizeHintHeight());
+    QCOMPARE(page2->treeWidgetHeight(), page2->treeWidgetSizeHintHeight());
 
     wizard.back();
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage*>(page1));
@@ -2576,7 +2576,7 @@ void tst_QWizard::task183550_stretchFactor()
     page2->disableVerticalExpansion();
     wizard.next();
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage*>(page2));
-    QVERIFY(page2->treeWidgetHeight() == page2->treeWidgetSizeHintHeight());
+    QCOMPARE(page2->treeWidgetHeight(), page2->treeWidgetSizeHintHeight());
 }
 
 void tst_QWizard::task161658_alignments()

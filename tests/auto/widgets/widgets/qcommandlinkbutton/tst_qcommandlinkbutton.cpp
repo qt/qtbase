@@ -98,11 +98,11 @@ void tst_QCommandLinkButton::getSetCheck()
     QString text("mytext");
     QVERIFY(obj1.description().isEmpty());
     obj1.setDescription(text);
-    QVERIFY(obj1.description() == text);
+    QCOMPARE(obj1.description(), text);
 
     QVERIFY(obj1.text().isEmpty());
     obj1.setText(text);
-    QVERIFY(obj1.text() == text);
+    QCOMPARE(obj1.text(), text);
 
     QMenu *var1 = new QMenu;
     obj1.setMenu(var1);
@@ -236,8 +236,8 @@ void tst_QCommandLinkButton::setAutoRepeat()
     QVERIFY( testWidget->isDown() );
     QVERIFY( toggle_count == 0 );
     QTest::keyRelease( testWidget, Qt::Key_Space );
-    QVERIFY(press_count == release_count);
-    QVERIFY(release_count == click_count);
+    QCOMPARE(press_count, release_count);
+    QCOMPARE(release_count, click_count);
     QVERIFY(press_count > 1);
 
     // #### shouldn't I check here to see if multiple signals have been fired???

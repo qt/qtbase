@@ -216,7 +216,7 @@ void tst_QMessageBox::button()
 
     // remove the cancel, should not exist anymore
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    QVERIFY(msgBox.button(QMessageBox::Cancel) == 0);
+    QVERIFY(!msgBox.button(QMessageBox::Cancel));
     QVERIFY(msgBox.button(QMessageBox::Yes) != 0);
 
     // should not crash
@@ -228,10 +228,10 @@ void tst_QMessageBox::button()
 void tst_QMessageBox::defaultButton()
 {
     QMessageBox msgBox;
-    QVERIFY(msgBox.defaultButton() == 0);
+    QVERIFY(!msgBox.defaultButton());
     msgBox.addButton(QMessageBox::Ok);
     msgBox.addButton(QMessageBox::Cancel);
-    QVERIFY(msgBox.defaultButton() == 0);
+    QVERIFY(!msgBox.defaultButton());
     QPushButton pushButton;
     msgBox.setDefaultButton(&pushButton);
     QVERIFY(msgBox.defaultButton() == 0); // we have not added it yet
@@ -250,27 +250,27 @@ void tst_QMessageBox::defaultButton()
     exec(&msgBox, Qt::Key_Enter);
     QCOMPARE(msgBox.clickedButton(), okButton);
     msgBox.setDefaultButton(QMessageBox::Yes); // its not in there!
-    QVERIFY(msgBox.defaultButton() == okButton);
+    QCOMPARE(msgBox.defaultButton(), okButton);
     msgBox.removeButton(okButton);
     delete okButton;
     okButton = 0;
-    QVERIFY(msgBox.defaultButton() == 0);
+    QVERIFY(!msgBox.defaultButton());
     msgBox.setDefaultButton(QMessageBox::Ok);
-    QVERIFY(msgBox.defaultButton() == 0);
+    QVERIFY(!msgBox.defaultButton());
 }
 
 void tst_QMessageBox::escapeButton()
 {
     QMessageBox msgBox;
-    QVERIFY(msgBox.escapeButton() == 0);
+    QVERIFY(!msgBox.escapeButton());
     msgBox.addButton(QMessageBox::Ok);
     exec(&msgBox);
     QVERIFY(msgBox.clickedButton() == msgBox.button(QMessageBox::Ok)); // auto detected (one button only)
     msgBox.addButton(QMessageBox::Cancel);
-    QVERIFY(msgBox.escapeButton() == 0);
+    QVERIFY(!msgBox.escapeButton());
     QPushButton invalidButton;
     msgBox.setEscapeButton(&invalidButton);
-    QVERIFY(msgBox.escapeButton() == 0);
+    QVERIFY(!msgBox.escapeButton());
     QAbstractButton *retryButton = msgBox.addButton(QMessageBox::Retry);
 
     exec(&msgBox);
@@ -293,13 +293,13 @@ void tst_QMessageBox::escapeButton()
     exec(&msgBox, Qt::Key_Escape);
     QCOMPARE(msgBox.clickedButton(), okButton);
     msgBox.setEscapeButton(QMessageBox::Yes); // its not in there!
-    QVERIFY(msgBox.escapeButton() == okButton);
+    QCOMPARE(msgBox.escapeButton(), okButton);
     msgBox.removeButton(okButton);
     delete okButton;
     okButton = 0;
-    QVERIFY(msgBox.escapeButton() == 0);
+    QVERIFY(!msgBox.escapeButton());
     msgBox.setEscapeButton(QMessageBox::Ok);
-    QVERIFY(msgBox.escapeButton() == 0);
+    QVERIFY(!msgBox.escapeButton());
 
     QMessageBox msgBox2;
     msgBox2.addButton(QMessageBox::Yes);
@@ -527,13 +527,13 @@ void tst_QMessageBox::testSymbols()
     QCOMPARE(mb1.text(), text);
 
     icon = mb1.icon();
-    QVERIFY(icon == QMessageBox::NoIcon);
+    QCOMPARE(icon, QMessageBox::NoIcon);
     mb1.setIcon(QMessageBox::Question);
-    QVERIFY(mb1.icon() == QMessageBox::Question);
+    QCOMPARE(mb1.icon(), QMessageBox::Question);
 
     QPixmap iconPixmap = mb1.iconPixmap();
     mb1.setIconPixmap(iconPixmap);
-    QVERIFY(mb1.icon() == QMessageBox::NoIcon);
+    QCOMPARE(mb1.icon(), QMessageBox::NoIcon);
 
     QCOMPARE(mb1.buttonText(QMessageBox::Ok), QLatin1String("OK"));
     QCOMPARE(mb1.buttonText(QMessageBox::Cancel), QString());

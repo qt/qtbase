@@ -3525,7 +3525,7 @@ void tst_QGraphicsView::embeddedViews()
     v2->QWidget::render(&actual);
     QTransform b = item->transform;
 
-    QVERIFY(a == b);
+    QCOMPARE(a, b);
     delete v1;
 }
 

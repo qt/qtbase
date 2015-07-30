@@ -3373,7 +3373,7 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-    QTRY_VERIFY(QApplication::widgetAt(testPos) == w1.data());
+    QTRY_COMPARE(QApplication::widgetAt(testPos), w1.data());
     QTRY_VERIFY(QApplication::widgetAt(testPos + QPoint(1, 1)) == w2.data());
 }
 
@@ -3420,24 +3420,24 @@ void tst_QWidget::testDeletionInEventHandlers()
     QPointer<Widget> w = new Widget;
     w->deleteThis = true;
     w->close();
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // focusOut (crashes)
     //w = new Widget;
     //w->show();
     //w->setFocus();
-    //QVERIFY(qApp->focusWidget() == w);
+    //QCOMPARE(qApp->focusWidget(), w);
     //w->deleteThis = true;
     //w->clearFocus();
-    //QVERIFY(w == 0);
+    //QVERIFY(w.isNull());
 
     // key press
     w = new Widget;
     w->show();
     w->deleteThis = true;
     QTest::keyPress(w, Qt::Key_A);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // key release
@@ -3445,7 +3445,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->show();
     w->deleteThis = true;
     QTest::keyRelease(w, Qt::Key_A);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // mouse press
@@ -3453,7 +3453,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->show();
     w->deleteThis = true;
     QTest::mousePress(w, Qt::LeftButton);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // mouse release
@@ -3462,7 +3462,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->deleteThis = true;
     QMouseEvent me(QEvent::MouseButtonRelease, QPoint(1, 1), Qt::LeftButton, Qt::LeftButton, 0);
     qApp->notify(w, &me);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // mouse double click
@@ -3470,7 +3470,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->show();
     w->deleteThis = true;
     QTest::mouseDClick(w, Qt::LeftButton);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // hide event (crashes)
@@ -3478,13 +3478,13 @@ void tst_QWidget::testDeletionInEventHandlers()
     //w->show();
     //w->deleteThis = true;
     //w->hide();
-    //QVERIFY(w == 0);
+    //QVERIFY(w.isNull());
 
     // action event
     w = new Widget;
     w->deleteThis = true;
     w->addAction(new QAction(w));
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     // change event
@@ -3492,7 +3492,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->show();
     w->deleteThis = true;
     w->setMouseTracking(true);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 
     w = new Widget;
@@ -3501,7 +3501,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->deleteThis = true;
     me = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(w, &me);
-    QVERIFY(w == 0);
+    QVERIFY(w.isNull());
     delete w;
 }
 
@@ -3931,7 +3931,7 @@ void tst_QWidget::winIdChangeEvent()
         QCOMPARE(winIdBefore, winIdAfter);
         QCOMPARE(child.winIdChangeEventCount(), 3);
         // winId is set to zero during reparenting
-        QVERIFY(0 == child.m_winIdList[1]);
+        QCOMPARE(WId(0), child.m_winIdList[1]);
     }
 
     {
@@ -3971,7 +3971,7 @@ void tst_QWidget::winIdChangeEvent()
         QCOMPARE(winIdBefore, winIdAfter);
         QCOMPARE(child.winIdChangeEventCount(), 3);
         // winId is set to zero during reparenting
-        QVERIFY(0 == child.m_winIdList[1]);
+        QCOMPARE(WId(0), child.m_winIdList[1]);
     }
 }
 
@@ -10484,7 +10484,7 @@ void tst_QWidget::qmlSetParentHelper()
     QWidget child;
     QVERIFY(QAbstractDeclarativeData::setWidgetParent);
     QAbstractDeclarativeData::setWidgetParent(&child, &parent);
-    QVERIFY(child.parentWidget() == &parent);
+    QCOMPARE(child.parentWidget(), &parent);
     QAbstractDeclarativeData::setWidgetParent(&child, 0);
     QVERIFY(!child.parentWidget());
 #else

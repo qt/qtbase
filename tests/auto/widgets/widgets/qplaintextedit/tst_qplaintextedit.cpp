@@ -333,7 +333,7 @@ void tst_QPlainTextEdit::selectAllSetsNotSelection()
         QSKIP("Test only relevant for systems with selection");
 
     QApplication::clipboard()->setText(QString("foobar"), QClipboard::Selection);
-    QVERIFY(QApplication::clipboard()->text(QClipboard::Selection) == QString("foobar"));
+    QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString("foobar"));
 
     ed->insertPlainText("Hello World");
     ed->selectAll();
@@ -905,13 +905,13 @@ void tst_QPlainTextEdit::mouseCursorShape()
 {
     // always show an IBeamCursor, see change 170146
     QVERIFY(!ed->isReadOnly());
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 
     ed->setReadOnly(true);
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 
     ed->setPlainText("Foo");
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 }
 #endif
 
@@ -1324,7 +1324,7 @@ void tst_QPlainTextEdit::preserveCharFormatAfterSetPlainText()
     QTextBlock block = ed->document()->begin();
     block = block.next();
     QCOMPARE(block.text(), QString("This should still be blue"));
-    QVERIFY(block.begin().fragment().charFormat().foreground().color() == QColor(Qt::blue));
+    QCOMPARE(block.begin().fragment().charFormat().foreground().color(), QColor(Qt::blue));
 }
 
 void tst_QPlainTextEdit::extraSelections()
@@ -1444,7 +1444,7 @@ void tst_QPlainTextEdit::wordWrapProperty()
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc));
         edit.setDocument(doc);
         edit.setWordWrapMode(QTextOption::NoWrap);
-        QVERIFY(doc->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+        QCOMPARE(doc->defaultTextOption().wrapMode(), QTextOption::NoWrap);
     }
     {
         QPlainTextEdit edit;
@@ -1452,18 +1452,18 @@ void tst_QPlainTextEdit::wordWrapProperty()
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc));
         edit.setWordWrapMode(QTextOption::NoWrap);
         edit.setDocument(doc);
-        QVERIFY(doc->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+        QCOMPARE(doc->defaultTextOption().wrapMode(), QTextOption::NoWrap);
     }
 }
 
 void tst_QPlainTextEdit::lineWrapProperty()
 {
-    QVERIFY(ed->wordWrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere);
-    QVERIFY(ed->lineWrapMode() == QPlainTextEdit::WidgetWidth);
+    QCOMPARE(ed->wordWrapMode(), QTextOption::WrapAtWordBoundaryOrAnywhere);
+    QCOMPARE(ed->lineWrapMode(), QPlainTextEdit::WidgetWidth);
     ed->setLineWrapMode(QPlainTextEdit::NoWrap);
-    QVERIFY(ed->lineWrapMode() == QPlainTextEdit::NoWrap);
-    QVERIFY(ed->wordWrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere);
-    QVERIFY(ed->document()->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+    QCOMPARE(ed->lineWrapMode(), QPlainTextEdit::NoWrap);
+    QCOMPARE(ed->wordWrapMode(), QTextOption::WrapAtWordBoundaryOrAnywhere);
+    QCOMPARE(ed->document()->defaultTextOption().wrapMode(), QTextOption::NoWrap);
 }
 
 void tst_QPlainTextEdit::selectionChanged()

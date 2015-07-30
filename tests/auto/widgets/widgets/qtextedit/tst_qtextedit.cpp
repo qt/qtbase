@@ -398,12 +398,13 @@ void tst_QTextEdit::cleanup()
 
 void tst_QTextEdit::inlineAttributesOnInsert()
 {
-    QVERIFY(ed->textCursor().charFormat().foreground().color() != Qt::blue);
+    const QColor blue(Qt::blue);
+    QVERIFY(ed->textCursor().charFormat().foreground().color() != blue);
 
-    ed->setTextColor(Qt::blue);
+    ed->setTextColor(blue);
     QTest::keyClick(ed, Qt::Key_A);
 
-    QVERIFY(ed->textCursor().charFormat().foreground().color() == Qt::blue);
+    QCOMPARE(ed->textCursor().charFormat().foreground().color(), blue);
 }
 
 void tst_QTextEdit::inlineAttributesOnSelection()
@@ -457,7 +458,7 @@ void tst_QTextEdit::autoBulletList1()
     QTest::keyClicks(ed, "*This should become a list");
 
     QVERIFY(ed->textCursor().currentList());
-    QVERIFY(ed->textCursor().currentList()->format().style() == QTextListFormat::ListDisc);
+    QCOMPARE(ed->textCursor().currentList()->format().style(), QTextListFormat::ListDisc);
 }
 
 void tst_QTextEdit::autoBulletList2()
@@ -582,7 +583,7 @@ void tst_QTextEdit::selectAllSetsNotSelection()
     }
 
     QApplication::clipboard()->setText(QString("foobar"), QClipboard::Selection);
-    QVERIFY(QApplication::clipboard()->text(QClipboard::Selection) == QString("foobar"));
+    QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString("foobar"));
 
     ed->insertPlainText("Hello World");
     ed->selectAll();
@@ -867,11 +868,12 @@ void tst_QTextEdit::appendShouldUseCurrentFormat()
     fmt.setFontItalic(true);
     ed->setCurrentCharFormat(fmt);
     ed->append("Hello");
+    const QColor blue(Qt::blue);
 
     QTextCursor cursor(ed->document());
 
     QVERIFY(cursor.movePosition(QTextCursor::NextCharacter));
-    QVERIFY(cursor.charFormat().foreground().color() != Qt::blue);
+    QVERIFY(cursor.charFormat().foreground().color() != blue);
     QVERIFY(!cursor.charFormat().fontItalic());
 
     QVERIFY(cursor.movePosition(QTextCursor::NextBlock));
@@ -883,7 +885,7 @@ void tst_QTextEdit::appendShouldUseCurrentFormat()
     }
 
     QVERIFY(cursor.movePosition(QTextCursor::NextCharacter));
-    QVERIFY(cursor.charFormat().foreground().color() == Qt::blue);
+    QCOMPARE(cursor.charFormat().foreground().color(), blue);
     QVERIFY(cursor.charFormat().fontItalic());
 }
 
@@ -1211,7 +1213,7 @@ void tst_QTextEdit::lineWrapModes()
 {
     ed->setLineWrapMode(QTextEdit::NoWrap);
     // NoWrap at the same time as having all lines that are all left aligned means we optimize to only layout once. The effect is that the width is always 0
-    QVERIFY(ed->document()->pageSize().width() == qreal(0));
+    QCOMPARE(ed->document()->pageSize().width(), qreal(0));
 
     QTextCursor cursor = QTextCursor(ed->document());
     cursor.insertText(QString("A simple line"));
@@ -1237,13 +1239,13 @@ void tst_QTextEdit::mouseCursorShape()
 {
     // always show an IBeamCursor, see change 170146
     QVERIFY(!ed->isReadOnly());
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 
     ed->setReadOnly(true);
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 
     ed->setPlainText("Foo");
-    QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
+    QCOMPARE(ed->viewport()->cursor().shape(), Qt::IBeamCursor);
 }
 #endif
 
@@ -1661,7 +1663,7 @@ void tst_QTextEdit::preserveCharFormatAfterSetPlainText()
     QTextBlock block = ed->document()->begin();
     block = block.next();
     QCOMPARE(block.text(), QString("This should still be blue"));
-    QVERIFY(block.begin().fragment().charFormat().foreground().color() == QColor(Qt::blue));
+    QCOMPARE(block.begin().fragment().charFormat().foreground().color(), QColor(Qt::blue));
 }
 
 void tst_QTextEdit::extraSelections()
@@ -1796,25 +1798,25 @@ void tst_QTextEdit::wordWrapProperty()
         QTextDocument *doc = new QTextDocument(&edit);
         edit.setDocument(doc);
         edit.setWordWrapMode(QTextOption::NoWrap);
-        QVERIFY(doc->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+        QCOMPARE(doc->defaultTextOption().wrapMode(), QTextOption::NoWrap);
     }
     {
         QTextEdit edit;
         QTextDocument *doc = new QTextDocument(&edit);
         edit.setWordWrapMode(QTextOption::NoWrap);
         edit.setDocument(doc);
-        QVERIFY(doc->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+        QCOMPARE(doc->defaultTextOption().wrapMode(), QTextOption::NoWrap);
     }
 }
 
 void tst_QTextEdit::lineWrapProperty()
 {
-    QVERIFY(ed->wordWrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere);
-    QVERIFY(ed->lineWrapMode() == QTextEdit::WidgetWidth);
+    QCOMPARE(ed->wordWrapMode(), QTextOption::WrapAtWordBoundaryOrAnywhere);
+    QCOMPARE(ed->lineWrapMode(), QTextEdit::WidgetWidth);
     ed->setLineWrapMode(QTextEdit::NoWrap);
-    QVERIFY(ed->lineWrapMode() == QTextEdit::NoWrap);
-    QVERIFY(ed->wordWrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere);
-    QVERIFY(ed->document()->defaultTextOption().wrapMode() == QTextOption::NoWrap);
+    QCOMPARE(ed->lineWrapMode(), QTextEdit::NoWrap);
+    QCOMPARE(ed->wordWrapMode(), QTextOption::WrapAtWordBoundaryOrAnywhere);
+    QCOMPARE(ed->document()->defaultTextOption().wrapMode(), QTextOption::NoWrap);
 }
 
 void tst_QTextEdit::selectionChanged()
@@ -2119,7 +2121,7 @@ void tst_QTextEdit::setDocumentPreservesPalette()
 
     QTextDocument *newDoc = new QTextDocument(ed);
     ed->setDocument(newDoc);
-    QVERIFY(control->document() == newDoc);
+    QCOMPARE(control->document(), newDoc);
     QVERIFY(whitePal.color(QPalette::Active, QPalette::Text)
             == control->palette().color(QPalette::Active, QPalette::Text));
 }

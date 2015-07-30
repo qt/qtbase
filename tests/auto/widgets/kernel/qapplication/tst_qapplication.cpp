@@ -1158,7 +1158,7 @@ void tst_QApplication::sendPostedEvents()
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
     QPointer<SendPostedEventsTester> p = tester;
     (void) app.exec();
-    QVERIFY(p == 0);
+    QVERIFY(p.isNull());
 }
 
 void tst_QApplication::thread()
@@ -1176,8 +1176,8 @@ void tst_QApplication::thread()
     // *before* the QApplication has a thread
     QObject object;
     QObject child(&object);
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 
     {
         int argc = 0;
@@ -1207,8 +1207,8 @@ void tst_QApplication::thread()
     QVERIFY(!currentThread->isFinished());
 
     // should still have a thread
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 
     // do the test again, making sure that the thread is the same as
     // before
@@ -1229,8 +1229,8 @@ void tst_QApplication::thread()
         QVERIFY(!currentThread->isFinished());
 
         // should still have a thread
-        QVERIFY(object.thread() == currentThread);
-        QVERIFY(child.thread() == currentThread);
+        QCOMPARE(object.thread(), currentThread);
+        QCOMPARE(child.thread(), currentThread);
 
         QTestEventLoop::instance().enterLoop(1);
     }
@@ -1244,8 +1244,8 @@ void tst_QApplication::thread()
     QVERIFY(!currentThread->isFinished());
 
     // should still have a thread
-    QVERIFY(object.thread() == currentThread);
-    QVERIFY(child.thread() == currentThread);
+    QCOMPARE(object.thread(), currentThread);
+    QCOMPARE(child.thread(), currentThread);
 }
 
 class DeleteLaterWidget : public QWidget
@@ -1559,9 +1559,9 @@ void tst_QApplication::focusChanged()
     QCOMPARE(spy.at(0).count(), 2);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &le1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == 0);
+    QCOMPARE(now, &le1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QVERIFY(!old);
     spy.clear();
     QCOMPARE(spy.count(), 0);
 
@@ -1569,27 +1569,27 @@ void tst_QApplication::focusChanged()
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &pb1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &le1);
+    QCOMPARE(now, &pb1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &le1);
     spy.clear();
 
     lb1.setFocus();
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == &lb1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &pb1);
+    QCOMPARE(now, &lb1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &pb1);
     spy.clear();
 
     lb1.clearFocus();
     QCOMPARE(spy.count(), 1);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-    QVERIFY(now == 0);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &lb1);
+    QVERIFY(!now);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &lb1);
     spy.clear();
 
     QWidget parent2;
@@ -1606,9 +1606,9 @@ void tst_QApplication::focusChanged()
     QVERIFY(spy.count() > 0); // one for deactivation, one for activation on Windows
     old = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(0));
     now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
-    QVERIFY(now == &le2);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == 0);
+    QCOMPARE(now, &le2);
+    QCOMPARE(now, QApplication::focusWidget());
+    QVERIFY(!old);
     spy.clear();
 
     QTestKeyEvent tab(QTest::Press, Qt::Key_Tab, 0, 0);
@@ -1630,82 +1630,82 @@ void tst_QApplication::focusChanged()
 
     tab.simulate(now);
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
     }
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         tab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
     }
 
 
     if (!tabAllControls) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
         old = &pb2;
     } else {
         backtab.simulate(now);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
     click.simulate(old);
     if (!(pb2.focusPolicy() & Qt::ClickFocus)) {
-        QVERIFY(spy.count() == 0);
-        QVERIFY(now == QApplication::focusWidget());
+        QCOMPARE(spy.count(), 0);
+        QCOMPARE(now, QApplication::focusWidget());
     } else {
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &pb2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &le2);
+        QCOMPARE(now, &pb2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &le2);
         spy.clear();
 
         click.simulate(old);
         QVERIFY(spy.count() > 0);
         old = qvariant_cast<QWidget*>(spy.at(0).at(0));
         now = qvariant_cast<QWidget*>(spy.at(0).at(1));
-        QVERIFY(now == &le2);
-        QVERIFY(now == QApplication::focusWidget());
-        QVERIFY(old == &pb2);
+        QCOMPARE(now, &le2);
+        QCOMPARE(now, QApplication::focusWidget());
+        QCOMPARE(old, &pb2);
         spy.clear();
     }
 
@@ -1720,9 +1720,9 @@ void tst_QApplication::focusChanged()
     else
         old = qvariant_cast<QWidget*>(spy.at(spy.count()-2).at(0));
     now = qvariant_cast<QWidget*>(spy.at(spy.count()-1).at(1));
-    QVERIFY(now == &le1);
-    QVERIFY(now == QApplication::focusWidget());
-    QVERIFY(old == &le2);
+    QCOMPARE(now, &le1);
+    QCOMPARE(now, QApplication::focusWidget());
+    QCOMPARE(old, &le2);
     spy.clear();
 }
 

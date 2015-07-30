@@ -131,8 +131,8 @@ void tst_QBoxLayout::insertSpacerItem()
     layout->insertSpacerItem(0, spacer2);
     window.setLayout(layout);
 
-    QVERIFY(layout->itemAt(0) == spacer2);
-    QVERIFY(layout->itemAt(2) == spacer1);
+    QCOMPARE(layout->itemAt(0), spacer2);
+    QCOMPARE(layout->itemAt(2), spacer1);
 
     window.show();
 }

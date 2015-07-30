@@ -715,7 +715,7 @@ void tst_QGraphicsAnchorLayout1::testSpecialCases()
 
     widget1->setGeometry(QRectF(0,0,100,100));
     QCOMPARE(childWidget->geometry(), QRectF(1,1,98,98));
-    QVERIFY(childWidget->parentLayoutItem() == layout1);
+    QCOMPARE(childWidget->parentLayoutItem(), layout1);
     QGraphicsWidget *widget2 = new QGraphicsWidget;
     TheAnchorLayout *layout2 = new TheAnchorLayout();
     widget2->setLayout(layout2);
@@ -739,10 +739,10 @@ void tst_QGraphicsAnchorLayout1::testSpecialCases()
 
     widget2->setGeometry(QRectF(0,0,100,100));
     QCOMPARE(childWidget->geometry(), QRectF(1,1,98,98));
-    QVERIFY(childWidget->parentLayoutItem() == layout2);
+    QCOMPARE(childWidget->parentLayoutItem(), layout2);
     QCOMPARE(widget4->geometry(), QRectF(1,1,98,98));
-    QVERIFY(widget4->parentLayoutItem() == layout2);
-    QVERIFY(widget4->parentItem() == widget2);
+    QCOMPARE(widget4->parentLayoutItem(), layout2);
+    QCOMPARE(widget4->parentItem(), widget2);
 
     delete widget4;
     delete widget3;

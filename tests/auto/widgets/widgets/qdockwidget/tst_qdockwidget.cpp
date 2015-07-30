@@ -120,7 +120,7 @@ void tst_QDockWidget::widget()
 {
     {
         QDockWidget dw;
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
     }
 
     {
@@ -130,32 +130,32 @@ void tst_QDockWidget::widget()
 
         dw.setWidget(w1);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w1);
+        QCOMPARE(dw.widget(), w1);
         QCOMPARE(w1->parentWidget(), (QWidget*)&dw);
 
         dw.setWidget(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
 
         dw.setWidget(w2);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w2);
+        QCOMPARE(dw.widget(), w2);
         QCOMPARE(w2->parentWidget(), (QWidget*)&dw);
 
         dw.setWidget(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
 
         dw.setWidget(w1);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w1);
+        QCOMPARE(dw.widget(), w1);
         QCOMPARE(w1->parentWidget(), (QWidget*)&dw);
 
         dw.setWidget(w2);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w2);
+        QCOMPARE(dw.widget(), w2);
         QCOMPARE(w2->parentWidget(), (QWidget*)&dw);
 
         dw.setWidget(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
     }
 
     {
@@ -165,37 +165,37 @@ void tst_QDockWidget::widget()
 
         dw.setWidget(w1);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w1);
+        QCOMPARE(dw.widget(), w1);
         QCOMPARE(w1->parentWidget(), (QWidget*)&dw);
 
         w1->setParent(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
 
         dw.setWidget(w2);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w2);
+        QCOMPARE(dw.widget(), w2);
         QCOMPARE(w2->parentWidget(), (QWidget*)&dw);
 
         w2->setParent(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
 
         dw.setWidget(w1);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w1);
+        QCOMPARE(dw.widget(), w1);
         QCOMPARE(w1->parentWidget(), (QWidget*)&dw);
 
         dw.setWidget(w2);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w2);
+        QCOMPARE(dw.widget(), w2);
         QCOMPARE(w2->parentWidget(), (QWidget*)&dw);
 
         w1->setParent(0);
         QVERIFY(dw.widget() != 0);
-        QVERIFY(dw.widget() == w2);
+        QCOMPARE(dw.widget(), w2);
         QCOMPARE(w2->parentWidget(), (QWidget*)&dw);
 
         w2->setParent(0);
-        QVERIFY(dw.widget() == 0);
+        QVERIFY(!dw.widget());
         delete w1;
         delete w2;
     }

@@ -948,7 +948,7 @@ void tst_QGraphicsLayout::ownership()
 
         destructedSet.clear();
         window->setLayout(0);
-        QVERIFY(destructedSet.count() == 0);
+        QCOMPARE(destructedSet.count(), 0);
         delete window;
     }
 

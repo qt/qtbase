@@ -165,13 +165,13 @@ void tst_QFormLayout::buddies()
     QLineEdit *le2 = new QLineEdit;
     fl->addRow(0, le2);
     QWidget *label2 = fl->labelForField(le2);
-    QVERIFY(label2 == 0);
+    QVERIFY(!label2);
 
     //no label
     QLineEdit *le3 = new QLineEdit;
     fl->addRow(le3);
     QWidget *label3 = fl->labelForField(le3);
-    QVERIFY(label3 == 0);
+    QVERIFY(!label3);
 
     //TODO: empty label?
 }
@@ -389,18 +389,18 @@ void tst_QFormLayout::setFormStyle()
 #if 0 // QT_NO_STYLE_PLASTIQUE
     widget.setStyle(new QPlastiqueStyle());
 
-    QVERIFY(layout.labelAlignment() == Qt::AlignRight);
+    QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
-    QVERIFY(layout.fieldGrowthPolicy() == QFormLayout::ExpandingFieldsGrow);
-    QVERIFY(layout.rowWrapPolicy() == QFormLayout::DontWrapRows);
+    QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::ExpandingFieldsGrow);
+    QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 #endif
 
     widget.setStyle(QStyleFactory::create("windows"));
 
-    QVERIFY(layout.labelAlignment() == Qt::AlignLeft);
+    QCOMPARE(layout.labelAlignment(), Qt::AlignLeft);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
-    QVERIFY(layout.fieldGrowthPolicy() == QFormLayout::AllNonFixedFieldsGrow);
-    QVERIFY(layout.rowWrapPolicy() == QFormLayout::DontWrapRows);
+    QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::AllNonFixedFieldsGrow);
+    QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 
     /* can't directly create mac style or qtopia style, since
        this test is cross platform.. so create dummy styles that
@@ -408,17 +408,17 @@ void tst_QFormLayout::setFormStyle()
      */
     widget.setStyle(new DummyMacStyle());
 
-    QVERIFY(layout.labelAlignment() == Qt::AlignRight);
+    QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignHCenter | Qt::AlignTop));
-    QVERIFY(layout.fieldGrowthPolicy() == QFormLayout::FieldsStayAtSizeHint);
-    QVERIFY(layout.rowWrapPolicy() == QFormLayout::DontWrapRows);
+    QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::FieldsStayAtSizeHint);
+    QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 
     widget.setStyle(new DummyQtopiaStyle());
 
-    QVERIFY(layout.labelAlignment() == Qt::AlignRight);
+    QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
-    QVERIFY(layout.fieldGrowthPolicy() == QFormLayout::AllNonFixedFieldsGrow);
-    QVERIFY(layout.rowWrapPolicy() == QFormLayout::WrapLongRows);
+    QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::AllNonFixedFieldsGrow);
+    QCOMPARE(layout.rowWrapPolicy(), QFormLayout::WrapLongRows);
 }
 
 void tst_QFormLayout::setFieldGrowthPolicy()
@@ -443,14 +443,14 @@ void tst_QFormLayout::setFieldGrowthPolicy()
         layout.activate();
 
         if (i == 0) {
-            QVERIFY(fld1.width() == fld2.width());
-            QVERIFY(fld2.width() == fld3.width());
+            QCOMPARE(fld1.width(), fld2.width());
+            QCOMPARE(fld2.width(), fld3.width());
         } else if (i == 1) {
-            QVERIFY(fld1.width() == fld2.width());
+            QCOMPARE(fld1.width(), fld2.width());
             QVERIFY(fld2.width() < fld3.width());
         } else {
             QVERIFY(fld1.width() < fld2.width());
-            QVERIFY(fld2.width() == fld3.width());
+            QCOMPARE(fld2.width(), fld3.width());
         }
     }
 }
@@ -639,17 +639,17 @@ void tst_QFormLayout::insertRow_QString_QWidget()
     layout->insertRow(-5, "&Name:", fld1);
     QLabel *label1 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label1 != 0);
-    QVERIFY(label1->buddy() == fld1);
+    QCOMPARE(label1->buddy(), fld1);
 
     layout->insertRow(0, "&Email:", fld2);
     QLabel *label2 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label2 != 0);
-    QVERIFY(label2->buddy() == fld2);
+    QCOMPARE(label2->buddy(), fld2);
 
     layout->insertRow(5, "&Age:", fld3);
     QLabel *label3 = qobject_cast<QLabel *>(layout->itemAt(2, QFormLayout::LabelRole)->widget());
     QVERIFY(label3 != 0);
-    QVERIFY(label3->buddy() == fld3);
+    QCOMPARE(label3->buddy(), fld3);
 }
 
 void tst_QFormLayout::insertRow_QString_QLayout()
@@ -663,21 +663,21 @@ void tst_QFormLayout::insertRow_QString_QLayout()
     layout->insertRow(-5, "&Name:", fld1);
     QLabel *label1 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label1 != 0);
-    QVERIFY(label1->buddy() == 0);
+    QVERIFY(!label1->buddy());
 
     QCOMPARE(layout->rowCount(), 1);
 
     layout->insertRow(0, "&Email:", fld2);
     QLabel *label2 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label2 != 0);
-    QVERIFY(label2->buddy() == 0);
+    QVERIFY(!label2->buddy());
 
     QCOMPARE(layout->rowCount(), 2);
 
     layout->insertRow(5, "&Age:", fld3);
     QLabel *label3 = qobject_cast<QLabel *>(layout->itemAt(2, QFormLayout::LabelRole)->widget());
     QVERIFY(label3 != 0);
-    QVERIFY(label3->buddy() == 0);
+    QVERIFY(!label3->buddy());
 
     QCOMPARE(layout->rowCount(), 3);
 }

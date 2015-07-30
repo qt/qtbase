@@ -2416,7 +2416,7 @@ void tst_QDateTimeEdit::displayedSections()
     QFETCH(uint, section);
 
     testWidget->setDisplayFormat(format);
-    QVERIFY((QDateTimeEdit::Section)section == testWidget->displayedSections());
+    QCOMPARE(QDateTimeEdit::Sections(section), testWidget->displayedSections());
 }
 
 void tst_QDateTimeEdit::currentSection_data()
@@ -2460,7 +2460,7 @@ void tst_QDateTimeEdit::currentSection()
     if ((QDateTimeEdit::Section)section == QDateTimeEdit::NoSection)
         testWidget->setCurrentSection(QDateTimeEdit::YearSection); // Ensure it's not reset (see above)
     testWidget->setCurrentSection((QDateTimeEdit::Section)section);
-    QVERIFY((QDateTimeEdit::Section)currentSection == testWidget->currentSection());
+    QCOMPARE((QDateTimeEdit::Section)currentSection, testWidget->currentSection());
 }
 
 void tst_QDateTimeEdit::readOnly()
@@ -2825,7 +2825,7 @@ void tst_QDateTimeEdit::calendarPopup()
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &timeEdit);
     QTest::mouseClick(&timeEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
     QWidget *wid2 = timeEdit.findChild<QWidget *>("qt_datetimedit_calendar");
-    QVERIFY(wid2 == 0);
+    QVERIFY(!wid2);
     timeEdit.hide();
 
 
@@ -2839,7 +2839,7 @@ void tst_QDateTimeEdit::calendarPopup()
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &dateEdit);
     QTest::mouseClick(&dateEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
     QWidget *wid3 = dateEdit.findChild<QWidget *>("qt_datetimedit_calendar");
-    QVERIFY(wid3 == 0);
+    QVERIFY(!wid3);
     dateEdit.hide();
 }
 

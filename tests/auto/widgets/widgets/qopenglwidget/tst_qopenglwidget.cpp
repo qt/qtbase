@@ -70,7 +70,7 @@ void tst_QOpenGLWidget::create()
 
     QVERIFY(w->isValid());
     QVERIFY(w->context());
-    QVERIFY(w->context()->format() == w->format());
+    QCOMPARE(w->context()->format(), w->format());
     QVERIFY(w->defaultFramebufferObject() != 0);
 }
 
@@ -304,7 +304,7 @@ void tst_QOpenGLWidget::asViewport()
     // the widget stack.
     btn->update();
     qApp->processEvents();
-    QVERIFY(view->paintCount() == 0);
+    QCOMPARE(view->paintCount(), 0);
 }
 
 class PaintCountWidget : public QOpenGLWidget

@@ -166,8 +166,8 @@ void tst_QScrollArea::checkHFW_Task_197736()
     scrollArea.setWidgetResizable(false);
     scrollArea.resize(QSize(100,100));
     w->resize(QSize(200,200));
-    QVERIFY(w->width() == 200);
-    QVERIFY(w->height() == 200);
+    QCOMPARE(w->width(), 200);
+    QCOMPARE(w->height(), 200);
 }
 
 QTEST_MAIN(tst_QScrollArea)

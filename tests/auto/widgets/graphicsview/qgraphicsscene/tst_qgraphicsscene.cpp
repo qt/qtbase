@@ -4727,9 +4727,9 @@ void tst_QGraphicsScene::minimumRenderSize()
     QTRY_VERIFY(view.repaints > viewRepaints);
     viewRepaints = view.repaints;
 
-    QVERIFY(viewRepaints == bigParent->repaints);
-    QVERIFY(viewRepaints == smallChild->repaints);
-    QVERIFY(viewRepaints == smallerGrandChild->repaints);
+    QCOMPARE(viewRepaints, bigParent->repaints);
+    QCOMPARE(viewRepaints, smallChild->repaints);
+    QCOMPARE(viewRepaints, smallerGrandChild->repaints);
 
     // Setting a minimum render size should cause a repaint
     scene.setMinimumRenderSize(0.5);
@@ -4738,9 +4738,9 @@ void tst_QGraphicsScene::minimumRenderSize()
     QTRY_VERIFY(view.repaints > viewRepaints);
     viewRepaints = view.repaints;
 
-    QVERIFY(viewRepaints == bigParent->repaints);
-    QVERIFY(viewRepaints == smallChild->repaints);
-    QVERIFY(viewRepaints == smallerGrandChild->repaints);
+    QCOMPARE(viewRepaints, bigParent->repaints);
+    QCOMPARE(viewRepaints, smallChild->repaints);
+    QCOMPARE(viewRepaints, smallerGrandChild->repaints);
 
     // Scaling should cause a repaint of big items only.
     view.scale(0.1, 0.1);
@@ -4749,8 +4749,8 @@ void tst_QGraphicsScene::minimumRenderSize()
     QTRY_VERIFY(view.repaints > viewRepaints);
     viewRepaints = view.repaints;
 
-    QVERIFY(viewRepaints == bigParent->repaints);
-    QVERIFY(viewRepaints == smallChild->repaints);
+    QCOMPARE(viewRepaints, bigParent->repaints);
+    QCOMPARE(viewRepaints, smallChild->repaints);
     QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
 
     // Scaling further should cause even fewer items to be repainted
@@ -4760,7 +4760,7 @@ void tst_QGraphicsScene::minimumRenderSize()
     QTRY_VERIFY(view.repaints > viewRepaints);
     viewRepaints = view.repaints;
 
-    QVERIFY(viewRepaints == bigParent->repaints);
+    QCOMPARE(viewRepaints, bigParent->repaints);
     QVERIFY(bigParent->repaints > smallChild->repaints);
     QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
 }

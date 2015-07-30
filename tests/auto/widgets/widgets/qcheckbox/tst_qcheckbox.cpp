@@ -324,7 +324,7 @@ void tst_QCheckBox::isToggleButton()
 
 void tst_QCheckBox::foregroundRole()
 {
-    QVERIFY(testWidget->foregroundRole() == QPalette::WindowText);
+    QCOMPARE(testWidget->foregroundRole(), QPalette::WindowText);
 }
 
 void tst_QCheckBox::minimumSizeHint()

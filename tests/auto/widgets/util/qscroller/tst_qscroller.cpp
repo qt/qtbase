@@ -297,7 +297,7 @@ void tst_QScroller::staticScrollers()
         QScrollerProperties sp2 = QScroller::scroller(o2)->scrollerProperties();
 
         // default properties should be the same
-        QVERIFY(sp1 == sp2);
+        QCOMPARE(sp1, sp2);
 
         QCOMPARE(QScroller::scroller(o1)->scrollerProperties(), sp1);
 

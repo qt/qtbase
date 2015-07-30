@@ -84,13 +84,13 @@ void tst_QWidgetsVariant::constructor_invalid()
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(typeId, /* copy */ 0);
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
 }
 
@@ -208,7 +208,7 @@ void tst_QWidgetsVariant::qvariant_cast_QObject_derived()
     CustomQWidget customWidget;
     QWidget *widget = &customWidget;
     QVariant data = QVariant::fromValue(widget);
-    QVERIFY(data.userType() == qMetaTypeId<QWidget*>());
+    QCOMPARE(data.userType(), qMetaTypeId<QWidget*>());
 
     QCOMPARE(data.value<QObject*>(), widget);
     QCOMPARE(data.value<QWidget*>(), widget);

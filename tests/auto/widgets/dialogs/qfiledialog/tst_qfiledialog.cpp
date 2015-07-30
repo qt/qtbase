@@ -677,7 +677,7 @@ void tst_QFiledialog::filters()
 
     // effects
     QList<QComboBox*> views = fd.findChildren<QComboBox*>("fileTypeCombo");
-    QVERIFY(views.count() == 1);
+    QCOMPARE(views.count(), 1);
     QCOMPARE(views.at(0)->isVisible(), false);
 
     QStringList filters;
@@ -1296,7 +1296,7 @@ void tst_QFiledialog::clearLineEdit()
 
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
-    QVERIFY(lineEdit->text() == "foo");
+    QCOMPARE(lineEdit->text(), QLatin1String("foo"));
     fd.setDirectory(QDir::home());
 
     QListView* list = fd.findChild<QListView*>("listView");
@@ -1393,12 +1393,12 @@ void tst_QFiledialog::trailingDotsAndSpaces()
     QTest::keyClick(lineEdit, Qt::Key_Space);
     QTest::keyClick(lineEdit, Qt::Key_Period);
     QTest::qWait(1000);
-    QVERIFY(currentChildrenCount == list->model()->rowCount(list->rootIndex()));
+    QCOMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
     lineEdit->clear();
     QTest::keyClick(lineEdit, Qt::Key_Period);
     QTest::keyClick(lineEdit, Qt::Key_Space);
     QTest::qWait(1000);
-    QVERIFY(currentChildrenCount == list->model()->rowCount(list->rootIndex()));
+    QCOMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
 }
 
 #ifdef Q_OS_UNIX

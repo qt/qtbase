@@ -165,7 +165,7 @@ void tst_QTabWidget::init()
     tw = new QTabWidget(0);
     QCOMPARE(tw->count(), 0);
     QCOMPARE(tw->currentIndex(), -1);
-    QVERIFY(tw->currentWidget() == NULL);
+    QVERIFY(!tw->currentWidget());
 }
 
 void tst_QTabWidget::cleanup()
@@ -208,7 +208,7 @@ void tst_QTabWidget::addRemoveTab()
     QCOMPARE(tw->count(), 0);
     tw->removeTab(-1);
     QCOMPARE(tw->count(), 0);
-    QVERIFY(tw->widget(-1) == 0);
+    QVERIFY(!tw->widget(-1));
 
     QWidget *w = new QWidget();
     int index = tw->addTab(w, LABEL);
@@ -216,7 +216,7 @@ void tst_QTabWidget::addRemoveTab()
     QCOMPARE(tw->indexOf(w), index);
 
     QCOMPARE(tw->count(), 1);
-    QVERIFY(tw->widget(index) == w);
+    QCOMPARE(tw->widget(index), w);
     QCOMPARE(tw->tabText(index), QString(LABEL));
 
     removePage(index);
@@ -333,21 +333,21 @@ void tst_QTabWidget::currentWidget()
 {
     // Test bad arguments
     tw->setCurrentWidget(NULL);
-    QVERIFY(tw->currentWidget() == NULL);
+    QVERIFY(!tw->currentWidget());
 
     int index = addPage();
     QWidget *w = tw->widget(index);
-    QVERIFY(tw->currentWidget() == w);
+    QCOMPARE(tw->currentWidget(), w);
     QCOMPARE(tw->currentIndex(), index);
 
     tw->setCurrentWidget(NULL);
-    QVERIFY(tw->currentWidget() == w);
+    QCOMPARE(tw->currentWidget(), w);
     QCOMPARE(tw->currentIndex(), index);
 
     int index2 = addPage();
     QWidget *w2 = tw->widget(index2);
     Q_UNUSED(w2);
-    QVERIFY(tw->currentWidget() == w);
+    QCOMPARE(tw->currentWidget(), w);
     QCOMPARE(tw->currentIndex(), index);
 
     removePage(index2);
@@ -372,7 +372,7 @@ void tst_QTabWidget::currentIndex()
     QCOMPARE(tw->currentIndex(), firstIndex);
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toInt() == firstIndex);
+    QCOMPARE(arguments.at(0).toInt(), firstIndex);
 
     int index = addPage();
     QCOMPARE(tw->currentIndex(), firstIndex);
@@ -380,19 +380,19 @@ void tst_QTabWidget::currentIndex()
     QCOMPARE(tw->currentIndex(), index);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toInt() == index);
+    QCOMPARE(arguments.at(0).toInt(), index);
 
     removePage(index);
     QCOMPARE(tw->currentIndex(), firstIndex);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toInt() == firstIndex);
+    QCOMPARE(arguments.at(0).toInt(), firstIndex);
 
     removePage(firstIndex);
     QCOMPARE(tw->currentIndex(), -1);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toInt() == -1);
+    QCOMPARE(arguments.at(0).toInt(), -1);
 }
 
 void tst_QTabWidget::cornerWidget()
@@ -400,24 +400,24 @@ void tst_QTabWidget::cornerWidget()
     // Test bad arguments
     tw->setCornerWidget(NULL, Qt::TopRightCorner);
 
-    QVERIFY(tw->cornerWidget(Qt::TopLeftCorner) == 0);
-    QVERIFY(tw->cornerWidget(Qt::TopRightCorner) == 0);
-    QVERIFY(tw->cornerWidget(Qt::BottomLeftCorner) == 0);
-    QVERIFY(tw->cornerWidget(Qt::BottomRightCorner) == 0);
+    QVERIFY(!tw->cornerWidget(Qt::TopLeftCorner));
+    QVERIFY(!tw->cornerWidget(Qt::TopRightCorner));
+    QVERIFY(!tw->cornerWidget(Qt::BottomLeftCorner));
+    QVERIFY(!tw->cornerWidget(Qt::BottomRightCorner));
 
     QWidget *w = new QWidget(0);
     tw->setCornerWidget(w, Qt::TopLeftCorner);
     QCOMPARE(w->parent(), (QObject *)tw);
-    QVERIFY(tw->cornerWidget(Qt::TopLeftCorner) == w);
+    QCOMPARE(tw->cornerWidget(Qt::TopLeftCorner), w);
     tw->setCornerWidget(w, Qt::TopRightCorner);
-    QVERIFY(tw->cornerWidget(Qt::TopRightCorner) == w);
+    QCOMPARE(tw->cornerWidget(Qt::TopRightCorner), w);
     tw->setCornerWidget(w, Qt::BottomLeftCorner);
-    QVERIFY(tw->cornerWidget(Qt::BottomLeftCorner) == w);
+    QCOMPARE(tw->cornerWidget(Qt::BottomLeftCorner), w);
     tw->setCornerWidget(w, Qt::BottomRightCorner);
-    QVERIFY(tw->cornerWidget(Qt::BottomRightCorner) == w);
+    QCOMPARE(tw->cornerWidget(Qt::BottomRightCorner), w);
 
     tw->setCornerWidget(0, Qt::TopRightCorner);
-    QVERIFY(tw->cornerWidget(Qt::TopRightCorner) == 0);
+    QVERIFY(!tw->cornerWidget(Qt::TopRightCorner));
     QCOMPARE(w->isHidden(), true);
 }
 

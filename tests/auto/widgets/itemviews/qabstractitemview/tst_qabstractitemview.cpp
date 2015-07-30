@@ -1036,7 +1036,7 @@ void tst_QAbstractItemView::dragAndDropOnChild()
             ++successes;
     }
 
-    QVERIFY(successes == 0);
+    QCOMPARE(successes, 0);
 }
 
 #endif // 0
@@ -1214,7 +1214,7 @@ void tst_QAbstractItemView::setCurrentIndex()
     view->setModel(model);
 
     view->setCurrentIndex(model->index(0,0));
-    QVERIFY(view->currentIndex() == model->index(0,0));
+    QCOMPARE(view->currentIndex(), model->index(0,0));
     view->setCurrentIndex(model->index(1,0));
     QVERIFY(view->currentIndex() == model->index(result ? 1 : 0,0));
 }

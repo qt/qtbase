@@ -2456,10 +2456,10 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     QVERIFY(lv.horizontalScrollBar()->value() > hValue);
 
     QApplication::sendEvent(lv.viewport(), &wheelUpEvent);
-    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+    QCOMPARE(lv.horizontalScrollBar()->value(), hValue);
 
     QApplication::sendEvent(lv.viewport(), &wheelLeftDownEvent);
-    QVERIFY(lv.horizontalScrollBar()->value() == hValue);
+    QCOMPARE(lv.horizontalScrollBar()->value(), hValue);
 
     // ensure that vertical wheel events are not converted when vertical
     // scroll bar is not visible but vertical scrolling is possible

@@ -224,7 +224,7 @@ void tst_QActionGroup::unCheckCurrentAction()
     current->setChecked(false);
     QVERIFY(!action1.isChecked());
     QVERIFY(!action2.isChecked());
-    QVERIFY(group.checkedAction() == 0);
+    QVERIFY(!group.checkedAction());
 }
 
 

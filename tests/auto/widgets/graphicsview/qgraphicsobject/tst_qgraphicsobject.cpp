@@ -102,7 +102,7 @@ void tst_QGraphicsObject::pos()
     QCOMPARE(xSpy.count(), 1);
     QCOMPARE(ySpy.count(), 1);
 
-    QVERIFY(object.pos() == QPointF(10,10));
+    QCOMPARE(object.pos(), QPointF(10,10));
 
     object.setPos(10, 10);
     QCOMPARE(xSpy.count(), 1);
@@ -111,12 +111,12 @@ void tst_QGraphicsObject::pos()
     object.setProperty("pos", QPointF(0, 0));
     QCOMPARE(xSpy.count(), 2);
     QCOMPARE(ySpy.count(), 2);
-    QVERIFY(object.property("pos") == QPointF(0,0));
+    QCOMPARE(object.property("pos").toPointF(), QPointF(0,0));
 
     object.setProperty("pos", QPointF(10, 0));
     QCOMPARE(xSpy.count(), 3);
     QCOMPARE(ySpy.count(), 2);
-    QVERIFY(object.property("pos") == QPointF(10,0));
+    QCOMPARE(object.property("pos").toPointF(), QPointF(10,0));
 
     object.setProperty("pos", QPointF(10, 10));
     QCOMPARE(xSpy.count(), 3);
@@ -135,7 +135,7 @@ void tst_QGraphicsObject::x()
     QCOMPARE(ySpy.count(), 0);
 
     QVERIFY(object.pos() == QPointF(10, 0));
-    QVERIFY(object.x() == 10);
+    QCOMPARE(object.x(), qreal(10));
 
     object.setX(10);
     QCOMPARE(xSpy.count(), 1);
@@ -144,7 +144,7 @@ void tst_QGraphicsObject::x()
     object.setProperty("x", 0);
     QCOMPARE(xSpy.count(), 2);
     QCOMPARE(ySpy.count(), 0);
-    QVERIFY(object.property("x") == 0);
+    QCOMPARE(object.property("x").toDouble(), double(0));
 }
 
 void tst_QGraphicsObject::y()
@@ -158,7 +158,7 @@ void tst_QGraphicsObject::y()
     QCOMPARE(ySpy.count(), 1);
 
     QVERIFY(object.pos() == QPointF(0, 10));
-    QVERIFY(object.y() == 10);
+    QCOMPARE(object.y(), qreal(10));
 
     object.setY(10);
     QCOMPARE(xSpy.count(), 0);
@@ -167,43 +167,43 @@ void tst_QGraphicsObject::y()
     object.setProperty("y", 0);
     QCOMPARE(xSpy.count(), 0);
     QCOMPARE(ySpy.count(), 2);
-    QVERIFY(object.property("y") == 0);
+    QCOMPARE(object.property("y").toDouble(), qreal(0));
 }
 
 void tst_QGraphicsObject::z()
 {
     MyGraphicsObject object;
     QSignalSpy zSpy(&object, SIGNAL(zChanged()));
-    QVERIFY(object.zValue() == 0);
+    QCOMPARE(object.zValue(), qreal(0));
     object.setZValue(10);
     QCOMPARE(zSpy.count(), 1);
 
-    QVERIFY(object.zValue() == 10);
+    QCOMPARE(object.zValue(), qreal(10));
 
     object.setZValue(10);
     QCOMPARE(zSpy.count(), 1);
 
     object.setProperty("z", 0);
     QCOMPARE(zSpy.count(), 2);
-    QVERIFY(object.property("z") == 0);
+    QCOMPARE(object.property("z").toDouble(), double(0));
 }
 
 void tst_QGraphicsObject::opacity()
 {
     MyGraphicsObject object;
     QSignalSpy spy(&object, SIGNAL(opacityChanged()));
-    QVERIFY(object.opacity() == 1.);
+    QCOMPARE(object.opacity(), 1.);
     object.setOpacity(0);
     QCOMPARE(spy.count(), 1);
 
-    QVERIFY(object.opacity() == 0.);
+    QCOMPARE(object.opacity(), 0.);
 
     object.setOpacity(0);
     QCOMPARE(spy.count(), 1);
 
     object.setProperty("opacity", .5);
     QCOMPARE(spy.count(), 2);
-    QVERIFY(object.property("opacity") == .5);
+    QCOMPARE(object.property("opacity").toDouble(), .5);
 }
 
 void tst_QGraphicsObject::enabled()

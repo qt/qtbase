@@ -520,7 +520,7 @@ public:
 
     void draw(QPainter *painter)
     {
-        QVERIFY(sourcePixmap(Qt::LogicalCoordinates).handle() == pixmap.handle());
+        QCOMPARE(sourcePixmap(Qt::LogicalCoordinates).handle(), pixmap.handle());
         QVERIFY((painter->worldTransform().type() <= QTransform::TxTranslate) == (sourcePixmap(Qt::DeviceCoordinates).handle() == pixmap.handle()));
 
         ++repaints;
@@ -595,7 +595,7 @@ void tst_QGraphicsEffect::deviceCoordinateTranslateCaching()
 
     item->translate(10, 0);
 
-    QTRY_VERIFY(item->numRepaints == numRepaints);
+    QTRY_COMPARE(item->numRepaints, numRepaints);
 }
 
 void tst_QGraphicsEffect::inheritOpacity()

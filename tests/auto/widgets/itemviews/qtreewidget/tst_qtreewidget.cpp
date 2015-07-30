@@ -1586,7 +1586,7 @@ void tst_QTreeWidget::scrollToItem()
 
     testWidget->setHeaderLabels(QStringList() << "foo");
     testWidget->scrollToItem(search);
-    QVERIFY(search->text(0) == "111");
+    QCOMPARE(search->text(0), QLatin1String("111"));
 
     bar = search->parent();
     QVERIFY(testWidget->isItemExpanded(bar));
@@ -2287,7 +2287,7 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting()
         QCOMPARE(parent->childCount(), childText.count());
         QVERIFY(parent->isExpanded());
     }
-    QVERIFY(tree.model()->rowCount() == parentText.count());
+    QCOMPARE(tree.model()->rowCount(), parentText.count());
 
     // verify that the items are still expanded
     foreach (QTreeWidgetItem *item, items) {
@@ -2659,7 +2659,7 @@ void tst_QTreeWidget::sortedIndexOfChild()
     tw.sortItems(0, (Qt::SortOrder)sortOrder);
     tw.expandAll();
 
-    QVERIFY(itms.count() == expectedIndexes.count());
+    QCOMPARE(itms.count(), expectedIndexes.count());
     for (int j = 0; j < expectedIndexes.count(); ++j)
         QCOMPARE(top->indexOfChild(itms.at(j)), expectedIndexes.at(j));
 }
@@ -3235,7 +3235,7 @@ void tst_QTreeWidget::setCurrentItemExpandsParent()
     QTreeWidgetItem *i1 = new QTreeWidgetItem(&w, QStringList() << "parent");
     QTreeWidgetItem *i2 = new QTreeWidgetItem(i1, QStringList() << "child");
     QVERIFY(!i2->isExpanded());
-    QVERIFY(w.currentItem() == 0);
+    QVERIFY(!w.currentItem());
     w.setCurrentItem(i2);
     QVERIFY(!i2->isExpanded());
     QCOMPARE(w.currentItem(), i2);
