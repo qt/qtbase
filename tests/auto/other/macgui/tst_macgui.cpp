@@ -231,7 +231,7 @@ void tst_MacGui::spinBoxArrowButtons()
     const QRect lessRect = lessInterface->rect();
     const QRect lessLocalRect(colorWidget.mapFromGlobal(lessRect.topLeft()), colorWidget.mapFromGlobal(lessRect.bottomRight()));
     const QRect compareRect = lessLocalRect.adjusted(5, 3, -5, -7);
-    QVERIFY(noFocus.copy(compareRect) == focus.copy(compareRect));
+    QCOMPARE(noFocus.copy(compareRect), focus.copy(compareRect));
 }
 
 QTEST_MAIN(tst_MacGui)

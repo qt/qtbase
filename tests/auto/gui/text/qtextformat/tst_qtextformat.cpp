@@ -101,7 +101,7 @@ void tst_QTextFormat::defaultAlignment()
     QTextBlockFormat fmt;
     QVERIFY(!fmt.hasProperty(QTextFormat::BlockAlignment));
     QCOMPARE(fmt.intProperty(QTextFormat::BlockAlignment), 0);
-    QVERIFY(fmt.alignment() == Qt::AlignLeft);
+    QCOMPARE(fmt.alignment(), Qt::AlignLeft);
 }
 
 void tst_QTextFormat::testUnderlinePropertyPrecedence()
@@ -209,7 +209,7 @@ void tst_QTextFormat::resolveFont()
     QVector<QTextFormat> formats = doc.allFormats();
     QCOMPARE(formats.count(), 3);
 
-    QVERIFY(formats.at(2).type() == QTextFormat::CharFormat);
+    QCOMPARE(formats.at(2).type(), int(QTextFormat::CharFormat));
     fmt = formats.at(2).toCharFormat();
 
     QVERIFY(!fmt.font().underline());

@@ -173,7 +173,7 @@ void tst_QRegion::setRects()
         QRect rect;
         region.setRects(&rect, 0);
         QVERIFY(region.isEmpty());
-        QVERIFY(region == QRegion());
+        QCOMPARE(region, QRegion());
         QVERIFY(!region.boundingRect().isValid());
         QVERIFY(region.rects().isEmpty());
     }

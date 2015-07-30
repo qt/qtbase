@@ -140,13 +140,13 @@ void tst_QGuiVariant::constructor_invalid()
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
     {
         QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(typeId, /* copy */ 0);
         QVERIFY(!variant.isValid());
-        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
 }
 
@@ -611,9 +611,9 @@ void tst_QGuiVariant::writeToReadFromDataStream()
                 // the uninitialized float can be NaN (observed on Windows Mobile 5 ARMv4i)
                 float readFloat = qvariant_cast<float>(readVariant);
                 float writtenFloat = qvariant_cast<float>(writeVariant);
-                QVERIFY(qIsNaN(readFloat) == qIsNaN(writtenFloat));
+                QCOMPARE(qIsNaN(readFloat), qIsNaN(writtenFloat));
                 if (!qIsNaN(readFloat))
-                    QVERIFY(readFloat == writtenFloat);
+                    QCOMPARE(readFloat, writtenFloat);
             }
             break;
         }
@@ -632,7 +632,7 @@ void tst_QGuiVariant::writeToReadFromOldDataStream()
         dataFileStream.setVersion(QDataStream::Qt_4_9);
         QVariant readVariant;
         dataFileStream >> readVariant;
-        QVERIFY(readVariant.userType() == QMetaType::QPolygonF);
+        QCOMPARE(readVariant.userType(), int(QMetaType::QPolygonF));
         QCOMPARE(testVariant, readVariant);
         file.close();
     }
@@ -656,7 +656,7 @@ void tst_QGuiVariant::writeToReadFromOldDataStream()
         QDataStream readVarData(variantData);
         readVarData >> dummy;
         readVarData >> polyData50;
-        QVERIFY(polyData49 == polyData50);
+        QCOMPARE(polyData49, polyData50);
     }
 }
 

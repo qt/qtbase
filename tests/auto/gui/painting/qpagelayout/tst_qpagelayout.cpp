@@ -76,7 +76,7 @@ void tst_QPageLayout::basics()
     QCOMPARE(simple.paintRectPixels(72), QRect(0, 0, 595, 842));
 
     const QPageLayout a4portrait = simple;
-    QVERIFY(a4portrait == simple);
+    QCOMPARE(a4portrait, simple);
 
     // Change orientation
     simple.setOrientation(QPageLayout::Landscape);

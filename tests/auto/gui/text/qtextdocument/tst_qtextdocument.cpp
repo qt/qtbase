@@ -744,7 +744,7 @@ void tst_QTextDocument::mightBeRichText()
 {
     QFETCH(QString, input);
     QFETCH(bool, result);
-    QVERIFY(result == Qt::mightBeRichText(input));
+    QCOMPARE(result, Qt::mightBeRichText(input));
 }
 
 Q_DECLARE_METATYPE(QTextDocumentFragment)
@@ -2222,7 +2222,7 @@ void tst_QTextDocument::clonePreservesUserStates()
         b2 = b2.next();
         QCOMPARE(b1.userState(), b2.userState());
     }
-    QVERIFY(b2 == clone->end());
+    QCOMPARE(b2, clone->end());
     delete clone;
 }
 
@@ -2269,7 +2269,7 @@ void tst_QTextDocument::resolvedFontInEmptyFormat()
     doc->setDefaultFont(font);
     QTextCharFormat fmt = doc->begin().charFormat();
     QVERIFY(fmt.properties().isEmpty());
-    QVERIFY(fmt.font() == font);
+    QCOMPARE(fmt.font(), font);
 }
 
 void tst_QTextDocument::defaultRootFrameMargin()
@@ -2369,6 +2369,7 @@ void tst_QTextDocument::deleteTextObjectsOnClear()
 
 void tst_QTextDocument::defaultStyleSheet()
 {
+    const QColor green("green");
     const QString sheet("p { background-color: green; }");
     QVERIFY(doc->defaultStyleSheet().isEmpty());
     doc->setDefaultStyleSheet(sheet);
@@ -2376,30 +2377,30 @@ void tst_QTextDocument::defaultStyleSheet()
 
     cursor.insertHtml("<p>test");
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 
     doc->clear();
     cursor.insertHtml("<p>test");
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->defaultStyleSheet(), sheet);
     cursor = QTextCursor(clone);
     cursor.insertHtml("<p>test");
     fmt = clone->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
     delete clone;
 
     cursor = QTextCursor(doc);
     cursor.insertHtml("<p>test");
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 
     doc->clear();
     cursor.insertHtml("<style>p { background-color: red; }</style><p>test");
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("red"));
+    QCOMPARE(fmt.background().color(), QColor(Qt::red));
 
     doc->clear();
     doc->setDefaultStyleSheet("invalid style sheet....");
@@ -2567,7 +2568,7 @@ void tst_QTextDocument::setTextPreservesUndoRedoEnabled()
 void tst_QTextDocument::firstLast()
 {
     QCOMPARE(doc->blockCount(), 1);
-    QVERIFY(doc->firstBlock() == doc->lastBlock());
+    QCOMPARE(doc->firstBlock(), doc->lastBlock());
 
     doc->setPlainText("Hello\nTest\nWorld");
 
@@ -3013,8 +3014,8 @@ void tst_QTextDocument::QTBUG27354_spaceAndSoftSpace()
         QTextBlock block = td.begin();
         while (block.isValid()) {
             QTextBlockFormat fmt = block.blockFormat();
-            QVERIFY(fmt.lineHeightType() == QTextBlockFormat::SingleHeight);
-            QVERIFY(fmt.lineHeight() == 0);
+            QCOMPARE(fmt.lineHeightType(), int(QTextBlockFormat::SingleHeight));
+            QCOMPARE(fmt.lineHeight(), qreal(0));
             block = block.next();
         }
     }
@@ -3164,8 +3165,8 @@ void tst_QTextDocument::cssInheritance()
         QTextBlock block = td.begin();
         while (block.isValid()) {
             QTextBlockFormat fmt = block.blockFormat();
-            QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
-            QVERIFY(fmt.lineHeight() == 200);
+            QCOMPARE(fmt.lineHeightType(), int(QTextBlockFormat::ProportionalHeight));
+            QCOMPARE(fmt.lineHeight(), qreal(200));
             block = block.next();
         }
     }
@@ -3175,12 +3176,12 @@ void tst_QTextDocument::cssInheritance()
                    "<p style=\"line-height: 40px\">Foo</p><p>Bar</p><p>Baz</p></body></html>");
         QTextBlock block = td.begin();
         QTextBlockFormat fmt = block.blockFormat();
-        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::FixedHeight);
-        QVERIFY(fmt.lineHeight() == 40);
+        QCOMPARE(fmt.lineHeightType(), int(QTextBlockFormat::FixedHeight));
+        QCOMPARE(fmt.lineHeight(), qreal(40));
         block = block.next();
         fmt = block.blockFormat();
-        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
-        QVERIFY(fmt.lineHeight() == 300);
+        QCOMPARE(fmt.lineHeightType(), int(QTextBlockFormat::ProportionalHeight));
+        QCOMPARE(fmt.lineHeight(), qreal(300));
     }
     {
         QTextDocument td;
@@ -3188,7 +3189,7 @@ void tst_QTextDocument::cssInheritance()
             "<p>Foo</p><p>Bar</p><p>Baz</p></body></html>");
         QTextBlock block = td.begin();
         while (block.isValid()) {
-            QVERIFY(block.blockFormat().background() == QBrush());
+            QCOMPARE(block.blockFormat().background(), QBrush());
             QVERIFY(block.charFormat().font().bold());
             block = block.next();
         }

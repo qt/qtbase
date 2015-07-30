@@ -203,8 +203,8 @@ void tst_QCssParser::scanner()
     QCss::Scanner::scan(QCss::Scanner::preprocess(QString::fromUtf8(inputFile.readAll())), &symbols);
 
     QVERIFY(symbols.count() > 1);
-    QVERIFY(symbols.last().token == QCss::S);
-    QVERIFY(symbols.last().lexem() == QLatin1String("\n"));
+    QCOMPARE(symbols.last().token, QCss::S);
+    QCOMPARE(symbols.last().lexem(), QLatin1String("\n"));
     symbols.remove(symbols.count() - 1, 1);
 
     QFile outputFile(output);
@@ -861,7 +861,7 @@ void tst_QCssParser::colorValue()
     QCss::Declaration decl;
     QVERIFY(parser.parseNextDeclaration(&decl));
     const QColor col = decl.colorValue();
-    QVERIFY(expectedColor.isValid() == col.isValid());
+    QCOMPARE(expectedColor.isValid(), col.isValid());
     QCOMPARE(col, expectedColor);
 }
 
@@ -1304,7 +1304,7 @@ void tst_QCssParser::rulesForNode()
             decls += rules.at(i).declarations;
     }
 
-    QVERIFY(decls.count() == declCount);
+    QCOMPARE(decls.count(), declCount);
 
     if (declCount > 0)
         QCOMPARE(decls.at(0).d->values.at(0).variant.toString(), value0);
@@ -1364,7 +1364,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
     v.extractBackground(&brush, &image, &repeat, &alignment, &origin, &attachment, &ignoredOrigin);
 
     QFETCH(QBrush, expectedBrush);
-    QVERIFY(expectedBrush.color() == brush.color());
+    QCOMPARE(expectedBrush.color(), brush.color());
 
     QTEST(image, "expectedImage");
     QTEST(int(repeat), "expectedRepeatValue");
@@ -1372,7 +1372,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
 
     //QTBUG-9674  : a second evaluation should give the same results
     QVERIFY(v.extractBackground(&brush, &image, &repeat, &alignment, &origin, &attachment, &ignoredOrigin));
-    QVERIFY(expectedBrush.color() == brush.color());
+    QCOMPARE(expectedBrush.color(), brush.color());
     QTEST(image, "expectedImage");
     QTEST(int(repeat), "expectedRepeatValue");
     QTEST(int(alignment), "expectedAlignment");
@@ -1438,7 +1438,7 @@ void tst_QCssParser::pseudoElement()
         decls += rules.at(i).declarations;
 
     }
-    QVERIFY(decls.count() == declCount);
+    QCOMPARE(decls.count(), declCount);
 }
 
 void tst_QCssParser::gradient_data()
@@ -1517,21 +1517,21 @@ void tst_QCssParser::gradient()
     QBrush sbg, abg;
     QVERIFY(ve.extractPalette(&fg, &sfg, &sbg, &abg));
     if (type == "linear") {
-        QVERIFY(sbg.style() == Qt::LinearGradientPattern);
+        QCOMPARE(sbg.style(), Qt::LinearGradientPattern);
         const QLinearGradient *lg = static_cast<const QLinearGradient *>(sbg.gradient());
         QCOMPARE(lg->start(), start);
         QCOMPARE(lg->finalStop(), finalStop);
     } else if (type == "conical") {
-        QVERIFY(sbg.style() == Qt::ConicalGradientPattern);
+        QCOMPARE(sbg.style(), Qt::ConicalGradientPattern);
         const QConicalGradient *cg = static_cast<const QConicalGradient *>(sbg.gradient());
         QCOMPARE(cg->center(), start);
     }
     const QGradient *g = sbg.gradient();
     QCOMPARE(g->spread(), QGradient::Spread(spread));
-    QVERIFY(g->stops().at(0).first == stop0);
-    QVERIFY(g->stops().at(0).second == color0);
-    QVERIFY(g->stops().at(1).first == stop1);
-    QVERIFY(g->stops().at(1).second == color1);
+    QCOMPARE(g->stops().at(0).first, stop0);
+    QCOMPARE(g->stops().at(0).second, color0);
+    QCOMPARE(g->stops().at(1).first, stop1);
+    QCOMPARE(g->stops().at(1).second, color1);
 }
 
 void tst_QCssParser::extractFontFamily_data()
@@ -1637,15 +1637,15 @@ void tst_QCssParser::extractBorder()
     QSize radii[4];
 
     extractor.extractBorder(widths, colors, styles, radii);
-    QVERIFY(widths[QCss::TopEdge] == expectedTopWidth);
-    QVERIFY(styles[QCss::TopEdge] == expectedTopStyle);
-    QVERIFY(colors[QCss::TopEdge] == expectedTopColor);
+    QCOMPARE(widths[QCss::TopEdge], expectedTopWidth);
+    QCOMPARE(int(styles[QCss::TopEdge]), expectedTopStyle);
+    QCOMPARE(colors[QCss::TopEdge].color(), expectedTopColor);
 
     //QTBUG-9674  : a second evaluation should give the same results
     QVERIFY(extractor.extractBorder(widths, colors, styles, radii));
-    QVERIFY(widths[QCss::TopEdge] == expectedTopWidth);
-    QVERIFY(styles[QCss::TopEdge] == expectedTopStyle);
-    QVERIFY(colors[QCss::TopEdge] == expectedTopColor);
+    QCOMPARE(widths[QCss::TopEdge], expectedTopWidth);
+    QCOMPARE(int(styles[QCss::TopEdge]), expectedTopStyle);
+    QCOMPARE(colors[QCss::TopEdge].color(), expectedTopColor);
 }
 
 void tst_QCssParser::noTextDecoration()

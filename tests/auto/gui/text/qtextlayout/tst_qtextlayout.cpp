@@ -1722,7 +1722,7 @@ void tst_QTextLayout::capitalization_allUpperCase()
     QTextEngine *engine = layout.engine();
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 1);
-    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Uppercase);
+    QCOMPARE(engine->layoutData->items.at(0).analysis.flags, ushort(QScriptAnalysis::Uppercase));
 }
 
 void tst_QTextLayout::capitalization_allUpperCase_newline()
@@ -1742,9 +1742,9 @@ void tst_QTextLayout::capitalization_allUpperCase_newline()
     QTextEngine *engine = layout.engine();
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 3);
-    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Uppercase);
-    QVERIFY(engine->layoutData->items.at(1).analysis.flags == QScriptAnalysis::LineOrParagraphSeparator);
-    QVERIFY(engine->layoutData->items.at(2).analysis.flags == QScriptAnalysis::Uppercase);
+    QCOMPARE(engine->layoutData->items.at(0).analysis.flags, ushort(QScriptAnalysis::Uppercase));
+    QCOMPARE(engine->layoutData->items.at(1).analysis.flags, ushort(QScriptAnalysis::LineOrParagraphSeparator));
+    QCOMPARE(engine->layoutData->items.at(2).analysis.flags, ushort(QScriptAnalysis::Uppercase));
 }
 
 void tst_QTextLayout::capitalization_allLowerCase()
@@ -1760,7 +1760,7 @@ void tst_QTextLayout::capitalization_allLowerCase()
     QTextEngine *engine = layout.engine();
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 1);
-    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Lowercase);
+    QCOMPARE(engine->layoutData->items.at(0).analysis.flags, ushort(QScriptAnalysis::Lowercase));
 }
 
 void tst_QTextLayout::capitalization_smallCaps()
@@ -1776,8 +1776,8 @@ void tst_QTextLayout::capitalization_smallCaps()
     QTextEngine *engine = layout.engine();
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 2);
-    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::None);
-    QVERIFY(engine->layoutData->items.at(1).analysis.flags == QScriptAnalysis::SmallCaps);
+    QCOMPARE(engine->layoutData->items.at(0).analysis.flags, ushort(QScriptAnalysis::None));
+    QCOMPARE(engine->layoutData->items.at(1).analysis.flags, ushort(QScriptAnalysis::SmallCaps));
 }
 
 void tst_QTextLayout::capitalization_capitalize()
@@ -1793,11 +1793,11 @@ void tst_QTextLayout::capitalization_capitalize()
     QTextEngine *engine = layout.engine();
     engine->itemize();
     QCOMPARE(engine->layoutData->items.count(), 5);
-    QVERIFY(engine->layoutData->items.at(0).analysis.flags == QScriptAnalysis::Uppercase);
-    QVERIFY(engine->layoutData->items.at(1).analysis.flags == QScriptAnalysis::None);
-    QVERIFY(engine->layoutData->items.at(2).analysis.flags == QScriptAnalysis::Tab);
-    QVERIFY(engine->layoutData->items.at(3).analysis.flags == QScriptAnalysis::Uppercase);
-    QVERIFY(engine->layoutData->items.at(4).analysis.flags == QScriptAnalysis::None);
+    QCOMPARE(engine->layoutData->items.at(0).analysis.flags, ushort(QScriptAnalysis::Uppercase));
+    QCOMPARE(engine->layoutData->items.at(1).analysis.flags, ushort(QScriptAnalysis::None));
+    QCOMPARE(engine->layoutData->items.at(2).analysis.flags, ushort(QScriptAnalysis::Tab));
+    QCOMPARE(engine->layoutData->items.at(3).analysis.flags, ushort(QScriptAnalysis::Uppercase));
+    QCOMPARE(engine->layoutData->items.at(4).analysis.flags, ushort(QScriptAnalysis::None));
 }
 
 void tst_QTextLayout::longText()
@@ -2073,8 +2073,8 @@ void tst_QTextLayout::cursorInNonStopChars()
     QTextLine line = layout.createLine();
     layout.endLayout();
 
-    QVERIFY(line.cursorToX(1) == line.cursorToX(3));
-    QVERIFY(line.cursorToX(2) == line.cursorToX(3));
+    QCOMPARE(line.cursorToX(1), line.cursorToX(3));
+    QCOMPARE(line.cursorToX(2), line.cursorToX(3));
 }
 
 void tst_QTextLayout::justifyTrailingSpaces()

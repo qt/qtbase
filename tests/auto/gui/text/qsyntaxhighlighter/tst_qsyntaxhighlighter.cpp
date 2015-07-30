@@ -170,7 +170,7 @@ void tst_QSyntaxHighlighter::basic()
     QVERIFY(hl->highlighted);
     QVERIFY(lout->documentChangedCalled);
 
-    QVERIFY(doc->begin().layout()->formats() == formats);
+    QCOMPARE(doc->begin().layout()->formats(), formats);
 }
 
 class CommentTestHighlighter : public QSyntaxHighlighter

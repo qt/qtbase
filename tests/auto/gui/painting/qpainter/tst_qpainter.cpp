@@ -799,7 +799,7 @@ void tst_QPainter::drawPixmapFragments()
     QImage origImage = origPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
     QImage resImage = resPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
 
-    QVERIFY(resImage.size() == resPixmap.size());
+    QCOMPARE(resImage.size(), resPixmap.size());
     QVERIFY(resImage.pixel(5, 5) == origImage.pixel(15, 15));
     QVERIFY(resImage.pixel(5, 15) == origImage.pixel(15, 5));
     QVERIFY(resImage.pixel(15, 5) == origImage.pixel(5, 15));
@@ -807,16 +807,16 @@ void tst_QPainter::drawPixmapFragments()
 
 
     QPainter::PixmapFragment fragment = QPainter::PixmapFragment::create(QPointF(20, 20), QRectF(30, 30, 2, 2));
-    QVERIFY(fragment.x == 20);
-    QVERIFY(fragment.y == 20);
-    QVERIFY(fragment.sourceLeft == 30);
-    QVERIFY(fragment.sourceTop == 30);
-    QVERIFY(fragment.width == 2);
-    QVERIFY(fragment.height == 2);
-    QVERIFY(fragment.scaleX == 1);
-    QVERIFY(fragment.scaleY == 1);
-    QVERIFY(fragment.rotation == 0);
-    QVERIFY(fragment.opacity == 1);
+    QCOMPARE(fragment.x, qreal(20));
+    QCOMPARE(fragment.y, qreal(20));
+    QCOMPARE(fragment.sourceLeft, qreal(30));
+    QCOMPARE(fragment.sourceTop, qreal(30));
+    QCOMPARE(fragment.width, qreal(2));
+    QCOMPARE(fragment.height, qreal(2));
+    QCOMPARE(fragment.scaleX, qreal(1));
+    QCOMPARE(fragment.scaleY, qreal(1));
+    QCOMPARE(fragment.rotation, qreal(0));
+    QCOMPARE(fragment.opacity, qreal(1));
 }
 
 void tst_QPainter::drawPixmapNegativeScale()
@@ -1481,7 +1481,7 @@ void tst_QPainter::drawPath3()
     p.drawPath(path);
     p.end();
 
-    QVERIFY(imgA == imgB);
+    QCOMPARE(imgA, imgB);
 
     imgA.invertPixels();
     imgB.fill(0xffffff);
@@ -1495,7 +1495,7 @@ void tst_QPainter::drawPath3()
     p.drawPath(path);
     p.end();
 
-    QVERIFY(imgA == imgB);
+    QCOMPARE(imgA, imgB);
 
     path.setFillRule(Qt::WindingFill);
     imgB.fill(0xffffff);

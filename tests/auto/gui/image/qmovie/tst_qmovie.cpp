@@ -189,7 +189,7 @@ void tst_QMovie::jumpToFrame()
     movie.start();
     movie.stop();
     QVERIFY(!movie.jumpToFrame(-1));
-    QVERIFY(movie.currentFrameNumber() == 0);
+    QCOMPARE(movie.currentFrameNumber(), 0);
 }
 
 void tst_QMovie::changeMovieFile()
@@ -198,7 +198,7 @@ void tst_QMovie::changeMovieFile()
     movie.start();
     movie.stop();
     movie.setFileName(QFINDTESTDATA("animations/trolltech.gif"));
-    QVERIFY(movie.currentFrameNumber() == -1);
+    QCOMPARE(movie.currentFrameNumber(), -1);
 }
 
 #ifndef QT_NO_WIDGETS

@@ -727,7 +727,7 @@ void tst_QTextDocumentFragment::html_listIndents5()
     QCOMPARE(list->format().indent(), 1);
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.currentList() == list);
+    QCOMPARE(cursor.currentList(), list);
     QCOMPARE(cursor.blockFormat().indent(), 0);
 }
 
@@ -778,7 +778,7 @@ void tst_QTextDocumentFragment::blockCharFormatCopied()
     cleanup();
     init();
     cursor.insertFragment(frag);
-    QVERIFY(cursor.blockCharFormat() == fmt);
+    QCOMPARE(cursor.blockCharFormat(), fmt);
 }
 
 void tst_QTextDocumentFragment::initialBlock()
@@ -794,19 +794,19 @@ void tst_QTextDocumentFragment::clone()
     mod.setAlignment(Qt::AlignCenter);
     cursor.mergeBlockFormat(mod);
     cursor.insertText("Blah");
-    QVERIFY(cursor.blockFormat().alignment() == Qt::AlignCenter);
+    QCOMPARE(cursor.blockFormat().alignment(), Qt::AlignCenter);
     QTextDocumentFragment frag(doc);
     cleanup();
     init();
     cursor.insertFragment(frag);
     cursor.movePosition(QTextCursor::Start);
-    QVERIFY(cursor.blockFormat().alignment() == Qt::AlignCenter);
+    QCOMPARE(cursor.blockFormat().alignment(), Qt::AlignCenter);
 }
 
 void tst_QTextDocumentFragment::dontRemoveInitialBlockIfItHoldsObjectIndexedCharFormat()
 {
     const char html[] = "<table><tr><td>cell one<td>cell two</tr><tr><td>cell three<td>cell four</tr></table>";
-    QVERIFY(doc->begin().charFormat().objectIndex() == -1);
+    QCOMPARE(doc->begin().charFormat().objectIndex(), -1);
     setHtml(QString::fromLatin1(html));
     int cnt = 0;
 
@@ -841,13 +841,13 @@ void tst_QTextDocumentFragment::unorderedListEnumeration()
     setHtml(QString::fromLatin1(html));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListDisc);
 
     const char html2[] = "<ul><ul><ul type=circle><li>Blah</li></ul></ul>";
     setHtml(QString::fromLatin1(html2));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListCircle);
 
 }
 
@@ -982,7 +982,7 @@ void tst_QTextDocumentFragment::cellBlockCount()
 
     int blockCount = 0;
     for (QTextFrame::iterator it = cell.begin(); !it.atEnd(); ++it) {
-        QVERIFY(it.currentFrame() == 0);
+        QVERIFY(!it.currentFrame());
         QVERIFY(it.currentBlock().isValid());
         ++blockCount;
     }
@@ -1003,7 +1003,7 @@ void tst_QTextDocumentFragment::cellBlockCount2()
 
     int blockCount = 0;
     for (QTextFrame::iterator it = cell.begin(); !it.atEnd(); ++it) {
-        QVERIFY(it.currentFrame() == 0);
+        QVERIFY(!it.currentFrame());
         QVERIFY(it.currentBlock().isValid());
         ++blockCount;
     }
@@ -1037,7 +1037,7 @@ void tst_QTextDocumentFragment::emptyTable3()
     QCOMPARE(table->columns(), 2);
     QTextTableCell cell = table->cellAt(0, 0);
     QVERIFY(cell.isValid());
-    QVERIFY(cell.firstPosition() == cell.lastPosition());
+    QCOMPARE(cell.firstPosition(), cell.lastPosition());
     cell = table->cellAt(0, 1);
     QTextCursor cursor = cell.firstCursorPosition();
     cursor.setPosition(cell.lastPosition(), QTextCursor::KeepAnchor);
@@ -1065,7 +1065,7 @@ void tst_QTextDocumentFragment::inheritAlignment()
     const char html[] = "<body align=right><p>Hey";
     setHtml(QString::fromLatin1(html));
     // html alignment is absolute
-    QVERIFY(doc->begin().blockFormat().alignment() == Qt::Alignment(Qt::AlignRight|Qt::AlignAbsolute));
+    QCOMPARE(doc->begin().blockFormat().alignment(), Qt::Alignment(Qt::AlignRight|Qt::AlignAbsolute));
 }
 
 void tst_QTextDocumentFragment::dontEmitEmptyNodeWhenEmptyTagIsFollowedByCloseTag()
@@ -1073,8 +1073,8 @@ void tst_QTextDocumentFragment::dontEmitEmptyNodeWhenEmptyTagIsFollowedByCloseTa
     // make sure the Hey does not end up as tag text for the img tag
     const char html[] = "<body align=right><p align=left>Blah<img></img><p>Hey";
     setHtml(QString::fromLatin1(html));
-    QVERIFY(doc->begin().blockFormat().alignment() == Qt::Alignment(Qt::AlignLeft|Qt::AlignAbsolute));
-    QVERIFY(doc->begin().next().blockFormat().alignment() == Qt::Alignment(Qt::AlignRight|Qt::AlignAbsolute));
+    QCOMPARE(doc->begin().blockFormat().alignment(), Qt::Alignment(Qt::AlignLeft|Qt::AlignAbsolute));
+    QCOMPARE(doc->begin().next().blockFormat().alignment(), Qt::Alignment(Qt::AlignRight|Qt::AlignAbsolute));
 }
 
 void tst_QTextDocumentFragment::toPlainText()
@@ -1480,19 +1480,19 @@ void tst_QTextDocumentFragment::html_subAndSuperScript()
     const char alignmentInherited[] = "<sub><font face=\"Verdana\">Subby</font></sub>";
 
     setHtml(subHtml);
-    QVERIFY(cursor.charFormat().verticalAlignment() == QTextCharFormat::AlignSubScript);
+    QCOMPARE(cursor.charFormat().verticalAlignment(), QTextCharFormat::AlignSubScript);
 
     setHtml(subHtmlCss);
-    QVERIFY(cursor.charFormat().verticalAlignment() == QTextCharFormat::AlignSubScript);
+    QCOMPARE(cursor.charFormat().verticalAlignment(), QTextCharFormat::AlignSubScript);
 
     setHtml(superHtml);
-    QVERIFY(cursor.charFormat().verticalAlignment() == QTextCharFormat::AlignSuperScript);
+    QCOMPARE(cursor.charFormat().verticalAlignment(), QTextCharFormat::AlignSuperScript);
 
     setHtml(superHtmlCss);
-    QVERIFY(cursor.charFormat().verticalAlignment() == QTextCharFormat::AlignSuperScript);
+    QCOMPARE(cursor.charFormat().verticalAlignment(), QTextCharFormat::AlignSuperScript);
 
     setHtml(alignmentInherited);
-    QVERIFY(cursor.charFormat().verticalAlignment() == QTextCharFormat::AlignSubScript);
+    QCOMPARE(cursor.charFormat().verticalAlignment(), QTextCharFormat::AlignSubScript);
 }
 
 void tst_QTextDocumentFragment::html_cssColors()
@@ -1695,7 +1695,7 @@ void tst_QTextDocumentFragment::html_bodyBackground()
     const char html[] = "<body background=\"foo.png\">Foo</body>";
     doc->setHtml(html);
 
-    QVERIFY(doc->rootFrame()->frameFormat().background().style() == Qt::TexturePattern);
+    QCOMPARE(doc->rootFrame()->frameFormat().background().style(), Qt::TexturePattern);
 }
 
 void tst_QTextDocumentFragment::html_tableCellBackground()
@@ -1709,7 +1709,7 @@ void tst_QTextDocumentFragment::html_tableCellBackground()
     QVERIFY(table);
 
     QTextTableCell cell = table->cellAt(0, 0);
-    QVERIFY(cell.format().background().style() == Qt::TexturePattern);
+    QCOMPARE(cell.format().background().style(), Qt::TexturePattern);
 }
 
 void tst_QTextDocumentFragment::css_bodyBackground()
@@ -1717,7 +1717,7 @@ void tst_QTextDocumentFragment::css_bodyBackground()
     const char html[] = "<body style=\"background-image:url('foo.png')\">Foo</body>";
     doc->setHtml(html);
 
-    QVERIFY(doc->rootFrame()->frameFormat().background().style() == Qt::TexturePattern);
+    QCOMPARE(doc->rootFrame()->frameFormat().background().style(), Qt::TexturePattern);
 }
 
 void tst_QTextDocumentFragment::css_tableCellBackground()
@@ -1731,7 +1731,7 @@ void tst_QTextDocumentFragment::css_tableCellBackground()
     QVERIFY(table);
 
     QTextTableCell cell = table->cellAt(0, 0);
-    QVERIFY(cell.format().background().style() == Qt::TexturePattern);
+    QCOMPARE(cell.format().background().style(), Qt::TexturePattern);
 }
 
 void tst_QTextDocumentFragment::css_cellPaddings()
@@ -1767,7 +1767,7 @@ void tst_QTextDocumentFragment::html_blockLevelDiv()
     setHtml(html);
 
     QCOMPARE(doc->begin().blockFormat().alignment(), Qt::AlignRight|Qt::AlignAbsolute);
-    QVERIFY(doc->begin().next() == doc->end());
+    QCOMPARE(doc->begin().next(), doc->end());
 }
 
 void tst_QTextDocumentFragment::html_spanNesting()
@@ -1805,7 +1805,7 @@ void tst_QTextDocumentFragment::html_nestedLists()
     cursor.movePosition(QTextCursor::NextBlock);
     QTextList *thirdList = cursor.currentList();
     QVERIFY(thirdList);
-    QVERIFY(thirdList == firstList);
+    QCOMPARE(thirdList, firstList);
 }
 
 void tst_QTextDocumentFragment::noSpecialCharactersInPlainText()
@@ -2022,7 +2022,7 @@ void tst_QTextDocumentFragment::html_frameImport()
     cursor.insertFragment(frag);
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QVERIFY(childFrames.count() == 1);
+    QCOMPARE(childFrames.count(), 1);
     QTextFrame *frame = childFrames.first();
     QCOMPARE(frame->frameFormat().margin(), ffmt.margin());
     QCOMPARE(frame->frameFormat().border(), ffmt.border());
@@ -2050,7 +2050,7 @@ void tst_QTextDocumentFragment::html_frameImport2()
     cursor.insertFragment(frag);
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QVERIFY(childFrames.count() == 1);
+    QCOMPARE(childFrames.count(), 1);
     QTextFrame *frame = childFrames.first();
     QCOMPARE(frame->frameFormat().topMargin(), ffmt.topMargin());
     QCOMPARE(frame->frameFormat().bottomMargin(), ffmt.bottomMargin());
@@ -2065,7 +2065,7 @@ void tst_QTextDocumentFragment::html_dontAddMarginsAcrossTableCells()
     cursor.insertFragment(QTextDocumentFragment::fromHtml(QString::fromLatin1(html)));
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QVERIFY(childFrames.count() == 1);
+    QCOMPARE(childFrames.count(), 1);
     QTextFrame *frame = childFrames.first();
     cursor = frame->firstCursorPosition();
     QCOMPARE(cursor.blockFormat().leftMargin(), qreal(50.0));
@@ -2078,7 +2078,7 @@ void tst_QTextDocumentFragment::html_dontMergeCenterBlocks()
 
     QCOMPARE(doc->blockCount(), 2);
     QTextBlock blk = doc->begin();
-    QVERIFY(blk.blockFormat().alignment() == Qt::AlignCenter);
+    QCOMPARE(blk.blockFormat().alignment(), Qt::AlignCenter);
     blk = blk.next();
     QVERIFY(blk.blockFormat().alignment() != Qt::AlignCenter);
 }
@@ -2112,7 +2112,7 @@ void tst_QTextDocumentFragment::html_tableCellBgColor2()
 
     QTextFrame::Iterator it = cell.begin();
     QVERIFY(!it.atEnd());
-    QVERIFY(it.currentFrame() == 0);
+    QVERIFY(!it.currentFrame());
     QVERIFY(it.currentBlock().isValid());
 
     ++it;
@@ -2122,9 +2122,9 @@ void tst_QTextDocumentFragment::html_tableCellBgColor2()
 
     ++it;
     QVERIFY(!it.atEnd());
-    QVERIFY(it.currentFrame() == 0);
+    QVERIFY(!it.currentFrame());
     QVERIFY(it.currentBlock().isValid());
-    QVERIFY(it.currentBlock().blockFormat().background() == QBrush(Qt::NoBrush));
+    QCOMPARE(it.currentBlock().blockFormat().background(), QBrush(Qt::NoBrush));
 
     ++it;
     QVERIFY(it.atEnd());
@@ -2245,8 +2245,8 @@ void tst_QTextDocumentFragment::html_blockVsInline()
 {
     {
         setHtml("<html><body><div><b>Foo<div>Bar");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<html><body><p><b>Foo<p>Bar");
@@ -2255,23 +2255,23 @@ void tst_QTextDocumentFragment::html_blockVsInline()
     }
     {
         setHtml("<html><body><b><center>Foo</center></b>");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<html><body><b><p>Foo");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<html><body><b><p>Foo<p>Bar");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<div><b>Foo<div>Bar");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<p><b>Foo<p>Bar");
@@ -2280,18 +2280,18 @@ void tst_QTextDocumentFragment::html_blockVsInline()
     }
     {
         setHtml("<b><center>Foo</center></b>");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<b><p>Foo");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
     {
         setHtml("<b><p>Foo<p>Bar");
-        QVERIFY(cursor.charFormat().fontWeight() == QFont::Bold);
-        QVERIFY(cursor.blockCharFormat().fontWeight() == QFont::Bold);
+        QCOMPARE(cursor.charFormat().fontWeight(), int(QFont::Bold));
+        QCOMPARE(cursor.blockCharFormat().fontWeight(), int(QFont::Bold));
     }
 }
 
@@ -2338,7 +2338,7 @@ void tst_QTextDocumentFragment::html_nestedTables()
 
     QTextTable *firstNestedTable = cursor.currentTable();
     QVERIFY(firstNestedTable);
-    QVERIFY(firstNestedTable->parentFrame() == table);
+    QCOMPARE(firstNestedTable->parentFrame(), table);
     QCOMPARE(firstNestedTable->rows(), 1);
     QCOMPARE(firstNestedTable->columns(), 1);
     QCOMPARE(firstNestedTable->cellAt(0, 0).firstCursorPosition().block().text(), QString("Hello"));
@@ -2348,13 +2348,13 @@ void tst_QTextDocumentFragment::html_nestedTables()
         ;
 
     QVERIFY(!cursor.isNull());
-    QVERIFY(cursor.currentTable() == table);
+    QCOMPARE(cursor.currentTable(), table);
 
     cursor.movePosition(QTextCursor::NextBlock);
 
     QTextTable *secondNestedTable = cursor.currentTable();
     QVERIFY(secondNestedTable);
-    QVERIFY(secondNestedTable->parentFrame() == table);
+    QCOMPARE(secondNestedTable->parentFrame(), table);
     QCOMPARE(secondNestedTable->rows(), 1);
     QCOMPARE(secondNestedTable->columns(), 1);
     QCOMPARE(secondNestedTable->cellAt(0, 0).firstCursorPosition().block().text(), QString("World"));
@@ -2454,7 +2454,7 @@ void tst_QTextDocumentFragment::html_anchorColor()
     setHtml("<span style=\"color: red;\"><a href=\"http://www.kde.org/\">Blue</a></span>");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QVERIFY(cursor.charFormat().foreground().color() == QGuiApplication::palette().link().color());
+    QCOMPARE(cursor.charFormat().foreground().color(), QGuiApplication::palette().link().color());
 
     setHtml("<span style=\"color: red;\"><a href=\"http://www.kde.org/\" style=\"color: yellow;\">Green</a></span>");
     cursor.movePosition(QTextCursor::Start);
@@ -2525,17 +2525,17 @@ void tst_QTextDocumentFragment::html_columnWidths()
 
     const QVector<QTextLength> columnWidths = fmt.columnWidthConstraints();
     QCOMPARE(columnWidths.count(), 2);
-    QVERIFY(columnWidths.at(0).type() == QTextLength::VariableLength);
-    QVERIFY(columnWidths.at(1).type() == QTextLength::PercentageLength);
-    QVERIFY(columnWidths.at(1).rawValue() == 1);
+    QCOMPARE(columnWidths.at(0).type(), QTextLength::VariableLength);
+    QCOMPARE(columnWidths.at(1).type(), QTextLength::PercentageLength);
+    QCOMPARE(columnWidths.at(1).rawValue(), qreal(1));
 }
 
 void tst_QTextDocumentFragment::css_fontWeight()
 {
     setHtml("<p style=\"font-weight:bold\">blah</p>");
-    QVERIFY(doc->begin().charFormat().fontWeight() == QFont::Bold);
+    QCOMPARE(doc->begin().charFormat().fontWeight(), int(QFont::Bold));
     setHtml("<p style=\"font-weight:600\">blah</p>");
-    QVERIFY(doc->begin().charFormat().fontWeight() == QFont::Bold);
+    QCOMPARE(doc->begin().charFormat().fontWeight(), int(QFont::Bold));
 
 }
 
@@ -2548,7 +2548,7 @@ void tst_QTextDocumentFragment::css_float()
     QVERIFY(o);
     QTextFormat f = o->format();
     QVERIFY(f.isFrameFormat());
-    QVERIFY(f.toFrameFormat().position() == QTextFrameFormat::FloatRight);
+    QCOMPARE(f.toFrameFormat().position(), QTextFrameFormat::FloatRight);
 
     setHtml("<img src=\"foo\" align=right>");
     fmt = doc->begin().begin().fragment().charFormat();
@@ -2557,7 +2557,7 @@ void tst_QTextDocumentFragment::css_float()
     QVERIFY(o);
     f = o->format();
     QVERIFY(f.isFrameFormat());
-    QVERIFY(f.toFrameFormat().position() == QTextFrameFormat::FloatRight);
+    QCOMPARE(f.toFrameFormat().position(), QTextFrameFormat::FloatRight);
 
     setHtml("<img src=\"foo\" align=left>");
     fmt = doc->begin().begin().fragment().charFormat();
@@ -2566,7 +2566,7 @@ void tst_QTextDocumentFragment::css_float()
     QVERIFY(o);
     f = o->format();
     QVERIFY(f.isFrameFormat());
-    QVERIFY(f.toFrameFormat().position() == QTextFrameFormat::FloatLeft);
+    QCOMPARE(f.toFrameFormat().position(), QTextFrameFormat::FloatLeft);
 }
 
 void tst_QTextDocumentFragment::css_textIndent()
@@ -2585,7 +2585,7 @@ void tst_QTextDocumentFragment::css_inline()
             "<p>test</p>"
             );
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::css_external()
@@ -2596,11 +2596,12 @@ void tst_QTextDocumentFragment::css_external()
             "<p>test</p>"
             );
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::css_import()
 {
+    const QColor green("green");
     doc->addResource(QTextDocument::StyleSheetResource, QUrl("test.css"), QString("@import \"other.css\";"));
     doc->addResource(QTextDocument::StyleSheetResource, QUrl("other.css"), QString("@import url(\"other2.css\");"));
     doc->addResource(QTextDocument::StyleSheetResource, QUrl("other2.css"), QString("p { background-color: green; }"));
@@ -2609,14 +2610,14 @@ void tst_QTextDocumentFragment::css_import()
             "<p>test</p>"
             );
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 
     doc->setHtml(""
             "<style>@import \"test.css\" screen;</style>"
             "<p>test</p>"
             );
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 }
 
 void tst_QTextDocumentFragment::css_selectors_data()
@@ -2662,9 +2663,9 @@ void tst_QTextDocumentFragment::css_selectors()
 
     QTextBlockFormat fmt = doc->begin().blockFormat();
     if (match)
-        QVERIFY(fmt.background().color() == QColor("red"));
+        QCOMPARE(fmt.background().color(), QColor("red"));
     else
-        QVERIFY(fmt.background().color() == QColor("green"));
+        QCOMPARE(fmt.background().color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::css_nodeNameCaseInsensitivity()
@@ -2674,7 +2675,7 @@ void tst_QTextDocumentFragment::css_nodeNameCaseInsensitivity()
             "</style>"
             "<p>test</p>");
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::css_textUnderlineStyle_data()
@@ -2710,14 +2711,14 @@ void tst_QTextDocumentFragment::css_textUnderlineStyleAndDecoration()
 
     QTextFragment fragment = doc->begin().begin().fragment();
     QVERIFY(fragment.isValid());
-    QVERIFY(fragment.charFormat().underlineStyle() == QTextCharFormat::SingleUnderline);
+    QCOMPARE(fragment.charFormat().underlineStyle(), QTextCharFormat::SingleUnderline);
     QVERIFY(fragment.charFormat().fontOverline());
 
     doc->setHtml("<span style=\"text-underline-style: solid; text-decoration: overline\">Test</span>");
 
     fragment = doc->begin().begin().fragment();
     QVERIFY(fragment.isValid());
-    QVERIFY(fragment.charFormat().underlineStyle() == QTextCharFormat::SingleUnderline);
+    QCOMPARE(fragment.charFormat().underlineStyle(), QTextCharFormat::SingleUnderline);
     QVERIFY(fragment.charFormat().fontOverline());
 }
 
@@ -2726,48 +2727,48 @@ void tst_QTextDocumentFragment::css_listStyleType()
     doc->setHtml("<ol style=\"list-style-type: disc\"><li>Blah</li></ol>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDisc);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListDisc);
 
     doc->setHtml("<ul style=\"list-style-type: square\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListSquare);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListSquare);
 
     doc->setHtml("<ul style=\"list-style-type: circle\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListCircle);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListCircle);
 
     doc->setHtml("<ul style=\"list-style-type: decimal\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDecimal);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListDecimal);
 
     doc->setHtml("<ul style=\"list-style-type: lower-alpha\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListLowerAlpha);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListLowerAlpha);
 
     doc->setHtml("<ul style=\"list-style-type: upper-alpha\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListUpperAlpha);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListUpperAlpha);
 
     doc->setHtml("<ul style=\"list-style-type: upper-roman\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListUpperRoman);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListUpperRoman);
 
     doc->setHtml("<ul style=\"list-style-type: lower-roman\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListLowerRoman);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListLowerRoman);
 
     // ignore the unsupported list-style-position inside the list-style shorthand property
     doc->setHtml("<ul style=\"list-style: outside decimal\"><li>Blah</li></ul>");
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListDecimal);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListDecimal);
 }
 
 void tst_QTextDocumentFragment::css_linkPseudo()
@@ -2785,13 +2786,13 @@ void tst_QTextDocumentFragment::css_linkPseudo()
 void tst_QTextDocumentFragment::css_pageBreaks()
 {
     doc->setHtml("<p>Foo</p>");
-    QVERIFY(doc->begin().blockFormat().pageBreakPolicy() == QTextFormat::PageBreak_Auto);
+    QCOMPARE(doc->begin().blockFormat().pageBreakPolicy(), QTextFormat::PageBreak_Auto);
 
     doc->setHtml("<p style=\" page-break-before:always;\">Foo</p>");
-    QVERIFY(doc->begin().blockFormat().pageBreakPolicy() == QTextFormat::PageBreak_AlwaysBefore);
+    QCOMPARE(doc->begin().blockFormat().pageBreakPolicy(), QTextFormat::PageBreak_AlwaysBefore);
 
     doc->setHtml("<p style=\" page-break-after:always;\">Foo</p>");
-    QVERIFY(doc->begin().blockFormat().pageBreakPolicy() == QTextFormat::PageBreak_AlwaysAfter);
+    QCOMPARE(doc->begin().blockFormat().pageBreakPolicy(), QTextFormat::PageBreak_AlwaysAfter);
 
     doc->setHtml("<p style=\" page-break-before:always; page-break-after:always;\">Foo</p>");
     QVERIFY(doc->begin().blockFormat().pageBreakPolicy() == (QTextFormat::PageBreak_AlwaysAfter | QTextFormat::PageBreak_AlwaysBefore));
@@ -2832,13 +2833,14 @@ void tst_QTextDocumentFragment::universalSelectors()
 
     QTextBlockFormat fmt = doc->begin().blockFormat();
     if (match)
-        QVERIFY(fmt.background().color() == QColor("green"));
+        QCOMPARE(fmt.background().color(), QColor("green"));
     else
         QVERIFY(!fmt.hasProperty(QTextFormat::BackgroundBrush));
 }
 
 void tst_QTextDocumentFragment::screenMedia()
 {
+    const QColor green("green");
     setHtml("<style>"
             "@media screen {"
             "p { background-color: green }"
@@ -2847,7 +2849,7 @@ void tst_QTextDocumentFragment::screenMedia()
             "<p>test</p>"
             "");
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 
     setHtml("<style>"
             "@media foobar {"
@@ -2857,7 +2859,7 @@ void tst_QTextDocumentFragment::screenMedia()
             "<p>test</p>"
             "");
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() != QColor("green"));
+    QVERIFY(fmt.background().color() != green);
 
     setHtml("<style>"
             "@media sCrEeN {"
@@ -2867,7 +2869,7 @@ void tst_QTextDocumentFragment::screenMedia()
             "<p>test</p>"
             "");
     fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), green);
 }
 
 void tst_QTextDocumentFragment::htmlResourceLoading()
@@ -2881,7 +2883,7 @@ void tst_QTextDocumentFragment::htmlResourceLoading()
     doc->clear();
     QTextCursor(doc).insertFragment(frag);
     QTextBlockFormat fmt = doc->begin().blockFormat();
-    QVERIFY(fmt.background().color() == QColor("green"));
+    QCOMPARE(fmt.background().color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::someCaseInsensitiveAttributeValues()
@@ -2890,7 +2892,7 @@ void tst_QTextDocumentFragment::someCaseInsensitiveAttributeValues()
     setHtml(QString::fromLatin1(html1));
     cursor.movePosition(QTextCursor::End);
     QVERIFY(cursor.currentList());
-    QVERIFY(cursor.currentList()->format().style() == QTextListFormat::ListSquare);
+    QCOMPARE(cursor.currentList()->format().style(), QTextListFormat::ListSquare);
 
     const char html2[] = "<div align=ceNTeR><b>Hello World";
     setHtml(html2);
@@ -2925,7 +2927,7 @@ void tst_QTextDocumentFragment::backgroundImage()
     doc.testPixmap.fill(Qt::blue);
     doc.setHtml("<p style=\"background-image: url(testPixmap)\">Hello</p>");
     QBrush bg = doc.begin().blockFormat().background();
-    QVERIFY(bg.style() == Qt::TexturePattern);
+    QCOMPARE(bg.style(), Qt::TexturePattern);
     QCOMPARE(bg.texture().cacheKey(), doc.testPixmap.cacheKey());
 }
 
@@ -3109,7 +3111,7 @@ void tst_QTextDocumentFragment::html_tableStrangeNewline()
     QCOMPARE(table->columns(), 1);
     const QTextTableCell cell = table->cellAt(0, 0);
     QCOMPARE(cell.firstCursorPosition().block().text(), QString("Foo"));
-    QVERIFY(cell.firstCursorPosition().block() == cell.lastCursorPosition().block());
+    QCOMPARE(cell.firstCursorPosition().block(), cell.lastCursorPosition().block());
 }
 
 void tst_QTextDocumentFragment::html_tableStrangeNewline2()
@@ -3123,7 +3125,7 @@ void tst_QTextDocumentFragment::html_tableStrangeNewline2()
     QCOMPARE(table->columns(), 1);
     const QTextTableCell cell = table->cellAt(0, 0);
     QCOMPARE(cell.firstCursorPosition().block().text(), QString("Foo"));
-    QVERIFY(cell.firstCursorPosition().block() == cell.lastCursorPosition().block());
+    QCOMPARE(cell.firstCursorPosition().block(), cell.lastCursorPosition().block());
 }
 
 void tst_QTextDocumentFragment::html_tableStrangeNewline3()
@@ -3152,11 +3154,11 @@ void tst_QTextDocumentFragment::html_tableStrangeNewline3()
 
     QTextTableCell cell = table->cellAt(0, 0);
     QCOMPARE(cell.firstCursorPosition().block().text(), QString("Meh"));
-    QVERIFY(cell.firstCursorPosition().block() == cell.lastCursorPosition().block());
+    QCOMPARE(cell.firstCursorPosition().block(), cell.lastCursorPosition().block());
 
     cell = table->cellAt(0, 1);
     QCOMPARE(cell.firstCursorPosition().block().text(), QString("Foo"));
-    QVERIFY(cell.firstCursorPosition().block() == cell.lastCursorPosition().block());
+    QCOMPARE(cell.firstCursorPosition().block(), cell.lastCursorPosition().block());
 }
 
 void tst_QTextDocumentFragment::html_caption()
@@ -3170,7 +3172,7 @@ void tst_QTextDocumentFragment::html_caption()
     cursor.movePosition(QTextCursor::NextBlock);
 
     QCOMPARE(cursor.block().text(), QString("This is a Caption!"));
-    QVERIFY(cursor.blockFormat().alignment() == Qt::AlignHCenter);
+    QCOMPARE(cursor.blockFormat().alignment(), Qt::AlignHCenter);
 
     cursor.movePosition(QTextCursor::NextBlock);
     QTextTable *table = cursor.currentTable();
@@ -3427,7 +3429,7 @@ void tst_QTextDocumentFragment::html_dontInheritAlignmentForFloatingImages()
     QVERIFY(o);
     QTextFormat f = o->format();
     QVERIFY(f.isFrameFormat());
-    QVERIFY(f.toFrameFormat().position() == QTextFrameFormat::InFlow);
+    QCOMPARE(f.toFrameFormat().position(), QTextFrameFormat::InFlow);
 }
 
 void tst_QTextDocumentFragment::html_verticalImageAlignment()
@@ -3437,35 +3439,35 @@ void tst_QTextDocumentFragment::html_verticalImageAlignment()
     cursor.movePosition(QTextCursor::NextCharacter);
     QVERIFY(cursor.charFormat().isImageFormat());
     QTextImageFormat fmt = cursor.charFormat().toImageFormat();
-    QVERIFY(fmt.verticalAlignment() == QTextCharFormat::AlignNormal);
+    QCOMPARE(fmt.verticalAlignment(), QTextCharFormat::AlignNormal);
 
     doc->setHtml("<img src=\"foo\" align=middle />");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
     QVERIFY(cursor.charFormat().isImageFormat());
     fmt = cursor.charFormat().toImageFormat();
-    QVERIFY(fmt.verticalAlignment() == QTextCharFormat::AlignMiddle);
+    QCOMPARE(fmt.verticalAlignment(), QTextCharFormat::AlignMiddle);
 
     doc->setHtml("<img src=\"foo\" style=\"vertical-align: middle\" />");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
     QVERIFY(cursor.charFormat().isImageFormat());
     fmt = cursor.charFormat().toImageFormat();
-    QVERIFY(fmt.verticalAlignment() == QTextCharFormat::AlignMiddle);
+    QCOMPARE(fmt.verticalAlignment(), QTextCharFormat::AlignMiddle);
 
     doc->setHtml("<img src=\"foo\" align=top />");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
     QVERIFY(cursor.charFormat().isImageFormat());
     fmt = cursor.charFormat().toImageFormat();
-    QVERIFY(fmt.verticalAlignment() == QTextCharFormat::AlignTop);
+    QCOMPARE(fmt.verticalAlignment(), QTextCharFormat::AlignTop);
 
     doc->setHtml("<img src=\"foo\" style=\"vertical-align: top\" />");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
     QVERIFY(cursor.charFormat().isImageFormat());
     fmt = cursor.charFormat().toImageFormat();
-    QVERIFY(fmt.verticalAlignment() == QTextCharFormat::AlignTop);
+    QCOMPARE(fmt.verticalAlignment(), QTextCharFormat::AlignTop);
 }
 
 void tst_QTextDocumentFragment::html_verticalCellAlignment()
@@ -3944,11 +3946,11 @@ void tst_QTextDocumentFragment::html_directionWithHtml()
 
     block = block.next();
     QVERIFY(block.blockFormat().hasProperty(QTextFormat::LayoutDirection));
-    QVERIFY(block.blockFormat().layoutDirection() == Qt::RightToLeft);
+    QCOMPARE(block.blockFormat().layoutDirection(), Qt::RightToLeft);
 
     block = block.next();
     QVERIFY(block.blockFormat().hasProperty(QTextFormat::LayoutDirection));
-    QVERIFY(block.blockFormat().layoutDirection() == Qt::LeftToRight);
+    QCOMPARE(block.blockFormat().layoutDirection(), Qt::LeftToRight);
 }
 
 void tst_QTextDocumentFragment::html_directionWithRichText()
@@ -3961,11 +3963,11 @@ void tst_QTextDocumentFragment::html_directionWithRichText()
 
     block = block.next();
     QVERIFY(block.blockFormat().hasProperty(QTextFormat::LayoutDirection));
-    QVERIFY(block.blockFormat().layoutDirection() == Qt::RightToLeft);
+    QCOMPARE(block.blockFormat().layoutDirection(), Qt::RightToLeft);
 
     block = block.next();
     QVERIFY(block.blockFormat().hasProperty(QTextFormat::LayoutDirection));
-    QVERIFY(block.blockFormat().layoutDirection() == Qt::LeftToRight);
+    QCOMPARE(block.blockFormat().layoutDirection(), Qt::LeftToRight);
 }
 
 void tst_QTextDocumentFragment::html_metaInBody()

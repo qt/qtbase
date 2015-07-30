@@ -461,8 +461,8 @@ void tst_QBrush::textureBrushComparison()
     imageBrush1.setTextureImage(image1);
     imageBrush2.setTextureImage(image2);
 
-    QVERIFY(imageBrush1 == imageBrush2);
-    QVERIFY(pixmapBrush == imageBrush1);
+    QCOMPARE(imageBrush1, imageBrush2);
+    QCOMPARE(pixmapBrush, imageBrush1);
 }
 
 QTEST_MAIN(tst_QBrush)

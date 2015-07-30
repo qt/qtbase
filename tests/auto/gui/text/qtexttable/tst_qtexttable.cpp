@@ -146,87 +146,87 @@ void tst_QTextTable::variousTableModifications()
     QTextTableFormat tableFmt;
 
     QTextTable *tab = cursor.insertTable(2, 2, tableFmt);
-    QVERIFY(doc->toPlainText().length() == 5);
-    QVERIFY(tab == cursor.currentTable());
-    QVERIFY(tab->columns() == 2);
-    QVERIFY(tab->rows() == 2);
+    QCOMPARE(doc->toPlainText().length(), 5);
+    QCOMPARE(tab, cursor.currentTable());
+    QCOMPARE(tab->columns(), 2);
+    QCOMPARE(tab->rows(), 2);
 
-    QVERIFY(cursor.position() == 1);
+    QCOMPARE(cursor.position(), 1);
     QTextCharFormat fmt = cursor.charFormat();
-    QVERIFY(fmt.objectIndex() == -1);
+    QCOMPARE(fmt.objectIndex(), -1);
     QTextTableCell cell = tab->cellAt(cursor);
     QVERIFY(cell.isValid());
-    QVERIFY(cell.row() == 0);
-    QVERIFY(cell.column() == 0);
+    QCOMPARE(cell.row(), 0);
+    QCOMPARE(cell.column(), 0);
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 2);
+    QCOMPARE(cursor.position(), 2);
     fmt = cursor.charFormat();
-    QVERIFY(fmt.objectIndex() == -1);
+    QCOMPARE(fmt.objectIndex(), -1);
     cell = tab->cellAt(cursor);
     QVERIFY(cell.isValid());
-    QVERIFY(cell.row() == 0);
-    QVERIFY(cell.column() == 1);
+    QCOMPARE(cell.row(), 0);
+    QCOMPARE(cell.column(), 1);
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 3);
+    QCOMPARE(cursor.position(), 3);
     fmt = cursor.charFormat();
-    QVERIFY(fmt.objectIndex() == -1);
+    QCOMPARE(fmt.objectIndex(), -1);
     cell = tab->cellAt(cursor);
     QVERIFY(cell.isValid());
-    QVERIFY(cell.row() == 1);
-    QVERIFY(cell.column() == 0);
+    QCOMPARE(cell.row(), 1);
+    QCOMPARE(cell.column(), 0);
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 4);
+    QCOMPARE(cursor.position(), 4);
     fmt = cursor.charFormat();
-    QVERIFY(fmt.objectIndex() == -1);
+    QCOMPARE(fmt.objectIndex(), -1);
     cell = tab->cellAt(cursor);
     QVERIFY(cell.isValid());
-    QVERIFY(cell.row() == 1);
-    QVERIFY(cell.column() == 1);
+    QCOMPARE(cell.row(), 1);
+    QCOMPARE(cell.column(), 1);
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 5);
+    QCOMPARE(cursor.position(), 5);
     fmt = cursor.charFormat();
-    QVERIFY(fmt.objectIndex() == -1);
+    QCOMPARE(fmt.objectIndex(), -1);
     cell = tab->cellAt(cursor);
     QVERIFY(!cell.isValid());
 
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 5);
+    QCOMPARE(cursor.position(), 5);
 
     // check we can't delete the cells with the cursor
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 1);
+    QCOMPARE(cursor.position(), 1);
     cursor.deleteChar();
-    QVERIFY(doc->toPlainText().length() == 5);
+    QCOMPARE(doc->toPlainText().length(), 5);
     cursor.movePosition(QTextCursor::NextBlock);
-    QVERIFY(cursor.position() == 2);
+    QCOMPARE(cursor.position(), 2);
     cursor.deleteChar();
-    QVERIFY(doc->toPlainText().length() == 5);
+    QCOMPARE(doc->toPlainText().length(), 5);
     cursor.deletePreviousChar();
-    QVERIFY(cursor.position() == 2);
-    QVERIFY(doc->toPlainText().length() == 5);
+    QCOMPARE(cursor.position(), 2);
+    QCOMPARE(doc->toPlainText().length(), 5);
 
     QTextTable *table = cursor.currentTable();
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 2);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 2);
 
     table->insertRows(2, 1);
-    QVERIFY(table->rows() == 3);
-    QVERIFY(table->columns() == 2);
-    QVERIFY(doc->toPlainText().length() == 7);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 2);
+    QCOMPARE(doc->toPlainText().length(), 7);
     table->insertColumns(2, 2);
-    QVERIFY(table->rows() == 3);
-    QVERIFY(table->columns() == 4);
-    QVERIFY(doc->toPlainText().length() == 13);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 4);
+    QCOMPARE(doc->toPlainText().length(), 13);
 
     table->resize(4, 5);
-    QVERIFY(table->rows() == 4);
-    QVERIFY(table->columns() == 5);
-    QVERIFY(doc->toPlainText().length() == 21);
+    QCOMPARE(table->rows(), 4);
+    QCOMPARE(table->columns(), 5);
+    QCOMPARE(doc->toPlainText().length(), 21);
 }
 
 void tst_QTextTable::tableShrinking()
@@ -234,25 +234,25 @@ void tst_QTextTable::tableShrinking()
     QTextTableFormat tableFmt;
 
     cursor.insertTable(3, 4, tableFmt);
-    QVERIFY(doc->toPlainText().length() == 13);
+    QCOMPARE(doc->toPlainText().length(), 13);
 
     QTextTable *table = cursor.currentTable();
-    QVERIFY(table->rows() == 3);
-    QVERIFY(table->columns() == 4);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 4);
 
     table->removeRows(1, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 4);
-    QVERIFY(doc->toPlainText().length() == 9);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 4);
+    QCOMPARE(doc->toPlainText().length(), 9);
     table->removeColumns(1, 2);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 2);
-    QVERIFY(doc->toPlainText().length() == 5);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 2);
+    QCOMPARE(doc->toPlainText().length(), 5);
 
     table->resize(1, 1);
-    QVERIFY(table->rows() == 1);
-    QVERIFY(table->columns() == 1);
-    QVERIFY(doc->toPlainText().length() == 2);
+    QCOMPARE(table->rows(), 1);
+    QCOMPARE(table->columns(), 1);
+    QCOMPARE(doc->toPlainText().length(), 2);
 }
 
 void tst_QTextTable::spans()
@@ -264,12 +264,12 @@ void tst_QTextTable::spans()
     QTextTable *table = cursor.currentTable();
     QVERIFY(table->cellAt(0, 0) != table->cellAt(0, 1));
     table->mergeCells(0, 0, 1, 2);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 2);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 2);
     QVERIFY(table->cellAt(0, 0) == table->cellAt(0, 1));
     table->mergeCells(0, 0, 2, 2);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 2);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 2);
 }
 
 void tst_QTextTable::variousModifications2()
@@ -277,45 +277,45 @@ void tst_QTextTable::variousModifications2()
     QTextTableFormat tableFmt;
 
     cursor.insertTable(2, 5, tableFmt);
-    QVERIFY(doc->toPlainText().length() == 11);
+    QCOMPARE(doc->toPlainText().length(), 11);
     QTextTable *table = cursor.currentTable();
-    QVERIFY(cursor.position() == 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 5);
+    QCOMPARE(cursor.position(), 1);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 5);
 
     table->insertColumns(0, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 6);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 6);
     table->insertColumns(6, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 7);
 
     table->insertRows(0, 1);
-    QVERIFY(table->rows() == 3);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 7);
     table->insertRows(3, 1);
-    QVERIFY(table->rows() == 4);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->rows(), 4);
+    QCOMPARE(table->columns(), 7);
 
     table->removeRows(0, 1);
-    QVERIFY(table->rows() == 3);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 7);
     table->removeRows(2, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 7);
 
     table->removeColumns(0, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 6);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 6);
     table->removeColumns(5, 1);
-    QVERIFY(table->rows() == 2);
-    QVERIFY(table->columns() == 5);
+    QCOMPARE(table->rows(), 2);
+    QCOMPARE(table->columns(), 5);
 
     tableFmt = table->format();
     table->insertColumns(2, 1);
     table->setFormat(tableFmt);
     table->insertColumns(2, 1);
-    QVERIFY(table->columns() == 7);
+    QCOMPARE(table->columns(), 7);
 }
 
 void tst_QTextTable::tableManager_undo()
@@ -325,16 +325,16 @@ void tst_QTextTable::tableManager_undo()
     QTextTable *table = cursor.insertTable(2, 2, fmt);
     QVERIFY(table);
 
-    QVERIFY(table->format().border() == 10);
+    QCOMPARE(table->format().border(), qreal(10));
 
     fmt.setBorder(20);
     table->setFormat(fmt);
 
-    QVERIFY(table->format().border() == 20);
+    QCOMPARE(table->format().border(), qreal(20));
 
     doc->undo();
 
-    QVERIFY(table->format().border() == 10);
+    QCOMPARE(table->format().border(), qreal(10));
 }
 
 void tst_QTextTable::tableManager_removeCell()
@@ -360,10 +360,10 @@ void tst_QTextTable::rowAt()
     QTextCursor cell20Cursor = table->cellAt(2, 0).firstCursorPosition();
     QTextCursor cell21Cursor = table->cellAt(2, 1).firstCursorPosition();
     QTextCursor cell30Cursor = table->cellAt(3, 0).firstCursorPosition();
-    QVERIFY(table->cellAt(cell00Cursor).firstCursorPosition() == cell00Cursor);
-    QVERIFY(table->cellAt(cell10Cursor).firstCursorPosition() == cell10Cursor);
-    QVERIFY(table->cellAt(cell20Cursor).firstCursorPosition() == cell20Cursor);
-    QVERIFY(table->cellAt(cell30Cursor).firstCursorPosition() == cell30Cursor);
+    QCOMPARE(table->cellAt(cell00Cursor).firstCursorPosition(), cell00Cursor);
+    QCOMPARE(table->cellAt(cell10Cursor).firstCursorPosition(), cell10Cursor);
+    QCOMPARE(table->cellAt(cell20Cursor).firstCursorPosition(), cell20Cursor);
+    QCOMPARE(table->cellAt(cell30Cursor).firstCursorPosition(), cell30Cursor);
 
     table->mergeCells(1, 0, 2, 1);
 
@@ -433,16 +433,16 @@ void tst_QTextTable::insertRows()
     QVERIFY(cursor == table->cellAt(0, 0).firstCursorPosition());
 
     table->insertRows(0, 1);
-    QVERIFY(table->rows() == 3);
+    QCOMPARE(table->rows(), 3);
 
     table->insertRows(1, 1);
-    QVERIFY(table->rows() == 4);
+    QCOMPARE(table->rows(), 4);
 
     table->insertRows(-1, 1);
-    QVERIFY(table->rows() == 5);
+    QCOMPARE(table->rows(), 5);
 
     table->insertRows(5, 2);
-    QVERIFY(table->rows() == 7);
+    QCOMPARE(table->rows(), 7);
 
 }
 
@@ -552,9 +552,9 @@ void tst_QTextTable::mergeCells()
 
     QTextBlock block = table->cellAt(0, 0).firstCursorPosition().block();
 
-    QVERIFY(block.text() == "Blah Foo");
-    QVERIFY(block.next().text() == "Hah");
-    QVERIFY(block.next().next().text() == "Bar");
+    QCOMPARE(block.text(), QLatin1String("Blah Foo"));
+    QCOMPARE(block.next().text(), QLatin1String("Hah"));
+    QCOMPARE(block.next().next().text(), QLatin1String("Bar"));
 
     table = create4x4Table();
 
@@ -580,7 +580,7 @@ void tst_QTextTable::mergeCells()
     if (table) {
         cursor = table->cellAt(0, 0).firstCursorPosition();
 
-        QVERIFY(cursor.block().text() == "Test");
+        QCOMPARE(cursor.block().text(), QLatin1String("Test"));
     }
 
     table = create2x2Table();
@@ -750,7 +750,7 @@ void tst_QTextTable::setCellFormat()
     fmt.setTableCellColumnSpan(25);
     fmt.setTableCellRowSpan(42);
     cell.setFormat(fmt);
-    QVERIFY(cell.format().background().color() == QColor(Qt::blue));
+    QCOMPARE(cell.format().background().color(), QColor(Qt::blue));
     QCOMPARE(cell.format().tableCellColumnSpan(), 1);
     QCOMPARE(cell.format().tableCellRowSpan(), 1);
 }

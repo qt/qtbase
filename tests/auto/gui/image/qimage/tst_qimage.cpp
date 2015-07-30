@@ -477,7 +477,7 @@ void tst_QImage::setAlphaChannel()
 
     image.setAlphaChannel(alphaChannel);
     image = image.convertToFormat(QImage::Format_ARGB32);
-    QVERIFY(image.format() == QImage::Format_ARGB32);
+    QCOMPARE(image.format(), QImage::Format_ARGB32);
 
     // alpha of 0 becomes black at a=0 due to premultiplication
     QRgb pixel = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
@@ -1564,12 +1564,12 @@ void tst_QImage::createHeuristicMask()
 
     // line 2
     QVERIFY(newMask.pixel(0,1) != newMask.pixel(1,1));
-    QVERIFY(newMask.pixel(1,1) == newMask.pixel(2,1));
+    QCOMPARE(newMask.pixel(1,1), newMask.pixel(2,1));
     QVERIFY(newMask.pixel(2,1) != newMask.pixel(3,1));
 
     // line 3
     QVERIFY(newMask.pixel(0,2) != newMask.pixel(1,2));
-    QVERIFY(newMask.pixel(1,2) == newMask.pixel(2,2));
+    QCOMPARE(newMask.pixel(1,2), newMask.pixel(2,2));
     QVERIFY(newMask.pixel(2,2) != newMask.pixel(3,2));
 }
 #endif
@@ -1580,10 +1580,10 @@ void tst_QImage::cacheKey()
     qint64 image1_key = image1.cacheKey();
     QImage image2 = image1;
 
-    QVERIFY(image2.cacheKey() == image1.cacheKey());
+    QCOMPARE(image2.cacheKey(), image1.cacheKey());
     image2.detach();
     QVERIFY(image2.cacheKey() != image1.cacheKey());
-    QVERIFY(image1.cacheKey() == image1_key);
+    QCOMPARE(image1.cacheKey(), image1_key);
 }
 
 void tst_QImage::smoothScale()

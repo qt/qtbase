@@ -437,14 +437,14 @@ void tst_QWindow::platformSurface()
     QCOMPARE(window.geometry(), geometry);
     window.create();
 
-    QTRY_VERIFY(window.received(QEvent::PlatformSurface) == 1);
-    QTRY_VERIFY(window.surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated);
+    QTRY_COMPARE(window.received(QEvent::PlatformSurface), 1);
+    QTRY_COMPARE(window.surfaceEventType(), QPlatformSurfaceEvent::SurfaceCreated);
     QTRY_VERIFY(window.handle() != Q_NULLPTR);
 
     window.destroy();
-    QTRY_VERIFY(window.received(QEvent::PlatformSurface) == 2);
-    QTRY_VERIFY(window.surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
-    QTRY_VERIFY(window.handle() == Q_NULLPTR);
+    QTRY_COMPARE(window.received(QEvent::PlatformSurface), 2);
+    QTRY_COMPARE(window.surfaceEventType(), QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
+    QTRY_VERIFY(!window.handle());
 
     // Check for synchronous delivery of platform surface events and that the platform
     // surface always existed upon event delivery
@@ -506,7 +506,7 @@ void tst_QWindow::isActive()
     context.swapBuffers(&window);
 #endif
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QVERIFY(window.isActive());
 
     Window child;
@@ -518,7 +518,7 @@ void tst_QWindow::isActive()
 
     child.requestActivate();
 
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &child);
     QVERIFY(child.isActive());
 
     // parent shouldn't receive new resize events from child being shown
@@ -541,7 +541,7 @@ void tst_QWindow::isActive()
     QTRY_VERIFY(dialog.isExposed());
     QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::Resize), 1);
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &dialog);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
     QVERIFY(dialog.isActive());
 
     // transient child has focus
@@ -552,7 +552,7 @@ void tst_QWindow::isActive()
 
     window.requestActivate();
 
-    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
     QTRY_COMPARE(window.received(QEvent::FocusIn), 2);
@@ -1331,14 +1331,14 @@ void tst_QWindow::inputReentrancy()
 class TabletTestWindow : public QWindow
 {
 public:
-    TabletTestWindow() : eventType(0) { }
+    TabletTestWindow() : eventType(QEvent::None) { }
     void tabletEvent(QTabletEvent *ev) {
         eventType = ev->type();
         eventGlobal = ev->globalPosF();
         eventLocal = ev->posF();
         eventDevice = ev->device();
     }
-    int eventType;
+    QEvent::Type eventType;
     QPointF eventGlobal, eventLocal;
     int eventDevice;
     bool eventFilter(QObject *obj, QEvent *ev) {
@@ -1371,16 +1371,16 @@ void tst_QWindow::tabletEvents()
     QTRY_COMPARE(window.eventLocal.toPoint(), local);
     QWindowSystemInterface::handleTabletEvent(&window, false, deviceLocal, deviceGlobal, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
     QCoreApplication::processEvents();
-    QTRY_VERIFY(window.eventType == QEvent::TabletRelease);
+    QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
 
     QWindowSystemInterface::handleTabletEnterProximityEvent(1, 2, 3);
     QCoreApplication::processEvents();
-    QTRY_VERIFY(window.eventType == QEvent::TabletEnterProximity);
+    QTRY_COMPARE(window.eventType, QEvent::TabletEnterProximity);
     QTRY_COMPARE(window.eventDevice, 1);
 
     QWindowSystemInterface::handleTabletLeaveProximityEvent(1, 2, 3);
     QCoreApplication::processEvents();
-    QTRY_VERIFY(window.eventType == QEvent::TabletLeaveProximity);
+    QTRY_COMPARE(window.eventType, QEvent::TabletLeaveProximity);
     QTRY_COMPARE(window.eventDevice, 1);
 
 #endif
@@ -1728,13 +1728,13 @@ void tst_QWindow::requestUpdate()
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.isExposed());
 
-    QVERIFY(window.received(QEvent::UpdateRequest) == 0);
+    QCOMPARE(window.received(QEvent::UpdateRequest), 0);
 
     window.requestUpdate();
-    QTRY_VERIFY(window.received(QEvent::UpdateRequest) == 1);
+    QTRY_COMPARE(window.received(QEvent::UpdateRequest), 1);
 
     window.requestUpdate();
-    QTRY_VERIFY(window.received(QEvent::UpdateRequest) == 2);
+    QTRY_COMPARE(window.received(QEvent::UpdateRequest), 2);
 }
 
 #include <tst_qwindow.moc>

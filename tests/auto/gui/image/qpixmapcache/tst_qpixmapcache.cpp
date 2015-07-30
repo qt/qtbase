@@ -111,7 +111,7 @@ void tst_QPixmapCache::setCacheLimit()
     delete p1;
 
     QPixmapCache::setCacheLimit(0);
-    QVERIFY(QPixmapCache::find("P1") == 0);
+    QVERIFY(!QPixmapCache::find("P1"));
 
     p1 = new QPixmap(2, 3);
     QPixmapCache::setCacheLimit(1000);
@@ -346,12 +346,12 @@ void tst_QPixmapCache::remove()
     QVERIFY(p1.toImage() == p1.toImage()); // sanity check
 
     QPixmapCache::remove("red");
-    QVERIFY(QPixmapCache::find("red") == 0);
+    QVERIFY(!QPixmapCache::find("red"));
     QPixmapCache::remove("red");
-    QVERIFY(QPixmapCache::find("red") == 0);
+    QVERIFY(!QPixmapCache::find("red"));
 
     QPixmapCache::remove("green");
-    QVERIFY(QPixmapCache::find("green") == 0);
+    QVERIFY(!QPixmapCache::find("green"));
 
     //The int part of the API
     QPixmapCache::clear();
@@ -424,7 +424,7 @@ void tst_QPixmapCache::clear()
     QPixmapCache::clear();
 
     for (int k = 0; k < numberOfKeys; ++k)
-        QVERIFY(QPixmapCache::find(QString::number(k)) == 0);
+        QVERIFY(!QPixmapCache::find(QString::number(k)));
 
     //The int part of the API
     QPixmap p2(10, 10);
