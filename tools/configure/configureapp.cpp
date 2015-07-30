@@ -911,8 +911,10 @@ void Configure::parseCmdLine()
               dictionary[ "OPENSSL"] = "no";
         } else if (configCmdLine.at(i) == "-openssl") {
               dictionary[ "OPENSSL" ] = "yes";
+              dictionary[ "SSL" ] = "yes";
         } else if (configCmdLine.at(i) == "-openssl-linked") {
               dictionary[ "OPENSSL" ] = "linked";
+              dictionary[ "SSL" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-libproxy") {
               dictionary[ "LIBPROXY"] = "no";
         } else if (configCmdLine.at(i) == "-libproxy") {
@@ -1701,8 +1703,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
         dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "SSL" ]                 = "no";
-        dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "SSE2" ]                = "no";
         dictionary[ "SSE3" ]                = "no";
