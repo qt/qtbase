@@ -52,10 +52,6 @@
 #  endif
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
-#  include <private/qgtkstyle_p_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static bool isCacheable(const QFileInfo &fi);
@@ -357,15 +353,6 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 QIcon QFileIconProvider::icon(const QFileInfo &info) const
 {
     Q_D(const QFileIconProvider);
-
-#if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
-    const QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
-    if (desktopEnvironment != QByteArrayLiteral("KDE")) {
-        QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
-        if (!gtkIcon.isNull())
-            return gtkIcon;
-    }
-#endif
 
     QIcon retIcon = d->getIcon(info);
     if (!retIcon.isNull())

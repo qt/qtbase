@@ -700,7 +700,7 @@ CFG_CUPS=auto
 CFG_ICONV=auto
 CFG_DBUS=auto
 CFG_GLIB=auto
-CFG_QGTKSTYLE=auto
+CFG_GTK=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
 CFG_LIBPROXY=auto
@@ -1958,9 +1958,9 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    gtkstyle)
+    gtk)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_QGTKSTYLE="$VAL"
+            CFG_GTK="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2553,8 +2553,8 @@ Third Party Libraries:
     -no-alsa ............ Do not compile ALSA support.
  +  -alsa ............... Compile ALSA support.
 
-    -no-gtkstyle ........ Do not compile GTK theme support.
- +  -gtkstyle ........... Compile GTK theme support.
+    -no-gtk ............. Do not compile GTK platform theme support.
+ +  -gtk ................ Compile GTK platform theme support.
 
 Additional options:
 
@@ -3373,7 +3373,7 @@ fi
 # disable XCB and GTK support auto-detection on Mac
 if [ "$XPLATFORM_MAC" = "yes" ]; then
     [ "$CFG_XCB" = "auto" ] && CFG_XCB=no
-    [ "$CFG_QGTKSTYLE" = "auto" ] && CFG_QGTKSTYLE=no
+    [ "$CFG_GTK" = "auto" ] && CFG_GTK=no
 fi
 
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
@@ -5041,33 +5041,31 @@ if [ "$CFG_GLIB" != "no" ]; then
 fi
 
 # auto-detect GTK style support
-if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
+if [ "$CFG_GLIB" = "yes" -a "$CFG_GTK" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
         QT_CFLAGS_QGTK2=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.18 atk 2>/dev/null`
         QT_LIBS_QGTK2=`$PKG_CONFIG --libs gtk+-2.0 2>/dev/null`
         QT_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
     fi
     if [ -n "$QT_CFLAGS_QGTK2" ] ; then
-        CFG_QGTKSTYLE=yes
-        QT_CONFIG="$QT_CONFIG gtk2 gtkstyle"
-        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTK2"
-        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGOBJECT"
+        CFG_GTK=yes
+        QT_CONFIG="$QT_CONFIG gtk2"
         QMakeVar set QT_CFLAGS_QGTK2 "$QT_CFLAGS_QGTK2"
         QMakeVar set QT_LIBS_QGTK2 "$QT_LIBS_QGTK2"
     else
-        if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        if [ "$CFG_GTK" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "GTK theme support cannot be enabled due to functionality tests!"
             [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
-            echo " Turn on verbose messaging (-v) to $0 to see the fin  al report."
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
             exit 101
         else
-            CFG_QGTKSTYLE=no
+            CFG_GTK=no
         fi
     fi
 elif [ "$CFG_GLIB" = "no" ]; then
-    CFG_QGTKSTYLE=no
+    CFG_GTK=no
 fi
 
 # auto-detect libicu support
@@ -6686,7 +6684,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
 [ "$CFG_EVDEV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVDEV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
-[ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
 [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
 [ "$CFG_POSIX_FALLOCATE" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_POSIX_FALLOCATE"
 [ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
@@ -7129,7 +7126,7 @@ report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"
 report_support "  Glib ..................." "$CFG_GLIB"
 report_support "  GStreamer .............." "$CFG_GSTREAMER" yes "$CFG_GSTREAMER_VERSION"
-report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
+report_support "  GTK platformtheme ......" "$CFG_GTK"
 report_support "  HarfBuzz ..............." "$CFG_HARFBUZZ" system "system library" qt "bundled copy"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"

@@ -602,7 +602,7 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(QGenericUnixTheme::xdgIconThemePaths());
     case QPlatformTheme::StyleNames: {
         QStringList styleNames;
-        styleNames << QStringLiteral("GTK+") << QStringLiteral("fusion") << QStringLiteral("windows");
+        styleNames << QStringLiteral("fusion") << QStringLiteral("windows");
         return QVariant(styleNames);
     }
     case QPlatformTheme::KeyboardScheme:

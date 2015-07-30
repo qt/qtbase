@@ -44,9 +44,6 @@
 #include "qandroidstyle_p.h"
 #endif
 #endif
-#ifndef QT_NO_STYLE_GTK
-#include "qgtkstyle_p.h"
-#endif
 #ifndef QT_NO_STYLE_WINDOWSXP
 #include "qwindowsxpstyle_p.h"
 #endif
@@ -86,7 +83,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
     The valid keys can be retrieved using the keys()
     function. Typically they include "windows" and "fusion".
-    Depending on the platform, "windowsxp", "windowsvista", "gtk"
+    Depending on the platform, "windowsxp", "windowsvista"
     and "macintosh" may be available.
     Note that keys are case insensitive.
 
@@ -141,11 +138,6 @@ QStyle *QStyleFactory::create(const QString& key)
 #ifndef QT_NO_STYLE_ANDROID
     if (style == QLatin1String("android"))
         ret = new QAndroidStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_GTK
-    if (style == QLatin1String("gtk") || style == QLatin1String("gtk+"))
-        ret = new QGtkStyle;
     else
 #endif
 #ifndef QT_NO_STYLE_MAC
@@ -209,10 +201,6 @@ QStringList QStyleFactory::keys()
 #ifndef QT_NO_STYLE_ANDROID
     if (!list.contains(QLatin1String("Android")))
         list << QLatin1String("Android");
-#endif
-#ifndef QT_NO_STYLE_GTK
-    if (!list.contains(QLatin1String("GTK+")))
-        list << QLatin1String("GTK+");
 #endif
 #ifndef QT_NO_STYLE_FUSION
     if (!list.contains(QLatin1String("Fusion")))

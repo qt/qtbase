@@ -38,7 +38,7 @@
     native widgets.
 
     Qt comes with a selection of built-in styles. Some styles are only
-    available on specific platforms (such as the Mac, GTK+ and Windows
+    available on specific platforms (such as the Mac and Windows
     Vista styles). Custom styles are made available as plugins or by
     creating an instance of a specific style class with
     QStyleFactory::create() and setting it with QApplication::setStyle().

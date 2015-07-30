@@ -54,10 +54,6 @@
   \caption \l{Macintosh Style Widget Gallery}
 
   The Macintosh style is provided by QMacStyle.
-  \li \image gtk-tabwidget.png GTK Style Widget Gallery
-  \caption \l{GTK Style Widget Gallery}
-
-  The GTK style is provided by QGtkStyle.
   \li \image fusion-tabwidget.png Fusion Style Widget Gallery
   \caption \l{Fusion Style Widget Gallery}
 
