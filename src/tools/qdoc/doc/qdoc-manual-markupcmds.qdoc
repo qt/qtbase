@@ -2092,8 +2092,11 @@
     {sa-command} {\\sa (see also)} commands.
 
     The \\keyword command is like the \l {target-command} {\\target}
-    command, but stronger. A keyword can be linked from anywhere using
-    a simple syntax.
+    command, except when linking to keyword the link goes to the top of
+    the QDoc comment where the \\keyword appears in. If you want to
+    create a link target to a \c section unit within a \\page, use
+    \\target instead. A keyword can be linked from anywhere using a
+    simple syntax.
 
     Keywords must be unique over all the documents processed during
     the QDoc run. The command uses the rest of the line as its

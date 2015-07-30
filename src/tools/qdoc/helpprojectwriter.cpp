@@ -307,8 +307,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                     QStringList details;
                     details << keyword->string()
                             << keyword->string()
-                            << gen_->fullDocumentLocation(node, false) +
-                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
+                            << gen_->fullDocumentLocation(node, false);
                     project.keywords.append(details);
                 }
                 else
@@ -357,8 +356,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node, false) +
-                                       QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
+                                    << gen_->fullDocumentLocation(node, false);
                             project.keywords.append(details);
                         }
                         else
@@ -438,8 +436,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                             QStringList details;
                             details << keyword->string()
                                     << keyword->string()
-                                    << gen_->fullDocumentLocation(node, false) +
-                                       QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
+                                    << gen_->fullDocumentLocation(node, false);
                             project.keywords.append(details);
                         } else
                             docNode->doc().location().warning(

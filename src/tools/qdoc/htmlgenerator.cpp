@@ -283,12 +283,17 @@ QString HtmlGenerator::format()
  */
 void HtmlGenerator::generateKeywordAnchors(const Node* node)
 {
+    Q_UNUSED(node);
+    // Disabled: keywords always link to the top of the QDoc
+    // comment they appear in, and do not use a dedicated anchor.
+#if 0
     if (!node->doc().isEmpty()) {
         const QList<Atom*>& keywords = node->doc().keywords();
         foreach (Atom* a, keywords) {
             out() << QLatin1String("<a name=\"") << Doc::canonicalTitle(a->string()) << QLatin1String("\"></a>");
         }
     }
+#endif
 }
 
 /*!
@@ -3809,10 +3814,8 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
         link = linkForNode(*node, relative);
         if ((*node)->docSubtype() == Node::Image)
             link = "images/used-in-examples/" + link;
-        if (!ref.isEmpty())
-            link += QLatin1Char('#') + ref;
     }
-    else if (!ref.isEmpty()) {
+    if (!ref.isEmpty()) {
         int hashtag = link.lastIndexOf(QChar('#'));
         if (hashtag != -1)
             link.truncate(hashtag);

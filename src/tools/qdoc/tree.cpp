@@ -995,7 +995,6 @@ void Tree::insertTarget(const QString& name,
  */
 void Tree::resolveTargets(Aggregate* root)
 {
-    // need recursion
     foreach (Node* child, root->childNodes()) {
         if (child->type() == Node::Document) {
             DocumentNode* node = static_cast<DocumentNode*>(child);
@@ -1039,9 +1038,8 @@ void Tree::resolveTargets(Aggregate* root)
                 QString ref = refForAtom(keywords.at(i));
                 QString title = keywords.at(i)->string();
                 if (!ref.isEmpty() && !title.isEmpty()) {
-                    QString key = Doc::canonicalTitle(title);
                     TargetRec* target = new TargetRec(ref, title, TargetRec::Keyword, child, 1);
-                    nodesByTargetRef_.insert(key, target);
+                    nodesByTargetRef_.insert(Doc::canonicalTitle(title), target);
                     nodesByTargetTitle_.insert(title, target);
                 }
             }
@@ -1059,6 +1057,8 @@ void Tree::resolveTargets(Aggregate* root)
                 }
             }
         }
+        if (child->isAggregate())
+            resolveTargets(static_cast<Aggregate*>(child));
     }
 }
 
