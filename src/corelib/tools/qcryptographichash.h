@@ -42,6 +42,7 @@
 #define QCRYPTOGRAPHICHASH_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,7 @@ class QIODevice;
 
 class Q_CORE_EXPORT QCryptographicHash
 {
+    Q_GADGET
 public:
     enum Algorithm {
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -69,6 +71,7 @@ public:
         Sha3_512
 #endif
     };
+    Q_ENUM(Algorithm)
 
     explicit QCryptographicHash(Algorithm method);
     ~QCryptographicHash();
