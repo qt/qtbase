@@ -1159,6 +1159,9 @@ void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *actio
     socketState = QAbstractSocket::ConnectedState;
     emit q->connectionReady();
 
+    if (socketType != QAbstractSocket::TcpSocket)
+        return;
+
     // Delay the reader so that the SSL socket can upgrade
     if (sslSocket)
         QObject::connect(qobject_cast<QSslSocket *>(sslSocket), &QSslSocket::encrypted, q, &QNativeSocketEngine::establishRead);
