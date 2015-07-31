@@ -127,7 +127,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
         m_roundness = 1;
     } else if (cosmetic) {
         m_curvyness_add = realWidth / 2;
-        m_curvyness_mul = CURVE_FLATNESS;
+        m_curvyness_mul = float(CURVE_FLATNESS);
         m_roundness = qMax<int>(4, realWidth * CURVE_FLATNESS);
     } else {
         m_curvyness_add = m_width;
@@ -543,7 +543,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
         curvynessMul = CURVE_FLATNESS / m_inv_scale;
     } else if (cosmetic) {
         curvynessAdd= width / 2;
-        curvynessMul= CURVE_FLATNESS;
+        curvynessMul= float(CURVE_FLATNESS);
     } else {
         curvynessAdd = width * m_inv_scale;
         curvynessMul = CURVE_FLATNESS / m_inv_scale;
