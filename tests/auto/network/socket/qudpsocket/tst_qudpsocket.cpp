@@ -848,7 +848,11 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
     QTest::addColumn<bool>("bind");
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
 
     QTest::newRow("localhost-unbound") << false << localhost;
     QTest::newRow("localhost-bound") << true << localhost;
@@ -858,6 +862,8 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
 
 void tst_QUdpSocket::writeDatagramToNonExistingPeer()
 {
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(bool, bind);
     QFETCH(QHostAddress, peerAddress);
 
@@ -879,7 +885,11 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 {
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
     // write (required to be connected)
     QTest::newRow("localhost") << localhost;
     QTest::newRow("remote") << remote;
@@ -888,6 +898,8 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 void tst_QUdpSocket::writeToNonExistingPeer()
 {
     QSKIP("Connected-mode UDP sockets and their behaviour are erratic");
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(QHostAddress, peerAddress);
     quint16 peerPort = 34534;
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
