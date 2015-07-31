@@ -179,8 +179,9 @@ void QOpenGLTexturePrivate::destroy()
         // not created or already destroyed
         return;
     }
-    if (QOpenGLContext::currentContext() != context) {
-        qWarning("Requires a valid current OpenGL context.\n"
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    if (!currentContext || !QOpenGLContext::areSharing(currentContext, context)) {
+        qWarning("Texture is not valid in the current context.\n"
                  "Texture has not been destroyed");
         return;
     }
