@@ -318,8 +318,7 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
             return false;
         }
 
-        EventRegistrationToken token;
-        d->tcpListener->add_ConnectionReceived(Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(), &token);
+        d->tcpListener->add_ConnectionReceived(Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(), &d->connectionToken);
         hr = d->tcpListener->BindEndpointAsync(hostAddress.Get(), portString.Get(), &op);
         if (FAILED(hr)) {
             qErrnoWarning(hr, "Unable to bind socket."); // ### Set error message
@@ -779,9 +778,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             qWarning("Failed to create stream socket");
             return false;
         }
-        EventRegistrationToken token;
         socketDescriptor = qintptr(socket.Detach());
-        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &token);
+        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &connectionToken);
         break;
     }
     default:
@@ -807,11 +805,19 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , closingDown(false)
     , socketDescriptor(-1)
     , sslSocket(Q_NULLPTR)
+    , connectionToken( { -1 } )
 {
 }
 
 QNativeSocketEnginePrivate::~QNativeSocketEnginePrivate()
 {
+    if (socketDescriptor == -1 || connectionToken.value == -1)
+        return;
+
+    if (socketType == QAbstractSocket::UdpSocket)
+        udpSocket()->remove_MessageReceived(connectionToken);
+    else if (socketType == QAbstractSocket::TcpSocket)
+        tcpListener->remove_ConnectionReceived(connectionToken);
 }
 
 void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, ErrorString errorString) const
