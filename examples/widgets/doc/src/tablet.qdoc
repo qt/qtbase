@@ -34,41 +34,41 @@
     \image tabletexample.png
 
     When you use a tablet with Qt applications, \l{QTabletEvent}s are
-    generated. You need to reimplement the
-    \l{QWidget::}{tabletEvent()} event handler if you want to handle
-    tablet events. Events are generated when the device used for
-    drawing enters and leaves the proximity of the tablet (i.e., when
-    it is close but not pressed down on it), when a device is pushed
-    down and released from it, and when a device is moved on the
-    tablet.
+    generated. You need to reimplement the \l{QWidget::}{tabletEvent()} event
+    handler if you want to handle tablet events. Events are generated when the
+    tool (stylus) used for drawing enters and leaves the proximity of the
+    tablet (i.e., when it is close but not pressed down on it), when the tool
+    is pressed down and released from it, when the tool is moved across the
+    tablet, and when one of the buttons on the tool is pressed or released.
 
-    The information available in QTabletEvent depends on the device
-    used. The tablet in this example has two different devices for
-    drawing: a stylus and an airbrush. For both devices the event
-    contains the position of the device, pressure on the tablet,
-    vertical tilt, and horizontal tilt (i.e, the angle between the
-    device and the perpendicular of the tablet). The airbrush has a
-    finger wheel; the position of this is also available in the tablet
-    event.
+    The information available in QTabletEvent depends on the device used.
+    This example can handle a tablet with up to three different drawing tools:
+    a stylus, an airbrush, and an art pen. For any of these the event will
+    contain the position of the tool, pressure on the tablet, button status,
+    vertical tilt, and horizontal tilt (i.e, the angle between the device and
+    the perpendicular of the tablet, if the tablet hardware can provide it).
+    The airbrush has a finger wheel; the position of this is also available
+    in the tablet event. The art pen provides rotation around the axis
+    perpendicular to the tablet surface, so that it can be used for calligraphy.
 
-    In this example we implement a drawing program. You can use the
-    stylus to draw on the tablet as you use a pencil on paper. When
-    you draw with the airbrush you get a spray of paint; the finger
-    wheel is used to change the density of the spray. The pressure and
-    tilt can change the alpha and saturation values of the QColor and the
-    width of the QPen used for drawing.
+    In this example we implement a drawing program. You can use the stylus to
+    draw on the tablet as you use a pencil on paper. When you draw with the
+    airbrush you get a spray of virtual paint; the finger wheel is used to
+    change the density of the spray. When you draw with the art pen, you get a
+    a line whose width and endpoint angle depend on the rotation of the pen.
+    The pressure and tilt can also be assigned to change the alpha and
+    saturation values of the color and the width of the stroke.
 
     The example consists of the following:
 
     \list
-    \li The \c MainWindow class inherits QMainWindow and creates
-        the examples menus and connect their slots and signals.
+    \li The \c MainWindow class inherits QMainWindow, creates
+        the menus, and connects their slots and signals.
     \li The \c TabletCanvas class inherits QWidget and
-        receives tablet events. It uses the events to paint on a
-        offscreen pixmap, which it draws onto itself.
+        receives tablet events. It uses the events to paint onto an
+        offscreen pixmap, and then renders it.
     \li The \c TabletApplication class inherits QApplication. This
-        class handles tablet events that are not sent to \c tabletEvent().
-        We will look at this later.
+        class handles tablet proximity events.
     \li The \c main() function creates a \c MainWindow and shows it
         as a top level window.
     \endlist
@@ -81,109 +81,98 @@
 
     \snippet widgets/tablet/mainwindow.h 0
 
-    The QActions let the user select if the tablets pressure and
-    tilt should change the pen width, color alpha component and color
-    saturation. \c createActions() creates all actions, and \c
-    createMenus() sets up the menus with the actions. We have one
-    QActionGroup for the actions that alter the alpha channel, color
-    saturation and line width respectively. The action groups are
-    connected to the \c alphaActionTriggered(), \c
-    colorSaturationActiontriggered(), and \c
-    lineWidthActionTriggered() slots, which calls functions in \c
-    myCanvas.
-
+    \c createMenus() sets up the menus with the actions. We have one
+    QActionGroup for the actions that alter the alpha channel, color saturation
+    and line width respectively. The action groups are connected to the
+    \c setAlphaValuator(), \c setSaturationValuator(), and
+    \c setLineWidthValuator() slots, which call functions in \c TabletCanvas.
 
     \section1 MainWindow Class Implementation
 
-    We start width a look at the constructor \c MainWindow():
+    We start with a look at the constructor \c MainWindow():
 
     \snippet widgets/tablet/mainwindow.cpp 0
 
-    In the constructor we create the canvas, actions, and menus.
-    We set the canvas as the center widget. We also initialize the
-    canvas to match the state of our menus and start drawing with a
-    red color.
+    In the constructor we call \c createMenus() to create all the actions and
+    menus, and set the canvas as the center widget.
 
-    Here is the implementation of \c brushColorAct():
+    \snippet widgets/tablet/mainwindow.cpp 8
 
-    \snippet widgets/tablet/mainwindow.cpp 1
+    At the beginning of \c createMenus() we populate the \b File menu.
+    We use an overload of \l{QMenu::}{addAction()}, introduced in Qt 5.6, to create
+    a menu item with a shortcut (and optionally an icon), add it to its menu,
+    and connect it to a slot, all with one line of code. We use QKeySequence to
+    get the platform-specific standard key shortcuts for these common menu items.
 
-    We let the user pick a color with a QColorDialog. If it is valid,
-    we set a new drawing color with \c setColor().
+    We also populate the \b Brush menu. The command to change a brush does not
+    normally have a standard shortcut, so we use \l{QObject::}{tr()} to enable
+    translating the shortcut along with the language translation of the application.
 
-    Here is the implementation of \c alphaActionTriggered():
+    Now we will look at the creation of one group of mutually-exclusive actions
+    in a submenu of the \b Tablet menu, for selecting which property of each
+    QTabletEvent will be used to vary the translucency (alpha channel) of the
+    line being drawn or color being airbrushed.
+    (See the \l{Application Example}{application example} if you want a
+    high-level introduction to QActions.)
+
+    \snippet widgets/tablet/mainwindow.cpp 9
+
+    We want the user to be able to choose whether the drawing color's alpha
+    component should be modulated by the tablet pressure, tilt, or the position
+    of the thumbwheel on the airbrush tool. We have one action for each choice,
+    and an additional action to choose not to change the alpha, that is, to keep
+    the color opaque. We make the actions checkable; the \c alphaChannelGroup
+    will then ensure that only one of the actions are checked at any time. The
+    \c triggered() signal is emitted from the group when an action is checked,
+    so we connect that to \c MainWindow::setAlphaValuator(). It will need to know
+    which property (valuator) of the QTabletEvent to pay attention to from now
+    on, so we use the QAction::data property to pass this information along.
+    (In order for this to be possible, the enum \c Valuator must be a registered
+    metatype, so that it can be inserted into a QVariant. That is accomplished
+    by the \c Q_ENUM declaration in tabletcanvas.h.)
+
+    Here is the implementation of \c setAlphaValuator():
 
     \snippet widgets/tablet/mainwindow.cpp 2
 
-    The \c TabletCanvas class supports two ways by which the alpha
-    channel of the drawing color can be changed: tablet pressure and
-    tilt. We have one action for each and an action if the alpha
-    channel should not be changed.
+    It simply needs to retrieve the \c Valuator enum from QAction::data(), and
+    pass that to \c TabletCanvas::setAlphaChannelValuator(). If we were not
+    using the \c data property, we would instead need to compare the QAction
+    pointer itself, for example in a switch statement. But that would require
+    keeping pointers to each QAction in class variables, for comparison purposes.
 
-    Here is the implementation of \c lineWidthActionTriggered():
+    Here is the implementation of \c setBrushColor():
 
-    \snippet widgets/tablet/mainwindow.cpp 3
+    \snippet widgets/tablet/mainwindow.cpp 1
 
-    We check which action is selected in \c lineWidthGroup, and set
-    how the canvas should change the drawing line width.
+    We do lazy initialization of a QColorDialog the first time the user
+    chooses \b {Brush color...} from the menu or via the action shortcut.
+    While the dialog is open, each time the user chooses a different color,
+    \c TabletCanvas::setColor() will be called to change the drawing color.
+    Because it is a non-modal dialog, the user is free to leave the color
+    dialog open, so as to be able to conveniently and frequently change colors,
+    or close it and re-open it later.
 
-    Here is the implementation of \c saturationActionTriggered():
-
-    \snippet widgets/tablet/mainwindow.cpp 4
-
-    We check which action is selected in \c colorSaturationGroup, and
-    set how the canvas should change the color saturation of the
-    drawing color.
-
-    Here is the implementation of \c saveAct():
+    Here is the implementation of \c save():
 
     \snippet widgets/tablet/mainwindow.cpp 5
 
-    We use the QFileDialog to let the user select a file to save the
-    drawing in. It is the \c TabletCanvas that save the drawing, so we
-    call its \c saveImage() function.
+    We use the QFileDialog to let the user select a file to save the drawing,
+    and then call \c TabletCanvas::saveImage() to actually write it to the
+    file.
 
-    Here is the implementation of \c loadAct():
+    Here is the implementation of \c load():
 
     \snippet widgets/tablet/mainwindow.cpp 6
 
-    We let the user select the image file to be opened with
-    a QFileDialog; we then ask the canvas to load the image with \c
-    loadImage().
+    We let the user select the image file to be opened with a QFileDialog; we
+    then ask the canvas to load the image with \c loadImage().
 
-    Here is the implementation of \c aboutAct():
+    Here is the implementation of \c about():
 
     \snippet widgets/tablet/mainwindow.cpp 7
 
     We show a message box with a short description of the example.
-
-    \c createActions() creates all actions and action groups of
-    the example. We look at the creation of one action group and its
-    actions. See the \l{Application Example}{application example} if
-    you want a high-level introduction to QActions.
-
-    Here is the implementation of \c createActions:
-
-    \snippet widgets/tablet/mainwindow.cpp 8
-    \dots
-    \snippet widgets/tablet/mainwindow.cpp 9
-
-    We want the user to be able to choose if the drawing color's
-    alpha component should be changed by the tablet pressure or tilt.
-    We have one action for each choice and an action if the alpha
-    channel is not to be changed, i.e, the color is opaque. We make
-    the actions checkable; the \c alphaChannelGroup will then ensure
-    that only one of the actions are checked at any time. The \c
-    triggered() signal is emitted when an action is checked.
-
-    \dots
-    \snippet widgets/tablet/mainwindow.cpp 10
-
-    Here is the implementation of \c createMenus():
-
-    \snippet widgets/tablet/mainwindow.cpp 11
-
-    We create the menus of the example and add the actions to them.
 
 
     \section1 TabletCanvas Class Definition
@@ -193,24 +182,22 @@
 
     \snippet widgets/tablet/tabletcanvas.h 0
 
-    The canvas can change the alpha channel, color saturation,
-    and line width of the drawing. We have one enum for each of
-    these; their values decide if it is the tablet pressure or tilt
-    that will alter them. We keep a private variable for each, the \c
-    alphaChannelType, \c colorSturationType, and \c penWidthType,
-    which we provide access functions for.
+    The canvas can change the alpha channel, color saturation, and line width
+    of the stroke. We have an enum listing the QTabletEvent properties with
+    which it is possible to modulate them. We keep a private variable for each:
+    \c m_alphaChannelValuator, \c m_colorSaturationValuator and
+    \c m_lineWidthValuator, and we provide accessor functions for them.
 
-    We draw on a QPixmap with \c myPen and \c myBrush using \c
-    myColor. The \c saveImage() and \c loadImage() saves and loads
-    the QPixmap to disk. The pixmap is drawn on the widget in \c
-    paintEvent(). The \c pointerType and \c deviceType keeps the type
-    of pointer, which is either a pen or an eraser, and device
-    currently used on the tablet, which is either a stylus or an
-    airbrush.
+    We draw on a QPixmap with \c m_pen and \c m_brush using \c m_color.
+    Each time a QTabletEvent is received, the stroke is drawn from
+    \c lastPoint to the point given in the current QTabletEvent,
+    and then the position and rotation are saved in \c lastPoint for next time.
+    The \c saveImage() and \c loadImage() functions save and load the QPixmap to disk.
+    The pixmap is drawn on the widget in \c paintEvent().
 
-    The interpretation of events from the tablet is done in \c
-    tabletEvent(); \c paintPixmap(), \c updateBrush(), and \c
-    brushPattern() are helper functions used by \c tabletEvent().
+    The interpretation of events from the tablet is done in \c tabletEvent(), and
+    \c paintPixmap(), \c updateBrush(), and \c updateCursor() are helper
+    functions used by \c tabletEvent().
 
 
     \section1 TabletCanvas Class Implementation
@@ -233,21 +220,28 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 2
 
-    We simply call \l{QPixmap::}{load()}, which loads the image in \a
-    file.
+    We simply call \l{QPixmap::}{load()}, which loads the image from \a file.
 
     Here is the implementation of \c tabletEvent():
 
     \snippet widgets/tablet/tabletcanvas.cpp 3
 
-    We get three kind of events to this function: TabletPress,
-    TabletRelease, and TabletMove, which is generated when a device
-    is pressed down on, leaves, or moves on the tablet. We set the \c
-    deviceDown to true when a device is pressed down on the tablet;
-    we then know when we should draw when we receive move events. We
-    have implemented the \c updateBrush() and \c paintPixmap() helper
-    functions to update \c myBrush and \c myPen after the state of \c
-    alphaChannelType, \c colorSaturationType, and \c lineWidthType.
+    We get three kind of events to this function: \c TabletPress, \c TabletRelease,
+    and \c TabletMove, which are generated when a drawing tool is pressed down on,
+    lifed up from, or moved across the tablet. We set \c m_deviceDown to \c true
+    when a device is pressed down on the tablet; we then know that we should
+    draw when we receive move events. We have implemented \c updateBrush()
+    to update \c m_brush and \c m_pen depending on which of the tablet event
+    properties the user has chosen to pay attention to.  The \c updateCursor()
+    function selects a cursor to represent the drawing tool in use, so that
+    as you hover with the tool in proximity of the tablet, you can see what
+    kind of stroke you are about to make.
+
+    \snippet widgets/tablet/tabletcanvas.cpp 12
+
+    If an art pen (\c RotationStylus) is in use, \c updateCursor()
+    is also called for each \c TabletMove event, and renders a rotated cursor
+    so that you can see the angle of the pen tip.
 
     Here is the implementation of \c paintEvent():
 
@@ -259,22 +253,22 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 5
 
-    In this function we draw on the pixmap based on the movement of the device.
-    If the device used on the tablet is a stylus, we want to draw a line from
+    In this function we draw on the pixmap based on the movement of the tool.
+    If the tool used on the tablet is a stylus, we want to draw a line from
     the last-known position to the current position. We also assume that this
     is a reasonable handling of any unknown device, but update the status bar
     with a warning. If it is an airbrush, we want to draw a circle filled with
     a soft gradient, whose density can depend on various event parameters.
     By default it depends on the tangential pressure, which is the position of
-    the finger wheel on the airbrush.  If it is a rotation stylus, we simulate
-    a felt marker by drawing trapezoidal strokes.
+    the finger wheel on the airbrush.  If the tool is a rotation stylus, we
+    simulate a felt marker by drawing trapezoidal stroke segments.
 
     \snippet widgets/tablet/tabletcanvas.cpp 6
 
-    In \c updateBrush() we set the pen and brush used for drawing
-    to match \c alphaChannelType, \c lineWidthType, \c
-    colorSaturationType, and \c myColor. We will examine the code to
-    set up \c myBrush and \c myPen for each of these variables:
+    In \c updateBrush() we set the pen and brush used for drawing to match
+    \c m_alphaChannelValuator, \c m_lineWidthValuator, \c m_colorSaturationValuator,
+    and \c m_color. We will examine the code to set up \c m_brush and
+    \c m_pen for each of these variables:
 
     \snippet widgets/tablet/tabletcanvas.cpp 7
 
@@ -288,34 +282,33 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 8
 
-    The alpha channel of QColor is given as a number between 0
-    and 255 where 0 is transparent and 255 is opaque.
-    \l{QTabletEvent::}{pressure()} returns the pressure as a qreal
-    between 0.0 and 1.0. By subtracting 127 from the tilt values and
-    taking the absolute value we get the smallest alpha values (i.e.,
-    the color is most transparent) when the pen is perpendicular to
-    the tablet. We select the largest of the vertical and horizontal
-    tilt value.
+    The alpha channel of QColor is given as a number between 0 and 255 where 0
+    is transparent and 255 is opaque, or as a floating-point number where 0 is
+    transparent and 1.0 is opaque. \l{QTabletEvent::}{pressure()} returns the
+    pressure as a qreal between 0.0 and 1.0. We get the smallest alpha values
+    (i.e., the color is most transparent) when the pen is perpendicular to the
+    tablet. We select the largest of the vertical and horizontal tilt values.
 
     \snippet widgets/tablet/tabletcanvas.cpp 9
 
-    The colorsaturation is given as a number between 0 and 255. It is
-    set with \l{QColor::}{setHsv()}. We can set the tilt values
-    directly, but must multiply the pressure to a number between 0 and
-    255.
+    The color saturation in the HSV color model can be given as an integer
+    between 0 and 255 or as a floating-point value between 0 and 1. We chose to
+    represent alpha as an integer, so we call \l{QColor::}{setHsv()} with
+    integer values. That means we need to multiply the pressure to a number
+    between 0 and 255.
 
     \snippet widgets/tablet/tabletcanvas.cpp 10
 
-    The width of the pen increases with the pressure. When the pen
-    width is controlled with the tilt we let the width increse with
-    the angle between the device and the perpendicular of the tablet.
+    The width of the pen stroke can increase with pressure, if so chosen.
+    But when the pen width is controlled by tilt, we let the width increase
+    with the angle between the tool and the perpendicular of the tablet.
 
     \snippet widgets/tablet/tabletcanvas.cpp 11
 
     We finally check whether the pointer is the stylus or the eraser.
     If it is the eraser, we set the color to the background color of
-    the pixmap an let the pressure decide the pen width, else we set
-    the colors we have set up previously in the function.
+    the pixmap and let the pressure decide the pen width, else we set
+    the colors we have decided previously in the function.
 
 
     \section1 TabletApplication Class Definition
@@ -325,13 +318,11 @@
 
     \snippet widgets/tablet/tabletapplication.h 0
 
-    We keep a \c TabletCanvas we send the device type of the events we
-    handle in the \c event() function to. The TabletEnterProximity
-    and TabletLeaveProximity events are not sendt to the QApplication
-    object, while other tablet events are sendt to the QWidget's
-    \c event(), which sends them on to \l{QWidget::}{tabletEvent()}.
-    Since we want to handle these events we have implemented \c
-    TabletApplication.
+    \c TabletApplication exists as a subclass of QApplication in order to
+    receive tablet proximity events and forward them to \c TabletCanvas.
+    The \c TabletEnterProximity and \c TabletLeaveProximity events are sent to
+    the QApplication object, while other tablet events are sent to the QWidget's
+    \c event() hander, which sends them on to \l{QWidget::}{tabletEvent()}.
 
 
     \section1 TabletApplication Class Implementation
@@ -340,24 +331,24 @@
 
     \snippet widgets/tablet/tabletapplication.cpp 0
 
-    We use this function to handle the TabletEnterProximity and
-    TabletLeaveProximity events, which is generated when a device
-    enters and leaves the proximity of the tablet. The intended use of these
-    events is to do work that is dependent on what kind of device is
-    used on the tablet. This way, you don't have to do this work
-    when other events are generated, which is more frequently than the
-    leave and enter proximity events. We call \c setTabletDevice() in
-    \c TabletCanvas.
+    We use this function to handle the \c TabletEnterProximity and
+    \c TabletLeaveProximity events, which are generated when a drawing
+    tool enters or leaves the proximity of the tablet.  Here we call
+    \c TabletCanvas::setTabletDevice(), which then calls \c updateCursor(),
+    which will set an appropriate cursor.  This is the only reason we
+    need the proximity events; for the purpose of correct drawing, it is
+    enough for \c TabletCanvas to observe the \l{QTabletEvent::}{device()} and
+    \l{QTabletEvent::}{pointerType()} in each event that it receives.
+
 
     \section1 The \c main() function
 
-    Here is the examples \c main() function:
+    Here is the example's \c main() function:
 
     \snippet widgets/tablet/main.cpp 0
 
-    In the \c main() function we create a \c MainWinow and display it
-    as a top level window. We use the \c TabletApplication class. We
-    need to set the canvas after the application is created. We cannot
-    use classes that implement event handling before an QApplication
-    object is instantiated.
+    Here we create a \c MainWindow and display it as a top level window. We use
+    the \c TabletApplication class. We need to set the canvas after the
+    application is created. We cannot use classes that implement event handling
+    before an QApplication object is instantiated.
 */
