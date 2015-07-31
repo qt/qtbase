@@ -633,7 +633,7 @@ public:
 
     static FakePointer *create(T thing)
     {
-        return reinterpret_cast<FakePointer *>(thing);
+        return reinterpret_cast<FakePointer *>(qintptr(thing));
     }
 
     T operator * () const
