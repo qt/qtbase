@@ -1183,8 +1183,6 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
-
-    QHighDpiScaling::updateHighDpiScaling();
 }
 
 /*!
@@ -1212,6 +1210,10 @@ void QGuiApplicationPrivate::eventDispatcherReady()
         createPlatformIntegration();
 
     platform_integration->initialize();
+
+    // Do this here in order to play nice with platforms that add screens only
+    // in initialize().
+    QHighDpiScaling::updateHighDpiScaling();
 }
 
 void QGuiApplicationPrivate::init()
