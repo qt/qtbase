@@ -83,8 +83,8 @@ QWidget *StarDelegate::createEditor(QWidget *parent,
 {
     if (index.data().canConvert<StarRating>()) {
         StarEditor *editor = new StarEditor(parent);
-        connect(editor, SIGNAL(editingFinished()),
-                this, SLOT(commitAndCloseEditor()));
+        connect(editor, &StarEditor::editingFinished,
+                this, &StarDelegate::commitAndCloseEditor);
         return editor;
     } else {
         return QStyledItemDelegate::createEditor(parent, option, index);

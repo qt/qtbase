@@ -55,12 +55,12 @@ FilterWidget::FilterWidget(QWidget *parent)
     , m_patternGroup(new QActionGroup(this))
 {
     setClearButtonEnabled(true);
-    connect(this, SIGNAL(textChanged(QString)), this, SIGNAL(filterChanged()));
+    connect(this, &QLineEdit::textChanged, this, &FilterWidget::filterChanged);
 
     QMenu *menu = new QMenu(this);
     m_caseSensitivityAction = menu->addAction(tr("Case Sensitive"));
     m_caseSensitivityAction->setCheckable(true);
-    connect(m_caseSensitivityAction, SIGNAL(toggled(bool)), this, SIGNAL(filterChanged()));
+    connect(m_caseSensitivityAction, &QAction::toggled, this, &FilterWidget::filterChanged);
 
     menu->addSeparator();
     m_patternGroup->setExclusive(true);
@@ -77,7 +77,7 @@ FilterWidget::FilterWidget(QWidget *parent)
     patternAction->setCheckable(true);
     patternAction->setData(QVariant(int(QRegExp::Wildcard)));
     m_patternGroup->addAction(patternAction);
-    connect(m_patternGroup, SIGNAL(triggered(QAction*)), this, SIGNAL(filterChanged()));
+    connect(m_patternGroup, &QActionGroup::triggered, this, &FilterWidget::filterChanged);
 
     const QIcon icon = QIcon(QPixmap(":/images/find.png"));
     QToolButton *optionsButton = new QToolButton;

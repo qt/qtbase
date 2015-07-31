@@ -69,9 +69,9 @@ Window::Window(QWidget *parent)
     mapper->addMapping(addressEdit, 1);
     mapper->addMapping(ageSpinBox, 2);
 
-    connect(previousButton, SIGNAL(clicked()), mapper, SLOT(toPrevious()));
-    connect(nextButton, SIGNAL(clicked()), mapper, SLOT(toNext()));
-    connect(mapper, SIGNAL(currentIndexChanged(int)), this, SLOT(updateButtons(int)));
+    connect(previousButton, &QAbstractButton::clicked, mapper, &QDataWidgetMapper::toPrevious);
+    connect(nextButton, &QAbstractButton::clicked, mapper, &QDataWidgetMapper::toNext);
+    connect(mapper, &QDataWidgetMapper::currentIndexChanged, this, &Window::updateButtons);
 //! [Set up the mapper]
 
 //! [Set up the layout]

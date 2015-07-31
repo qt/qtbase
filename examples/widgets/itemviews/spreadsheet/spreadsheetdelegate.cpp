@@ -63,7 +63,7 @@ QWidget *SpreadSheetDelegate::createEditor(QWidget *parent,
 
     QCompleter *autoComplete = new QCompleter(allStrings);
     editor->setCompleter(autoComplete);
-    connect(editor, SIGNAL(editingFinished()), this, SLOT(commitAndCloseEditor()));
+    connect(editor, &QLineEdit::editingFinished, this, &SpreadSheetDelegate::commitAndCloseEditor);
     return editor;
 }
 

@@ -59,12 +59,12 @@ Window::Window(QWidget *parent)
     logViewer = new QTextBrowser;
     logViewer->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 
-    connect(lineEdit, SIGNAL(textChanged(QString)),
-            model, SLOT(setDirPath(QString)));
-    connect(lineEdit, SIGNAL(textChanged(QString)),
-            logViewer, SLOT(clear()));
-    connect(model, SIGNAL(numberPopulated(int)),
-            this, SLOT(updateLog(int)));
+    connect(lineEdit, &QLineEdit::textChanged,
+            model, &FileListModel::setDirPath);
+    connect(lineEdit, &QLineEdit::textChanged,
+            logViewer, &QTextEdit::clear);
+    connect(model, &FileListModel::numberPopulated,
+            this, &Window::updateLog);
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(label, 0, 0);

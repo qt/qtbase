@@ -66,7 +66,7 @@ Window::Window()
     //! [3]
     filterWidget = new FilterWidget;
     filterWidget->setText("Grace|Sports");
-    connect(filterWidget, SIGNAL(filterChanged()), this, SLOT(textFilterChanged()));
+    connect(filterWidget, &FilterWidget::filterChanged, this, &Window::textFilterChanged);
 
     filterPatternLabel = new QLabel(tr("&Filter pattern:"));
     filterPatternLabel->setBuddy(filterWidget);
@@ -81,13 +81,13 @@ Window::Window()
     toLabel = new QLabel(tr("&To:"));
     toLabel->setBuddy(toDateEdit);
 
-    connect(filterWidget, SIGNAL(textChanged(QString)),
-            this, SLOT(textFilterChanged()));
-    connect(fromDateEdit, SIGNAL(dateChanged(QDate)),
-            this, SLOT(dateFilterChanged()));
-    connect(toDateEdit, SIGNAL(dateChanged(QDate)),
+    connect(filterWidget, &QLineEdit::textChanged,
+            this, &Window::textFilterChanged);
+    connect(fromDateEdit, &QDateTimeEdit::dateChanged,
+            this, &Window::dateFilterChanged);
+    connect(toDateEdit, &QDateTimeEdit::dateChanged,
             //! [3] //! [4]
-            this, SLOT(dateFilterChanged()));
+            this, &Window::dateFilterChanged);
     //! [4]
 
     //! [5]

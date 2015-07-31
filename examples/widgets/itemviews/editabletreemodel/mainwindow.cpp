@@ -60,19 +60,17 @@ MainWindow::MainWindow(QWidget *parent)
     for (int column = 0; column < model->columnCount(); ++column)
         view->resizeColumnToContents(column);
 
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect(exitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
-    connect(view->selectionModel(),
-            SIGNAL(selectionChanged(const QItemSelection &,
-                                    const QItemSelection &)),
-            this, SLOT(updateActions()));
+    connect(view->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &MainWindow::updateActions);
 
-    connect(actionsMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
-    connect(insertRowAction, SIGNAL(triggered()), this, SLOT(insertRow()));
-    connect(insertColumnAction, SIGNAL(triggered()), this, SLOT(insertColumn()));
-    connect(removeRowAction, SIGNAL(triggered()), this, SLOT(removeRow()));
-    connect(removeColumnAction, SIGNAL(triggered()), this, SLOT(removeColumn()));
-    connect(insertChildAction, SIGNAL(triggered()), this, SLOT(insertChild()));
+    connect(actionsMenu, &QMenu::aboutToShow, this, &MainWindow::updateActions);
+    connect(insertRowAction, &QAction::triggered, this, &MainWindow::insertRow);
+    connect(insertColumnAction, &QAction::triggered, this, &MainWindow::insertColumn);
+    connect(removeRowAction, &QAction::triggered, this, &MainWindow::removeRow);
+    connect(removeColumnAction, &QAction::triggered, this, &MainWindow::removeColumn);
+    connect(insertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
 
     updateActions();
 }
@@ -102,13 +100,13 @@ void MainWindow::insertChild()
     updateActions();
 }
 
-bool MainWindow::insertColumn(const QModelIndex &parent)
+bool MainWindow::insertColumn()
 {
     QAbstractItemModel *model = view->model();
     int column = view->selectionModel()->currentIndex().column();
 
     // Insert a column in the parent item.
-    bool changed = model->insertColumn(column + 1, parent);
+    bool changed = model->insertColumn(column + 1);
     if (changed)
         model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
 
@@ -133,15 +131,15 @@ void MainWindow::insertRow()
     }
 }
 
-bool MainWindow::removeColumn(const QModelIndex &parent)
+bool MainWindow::removeColumn()
 {
     QAbstractItemModel *model = view->model();
     int column = view->selectionModel()->currentIndex().column();
 
     // Insert columns in each child of the parent item.
-    bool changed = model->removeColumn(column, parent);
+    bool changed = model->removeColumn(column);
 
-    if (!parent.isValid() && changed)
+    if (changed)
         updateActions();
 
     return changed;

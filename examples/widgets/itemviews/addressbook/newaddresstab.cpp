@@ -53,7 +53,7 @@ NewAddressTab::NewAddressTab(QWidget *parent)
 
     addButton = new QPushButton(tr("Add"));
 
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addEntry()));
+    connect(addButton, &QAbstractButton::clicked, this, &NewAddressTab::addEntry);
 
     mainLayout = new QVBoxLayout;
     mainLayout->addWidget(descriptionLabel);
