@@ -121,7 +121,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->threadId = reinterpret_cast<Qt::HANDLE>(GetCurrentThreadId());
 
         if (!QCoreApplicationPrivate::theMainThread) {
-            QCoreApplicationPrivate::theMainThread = threadData->thread;
+            QCoreApplicationPrivate::theMainThread = threadData->thread.load();
             // TODO: is there a way to reflect the branch's behavior using
             // WinRT API?
         } else {
