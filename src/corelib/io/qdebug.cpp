@@ -174,6 +174,16 @@ void QDebug::putUcs4(uint ucs4)
     maybeQuote('\'');
 }
 
+// These two functions return true if the character should be printed by QDebug.
+// For QByteArray, this is technically identical to US-ASCII isprint();
+// for QString, we use QChar::isPrint, which requires a full UCS-4 decode.
+static inline bool isPrintable(uint ucs4)
+{ return QChar::isPrint(ucs4); }
+static inline bool isPrintable(ushort uc)
+{ return QChar::isPrint(uc); }
+static inline bool isPrintable(uchar c)
+{ return c >= ' ' && c < 0x7f; }
+
 template <typename Char>
 static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length, bool isUnicode = true)
 {
@@ -194,22 +204,23 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
         }
 
         if (sizeof(Char) == sizeof(QChar)) {
+            // Surrogate characters are category Cs (Other_Surrogate), so isPrintable = false for them
             int runLength = 0;
             while (p + runLength != end &&
-                   p[runLength] < 0x7f && p[runLength] >= 0x20 && p[runLength] != '\\' && p[runLength] != '"')
+                   isPrintable(p[runLength]) && p[runLength] != '\\' && p[runLength] != '"')
                 ++runLength;
             if (runLength) {
                 d->write(reinterpret_cast<const QChar *>(p), runLength);
                 p += runLength - 1;
                 continue;
             }
-        } else if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
+        } else if (isPrintable(*p) && *p != '\\' && *p != '"') {
             QChar c = QLatin1Char(*p);
             d->write(&c, 1);
             continue;
         }
 
-        // print as an escape sequence
+        // print as an escape sequence (maybe, see below for surrogate pairs)
         int buflen = 2;
         ushort buf[sizeof "\\U12345678" - 1];
         buf[0] = '\\';
@@ -248,17 +259,23 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
                 if ((p + 1) != end && QChar::isLowSurrogate(p[1])) {
                     // properly-paired surrogates
                     uint ucs4 = QChar::surrogateToUcs4(*p, p[1]);
+                    if (isPrintable(ucs4)) {
+                        buf[0] = *p;
+                        buf[1] = p[1];
+                        buflen = 2;
+                    } else {
+                        buf[1] = 'U';
+                        buf[2] = '0'; // toHexUpper(ucs4 >> 32);
+                        buf[3] = '0'; // toHexUpper(ucs4 >> 28);
+                        buf[4] = toHexUpper(ucs4 >> 20);
+                        buf[5] = toHexUpper(ucs4 >> 16);
+                        buf[6] = toHexUpper(ucs4 >> 12);
+                        buf[7] = toHexUpper(ucs4 >> 8);
+                        buf[8] = toHexUpper(ucs4 >> 4);
+                        buf[9] = toHexUpper(ucs4);
+                        buflen = 10;
+                    }
                     ++p;
-                    buf[1] = 'U';
-                    buf[2] = '0'; // toHexUpper(ucs4 >> 32);
-                    buf[3] = '0'; // toHexUpper(ucs4 >> 28);
-                    buf[4] = toHexUpper(ucs4 >> 20);
-                    buf[5] = toHexUpper(ucs4 >> 16);
-                    buf[6] = toHexUpper(ucs4 >> 12);
-                    buf[7] = toHexUpper(ucs4 >> 8);
-                    buf[8] = toHexUpper(ucs4 >> 4);
-                    buf[9] = toHexUpper(ucs4);
-                    buflen = 10;
                     break;
                 }
                 // improperly-paired surrogates, fall through
