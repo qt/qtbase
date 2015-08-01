@@ -4280,6 +4280,7 @@ compileTest()
     if [ "$CFG_SHARED" = "no" ]; then
         test_config="$QMAKE_CONFIG static"
     fi
+    echo $ECHO_N "checking for $name... $ECHO_C"
     "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
