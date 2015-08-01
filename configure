@@ -4343,6 +4343,21 @@ if [ "$CFG_CXX11" != "no" ]; then
     fi
 fi
 
+# Detect which edition of the C++ standard the compiler defaults to
+CFG_STDCXX_DEFAULT=199711
+if compileTest common/c++default "default C++ standard edition"; then
+    if [ -e "$outpath/config.tests/common/c++default/c++default.ii" ]; then
+        CFG_STDCXX_DEFAULT=`sed -n '/^[0-9]/s/L//p' "$outpath/config.tests/common/c++default/c++default.ii"`
+    else
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            echo "Failed to run the preprocessor, something is wrong with your compiler"
+        fi
+        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            exit 101
+        fi
+    fi
+fi
+
 # detect sse2 support
 if [ "${CFG_SSE2}" = "auto" ]; then
     if compileTest common/sse2 "sse2"; then
@@ -6894,6 +6909,7 @@ fi
 if [ -n "$RPATH_FLAGS" ]; then
     echo "QMAKE_RPATHDIR += $RPATH_FLAGS" >> "$QTCONFIG.tmp"
 fi
+echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT" >> "$QTCONFIG.tmp"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"

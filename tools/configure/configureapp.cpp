@@ -2343,6 +2343,22 @@ void Configure::autoDetection()
             dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
     }
 
+    if (!dictionary["QMAKESPEC"].contains("msvc")) {
+        if (tryCompileProject("common/c++default", QString(), false)) {
+            QFile iiFile(buildPath + "/config.tests/common/c++default/c++default.ii");
+            if (iiFile.open(QIODevice::ReadOnly)) {
+                QString content = QString::fromUtf8(iiFile.readAll());
+                QRegExp expr("\\b([0-9]+)L\\b");
+                if (expr.indexIn(content) != -1)
+                    dictionary["CFG_STDCXX_DEFAULT"] = expr.cap(1);
+            }
+        }
+        if (dictionary["CFG_STDCXX_DEFAULT"].isEmpty()) {
+            cout << "Could not determine the C++ standard the compiler uses by default, assuming C++98." << endl;
+            dictionary["CFG_STDCXX_DEFAULT"] = "199711";
+        }
+    }
+
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
         dictionary["STYLE_WINDOWSXP"] = checkAvailability("STYLE_WINDOWSXP") ? defaultTo("STYLE_WINDOWSXP") : "no";
@@ -2681,6 +2697,8 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "C++11" ] == "yes")
         qtConfig += "c++11";
+    if (!dictionary[ "CFG_STDCXX_DEFAULT" ].isEmpty())
+        qmakeVars += "QT_COMPILER_STDCXX = " + dictionary[ "CFG_STDCXX_DEFAULT" ];
 
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";
@@ -3289,7 +3307,8 @@ void Configure::detectArch()
     QDir::setCurrent(oldpwd);
 }
 
-bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions)
+bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions,
+                                  bool distClean)
 {
     QString oldpwd = QDir::currentPath();
 
@@ -3332,7 +3351,8 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         //cout << output << endl;
 
         // clean up
-        Environment::execute(command + " distclean 2>&1");
+        if (distClean)
+            Environment::execute(command + " distclean 2>&1");
     }
 
     QDir::setCurrent(oldpwd);
