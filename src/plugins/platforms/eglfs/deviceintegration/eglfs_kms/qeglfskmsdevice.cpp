@@ -284,6 +284,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         false,
         drmModeGetCrtc(m_dri_fd, crtc_id),
         modes,
+        connector->subpixel,
         connectorProperty(connector, QByteArrayLiteral("DPMS"))
     };
 

@@ -60,6 +60,7 @@ struct QEglFSKmsOutput
     bool mode_set;
     drmModeCrtcPtr saved_crtc;
     QList<drmModeModeInfo> modes;
+    int subpixel;
     drmModePropertyPtr dpms_prop;
 };
 
@@ -103,6 +104,8 @@ public:
 
     QEglFSKmsOutput &output() { return m_output; }
     void restoreMode();
+
+    SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
 
     QPlatformScreen::PowerState powerState() const Q_DECL_OVERRIDE;
     void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;

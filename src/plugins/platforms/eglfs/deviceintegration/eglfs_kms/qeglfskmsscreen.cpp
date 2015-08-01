@@ -321,6 +321,24 @@ qreal QEglFSKmsScreen::refreshRate() const
     return refresh > 0 ? refresh : 60;
 }
 
+QPlatformScreen::SubpixelAntialiasingType QEglFSKmsScreen::subpixelAntialiasingTypeHint() const
+{
+    switch (m_output.subpixel) {
+    default:
+    case DRM_MODE_SUBPIXEL_UNKNOWN:
+    case DRM_MODE_SUBPIXEL_NONE:
+        return Subpixel_None;
+    case DRM_MODE_SUBPIXEL_HORIZONTAL_RGB:
+        return Subpixel_RGB;
+    case DRM_MODE_SUBPIXEL_HORIZONTAL_BGR:
+        return Subpixel_BGR;
+    case DRM_MODE_SUBPIXEL_VERTICAL_RGB:
+        return Subpixel_VRGB;
+    case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
+        return Subpixel_VBGR;
+    }
+}
+
 QPlatformScreen::PowerState QEglFSKmsScreen::powerState() const
 {
     return m_powerState;
