@@ -595,12 +595,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QChar::QChar(char ch)
+    \internal
 
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 */
 
 /*!
     \fn QChar::QChar(uchar ch)
+    \internal
 
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 */
