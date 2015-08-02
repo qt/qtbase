@@ -1385,6 +1385,8 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
     Note that the destroyed() signal will be emitted even if the signals
     for this object have been blocked.
 
+    Signals emitted while being blocked are not buffered.
+
     \sa signalsBlocked()
 */
 
