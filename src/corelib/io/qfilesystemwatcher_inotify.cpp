@@ -37,6 +37,7 @@
 #ifndef QT_NO_FILESYSTEMWATCHER
 
 #include "private/qcore_unix_p.h"
+#include "private/qsystemerror_p.h"
 
 #include <qdebug.h>
 #include <qfile.h>
@@ -287,7 +288,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                        | IN_DELETE_SELF
                                        )));
         if (wd < 0) {
-            perror("QInotifyFileSystemWatcherEngine::addPaths: inotify_add_watch failed");
+            qWarning().nospace() << "inotify_add_watch(" << path << ") failed: " << QSystemError(errno, QSystemError::NativeError).toString();
             continue;
         }
 
