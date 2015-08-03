@@ -282,6 +282,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
         QSize qtSize = iface->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
     } else if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
+        if (iface->role() == QAccessible::StaticText)
+            return nil;
         return QCFString::toNSString(iface->text(QAccessible::Name));
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
         return QCFString::toNSString(iface->text(QAccessible::Description));

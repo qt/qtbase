@@ -332,6 +332,7 @@ bool hasValueAttribute(QAccessibleInterface *interface)
     Q_ASSERT(interface);
     const QAccessible::Role qtrole = interface->role();
     if (qtrole == QAccessible::EditableText
+            || qtrole == QAccessible::StaticText
             || interface->valueInterface()
             || interface->state().checkable) {
         return true;
@@ -343,6 +344,9 @@ bool hasValueAttribute(QAccessibleInterface *interface)
 id getValueAttribute(QAccessibleInterface *interface)
 {
     const QAccessible::Role qtrole = interface->role();
+    if (qtrole == QAccessible::StaticText) {
+        return QCFString::toNSString(interface->text(QAccessible::Name));
+    }
     if (qtrole == QAccessible::EditableText) {
         if (QAccessibleTextInterface *textInterface = interface->textInterface()) {
             // VoiceOver will read out the entire text string at once when returning
