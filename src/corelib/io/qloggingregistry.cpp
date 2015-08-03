@@ -398,10 +398,12 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     Q_ASSERT(reg->categories.contains(cat));
     QtMsgType enableForLevel = reg->categories.value(cat);
 
+    // NB: note that the numeric values of the Qt*Msg constants are
+    //     not in severity order.
     bool debug = (enableForLevel == QtDebugMsg);
-    bool info = (enableForLevel <= QtInfoMsg);
-    bool warning = (enableForLevel <= QtWarningMsg);
-    bool critical = (enableForLevel <= QtCriticalMsg);
+    bool info = debug || (enableForLevel == QtInfoMsg);
+    bool warning = info || (enableForLevel == QtWarningMsg);
+    bool critical = warning || (enableForLevel == QtCriticalMsg);
 
     // hard-wired implementation of
     //   qt.*.debug=false
