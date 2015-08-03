@@ -1579,6 +1579,13 @@ void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* r
             if (values.size() > 1) {
                 foreach (CollectionNode* v, values) {
                     if (v != n) {
+                        // Allow multiple (major) versions of QML/JS modules
+                        if (n->type() == Node::QmlModule
+                                && n->logicalModuleIdentifier() != v->logicalModuleIdentifier()) {
+                            if (v->wasSeen() && v != relative && !v->members().isEmpty())
+                                cnm.insert(v->fullTitle().toLower(), v);
+                            continue;
+                        }
                         foreach (Node* t, v->members())
                             n->addMember(t);
                     }
@@ -1599,12 +1606,19 @@ void QDocDatabase::mergeCollections(Node::Genus genus, CNMap& cnm, const Node* r
   Finds all the collection nodes with the same name
   and genus as \a c and merges their members into the
   members list of \a c.
+
+  For QML and JS modules, the merge is done only if
+  the module identifier matches between the nodes, to avoid
+  merging modules with different (major) versions.
  */
 void QDocDatabase::mergeCollections(CollectionNode* c)
 {
     foreach (Tree* t, searchOrder()) {
         CollectionNode* cn = t->getCollection(c->name(), c->genus());
         if (cn && cn != c) {
+            if (cn->type() == Node::QmlModule
+                    && cn->logicalModuleIdentifier() != c->logicalModuleIdentifier())
+                continue;
             foreach (Node* n, cn->members())
                 c->addMember(n);
         }
