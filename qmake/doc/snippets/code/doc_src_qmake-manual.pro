@@ -987,3 +987,10 @@ QMAKE_SONAME_PREFIX = /Library/Frameworks
 #! [185]
 VERSION_PE_HEADER = 1.2
 #! [185]
+
+#! [186]
+win32-g++:contains(QMAKE_HOST.arch, x86_64):{
+    message("Host is 64bit")
+    ...
+}
+#! [186]
