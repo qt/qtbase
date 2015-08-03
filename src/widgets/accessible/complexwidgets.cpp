@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "complexwidgets.h"
+#include "complexwidgets_p.h"
 
 #include <qaccessible.h>
 #include <qapplication.h>

@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qaccessiblemenu.h"
+#include "qaccessiblemenu_p.h"
 
 #include <qmenu.h>
 #include <qmenubar.h>
