@@ -39,26 +39,21 @@
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
-#ifdef QT_WINRT_USE_DWRITE
 struct IDWriteFontFile;
 struct IDWriteFontFamily;
-#endif
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_WINRT_USE_DWRITE
 struct FontDescription
 {
     quint32 index;
     QByteArray uuid;
 };
-#endif
 
 class QWinRTFontDatabase : public QBasicFontDatabase
 {
 public:
     QString fontDir() const;
-#ifdef QT_WINRT_USE_DWRITE
     ~QWinRTFontDatabase();
     QFont defaultFont() const Q_DECL_OVERRIDE;
     bool fontsAlwaysScalable() const Q_DECL_OVERRIDE;
@@ -69,7 +64,6 @@ public:
 private:
     QHash<IDWriteFontFile *, FontDescription> m_fonts;
     QHash<QString, IDWriteFontFamily *> m_fontFamilies;
-#endif // QT_WINRT_USE_DWRITE
 };
 
 QT_END_NAMESPACE
