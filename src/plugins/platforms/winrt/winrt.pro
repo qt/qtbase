@@ -47,9 +47,4 @@ HEADERS = \
     qwinrttheme.h \
     qwinrtwindow.h
 
-winphone:equals(WINSDK_VER, 8.0): {
-    SOURCES -= qwinrtplatformmessagedialoghelper.cpp
-    HEADERS -= qwinrtplatformmessagedialoghelper.h
-}
-
 OTHER_FILES += winrt.json
