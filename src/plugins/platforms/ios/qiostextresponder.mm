@@ -652,7 +652,17 @@
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
 {
     int p = static_cast<QUITextPosition *>(position).index;
-    return [QUITextPosition positionWithIndex:(direction == UITextLayoutDirectionRight ? p + offset : p - offset)];
+
+    switch (direction) {
+    case UITextLayoutDirectionLeft:
+        return [QUITextPosition positionWithIndex:p - offset];
+    case UITextLayoutDirectionRight:
+        return [QUITextPosition positionWithIndex:p + offset];
+    default:
+        // Qt doesn't support getting the position above or below the current position, so
+        // for those cases we just return the current position, making it a no-op.
+        return position;
+    }
 }
 
 - (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction
