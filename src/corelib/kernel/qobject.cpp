@@ -503,6 +503,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \brief Exception-safe wrapper around QObject::blockSignals()
     \since 5.3
     \ingroup objectmodel
+    \inmodule QtCore
 
     \reentrant
 
