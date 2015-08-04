@@ -867,8 +867,7 @@ QFont QFontDialog::selectedFont() const
 
     \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
     \value DontUseNativeDialog Use Qt's standard font dialog on the Mac instead of Apple's
-                               native font panel. (Currently, the native dialog is never used,
-                               but this is likely to change in future Qt releases.)
+                               native font panel.
     \value ScalableFonts Show scalable fonts
     \value NonScalableFonts Show non scalable fonts
     \value MonospacedFonts Show monospaced fonts
