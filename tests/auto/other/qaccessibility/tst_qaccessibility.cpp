@@ -1725,7 +1725,7 @@ static QRect characterRect(const QTextEdit &edit, int offset)
     int h = fm.height();
 
     qreal x = line.cursorToX(relativeOffset);
-    QRect r(layoutPosition.x() + x, layoutPosition.y() + line.y(), w, h);
+    QRect r(layoutPosition.x() + x, layoutPosition.y() + line.y() + line.ascent() + fm.descent() - h, w, h);
     r.moveTo(edit.viewport()->mapToGlobal(r.topLeft()));
 
     return r;
