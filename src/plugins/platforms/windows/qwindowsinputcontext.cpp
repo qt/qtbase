@@ -206,7 +206,7 @@ void QWindowsInputContext::setFocusObject(QObject *object)
     // remains active when this happens resulting in a lock-up. Consecutive
     // key events still have VK_PROCESSKEY set and are thus ignored.
     if (m_compositionContext.isComposing)
-        imeNotifyCancelComposition(m_compositionContext.hwnd);
+        reset();
 
     const QWindow *window = QGuiApplication::focusWindow();
     if (object && window && window->handle()) {
