@@ -6165,6 +6165,10 @@ void tst_QNetworkReply::sslSessionSharing_data()
 
 void tst_QNetworkReply::sslSessionSharing()
 {
+#ifdef QT_SECURETRANSPORT
+    QSKIP("Not implemented with SecureTransport");
+#endif
+
     QString urlString("https://" + QtNetworkSettings::serverName());
     QList<QNetworkReplyPtr> replies;
 
@@ -6229,6 +6233,10 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession_data()
 
 void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
 {
+#ifdef QT_SECURETRANSPORT
+    QSKIP("Not implemented with SecureTransport");
+#endif
+
     QString urlString("https://" + QtNetworkSettings::serverName());
 
     // warm up SSL session cache to get a working session
