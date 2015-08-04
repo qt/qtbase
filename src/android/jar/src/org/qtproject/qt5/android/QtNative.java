@@ -100,13 +100,15 @@ public class QtNative
         }
     }
 
-    public static boolean openURL(String url)
+    public static boolean openURL(String url, String mime)
     {
         boolean ok = true;
 
         try {
             Uri uri = Uri.parse(url);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            if (!mime.isEmpty())
+                intent.setDataAndType(uri, mime);
             activity().startActivity(intent);
         } catch (Exception e) {
             e.printStackTrace();
