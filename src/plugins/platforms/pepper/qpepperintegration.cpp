@@ -111,8 +111,9 @@ QPepperIntegration::~QPepperIntegration()
 bool QPepperIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedOpenGL:
-        return true;
+    case ThreadedOpenGL :
+        // Threaded GL is supported when Qt is running on a secondary thread only.
+        return QPepperInstancePrivate::get()->m_runQtOnThread;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
