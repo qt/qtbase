@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
     In most cases where it is used, the user intends for the first argument
     to be treated atomically as per the other overload.
 
-    \sa start()
+    \sa QProcess::start()
 */
 
 /*!
