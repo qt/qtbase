@@ -196,6 +196,7 @@ public:
         SRGB8_PunchThrough_Alpha1_ETC2 = 0x9277, // GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
         RGBA8_ETC2_EAC         = 0x9278,    // GL_COMPRESSED_RGBA8_ETC2_EAC
         SRGB8_Alpha8_ETC2_EAC  = 0x9279,    // GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        RGB8_ETC1              = 0x8D64,    // GL_ETC1_RGB8_OES
 
         // sRGB formats
         SRGB8                  = 0x8C41,    // GL_SRGB8
