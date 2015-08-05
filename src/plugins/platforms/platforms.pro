@@ -40,3 +40,5 @@ contains(QT_CONFIG, linuxfb): SUBDIRS += linuxfb
 haiku {
     SUBDIRS += haiku
 }
+
+contains(QT_CONFIG, mirclient): SUBDIRS += mirclient
