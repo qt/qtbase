@@ -22,7 +22,7 @@
 class UbuntuMirClientIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "ubuntumirclient.json")
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "mirclient.json")
 
 public:
     QStringList keys() const;
