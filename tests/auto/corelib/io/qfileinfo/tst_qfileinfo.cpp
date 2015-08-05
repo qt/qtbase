@@ -144,12 +144,18 @@ inline bool qIsLikelyToBeNfs(int /* handle */)
 #endif
 #endif
 
+static QString seedAndTemplate()
+{
+    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
+    return QDir::tempPath() + "/tst_qfileinfo-XXXXXX";
+}
 class tst_QFileInfo : public QObject
 {
 Q_OBJECT
 
 public:
-    tst_QFileInfo() : m_currentDir(QDir::currentPath()) {}
+    tst_QFileInfo() : m_currentDir(QDir::currentPath()), m_dir(seedAndTemplate())
+ {}
 
 private slots:
     void initTestCase();

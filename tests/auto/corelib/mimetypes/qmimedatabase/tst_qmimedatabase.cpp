@@ -103,7 +103,14 @@ static bool copyResourceFile(const QString &sourceFileName, const QString &targe
 // Set LANG before QCoreApplication is created
 Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
+static QString seedAndTemplate()
+{
+    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
+    return QDir::tempPath() + "/tst_qmimedatabase-XXXXXX";
+}
+
 tst_QMimeDatabase::tst_QMimeDatabase()
+    : m_temporaryDir(seedAndTemplate())
 {
 }
 
