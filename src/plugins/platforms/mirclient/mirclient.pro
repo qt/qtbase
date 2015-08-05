@@ -6,7 +6,7 @@ PLUGIN_CLASS_NAME = MirServerIntegrationPlugin
 !equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
 load(qt_plugin)
 
-QT += core-private gui-private platformsupport-private sensors dbus
+QT += core-private gui-private platformsupport-private dbus
 
 CONFIG += qpa/genericunixfontdatabase
 

@@ -470,19 +470,19 @@ void UbuntuInput::dispatchOrientationEvent(QWindow *window, const MirOrientation
         return;
     }
 
-    QOrientationReading::Orientation orientation;
+    OrientationChangeEvent::Orientation orientation;
     switch (mir_orientation) {
     case mir_orientation_normal:
-        orientation = QOrientationReading::TopUp;
+        orientation = OrientationChangeEvent::TopUp;
         break;
     case mir_orientation_left:
-        orientation = QOrientationReading::LeftUp;
+        orientation = OrientationChangeEvent::LeftUp;
         break;
     case mir_orientation_inverted:
-        orientation = QOrientationReading::TopDown;
+        orientation = OrientationChangeEvent::TopDown;
         break;
     case mir_orientation_right:
-        orientation = QOrientationReading::RightUp;
+        orientation = OrientationChangeEvent::RightUp;
         break;
     default:
         DLOG("No such orientation %d", mir_orientation);
