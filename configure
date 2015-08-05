@@ -688,7 +688,7 @@ CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
-CFG_MIRCLIENT=no
+CFG_MIRCLIENT=auto
 CFG_LIBUDEV=auto
 CFG_LIBINPUT=auto
 CFG_OBSOLETE_WAYLAND=no
@@ -5537,9 +5537,14 @@ fi
 
 if [ "$CFG_MIRCLIENT" != "no" ]; then
 # TODO: implement configure tests for Mir
-    if [ "$CFG_MIRCLIENT" = "yes" ]; then
-        echo " Turning on Mir support without testing functionality."
-        echo " If Mir dependencies are not installed, the build will abort later."
+    if compileTest qpa/mirclient "Mir client"; then
+        CFG_MIRCLIENT=yes
+    elif [ "$CFG_MIRCLIENT" = "yes" ]; then
+        echo " Mir client support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
     else
         CFG_MIRCLIENT=no
     fi
