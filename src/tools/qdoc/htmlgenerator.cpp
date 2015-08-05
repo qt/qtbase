@@ -691,9 +691,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         else if ((idx = atom->string().indexOf(QStringLiteral("bymodule"))) != -1) {
             QString moduleName = atom->string().mid(idx + 8).trimmed();
             Node::Genus genus = Node::CPP;
-            if (atom->string().startsWith(QStringLiteral("qml")))
+            if (atom->string().startsWith(QLatin1String("qml")))
                 genus = Node::QML;
-            else if (atom->string().startsWith(QStringLiteral("js")))
+            else if (atom->string().startsWith(QLatin1String("js")))
                 genus = Node::JS;
             QDocDatabase* qdb = QDocDatabase::qdocDB();
             const CollectionNode* cn = qdb->getCollectionNode(moduleName, genus);
@@ -1667,7 +1667,7 @@ void HtmlGenerator::generateDocumentNode(DocumentNode* dn, CodeMarker* marker)
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
     */
-    if ((dn->name() != QStringLiteral("index.html")))
+    if ((dn->name() != QLatin1String("index.html")))
         generateTableOfContents(dn,marker,0);
 
     generateKeywordAnchors(dn);
@@ -4557,11 +4557,11 @@ void HtmlGenerator::generateManifestFile(const QString &manifest, const QString 
             if (s.length() < 2
                 || s.at(0).isDigit()
                 || s.at(0) == '-'
-                || s == QStringLiteral("qt")
-                || s == QStringLiteral("the")
-                || s == QStringLiteral("and")
-                || s.startsWith(QStringLiteral("example"))
-                || s.startsWith(QStringLiteral("chapter")))
+                || s == QLatin1String("qt")
+                || s == QLatin1String("the")
+                || s == QLatin1String("and")
+                || s.startsWith(QLatin1String("example"))
+                || s.startsWith(QLatin1String("chapter")))
                 tag_it = tags.erase(tag_it);
             else if (s != *tag_it) {
                 modified << s;
