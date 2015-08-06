@@ -421,6 +421,16 @@ struct DefinedTypesFilter {
 */
 
 /*!
+    \fn void *QMetaType::construct(int type, const void *copy)
+    \deprecated
+
+    Constructs a value of the given type which is a copy of \a copy.
+    The default value for \a copy is 0.
+
+    Deprecated, use the static function QMetaType::create(int type,
+    const void *copy) instead.
+*/
+/*!
     \fn void *QMetaType::construct(void *where, const void *copy = 0) const
     \since 5.0
 
@@ -1834,7 +1844,8 @@ public:
     void delegate(const T *where) { DestructorImpl<T>::Destruct(m_type, const_cast<T*>(where)); }
     void delegate(const void *) {}
     void delegate(const QMetaTypeSwitcher::UnknownType*) {}
-    void delegate(const QMetaTypeSwitcher::NotBuiltinType *where) { customTypeDestructor(m_type, (void*)where); }
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType *where)
+    { customTypeDestructor(m_type, const_cast<void *>(static_cast<const void *>(where))); }
 
 private:
     static void customTypeDestructor(const int type, void *where)

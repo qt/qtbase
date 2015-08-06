@@ -54,26 +54,26 @@ public:
     QIOSIntegration();
     ~QIOSIntegration();
 
-    bool hasCapability(Capability cap) const;
+    bool hasCapability(Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformInputContext *inputContext() const;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
     QPlatformServices *services() const Q_DECL_OVERRIDE;
 
-    QVariant styleHint(StyleHint hint) const;
+    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
 
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QStringList themeNames() const Q_DECL_OVERRIDE;
+    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
 
     QTouchDevice *touchDevice();
     QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
@@ -86,7 +86,7 @@ public:
 
     // -- QPlatformNativeInterface --
 
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
 
     void setDebugWindowManagement(bool);
     bool debugWindowManagement() const;

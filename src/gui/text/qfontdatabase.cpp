@@ -72,12 +72,14 @@ QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff
 
+#if defined(QT_BUILD_INTERNAL)
 bool qt_enable_test_font = false;
 
 Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
 {
     qt_enable_test_font = value;
 }
+#endif
 
 static int getFontWeight(const QString &weightString)
 {
@@ -756,7 +758,47 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
     return alias;
 }
 
-static QStringList fallbackFamilies(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
+QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
+{
+    Q_UNUSED(family);
+    Q_UNUSED(styleHint);
+
+    QStringList retList;
+
+    size_t writingSystem = std::find(scriptForWritingSystem,
+                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                     script) - scriptForWritingSystem;
+    if (writingSystem >= QFontDatabase::WritingSystemsCount)
+        writingSystem = QFontDatabase::Any;
+
+    QFontDatabasePrivate *db = privateDb();
+    for (int i = 0; i < db->count; ++i) {
+        QtFontFamily *f = db->families[i];
+
+        f->ensurePopulated();
+
+        if (writingSystem > QFontDatabase::Any && f->writingSystems[writingSystem] != QtFontFamily::Supported)
+            continue;
+
+        for (int j = 0; j < f->count; ++j) {
+            QtFontFoundry *foundry = f->foundries[j];
+
+            for (int k = 0; k < foundry->count; ++k) {
+                if (style == foundry->styles[k]->key.style) {
+                    if (foundry->name.isEmpty())
+                        retList.append(f->name);
+                    else
+                        retList.append(f->name + QLatin1String(" [") + foundry->name + QLatin1Char(']'));
+                    break;
+                }
+            }
+        }
+    }
+
+    return retList;
+}
+
+QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     // make sure that the db has all fallback families
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
@@ -884,17 +926,19 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
     Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
-        QStringList fallbacks = request.fallBackFamilies;
-
-        QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
-        if (styleHint == QFont::AnyStyle && request.fixedPitch)
-            styleHint = QFont::TypeWriter;
-
-        fallbacks += fallbackFamilies(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
-
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
-        pfMultiEngine->setFallbackFamiliesList(fallbacks);
+        if (!request.fallBackFamilies.isEmpty()) {
+            QStringList fallbacks = request.fallBackFamilies;
+
+            QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
+            if (styleHint == QFont::AnyStyle && request.fixedPitch)
+                styleHint = QFont::TypeWriter;
+
+            fallbacks += qt_fallbacksForFamily(family->name, QFont::Style(style->key.style), styleHint, QChar::Script(script));
+
+            pfMultiEngine->setFallbackFamiliesList(fallbacks);
+        }
         engine = pfMultiEngine;
 
         // Cache Multi font engine as well in case we got the single
@@ -2527,6 +2571,15 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
 
     QFontEngine *engine;
 
+#if defined(QT_BUILD_INTERNAL)
+    // For testing purpose only, emulates an exact-matching monospace font
+    if (qt_enable_test_font && request.family == QLatin1String("__Qt__Box__Engine__")) {
+        engine = new QTestFontEngine(request.pixelSize);
+        engine->fontDef = request;
+        return engine;
+    }
+#endif
+
     // Until we specifically asked not to, try looking for Multi font engine
     // first, the last '1' indicates that we want Multi font engine instead
     // of single ones
@@ -2541,12 +2594,6 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
     QString family_name, foundry_name;
 
     parseFontName(request.family, foundry_name, family_name);
-
-    if (qt_enable_test_font && request.family == QLatin1String("__Qt__Box__Engine__")) {
-        engine =new QTestFontEngine(request.pixelSize);
-        engine->fontDef = request;
-        return engine;
-    }
 
     QtFontDesc desc;
     QList<int> blackListed;
@@ -2568,10 +2615,10 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
                 styleHint = QFont::TypeWriter;
 
             QStringList fallbacks = request.fallBackFamilies
-                                  + fallbackFamilies(request.family,
-                                                     QFont::Style(request.style),
-                                                     styleHint,
-                                                     QChar::Script(script));
+                                  + qt_fallbacksForFamily(request.family,
+                                                          QFont::Style(request.style),
+                                                          styleHint,
+                                                          QChar::Script(script));
             if (script > QChar::Script_Common)
                 fallbacks += QString(); // Find the first font matching the specified script.
 

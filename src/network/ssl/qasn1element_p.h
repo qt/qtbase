@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 #define RSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.113549.1.1.1")
 #define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
+#define EC_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10045.2.1")
 
 class Q_AUTOTEST_EXPORT QAsn1Element
 {
@@ -80,6 +81,7 @@ public:
 
         // context specific
         Context0Type = 0xA0,
+        Context1Type = 0xA1,
         Context3Type = 0xA3
     };
 

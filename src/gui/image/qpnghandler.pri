@@ -1,4 +1,3 @@
-INCLUDEPATH *= $$PWD
 HEADERS += $$PWD/qpnghandler_p.h
 SOURCES += $$PWD/qpnghandler.cpp
 contains(QT_CONFIG, system-png) {

@@ -115,7 +115,7 @@
 </TestFunction>
 <TestFunction name="encoding">
 <Message type="qdebug" file="" line="0">
-    <Description><![CDATA["\u00DClrich \u00DCml\u00E4ut"]]></Description>
+    <Description><![CDATA["Ülrich Ümläut"]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>

@@ -494,12 +494,20 @@ void tst_QSslCertificate::publicKey()
     QFETCH(QSsl::EncodingFormat, format);
     QFETCH(QString, pubkeyFilePath);
 
+    QSsl::KeyAlgorithm algorithm;
+    if (QFileInfo(pubkeyFilePath).fileName().startsWith("dsa-"))
+        algorithm = QSsl::Dsa;
+    else if (QFileInfo(pubkeyFilePath).fileName().startsWith("ec-"))
+        algorithm = QSsl::Ec;
+    else
+        algorithm = QSsl::Rsa;
+
     QByteArray encodedCert = readFile(certFilePath);
     QSslCertificate certificate(encodedCert, format);
     QVERIFY(!certificate.isNull());
 
     QByteArray encodedPubkey = readFile(pubkeyFilePath);
-    QSslKey pubkey(encodedPubkey, QSsl::Rsa, format, QSsl::PublicKey); // ### support DSA as well!
+    QSslKey pubkey(encodedPubkey, algorithm, format, QSsl::PublicKey);
     QVERIFY(!pubkey.isNull());
 
     QCOMPARE(certificate.publicKey(), pubkey);
@@ -581,7 +589,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"certificates/*\" fixed der") << QString("certificates/*") << int(QRegExp::FixedString) << false << 0;
     QTest::newRow("\"certificates/*\" regexp pem") << QString("certificates/*") << int(QRegExp::RegExp) << true << 0;
     QTest::newRow("\"certificates/*\" regexp der") << QString("certificates/*") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 5;
+    QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 7;
     QTest::newRow("\"certificates/ca*\" wildcard pem") << QString("certificates/ca*") << int(QRegExp::Wildcard) << true << 1;
     QTest::newRow("\"certificates/cert*\" wildcard pem") << QString("certificates/cert*") << int(QRegExp::Wildcard) << true << 4;
     QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << QString("certificates/cert-[sure]*") << int(QRegExp::Wildcard) << true << 3;
@@ -612,7 +620,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
 #ifdef Q_OS_LINUX
-    QTest::newRow("absolute path wildcard pem") << (testDataDir + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 5;
+    QTest::newRow("absolute path wildcard pem") << (testDataDir + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 7;
 #endif
 
     QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;

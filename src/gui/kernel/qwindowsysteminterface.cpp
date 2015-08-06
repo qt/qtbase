@@ -227,6 +227,22 @@ bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, ulong timestamp,
 #endif
 }
 
+bool QWindowSystemInterface::tryHandleShortcutOverrideEvent(QWindow *w, QKeyEvent *ev)
+{
+#ifndef QT_NO_SHORTCUT
+    Q_ASSERT(ev->type() == QKeyEvent::ShortcutOverride);
+
+    QObject *focus = w->focusObject();
+    if (!focus)
+        focus = w;
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, ev);
+#else
+    Q_UNUSED(w)
+    Q_UNUSED(ev)
+    return false;
+#endif
+}
+
 // used by QTestLib to directly send shortcuts to objects
 bool QWindowSystemInterface::tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                    const QString &text, bool autorep, ushort count)

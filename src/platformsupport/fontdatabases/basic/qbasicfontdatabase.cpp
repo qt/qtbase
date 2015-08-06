@@ -55,23 +55,24 @@ QT_BEGIN_NAMESPACE
 void QBasicFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
+    QDir dir(fontpath);
 
-    if(!QFile::exists(fontpath)) {
+    if (!dir.exists()) {
         qWarning("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
         return;
     }
 
-    QDir dir(fontpath);
-    dir.setNameFilters(QStringList() << QLatin1String("*.ttf")
-                       << QLatin1String("*.ttc") << QLatin1String("*.pfa")
-                       << QLatin1String("*.pfb")
-                       << QLatin1String("*.otf"));
-    dir.refresh();
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-//        qDebug() << "looking at" << file;
-        addTTFile(QByteArray(), file);
+    QStringList nameFilters;
+    nameFilters << QLatin1String("*.ttf")
+                << QLatin1String("*.ttc")
+                << QLatin1String("*.pfa")
+                << QLatin1String("*.pfb")
+                << QLatin1String("*.otf");
+
+    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+        const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
+        QBasicFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
@@ -176,18 +177,9 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     return fe;
 }
 
-QStringList QBasicFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
-{
-    Q_UNUSED(family);
-    Q_UNUSED(style);
-    Q_UNUSED(script);
-    Q_UNUSED(styleHint);
-    return QStringList();
-}
-
 QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    return addTTFile(fontData,fileName.toLocal8Bit());
+    return QBasicFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
 }
 
 void QBasicFontDatabase::releaseHandle(void *handle)
@@ -198,7 +190,7 @@ void QBasicFontDatabase::releaseHandle(void *handle)
 
 extern FT_Library qt_getFreetype();
 
-QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file, QSupportedWritingSystems *supportedWritingSystems)
+QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     FT_Library library = qt_getFreetype();
 
@@ -237,8 +229,6 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             if (cm->encoding == FT_ENCODING_ADOBE_CUSTOM
                     || cm->encoding == FT_ENCODING_MS_SYMBOL) {
                 writingSystems.setSupported(QFontDatabase::Symbol);
-                if (supportedWritingSystems)
-                    supportedWritingSystems->setSupported(QFontDatabase::Symbol);
                 break;
             }
         }
@@ -257,8 +247,6 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             };
 
             writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
-            if (supportedWritingSystems)
-                *supportedWritingSystems = writingSystems;
 
             if (os2->usWeightClass) {
                 weight = QPlatformFontDatabase::weightFromInteger(os2->usWeightClass);

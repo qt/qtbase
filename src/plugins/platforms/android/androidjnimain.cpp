@@ -443,6 +443,11 @@ static void *startMainMethod(void */*data*/)
     if (m_applicationClass)
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "quitApp", "()V");
 
+    // All attached threads should be detached before returning from this function.
+    JavaVM *vm = QtAndroidPrivate::javaVM();
+    if (vm != 0)
+        vm->DetachCurrentThread();
+
     return 0;
 }
 

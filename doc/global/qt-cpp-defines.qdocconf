@@ -157,4 +157,5 @@ Cpp.ignoredirectives    += \
                           QT_WARNING_DISABLE_GCC \
                           QT_WARNING_DISABLE_INTEL \
                           QT_WARNING_DISABLE_MSVC \
-                          Q_ATTRIBUTE_FORMAT_PRINTF
+                          Q_ATTRIBUTE_FORMAT_PRINTF \
+                          Q_MV_IOS

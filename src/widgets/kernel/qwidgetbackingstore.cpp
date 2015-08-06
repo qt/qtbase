@@ -74,7 +74,7 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     Q_UNUSED(widgetTextures);
     Q_ASSERT(!region.isEmpty());
 #else
-    Q_ASSERT(!region.isEmpty() || (widgetTextures && widgetTextures->count()));
+    Q_ASSERT(!region.isEmpty() || widgetTextures);
 #endif
     Q_ASSERT(widget);
     Q_ASSERT(backingStore);
@@ -1124,7 +1124,7 @@ void QWidgetBackingStore::doSync()
         widgetTextures = new QPlatformTextureList;
         findTextureWidgetsRecursively(tlw, tlw, widgetTextures);
     }
-    qt_window_private(tlw->windowHandle())->compositing = widgetTextures && !widgetTextures->isEmpty();
+    qt_window_private(tlw->windowHandle())->compositing = widgetTextures;
     fullUpdatePending = false;
 #endif
 

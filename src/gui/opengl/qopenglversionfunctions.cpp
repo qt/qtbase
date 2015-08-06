@@ -186,11 +186,17 @@ void QAbstractOpenGLFunctionsPrivate::removeExternalFunctions(QOpenGLContext *co
 
     \sa QOpenGLContext::versionFunctions()
 */
+/*!
+   Constructs a QAbstractOpenGLFunctions object.
+*/
 QAbstractOpenGLFunctions::QAbstractOpenGLFunctions()
     : d_ptr(new QAbstractOpenGLFunctionsPrivate)
 {
 }
 
+/*!
+   Destroys a QAbstractOpenGLFunctions object.
+*/
 QAbstractOpenGLFunctions::~QAbstractOpenGLFunctions()
 {
     Q_D(QAbstractOpenGLFunctions);
@@ -228,12 +234,16 @@ bool QAbstractOpenGLFunctions::isInitialized() const
     return d->initialized;
 }
 
+/*! \internal
+ */
 void QAbstractOpenGLFunctions::setOwningContext(const QOpenGLContext *context)
 {
     Q_D(QAbstractOpenGLFunctions);
     d->owningContext = const_cast<QOpenGLContext*>(context);
 }
 
+/*! \internal
+ */
 QOpenGLContext *QAbstractOpenGLFunctions::owningContext() const
 {
     Q_D(const QAbstractOpenGLFunctions);

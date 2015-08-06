@@ -659,4 +659,18 @@ int QPixmapCache::totalUsed()
     return (pm_cache()->totalCost()+1023) / 1024;
 }
 
+/*!
+   \fn QPixmapCache::KeyData::KeyData()
+
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::KeyData(const KeyData &other)
+   \internal
+*/
+/*!
+   \fn QPixmapCache::KeyData::~KeyData()
+
+   \internal
+*/
 QT_END_NAMESPACE

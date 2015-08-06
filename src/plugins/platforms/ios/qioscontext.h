@@ -50,15 +50,15 @@ public:
     QIOSContext(QOpenGLContext *context);
     ~QIOSContext();
 
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
-    void swapBuffers(QPlatformSurface *surface);
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
 
-    GLuint defaultFramebufferObject(QPlatformSurface *) const;
-    QFunctionPointer getProcAddress(const QByteArray &procName);
+    GLuint defaultFramebufferObject(QPlatformSurface *) const Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
     bool isSharing() const Q_DECL_OVERRIDE;
     bool isValid() const Q_DECL_OVERRIDE;

@@ -59,6 +59,9 @@ public:
     bool translateTouchEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
                              LRESULT *result);
+    bool translateGestureEvent(QWindow *window, HWND hwnd,
+                               QtWindows::WindowsEventType,
+                               MSG msg, LRESULT *);
     bool translateScrollEvent(QWindow *window, HWND hwnd,
                               MSG msg, LRESULT *result);
 

@@ -425,7 +425,7 @@ qint64 QBuffer::writeData(const char *data, qint64 len)
         }
     }
 
-    memcpy(d->buf->data() + pos(), (uchar *)data, int(len));
+    memcpy(d->buf->data() + pos(), data, int(len));
 
 #ifndef QT_NO_QOBJECT
     d->writtenSinceLastEmit += len;

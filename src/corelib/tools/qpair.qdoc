@@ -109,7 +109,7 @@
     \endcode
 
     Swap overloads are found in namespace \c std as well as via
-    argument-dependent lookup (ADL) in \c{T}'s namespace.
+    argument-dependent lookup (ADL) in the namespace of \c{T} .
 */
 
 /*!
@@ -136,8 +136,7 @@
     \fn QPair::QPair(QPair<TT1, TT2> &&p)
     \since 5.2
 
-    Move-constructs a QPair instance, making it point to the same object that
-    \a p was pointing to.
+    Move-constructs a QPair instance, making it point to the same object that \a p was pointing to.
 */
 
 /*!

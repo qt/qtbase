@@ -956,7 +956,7 @@ public:
         } else
 #endif
         {
-            delete [] (uchar *)mappingBuffer();
+            delete [] mappingBuffer();
         }
     }
     QString mappingFile() const { return fileName; }
@@ -1450,13 +1450,13 @@ bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *
 {
     Q_D(QResourceFileEngine);
     if (extension == MapExtension) {
-        const MapExtensionOption *options = (MapExtensionOption*)(option);
+        const MapExtensionOption *options = (const MapExtensionOption*)(option);
         MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
         return (returnValue->address != 0);
     }
     if (extension == UnMapExtension) {
-        UnMapExtensionOption *options = (UnMapExtensionOption*)option;
+        const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
         return d->unmap(options->address);
     }
     return false;

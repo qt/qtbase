@@ -12681,11 +12681,21 @@ void QWidget::initPainter(QPainter *painter) const
     painter->d_func()->state->font = f;
 }
 
+/*!
+    \internal
+
+    Do PaintDevice rendering with the specified \a offset.
+*/
 QPaintDevice *QWidget::redirected(QPoint *offset) const
 {
     return d_func()->redirected(offset);
 }
 
+/*!
+    \internal
+
+    A painter that is shared among other instances of QPainter.
+*/
 QPainter *QWidget::sharedPainter() const
 {
     // Someone sent a paint event directly to the widget
@@ -12887,6 +12897,45 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
+/*! \fn Qt::HANDLE QWidget::macCGHandle() const
+    \internal
+
+    Returns the CoreGraphics handle of the widget. Use of this function is not portable.
+    This function will return 0 if no painter context can be established, or if the handle
+    could not be created.
+
+    \warning This function is only available on OS X.
+*/
+/*! \fn Qt::HANDLE QWidget::macQDHandle() const
+    \internal
+
+    Returns the QuickDraw handle of the widget. Use of this function is not portable.
+    This function will return 0 if QuickDraw is not supported, or if the handle could
+    not be created.
+
+    \warning This function is only available on OS X.
+*/
+/*! \fn const QX11Info &QWidget::x11Info() const
+    \internal
+
+    Returns information about the configuration of the X display used to display
+    the widget.
+
+    \warning This function is only available on X11.
+*/
+
+/*! \fn Qt::HANDLE QWidget::x11PictureHandle() const
+    \internal
+
+    Returns the X11 picture handle of the widget for XRender
+    support. Use of this function is not portable. This function will
+    return 0 if XRender support is not compiled into Qt, if the
+    XRender extension is not supported on the X11 display, or if the
+    handle could not be created.
+
+    \warning This function is only available on X11.
+
+*/
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"
