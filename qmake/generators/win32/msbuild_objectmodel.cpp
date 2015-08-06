@@ -643,7 +643,12 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << tagValue("DefaultLanguage", "en")
             << tagValue("AppContainerApplication", "true")
             << tagValue("ApplicationType", isWinPhone ? "Windows Phone" : "Windows Store")
-            << tagValue("ApplicationTypeRevision", tool.SdkVersion == "10.0" ? "8.2" : tool.SdkVersion);
+            << tagValue("ApplicationTypeRevision", tool.SdkVersion);
+        if (tool.SdkVersion == "10.0") {
+            const QString ucrtVersion = qgetenv("UCRTVERSION");
+            xml << tagValue("WindowsTargetPlatformVersion", ucrtVersion)
+                << tagValue("WindowsTargetPlatformMinVersion", ucrtVersion);
+        }
     }
 
     xml << closetag();
