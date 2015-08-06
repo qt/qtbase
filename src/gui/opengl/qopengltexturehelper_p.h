@@ -253,23 +253,48 @@ public:
 
     inline void glCompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width,
-                                           GLint border, GLsizei imageSize, const GLvoid *bits)
+                                           GLint border, GLsizei imageSize, const GLvoid *bits,
+                                           const QOpenGLPixelTransferOptions * const options = 0)
     {
-        (this->*CompressedTextureImage1D)(texture, target, bindingTarget, level, internalFormat, width, border, imageSize, bits);
+        if (options) {
+            QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
+            setPixelUploadOptions(*options);
+            (this->*CompressedTextureImage1D)(texture, target, bindingTarget, level, internalFormat, width, border, imageSize, bits);
+            setPixelUploadOptions(oldOptions);
+        } else {
+            (this->*CompressedTextureImage1D)(texture, target, bindingTarget, level, internalFormat, width, border, imageSize, bits);
+        }
     }
 
     inline void glCompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width, GLsizei height,
-                                           GLint border, GLsizei imageSize, const GLvoid *bits)
+                                           GLint border, GLsizei imageSize, const GLvoid *bits,
+                                           const QOpenGLPixelTransferOptions * const options = 0)
+
     {
-        (this->*CompressedTextureImage2D)(texture, target, bindingTarget, level, internalFormat, width, height, border, imageSize, bits);
+        if (options) {
+            QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
+            setPixelUploadOptions(*options);
+            (this->*CompressedTextureImage2D)(texture, target, bindingTarget, level, internalFormat, width, height, border, imageSize, bits);
+            setPixelUploadOptions(oldOptions);
+        } else {
+            (this->*CompressedTextureImage2D)(texture, target, bindingTarget, level, internalFormat, width, height, border, imageSize, bits);
+        }
     }
 
     inline void glCompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth,
-                                           GLint border, GLsizei imageSize, const GLvoid *bits)
+                                           GLint border, GLsizei imageSize, const GLvoid *bits,
+                                           const QOpenGLPixelTransferOptions * const options = 0)
     {
-        (this->*CompressedTextureImage3D)(texture, target, bindingTarget, level, internalFormat, width, height, depth, border, imageSize, bits);
+        if (options) {
+            QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
+            setPixelUploadOptions(*options);
+            (this->*CompressedTextureImage3D)(texture, target, bindingTarget, level, internalFormat, width, height, depth, border, imageSize, bits);
+            setPixelUploadOptions(oldOptions);
+        } else {
+            (this->*CompressedTextureImage3D)(texture, target, bindingTarget, level, internalFormat, width, height, depth, border, imageSize, bits);
+        }
     }
 
 private:
