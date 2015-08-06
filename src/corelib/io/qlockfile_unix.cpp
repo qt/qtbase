@@ -241,6 +241,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     free(proc);
     return name;
 #else
+    Q_UNUSED(pid);
     return QString();
 #endif
 }
