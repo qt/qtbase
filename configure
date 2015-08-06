@@ -2723,7 +2723,10 @@ MacOS/iOS options:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
-    -securetransport ... Use SecureTransport instead of OpenSSL (requires -no-openssl)
+ *  -securetransport ... Use SecureTransport instead of OpenSSL
+
+    -no-securetransport  Do not use SecureTransport, either use OpenSSL or dot not use any SSL backend
+                         at all (if combined with -no-openssl).
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
                          one of the available SDKs as listed by 'xcodebuild -showsdks'.
@@ -5932,6 +5935,13 @@ if compileTest unix/cloexec "cloexec"; then
     CFG_CLOEXEC=yes
 fi
 
+if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_SECURETRANSPORT" != "no" ] && ([ "$CFG_OPENSSL" = "no" ] || [ "$CFG_OPENSSL" = "auto" ]); then
+    CFG_SECURETRANSPORT=yes
+    CFG_OPENSSL=no
+else
+    CFG_SECURETRANSPORT=no
+fi
+
 # detect OpenSSL
 if [ "$CFG_OPENSSL" != "no" ]; then
     if compileTest unix/openssl "OpenSSL"; then
@@ -5951,11 +5961,6 @@ if [ "$CFG_OPENSSL" != "no" ]; then
     fi
 fi
 
-if [ "$CFG_SECURETRANSPORT" != "no" ] && [ "$CFG_OPENSSL" = "no" ] && [ "$XPLATFORM_MAC" = "yes" ]; then
-    CFG_SECURETRANSPORT=yes
-else
-    CFG_SECURETRANSPORT=no
-fi
 
 # detect PCRE
 if [ "$CFG_PCRE" != "qt" ]; then
