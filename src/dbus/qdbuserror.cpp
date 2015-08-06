@@ -142,6 +142,7 @@ static inline const char *get(QDBusError::ErrorType code)
     return errorMessages_string + errorMessages_indices[intcode];
 }
 
+#ifndef QT_BOOTSTRAPPED
 static inline QDBusError::ErrorType get(const char *name)
 {
     if (!name || !*name)
@@ -151,6 +152,7 @@ static inline QDBusError::ErrorType get(const char *name)
             return QDBusError::ErrorType(i + int(QDBusError::Other));
     return QDBusError::Other;
 }
+#endif
 
 /*!
     \class QDBusError
