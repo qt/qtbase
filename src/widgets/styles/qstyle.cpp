@@ -2263,8 +2263,9 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
     standard palette is not used. In particular, the Windows XP,
     Vista, and Mac styles do not use the standard palette, but make
     use of native theme engines. With these styles, you should not set
-    the palette with QApplication::setStandardPalette().
+    the palette with QApplication::setPalette().
 
+    \sa QApplication::setPalette()
  */
 QPalette QStyle::standardPalette() const
 {
