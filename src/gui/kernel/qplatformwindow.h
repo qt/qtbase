@@ -138,6 +138,7 @@ public:
     QSize windowBaseSize() const;
     QSize windowSizeIncrement() const;
     QRect windowGeometry() const;
+    QRect windowFrameGeometry() const;
     QRectF windowClosestAcceptableGeometry(const QRectF &nativeRect) const;
 
 protected:
