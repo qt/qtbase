@@ -1850,12 +1850,11 @@ QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
 {
     if (!m_contentView)
         return QPoint();
-    NSPoint origin = [m_contentView isFlipped] ?
-                        NSMakePoint(0, [m_contentView frame].size.height) :
-                        NSMakePoint(0, 0);
-    NSPoint windowPoint = [m_contentView convertPoint:origin toView:nil];
+    const NSPoint origin = [m_contentView isFlipped] ? NSMakePoint(0, [m_contentView frame].size.height)
+                                                     : NSMakePoint(0,                                 0);
+    const NSRect visibleRect = [m_contentView visibleRect];
 
-    return QPoint(-std::min((int)windowPoint.x, 0), -std::min((int)windowPoint.y,0));
+    return QPoint(visibleRect.origin.x, -visibleRect.origin.y + (origin.y - visibleRect.size.height));
 }
 
 QMargins QCocoaWindow::frameMargins() const
