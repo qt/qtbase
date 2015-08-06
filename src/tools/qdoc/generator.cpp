@@ -804,9 +804,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         else if (node->type() == Node::Function) {
             const FunctionNode *func = static_cast<const FunctionNode *>(node);
             QSet<QString> definedParams;
-            QList<Parameter>::ConstIterator p = func->parameters().constBegin();
+            QVector<Parameter>::ConstIterator p = func->parameters().constBegin();
             while (p != func->parameters().constEnd()) {
-                if ((*p).name().isEmpty() && (*p).leftType() != QLatin1String("...")
+                if ((*p).name().isEmpty() && (*p).dataType() != QLatin1String("...")
                         && func->name() != QLatin1String("operator++")
                         && func->name() != QLatin1String("operator--")) {
                     node->doc().location().warning(tr("Missing parameter name"));
@@ -836,7 +836,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                     else if (!(*a).isEmpty() && !documentedParams.contains(*a)) {
                         bool needWarning = (func->status() > Node::Obsolete);
                         if (func->overloadNumber() > 0) {
-                            FunctionNode *primaryFunc = func->parent()->findFunctionNode(func->name());
+                            FunctionNode *primaryFunc = func->parent()->findFunctionNode(func->name(), QString());
                             if (primaryFunc) {
                                 foreach (const Parameter &param,
                                          primaryFunc->parameters()) {
@@ -1504,7 +1504,7 @@ void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
         if (i != 0)
             code += ", ";
         const Parameter &p = func->parameters().at(i);
-        code += p.leftType() + p.rightType();
+        code += p.dataType() + p.rightType();
     }
 
     code += ")";
@@ -1516,7 +1516,7 @@ void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
         if (i != 0)
             code += ", ";
         const Parameter &p = func->parameters().at(i);
-        code += p.leftType();
+        code += p.dataType();
         if (code[code.size()-1].isLetterOrNumber())
             code += " ";
         code += p.name()  + p.rightType();
@@ -2049,14 +2049,14 @@ void Generator::supplementAlsoList(const Node *node, QList<Text> &alsoList)
             if (func->name().startsWith("set") && func->name().size() >= 4) {
                 alternateName = func->name()[3].toLower();
                 alternateName += func->name().mid(4);
-                alternateFunc = func->parent()->findFunctionNode(alternateName);
+                alternateFunc = func->parent()->findFunctionNode(alternateName, QString());
 
                 if (!alternateFunc) {
                     alternateName = "is" + func->name().mid(3);
-                    alternateFunc = func->parent()->findFunctionNode(alternateName);
+                    alternateFunc = func->parent()->findFunctionNode(alternateName, QString());
                     if (!alternateFunc) {
                         alternateName = "has" + func->name().mid(3);
-                        alternateFunc = func->parent()->findFunctionNode(alternateName);
+                        alternateFunc = func->parent()->findFunctionNode(alternateName, QString());
                     }
                 }
             }
@@ -2064,7 +2064,7 @@ void Generator::supplementAlsoList(const Node *node, QList<Text> &alsoList)
                 alternateName = "set";
                 alternateName += func->name()[0].toUpper();
                 alternateName += func->name().mid(1);
-                alternateFunc = func->parent()->findFunctionNode(alternateName);
+                alternateFunc = func->parent()->findFunctionNode(alternateName, QString());
             }
 
             if (alternateFunc && alternateFunc->access() != Node::Private) {

@@ -51,16 +51,6 @@ class CppCodeParser : public CodeParser
 {
     Q_DECLARE_TR_FUNCTIONS(QDoc::CppCodeParser)
 
-    struct ParsedParameter {
-        bool qPrivateSignal_;
-        QString dataType_;
-        QString name_;
-        QString defaultValue_;
-      ParsedParameter() : qPrivateSignal_(false) { }
-    };
-    friend class QTypeInfo<ParsedParameter>;
-    typedef QVector<ParsedParameter> ParsedParameterList;
-
     struct ExtraFuncData {
         Aggregate* root; // Used as the parent.
         Node::NodeType type; // The node type: Function, etc.
@@ -74,6 +64,7 @@ class CppCodeParser : public CodeParser
 public:
     CppCodeParser();
     ~CppCodeParser();
+    static CppCodeParser* cppParser() { return cppParser_; }
 
     virtual void initializeParser(const Config& config) Q_DECL_OVERRIDE;
     virtual void terminateParser() Q_DECL_OVERRIDE;
@@ -84,6 +75,7 @@ public:
     virtual void parseSourceFile(const Location& location, const QString& filePath) Q_DECL_OVERRIDE;
     virtual void doneParsingHeaderFiles() Q_DECL_OVERRIDE;
     virtual void doneParsingSourceFiles() Q_DECL_OVERRIDE;
+    bool parseParameters(const QString& parameters, QVector<Parameter>& pvect, bool& isQPrivateSignal);
 
 protected:
     const QSet<QString>& topicCommands();
@@ -126,7 +118,7 @@ protected:
     bool matchTemplateAngles(CodeChunk *type = 0);
     bool matchTemplateHeader();
     bool matchDataType(CodeChunk *type, QString *var = 0);
-    bool matchParameter(ParsedParameterList& pplist);
+    bool matchParameter(QVector<Parameter>& pvect, bool& isQPrivateSignal);
     bool matchFunctionDecl(Aggregate *parent,
                            QStringList *parentPathPtr,
                            FunctionNode **funcPtr,
@@ -184,10 +176,10 @@ protected:
 
     static QStringList exampleFiles;
     static QStringList exampleDirs;
+    static CppCodeParser* cppParser_;
     QString exampleNameFilter;
     QString exampleImageFilter;
 };
-Q_DECLARE_TYPEINFO(CppCodeParser::ParsedParameter, Q_MOVABLE_TYPE);
 
 #define COMMAND_ABSTRACT                Doc::alias("abstract")
 #define COMMAND_CLASS                   Doc::alias("class")

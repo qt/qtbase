@@ -40,7 +40,6 @@
 QT_BEGIN_NAMESPACE
 
 class Config;
-class Node;
 class QString;
 class QDocDatabase;
 

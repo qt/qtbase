@@ -1238,7 +1238,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             for (int i = 0; i < functionNode->parameters().size(); ++i) {
                 Parameter parameter = functionNode->parameters()[i];
                 writer.writeStartElement("parameter");
-                writer.writeAttribute("left", parameter.leftType());
+                writer.writeAttribute("left", parameter.dataType());
                 writer.writeAttribute("right", parameter.rightType());
                 writer.writeAttribute("name", parameter.name());
                 writer.writeAttribute("default", parameter.defaultValue());

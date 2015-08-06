@@ -1839,8 +1839,13 @@
     \li \c {\l QWidget} - The name of a class documented with the \l
     {class-command} {\\class} command.
 
-    \li \c {\l QWidget::sizeHint()} - The name of a member function,
-    documented with or without an \l {fn-command} {\\fn} command.
+    \li \c {\l QWidget::sizeHint()} - The signature of a function without
+    parameters. If a matching function without parameters can't be found,
+    the link is satisfied with the first matching function found.
+
+    \li \c {\l QWidget::removeAction(QAction* action)} - The signature
+    of a function with parameters. If an exact match is not found, the
+    link is not satisfied and qdoc reports a \e {Can't link to...} error.
 
     \li \c {\l <QtGlobal>} - The subject of a \l {headerfile-command}
     {\\headerfile} command.

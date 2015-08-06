@@ -675,7 +675,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
                 QString name = member->name.toString();
                 FunctionNode *qmlSignal = new FunctionNode(Node::QmlSignal, current, name, false);
 
-                QList<Parameter> parameters;
+                QVector<Parameter> parameters;
                 for (QQmlJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
                     if (!it->type.isEmpty() && !it->name.isEmpty())
                         parameters.append(Parameter(it->type.toString(), QString(), it->name.toString()));
@@ -754,7 +754,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
             }
             if (overloads > 1)
                 qmlMethod->setOverloadFlag(true);
-            QList<Parameter> parameters;
+            QVector<Parameter> parameters;
             QQmlJS::AST::FormalParameterList* formals = fd->formals;
             if (formals) {
                 QQmlJS::AST::FormalParameterList* fpl = formals;

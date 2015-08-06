@@ -380,6 +380,30 @@ QString QDocForest::getLinkCounts(QStringList& strings, QVector<int>& counts)
     return depends;
 }
 
+/*!
+ */
+const Node* QDocForest::findFunctionNode(const QString& target,
+                                         const Node* relative,
+                                         Node::Genus genus)
+{
+    QString function, params;
+    int length = target.length();
+    if (target.endsWith(QChar(')'))) {
+        int position = target.lastIndexOf(QChar('('));
+        params = target.mid(position+1, length-position-2);
+        function = target.left(position);
+    }
+    else
+        function = target;
+    foreach (Tree* t, searchOrder()) {
+        const Node* n = t->findFunctionNode(function, params, relative, genus);
+        if (n)
+            return n;
+        relative = 0;
+    }
+    return 0;
+}
+
 /*! \class QDocDatabase
   This class provides exclusive access to the qdoc database,
   which consists of a forrest of trees and a lot of maps and
@@ -1342,8 +1366,16 @@ void QDocDatabase::resolveNamespaces()
         }
     }
 }
-
-
+#if 0
+/*!
+ */
+const Node* QDocDatabase::findFunctionNode(const QString& target,
+                                           const Node* relative,
+                                           Node::Genus genus)
+{
+    return forest_.findFunctionNode(target, relative, genus);
+}
+#endif
 /*!
   This function is called for autolinking to a \a type,
   which could be a function return type or a parameter
@@ -1641,6 +1673,8 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     Atom* atom = const_cast<Atom*>(a);
     QStringList targetPath = atom->string().split("#");
     QString first = targetPath.first().trimmed();
+    if (Generator::debugging())
+        qDebug() << "  first:" << first;
 
     Tree* domain = 0;
     Node::Genus genus = Node::DontCare;
@@ -1659,8 +1693,14 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     else if (domain) {
         if (first.endsWith(".html"))
             node = domain->findNodeByNameAndType(QStringList(first), Node::Document);
-        else if (first.endsWith("()"))
-            node = domain->findFunctionNode(first, 0, genus);
+        else if (first.endsWith(QChar(')'))) {
+            QString function, params;
+            int length = first.length();
+            int position = first.lastIndexOf(QChar('('));
+            params = first.mid(position+1, length-position-2);
+            function = first.left(position);
+            node = domain->findFunctionNode(function, params, 0, genus);
+        }
         else {
             int flags = SearchBaseClasses | SearchEnumValues;
             QStringList nodePath = first.split("::");
@@ -1683,8 +1723,11 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
             if (!node && first.contains("/"))
                 return findNodeForTarget(targetPath, relative, genus, ref);
         }
-        else if (first.endsWith("()"))
+        else if (first.endsWith(QChar(')'))) {
             node = findFunctionNode(first, relative, genus);
+            if (Generator::debugging())
+                qDebug() << "  node:" << node;
+        }
         else {
             node = findNodeForTarget(targetPath, relative, genus, ref);
             return node;

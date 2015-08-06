@@ -220,6 +220,7 @@ QmlTypeNode* Tree::findQmlTypeNode(const QStringList& path)
   used as the starting point.
  */
 const FunctionNode* Tree::findFunctionNode(const QStringList& path,
+                                           const QString& params,
                                            const Node* relative,
                                            int findFlags,
                                            Node::Genus genus) const
@@ -234,7 +235,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
                 qcn = static_cast<QmlTypeNode*>(n);
         }
         if (qcn)
-            return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2]));
+            return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2], params));
     }
 
     if (!relative)
@@ -254,7 +255,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
 
             const Node* next;
             if (i == path.size() - 1)
-                next = ((const Aggregate*) node)->findFunctionNode(path.at(i));
+                next = ((const Aggregate*) node)->findFunctionNode(path.at(i), params);
             else
                 next = ((const Aggregate*) node)->findChildNode(path.at(i), genus);
 
@@ -262,7 +263,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
                     if (i == path.size() - 1)
-                        next = static_cast<const Aggregate*>(baseClass)->findFunctionNode(path.at(i));
+                        next = static_cast<const Aggregate*>(baseClass)->findFunctionNode(path.at(i), params);
                     else
                         next = static_cast<const Aggregate*>(baseClass)->findChildNode(path.at(i), genus);
 
@@ -1452,13 +1453,17 @@ void Tree::insertQmlType(const QString& key, QmlTypeNode* n)
   Split \a target on "::" and find the function node with that
   path.
  */
-const Node* Tree::findFunctionNode(const QString& target, const Node* relative, Node::Genus genus)
+const Node* Tree::findFunctionNode(const QString& target,
+                                   const QString& params,
+                                   const Node* relative,
+                                   Node::Genus genus) const
 {
     QString t = target;
-    if (t.endsWith("()"))
+    if (t.endsWith("()")) {
         t.chop(2);
+    }
     QStringList path = t.split("::");
-    const FunctionNode* fn = findFunctionNode(path, relative, SearchBaseClasses, genus);
+    const FunctionNode* fn = findFunctionNode(path, params, relative, SearchBaseClasses, genus);
     if (fn && fn->metaness() != FunctionNode::MacroWithoutParams)
         return fn;
     return 0;
