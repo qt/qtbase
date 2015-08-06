@@ -40,7 +40,7 @@
                "type": "win"
            },
            "features": [
-               "disable_desktopgl",
+               "disable_desktopgl"
            ]
        }
     ]
