@@ -459,82 +459,81 @@ static inline qreal fixed1616ToReal(FP1616 val)
 
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
-    if (xi2PrepareXIGenericDeviceEvent(event, m_xiOpCode)) {
-        xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
-        int sourceDeviceId = xiEvent->deviceid; // may be the master id
-        xXIDeviceEvent *xiDeviceEvent = 0;
-        QXcbWindowEventListener *eventListener = 0;
+    xi2PrepareXIGenericDeviceEvent(event);
+    xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
+    int sourceDeviceId = xiEvent->deviceid; // may be the master id
+    xXIDeviceEvent *xiDeviceEvent = 0;
+    QXcbWindowEventListener *eventListener = 0;
 
-        switch (xiEvent->evtype) {
-        case XI_ButtonPress:
-        case XI_ButtonRelease:
-        case XI_Motion:
+    switch (xiEvent->evtype) {
+    case XI_ButtonPress:
+    case XI_ButtonRelease:
+    case XI_Motion:
 #ifdef XCB_USE_XINPUT22
-        case XI_TouchBegin:
-        case XI_TouchUpdate:
-        case XI_TouchEnd:
+    case XI_TouchBegin:
+    case XI_TouchUpdate:
+    case XI_TouchEnd:
 #endif
-        {
-            xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
-            eventListener = windowEventListenerFromId(xiDeviceEvent->event);
-            if (eventListener) {
-                long result = 0;
-                if (eventListener->handleGenericEvent(reinterpret_cast<xcb_generic_event_t *>(event), &result))
-                    return;
-            }
-            sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
-            break;
+    {
+        xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+        eventListener = windowEventListenerFromId(xiDeviceEvent->event);
+        if (eventListener) {
+            long result = 0;
+            if (eventListener->handleGenericEvent(reinterpret_cast<xcb_generic_event_t *>(event), &result))
+                return;
         }
-        case XI_HierarchyChanged:
-            xi2HandleHierachyEvent(xiEvent);
-            return;
-        case XI_DeviceChanged:
-            xi2HandleDeviceChangedEvent(xiEvent);
-            return;
-        default:
-            break;
-        }
+        sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
+        break;
+    }
+    case XI_HierarchyChanged:
+        xi2HandleHierachyEvent(xiEvent);
+        return;
+    case XI_DeviceChanged:
+        xi2HandleDeviceChangedEvent(xiEvent);
+        return;
+    default:
+        break;
+    }
 
 #ifndef QT_NO_TABLETEVENT
-        for (int i = 0; i < m_tabletData.count(); ++i) {
-            if (m_tabletData.at(i).deviceId == sourceDeviceId) {
-                if (xi2HandleTabletEvent(xiEvent, &m_tabletData[i], eventListener))
-                    return;
-            }
+    for (int i = 0; i < m_tabletData.count(); ++i) {
+        if (m_tabletData.at(i).deviceId == sourceDeviceId) {
+            if (xi2HandleTabletEvent(xiEvent, &m_tabletData[i], eventListener))
+                return;
         }
+    }
 #endif // QT_NO_TABLETEVENT
 
 #ifdef XCB_USE_XINPUT21
-        QHash<int, ScrollingDevice>::iterator device = m_scrollingDevices.find(sourceDeviceId);
-        if (device != m_scrollingDevices.end())
-            xi2HandleScrollEvent(xiEvent, device.value());
+    QHash<int, ScrollingDevice>::iterator device = m_scrollingDevices.find(sourceDeviceId);
+    if (device != m_scrollingDevices.end())
+        xi2HandleScrollEvent(xiEvent, device.value());
 #endif // XCB_USE_XINPUT21
 
 #ifdef XCB_USE_XINPUT22
-        if (xiDeviceEvent) {
-            switch (xiDeviceEvent->evtype) {
-            case XI_ButtonPress:
-            case XI_ButtonRelease:
-            case XI_Motion:
-                if (xi2MouseEvents() && eventListener && !(xiDeviceEvent->flags & XIPointerEmulated))
-                    eventListener->handleXIMouseEvent(event);
-                break;
+    if (xiDeviceEvent) {
+        switch (xiDeviceEvent->evtype) {
+        case XI_ButtonPress:
+        case XI_ButtonRelease:
+        case XI_Motion:
+            if (xi2MouseEvents() && eventListener && !(xiDeviceEvent->flags & XIPointerEmulated))
+                eventListener->handleXIMouseEvent(event);
+            break;
 
-            case XI_TouchBegin:
-            case XI_TouchUpdate:
-            case XI_TouchEnd:
-                if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-                    qCDebug(lcQpaXInput, "XI2 touch event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f on window %x",
-                            event->event_type, xiDeviceEvent->sequenceNumber, xiDeviceEvent->detail,
-                            fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y),
-                            fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y),xiDeviceEvent->event);
-                if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event))
-                    xi2ProcessTouch(xiDeviceEvent, platformWindow);
-                break;
-            }
+        case XI_TouchBegin:
+        case XI_TouchUpdate:
+        case XI_TouchEnd:
+            if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
+                qCDebug(lcQpaXInput, "XI2 touch event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f on window %x",
+                        event->event_type, xiDeviceEvent->sequenceNumber, xiDeviceEvent->detail,
+                        fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y),
+                        fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y),xiDeviceEvent->event);
+            if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event))
+                xi2ProcessTouch(xiDeviceEvent, platformWindow);
+            break;
         }
-#endif // XCB_USE_XINPUT22
     }
+#endif // XCB_USE_XINPUT22
 }
 
 #ifdef XCB_USE_XINPUT22

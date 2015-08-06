@@ -107,6 +107,24 @@ Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 #define XCB_GE_GENERIC 35
 #endif
 
+// Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
+// - "pad0" became "extension"
+// - "pad1" and "pad" became "pad0"
+// New and old version of this struct share the following fields:
+typedef struct qt_xcb_ge_event_t {
+    uint8_t  response_type;
+    uint8_t  extension;
+    uint16_t sequence;
+    uint32_t length;
+    uint16_t event_type;
+} qt_xcb_ge_event_t;
+
+static inline bool isXIEvent(xcb_generic_event_t *event, int opCode)
+{
+    qt_xcb_ge_event_t *e = (qt_xcb_ge_event_t *)event;
+    return e->extension == opCode;
+}
+
 #ifdef XCB_USE_XLIB
 static const char * const xcbConnectionErrors[] = {
     "No error", /* Error 0 */
@@ -1109,7 +1127,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #if defined(XCB_USE_XINPUT2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()
-            if (m_xi2Enabled)
+            if (m_xi2Enabled && isXIEvent(event, m_xiOpCode))
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
             break;
 #endif
@@ -1431,6 +1449,105 @@ void *QXcbConnection::createVisualInfoForDefaultVisualId() const
 
 #endif
 
+#if defined(XCB_USE_XINPUT2)
+// it is safe to cast XI_* events here as long as we are only touching the first 32 bytes,
+// after that position event needs memmove, see xi2PrepareXIGenericDeviceEvent
+static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t type)
+{
+    if (!isXIEvent(event, opCode))
+        return false;
+
+    xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
+    return xiEvent->evtype == type;
+}
+#endif
+static inline bool isValid(xcb_generic_event_t *event)
+{
+    return event && (event->response_type & ~0x80);
+}
+
+/*! \internal
+
+    Compresses events of the same type to avoid swamping the event queue.
+    If event compression is not desired there are several options what developers can do:
+
+    1) Write responsive applications. We drop events that have been buffered in the event
+       queue while waiting on unresponsive GUI thread.
+    2) Use QAbstractNativeEventFilter to get all events from X connection. This is not optimal
+       because it requires working with native event types.
+    3) Or add public API to Qt for disabling event compression QTBUG-44964
+
+*/
+bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const
+{
+    uint responseType = event->response_type & ~0x80;
+    int nextIndex = currentIndex + 1;
+
+    if (responseType == XCB_MOTION_NOTIFY) {
+        // compress XCB_MOTION_NOTIFY notify events
+        for (int j = nextIndex; j < eventqueue->size(); ++j) {
+            xcb_generic_event_t *next = eventqueue->at(j);
+            if (!isValid(next))
+                continue;
+            if (next->response_type == XCB_MOTION_NOTIFY)
+                return true;
+        }
+        return false;
+    }
+#if defined(XCB_USE_XINPUT2)
+    // compress XI_* events
+    if (responseType == XCB_GE_GENERIC) {
+        if (!m_xi2Enabled)
+            return false;
+
+        // compress XI_Motion
+        if (isXIType(event, m_xiOpCode, XI_Motion)) {
+            for (int j = nextIndex; j < eventqueue->size(); ++j) {
+                xcb_generic_event_t *next = eventqueue->at(j);
+                if (!isValid(next))
+                    continue;
+                if (isXIType(next, m_xiOpCode, XI_Motion))
+                    return true;
+            }
+            return false;
+        }
+#ifdef XCB_USE_XINPUT22
+        // compress XI_TouchUpdate for the same touch point id
+        if (isXIType(event, m_xiOpCode, XI_TouchUpdate)) {
+            xXIDeviceEvent *xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+            uint32_t id = xiDeviceEvent->detail % INT_MAX;
+            for (int j = nextIndex; j < eventqueue->size(); ++j) {
+                xcb_generic_event_t *next = eventqueue->at(j);
+                if (!isValid(next))
+                    continue;
+                if (isXIType(next, m_xiOpCode, XI_TouchUpdate)) {
+                    xXIDeviceEvent *xiDeviceNextEvent = reinterpret_cast<xXIDeviceEvent *>(next);
+                    if (id == xiDeviceNextEvent->detail % INT_MAX)
+                        return true;
+                }
+            }
+            return false;
+        }
+#endif
+        return false;
+    }
+#endif
+    if (responseType == XCB_CONFIGURE_NOTIFY) {
+        // compress multiple configure notify events for the same window
+        for (int j = nextIndex; j < eventqueue->size(); ++j) {
+            xcb_generic_event_t *next = eventqueue->at(j);
+            if (isValid(next) && next->response_type == XCB_CONFIGURE_NOTIFY
+                && ((xcb_configure_notify_event_t *)next)->event == ((xcb_configure_notify_event_t*)event)->event)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return false;
+}
+
 void QXcbConnection::processXcbEvents()
 {
     int connection_error = xcb_connection_has_error(xcb_connection());
@@ -1441,61 +1558,39 @@ void QXcbConnection::processXcbEvents()
 
     QXcbEventArray *eventqueue = m_reader->lock();
 
-    for(int i = 0; i < eventqueue->size(); ++i) {
+    for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
         if (!event)
             continue;
         QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
         (*eventqueue)[i] = 0;
 
-        uint response_type = event->response_type & ~0x80;
-
-        if (!response_type) {
+        if (!(event->response_type & ~0x80)) {
             handleXcbError((xcb_generic_error_t *)event);
-        } else {
-            if (response_type == XCB_MOTION_NOTIFY) {
-                // compress multiple motion notify events in a row
-                // to avoid swamping the event queue
-                xcb_generic_event_t *next = eventqueue->value(i+1, 0);
-                if (next && (next->response_type & ~0x80) == XCB_MOTION_NOTIFY)
-                    continue;
-            }
-
-            if (response_type == XCB_CONFIGURE_NOTIFY) {
-                // compress multiple configure notify events for the same window
-                bool found = false;
-                for (int j = i; j < eventqueue->size(); ++j) {
-                    xcb_generic_event_t *other = eventqueue->at(j);
-                    if (other && (other->response_type & ~0x80) == XCB_CONFIGURE_NOTIFY
-                        && ((xcb_configure_notify_event_t *)other)->event == ((xcb_configure_notify_event_t *)event)->event)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found)
-                    continue;
-            }
-
-            bool accepted = false;
-            if (clipboard()->processIncr())
-                clipboard()->incrTransactionPeeker(event, accepted);
-            if (accepted)
-                continue;
-
-            QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
-            while (it != m_peekFuncs.end()) {
-                // These callbacks return true if the event is what they were
-                // waiting for, remove them from the list in that case.
-                if ((*it)(this, event))
-                    it = m_peekFuncs.erase(it);
-                else
-                    ++it;
-            }
-            m_reader->unlock();
-            handleXcbEvent(event);
-            m_reader->lock();
+            continue;
         }
+
+        if (compressEvent(event, i, eventqueue))
+            continue;
+
+        bool accepted = false;
+        if (clipboard()->processIncr())
+            clipboard()->incrTransactionPeeker(event, accepted);
+        if (accepted)
+            continue;
+
+        QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
+        while (it != m_peekFuncs.end()) {
+            // These callbacks return true if the event is what they were
+            // waiting for, remove them from the list in that case.
+            if ((*it)(this, event))
+                it = m_peekFuncs.erase(it);
+            else
+                ++it;
+        }
+        m_reader->unlock();
+        handleXcbEvent(event);
+        m_reader->lock();
     }
 
     eventqueue->clear();
@@ -2037,34 +2132,13 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     return true;
 }
 
-// Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
-// - "pad0" became "extension"
-// - "pad1" and "pad" became "pad0"
-// New and old version of this struct share the following fields:
-// NOTE: API might change again in the next release of xcb in which case this comment will
-// need to be updated to reflect the reality.
-typedef struct qt_xcb_ge_event_t {
-    uint8_t  response_type;
-    uint8_t  extension;
-    uint16_t sequence;
-    uint32_t length;
-    uint16_t event_type;
-} qt_xcb_ge_event_t;
-
-bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *ev, int opCode)
+void QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event)
 {
-    qt_xcb_ge_event_t *event = (qt_xcb_ge_event_t *)ev;
-    // xGenericEvent has "extension" on the second byte, the same is true for xcb_ge_event_t starting from
-    // the xcb version 1.9.3, prior to that it was called "pad0".
-    if (event->extension == opCode) {
-        // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
-        // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
-        // Move this data back to have the same layout in memory as it was on the wire
-        // and allow casting, overwriting the full_sequence field.
-        memmove((char*) event + 32, (char*) event + 36, event->length * 4);
-        return true;
-    }
-    return false;
+    // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
+    // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
+    // Move this data back to have the same layout in memory as it was on the wire
+    // and allow casting, overwriting the full_sequence field.
+    memmove((char*) event + 32, (char*) event + 36, event->length * 4);
 }
 #endif // defined(XCB_USE_XINPUT2)
 
