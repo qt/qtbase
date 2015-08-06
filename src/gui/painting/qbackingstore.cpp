@@ -182,7 +182,8 @@ void QBackingStore::beginPaint(const QRegion &region)
             qCDebug(lcScaling) << "QBackingStore::beginPaint new backingstore for" << d_ptr->window;
             qCDebug(lcScaling) << "  source size" << source->size() << "dpr" << source->devicePixelRatio();
             d_ptr->highDpiBackingstore.reset(
-                new QImage(source->bits(), source->width(), source->height(), source->format()));
+                new QImage(source->bits(), source->width(), source->height(), source->bytesPerLine(), source->format()));
+
             qreal targetDevicePixelRatio = d_ptr->window->devicePixelRatio();
             d_ptr->highDpiBackingstore->setDevicePixelRatio(targetDevicePixelRatio);
             qCDebug(lcScaling) <<"  destination size" << d_ptr->highDpiBackingstore->size()
