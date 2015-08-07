@@ -19,29 +19,29 @@ CONFIG += link_pkgconfig
 PKGCONFIG += egl mirclient ubuntu-platform-api
 
 SOURCES = \
-    backingstore.cpp \
-    clipboard.cpp \
-    glcontext.cpp \
-    input.cpp \
-    integration.cpp \
-    nativeinterface.cpp \
-    platformservices.cpp \
-    plugin.cpp \
-    screen.cpp \
-    theme.cpp \
-    window.cpp
+    qmirclientbackingstore.cpp \
+    qmirclientclipboard.cpp \
+    qmirclientglcontext.cpp \
+    qmirclientinput.cpp \
+    qmirclientintegration.cpp \
+    qmirclientnativeinterface.cpp \
+    qmirclientplatformservices.cpp \
+    qmirclientplugin.cpp \
+    qmirclientscreen.cpp \
+    qmirclienttheme.cpp \
+    qmirclientwindow.cpp
 
 HEADERS = \
-    backingstore.h \
-    clipboard.h \
-    glcontext.h \
-    input.h \
-    integration.h \
-    logging.h \
-    nativeinterface.h \
-    orientationchangeevent_p.h \
-    platformservices.h \
-    plugin.h \
-    screen.h \
-    theme.h \
-    window.h
+    qmirclientbackingstore.h \
+    qmirclientclipboard.h \
+    qmirclientglcontext.h \
+    qmirclientinput.h \
+    qmirclientintegration.h \
+    qmirclientlogging.h \
+    qmirclientnativeinterface.h \
+    qmirclientorientationchangeevent_p.h \
+    qmirclientplatformservices.h \
+    qmirclientplugin.h \
+    qmirclientscreen.h \
+    qmirclienttheme.h \
+    qmirclientwindow.h

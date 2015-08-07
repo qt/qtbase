@@ -14,9 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "glcontext.h"
-#include "window.h"
-#include "logging.h"
+#include "qmirclientglcontext.h"
+#include "qmirclientwindow.h"
+#include "qmirclientlogging.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 #if !defined(QT_NO_DEBUG)
@@ -47,7 +47,7 @@ static EGLenum api_in_use()
 #endif
 }
 
-UbuntuOpenGLContext::UbuntuOpenGLContext(UbuntuScreen* screen, UbuntuOpenGLContext* share)
+QMirClientOpenGLContext::QMirClientOpenGLContext(QMirClientScreen* screen, QMirClientOpenGLContext* share)
 {
     ASSERT(screen != NULL);
     mEglDisplay = screen->eglDisplay();
@@ -65,15 +65,15 @@ UbuntuOpenGLContext::UbuntuOpenGLContext(UbuntuScreen* screen, UbuntuOpenGLConte
     DASSERT(mEglContext != EGL_NO_CONTEXT);
 }
 
-UbuntuOpenGLContext::~UbuntuOpenGLContext()
+QMirClientOpenGLContext::~QMirClientOpenGLContext()
 {
     ASSERT(eglDestroyContext(mEglDisplay, mEglContext) == EGL_TRUE);
 }
 
-bool UbuntuOpenGLContext::makeCurrent(QPlatformSurface* surface)
+bool QMirClientOpenGLContext::makeCurrent(QPlatformSurface* surface)
 {
     DASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
-    EGLSurface eglSurface = static_cast<UbuntuWindow*>(surface)->eglSurface();
+    EGLSurface eglSurface = static_cast<QMirClientWindow*>(surface)->eglSurface();
 #if defined(QT_NO_DEBUG)
     eglBindAPI(api_in_use());
     eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext);
@@ -85,7 +85,7 @@ bool UbuntuOpenGLContext::makeCurrent(QPlatformSurface* surface)
     return true;
 }
 
-void UbuntuOpenGLContext::doneCurrent()
+void QMirClientOpenGLContext::doneCurrent()
 {
 #if defined(QT_NO_DEBUG)
     eglBindAPI(api_in_use());
@@ -96,9 +96,9 @@ void UbuntuOpenGLContext::doneCurrent()
 #endif
 }
 
-void UbuntuOpenGLContext::swapBuffers(QPlatformSurface* surface)
+void QMirClientOpenGLContext::swapBuffers(QPlatformSurface* surface)
 {
-    UbuntuWindow *ubuntuWindow = static_cast<UbuntuWindow*>(surface);
+    QMirClientWindow *ubuntuWindow = static_cast<QMirClientWindow*>(surface);
 
     EGLSurface eglSurface = ubuntuWindow->eglSurface();
 #if defined(QT_NO_DEBUG)
@@ -124,7 +124,7 @@ void UbuntuOpenGLContext::swapBuffers(QPlatformSurface* surface)
     ubuntuWindow->onBuffersSwapped_threadSafe(newBufferWidth, newBufferHeight);
 }
 
-void (*UbuntuOpenGLContext::getProcAddress(const QByteArray& procName)) ()
+void (*QMirClientOpenGLContext::getProcAddress(const QByteArray& procName)) ()
 {
 #if defined(QT_NO_DEBUG)
     eglBindAPI(api_in_use());

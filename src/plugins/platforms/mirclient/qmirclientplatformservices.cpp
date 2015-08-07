@@ -14,24 +14,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "platformservices.h"
+#include "qmirclientplatformservices.h"
 
 #include <QUrl>
 
 #include <ubuntu/application/url_dispatcher/service.h>
 #include <ubuntu/application/url_dispatcher/session.h>
 
-bool UbuntuPlatformServices::openUrl(const QUrl &url)
+bool QMirClientPlatformServices::openUrl(const QUrl &url)
 {
     return callDispatcher(url);
 }
 
-bool UbuntuPlatformServices::openDocument(const QUrl &url)
+bool QMirClientPlatformServices::openDocument(const QUrl &url)
 {
     return callDispatcher(url);
 }
 
-bool UbuntuPlatformServices::callDispatcher(const QUrl &url)
+bool QMirClientPlatformServices::callDispatcher(const QUrl &url)
 {
     UAUrlDispatcherSession* session = ua_url_dispatcher_session();
     if (!session)

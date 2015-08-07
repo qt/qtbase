@@ -14,26 +14,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_WINDOW_H
-#define UBUNTU_WINDOW_H
+#ifndef QMIRCLIENTWINDOW_H
+#define QMIRCLIENTWINDOW_H
 
 #include <qpa/qplatformwindow.h>
 #include <QSharedPointer>
 
 #include <mir_toolkit/mir_client_library.h>
 
-class UbuntuClipboard;
-class UbuntuInput;
-class UbuntuScreen;
-class UbuntuWindowPrivate;
+class QMirClientClipboard;
+class QMirClientInput;
+class QMirClientScreen;
+class QMirClientWindowPrivate;
 
-class UbuntuWindow : public QObject, public QPlatformWindow
+class QMirClientWindow : public QObject, public QPlatformWindow
 {
     Q_OBJECT
 public:
-    UbuntuWindow(QWindow *w, QSharedPointer<UbuntuClipboard> clipboard, UbuntuScreen *screen,
-                 UbuntuInput *input, MirConnection *mir_connection);
-    virtual ~UbuntuWindow();
+    QMirClientWindow(QWindow *w, QSharedPointer<QMirClientClipboard> clipboard, QMirClientScreen *screen,
+                 QMirClientInput *input, MirConnection *mir_connection);
+    virtual ~QMirClientWindow();
 
     // QPlatformWindow methods.
     WId winId() const override;
@@ -47,13 +47,13 @@ public:
     void handleSurfaceFocusChange(bool focused);
     void onBuffersSwapped_threadSafe(int newBufferWidth, int newBufferHeight);
 
-    UbuntuWindowPrivate* priv() { return d; }
+    QMirClientWindowPrivate* priv() { return d; }
 
 private:
     void createWindow();
     void moveResize(const QRect& rect);
 
-    UbuntuWindowPrivate *d;
+    QMirClientWindowPrivate *d;
 };
 
-#endif // UBUNTU_WINDOW_H
+#endif // QMIRCLIENTWINDOW_H

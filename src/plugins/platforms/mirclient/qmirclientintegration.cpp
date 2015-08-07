@@ -25,16 +25,16 @@
 #include <QOpenGLContext>
 
 // Local
-#include "backingstore.h"
-#include "clipboard.h"
-#include "glcontext.h"
-#include "input.h"
-#include "integration.h"
-#include "logging.h"
-#include "nativeinterface.h"
-#include "screen.h"
-#include "theme.h"
-#include "window.h"
+#include "qmirclientbackingstore.h"
+#include "qmirclientclipboard.h"
+#include "qmirclientglcontext.h"
+#include "qmirclientinput.h"
+#include "qmirclientintegration.h"
+#include "qmirclientlogging.h"
+#include "qmirclientnativeinterface.h"
+#include "qmirclientscreen.h"
+#include "qmirclienttheme.h"
+#include "qmirclientwindow.h"
 
 // platform-api
 #include <ubuntu/application/lifecycle_delegate.h>
@@ -54,18 +54,18 @@ static void aboutToStopCallback(UApplicationArchive *archive, void* context)
 {
     Q_UNUSED(archive)
     DASSERT(context != NULL);
-    UbuntuClientIntegration* integration = static_cast<UbuntuClientIntegration*>(context);
+    QMirClientClientIntegration* integration = static_cast<QMirClientClientIntegration*>(context);
     integration->inputContext()->hideInputPanel();
     QCoreApplication::postEvent(QCoreApplication::instance(),
                                 new QEvent(QEvent::ApplicationDeactivate));
 }
 
-UbuntuClientIntegration::UbuntuClientIntegration()
+QMirClientClientIntegration::QMirClientClientIntegration()
     : QPlatformIntegration()
-    , mNativeInterface(new UbuntuNativeInterface)
+    , mNativeInterface(new QMirClientNativeInterface)
     , mFontDb(new QGenericUnixFontDatabase)
-    , mServices(new UbuntuPlatformServices)
-    , mClipboard(new UbuntuClipboard)
+    , mServices(new QMirClientPlatformServices)
+    , mClipboard(new QMirClientClipboard)
     , mScaleFactor(1.0)
 {
     setupOptions();
@@ -75,17 +75,17 @@ UbuntuClientIntegration::UbuntuClientIntegration()
     mInstance = u_application_instance_new_from_description_with_options(mDesc, mOptions);
 
     if (mInstance == nullptr)
-        qFatal("UbuntuClientIntegration: connection to Mir server failed. Check that a Mir server is\n"
+        qFatal("QMirClientClientIntegration: connection to Mir server failed. Check that a Mir server is\n"
                "running, and the correct socket is being used and is accessible. The shell may have\n"
                "rejected the incoming connection, so check its log file");
 
     // Create default screen.
-    mScreen = new UbuntuScreen(u_application_instance_get_mir_connection(mInstance));
+    mScreen = new QMirClientScreen(u_application_instance_get_mir_connection(mInstance));
     screenAdded(mScreen);
 
     // Initialize input.
     if (qEnvironmentVariableIsEmpty("QTUBUNTU_NO_INPUT")) {
-        mInput = new UbuntuInput(this);
+        mInput = new QMirClientInput(this);
         mInputContext = QPlatformInputContextFactory::create();
     } else {
         mInput = nullptr;
@@ -106,7 +106,7 @@ UbuntuClientIntegration::UbuntuClientIntegration()
     mScaleFactor = static_cast<qreal>(gridUnit) / defaultGridUnit;
 }
 
-UbuntuClientIntegration::~UbuntuClientIntegration()
+QMirClientClientIntegration::~QMirClientClientIntegration()
 {
     delete mInput;
     delete mInputContext;
@@ -114,12 +114,12 @@ UbuntuClientIntegration::~UbuntuClientIntegration()
     delete mServices;
 }
 
-QPlatformServices *UbuntuClientIntegration::services() const
+QPlatformServices *QMirClientClientIntegration::services() const
 {
     return mServices;
 }
 
-void UbuntuClientIntegration::setupOptions()
+void QMirClientClientIntegration::setupOptions()
 {
     QStringList args = QCoreApplication::arguments();
     int argc = args.size() + 1;
@@ -135,7 +135,7 @@ void UbuntuClientIntegration::setupOptions()
     delete [] argv;
 }
 
-void UbuntuClientIntegration::setupDescription()
+void QMirClientClientIntegration::setupDescription()
 {
     mDesc = u_application_description_new();
     UApplicationId* id = u_application_id_new_from_stringn("QtUbuntu", 8);
@@ -148,20 +148,20 @@ void UbuntuClientIntegration::setupDescription()
     u_application_description_set_application_lifecycle_delegate(mDesc, delegate);
 }
 
-QPlatformWindow* UbuntuClientIntegration::createPlatformWindow(QWindow* window) const
+QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window) const
 {
-    return const_cast<UbuntuClientIntegration*>(this)->createPlatformWindow(window);
+    return const_cast<QMirClientClientIntegration*>(this)->createPlatformWindow(window);
 }
 
-QPlatformWindow* UbuntuClientIntegration::createPlatformWindow(QWindow* window)
+QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window)
 {
-    QPlatformWindow* platformWindow = new UbuntuWindow(
-            window, mClipboard, static_cast<UbuntuScreen*>(mScreen), mInput, u_application_instance_get_mir_connection(mInstance));
+    QPlatformWindow* platformWindow = new QMirClientWindow(
+            window, mClipboard, static_cast<QMirClientScreen*>(mScreen), mInput, u_application_instance_get_mir_connection(mInstance));
     platformWindow->requestActivateWindow();
     return platformWindow;
 }
 
-bool UbuntuClientIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps:
@@ -186,41 +186,41 @@ bool UbuntuClientIntegration::hasCapability(QPlatformIntegration::Capability cap
     }
 }
 
-QAbstractEventDispatcher *UbuntuClientIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QMirClientClientIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
 }
 
-QPlatformBackingStore* UbuntuClientIntegration::createPlatformBackingStore(QWindow* window) const
+QPlatformBackingStore* QMirClientClientIntegration::createPlatformBackingStore(QWindow* window) const
 {
-    return new UbuntuBackingStore(window);
+    return new QMirClientBackingStore(window);
 }
 
-QPlatformOpenGLContext* UbuntuClientIntegration::createPlatformOpenGLContext(
+QPlatformOpenGLContext* QMirClientClientIntegration::createPlatformOpenGLContext(
         QOpenGLContext* context) const
 {
-    return const_cast<UbuntuClientIntegration*>(this)->createPlatformOpenGLContext(context);
+    return const_cast<QMirClientClientIntegration*>(this)->createPlatformOpenGLContext(context);
 }
 
-QPlatformOpenGLContext* UbuntuClientIntegration::createPlatformOpenGLContext(
+QPlatformOpenGLContext* QMirClientClientIntegration::createPlatformOpenGLContext(
         QOpenGLContext* context)
 {
-    return new UbuntuOpenGLContext(static_cast<UbuntuScreen*>(context->screen()->handle()),
-                                   static_cast<UbuntuOpenGLContext*>(context->shareHandle()));
+    return new QMirClientOpenGLContext(static_cast<QMirClientScreen*>(context->screen()->handle()),
+                                   static_cast<QMirClientOpenGLContext*>(context->shareHandle()));
 }
 
-QStringList UbuntuClientIntegration::themeNames() const
+QStringList QMirClientClientIntegration::themeNames() const
 {
-    return QStringList(UbuntuTheme::name);
+    return QStringList(QMirClientTheme::name);
 }
 
-QPlatformTheme* UbuntuClientIntegration::createPlatformTheme(const QString& name) const
+QPlatformTheme* QMirClientClientIntegration::createPlatformTheme(const QString& name) const
 {
     Q_UNUSED(name);
-    return new UbuntuTheme;
+    return new QMirClientTheme;
 }
 
-QVariant UbuntuClientIntegration::styleHint(StyleHint hint) const
+QVariant QMirClientClientIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
         case QPlatformIntegration::StartDragDistance: {
@@ -237,7 +237,7 @@ QVariant UbuntuClientIntegration::styleHint(StyleHint hint) const
     return QPlatformIntegration::styleHint(hint);
 }
 
-QPlatformClipboard* UbuntuClientIntegration::clipboard() const
+QPlatformClipboard* QMirClientClientIntegration::clipboard() const
 {
     return mClipboard.data();
 }

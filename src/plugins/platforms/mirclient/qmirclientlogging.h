@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QUBUNTULOGGING_H
-#define QUBUNTULOGGING_H
+#ifndef QMIRCLIENTLOGGING_H
+#define QMIRCLIENTLOGGING_H
 
 // Logging and assertion macros.
 #define LOG(...) qDebug(__VA_ARGS__)
@@ -36,4 +36,4 @@
 #define DNOT_REACHED() qt_noop()
 #endif
 
-#endif  // QUBUNTULOGGING_H
+#endif  // QMIRCLIENTLOGGING_H

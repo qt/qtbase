@@ -14,32 +14,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ORIENTATIONCHANGEEVENT_P_H
-#define ORIENTATIONCHANGEEVENT_P_H
+#ifndef QMIRCLIENTPLATFORMSERVICES_H
+#define QMIRCLIENTPLATFORMSERVICES_H
 
-#include <QEvent>
-#include "logging.h"
+#include <qpa/qplatformservices.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
-class OrientationChangeEvent : public QEvent {
+class QMirClientPlatformServices : public QPlatformServices {
 public:
-    enum Orientation {
-        Undefined = 0,
-        TopUp,
-        TopDown,
-        LeftUp,
-        RightUp,
-        FaceUp,
-        FaceDown
-    };
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
 
-    OrientationChangeEvent(QEvent::Type type, Orientation orientation)
-        : QEvent(type)
-        , mOrientation(orientation)
-    {
-    }
-
-    static const QEvent::Type mType;
-    Orientation mOrientation;
+private:
+    bool callDispatcher(const QUrl &url);
 };
 
-#endif // ORIENTATIONCHANGEEVENT_P_H
+#endif // QMIRCLIENTPLATFORMSERVICES_H

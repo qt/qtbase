@@ -14,30 +14,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_INPUT_H
-#define UBUNTU_INPUT_H
+#ifndef QMIRCLIENTINPUT_H
+#define QMIRCLIENTINPUT_H
 
 // Qt
 #include <qpa/qwindowsysteminterface.h>
 
 #include <mir_toolkit/mir_client_library.h>
 
-class UbuntuClientIntegration;
-class UbuntuWindow;
+class QMirClientClientIntegration;
+class QMirClientWindow;
 
-class UbuntuInput : public QObject
+class QMirClientInput : public QObject
 {
     Q_OBJECT
 
 public:
-    UbuntuInput(UbuntuClientIntegration* integration);
-    virtual ~UbuntuInput();
+    QMirClientInput(QMirClientClientIntegration* integration);
+    virtual ~QMirClientInput();
 
     // QObject methods.
     void customEvent(QEvent* event) override;
 
-    void postEvent(UbuntuWindow* window, const MirEvent *event);
-    UbuntuClientIntegration* integration() const { return mIntegration; }
+    void postEvent(QMirClientWindow* window, const MirEvent *event);
+    QMirClientClientIntegration* integration() const { return mIntegration; }
 
 protected:
     void dispatchKeyEvent(QWindow *window, const MirInputEvent *event);
@@ -48,10 +48,10 @@ protected:
     void dispatchOrientationEvent(QWindow* window, const MirOrientationEvent *event);
 
 private:
-    UbuntuClientIntegration* mIntegration;
+    QMirClientClientIntegration* mIntegration;
     QTouchDevice* mTouchDevice;
     const QByteArray mEventFilterType;
     const QEvent::Type mEventType;
 };
 
-#endif // UBUNTU_INPUT_H
+#endif // QMIRCLIENTINPUT_H

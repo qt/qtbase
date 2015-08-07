@@ -14,17 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_OPENGL_CONTEXT_H
-#define UBUNTU_OPENGL_CONTEXT_H
+#ifndef QMIRCLIENTGLCONTEXT_H
+#define QMIRCLIENTGLCONTEXT_H
 
 #include <qpa/qplatformopenglcontext.h>
-#include "screen.h"
+#include "qmirclientscreen.h"
 
-class UbuntuOpenGLContext : public QPlatformOpenGLContext
+class QMirClientOpenGLContext : public QPlatformOpenGLContext
 {
 public:
-    UbuntuOpenGLContext(UbuntuScreen* screen, UbuntuOpenGLContext* share);
-    virtual ~UbuntuOpenGLContext();
+    QMirClientOpenGLContext(QMirClientScreen* screen, QMirClientOpenGLContext* share);
+    virtual ~QMirClientOpenGLContext();
 
     // QPlatformOpenGLContext methods.
     QSurfaceFormat format() const override { return mScreen->surfaceFormat(); }
@@ -37,9 +37,9 @@ public:
     EGLContext eglContext() const { return mEglContext; }
 
 private:
-    UbuntuScreen* mScreen;
+    QMirClientScreen* mScreen;
     EGLContext mEglContext;
     EGLDisplay mEglDisplay;
 };
 
-#endif // UBUNTU_OPENGL_CONTEXT_H
+#endif // QMIRCLIENTGLCONTEXT_H

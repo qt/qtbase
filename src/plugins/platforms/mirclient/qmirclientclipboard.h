@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_CLIPBOARD_H
-#define UBUNTU_CLIPBOARD_H
+#ifndef QMIRCLIENTCLIPBOARD_H
+#define QMIRCLIENTCLIPBOARD_H
 
 #include <qpa/qplatformclipboard.h>
 
@@ -24,12 +24,12 @@
 class QDBusInterface;
 class QDBusPendingCallWatcher;
 
-class UbuntuClipboard : public QObject, public QPlatformClipboard
+class QMirClientClipboard : public QObject, public QPlatformClipboard
 {
     Q_OBJECT
 public:
-    UbuntuClipboard();
-    virtual ~UbuntuClipboard();
+    QMirClientClipboard();
+    virtual ~QMirClientClipboard();
 
     // QPlatformClipboard methods.
     QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
@@ -64,4 +64,4 @@ private:
     bool mDBusSetupDone;
 };
 
-#endif // UBUNTU_CLIPBOARD_H
+#endif // QMIRCLIENTCLIPBOARD_H

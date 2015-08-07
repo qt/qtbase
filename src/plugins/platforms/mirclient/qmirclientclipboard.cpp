@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "clipboard.h"
+#include "qmirclientclipboard.h"
 
 #include <QtCore/QMimeData>
 #include <QtCore/QStringList>
@@ -44,7 +44,7 @@ const int maxBufferSize = 4 * 1024 * 1024;  // 4 Mb
 
 }
 
-UbuntuClipboard::UbuntuClipboard()
+QMirClientClipboard::QMirClientClipboard()
     : mMimeData(new QMimeData)
     , mIsOutdated(true)
     , mUpdatesDisabled(false)
@@ -52,12 +52,12 @@ UbuntuClipboard::UbuntuClipboard()
 {
 }
 
-UbuntuClipboard::~UbuntuClipboard()
+QMirClientClipboard::~QMirClientClipboard()
 {
     delete mMimeData;
 }
 
-void UbuntuClipboard::requestDBusClipboardContents()
+void QMirClientClipboard::requestDBusClipboardContents()
 {
     if (!mDBusSetupDone) {
         setupDBus();
@@ -74,13 +74,13 @@ void UbuntuClipboard::requestDBusClipboardContents()
                      this, SLOT(onDBusClipboardGetContentsFinished(QDBusPendingCallWatcher*)));
 }
 
-void UbuntuClipboard::onDBusClipboardGetContentsFinished(QDBusPendingCallWatcher* call)
+void QMirClientClipboard::onDBusClipboardGetContentsFinished(QDBusPendingCallWatcher* call)
 {
     Q_ASSERT(call == mPendingGetContentsCall.data());
 
     QDBusPendingReply<QByteArray> reply = *call;
     if (reply.isError()) {
-        qCritical("UbuntuClipboard - Failed to get system clipboard contents via D-Bus. %s, %s",
+        qCritical("QMirClientClipboard - Failed to get system clipboard contents via D-Bus. %s, %s",
                 qPrintable(reply.error().name()), qPrintable(reply.error().message()));
         // TODO: Might try again later a number of times...
     } else {
@@ -90,18 +90,18 @@ void UbuntuClipboard::onDBusClipboardGetContentsFinished(QDBusPendingCallWatcher
     call->deleteLater();
 }
 
-void UbuntuClipboard::onDBusClipboardSetContentsFinished(QDBusPendingCallWatcher *call)
+void QMirClientClipboard::onDBusClipboardSetContentsFinished(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<void> reply = *call;
     if (reply.isError()) {
-        qCritical("UbuntuClipboard - Failed to set the system clipboard contents via D-Bus. %s, %s",
+        qCritical("QMirClientClipboard - Failed to set the system clipboard contents via D-Bus. %s, %s",
                 qPrintable(reply.error().name()), qPrintable(reply.error().message()));
         // TODO: Might try again later a number of times...
     }
     call->deleteLater();
 }
 
-void UbuntuClipboard::updateMimeData(const QByteArray &serializedMimeData)
+void QMirClientClipboard::updateMimeData(const QByteArray &serializedMimeData)
 {
     if (mUpdatesDisabled)
         return;
@@ -113,11 +113,11 @@ void UbuntuClipboard::updateMimeData(const QByteArray &serializedMimeData)
         mIsOutdated = false;
         emitChanged(QClipboard::Clipboard);
     } else {
-        qWarning("UbuntuClipboard - Got invalid serialized mime data. Ignoring it.");
+        qWarning("QMirClientClipboard - Got invalid serialized mime data. Ignoring it.");
     }
 }
 
-void UbuntuClipboard::setupDBus()
+void QMirClientClipboard::setupDBus()
 {
     QDBusConnection dbusConnection = QDBusConnection::sessionBus();
 
@@ -128,7 +128,7 @@ void UbuntuClipboard::setupDBus()
             "ContentsChanged",
             this, SLOT(updateMimeData(QByteArray)));
     if (!ok) {
-        qCritical("UbuntuClipboard - Failed to connect to ContentsChanged signal form the D-Bus system clipboard.");
+        qCritical("QMirClientClipboard - Failed to connect to ContentsChanged signal form the D-Bus system clipboard.");
     }
 
     mDBusClipboard = new QDBusInterface("com.canonical.QtMir",
@@ -139,7 +139,7 @@ void UbuntuClipboard::setupDBus()
     mDBusSetupDone = true;
 }
 
-QByteArray UbuntuClipboard::serializeMimeData(QMimeData *mimeData) const
+QByteArray QMirClientClipboard::serializeMimeData(QMimeData *mimeData) const
 {
     const QStringList formats = mimeData->formats();
     const int formatCount = qMin(formats.size(), maxFormatsCount);
@@ -173,14 +173,14 @@ QByteArray UbuntuClipboard::serializeMimeData(QMimeData *mimeData) const
             }
         }
     } else {
-        qWarning("UbuntuClipboard: Not sending contents (%d bytes) to the global clipboard as it's"
+        qWarning("QMirClientClipboard: Not sending contents (%d bytes) to the global clipboard as it's"
                 " bigger than the maximum allowed size of %d bytes", bufferSize, maxBufferSize);
     }
 
     return serializedMimeData;
 }
 
-QMimeData *UbuntuClipboard::deserializeMimeData(const QByteArray &serializedMimeData) const
+QMimeData *QMirClientClipboard::deserializeMimeData(const QByteArray &serializedMimeData) const
 {
     if (static_cast<std::size_t>(serializedMimeData.size()) < sizeof(int)) {
         // Data is invalid
@@ -213,7 +213,7 @@ QMimeData *UbuntuClipboard::deserializeMimeData(const QByteArray &serializedMime
     return mimeData;
 }
 
-QMimeData* UbuntuClipboard::mimeData(QClipboard::Mode mode)
+QMimeData* QMirClientClipboard::mimeData(QClipboard::Mode mode)
 {
     if (mode != QClipboard::Clipboard)
         return nullptr;
@@ -230,7 +230,7 @@ QMimeData* UbuntuClipboard::mimeData(QClipboard::Mode mode)
     return mMimeData;
 }
 
-void UbuntuClipboard::setMimeData(QMimeData* mimeData, QClipboard::Mode mode)
+void QMirClientClipboard::setMimeData(QMimeData* mimeData, QClipboard::Mode mode)
 {
     if (mode != QClipboard::Clipboard)
         return;
@@ -253,18 +253,18 @@ void UbuntuClipboard::setMimeData(QMimeData* mimeData, QClipboard::Mode mode)
     emitChanged(QClipboard::Clipboard);
 }
 
-bool UbuntuClipboard::supportsMode(QClipboard::Mode mode) const
+bool QMirClientClipboard::supportsMode(QClipboard::Mode mode) const
 {
     return mode == QClipboard::Clipboard;
 }
 
-bool UbuntuClipboard::ownsMode(QClipboard::Mode mode) const
+bool QMirClientClipboard::ownsMode(QClipboard::Mode mode) const
 {
     Q_UNUSED(mode);
     return false;
 }
 
-void UbuntuClipboard::setDBusClipboardContents(const QByteArray &clipboardContents)
+void QMirClientClipboard::setDBusClipboardContents(const QByteArray &clipboardContents)
 {
     if (!mPendingSetContentsCall.isNull()) {
         // Ignore any previous set call as we are going to overwrite it anyway

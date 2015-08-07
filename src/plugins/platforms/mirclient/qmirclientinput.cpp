@@ -15,13 +15,13 @@
  */
 
 // Local
-#include "input.h"
-#include "integration.h"
-#include "nativeinterface.h"
-#include "screen.h"
-#include "window.h"
-#include "logging.h"
-#include "orientationchangeevent_p.h"
+#include "qmirclientinput.h"
+#include "qmirclientintegration.h"
+#include "qmirclientnativeinterface.h"
+#include "qmirclientscreen.h"
+#include "qmirclientwindow.h"
+#include "qmirclientlogging.h"
+#include "qmirclientorientationchangeevent_p.h"
 
 // Qt
 #if !defined(QT_NO_DEBUG)
@@ -120,26 +120,26 @@ static const uint32_t KeyTable[] = {
     0,                          0
 };
 
-class UbuntuEvent : public QEvent
+class QMirClientEvent : public QEvent
 {
 public:
-    UbuntuEvent(UbuntuWindow* window, const MirEvent *event, QEvent::Type type)
+    QMirClientEvent(QMirClientWindow* window, const MirEvent *event, QEvent::Type type)
         : QEvent(type), window(window) {
         nativeEvent = mir_event_ref(event);
     }
-    ~UbuntuEvent()
+    ~QMirClientEvent()
     {
         mir_event_unref(nativeEvent);
     }
 
-    QPointer<UbuntuWindow> window;
+    QPointer<QMirClientWindow> window;
     const MirEvent *nativeEvent;
 };
 
-UbuntuInput::UbuntuInput(UbuntuClientIntegration* integration)
+QMirClientInput::QMirClientInput(QMirClientClientIntegration* integration)
     : QObject(nullptr)
     , mIntegration(integration)
-    , mEventFilterType(static_cast<UbuntuNativeInterface*>(
+    , mEventFilterType(static_cast<QMirClientNativeInterface*>(
         integration->nativeInterface())->genericEventFilterType())
     , mEventType(static_cast<QEvent::Type>(QEvent::registerEventType()))
 {
@@ -152,7 +152,7 @@ UbuntuInput::UbuntuInput(UbuntuClientIntegration* integration)
     QWindowSystemInterface::registerTouchDevice(mTouchDevice);
 }
 
-UbuntuInput::~UbuntuInput()
+QMirClientInput::~QMirClientInput()
 {
   // Qt will take care of deleting mTouchDevice.
 }
@@ -185,10 +185,10 @@ static const char* nativeEventTypeToStr(MirEventType t)
 }
 #endif // LOG_EVENTS != 0
 
-void UbuntuInput::customEvent(QEvent* event)
+void QMirClientInput::customEvent(QEvent* event)
 {
     DASSERT(QThread::currentThread() == thread());
-    UbuntuEvent* ubuntuEvent = static_cast<UbuntuEvent*>(event);
+    QMirClientEvent* ubuntuEvent = static_cast<QMirClientEvent*>(event);
     const MirEvent *nativeEvent = ubuntuEvent->nativeEvent;
 
     if ((ubuntuEvent->window == nullptr) || (ubuntuEvent->window->window() == nullptr)) {
@@ -206,7 +206,7 @@ void UbuntuInput::customEvent(QEvent* event)
     }
 
     #if (LOG_EVENTS != 0)
-    LOG("UbuntuInput::customEvent(type=%s)", nativeEventTypeToStr(mir_event_get_type(nativeEvent)));
+    LOG("QMirClientInput::customEvent(type=%s)", nativeEventTypeToStr(mir_event_get_type(nativeEvent)));
     #endif
 
     // Event dispatching.
@@ -249,21 +249,21 @@ void UbuntuInput::customEvent(QEvent* event)
     }
 }
 
-void UbuntuInput::postEvent(UbuntuWindow *platformWindow, const MirEvent *event)
+void QMirClientInput::postEvent(QMirClientWindow *platformWindow, const MirEvent *event)
 {
     QWindow *window = platformWindow->window();
 
-    QCoreApplication::postEvent(this, new UbuntuEvent(
+    QCoreApplication::postEvent(this, new QMirClientEvent(
             platformWindow, event, mEventType));
 
     if ((window->flags().testFlag(Qt::WindowTransparentForInput)) && window->parent()) {
-        QCoreApplication::postEvent(this, new UbuntuEvent(
-                    static_cast<UbuntuWindow*>(platformWindow->QPlatformWindow::parent()),
+        QCoreApplication::postEvent(this, new QMirClientEvent(
+                    static_cast<QMirClientWindow*>(platformWindow->QPlatformWindow::parent()),
                     event, mEventType));
     }
 }
 
-void UbuntuInput::dispatchInputEvent(QWindow *window, const MirInputEvent *ev)
+void QMirClientInput::dispatchInputEvent(QWindow *window, const MirInputEvent *ev)
 {
     switch (mir_input_event_get_type(ev))
     {
@@ -281,7 +281,7 @@ void UbuntuInput::dispatchInputEvent(QWindow *window, const MirInputEvent *ev)
     }
 }
 
-void UbuntuInput::dispatchTouchEvent(QWindow *window, const MirInputEvent *ev)
+void QMirClientInput::dispatchTouchEvent(QWindow *window, const MirInputEvent *ev)
 {
     const MirTouchEvent *tev = mir_input_event_get_touch_event(ev);
 
@@ -369,7 +369,7 @@ Qt::KeyboardModifiers qt_modifiers_from_mir(MirInputEventModifiers modifiers)
 }
 }
 
-void UbuntuInput::dispatchKeyEvent(QWindow *window, const MirInputEvent *event)
+void QMirClientInput::dispatchKeyEvent(QWindow *window, const MirInputEvent *event)
 {
     const MirKeyboardEvent *key_event = mir_input_event_get_keyboard_event(event);
 
@@ -420,7 +420,7 @@ Qt::MouseButtons extract_buttons(const MirPointerEvent *pev)
 }
 }
 
-void UbuntuInput::dispatchPointerEvent(QWindow *window, const MirInputEvent *ev)
+void QMirClientInput::dispatchPointerEvent(QWindow *window, const MirInputEvent *ev)
 {
     auto timestamp = mir_input_event_get_event_time(ev) / 1000000;
 
@@ -457,7 +457,7 @@ static const char* nativeOrientationDirectionToStr(MirOrientation orientation)
 }
 #endif
 
-void UbuntuInput::dispatchOrientationEvent(QWindow *window, const MirOrientationEvent *event)
+void QMirClientInput::dispatchOrientationEvent(QWindow *window, const MirOrientationEvent *event)
 {
     MirOrientation mir_orientation = mir_orientation_event_get_direction(event);
     #if (LOG_EVENTS != 0)
@@ -493,7 +493,7 @@ void UbuntuInput::dispatchOrientationEvent(QWindow *window, const MirOrientation
     // notifying Qt of the actual orientation change - done to prevent multiple Windows each creating
     // an identical orientation change event and passing it directly to Qt.
     // [Platform]Screen can also factor in the native orientation.
-    QCoreApplication::postEvent(static_cast<UbuntuScreen*>(window->screen()->handle()),
+    QCoreApplication::postEvent(static_cast<QMirClientScreen*>(window->screen()->handle()),
                                 new OrientationChangeEvent(OrientationChangeEvent::mType, orientation));
 }
 

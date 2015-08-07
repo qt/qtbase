@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_BACKING_STORE_H
-#define UBUNTU_BACKING_STORE_H
+#ifndef QMIRCLIENTBACKINGSTORE_H
+#define QMIRCLIENTBACKINGSTORE_H
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -23,11 +23,11 @@ class QOpenGLContext;
 class QOpenGLTexture;
 class QOpenGLTextureBlitter;
 
-class UbuntuBackingStore : public QPlatformBackingStore
+class QMirClientBackingStore : public QPlatformBackingStore
 {
 public:
-    UbuntuBackingStore(QWindow* window);
-    virtual ~UbuntuBackingStore();
+    QMirClientBackingStore(QWindow* window);
+    virtual ~QMirClientBackingStore();
 
     // QPlatformBackingStore methods.
     void beginPaint(const QRegion&) override;
@@ -46,4 +46,4 @@ private:
     QRegion mDirty;
 };
 
-#endif // UBUNTU_BACKING_STORE_H
+#endif // QMIRCLIENTBACKINGSTORE_H

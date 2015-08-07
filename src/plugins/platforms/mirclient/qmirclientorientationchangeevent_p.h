@@ -14,20 +14,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_PLATFORM_SERVICES_H
-#define UBUNTU_PLATFORM_SERVICES_H
+#ifndef QMIRCLIENTORIENTATIONCHANGEEVENT_P_H
+#define QMIRCLIENTORIENTATIONCHANGEEVENT_P_H
 
-#include <qpa/qplatformservices.h>
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QEvent>
+#include "qmirclientlogging.h"
 
-class UbuntuPlatformServices : public QPlatformServices {
+class OrientationChangeEvent : public QEvent {
 public:
-    bool openUrl(const QUrl &url) override;
-    bool openDocument(const QUrl &url) override;
+    enum Orientation {
+        Undefined = 0,
+        TopUp,
+        TopDown,
+        LeftUp,
+        RightUp,
+        FaceUp,
+        FaceDown
+    };
 
-private:
-    bool callDispatcher(const QUrl &url);
+    OrientationChangeEvent(QEvent::Type type, Orientation orientation)
+        : QEvent(type)
+        , mOrientation(orientation)
+    {
+    }
+
+    static const QEvent::Type mType;
+    Orientation mOrientation;
 };
 
-#endif // UBUNTU_PLATFORM_SERVICES_H
+#endif // QMIRCLIENTORIENTATIONCHANGEEVENT_P_H

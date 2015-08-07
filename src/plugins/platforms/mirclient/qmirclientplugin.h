@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_CLIENT_PLUGIN_H
-#define UBUNTU_CLIENT_PLUGIN_H
+#ifndef QMIRCLIENTPLUGIN_H
+#define QMIRCLIENTPLUGIN_H
 
 #include <qpa/qplatformintegrationplugin.h>
 
-class UbuntuMirClientIntegrationPlugin : public QPlatformIntegrationPlugin
+class QMirClientIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "mirclient.json")
@@ -29,4 +29,4 @@ public:
     QPlatformIntegration* create(const QString&, const QStringList&);
 };
 
-#endif // UBUNTU_CLIENT_PLUGIN_H
+#endif // QMIRCLIENTPLUGIN_H

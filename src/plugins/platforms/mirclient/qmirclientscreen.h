@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_SCREEN_H
-#define UBUNTU_SCREEN_H
+#ifndef QMIRCLIENTSCREEN_H
+#define QMIRCLIENTSCREEN_H
 
 #include <qpa/qplatformscreen.h>
 #include <QSurfaceFormat>
@@ -23,12 +23,12 @@
 
 struct MirConnection;
 
-class UbuntuScreen : public QObject, public QPlatformScreen
+class QMirClientScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    UbuntuScreen(MirConnection *connection);
-    virtual ~UbuntuScreen();
+    QMirClientScreen(MirConnection *connection);
+    virtual ~QMirClientScreen();
 
     // QPlatformScreen methods.
     QImage::Format format() const override { return mFormat; }
@@ -60,4 +60,4 @@ private:
     EGLNativeDisplayType mEglNativeDisplay;
 };
 
-#endif // UBUNTU_SCREEN_H
+#endif // QMIRCLIENTSCREEN_H

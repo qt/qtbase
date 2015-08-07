@@ -14,27 +14,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "plugin.h"
-#include "integration.h"
+#ifndef QMIRCLIENTTHEME_H
+#define QMIRCLIENTTHEME_H
 
-QStringList UbuntuMirClientIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "mirclient";
-    return list;
-}
+#include <QtPlatformSupport/private/qgenericunixthemes_p.h>
 
-QPlatformIntegration* UbuntuMirClientIntegrationPlugin::create(const QString &system,
-                                                               const QStringList &)
+class QMirClientTheme : public QGenericUnixTheme
 {
-    if (system.toLower() == "mirclient") {
-#ifdef PLATFORM_API_TOUCH
-        setenv("UBUNTU_PLATFORM_API_BACKEND", "touch_mirclient", 1);
-#else
-        setenv("UBUNTU_PLATFORM_API_BACKEND", "desktop_mirclient", 1);
-#endif
-        return new UbuntuClientIntegration;
-    } else {
-        return 0;
-    }
-}
+public:
+    static const char* name;
+    QMirClientTheme();
+    virtual ~QMirClientTheme();
+
+    // From QPlatformTheme
+    QVariant themeHint(ThemeHint hint) const override;
+};
+
+#endif // QMIRCLIENTTHEME_H

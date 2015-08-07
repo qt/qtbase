@@ -14,15 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "backingstore.h"
-#include "logging.h"
+#include "qmirclientbackingstore.h"
+#include "qmirclientlogging.h"
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLTexture>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/private/qopengltextureblitter_p.h>
 #include <QtGui/qopenglfunctions.h>
 
-UbuntuBackingStore::UbuntuBackingStore(QWindow* window)
+QMirClientBackingStore::QMirClientBackingStore(QWindow* window)
     : QPlatformBackingStore(window)
     , mContext(new QOpenGLContext)
     , mTexture(new QOpenGLTexture(QOpenGLTexture::Target2D))
@@ -35,11 +35,11 @@ UbuntuBackingStore::UbuntuBackingStore(QWindow* window)
     window->setSurfaceType(QSurface::OpenGLSurface);
 }
 
-UbuntuBackingStore::~UbuntuBackingStore()
+QMirClientBackingStore::~QMirClientBackingStore()
 {
 }
 
-void UbuntuBackingStore::flush(QWindow* window, const QRegion& region, const QPoint& offset)
+void QMirClientBackingStore::flush(QWindow* window, const QRegion& region, const QPoint& offset)
 {
     Q_UNUSED(region);
     Q_UNUSED(offset);
@@ -59,7 +59,7 @@ void UbuntuBackingStore::flush(QWindow* window, const QRegion& region, const QPo
     mContext->swapBuffers(window);
 }
 
-void UbuntuBackingStore::updateTexture()
+void QMirClientBackingStore::updateTexture()
 {
     if (mDirty.isNull())
         return;
@@ -108,12 +108,12 @@ void UbuntuBackingStore::updateTexture()
 }
 
 
-void UbuntuBackingStore::beginPaint(const QRegion& region)
+void QMirClientBackingStore::beginPaint(const QRegion& region)
 {
     mDirty |= region;
 }
 
-void UbuntuBackingStore::resize(const QSize& size, const QRegion& /*staticContents*/)
+void QMirClientBackingStore::resize(const QSize& size, const QRegion& /*staticContents*/)
 {
     mImage = QImage(size, QImage::Format_RGB32);
 
@@ -121,7 +121,7 @@ void UbuntuBackingStore::resize(const QSize& size, const QRegion& /*staticConten
         mTexture->destroy();
 }
 
-QPaintDevice* UbuntuBackingStore::paintDevice()
+QPaintDevice* QMirClientBackingStore::paintDevice()
 {
     return &mImage;
 }

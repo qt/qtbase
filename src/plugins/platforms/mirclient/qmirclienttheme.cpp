@@ -14,21 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "theme.h"
+#include "qmirclienttheme.h"
 
 #include <QtCore/QVariant>
 
-const char *UbuntuTheme::name = "ubuntu";
+const char *QMirClientTheme::name = "ubuntu";
 
-UbuntuTheme::UbuntuTheme()
+QMirClientTheme::QMirClientTheme()
 {
 }
 
-UbuntuTheme::~UbuntuTheme()
+QMirClientTheme::~QMirClientTheme()
 {
 }
 
-QVariant UbuntuTheme::themeHint(ThemeHint hint) const
+QVariant QMirClientTheme::themeHint(ThemeHint hint) const
 {
     if (hint == QPlatformTheme::SystemIconThemeName) {
         QByteArray iconTheme = qgetenv("QTUBUNTU_ICON_THEME");

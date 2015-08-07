@@ -14,26 +14,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UBUNTU_CLIENT_INTEGRATION_H
-#define UBUNTU_CLIENT_INTEGRATION_H
+#ifndef QMIRCLIENTINTEGRATION_H
+#define QMIRCLIENTINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
 #include <QSharedPointer>
 
-#include "platformservices.h"
+#include "qmirclientplatformservices.h"
 
 // platform-api
 #include <ubuntu/application/description.h>
 #include <ubuntu/application/instance.h>
 
-class UbuntuClipboard;
-class UbuntuInput;
-class UbuntuScreen;
+class QMirClientClipboard;
+class QMirClientInput;
+class QMirClientScreen;
 
-class UbuntuClientIntegration : public QPlatformIntegration {
+class QMirClientClientIntegration : public QPlatformIntegration {
 public:
-    UbuntuClientIntegration();
-    virtual ~UbuntuClientIntegration();
+    QMirClientClientIntegration();
+    virtual ~QMirClientClientIntegration();
 
     // QPlatformIntegration methods.
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
@@ -52,7 +52,7 @@ public:
 
     QPlatformOpenGLContext* createPlatformOpenGLContext(QOpenGLContext* context);
     QPlatformWindow* createPlatformWindow(QWindow* window);
-    UbuntuScreen* screen() const { return mScreen; }
+    QMirClientScreen* screen() const { return mScreen; }
 
 private:
     void setupOptions();
@@ -61,12 +61,12 @@ private:
     QPlatformNativeInterface* mNativeInterface;
     QPlatformFontDatabase* mFontDb;
 
-    UbuntuPlatformServices* mServices;
+    QMirClientPlatformServices* mServices;
 
-    UbuntuScreen* mScreen;
-    UbuntuInput* mInput;
+    QMirClientScreen* mScreen;
+    QMirClientInput* mInput;
     QPlatformInputContext* mInputContext;
-    QSharedPointer<UbuntuClipboard> mClipboard;
+    QSharedPointer<QMirClientClipboard> mClipboard;
     qreal mScaleFactor;
 
     // Platform API stuff
@@ -75,4 +75,4 @@ private:
     UApplicationInstance* mInstance;
 };
 
-#endif // UBUNTU_CLIENT_INTEGRATION_H
+#endif // QMIRCLIENTINTEGRATION_H
