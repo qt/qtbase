@@ -689,6 +689,7 @@ CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
+CFG_MIRCLIENT=auto
 CFG_LIBUDEV=auto
 CFG_LIBINPUT=auto
 CFG_OBSOLETE_WAYLAND=no
@@ -1850,6 +1851,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    mirclient)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_MIRCLIENT="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LIBUDEV="$VAL"
@@ -2649,6 +2657,9 @@ Additional options:
 
     -no-kms ............ Do not compile KMS support.
  *  -kms ............... Compile KMS support (Requires EGL).
+
+ *  -no-mirclient....... Do not compile Mir client support.
+    -mirclient.......... Compile Mir client support.
 
     -qpa <name> ......... Sets the default QPA platform (e.g xcb, cocoa, windows).
 
@@ -5269,6 +5280,7 @@ ORIG_CFG_EGLFS="$CFG_EGLFS"
 ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
 ORIG_CFG_LINUXFB="$CFG_LINUXFB"
 ORIG_CFG_KMS="$CFG_KMS"
+ORIG_CFG_MIRCLIENT="$CFG_MIRCLIENT"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -5551,6 +5563,20 @@ if [ "$CFG_KMS" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_MIRCLIENT" != "no" ]; then
+    if compileTest qpa/mirclient "Mir client"; then
+        CFG_MIRCLIENT=yes
+    elif [ "$CFG_MIRCLIENT" = "yes" ]; then
+        echo " Mir client support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_MIRCLIENT=no
+    fi
+fi
+
 # Detect libxkbcommon
 MIN_REQ_XKBCOMMON="0.4.1"
 # currently only xcb platform plugin supports building xkbcommon
@@ -5721,11 +5747,14 @@ fi
 if [ "$CFG_KMS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG kms"
 fi
+if [ "$CFG_MIRCLIENT" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG mirclient"
+fi
 
 if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]  && [ "$CFG_MIRCLIENT" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ]  || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
         echo " -no-qpa-platform-guard to configure. Doing this will"
@@ -7142,6 +7171,7 @@ report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
 report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
 report_support "      EGLFS X11 .........." "$CFG_EGL_X"
 report_support "    LinuxFB .............." "$CFG_LINUXFB"
+report_support "    Mir client............" "$CFG_MIRCLIENT"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
     report_support "      EGL on X ..........." "$CFG_EGL_X"
