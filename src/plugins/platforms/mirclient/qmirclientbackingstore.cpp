@@ -97,8 +97,6 @@ void QMirClientBackingStore::updateTexture()
     QRegion fixed;
     QRect imageRect = mImage.rect();
 
-    /* Following code taken from QEGLPlatformBackingStore under the terms of the Lesser GPL v2.1 licence
-     * Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies). */
     Q_FOREACH (const QRect &rect, mDirty.rects()) {
         // intersect with image rect to be sure
         QRect r = imageRect & rect;

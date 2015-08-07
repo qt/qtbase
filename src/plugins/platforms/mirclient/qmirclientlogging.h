@@ -40,7 +40,7 @@
 
 // Logging and assertion macros.
 #define LOG(...) qDebug(__VA_ARGS__)
-#define LOG_IF(cond,...) do { if (cond) qDebug(__VA_ARGS__); } while(0)
+#define LOG_IF(cond,...) do { if (cond) qDebug(__VA_ARGS__); } while (0)
 #define ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
 #define NOT_REACHED() qt_assert("Not reached!",__FILE__,__LINE__)
 
