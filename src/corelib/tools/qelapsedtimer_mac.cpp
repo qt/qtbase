@@ -59,8 +59,13 @@ static qint64 absoluteToNSecs(qint64 cpuTime)
 {
     if (info.denom == 0)
         mach_timebase_info(&info);
+#ifdef __LP64__
+    __uint128_t nsecs = static_cast<__uint128_t>(cpuTime) * info.numer / info.denom;
+    return static_cast<qint64>(nsecs);
+#else
     qint64 nsecs = cpuTime * info.numer / info.denom;
     return nsecs;
+#endif
 }
 
 static qint64 absoluteToMSecs(qint64 cpuTime)
