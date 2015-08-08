@@ -19,7 +19,6 @@ typedef ABI::Windows::Foundation::__FITypedEventHandler_2_Windows__CGraphics__CD
 
 namespace rx
 {
-long ConvertDipsToPixels(float dips);
 
 class CoreWindowNativeWindow : public InspectableNativeWindow, public std::enable_shared_from_this<CoreWindowNativeWindow>
 {
@@ -64,8 +63,7 @@ class CoreWindowSizeChangedHandler :
             ABI::Windows::Foundation::Size windowSize;
             if (SUCCEEDED(sizeChangedEventArgs->get_Size(&windowSize)))
             {
-                SIZE windowSizeInPixels = { ConvertDipsToPixels(windowSize.Width), ConvertDipsToPixels(windowSize.Height) };
-                host->setNewClientSize(windowSizeInPixels);
+                host->setNewClientSize(windowSize);
             }
         }
 

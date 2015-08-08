@@ -288,4 +288,25 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
 
     return result;
 }
+
+static float GetLogicalDpi()
+{
+    ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayProperties;
+    float dpi = 96.0f;
+
+    if (SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(), displayProperties.GetAddressOf())))
+    {
+        if (SUCCEEDED(displayProperties->get_LogicalDpi(&dpi)))
+        {
+            return dpi;
+        }
+    }
+    return dpi;
+}
+
+long ConvertDipsToPixels(float dips)
+{
+    static const float dipsPerInch = 96.0f;
+    return lround((dips * GetLogicalDpi() / dipsPerInch));
+}
 }
