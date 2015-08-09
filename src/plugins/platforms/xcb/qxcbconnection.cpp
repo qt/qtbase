@@ -55,7 +55,6 @@
 
 #include <algorithm>
 
-#include <dlfcn.h>
 #include <stdio.h>
 #include <errno.h>
 #include <xcb/shm.h>
@@ -75,6 +74,25 @@
 
 #ifdef XCB_USE_RENDER
 #include <xcb/render.h>
+#endif
+
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+static xcb_generic_event_t *local_xcb_poll_for_queued_event(xcb_connection_t *c)
+    __attribute__((weakref("xcb_poll_for_queued_event")));
+
+static inline void checkXcbPollForQueuedEvent()
+{ }
+#else
+#include <dlfcn.h>
+typedef xcb_generic_event_t * (*XcbPollForQueuedEventFunctionPointer)(xcb_connection_t *c);
+static XcbPollForQueuedEventFunctionPointer local_xcb_poll_for_queued_event;
+
+static inline void checkXcbPollForQueuedEvent()
+{
+#ifdef RTLD_DEFAULT
+    local_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
+#endif
+}
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -252,16 +270,32 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                         otherScreen->addVirtualSibling(screen);
                 m_screens << screen;
                 QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
+
+                // Windows which had null screens have already had expose events by now.
+                // They need to be told the screen is back, it's OK to render.
+                foreach (QWindow *window, QGuiApplication::topLevelWindows()) {
+                    QXcbWindow *xcbWin = static_cast<QXcbWindow*>(window->handle());
+                    if (xcbWin)
+                        xcbWin->maybeSetScreen(screen);
+                }
             }
             // else ignore disabled screens
         } else if (screen) {
             // Screen has been disabled -> remove
             if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
-                qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
-                m_screens.removeOne(screen);
-                foreach (QXcbScreen *otherScreen, m_screens)
-                    otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
-                QXcbIntegration::instance()->destroyScreen(screen);
+                xcb_randr_get_output_info_cookie_t outputInfoCookie =
+                    xcb_randr_get_output_info(xcb_connection(), output.output, output.config_timestamp);
+                QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
+                    xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
+                if (outputInfo->crtc == XCB_NONE) {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
+                    m_screens.removeOne(screen);
+                    foreach (QXcbScreen *otherScreen, m_screens)
+                        otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
+                    QXcbIntegration::instance()->destroyScreen(screen);
+                } else {
+                    qCDebug(lcQpaScreen) << "output" << screen->name() << "has been temporarily disabled for the mode switch";
+                }
             } else {
                 // Just update existing screen
                 screen->updateGeometry(output.config_timestamp);
@@ -1153,21 +1187,13 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
 
 QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
     : m_connection(connection)
-    , m_xcb_poll_for_queued_event(0)
 {
-#ifdef RTLD_DEFAULT
-    m_xcb_poll_for_queued_event = (XcbPollForQueuedEventFunctionPointer)dlsym(RTLD_DEFAULT, "xcb_poll_for_queued_event");
-#endif
-
-#ifdef Q_XCB_DEBUG
-    if (m_xcb_poll_for_queued_event)
-        qDebug("Using threaded event reader with xcb_poll_for_queued_event");
-#endif
+    checkXcbPollForQueuedEvent();
 }
 
 void QXcbEventReader::start()
 {
-    if (m_xcb_poll_for_queued_event) {
+    if (local_xcb_poll_for_queued_event) {
         connect(this, SIGNAL(eventPending()), m_connection, SLOT(processXcbEvents()), Qt::QueuedConnection);
         connect(this, SIGNAL(finished()), m_connection, SLOT(processXcbEvents()));
         QThread::start();
@@ -1193,7 +1219,7 @@ void QXcbEventReader::registerEventDispatcher(QAbstractEventDispatcher *dispatch
     // flush the xcb connection before the EventDispatcher is going to block
     // In the non-threaded case processXcbEvents is called before going to block,
     // which flushes the connection.
-    if (m_xcb_poll_for_queued_event)
+    if (local_xcb_poll_for_queued_event)
         connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(flush()));
 }
 
@@ -1203,7 +1229,7 @@ void QXcbEventReader::run()
     while (m_connection && (event = xcb_wait_for_event(m_connection->xcb_connection()))) {
         m_mutex.lock();
         addEvent(event);
-        while (m_connection && (event = m_xcb_poll_for_queued_event(m_connection->xcb_connection())))
+        while (m_connection && (event = local_xcb_poll_for_queued_event(m_connection->xcb_connection())))
             addEvent(event);
         m_mutex.unlock();
         emit eventPending();
@@ -1227,7 +1253,7 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
 QXcbEventArray *QXcbEventReader::lock()
 {
     m_mutex.lock();
-    if (!m_xcb_poll_for_queued_event) {
+    if (!local_xcb_poll_for_queued_event) {
         while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection->xcb_connection()))
             m_events << event;
     }

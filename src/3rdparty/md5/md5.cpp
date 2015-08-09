@@ -36,7 +36,7 @@ static void
 byteSwap(UWORD32 *buf, unsigned words)
 {
         const quint32 byteOrderTest = 0x1;
-        if (((char *)&byteOrderTest)[0] == 0) {
+        if (((const char *)&byteOrderTest)[0] == 0) {
             md5byte *p = (md5byte *)buf;
 
             do {

@@ -2396,6 +2396,12 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 */
 
 /*!
+    \fn QXmlStreamAttributes::QXmlStreamAttributes()
+
+    A constructor for QXmlStreamAttributes.
+*/
+
+/*!
     \typedef QXmlStreamNotationDeclarations
     \relates QXmlStreamNotationDeclaration
 

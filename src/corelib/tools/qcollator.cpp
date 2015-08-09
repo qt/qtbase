@@ -87,7 +87,7 @@ QCollator::QCollator(const QCollator &other)
 }
 
 /*!
-   Destructor for QCollator.
+    Destroys the collator.
  */
 QCollator::~QCollator()
 {

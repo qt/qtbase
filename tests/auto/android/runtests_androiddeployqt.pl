@@ -390,7 +390,7 @@ sub startTest
 
     system("$adb_tool $device_serial pull /data/data/$packageName/output.txt $output_dir/$output_file.txt") if ($get_txt);
     if ($get_txt){
-       print "Tesresults for $packageName:\n";
+       print "Test results for $packageName:\n";
        my $insig =
        print_output("$output_dir/$output_file.txt", $packageName, $insignificance);
     }

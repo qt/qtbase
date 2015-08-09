@@ -51,8 +51,8 @@ static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const 
 {
     // do sixteen characters at a time
     for ( ; end - src >= 16; src += 16, dst += 16) {
-        __m128i data1 = _mm_loadu_si128((__m128i*)src);
-        __m128i data2 = _mm_loadu_si128(1+(__m128i*)src);
+        __m128i data1 = _mm_loadu_si128((const __m128i*)src);
+        __m128i data2 = _mm_loadu_si128(1+(const __m128i*)src);
 
 
         // check if everything is ASCII
@@ -90,7 +90,7 @@ static inline bool simdDecodeAscii(ushort *&dst, const uchar *&nextAscii, const 
 {
     // do sixteen characters at a time
     for ( ; end - src >= 16; src += 16, dst += 16) {
-        __m128i data = _mm_loadu_si128((__m128i*)src);
+        __m128i data = _mm_loadu_si128((const __m128i*)src);
 
 #ifdef __AVX2__
         const int BitSpacing = 2;
@@ -390,7 +390,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
             *dst++ = QChar::ReplacementCharacter;
     }
 
-    result.truncate(dst - (ushort *)result.unicode());
+    result.truncate(dst - (const ushort *)result.unicode());
     if (state) {
         state->invalidChars += invalid;
         if (headerdone)
@@ -469,7 +469,7 @@ QString QUtf16::convertToUnicode(const char *chars, int len, QTextCodec::Convert
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
 
     QString result(len, Qt::Uninitialized); // worst case
-    QChar *qch = (QChar *)result.unicode();
+    QChar *qch = (QChar *)result.data();
     while (len--) {
         if (half) {
             QChar ch;
@@ -600,7 +600,7 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
 
     QString result;
     result.resize((num + len) >> 2 << 1); // worst case
-    QChar *qch = (QChar *)result.unicode();
+    QChar *qch = (QChar *)result.data();
 
     const char *end = chars + len;
     while (chars < end) {

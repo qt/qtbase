@@ -2663,7 +2663,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(Aggregate *inner,
         out() << "<p><b>The following members of class "
               << "<a href=\"" << linkForNode(inner, 0) << "\">"
               << protectEnc(inner->name()) << "</a>"
-              << "are part of the "
+              << " are part of the "
                  "Qt compatibility layer.</b> We advise against "
                  "using them in new code.</p>\n";
     }

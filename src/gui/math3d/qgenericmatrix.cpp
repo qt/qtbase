@@ -69,12 +69,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGenericMatrix::QGenericMatrix(const QGenericMatrix<N, M, T>& other)
-
-    Constructs a copy of \a other.
-*/
-
-/*!
     \fn QGenericMatrix::QGenericMatrix(const T *values)
 
     Constructs a matrix from the given N * M floating-point \a values.

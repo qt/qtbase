@@ -500,6 +500,7 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
     bool retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
     setSocketError(d->plainSocket->error());
+    setErrorString(d->plainSocket->errorString());
     setSocketState(state);
     setOpenMode(openMode);
     setLocalPort(d->plainSocket->localPort());

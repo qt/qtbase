@@ -411,18 +411,48 @@ void tst_QDebug::qDebugQString() const
     qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
     QCOMPARE(s_msg, "   " + string);
 
-    string = QLatin1String("\nSm\xF8rg\xE5sbord\\");
+    string = "Sm\xc3\xb8rg\xc3\xa5sbord "                               // Latin script
+             "\xce\x91\xce\xb8\xce\xae\xce\xbd\xce\xb1 "                // Greek script
+             "\xd0\x9c\xd0\xbe\xd1\x81\xd0\xba\xd0\xb2\xd0\xb0";        // Cyrillic script
     qDebug().noquote().nospace() << string;
     QCOMPARE(s_msg, string);
 
+    // This string only contains printable characters
     qDebug() << string;
-    QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
+    QCOMPARE(s_msg, '"' + string + '"');
 
-    // surrogate pairs (including broken pairings)
-    ushort utf16[] = { 0xDC00, 0xD800, 0xDC00, 'x', 0xD800, 0xDC00, 0xD800, 0 };
+    string = "\n\t\\\"";
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, string);
+
+    // This string only contains characters that must be escaped
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\n\\t\\\\\\\"\""));
+
+    // Unicode escapes, BMP
+    string = "\1"                           // U+0001: START OF HEADING (category Cc)
+             "\x7f"                         // U+007F: DELETE (category Cc)
+             "\xc2\xad"                     // U+00AD: SOFT HYPHEN (category Cf)
+             "\xef\xbb\xbf";                // U+FEFF: ZERO WIDTH NO-BREAK SPACE / BOM (category Cf)
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\u0001\\u007F\\u00AD\\uFEFF\""));
+
+    // Unicode printable non-BMP
+    string = "\xf0\x90\x80\x80";            // U+10000: LINEAR B SYLLABLE B008 A (category Lo)
+    qDebug() << string;
+    QCOMPARE(s_msg, '"' + string + '"');
+
+    // non-BMP and non-printable
+    string = "\xf3\xa0\x80\x81 "            // U+E0001: LANGUAGE TAG (category Cf)
+             "\xf4\x80\x80\x80";            // U+100000: Plane 16 Private Use (category Co)
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\U000E0001 \\U00100000\""));
+
+    // broken surrogate pairs
+    ushort utf16[] = { 0xDC00, 0xD800, 'x', 0xD800, 0 };
     string = QString::fromUtf16(utf16);
     qDebug() << string;
-    QCOMPARE(s_msg, QString("\"\\uDC00\\U00010000x\\U00010000\\uD800\""));
+    QCOMPARE(s_msg, QString("\"\\uDC00\\uD800x\\uD800\""));
 }
 
 void tst_QDebug::qDebugQStringRef() const
@@ -656,6 +686,15 @@ void tst_QDebug::threadSafety() const
         QCOMPARE(s_messages.at(i), QStringLiteral("doDebug"));
     }
 }
+
+// Should compile: instentiation of unrelated operator<< should not cause cause compilation
+// error in QDebug operators (QTBUG-47375)
+class TestClassA {};
+class TestClassB {};
+
+template <typename T>
+TestClassA& operator<< (TestClassA& s, T&) { return s; };
+template<> TestClassA& operator<< <TestClassB>(TestClassA& s, TestClassB& l);
 
 QTEST_MAIN(tst_QDebug);
 #include "tst_qdebug.moc"

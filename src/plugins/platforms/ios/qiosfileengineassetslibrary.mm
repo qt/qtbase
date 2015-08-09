@@ -304,7 +304,7 @@ public:
         return g_iteratorCurrentUrl.localData();
     }
 
-    QFileInfo currentFileInfo() const
+    QFileInfo currentFileInfo() const Q_DECL_OVERRIDE
     {
         return QFileInfo(currentFileName());
     }

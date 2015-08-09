@@ -265,9 +265,6 @@ static const uint qCompilerCpuFeatures = 0
 #if defined __RTM__
         | RTM
 #endif
-#if defined __HLE__
-        | HLE
-#endif
 #if defined __AVX2__
         | AVX2
 #endif

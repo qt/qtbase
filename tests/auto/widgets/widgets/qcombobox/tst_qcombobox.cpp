@@ -165,6 +165,7 @@ private slots:
     void setCustomModelAndView();
     void updateDelegateOnEditableChange();
     void respectChangedOwnershipOfItemView();
+    void task_QTBUG_39088_inputMethodHints();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -3168,6 +3169,14 @@ void tst_QComboBox::updateDelegateOnEditableChange()
         bool menuDelegateAfter = qobject_cast<QComboMenuDelegate *>(box.itemDelegate()) != 0;
         QCOMPARE(menuDelegateAfter, menuDelegateBefore);
     }
+}
+
+void tst_QComboBox::task_QTBUG_39088_inputMethodHints()
+{
+    QComboBox box;
+    box.setEditable(true);
+    box.setInputMethodHints(Qt::ImhNoPredictiveText);
+    QCOMPARE(box.lineEdit()->inputMethodHints(), Qt::ImhNoPredictiveText);
 }
 
 void tst_QComboBox::respectChangedOwnershipOfItemView()

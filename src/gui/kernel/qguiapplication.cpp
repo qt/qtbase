@@ -1898,8 +1898,14 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 #if !defined(Q_OS_OSX)
     // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
     const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
-    if (checkShortcut && QWindowSystemInterface::tryHandleShortcutEvent(window, e->timestamp, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount))
-        return;
+    if (checkShortcut) {
+        QKeyEvent override(QEvent::ShortcutOverride, e->key, e->modifiers,
+                     e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
+                     e->unicode, e->repeat, e->repeatCount);
+        override.setTimestamp(e->timestamp);
+        if (QWindowSystemInterface::tryHandleShortcutOverrideEvent(window, &override))
+            return;
+    }
 #endif // Q_OS_OSX
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,

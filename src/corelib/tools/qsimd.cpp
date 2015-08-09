@@ -36,6 +36,10 @@
 #include <QByteArray>
 #include <stdio.h>
 
+#ifdef Q_OS_LINUX
+#  include "../testlib/3rdparty/valgrind_p.h"
+#endif
+
 #if defined(Q_OS_WIN)
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
@@ -256,8 +260,12 @@ static inline uint detectProcessorFeatures()
 
     uint features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
+#if Q_PROCESSOR_X86 < 5
     if (cpuidLevel < 1)
         return 0;
+#else
+    Q_ASSERT(cpuidLevel >= 1);
+#endif
 
     uint cpuid01ECX = 0, cpuid01EDX = 0;
     cpuidFeatures01(cpuid01ECX, cpuid01EDX);
@@ -497,8 +505,7 @@ static const int features_indices[] = {
 static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
 
 // record what CPU features were enabled by default in this Qt build
-// don't define for HLE, since the HLE prefix can be run on older CPUs
-static const uint minFeature = qCompilerCpuFeatures & ~HLE;
+static const uint minFeature = qCompilerCpuFeatures;
 
 #ifdef Q_OS_WIN
 #if defined(Q_CC_GNU)
@@ -554,7 +561,12 @@ void qDetectCpuFeatures()
         }
     }
 
-    if (minFeature != 0 && (f & minFeature) != minFeature) {
+#ifdef RUNNING_ON_VALGRIND
+    bool runningOnValgrind = RUNNING_ON_VALGRIND;
+#else
+    bool runningOnValgrind = false;
+#endif
+    if (!runningOnValgrind && (minFeature != 0 && (f & minFeature) != minFeature)) {
         uint missing = minFeature & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (int i = 0; i < features_count; ++i) {

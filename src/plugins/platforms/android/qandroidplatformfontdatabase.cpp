@@ -45,26 +45,20 @@ QString QAndroidPlatformFontDatabase::fontDir() const
 void QAndroidPlatformFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
+    QDir dir(fontpath);
 
-    if (!QFile::exists(fontpath)) {
+    if (!dir.exists()) {
         qFatal("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
     }
 
-    QDir dir(fontpath);
-    QList<QFileInfo> entries = dir.entryInfoList(QStringList() << QStringLiteral("*.ttf") << QStringLiteral("*.otf"), QDir::Files);
-    for (int i = 0; i < int(entries.count()); ++i) {
-        const QByteArray file = QFile::encodeName(entries.at(i).absoluteFilePath());
-        QSupportedWritingSystems supportedWritingSystems;
-        QStringList families = addTTFile(QByteArray(), file, &supportedWritingSystems);
+    QStringList nameFilters;
+    nameFilters << QLatin1String("*.ttf")
+                << QLatin1String("*.otf");
 
-        extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem);
-        for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
-            if (i == QFontDatabase::Any || supportedWritingSystems.supported(QFontDatabase::WritingSystem(i))) {
-                QChar::Script script = QChar::Script(qt_script_for_writing_system(QFontDatabase::WritingSystem(i)));
-                m_fallbacks[script] += families;
-            }
-        }
+    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+        const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
+        QBasicFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
@@ -73,15 +67,16 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
                                                              QFont::StyleHint styleHint,
                                                              QChar::Script script) const
 {
-    Q_UNUSED(family);
-    Q_UNUSED(style);
-
+    QStringList result;
     if (styleHint == QFont::Monospace || styleHint == QFont::Courier)
-        return QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";") + m_fallbacks[script];
+        result.append(QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";"));
     else if (styleHint == QFont::Serif)
-        return QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(";") + m_fallbacks[script];
+        result.append(QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(";"));
+    else
+        result.append(QString(qgetenv("QT_ANDROID_FONTS")).split(";"));
+    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
-    return QString(qgetenv("QT_ANDROID_FONTS")).split(";") + m_fallbacks[script];
+    return result;
 }
 
 QT_END_NAMESPACE

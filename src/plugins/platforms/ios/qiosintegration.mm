@@ -81,7 +81,7 @@ QIOSIntegration::QIOSIntegration()
     // QPlatformBackingStore.
     qApp->setAttribute(Qt::AA_ShareOpenGLContexts, true);
     // And that context must match the format used for the backingstore's context.
-    QSurfaceFormat fmt;
+    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
     fmt.setDepthBufferSize(16);
     fmt.setStencilBufferSize(8);
     QSurfaceFormat::setDefaultFormat(fmt);

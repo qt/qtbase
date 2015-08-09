@@ -572,12 +572,13 @@ bool QImageData::checkForAlphaPixels() const
 
     \endtable
 
+    \target qimage-legalese
     \section1 Legal Information
 
     For smooth scaling, the transformed() functions use code based on
     smooth scaling algorithm by Daniel M. Duley.
 
-    \legalese
+    \badcode
      Copyright (C) 2004, 2005 Daniel M. Duley
 
      Redistribution and use in source and binary forms, with or without
@@ -600,7 +601,7 @@ bool QImageData::checkForAlphaPixels() const
      THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
      THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    \endlegalese
+    \endcode
 
     \sa QImageReader, QImageWriter, QPixmap, QSvgRenderer, {Image Composition Example},
         {Image Viewer Example}, {Scribble Example}, {Pixelator Example}
@@ -4359,6 +4360,10 @@ int QImage::bitPlaneCount() const
     return bpc;
 }
 
+/*!
+   Returns a smoothly scaled copy of the image. The returned image has a size
+   of width \a w by height \a h pixels.
+*/
 QImage QImage::smoothScaled(int w, int h) const {
     QImage src = *this;
     switch (src.format()) {

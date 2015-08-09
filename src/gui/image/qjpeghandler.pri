@@ -1,5 +1,4 @@
 # common to plugin and built-in forms
-INCLUDEPATH *= $$PWD
 HEADERS += $$PWD/qjpeghandler_p.h
 SOURCES += $$PWD/qjpeghandler.cpp
 contains(QT_CONFIG, system-jpeg) {

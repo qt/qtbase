@@ -2168,6 +2168,9 @@ QGLContext::QGLContext(QOpenGLContext *context)
     d->setupSharing();
 }
 
+/*!
+    Returns the OpenGL context handle.
+*/
 QOpenGLContext *QGLContext::contextHandle() const
 {
     Q_D(const QGLContext);
@@ -2175,7 +2178,7 @@ QOpenGLContext *QGLContext::contextHandle() const
 }
 
 /*!
-    Returns a OpenGL context for the window context specified by the \a context
+    Returns an OpenGL context for the window context specified by the \a context
     parameter.
 */
 QGLContext *QGLContext::fromOpenGLContext(QOpenGLContext *context)
@@ -4355,7 +4358,7 @@ void QGLWidget::resizeOverlayGL(int, int)
 }
 
 /*!\reimp
- */
+*/
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

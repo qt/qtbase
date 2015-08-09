@@ -293,7 +293,7 @@ template <class T>
 inline typename QtPrivate::QEnableIf<
     QtPrivate::IsQEnumHelper<T>::Value || QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
     QDebug>::Type
-operator<<(QDebug debug, const QFlags<T> &flags)
+qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 {
     const QMetaObject *obj = qt_getEnumMetaObject(T());
     const char *name = qt_getEnumName(T());
@@ -304,10 +304,10 @@ template <class T>
 inline typename QtPrivate::QEnableIf<
     !QtPrivate::IsQEnumHelper<T>::Value && !QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
     QDebug>::Type
-operator<<(QDebug debug, const QFlags<T> &flags)
+qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 #else // !QT_NO_QOBJECT
 template <class T>
-inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
+inline QDebug qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 #endif
 {
     QDebugStateSaver saver(debug);
@@ -325,6 +325,14 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     }
     debug << ')';
     return debug;
+}
+
+template<typename T>
+inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
+{
+    // We have to use an indirection otherwise specialisation of some other overload of the
+    // operator<< the compiler would try to instantiate QFlags<T> for the QEnableIf
+    return qt_QMetaEnum_flagDebugOperator_helper(debug, flags);
 }
 
 #ifdef Q_OS_MAC

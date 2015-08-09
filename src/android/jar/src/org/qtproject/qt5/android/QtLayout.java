@@ -43,9 +43,11 @@ import android.view.ViewGroup;
 
 public class QtLayout extends ViewGroup
 {
-    public QtLayout(Context context)
+    private Runnable m_startApplicationRunnable;
+    public QtLayout(Context context, Runnable startRunnable)
     {
         super(context);
+        m_startApplicationRunnable = startRunnable;
     }
 
     public QtLayout(Context context, AttributeSet attrs)
@@ -65,6 +67,10 @@ public class QtLayout extends ViewGroup
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
         QtNative.setApplicationDisplayMetrics(metrics.widthPixels,
                                               metrics.heightPixels, w, h, metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
+        if (m_startApplicationRunnable != null) {
+            m_startApplicationRunnable.run();
+            m_startApplicationRunnable = null;
+        }
     }
 
     @Override
