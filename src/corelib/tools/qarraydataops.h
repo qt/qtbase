@@ -83,6 +83,9 @@ struct QPodArrayOps
         this->size += e - b;
     }
 
+    void moveAppend(T *b, T *e)
+    { copyAppend(b, e); }
+
     void copyAppend(size_t n, parameter_type t)
     {
         Q_ASSERT(this->isMutable());
@@ -172,6 +175,20 @@ struct QGenericArrayOps
         T *iter = this->end();
         for (; b != e; ++iter, ++b) {
             new (iter) T(*b);
+            ++this->size;
+        }
+    }
+
+    void moveAppend(T *b, T *e)
+    {
+        Q_ASSERT(this->isMutable() || b == e);
+        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(b <= e);
+        Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+
+        T *iter = this->end();
+        for (; b != e; ++iter, ++b) {
+            new (iter) T(std::move(*b));
             ++this->size;
         }
     }
@@ -413,6 +430,45 @@ struct QMovableArrayOps
             // Exceptions or not, dtor called once per instance
             (--e)->~T();
         } while (e != b);
+    }
+
+    void moveAppend(T *b, T *e)
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(b <= e);
+        Q_ASSERT(e <= this->begin() || b > this->end()); // No overlap
+        Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+
+        // Provides strong exception safety guarantee,
+        // provided T::~T() nothrow
+
+        struct CopyConstructor
+        {
+            CopyConstructor(T *w) : where(w) {}
+
+            void copy(const T *src, const T *const srcEnd)
+            {
+                n = 0;
+                for (; src != srcEnd; ++src) {
+                    new (where + n) T(std::move(*src));
+                    ++n;
+                }
+                n = 0;
+            }
+
+            ~CopyConstructor()
+            {
+                while (n)
+                    where[--n].~T();
+            }
+
+            T *const where;
+            size_t n;
+        } copier(this->end());
+
+        copier.copy(b, e);
+        this->size += (e - b);
     }
 };
 
