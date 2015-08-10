@@ -37,6 +37,7 @@
 #include <qscopedpointer.h>
 #include <qurl.h>
 #include <private/qmutexpool_p.h>
+#include <private/qnativesocketengine_p.h>
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -160,6 +161,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             state._u._ext.nscount6 = 1;
             ns->sin6_family = AF_INET6;
             ns->sin6_port = htons(53);
+            SetSALen::set(ns, sizeof(*ns));
 
             Q_IPV6ADDR ipv6Address = nameserver.toIPv6Address();
             for (int i=0; i<16; i++) {

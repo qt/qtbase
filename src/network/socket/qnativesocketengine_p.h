@@ -99,6 +99,16 @@ union qt_sockaddr {
     sockaddr_in6 a6;
 };
 
+namespace {
+namespace SetSALen {
+    template <typename T> void set(T *sa, typename QtPrivate::QEnableIf<(&T::sa_len, true), QT_SOCKLEN_T>::Type len)
+    { sa->sa_len = len; }
+    template <typename T> void set(T *sin6, typename QtPrivate::QEnableIf<(&T::sin6_len, true), QT_SOCKLEN_T>::Type len)
+    { sin6->sin6_len = len; }
+    template <typename T> void set(T *, ...) {}
+}
+}
+
 class QNativeSocketEnginePrivate;
 #ifndef QT_NO_NETWORKINTERFACE
 class QNetworkInterface;
@@ -287,12 +297,14 @@ public:
             Q_IPV6ADDR tmp = address.toIPv6Address();
             memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
             *sockAddrSize = sizeof(sockaddr_in6);
+            SetSALen::set(&aa->a, sizeof(sockaddr_in6));
         } else {
             memset(&aa->a, 0, sizeof(sockaddr_in));
             aa->a4.sin_family = AF_INET;
             aa->a4.sin_port = htons(port);
             aa->a4.sin_addr.s_addr = htonl(address.toIPv4Address());
             *sockAddrSize = sizeof(sockaddr_in);
+            SetSALen::set(&aa->a, sizeof(sockaddr_in));
         }
     }
 
