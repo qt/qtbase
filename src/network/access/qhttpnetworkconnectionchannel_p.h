@@ -157,6 +157,7 @@ public:
 
     void init();
     void close();
+    void abort();
 
     bool sendRequest();
 

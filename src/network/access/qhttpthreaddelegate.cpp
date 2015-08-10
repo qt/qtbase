@@ -396,6 +396,7 @@ void QHttpThreadDelegate::abortRequest()
     qDebug() << "QHttpThreadDelegate::abortRequest() thread=" << QThread::currentThreadId() << "sync=" << synchronous;
 #endif
     if (httpReply) {
+        httpReply->abort();
         delete httpReply;
         httpReply = 0;
     }

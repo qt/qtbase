@@ -247,6 +247,17 @@ char* QHttpNetworkReply::userProvidedDownloadBuffer()
     return d->userProvidedDownloadBuffer;
 }
 
+void QHttpNetworkReply::abort()
+{
+    Q_D(QHttpNetworkReply);
+    d->state = QHttpNetworkReplyPrivate::Aborted;
+}
+
+bool QHttpNetworkReply::isAborted() const
+{
+    return d_func()->state == QHttpNetworkReplyPrivate::Aborted;
+}
+
 bool QHttpNetworkReply::isFinished() const
 {
     return d_func()->state == QHttpNetworkReplyPrivate::AllDoneState;
