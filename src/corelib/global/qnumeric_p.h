@@ -107,84 +107,28 @@ static inline bool isfinite(float f) { return std::isfinite(f); }
 #endif
 }
 
-#if !defined(Q_CC_MIPS)
-
-static const union { unsigned char c[8]; double d; } qt_be_inf_bytes = { { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 } };
-static const union { unsigned char c[8]; double d; } qt_le_inf_bytes = { { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f } };
-static inline double qt_inf()
+Q_DECL_CONSTEXPR static inline double qt_inf() Q_DECL_NOEXCEPT
 {
-    return (QSysInfo::ByteOrder == QSysInfo::BigEndian
-            ? qt_be_inf_bytes.d
-            : qt_le_inf_bytes.d);
+    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_infinity,
+                      "platform has no definition for infinity for type double");
+    return std::numeric_limits<double>::infinity();
 }
 
-// Signaling NAN
-static const union { unsigned char c[8]; double d; } qt_be_snan_bytes = { { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 } };
-static const union { unsigned char c[8]; double d; } qt_le_snan_bytes = { { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f } };
-static inline double qt_snan()
+// Signaling NaN
+Q_DECL_CONSTEXPR static inline double qt_snan() Q_DECL_NOEXCEPT
 {
-    return (QSysInfo::ByteOrder == QSysInfo::BigEndian
-            ? qt_be_snan_bytes.d
-            : qt_le_snan_bytes.d);
+    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
+                      "platform has no definition for signaling NaN for type double");
+    return std::numeric_limits<double>::signaling_NaN();
 }
 
-// Quiet NAN
-static const union { unsigned char c[8]; double d; } qt_be_qnan_bytes = { { 0xff, 0xf8, 0, 0, 0, 0, 0, 0 } };
-static const union { unsigned char c[8]; double d; } qt_le_qnan_bytes = { { 0, 0, 0, 0, 0, 0, 0xf8, 0xff } };
-static inline double qt_qnan()
+// Quiet NaN
+Q_DECL_CONSTEXPR static inline double qt_qnan() Q_DECL_NOEXCEPT
 {
-    return (QSysInfo::ByteOrder == QSysInfo::BigEndian
-            ? qt_be_qnan_bytes.d
-            : qt_le_qnan_bytes.d);
+    Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_quiet_NaN,
+                      "platform has no definition for quiet NaN for type double");
+    return std::numeric_limits<double>::quiet_NaN();
 }
-
-#else // Q_CC_MIPS
-
-static const unsigned char qt_be_inf_bytes[] = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 };
-static const unsigned char qt_le_inf_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
-static inline double qt_inf()
-{
-    const unsigned char *bytes;
-    bytes = (QSysInfo::ByteOrder == QSysInfo::BigEndian
-             ? qt_be_inf_bytes
-             : qt_le_inf_bytes);
-
-    union { unsigned char c[8]; double d; } returnValue;
-    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
-    return returnValue.d;
-}
-
-// Signaling NAN
-static const unsigned char qt_be_snan_bytes[] = { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 };
-static const unsigned char qt_le_snan_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
-static inline double qt_snan()
-{
-    const unsigned char *bytes;
-    bytes = (QSysInfo::ByteOrder == QSysInfo::BigEndian
-             ? qt_be_snan_bytes
-             : qt_le_snan_bytes);
-
-    union { unsigned char c[8]; double d; } returnValue;
-    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
-    return returnValue.d;
-}
-
-// Quiet NAN
-static const unsigned char qt_be_qnan_bytes[] = { 0xff, 0xf8, 0, 0, 0, 0, 0, 0 };
-static const unsigned char qt_le_qnan_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf8, 0xff };
-static inline double qt_qnan()
-{
-    const unsigned char *bytes;
-    bytes = (QSysInfo::ByteOrder == QSysInfo::BigEndian
-             ? qt_be_qnan_bytes
-             : qt_le_qnan_bytes);
-
-    union { unsigned char c[8]; double d; } returnValue;
-    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
-    return returnValue.d;
-}
-
-#endif // Q_CC_MIPS
 
 static inline bool qt_is_inf(double d)
 {
