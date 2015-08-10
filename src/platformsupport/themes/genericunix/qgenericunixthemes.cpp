@@ -240,8 +240,13 @@ void QKdeThemePrivate::refresh()
     toolButtonStyle = Qt::ToolButtonTextBesideIcon;
     toolBarIconSize = 0;
     styleNames.clear();
+    if (kdeVersion >= 5)
+        styleNames << QStringLiteral("breeze");
     styleNames << QStringLiteral("Oxygen") << QStringLiteral("fusion") << QStringLiteral("windows");
-    iconFallbackThemeName = iconThemeName = QStringLiteral("oxygen");
+    if (kdeVersion >= 5)
+        iconFallbackThemeName = iconThemeName = QStringLiteral("breeze");
+    else
+        iconFallbackThemeName = iconThemeName = QStringLiteral("oxygen");
 
     QHash<QString, QSettings*> kdeSettings;
 
