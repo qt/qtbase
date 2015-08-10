@@ -840,6 +840,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 bundleIdentifier.chop(4);
             if (bundleIdentifier.endsWith(".framework"))
                 bundleIdentifier.chop(10);
+            // replace invalid bundle id characters
+            bundleIdentifier.replace('_', '-');
             commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
 
             if (isApp) {
