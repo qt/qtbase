@@ -105,6 +105,18 @@ void tst_QNumeric::qNan()
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1));
     QVERIFY(qIsNaN(-nan));
+
+    Q_STATIC_ASSERT(sizeof(double) == 8);
+#ifdef Q_LITTLE_ENDIAN
+    const uchar bytes[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f };
+#else
+    const uchar bytes[] = { 0x7f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+#endif
+    memcpy(&nan, bytes, 8);
+    QVERIFY(!qIsFinite(nan));
+    QVERIFY(!qIsInf(nan));
+    QVERIFY(qIsNaN(nan));
+
     double inf = qInf();
     QVERIFY(inf > 0);
     QVERIFY(-inf < 0);

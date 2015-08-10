@@ -47,7 +47,7 @@
 //
 
 #include "QtCore/qglobal.h"
-
+#include <cmath>
 #include <limits>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -56,7 +56,56 @@
 #  include <immintrin.h>    // for _addcarry_u<nn>
 #endif
 
+#if defined(Q_CC_MSVC)
+#include <float.h>
+#endif
+
+#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || !defined(__cplusplus) || __cplusplus < 201103L)
+#include <math.h>
 QT_BEGIN_NAMESPACE
+namespace qnumeric_std_wrapper {
+// the 'using namespace std' below is cases where the stdlib already put the math.h functions in the std namespace and undefined the macros.
+static inline bool math_h_isnan(double d) { using namespace std; return isnan(d); }
+static inline bool math_h_isinf(double d) { using namespace std; return isinf(d); }
+static inline bool math_h_isfinite(double d) { using namespace std; return isfinite(d); }
+static inline bool math_h_isnan(float f) { using namespace std; return isnan(f); }
+static inline bool math_h_isinf(float f) { using namespace std; return isinf(f); }
+static inline bool math_h_isfinite(float f) { using namespace std; return isfinite(f); }
+}
+QT_END_NAMESPACE
+// These macros from math.h conflict with the real functions in the std namespace.
+#undef signbit
+#undef isnan
+#undef isinf
+#undef isfinite
+#endif
+
+QT_BEGIN_NAMESPACE
+
+namespace qnumeric_std_wrapper {
+#if defined(Q_CC_MSVC) && _MSC_VER < 1800
+static inline bool isnan(double d) { return !!_isnan(d); }
+static inline bool isinf(double d) { return !_finite(d) && !_isnan(d); }
+static inline bool isfinite(double d) { return !!_finite(d); }
+static inline bool isnan(float f) { return !!_isnanf(f); }
+static inline bool isinf(float f) { return !_finitef(f) && !_isnan(f); }
+static inline bool isfinite(float f) { return !!_finite(f); }
+#elif !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || !defined(__cplusplus) || __cplusplus < 201103L)
+static inline bool isnan(double d) { return math_h_isnan(d); }
+static inline bool isinf(double d) { return math_h_isinf(d); }
+static inline bool isfinite(double d) { return math_h_isfinite(d); }
+static inline bool isnan(float f) { return math_h_isnan(f); }
+static inline bool isinf(float f) { return math_h_isinf(f); }
+static inline bool isfinite(float f) { return math_h_isfinite(f); }
+#else
+static inline bool isnan(double d) { return std::isnan(d); }
+static inline bool isinf(double d) { return std::isinf(d); }
+static inline bool isfinite(double d) { return std::isfinite(d); }
+static inline bool isnan(float f) { return std::isnan(f); }
+static inline bool isinf(float f) { return std::isinf(f); }
+static inline bool isfinite(float f) { return std::isfinite(f); }
+#endif
+}
 
 #if !defined(Q_CC_MIPS)
 
@@ -139,62 +188,32 @@ static inline double qt_qnan()
 
 static inline bool qt_is_inf(double d)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) == 0x7f && ch[1] == 0xf0;
-    } else {
-        return (ch[7] & 0x7f) == 0x7f && ch[6] == 0xf0;
-    }
+    return qnumeric_std_wrapper::isinf(d);
 }
 
 static inline bool qt_is_nan(double d)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) == 0x7f && ch[1] > 0xf0;
-    } else {
-        return (ch[7] & 0x7f) == 0x7f && ch[6] > 0xf0;
-    }
+    return qnumeric_std_wrapper::isnan(d);
 }
 
 static inline bool qt_is_finite(double d)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) != 0x7f || (ch[1] & 0xf0) != 0xf0;
-    } else {
-        return (ch[7] & 0x7f) != 0x7f || (ch[6] & 0xf0) != 0xf0;
-    }
+    return qnumeric_std_wrapper::isfinite(d);
 }
 
-static inline bool qt_is_inf(float d)
+static inline bool qt_is_inf(float f)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) == 0x7f && ch[1] == 0x80;
-    } else {
-        return (ch[3] & 0x7f) == 0x7f && ch[2] == 0x80;
-    }
+    return qnumeric_std_wrapper::isinf(f);
 }
 
-static inline bool qt_is_nan(float d)
+static inline bool qt_is_nan(float f)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) == 0x7f && ch[1] > 0x80;
-    } else {
-        return (ch[3] & 0x7f) == 0x7f && ch[2] > 0x80;
-    }
+    return qnumeric_std_wrapper::isnan(f);
 }
 
-static inline bool qt_is_finite(float d)
+static inline bool qt_is_finite(float f)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ch[0] & 0x7f) != 0x7f || (ch[1] & 0x80) != 0x80;
-    } else {
-        return (ch[3] & 0x7f) != 0x7f || (ch[2] & 0x80) != 0x80;
-    }
+    return qnumeric_std_wrapper::isfinite(f);
 }
 
 //
