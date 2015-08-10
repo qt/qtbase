@@ -642,10 +642,12 @@ void tst_QHostAddress::isLoopback_data()
     QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << false;
     QTest::newRow("Broadcast") << QHostAddress(QHostAddress::Broadcast) << false;
     QTest::newRow("Null") << QHostAddress(QHostAddress::Null) << false;
+    QTest::newRow("ipv6-all-ffff") << QHostAddress("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") << false;
 
     QTest::newRow("::ffff:127.0.0.1") << QHostAddress("::ffff:127.0.0.1") << true;
     QTest::newRow("::ffff:127.0.0.2") << QHostAddress("::ffff:127.0.0.2") << true;
     QTest::newRow("::ffff:127.3.2.1") << QHostAddress("::ffff:127.3.2.1") << true;
+
 }
 
 void tst_QHostAddress::isLoopback()
