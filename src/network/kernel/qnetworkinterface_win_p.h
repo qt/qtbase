@@ -91,17 +91,6 @@ QT_BEGIN_NAMESPACE
 #define IF_TYPE_PPP 23
 
 #endif
-// copied from qnativesocketengine_win.cpp
-struct qt_in6_addr {
-    u_char qt_s6_addr[16];
-};
-typedef struct {
-    short   sin6_family;            /* AF_INET6 */
-    u_short sin6_port;              /* Transport level port number */
-    u_long  sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    u_long  sin6_scope_id;          /* set of interfaces for a scope */
-} qt_sockaddr_in6;
 
 // copied from MSDN online help
 typedef enum {

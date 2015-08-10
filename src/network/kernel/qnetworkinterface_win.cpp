@@ -43,6 +43,8 @@
 #include <qurl.h>
 #include <private/qsystemlibrary_p.h>
 
+#include <WS2tcpip.h>
+
 QT_BEGIN_NAMESPACE
 
 typedef DWORD (WINAPI *PtrGetAdaptersInfo)(PIP_ADAPTER_INFO, PULONG);
@@ -86,8 +88,8 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
     if (sa->sa_family == AF_INET)
         address.setAddress(htonl(((sockaddr_in *)sa)->sin_addr.s_addr));
     else if (sa->sa_family == AF_INET6) {
-        address.setAddress(((qt_sockaddr_in6 *)sa)->sin6_addr.qt_s6_addr);
-        int scope = ((qt_sockaddr_in6 *)sa)->sin6_scope_id;
+        address.setAddress(((sockaddr_in6 *)sa)->sin6_addr.s6_addr);
+        int scope = ((sockaddr_in6 *)sa)->sin6_scope_id;
         if (scope)
             address.setScopeId(QString::number(scope));
     } else

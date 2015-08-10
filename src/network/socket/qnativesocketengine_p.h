@@ -51,22 +51,11 @@
 #  include <netinet/in.h>
 #else
 #  include <winsock2.h>
+#  include <ws2tcpip.h>
 #  include <mswsock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
-
-// Use our own defines and structs which we know are correct
-#  define QT_SS_MAXSIZE 128
-#  define QT_SS_ALIGNSIZE (sizeof(qint64))
-#  define QT_SS_PAD1SIZE (QT_SS_ALIGNSIZE - sizeof (short))
-#  define QT_SS_PAD2SIZE (QT_SS_MAXSIZE - (sizeof (short) + QT_SS_PAD1SIZE + QT_SS_ALIGNSIZE))
-struct qt_sockaddr_storage {
-      short ss_family;
-      char __ss_pad1[QT_SS_PAD1SIZE];
-      qint64 __ss_align;
-      char __ss_pad2[QT_SS_PAD2SIZE];
-};
 
 #ifdef Q_OS_WIN
 #define QT_SOCKLEN_T int
@@ -103,25 +92,10 @@ typedef INT (WSAAPI *LPFN_WSASENDMSG)(SOCKET s, LPWSAMSG lpMsg, DWORD dwFlags,
 #endif
 #endif
 
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-struct qt_in6_addr {
-    quint8 qt_s6_addr[16];
-};
-struct qt_sockaddr_in6 {
-    short   sin6_family;            /* AF_INET6 */
-    quint16 sin6_port;              /* Transport level port number */
-    quint32 sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    quint32 sin6_scope_id;          /* set of interfaces for a scope */
-};
-
 union qt_sockaddr {
     sockaddr a;
     sockaddr_in a4;
-    qt_sockaddr_in6 a6;
-    qt_sockaddr_storage storage;
+    sockaddr_in6 a6;
 };
 
 class QNativeSocketEnginePrivate;
@@ -302,13 +276,13 @@ public:
             || address.protocol() == QAbstractSocket::AnyIPProtocol
             || socketProtocol == QAbstractSocket::IPv6Protocol
             || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            memset(&aa->a6, 0, sizeof(qt_sockaddr_in6));
+            memset(&aa->a6, 0, sizeof(sockaddr_in6));
             aa->a6.sin6_family = AF_INET6;
             aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
             aa->a6.sin6_port = htons(port);
             Q_IPV6ADDR tmp = address.toIPv6Address();
             memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
-            *sockAddrSize = sizeof(qt_sockaddr_in6);
+            *sockAddrSize = sizeof(sockaddr_in6);
         } else {
             memset(&aa->a, 0, sizeof(sockaddr_in));
             aa->a4.sin_family = AF_INET;

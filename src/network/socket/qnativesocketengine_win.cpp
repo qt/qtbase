@@ -171,10 +171,10 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxLength)
 static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt_sockaddr *sa, quint16 *port, QHostAddress *address)
 {
     if (sa->a.sa_family == AF_INET6) {
-        const qt_sockaddr_in6 *sa6 = &sa->a6;
+        const sockaddr_in6 *sa6 = &sa->a6;
         Q_IPV6ADDR tmp;
         for (int i = 0; i < 16; ++i)
-            tmp.c[i] = sa6->sin6_addr.qt_s6_addr[i];
+            tmp.c[i] = sa6->sin6_addr.s6_addr[i];
         if (address) {
             QHostAddress a;
             a.setAddress(tmp);
