@@ -113,8 +113,10 @@ public:
     QString hardwareAddress() const;
     QList<QNetworkAddressEntry> addressEntries() const;
 
+    static int interfaceIndexFromName(const QString &name);
     static QNetworkInterface interfaceFromName(const QString &name);
     static QNetworkInterface interfaceFromIndex(int index);
+    static QString interfaceNameFromIndex(int index);
     static QList<QNetworkInterface> allInterfaces();
     static QList<QHostAddress> allAddresses();
 

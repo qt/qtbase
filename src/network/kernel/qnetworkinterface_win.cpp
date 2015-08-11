@@ -57,8 +57,14 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceIndexToLuid)(NET_IFINDEX, PNET_LUID);
 typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceLuidToName)(const NET_LUID *, PWSTR, SIZE_T);
+typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceLuidToIndex)(const NET_LUID *, PNET_IFINDEX);
+typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceNameToLuid)(const WCHAR *, PNET_LUID);
+static PtrConvertInterfaceIndexToLuid ptrConvertInterfaceIndexToLuid = 0;
 static PtrConvertInterfaceLuidToName ptrConvertInterfaceLuidToName = 0;
+static PtrConvertInterfaceLuidToIndex ptrConvertInterfaceLuidToIndex = 0;
+static PtrConvertInterfaceNameToLuid ptrConvertInterfaceNameToLuid = 0;
 
 static void resolveLibs()
 {
@@ -71,10 +77,16 @@ static void resolveLibs()
 
 #if defined(Q_OS_WINCE)
         // since Windows Embedded Compact 7
+        ptrConvertInterfaceIndexToLuid = (PtrConvertInterfaceIndexToLuid)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceIndexToLuid");
         ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceLuidToNameW");
+        ptrConvertInterfaceLuidToIndex = (PtrConvertInterfaceLuidToIndex)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceLuidToIndex");
+        ptrConvertInterfaceNameToLuid = (PtrConvertInterfaceNameToLuid)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceNameToLuidW");
 #else
         // since Windows Vista
+        ptrConvertInterfaceIndexToLuid = (PtrConvertInterfaceIndexToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceIndexToLuid");
         ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToNameW");
+        ptrConvertInterfaceLuidToIndex = (PtrConvertInterfaceLuidToIndex)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToIndex");
+        ptrConvertInterfaceNameToLuid = (PtrConvertInterfaceNameToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceNameToLuidW");
 #endif
         done = true;
     }
@@ -92,11 +104,40 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
         address.setAddress(((sockaddr_in6 *)sa)->sin6_addr.s6_addr);
         int scope = ((sockaddr_in6 *)sa)->sin6_scope_id;
         if (scope)
-            address.setScopeId(QString::number(scope));
+            address.setScopeId(QNetworkInterfaceManager::interfaceNameFromIndex(scope));
     } else
         qWarning("Got unknown socket family %d", sa->sa_family);
     return address;
 
+}
+
+uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
+{
+    resolveLibs();
+    if (!ptrConvertInterfaceNameToLuid || !ptrConvertInterfaceLuidToIndex)
+        return 0;
+
+    NET_IFINDEX id;
+    NET_LUID luid;
+    if (ptrConvertInterfaceNameToLuid(reinterpret_cast<const wchar_t *>(name.constData()), &luid) == NO_ERROR
+            && ptrConvertInterfaceLuidToIndex(&luid, &id) == NO_ERROR)
+        return uint(id);
+    return 0;
+}
+
+QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
+{
+    resolveLibs();
+    if (ptrConvertInterfaceIndexToLuid && ptrConvertInterfaceLuidToName) {
+        NET_LUID luid;
+        if (ptrConvertInterfaceIndexToLuid(index, &luid) == NO_ERROR) {
+            WCHAR buf[IF_MAX_STRING_SIZE + 1];
+            if (ptrConvertInterfaceLuidToName(&luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
+                return QString::fromWCharArray(buf);
+        }
+    }
+
+    return QString::number(index);
 }
 
 static QHash<QHostAddress, QHostAddress> ipv4Netmasks()

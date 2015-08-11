@@ -322,12 +322,6 @@ static inline int qt_socket_getMaxMsgSize(qintptr socketDescriptor)
 #  define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
 #endif
 
-// inline on purpose
-inline uint QNativeSocketEnginePrivate::scopeIdFromString(const QString &scopeid)
-{
-    return scopeid.toUInt();
-}
-
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -93,14 +94,8 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
             // this is the most likely scenario:
             // a scope ID in a socket is that of the interface this address came from
             address.setScopeId(ifname);
-        } else  if (scope) {
-#ifndef QT_NO_IPV6IFNAME
-            char scopeid[IFNAMSIZ];
-            if (::if_indextoname(scope, scopeid)) {
-                address.setScopeId(QLatin1String(scopeid));
-            } else
-#endif
-                address.setScopeId(QString::number(uint(scope)));
+        } else if (scope) {
+            address.setScopeId(QNetworkInterfaceManager::interfaceNameFromIndex(scope));
         }
     }
     return address;
@@ -122,6 +117,53 @@ static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
     flags |= (rawFlags & IFF_MULTICAST) ? QNetworkInterface::CanMulticast : QNetworkInterface::InterfaceFlag(0);
 #endif
     return flags;
+}
+
+uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
+{
+#ifndef QT_NO_IPV6IFNAME
+    return ::if_nametoindex(name.toLatin1());
+#elif defined(SIOCGIFINDEX)
+    struct ifreq req;
+    int socket = qt_safe_socket(AF_INET, SOCK_STREAM, 0);
+    if (socket < 0)
+        return 0;
+
+    QByteArray name8bit = name.toLatin1();
+    memset(&req, 0, sizeof(ifreq));
+    memcpy(req.ifr_name, name8bit, qMin<int>(name8bit.length() + 1, sizeof(req.ifr_name) - 1));
+
+    uint id = 0;
+    if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
+        id = req.ifr_ifindex;
+    qt_safe_close(socket);
+    return id;
+#else
+    return 0;
+#endif
+}
+
+QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
+{
+#ifndef QT_NO_IPV6IFNAME
+    char buf[IF_NAMESIZE];
+    if (::if_indextoname(index, buf))
+        return QString::fromLatin1(buf);
+#elif defined(SIOCGIFNAME)
+    struct ifreq req;
+    int socket = qt_safe_socket(AF_INET, SOCK_STREAM, 0);
+    if (socket >= 0) {
+        memset(&req, 0, sizeof(ifreq));
+        req.ifr_ifindex = index;
+
+        if (qt_safe_ioctl(socket, SIOCGIFNAME, &req) >= 0) {
+            qt_safe_close(socket);
+            return QString::fromLatin1(req.ifr_name);
+        }
+        qt_safe_close(socket);
+    }
+#endif
+    return QString::number(uint(index));
 }
 
 #ifdef QT_NO_GETIFADDRS

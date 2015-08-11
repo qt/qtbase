@@ -59,6 +59,20 @@ struct HostNameInfo {
     QString address;
 };
 
+uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
+{
+    // TBD - may not be possible
+    Q_UNUSED(name);
+    return 0;
+}
+
+QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
+{
+    // TBD - may not be possible
+    return QString::number(index);
+}
+
+
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     QList<QNetworkInterfacePrivate *> interfaces;

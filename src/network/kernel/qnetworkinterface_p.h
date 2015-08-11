@@ -100,6 +100,9 @@ public:
     QSharedDataPointer<QNetworkInterfacePrivate> interfaceFromIndex(int index);
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > allInterfaces();
 
+    static uint interfaceIndexFromName(const QString &name);
+    static QString interfaceNameFromIndex(uint index);
+
     // convenience:
     QSharedDataPointer<QNetworkInterfacePrivate> empty;
 

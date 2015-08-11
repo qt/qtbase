@@ -45,6 +45,7 @@
 // We mean it.
 //
 #include "QtNetwork/qhostaddress.h"
+#include "QtNetwork/qnetworkinterface.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
 #  include "qplatformdefs.h"
@@ -264,7 +265,8 @@ public:
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
 
-    static uint scopeIdFromString(const QString &scopeid);
+    static uint scopeIdFromString(const QString &scopeid)
+    { return QNetworkInterface::interfaceIndexFromName(scopeid); }
 
     /*! \internal
         Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.

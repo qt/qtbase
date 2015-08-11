@@ -519,6 +519,31 @@ QList<QNetworkAddressEntry> QNetworkInterface::addressEntries() const
 }
 
 /*!
+    \since 5.7
+
+    Returns the index of the interface whose name is \a name or 0 if there is
+    no interface with that name. This function should produce the same result
+    as the following code, but will probably execute faster.
+
+    \code
+        QNetworkInterface::interfaceFromName(name).index()
+    \endcode
+
+    \sa interfaceFromName(), interfaceNameFromIndex(), QUdpDatagram::interfaceIndex()
+*/
+int QNetworkInterface::interfaceIndexFromName(const QString &name)
+{
+    if (name.isEmpty())
+        return 0;
+
+    bool ok;
+    uint id = name.toUInt(&ok);
+    if (!ok)
+        id = QNetworkInterfaceManager::interfaceIndexFromName(name);
+    return int(id);
+}
+
+/*!
     Returns a QNetworkInterface object for the interface named \a
     name. If no such interface exists, this function returns an
     invalid QNetworkInterface object.
@@ -550,6 +575,27 @@ QNetworkInterface QNetworkInterface::interfaceFromIndex(int index)
     QNetworkInterface result;
     result.d = manager()->interfaceFromIndex(index);
     return result;
+}
+
+/*!
+    \since 5.7
+
+    Returns the name of the interface whose index is \a index or an empty
+    string if there is no interface with that index. This function should
+    produce the same result as the following code, but will probably execute
+    faster.
+
+    \code
+        QNetworkInterface::interfaceFromIndex(index).name()
+    \endcode
+
+    \sa interfaceFromIndex(), interfaceIndexFromName(), QUdpDatagram::interfaceIndex()
+*/
+QString QNetworkInterface::interfaceNameFromIndex(int index)
+{
+    if (!index)
+        return QString();
+    return QNetworkInterfaceManager::interfaceNameFromIndex(index);
 }
 
 /*!

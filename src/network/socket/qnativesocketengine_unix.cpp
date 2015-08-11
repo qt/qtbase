@@ -107,15 +107,8 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
-            if (s->a6.sin6_scope_id) {
-#ifndef QT_NO_IPV6IFNAME
-                char scopeid[IFNAMSIZ];
-                if (::if_indextoname(s->a6.sin6_scope_id, scopeid)) {
-                    addr->setScopeId(QLatin1String(scopeid));
-                } else
-#endif
-                    addr->setScopeId(QString::number(s->a6.sin6_scope_id));
-            }
+            if (s->a6.sin6_scope_id)
+                addr->setScopeId(QNetworkInterface::interfaceNameFromIndex(s->a6.sin6_scope_id));
         }
         if (port)
             *port = ntohs(s->a6.sin6_port);
@@ -129,21 +122,6 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
         tmpAddress.setAddress(ntohl(s->a4.sin_addr.s_addr));
         *addr = tmpAddress;
     }
-}
-
-// inline on purpose
-inline uint QNativeSocketEnginePrivate::scopeIdFromString(const QString &scopeid)
-{
-    if (scopeid.isEmpty())
-        return 0;
-
-    bool ok;
-    uint id = scopeid.toUInt(&ok);
-#ifndef QT_NO_IPV6IFNAME
-    if (!ok)
-        id = ::if_nametoindex(scopeid.toLatin1());
-#endif
-    return id;
 }
 
 static void convertToLevelAndOption(QNativeSocketEngine::SocketOption opt,

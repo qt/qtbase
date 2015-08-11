@@ -203,6 +203,11 @@ void tst_QNetworkInterface::interfaceFromXXX()
     QFETCH(QNetworkInterface, iface);
 
     QVERIFY(QNetworkInterface::interfaceFromName(iface.name()).isValid());
+    if (int idx = iface.index()) {
+        QVERIFY(QNetworkInterface::interfaceFromIndex(idx).isValid());
+        QCOMPARE(QNetworkInterface::interfaceNameFromIndex(idx), iface.name());
+        QCOMPARE(QNetworkInterface::interfaceIndexFromName(iface.name()), idx);
+    }
     foreach (QNetworkAddressEntry entry, iface.addressEntries()) {
         QVERIFY(!entry.ip().isNull());
 
