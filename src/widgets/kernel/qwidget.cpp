@@ -12861,7 +12861,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
     const QDebugStateSaver saver(debug);
     debug.nospace();
     if (widget) {
-        debug << widget->metaObject()->className() << '(' << (void *)widget;
+        debug << widget->metaObject()->className() << '(' << (const void *)widget;
         if (!widget->objectName().isEmpty())
             debug << ", name=" << widget->objectName();
         if (debug.verbosity() > 2) {

@@ -2030,7 +2030,7 @@ QString FunctionNode::signature(bool values) const
 PropertyNode::FunctionRole PropertyNode::role(const FunctionNode* fn) const
 {
     for (int i=0; i<4; i++) {
-        if (functions_[i].contains((Node*)fn))
+        if (functions_[i].contains(const_cast<FunctionNode*>(fn)))
             return (FunctionRole) i;
     }
     return Notifier;
