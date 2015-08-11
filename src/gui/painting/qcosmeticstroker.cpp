@@ -719,10 +719,11 @@ static inline void capAdjust(int caps, int &x1, int &x2, int &y, int yinc)
 template<DrawPixel drawPixel, class Dasher>
 static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2, qreal ry2, int caps)
 {
+    bool didDraw = qAbs(rx2 - rx1) + qAbs(ry2 - ry1) >= 1.0;
+
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
         return true;
 
-    bool didDraw = false;
     const int half = stroker->legacyRounding ? 31 : 0;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
