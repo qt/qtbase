@@ -2075,6 +2075,7 @@ public:
     uint ownerId(FileOwner) const { return 0; }
     QString owner(FileOwner) const { return QString(); }
     QDateTime fileTime(FileTime) const { return QDateTime(); }
+    bool setFileTime(const QDateTime &newDate, FileTime time) { return false; }
 
 private:
     int number;

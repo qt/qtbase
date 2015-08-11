@@ -353,6 +353,13 @@ public:
         return QDateTime();
     }
 
+    bool setFileTime(const QDateTime &newDate, FileTime time)
+    {
+        Q_UNUSED(newDate);
+        Q_UNUSED(time);
+        return false;
+    }
+
     void setFileName(const QString &file)
     {
         if (openForRead_ || openForWrite_)

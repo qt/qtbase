@@ -45,6 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDateTime;
 class QFileDevicePrivate;
 
 class Q_CORE_EXPORT QFileDevice : public QIODevice
@@ -71,6 +72,12 @@ public:
         ResizeError = 12,
         PermissionsError = 13,
         CopyError = 14
+    };
+
+    enum FileTime {
+        FileCreationTime,
+        FileModificationTime,
+        FileAccessTime
     };
 
     enum Permission {
@@ -118,6 +125,9 @@ public:
 
     uchar *map(qint64 offset, qint64 size, MemoryMapFlags flags = NoOptions);
     bool unmap(uchar *address);
+
+    QDateTime fileTime(QFileDevice::FileTime time) const;
+    bool setFileTime(const QDateTime &newDate, QFileDevice::FileTime fileTime);
 
 protected:
     QFileDevice();

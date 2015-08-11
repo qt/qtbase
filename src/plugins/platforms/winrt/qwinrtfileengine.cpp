@@ -440,6 +440,14 @@ QDateTime QWinRTFileEngine::fileTime(FileTime type) const
     return QDateTime(date, time);
 }
 
+bool QWinRTFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+{
+    Q_UNUSED(newDate);
+    Q_UNUSED(time);
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
 qint64 QWinRTFileEngine::read(char *data, qint64 maxlen)
 {
     Q_D(QWinRTFileEngine);

@@ -262,8 +262,8 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     info objects, just append one to the file name given to the constructors
     or setFile().
 
-    The file's dates are returned by created(), lastModified() and
-    lastRead(). Information about the file's access permissions is
+    The file's dates are returned by created(), lastModified(), lastRead() and
+    fileTime(). Information about the file's access permissions is
     obtained with isReadable(), isWritable() and isExecutable(). The
     file's ownership is available from owner(), ownerId(), group() and
     groupId(). You can examine a file's permissions and ownership in a
@@ -1324,7 +1324,7 @@ QDateTime QFileInfo::created() const
 /*!
     Returns the date and local time when the file was last modified.
 
-    \sa created(), lastRead()
+    \sa created(), lastRead(), fileTime()
 */
 QDateTime QFileInfo::lastModified() const
 {
@@ -1346,7 +1346,7 @@ QDateTime QFileInfo::lastModified() const
     On platforms where this information is not available, returns the
     same as lastModified().
 
-    \sa created(), lastModified()
+    \sa created(), lastModified(), fileTime()
 */
 QDateTime QFileInfo::lastRead() const
 {
@@ -1360,6 +1360,45 @@ QDateTime QFileInfo::lastRead() const
         return d->metaData.accessTime().toLocalTime();
     }
     return d->getFileTime(QAbstractFileEngine::AccessTime).toLocalTime();
+}
+
+/*!
+    \enum QFileInfo::FileTime
+    \since 5.10
+
+    This enum is used by the fileTime() function.
+
+    \value FileCreationTime     When the file was created (not supported on UNIX).
+    \value FileModificationTime When the file was most recently modified.
+    \value FileAccessTime       When the file was most recently accessed (e.g.
+                                read or written to).
+
+    \sa fileTime()
+*/
+
+/*!
+    \since 5.10
+    Returns the file time specified by \a time.
+    If the time cannot be determined return QDateTime() (an invalid
+    date time).
+
+    \sa FileTime, QDateTime::isValid()
+*/
+QDateTime QFileInfo::fileTime(QFileInfo::FileTime time) const
+{
+    switch (time) {
+    case QFileInfo::FileCreationTime:
+        return created();
+
+    case QFileInfo::FileModificationTime:
+        return lastModified();
+
+    case QFileInfo::FileAccessTime:
+        return lastRead();
+
+    default:
+        Q_UNREACHABLE();
+    }
 }
 
 /*!

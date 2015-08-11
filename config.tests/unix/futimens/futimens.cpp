@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+** Copyright (C) 2015 Raphael Gozzo <raphael.rg91@gmail.com>
+** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,52 +37,11 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSFILEENGINEASSETSLIBRARY_H
-#define QIOSFILEENGINEASSETSLIBRARY_H
+#include <sys/stat.h>
 
-#include <QtCore/private/qabstractfileengine_p.h>
-
-Q_FORWARD_DECLARE_OBJC_CLASS(ALAsset);
-
-QT_BEGIN_NAMESPACE
-
-class QIOSAssetData;
-
-class QIOSFileEngineAssetsLibrary : public QAbstractFileEngine
+int main(int, char **)
 {
-public:
-    QIOSFileEngineAssetsLibrary(const QString &fileName);
-    ~QIOSFileEngineAssetsLibrary();
-
-    bool open(QIODevice::OpenMode openMode) override;
-    bool close() override;
-    FileFlags fileFlags(FileFlags type) const override;
-    qint64 size() const override;
-    qint64 read(char *data, qint64 maxlen) override;
-    qint64 pos() const override;
-    bool seek(qint64 pos) override;
-    bool setFileTime(const QDateTime &newDate, FileTime time) override;
-    QString fileName(FileName file) const override;
-    void setFileName(const QString &file) override;
-    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const override;
-
-#ifndef QT_NO_FILESYSTEMITERATOR
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
-    Iterator *endEntryList() override;
-#endif
-
-    void setError(QFile::FileError error, const QString &str) { QAbstractFileEngine::setError(error, str); }
-
-private:
-    QString m_fileName;
-    QString m_assetUrl;
-    qint64 m_offset;
-    mutable QIOSAssetData *m_data;
-
-    ALAsset *loadAsset() const;
-};
-
-QT_END_NAMESPACE
-
-#endif // QIOSFILEENGINEASSETSLIBRARY_H
+    futimens(-1,0);
+    return 0;
+}
 

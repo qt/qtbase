@@ -80,6 +80,39 @@ static inline bool isUncPath(const QString &path)
             && path.size() > 2 && path.at(2) != QLatin1Char('.'));
 }
 
+static inline void QDateTimeToSystemTime(const QDateTime &date, SYSTEMTIME *systemTime)
+{
+    const QDate d = date.date();
+    const QTime t = date.time();
+
+    systemTime->wYear = d.year();
+    systemTime->wMonth = d.month();
+    systemTime->wDay = d.day();
+    systemTime->wHour = t.hour();
+    systemTime->wMinute = t.minute();
+    systemTime->wSecond = t.second();
+    systemTime->wMilliseconds = t.msec();
+    systemTime->wDayOfWeek = d.dayOfWeek() % 7;
+}
+
+static inline bool QDateTimeToFileTime(const QDateTime &date, FILETIME *fileTime)
+{
+    SYSTEMTIME sTime;
+
+#if defined(Q_OS_WINCE)
+    QDateTimeToSystemTime(date, &sTime);
+#else
+    SYSTEMTIME lTime;
+
+    QDateTimeToSystemTime(date, &lTime);
+
+    if (!::TzSpecificLocalTimeToSystemTime(0, &lTime, &sTime))
+        return false;
+#endif
+
+    return ::SystemTimeToFileTime(&sTime, fileTime);
+}
+
 /*!
     \internal
 */
@@ -850,6 +883,69 @@ bool QFSFileEngine::setSize(qint64 size)
     return false;
 }
 
+bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+{
+    Q_D(QFSFileEngine);
+
+    if (d->openMode == QFile::NotOpen) {
+        setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
+        return false;
+    }
+
+    if (!newDate.isValid()) {
+        setError(QFile::UnspecifiedError, qt_error_string(ERROR_INVALID_PARAMETER));
+        return false;
+    }
+
+    HANDLE handle = d->fileHandle;
+
+#ifndef Q_OS_WINCE
+    if (handle == INVALID_HANDLE_VALUE) {
+        if (d->fh)
+            handle = reinterpret_cast<HANDLE>(::_get_osfhandle(QT_FILENO(d->fh)));
+        else if (d->fd != -1)
+            handle = reinterpret_cast<HANDLE>(::_get_osfhandle(d->fd));
+    }
+#endif
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
+        return false;
+    }
+
+    FILETIME fTime;
+    FILETIME *pLastWrite = NULL;
+    FILETIME *pLastAccess = NULL;
+    FILETIME *pCreationTime = NULL;
+
+    switch (time) {
+    case QAbstractFileEngine::ModificationTime:
+        pLastWrite = &fTime;
+        break;
+
+    case QAbstractFileEngine::AccessTime:
+        pLastAccess = &fTime;
+        break;
+
+    case QAbstractFileEngine::CreationTime:
+        pCreationTime = &fTime;
+        break;
+    }
+
+    if (!QDateTimeToFileTime(newDate, &fTime)) {
+        setError(QFile::UnspecifiedError, qt_error_string());
+        return false;
+    }
+
+    if (!::SetFileTime(handle, pCreationTime, pLastAccess, pLastWrite)) {
+        setError(QFile::PermissionsError, qt_error_string());
+        return false;
+    }
+
+    d->metaData.clearFlags(QFileSystemMetaData::Times);
+
+    return true;
+}
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const
 {

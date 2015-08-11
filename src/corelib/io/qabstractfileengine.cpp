@@ -727,6 +727,18 @@ QString QAbstractFileEngine::owner(FileOwner owner) const
 }
 
 /*!
+    \fn bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+
+    \since 5.10
+    Sets the file \a time to \a newDate, returning true if successful;
+    otherwise returns false.
+
+    This virtual function must be reimplemented by all subclasses.
+
+    \sa fileTime()
+*/
+
+/*!
     If \a time is \c CreationTime, return when the file was created.
     If \a time is \c ModificationTime, return when the file was most
     recently modified. If \a time is \c AccessTime, return when the

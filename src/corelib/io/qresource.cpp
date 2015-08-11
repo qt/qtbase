@@ -1457,6 +1457,13 @@ QString QResourceFileEngine::owner(FileOwner) const
     return QString();
 }
 
+bool QResourceFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+{
+    Q_UNUSED(newDate);
+    Q_UNUSED(time);
+    return false;
+}
+
 QDateTime QResourceFileEngine::fileTime(FileTime time) const
 {
     Q_D(const QResourceFileEngine);

@@ -206,6 +206,13 @@ public:
         return type & flags;
     }
 
+    bool setFileTime(const QDateTime &newDate, FileTime time) override
+    {
+        Q_UNUSED(newDate);
+        Q_UNUSED(time);
+        return false;
+    }
+
     QString fileName(FileName file = DefaultName) const override
     {
         int pos;

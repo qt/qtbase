@@ -57,6 +57,12 @@ class Q_CORE_EXPORT QFileInfo
 {
     friend class QDirIteratorPrivate;
 public:
+    enum FileTime {
+        FileCreationTime,
+        FileModificationTime,
+        FileAccessTime
+    };
+
     explicit QFileInfo(QFileInfoPrivate *d);
 
     QFileInfo();
@@ -132,6 +138,7 @@ public:
     QDateTime created() const;
     QDateTime lastModified() const;
     QDateTime lastRead() const;
+    QDateTime fileTime(QFileInfo::FileTime time) const;
 
     bool caching() const;
     void setCaching(bool on);

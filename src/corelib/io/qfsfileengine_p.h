@@ -96,6 +96,7 @@ public:
     QString fileName(FileName file) const Q_DECL_OVERRIDE;
     uint ownerId(FileOwner) const Q_DECL_OVERRIDE;
     QString owner(FileOwner) const Q_DECL_OVERRIDE;
+    bool setFileTime(const QDateTime &newDate, FileTime time) Q_DECL_OVERRIDE;
     QDateTime fileTime(FileTime time) const Q_DECL_OVERRIDE;
     void setFileName(const QString &file) Q_DECL_OVERRIDE;
     int handle() const Q_DECL_OVERRIDE;

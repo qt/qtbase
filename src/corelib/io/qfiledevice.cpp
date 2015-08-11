@@ -738,4 +738,80 @@ bool QFileDevice::unmap(uchar *address)
     return false;
 }
 
+/*!
+    \enum QFileDevice::FileTime
+    \since 5.10
+
+    This enum is used by the fileTime() and setFileTime() functions.
+
+    \value FileCreationTime     When the file was created (not supported on UNIX).
+    \value FileModificationTime When the file was most recently modified.
+    \value FileAccessTime       When the file was most recently accessed (e.g.
+                                read or written to).
+
+    \sa setFileName(), fileTime()
+*/
+
+static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTime(QFileDevice::FileTime time)
+{
+    switch (time) {
+    case QFileDevice::FileAccessTime:
+        return QAbstractFileEngine::AccessTime;
+
+    case QFileDevice::FileCreationTime:
+        return QAbstractFileEngine::CreationTime;
+
+    case QFileDevice::FileModificationTime:
+        return QAbstractFileEngine::ModificationTime;
+    }
+
+    Q_UNREACHABLE();
+    return QAbstractFileEngine::AccessTime;
+}
+
+/*!
+    \since 5.10
+    Returns the file time specified by \a time.
+    If the time cannot be determined return QDateTime() (an invalid
+    date time).
+
+    \sa setFileName(), FileTime, QDateTime::isValid()
+*/
+QDateTime QFileDevice::fileTime(QFileDevice::FileTime time) const
+{
+    Q_D(const QFileDevice);
+
+    if (d->engine())
+        return d->engine()->fileTime(FileDeviceTimeToAbstractFileEngineTime(time));
+
+    return QDateTime();
+}
+
+/*!
+    \since 5.10
+    Sets the file \a time to \a newDate, returning true if successful;
+    otherwise returns false.
+
+    \note The file must be open to use this function.
+
+    \sa fileTime(), FileTime
+*/
+bool QFileDevice::setFileTime(const QDateTime &newDate, QFileDevice::FileTime fileTime)
+{
+    Q_D(QFileDevice);
+
+    if (!d->engine()) {
+        d->setError(QFileDevice::UnspecifiedError, tr("No file engine available"));
+        return false;
+    }
+
+    if (!d->fileEngine->setFileTime(newDate, FileDeviceTimeToAbstractFileEngineTime(fileTime))) {
+        d->setError(d->fileEngine->error(), d->fileEngine->errorString());
+        return false;
+    }
+
+    unsetError();
+    return true;
+}
+
 QT_END_NAMESPACE

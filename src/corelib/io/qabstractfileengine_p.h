@@ -144,6 +144,7 @@ public:
     virtual QString fileName(FileName file=DefaultName) const;
     virtual uint ownerId(FileOwner) const;
     virtual QString owner(FileOwner) const;
+    virtual bool setFileTime(const QDateTime &newDate, FileTime time) = 0;
     virtual QDateTime fileTime(FileTime time) const;
     virtual void setFileName(const QString &file);
     virtual int handle() const;

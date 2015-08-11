@@ -899,6 +899,10 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
+/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+  \reimp
+*/
+
 /*! \fn QDateTime QFSFileEngine::fileTime(FileTime time) const
   \reimp
 */
