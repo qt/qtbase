@@ -128,6 +128,8 @@ public:
     void setSessionTicket(const QByteArray &sessionTicket);
     int sessionTicketLifeTimeHint() const;
 
+    QSslKey ephemeralServerKey() const;
+
     // EC settings
     QVector<QSslEllipticCurve> ellipticCurves() const;
     void setEllipticCurves(const QVector<QSslEllipticCurve> &curves);

@@ -232,6 +232,8 @@ private slots:
 #ifndef QT_NO_OPENSSL
     void simplePskConnect_data();
     void simplePskConnect();
+    void ephemeralServerKey_data();
+    void ephemeralServerKey();
 #endif
 
     static void exitLoop()
@@ -3344,6 +3346,40 @@ void tst_QSslSocket::simplePskConnect()
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(disconnectedSpy.count(), 1);
 }
+
+void tst_QSslSocket::ephemeralServerKey_data()
+{
+    QTest::addColumn<QString>("cipher");
+    QTest::addColumn<bool>("emptyKey");
+
+    QTest::newRow("NonForwardSecrecyCipher") << "RC4-SHA" << true;
+    QTest::newRow("ForwardSecrecyCipher") << "ECDHE-RSA-AES256-SHA" << (QSslSocket::sslLibraryVersionNumber() < 0x10002000L);
+}
+
+void tst_QSslSocket::ephemeralServerKey()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (!QSslSocket::supportsSsl() || setProxy)
+        return;
+
+    QFETCH(QString, cipher);
+    QFETCH(bool, emptyKey);
+    SslServer server;
+    server.config.setCiphers(QList<QSslCipher>() << QSslCipher(cipher));
+    QVERIFY(server.listen());
+    QSslSocketPtr client = newSocket();
+    socket = client.data();
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    QSignalSpy spy(client.data(), &QSslSocket::encrypted);
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+    spy.wait();
+
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(server.config.ephemeralServerKey().isNull());
+    QCOMPARE(client->sslConfiguration().ephemeralServerKey().isNull(), emptyKey);
+}
+
 #endif // QT_NO_OPENSSL
 
 #endif // QT_NO_SSL

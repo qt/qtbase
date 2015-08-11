@@ -731,6 +731,23 @@ int QSslConfiguration::sessionTicketLifeTimeHint() const
 }
 
 /*!
+   \since 5.7
+
+   Returns the ephemeral server key used for cipher algorithms
+   with forward secrecy, e.g. DHE-RSA-AES128-SHA.
+
+   The ephemeral key is only available when running in client mode, i.e.
+   QSslSocket::SslClientMode. When running in server mode or using a
+   cipher algorithm without forward secrecy a null key is returned.
+   The ephemeral server key will be set before emitting the encrypted()
+   signal.
+ */
+QSslKey QSslConfiguration::ephemeralServerKey() const
+{
+    return d->ephemeralServerKey;
+}
+
+/*!
     \since 5.5
 
     Returns this connection's current list of elliptic curves. This

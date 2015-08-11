@@ -1566,6 +1566,14 @@ void QSslSocketBackendPrivate::continueHandshake()
     }
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    if (q_SSLeay() >= 0x10002000L && mode == QSslSocket::SslClientMode) {
+        EVP_PKEY *key;
+        if (q_SSL_get_server_tmp_key(ssl, &key))
+            configuration.ephemeralServerKey = QSslKey(key, QSsl::PublicKey);
+    }
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+
     connectionEncrypted = true;
     emit q->encrypted();
     if (autoStartHandshake && pendingClose) {

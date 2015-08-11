@@ -113,6 +113,8 @@ public:
     QByteArray sslSession;
     int sslSessionTicketLifeTimeHint;
 
+    QSslKey ephemeralServerKey;
+
     QList<QByteArray> nextAllowedProtocols;
     QByteArray nextNegotiatedProtocol;
     QSslConfiguration::NextProtocolNegotiationStatus nextProtocolNegotiationStatus;

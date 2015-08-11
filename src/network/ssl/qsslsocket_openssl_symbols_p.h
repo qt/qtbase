@@ -483,6 +483,9 @@ size_t q_EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
 int q_EC_curve_nist2nid(const char *name);
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+#define q_SSL_get_server_tmp_key(ssl, key) q_SSL_ctrl((ssl), SSL_CTRL_GET_SERVER_TMP_KEY, 0, (char *)key)
+#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 
 // PKCS#12 support
 int q_PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
