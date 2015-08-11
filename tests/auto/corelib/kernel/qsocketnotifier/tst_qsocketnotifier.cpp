@@ -40,6 +40,7 @@
 #include <QtCore/QSocketNotifier>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#include <QtNetwork/QUdpSocket>
 #ifndef Q_OS_WINRT
 #include <private/qnativesocketengine_p.h>
 #else
@@ -66,7 +67,28 @@ private slots:
 #ifdef Q_OS_UNIX
     void posixSockets();
 #endif
+    void asyncMultipleDatagram();
+
+protected slots:
+    void async_readDatagramSlot();
+    void async_writeDatagramSlot();
+
+private:
+    QUdpSocket *m_asyncSender;
+    QUdpSocket *m_asyncReceiver;
 };
+
+static QHostAddress makeNonAny(const QHostAddress &address,
+                               QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
+{
+    if (address == QHostAddress::Any)
+        return preferForAny;
+    if (address == QHostAddress::AnyIPv4)
+        return QHostAddress::LocalHost;
+    if (address == QHostAddress::AnyIPv6)
+        return QHostAddress::LocalHostIPv6;
+    return address;
+}
 
 class UnexpectedDisconnectTester : public QObject
 {
@@ -298,6 +320,57 @@ void tst_QSocketNotifier::posixSockets()
     qt_safe_close(posixSocket);
 }
 #endif
+
+void tst_QSocketNotifier::async_readDatagramSlot()
+{
+    char buf[1];
+    QVERIFY(m_asyncReceiver->hasPendingDatagrams());
+    do {
+        QCOMPARE(m_asyncReceiver->pendingDatagramSize(), qint64(1));
+        QCOMPARE(m_asyncReceiver->readDatagram(buf, sizeof(buf)), qint64(1));
+        if (buf[0] == '1') {
+            // wait for the second datagram message.
+            QTest::qSleep(100);
+        }
+    } while (m_asyncReceiver->hasPendingDatagrams());
+
+    if (buf[0] == '3')
+        QTestEventLoop::instance().exitLoop();
+}
+
+void tst_QSocketNotifier::async_writeDatagramSlot()
+{
+    m_asyncSender->writeDatagram("3", makeNonAny(m_asyncReceiver->localAddress()),
+                                                 m_asyncReceiver->localPort());
+}
+
+void tst_QSocketNotifier::asyncMultipleDatagram()
+{
+    m_asyncSender = new QUdpSocket;
+    m_asyncReceiver = new QUdpSocket;
+
+    QVERIFY(m_asyncReceiver->bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    quint16 port = m_asyncReceiver->localPort();
+    QVERIFY(port != 0);
+
+    QSignalSpy spy(m_asyncReceiver, &QIODevice::readyRead);
+    connect(m_asyncReceiver, &QIODevice::readyRead, this,
+            &tst_QSocketNotifier::async_readDatagramSlot);
+    m_asyncSender->writeDatagram("1", makeNonAny(m_asyncReceiver->localAddress()), port);
+    m_asyncSender->writeDatagram("2", makeNonAny(m_asyncReceiver->localAddress()), port);
+    // wait a little to ensure that the datagrams we've just sent
+    // will be delivered on receiver side.
+    QTest::qSleep(100);
+
+    QTimer::singleShot(500, this, &tst_QSocketNotifier::async_writeDatagramSlot);
+
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(spy.count(), 2);
+
+    delete m_asyncSender;
+    delete m_asyncReceiver;
+}
 
 QTEST_MAIN(tst_QSocketNotifier)
 #include <tst_qsocketnotifier.moc>
