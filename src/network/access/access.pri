@@ -78,6 +78,8 @@ ios {
 
     OBJECTIVE_SOURCES += \
         access/qnetworkreplynsurlconnectionimpl.mm
+
+    LIBS_PRIVATE += -framework Foundation
 }
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)
