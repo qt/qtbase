@@ -218,6 +218,27 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
         iface = new QNetworkInterfacePrivate;
         iface->index = ifindex;
         interfaces << iface;
+    }
+
+    return iface;
+}
+
+static QList<QNetworkInterfacePrivate *> interfaceListing()
+{
+    QList<QNetworkInterfacePrivate *> interfaces;
+
+    int socket;
+    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+        return interfaces;      // error
+
+    QSet<QByteArray> names = interfaceNames(socket);
+    QSet<QByteArray>::ConstIterator it = names.constBegin();
+    for ( ; it != names.constEnd(); ++it) {
+        ifreq req;
+        memset(&req, 0, sizeof(ifreq));
+        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
+
+        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
 #ifdef SIOCGIFNAME
         // Get the canonical name
@@ -246,27 +267,6 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
             iface->hardwareAddress = iface->makeHwAddress(6, addr);
         }
 #endif
-    }
-
-    return iface;
-}
-
-static QList<QNetworkInterfacePrivate *> interfaceListing()
-{
-    QList<QNetworkInterfacePrivate *> interfaces;
-
-    int socket;
-    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-        return interfaces;      // error
-
-    QSet<QByteArray> names = interfaceNames(socket);
-    QSet<QByteArray>::ConstIterator it = names.constBegin();
-    for ( ; it != names.constEnd(); ++it) {
-        ifreq req;
-        memset(&req, 0, sizeof(ifreq));
-        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
-
-        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
         // Get the interface broadcast address
         QNetworkAddressEntry entry;
