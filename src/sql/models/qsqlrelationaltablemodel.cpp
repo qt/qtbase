@@ -428,8 +428,9 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
     example, if \a index is out of bounds).
 
     For relational columns, \a value must be the index, not the
-    display value. The index must also exist in the referenced
-    table, otherwise the function returns \c false.
+    display value. If an index is given, it must also exist in the
+    referenced table, otherwise the function returns \c false.
+    If a QVariant() is passed instead of an index, the index is cleared.
 
     \sa editStrategy(), data(), submit(), revertRow()
 */
@@ -442,7 +443,7 @@ bool QSqlRelationalTableModel::setData(const QModelIndex &index, const QVariant 
         auto relation = d->relations.at(index.column());
         if (!relation->isDictionaryInitialized())
             relation->populateDictionary();
-        if (!relation->dictionary.contains(value.toString()))
+        if (value.isValid() && !relation->dictionary.contains(value.toString()))
             return false;
     }
     return QSqlTableModel::setData(index, value, role);

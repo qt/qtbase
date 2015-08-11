@@ -402,6 +402,26 @@ void tst_QSqlRelationalTableModel::setData()
         QCOMPARE(model.data(model.index(0,1)).toString(), QString("Hr"));
     }
 
+    // verify that clearing a foreign key works
+    {
+        QSqlRelationalTableModel model(0, db);
+
+        model.setTable(reltest1);
+        model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
+        model.setSort(0, Qt::AscendingOrder);
+        QVERIFY_SQL(model, select());
+
+        QVERIFY(model.setData(model.index(0, 1), QString("harry2")));
+        QVERIFY(model.setData(model.index(0, 2), 2));
+
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry2"));
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
+
+        QVERIFY(model.setData(model.index(0, 2), QVariant())); // clear foreign key
+
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry2"));
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString()); // check that foreign value is not visible
+    }
 }
 
 void tst_QSqlRelationalTableModel::multipleRelation()
