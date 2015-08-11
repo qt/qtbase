@@ -427,11 +427,10 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             if (!inCache)
                 shaderCache.store(newProg->program, QOpenGLContext::currentContext());
         } else {
-            QLatin1String none("none");
-            QLatin1String br("\n");
             QString error;
             error = QLatin1String("Shader program failed to link,");
 #if defined(QT_DEBUG)
+            QLatin1String br("\n");
             error += QLatin1String("\n  Shaders Used:\n");
             for (int i = 0; i < newProg->program->shaders().count(); ++i) {
                 QOpenGLShader *shader = newProg->program->shaders().at(i);
