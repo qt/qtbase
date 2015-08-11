@@ -785,7 +785,7 @@ QString QHostAddress::toString() const
     usually the same as the interface name (e.g., "eth0", "en1") or number
     (e.g., "1", "2").
 
-    \sa setScopeId()
+    \sa setScopeId(), QNetworkInterface, QNetworkInterface::interfaceFromName
 */
 QString QHostAddress::scopeId() const
 {
@@ -796,8 +796,14 @@ QString QHostAddress::scopeId() const
 /*!
     \since 4.1
 
-    Sets the IPv6 scope ID of the address to \a id. If the address
-    protocol is not IPv6, this function does nothing.
+    Sets the IPv6 scope ID of the address to \a id. If the address protocol is
+    not IPv6, this function does nothing. The scope ID may be set as an
+    interface name (such as "eth0" or "en1") or as an integer representing the
+    interface index. If \a id is an interface name, QtNetwork will convert to
+    an interface index using QNetworkInterface::interfaceIndexFromName() before
+    calling the operating system networking functions.
+
+    \sa scopeId(), QNetworkInterface, QNetworkInterface::interfaceFromName
 */
 void QHostAddress::setScopeId(const QString &id)
 {

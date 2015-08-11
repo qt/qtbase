@@ -86,9 +86,16 @@ QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interface
 {
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
     QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
-    for ( ; it != interfaceList.constEnd(); ++it)
-        if ((*it)->name == name)
+
+    bool ok;
+    uint index = name.toUInt(&ok);
+
+    for ( ; it != interfaceList.constEnd(); ++it) {
+        if (ok && (*it)->index == int(index))
             return *it;
+        else if ((*it)->name == name)
+            return *it;
+    }
 
     return empty;
 }
@@ -515,6 +522,9 @@ QList<QNetworkAddressEntry> QNetworkInterface::addressEntries() const
     Returns a QNetworkInterface object for the interface named \a
     name. If no such interface exists, this function returns an
     invalid QNetworkInterface object.
+
+    The string \a name may be either an actual interface name (such as "eth0"
+    or "en1") or an interface index in string form ("1", "2", etc.).
 
     \sa name(), isValid()
 */
