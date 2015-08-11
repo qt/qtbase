@@ -525,7 +525,8 @@ bool QOpenGLShader::compileSourceCode(const char *source)
 
         // The precision qualifiers are useful on OpenGL/ES systems,
         // but usually not present on desktop systems.
-        const QSurfaceFormat currentSurfaceFormat = QOpenGLContext::currentContext()->format();
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        const QSurfaceFormat currentSurfaceFormat = ctx->format();
         QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
         if (currentSurfaceFormat.renderableType() == QSurfaceFormat::OpenGL
                 || ctx_d->workaround_missingPrecisionQualifiers
@@ -545,10 +546,16 @@ bool QOpenGLShader::compileSourceCode(const char *source)
         }
 #endif
 
-        // Append #line directive in order to compensate for text insertion
-        QByteArray lineDirective = QStringLiteral("#line %1\n").arg(versionDirectivePosition.line).toUtf8();
-        sourceChunks.append(lineDirective.constData());
-        sourceChunkLengths.append(GLint(lineDirective.length()));
+        QByteArray lineDirective;
+        // #line is rejected by some drivers:
+        // "2.1 Mesa 8.1-devel (git-48a3d4e)" or "MESA 2.1 Mesa 8.1-devel"
+        const char *version = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_VERSION));
+        if (!version || !strstr(version, "2.1 Mesa 8")) {
+            // Append #line directive in order to compensate for text insertion
+            lineDirective = QStringLiteral("#line %1\n").arg(versionDirectivePosition.line).toUtf8();
+            sourceChunks.append(lineDirective.constData());
+            sourceChunkLengths.append(GLint(lineDirective.length()));
+        }
 
         // Append rest of shader code
         sourceChunks.append(source + versionDirectivePosition.position);
