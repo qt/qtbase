@@ -284,7 +284,7 @@ QStringList QCommandLineOptionPrivate::removeInvalidNames(QStringList nameList)
     else
         nameList.erase(std::remove_if(nameList.begin(), nameList.end(), IsInvalidName()),
                        nameList.end());
-    return qMove(nameList);
+    return nameList;
 }
 
 /*!
