@@ -133,6 +133,9 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkInterface &networ
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QNetworkAddressEntry)
+Q_DECLARE_METATYPE(QNetworkInterface)
+
 #endif // QT_NO_NETWORKINTERFACE
 
 #endif

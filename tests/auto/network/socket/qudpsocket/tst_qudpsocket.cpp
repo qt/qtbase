@@ -56,7 +56,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QHostAddress)
-Q_DECLARE_METATYPE(QNetworkInterface)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 
