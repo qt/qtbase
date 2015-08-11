@@ -185,9 +185,14 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     QNetworkInterfacePrivate *iface = 0;
     int ifindex = 0;
 
-#ifndef QT_NO_IPV6IFNAME
+#if !defined(QT_NO_IPV6IFNAME) || defined(SIOCGIFINDEX)
     // Get the interface index
+#  ifdef SIOCGIFINDEX
+    if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
+        ifindex = req.ifr_ifindex;
+#  else
     ifindex = if_nametoindex(req.ifr_name);
+#  endif
 
     // find the interface data
     QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
