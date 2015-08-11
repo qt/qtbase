@@ -127,14 +127,13 @@ static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
 #ifdef QT_NO_GETIFADDRS
 // getifaddrs not available
 
-static const int STORAGEBUFFER_GROWTH = 256;
-
 static QSet<QByteArray> interfaceNames(int socket)
 {
     QSet<QByteArray> result;
 #ifdef QT_NO_IPV6IFNAME
     QByteArray storageBuffer;
     struct ifconf interfaceList;
+    static const int STORAGEBUFFER_GROWTH = 256;
 
     forever {
         // grow the storage buffer
