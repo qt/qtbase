@@ -687,10 +687,10 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
   <type> <QML-type>::<name>(<param>, <param>, ...)
   <type> <QML-module>::<QML-type>::<name>(<param>, <param>, ...)
 
-  This function splits the argument into one of those two
-  forms, sets \a module, \a qmlTypeName, and \a name, and returns
-  true. If the argument doesn't match either form, an error
-  message is emitted and false is returned.
+  This function splits the \a{arg}ument into one of those
+  two forms, sets \a type, \a module, and \a qmlTypeName,
+  and returns true. If the argument doesn't match either
+  form, an error message is emitted and false is returned.
 
   \note The two QML types \e{Component} and \e{QtObject} never
   have a module qualifier.
@@ -700,30 +700,29 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
                                       QString& module,
                                       QString& qmlTypeName)
 {
-    QStringList colonSplit(arg.split("::"));
+    QString name;
+    int leftParen = arg.indexOf(QChar('('));
+    if (leftParen > 0)
+        name = arg.left(leftParen);
+    else
+        name = arg;
+    int firstBlank = name.indexOf(QChar(' '));
+    if (firstBlank > 0) {
+        type = name.left(firstBlank);
+        name = name.right(name.length() - firstBlank - 1);
+    }
+    else
+        type.clear();
+
+    QStringList colonSplit(name.split("::"));
     if (colonSplit.size() > 1) {
-        QStringList blankSplit = colonSplit[0].split(QLatin1Char(' '));
-        if (blankSplit.size() > 1) {
-            type = blankSplit[0];
-            if (colonSplit.size() > 2) {
-                module = blankSplit[1];
-                qmlTypeName = colonSplit[1];
-            }
-            else {
-                module.clear();
-                qmlTypeName = blankSplit[1];
-            }
+        if (colonSplit.size() > 2) {
+            module = colonSplit[0];
+            qmlTypeName = colonSplit[1];
         }
         else {
-            type.clear();
-            if (colonSplit.size() > 2) {
-                module = colonSplit[0];
-                qmlTypeName = colonSplit[1];
-            }
-            else {
-                module.clear();
-                qmlTypeName = colonSplit[0];
-            }
+            module.clear();
+            qmlTypeName = colonSplit[0];
         }
         return true;
     }
