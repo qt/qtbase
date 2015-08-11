@@ -775,11 +775,6 @@ QString QHostAddress::toString() const
     on your host. Link-local addresses ("fe80...") are generated from the MAC
     address of the local network adaptor, and are not guaranteed to be unique.
 
-    \li Site-local: Addresses that are local to the site / private network
-    (e.g., the company intranet). Site-local addresses ("fec0...")  are
-    usually distributed by the site router, and are not guaranteed to be
-    unique outside of the local site.
-
     \li Global: For globally routable addresses, such as public servers on the
     Internet.
 
