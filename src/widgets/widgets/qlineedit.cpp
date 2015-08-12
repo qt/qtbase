@@ -1899,13 +1899,19 @@ void QLineEdit::paintEvent(QPaintEvent *)
 
     if (d->shouldShowPlaceholderText()) {
         if (!d->placeholderText.isEmpty()) {
+            const Qt::LayoutDirection layoutDir = d->placeholderText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+            const Qt::Alignment alignPhText = QStyle::visualAlignment(layoutDir, QFlag(d->alignment));
             QColor col = pal.text().color();
             col.setAlpha(128);
             QPen oldpen = p.pen();
             p.setPen(col);
-            QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
-            p.drawText(lineRect, va, elidedText);
+            Qt::LayoutDirection oldLayoutDir = p.layoutDirection();
+            p.setLayoutDirection(layoutDir);
+
+            const QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
+            p.drawText(lineRect, alignPhText, elidedText);
             p.setPen(oldpen);
+            p.setLayoutDirection(oldLayoutDir);
         }
     }
 
