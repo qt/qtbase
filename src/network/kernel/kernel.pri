@@ -34,11 +34,10 @@ android {
 
 win32: {
     !winrt {
-        HEADERS += kernel/qnetworkinterface_win_p.h
         SOURCES += kernel/qdnslookup_win.cpp \
                    kernel/qhostinfo_win.cpp \
                    kernel/qnetworkinterface_win.cpp
-        LIBS_PRIVATE += -ldnsapi
+        LIBS_PRIVATE += -ldnsapi -liphlpapi
     } else {
         SOURCES += kernel/qdnslookup_winrt.cpp \
                    kernel/qhostinfo_winrt.cpp \
