@@ -90,6 +90,7 @@ Q_DECLARE_SHARED(QNetworkAddressEntry)
 class QNetworkInterfacePrivate;
 class Q_NETWORK_EXPORT QNetworkInterface
 {
+    Q_GADGET
 public:
     enum InterfaceFlag {
         IsUp = 0x1,
@@ -100,6 +101,27 @@ public:
         CanMulticast = 0x20
     };
     Q_DECLARE_FLAGS(InterfaceFlags, InterfaceFlag)
+    Q_FLAG(InterfaceFlags)
+
+    enum InterfaceType {
+        Loopback = 1,
+        Virtual,
+        Ethernet,
+        Slip,
+        CanBus,
+        Ppp,
+        Fddi,
+        Wifi,
+        Ieee80211 = Wifi,   // alias
+        Phonet,
+        Ieee802154,
+        SixLoWPAN,  // 6LoWPAN, but we can't start with a digit
+        Ieee80216,
+        Ieee1394,
+
+        Unknown = 0
+    };
+    Q_ENUM(InterfaceType)
 
     QNetworkInterface();
     QNetworkInterface(const QNetworkInterface &other);
@@ -117,6 +139,7 @@ public:
     QString name() const;
     QString humanReadableName() const;
     InterfaceFlags flags() const;
+    InterfaceType type() const;
     QString hardwareAddress() const;
     QList<QNetworkAddressEntry> addressEntries() const;
 

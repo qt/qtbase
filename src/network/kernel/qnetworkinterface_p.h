@@ -52,6 +52,7 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/qnetworkinterface.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qreadwritelock.h>
@@ -82,6 +83,7 @@ public:
 
     int index;                  // interface index, if know
     QNetworkInterface::InterfaceFlags flags;
+    QNetworkInterface::InterfaceType type = QNetworkInterface::Unknown;
 
     QString name;
     QString friendlyName;

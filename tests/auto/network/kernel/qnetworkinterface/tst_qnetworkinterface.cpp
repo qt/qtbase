@@ -138,6 +138,7 @@ void tst_QNetworkInterface::dump()
 
         qDebug() << "    index:     " << i.index();
         qDebug() << "    flags:     " << qPrintable(flags);
+        qDebug() << "    type:      " << i.type();
         qDebug() << "    hw address:" << qPrintable(i.hardwareAddress());
 
         int count = 0;

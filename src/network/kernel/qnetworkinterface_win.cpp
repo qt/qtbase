@@ -62,6 +62,10 @@
 
 #include <qt_windows.h>
 
+// In case these aren't defined
+#define IF_TYPE_IEEE80216_WMAN  237
+#define IF_TYPE_IEEE802154      259
+
 QT_BEGIN_NAMESPACE
 
 static QHostAddress addressFromSockaddr(sockaddr *sa)
@@ -155,6 +159,45 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (ptr->IfType == IF_TYPE_PPP)
             iface->flags |= QNetworkInterface::IsPointToPoint;
 
+        switch (ptr->IfType) {
+        case IF_TYPE_ETHERNET_CSMACD:
+            iface->type = QNetworkInterface::Ethernet;
+            break;
+
+        case IF_TYPE_FDDI:
+            iface->type = QNetworkInterface::Fddi;
+            break;
+
+        case IF_TYPE_PPP:
+            iface->type = QNetworkInterface::Ppp;
+            break;
+
+        case IF_TYPE_SLIP:
+            iface->type = QNetworkInterface::Slip;
+            break;
+
+        case IF_TYPE_SOFTWARE_LOOPBACK:
+            iface->type = QNetworkInterface::Loopback;
+            iface->flags |= QNetworkInterface::IsLoopBack;
+            break;
+
+        case IF_TYPE_IEEE80211:
+            iface->type = QNetworkInterface::Ieee80211;
+            break;
+
+        case IF_TYPE_IEEE1394:
+            iface->type = QNetworkInterface::Ieee1394;
+            break;
+
+        case IF_TYPE_IEEE80216_WMAN:
+            iface->type = QNetworkInterface::Ieee80216;
+            break;
+
+        case IF_TYPE_IEEE802154:
+            iface->type = QNetworkInterface::Ieee802154;
+            break;
+        }
+
         // use ConvertInterfaceLuidToNameW because that returns a friendlier name, though not
         // as "friendly" as FriendlyName below
         WCHAR buf[IF_MAX_STRING_SIZE + 1];
@@ -167,9 +210,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (ptr->PhysicalAddressLength)
             iface->hardwareAddress = iface->makeHwAddress(ptr->PhysicalAddressLength,
                                                           ptr->PhysicalAddress);
-        else
-            // loopback if it has no address
-            iface->flags |= QNetworkInterface::IsLoopBack;
 
         // parse the IP (unicast) addresses
         for (PIP_ADAPTER_UNICAST_ADDRESS addr = ptr->FirstUnicastAddress; addr; addr = addr->Next) {

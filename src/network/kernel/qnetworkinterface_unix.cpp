@@ -384,11 +384,70 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 # elif defined(Q_OS_BSD4)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include <net/if_dl.h>
+#  include <net/if_media.h>
+#  include <net/if_types.h>
 QT_END_INCLUDE_NAMESPACE
+
+static int openSocket(int &socket)
+{
+    if (socket == -1)
+        socket = qt_safe_socket(AF_INET, SOCK_DGRAM, 0);
+    return socket;
+}
+
+static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, struct ifmediareq *req)
+{
+    // Determine the interface type.
+
+    // On Darwin, these are #defines, but on FreeBSD they're just an
+    // enum, so we can't #ifdef them. Use the authoritative list from
+    // https://www.iana.org/assignments/smi-numbers/smi-numbers.xhtml#smi-numbers-5
+    switch (iftype) {
+    case IFT_PPP:
+        return QNetworkInterface::Ppp;
+
+    case IFT_LOOP:
+        return QNetworkInterface::Loopback;
+
+    case IFT_SLIP:
+        return QNetworkInterface::Slip;
+
+    case 0x47:      // IFT_IEEE80211
+        return QNetworkInterface::Ieee80211;
+
+    case IFT_IEEE1394:
+        return QNetworkInterface::Ieee1394;
+
+    case IFT_GIF:
+    case IFT_STF:
+        return QNetworkInterface::Virtual;
+    }
+
+    // For the remainder (including Ethernet), let's try SIOGIFMEDIA
+    req->ifm_count = 0;
+    if (qt_safe_ioctl(socket, SIOCGIFMEDIA, req) == 0) {
+        // see https://man.openbsd.org/ifmedia.4
+
+        switch (IFM_TYPE(req->ifm_current)) {
+        case IFM_ETHER:
+            return QNetworkInterface::Ethernet;
+
+        case IFM_FDDI:
+            return QNetworkInterface::Fddi;
+
+        case IFM_IEEE80211:
+            return QNetworkInterface::Ieee80211;
+        }
+    }
+
+    return QNetworkInterface::Unknown;
+}
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     QList<QNetworkInterfacePrivate *> interfaces;
+    struct ifmediareq mediareq;
+    int socket = -1;
 
     // on NetBSD we use AF_LINK and sockaddr_dl
     // scan the list for that family
@@ -402,8 +461,13 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->name = QString::fromLatin1(ptr->ifa_name);
             iface->flags = convertFlags(ptr->ifa_flags);
             iface->hardwareAddress = iface->makeHwAddress(sdl->sdl_alen, (uchar*)LLADDR(sdl));
+
+            strlcpy(mediareq.ifm_name, ptr->ifa_name, sizeof(mediareq.ifm_name));
+            iface->type = probeIfType(openSocket(socket), sdl->sdl_type, &mediareq);
         }
 
+    if (socket != -1)
+        qt_safe_close(socket);
     return interfaces;
 }
 

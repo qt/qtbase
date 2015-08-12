@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -391,6 +391,57 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
 */
 
 /*!
+    \enum QNetworkInterface::InterfaceType
+
+    Specifies the type of hardware (PHY layer, OSI level 1) this interface is,
+    if it could be determined. Interface types that are not among those listed
+    below will generally be listed as Unknown, though future versions of Qt may
+    add new enumeration values.
+
+    The possible values are:
+
+    \value Unknown              The interface type could not be determined or is not
+                                one of the other listed types.
+    \value Loopback             The virtual loopback interface, which is assigned
+                                the loopback IP addresses (127.0.0.1, ::1).
+    \value Virtual              A type of interface determined to be virtual, but
+                                not any of the other possible types. For example,
+                                tunnel interfaces are (currently) detected as
+                                virtual ones.
+    \value Ethernet             IEEE 802.3 Ethernet interfaces, though on many
+                                systems other types of IEEE 802 interfaces may also
+                                be detected as Ethernet (especially Wi-Fi).
+    \value WiFi                 IEEE 802.11 Wi-Fi interfaces. Note that on some
+                                systems, QNetworkInterface may be unable to
+                                distinguish regular Ethernet from Wi-Fi and will
+                                not return this enum value.
+    \value Ieee80211            An alias for WiFi.
+    \value CanBus               ISO 11898 Controller Area Network bus interfaces,
+                                usually found on automotive systems.
+    \value Fddi                 ANSI X3T12 Fiber Distributed Data Interface, a local area
+                                network over optical fibers.
+    \value Ppp                  Point-to-Point Protocol interfaces, establishing a
+                                direct connection between two nodes over a lower
+                                transport layer (often serial over radio or physical
+                                line).
+    \value Slip                 Serial Line Internet Protocol interfaces.
+    \value Phonet               Interfaces using the Linux Phonet socket family, for
+                                communication with cellular modems. See the
+                                \l {https://www.kernel.org/doc/Documentation/networking/phonet.txt}{Linux kernel documentation}
+                                for more information.
+    \value Ieee802154           IEEE 802.15.4 Personal Area Network interfaces, other
+                                than 6LoWPAN (see below).
+    \value SixLoWPAN            6LoWPAN (IPv6 over Low-power Wireless Personal Area
+                                Networks) interfaces, which operate on IEEE 802.15.4
+                                PHY, but have specific header compression schemes
+                                for IPv6 and UDP. This type of interface is often
+                                used for mesh networking.
+    \value Ieee80216            IEEE 802.16 Wireless Metropolitan Area Network, also
+                                known under the commercial name "WiMAX".
+    \value Ieee1394             IEEE 1394 interfaces (a.k.a. "FireWire").
+*/
+
+/*!
     Constructs an empty network interface object.
 */
 QNetworkInterface::QNetworkInterface()
@@ -494,6 +545,19 @@ QNetworkInterface::InterfaceFlags QNetworkInterface::flags() const
 }
 
 /*!
+    \since 5.11
+
+    Returns the type of this interface, if it could be determined. If it could
+    not be determined, this function returns QNetworkInterface::Unknown.
+
+    \sa hardwareAddress()
+*/
+QNetworkInterface::InterfaceType QNetworkInterface::type() const
+{
+    return d ? d->type : Unknown;
+}
+
+/*!
     Returns the low-level hardware address for this interface. On
     Ethernet interfaces, this will be a MAC address in string
     representation, separated by colons.
@@ -501,6 +565,8 @@ QNetworkInterface::InterfaceFlags QNetworkInterface::flags() const
     Other interface types may have other types of hardware
     addresses. Implementations should not depend on this function
     returning a valid MAC address.
+
+    \sa type()
 */
 QString QNetworkInterface::hardwareAddress() const
 {
@@ -685,5 +751,7 @@ QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkinterface.cpp"
 
 #endif // QT_NO_NETWORKINTERFACE

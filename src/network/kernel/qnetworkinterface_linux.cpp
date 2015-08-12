@@ -48,15 +48,75 @@
 // accordding to rtnetlink(7)
 #include <asm/types.h>
 #include <linux/if.h>
+#include <linux/if_arp.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#include <linux/wireless.h>
 #include <sys/socket.h>
+
+/* in case these aren't defined in linux/if_arp.h (added since 2.6.28)  */
+#define ARPHRD_PHONET       820     /* v2.6.29: PhoNet media type */
+#define ARPHRD_PHONET_PIPE  821     /* v2.6.29: PhoNet pipe header */
+#define ARPHRD_IEEE802154   804     /* v2.6.31 */
+#define ARPHRD_6LOWPAN      825     /* v3.14: IPv6 over LoWPAN */
 
 QT_BEGIN_NAMESPACE
 
 enum {
     BufferSize = 8192
 };
+
+static QNetworkInterface::InterfaceType probeIfType(int socket, struct ifreq *req, short arptype)
+{
+    switch (ushort(arptype)) {
+    case ARPHRD_LOOPBACK:
+        return QNetworkInterface::Loopback;
+
+    case ARPHRD_ETHER:
+        // check if it's a WiFi interface
+        if (qt_safe_ioctl(socket, SIOCGIWMODE, req) >= 0)
+            return QNetworkInterface::Wifi;
+        return QNetworkInterface::Ethernet;
+
+    case ARPHRD_SLIP:
+    case ARPHRD_CSLIP:
+    case ARPHRD_SLIP6:
+    case ARPHRD_CSLIP6:
+        return QNetworkInterface::Slip;
+
+    case ARPHRD_CAN:
+        return QNetworkInterface::CanBus;
+
+    case ARPHRD_PPP:
+        return QNetworkInterface::Ppp;
+
+    case ARPHRD_FDDI:
+        return QNetworkInterface::Fddi;
+
+    case ARPHRD_IEEE80211:
+    case ARPHRD_IEEE80211_PRISM:
+    case ARPHRD_IEEE80211_RADIOTAP:
+        return QNetworkInterface::Ieee80211;
+
+    case ARPHRD_IEEE802154:
+        return QNetworkInterface::Ieee802154;
+
+    case ARPHRD_PHONET:
+    case ARPHRD_PHONET_PIPE:
+        return QNetworkInterface::Phonet;
+
+    case ARPHRD_6LOWPAN:
+        return QNetworkInterface::SixLoWPAN;
+
+    case ARPHRD_TUNNEL:
+    case ARPHRD_TUNNEL6:
+    case ARPHRD_NONE:
+    case ARPHRD_VOID:
+        return QNetworkInterface::Virtual;
+    }
+    return QNetworkInterface::Unknown;
+}
+
 
 namespace {
 struct NetlinkSocket
@@ -195,6 +255,7 @@ QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
 static QList<QNetworkInterfacePrivate *> getInterfaces(int sock, char *buf)
 {
     QList<QNetworkInterfacePrivate *> result;
+    struct ifreq req;
 
     // request all links
     struct {
@@ -227,6 +288,8 @@ static QList<QNetworkInterfacePrivate *> getInterfaces(int sock, char *buf)
                 break;
 
             case IFLA_IFNAME:       // interface name
+                Q_ASSERT(payloadLen <= int(sizeof(req.ifr_name)));
+                memcpy(req.ifr_name, payloadPtr, payloadLen);   // including terminating NUL
                 iface->name = QString::fromLatin1(payloadPtr, payloadLen - 1);
                 break;
 
@@ -245,6 +308,7 @@ static QList<QNetworkInterfacePrivate *> getInterfaces(int sock, char *buf)
             qWarning("QNetworkInterface: found interface %d with no name", iface->index);
             delete iface;
         } else {
+            iface->type = probeIfType(sock, &req, ifi->ifi_type);
             result.append(iface);
         }
     });
