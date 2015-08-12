@@ -595,16 +595,24 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QChar::QChar(char ch)
-    \internal
 
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
+
+    \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
+    is defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
     \fn QChar::QChar(uchar ch)
-    \internal
 
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
+
+    \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
+    is defined.
+
+    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
