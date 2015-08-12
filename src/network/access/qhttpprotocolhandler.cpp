@@ -250,7 +250,6 @@ bool QHttpProtocolHandler::sendRequest()
     if (!m_reply) {
         // heh, how should that happen!
         qWarning() << "QAbstractProtocolHandler::sendRequest() called without QHttpNetworkReply";
-        m_channel->state = QHttpNetworkConnectionChannel::IdleState;
         return false;
     }
 

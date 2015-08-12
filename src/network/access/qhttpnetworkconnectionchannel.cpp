@@ -58,6 +58,11 @@ QT_BEGIN_NAMESPACE
 
 // TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
 
+// Because in-flight when sending a request, the server might close our connection (because the persistent HTTP
+// connection times out)
+// We use 3 because we can get a _q_error 3 times depending on the timing:
+static const int reconnectAttemptsDefault = 3;
+
 QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     : socket(0)
     , ssl(false)
@@ -69,7 +74,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , resendCurrent(false)
     , lastStatus(0)
     , pendingEncrypt(false)
-    , reconnectAttempts(2)
+    , reconnectAttempts(reconnectAttemptsDefault)
     , authMethod(QAuthenticatorPrivate::None)
     , proxyAuthMethod(QAuthenticatorPrivate::None)
     , authenticationCredentialsSent(false)
@@ -106,19 +111,18 @@ void QHttpNetworkConnectionChannel::init()
     socket->setProxy(QNetworkProxy::NoProxy);
 #endif
 
-    // We want all signals (except the interactive ones) be connected as QueuedConnection
-    // because else we're falling into cases where we recurse back into the socket code
-    // and mess up the state. Always going to the event loop (and expecting that when reading/writing)
-    // is safer.
+    // After some back and forth in all the last years, this is now a DirectConnection because otherwise
+    // the state inside the *Socket classes gets messed up, also in conjunction with the socket notifiers
+    // which behave slightly differently on Windows vs Linux
     QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
                      this, SLOT(_q_bytesWritten(qint64)),
-                     Qt::QueuedConnection);
+                     Qt::DirectConnection);
     QObject::connect(socket, SIGNAL(connected()),
                      this, SLOT(_q_connected()),
-                     Qt::QueuedConnection);
+                     Qt::DirectConnection);
     QObject::connect(socket, SIGNAL(readyRead()),
                      this, SLOT(_q_readyRead()),
-                     Qt::QueuedConnection);
+                     Qt::DirectConnection);
 
     // The disconnected() and error() signals may already come
     // while calling connectToHost().
@@ -129,10 +133,10 @@ void QHttpNetworkConnectionChannel::init()
     qRegisterMetaType<QAbstractSocket::SocketError>();
     QObject::connect(socket, SIGNAL(disconnected()),
                      this, SLOT(_q_disconnected()),
-                     Qt::QueuedConnection);
+                     Qt::DirectConnection);
     QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(_q_error(QAbstractSocket::SocketError)),
-                     Qt::QueuedConnection);
+                     Qt::DirectConnection);
 
 
 #ifndef QT_NO_NETWORKPROXY
@@ -147,7 +151,7 @@ void QHttpNetworkConnectionChannel::init()
         // won't be a sslSocket if encrypt is false
         QObject::connect(sslSocket, SIGNAL(encrypted()),
                          this, SLOT(_q_encrypted()),
-                         Qt::QueuedConnection);
+                         Qt::DirectConnection);
         QObject::connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
                          this, SLOT(_q_sslErrors(QList<QSslError>)),
                          Qt::DirectConnection);
@@ -156,7 +160,7 @@ void QHttpNetworkConnectionChannel::init()
                          Qt::DirectConnection);
         QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
                          this, SLOT(_q_encryptedBytesWritten(qint64)),
-                         Qt::QueuedConnection);
+                         Qt::DirectConnection);
 
         if (ignoreAllSslErrors)
             sslSocket->ignoreSslErrors();
@@ -400,7 +404,7 @@ void QHttpNetworkConnectionChannel::allDone()
 
     // reset the reconnection attempts after we receive a complete reply.
     // in case of failures, each channel will attempt two reconnects before emitting error.
-    reconnectAttempts = 2;
+    reconnectAttempts = reconnectAttemptsDefault;
 
     // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
     if (state != QHttpNetworkConnectionChannel::ClosingState)
@@ -654,6 +658,15 @@ void QHttpNetworkConnectionChannel::closeAndResendCurrentRequest()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
+void QHttpNetworkConnectionChannel::resendCurrentRequest()
+{
+    requeueCurrentlyPipelinedRequests();
+    if (reply)
+        resendCurrent = true;
+    if (qobject_cast<QHttpNetworkConnection*>(connection))
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+}
+
 bool QHttpNetworkConnectionChannel::isSocketBusy() const
 {
     return (state & QHttpNetworkConnectionChannel::BusyState);
@@ -697,8 +710,8 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
         return;
     }
 
-    // read the available data before closing
-    if (isSocketWaiting() || isSocketReading()) {
+    // read the available data before closing (also done in _q_error for other codepaths)
+    if ((isSocketWaiting() || isSocketReading()) && socket->bytesAvailable()) {
         if (reply) {
             state = QHttpNetworkConnectionChannel::ReadingState;
             _q_receiveReply();
@@ -710,7 +723,8 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
     state = QHttpNetworkConnectionChannel::IdleState;
 
     requeueCurrentlyPipelinedRequests();
-    close();
+
+    pendingEncrypt = false;
 }
 
 
@@ -792,11 +806,19 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         errorCode = QNetworkReply::ConnectionRefusedError;
         break;
     case QAbstractSocket::RemoteHostClosedError:
-        // try to reconnect/resend before sending an error.
-        // while "Reading" the _q_disconnected() will handle this.
-        if (state != QHttpNetworkConnectionChannel::IdleState && state != QHttpNetworkConnectionChannel::ReadingState) {
+        // This error for SSL comes twice in a row, first from SSL layer ("The TLS/SSL connection has been closed") then from TCP layer.
+        // Depending on timing it can also come three times in a row (first time when we try to write into a closing QSslSocket).
+        // The reconnectAttempts handling catches the cases where we can re-send the request.
+        if (!reply && state == QHttpNetworkConnectionChannel::IdleState) {
+            // Not actually an error, it is normal for Keep-Alive connections to close after some time if no request
+            // is sent on them. No need to error the other replies below. Just bail out here.
+            // The _q_disconnected will handle the possibly pipelined replies
+            return;
+        } else if (state != QHttpNetworkConnectionChannel::IdleState && state != QHttpNetworkConnectionChannel::ReadingState) {
+            // Try to reconnect/resend before sending an error.
+            // While "Reading" the _q_disconnected() will handle this.
             if (reconnectAttempts-- > 0) {
-                closeAndResendCurrentRequest();
+                resendCurrentRequest();
                 return;
             } else {
                 errorCode = QNetworkReply::RemoteHostClosedError;
@@ -821,24 +843,15 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 // we can ignore the readbuffersize as the data is already
                 // in memory and we will not receive more data on the socket.
                 reply->setReadBufferSize(0);
+                reply->setDownstreamLimited(false);
                 _q_receiveReply();
-#ifndef QT_NO_SSL
-                if (ssl) {
-                    // QT_NO_OPENSSL. The QSslSocket can still have encrypted bytes in the plainsocket.
-                    // So we need to check this if the socket is a QSslSocket. When the socket is flushed
-                    // it will force a decrypt of the encrypted data in the plainsocket.
-                    QSslSocket *sslSocket = static_cast<QSslSocket*>(socket);
-                    qint64 beforeFlush = sslSocket->encryptedBytesAvailable();
-                    while (sslSocket->encryptedBytesAvailable()) {
-                        sslSocket->flush();
-                        _q_receiveReply();
-                        qint64 afterFlush = sslSocket->encryptedBytesAvailable();
-                        if (afterFlush == beforeFlush)
-                            break;
-                        beforeFlush = afterFlush;
-                    }
+                if (!reply) {
+                    // No more reply assigned after the previous call? Then it had been finished successfully.
+                    requeueCurrentlyPipelinedRequests();
+                    state = QHttpNetworkConnectionChannel::IdleState;
+                    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+                    return;
                 }
-#endif
             }
 
             errorCode = QNetworkReply::RemoteHostClosedError;
@@ -849,7 +862,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     case QAbstractSocket::SocketTimeoutError:
         // try to reconnect/resend before sending an error.
         if (state == QHttpNetworkConnectionChannel::WritingState && (reconnectAttempts-- > 0)) {
-            closeAndResendCurrentRequest();
+            resendCurrentRequest();
             return;
         }
         errorCode = QNetworkReply::TimeoutError;
@@ -863,7 +876,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     case QAbstractSocket::ProxyConnectionClosedError:
         // try to reconnect/resend before sending an error.
         if (reconnectAttempts-- > 0) {
-            closeAndResendCurrentRequest();
+            resendCurrentRequest();
             return;
         }
         errorCode = QNetworkReply::ProxyConnectionClosedError;
@@ -871,7 +884,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     case QAbstractSocket::ProxyConnectionTimeoutError:
         // try to reconnect/resend before sending an error.
         if (reconnectAttempts-- > 0) {
-            closeAndResendCurrentRequest();
+            resendCurrentRequest();
             return;
         }
         errorCode = QNetworkReply::ProxyTimeoutError;
@@ -919,8 +932,18 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     // send the next request
     QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
 
-    if (that) //signal emission triggered event loop
-        close();
+    if (that) {
+        //signal emission triggered event loop
+        if (!socket)
+            state = QHttpNetworkConnectionChannel::IdleState;
+        else if (socket->state() == QAbstractSocket::UnconnectedState)
+            state = QHttpNetworkConnectionChannel::IdleState;
+        else
+            state = QHttpNetworkConnectionChannel::ClosingState;
+
+        // pendingEncrypt must only be true in between connected and encrypted states
+        pendingEncrypt = false;
+    }
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -944,7 +967,8 @@ void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetwor
 
 void QHttpNetworkConnectionChannel::_q_uploadDataReadyRead()
 {
-    sendRequest();
+    if (reply)
+        sendRequest();
 }
 
 #ifndef QT_NO_SSL

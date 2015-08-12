@@ -124,7 +124,7 @@ int qFindByteArray(
 int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
 {
     Q_ASSERT(alloc >= 0 && extra >= 0);
-    Q_ASSERT_X(uint(alloc) < QByteArray::MaxSize, "qAllocMore", "Requested size is too large!");
+    Q_ASSERT_X(alloc <= MaxAllocSize - extra, "qAllocMore", "Requested size is too large!");
 
     unsigned nalloc = qNextPowerOfTwo(alloc + extra);
 

@@ -322,9 +322,9 @@ bool QFontEngineQPF2::getSfntTableData(uint tag, uchar *buffer, uint *length) co
 
 glyph_t QFontEngineQPF2::glyphIndex(uint ucs4) const
 {
-    glyph_t glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+    glyph_t glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
     if (glyph == 0 && symbol && ucs4 < 0x100)
-        glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
+        glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4 + 0xf000);
     if (!findGlyph(glyph))
         glyph = 0;
 
@@ -348,16 +348,16 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
         QStringIterator it(str, str + len);
         while (it.hasNext()) {
             const uint uc = it.next();
-            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
             ++glyph_pos;
         }
     } else {
         QStringIterator it(str, str + len);
         while (it.hasNext()) {
             const uint uc = it.next();
-            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
             if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))

@@ -239,7 +239,7 @@ public:
     QFontEngineGlyphCache *glyphCache(const void *key, GlyphFormat format, const QTransform &transform) const;
 
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
-    static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
+    static quint32 getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint unicode);
 
     static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
 
