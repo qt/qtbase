@@ -1152,7 +1152,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
 
     if (statusCode == 304) {
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
-        qDebug() << "Received a 304 from" << url();
+        qDebug() << "Received a 304 from" << request.url();
 #endif
         QAbstractNetworkCache *nc = managerPrivate->networkCache;
         if (nc) {
@@ -1457,7 +1457,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         }
 
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
-        QByteArray n = rawHeader(header);
+        QByteArray n = q->rawHeader(header);
         QByteArray o;
         if (it != cacheHeaders.rawHeaders.constEnd())
             o = (*it).second;
