@@ -222,67 +222,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     return interfaces;
 }
 
-static QList<QNetworkInterfacePrivate *> interfaceListingWin2k()
-{
-    QList<QNetworkInterfacePrivate *> interfaces;
-    IP_ADAPTER_INFO staticBuf[2]; // 2 is arbitrary
-    PIP_ADAPTER_INFO pAdapter = staticBuf;
-    ULONG bufSize = sizeof staticBuf;
-
-    DWORD retval = ptrGetAdaptersInfo(pAdapter, &bufSize);
-    if (retval == ERROR_BUFFER_OVERFLOW) {
-        // need more memory
-        pAdapter = (IP_ADAPTER_INFO *)malloc(bufSize);
-        if (!pAdapter)
-            return interfaces;
-        // try again
-        if (ptrGetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
-            free(pAdapter);
-            return interfaces;
-        }
-    } else if (retval != ERROR_SUCCESS) {
-        // error
-        return interfaces;
-    }
-
-    // iterate over the list and add the entries to our listing
-    for (PIP_ADAPTER_INFO ptr = pAdapter; ptr; ptr = ptr->Next) {
-        QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
-        interfaces << iface;
-
-        iface->index = ptr->Index;
-        iface->flags = QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
-        if (ptr->Type == MIB_IF_TYPE_PPP)
-            iface->flags |= QNetworkInterface::IsPointToPoint;
-        else
-            iface->flags |= QNetworkInterface::CanBroadcast;
-        iface->name = QString::fromLocal8Bit(ptr->AdapterName);
-        iface->hardwareAddress = QNetworkInterfacePrivate::makeHwAddress(ptr->AddressLength,
-                                                                         ptr->Address);
-
-        for (PIP_ADDR_STRING addr = &ptr->IpAddressList; addr; addr = addr->Next) {
-            QNetworkAddressEntry entry;
-            entry.setIp(QHostAddress(QLatin1String(addr->IpAddress.String)));
-            entry.setNetmask(QHostAddress(QLatin1String(addr->IpMask.String)));
-            // broadcast address is set on postProcess()
-
-            iface->addressEntries << entry;
-        }
-    }
-
-    if (pAdapter != staticBuf)
-        free(pAdapter);
-
-    return interfaces;
-}
-
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     resolveLibs();
     if (ptrGetAdaptersAddresses != NULL)
         return interfaceListingWinXP();
-    else if (ptrGetAdaptersInfo != NULL)
-        return interfaceListingWin2k();
 
     // failed
     return QList<QNetworkInterfacePrivate *>();
