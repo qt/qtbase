@@ -39,11 +39,33 @@
 
 #include <qpa/qplatformintegration.h>
 
+namespace ABI {
+    namespace Windows {
+        namespace ApplicationModel {
+            struct ISuspendingEventArgs;
+        }
+        namespace Foundation {
+            struct IAsyncAction;
+        }
+#ifdef Q_OS_WINPHONE
+        namespace Phone {
+            namespace UI {
+                namespace Input {
+                    struct IBackPressedEventArgs;
+                }
+            }
+        }
+#endif
+    }
+}
+struct IAsyncInfo;
+struct IInspectable;
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
-class QWinRTScreen;
 
+class QWinRTIntegrationPrivate;
 class QWinRTIntegration : public QPlatformIntegration
 {
 private:
@@ -53,9 +75,11 @@ public:
 
     static QWinRTIntegration *create()
     {
-        QWinRTIntegration *integration = new QWinRTIntegration;
-        return integration->m_success ? integration : 0;
+        QScopedPointer<QWinRTIntegration> integration(new QWinRTIntegration);
+        return integration->succeeded() ? integration.take() : nullptr;
     }
+
+    bool succeeded() const;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QVariant styleHint(StyleHint hint) const;
@@ -71,11 +95,16 @@ public:
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
+
 private:
-    bool m_success;
-    QWinRTScreen *m_screen;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformServices *m_services;
+#ifdef Q_OS_WINPHONE
+    HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
+#endif
+    HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
+    HRESULT onResume(IInspectable *, IInspectable *);
+
+    QScopedPointer<QWinRTIntegrationPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTIntegration)
 };
 
 QT_END_NAMESPACE

@@ -45,35 +45,136 @@
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 
+#include <QtCore/QCoreApplication>
+#include <QtGui/QSurface>
 #include <QtGui/QOpenGLContext>
+#include <qfunctions_winrt.h>
 
+#include <functional>
 #include <wrl.h>
+#include <windows.ui.xaml.h>
+#include <windows.applicationmodel.h>
+#include <windows.applicationmodel.core.h>
 #include <windows.ui.core.h>
 #include <windows.ui.viewmanagement.h>
-#include <Windows.ApplicationModel.core.h>
+#include <windows.graphics.display.h>
+#ifdef Q_OS_WINPHONE
+#  include <windows.phone.ui.input.h>
+#endif
 
 using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::ApplicationModel;
+using namespace ABI::Windows::ApplicationModel::Core;
+using namespace ABI::Windows::UI;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::UI::ViewManagement;
+using namespace ABI::Windows::Graphics::Display;
 using namespace ABI::Windows::ApplicationModel::Core;
+#ifdef Q_OS_WINPHONE
+using namespace ABI::Windows::Phone::UI::Input;
+#endif
+
+typedef IEventHandler<IInspectable *> ResumeHandler;
+typedef IEventHandler<SuspendingEventArgs *> SuspendHandler;
+#ifdef Q_OS_WINPHONE
+typedef IEventHandler<BackPressedEventArgs*> BackPressedHandler;
+#endif
 
 QT_BEGIN_NAMESPACE
 
-QWinRTIntegration::QWinRTIntegration()
-    : m_success(false)
-    , m_fontDatabase(new QWinRTFontDatabase)
-    , m_services(new QWinRTServices)
-{
-    m_screen = new QWinRTScreen;
-    screenAdded(m_screen);
+typedef HRESULT (__stdcall ICoreApplication::*CoreApplicationCallbackRemover)(EventRegistrationToken);
+uint qHash(CoreApplicationCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+#ifdef Q_OS_WINPHONE
+typedef HRESULT (__stdcall IHardwareButtonsStatics::*HardwareButtonsCallbackRemover)(EventRegistrationToken);
+uint qHash(HardwareButtonsCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+#endif
 
-    m_success = true;
+class QWinRTIntegrationPrivate
+{
+public:
+    QPlatformFontDatabase *fontDatabase;
+    QPlatformServices *platformServices;
+    QWinRTScreen *mainScreen;
+    QScopedPointer<QWinRTInputContext> inputContext;
+
+    ComPtr<ICoreApplication> application;
+    QHash<CoreApplicationCallbackRemover, EventRegistrationToken> applicationTokens;
+#ifdef Q_OS_WINPHONE
+    ComPtr<IHardwareButtonsStatics> hardwareButtons;
+    QHash<HardwareButtonsCallbackRemover, EventRegistrationToken> buttonsTokens;
+#endif
+};
+
+QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
+{
+    Q_D(QWinRTIntegration);
+
+    d->fontDatabase = new QWinRTFontDatabase;
+
+    HRESULT hr;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                IID_PPV_ARGS(&d->application));
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->application->add_Suspending(Callback<SuspendHandler>(this, &QWinRTIntegration::onSuspended).Get(),
+                                        &d->applicationTokens[&ICoreApplication::remove_Resuming]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->application->add_Resuming(Callback<ResumeHandler>(this, &QWinRTIntegration::onResume).Get(),
+                                      &d->applicationTokens[&ICoreApplication::remove_Resuming]);
+    Q_ASSERT_SUCCEEDED(hr);
+
+#ifdef Q_OS_WINPHONE
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Phone_UI_Input_HardwareButtons).Get(),
+                                IID_PPV_ARGS(&d->hardwareButtons));
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->hardwareButtons->add_BackPressed(Callback<BackPressedHandler>(this, &QWinRTIntegration::onBackButtonPressed).Get(),
+                                             &d->buttonsTokens[&IHardwareButtonsStatics::remove_BackPressed]);
+    Q_ASSERT_SUCCEEDED(hr);
+#endif // Q_OS_WINPHONE
+
+    hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
+        HRESULT hr;
+        ComPtr<Xaml::IWindowStatics> windowStatics;
+        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Window).Get(),
+                                    IID_PPV_ARGS(&windowStatics));
+        Q_ASSERT_SUCCEEDED(hr);
+        ComPtr<Xaml::IWindow> window;
+        hr = windowStatics->get_Current(&window);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = window->Activate();
+        Q_ASSERT_SUCCEEDED(hr);
+
+        d->mainScreen = new QWinRTScreen(window.Get());
+        d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
+        screenAdded(d->mainScreen);
+        return S_OK;
+    });
+    Q_ASSERT_SUCCEEDED(hr);
 }
 
 QWinRTIntegration::~QWinRTIntegration()
 {
+    Q_D(QWinRTIntegration);
+    HRESULT hr;
+#ifdef Q_OS_WINPHONE
+    for (QHash<HardwareButtonsCallbackRemover, EventRegistrationToken>::const_iterator i = d->buttonsTokens.begin(); i != d->buttonsTokens.end(); ++i) {
+        hr = (d->hardwareButtons.Get()->*i.key())(i.value());
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+#endif
+    for (QHash<CoreApplicationCallbackRemover, EventRegistrationToken>::const_iterator i = d->applicationTokens.begin(); i != d->applicationTokens.end(); ++i) {
+        hr = (d->application.Get()->*i.key())(i.value());
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+    destroyScreen(d->mainScreen);
     Windows::Foundation::Uninitialize();
+}
+
+bool QWinRTIntegration::succeeded() const
+{
+    Q_D(const QWinRTIntegration);
+    return d->mainScreen;
 }
 
 QAbstractEventDispatcher *QWinRTIntegration::createEventDispatcher() const
@@ -112,28 +213,31 @@ QPlatformBackingStore *QWinRTIntegration::createPlatformBackingStore(QWindow *wi
 
 QPlatformOpenGLContext *QWinRTIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    QWinRTScreen *screen = static_cast<QWinRTScreen *>(context->screen()->handle());
-    return new QWinRTEGLContext(context->format(), context->handle(), screen->eglDisplay(), screen->eglSurface(), screen->eglConfig());
+    return new QWinRTEGLContext(context);
 }
 
 QPlatformFontDatabase *QWinRTIntegration::fontDatabase() const
 {
-    return m_fontDatabase;
+    Q_D(const QWinRTIntegration);
+    return d->fontDatabase;
 }
 
 QPlatformInputContext *QWinRTIntegration::inputContext() const
 {
-    return m_screen->inputContext();
+    Q_D(const QWinRTIntegration);
+    return d->inputContext.data();
 }
 
 QPlatformServices *QWinRTIntegration::services() const
 {
-    return m_services;
+    Q_D(const QWinRTIntegration);
+    return d->platformServices;
 }
 
 Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
 {
-    return m_screen->keyboardModifiers();
+    Q_D(const QWinRTIntegration);
+    return d->mainScreen->keyboardModifiers();
 }
 
 QStringList QWinRTIntegration::themeNames() const
@@ -149,4 +253,45 @@ name) const
 
     return 0;
 }
+
+// System-level integration points
+
+#ifdef Q_OS_WINPHONE
+HRESULT QWinRTIntegration::onBackButtonPressed(IInspectable *, IBackPressedEventArgs *args)
+{
+    Q_D(QWinRTIntegration);
+
+    QKeyEvent backPress(QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
+    QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
+    backPress.setAccepted(false);
+    backRelease.setAccepted(false);
+
+    QWindow *window = d->mainScreen->topWindow();
+    QObject *receiver = window ? static_cast<QObject *>(window)
+                               : static_cast<QObject *>(QCoreApplication::instance());
+
+    // If the event is ignored, the app go to the background
+    QCoreApplication::sendEvent(receiver, &backPress);
+    QCoreApplication::sendEvent(receiver, &backRelease);
+    args->put_Handled(backPress.isAccepted() || backRelease.isAccepted());
+
+    return S_OK;
+}
+#endif // Q_OS_WINPHONE
+
+HRESULT QWinRTIntegration::onSuspended(IInspectable *, ISuspendingEventArgs *)
+{
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
+    QWindowSystemInterface::flushWindowSystemEvents();
+    return S_OK;
+}
+
+HRESULT QWinRTIntegration::onResume(IInspectable *, IInspectable *)
+{
+    // First the system invokes onResume and then changes
+    // the visibility of the screen to be active.
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationHidden);
+    return S_OK;
+}
+
 QT_END_NAMESPACE
