@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -56,6 +57,9 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceLuidToName)(const NET_LUID *, PWSTR, SIZE_T);
+static PtrConvertInterfaceLuidToName ptrConvertInterfaceLuidToName = 0;
+
 static void resolveLibs()
 {
     // try to find the functions we need from Iphlpapi.dll
@@ -66,7 +70,11 @@ static void resolveLibs()
         Q_ASSERT(iphlpapiHnd);
 
 #if defined(Q_OS_WINCE)
+        // since Windows Embedded Compact 7
+        ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, L"ConvertInterfaceLuidToNameW");
 #else
+        // since Windows Vista
+        ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToNameW");
 #endif
         done = true;
     }
@@ -176,7 +184,16 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
         if (ptr->IfType == IF_TYPE_PPP)
             iface->flags |= QNetworkInterface::IsPointToPoint;
 
-        iface->name = QString::fromLocal8Bit(ptr->AdapterName);
+        if (ptrConvertInterfaceLuidToName && ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid)) {
+            // use ConvertInterfaceLuidToName because that returns a friendlier name, though not
+            // as friendly as FriendlyName below
+            WCHAR buf[IF_MAX_STRING_SIZE + 1];
+            if (ptrConvertInterfaceLuidToName(&ptr->Luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
+                iface->name = QString::fromWCharArray(buf);
+        }
+        if (iface->name.isEmpty())
+            iface->name = QString::fromLocal8Bit(ptr->AdapterName);
+
         iface->friendlyName = QString::fromWCharArray(ptr->FriendlyName);
         if (ptr->PhysicalAddressLength)
             iface->hardwareAddress = iface->makeHwAddress(ptr->PhysicalAddressLength,
