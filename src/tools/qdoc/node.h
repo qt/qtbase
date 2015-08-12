@@ -178,6 +178,7 @@ public:
     void setThreadSafeness(ThreadSafeness t) { safeness_ = (unsigned char) t; }
     void setSince(const QString &since);
     void setRelates(Aggregate* pseudoParent);
+    void setRelates(const QString &name);
     void setPhysicalModuleName(const QString &name) { physicalModuleName_ = name; }
     void setUrl(const QString& url) { url_ = url; }
     void setTemplateStuff(const QString &t) { templateStuff_ = t; }
@@ -336,6 +337,7 @@ public:
 
 protected:
     Node(NodeType type, Aggregate* parent, const QString& name);
+    void removeRelates();
 
 private:
 
@@ -421,6 +423,7 @@ private:
 
     static bool isSameSignature(const FunctionNode* f1, const FunctionNode* f2);
     void removeRelated(Node* pseudoChild);
+    void addRelated(Node* pseudoChild);
 
     QString outputFileName_;
     QStringList pageKeywds;

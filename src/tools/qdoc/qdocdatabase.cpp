@@ -1295,6 +1295,10 @@ void QDocDatabase::resolveIssues() {
     resolveQmlInheritance(primaryTreeRoot());
     primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
+    if (!Generator::singleExec()) {
+        QDocIndexFiles::qdocIndexFiles()->resolveRelates();
+        QDocIndexFiles::destroyQDocIndexFiles();
+    }
 }
 
 void QDocDatabase::resolveStuff()
@@ -1305,7 +1309,6 @@ void QDocDatabase::resolveStuff()
     primaryTree()->resolveCppToQmlLinks();
     primaryTree()->resolveUsingClauses();
     resolveNamespaces();
-    primaryTreeRoot()->normalizeOverloads();
 }
 
 /*!
@@ -1495,7 +1498,6 @@ void QDocDatabase::readIndexes(const QStringList& t)
             qDebug() << "This index file is already in memory:" << f;
     }
     QDocIndexFiles::qdocIndexFiles()->readIndexes(indexFiles);
-    QDocIndexFiles::destroyQDocIndexFiles();
 }
 
 /*!
