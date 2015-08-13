@@ -50,10 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
-
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
-
 namespace {
 
 // avoid duplicate QStringLiteral data:
@@ -69,17 +65,19 @@ class QFactoryLoaderPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QFactoryLoader)
 public:
     QFactoryLoaderPrivate(){}
+    QByteArray iid;
     ~QFactoryLoaderPrivate();
     mutable QMutex mutex;
-    QByteArray iid;
     QList<QLibraryPrivate*> libraryList;
     QMap<QString,QLibraryPrivate*> keyMap;
     QString suffix;
     Qt::CaseSensitivity cs;
     QStringList loadedPaths;
-
-    void unloadPath(const QString &path);
 };
+
+Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
+
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
@@ -89,25 +87,6 @@ QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
         library->release();
     }
 }
-
-QFactoryLoader::QFactoryLoader(const char *iid,
-                               const QString &suffix,
-                               Qt::CaseSensitivity cs)
-    : QObject(*new QFactoryLoaderPrivate)
-{
-    moveToThread(QCoreApplicationPrivate::mainThread());
-    Q_D(QFactoryLoader);
-    d->iid = iid;
-    d->cs = cs;
-    d->suffix = suffix;
-
-
-    QMutexLocker locker(qt_factoryloader_mutex());
-    update();
-    qt_factory_loaders()->append(this);
-}
-
-
 
 void QFactoryLoader::update()
 {
@@ -229,11 +208,45 @@ QFactoryLoader::~QFactoryLoader()
     qt_factory_loaders()->removeAll(this);
 }
 
+#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
+QLibraryPrivate *QFactoryLoader::library(const QString &key) const
+{
+    Q_D(const QFactoryLoader);
+    return d->keyMap.value(d->cs ? key : key.toLower());
+}
+#endif
+
+void QFactoryLoader::refreshAll()
+{
+    QMutexLocker locker(qt_factoryloader_mutex());
+    QList<QFactoryLoader *> *loaders = qt_factory_loaders();
+    for (QList<QFactoryLoader *>::const_iterator it = loaders->constBegin();
+         it != loaders->constEnd(); ++it) {
+        (*it)->update();
+    }
+}
+
+QFactoryLoader::QFactoryLoader(const char *iid,
+                               const QString &suffix,
+                               Qt::CaseSensitivity cs)
+    : QObject(*new QFactoryLoaderPrivate)
+{
+    moveToThread(QCoreApplicationPrivate::mainThread());
+    Q_D(QFactoryLoader);
+    d->iid = iid;
+    d->cs = cs;
+    d->suffix = suffix;
+
+    QMutexLocker locker(qt_factoryloader_mutex());
+    update();
+    qt_factory_loaders()->append(this);
+}
+
 QList<QJsonObject> QFactoryLoader::metaData() const
 {
     Q_D(const QFactoryLoader);
-    QMutexLocker locker(&d->mutex);
     QList<QJsonObject> metaData;
+    QMutexLocker locker(&d->mutex);
     for (int i = 0; i < d->libraryList.size(); ++i)
         metaData.append(d->libraryList.at(i)->metaData);
 
@@ -266,8 +279,8 @@ QObject *QFactoryLoader::instance(int index) const
         }
         return 0;
     }
-
     index -= d->libraryList.size();
+
     QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
     for (int i = 0; i < staticPlugins.count(); ++i) {
         const QJsonObject object = staticPlugins.at(i).metaData();
@@ -280,24 +293,6 @@ QObject *QFactoryLoader::instance(int index) const
     }
 
     return 0;
-}
-
-#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
-QLibraryPrivate *QFactoryLoader::library(const QString &key) const
-{
-    Q_D(const QFactoryLoader);
-    return d->keyMap.value(d->cs ? key : key.toLower());
-}
-#endif
-
-void QFactoryLoader::refreshAll()
-{
-    QMutexLocker locker(qt_factoryloader_mutex());
-    QList<QFactoryLoader *> *loaders = qt_factory_loaders();
-    for (QList<QFactoryLoader *>::const_iterator it = loaders->constBegin();
-         it != loaders->constEnd(); ++it) {
-        (*it)->update();
-    }
 }
 
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
