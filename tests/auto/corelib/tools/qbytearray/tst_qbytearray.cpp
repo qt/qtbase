@@ -896,7 +896,9 @@ void tst_QByteArray::prepend()
     QCOMPARE(ba.prepend("1"), QByteArray("1foo"));
     QCOMPARE(ba.prepend(QByteArray("2")), QByteArray("21foo"));
     QCOMPARE(ba.prepend('3'), QByteArray("321foo"));
-    QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 321foo", 8));
+    QCOMPARE(ba.prepend(-1, 'x'), QByteArray("321foo"));
+    QCOMPARE(ba.prepend(3, 'x'), QByteArray("xxx321foo"));
+    QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 xxx321foo", 11));
 }
 
 void tst_QByteArray::prependExtended_data()
@@ -924,8 +926,10 @@ void tst_QByteArray::prependExtended()
     QCOMPARE(array.prepend("1"), QByteArray("1data"));
     QCOMPARE(array.prepend(QByteArray("2")), QByteArray("21data"));
     QCOMPARE(array.prepend('3'), QByteArray("321data"));
-    QCOMPARE(array.prepend("\0 ", 2), QByteArray::fromRawData("\0 321data", 9));
-    QCOMPARE(array.size(), 9);
+    QCOMPARE(array.prepend(-1, 'x'), QByteArray("321data"));
+    QCOMPARE(array.prepend(3, 'x'), QByteArray("xxx321data"));
+    QCOMPARE(array.prepend("\0 ", 2), QByteArray::fromRawData("\0 xxx321data", 12));
+    QCOMPARE(array.size(), 12);
 }
 
 void tst_QByteArray::append()
@@ -936,9 +940,11 @@ void tst_QByteArray::append()
     QCOMPARE(ba.append("1"), QByteArray("foo1"));
     QCOMPARE(ba.append(QByteArray("2")), QByteArray("foo12"));
     QCOMPARE(ba.append('3'), QByteArray("foo123"));
-    QCOMPARE(ba.append("\0"), QByteArray("foo123"));
-    QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123\0", 7));
-    QCOMPARE(ba.size(), 7);
+    QCOMPARE(ba.append(-1, 'x'), QByteArray("foo123"));
+    QCOMPARE(ba.append(3, 'x'), QByteArray("foo123xxx"));
+    QCOMPARE(ba.append("\0"), QByteArray("foo123xxx"));
+    QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123xxx\0", 10));
+    QCOMPARE(ba.size(), 10);
 }
 
 void tst_QByteArray::appendExtended_data()
@@ -958,9 +964,11 @@ void tst_QByteArray::appendExtended()
     QCOMPARE(array.append("1"), QByteArray("data1"));
     QCOMPARE(array.append(QByteArray("2")), QByteArray("data12"));
     QCOMPARE(array.append('3'), QByteArray("data123"));
-    QCOMPARE(array.append("\0"), QByteArray("data123"));
-    QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123\0", 8));
-    QCOMPARE(array.size(), 8);
+    QCOMPARE(array.append(-1, 'x'), QByteArray("data123"));
+    QCOMPARE(array.append(3, 'x'), QByteArray("data123xxx"));
+    QCOMPARE(array.append("\0"), QByteArray("data123xxx"));
+    QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123xxx\0", 11));
+    QCOMPARE(array.size(), 11);
 }
 
 void tst_QByteArray::insert()
@@ -975,6 +983,12 @@ void tst_QByteArray::insert()
     ba = "ac";
     QCOMPARE(ba.insert(1, 'b'), QByteArray("abc"));
     QCOMPARE(ba.size(), 3);
+
+    ba = "ac";
+    QCOMPARE(ba.insert(-1, 3, 'x'), QByteArray("ac"));
+    QCOMPARE(ba.insert(1, 3, 'x'), QByteArray("axxxc"));
+    QCOMPARE(ba.insert(6, 3, 'x'), QByteArray("axxxc xxx"));
+    QCOMPARE(ba.size(), 9);
 
     ba = "ikl";
     QCOMPARE(ba.insert(1, "j"), QByteArray("ijkl"));
@@ -994,7 +1008,8 @@ void tst_QByteArray::insertExtended()
 {
     QFETCH(QByteArray, array);
     QCOMPARE(array.insert(1, "i"), QByteArray("diata"));
-    QCOMPARE(array.size(), 5);
+    QCOMPARE(array.insert(1, 3, 'x'), QByteArray("dxxxiata"));
+    QCOMPARE(array.size(), 8);
 }
 
 void tst_QByteArray::remove_data()

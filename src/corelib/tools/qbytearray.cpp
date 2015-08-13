@@ -1713,6 +1713,14 @@ QByteArray &QByteArray::prepend(const char *str, int len)
     return *this;
 }
 
+/*! \fn QByteArray &QByteArray::prepend(int count, char ch)
+
+    \overload
+    \since 5.7
+
+    Prepends \a count copies of character \a ch to this byte array.
+*/
+
 /*!
     \overload
 
@@ -1824,6 +1832,17 @@ QByteArray &QByteArray::append(const char *str, int len)
     }
     return *this;
 }
+
+/*! \fn QByteArray &QByteArray::append(int count, char ch)
+
+    \overload
+    \since 5.7
+
+    Appends \a count copies of character \a ch to this byte
+    array and returns a reference to this byte array.
+
+    If \a count is negative or zero nothing is appended to the byte array.
+*/
 
 /*!
     \overload
@@ -1939,6 +1958,33 @@ QByteArray &QByteArray::insert(int i, const char *str, int len)
 QByteArray &QByteArray::insert(int i, char ch)
 {
     return qbytearray_insert(this, i, &ch, 1);
+}
+
+/*! \fn QByteArray &QByteArray::insert(int i, int count, char ch)
+
+    \overload
+    \since 5.7
+
+    Inserts \a count copies of character \a ch at index position \a i in the
+    byte array.
+
+    If \a i is greater than size(), the array is first extended using resize().
+*/
+
+QByteArray &QByteArray::insert(int i, int count, char ch)
+{
+    if (i < 0 || count <= 0)
+        return *this;
+
+    int oldsize = size();
+    resize(qMax(i, oldsize) + count);
+    char *dst = d->data();
+    if (i > oldsize)
+        ::memset(dst + oldsize, 0x20, i - oldsize);
+    else if (i < oldsize)
+        ::memmove(dst + i + count, dst + i, oldsize - i);
+    ::memset(dst + i, ch, count);
+    return *this;
 }
 
 /*!

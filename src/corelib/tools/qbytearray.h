@@ -285,14 +285,17 @@ public:
     QByteArray rightJustified(int width, char fill = ' ', bool truncate = false) const Q_REQUIRED_RESULT;
 
     QByteArray &prepend(char c);
+    QByteArray &prepend(int count, char c);
     QByteArray &prepend(const char *s);
     QByteArray &prepend(const char *s, int len);
     QByteArray &prepend(const QByteArray &a);
     QByteArray &append(char c);
+    QByteArray &append(int count, char c);
     QByteArray &append(const char *s);
     QByteArray &append(const char *s, int len);
     QByteArray &append(const QByteArray &a);
     QByteArray &insert(int i, char c);
+    QByteArray &insert(int i, int count, char c);
     QByteArray &insert(int i, const char *s);
     QByteArray &insert(int i, const char *s, int len);
     QByteArray &insert(int i, const QByteArray &a);
@@ -568,6 +571,10 @@ inline QByteArray::const_iterator QByteArray::cend() const
 { return d->data() + d->size; }
 inline QByteArray::const_iterator QByteArray::constEnd() const
 { return d->data() + d->size; }
+inline QByteArray &QByteArray::append(int n, char ch)
+{ return insert(d->size, n, ch); }
+inline QByteArray &QByteArray::prepend(int n, char ch)
+{ return insert(0, n, ch); }
 inline QByteArray &QByteArray::operator+=(char c)
 { return append(c); }
 inline QByteArray &QByteArray::operator+=(const char *s)
