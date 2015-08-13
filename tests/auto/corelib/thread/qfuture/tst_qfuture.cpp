@@ -1438,6 +1438,8 @@ void tst_QFuture::nestedExceptions()
     QVERIFY(MyClass::caught);
 }
 
+#endif // QT_NO_EXCEPTIONS
+
 void tst_QFuture::nonGlobalThreadPool()
 {
     static Q_CONSTEXPR int Answer = 42;
@@ -1484,8 +1486,6 @@ void tst_QFuture::nonGlobalThreadPool()
         QCOMPARE(future.result(), Answer);
     }
 }
-
-#endif // QT_NO_EXCEPTIONS
 
 QTEST_MAIN(tst_QFuture)
 #include "tst_qfuture.moc"
