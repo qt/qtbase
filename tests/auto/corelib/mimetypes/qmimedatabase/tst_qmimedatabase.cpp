@@ -897,7 +897,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("text/x-suse-ymu"));
+             QString::fromLatin1("text/x-SuSE-ymu"));
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
     checkHasMimeType("text/x-suse-ymp");
 
@@ -954,8 +954,9 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     }
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("text/x-suse-ymu"));
+             QString::fromLatin1("text/x-SuSE-ymu"));
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+    QCOMPARE(db.mimeTypeForName(QLatin1String("text/x-SuSE-ymu")).comment(), QString("URL of a YaST Meta Package"));
     checkHasMimeType("text/x-suse-ymp");
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").

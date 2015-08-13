@@ -560,10 +560,13 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // load comment and globPatterns
 
     const QString file = data.name + QLatin1String(".xml");
-    const QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file);
+    // shared-mime-info since 1.3 lowercases the xml files
+    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file.toLower());
     if (mimeFiles.isEmpty()) {
-        // TODO: ask Thiago about this
-        qWarning() << "No file found for" << file << ", even though the file appeared in a directory listing.";
+        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file); // pre-1.3
+    }
+    if (mimeFiles.isEmpty()) {
+        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.";
         qWarning() << "Either it was just removed, or the directory doesn't have executable permission...";
         qWarning() << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
         return;
