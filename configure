@@ -2725,7 +2725,7 @@ MacOS/iOS options:
 
  *  -securetransport ... Use SecureTransport instead of OpenSSL
 
-    -no-securetransport  Do not use SecureTransport, either use OpenSSL or dot not use any SSL backend
+    -no-securetransport  Do not use SecureTransport, either use OpenSSL or do not use any SSL backend
                          at all (if combined with -no-openssl).
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
