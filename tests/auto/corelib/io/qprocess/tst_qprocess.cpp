@@ -122,6 +122,7 @@ private slots:
     void removeFileWhileProcessIsRunning();
     void fileWriterProcess();
     void switchReadChannels();
+    void discardUnwantedOutput();
     void setWorkingDirectory();
     void setNonExistentWorkingDirectory();
 #endif // not Q_OS_WINCE
@@ -2225,6 +2226,25 @@ void tst_QProcess::switchReadChannels()
     QCOMPARE(process.read(1), QByteArray("D"));
     process.setReadChannel(QProcess::StandardOutput);
     QCOMPARE(process.read(1), QByteArray("D"));
+}
+#endif
+
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::discardUnwantedOutput()
+{
+    QProcess process;
+
+    process.setProgram("testProcessEcho2/testProcessEcho2");
+    process.start(QIODevice::WriteOnly);
+    process.write("Hello, World");
+    process.closeWriteChannel();
+    QVERIFY(process.waitForFinished(5000));
+
+    process.setReadChannel(QProcess::StandardOutput);
+    QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
+    process.setReadChannel(QProcess::StandardError);
+    QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
 }
 #endif
 

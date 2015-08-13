@@ -2206,6 +2206,16 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
         mode &= ~QIODevice::ReadOnly;      // not open for reading
     if (mode == 0)
         mode = QIODevice::Unbuffered;
+#ifndef Q_OS_WINCE
+    if ((mode & QIODevice::ReadOnly) == 0) {
+        if (stdoutChannel.type == QProcessPrivate::Channel::Normal)
+            q->setStandardOutputFile(q->nullDevice());
+        if (stderrChannel.type == QProcessPrivate::Channel::Normal
+            && processChannelMode != QProcess::MergedChannels)
+            q->setStandardErrorFile(q->nullDevice());
+    }
+#endif
+
     q->QIODevice::open(mode);
 
     stdinChannel.closed = false;
