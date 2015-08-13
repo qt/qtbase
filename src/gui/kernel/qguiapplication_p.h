@@ -183,6 +183,7 @@ public:
     static QIcon *app_icon;
     static QString *platform_name;
     static QString *displayName;
+    static QString *desktopFileName;
 
     QWindowList modalWindowList;
     static void showModalWindow(QWindow *window);

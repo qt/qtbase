@@ -67,6 +67,7 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_OBJECT
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(QString applicationDisplayName READ applicationDisplayName WRITE setApplicationDisplayName)
+    Q_PROPERTY(QString desktopFileName READ desktopFileName WRITE setDesktopFileName)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
     Q_PROPERTY(QString platformName READ platformName STORED false)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
@@ -81,6 +82,9 @@ public:
 
     static void setApplicationDisplayName(const QString &name);
     static QString applicationDisplayName();
+
+    static void setDesktopFileName(const QString &name);
+    static QString desktopFileName();
 
     static QWindowList allWindows();
     static QWindowList topLevelWindows();

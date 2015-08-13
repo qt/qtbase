@@ -143,6 +143,7 @@ QIcon *QGuiApplicationPrivate::app_icon = 0;
 
 QString *QGuiApplicationPrivate::platform_name = 0;
 QString *QGuiApplicationPrivate::displayName = 0;
+QString *QGuiApplicationPrivate::desktopFileName = 0;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
 
@@ -604,6 +605,8 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::platform_name = 0;
     delete QGuiApplicationPrivate::displayName;
     QGuiApplicationPrivate::displayName = 0;
+    delete QGuiApplicationPrivate::desktopFileName;
+    QGuiApplicationPrivate::desktopFileName = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -642,6 +645,34 @@ void QGuiApplication::setApplicationDisplayName(const QString &name)
 QString QGuiApplication::applicationDisplayName()
 {
     return QGuiApplicationPrivate::displayName ? *QGuiApplicationPrivate::displayName : applicationName();
+}
+
+/*!
+    \property QGuiApplication::desktopFileName
+    \brief the base name of the desktop entry for this application
+    \since 5.7
+
+    This is the file name, without the full path, of the desktop entry
+    that represents this application according to the freedesktop desktop
+    entry specification.
+
+    This property gives a precise indication of what desktop entry represents
+    the application and it is needed by the windowing system to retrieve
+    such information without resorting to imprecise heuristics.
+
+    The latest version of the freedesktop desktop entry specification can be obtained
+    \l{http://standards.freedesktop.org/desktop-entry-spec/latest/}{here}.
+*/
+void QGuiApplication::setDesktopFileName(const QString &name)
+{
+    if (!QGuiApplicationPrivate::desktopFileName)
+        QGuiApplicationPrivate::desktopFileName = new QString;
+    *QGuiApplicationPrivate::desktopFileName = name;
+}
+
+QString QGuiApplication::desktopFileName()
+{
+    return QGuiApplicationPrivate::desktopFileName ? *QGuiApplicationPrivate::desktopFileName : QString();
 }
 
 /*!

@@ -62,6 +62,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
 private slots:
     void cleanup();
     void displayName();
+    void desktopFileName();
     void firstWindowTitle();
     void windowIcon();
     void focusObject();
@@ -99,6 +100,21 @@ void tst_QGuiApplication::displayName()
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("tst_qguiapplication"));
     QGuiApplication::setApplicationDisplayName("The GUI Application");
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
+}
+
+void tst_QGuiApplication::desktopFileName()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+
+    QCOMPARE(QGuiApplication::desktopFileName(), QString());
+
+    QGuiApplication::setDesktopFileName("io.qt.QGuiApplication.desktop");
+    QCOMPARE(QGuiApplication::desktopFileName(), QString::fromLatin1("io.qt.QGuiApplication.desktop"));
+
+    QGuiApplication::setDesktopFileName(QString());
+    QCOMPARE(QGuiApplication::desktopFileName(), QString());
 }
 
 void tst_QGuiApplication::firstWindowTitle()
