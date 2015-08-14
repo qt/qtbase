@@ -79,13 +79,11 @@ bool MingwMakefileGenerator::findLibraries()
         if ((*it).startsWith("-l")) {
             QString steam = (*it).mid(2).toQString();
             ProString out;
-            QString suffix = project->first(ProKey("QMAKE_" + steam.toUpper() + "_SUFFIX")).toQString();
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString extension;
                 int ver = findHighestVersion((*dir_it).local(), steam);
                 if (ver > 0)
                     extension += QString::number(ver);
-                extension += suffix;
                 if (QMakeMetaInfo::libExists((*dir_it).local() + '/' + steam)
                     || exists((*dir_it).local() + '/' + steam + extension + ".a")
                     || exists((*dir_it).local() + '/' + steam + extension + ".dll.a")) {

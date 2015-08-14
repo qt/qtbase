@@ -398,7 +398,6 @@ UnixMakefileGenerator::findLibraries()
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.mid(2);
-                    lib += project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX")).toQString();
                     bool found = false;
                     ProStringList extens;
                     extens << project->first("QMAKE_EXTENSION_SHLIB") << "a";
@@ -409,7 +408,6 @@ UnixMakefileGenerator::findLibraries()
                                     + project->first("QMAKE_PREFIX_SHLIB")
                                     + lib + '.' + (*extit));
                             if (exists(pathToLib)) {
-                                (*it) = "-l" + lib;
                                 found = true;
                                 break;
                             }
@@ -448,10 +446,9 @@ UnixMakefileGenerator::processPrlFiles()
                        libdirs.insert(libidx++, l);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.right(opt.length() - 2);
-                    QString prl_ext = project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX")).toQString();
                     for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
                         QString prl = libdirs[dep_i].local() + '/'
-                                      + project->first("QMAKE_PREFIX_SHLIB") + lib + prl_ext;
+                                      + project->first("QMAKE_PREFIX_SHLIB") + lib;
                         if (processPrlFile(prl))
                             break;
                     }

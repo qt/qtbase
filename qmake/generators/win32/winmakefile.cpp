@@ -116,14 +116,12 @@ Win32MakefileGenerator::findLibraries()
         } else if(opt.startsWith("-l") || opt.startsWith("/l")) {
             QString lib = opt.right(opt.length() - 2), out;
             if(!lib.isEmpty()) {
-                ProString suffix = project->first(ProKey("QMAKE_" + lib.toUpper() + "_SUFFIX"));
                 for(QList<QMakeLocalFileName>::Iterator it = dirs.begin();
                     it != dirs.end(); ++it) {
                     QString extension;
                     int ver = findHighestVersion((*it).local(), lib);
                     if(ver > 0)
                         extension += QString::number(ver);
-                    extension += suffix;
                     extension += ".lib";
                     if (QMakeMetaInfo::libExists((*it).local() + '/' + lib)
                             || exists((*it).local() + '/' + lib + extension)) {
