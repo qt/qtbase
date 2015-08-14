@@ -1129,7 +1129,7 @@ uint qHash(const QHostAddress &key, uint seed)
 {
     // both lines might throw
     QT_ENSURE_PARSED(&key);
-    return qHash(QByteArray::fromRawData(reinterpret_cast<const char *>(key.d->a6.c), 16), seed);
+    return qHashBits(key.d->a6.c, 16, seed);
 }
 
 #ifndef QT_NO_DATASTREAM
