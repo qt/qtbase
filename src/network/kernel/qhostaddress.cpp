@@ -193,7 +193,7 @@ static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr,
     return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == 0;
 }
 
-bool QHostAddressPrivate::parse()
+Q_NEVER_INLINE bool QHostAddressPrivate::parse()
 {
     isParsed = true;
     protocol = QAbstractSocket::UnknownNetworkLayerProtocol;
