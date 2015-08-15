@@ -76,6 +76,7 @@
 #if defined(Q_OS_LINUX)
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #ifdef Q_OS_WIN
@@ -2213,9 +2214,11 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
-                    watchDog->beginTest();
+                    if (watchDog)
+                        watchDog->beginTest();
                     qInvokeTestMethodDataEntry(slot);
-                    watchDog->testFinished();
+                    if (watchDog)
+                        watchDog->testFinished();
 
                     if (data)
                         break;
@@ -2487,6 +2490,37 @@ char *toPrettyUnicode(const ushort *p, int length)
     return buffer.take();
 }
 
+static bool debuggerPresent()
+{
+#if defined(Q_OS_LINUX)
+    int fd = open("/proc/self/status", O_RDONLY);
+    if (fd == -1)
+        return false;
+    char buffer[2048];
+    ssize_t size = read(fd, buffer, sizeof(buffer));
+    if (size == -1) {
+        close(fd);
+        return false;
+    }
+    buffer[size] = 0;
+    const char tracerPidToken[] = "TracerPid:";
+    char *tracerPid = strstr(buffer, tracerPidToken);
+    if (!tracerPid) {
+        close(fd);
+        return false;
+    }
+    tracerPid += sizeof(tracerPidToken);
+    long int pid = strtol(tracerPid, &tracerPid, 10);
+    close(fd);
+    return pid != 0;
+#elif defined(Q_OS_WIN)
+    return IsDebuggerPresent();
+#else
+    // TODO
+    return false;
+#endif
+}
+
 static void qInvokeTestMethods(QObject *testObject)
 {
     const QMetaObject *metaObject = testObject->metaObject();
@@ -2496,7 +2530,9 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestTable::globalTestTable();
     invokeMethod(testObject, "initTestCase_data()");
 
-    WatchDog watchDog;
+    QScopedPointer<WatchDog> watchDog;
+    if (!debuggerPresent())
+        watchDog.reset(new WatchDog);
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         invokeMethod(testObject, "initTestCase()");
@@ -2512,7 +2548,7 @@ static void qInvokeTestMethods(QObject *testObject)
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
                     if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
-                                                              QTest::testFuncs[i].data(), &watchDog)) {
+                                                              QTest::testFuncs[i].data(), watchDog.data())) {
                         break;
                     }
                 }
@@ -2525,7 +2561,7 @@ static void qInvokeTestMethods(QObject *testObject)
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, &watchDog))
+                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, watchDog.data()))
                         break;
                 }
                 delete[] testMethods;
