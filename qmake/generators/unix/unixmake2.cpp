@@ -818,7 +818,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << escapeDependencyPath(info_plist_out) << ": \n\t";
             info_plist_out = escapeFilePath(info_plist_out);
             if (!destdir.isEmpty())
-                t << mkdir_p_asstring(destdir, false) << "\n\t";
+                t << mkdir_p_asstring(destdir) << "\n\t";
             ProStringList commonSedArgs;
             if (!project->values("VERSION").isEmpty()) {
                 commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "."
