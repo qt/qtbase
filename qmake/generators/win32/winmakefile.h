@@ -58,11 +58,10 @@ protected:
     virtual void writeRcFilePart(QTextStream &t);
 
     int findHighestVersion(const QString &dir, const QString &stem);
-    virtual bool findLibraries();
+    virtual bool findLibraries(bool linkPrl, bool mergeLflags);
 
     virtual ProString fixLibFlag(const ProString &lib);
 
-    virtual void processPrlFiles();
     void processVars();
     void fixTargetExt();
     void processRcFileVar();

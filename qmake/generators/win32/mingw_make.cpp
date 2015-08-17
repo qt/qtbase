@@ -33,7 +33,6 @@
 
 #include "mingw_make.h"
 #include "option.h"
-#include "meta.h"
 
 #include <proitems.h>
 
@@ -68,7 +67,7 @@ ProString MingwMakefileGenerator::fixLibFlag(const ProString &lib)
     return escapeFilePath(lib);
 }
 
-bool MingwMakefileGenerator::findLibraries()
+bool MingwMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
@@ -78,15 +77,16 @@ bool MingwMakefileGenerator::findLibraries()
     while (it != l.end()) {
         if ((*it).startsWith("-l")) {
             QString steam = (*it).mid(2).toQString();
-            ProString out;
+            QString out;
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString extension;
                 int ver = findHighestVersion((*dir_it).local(), steam);
                 if (ver > 0)
                     extension += QString::number(ver);
-                if (QMakeMetaInfo::libExists((*dir_it).local() + '/' + steam)
-                    || exists((*dir_it).local() + '/' + steam + extension + ".a")
-                    || exists((*dir_it).local() + '/' + steam + extension + ".dll.a")) {
+                QString libBase = (*dir_it).local() + '/' + steam;
+                if ((linkPrl && processPrlFile(libBase))
+                    || exists(libBase + extension + ".a")
+                    || exists(libBase + extension + ".dll.a")) {
                         out = *it + extension;
                         break;
                 }
@@ -97,9 +97,37 @@ bool MingwMakefileGenerator::findLibraries()
             QMakeLocalFileName f((*it).mid(2).toQString());
             dirs.append(f);
             *it = "-L" + f.real();
+        } else if (linkPrl && !(*it).startsWith('-')) {
+            QString prl = (*it).toQString();
+            if (!processPrlFile(prl) && QDir::isRelativePath(prl)) {
+                for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
+                    prl = (*dir_it).local() + '/' + *it;
+                    if (processPrlFile(prl))
+                        break;
+                }
+            }
         }
 
+        ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
+        for (int prl = 0; prl < prl_libs.size(); ++prl)
+            it = l.insert(++it, prl_libs.at(prl));
+        prl_libs.clear();
         ++it;
+    }
+    if (mergeLflags) {
+        ProStringList lopts;
+        for (int lit = 0; lit < l.size(); ++lit) {
+            ProString opt = l.at(lit);
+            if (opt.startsWith("-L")) {
+                if (!lopts.contains(opt))
+                    lopts.append(opt);
+            } else {
+                // Make sure we keep the dependency order of libraries
+                lopts.removeAll(opt);
+                lopts.append(opt);
+            }
+        }
+        l = lopts;
     }
   }
     return true;

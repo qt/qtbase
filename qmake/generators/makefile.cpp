@@ -252,10 +252,12 @@ MakefileGenerator::setProjectFile(QMakeProject *p)
     else
         target_mode = TARG_UNIX_MODE;
     init();
-    findLibraries();
-    if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE &&
-       project->isActiveConfig("link_prl")) //load up prl's'
-        processPrlFiles();
+    bool linkPrl = (Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
+                   && project->isActiveConfig("link_prl");
+    bool mergeLflags = linkPrl
+                       && !project->isActiveConfig("no_smart_library_merge")
+                       && !project->isActiveConfig("no_lflags_merge");
+    findLibraries(linkPrl, mergeLflags);
 }
 
 ProStringList
@@ -942,12 +944,6 @@ MakefileGenerator::filterIncludedFiles(const char *var)
         else
             ++input;
     }
-}
-
-void
-MakefileGenerator::processPrlFiles()
-{
-    qFatal("MakefileGenerator::processPrlFiles() called!");
 }
 
 static QString

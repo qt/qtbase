@@ -375,12 +375,14 @@ UnixMakefileGenerator::fixLibFlag(const ProString &lib)
 }
 
 bool
-UnixMakefileGenerator::findLibraries()
+UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
-    QList<QMakeLocalFileName> libdirs;
-    int libidx = 0;
+    QList<QMakeLocalFileName> libdirs, frameworkdirs;
+    int libidx = 0, fwidx = 0;
     foreach (const ProString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
+    frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
+    frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
     static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
     for (int i = 0; lflags[i]; i++) {
         ProStringList &l = project->values(lflags[i]);
@@ -398,94 +400,58 @@ UnixMakefileGenerator::findLibraries()
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.mid(2);
-                    bool found = false;
                     ProStringList extens;
                     extens << project->first("QMAKE_EXTENSION_SHLIB") << "a";
-                    for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
-                        for (QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin();
-                             dep_it != libdirs.end(); ++dep_it) {
-                            QString pathToLib = ((*dep_it).local() + '/'
-                                    + project->first("QMAKE_PREFIX_SHLIB")
-                                    + lib + '.' + (*extit));
-                            if (exists(pathToLib)) {
-                                found = true;
-                                break;
-                            }
+                    for (QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin();
+                         dep_it != libdirs.end(); ++dep_it) {
+                        QString libBase = (*dep_it).local() + '/'
+                                + project->first("QMAKE_PREFIX_SHLIB") + lib;
+                        if (linkPrl && processPrlFile(libBase))
+                            goto found;
+                        for (ProStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {
+                            if (exists(libBase + '.' + (*extit)))
+                                goto found;
                         }
                     }
-                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
-                    if (opt.length() == 10)
-                        ++it;
-                    // Skip
-                }
-            }
-            ++it;
-        }
-    }
-    return false;
-}
-
-void
-UnixMakefileGenerator::processPrlFiles()
-{
-    QList<QMakeLocalFileName> libdirs, frameworkdirs;
-    int libidx = 0, fwidx = 0;
-    foreach (const ProString &dlib, project->values("QMAKE_DEFAULT_LIBDIRS"))
-        libdirs.append(QMakeLocalFileName(dlib.toQString()));
-    frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
-    frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
-    for (int i = 0; lflags[i]; i++) {
-        ProStringList &l = project->values(lflags[i]);
-        for(int lit = 0; lit < l.size(); ++lit) {
-            QString opt = l.at(lit).toQString();
-            if(opt.startsWith("-")) {
-                if (opt.startsWith("-L")) {
-                    QMakeLocalFileName l(opt.mid(2));
-                    if(!libdirs.contains(l))
-                       libdirs.insert(libidx++, l);
-                } else if(opt.startsWith("-l")) {
-                    QString lib = opt.right(opt.length() - 2);
-                    for(int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                        QString prl = libdirs[dep_i].local() + '/'
-                                      + project->first("QMAKE_PREFIX_SHLIB") + lib;
-                        if (processPrlFile(prl))
-                            break;
-                    }
+                  found: ;
                 } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-F")) {
-                    QMakeLocalFileName f(opt.right(opt.length()-2));
-                    if(!frameworkdirs.contains(f))
+                    QMakeLocalFileName f(opt.mid(2));
+                    if (!frameworkdirs.contains(f))
                         frameworkdirs.insert(fwidx++, f);
                 } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
-                    if(opt.length() > 11)
-                        opt = opt.mid(11).trimmed();
-                    else
-                        opt = l.at(++lit).toQString();
-                    foreach (const QMakeLocalFileName &dir, frameworkdirs) {
-                        QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
-                        if(processPrlFile(prl))
-                            break;
+                    if (linkPrl) {
+                        if (opt.length() == 10)
+                            opt = (*++it).toQString();
+                        else
+                            opt = opt.mid(10).trimmed();
+                        foreach (const QMakeLocalFileName &dir, frameworkdirs) {
+                            QString prl = dir.local() + "/" + opt + ".framework/" + opt + Option::prl_ext;
+                            if (processPrlFile(prl))
+                                break;
+                        }
+                    } else {
+                        if (opt.length() == 10)
+                            ++it;
+                        // Skip
                     }
                 }
-            } else if(!opt.isNull()) {
+            } else if (linkPrl) {
                 processPrlFile(opt);
             }
 
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
-            if(!prl_libs.isEmpty()) {
-                for(int prl = 0; prl < prl_libs.size(); ++prl)
-                    l.insert(++lit, prl_libs.at(prl));
-                prl_libs.clear();
-            }
+            for (int prl = 0; prl < prl_libs.size(); ++prl)
+                it = l.insert(++it, prl_libs.at(prl));
+            prl_libs.clear();
+            ++it;
         }
 
-        //merge them into a logical order
-        if(!project->isActiveConfig("no_smart_library_merge") && !project->isActiveConfig("no_lflags_merge")) {
+        if (mergeLflags) {
             QHash<ProKey, ProStringList> lflags;
             for(int lit = 0; lit < l.size(); ++lit) {
                 ProKey arch("default");
                 ProString opt = l.at(lit);
-                if(opt.startsWith("-")) {
+                if (opt.startsWith('-')) {
                     if (target_mode == TARG_MAC_MODE && opt.startsWith("-Xarch")) {
                         if (opt.length() > 7) {
                             arch = opt.mid(7).toKey();
@@ -493,21 +459,20 @@ UnixMakefileGenerator::processPrlFiles()
                         }
                     }
 
-                    if (opt.startsWith("-L") ||
-                       (target_mode == TARG_MAC_MODE && opt.startsWith("-F"))) {
-                        if(!lflags[arch].contains(opt))
+                    if (opt.startsWith("-L")
+                        || (target_mode == TARG_MAC_MODE && opt.startsWith("-F"))) {
+                        if (!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
-                    } else if(opt.startsWith("-l") || opt == "-pthread") {
-                        // Make sure we keep the dependency-order of libraries
-                        if (lflags[arch].contains(opt))
-                            lflags[arch].removeAll(opt);
+                    } else if (opt.startsWith("-l") || opt == "-pthread") {
+                        // Make sure we keep the dependency order of libraries
+                        lflags[arch].removeAll(opt);
                         lflags[arch].append(opt);
                     } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
-                        if(opt.length() > 11)
-                            opt = opt.mid(11);
-                        else {
+                        if (opt.length() > 10) {
+                            opt = opt.mid(10).trimmed();
+                        } else {
                             opt = l.at(++lit);
-                            if (target_mode == TARG_MAC_MODE && opt.startsWith("-Xarch"))
+                            if (opt.startsWith("-Xarch"))
                                 opt = l.at(++lit); // The user has done the right thing and prefixed each part
                         }
                         bool found = false;
@@ -544,6 +509,7 @@ UnixMakefileGenerator::processPrlFiles()
             }
         }
     }
+    return false;
 }
 
 QString

@@ -197,11 +197,10 @@ protected:
     QString prlFileName(bool fixify=true);
     void writePrlFile();
     bool processPrlFile(QString &);
-    virtual void processPrlFiles();
     virtual void writePrlFile(QTextStream &);
 
     //make sure libraries are found
-    virtual bool findLibraries();
+    virtual bool findLibraries(bool linkPrl, bool mergeLflags);
 
     //for retrieving values and lists of values
     virtual QString var(const ProKey &var) const;
@@ -276,7 +275,7 @@ inline bool MakefileGenerator::noIO() const
 inline QString MakefileGenerator::defaultInstall(const QString &)
 { return QString(""); }
 
-inline bool MakefileGenerator::findLibraries()
+inline bool MakefileGenerator::findLibraries(bool, bool)
 { return true; }
 
 inline MakefileGenerator::~MakefileGenerator()

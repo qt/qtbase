@@ -87,7 +87,7 @@ ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 }
 
 bool
-Win32MakefileGenerator::findLibraries()
+Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
@@ -123,8 +123,9 @@ Win32MakefileGenerator::findLibraries()
                     if(ver > 0)
                         extension += QString::number(ver);
                     extension += ".lib";
-                    if (QMakeMetaInfo::libExists((*it).local() + '/' + lib)
-                            || exists((*it).local() + '/' + lib + extension)) {
+                    QString libBase = (*it).local() + '/' + lib;
+                    if ((linkPrl && processPrlFile(libBase))
+                            || exists(libBase + extension)) {
                         out = (*it).real() + Option::dir_sep + lib + extension;
                         break;
                     }
@@ -133,66 +134,38 @@ Win32MakefileGenerator::findLibraries()
             if(out.isEmpty())
                 out = lib + ".lib";
             (*it) = out;
+        } else if (linkPrl && !processPrlFile(opt) && QDir::isRelativePath(opt)) {
+            for (QList<QMakeLocalFileName>::Iterator it = dirs.begin(); it != dirs.end(); ++it) {
+                QString prl = (*it).local() + '/' + opt;
+                if (processPrlFile(prl))
+                    break;
+            }
         }
+
+        ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
+        for (int prl = 0; prl < prl_libs.size(); ++prl)
+            it = l.insert(++it, prl_libs.at(prl));
+        prl_libs.clear();
         ++it;
+    }
+    if (mergeLflags) {
+        ProStringList lopts;
+        for (int lit = 0; lit < l.size(); ++lit) {
+            ProString opt = l.at(lit);
+            if (opt.startsWith("/LIBPATH:")) {
+                if (!lopts.contains(opt))
+                    lopts.append(opt);
+            } else {
+                // Make sure we keep the dependency order of libraries
+                lopts.removeAll(opt);
+                lopts.append(opt);
+            }
+        }
+        l = lopts;
     }
   }
     return true;
 }
-
-void
-Win32MakefileGenerator::processPrlFiles()
-{
-    const QString libArg = project->first("QMAKE_L_FLAG").toQString();
-    QList<QMakeLocalFileName> libdirs;
-    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
-    for (int i = 0; lflags[i]; i++) {
-        ProStringList &l = project->values(lflags[i]);
-        for (int lit = 0; lit < l.size(); ++lit) {
-            QString opt = l.at(lit).toQString();
-            if (opt.startsWith(libArg)) {
-                QMakeLocalFileName l(opt.mid(libArg.length()));
-                if (!libdirs.contains(l))
-                    libdirs.append(l);
-            } else {
-                if (!processPrlFile(opt) && (QDir::isRelativePath(opt) || opt.startsWith("-l"))) {
-                    QString tmp;
-                    if (opt.startsWith("-l"))
-                        tmp = opt.mid(2);
-                    else
-                        tmp = opt;
-                    for(QList<QMakeLocalFileName>::Iterator it = libdirs.begin(); it != libdirs.end(); ++it) {
-                        QString prl = (*it).local() + '/' + tmp;
-                        if (processPrlFile(prl))
-                            break;
-                    }
-                }
-            }
-            ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
-            for (int prl = 0; prl < prl_libs.size(); ++prl)
-                l.insert(++lit, prl_libs.at(prl));
-            prl_libs.clear();
-        }
-
-        // Merge them into a logical order
-        if (!project->isActiveConfig("no_smart_library_merge") && !project->isActiveConfig("no_lflags_merge")) {
-            ProStringList lflags;
-            for (int lit = 0; lit < l.size(); ++lit) {
-                ProString opt = l.at(lit);
-                if (opt.startsWith(libArg)) {
-                    if (!lflags.contains(opt))
-                        lflags.append(opt);
-                } else {
-                    // Make sure we keep the dependency-order of libraries
-                    lflags.removeAll(opt);
-                    lflags.append(opt);
-                }
-            }
-            l = lflags;
-        }
-    }
-}
-
 
 void Win32MakefileGenerator::processVars()
 {

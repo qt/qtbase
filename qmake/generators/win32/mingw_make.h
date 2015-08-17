@@ -62,7 +62,7 @@ private:
 
     QString preCompHeaderOut;
 
-    virtual bool findLibraries();
+    virtual bool findLibraries(bool linkPrl, bool mergeLflags);
 
     QString objectsLinkLine;
 };
