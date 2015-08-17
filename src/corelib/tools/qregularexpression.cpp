@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2015 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -1325,48 +1325,45 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     int * const captureOffsets = priv->capturedOffsets.data();
     const int captureOffsetsCount = priv->capturedOffsets.size();
 
-    int realOffset = offset + subjectStart;
-    const int realSubjectLength = subjectLength + subjectStart;
-
-    const unsigned short * const subjectUtf16 = subject.utf16();
+    const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
 
     int result;
 
     if (!previousMatchWasEmpty) {
         result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                subjectUtf16, realSubjectLength,
-                                realOffset, pcreOptions,
+                                subjectUtf16, subjectLength,
+                                offset, pcreOptions,
                                 captureOffsets, captureOffsetsCount);
     } else {
         result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                subjectUtf16, realSubjectLength,
-                                realOffset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
+                                subjectUtf16, subjectLength,
+                                offset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
                                 captureOffsets, captureOffsetsCount);
 
         if (result == PCRE_ERROR_NOMATCH) {
-            ++realOffset;
+            ++offset;
 
             if (usingCrLfNewlines
-                    && realOffset < realSubjectLength
-                    && subjectUtf16[realOffset - 1] == QLatin1Char('\r')
-                    && subjectUtf16[realOffset] == QLatin1Char('\n')) {
-                ++realOffset;
-            } else if (realOffset < realSubjectLength
-                       && QChar::isLowSurrogate(subjectUtf16[realOffset])) {
-                ++realOffset;
+                    && offset < subjectLength
+                    && subjectUtf16[offset - 1] == QLatin1Char('\r')
+                    && subjectUtf16[offset] == QLatin1Char('\n')) {
+                ++offset;
+            } else if (offset < subjectLength
+                       && QChar::isLowSurrogate(subjectUtf16[offset])) {
+                ++offset;
             }
 
             result = pcre16SafeExec(compiledPattern, currentStudyData,
-                                    subjectUtf16, realSubjectLength,
-                                    realOffset, pcreOptions,
+                                    subjectUtf16, subjectLength,
+                                    offset, pcreOptions,
                                     captureOffsets, captureOffsetsCount);
         }
     }
 
 #ifdef QREGULAREXPRESSION_DEBUG
     qDebug() << "Matching" <<  pattern << "against" << subject
-             << "starting at" << subjectStart << "len" << subjectLength << "real len" << realSubjectLength
-             << "offset" << offset << "real offset" << realOffset
+             << "starting at" << subjectStart << "len" << subjectLength
+             << "offset" << offset
              << matchType << matchOptions << previousMatchWasEmpty
              << "result" << result;
 #endif
@@ -2041,7 +2038,7 @@ QString QRegularExpressionMatch::captured(int nth) const
     if (start == -1) // didn't capture
         return QString();
 
-    return d->subject.mid(start, capturedLength(nth));
+    return d->subject.mid(start + d->subjectStart, capturedLength(nth));
 }
 
 /*!
@@ -2062,7 +2059,7 @@ QStringRef QRegularExpressionMatch::capturedRef(int nth) const
     if (start == -1) // didn't capture
         return QStringRef();
 
-    return d->subject.midRef(start, capturedLength(nth));
+    return d->subject.midRef(start + d->subjectStart, capturedLength(nth));
 }
 
 /*!
