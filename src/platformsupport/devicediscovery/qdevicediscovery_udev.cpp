@@ -185,11 +185,11 @@ void QDeviceDiscoveryUDev::handleUDevNotification()
     // if we cannot determine a type, walk up the device tree
     if (!checkDeviceType(dev)) {
         // does not increase the refcount
-        dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
-        if (!dev)
+        struct udev_device *parent_dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
+        if (!parent_dev)
             goto cleanup;
 
-        if (!checkDeviceType(dev))
+        if (!checkDeviceType(parent_dev))
             goto cleanup;
     }
 
