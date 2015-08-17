@@ -414,6 +414,9 @@ public:
     ComPtr<Xaml::IDependencyObject> canvas;
     ComPtr<IApplicationView> view;
     ComPtr<IDisplayInformation> displayInformation;
+#ifdef Q_OS_WINPHONE
+    ComPtr<IStatusBar> statusBar;
+#endif // Q_OS_WINPHONE
 
     QScopedPointer<QWinRTCursor> cursor;
 
@@ -535,6 +538,15 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
     Q_ASSERT_SUCCEEDED(hr);
 
     d->cursor.reset(new QWinRTCursor);
+
+#ifdef Q_OS_WINPHONE
+    ComPtr<IStatusBarStatics> statusBarStatics;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_StatusBar).Get(),
+                                IID_PPV_ARGS(&statusBarStatics));
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = statusBarStatics->GetForCurrentView(&d->statusBar);
+    Q_ASSERT_SUCCEEDED(hr);
+#endif // Q_OS_WINPHONE
 }
 
 QWinRTScreen::~QWinRTScreen()
@@ -660,6 +672,19 @@ void QWinRTScreen::addWindow(QWindow *window)
     Q_D(QWinRTScreen);
     if (window == topWindow())
         return;
+
+#ifdef Q_OS_WINPHONE
+    if (d->statusBar && (window->flags() & Qt::WindowType_Mask) == Qt::Window) {
+        QEventDispatcherWinRT::runOnXamlThread([this, d]() {
+            HRESULT hr;
+            ComPtr<IAsyncAction> op;
+            hr = d->statusBar->HideAsync(&op);
+            Q_ASSERT_SUCCEEDED(hr);
+            return S_OK;
+        });
+    }
+#endif // Q_OS_WINPHONE
+
     d->visibleWindows.prepend(window);
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
