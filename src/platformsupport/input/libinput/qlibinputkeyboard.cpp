@@ -33,6 +33,7 @@
 
 #include "qlibinputkeyboard_p.h"
 #include <QtCore/QTextCodec>
+#include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 #include <libinput.h>
 #ifndef QT_NO_XKBCOMMON_EVDEV
@@ -41,6 +42,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 
 const int REPEAT_DELAY = 500;
 const int REPEAT_RATE = 100;
@@ -128,6 +131,7 @@ QLibInputKeyboard::QLibInputKeyboard()
 #endif
 {
 #ifndef QT_NO_XKBCOMMON_EVDEV
+    qCDebug(qLcLibInput) << "Using xkbcommon for key mapping";
     m_ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!m_ctx) {
         qWarning("Failed to create xkb context");
@@ -150,6 +154,8 @@ QLibInputKeyboard::QLibInputKeyboard()
 
     m_repeatTimer.setSingleShot(true);
     connect(&m_repeatTimer, &QTimer::timeout, this, &QLibInputKeyboard::handleRepeat);
+#else
+    qCWarning(qLcLibInput) << "X-less xkbcommon not available, not performing key mapping";
 #endif
 }
 
