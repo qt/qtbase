@@ -107,6 +107,8 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
     switch (hint) {
     case QPlatformTheme::StyleNames:
         return QStringList(QStringLiteral("fusion"));
+    case KeyboardScheme:
+        return QVariant(int(MacKeyboardScheme));
     default:
         return QPlatformTheme::themeHint(hint);
     }
