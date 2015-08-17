@@ -99,6 +99,9 @@
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include <QtCore/qt_windows.h>
 #  include <QtCore/QLibraryInfo>
+# if defined(Q_OS_WINPHONE)
+#   include <Objbase.h>
+# endif
 #endif // Q_OS_WIN && !Q_OS_WINCE
 
 #include <ctype.h>
@@ -1232,6 +1235,16 @@ void QGuiApplicationPrivate::init()
 #ifndef QT_NO_SESSIONMANAGER
     QString session_id;
     QString session_key;
+# if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    wchar_t guidstr[40];
+    GUID guid;
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_id = QString::fromWCharArray(guidstr);
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_key = QString::fromWCharArray(guidstr);
+# endif
 #endif
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
