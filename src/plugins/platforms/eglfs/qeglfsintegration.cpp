@@ -40,6 +40,7 @@
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QWindow>
+#include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
@@ -61,6 +62,10 @@
 #include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include <QtPlatformHeaders/QEGLNativeContext>
+
+#ifndef QT_NO_LIBINPUT
+#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#endif
 
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -389,6 +394,13 @@ void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 
 void QEglFSIntegration::createInputHandlers()
 {
+#ifndef QT_NO_LIBINPUT
+    if (!qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT")) {
+        new QLibInputHandler(QLatin1String("libinput"), QString());
+        return;
+    }
+#endif
+
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
