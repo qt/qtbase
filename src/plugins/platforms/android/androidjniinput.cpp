@@ -70,18 +70,20 @@ namespace QtAndroidInput
                                                   candidatesEnd);
     }
 
-    void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints)
+    void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
                                                   "showSoftwareKeyboard",
-                                                  "(IIIII)V",
+                                                  "(IIIIII)V",
                                                   left,
                                                   top,
                                                   width,
                                                   height,
-                                                  inputHints);
+                                                  inputHints,
+                                                  enterKeyType
+                                                 );
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-        qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints;
+        qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
 #endif
     }
 

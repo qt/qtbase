@@ -36,11 +36,13 @@
 
 #include "qwinrtcursor.h"
 #include "qwinrtscreen.h"
+#include <private/qeventdispatcher_winrt_p.h>
 
 #include <QtCore/qfunctions_winrt.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 
+#include <functional>
 #include <wrl.h>
 #include <windows.ui.core.h>
 #include <windows.foundation.h>
@@ -77,12 +79,17 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     Q_D(QWinRTCursor);
 
+    HRESULT hr;
     ICoreWindow *coreWindow = static_cast<QWinRTScreen *>(window->screen()->handle())->coreWindow();
 
     CoreCursorType type;
     switch (windowCursor ? windowCursor->shape() : Qt::ArrowCursor) {
     case Qt::BlankCursor:
-        coreWindow->put_PointerCursor(Q_NULLPTR);
+        hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow]() {
+            coreWindow->put_PointerCursor(Q_NULLPTR);
+            return S_OK;
+        });
+        RETURN_VOID_IF_FAILED("Failed to set blank native cursor");
         return;
     default:
     case Qt::OpenHandCursor:
@@ -142,11 +149,13 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     }
 
     ComPtr<ICoreCursor> cursor;
-    HRESULT hr = d->cursorFactory->CreateCursor(type, 0, &cursor);
+    hr = d->cursorFactory->CreateCursor(type, 0, &cursor);
     RETURN_VOID_IF_FAILED("Failed to create native cursor.");
 
-    hr = coreWindow->put_PointerCursor(cursor.Get());
-    RETURN_VOID_IF_FAILED("Failed to set native cursor.");
+    hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &cursor]() {
+        return coreWindow->put_PointerCursor(cursor.Get());
+    });
+    RETURN_VOID_IF_FAILED("Failed to set native cursor");
 }
 #endif // QT_NO_CURSOR
 
@@ -154,8 +163,12 @@ QPoint QWinRTCursor::pos() const
 {
     ICoreWindow *coreWindow =
             static_cast<QWinRTScreen *>(QGuiApplication::primaryScreen()->handle())->coreWindow();
+    HRESULT hr;
     Point point;
-    coreWindow->get_PointerPosition(&point);
+    hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &point]() {
+        return coreWindow->get_PointerPosition(&point);
+    });
+    RETURN_IF_FAILED("Failed to get native cursor position", QPoint());
     return QPoint(point.X, point.Y);
 }
 

@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
 public:
-    QCoreTextFontDatabase();
+    QCoreTextFontDatabase(bool useFreeType = false);
     ~QCoreTextFontDatabase();
     void populateFontDatabase() Q_DECL_OVERRIDE;
     void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
@@ -95,6 +95,11 @@ public:
 private:
     void populateFromDescriptor(CTFontDescriptorRef font);
 
+#ifndef QT_NO_FREETYPE
+    bool m_useFreeType;
+    QFontEngine *freeTypeFontEngine(const QFontDef &fontDef, const QByteArray &filename,
+                                    const QByteArray &fontData = QByteArray());
+#endif
     mutable QString defaultFontName;
 
     void removeApplicationFonts();

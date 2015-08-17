@@ -165,6 +165,9 @@ public:
     bool restoreDockWidget(QDockWidget *dockwidget);
 
     Qt::DockWidgetArea dockWidgetArea(QDockWidget *dockwidget) const;
+
+    void resizeDocks(const QList<QDockWidget *> &docks,
+                     const QList<int> &sizes, Qt::Orientation orientation);
 #endif // QT_NO_DOCKWIDGET
 
     QByteArray saveState(int version = 0) const;

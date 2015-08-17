@@ -690,6 +690,14 @@ QRect QPlatformWindow::windowGeometry() const
 }
 
 /*!
+    Returns the QWindow frame geometry.
+*/
+QRect QPlatformWindow::windowFrameGeometry() const
+{
+    return QHighDpi::toNativePixels(window()->frameGeometry(), window());
+}
+
+/*!
     Returns the closest acceptable geometry for a given geometry before
     a resize/move event for platforms that support it, for example to
     implement heightForWidth().

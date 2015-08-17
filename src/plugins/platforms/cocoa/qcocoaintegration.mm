@@ -142,6 +142,16 @@ qreal QCocoaScreen::devicePixelRatio() const
     return qreal(screen ? [screen backingScaleFactor] : 1.0);
 }
 
+QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingTypeHint() const
+{
+    QPlatformScreen::SubpixelAntialiasingType type = QPlatformScreen::subpixelAntialiasingTypeHint();
+    if (type == QPlatformScreen::Subpixel_None) {
+        // Every OSX machine has RGB pixels unless a peculiar or rotated non-Apple screen is attached
+        type = QPlatformScreen::Subpixel_RGB;
+    }
+    return type;
+}
+
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
     NSPoint screenPoint = qt_mac_flipPoint(point);
@@ -244,10 +254,25 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
     return windowPixmap;
 }
 
+static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
+{
+    QCocoaIntegration::Options options;
+    foreach (const QString &param, paramList) {
+#ifndef QT_NO_FREETYPE
+        if (param == QLatin1String("fontengine=freetype"))
+            options |= QCocoaIntegration::UseFreeTypeFontEngine;
+        else
+#endif
+            qWarning() << "Unknown option" << param;
+    }
+    return options;
+}
+
 QCocoaIntegration *QCocoaIntegration::mInstance = 0;
 
-QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QCoreTextFontDatabase())
+QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
+    : mOptions(parseOptions(paramList))
+    , mFontDb(new QCoreTextFontDatabase(mOptions.testFlag(UseFreeTypeFontEngine)))
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
@@ -343,6 +368,11 @@ QCocoaIntegration::~QCocoaIntegration()
 QCocoaIntegration *QCocoaIntegration::instance()
 {
     return mInstance;
+}
+
+QCocoaIntegration::Options QCocoaIntegration::options() const
+{
+    return mOptions;
 }
 
 /*!

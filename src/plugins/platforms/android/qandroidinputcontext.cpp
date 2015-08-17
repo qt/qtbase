@@ -545,7 +545,9 @@ void QAndroidInputContext::showInputPanel()
                                          rect.top(),
                                          rect.width(),
                                          rect.height(),
-                                         query->value(Qt::ImHints).toUInt());
+                                         query->value(Qt::ImHints).toUInt(),
+                                         query->value(Qt::ImEnterKeyType).toUInt()
+                                        );
 }
 
 void QAndroidInputContext::showInputPanelLater(Qt::ApplicationState state)

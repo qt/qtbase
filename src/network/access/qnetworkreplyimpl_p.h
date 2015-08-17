@@ -115,8 +115,6 @@ public:
     QNetworkReplyImplPrivate();
 
     void _q_startOperation();
-    void _q_sourceReadyRead();
-    void _q_sourceReadChannelFinished();
     void _q_copyReadyRead();
     void _q_copyReadChannelFinished();
     void _q_bufferOutgoingData();

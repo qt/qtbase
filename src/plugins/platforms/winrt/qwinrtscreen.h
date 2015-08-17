@@ -40,8 +40,6 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <EGL/egl.h>
-
 namespace ABI {
     namespace Windows {
         namespace ApplicationModel {
@@ -59,21 +57,16 @@ namespace ABI {
                 struct IWindowActivatedEventArgs;
                 struct IWindowSizeChangedEventArgs;
             }
+            namespace Xaml {
+                struct IDependencyObject;
+                struct IWindow;
+            }
         }
         namespace Graphics {
             namespace Display {
                 struct IDisplayInformation;
             }
         }
-#ifdef Q_OS_WINPHONE
-        namespace Phone {
-            namespace UI {
-                namespace Input {
-                    struct IBackPressedEventArgs;
-                }
-            }
-        }
-#endif
     }
 }
 struct IInspectable;
@@ -81,23 +74,20 @@ struct IInspectable;
 QT_BEGIN_NAMESPACE
 
 class QTouchDevice;
-class QWinRTEGLContext;
 class QWinRTCursor;
 class QWinRTInputContext;
 class QWinRTScreenPrivate;
 class QWinRTScreen : public QPlatformScreen
 {
 public:
-    explicit QWinRTScreen();
+    explicit QWinRTScreen(ABI::Windows::UI::Xaml::IWindow *xamlWindow);
     ~QWinRTScreen();
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
-    QSurfaceFormat surfaceFormat() const;
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     qreal scaleFactor() const;
-    QWinRTInputContext *inputContext() const;
     QPlatformCursor *cursor() const;
     Qt::KeyboardModifiers keyboardModifiers() const;
 
@@ -110,10 +100,10 @@ public:
     void raise(QWindow *window);
     void lower(QWindow *window);
 
+    void updateWindowTitle();
+
     ABI::Windows::UI::Core::ICoreWindow *coreWindow() const;
-    EGLDisplay eglDisplay() const; // To opengl context
-    EGLSurface eglSurface() const; // To window
-    EGLConfig eglConfig() const;
+    ABI::Windows::UI::Xaml::IDependencyObject *canvas() const;
 
 private:
     void handleExpose();
@@ -127,19 +117,12 @@ private:
     HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
 
     HRESULT onActivated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowActivatedEventArgs *);
-    HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
-    HRESULT onResume(IInspectable *, IInspectable *);
 
     HRESULT onClosed(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::ICoreWindowEventArgs *);
     HRESULT onVisibilityChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IVisibilityChangedEventArgs *);
-    HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *);
 
     HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
     HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
-
-#ifdef Q_OS_WINPHONE
-    HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
-#endif
 
     QScopedPointer<QWinRTScreenPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTScreen)

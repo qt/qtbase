@@ -376,7 +376,7 @@ public:
     Node* findChildNode(const QString& name, Node::Genus genus) const;
     Node* findChildNode(const QString& name, NodeType type);
     virtual void findChildren(const QString& name, NodeList& nodes) const Q_DECL_OVERRIDE;
-    FunctionNode* findFunctionNode(const QString& name) const;
+    FunctionNode* findFunctionNode(const QString& name, const QString& params) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
@@ -815,12 +815,11 @@ inline void EnumNode::setFlagsType(TypedefNode* t)
     t->setAssociatedEnum(this);
 }
 
-
 class Parameter
 {
 public:
     Parameter() {}
-    Parameter(const QString& leftType,
+    Parameter(const QString& dataType,
               const QString& rightType = QString(),
               const QString& name = QString(),
               const QString& defaultValue = QString());
@@ -830,20 +829,23 @@ public:
 
     void setName(const QString& name) { name_ = name; }
 
-    bool hasType() const { return leftType_.length() + rightType_.length() > 0; }
-    const QString& leftType() const { return leftType_; }
+    bool hasType() const { return dataType_.length() + rightType_.length() > 0; }
+    const QString& dataType() const { return dataType_; }
     const QString& rightType() const { return rightType_; }
     const QString& name() const { return name_; }
     const QString& defaultValue() const { return defaultValue_; }
 
     QString reconstruct(bool value = false) const;
 
-private:
-    QString leftType_;
-    QString rightType_;
+ public:
+    QString dataType_;
+    QString rightType_;  // mws says remove this 04/08/2015
     QString name_;
     QString defaultValue_;
 };
+
+//friend class QTypeInfo<Parameter>;
+//Q_DECLARE_TYPEINFO(Parameter, Q_MOVABLE_TYPE);
 
 class FunctionNode : public LeafNode
 {
@@ -874,7 +876,7 @@ public:
     void setOverloadNumber(unsigned char n) { overloadNumber_ = n; }
     void setReimplemented(bool b);
     void addParameter(const Parameter& parameter);
-    inline void setParameters(const QList<Parameter>& parameters);
+    inline void setParameters(const QVector<Parameter>& parameters);
     void borrowParameterNames(const FunctionNode* source);
     void setReimplementedFrom(FunctionNode* from);
 
@@ -907,7 +909,7 @@ public:
     virtual bool isJsMethod() const Q_DECL_OVERRIDE {
         return (type() == Node::QmlMethod) && (genus() == Node::JS);
     }
-    const QList<Parameter>& parameters() const { return parameters_; }
+    const QVector<Parameter>& parameters() const { return parameters_; }
     void clearParams() { parameters_.clear(); }
     QStringList parameterNames() const;
     QString rawParameters(bool names = false, bool values = false) const;
@@ -957,7 +959,7 @@ private:
     bool privateSignal_: 1;
     bool overload_ : 1;
     unsigned char overloadNumber_;
-    QList<Parameter> parameters_;
+    QVector<Parameter> parameters_;
     const FunctionNode* reimplementedFrom_;
     PropNodeList        associatedProperties_;
     QList<FunctionNode*> reimplementedBy_;
@@ -1030,7 +1032,7 @@ private:
     const PropertyNode* overrides_;
 };
 
-inline void FunctionNode::setParameters(const QList<Parameter> &p)
+inline void FunctionNode::setParameters(const QVector<Parameter> &p)
 {
     parameters_ = p;
 }

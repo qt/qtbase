@@ -1120,6 +1120,15 @@ QT_BEGIN_INCLUDE_NAMESPACE
 
 QT_END_INCLUDE_NAMESPACE
 
+#if defined(Q_OS_OSX) && !defined(QT_NO_FREETYPE)
+static const char *s_shapersForOsxFreeType[] =
+{
+    "ot",
+    "fallback",
+    Q_NULLPTR
+};
+#endif
+
 int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, const QVector<uint> &itemBoundaries, bool kerningEnabled) const
 {
     uint glyphs_shaped = 0;
@@ -1172,7 +1181,15 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             };
             const int num_features = 1;
 
-            bool shapedOk = hb_shape_full(hb_font, buffer, features, num_features, 0);
+            const char *const *shaper_list = Q_NULLPTR;
+#if defined(Q_OS_OSX) && !defined(QT_NO_FREETYPE)
+            // What's behind QFontEngine::FaceData::user_data isn't compatible between CoreText and
+            // FreeType font engines - specifically functions in hb-coretext.cc would run into undefined
+            // behavior with data from the FreeType engine. The OpenType shaper works with that engine.
+            if (actualFontEngine->type() == QFontEngine::Freetype)
+                shaper_list = s_shapersForOsxFreeType;
+#endif
+            bool shapedOk = hb_shape_full(hb_font, buffer, features, num_features, shaper_list);
             if (Q_UNLIKELY(!shapedOk)) {
                 hb_buffer_destroy(buffer);
                 return 0;

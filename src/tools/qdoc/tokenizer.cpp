@@ -33,6 +33,7 @@
 
 #include "config.h"
 #include "tokenizer.h"
+#include "generator.h"
 
 #include <qfile.h>
 #include <qhash.h>

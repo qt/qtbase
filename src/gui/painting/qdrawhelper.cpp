@@ -1252,25 +1252,54 @@ static inline void qConvertARGB64PMToA2RGB30PM_sse2(uint *dest, const QRgba64 *b
     const __m128i cmask = _mm_set1_epi32(0x000003ff);
     int i = 0;
     __m128i vr, vg, vb, va;
-    for (; i < count-1; i += 2) {
-        __m128i vs = _mm_loadu_si128((const __m128i*)buffer);
-        buffer += 2;
-        vr = _mm_srli_epi64(vs, 6);
-        vg = _mm_srli_epi64(vs, 16 + 6 - 10);
-        vb = _mm_srli_epi64(vs, 32 + 6);
-        vr = _mm_and_si128(vr, cmask);
-        vg = _mm_and_si128(vg, gmask);
-        vb = _mm_and_si128(vb, cmask);
-        va = _mm_srli_epi64(vs, 48 + 14);
-        if (PixelOrder == PixelOrderRGB)
-            vr = _mm_slli_epi32(vr, 20);
-        else
-            vb = _mm_slli_epi32(vb, 20);
-        va = _mm_slli_epi32(va, 30);
-        __m128i vd = _mm_or_si128(_mm_or_si128(vr, vg), _mm_or_si128(vb, va));
-        vd = _mm_shuffle_epi32(vd, _MM_SHUFFLE(3, 1, 2, 0));
-        _mm_storel_epi64((__m128i*)dest, vd);
-        dest += 2;
+    if (i < count && (const uintptr_t)buffer & 0x8) {
+        *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+        ++i;
+    }
+
+    for (; i < count-15; i += 16) {
+        // Repremultiplying is really expensive and hard to do in SIMD without AVX2,
+        // so we try to avoid it by checking if it is needed 16 samples at a time.
+        __m128i vOr = _mm_set1_epi32(0);
+        __m128i vAnd = _mm_set1_epi32(0xffffffff);
+        for (int j = 0; j < 16; j += 2) {
+            __m128i vs = _mm_load_si128((const __m128i*)(buffer + j));
+            vOr = _mm_or_si128(vOr, vs);
+            vAnd = _mm_and_si128(vAnd, vs);
+        }
+        const quint16 orAlpha = ((uint)_mm_extract_epi16(vOr, 3)) | ((uint)_mm_extract_epi16(vOr, 7));
+        const quint16 andAlpha = ((uint)_mm_extract_epi16(vAnd, 3)) & ((uint)_mm_extract_epi16(vAnd, 7));
+
+        if (andAlpha == 0xffff) {
+            for (int j = 0; j < 16; j += 2) {
+                __m128i vs = _mm_load_si128((const __m128i*)buffer);
+                buffer += 2;
+                vr = _mm_srli_epi64(vs, 6);
+                vg = _mm_srli_epi64(vs, 16 + 6 - 10);
+                vb = _mm_srli_epi64(vs, 32 + 6);
+                vr = _mm_and_si128(vr, cmask);
+                vg = _mm_and_si128(vg, gmask);
+                vb = _mm_and_si128(vb, cmask);
+                va = _mm_srli_epi64(vs, 48 + 14);
+                if (PixelOrder == PixelOrderRGB)
+                    vr = _mm_slli_epi32(vr, 20);
+                else
+                    vb = _mm_slli_epi32(vb, 20);
+                va = _mm_slli_epi32(va, 30);
+                __m128i vd = _mm_or_si128(_mm_or_si128(vr, vg), _mm_or_si128(vb, va));
+                vd = _mm_shuffle_epi32(vd, _MM_SHUFFLE(3, 1, 2, 0));
+                _mm_storel_epi64((__m128i*)dest, vd);
+                dest += 2;
+            }
+        } else if (orAlpha == 0) {
+            for (int j = 0; j < 16; ++j) {
+                *dest++ = 0;
+                buffer++;
+            }
+        } else {
+            for (int j = 0; j < 16; ++j)
+                *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
+        }
     }
 
     for (; i < count; ++i)

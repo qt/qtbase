@@ -3101,6 +3101,53 @@ void QDockAreaLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
         remove(index);
 }
 
+void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
+                                  const QList<int> &sizes, Qt::Orientation o)
+{
+    if (docks.count() != sizes.count()) {
+        qWarning("QMainWidget::resizeDocks: size of the lists are not the same");
+        return;
+    }
+    int count = docks.count();
+    fallbackToSizeHints = false;
+    for (int i = 0; i < count; ++i) {
+        QList<int> path = indexOf(docks[i]);
+        if (path.isEmpty()) {
+            qWarning("QMainWidget::resizeDocks: one QDockWidget is not part of the layout");
+            continue;
+        }
+        int size = sizes[i];
+        if (size <= 0) {
+            qWarning("QMainWidget::resizeDocks: all sizes need to be larger than 0");
+            size = 1;
+        }
+
+        while (path.size() > 1) {
+            QDockAreaLayoutInfo *info = this->info(path);
+            if (!info->tabbed && info->o == o) {
+                info->item_list[path.last()].size = size;
+                int totalSize = 0;
+                foreach (const QDockAreaLayoutItem &item, info->item_list) {
+                    if (!item.skip()) {
+                        if (totalSize != 0)
+                            totalSize += sep;
+                        totalSize += item.size == -1 ? pick(o, item.sizeHint()) : item.size;
+                    }
+                }
+                size = totalSize;
+            }
+            path.removeLast();
+        }
+
+        const int dockNum = path.first();
+        Q_ASSERT(dockNum < QInternal::DockCount);
+        QRect &r = this->docks[dockNum].rect;
+        QSize s = r.size();
+        rpick(o, s) = size;
+        r.setSize(s);
+    }
+}
+
 void QDockAreaLayout::splitDockWidget(QDockWidget *after,
                                                QDockWidget *dockWidget,
                                                Qt::Orientation orientation)

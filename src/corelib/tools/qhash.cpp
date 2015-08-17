@@ -2240,7 +2240,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     Returns a pointer to the current item's key.
 */
 
-/*! \fn bool QHash::key_iterator::operator==(key_iterator other)
+/*! \fn bool QHash::key_iterator::operator==(key_iterator other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -2248,7 +2248,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa operator!=()
 */
 
-/*! \fn bool QHash::key_iterator::operator!=(key_iterator other)
+/*! \fn bool QHash::key_iterator::operator!=(key_iterator other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.

@@ -62,15 +62,12 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
 #  define Q_STATIC_TEMPLATE_FUNCTION static
-#  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #  define Q_DECL_RESTRICT __restrict__
 #elif defined(Q_CC_MSVC)
 #  define Q_STATIC_TEMPLATE_FUNCTION static
-#  define Q_ALWAYS_INLINE __forceinline
 #  define Q_DECL_RESTRICT __restrict
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
-#  define Q_ALWAYS_INLINE inline
 #  define Q_DECL_RESTRICT
 #endif
 
@@ -712,18 +709,6 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
 
-static Q_ALWAYS_INLINE uint BYTE_MUL_RGB30(uint x, uint a) {
-    uint xa = x >> 30;
-    uint xr = (x >> 20) & 0x3ff;
-    uint xg = (x >> 10) & 0x3ff;
-    uint xb = x & 0x3ff;
-    xa = qt_div_255(xa * a);
-    xr = qt_div_255(xr * a);
-    xg = qt_div_255(xg * a);
-    xb = qt_div_255(xb * a);
-    return (xa << 30) | (xr << 20) | (xg << 10) | xb;
-}
-
 static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
 {
     uint a = c >> 30;
@@ -897,6 +882,18 @@ inline QRgb qRepremultiply(QRgb p)
     return qPremultiply(p);
 }
 
+template<unsigned int Shift>
+inline QRgba64 qRepremultiply(QRgba64 p)
+{
+    const uint alpha = p.alpha();
+    if (alpha == 65535 || alpha == 0)
+        return p;
+    p = p.unpremultiplied();
+    Q_CONSTEXPR  uint mult = 65535 / (65535 >> Shift);
+    p.setAlpha(mult * (alpha >> Shift));
+    return p.premultiplied();
+}
+
 template<>
 inline uint qConvertArgb32ToA2rgb30<PixelOrderBGR>(QRgb c)
 {
@@ -1000,6 +997,7 @@ template<enum QtPixelOrder> inline unsigned int qConvertRgb64ToRgb30(QRgba64);
 template<>
 inline unsigned int qConvertRgb64ToRgb30<PixelOrderBGR>(QRgba64 c)
 {
+    c = qRepremultiply<14>(c);
     const uint a = c.alpha() >> 14;
     const uint r = c.red() >> 6;
     const uint g = c.green() >> 6;
@@ -1010,6 +1008,7 @@ inline unsigned int qConvertRgb64ToRgb30<PixelOrderBGR>(QRgba64 c)
 template<>
 inline unsigned int qConvertRgb64ToRgb30<PixelOrderRGB>(QRgba64 c)
 {
+    c = qRepremultiply<14>(c);
     const uint a = c.alpha() >> 14;
     const uint r = c.red() >> 6;
     const uint g = c.green() >> 6;

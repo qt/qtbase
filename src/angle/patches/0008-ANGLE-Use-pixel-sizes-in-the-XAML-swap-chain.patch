@@ -1,0 +1,361 @@
+From 333bb863e5c3e04fcc513e4750208fa3742be7a1 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Sat, 8 Aug 2015 21:42:03 +0300
+Subject: [PATCH 2/4] ANGLE: Use pixel sizes in the XAML swap chain
+
+This is necessary for Qt applications, as they render to GL in physical
+pixels. This is consistent with the CoreWindow swap chain behavior.
+
+This includes a partial revert of "ANGLE: Improve Windows Phone Support"
+as the modifications to SwapChain11 are incompatible with the XAML swap
+chain.
+
+This change only affects Windows Runtime targets.
+
+Change-Id: I401ae81028a9dfdb9da37f51c60844467c476f76
+---
+ .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 46 ----------------------
+ .../d3d/d3d11/winrt/CoreWindowNativeWindow.cpp     | 21 ----------
+ .../d3d/d3d11/winrt/CoreWindowNativeWindow.h       |  4 +-
+ .../d3d/d3d11/winrt/InspectableNativeWindow.cpp    | 21 ++++++++++
+ .../d3d/d3d11/winrt/InspectableNativeWindow.h      | 10 +++--
+ .../d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp | 30 ++++++++------
+ .../d3d/d3d11/winrt/SwapChainPanelNativeWindow.h   |  7 ++--
+ 7 files changed, 49 insertions(+), 90 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index dc539cf..0af2cf1 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -154,14 +154,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+         const bool useSharedResource = !mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport();
+ 
+         D3D11_TEXTURE2D_DESC offscreenTextureDesc = {0};
+-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+-        const int textureLength = std::max(backbufferWidth, backbufferHeight);
+-        offscreenTextureDesc.Width = textureLength;
+-        offscreenTextureDesc.Height = textureLength;
+-#else
+         offscreenTextureDesc.Width = backbufferWidth;
+         offscreenTextureDesc.Height = backbufferHeight;
+-#endif
+         offscreenTextureDesc.Format = backbufferFormatInfo.texFormat;
+         offscreenTextureDesc.MipLevels = 1;
+         offscreenTextureDesc.ArraySize = 1;
+@@ -241,14 +235,8 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+     if (mDepthBufferFormat != GL_NONE)
+     {
+         D3D11_TEXTURE2D_DESC depthStencilTextureDesc;
+-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+-        const int textureLength = std::max(backbufferWidth, backbufferHeight);
+-        depthStencilTextureDesc.Width = textureLength;
+-        depthStencilTextureDesc.Height = textureLength;
+-#else
+         depthStencilTextureDesc.Width = backbufferWidth;
+         depthStencilTextureDesc.Height = backbufferHeight;
+-#endif
+         depthStencilTextureDesc.Format = depthBufferFormatInfo.texFormat;
+         depthStencilTextureDesc.MipLevels = 1;
+         depthStencilTextureDesc.ArraySize = 1;
+@@ -349,7 +337,6 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+         return EGL_SUCCESS;
+     }
+ 
+-#if !defined(ANGLE_ENABLE_WINDOWS_STORE) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+     // Can only call resize if we have already created our swap buffer and resources
+     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
+ 
+@@ -392,12 +379,6 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+     }
+ 
+     return resetOffscreenTexture(backbufferWidth, backbufferHeight);
+-#else
+-    // Do nothing on Windows Phone apart from updating the internal buffer/width height
+-    mWidth = backbufferWidth;
+-    mHeight = backbufferHeight;
+-    return EGL_SUCCESS;
+-#endif
+ }
+ 
+ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swapInterval)
+@@ -552,27 +533,6 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+ 
+     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
+ 
+-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+-    // Create a quad in homogeneous coordinates
+-    float x1 = -1.0f;
+-    float y1 = -1.0f;
+-    float x2 = 1.0f;
+-    float y2 = 1.0f;
+-
+-    const float dim = std::max(mWidth, mHeight);
+-    float u1 = 0;
+-    float v1 = 0;
+-    float u2 = float(width) / dim;
+-    float v2 = float(height) / dim;
+-
+-    const NativeWindow::RotationFlags flags = mNativeWindow.rotationFlags();
+-    const bool rotateL = flags == NativeWindow::RotateLeft;
+-    const bool rotateR = flags == NativeWindow::RotateRight;
+-    d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, rotateL ? u2 : u1, rotateR ? v2 : v1);
+-    d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, rotateR ? u2 : u1, rotateL ? v1 : v2);
+-    d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
+-    d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
+-#else
+     // Create a quad in homogeneous coordinates
+     float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
+     float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
+@@ -588,7 +548,6 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, u1, v2);
+     d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, u2, v1);
+     d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, u2, v2);
+-#endif
+ 
+     deviceContext->Unmap(mQuadVB, 0);
+ 
+@@ -618,13 +577,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     D3D11_VIEWPORT viewport;
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
+-#if defined(ANGLE_ENABLE_WINDOWS_STORE) && (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+-    viewport.Width = (rotateL || rotateR) ? height : width;
+-    viewport.Height = (rotateL || rotateR) ? width : height;
+-#else
+     viewport.Width = mWidth;
+     viewport.Height = mHeight;
+-#endif
+     viewport.MinDepth = 0.0f;
+     viewport.MaxDepth = 1.0f;
+     deviceContext->RSSetViewports(1, &viewport);
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+index fa9a69c..f45a077 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp
+@@ -191,25 +191,4 @@ HRESULT GetCoreWindowSizeInPixels(const ComPtr<ABI::Windows::UI::Core::ICoreWind
+ 
+     return result;
+ }
+-
+-static float GetLogicalDpi()
+-{
+-    ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayProperties;
+-    float dpi = 96.0f;
+-
+-    if (SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(), displayProperties.GetAddressOf())))
+-    {
+-        if (SUCCEEDED(displayProperties->get_LogicalDpi(&dpi)))
+-        {
+-            return dpi;
+-        }
+-    }
+-    return dpi;
+-}
+-
+-long ConvertDipsToPixels(float dips)
+-{
+-    static const float dipsPerInch = 96.0f;
+-    return lround((dips * GetLogicalDpi() / dipsPerInch));
+-}
+ }
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
+index 59df9d5..87cdfe6 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h
+@@ -19,7 +19,6 @@ typedef ABI::Windows::Foundation::__FITypedEventHandler_2_Windows__CGraphics__CD
+ 
+ namespace rx
+ {
+-long ConvertDipsToPixels(float dips);
+ 
+ class CoreWindowNativeWindow : public InspectableNativeWindow, public std::enable_shared_from_this<CoreWindowNativeWindow>
+ {
+@@ -64,8 +63,7 @@ class CoreWindowSizeChangedHandler :
+             ABI::Windows::Foundation::Size windowSize;
+             if (SUCCEEDED(sizeChangedEventArgs->get_Size(&windowSize)))
+             {
+-                SIZE windowSizeInPixels = { ConvertDipsToPixels(windowSize.Width), ConvertDipsToPixels(windowSize.Height) };
+-                host->setNewClientSize(windowSizeInPixels);
++                host->setNewClientSize(windowSize);
+             }
+         }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+index 2bf48c5..e83f479 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+@@ -288,4 +288,25 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
+ 
+     return result;
+ }
++
++static float GetLogicalDpi()
++{
++    ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayProperties;
++    float dpi = 96.0f;
++
++    if (SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(), displayProperties.GetAddressOf())))
++    {
++        if (SUCCEEDED(displayProperties->get_LogicalDpi(&dpi)))
++        {
++            return dpi;
++        }
++    }
++    return dpi;
++}
++
++long ConvertDipsToPixels(float dips)
++{
++    static const float dipsPerInch = 96.0f;
++    return lround((dips * GetLogicalDpi() / dipsPerInch));
++}
+ }
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
+index 575bdf8..f053407 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.h
+@@ -26,6 +26,8 @@ using namespace ABI::Windows::Foundation::Collections;
+ 
+ namespace rx
+ {
++long ConvertDipsToPixels(float dips);
++
+ class InspectableNativeWindow
+ {
+   public:
+@@ -45,7 +47,7 @@ class InspectableNativeWindow
+     virtual HRESULT createSwapChain(ID3D11Device *device, DXGIFactory *factory, DXGI_FORMAT format, unsigned int width, unsigned int height, DXGISwapChain **swapChain) = 0;
+     virtual bool registerForSizeChangeEvents() = 0;
+     virtual void unregisterForSizeChangeEvents() = 0;
+-    virtual HRESULT scaleSwapChain(const SIZE& newSize) { return S_OK; }
++    virtual HRESULT scaleSwapChain(const Size& newSize) { return S_OK; }
+ 
+     bool getClientRect(RECT *rect)
+     {
+@@ -59,11 +61,11 @@ class InspectableNativeWindow
+         return true;
+     }
+ 
+-    void setNewClientSize(const SIZE &newSize)
++    void setNewClientSize(const Size &newSize)
+     {
+-        if (mSupportsSwapChainResize && !mRequiresSwapChainScaling)
++        if (mSupportsSwapChainResize)
+         {
+-            mNewClientRect = { 0, 0, newSize.cx, newSize.cy };
++            mNewClientRect = { 0, 0, ConvertDipsToPixels(newSize.Width), ConvertDipsToPixels(newSize.Height) };
+             mClientRectChanged = true;
+         }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp
+index 53899db..0b48b54 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp
+@@ -66,7 +66,7 @@ bool SwapChainPanelNativeWindow::initialize(EGLNativeWindowType window, IPropert
+         }
+         else
+         {
+-            result = GetSwapChainPanelSize(mSwapChainPanel, &mClientRect);
++            result = GetSwapChainPanelSize(mSwapChainPanel, &mClientRect, &mRequiresSwapChainScaling);
+         }
+     }
+ 
+@@ -139,7 +139,6 @@ HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device, DXGIFa
+ 
+     ComPtr<IDXGISwapChain1> newSwapChain;
+     ComPtr<ISwapChainPanelNative> swapChainPanelNative;
+-    RECT currentPanelSize = {};
+ 
+     HRESULT result = factory->CreateSwapChainForComposition(device, &swapChainDesc, nullptr, newSwapChain.ReleaseAndGetAddressOf());
+ 
+@@ -167,13 +166,13 @@ HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device, DXGIFa
+     // first reading the current size of the swapchain panel, then scaling
+     if (SUCCEEDED(result) && mRequiresSwapChainScaling)
+     {
+-        result = GetSwapChainPanelSize(mSwapChainPanel, &currentPanelSize);
+-    }
++        ComPtr<ABI::Windows::UI::Xaml::IUIElement> uiElement;
++        result = mSwapChainPanel.As(&uiElement);
++        ASSERT(SUCCEEDED(result));
+ 
+-    // Scale the swapchain to fit inside the contents of the panel.
+-    if (SUCCEEDED(result) && mRequiresSwapChainScaling)
+-    {
+-        SIZE currentSize = { currentPanelSize.right, currentPanelSize.bottom };
++        Size currentSize;
++        result = uiElement->get_RenderSize(&currentSize);
++        ASSERT(SUCCEEDED(result));
+         result = scaleSwapChain(currentSize);
+     }
+ 
+@@ -190,9 +189,9 @@ HRESULT SwapChainPanelNativeWindow::createSwapChain(ID3D11Device *device, DXGIFa
+     return result;
+ }
+ 
+-HRESULT SwapChainPanelNativeWindow::scaleSwapChain(const SIZE &newSize)
++HRESULT SwapChainPanelNativeWindow::scaleSwapChain(const Size &newSize)
+ {
+-    ABI::Windows::Foundation::Size renderScale = { (float)newSize.cx/(float)mClientRect.right, (float)newSize.cy/(float)mClientRect.bottom };
++    ABI::Windows::Foundation::Size renderScale = { newSize.Width / mNewClientRect.right, newSize.Height / mNewClientRect.bottom };
+     // Setup a scale matrix for the swap chain
+     DXGI_MATRIX_3X2_F scaleMatrix = {};
+     scaleMatrix._11 = renderScale.Width;
+@@ -208,7 +207,7 @@ HRESULT SwapChainPanelNativeWindow::scaleSwapChain(const SIZE &newSize)
+     return result;
+ }
+ 
+-HRESULT GetSwapChainPanelSize(const ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> &swapChainPanel, RECT *windowSize)
++HRESULT GetSwapChainPanelSize(const ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> &swapChainPanel, RECT *windowSize, bool *scalingActive)
+ {
+     ComPtr<ABI::Windows::UI::Xaml::IUIElement> uiElement;
+     ABI::Windows::Foundation::Size renderSize = { 0, 0 };
+@@ -220,7 +219,14 @@ HRESULT GetSwapChainPanelSize(const ComPtr<ABI::Windows::UI::Xaml::Controls::ISw
+ 
+     if (SUCCEEDED(result))
+     {
+-        *windowSize = { 0, 0, lround(renderSize.Width), lround(renderSize.Height) };
++        long width = ConvertDipsToPixels(renderSize.Width);
++        long height = ConvertDipsToPixels(renderSize.Height);
++        *windowSize = { 0, 0, width, height };
++
++        if (scalingActive)
++        {
++            *scalingActive = width != renderSize.Width || height != renderSize.Height;
++        }
+     }
+ 
+     return result;
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.h
+index caf327d..5debd2f 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.h
+@@ -22,7 +22,7 @@ class SwapChainPanelNativeWindow : public InspectableNativeWindow, public std::e
+     bool registerForSizeChangeEvents();
+     void unregisterForSizeChangeEvents();
+     HRESULT createSwapChain(ID3D11Device *device, DXGIFactory *factory, DXGI_FORMAT format, unsigned int width, unsigned int height, DXGISwapChain **swapChain);
+-    HRESULT scaleSwapChain(const SIZE &newSize);
++    HRESULT scaleSwapChain(const Size &newSize) override;
+ 
+   private:
+     ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> mSwapChainPanel;
+@@ -62,8 +62,7 @@ class SwapChainPanelSizeChangedHandler :
+             HRESULT result = sizeChangedEventArgs->get_NewSize(&newSize);
+             if (SUCCEEDED(result))
+             {
+-                SIZE windowSize = { lround(newSize.Width), lround(newSize.Height) };
+-                host->setNewClientSize(windowSize);
++                host->setNewClientSize(newSize);
+             }
+         }
+ 
+@@ -74,6 +73,6 @@ class SwapChainPanelSizeChangedHandler :
+     std::weak_ptr<InspectableNativeWindow> mHost;
+ };
+ 
+-HRESULT GetSwapChainPanelSize(const ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> &swapChainPanel, RECT *windowSize);
++HRESULT GetSwapChainPanelSize(const ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> &swapChainPanel, RECT *windowSize, bool *scalingActive = nullptr);
+ }
+ #endif // LIBANGLE_RENDERER_D3D_D3D11_WINRT_SWAPCHAINPANELNATIVEWINDOW_H_
+-- 
+1.9.5.msysgit.1
+

@@ -99,6 +99,13 @@ static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *leng
 
 static QFontEngineFT::Glyph emptyGlyph = {0, 0, 0, 0, 0, 0, 0, 0};
 
+static const QFontEngine::HintStyle ftInitialDefaultHintStyle =
+#ifdef Q_OS_WIN
+    QFontEngineFT::HintFull;
+#else
+    QFontEngineFT::HintNone;
+#endif
+
 // -------------------------- Freetype support ------------------------------
 
 class QtFreetypeData
@@ -629,11 +636,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     antialias = true;
     freetype = 0;
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
-#ifndef Q_OS_WIN
-    default_hint_style = HintNone;
-#else
-    default_hint_style = HintFull;
-#endif
+    default_hint_style = ftInitialDefaultHintStyle;
     subpixelType = Subpixel_None;
     lcdFilterType = 0;
 #if defined(FT_LCD_FILTER_H)
@@ -758,6 +761,24 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
     fsType = freetype->fsType();
     return true;
+}
+
+void QFontEngineFT::setQtDefaultHintStyle(QFont::HintingPreference hintingPreference)
+{
+    switch (hintingPreference) {
+    case QFont::PreferNoHinting:
+        setDefaultHintStyle(HintNone);
+        break;
+    case QFont::PreferFullHinting:
+        setDefaultHintStyle(HintFull);
+        break;
+    case QFont::PreferVerticalHinting:
+        setDefaultHintStyle(HintLight);
+        break;
+    case QFont::PreferDefaultHinting:
+        setDefaultHintStyle(ftInitialDefaultHintStyle);
+        break;
+    }
 }
 
 void QFontEngineFT::setDefaultHintStyle(HintStyle style)

@@ -389,12 +389,13 @@ public class QtNative
                                              final int y,
                                              final int width,
                                              final int height,
-                                             final int inputHints )
+                                             final int inputHints,
+                                             final int enterKeyType)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.showSoftwareKeyboard(x, y, width, height, inputHints);
+                m_activityDelegate.showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
             }
         });
     }

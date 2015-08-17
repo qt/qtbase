@@ -196,6 +196,7 @@ void MainWindow::createActions()
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
     QToolBar *editToolBar = addToolBar(tr("Edit"));
 //!
+#ifndef QT_NO_CLIPBOARD
     const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon(":/images/cut.png"));
     QAction *cutAct = new QAction(cutIcon, tr("Cu&t"), this);
 //! [21]
@@ -226,6 +227,8 @@ void MainWindow::createActions()
 
     menuBar()->addSeparator();
 
+#endif // !QT_NO_CLIPBOARD
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
     aboutAct->setStatusTip(tr("Show the application's About box"));
@@ -237,11 +240,13 @@ void MainWindow::createActions()
 //! [22]
 
 //! [23]
+#ifndef QT_NO_CLIPBOARD
     cutAct->setEnabled(false);
 //! [23] //! [24]
     copyAct->setEnabled(false);
     connect(textEdit, &QPlainTextEdit::copyAvailable, cutAct, &QAction::setEnabled);
     connect(textEdit, &QPlainTextEdit::copyAvailable, copyAct, &QAction::setEnabled);
+#endif // !QT_NO_CLIPBOARD
 }
 //! [24]
 

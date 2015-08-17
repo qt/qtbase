@@ -378,7 +378,7 @@ void **QListData::erase(void **xi)
     references into a QVector and non-heap-allocating QLists.
 
     Internally, QList\<T\> is represented as an array of T if
-    If \c{sizeof(T) <= sizeof(void*)} and T has been declared to be
+    \c{sizeof(T) <= sizeof(void*)} and T has been declared to be
     either a \c{Q_MOVABLE_TYPE} or a \c{Q_PRIMITIVE_TYPE} using
     \l {Q_DECLARE_TYPEINFO}. Otherwise, QList\<T\> is represented
     as an array of T* and the items are allocated on the heap.

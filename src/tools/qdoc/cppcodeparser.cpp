@@ -54,6 +54,7 @@ static bool inMacroCommand_ = false;
 static bool parsingHeaderFile_ = false;
 QStringList CppCodeParser::exampleFiles;
 QStringList CppCodeParser::exampleDirs;
+CppCodeParser* CppCodeParser::cppParser_ = 0;
 
 /*!
   The constructor initializes some regular expressions
@@ -63,6 +64,7 @@ CppCodeParser::CppCodeParser()
     : varComment("/\\*\\s*([a-zA-Z_0-9]+)\\s*\\*/"), sep("(?:<[^>]+>)?::")
 {
     reset();
+    cppParser_ = this;
 }
 
 /*!
@@ -374,12 +376,12 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             }
             else {
                 func->setMetaness(FunctionNode::MacroWithParams);
-                QList<Parameter> params = func->parameters();
+                QVector<Parameter> params = func->parameters();
                 for (int i = 0; i < params.size(); ++i) {
                     Parameter &param = params[i];
-                    if (param.name().isEmpty() && !param.leftType().isEmpty()
-                            && param.leftType() != "...")
-                        param = Parameter("", "", param.leftType());
+                    if (param.name().isEmpty() && !param.dataType().isEmpty()
+                            && param.dataType() != "...")
+                        param = Parameter("", "", param.dataType());
                 }
                 func->setParameters(params);
             }
@@ -685,10 +687,10 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
   <type> <QML-type>::<name>(<param>, <param>, ...)
   <type> <QML-module>::<QML-type>::<name>(<param>, <param>, ...)
 
-  This function splits the argument into one of those two
-  forms, sets \a module, \a qmlTypeName, and \a name, and returns
-  true. If the argument doesn't match either form, an error
-  message is emitted and false is returned.
+  This function splits the \a{arg}ument into one of those
+  two forms, sets \a type, \a module, and \a qmlTypeName,
+  and returns true. If the argument doesn't match either
+  form, an error message is emitted and false is returned.
 
   \note The two QML types \e{Component} and \e{QtObject} never
   have a module qualifier.
@@ -698,30 +700,29 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
                                       QString& module,
                                       QString& qmlTypeName)
 {
-    QStringList colonSplit(arg.split("::"));
+    QString name;
+    int leftParen = arg.indexOf(QChar('('));
+    if (leftParen > 0)
+        name = arg.left(leftParen);
+    else
+        name = arg;
+    int firstBlank = name.indexOf(QChar(' '));
+    if (firstBlank > 0) {
+        type = name.left(firstBlank);
+        name = name.right(name.length() - firstBlank - 1);
+    }
+    else
+        type.clear();
+
+    QStringList colonSplit(name.split("::"));
     if (colonSplit.size() > 1) {
-        QStringList blankSplit = colonSplit[0].split(QLatin1Char(' '));
-        if (blankSplit.size() > 1) {
-            type = blankSplit[0];
-            if (colonSplit.size() > 2) {
-                module = blankSplit[1];
-                qmlTypeName = colonSplit[1];
-            }
-            else {
-                module.clear();
-                qmlTypeName = blankSplit[1];
-            }
+        if (colonSplit.size() > 2) {
+            module = colonSplit[0];
+            qmlTypeName = colonSplit[1];
         }
         else {
-            type.clear();
-            if (colonSplit.size() > 2) {
-                module = colonSplit[0];
-                qmlTypeName = colonSplit[1];
-            }
-            else {
-                module.clear();
-                qmlTypeName = colonSplit[0];
-            }
+            module.clear();
+            qmlTypeName = colonSplit[0];
         }
         return true;
     }
@@ -1308,23 +1309,23 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
 
 /*!
   Parse the next function parameter, if there is one, and
-  append it to parameter list \a p. Return true if a parameter
-  is parsed and appended to \a p. Otherwise return false.
+  append it to parameter vector \a pvect. Return true if
+  a parameter is parsed and appended to \a pvect.
+  Otherwise return false.
  */
-bool CppCodeParser::matchParameter(ParsedParameterList& pplist)
+bool CppCodeParser::matchParameter(QVector<Parameter>& pvect, bool& isQPrivateSignal)
 {
-    ParsedParameter pp;
     if (match(Tok_QPrivateSignal)) {
-        pp.qPrivateSignal_ = true;
-        pplist.append(pp);
+        isQPrivateSignal = true;
         return true;
     }
 
+    Parameter p;
     CodeChunk chunk;
-    if (!matchDataType(&chunk, &pp.name_)) {
+    if (!matchDataType(&chunk, &p.name_)) {
         return false;
     }
-    pp.dataType_ = chunk.toString();
+    p.dataType_ = chunk.toString();
     chunk.clear();
     match(Tok_Comment);
     if (match(Tok_Equal)) {
@@ -1336,8 +1337,8 @@ bool CppCodeParser::matchParameter(ParsedParameterList& pplist)
             readToken();
         }
     }
-    pp.defaultValue_ = chunk.toString();
-    pplist.append(pp);
+    p.defaultValue_ = chunk.toString();
+    pvect.append(p);
     return true;
 }
 
@@ -1542,10 +1543,11 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
     readToken();
 
     // A left paren was seen. Parse the parameters
-    ParsedParameterList pplist;
+    bool isQPrivateSignal = false;
+    QVector<Parameter> pvect;
     if (tok != Tok_RightParen) {
         do {
-            if (!matchParameter(pplist))
+            if (!matchParameter(pvect, isQPrivateSignal))
                 return false;
         } while (match(Tok_Comma));
     }
@@ -1629,13 +1631,10 @@ bool CppCodeParser::matchFunctionDecl(Aggregate *parent,
         func->setStatic(matched_static);
         func->setConst(matchedConst);
         func->setVirtualness(virtuality);
-        if (!pplist.isEmpty()) {
-            foreach (const ParsedParameter& pp, pplist) {
-                if (pp.qPrivateSignal_)
-                    func->setPrivateSignal();
-                else
-                    func->addParameter(Parameter(pp.dataType_, "", pp.name_, pp.defaultValue_));
-            }
+        if (isQPrivateSignal)
+            func->setPrivateSignal();
+        if (!pvect.isEmpty()) {
+            func->setParameters(pvect);
         }
     }
     if (parentPathPtr != 0)
@@ -2414,6 +2413,34 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
     tokenizer = outerTokenizer;
     tok = outerTok;
     return ok;
+}
+
+/*!
+  This function uses a Tokenizer to parse the \a parameters of a
+  function into the parameter vector \a {pvect}.
+ */
+bool CppCodeParser::parseParameters(const QString& parameters,
+                                    QVector<Parameter>& pvect,
+                                    bool& isQPrivateSignal)
+{
+    Tokenizer* outerTokenizer = tokenizer;
+    int outerTok = tok;
+
+    QByteArray latin1 = parameters.toLatin1();
+    Tokenizer stringTokenizer(Location(), latin1);
+    stringTokenizer.setParsingFnOrMacro(true);
+    tokenizer = &stringTokenizer;
+    readToken();
+
+    inMacroCommand_ = false;
+    do {
+        if (!matchParameter(pvect, isQPrivateSignal))
+            return false;
+    } while (match(Tok_Comma));
+
+    tokenizer = outerTokenizer;
+    tok = outerTok;
+    return true;
 }
 
 /*!

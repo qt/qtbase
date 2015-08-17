@@ -107,7 +107,10 @@ class Tree
     ClassNode* findClassNode(const QStringList& path, const Node* start = 0) const;
     NamespaceNode* findNamespaceNode(const QStringList& path) const;
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone);
-    const Node* findFunctionNode(const QString& target, const Node* relative, Node::Genus genus);
+    const Node* findFunctionNode(const QString& target,
+                                 const QString& params,
+                                 const Node* relative,
+                                 Node::Genus genus) const;
 
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
@@ -163,6 +166,7 @@ class Tree
     NamespaceNode *root() { return &root_; }
 
     const FunctionNode *findFunctionNode(const QStringList &path,
+                                         const QString& params,
                                          const Node *relative = 0,
                                          int findFlags = 0,
                                          Node::Genus genus = Node::DontCare) const;

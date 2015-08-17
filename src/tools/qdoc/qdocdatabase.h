@@ -141,15 +141,8 @@ class QDocForest
 
     const Node* findFunctionNode(const QString& target,
                                  const Node* relative,
-                                 Node::Genus genus) {
-        foreach (Tree* t, searchOrder()) {
-            const Node* n = t->findFunctionNode(target, relative, genus);
-            if (n)
-                return n;
-            relative = 0;
-        }
-        return 0;
-    }
+                                 Node::Genus genus);
+
     const Node* findNodeForTarget(QStringList& targetPath,
                                   const Node* relative,
                                   Node::Genus genus,

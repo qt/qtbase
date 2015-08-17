@@ -303,24 +303,24 @@ bool QWindowSystemInterface::tryHandleExtendedShortcutEvent(QWindow *w, ulong ti
 }
 
 
-void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
+bool QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleKeyEvent(w, time, t, k, mods, text, autorep, count);
+    return handleKeyEvent(w, time, t, k, mods, text, autorep, count);
 }
 
-void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
+bool QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
     // This is special handling needed for OS X which eventually will call sendEvent(), on other platforms
     // this might not be safe, e.g., on Android. See: QGuiApplicationPrivate::processKeyEvent() for
     // shortcut overriding on other platforms.
 #if defined(Q_OS_OSX)
     if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
-        return;
+        return true;
 #endif // Q_OS_OSX
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
 void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
@@ -441,10 +441,12 @@ void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *e
     windowSystemEventQueue.remove(event);
 }
 
-void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
+bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
 {
+    bool accepted = true;
     if (synchronousWindowSystemEvents) {
         QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        accepted = ev->eventAccepted;
         delete ev;
     } else {
         windowSystemEventQueue.append(ev);
@@ -452,6 +454,7 @@ void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfa
         if (dispatcher)
             dispatcher->wakeUp();
     }
+    return accepted;
 }
 
 void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
@@ -611,7 +614,7 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::Process
     Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
 
     QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
-    flushWindowSystemEvents(flags);
+    sendWindowSystemEvents(flags);
     QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
 }
 

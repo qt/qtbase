@@ -241,6 +241,10 @@ private slots:
 
     void aggregateFunctionTypes_data() { generic_data(); }
     void aggregateFunctionTypes();
+
+    void integralTypesMysql_data() { generic_data("QMYSQL"); }
+    void integralTypesMysql();
+
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -3971,6 +3975,66 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toString(), QLatin1String("upper"));
         QCOMPARE(q.record().field(0).type(), QVariant::String);
+    }
+}
+
+template<typename T>
+void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const QString &type, const bool withPreparedStatement,
+                               const T min = std::numeric_limits<T>::min(), const T max = std::numeric_limits<T>::max())
+{
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("DROP TABLE IF EXISTS " + tableName));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id " + type + ")"));
+
+    const int steps = 20;
+    const T increment = max / steps - min / steps;
+
+    // insert some values
+    QVector<T> values;
+    values.resize(steps);
+    T v = min;
+    if (withPreparedStatement) {
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
+    }
+    for (int i = 0; i < values.size(); ++i) {
+        if (withPreparedStatement) {
+            q.bindValue(0, v);
+            QVERIFY_SQL(q, exec());
+        } else {
+            QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (" + QString::number(v) + ")"));
+        }
+        values[i] = v;
+        v += increment;
+    }
+
+    // ensure we can read them back properly
+    QVERIFY_SQL(q, exec("SELECT id FROM " + tableName));
+    QVector<T> actualValues;
+    actualValues.reserve(values.size());
+    while (q.next()) {
+        actualValues << q.value(0).value<T>();
+    }
+    QCOMPARE(actualValues, values);
+}
+
+void tst_QSqlQuery::integralTypesMysql()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    for (int i = 0; i < 2; ++i) {
+        const bool withPreparedStatement = (i == 1);
+        runIntegralTypesMysqlTest<char>(db, "tinyIntTest", "TINYINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<unsigned char>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<char>(db, "smallIntTest", "SMALLINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<unsigned char>(db, "unsignedSmallIntTest", "SMALLINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<int>(db, "mediumIntTest", "MEDIUMINT", withPreparedStatement, -(1 << 23), (1 << 23) - 1);
+        runIntegralTypesMysqlTest<unsigned int>(db, "unsignedMediumIntTest", "MEDIUMINT UNSIGNED", withPreparedStatement, 0, (1 << 24) - 1);
+        runIntegralTypesMysqlTest<int>(db, "intTest", "INT", withPreparedStatement);
+        runIntegralTypesMysqlTest<unsigned int>(db, "unsignedIntTest", "INT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<long long>(db, "bigIntTest", "BIGINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<unsigned long long>(db, "unsignedBigIntTest", "BIGINT UNSIGNED", withPreparedStatement);
     }
 }
 

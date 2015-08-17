@@ -47,6 +47,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
+#include <QtCore/QJsonDocument>
 
 #include <algorithm>
 
@@ -107,6 +108,7 @@ private slots:
     void testConfiguration();
     void testGlConfiguration();
     void testBugList();
+    void testDefaultWindowsBlacklist();
 };
 
 static void dumpConfiguration(QTextStream &str)
@@ -282,6 +284,20 @@ void tst_QOpenGlConfig::testBugList()
                                                 QVersionNumber(1, 0), QString(), fileName);
     QVERIFY2(expectedFeatures == actualFeatures,
              msgSetMismatch(expectedFeatures, actualFeatures));
+}
+
+void tst_QOpenGlConfig::testDefaultWindowsBlacklist()
+{
+    if (qGuiApp->platformName() != QStringLiteral("windows"))
+        QSKIP("Only applicable to Windows");
+
+    QFile f(QStringLiteral(":/qt-project.org/windows/openglblacklists/default.json"));
+    QVERIFY(f.open(QIODevice::ReadOnly | QIODevice::Text));
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    QVERIFY2(err.error == 0,
+             QStringLiteral("Failed to parse built-in Windows GPU blacklist. %1 : %2")
+             .arg(err.offset).arg(err.errorString()).toLatin1());
 }
 
 QTEST_MAIN(tst_QOpenGlConfig)

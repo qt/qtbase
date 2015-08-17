@@ -212,10 +212,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
                 }
                 dirs.append(result);
 #ifndef QT_BOOTSTRAPPED
-                if (type != GenericDataLocation) {
-                    dirs.append(QCoreApplication::applicationDirPath());
-                    dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
-                }
+                dirs.append(QCoreApplication::applicationDirPath());
+                dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
 #endif
             }
             break;

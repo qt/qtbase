@@ -34,11 +34,12 @@
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
-#include "codeparser.h"
+#include "cppcodeparser.h"
 #include <quuid.h>
 #include "qdocdatabase.h"
 #include <qdebug.h>
 #include "generator.h"
+#include "tokenizer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -810,9 +811,56 @@ Node* Aggregate::findChildNode(const QString& name, NodeType type)
   Find a function node that is a child of this nose, such
   that the function node has the specified \a name.
  */
-FunctionNode *Aggregate::findFunctionNode(const QString& name) const
+FunctionNode *Aggregate::findFunctionNode(const QString& name, const QString& params) const
 {
-    return static_cast<FunctionNode *>(primaryFunctionMap_.value(name));
+    FunctionNode* pfn = static_cast<FunctionNode*>(primaryFunctionMap_.value(name));
+    FunctionNode* fn = pfn;
+    if (fn) {
+        const QVector<Parameter>* funcParams = &(fn->parameters());
+        if (params.isEmpty() && funcParams->isEmpty())
+            return fn;
+        bool isQPrivateSignal = false; // Not used in the search
+        QVector<Parameter> testParams;
+        if (!params.isEmpty()) {
+            CppCodeParser* cppParser = CppCodeParser::cppParser();
+            cppParser->parseParameters(params, testParams, isQPrivateSignal);
+        }
+        NodeList funcs = secondaryFunctionMap_.value(name);
+        int i = -1;
+        while (fn) {
+            if (testParams.size() == funcParams->size()) {
+                if (testParams.isEmpty())
+                    return fn;
+                bool different = false;
+                for (int j=0; j<testParams.size(); j++) {
+                    if (testParams.at(j).dataType() != funcParams->at(j).dataType()) {
+                        different = true;
+                        break;
+                    }
+                }
+                if (!different)
+                    return fn;
+            }
+            if (++i < funcs.size()) {
+                fn = static_cast<FunctionNode*>(funcs.at(i));
+                funcParams = &(fn->parameters());
+            }
+            else
+                fn = 0;
+        }
+        if (!fn && !testParams.empty())
+            return 0;
+    }
+    /*
+      Most \l commands that link to functions don't include
+      the parameter declarations in the function signature,
+      so if the \l is meant to go to a function that does
+      have parameters, the algorithm above won't find it.
+      Therefore we must return the pointer to the function
+      in the primary function map in the cases where the
+      parameters should have been specified in the \l command.
+    */
+    return (fn ? fn : pfn);
 }
 
 /*!
@@ -1090,20 +1138,20 @@ void Aggregate::setIncludes(const QStringList& includes)
  */
 bool Aggregate::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 {
-    if (f1->parameters().count() != f2->parameters().count())
+    if (f1->parameters().size() != f2->parameters().size())
         return false;
     if (f1->isConst() != f2->isConst())
         return false;
 
-    QList<Parameter>::ConstIterator p1 = f1->parameters().constBegin();
-    QList<Parameter>::ConstIterator p2 = f2->parameters().constBegin();
+    QVector<Parameter>::ConstIterator p1 = f1->parameters().constBegin();
+    QVector<Parameter>::ConstIterator p2 = f2->parameters().constBegin();
     while (p2 != f2->parameters().constEnd()) {
         if ((*p1).hasType() && (*p2).hasType()) {
             if ((*p1).rightType() != (*p2).rightType())
                 return false;
 
-            QString t1 = p1->leftType();
-            QString t2 = p2->leftType();
+            QString t1 = p1->dataType();
+            QString t2 = p2->dataType();
 
             if (t1.length() < t2.length())
                 qSwap(t1, t2);
@@ -1751,33 +1799,40 @@ void TypedefNode::setAssociatedEnum(const EnumNode *enume)
 
 /*!
   Constructs this parameter from the left and right types
-  \a leftType and rightType, the parameter \a name, and the
+  \a dataType and rightType, the parameter \a name, and the
   \a defaultValue. In practice, \a rightType is not used,
   and I don't know what is was meant for.
  */
-Parameter::Parameter(const QString& leftType,
+Parameter::Parameter(const QString& dataType,
                      const QString& rightType,
                      const QString& name,
                      const QString& defaultValue)
-    : leftType_(leftType), rightType_(rightType), name_(name), defaultValue_(defaultValue)
+    : dataType_(dataType),
+      rightType_(rightType),
+      name_(name),
+      defaultValue_(defaultValue)
 {
+    // nothing.
 }
 
 /*!
-  The standard copy constructor copies the strings from \a p.
+  Standard copy constructor copies \p.
  */
 Parameter::Parameter(const Parameter& p)
-    : leftType_(p.leftType_), rightType_(p.rightType_), name_(p.name_), defaultValue_(p.defaultValue_)
+    : dataType_(p.dataType_),
+      rightType_(p.rightType_),
+      name_(p.name_),
+      defaultValue_(p.defaultValue_)
 {
+    // nothing.
 }
 
 /*!
-  Assigning Parameter \a p to this Parameter copies the
-  strings across.
+  standard assignment operator assigns \p.
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
-    leftType_ = p.leftType_;
+    dataType_ = p.dataType_;
     rightType_ = p.rightType_;
     name_ = p.name_;
     defaultValue_ = p.defaultValue_;
@@ -1791,7 +1846,7 @@ Parameter& Parameter::operator=(const Parameter& p)
  */
 QString Parameter::reconstruct(bool value) const
 {
-    QString p = leftType_ + rightType_;
+    QString p = dataType_ + rightType_;
     if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
         p += QLatin1Char(' ');
     p += name_;
@@ -1902,8 +1957,8 @@ void FunctionNode::addParameter(const Parameter& parameter)
  */
 void FunctionNode::borrowParameterNames(const FunctionNode *source)
 {
-    QList<Parameter>::Iterator t = parameters_.begin();
-    QList<Parameter>::ConstIterator s = source->parameters_.constBegin();
+    QVector<Parameter>::Iterator t = parameters_.begin();
+    QVector<Parameter>::ConstIterator s = source->parameters_.constBegin();
     while (s != source->parameters_.constEnd() && t != parameters_.end()) {
         if (!(*s).name().isEmpty())
             (*t).setName((*s).name());
@@ -1958,7 +2013,7 @@ bool FunctionNode::hasActiveAssociatedProperty() const
 QStringList FunctionNode::parameterNames() const
 {
     QStringList names;
-    QList<Parameter>::ConstIterator p = parameters().constBegin();
+    QVector<Parameter>::ConstIterator p = parameters().constBegin();
     while (p != parameters().constEnd()) {
         names << (*p).name();
         ++p;
@@ -1975,7 +2030,7 @@ QString FunctionNode::rawParameters(bool names, bool values) const
 {
     QString raw;
     foreach (const Parameter &parameter, parameters()) {
-        raw += parameter.leftType() + parameter.rightType();
+        raw += parameter.dataType() + parameter.rightType();
         if (names)
             raw += parameter.name();
         if (values)
@@ -1991,7 +2046,7 @@ QString FunctionNode::rawParameters(bool names, bool values) const
 QStringList FunctionNode::reconstructParameters(bool values) const
 {
     QStringList reconstructedParameters;
-    QList<Parameter>::ConstIterator p = parameters().constBegin();
+    QVector<Parameter>::ConstIterator p = parameters().constBegin();
     while (p != parameters().constEnd()) {
         reconstructedParameters << (*p).reconstruct(values);
         ++p;

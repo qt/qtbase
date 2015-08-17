@@ -323,17 +323,9 @@ uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandled
 
 struct QCoreApplicationData {
     QCoreApplicationData() Q_DECL_NOTHROW {
-#ifndef QT_NO_LIBRARY
-        app_libpaths = 0;
-        manual_libpaths = 0;
-#endif
         applicationNameSet = false;
     }
     ~QCoreApplicationData() {
-#ifndef QT_NO_LIBRARY
-        delete app_libpaths;
-        delete manual_libpaths;
-#endif
 #ifndef QT_NO_QOBJECT
         // cleanup the QAdoptedThread created for the main() thread
         if (QCoreApplicationPrivate::theMainThread) {
@@ -377,8 +369,8 @@ struct QCoreApplicationData {
     bool applicationNameSet; // true if setApplicationName was called
 
 #ifndef QT_NO_LIBRARY
-    QStringList *app_libpaths;
-    QStringList *manual_libpaths;
+    QScopedPointer<QStringList> app_libpaths;
+    QScopedPointer<QStringList> manual_libpaths;
 #endif
 
 };
@@ -571,9 +563,9 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
 #ifndef QT_NO_LIBRARY
-    QStringList *app_libpaths = coreappdata()->app_libpaths;
+    QStringList *app_libpaths = coreappdata()->app_libpaths.data();
     if (!app_libpaths)
-        coreappdata()->app_libpaths = app_libpaths = new QStringList;
+        coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
     QString app_location = QCoreApplication::applicationFilePath();
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
 #ifdef Q_OS_WINRT
@@ -774,16 +766,14 @@ void QCoreApplication::init()
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
     // into account. If necessary, recompute right away and replay the manual changes on top of the
     // new lib paths.
-    QStringList *appPaths = coreappdata()->app_libpaths;
-    QStringList *manualPaths = coreappdata()->manual_libpaths;
+    QStringList *appPaths = coreappdata()->app_libpaths.take();
+    QStringList *manualPaths = coreappdata()->manual_libpaths.take();
     if (appPaths) {
-        coreappdata()->app_libpaths = 0;
         if (manualPaths) {
             // Replay the delta. As paths can only be prepended to the front or removed from
             // anywhere in the list, we can just linearly scan the lists and find the items that
             // have been removed. Once the original list is exhausted we know all the remaining
             // items have been added.
-            coreappdata()->manual_libpaths = 0;
             QStringList newPaths(libraryPaths());
             for (int i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
                 if (--j < 0) {
@@ -796,7 +786,7 @@ void QCoreApplication::init()
                 }
             }
             delete manualPaths;
-            coreappdata()->manual_libpaths = new QStringList(newPaths);
+            coreappdata()->manual_libpaths.reset(new QStringList(newPaths));
         }
         delete appPaths;
     }
@@ -872,10 +862,8 @@ QCoreApplication::~QCoreApplication()
 #endif
 
 #ifndef QT_NO_LIBRARY
-    delete coreappdata()->app_libpaths;
-    coreappdata()->app_libpaths = 0;
-    delete coreappdata()->manual_libpaths;
-    coreappdata()->manual_libpaths = 0;
+    coreappdata()->app_libpaths.reset();
+    coreappdata()->manual_libpaths.reset();
 #endif
 }
 
@@ -2540,7 +2528,8 @@ QStringList QCoreApplication::libraryPaths()
         return *(coreappdata()->manual_libpaths);
 
     if (!coreappdata()->app_libpaths) {
-        QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
+        QStringList *app_libpaths = new QStringList;
+        coreappdata()->app_libpaths.reset(app_libpaths);
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
@@ -2592,9 +2581,10 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
     if (!coreappdata()->app_libpaths)
         libraryPaths();
 
-    if (!coreappdata()->manual_libpaths)
-        coreappdata()->manual_libpaths = new QStringList;
-    *(coreappdata()->manual_libpaths) = paths;
+    if (coreappdata()->manual_libpaths)
+        *(coreappdata()->manual_libpaths) = paths;
+    else
+        coreappdata()->manual_libpaths.reset(new QStringList(paths));
 
     locker.unlock();
     QFactoryLoader::refreshAll();
@@ -2626,18 +2616,18 @@ void QCoreApplication::addLibraryPath(const QString &path)
 
     QMutexLocker locker(libraryPathMutex());
 
-    QStringList *libpaths = coreappdata()->manual_libpaths;
+    QStringList *libpaths = coreappdata()->manual_libpaths.data();
     if (libpaths) {
         if (libpaths->contains(canonicalPath))
             return;
     } else {
         // make sure that library paths are initialized
         libraryPaths();
-        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        QStringList *app_libpaths = coreappdata()->app_libpaths.data();
         if (app_libpaths->contains(canonicalPath))
             return;
 
-        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
+        coreappdata()->manual_libpaths.reset(libpaths = new QStringList(*app_libpaths));
     }
 
     libpaths->prepend(canonicalPath);
@@ -2665,18 +2655,18 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
     QMutexLocker locker(libraryPathMutex());
 
-    QStringList *libpaths = coreappdata()->manual_libpaths;
+    QStringList *libpaths = coreappdata()->manual_libpaths.data();
     if (libpaths) {
         if (libpaths->removeAll(canonicalPath) == 0)
             return;
     } else {
         // make sure that library paths is initialized
         libraryPaths();
-        QStringList *app_libpaths = coreappdata()->app_libpaths;
+        QStringList *app_libpaths = coreappdata()->app_libpaths.data();
         if (!app_libpaths->contains(canonicalPath))
             return;
 
-        libpaths = coreappdata()->manual_libpaths = new QStringList(*app_libpaths);
+        coreappdata()->manual_libpaths.reset(libpaths = new QStringList(*app_libpaths));
         libpaths->removeAll(canonicalPath);
     }
 
