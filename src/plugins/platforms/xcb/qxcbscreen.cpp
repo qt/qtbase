@@ -104,8 +104,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
             updateRefreshRate(crtc->mode);
             free(crtc);
         }
-    } else {
-        updateGeometry(output ? output->timestamp : 0);
     }
 
     if (m_geometry.isEmpty()) {
