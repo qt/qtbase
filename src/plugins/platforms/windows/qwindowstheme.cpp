@@ -501,28 +501,43 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     const int scaleFactor = primaryScreen ? qRound(QHighDpiScaling::factor(primaryScreen)) : 1;
     const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
+    int stockId = SIID_INVALID;
+    UINT stockFlags = 0;
     LPCTSTR iconName = 0;
     switch (sp) {
     case DriveCDIcon:
+        stockId = SIID_DRIVECD;
+        resourceId = 12;
+        break;
     case DriveDVDIcon:
+        stockId = SIID_DRIVEDVD;
         resourceId = 12;
         break;
     case DriveNetIcon:
+        stockId = SIID_DRIVENET;
         resourceId = 10;
         break;
     case DriveHDIcon:
+        stockId = SIID_DRIVEFIXED;
         resourceId = 9;
         break;
     case DriveFDIcon:
+        stockId = SIID_DRIVE35;
         resourceId = 7;
         break;
-    case FileIcon:
     case FileLinkIcon:
+        stockFlags = SHGSI_LINKOVERLAY;
+        // Fall through
+    case FileIcon:
+        stockId = SIID_DOCNOASSOC;
         resourceId = 1;
         break;
-    case DirIcon:
     case DirLinkIcon:
+        stockFlags = SHGSI_LINKOVERLAY;
+        // Fall through
     case DirClosedIcon:
+    case DirIcon:
+        stockId = SIID_FOLDER;
         resourceId = 4;
         break;
     case DesktopIcon:
@@ -531,54 +546,68 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     case ComputerIcon:
         resourceId = 16;
         break;
-    case DirOpenIcon:
     case DirLinkOpenIcon:
+        stockFlags = SHGSI_LINKOVERLAY;
+        // Fall through
+    case DirOpenIcon:
+        stockId = SIID_FOLDEROPEN;
         resourceId = 5;
         break;
     case FileDialogNewFolder:
+        stockId = SIID_FOLDER;
         resourceId = 319;
         break;
     case DirHomeIcon:
         resourceId = 235;
         break;
     case TrashIcon:
+        stockId = SIID_RECYCLER;
         resourceId = 191;
         break;
 #ifndef Q_OS_WINCE
     case MessageBoxInformation:
+        stockId = SIID_INFO;
         iconName = IDI_INFORMATION;
         break;
     case MessageBoxWarning:
+        stockId = SIID_WARNING;
         iconName = IDI_WARNING;
         break;
     case MessageBoxCritical:
+        stockId = SIID_ERROR;
         iconName = IDI_ERROR;
         break;
     case MessageBoxQuestion:
+        stockId = SIID_HELP;
         iconName = IDI_QUESTION;
         break;
     case VistaShield:
+        stockId = SIID_SHIELD;
+        break;
+#endif
+    default:
+        break;
+    }
+
+#ifndef Q_OS_WINCE
+    if (stockId != SIID_INVALID) {
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
-            if (!QWindowsContext::shell32dll.sHGetStockIconInfo)
-                return QPixmap();
+            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
+            && QWindowsContext::shell32dll.sHGetStockIconInfo) {
             QPixmap pixmap;
             SHSTOCKICONINFO iconInfo;
             memset(&iconInfo, 0, sizeof(iconInfo));
             iconInfo.cbSize = sizeof(iconInfo);
-            const int iconSize = pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
-            if (QWindowsContext::shell32dll.sHGetStockIconInfo(SIID_SHIELD, SHGFI_ICON | iconSize, &iconInfo) == S_OK) {
+            stockFlags |= (pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
+            if (QWindowsContext::shell32dll.sHGetStockIconInfo(stockId, SHGFI_ICON | stockFlags, &iconInfo) == S_OK) {
                 pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
                 pixmap.setDevicePixelRatio(scaleFactor);
                 DestroyIcon(iconInfo.hIcon);
                 return pixmap;
             }
         }
-        break;
-#endif
-    default:
-        break;
     }
+#endif
 
     if (resourceId != -1) {
         QPixmap pixmap = loadIconFromShell32(resourceId, pixmapSize);
