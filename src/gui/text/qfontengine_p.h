@@ -214,8 +214,8 @@ public:
     virtual QFixed underlinePosition() const;
 
     virtual qreal maxCharWidth() const = 0;
-    virtual qreal minLeftBearing() const { return qreal(); }
-    virtual qreal minRightBearing() const { return qreal(); }
+    virtual qreal minLeftBearing() const;
+    virtual qreal minRightBearing() const;
 
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 
@@ -323,6 +323,10 @@ private:
 
 private:
     QVariant m_userData;
+
+    mutable qreal m_minLeftBearing;
+    mutable qreal m_minRightBearing;
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)

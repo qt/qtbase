@@ -96,8 +96,6 @@ public:
     QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
     QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
-    qreal minRightBearing() const Q_DECL_OVERRIDE;
-    qreal minLeftBearing() const Q_DECL_OVERRIDE;
     QFixed emSquareSize() const Q_DECL_OVERRIDE;
 
     bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;

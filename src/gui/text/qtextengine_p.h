@@ -107,6 +107,22 @@ struct Q_GUI_EXPORT glyph_metrics_t
 
     glyph_metrics_t transformed(const QTransform &xform) const;
     inline bool isValid() const {return x != 100000 && y != 100000;}
+
+    inline QFixed leftBearing() const
+    {
+        if (!isValid())
+            return QFixed();
+
+        return x;
+    }
+
+    inline QFixed rightBearing() const
+    {
+        if (!isValid())
+            return QFixed();
+
+        return xoff - x - width;
+    }
 };
 Q_DECLARE_TYPEINFO(glyph_metrics_t, Q_PRIMITIVE_TYPE);
 

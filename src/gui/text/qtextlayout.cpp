@@ -1966,9 +1966,16 @@ void QTextLine::layout_helper(int maxGlyphs)
                 // end up breaking due to the current glyph being too wide.
                 QFixed previousRightBearing = lbh.rightBearing;
 
-                // We ignore the right bearing if the minimum negative bearing is too little to
-                // expand the text beyond the edge.
-                if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
+                // We skip calculating the right bearing if the minimum negative bearing is too
+                // small to possibly expand the text beyond the edge. Note that this optimization
+                // will in some cases fail, as the minimum right bearing reported by the font
+                // engine may not cover all the glyphs in the font. The result is that we think
+                // we don't need to break at the current glyph (because the right bearing is 0),
+                // and when we then end up breaking on the next glyph we compute the right bearing
+                // and end up with a line width that is slightly larger width than what was requested.
+                // Unfortunately we can't remove this optimization as it will slow down text
+                // layouting significantly, so we accept the slight correctnes issue.
+                if ((lbh.calculateNewWidth(line) + qAbs(lbh.minimumRightBearing)) > line.width)
                     lbh.calculateRightBearing();
 
                 if (lbh.checkFullOtherwiseExtend(line)) {

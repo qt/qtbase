@@ -688,7 +688,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         symbol = bool(fontDef.family.contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
 
-    lbearing = rbearing = SHRT_MIN;
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing);
 
     FT_Face face = lockFace();
@@ -1256,54 +1255,6 @@ QFixed QFontEngineFT::averageCharWidth() const
 qreal QFontEngineFT::maxCharWidth() const
 {
     return metrics.max_advance >> 6;
-}
-
-static const ushort char_table[] = {
-        40,
-        67,
-        70,
-        75,
-        86,
-        88,
-        89,
-        91,
-        95,
-        102,
-        114,
-        124,
-        127,
-        205,
-        645,
-        884,
-        922,
-        1070,
-        12386
-};
-
-static const int char_table_entries = sizeof(char_table)/sizeof(ushort);
-
-
-qreal QFontEngineFT::minLeftBearing() const
-{
-    if (lbearing == SHRT_MIN)
-        (void) minRightBearing(); // calculates both
-    return lbearing.toReal();
-}
-
-qreal QFontEngineFT::minRightBearing() const
-{
-    if (rbearing == SHRT_MIN) {
-        lbearing = rbearing = 0;
-        for (int i = 0; i < char_table_entries; ++i) {
-            const glyph_t glyph = glyphIndex(char_table[i]);
-            if (glyph != 0) {
-                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyph);
-                lbearing = qMin(lbearing, gi.x);
-                rbearing = qMin(rbearing, (gi.xoff - gi.x - gi.width));
-            }
-        }
-    }
-    return rbearing.toReal();
 }
 
 QFixed QFontEngineFT::lineThickness() const

@@ -54,6 +54,7 @@
 #include <private/qharfbuzz_p.h>
 
 #include <algorithm>
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -235,10 +236,14 @@ Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
 
 // QFontEngine
 
+#define kBearingNotInitialized std::numeric_limits<qreal>::max()
+
 QFontEngine::QFontEngine(Type type)
     : m_type(type), ref(0),
       font_(0), font_destroy_func(0),
-      face_(0), face_destroy_func(0)
+      face_(0), face_destroy_func(0),
+      m_minLeftBearing(kBearingNotInitialized),
+      m_minRightBearing(kBearingNotInitialized)
 {
     faceData.user_data = this;
     faceData.get_font_table = qt_get_font_table_default;
@@ -562,11 +567,55 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
 void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rightBearing)
 {
     glyph_metrics_t gi = boundingBox(glyph);
-    bool isValid = gi.isValid();
     if (leftBearing != 0)
-        *leftBearing = isValid ? gi.x.toReal() : 0.0;
+        *leftBearing = gi.leftBearing().toReal();
     if (rightBearing != 0)
-        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : 0.0;
+        *rightBearing = gi.rightBearing().toReal();
+}
+
+qreal QFontEngine::minLeftBearing() const
+{
+    if (m_minLeftBearing == kBearingNotInitialized)
+        minRightBearing(); // Initializes both (see below)
+
+    return m_minLeftBearing;
+}
+
+qreal QFontEngine::minRightBearing() const
+{
+    if (m_minRightBearing == kBearingNotInitialized) {
+
+        // To balance performance and correctness we only look at a subset of the
+        // possible glyphs in the font, based on which characters are more likely
+        // to have a left or right bearing.
+        static const ushort characterSubset[] = {
+            '(', 'C', 'F', 'K', 'V', 'X', 'Y', ']', '_', 'f', 'r', '|',
+            127, 205, 645, 884, 922, 1070, 12386
+        };
+
+        // The font may have minimum bearings larger than 0, so we have to start at the max
+        m_minLeftBearing = m_minRightBearing = std::numeric_limits<qreal>::max();
+
+        for (uint i = 0; i < (sizeof(characterSubset) / sizeof(ushort)); ++i) {
+            const glyph_t glyph = glyphIndex(characterSubset[i]);
+            if (!glyph)
+                continue;
+
+            glyph_metrics_t glyphMetrics = const_cast<QFontEngine *>(this)->boundingBox(glyph);
+
+            // Glyphs with no contours shouldn't contribute to bearings
+            if (!glyphMetrics.width || !glyphMetrics.height)
+                continue;
+
+            m_minLeftBearing = qMin(m_minLeftBearing, glyphMetrics.leftBearing().toReal());
+            m_minRightBearing = qMin(m_minRightBearing, glyphMetrics.rightBearing().toReal());
+        }
+
+        if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized)
+            qWarning() << "Failed to compute left/right minimum bearings for" << fontDef.family;
+    }
+
+    return m_minRightBearing;
 }
 
 glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)
@@ -1469,8 +1518,7 @@ QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
         glyph_t glyph = glyphs.glyphs[glyphs.numGlyphs - 1];
         glyph_metrics_t gi = boundingBox(glyph);
         if (gi.isValid())
-            return round ? QFixed(qRound(gi.xoff - gi.x - gi.width))
-                         : QFixed(gi.xoff - gi.x - gi.width);
+            return round ? qRound(gi.rightBearing()) : gi.rightBearing();
     }
     return 0;
 }
