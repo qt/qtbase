@@ -50,8 +50,6 @@ UnixMakefileGenerator::init()
         project->values("ICON") = project->values("RC_FILE");
     if(project->isEmpty("QMAKE_EXTENSION_PLUGIN"))
         project->values("QMAKE_EXTENSION_PLUGIN").append(project->first("QMAKE_EXTENSION_SHLIB"));
-    if(project->isEmpty("QMAKE_LIBTOOL"))
-        project->values("QMAKE_LIBTOOL").append("libtool --silent");
 
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
 
@@ -144,8 +142,6 @@ UnixMakefileGenerator::init()
 
     if(project->isActiveConfig("GNUmake") && !project->isEmpty("QMAKE_CFLAGS_DEPS"))
         include_deps = true; //do not generate deps
-    if(project->isActiveConfig("compile_libtool"))
-        Option::obj_ext = ".lo"; //override the .o
 
     MakefileGenerator::init();
 
@@ -225,7 +221,7 @@ UnixMakefileGenerator::init()
             project->values(runCompImp).append("$(" + compiler + ") " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "\"$@\" \"$<\"");
     }
 
-    if (project->isActiveConfig("mac") && !project->isEmpty("TARGET") && !project->isActiveConfig("compile_libtool") &&
+    if (project->isActiveConfig("mac") && !project->isEmpty("TARGET") &&
        ((project->isActiveConfig("build_pass") || project->isEmpty("BUILDS")))) {
         ProString bundle;
         if(project->isActiveConfig("bundle") && !project->isEmpty("QMAKE_BUNDLE_EXTENSION")) {
@@ -300,49 +296,6 @@ UnixMakefileGenerator::init()
         if(!ar_sublibs.isEmpty()) {
             project->values("QMAKE_AR_SUBLIBS") = ar_sublibs;
             project->values("QMAKE_INTERNAL_PRL_LIBS") << "QMAKE_AR_SUBLIBS";
-        }
-    }
-
-    if(project->isActiveConfig("compile_libtool")) {
-        static const char * const libtoolify[] = {
-            "QMAKE_RUN_CC", "QMAKE_RUN_CC_IMP", "QMAKE_RUN_CXX", "QMAKE_RUN_CXX_IMP",
-            "QMAKE_LINK_THREAD", "QMAKE_LINK", "QMAKE_AR_CMD", "QMAKE_LINK_SHLIB_CMD", 0
-        };
-        for (int i = 0; libtoolify[i]; i++) {
-            ProStringList &l = project->values(libtoolify[i]);
-            if(!l.isEmpty()) {
-                QString libtool_flags, comp_flags;
-                if (!strncmp(libtoolify[i], "QMAKE_LINK", 10) || !strcmp(libtoolify[i], "QMAKE_AR_CMD")) {
-                    libtool_flags += " --mode=link";
-                    if(project->isActiveConfig("staticlib")) {
-                        libtool_flags += " -static";
-                    } else {
-                        if(!project->isEmpty("QMAKE_LIB_FLAG")) {
-                            int maj = project->first("VER_MAJ").toInt();
-                            int min = project->first("VER_MIN").toInt();
-                            int pat = project->first("VER_PAT").toInt();
-                            comp_flags += " -version-info " + QString::number(10*maj + min) +
-                                          ":" + QString::number(pat) + ":0";
-                            if (strcmp(libtoolify[i], "QMAKE_AR_CMD")) {
-                                QString rpath = Option::output_dir;
-                                if(!project->isEmpty("DESTDIR")) {
-                                    rpath = project->first("DESTDIR").toQString();
-                                    if(QDir::isRelativePath(rpath))
-                                        rpath.prepend(Option::output_dir + Option::dir_sep);
-                                }
-                                comp_flags += " -rpath " + escapeFilePath(Option::fixPathToTargetOS(rpath, false));
-                            }
-                        }
-                    }
-                    if(project->isActiveConfig("plugin"))
-                        libtool_flags += " -module";
-                } else {
-                    libtool_flags += " --mode=compile";
-                }
-                l.first().prepend("$(LIBTOOL)" + libtool_flags + " ");
-                if(!comp_flags.isEmpty())
-                    l.first() += comp_flags;
-            }
         }
     }
 }
@@ -457,17 +410,6 @@ UnixMakefileGenerator::findLibraries()
                                     + lib + '.' + (*extit));
                             if (exists(pathToLib)) {
                                 (*it) = "-l" + lib;
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!found && project->isActiveConfig("compile_libtool")) {
-                        for (int dep_i = 0; dep_i < libdirs.size(); ++dep_i) {
-                            if (exists(libdirs[dep_i].local() + '/'
-                                       + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext)) {
-                                (*it) = libdirs[dep_i].real() + Option::dir_sep
-                                        + project->first("QMAKE_PREFIX_SHLIB") + lib + Option::libtool_ext;
                                 found = true;
                                 break;
                             }
@@ -654,16 +596,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         uninst.append("-$(DEL_FILE) " + dst);
     }
 
-    if (bundle == NoBundle && project->isActiveConfig("compile_libtool")) {
-        QString src_targ = escapeFilePath(target);
-        if(src_targ == "$(TARGET)")
-            src_targ = "$(TARGETL)";
-        QString dst_dir = fileFixify(targetdir, FileFixifyAbsolute);
-        if(QDir::isRelativePath(dst_dir))
-            dst_dir = Option::fixPathToTargetOS(Option::output_dir + Option::dir_sep + dst_dir);
-        ret = "-$(LIBTOOL) --mode=install cp " + src_targ + ' ' + escapeFilePath(filePrefixRoot(root, dst_dir));
-        uninst.append("-$(LIBTOOL) --mode=uninstall " + src_targ);
-    } else {
+    {
         QString src_targ = target;
         if(!destdir.isEmpty())
             src_targ = Option::fixPathToTargetOS(destdir + target, false);
@@ -781,7 +714,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             if(type == "prl" && project->isActiveConfig("create_prl") && !project->isActiveConfig("no_install_prl") &&
                !project->isEmpty("QMAKE_INTERNAL_PRL_FILE"))
                 meta = prlFileName(false);
-            if(type == "libtool" && project->isActiveConfig("create_libtool") && !project->isActiveConfig("compile_libtool"))
+            if (type == "libtool" && project->isActiveConfig("create_libtool"))
                 meta = libtoolFileName(false);
             if(type == "pkgconfig" && project->isActiveConfig("create_pc"))
                 meta = pkgConfigFileName(false);
