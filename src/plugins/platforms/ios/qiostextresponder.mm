@@ -360,6 +360,24 @@
     [self sendKeyPressRelease:Qt::Key_Delete modifiers:Qt::ControlModifier];
 }
 
+- (void)toggleBoldface:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_B modifiers:Qt::ControlModifier];
+}
+
+- (void)toggleItalics:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_I modifiers:Qt::ControlModifier];
+}
+
+- (void)toggleUnderline:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendKeyPressRelease:Qt::Key_U modifiers:Qt::ControlModifier];
+}
+
 // -------------------------------------------------------------------------
 
 - (void)keyCommandTriggered:(UIKeyCommand *)keyCommand
