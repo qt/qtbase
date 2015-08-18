@@ -405,6 +405,8 @@ void QGestureManager::cancelGesturesForChildren(QGesture *original)
     Q_ASSERT(original);
     QWidget *originatingWidget = m_gestureTargets.value(original);
     Q_ASSERT(originatingWidget);
+    if (!originatingWidget)
+        return;
 
     // iterate over all active gestures and all maybe gestures
     // for each find the owner
@@ -565,7 +567,8 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
     foreach (QGesture *gesture, gestures) {
         QWidget *receiver = m_gestureTargets.value(gesture, 0);
         Q_ASSERT(receiver);
-        gestureByTypes[gesture->gestureType()].insert(receiver, gesture);
+        if (receiver)
+            gestureByTypes[gesture->gestureType()].insert(receiver, gesture);
     }
 
     // for each gesture type

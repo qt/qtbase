@@ -117,7 +117,7 @@ private:
     QHash<QGesture *, QGestureRecognizer *> m_gestureToRecognizer;
     QHash<QGesture *, QObject *> m_gestureOwners;
 
-    QHash<QGesture *, QWidget *> m_gestureTargets;
+    QHash<QGesture *, QPointer<QWidget> > m_gestureTargets;
 
     int m_lastCustomGestureId;
 
