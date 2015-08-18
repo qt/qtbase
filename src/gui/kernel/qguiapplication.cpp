@@ -449,8 +449,7 @@ static QWindowGeometrySpecification windowGeometrySpecification;
         \row
         \li  Miscellaneous
         \li  startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop

@@ -339,8 +339,7 @@ void QApplicationPrivate::createEventDispatcher()
         \li  Miscellaneous
         \li  closeAllWindows(),
             startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
