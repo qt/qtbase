@@ -180,10 +180,13 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
     const uint32_t k = libinput_event_keyboard_get_key(e) + 8;
     const bool pressed = libinput_event_keyboard_get_key_state(e) == LIBINPUT_KEY_STATE_PRESSED;
 
-    QByteArray chars;
-    chars.resize(1 + xkb_state_key_get_utf8(m_state, k, Q_NULLPTR, 0));
-    xkb_state_key_get_utf8(m_state, k, chars.data(), chars.size());
-    const QString text = QString::fromUtf8(chars);
+    QVarLengthArray<char, 32> chars(32);
+    const int size = xkb_state_key_get_utf8(m_state, k, chars.data(), chars.size());
+    if (Q_UNLIKELY(size + 1 > chars.size())) { // +1 for NUL
+        chars.resize(size + 1);
+        xkb_state_key_get_utf8(m_state, k, chars.data(), chars.size());
+    }
+    const QString text = QString::fromUtf8(chars.constData(), size);
 
     const xkb_keysym_t sym = xkb_state_key_get_one_sym(m_state, k);
 
