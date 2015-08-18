@@ -46,10 +46,14 @@
 #include <QVector3D>
 #include "../hellogl2/logo.h"
 
+QT_BEGIN_NAMESPACE
+
 class QOpenGLTexture;
 class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
+
+QT_END_NAMESPACE
 
 class GLWindow : public QOpenGLWindow
 {
