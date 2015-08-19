@@ -113,10 +113,10 @@ public:
     Q_DECL_CONSTEXPR quint16 green() const { return rgba >> GreenShift; }
     Q_DECL_CONSTEXPR quint16 blue()  const { return rgba >> BlueShift;  }
     Q_DECL_CONSTEXPR quint16 alpha() const { return rgba >> AlphaShift; }
-    void setRed(quint16 _red)     { *this = fromRgba64(_red, green(), blue(), alpha()); }
-    void setGreen(quint16 _green) { *this = fromRgba64(red(), _green, blue(), alpha()); }
-    void setBlue(quint16 _blue)   { *this = fromRgba64(red(), green(), _blue, alpha()); }
-    void setAlpha(quint16 _alpha) { *this = fromRgba64(red(), green(), blue(), _alpha); }
+    void setRed(quint16 _red)     { rgba = (rgba & ~(Q_UINT64_C(0xffff) << RedShift))   | (quint64(_red) << RedShift); }
+    void setGreen(quint16 _green) { rgba = (rgba & ~(Q_UINT64_C(0xffff) << GreenShift)) | (quint64(_green) << GreenShift); }
+    void setBlue(quint16 _blue)   { rgba = (rgba & ~(Q_UINT64_C(0xffff) << BlueShift))  | (quint64(_blue) << BlueShift); }
+    void setAlpha(quint16 _alpha) { rgba = (rgba & ~(Q_UINT64_C(0xffff) << AlphaShift)) | (quint64(_alpha) << AlphaShift); }
 
     Q_DECL_CONSTEXPR quint8 red8()   const { return div_257(red()); }
     Q_DECL_CONSTEXPR quint8 green8() const { return div_257(green()); }
@@ -161,16 +161,16 @@ public:
     }
 
 private:
-    static Q_DECL_CONSTEXPR quint64 alphaMask() { return quint64(0xffff) << AlphaShift; }
+    static Q_DECL_CONSTEXPR quint64 alphaMask() { return Q_UINT64_C(0xffff) << AlphaShift; }
 
     static Q_DECL_CONSTEXPR uint div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
     static Q_DECL_CONSTEXPR uint div_257(uint x) { return div_257_floor(x + 128); }
     static Q_DECL_CONSTEXPR uint div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
     Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_32bit() const
     {
-        const quint16 a = alpha();
-        if (a == 0xffff || a == 0)
+        if (isOpaque() || isTransparent())
             return *this;
+        const quint32 a = alpha();
         const quint16 r = (quint32(red())   * 0xffff + a/2) / a;
         const quint16 g = (quint32(green()) * 0xffff + a/2) / a;
         const quint16 b = (quint32(blue())  * 0xffff + a/2) / a;
@@ -178,9 +178,9 @@ private:
     }
     Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_64bit() const
     {
-        const quint16 a = alpha();
-        if (a == 0xffff || a == 0)
+        if (isOpaque() || isTransparent())
             return *this;
+        const quint64 a = alpha();
         const quint64 fa = (Q_UINT64_C(0xffff00008000) + a/2) / a;
         const quint16 r = (red()   * fa + 0x80000000) >> 32;
         const quint16 g = (green() * fa + 0x80000000) >> 32;
