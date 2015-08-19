@@ -1935,91 +1935,69 @@ QWindowsSockInit::~QWindowsSockInit()
 Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
 
-#  ifndef Q_OS_WINCE
+#endif // !Q_OS_WINRT
 
-// Determine Windows versions >= 8 by querying the version of kernel32.dll.
-static inline bool determineWinOsVersionPost8(OSVERSIONINFO *result)
+#ifdef Q_OS_WINRT
+static inline HMODULE moduleHandleForFunction(LPCVOID address)
 {
-    typedef WORD (WINAPI* PtrGetFileVersionInfoSizeW)(LPCWSTR, LPDWORD);
-    typedef BOOL (WINAPI* PtrVerQueryValueW)(LPCVOID, LPCWSTR, LPVOID, PUINT);
-    typedef BOOL (WINAPI* PtrGetFileVersionInfoW)(LPCWSTR, DWORD, DWORD, LPVOID);
-
-    QSystemLibrary versionLib(QStringLiteral("version"));
-    if (!versionLib.load())
-        return false;
-    PtrGetFileVersionInfoSizeW getFileVersionInfoSizeW = (PtrGetFileVersionInfoSizeW)versionLib.resolve("GetFileVersionInfoSizeW");
-    PtrVerQueryValueW verQueryValueW = (PtrVerQueryValueW)versionLib.resolve("VerQueryValueW");
-    PtrGetFileVersionInfoW getFileVersionInfoW = (PtrGetFileVersionInfoW)versionLib.resolve("GetFileVersionInfoW");
-    if (!getFileVersionInfoSizeW || !verQueryValueW || !getFileVersionInfoW)
-        return false;
-
-    const wchar_t kernel32Dll[] = L"kernel32.dll";
-    DWORD handle;
-    const DWORD size = getFileVersionInfoSizeW(kernel32Dll, &handle);
-    if (!size)
-        return false;
-    QScopedArrayPointer<BYTE> versionInfo(new BYTE[size]);
-    if (!getFileVersionInfoW(kernel32Dll, handle, size, versionInfo.data()))
-        return false;
-    UINT uLen;
-    VS_FIXEDFILEINFO *fileInfo = Q_NULLPTR;
-    if (!verQueryValueW(versionInfo.data(), L"\\", (LPVOID *)&fileInfo, &uLen))
-        return false;
-    const DWORD fileVersionMS = fileInfo->dwFileVersionMS;
-    const DWORD fileVersionLS = fileInfo->dwFileVersionLS;
-    result->dwMajorVersion = HIWORD(fileVersionMS);
-    result->dwMinorVersion = LOWORD(fileVersionMS);
-    result->dwBuildNumber = HIWORD(fileVersionLS);
-    return true;
+    // This is a widely used, decades-old technique for retrieving the handle
+    // of a module and is effectively equivalent to GetModuleHandleEx
+    // (which is unavailable on WinRT)
+    MEMORY_BASIC_INFORMATION mbi = { 0, 0, 0, 0, 0, 0, 0 };
+    if (VirtualQuery(address, &mbi, sizeof(mbi)) == 0)
+        return 0;
+    return reinterpret_cast<HMODULE>(mbi.AllocationBase);
 }
-
-// Fallback for determining Windows versions >= 8 by looping using the
-// version check macros. Note that it will return build number=0 to avoid
-// inefficient looping.
-static inline void determineWinOsVersionFallbackPost8(OSVERSIONINFO *result)
-{
-    result->dwBuildNumber = 0;
-    DWORDLONG conditionMask = 0;
-    VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
-    VER_SET_CONDITION(conditionMask, VER_PLATFORMID, VER_EQUAL);
-    OSVERSIONINFOEX checkVersion = { sizeof(OSVERSIONINFOEX), result->dwMajorVersion, 0,
-                                     result->dwBuildNumber, result->dwPlatformId, {'\0'}, 0, 0, 0, 0, 0 };
-    for ( ; VerifyVersionInfo(&checkVersion, VER_MAJORVERSION | VER_PLATFORMID, conditionMask); ++checkVersion.dwMajorVersion)
-        result->dwMajorVersion = checkVersion.dwMajorVersion;
-    conditionMask = 0;
-    checkVersion.dwMajorVersion = result->dwMajorVersion;
-    checkVersion.dwMinorVersion = 0;
-    VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, VER_EQUAL);
-    VER_SET_CONDITION(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
-    VER_SET_CONDITION(conditionMask, VER_PLATFORMID, VER_EQUAL);
-    for ( ; VerifyVersionInfo(&checkVersion, VER_MAJORVERSION | VER_MINORVERSION | VER_PLATFORMID, conditionMask); ++checkVersion.dwMinorVersion)
-        result->dwMinorVersion = checkVersion.dwMinorVersion;
-}
-
-#  endif // !Q_OS_WINCE
+#endif
 
 static inline OSVERSIONINFO winOsVersion()
 {
     OSVERSIONINFO result = { sizeof(OSVERSIONINFO), 0, 0, 0, 0, {'\0'}};
+
+#ifndef Q_OS_WINCE
+#define GetProcAddressA GetProcAddress
+#endif
+
+    // GetModuleHandle is not supported in WinRT and linking to it at load time
+    // will not pass the Windows App Certification Kit... but it exists and is functional,
+    // so use some unusual but widely used techniques to get a pointer to it
+#ifdef Q_OS_WINRT
+    // 1. Get HMODULE of kernel32.dll, using the address of some function exported by that DLL
+    HMODULE kernelModule = moduleHandleForFunction(reinterpret_cast<LPCVOID>(VirtualQuery));
+    if (Q_UNLIKELY(!kernelModule))
+        return result;
+
+    // 2. Get pointer to GetModuleHandle so we can then load other arbitrary modules (DLLs)
+    typedef HMODULE(WINAPI *GetModuleHandleFunction)(LPCWSTR);
+    GetModuleHandleFunction pGetModuleHandle = reinterpret_cast<GetModuleHandleFunction>(
+        GetProcAddressA(kernelModule, "GetModuleHandleW"));
+    if (Q_UNLIKELY(!pGetModuleHandle))
+        return result;
+#else
+#define pGetModuleHandle GetModuleHandleW
+#endif
+
+    HMODULE ntdll = pGetModuleHandle(L"ntdll.dll");
+    if (Q_UNLIKELY(!ntdll))
+        return result;
+
+    // NTSTATUS is not defined on WinRT
+    typedef LONG NTSTATUS;
+    typedef NTSTATUS (NTAPI *RtlGetVersionFunction)(LPOSVERSIONINFO);
+
+    // RtlGetVersion is documented public API but we must load it dynamically
+    // because linking to it at load time will not pass the Windows App Certification Kit
+    // https://msdn.microsoft.com/en-us/library/windows/hardware/ff561910.aspx
+    RtlGetVersionFunction pRtlGetVersion = reinterpret_cast<RtlGetVersionFunction>(
+        GetProcAddressA(ntdll, "RtlGetVersion"));
+    if (Q_UNLIKELY(!pRtlGetVersion))
+        return result;
+
     // GetVersionEx() has been deprecated in Windows 8.1 and will return
-    // only Windows 8 from that version on.
-#  if defined(_MSC_VER) && _MSC_VER >= 1800
-#    pragma warning( push )
-#    pragma warning( disable : 4996 )
-#  endif
-    GetVersionEx(&result);
-#  if defined(_MSC_VER) && _MSC_VER >= 1800
-#    pragma warning( pop )
-#  endif
-#  ifndef Q_OS_WINCE
-    if (result.dwMajorVersion == 6 && result.dwMinorVersion == 2) {
-        if (!determineWinOsVersionPost8(&result))
-            determineWinOsVersionFallbackPost8(&result);
-    }
-#  endif // !Q_OS_WINCE
+    // only Windows 8 from that version on, so use the kernel API function.
+    pRtlGetVersion(&result); // always returns STATUS_SUCCESS
     return result;
 }
-#endif // !Q_OS_WINRT
 
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
@@ -2039,11 +2017,10 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     static QSysInfo::WinVersion winver;
     if (winver)
         return winver;
-#ifdef Q_OS_WINRT
-    winver = QSysInfo::WV_WINDOWS8_1;
-#else
     winver = QSysInfo::WV_NT;
     const OSVERSIONINFO osver = winOsVersion();
+    if (osver.dwMajorVersion == 0)
+        return QSysInfo::WV_None;
 #ifdef Q_OS_WINCE
     DWORD qt_cever = 0;
     qt_cever = osver.dwMajorVersion * 100;
@@ -2123,7 +2100,6 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
         }
     }
 #endif
-#endif // !Q_OS_WINRT
 
     return winver;
 }
@@ -2594,10 +2570,7 @@ QString QSysInfo::kernelType()
 */
 QString QSysInfo::kernelVersion()
 {
-#ifdef Q_OS_WINRT
-    // TBD
-    return QString();
-#elif defined(Q_OS_WIN)
+#ifdef Q_OS_WIN
     const OSVERSIONINFO osver = winOsVersion();
     return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
             + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
