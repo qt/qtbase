@@ -1121,8 +1121,17 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = false;
             break;
         case XCB_PROPERTY_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+        {
+            xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+            if (pn->atom == atom(QXcbAtom::_NET_WORKAREA)) {
+                QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(pn->window);
+                if (virtualDesktop)
+                    virtualDesktop->updateWorkArea();
+            } else {
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+            }
             break;
+        }
 #if defined(XCB_USE_XINPUT2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()

@@ -77,10 +77,15 @@ public:
 
     bool compositingActive() const;
 
+    QRect workArea() const { return m_workArea; }
+    void updateWorkArea();
+
     void handleXFixesSelectionNotify(xcb_xfixes_selection_notify_event_t *notify_event);
     void subscribeToXFixesSelectionNotify();
 
 private:
+    QRect getWorkArea() const;
+
     xcb_screen_t *m_screen;
     int m_number;
     QList<QPlatformScreen *> m_screens;
@@ -88,6 +93,8 @@ private:
     QXcbXSettings *m_xSettings;
     xcb_atom_t m_net_wm_cm_atom;
     bool m_compositingActive;
+
+    QRect m_workArea;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
@@ -142,6 +149,7 @@ public:
     void handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event);
     void updateGeometry(const QRect &geom, uint8_t rotation);
     void updateGeometry(xcb_timestamp_t timestamp = XCB_TIME_CURRENT_TIME);
+    void updateAvailableGeometry();
     void updateRefreshRate(xcb_randr_mode_t mode);
 
     void readXResources();
