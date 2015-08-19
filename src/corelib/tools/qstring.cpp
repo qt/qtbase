@@ -2738,7 +2738,7 @@ bool operator<(const QString &s1, const QString &s2)
 }
 /*!
    \overload operator<()
-   \relates QString
+
     Returns \c true if this string is lexically less than the parameter
     string called \a other; otherwise returns \c false.
 */
@@ -2843,7 +2843,7 @@ bool QString::operator<(QLatin1String other) const
 
 /*!
    \overload operator>()
-   \relates QString
+
     Returns \c true if this string is lexically greater than the parameter
     string \a other; otherwise returns \c false.
 */
