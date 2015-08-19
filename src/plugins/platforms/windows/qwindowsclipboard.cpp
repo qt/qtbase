@@ -109,8 +109,11 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 IDataObject *QWindowsClipboardRetrievalMimeData::retrieveDataObject() const
 {
     IDataObject * pDataObj = 0;
-    if (OleGetClipboard(&pDataObj) == S_OK)
+    if (OleGetClipboard(&pDataObj) == S_OK) {
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj;
         return pDataObj;
+    }
     return 0;
 }
 
