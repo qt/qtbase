@@ -324,10 +324,8 @@
 
 - (void)sendKeyPressRelease:(Qt::Key)key modifiers:(Qt::KeyboardModifiers)modifiers
 {
-    QKeyEvent press(QEvent::KeyPress, key, modifiers);
-    QKeyEvent release(QEvent::KeyRelease, key, modifiers);
-    [self sendEventToFocusObject:press];
-    [self sendEventToFocusObject:release];
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
 }
 
 - (void)cut:(id)sender
@@ -711,10 +709,10 @@
 
 - (void)deleteBackward
 {
-    // Since we're posting im events directly to the focus object, we should do the
-    // same for key events. Otherwise they might end up in a different place or out
-    // of sync with im events.
+    // UITextInput selects the text to be deleted before calling this method. To avoid
+    // drawing the selection, we flush after posting the key press/release.
     [self sendKeyPressRelease:Qt::Key_Backspace modifiers:Qt::NoModifier];
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 @end
