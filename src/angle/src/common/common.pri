@@ -7,6 +7,8 @@ INCLUDEPATH += \
 
 LIBS_PRIVATE = $$QMAKE_LIBS_CORE $$QMAKE_LIBS_GUI
 
+TR_EXCLUDE += $$ANGLE_DIR/src/*
+
 lib_replace.match = $$[QT_INSTALL_LIBS/get]
 lib_replace.replace = \$\$\$\$[QT_INSTALL_LIBS]
 lib_replace.CONFIG = path
