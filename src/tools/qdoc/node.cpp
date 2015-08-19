@@ -480,6 +480,9 @@ bool Node::fromFlagValue(FlagValue fv, bool defaultValue)
  */
 void Node::setRelates(Aggregate *pseudoParent)
 {
+    if (pseudoParent == parent())
+        return;
+
     removeRelates();
     relatesTo_ = pseudoParent;
     pseudoParent->addRelated(this);

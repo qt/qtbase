@@ -932,8 +932,11 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                 doc.location().warning(tr("Cannot find '%1' in '\\%2'").arg(arg).arg(COMMAND_RELATES));
 
         }
-        else
+        else if (node->parent() != n)
             node->setRelates(static_cast<Aggregate*>(n));
+        else
+            doc.location().warning(tr("Invalid use of '\\%1' (already a member of '%2')")
+                                   .arg(COMMAND_RELATES, arg));
     }
     else if (command == COMMAND_CONTENTSPAGE) {
         setLink(node, Node::ContentsLink, arg);
