@@ -1029,9 +1029,8 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
                             tabletData->inProximity = true;
                             tabletData->tool = toolIdToTabletDevice(tool);
                             tabletData->serialId = qint64(ptr[_WACSER_USB_ID]) << 32 | qint64(ptr[_WACSER_TOOL_SERIAL]);
-                            QWindowSystemInterface::handleTabletEnterProximityEvent(tabletData->tool,
-                                                                                    tabletData->pointerType,
-                                                                                    tabletData->serialId);
+                            QWindowSystemInterface::handleTabletEnterProximityEvent(ev->time,
+                                tabletData->tool, tabletData->pointerType, tabletData->serialId);
                         } else {
                             tabletData->inProximity = false;
                             tabletData->tool = toolIdToTabletDevice(ptr[_WACSER_LAST_TOOL_ID]);
@@ -1040,9 +1039,8 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
                             if (!tabletData->tool)
                                 tabletData->tool = toolIdToTabletDevice(ptr[_WACSER_LAST_TOOL_SERIAL]);
                             tabletData->serialId = qint64(ptr[_WACSER_USB_ID]) << 32 | qint64(ptr[_WACSER_LAST_TOOL_SERIAL]);
-                            QWindowSystemInterface::handleTabletLeaveProximityEvent(tabletData->tool,
-                                                                                    tabletData->pointerType,
-                                                                                    tabletData->serialId);
+                            QWindowSystemInterface::handleTabletLeaveProximityEvent(ev->time,
+                                tabletData->tool, tabletData->pointerType, tabletData->serialId);
                         }
                         // TODO maybe have a hash of tabletData->deviceId to device data so we can
                         // look up the tablet name here, and distinguish multiple tablets
@@ -1110,13 +1108,14 @@ void QXcbConnection::xi2ReportTabletEvent(TabletData &tabletData, void *event)
     }
 
     if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-        qCDebug(lcQpaXInput, "XI2 event on tablet %d with tool %d type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
-            tabletData.deviceId, tabletData.tool, ev->evtype, ev->sequenceNumber, ev->detail,
+        qCDebug(lcQpaXInput, "XI2 event on tablet %d with tool %d type %d seq %d detail %d time %d "
+            "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
+            tabletData.deviceId, tabletData.tool, ev->evtype, ev->sequenceNumber, ev->detail, ev->time,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
             fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
             (int)tabletData.buttons, pressure, xTilt, yTilt, rotation);
 
-    QWindowSystemInterface::handleTabletEvent(window, local, global,
+    QWindowSystemInterface::handleTabletEvent(window, ev->time, local, global,
                                               tabletData.tool, tabletData.pointerType,
                                               tabletData.buttons, pressure,
                                               xTilt, yTilt, tangentialPressure,
