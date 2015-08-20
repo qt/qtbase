@@ -200,18 +200,27 @@ void QWindowsInputContext::reset()
     doneContext();
 }
 
-void QWindowsInputContext::setFocusObject(QObject *object)
+void QWindowsInputContext::setFocusObject(QObject *)
 {
     // ### fixme: On Windows 8.1, it has been observed that the Input context
     // remains active when this happens resulting in a lock-up. Consecutive
     // key events still have VK_PROCESSKEY set and are thus ignored.
     if (m_compositionContext.isComposing)
         reset();
+    updateEnabled();
+}
 
+void QWindowsInputContext::updateEnabled()
+{
+    if (!QGuiApplication::focusObject())
+        return;
     const QWindow *window = QGuiApplication::focusWindow();
-    if (object && window && window->handle()) {
+    if (window && window->handle()) {
         QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(window);
-        if (inputMethodAccepted()) {
+        const bool accepted = inputMethodAccepted();
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaInputMethods) << __FUNCTION__ << window << "accepted=" << accepted;
+        if (accepted) {
             // Re-enable IME by associating default context saved on first disabling.
             if (platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
                 ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
@@ -235,6 +244,8 @@ void QWindowsInputContext::setFocusObject(QObject *object)
 
 void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 {
+    if (queries & Qt::ImEnabled)
+        updateEnabled();
     QPlatformInputContext::update(queries);
 }
 
