@@ -325,6 +325,7 @@ void tst_PlatformSocketEngine::broadcastTest()
                                          trollMessage.size(),
                                          QIpPacketHeader(QHostAddress::Broadcast, port));
 
+    QVERIFY2(written != -1, qt_error_string().toLocal8Bit());
     QCOMPARE((int)written, trollMessage.size());
 
     // Wait until we receive it ourselves
