@@ -161,12 +161,12 @@ public:
     }
 
 private:
-    static Q_DECL_CONSTEXPR quint64 alphaMask() { return Q_UINT64_C(0xffff) << AlphaShift; }
+    static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE quint64 alphaMask() { return Q_UINT64_C(0xffff) << AlphaShift; }
 
-    static Q_DECL_CONSTEXPR uint div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
-    static Q_DECL_CONSTEXPR uint div_257(uint x) { return div_257_floor(x + 128); }
-    static Q_DECL_CONSTEXPR uint div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
-    Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_32bit() const
+    static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
+    static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint div_257(uint x) { return div_257_floor(x + 128); }
+    static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
+    Q_DECL_RELAXED_CONSTEXPR Q_ALWAYS_INLINE QRgba64 unpremultiplied_32bit() const
     {
         if (isOpaque() || isTransparent())
             return *this;
@@ -176,7 +176,7 @@ private:
         const quint16 b = (quint32(blue())  * 0xffff + a/2) / a;
         return fromRgba64(r, g, b, a);
     }
-    Q_DECL_RELAXED_CONSTEXPR QRgba64 unpremultiplied_64bit() const
+    Q_DECL_RELAXED_CONSTEXPR Q_ALWAYS_INLINE QRgba64 unpremultiplied_64bit() const
     {
         if (isOpaque() || isTransparent())
             return *this;
