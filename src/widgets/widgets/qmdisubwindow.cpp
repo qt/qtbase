@@ -1000,7 +1000,9 @@ void QMdiSubWindowPrivate::removeBaseWidget()
         q->setWindowModified(false);
     }
     lastChildWindowTitle.clear();
-    baseWidget->setParent(0);
+    // QTBUG-47993: parent widget can be reset before this call
+    if (baseWidget->parentWidget() == q)
+        baseWidget->setParent(0);
     baseWidget = 0;
     isWidgetHiddenByUs = false;
 }

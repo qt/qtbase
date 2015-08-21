@@ -201,6 +201,7 @@ private slots:
     void task_226929();
     void styleChange();
     void testFullScreenState();
+    void testRemoveBaseWidget();
 };
 
 void tst_QMdiSubWindow::initTestCase()
@@ -2062,6 +2063,27 @@ void tst_QMdiSubWindow::testFullScreenState()
                                  // should be equivalent to setVisible(true) (and not showNormal())
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     QCOMPARE(subWindow->size(), QSize(300, 300));
+}
+
+void tst_QMdiSubWindow::testRemoveBaseWidget()
+{
+    QMdiArea mdiArea;
+    mdiArea.show();
+
+    QWidget *widget1 = new QWidget;
+    mdiArea.addSubWindow(widget1);
+
+    QWidget *widget2 = new QWidget;
+    mdiArea.addSubWindow(widget2);
+
+    mdiArea.removeSubWindow(widget1);
+    QVERIFY(!widget1->parent());
+
+    widget2->setParent(widget1);
+    mdiArea.removeSubWindow(widget2);
+    QCOMPARE(widget2->parent(), widget1);
+
+    delete widget1;
 }
 
 QTEST_MAIN(tst_QMdiSubWindow)
