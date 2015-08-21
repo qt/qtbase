@@ -145,10 +145,8 @@ static FontKeys &fontKeys()
 
 static const FontKey *findFontKey(const QString &name, int *indexIn = Q_NULLPTR)
 {
-    typedef FontKeys::ConstIterator ConstIt;
-
      const FontKeys &keys = fontKeys();
-     for (ConstIt it = keys.constBegin(), cend = keys.constEnd(); it != cend; ++it) {
+     for (auto it = keys.constBegin(), cend = keys.constEnd(); it != cend; ++it) {
          const int index = it->fontNames.indexOf(name);
          if (index >= 0) {
              if (indexIn)

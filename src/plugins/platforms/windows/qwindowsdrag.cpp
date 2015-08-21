@@ -239,8 +239,6 @@ private:
     };
 
     typedef QMap<Qt::DropAction, CursorEntry> ActionCursorMap;
-    typedef ActionCursorMap::Iterator ActionCursorMapIt;
-    typedef ActionCursorMap::ConstIterator ActionCursorMapConstIt;
 
     const Mode m_mode;
     QWindowsDrag *m_drag;
@@ -318,7 +316,7 @@ void QWindowsOleDropSource::createCursors()
         if (cursorPixmap.isNull())
             cursorPixmap = m_drag->defaultCursor(action);
         const qint64 cacheKey = cursorPixmap.cacheKey();
-        const ActionCursorMapIt it = m_cursors.find(action);
+        const auto it = m_cursors.find(action);
         if (it != m_cursors.end() && it.value().cacheKey == cacheKey)
             continue;
         if (cursorPixmap.isNull()) {
@@ -447,7 +445,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
     m_drag->updateAction(action);
 
     const qint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
-    ActionCursorMapConstIt it = m_cursors.constFind(action);
+    auto it = m_cursors.constFind(action);
     // If a custom drag cursor is set, check its cache key to detect changes.
     if (it == m_cursors.constEnd() || (currentCacheKey && currentCacheKey != it.value().cacheKey)) {
         createCursors();
