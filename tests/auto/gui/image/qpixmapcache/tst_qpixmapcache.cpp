@@ -147,7 +147,7 @@ void tst_QPixmapCache::setCacheLimit()
     QVERIFY(QPixmapCache::find(key, p1) == 0);
     QPixmapCache::setCacheLimit(1000);
     key = QPixmapCache::insert(*p1);
-    QCOMPARE(getPrivate(key)->isValid, true);
+    QVERIFY(key.isValid());
     QCOMPARE(getPrivate(key)->key, 1);
 
     delete p1;
@@ -189,7 +189,7 @@ void tst_QPixmapCache::setCacheLimit()
     key2 = QPixmapCache::insert(*p1);
     QCOMPARE(getPrivate(key2)->key, 1);
     //This old key is not valid anymore after the flush
-    QCOMPARE(getPrivate(key)->isValid, false);
+    QVERIFY(!key.isValid());
     QVERIFY(QPixmapCache::find(key, &p2) == 0);
     delete p1;
 }
@@ -233,7 +233,7 @@ void tst_QPixmapCache::find()
 
     //at that time the first key has been erase because no more place in the cache
     QVERIFY(QPixmapCache::find(key, &p1) == 0);
-    QCOMPARE(getPrivate(key)->isValid, false);
+    QVERIFY(!key.isValid());
 }
 
 void tst_QPixmapCache::insert()
@@ -313,7 +313,7 @@ void tst_QPixmapCache::replace()
     p2.fill(Qt::yellow);
 
     QPixmapCache::Key key = QPixmapCache::insert(p1);
-    QCOMPARE(getPrivate(key)->isValid, true);
+    QVERIFY(key.isValid());
 
     QPixmap p3;
     QVERIFY(QPixmapCache::find(key, &p3) == 1);
@@ -321,7 +321,7 @@ void tst_QPixmapCache::replace()
     QPixmapCache::replace(key, p2);
 
     QVERIFY(QPixmapCache::find(key, &p3) == 1);
-    QCOMPARE(getPrivate(key)->isValid, true);
+    QVERIFY(key.isValid());
     QCOMPARE(getPrivate(key)->key, 1);
 
     QCOMPARE(p3.width(), 10);
@@ -438,7 +438,7 @@ void tst_QPixmapCache::clear()
 
     for (int k = 0; k < numberOfKeys; ++k) {
         QVERIFY(QPixmapCache::find(keys.at(k), &p1) == 0);
-        QCOMPARE(getPrivate(keys[k])->isValid, false);
+        QVERIFY(!keys[k].isValid());
     }
 }
 

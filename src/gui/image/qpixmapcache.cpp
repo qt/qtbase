@@ -156,6 +156,16 @@ bool QPixmapCache::Key::operator ==(const Key &key) const
 */
 
 /*!
+    Returns \c true if there is a cached pixmap associated with this key.
+    Otherwise, if pixmap was flushed, the key is no longer valid.
+    \since 5.7
+*/
+bool QPixmapCache::Key::isValid() const Q_DECL_NOTHROW
+{
+    return d && d->isValid;
+}
+
+/*!
     \internal
 */
 QPixmapCache::Key &QPixmapCache::Key::operator =(const Key &other)

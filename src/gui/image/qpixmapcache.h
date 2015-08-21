@@ -59,6 +59,7 @@ public:
         Key &operator =(const Key &other);
 
         void swap(Key &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+        bool isValid() const Q_DECL_NOTHROW;
 
     private:
         KeyData *d;
