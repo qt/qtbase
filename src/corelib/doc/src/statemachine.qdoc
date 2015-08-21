@@ -71,6 +71,8 @@
   which are currently active. All the states in a valid configuration of the state machine will
   have a common ancestor.
 
+  \sa {The Declarative State Machine Framework}
+
   \section1 Classes in the State Machine Framework
 
   These classes are provided by qt for creating event-driven state machines.
