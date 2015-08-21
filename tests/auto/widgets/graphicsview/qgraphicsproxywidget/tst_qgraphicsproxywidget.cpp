@@ -491,7 +491,7 @@ void tst_QGraphicsProxyWidget::setWidget()
         QCOMPARE(proxy->rect().toRect(), widget->rect());
         QCOMPARE(proxy->focusPolicy(), Qt::WheelFocus);
         QVERIFY(proxy->acceptDrops());
-        QCOMPARE(proxy->acceptsHoverEvents(), true); // to get widget enter events
+        QCOMPARE(proxy->acceptHoverEvents(), true); // to get widget enter events
         int left, top, right, bottom;
         widget->getContentsMargins(&left, &top, &right, &bottom);
         qreal rleft, rtop, rright, rbottom;

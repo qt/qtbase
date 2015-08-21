@@ -114,7 +114,7 @@ void tst_QGraphicsItem::setParentItem_deep()
             childRect->setParentItem(lastRect);
             lastRect = childRect;
         }
-        QGraphicsItem *first = rect.children().first();
+        QGraphicsItem *first = rect.childItems().first();
         first->setParentItem(0);
     }
 }
@@ -194,8 +194,9 @@ void tst_QGraphicsItem::rotate()
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
     processEvents();
 
+    const QTransform rotate(QTransform().rotate(45));
     QBENCHMARK {
-        item->rotate(45);
+        item->setTransform(rotate, true);
     }
 }
 
@@ -205,8 +206,9 @@ void tst_QGraphicsItem::scale()
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
     processEvents();
 
+    const QTransform scale(QTransform::fromScale(2, 2));
     QBENCHMARK {
-        item->scale(2, 2);
+        item->setTransform(scale, true);
     }
 }
 
@@ -216,8 +218,9 @@ void tst_QGraphicsItem::shear()
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
     processEvents();
 
+    const QTransform shear = QTransform().shear(1.5, 1.5);
     QBENCHMARK {
-        item->shear(1.5, 1.5);
+        item->setTransform(shear, true);
     }
 }
 
@@ -227,8 +230,9 @@ void tst_QGraphicsItem::translate()
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
     processEvents();
 
+    const QTransform translate = QTransform::fromTranslate(100, 100);
     QBENCHMARK {
-        item->translate(100, 100);
+        item->setTransform(translate, true);
     }
 }
 

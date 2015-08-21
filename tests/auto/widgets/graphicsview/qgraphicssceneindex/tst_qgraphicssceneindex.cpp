@@ -327,7 +327,7 @@ void tst_QGraphicsSceneIndex::removeItems()
     delete widgetChild1;
 
     //We move the parent
-    scene.items(295, 295, 50, 50);
+    scene.items(QRectF(295, 295, 50, 50));
 
     //This should not crash
 }

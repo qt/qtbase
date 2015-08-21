@@ -1108,7 +1108,7 @@ void tst_QGraphicsWidget::initStyleOption()
 
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
-    widget->setAcceptsHoverEvents(true);
+    widget->setAcceptHoverEvents(true);
     QStyleOption option;
     scene.addItem(widget);
 
@@ -2090,12 +2090,12 @@ void tst_QGraphicsWidget::task236127_bspTreeIndexFails()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QTRY_VERIFY(!scene.itemAt(25, 25));
+    QTRY_VERIFY(scene.items(QPointF(25, 25)).isEmpty());
     widget->setGeometry(0, 112, 360, 528);
-    QTRY_COMPARE(scene.itemAt(15, 120), (QGraphicsItem *)widget);
+    QTRY_COMPARE(scene.items(QPointF(15, 120)).value(0, Q_NULLPTR), (QGraphicsItem *)widget);
     widget2->setGeometry(0, 573, 360, 67);
-    QTRY_COMPARE(scene.itemAt(15, 120), (QGraphicsItem *)widget);
-    QTRY_COMPARE(scene.itemAt(50, 585), (QGraphicsItem *)widget2);
+    QTRY_COMPARE(scene.items(QPointF(15, 120)).value(0, Q_NULLPTR), (QGraphicsItem *)widget);
+    QTRY_COMPARE(scene.items(QPointF(50, 585)).value(0, Q_NULLPTR), (QGraphicsItem *)widget2);
 }
 
 void tst_QGraphicsWidget::defaultSize()

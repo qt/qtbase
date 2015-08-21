@@ -166,7 +166,7 @@ void tst_QGraphicsView::initTestCase()
     mView.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mView.tryResize(100, 100);
     mView.show();
-    QTest::qWaitForWindowShown(&mView);
+    QTest::qWaitForWindowExposed(&mView);
     QTest::qWait(300);
     processEvents();
 }
@@ -418,7 +418,7 @@ void tst_QGraphicsView::chipTester()
     tester.setOpenGL(opengl);
     tester.setOperation(ChipTester::Operation(operation));
     tester.show();
-    QTest::qWaitForWindowShown(&tester);
+    QTest::qWaitForWindowExposed(&tester);
     QTest::qWait(250);
     processEvents();
 
@@ -434,7 +434,7 @@ static void addChildHelper(QGraphicsItem *parent, int n, bool rotate)
     QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 50, 50), parent);
     item->setPos(10, 10);
     if (rotate)
-        item->rotate(10);
+        item->setTransform(QTransform().rotate(10), true);
     addChildHelper(item, n - 1, rotate);
 }
 
@@ -464,7 +464,8 @@ void tst_QGraphicsView::deepNesting()
     for (int y = 0; y < 15; ++y) {
         for (int x = 0; x < 15; ++x) {
             QGraphicsItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
-            if (rotate) item1->rotate(10);
+            if (rotate)
+                item1->setTransform(QTransform().rotate(10), true);
             item1->setPos(x * 25, y * 25);
             addChildHelper(item1, 30, rotate);
         }
@@ -476,7 +477,7 @@ void tst_QGraphicsView::deepNesting()
     mView.setRenderHint(QPainter::Antialiasing);
     mView.setScene(&scene);
     mView.tryResize(600, 600);
-    (void)scene.itemAt(0, 0);
+    (void)scene.items(QPointF(0, 0));
     processEvents();
 
     QBENCHMARK {

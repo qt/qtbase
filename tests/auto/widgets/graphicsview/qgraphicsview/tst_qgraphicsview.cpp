@@ -1392,8 +1392,8 @@ void tst_QGraphicsView::fitInView()
     items[2]->setPos(-100, 100);
     items[3]->setPos(100, 100);
 
-    items[0]->rotate(30);
-    items[1]->rotate(-30);
+    items[0]->setTransform(QTransform().rotate(30), true);
+    items[1]->setTransform(QTransform().rotate(-30), true);
 
 #if defined(Q_OS_WINCE)
     //Is the standard scrollbar size
@@ -3515,7 +3515,7 @@ void tst_QGraphicsView::embeddedViews()
     SpyItem *item = new SpyItem;
     v2->scene()->addItem(item);
 
-    proxy->translate(5, 5);
+    proxy->setTransform(QTransform::fromTranslate(5, 5), true);
 
     QImage actual(64, 64, QImage::Format_ARGB32_Premultiplied);
     actual.fill(0);

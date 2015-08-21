@@ -165,7 +165,7 @@ void tst_QGraphicsScene::addItem()
                 scene.addItem(item);
             }
         }
-        scene.itemAt(0, 0);
+        scene.items(QPointF(0, 0));
     }
     //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list
     qApp->processEvents();
@@ -217,12 +217,12 @@ void tst_QGraphicsScene::itemAt()
         }
     }
 
-    scene.itemAt(0, 0); // triggers indexing
+    scene.items(QPointF(0, 0)); // triggers indexing
     processEvents();
 
     QGraphicsItem *item = 0;
     QBENCHMARK {
-        item = scene.itemAt(0, 0);
+        item = scene.items(QPointF(0, 0)).value(0, Q_NULLPTR);
     }
 
     //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list
@@ -239,7 +239,7 @@ void tst_QGraphicsScene::initialShow()
             item->setPos((y/2) * item->rect().width(), (y/2) * item->rect().height());
             scene.addItem(item);
         }
-        scene.itemAt(0, 0); // triggers indexing
+        scene.items(QPointF(0, 0)); // triggers indexing
         //This call polish the items so we bench their processing too.
         qApp->processEvents();
     }

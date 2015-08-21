@@ -310,7 +310,7 @@ private slots:
     void selected_textItem();
     void selected_multi();
     void acceptedMouseButtons();
-    void acceptsHoverEvents();
+    void acceptHoverEvents();
     void childAcceptsHoverEvents();
     void hasFocus();
     void pos();
@@ -564,9 +564,9 @@ void tst_QGraphicsItem::construction()
         QVERIFY(!item->isSelected());
         QCOMPARE(item->acceptedMouseButtons(), Qt::MouseButtons(0x1f));
         if (item->type() == QGraphicsTextItem::Type)
-            QVERIFY(item->acceptsHoverEvents());
+            QVERIFY(item->acceptHoverEvents());
         else
-            QVERIFY(!item->acceptsHoverEvents());
+            QVERIFY(!item->acceptHoverEvents());
         QVERIFY(!item->hasFocus());
         QCOMPARE(item->pos(), QPointF());
         QCOMPARE(item->matrix(), QMatrix());
@@ -1125,11 +1125,11 @@ void tst_QGraphicsItem::visible()
 
     scene.addItem(item);
     QVERIFY(item->isVisible());
-    QCOMPARE(scene.itemAt(0, 0), item);
+    QCOMPARE(scene.items(QPointF(0, 0)).value(0, Q_NULLPTR), item);
     item->setVisible(false);
-    QCOMPARE(scene.itemAt(0, 0), (QGraphicsItem *)0);
+    QVERIFY(scene.items(QPointF(0, 0)).isEmpty());
     item->setVisible(true);
-    QCOMPARE(scene.itemAt(0, 0), item);
+    QCOMPARE(scene.items(QPointF(0, 0)).value(0, Q_NULLPTR), item);
 
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
     event.setButton(Qt::LeftButton);
@@ -1930,7 +1930,7 @@ protected:
     { ++hoverOutCount; }
 };
 
-void tst_QGraphicsItem::acceptsHoverEvents()
+void tst_QGraphicsItem::acceptHoverEvents()
 {
     QGraphicsScene scene;
     HoverItem *item1 = new HoverItem(QRectF(-10, -10, 20, 20));
@@ -1939,10 +1939,10 @@ void tst_QGraphicsItem::acceptsHoverEvents()
     scene.addItem(item2);
     item2->setZValue(1);
 
-    QVERIFY(!item1->acceptsHoverEvents());
-    QVERIFY(!item2->acceptsHoverEvents());
-    item1->setAcceptsHoverEvents(true);
-    item2->setAcceptsHoverEvents(true);
+    QVERIFY(!item1->acceptHoverEvents());
+    QVERIFY(!item2->acceptHoverEvents());
+    item1->setAcceptHoverEvents(true);
+    item2->setAcceptHoverEvents(true);
 
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseMove);
     event.setScenePos(QPointF(-100, -100));
@@ -1953,8 +1953,8 @@ void tst_QGraphicsItem::acceptsHoverEvents()
     QCOMPARE(item1->hoverInCount, 0);
     QCOMPARE(item2->hoverInCount, 1);
 
-    item1->setAcceptsHoverEvents(false);
-    item2->setAcceptsHoverEvents(false);
+    item1->setAcceptHoverEvents(false);
+    item2->setAcceptHoverEvents(false);
 
     event.setScenePos(QPointF(-100, -100));
     QApplication::sendEvent(&scene, &event);
@@ -1964,8 +1964,8 @@ void tst_QGraphicsItem::acceptsHoverEvents()
     QCOMPARE(item1->hoverInCount, 0);
     QCOMPARE(item2->hoverInCount, 1);
 
-    item1->setAcceptsHoverEvents(true);
-    item2->setAcceptsHoverEvents(false);
+    item1->setAcceptHoverEvents(true);
+    item2->setAcceptHoverEvents(false);
 
     event.setScenePos(QPointF(-100, -100));
     QApplication::sendEvent(&scene, &event);
@@ -2168,27 +2168,27 @@ void tst_QGraphicsItem::matrix()
     line.resetMatrix();
     QCOMPARE(line.matrix(), QMatrix());
 
-    line.rotate(90);
+    line.setTransform(QTransform().rotate(90), true);
     QCOMPARE(line.matrix(), QMatrix().rotate(90));
-    line.rotate(90);
+    line.setTransform(QTransform().rotate(90), true);
     QCOMPARE(line.matrix(), QMatrix().rotate(90).rotate(90));
     line.resetMatrix();
 
-    line.scale(2, 4);
+    line.setTransform(QTransform::fromScale(2, 4), true);
     QCOMPARE(line.matrix(), QMatrix().scale(2, 4));
-    line.scale(2, 4);
+    line.setTransform(QTransform::fromScale(2, 4), true);
     QCOMPARE(line.matrix(), QMatrix().scale(2, 4).scale(2, 4));
     line.resetMatrix();
 
-    line.shear(2, 4);
+    line.setTransform(QTransform().shear(2, 4), true);
     QCOMPARE(line.matrix(), QMatrix().shear(2, 4));
-    line.shear(2, 4);
+    line.setTransform(QTransform().shear(2, 4), true);
     QCOMPARE(line.matrix(), QMatrix().shear(2, 4).shear(2, 4));
     line.resetMatrix();
 
-    line.translate(10, 10);
+    line.setTransform(QTransform::fromTranslate(10, 10), true);
     QCOMPARE(line.matrix(), QMatrix().translate(10, 10));
-    line.translate(10, 10);
+    line.setTransform(QTransform::fromTranslate(10, 10), true);
     QCOMPARE(line.matrix(), QMatrix().translate(10, 10).translate(10, 10));
     line.resetMatrix();
 }
@@ -2201,15 +2201,15 @@ void tst_QGraphicsItem::sceneMatrix()
     QCOMPARE(parent->sceneMatrix(), QMatrix());
     QCOMPARE(child->sceneMatrix(), QMatrix());
 
-    parent->translate(10, 10);
+    parent->setTransform(QTransform::fromTranslate(10, 10), true);
     QCOMPARE(parent->sceneMatrix(), QMatrix().translate(10, 10));
     QCOMPARE(child->sceneMatrix(), QMatrix().translate(10, 10));
 
-    child->translate(10, 10);
+    child->setTransform(QTransform::fromTranslate(10, 10), true);
     QCOMPARE(parent->sceneMatrix(), QMatrix().translate(10, 10));
     QCOMPARE(child->sceneMatrix(), QMatrix().translate(20, 20));
 
-    parent->rotate(90);
+    parent->setTransform(QTransform().rotate(90), true);
     QCOMPARE(parent->sceneMatrix(), QMatrix().translate(10, 10).rotate(90));
     QCOMPARE(child->sceneMatrix(), QMatrix().translate(10, 10).rotate(90).translate(10, 10));
 
@@ -2645,7 +2645,7 @@ void tst_QGraphicsItem::isObscuredBy()
     MyItem myitem1, myitem2;
 
     myitem1.setRect(QRectF(50, 50, 40, 200));
-    myitem1.rotate(67);
+    myitem1.setTransform(QTransform().rotate(67), true);
 
     myitem2.setRect(QRectF(25, 25, 20, 20));
     myitem2.setZValue(-1.0);
@@ -3271,7 +3271,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
-    tester->setAcceptsHoverEvents(true);
+    tester->setAcceptHoverEvents(true);
 
     QTRY_COMPARE(tester->repaints, 1);
 
@@ -3363,7 +3363,7 @@ void tst_QGraphicsItem::sceneBoundingRect()
     QCOMPARE(item->boundingRect(), QRectF(0, 0, 100, 100));
     QCOMPARE(item->sceneBoundingRect(), QRectF(100, 100, 100, 100));
 
-    item->rotate(90);
+    item->setTransform(QTransform().rotate(90), true);
 
     QCOMPARE(item->boundingRect(), QRectF(0, 0, 100, 100));
     QCOMPARE(item->sceneBoundingRect(), QRectF(0, 100, 100, 100));
@@ -3391,7 +3391,7 @@ void tst_QGraphicsItem::childrenBoundingRect()
     QGraphicsRectItem *childChild = scene.addRect(QRectF(0, 0, 100, 100), QPen(Qt::black, 0));
     childChild->setParentItem(child);
     childChild->setPos(500, 500);
-    child->rotate(90);
+    child->setTransform(QTransform().rotate(90), true);
 
     scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
 
@@ -3439,11 +3439,11 @@ void tst_QGraphicsItem::childrenBoundingRectTransformed()
     QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
     QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
 
-    rect->rotate(45);
-    rect2->rotate(-45);
-    rect3->rotate(45);
-    rect4->rotate(-45);
-    rect5->rotate(45);
+    rect->setTransform(QTransform().rotate(45), true);
+    rect2->setTransform(QTransform().rotate(-45), true);
+    rect3->setTransform(QTransform().rotate(45), true);
+    rect4->setTransform(QTransform().rotate(-45), true);
+    rect5->setTransform(QTransform().rotate(45), true);
 
     subTreeRect = rect->childrenBoundingRect();
     QCOMPARE(rect->childrenBoundingRect(), QRectF(-100, 75, 275, 250));
@@ -3565,7 +3565,7 @@ void tst_QGraphicsItem::group()
     QGraphicsRectItem *child = scene.addRect(QRectF(0, 0, 50, 50), QPen(Qt::black, 0), QBrush(Qt::blue));
     QGraphicsRectItem *parent2 = scene.addRect(QRectF(0, 0, 50, 50), QPen(Qt::black, 0), QBrush(Qt::red));
     parent2->setPos(-50, 50);
-    child->rotate(45);
+    child->setTransform(QTransform().rotate(45), true);
     child->setParentItem(parent);
     parent->setPos(25, 25);
     child->setPos(25, 25);
@@ -3614,7 +3614,7 @@ void tst_QGraphicsItem::group()
         newItems << item;
         item->setPos(-1000 + rand() % 2000,
                      -1000 + rand() % 2000);
-        item->rotate(rand() % 90);
+        item->setTransform(QTransform().rotate(rand() % 90), true);
     }
 
     view.fitInView(scene.itemsBoundingRect());
@@ -3657,8 +3657,8 @@ void tst_QGraphicsItem::setGroup2()
     rect->setTransformOriginPoint(50,50);
     rect->setRotation(45);
     rect->setScale(1.5);
-    rect->translate(20,20);
-    group.translate(-30,-40);
+    rect->setTransform(QTransform::fromTranslate(20,20), true);
+    group.setTransform(QTransform::fromTranslate(-30, -40), true);
     group.setRotation(180);
     group.setScale(0.5);
 
@@ -3711,7 +3711,7 @@ void tst_QGraphicsItem::warpChildrenIntoGroup()
     QGraphicsScene scene;
     QGraphicsRectItem *parentRectItem = scene.addRect(QRectF(0, 0, 100, 100));
     QGraphicsRectItem *childRectItem = scene.addRect(QRectF(0, 0, 100, 100));
-    parentRectItem->rotate(90);
+    parentRectItem->setTransform(QTransform().rotate(90), true);
     childRectItem->setPos(-50, -25);
     childRectItem->setParentItem(parentRectItem);
 
@@ -3720,7 +3720,7 @@ void tst_QGraphicsItem::warpChildrenIntoGroup()
 
     QGraphicsRectItem *parentOfGroup = scene.addRect(QRectF(0, 0, 100, 100));
     parentOfGroup->setPos(-200, -200);
-    parentOfGroup->scale(2, 2);
+    parentOfGroup->setTransform(QTransform::fromScale(2, 2), true);
 
     QGraphicsItemGroup *group = new QGraphicsItemGroup;
     group->setPos(50, 50);
@@ -4633,7 +4633,7 @@ void tst_QGraphicsItem::itemChange()
 
         // ItemTransformChange / ItemTransformHasChanged
         tester.itemChangeReturnValue.setValue<QTransform>(QTransform().rotate(90));
-        tester.translate(50, 0);
+        tester.setTransform(QTransform::fromTranslate(50, 0), true);
         ++changeCount; // notification sent too
         ++changeCount;
         QCOMPARE(tester.changes.size(), changeCount);
@@ -5362,7 +5362,7 @@ void tst_QGraphicsItem::deleteItemInEventHandlers()
     for (int i = 0; i < 17; ++i) {
         QGraphicsScene scene;
         HarakiriItem *item = new HarakiriItem(i);
-        item->setAcceptsHoverEvents(true);
+        item->setAcceptHoverEvents(true);
         item->setFlag(QGraphicsItem::ItemIsFocusable);
 
         scene.addItem(item);
@@ -5514,16 +5514,16 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QGraphicsScene scene;
     scene.addItem(parent);
 
-    QCOMPARE(scene.itemAt(5, 5), (QGraphicsItem *)parent);
-    QCOMPARE(scene.itemAt(15, 5), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(5, 15), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(60, 60), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(140, 60), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(60, 140), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(140, 140), (QGraphicsItem *)0);
-    QCOMPARE(scene.itemAt(75, 75), (QGraphicsItem *)child2);
-    QCOMPARE(scene.itemAt(75, 100), (QGraphicsItem *)child1);
-    QCOMPARE(scene.itemAt(100, 75), (QGraphicsItem *)child1);
+    QCOMPARE(scene.items(QPointF(5, 5)).value(0, Q_NULLPTR), (QGraphicsItem *)parent);
+    QVERIFY(scene.items(QPointF(15, 5)).isEmpty());
+    QVERIFY(scene.items(QPointF(5, 15)).isEmpty());
+    QVERIFY(scene.items(QPointF(60, 60)).isEmpty());
+    QVERIFY(scene.items(QPointF(140, 60)).isEmpty());
+    QVERIFY(scene.items(QPointF(60, 140)).isEmpty());
+    QVERIFY(scene.items(QPointF(140, 140)).isEmpty());
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child2);
+    QCOMPARE(scene.items(QPointF(75, 100)).value(0, Q_NULLPTR), (QGraphicsItem *)child1);
+    QCOMPARE(scene.items(QPointF(100, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child1);
 
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     image.fill(0);
@@ -5558,20 +5558,20 @@ void tst_QGraphicsItem::itemClipsChildrenToShape3()
     grandchild->setPos( 50, 50 );
     parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
-    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)parent);
-    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)child);
-    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+    QCOMPARE(scene.items(QPointF(25, 25)).value(0, Q_NULLPTR), (QGraphicsItem *)parent);
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child);
+    QCOMPARE(scene.items(QPointF(125, 125)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
+    QVERIFY(scene.items(QPointF(175, 175)).isEmpty());
 
     // Move child to fully overlap the parent.  The grandchild should
     // now occupy two-thirds of the scene
     child->prepareGeometryChange();
     child->setPos( 0, 0 );
 
-    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)child);
-    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+    QCOMPARE(scene.items(QPointF(25, 25)).value(0, Q_NULLPTR), (QGraphicsItem *)child);
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.items(QPointF(125, 125)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
+    QVERIFY(scene.items(QPointF(175, 175)).isEmpty());
 }
 
 class MyProxyWidget : public QGraphicsProxyWidget
@@ -5843,17 +5843,17 @@ void tst_QGraphicsItem::itemClippingDiscovery()
     rightRectItem->setParentItem(clipItem);
 
     // The rects item are both visible at these points.
-    QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)leftRectItem);
-    QCOMPARE(scene.itemAt(90, 90), (QGraphicsItem *)rightRectItem);
+    QCOMPARE(scene.items(QPointF(10, 10)).value(0, Q_NULLPTR), (QGraphicsItem *)leftRectItem);
+    QCOMPARE(scene.items(QPointF(90, 90)).value(0, Q_NULLPTR), (QGraphicsItem *)rightRectItem);
 
     // The ellipse clips the rects now.
     clipItem->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
     // The rect items are no longer visible at these points.
-    QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
+    QVERIFY(scene.items(QPointF(10, 10)).isEmpty());
     if (sizeof(qreal) != sizeof(double))
         QSKIP("This fails due to internal rounding errors");
-    QCOMPARE(scene.itemAt(90, 90), (QGraphicsItem *)0);
+    QVERIFY(scene.items(QPointF(90, 90)).isEmpty());
 }
 
 class ItemCountsBoundingRectCalls : public QGraphicsRectItem
@@ -5884,7 +5884,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     int oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
 
     // First test that both items are searched if no optimization flags are set
-    QGraphicsItem* item = scene.itemAt(25,5);
+    QGraphicsItem* item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
 
     QCOMPARE(item, childOutsideShape);
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
@@ -5895,7 +5895,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
 
     // Repeat the test to make sure that no caching/indexing is in effect
-    item = scene.itemAt(25,5);
+    item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
 
     QCOMPARE(item, childOutsideShape);
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
@@ -5908,7 +5908,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     // Set the optimization flag and make sure that the child is not returned
     // and that the child's boundingRect() method is never called.
     parent->setFlag(QGraphicsItem::ItemContainsChildrenInShape);
-    item = scene.itemAt(25,5);
+    item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
 
     QVERIFY(!(item));
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
@@ -6216,12 +6216,12 @@ void tst_QGraphicsItem::untransformable()
     QGraphicsItem *item1 = new QGraphicsEllipseItem(QRectF(-50, -50, 100, 100));
     item1->setZValue(1);
     item1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    item1->rotate(45);
+    item1->setTransform(QTransform().rotate(45), true);
     ((QGraphicsEllipseItem *)item1)->setBrush(Qt::red);
 
     QGraphicsItem *item2 = new QGraphicsEllipseItem(QRectF(-50, -50, 100, 100));
     item2->setParentItem(item1);
-    item2->rotate(45);
+    item2->setTransform(QTransform().rotate(45), true);
     item2->setPos(100, 0);
     ((QGraphicsEllipseItem *)item2)->setBrush(Qt::green);
 
@@ -6460,10 +6460,11 @@ void tst_QGraphicsItem::task177918_lineItemUndetected()
     QGraphicsLineItem *line = scene.addLine(10, 10, 10, 10);
     QCOMPARE(line->boundingRect(), QRectF(10, 10, 0, 0));
 
-    QVERIFY(!scene.items(9, 9, 2, 2, Qt::IntersectsItemShape).isEmpty());
-    QVERIFY(!scene.items(9, 9, 2, 2, Qt::ContainsItemShape).isEmpty());
-    QVERIFY(!scene.items(9, 9, 2, 2, Qt::IntersectsItemBoundingRect).isEmpty());
-    QVERIFY(!scene.items(9, 9, 2, 2, Qt::ContainsItemBoundingRect).isEmpty());
+    const QRectF rect(9, 9, 2, 2);
+    QVERIFY(!scene.items(rect, Qt::IntersectsItemShape).isEmpty());
+    QVERIFY(!scene.items(rect, Qt::ContainsItemShape).isEmpty());
+    QVERIFY(!scene.items(rect, Qt::IntersectsItemBoundingRect).isEmpty());
+    QVERIFY(!scene.items(rect, Qt::ContainsItemBoundingRect).isEmpty());
 }
 
 void tst_QGraphicsItem::task240400_clickOnTextItem_data()
@@ -6699,8 +6700,8 @@ void tst_QGraphicsItem::itemTransform_parentChild()
     QGraphicsItem *child = scene.addRect(0, 0, 100, 100);
     child->setParentItem(parent);
     child->setPos(10, 10);
-    child->scale(2, 2);
-    child->rotate(90);
+    child->setTransform(QTransform::fromScale(2, 2), true);
+    child->setTransform(QTransform().rotate(90), true);
 
     QCOMPARE(child->itemTransform(parent).map(QPointF(10, 10)), QPointF(-10, 30));
     QCOMPARE(parent->itemTransform(child).map(QPointF(-10, 30)), QPointF(10, 10));
@@ -6712,19 +6713,19 @@ void tst_QGraphicsItem::itemTransform_siblings()
     QGraphicsItem *parent = scene.addRect(0, 0, 100, 100);
     QGraphicsItem *brother = scene.addRect(0, 0, 100, 100);
     QGraphicsItem *sister = scene.addRect(0, 0, 100, 100);
-    parent->scale(10, 5);
-    parent->rotate(-180);
-    parent->shear(2, 3);
+    parent->setTransform(QTransform::fromScale(10, 5), true);
+    parent->setTransform(QTransform().rotate(-180), true);
+    parent->setTransform(QTransform().shear(2, 3), true);
 
     brother->setParentItem(parent);
     sister->setParentItem(parent);
 
     brother->setPos(10, 10);
-    brother->scale(2, 2);
-    brother->rotate(90);
+    brother->setTransform(QTransform::fromScale(2, 2), true);
+    brother->setTransform(QTransform().rotate(90), true);
     sister->setPos(10, 10);
-    sister->scale(2, 2);
-    sister->rotate(90);
+    sister->setTransform(QTransform::fromScale(2, 2), true);
+    sister->setTransform(QTransform().rotate(90), true);
 
     QCOMPARE(brother->itemTransform(sister).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(sister->itemTransform(brother).map(QPointF(10, 10)), QPointF(10, 10));
@@ -6736,11 +6737,11 @@ void tst_QGraphicsItem::itemTransform_unrelated()
     QGraphicsItem *stranger1 = scene.addRect(0, 0, 100, 100);
     QGraphicsItem *stranger2 = scene.addRect(0, 0, 100, 100);
     stranger1->setPos(10, 10);
-    stranger1->scale(2, 2);
-    stranger1->rotate(90);
+    stranger1->setTransform(QTransform::fromScale(2, 2), true);
+    stranger1->setTransform(QTransform().rotate(90), true);
     stranger2->setPos(10, 10);
-    stranger2->scale(2, 2);
-    stranger2->rotate(90);
+    stranger2->setTransform(QTransform::fromScale(2, 2), true);
+    stranger2->setTransform(QTransform().rotate(90), true);
 
     QCOMPARE(stranger1->itemTransform(stranger2).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(stranger2->itemTransform(stranger1).map(QPointF(10, 10)), QPointF(10, 10));
@@ -7022,7 +7023,8 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     paintedItems.clear();
     view.viewport()->update();
     QApplication::processEvents();
-    QTRY_COMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
+    QRectF rect(0, 0, 100, 100);
+    QTRY_COMPARE(scene.items(rect), (QList<QGraphicsItem *>()
                                            << grandChild111 << child11
                                            << grandChild121 << child12 << parent1
                                            << grandChild211 << child21
@@ -7038,7 +7040,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     paintedItems.clear();
     QApplication::processEvents();
 
-    QTRY_COMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
+    QTRY_COMPARE(scene.items(rect), (QList<QGraphicsItem *>()
                                            << grandChild121 << child12 << parent1
                                            << grandChild111 << child11
                                            << grandChild211 << child21
@@ -7054,7 +7056,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     scene.update();
     QApplication::processEvents();
 
-    QTRY_COMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
+    QTRY_COMPARE(scene.items(rect), (QList<QGraphicsItem *>()
                                            << parent1 << grandChild111 << child11
                                            << grandChild121 << child12
                                            << grandChild211 << child21
@@ -7221,12 +7223,12 @@ void tst_QGraphicsItem::sceneTransformCache()
     QGraphicsRectItem *rect2 = scene.addRect(0, 0, 100, 100);
     rect2->setPen(QPen(Qt::black, 0));
     rect2->setParentItem(rect);
-    rect2->rotate(90);
-    rect->translate(0, 50);
+    rect2->setTransform(QTransform().rotate(90), true);
+    rect->setTransform(QTransform::fromTranslate(0, 50), true);
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    rect->translate(0, 100);
+    rect->setTransform(QTransform::fromTranslate(0, 100), true);
     QTransform x;
     x.translate(0, 150);
     x.rotate(90);
@@ -7390,14 +7392,14 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(testerChild2->repaints, 2);
 
     // Translating does not result in a repaint.
-    tester->translate(10, 10);
+    tester->setTransform(QTransform::fromTranslate(10, 10), true);
     QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 2);
     QCOMPARE(testerChild->repaints, 2);
     QCOMPARE(testerChild2->repaints, 2);
 
     // Rotating results in a repaint.
-    tester->rotate(45);
+    tester->setTransform(QTransform().rotate(45), true);
     QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 3);
     QCOMPARE(testerChild->repaints, 3);
@@ -7413,9 +7415,9 @@ void tst_QGraphicsItem::cacheMode()
     QCOMPARE(testerChild2->repaints, 3);
 
     // Rotating items with ItemCoordinateCache doesn't cause a repaint.
-    tester->rotate(22);
-    testerChild->rotate(22);
-    testerChild2->rotate(22);
+    tester->setTransform(QTransform().rotate(22), true);
+    testerChild->setTransform(QTransform().rotate(22), true);
+    testerChild2->setTransform(QTransform().rotate(22), true);
     QTest::qWait(25);
     QTRY_COMPARE(tester->repaints, 4);
     QTRY_COMPARE(testerChild->repaints, 4);
@@ -7728,9 +7730,9 @@ void tst_QGraphicsItem::deviceTransform()
     rect1->setPos(100, 100);
     rect2->setPos(100, 100);
     rect3->setPos(100, 100);
-    rect1->rotate(rotation1);
-    rect2->rotate(rotation2);
-    rect3->rotate(rotation3);
+    rect1->setTransform(QTransform().rotate(rotation1), true);
+    rect2->setTransform(QTransform().rotate(rotation2), true);
+    rect3->setTransform(QTransform().rotate(rotation3), true);
     rect1->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable1);
     rect2->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable2);
     rect3->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable3);
@@ -7863,14 +7865,14 @@ void tst_QGraphicsItem::update()
     expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     view.reset();
     item->repaints = 0;
-    parent->translate(-400, 0);
+    parent->setTransform(QTransform::fromTranslate(-400, 0), true);
     qApp->processEvents();
     QCOMPARE(item->repaints, 0);
     QCOMPARE(view.repaints, 1);
     QCOMPARE(view.paintedRegion, expectedRegion);
     view.reset();
     item->repaints = 0;
-    parent->translate(400, 0);
+    parent->setTransform(QTransform::fromTranslate(400, 0), true);
     qApp->processEvents();
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
@@ -8170,7 +8172,7 @@ void tst_QGraphicsItem::moveItem()
 
     RESET_COUNTERS
 
-    parent->translate(20, 20);
+    parent->setTransform(QTransform::fromTranslate(20, 20), true);
     qApp->processEvents();
     QCOMPARE(parent->repaints, 1);
     QCOMPARE(child->repaints, 1);
@@ -11641,12 +11643,12 @@ void tst_QGraphicsItem::QTBUG_21618_untransformable_sceneTransform()
 
     QGraphicsItem *item1 = scene.addRect(0, 0, 100, 100, QPen(), Qt::red);
     item1->setPos(50, 50);
-    item1->translate(50, 50);
-    item1->rotate(90);
+    item1->setTransform(QTransform::fromTranslate(50, 50), true);
+    item1->setTransform(QTransform().rotate(90), true);
     QGraphicsItem *item2 = scene.addRect(0, 0, 100, 100, QPen(), Qt::green);
     item2->setPos(50, 50);
-    item2->translate(50, 50);
-    item2->rotate(90);
+    item2->setTransform(QTransform::fromTranslate(50, 50), true);
+    item2->setTransform(QTransform().rotate(90), true);
     item2->setFlags(QGraphicsItem::ItemIgnoresTransformations);
 
     QGraphicsRectItem *item1_topleft = new QGraphicsRectItem(QRectF(-2, -2, 4, 4));
