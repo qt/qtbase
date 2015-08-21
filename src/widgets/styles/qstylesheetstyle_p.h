@@ -42,6 +42,7 @@
 #include "QtCore/qhash.h"
 #include "QtGui/qevent.h"
 #include "QtCore/qvector.h"
+#include "QtCore/qset.h"
 #include "QtWidgets/qapplication.h"
 #include "private/qcssparser_p.h"
 #include "QtGui/qbrush.h"

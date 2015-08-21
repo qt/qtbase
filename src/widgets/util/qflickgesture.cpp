@@ -40,6 +40,7 @@
 #include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
 #include "qscroller.h"
+#include <QtGui/qtouchdevice.h>
 #include "private/qapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qflickgesture_p.h"

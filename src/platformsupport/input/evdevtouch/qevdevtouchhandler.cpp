@@ -36,6 +36,7 @@
 #include <QHash>
 #include <QSocketNotifier>
 #include <QGuiApplication>
+#include <QTouchDevice>
 #include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>

@@ -44,6 +44,7 @@
 #include <qpa/qplatformfontdatabase.h>
 
 #include <QtCore/qendian.h>
+#include <QtCore/qfile.h>
 
 QT_BEGIN_NAMESPACE
 

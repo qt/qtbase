@@ -36,6 +36,7 @@
 #include <QRect>
 #include <QWindow>
 #include <QGuiApplication>
+#include <QTouchDevice>
 
 #include <qpa/qwindowsysteminterface.h>
 

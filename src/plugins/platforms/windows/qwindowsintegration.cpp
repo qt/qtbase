@@ -62,6 +62,7 @@
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
 #  include "qwindowssessionmanager.h"
 #endif
+#include <QtGui/qtouchdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>

@@ -36,6 +36,7 @@
 
 #include <QtCore/QList>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/QFile>
 
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>

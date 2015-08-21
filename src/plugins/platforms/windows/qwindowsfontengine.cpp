@@ -54,6 +54,7 @@
 #include <QtGui/private/qpaintengine_raster_p.h>
 
 #include <QtCore/QtEndian>
+#include <QtCore/QFile>
 #include <QtCore/qmath.h>
 #include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>

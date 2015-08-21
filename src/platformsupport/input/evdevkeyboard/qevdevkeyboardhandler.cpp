@@ -35,6 +35,7 @@
 
 #include <qplatformdefs.h>
 
+#include <QFile>
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QCoreApplication>

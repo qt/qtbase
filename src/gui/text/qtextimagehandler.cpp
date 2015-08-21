@@ -38,6 +38,7 @@
 #include <qtextformat.h>
 #include <qpainter.h>
 #include <qdebug.h>
+#include <qfile.h>
 #include <private/qtextengine_p.h>
 #include <qpalette.h>
 #include <qthread.h>

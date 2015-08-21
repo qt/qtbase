@@ -38,6 +38,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLShaderProgram>
+#include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>

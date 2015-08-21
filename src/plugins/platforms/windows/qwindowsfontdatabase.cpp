@@ -43,6 +43,7 @@
 
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
 #include <QtCore/QtEndian>
 #include <QtCore/QThreadStorage>
 

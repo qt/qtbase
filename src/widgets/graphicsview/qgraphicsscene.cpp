@@ -232,6 +232,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qpolygon.h>
+#include <QtGui/qtouchdevice.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qtooltip.h>
 #include <QtGui/qtransform.h>

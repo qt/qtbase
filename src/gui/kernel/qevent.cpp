@@ -37,6 +37,7 @@
 #include "qpa/qplatformintegration.h"
 #include "qpa/qplatformdrag.h"
 #include "private/qevent_p.h"
+#include "qfile.h"
 #include "qmetaobject.h"
 #include "qmimedata.h"
 #include "private/qdnd_p.h"

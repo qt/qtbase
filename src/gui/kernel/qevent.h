@@ -35,20 +35,19 @@
 #define QEVENT_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtCore/qobject.h>
 #include <QtGui/qregion.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qkeysequence.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qmap.h>
+#include <QtCore/qmap.h> // ### Qt 6: Remove
 #include <QtCore/qvector.h>
-#include <QtCore/qset.h>
+#include <QtCore/qset.h> // ### Qt 6: Remove
 #include <QtCore/qurl.h>
-#include <QtCore/qfile.h>
+#include <QtCore/qfile.h> // ### Qt 6: Replace by <qiodevice.h> and forward declare QFile
 #include <QtGui/qvector2d.h>
-#include <QtGui/qtouchdevice.h>
+#include <QtGui/qtouchdevice.h> // ### Qt 6: Replace by forward declaration
 
 QT_BEGIN_NAMESPACE
 

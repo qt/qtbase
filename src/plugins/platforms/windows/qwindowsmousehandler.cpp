@@ -41,6 +41,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/QTouchDevice>
 #include <QtGui/QWindow>
 #include <QtGui/QCursor>
 

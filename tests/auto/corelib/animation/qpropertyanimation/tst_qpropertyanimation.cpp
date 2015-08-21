@@ -34,6 +34,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/qpropertyanimation.h>
 #include <QtCore/qvariantanimation.h>
+#include <QtGui/qtouchdevice.h>
 #include <QtWidgets/qwidget.h>
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)

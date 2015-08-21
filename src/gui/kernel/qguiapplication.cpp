@@ -37,6 +37,7 @@
 #include <qpa/qplatformintegrationfactory_p.h>
 #include "private/qevent_p.h"
 #include "qfont.h"
+#include "qtouchdevice.h"
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>

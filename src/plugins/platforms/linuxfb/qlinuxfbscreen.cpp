@@ -34,6 +34,7 @@
 #include "qlinuxfbscreen.h"
 #include <QtPlatformSupport/private/qfbcursor_p.h>
 #include <QtPlatformSupport/private/qfbwindow_p.h>
+#include <QtCore/QFile>
 #include <QtCore/QRegularExpression>
 #include <QtGui/QPainter>
 
