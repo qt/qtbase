@@ -209,6 +209,9 @@
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
 
+    self.undoManager.groupsByEvent = NO;
+    [self rebuildUndoStack];
+
     return self;
 }
 
@@ -376,6 +379,56 @@
 {
     Q_UNUSED(sender);
     [self sendKeyPressRelease:Qt::Key_U modifiers:Qt::ControlModifier];
+}
+
+// -------------------------------------------------------------------------
+
+- (void)undo
+{
+    [self sendKeyPressRelease:Qt::Key_Z modifiers:Qt::ControlModifier];
+    [self rebuildUndoStack];
+}
+
+- (void)redo
+{
+    [self sendKeyPressRelease:Qt::Key_Z modifiers:Qt::ControlModifier|Qt::ShiftModifier];
+    [self rebuildUndoStack];
+}
+
+- (void)registerRedo
+{
+    NSUndoManager *undoMgr = self.undoManager;
+    [undoMgr beginUndoGrouping];
+    [undoMgr registerUndoWithTarget:self selector:@selector(redo) object:nil];
+    [undoMgr endUndoGrouping];
+}
+
+- (void)rebuildUndoStack
+{
+    dispatch_async(dispatch_get_main_queue (), ^{
+        // Register dummy undo/redo operations to enable Cmd-Z and Cmd-Shift-Z
+        // Ensure we do this outside any undo/redo callback since NSUndoManager
+        // will treat registerUndoWithTarget as registering a redo when called
+        // from within a undo callback.
+        NSUndoManager *undoMgr = self.undoManager;
+        [undoMgr removeAllActions];
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(undo) object:nil];
+        [undoMgr endUndoGrouping];
+
+        // Schedule an operation that we immediately pop off to be able to schedule a redo
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(registerRedo) object:nil];
+        [undoMgr endUndoGrouping];
+        [undoMgr undo];
+
+        // Note that, perhaps because of a bug in UIKit, the buttons on the shortcuts bar ends up
+        // disabled if a undo/redo callback doesn't lead to a [UITextInputDelegate textDidChange].
+        // And we only call that method if Qt made changes to the text. The effect is that the buttons
+        // become disabled when there is nothing more to undo (Qt didn't change anything upon receiving
+        // an undo request). This seems to be OK behavior, so we let it stay like that unless it shows
+        // to cause problems.
+    });
 }
 
 // -------------------------------------------------------------------------
