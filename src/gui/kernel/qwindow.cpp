@@ -1270,8 +1270,11 @@ void QWindow::setMinimumSize(const QSize &size)
 */
 void QWindow::setX(int arg)
 {
+    Q_D(QWindow);
     if (x() != arg)
         setGeometry(QRect(arg, y(), width(), height()));
+    else
+        d->positionAutomatic = false;
 }
 
 /*!
@@ -1280,8 +1283,11 @@ void QWindow::setX(int arg)
 */
 void QWindow::setY(int arg)
 {
+    Q_D(QWindow);
     if (y() != arg)
         setGeometry(QRect(x(), arg, width(), height()));
+    else
+        d->positionAutomatic = false;
 }
 
 /*!
