@@ -1077,8 +1077,9 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
         QTextUndoCommand &last = undoStack[undoState - 1];
 
         if ( (last.block_part && c.block_part && !last.block_end) // part of the same block => can merge
-            || (!c.block_part && !last.block_part)) {  // two single undo items => can merge
-
+            || (!c.block_part && !last.block_part) // two single undo items => can merge
+            || (c.command == QTextUndoCommand::Inserted && last.command == c.command && (last.block_part && !c.block_part))) {
+            // two sequential inserts that are not part of the same block => can merge
             if (last.tryMerge(c))
                 return;
         }

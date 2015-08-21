@@ -2899,14 +2899,27 @@ void tst_QTextDocument::testUndoBlocks()
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString(""));
 
+    cursor.insertText("town");
+    cursor.beginEditBlock(); // Edit block 1 - Deletion/Insertion
+    cursor.setPosition(0, QTextCursor::KeepAnchor);
+    cursor.insertText("r");
+    cursor.endEditBlock();
+    cursor.insertText("est"); // Merged into edit block 1
+    QCOMPARE(doc->toPlainText(), QString("rest"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("town"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+
+    // This case would not happen in practice. If the user typed out this text, it would all be part of one
+    // edit block. This would cause the undo to clear all text. But for the purpose of testing the beginEditBlock
+    // and endEditBlock calls with respect to qtextdocument this is tested.
     cursor.insertText("quod");
-    cursor.beginEditBlock();
+    cursor.beginEditBlock(); // Edit block 1 - Insertion
     cursor.insertText(" erat");
     cursor.endEditBlock();
-    cursor.insertText(" demonstrandum");
+    cursor.insertText(" demonstrandum"); // Merged into edit block 1
     QCOMPARE(doc->toPlainText(), QString("quod erat demonstrandum"));
-    doc->undo();
-    QCOMPARE(doc->toPlainText(), QString("quod erat"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString("quod"));
     doc->undo();
