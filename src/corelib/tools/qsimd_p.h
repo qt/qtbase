@@ -150,7 +150,7 @@
 #    define QT_FUNCTION_TARGET(x)
 #  endif
 #else
-#  define QT_COMPILER_SUPPORTS_HERE(x)    defined(__ ## x ## __)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  define QT_FUNCTION_TARGET(x)
 #endif
 
