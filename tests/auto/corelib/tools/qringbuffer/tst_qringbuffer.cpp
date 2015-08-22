@@ -34,12 +34,14 @@
 #include <QtTest/QtTest>
 
 #include <private/qringbuffer_p.h>
+#include <qvector.h>
 
 class tst_QRingBuffer : public QObject
 {
     Q_OBJECT
 private slots:
     void constructing();
+    void usingInVector();
     void readPointerAtPositionWriteRead();
     void readPointerAtPositionEmptyRead();
     void readPointerAtPositionWithHead();
@@ -72,6 +74,16 @@ void tst_QRingBuffer::constructing()
 
     char buf[5];
     QCOMPARE(ringBuffer.peek(buf, sizeof(buf)), Q_INT64_C(0));
+}
+
+void tst_QRingBuffer::usingInVector()
+{
+    QRingBuffer ringBuffer;
+    QVector<QRingBuffer> buffers;
+
+    ringBuffer.reserve(5);
+    buffers.append(ringBuffer);
+    QCOMPARE(buffers[0].size(), Q_INT64_C(5));
 }
 
 void tst_QRingBuffer::sizeWhenReserved()

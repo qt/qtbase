@@ -135,7 +135,7 @@ private:
     QList<QByteArray> buffers;
     int head, tail;
     int tailBuffer; // always buffers.size() - 1
-    const int basicBlockSize;
+    int basicBlockSize;
     qint64 bufferSize;
 };
 
