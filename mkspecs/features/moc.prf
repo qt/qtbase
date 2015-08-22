@@ -24,8 +24,23 @@ win32:count(MOC_INCLUDEPATH, 40, >) {
     write_file($$absolute_path($$WIN_INCLUDETEMP, $$OUT_PWD), WIN_INCLUDETEMP_CONT)|error("Aborting.")
 }
 
+# QNX's compiler sets "gcc" config, but does not support the -dM option;
+# iOS builds are multi-arch, so this feature cannot possibly work.
+if(gcc|intel_icl|msvc):!rim_qcc:!ios {
+    moc_predefs.CONFIG = no_link
+    gcc:            moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -dM -E -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    else:intel_icl: moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -QdM -P -Fi${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    else:msvc {
+        moc_predefs.commands += $$QMAKE_CXX -Bx$$shell_path($$[QT_INSTALL_BINS/get]/qmake) $$QMAKE_CXXFLAGS -E ${QMAKE_FILE_IN} 2>NUL >${QMAKE_FILE_OUT}
+    } else:         error("Oops, I messed up")
+    moc_predefs.output = $$MOC_DIR/moc_predefs.h
+    moc_predefs.input = MOC_PREDEF_FILE
+    silent: moc_predefs.commands = @echo generating $$moc_predefs.output$$escape_expand(\n\t)@$$moc_predefs.commands
+    QMAKE_EXTRA_COMPILERS += moc_predefs
+    MOC_PREDEF_FILE = $$[QT_HOST_DATA/src]/mkspecs/features/data/dummy.cpp
+}
+
 defineReplace(mocCmdBase) {
-    RET =
     !isEmpty(WIN_INCLUDETEMP) {
         incvar = @$$WIN_INCLUDETEMP
     } else {
@@ -34,7 +49,13 @@ defineReplace(mocCmdBase) {
             incvar += -I$$shell_quote($$inc)
         incvar += $$QMAKE_FRAMEWORKPATH_FLAGS
     }
-    RET += $$QMAKE_MOC $(DEFINES) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$incvar $$QMAKE_MOC_OPTIONS
+
+    RET = $$QMAKE_MOC $(DEFINES)
+
+    isEmpty(MOC_PREDEF_FILE): RET += $$join(QMAKE_COMPILER_DEFINES, " -D", -D)
+    else: RET += --include $$moc_predefs.output
+
+    RET += $$incvar $$QMAKE_MOC_OPTIONS
     return($$RET)
 }
 
@@ -46,7 +67,7 @@ moc_header.output = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAK
 moc_header.input = HEADERS
 moc_header.variable_out = SOURCES
 moc_header.name = MOC ${QMAKE_FILE_IN}
-moc_header.depends += $$WIN_INCLUDETEMP
+moc_header.depends += $$WIN_INCLUDETEMP $$moc_predefs.output
 silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
 INCREDIBUILD_XGE += moc_header
@@ -58,7 +79,7 @@ moc_source.commands = ${QMAKE_FUNC_mocCmdBase} ${QMAKE_FILE_IN} -o ${QMAKE_FILE_
 moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}
 moc_source.input = SOURCES OBJECTIVE_SOURCES
 moc_source.name = MOC ${QMAKE_FILE_IN}
-moc_source.depends += $$WIN_INCLUDETEMP
+moc_source.depends += $$WIN_INCLUDETEMP $$moc_predefs.output
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
 QMAKE_EXTRA_COMPILERS += moc_source
 INCREDIBUILD_XGE += moc_source

@@ -575,6 +575,8 @@ private slots:
     void frameworkSearchPath();
     void cstyleEnums();
     void defineMacroViaCmdline();
+    void defineMacroViaForcedInclude();
+    void defineMacroViaForcedIncludeRelative();
     void specifyMetaTagsFromCmdline();
     void invokable();
     void singleFunctionKeywordSignalAndSlot();
@@ -1240,6 +1242,46 @@ void tst_Moc::defineMacroViaCmdline()
 
     QStringList args;
     args << "-DFOO";
+    args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
+
+    proc.start(m_moc, args);
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+#else
+    QSKIP("Only tested on linux/gcc");
+#endif
+}
+
+void tst_Moc::defineMacroViaForcedInclude()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+
+    QStringList args;
+    args << "--include" << m_sourceDirectory + QLatin1String("/subdir/extradefines.h");
+    args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
+
+    proc.start(m_moc, args);
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+#else
+    QSKIP("Only tested on linux/gcc");
+#endif
+}
+
+void tst_Moc::defineMacroViaForcedIncludeRelative()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+
+    QStringList args;
+    args << "--include" << QStringLiteral("extradefines.h") << "-I" + m_sourceDirectory + "/subdir";
     args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
 
     proc.start(m_moc, args);

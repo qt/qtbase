@@ -1004,6 +1004,36 @@ static void mergeStringLiterals(Symbols *_symbols)
     }
 }
 
+QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteArray &relativeTo)
+{
+    // #### stringery
+    QFileInfo fi;
+    if (!relativeTo.isEmpty())
+        fi.setFile(QFileInfo(QString::fromLocal8Bit(relativeTo.constData())).dir(), QString::fromLocal8Bit(include.constData()));
+    for (int j = 0; j < Preprocessor::includes.size() && !fi.exists(); ++j) {
+        const IncludePath &p = Preprocessor::includes.at(j);
+        if (p.isFrameworkPath) {
+            const int slashPos = include.indexOf('/');
+            if (slashPos == -1)
+                continue;
+            fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
+                       QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
+        } else {
+            fi.setFile(QString::fromLocal8Bit(p.path.constData()), QString::fromLocal8Bit(include.constData()));
+        }
+        // try again, maybe there's a file later in the include paths with the same name
+        // (186067)
+        if (fi.isDir()) {
+            fi = QFileInfo();
+            continue;
+        }
+    }
+
+    if (!fi.exists() || fi.isDir())
+        return QByteArray();
+    return fi.canonicalFilePath().toLocal8Bit();
+}
+
 void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
 {
     currentFilenames.push(filename);
@@ -1024,32 +1054,9 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                 continue;
             until(PP_NEWLINE);
 
-            // #### stringery
-            QFileInfo fi;
-            if (local)
-                fi.setFile(QFileInfo(QString::fromLocal8Bit(filename.constData())).dir(), QString::fromLocal8Bit(include.constData()));
-            for (int j = 0; j < Preprocessor::includes.size() && !fi.exists(); ++j) {
-                const IncludePath &p = Preprocessor::includes.at(j);
-                if (p.isFrameworkPath) {
-                    const int slashPos = include.indexOf('/');
-                    if (slashPos == -1)
-                        continue;
-                    fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
-                               QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
-                } else {
-                    fi.setFile(QString::fromLocal8Bit(p.path.constData()), QString::fromLocal8Bit(include.constData()));
-                }
-                // try again, maybe there's a file later in the include paths with the same name
-                // (186067)
-                if (fi.isDir()) {
-                    fi = QFileInfo();
-                    continue;
-                }
-            }
-
-            if (!fi.exists() || fi.isDir())
+            include = resolveInclude(include, local ? filename : QByteArray());
+            if (include.isNull())
                 continue;
-            include = fi.canonicalFilePath().toLocal8Bit();
 
             if (Preprocessor::preprocessedIncludes.contains(include))
                 continue;
@@ -1204,6 +1211,7 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, QFile *file)
     input = cleaned(input);
 
     // phase 2: tokenize for the preprocessor
+    index = 0;
     symbols = tokenize(input);
 
 #if 0

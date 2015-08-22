@@ -263,6 +263,11 @@ int runMoc(int argc, char **argv)
     prependIncludeOption.setValueName(QStringLiteral("file"));
     parser.addOption(prependIncludeOption);
 
+    QCommandLineOption includeOption(QStringLiteral("include"));
+    includeOption.setDescription(QStringLiteral("Parse <file> as an #include before the main source(s)."));
+    includeOption.setValueName(QStringLiteral("file"));
+    parser.addOption(includeOption);
+
     QCommandLineOption noNotesWarningsCompatOption(QStringLiteral("n"));
     noNotesWarningsCompatOption.setDescription(QStringLiteral("Do not display notes (-nn) or warnings (-nw). Compatibility option."));
     noNotesWarningsCompatOption.setValueName(QStringLiteral("which"));
@@ -420,7 +425,17 @@ int runMoc(int argc, char **argv)
     moc.includes = pp.includes;
 
     // 1. preprocess
-    moc.symbols = pp.preprocessed(moc.filename, &in);
+    const auto includeFiles = parser.values(includeOption);
+    for (const QString &includeName : includeFiles) {
+        QByteArray rawName = pp.resolveInclude(QFile::encodeName(includeName), moc.filename);
+        QFile f(QFile::decodeName(rawName));
+        if (f.open(QIODevice::ReadOnly)) {
+            moc.symbols += Symbol(0, MOC_INCLUDE_BEGIN, rawName);
+            moc.symbols += pp.preprocessed(rawName, &f);
+            moc.symbols += Symbol(0, MOC_INCLUDE_END, rawName);
+        }
+    }
+    moc.symbols += pp.preprocessed(moc.filename, &in);
 
     // We obviously do not support MS extensions
     pp.macros.remove("_MSC_EXTENSIONS");

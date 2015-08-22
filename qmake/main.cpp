@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -41,6 +42,10 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -241,6 +246,30 @@ static int doInstall(int argc, char **argv)
     return 3;
 }
 
+static int dumpMacros(const wchar_t *cmdline)
+{
+    // from http://stackoverflow.com/questions/3665537/how-to-find-out-cl-exes-built-in-macros
+    int argc;
+    wchar_t **argv = CommandLineToArgvW(cmdline, &argc);
+    if (!argv)
+        return 2;
+    for (int i = 0; i < argc; ++i) {
+        if (argv[i][0] != L'-' || argv[i][1] != 'D')
+            continue;
+
+        wchar_t *value = wcschr(argv[i], L'=');
+        if (value) {
+            *value = 0;
+            ++value;
+        } else {
+            // point to the NUL at the end, so we don't print anything
+            value = argv[i] + wcslen(argv[i]);
+        }
+        wprintf(L"#define %Ls %Ls\n", argv[i] + 2, value);
+    }
+    return 0;
+}
+
 #endif // Q_OS_WIN
 
 /* This is to work around lame implementation on Darwin. It has been noted that the getpwd(3) function
@@ -275,6 +304,15 @@ int runQMake(int argc, char **argv)
     // Workaround for inferior/missing command line tools on Windows: make our own!
     if (argc >= 2 && !strcmp(argv[1], "-install"))
         return doInstall(argc - 2, argv + 2);
+
+    {
+        // Support running as Visual C++'s compiler
+        const wchar_t *cmdline = _wgetenv(L"MSC_CMD_FLAGS");
+        if (!cmdline || !*cmdline)
+            cmdline = _wgetenv(L"MSC_IDE_FLAGS");
+        if (cmdline && *cmdline)
+            return dumpMacros(cmdline);
+    }
 #endif
 
     QMakeVfs vfs;

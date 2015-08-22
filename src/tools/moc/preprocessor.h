@@ -62,6 +62,7 @@ public:
     QList<QByteArray> frameworks;
     QSet<QByteArray> preprocessedIncludes;
     Macros macros;
+    QByteArray resolveInclude(const QByteArray &filename, const QByteArray &relativeTo);
     Symbols preprocessed(const QByteArray &filename, QFile *device);
 
     void parseDefineArguments(Macro *m);
