@@ -937,18 +937,14 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 /*!
     \property QCoreApplication::quitLockEnabled
 
-    Returns \c true if the use of the QEventLoopLocker feature can cause the
-    application to quit, otherwise returns \c false.
+    \brief Whether the use of the QEventLoopLocker feature can cause the
+    application to quit.
+
+    The default is \c true.
 
     \sa QEventLoopLocker
 */
 
-/*!
-    Returns \c true if the use of the QEventLoopLocker feature can cause the
-    application to quit, otherwise returns \c false.
-
-    \sa QEventLoopLocker
- */
 bool QCoreApplication::isQuitLockEnabled()
 {
     return quitLockRefEnabled;
@@ -956,14 +952,6 @@ bool QCoreApplication::isQuitLockEnabled()
 
 static bool doNotify(QObject *, QEvent *);
 
-/*!
-    Enables the ability of the QEventLoopLocker feature to quit
-    the application.
-
-    If disabled, the use of QEventLoopLocker will not quit the application.
-
-    \sa QEventLoopLocker
- */
 void QCoreApplication::setQuitLockEnabled(bool enabled)
 {
     quitLockRefEnabled = enabled;
