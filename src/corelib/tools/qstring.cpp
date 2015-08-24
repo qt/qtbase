@@ -2680,6 +2680,8 @@ bool operator==(const QString &s1, const QString &s2)
 
 /*!
     \overload operator==()
+    Returns \c true if this string is equal to \a other; otherwise
+    returns \c false.
 */
 bool QString::operator==(QLatin1String other) const
 {
