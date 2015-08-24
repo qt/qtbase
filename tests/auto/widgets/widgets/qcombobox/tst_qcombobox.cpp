@@ -2687,7 +2687,8 @@ void tst_QComboBox::resetModel()
 
         void reset()
         {
-            QStringListModel::reset();
+            QStringListModel::beginResetModel();
+            QStringListModel::endResetModel();
         }
     };
     QComboBox cb;

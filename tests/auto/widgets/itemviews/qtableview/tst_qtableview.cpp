@@ -415,7 +415,8 @@ public:
 
     void reset()
     {
-        QAbstractTableModel::reset();
+        beginResetModel();
+        endResetModel();
     }
 
     int row_count;
@@ -3606,7 +3607,11 @@ public:
     {
         return QVariant();
     }
-    void res() { reset(); }
+    void res()
+    {
+        beginResetModel();
+        endResetModel();
+    }
 
     int rows;
     int columns;

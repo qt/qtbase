@@ -549,7 +549,7 @@ void tst_QGraphicsEffect::drawPixmapItem()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(effect->repaints >= 1);
 
-    item->rotate(180);
+    item->setTransform(QTransform().rotate(180), true);
 
     QTRY_VERIFY(effect->repaints >= 2);
 }
@@ -593,7 +593,7 @@ void tst_QGraphicsEffect::deviceCoordinateTranslateCaching()
     QTRY_VERIFY(item->numRepaints >= 1);
     int numRepaints = item->numRepaints;
 
-    item->translate(10, 0);
+    item->setTransform(QTransform::fromTranslate(10, 0), true);
 
     QTRY_COMPARE(item->numRepaints, numRepaints);
 }
