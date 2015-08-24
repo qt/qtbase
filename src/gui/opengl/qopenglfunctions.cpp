@@ -3701,7 +3701,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
 
-    Convenience function that calls glCopyBufferSubData(\a readTarget, writeTarget, \a readOffset, \a writeOffset, \a size).
+    Convenience function that calls glCopyBufferSubData(\a readTarget, \a writeTarget, \a readOffset, \a writeOffset, \a size).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -3855,7 +3855,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glEndTransformFeedback()
+    \fn void QOpenGLExtraFunctions::glEndTransformFeedback(void)
 
     Convenience function that calls glEndTransformFeedback().
 
@@ -4362,7 +4362,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glPauseTransformFeedback()
+    \fn void QOpenGLExtraFunctions::glPauseTransformFeedback(void)
 
     Convenience function that calls glPauseTransformFeedback().
 
@@ -4427,7 +4427,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glResumeTransformFeedback()
+    \fn void QOpenGLExtraFunctions::glResumeTransformFeedback(void)
 
     Convenience function that calls glResumeTransformFeedback().
 
@@ -4455,7 +4455,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat * param)
 
-    Convenience function that calls glSamplerParameterfv(\a sampler, pname, \a param).
+    Convenience function that calls glSamplerParameterfv(\a sampler, \a pname, \a param).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4624,7 +4624,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glUniform3uiv(GLint location, GLsizei count, const GLuint * value)
 
-    Convenience function that calls glUniform3uiv(\a location, count, \a value).
+    Convenience function that calls glUniform3uiv(\a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4858,7 +4858,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glActiveShaderProgram(GLuint pipeline, GLuint program)
 
-    Convenience function that calls glActiveShaderProgram(pipeline, program).
+    Convenience function that calls glActiveShaderProgram(\a pipeline, \a program).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4869,9 +4869,9 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 */
 
 /*!
-    \fn void QOpenGLFunctions::glBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
+    \fn void QOpenGLExtraFunctions::glBindImageTexture(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format)
 
-    Convenience function that calls glBindImageTexture(unit, texture, level, layered, layer, access, format).
+    Convenience function that calls glBindImageTexture(\a unit, \a texture, \a level, \a layered, \a layer, \a access, \a format).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4884,7 +4884,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glBindProgramPipeline(GLuint pipeline)
 
-    Convenience function that calls glBindProgramPipeline(pipeline).
+    Convenience function that calls glBindProgramPipeline(\a pipeline).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4897,7 +4897,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glBindVertexBuffer(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
 
-    Convenience function that calls glBindVertexBuffer(bindingindex, buffer, offset, stride).
+    Convenience function that calls glBindVertexBuffer(\a bindingindex, \a buffer, \a offset, \a stride).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4910,7 +4910,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn GLuint QOpenGLExtraFunctions::glCreateShaderProgramv(GLenum type, GLsizei count, const GLchar *const* strings)
 
-    Convenience function that calls glCreateShaderProgramv(type, count, strings).
+    Convenience function that calls glCreateShaderProgramv(\a type, \a count, \a strings).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4923,7 +4923,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glDeleteProgramPipelines(GLsizei n, const GLuint * pipelines)
 
-    Convenience function that calls glDeleteProgramPipelines(n, pipelines).
+    Convenience function that calls glDeleteProgramPipelines(\a n, \a pipelines).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4936,7 +4936,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
 
-    Convenience function that calls glDispatchCompute(num_groups_x, num_groups_y, num_groups_z).
+    Convenience function that calls glDispatchCompute(\a num_groups_x, \a num_groups_y, \a num_groups_z).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4949,7 +4949,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glDispatchComputeIndirect(GLintptr indirect)
 
-    Convenience function that calls glDispatchComputeIndirect(indirect).
+    Convenience function that calls glDispatchComputeIndirect(\a indirect).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4962,7 +4962,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glDrawArraysIndirect(GLenum mode, const void * indirect)
 
-    Convenience function that calls glDrawArraysIndirect(mode, indirect).
+    Convenience function that calls glDrawArraysIndirect(\a mode, \a indirect).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4975,7 +4975,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glDrawElementsIndirect(GLenum mode, GLenum type, const void * indirect)
 
-    Convenience function that calls glDrawElementsIndirect(mode, type, indirect).
+    Convenience function that calls glDrawElementsIndirect(\a mode, \a type, \a indirect).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -4988,7 +4988,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glFramebufferParameteri(GLenum target, GLenum pname, GLint param)
 
-    Convenience function that calls glFramebufferParameteri(target, pname, param).
+    Convenience function that calls glFramebufferParameteri(\a target, \a pname, \a param).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5001,7 +5001,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGenProgramPipelines(GLsizei n, GLuint* pipelines)
 
-    Convenience function that calls glGenProgramPipelines(n, pipelines).
+    Convenience function that calls glGenProgramPipelines(\a n, \a pipelines).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5014,7 +5014,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetBooleani_v(GLenum target, GLuint index, GLboolean* data)
 
-    Convenience function that calls glGetBooleani_v(target, index, data).
+    Convenience function that calls glGetBooleani_v(\a target, \a index, \a data).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5027,7 +5027,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetFramebufferParameteriv(GLenum target, GLenum pname, GLint* params)
 
-    Convenience function that calls glGetFramebufferParameteriv(target, pname, params).
+    Convenience function that calls glGetFramebufferParameteriv(\a target, \a pname, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5040,7 +5040,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetMultisamplefv(GLenum pname, GLuint index, GLfloat* val)
 
-    Convenience function that calls glGetMultisamplefv(pname, index, val).
+    Convenience function that calls glGetMultisamplefv(\a pname, \a index, \a val).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5053,7 +5053,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetProgramInterfaceiv(GLuint program, GLenum programInterface, GLenum pname, GLint* params)
 
-    Convenience function that calls glGetProgramInterfaceiv(program, programInterface, pname, params).
+    Convenience function that calls glGetProgramInterfaceiv(\a program, \a programInterface, \a pname, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5066,7 +5066,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetProgramPipelineInfoLog(GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog)
 
-    Convenience function that calls glGetProgramPipelineInfoLog(pipeline, bufSize, length, infoLog).
+    Convenience function that calls glGetProgramPipelineInfoLog(\a pipeline, \a bufSize, \a length, \a infoLog).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5079,7 +5079,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetProgramPipelineiv(GLuint pipeline, GLenum pname, GLint* params)
 
-    Convenience function that calls glGetProgramPipelineiv(pipeline, pname, params).
+    Convenience function that calls glGetProgramPipelineiv(\a pipeline, \a pname, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5092,7 +5092,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn GLuint QOpenGLExtraFunctions::glGetProgramResourceIndex(GLuint program, GLenum programInterface, const GLchar * name)
 
-    Convenience function that calls glGetProgramResourceIndex(program, programInterface, name).
+    Convenience function that calls glGetProgramResourceIndex(\a program, \a programInterface, \a name).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5105,7 +5105,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn GLint QOpenGLExtraFunctions::glGetProgramResourceLocation(GLuint program, GLenum programInterface, const GLchar * name)
 
-    Convenience function that calls glGetProgramResourceLocation(program, programInterface, name).
+    Convenience function that calls glGetProgramResourceLocation(\a program, \a programInterface, \a name).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5118,7 +5118,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetProgramResourceName(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei* length, GLchar* name)
 
-    Convenience function that calls glGetProgramResourceName(program, programInterface, index, bufSize, length, name).
+    Convenience function that calls glGetProgramResourceName(\a program, \a programInterface, \a index, \a bufSize, \a length, \a name).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5131,7 +5131,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetProgramResourceiv(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum * props, GLsizei bufSize, GLsizei* length, GLint* params)
 
-    Convenience function that calls glGetProgramResourceiv(program, programInterface, index, propCount, props, bufSize, length, params).
+    Convenience function that calls glGetProgramResourceiv(\a program, \a programInterface, \a index, \a propCount, \a props, \a bufSize, \a length, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5144,7 +5144,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat* params)
 
-    Convenience function that calls glGetTexLevelParameterfv(target, level, pname, params).
+    Convenience function that calls glGetTexLevelParameterfv(\a target, \a level, \a pname, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5157,7 +5157,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint* params)
 
-    Convenience function that calls glGetTexLevelParameteriv(target, level, pname, params).
+    Convenience function that calls glGetTexLevelParameteriv(\a target, \a level, \a pname, \a params).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5170,7 +5170,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn GLboolean QOpenGLExtraFunctions::glIsProgramPipeline(GLuint pipeline)
 
-    Convenience function that calls glIsProgramPipeline(pipeline).
+    Convenience function that calls glIsProgramPipeline(\a pipeline).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5183,7 +5183,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glMemoryBarrier(GLbitfield barriers)
 
-    Convenience function that calls glMemoryBarrier(barriers).
+    Convenience function that calls glMemoryBarrier(\a barriers).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5196,7 +5196,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glMemoryBarrierByRegion(GLbitfield barriers)
 
-    Convenience function that calls glMemoryBarrierByRegion(barriers).
+    Convenience function that calls glMemoryBarrierByRegion(\a barriers).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5209,7 +5209,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1f(GLuint program, GLint location, GLfloat v0)
 
-    Convenience function that calls glProgramUniform1f(program, location, v0).
+    Convenience function that calls glProgramUniform1f(\a program, \a location, \a v0).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5222,7 +5222,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
 
-    Convenience function that calls glProgramUniform1fv(program, location, count, value).
+    Convenience function that calls glProgramUniform1fv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5235,7 +5235,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1i(GLuint program, GLint location, GLint v0)
 
-    Convenience function that calls glProgramUniform1i(program, location, v0).
+    Convenience function that calls glProgramUniform1i(\a program, \a location, \a v0).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5248,7 +5248,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1iv(GLuint program, GLint location, GLsizei count, const GLint * value)
 
-    Convenience function that calls glProgramUniform1iv(program, location, count, value).
+    Convenience function that calls glProgramUniform1iv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5261,7 +5261,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1ui(GLuint program, GLint location, GLuint v0)
 
-    Convenience function that calls glProgramUniform1ui(program, location, v0).
+    Convenience function that calls glProgramUniform1ui(\a program, \a location, \a v0).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5274,7 +5274,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform1uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
 
-    Convenience function that calls glProgramUniform1uiv(program, location, count, value).
+    Convenience function that calls glProgramUniform1uiv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5287,7 +5287,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1)
 
-    Convenience function that calls glProgramUniform2f(program, location, v0, v1).
+    Convenience function that calls glProgramUniform2f(\a program, \a location, \a v0, \a v1).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5300,7 +5300,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
 
-    Convenience function that calls glProgramUniform2fv(program, location, count, value).
+    Convenience function that calls glProgramUniform2fv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5313,7 +5313,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1)
 
-    Convenience function that calls glProgramUniform2i(program, location, v0, v1).
+    Convenience function that calls glProgramUniform2i(\a program, \a location, \a v0, \a v1).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5326,7 +5326,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2iv(GLuint program, GLint location, GLsizei count, const GLint * value)
 
-    Convenience function that calls glProgramUniform2iv(program, location, count, value).
+    Convenience function that calls glProgramUniform2iv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5339,7 +5339,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2ui(GLuint program, GLint location, GLuint v0, GLuint v1)
 
-    Convenience function that calls glProgramUniform2ui(program, location, v0, v1).
+    Convenience function that calls glProgramUniform2ui(\a program, \a location, \a v0, \a v1).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5352,7 +5352,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform2uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
 
-    Convenience function that calls glProgramUniform2uiv(program, location, count, value).
+    Convenience function that calls glProgramUniform2uiv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5365,7 +5365,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 
-    Convenience function that calls glProgramUniform3f(program, location, v0, v1, v2).
+    Convenience function that calls glProgramUniform3f(\a program, \a location, \a v0, \a v1, \a v2).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5378,7 +5378,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
 
-    Convenience function that calls glProgramUniform3fv(program, location, count, value).
+    Convenience function that calls glProgramUniform3fv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5391,7 +5391,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
 
-    Convenience function that calls glProgramUniform3i(program, location, v0, v1, v2).
+    Convenience function that calls glProgramUniform3i(\a program, \a location, \a v0, \a v1, \a v2).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5404,7 +5404,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3iv(GLuint program, GLint location, GLsizei count, const GLint * value)
 
-    Convenience function that calls glProgramUniform3iv(program, location, count, value).
+    Convenience function that calls glProgramUniform3iv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5417,7 +5417,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
 
-    Convenience function that calls glProgramUniform3ui(program, location, v0, v1, v2).
+    Convenience function that calls glProgramUniform3ui(\a program, \a location, \a v0, \a v1, \a v2).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5430,7 +5430,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform3uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
 
-    Convenience function that calls glProgramUniform3uiv(program, location, count, value).
+    Convenience function that calls glProgramUniform3uiv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5443,7 +5443,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 
-    Convenience function that calls glProgramUniform4f(program, location, v0, v1, v2, v3).
+    Convenience function that calls glProgramUniform4f(\a program, \a location, \a v0, \a v1, \a v2, \a v3).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5456,7 +5456,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4fv(GLuint program, GLint location, GLsizei count, const GLfloat * value)
 
-    Convenience function that calls glProgramUniform4fv(program, location, count, value).
+    Convenience function that calls glProgramUniform4fv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5469,7 +5469,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4i(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
 
-    Convenience function that calls glProgramUniform4i(program, location, v0, v1, v2, v3).
+    Convenience function that calls glProgramUniform4i(\a program, \a location, \a v0, \a v1, \a v2, \a v3).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5482,7 +5482,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4iv(GLuint program, GLint location, GLsizei count, const GLint * value)
 
-    Convenience function that calls glProgramUniform4iv(program, location, count, value).
+    Convenience function that calls glProgramUniform4iv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5495,7 +5495,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4ui(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
 
-    Convenience function that calls glProgramUniform4ui(program, location, v0, v1, v2, v3).
+    Convenience function that calls glProgramUniform4ui(\a program, \a location, \a v0, \a v1, \a v2, \a v3).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5508,7 +5508,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniform4uiv(GLuint program, GLint location, GLsizei count, const GLuint * value)
 
-    Convenience function that calls glProgramUniform4uiv(program, location, count, value).
+    Convenience function that calls glProgramUniform4uiv(\a program, \a location, \a count, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5521,7 +5521,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix2fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix2fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5534,7 +5534,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix2x3fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix2x3fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5547,7 +5547,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix2x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix2x4fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix2x4fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5560,7 +5560,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix3fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix3fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5573,7 +5573,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix3x2fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix3x2fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5586,7 +5586,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix3x4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix3x4fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix3x4fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5599,7 +5599,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix4fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix4fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5612,7 +5612,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4x2fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix4x2fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix4x2fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5625,7 +5625,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glProgramUniformMatrix4x3fv(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)
 
-    Convenience function that calls glProgramUniformMatrix4x3fv(program, location, count, transpose, value).
+    Convenience function that calls glProgramUniformMatrix4x3fv(\a program, \a location, \a count, \a transpose, \a value).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5638,7 +5638,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glSampleMaski(GLuint maskNumber, GLbitfield mask)
 
-    Convenience function that calls glSampleMaski(maskNumber, mask).
+    Convenience function that calls glSampleMaski(\a maskNumber, \a mask).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5651,7 +5651,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glTexStorage2DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
 
-    Convenience function that calls glTexStorage2DMultisample(target, samples, internalformat, width, height, fixedsamplelocations).
+    Convenience function that calls glTexStorage2DMultisample(\a target, \a samples, \a internalformat, \a width, \a height, \a fixedsamplelocations).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5664,7 +5664,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glUseProgramStages(GLuint pipeline, GLbitfield stages, GLuint program)
 
-    Convenience function that calls glUseProgramStages(pipeline, stages, program).
+    Convenience function that calls glUseProgramStages(\a pipeline, \a stages, \a program).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5677,7 +5677,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glValidateProgramPipeline(GLuint pipeline)
 
-    Convenience function that calls glValidateProgramPipeline(pipeline).
+    Convenience function that calls glValidateProgramPipeline(\a pipeline).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5690,7 +5690,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glVertexAttribBinding(GLuint attribindex, GLuint bindingindex)
 
-    Convenience function that calls glVertexAttribBinding(attribindex, bindingindex).
+    Convenience function that calls glVertexAttribBinding(\a attribindex, \a bindingindex).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5703,7 +5703,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glVertexAttribFormat(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset)
 
-    Convenience function that calls glVertexAttribFormat(attribindex, size, type, normalized, relativeoffset).
+    Convenience function that calls glVertexAttribFormat(\a attribindex, \a size, \a type, \a normalized, \a relativeoffset).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5716,7 +5716,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)
 
-    Convenience function that calls glVertexAttribIFormat(attribindex, size, type, relativeoffset).
+    Convenience function that calls glVertexAttribIFormat(\a attribindex, \a size, \a type, \a relativeoffset).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -5729,7 +5729,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 /*!
     \fn void QOpenGLExtraFunctions::glVertexBindingDivisor(GLuint bindingindex, GLuint divisor)
 
-    Convenience function that calls glVertexBindingDivisor(bindingindex, divisor).
+    Convenience function that calls glVertexBindingDivisor(\a bindingindex, \a divisor).
 
     This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
     with plain OpenGL, the function is only usable when the given profile and version contains the
@@ -7398,10 +7398,25 @@ static void QOPENGLF_APIENTRY qopenglfResolveVertexBindingDivisor(GLuint binding
         RESOLVE_FUNC_VOID(0, VertexBindingDivisor)(bindingindex, divisor);
 }
 
+/*!
+    Constructs a default function resolver. The resolver cannot be used until
+    \l {QOpenGLFunctions::}{initializeOpenGLFunctions()} is called to specify
+    the context.
+*/
 QOpenGLExtraFunctions::QOpenGLExtraFunctions()
 {
 }
 
+/*!
+    Constructs a function resolver for context. If \a context is null, then
+    the resolver will be created for the current QOpenGLContext.
+
+    The context or another context in the group must be current.
+
+    An object constructed in this way can only be used with context and other
+    contexts that share with it. Use \l {QOpenGLFunctions::}
+    {initializeOpenGLFunctions()} to change the object's context association.
+*/
 QOpenGLExtraFunctions::QOpenGLExtraFunctions(QOpenGLContext *context)
     : QOpenGLFunctions(context)
 {
