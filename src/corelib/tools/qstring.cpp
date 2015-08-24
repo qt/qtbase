@@ -3616,9 +3616,14 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 }
 
 /*!
-  \overload count()
+    \overload count()
 
-  Returns the number of occurrences of character \a ch in the string.
+    Returns the number of occurrences of character \a ch in the string.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa contains(), indexOf()
 */
 
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
