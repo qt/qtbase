@@ -1807,7 +1807,7 @@ void QCoreApplicationPrivate::maybeQuit()
     Tells the application to exit with return code 0 (success).
     Equivalent to calling QCoreApplication::exit(0).
 
-    It's common to connect the QApplication::lastWindowClosed() signal
+    It's common to connect the QGuiApplication::lastWindowClosed() signal
     to quit(), and you also often connect e.g. QAbstractButton::clicked() or
     signals in QAction, QMenu, or QMenuBar to it.
 
@@ -1815,7 +1815,7 @@ void QCoreApplicationPrivate::maybeQuit()
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
 
-    \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
+    \sa exit(), aboutToQuit(), QGuiApplication::lastWindowClosed()
 */
 
 void QCoreApplication::quit()
