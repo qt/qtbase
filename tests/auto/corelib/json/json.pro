@@ -8,4 +8,3 @@ CONFIG += parallel_test
     else:RESOURCES += json.qrc
 
 SOURCES += tst_qtjson.cpp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

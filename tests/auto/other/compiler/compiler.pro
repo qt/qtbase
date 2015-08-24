@@ -6,4 +6,3 @@ QT = core testlib
 contains(QT_CONFIG, c++11): CONFIG += c++14 c++11
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

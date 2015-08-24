@@ -16,4 +16,3 @@ RESOURCES += icons.qrc \
 
 qtHaveModule(opengl): QT += opengl
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

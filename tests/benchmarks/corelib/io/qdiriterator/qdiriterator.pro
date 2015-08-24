@@ -13,4 +13,3 @@ wince* {
    DEPLOYMENT += corelibdir
 }
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

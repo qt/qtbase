@@ -9,4 +9,3 @@ contains(QT_CONFIG, dbus-linked) {
 } else {
     SOURCES += ../../../../src/dbus/qdbus_symbols.cpp
 }
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

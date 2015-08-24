@@ -46,4 +46,3 @@ renamed_target.extra = $$member(renamed_target.extra, 0, -2)
 QMAKE_POST_LINK = $$member(QMAKE_POST_LINK, 0, -2)
 
 INSTALLS += target renamed_target
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

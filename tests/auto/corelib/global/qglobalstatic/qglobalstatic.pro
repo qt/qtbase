@@ -10,4 +10,3 @@ CONFIG   += exceptions
 
 SOURCES += tst_qglobalstatic.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

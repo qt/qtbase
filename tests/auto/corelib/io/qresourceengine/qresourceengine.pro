@@ -16,7 +16,6 @@ TESTDATA += \
     parentdir.txt \
     testqrc/*
 GENERATED_TESTDATA = $${runtime_resource.target}
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 
 android:!android-no-sdk {
     RESOURCES += android_testdata.qrc

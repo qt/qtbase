@@ -16,5 +16,4 @@ win32 {
 
 TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 blackberry:LIBS += -lpps

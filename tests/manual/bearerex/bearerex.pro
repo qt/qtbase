@@ -19,4 +19,3 @@ SOURCES += bearerex.cpp \
            main.cpp \
            xqlistwidget.cpp \
     datatransferer.cpp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

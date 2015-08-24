@@ -10,4 +10,3 @@ win32 {
     TARGET = ../../release/tst_macplist
   }
 }
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

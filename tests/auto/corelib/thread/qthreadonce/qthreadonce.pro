@@ -10,4 +10,3 @@ SOURCES = tst_qthreadonce.cpp
 
 # Temporary:
 SOURCES += qthreadonce.cpp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

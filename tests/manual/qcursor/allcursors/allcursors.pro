@@ -14,4 +14,3 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

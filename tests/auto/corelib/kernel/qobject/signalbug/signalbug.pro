@@ -12,4 +12,3 @@ SOURCES += signalbug.cpp
 # This app is testdata for tst_qobject
 target.path = $$[QT_INSTALL_TESTS]/tst_qobject/$$TARGET
 INSTALLS += target
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

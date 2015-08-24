@@ -24,4 +24,3 @@ wince {
    DEPLOYMENT += addFiles imageFormatsPlugins
 }
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

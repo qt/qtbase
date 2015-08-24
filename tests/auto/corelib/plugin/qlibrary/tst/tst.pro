@@ -14,4 +14,3 @@ win32 {
 }
 
 TESTDATA += ../library_path/invalid.so
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

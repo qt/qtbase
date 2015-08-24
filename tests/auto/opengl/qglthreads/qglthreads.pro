@@ -10,6 +10,5 @@ x11 {
     LIBS += $$QMAKE_LIBS_X11
 }
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 
 win32:CONFIG+=insignificant_test # QTBUG-28264

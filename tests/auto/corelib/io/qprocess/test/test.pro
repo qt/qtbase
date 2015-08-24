@@ -19,4 +19,3 @@ TEST_HELPER_INSTALLS += \
     "../testProcessSpacesArgs/one space" \
     "../testProcessSpacesArgs/two space s" \
     "../test Space In Name/testSpaceInName"
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
