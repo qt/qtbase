@@ -489,8 +489,8 @@ quint16 qChecksum(const char *data, uint len)
 
     \overload
 
-    Compresses the first \a nbytes of \a data and returns the
-    compressed data in a new byte array.
+    Compresses the first \a nbytes of \a data at compression level
+    \a compressionLevel and returns the compressed data in a new byte array.
 */
 
 #ifndef QT_NO_COMPRESS
