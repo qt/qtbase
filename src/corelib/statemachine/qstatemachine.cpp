@@ -160,6 +160,8 @@ QT_BEGIN_NAMESPACE
     \since 5.4
 
     \brief the running state of this state machine
+
+    \sa start(), stop(), started(), stopped(), runningChanged()
 */
 
 #ifndef QT_NO_ANIMATION
@@ -2576,11 +2578,6 @@ void QStateMachine::removeState(QAbstractState *state)
     state->setParent(0);
 }
 
-/*!
-  Returns whether this state machine is running.
-
-  \sa start(), stop()
-*/
 bool QStateMachine::isRunning() const
 {
     Q_D(const QStateMachine);
@@ -2643,11 +2640,6 @@ void QStateMachine::stop()
     }
 }
 
-/*!
-    Convenience functions to start/stop this state machine.
-
-    \sa start(), stop(), started(), finished(), stopped()
-*/
 void QStateMachine::setRunning(bool running)
 {
     if (running)
