@@ -2649,14 +2649,14 @@ Additional options:
     -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  *  -eglfs ............. Compile EGLFS support.
 
+    -no-kms ............ Do not compile EGLFS KMS backend.
+ *  -kms ............... Compile EGLFS KMS backend.
+
     -no-directfb ....... Do not compile DirectFB support.
  *  -directfb .......... Compile DirectFB support.
 
     -no-linuxfb ........ Do not compile Linux Framebuffer support.
  *  -linuxfb ........... Compile Linux Framebuffer support.
-
-    -no-kms ............ Do not compile KMS support.
- *  -kms ............... Compile KMS support (Requires EGL).
 
  *  -no-mirclient....... Do not compile Mir client support.
     -mirclient.......... Compile Mir client support.
