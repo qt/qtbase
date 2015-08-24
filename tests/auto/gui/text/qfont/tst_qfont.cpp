@@ -504,7 +504,7 @@ void tst_QFont::isCopyOf()
 
 void tst_QFont::insertAndRemoveSubstitutions()
 {
-    QFont::removeSubstitution("BogusFontFamily");
+    QFont::removeSubstitutions("BogusFontFamily");
     // make sure it is empty before we start
     QVERIFY(QFont::substitutes("BogusFontFamily").isEmpty());
     QVERIFY(QFont::substitutes("bogusfontfamily").isEmpty());
@@ -521,7 +521,7 @@ void tst_QFont::insertAndRemoveSubstitutions()
     QCOMPARE(QFont::substitutes("BogusFontFamily").count(), 3);
     QCOMPARE(QFont::substitutes("bogusfontfamily").count(), 3);
 
-    QFont::removeSubstitution("BogusFontFamily");
+    QFont::removeSubstitutions("BogusFontFamily");
     // make sure it is empty again
     QVERIFY(QFont::substitutes("BogusFontFamily").isEmpty());
     QVERIFY(QFont::substitutes("bogusfontfamily").isEmpty());

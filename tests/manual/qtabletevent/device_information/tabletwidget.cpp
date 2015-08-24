@@ -61,7 +61,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mType = event->type();
             mPos = event->pos();
             mGPos = event->globalPos();
-            mHiResGlobalPos = event->hiResGlobalPos();
+            mHiResGlobalPos = event->posF();
             mDev = event->device();
             mPointerType = event->pointerType();
             mUnique = event->uniqueId();

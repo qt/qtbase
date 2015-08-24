@@ -246,30 +246,31 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
             socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
 
         socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
-        QVERIFY2(socket->waitForConnected(10000), "Timeout connecting to " + url.encodedHost());
+        const QByteArray encodedHost = url.host(QUrl::FullyEncoded).toLatin1();
+        QVERIFY2(socket->waitForConnected(10000), "Timeout connecting to " + encodedHost);
 
 #ifndef QT_NO_SSL
         if (isHttps) {
             static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1_0);
             static_cast<QSslSocket *>(socket.data())->startClientEncryption();
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
-            QVERIFY2(static_cast<QSslSocket *>(socket.data())->waitForEncrypted(10000), "Timeout starting TLS with " + url.encodedHost());
+            QVERIFY2(static_cast<QSslSocket *>(socket.data())->waitForEncrypted(10000), "Timeout starting TLS with " + encodedHost);
         }
 #endif // QT_NO_SSL
 
         socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
                       "Connection: close\r\n"
                       "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
-                      "Host: " + url.encodedHost() + "\r\n"
+                      "Host: " + encodedHost + "\r\n"
                       "\r\n");
         while (socket->bytesToWrite())
-            QVERIFY2(socket->waitForBytesWritten(10000), "Timeout writing to " + url.encodedHost());
+            QVERIFY2(socket->waitForBytesWritten(10000), "Timeout writing to " + encodedHost);
 
         while (socket->state() == QAbstractSocket::ConnectedState && !timeout.hasExpired(10000)) {
             socket->waitForReadyRead(10000);
             byteCounter += socket->readAll().size(); // discard
         }
-        QVERIFY2(!timeout.hasExpired(10000), "Timeout reading from " + url.encodedHost());
+        QVERIFY2(!timeout.hasExpired(10000), "Timeout reading from " + encodedHost);
 
         totalBytes += byteCounter;
         if (intermediateDebug) {
@@ -318,16 +319,17 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
             socket->connectToHost(url.host(), url.port(80));
         }
 
+        const QByteArray encodedHost = url.host(QUrl::FullyEncoded).toLatin1();
         socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
                       "Connection: close\r\n"
                       "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
-                      "Host: " + url.encodedHost() + "\r\n"
+                      "Host: " + encodedHost + "\r\n"
                       "\r\n");
         connect(socket.data(), SIGNAL(readyRead()), SLOT(slotReadAll()));
 
         QTestEventLoop::instance().connect(socket.data(), SIGNAL(disconnected()), SLOT(exitLoop()));
         QTestEventLoop::instance().enterLoop(30);
-        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout with " + url.encodedHost() + "; "
+        QVERIFY2(!QTestEventLoop::instance().timeout(), "Timeout with " + encodedHost + "; "
                  + QByteArray::number(socket->bytesToWrite()) + " bytes to write");
 
         totalBytes += byteCounter;
@@ -397,10 +399,11 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
                 socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
             }
 
+            const QByteArray encodedHost = url.host(QUrl::FullyEncoded).toLatin1();
             socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
                           "Connection: close\r\n"
                           "User-Agent: tst_QTcpSocket_stresstest/1.0\r\n"
-                          "Host: " + url.encodedHost() + "\r\n"
+                          "Host: " + encodedHost + "\r\n"
                           "\r\n");
             connect(socket, SIGNAL(readyRead()), SLOT(slotReadAll()));
             QTestEventLoop::instance().connect(socket, SIGNAL(disconnected()), SLOT(exitLoop()));

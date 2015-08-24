@@ -253,7 +253,7 @@ void tst_languageChange::retranslatability()
     switch (dialogType) {
     case InputDialog:
         stateMachine.start();
-        QInputDialog::getInteger(0, QLatin1String("title"), QLatin1String("label"));
+        QInputDialog::getInt(0, QLatin1String("title"), QLatin1String("label"));
         break;
 
     case ColorDialog:

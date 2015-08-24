@@ -2581,7 +2581,7 @@ void tst_QSortFilterProxyModel::hiddenColumns()
     public:
         MyStandardItemModel() : QStandardItemModel(0,5) {}
         void reset()
-        { QStandardItemModel::reset(); }
+        { beginResetModel(); endResetModel(); }
         friend class tst_QSortFilterProxyModel;
     } model;
     QSortFilterProxyModel proxy;
@@ -3377,7 +3377,10 @@ void tst_QSortFilterProxyModel::resetInvalidate()
         {
             switch (test) {
             case 0: break;
-            case 1: reset(); break;
+            case 1:
+                beginResetModel();
+                endResetModel();
+                break;
             case 2: invalidate(); break;
             case 3: invalidateFilter(); break;
             }

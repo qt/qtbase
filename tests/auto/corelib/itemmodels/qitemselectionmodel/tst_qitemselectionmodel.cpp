@@ -1512,7 +1512,7 @@ class MyStandardItemModel: public QStandardItemModel
     Q_OBJECT
 public:
     inline MyStandardItemModel(int i1, int i2): QStandardItemModel(i1, i2) {}
-    inline void reset() { QStandardItemModel::reset(); }
+    inline void reset() { beginResetModel(); endResetModel(); }
 };
 
 void tst_QItemSelectionModel::resetModel()

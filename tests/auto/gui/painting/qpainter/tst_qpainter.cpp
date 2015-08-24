@@ -4487,7 +4487,7 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
     TestWidget *widget = new TestWidget();
     proxy->setWidget(widget);
     scene->addItem(proxy);
-    proxy->rotate(45);
+    proxy->setTransform(QTransform().rotate(45));
     w->resize(scene->sceneRect().size().toSize());
 
     w->show();

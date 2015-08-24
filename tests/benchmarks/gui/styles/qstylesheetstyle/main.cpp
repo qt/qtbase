@@ -173,7 +173,7 @@ void tst_qstylesheetstyle::grid()
     w->setStyleSheet("/* */");
     if(show) {
         w->show();
-        QTest::qWaitForWindowShown(w);
+        QTest::qWaitForWindowExposed(w);
         QApplication::flush();
         QApplication::processEvents();
         QTest::qWait(30);

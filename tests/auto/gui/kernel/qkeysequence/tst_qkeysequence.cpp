@@ -250,7 +250,7 @@ void tst_QKeySequence::operatorQString()
 
     seq = QKeySequence( modifiers | keycode );
 
-    QCOMPARE( (QString)seq, keystring );
+    QCOMPARE( seq.toString(QKeySequence::NativeText), keystring );
 }
 
 // this verifies that the constructors can handle the same strings in and out
@@ -260,7 +260,7 @@ void tst_QKeySequence::symetricConstructors()
     QFETCH( int, keycode );
 
     QKeySequence seq1( modifiers | keycode );
-    QKeySequence seq2( (QString)seq1 );
+    QKeySequence seq2( seq1.toString(QKeySequence::NativeText) );
 
     QVERIFY( seq1 == seq2 );
 }

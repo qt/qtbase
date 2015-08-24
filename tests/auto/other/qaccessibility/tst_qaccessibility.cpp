@@ -1763,7 +1763,7 @@ void tst_QAccessibility::textEditTest()
         }
 
         edit.show();
-        QTest::qWaitForWindowShown(&edit);
+        QTest::qWaitForWindowExposed(&edit);
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&edit);
         QCOMPARE(iface->text(QAccessible::Value), edit.toPlainText());
         QVERIFY(iface->state().focusable);
@@ -2175,7 +2175,7 @@ void tst_QAccessibility::lineEditTest()
         QLineEdit le(QStringLiteral("My characters have geometries."), toplevel);
         // characterRect()
         le.show();
-        QTest::qWaitForWindowShown(&le);
+        QTest::qWaitForWindowExposed(&le);
         QAccessibleInterface *iface(QAccessible::queryAccessibleInterface(&le));
         QAccessibleTextInterface* textIface = iface->textInterface();
         QVERIFY(textIface);
@@ -3576,7 +3576,7 @@ void tst_QAccessibility::comboBoxTest()
     // Fully decorated windows have a minimum width of 160 on Windows.
     combo.setMinimumWidth(200);
     combo.show();
-    QVERIFY(QTest::qWaitForWindowShown(&combo));
+    QVERIFY(QTest::qWaitForWindowExposed(&combo));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&combo);
     QCOMPARE(verifyHierarchy(iface), 0);
