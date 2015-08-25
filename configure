@@ -2690,7 +2690,7 @@ Additional options:
     -no-gstreamer ....... Do not support GStreamer.
  +  -gstreamer <version>  Enable GStreamer support
                           With no parameter, this will attempt to auto-detect GStreamer 0.10 and
-                          1.0. GStreamer 0.10 is used by default when available.
+                          1.0. GStreamer 1.0 is used by default when available.
                           Use 0.10 or 1.0 for <version> to override auto-detection.
 
  *  -no-system-proxies .. Do not use system network proxies by default.
@@ -6043,12 +6043,12 @@ fi
 
 # detect GStreamer support
 if [ "$CFG_GSTREAMER" = "auto" ] || [ "$CFG_GSTREAMER" = "yes" ]; then
-    if compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
-        CFG_GSTREAMER=yes
-        CFG_GSTREAMER_VERSION=0.10
-    elif compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
+    if compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
         CFG_GSTREAMER=yes
         CFG_GSTREAMER_VERSION=1.0
+    elif compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=0.10
     else
         if [ "$CFG_GSTREAMER" = "yes" ]; then
             echo "GStreamer support cannot be enabled due to functionality tests!"
