@@ -807,6 +807,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             QVector<Parameter>::ConstIterator p = func->parameters().constBegin();
             while (p != func->parameters().constEnd()) {
                 if ((*p).name().isEmpty() && (*p).dataType() != QLatin1String("...")
+                        && (*p).dataType() != QLatin1String("void")
                         && func->name() != QLatin1String("operator++")
                         && func->name() != QLatin1String("operator--")) {
                     node->doc().location().warning(tr("Missing parameter name"));
