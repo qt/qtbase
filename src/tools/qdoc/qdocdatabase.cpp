@@ -276,7 +276,7 @@ const QVector<Tree*>& QDocForest::indexSearchOrder()
 NamespaceNode* QDocForest::newIndexTree(const QString& module)
 {
     primaryTree_ = new Tree(module, qdb_);
-    forest_.insert(module, primaryTree_);
+    forest_.insert(module.toLower(), primaryTree_);
     return primaryTree_->root();
 }
 
