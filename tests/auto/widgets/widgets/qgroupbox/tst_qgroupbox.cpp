@@ -73,6 +73,7 @@ private slots:
     void childrenAreDisabled();
     void propagateFocus();
     void task_QTBUG_19170_ignoreMouseReleseEvent();
+    void task_QTBUG_15519_propagateMouseEvents();
 
 private:
     bool checked;
@@ -80,6 +81,7 @@ private:
     qint64 clickTimeStamp;
     qint64 toggleTimeStamp;
 
+    static void sendMouseMoveEvent(QWidget *widget, const QPoint &localPos);
 };
 
 tst_QGroupBox::tst_QGroupBox()
@@ -500,6 +502,115 @@ void tst_QGroupBox::task_QTBUG_19170_ignoreMouseReleseEvent()
     box.setChecked(false);
     QTest::mouseRelease(&box, Qt::LeftButton, 0, rect.center());
     QCOMPARE(box.isChecked(), false);
+}
+
+class MouseEventTestWidget : public QWidget
+{
+public:
+    bool mousePressed;
+    bool mouseReleased;
+    bool mouseMoved;
+
+    void reset()
+    {
+        mousePressed = false;
+        mouseReleased = false;
+        mouseMoved = false;
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent*)
+    {
+        mousePressed = true;
+    }
+
+    void mouseReleaseEvent(QMouseEvent*)
+    {
+        mouseReleased = true;
+    }
+
+    void mouseMoveEvent(QMouseEvent*)
+    {
+        mouseMoved = true;
+    }
+};
+
+void tst_QGroupBox::task_QTBUG_15519_propagateMouseEvents()
+{
+    MouseEventTestWidget parent;
+    QGroupBox box(&parent);
+    parent.setMouseTracking(true);
+    box.setMouseTracking(true);
+    box.resize(100, 100);
+    box.setTitle("This is a test for QTBUG-15519");
+    box.show();
+
+    QStyleOptionGroupBox option;
+    option.initFrom(&box);
+    option.subControls = QStyle::SubControls(QStyle::SC_All);
+    QRect checkBoxRect = box.style()->subControlRect(QStyle::CC_GroupBox, &option,
+                                                     QStyle::SC_GroupBoxCheckBox, &box);
+
+    // Without a checkbox, all mouse events should propagate
+
+    parent.reset();
+    QTest::mousePress(&box, Qt::LeftButton, 0, checkBoxRect.center());
+    QCOMPARE(parent.mousePressed, true);
+
+    parent.reset();
+    QTest::mousePress(&box, Qt::LeftButton, 0, box.rect().center());
+    QCOMPARE(parent.mousePressed, true);
+
+    parent.reset();
+    QTest::mouseRelease(&box, Qt::LeftButton, 0, checkBoxRect.center());
+    QCOMPARE(parent.mouseReleased, true);
+
+    parent.reset();
+    QTest::mouseRelease(&box, Qt::LeftButton, 0, box.rect().center());
+    QCOMPARE(parent.mouseReleased, true);
+
+    parent.reset();
+    sendMouseMoveEvent(&box, checkBoxRect.center());
+    QCOMPARE(parent.mouseMoved, true);
+
+    parent.reset();
+    sendMouseMoveEvent(&box, box.rect().center());
+    QCOMPARE(parent.mouseMoved, true);
+
+    // With a checkbox, presses and releases to the checkbox should not propagate
+
+    box.setCheckable(true);
+
+    parent.reset();
+    QTest::mousePress(&box, Qt::LeftButton, 0, checkBoxRect.center());
+    QCOMPARE(parent.mousePressed, false);
+
+    parent.reset();
+    QTest::mousePress(&box, Qt::LeftButton, 0, box.rect().center());
+    QCOMPARE(parent.mousePressed, true);
+
+    parent.reset();
+    QTest::mouseRelease(&box, Qt::LeftButton, 0, checkBoxRect.center());
+    QCOMPARE(parent.mouseReleased, false);
+
+    parent.reset();
+    QTest::mouseRelease(&box, Qt::LeftButton, 0, box.rect().center());
+    QCOMPARE(parent.mouseReleased, true);
+
+    parent.reset();
+    sendMouseMoveEvent(&box, checkBoxRect.center());
+    QCOMPARE(parent.mouseMoved, true);
+
+    parent.reset();
+    sendMouseMoveEvent(&box, box.rect().center());
+    QCOMPARE(parent.mouseMoved, true);
+}
+
+void tst_QGroupBox::sendMouseMoveEvent(QWidget *widget, const QPoint &localPos)
+{
+    // Send a MouseMove event without actually moving the pointer
+    QMouseEvent event(QEvent::MouseMove, localPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(widget, &event);
 }
 
 QTEST_MAIN(tst_QGroupBox)

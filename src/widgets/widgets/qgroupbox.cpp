@@ -707,6 +707,8 @@ void QGroupBox::mousePressEvent(QMouseEvent *event)
     if (d->checkable && (d->pressedControl & (QStyle::SC_GroupBoxCheckBox | QStyle::SC_GroupBoxLabel))) {
         d->overCheckBox = true;
         update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
+    } else {
+        event->ignore();
     }
 }
 
@@ -723,6 +725,8 @@ void QGroupBox::mouseMoveEvent(QMouseEvent *event)
     if (d->checkable && (d->pressedControl == QStyle::SC_GroupBoxCheckBox || d->pressedControl == QStyle::SC_GroupBoxLabel)
         && (d->overCheckBox != oldOverCheckBox))
         update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
+
+    event->ignore();
 }
 
 /*! \reimp */
