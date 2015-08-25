@@ -306,15 +306,12 @@ const Node* QDocForest::findNodeForTarget(QStringList& targetPath,
 {
     int flags = SearchBaseClasses | SearchEnumValues;
 
-    QString entity = targetPath.at(0);
-    targetPath.removeFirst();
+    QString entity = targetPath.takeFirst();
     QStringList entityPath = entity.split("::");
 
     QString target;
-    if (!targetPath.isEmpty()) {
-        target = targetPath.at(0);
-        targetPath.removeFirst();
-    }
+    if (!targetPath.isEmpty())
+        target = targetPath.takeFirst();
 
     foreach (Tree* t, searchOrder()) {
         const Node* n = t->findNodeForTarget(entityPath, target, relative, flags, genus, ref);
@@ -1703,37 +1700,28 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
             function = first.left(position);
             node = domain->findFunctionNode(function, params, 0, genus);
         }
-        else {
+        if (!node) {
             int flags = SearchBaseClasses | SearchEnumValues;
             QStringList nodePath = first.split("::");
             QString target;
             targetPath.removeFirst();
-            if (!targetPath.isEmpty()) {
-                target = targetPath.at(0);
-                targetPath.removeFirst();
-            }
+            if (!targetPath.isEmpty())
+                target = targetPath.takeFirst();
             if (relative && relative->tree()->physicalModuleName() != domain->physicalModuleName())
                 relative = 0;
-            node = domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
-            return node;
+            return domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
         }
     }
     else {
-        if (first.endsWith(".html")) {
+        if (first.endsWith(".html"))
             node = findNodeByNameAndType(QStringList(first), Node::Document);
-            // the path may also refer to an example file with .html extension
-            if (!node && first.contains("/"))
-                return findNodeForTarget(targetPath, relative, genus, ref);
-        }
         else if (first.endsWith(QChar(')'))) {
             node = findFunctionNode(first, relative, genus);
             if (Generator::debugging())
                 qDebug() << "  node:" << node;
         }
-        else {
-            node = findNodeForTarget(targetPath, relative, genus, ref);
-            return node;
-        }
+        if (!node)
+            return findNodeForTarget(targetPath, relative, genus, ref);
     }
 
     if (node && ref.isEmpty()) {
