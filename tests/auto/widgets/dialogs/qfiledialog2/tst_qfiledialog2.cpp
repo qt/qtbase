@@ -57,6 +57,8 @@
 #include "../../../../../src/widgets/dialogs/qfilesystemmodel_p.h"
 #include "../../../../../src/widgets/dialogs/qfiledialog_p.h"
 
+#include <qpa/qplatformdialoghelper.h>
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include "../../../network-settings.h"
 #endif
@@ -134,6 +136,8 @@ private slots:
     void QTBUG6558_showDirsOnly();
     void QTBUG4842_selectFilterWithHideNameFilterDetails();
     void dontShowCompleterOnRoot();
+    void nameFilterParsing_data();
+    void nameFilterParsing();
 
 private:
     void cleanupSettingsFile();
@@ -1351,6 +1355,25 @@ void tst_QFileDialog2::dontShowCompleterOnRoot()
     QApplication::processEvents();
 
     QTRY_VERIFY(lineEdit->completer()->popup()->isHidden());
+}
+
+void tst_QFileDialog2::nameFilterParsing_data()
+{
+    QTest::addColumn<QString>("filterString");
+    QTest::addColumn<QStringList>("filters");
+
+    // QTBUG-47923: Do not trip over "*,v".
+    QTest::newRow("text") << "plain text document (*.txt *.asc *,v *.doc)"
+        << (QStringList() << "*.txt" << "*.asc" << "*,v" << "*.doc");
+    QTest::newRow("html") << "HTML document (*.html *.htm)"
+       << (QStringList() << "*.html" <<  "*.htm");
+}
+
+void tst_QFileDialog2::nameFilterParsing()
+{
+    QFETCH(QString, filterString);
+    QFETCH(QStringList, filters);
+    QCOMPARE(QPlatformFileDialogHelper::cleanFilterList(filterString), filters);
 }
 
 QTEST_MAIN(tst_QFileDialog2)

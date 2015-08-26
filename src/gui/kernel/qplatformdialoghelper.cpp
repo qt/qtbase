@@ -651,12 +651,13 @@ void QPlatformFileDialogHelper::setOptions(const QSharedPointer<QFileDialogOptio
 }
 
 const char *QPlatformFileDialogHelper::filterRegExp =
-"^(.*)\\(([a-zA-Z0-9_.*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
+"^(.*)\\(([a-zA-Z0-9_.,*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
 
 // Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
 QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
 {
     QRegExp regexp(QString::fromLatin1(filterRegExp));
+    Q_ASSERT(regexp.isValid());
     QString f = filter;
     int i = regexp.indexIn(f);
     if (i >= 0)
