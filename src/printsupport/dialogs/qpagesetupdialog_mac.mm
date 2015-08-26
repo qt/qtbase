@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "qpagesetupdialog.h"
 

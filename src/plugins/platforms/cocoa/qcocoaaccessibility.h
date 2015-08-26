@@ -33,7 +33,7 @@
 #ifndef QCOCOAACCESIBILITY_H
 #define QCOCOAACCESIBILITY_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include <QtGui>
 #include <qpa/qplatformaccessibility.h>

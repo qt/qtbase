@@ -39,7 +39,7 @@
 #include <QtPlatformSupport/private/cglconvenience_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

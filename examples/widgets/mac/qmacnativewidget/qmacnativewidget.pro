@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 OBJECTIVE_SOURCES += main.mm
-LIBS += -framework Cocoa
+LIBS += -framework AppKit
 
 QT += widgets
 #QT += widgets-private gui-private core-private

@@ -35,8 +35,8 @@
 
 #include <sys/param.h>
 
-#if defined(Q_OS_MACX)
-#import <Cocoa/Cocoa.h>
+#if defined(Q_OS_OSX)
+#import <AppKit/AppKit.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #elif defined(Q_OS_IOS)
 #import <UIKit/UIFont.h>

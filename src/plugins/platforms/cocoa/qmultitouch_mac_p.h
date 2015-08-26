@@ -47,7 +47,7 @@
 
 #include <QtCore/qglobal.h>
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qhash.h>

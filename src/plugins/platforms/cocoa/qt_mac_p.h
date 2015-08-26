@@ -48,7 +48,7 @@
 #include "qmacdefines_mac.h"
 
 #ifdef __OBJC__
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include <objc/runtime.h>
 #endif
 

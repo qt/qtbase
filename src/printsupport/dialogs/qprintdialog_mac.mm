@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "qprintdialog.h"
 #include "qabstractprintdialog_p.h"

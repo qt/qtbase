@@ -60,7 +60,7 @@
 
 #include <QtPlatformHeaders/qcocoawindowfunctions.h>
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

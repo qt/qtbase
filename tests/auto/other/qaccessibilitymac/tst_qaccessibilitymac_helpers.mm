@@ -42,7 +42,7 @@
 #include <QtTest>
 #include <unistd.h>
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 QT_USE_NAMESPACE

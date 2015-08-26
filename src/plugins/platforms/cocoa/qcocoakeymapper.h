@@ -36,7 +36,7 @@
 
 #include <qcocoahelpers.h>
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
 #include <QtCore/QList>

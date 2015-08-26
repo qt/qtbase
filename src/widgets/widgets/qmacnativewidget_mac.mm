@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 #include "qmacnativewidget_mac.h"
 
 #include <QtCore/qdebug.h>

@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include <QtWidgets>
 #include <QMacCocoaViewContainer>
 

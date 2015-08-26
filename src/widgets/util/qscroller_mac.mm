@@ -35,7 +35,7 @@
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include "qscroller_p.h"
 

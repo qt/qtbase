@@ -40,7 +40,7 @@
 #include <QtGui/QWindow>
 
 #undef slots
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

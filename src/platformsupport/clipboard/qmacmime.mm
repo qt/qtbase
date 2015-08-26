@@ -32,10 +32,13 @@
 ****************************************************************************/
 
 #include <QtCore/qsystemdetection.h>
+
+#if defined(Q_OS_OSX)
+#import <AppKit/AppKit.h>
+#endif
+
 #if defined(Q_OS_IOS)
 #import <UIKit/UIKit.h>
-#elif defined(Q_OS_OSX)
-#import <Cocoa/Cocoa.h>
 #endif
 
 #include "qmacmime_p.h"

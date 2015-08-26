@@ -37,8 +37,7 @@
 
 #include "qt_mac_p.h"
 
-#import <Cocoa/Cocoa.h>
-#import <AppKit/NSAccessibility.h>
+#import <AppKit/AppKit.h>
 
 #import <qaccessible.h>
 

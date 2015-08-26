@@ -45,7 +45,7 @@
 // We mean it.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder

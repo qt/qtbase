@@ -36,7 +36,7 @@
 #include <QtGui>
 #include <QtWidgets/QtWidgets>
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     QGuiApplication *m_app;

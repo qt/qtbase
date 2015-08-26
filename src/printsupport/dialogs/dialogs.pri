@@ -8,10 +8,10 @@ HEADERS += \
         dialogs/qprintdialog.h \
         dialogs/qprintpreviewdialog.h
 
-mac:!ios {
+osx {
     OBJECTIVE_SOURCES += dialogs/qpagesetupdialog_mac.mm \
                          dialogs/qprintdialog_mac.mm
-    LIBS_PRIVATE += -framework Cocoa
+    LIBS_PRIVATE += -framework AppKit
 }
 
 win32 {

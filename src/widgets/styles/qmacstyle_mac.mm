@@ -36,7 +36,7 @@
   .../doc/src/qstyles.qdoc.
 */
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "qmacstyle_mac_p.h"
 #include "qmacstyle_mac_p_p.h"

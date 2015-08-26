@@ -34,7 +34,7 @@
 #ifndef QWINDOWSCURSOR_H
 #define QWINDOWSCURSOR_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include <QtCore>
 #include <qpa/qplatformcursor.h>

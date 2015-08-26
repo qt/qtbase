@@ -34,7 +34,7 @@
 #ifndef QNSWINDOWDELEGATE_H
 #define QNSWINDOWDELEGATE_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "qcocoawindow.h"
 

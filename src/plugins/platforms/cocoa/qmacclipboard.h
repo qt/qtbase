@@ -39,7 +39,7 @@
 
 #undef slots
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -79,7 +79,7 @@
 //
 
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include <qglobal.h>
 #include <private/qcore_mac_p.h>

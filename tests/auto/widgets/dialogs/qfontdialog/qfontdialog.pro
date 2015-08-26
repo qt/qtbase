@@ -8,9 +8,9 @@ SOURCES  += tst_qfontdialog.cpp
 
 RESOURCES += testfonts.qrc
 
-mac {
+osx {
 #    ### fixme
 #    OBJECTIVE_SOURCES += tst_qfontdialog_mac_helpers.mm
-#    LIBS += -framework Cocoa
+#    LIBS += -framework AppKit
 }
 

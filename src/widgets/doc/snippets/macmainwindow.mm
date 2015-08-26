@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 #include "macmainwindow.h"
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 #include <QtGui>
 
 

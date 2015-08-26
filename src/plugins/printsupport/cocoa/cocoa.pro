@@ -5,7 +5,7 @@ PLUGIN_CLASS_NAME = QCocoaPrinterSupportPlugin
 load(qt_plugin)
 
 QT += gui-private printsupport-private
-LIBS += -framework Cocoa
+LIBS += -framework AppKit
 
 SOURCES += main.cpp
 

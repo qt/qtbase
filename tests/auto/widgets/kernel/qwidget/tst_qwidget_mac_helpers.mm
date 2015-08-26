@@ -39,7 +39,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <private/qcore_mac_p.h>
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 QString nativeWindowTitle(QWidget *window, Qt::WindowState state)
 {

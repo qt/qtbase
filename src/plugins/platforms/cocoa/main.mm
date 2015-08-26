@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include <qpa/qplatformintegrationplugin.h>
 #include <qpa/qplatformthemeplugin.h>

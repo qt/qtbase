@@ -33,7 +33,7 @@ testcocoon {
     load(testcocoon)
 }
 
-mac:!ios: LIBS_PRIVATE += -framework Cocoa
+osx: LIBS_PRIVATE += -framework AppKit
 
 CONFIG += simd optimize_full
 

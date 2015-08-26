@@ -92,7 +92,7 @@ typedef signed long OSStatus;
 #      define old_slots slots
 #      undef slots
 #    endif
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #    ifdef old_slots
 #      undef slots
 #      define slots

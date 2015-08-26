@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include "qcocoatheme.h"
 #include "messages.h"

@@ -80,7 +80,7 @@
 #include <qdebug.h>
 
 #undef slots
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
 QT_BEGIN_NAMESPACE

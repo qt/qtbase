@@ -34,7 +34,7 @@
 #ifndef QPLATFORMINTEGRATION_COCOA_H
 #define QPLATFORMINTEGRATION_COCOA_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include "qcocoacursor.h"
 #include "qcocoawindow.h"

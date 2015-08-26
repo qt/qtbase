@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 #include "qmenu.h"
 #include "qmenubar.h"

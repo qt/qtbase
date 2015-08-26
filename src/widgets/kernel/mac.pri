@@ -1,4 +1,4 @@
-!x11:mac:!ios {
-   LIBS_PRIVATE += -framework Carbon -framework Cocoa -lz
+!x11:osx {
+   LIBS_PRIVATE += -framework Carbon -framework AppKit -lz
    *-mwerks:INCLUDEPATH += compat
 }

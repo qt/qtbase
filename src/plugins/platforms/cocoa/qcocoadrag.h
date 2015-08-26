@@ -34,7 +34,7 @@
 #ifndef QCOCOADRAG_H
 #define QCOCOADRAG_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include <QtGui>
 #include <qpa/qplatformdrag.h>
 #include <private/qsimpledrag_p.h>

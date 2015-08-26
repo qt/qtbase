@@ -34,7 +34,7 @@
 #ifndef QCOCOAWINDOW_H
 #define QCOCOAWINDOW_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include <qpa/qplatformwindow.h>
 #include <QRect>

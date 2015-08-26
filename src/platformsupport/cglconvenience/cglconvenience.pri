@@ -1,4 +1,4 @@
-mac:!ios {
+osx {
     INCLUDEPATH += $$PWD
 
     HEADERS += \
@@ -7,5 +7,5 @@ mac:!ios {
     OBJECTIVE_SOURCES += \
         $$PWD/cglconvenience.mm
 
-    LIBS_PRIVATE += -framework Cocoa -framework OpenGL
+    LIBS_PRIVATE += -framework AppKit -framework OpenGL
 }

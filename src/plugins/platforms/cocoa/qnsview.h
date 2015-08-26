@@ -34,7 +34,7 @@
 #ifndef QNSVIEW_H
 #define QNSVIEW_H
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 
 #include <QtCore/QPointer>
 #include <QtGui/QImage>
