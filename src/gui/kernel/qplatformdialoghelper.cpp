@@ -119,6 +119,8 @@ static const int buttonRoleLayouts[2][5][14] =
 
 QPlatformDialogHelper::QPlatformDialogHelper()
 {
+    qRegisterMetaType<StandardButton>();
+    qRegisterMetaType<ButtonRole>();
 }
 
 QPlatformDialogHelper::~QPlatformDialogHelper()
