@@ -38,7 +38,9 @@
 #include "qwinrttheme.h"
 
 #include <QtCore/qfunctions_winrt.h>
+#include <private/qeventdispatcher_winrt_p.h>
 
+#include <functional>
 #include <windows.ui.popups.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
@@ -168,16 +170,20 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
         }
     }
 
-    ComPtr<IAsyncOperation<IUICommand *>> op;
-    hr = dialog->ShowAsync(&op);
-    RETURN_FALSE_IF_FAILED("Failed to show dialog");
-    hr = op->put_Completed(Callback<DialogCompletedHandler>(this, &QWinRTMessageDialogHelper::onCompleted).Get());
-    RETURN_FALSE_IF_FAILED("Failed to set dialog callback");
+    hr = QEventDispatcherWinRT::runOnXamlThread([this, d, dialog]() {
+        HRESULT hr;
+        ComPtr<IAsyncOperation<IUICommand *>> op;
+        hr = dialog->ShowAsync(&op);
+        RETURN_HR_IF_FAILED("Failed to show dialog");
+        hr = op->put_Completed(Callback<DialogCompletedHandler>(this, &QWinRTMessageDialogHelper::onCompleted).Get());
+        RETURN_HR_IF_FAILED("Failed to set dialog callback");
+        d->shown = true;
+        hr = op.As(&d->info);
+        RETURN_HR_IF_FAILED("Failed to acquire AsyncInfo for MessageDialog");
+        return hr;
+    });
 
-    d->shown = true;
-    hr = op.As(&d->info);
-    RETURN_FALSE_IF_FAILED("Failed to acquire AsyncInfo for MessageDialog");
-
+    RETURN_FALSE_IF_FAILED("Failed to show dialog")
     return true;
 }
 
