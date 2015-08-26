@@ -1048,6 +1048,7 @@ HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *
     if (d->orientation != newOrientation) {
         d->orientation = newOrientation;
         QWindowSystemInterface::handleScreenOrientationChange(screen(), d->orientation);
+        handleExpose(); // Clean broken frames caused by race between Qt and ANGLE
     }
     return S_OK;
 }
