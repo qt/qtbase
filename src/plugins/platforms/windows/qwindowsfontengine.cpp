@@ -181,9 +181,8 @@ void QWindowsFontEngine::getCMap()
     bool symb = false;
     if (ttf) {
         cmapTable = getSfntTable(qbswap<quint32>(MAKE_TAG('c', 'm', 'a', 'p')));
-        int size = 0;
         cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>(cmapTable.constData()),
-                       cmapTable.size(), &symb, &size);
+                       cmapTable.size(), &symb, &cmapSize);
     }
     if (!cmap) {
         ttf = false;
@@ -218,16 +217,16 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
             QStringIterator it(str, str + numChars);
             while (it.hasNext()) {
                 const uint uc = it.next();
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
                 if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
                 ++glyph_pos;
             }
         } else if (ttf) {
             QStringIterator it(str, str + numChars);
             while (it.hasNext()) {
                 const uint uc = it.next();
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
                 ++glyph_pos;
             }
         } else {
@@ -275,6 +274,7 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     hasOutline(0),
     lw(0),
     cmap(0),
+    cmapSize(0),
     lbearing(SHRT_MIN),
     rbearing(SHRT_MIN),
     x_height(-1),
@@ -346,11 +346,11 @@ glyph_t QWindowsFontEngine::glyphIndex(uint ucs4) const
 
 #if !defined(Q_OS_WINCE)
     if (symbol) {
-        glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+        glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
         if (glyph == 0 && ucs4 < 0x100)
-            glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
+            glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4 + 0xf000);
     } else if (ttf) {
-        glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+        glyph = getTrueTypeGlyphIndex(cmap, cmapSize, ucs4);
 #else
     if (tm.tmFirstChar > 60000) {
         glyph = ucs4;

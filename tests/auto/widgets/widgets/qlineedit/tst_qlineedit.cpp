@@ -306,6 +306,7 @@ private slots:
     void clearButton();
     void clearButtonVisibleAfterSettingText_QTBUG_45518();
     void sideWidgets();
+    void sideWidgetsActionEvents();
 
     void shouldShowPlaceholderText_data();
     void shouldShowPlaceholderText();
@@ -4318,6 +4319,13 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
 #endif // QT_BUILD_INTERNAL
 }
 
+static inline QIcon sideWidgetTestIcon()
+{
+    QImage image(QSize(20, 20), QImage::Format_ARGB32);
+    image.fill(Qt::yellow);
+    return QIcon(QPixmap::fromImage(image));
+}
+
 void tst_QLineEdit::sideWidgets()
 {
     QWidget testWidget;
@@ -4325,9 +4333,7 @@ void tst_QLineEdit::sideWidgets()
     QLineEdit *lineEdit = new QLineEdit(&testWidget);
     l->addWidget(lineEdit);
     l->addSpacerItem(new QSpacerItem(0, 50, QSizePolicy::Ignored, QSizePolicy::Fixed));
-    QImage image(QSize(20, 20), QImage::Format_ARGB32);
-    image.fill(Qt::yellow);
-    QAction *iconAction = new QAction(QIcon(QPixmap::fromImage(image)), QString(), lineEdit);
+    QAction *iconAction = new QAction(sideWidgetTestIcon(), QString(), lineEdit);
     QWidgetAction *label1Action = new QWidgetAction(lineEdit);
     label1Action->setDefaultWidget(new QLabel(QStringLiteral("l1")));
     QWidgetAction *label2Action = new QWidgetAction(lineEdit);
@@ -4352,6 +4358,38 @@ void tst_QLineEdit::sideWidgets()
     lineEdit->removeAction(label1Action);
     lineEdit->addAction(iconAction);
     lineEdit->addAction(iconAction);
+}
+
+void tst_QLineEdit::sideWidgetsActionEvents()
+{
+    // QTBUG-39660, verify whether action events are handled by the widget.
+    QWidget testWidget;
+    QVBoxLayout *l = new QVBoxLayout(&testWidget);
+    QLineEdit *lineEdit = new QLineEdit(&testWidget);
+    l->addWidget(lineEdit);
+    l->addSpacerItem(new QSpacerItem(0, 50, QSizePolicy::Ignored, QSizePolicy::Fixed));
+    QAction *iconAction = lineEdit->addAction(sideWidgetTestIcon(), QLineEdit::LeadingPosition);
+    testWidget.move(300, 300);
+    testWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
+
+    QWidget *toolButton = Q_NULLPTR;
+    foreach (QWidget *w, iconAction->associatedWidgets()) {
+        if (qobject_cast<QToolButton *>(w)) {
+            toolButton = w;
+            break;
+        }
+    }
+    QVERIFY(toolButton);
+
+    QVERIFY(toolButton->isVisible());
+    QVERIFY(toolButton->isEnabled());
+
+    iconAction->setEnabled(false);
+    QVERIFY(!toolButton->isEnabled());
+
+    iconAction->setVisible(false);
+    QVERIFY(!toolButton->isVisible());
 }
 
 Q_DECLARE_METATYPE(Qt::AlignmentFlag)

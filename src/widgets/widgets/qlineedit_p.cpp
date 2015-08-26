@@ -188,6 +188,9 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(update()));
 
+    QObject::connect(control, SIGNAL(selectionChanged()),
+            q, SLOT(updateMicroFocus()));
+
     QObject::connect(control, SIGNAL(displayTextChanged(QString)),
             q, SLOT(update()));
 
@@ -321,6 +324,24 @@ void QLineEditIconButton::paintEvent(QPaintEvent *)
     painter.drawPixmap(pixmapRect, iconPixmap);
 }
 
+void QLineEditIconButton::actionEvent(QActionEvent *e)
+{
+    switch (e->type()) {
+    case QEvent::ActionChanged: {
+        const QAction *action = e->action();
+        if (isVisible() != action->isVisible()) {
+            setVisible(action->isVisible());
+            if (QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget()))
+                static_cast<QLineEditPrivate *>(qt_widget_private(le))->positionSideWidgets();
+        }
+    }
+        break;
+    default:
+        break;
+    }
+    QToolButton::actionEvent(e);
+}
+
 void QLineEditIconButton::setOpacity(qreal value)
 {
     if (!qFuzzyCompare(m_opacity, value)) {
@@ -412,12 +433,14 @@ void QLineEditPrivate::positionSideWidgets()
         QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
         foreach (const SideWidgetEntry &e, leftSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            widgetGeometry.moveLeft(widgetGeometry.left() + delta);
+            if (e.widget->isVisible())
+                widgetGeometry.moveLeft(widgetGeometry.left() + delta);
         }
         widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
         foreach (const SideWidgetEntry &e, rightSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            widgetGeometry.moveLeft(widgetGeometry.left() - delta);
+            if (e.widget->isVisible())
+                widgetGeometry.moveLeft(widgetGeometry.left() - delta);
         }
     }
 }

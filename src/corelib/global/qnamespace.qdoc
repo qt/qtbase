@@ -2658,6 +2658,7 @@
     \value ItemIsTristate \e{This enum value is deprecated.} Use Qt::ItemIsAutoTristate
     instead.
     \value ItemNeverHasChildren The item never has child items.
+           This is used for optimization purposes only.
     \value ItemIsUserTristate The user can cycle through three separate states.
            This value has been added in Qt 5.5.
 

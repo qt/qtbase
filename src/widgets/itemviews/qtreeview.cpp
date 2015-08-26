@@ -433,6 +433,9 @@ void QTreeView::setRootIsDecorated(bool show)
   The height is obtained from the first item in the view.  It is updated
   when the data changes on that item.
 
+  \note If the editor size hint is bigger than the cell size hint, then the
+  size hint of the editor will be used.
+
   By default, this property is \c false.
 */
 bool QTreeView::uniformRowHeights() const

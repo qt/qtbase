@@ -386,9 +386,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
     result = find(e);
     if (result == QKeySequence::NoMatch && (e->modifiers() & Qt::KeypadModifier)) {
         // Try to find a match without keypad modifier
-        QKeyEvent event = *e;
-        event.setModifiers(e->modifiers() & ~Qt::KeypadModifier);
-        result = find(&event);
+        result = find(e, Qt::KeypadModifier);
     }
     if (result == QKeySequence::NoMatch && e->modifiers() & Qt::ShiftModifier) {
         // If Shift + Key_Backtab, also try Shift + Qt::Key_Tab
@@ -441,13 +439,13 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
     which can be access through matches().
     \sa matches
 */
-QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e)
+QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
     if (!d->sequences.count())
         return QKeySequence::NoMatch;
 
-    createNewSequences(e, d->newEntries);
+    createNewSequences(e, d->newEntries, ignoredModifiers);
 #if defined(DEBUG_QSHORTCUTMAP)
     qDebug() << "Possible shortcut key sequences:" << d->newEntries;
 #endif
@@ -549,7 +547,7 @@ void QShortcutMap::clearSequence(QVector<QKeySequence> &ksl)
     Alters \a seq to the new sequence state, based on the
     current sequence state, and the new key event \a e.
 */
-void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl)
+void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
     QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
@@ -579,7 +577,7 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl)
                 curKsl.setKey(0, 2);
                 curKsl.setKey(0, 3);
             }
-            curKsl.setKey(possibleKeys.at(pkNum), index);
+            curKsl.setKey(possibleKeys.at(pkNum) & ~ignoredModifiers, index);
         }
     }
 }

@@ -1478,7 +1478,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         else
                             warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.", plist.toLatin1().constData());
                     } else {
-                        plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
+                        plist = fileFixify(specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE"), FileFixifyBackwards);
                         QFile plist_in_file(plist);
                         if (plist_in_file.open(QIODevice::ReadOnly)) {
                             QTextStream plist_in(&plist_in_file);
@@ -1505,7 +1505,11 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                 QTextStream plist_out(&plist_out_file);
                                 plist_out << plist_in_text;
                                 t << "\t\t\t\t" << writeSettings("INFOPLIST_FILE", "Info.plist") << ";\n";
+                            } else {
+                                warn_msg(WarnLogic, "Could not write Info.plist: '%s'.", plist_out_file.fileName().toLatin1().constData());
                             }
+                        } else {
+                            warn_msg(WarnLogic, "Could not open Info.plist: '%s'.", plist.toLatin1().constData());
                         }
                     }
                 }

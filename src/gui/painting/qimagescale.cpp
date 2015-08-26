@@ -305,7 +305,10 @@ static void qt_qimageScaleAARGBA_up_xy(QImageScaleInfo *isi, unsigned int *dest,
             for (int x = 0; x < dw; x++) {
                 const unsigned int *pix = sptr + xpoints[x];
                 const int xap = xapoints[x];
-                *dptr = INTERPOLATE_PIXEL_256(pix[0], 256 - xap, pix[1], xap);
+                if (xap > 0)
+                    *dptr = INTERPOLATE_PIXEL_256(pix[0], 256 - xap, pix[1], xap);
+                else
+                    *dptr = pix[0];
                 dptr++;
             }
         }

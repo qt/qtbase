@@ -190,19 +190,24 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                     incDirs << vcInstallDir + QStringLiteral("include");
                     incDirs << vcInstallDir + QStringLiteral("atlmfc/include");
-                    // ### Investigate why VS uses 10056 first
-                    incDirs << kitDir + QStringLiteral("Include/10.0.10056.0/ucrt");
-                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/ucrt");
-                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/um");
-                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/shared");
-                    incDirs << kitDir + QStringLiteral("Include/10.0.10069.0/winrt");
+
+                    const QString crtVersion = qgetenv("UCRTVersion");
+                    if (crtVersion.isEmpty()) {
+                        fprintf(stderr, "Failed to access CRT version.\n");
+                        return false;
+                    }
+                    const QString crtInclude = kitDir + QStringLiteral("Include/") + crtVersion;
+                    const QString crtLib = kitDir + QStringLiteral("Lib/") + crtVersion;
+                    incDirs << crtInclude + QStringLiteral("/ucrt");
+                    incDirs << crtInclude + QStringLiteral("/um");
+                    incDirs << crtInclude + QStringLiteral("/shared");
+                    incDirs << crtInclude + QStringLiteral("/winrt");
 
                     libDirs << vcInstallDir + QStringLiteral("lib/store/") + compilerArch;
                     libDirs << vcInstallDir + QStringLiteral("atlmfc/lib") + compilerArch;
-                    // ### Investigate why VS uses 10056 first
-                    libDirs << kitDir + QStringLiteral("lib/10.0.10056.0/ucrt/") + arch;
-                    libDirs << kitDir + QStringLiteral("lib/10.0.10069.0/ucrt/") + arch;
-                    libDirs << kitDir + QStringLiteral("lib/10.0.10069.0/um/") + arch;
+
+                    libDirs << crtLib + QStringLiteral("/ucrt/") + arch;
+                    libDirs << crtLib + QStringLiteral("/um/") + arch;
                 } else if (isPhone) {
                     QString sdkDir = vcInstallDir;
                     if (!QDir(sdkDir).exists()) {

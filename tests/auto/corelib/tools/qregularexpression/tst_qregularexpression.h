@@ -72,6 +72,7 @@ private slots:
     void regularExpressionMatch();
     void JOptionUsage_data();
     void JOptionUsage();
+    void QStringAndQStringRefEquivalence();
 
 private:
     void provideRegularExpressions();

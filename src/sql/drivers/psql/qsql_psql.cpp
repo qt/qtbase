@@ -1332,6 +1332,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             if (r.isEmpty())
                 r = QSqlDriver::formatValue(field, trimStrings);
             break;
+        case QVariant::Uuid:
+            r = QLatin1Char('\'') + field.value().toString() + QLatin1Char('\'');
+            break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
             break;

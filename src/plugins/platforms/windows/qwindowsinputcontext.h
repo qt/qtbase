@@ -87,6 +87,7 @@ private:
     void doneContext();
     void startContextComposition();
     void endContextComposition();
+    void updateEnabled();
 
     const DWORD m_WM_MSIME_MOUSE;
     static HIMC m_defaultContext;
