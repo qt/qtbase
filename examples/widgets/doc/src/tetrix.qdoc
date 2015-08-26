@@ -108,7 +108,7 @@
 
     We connect \l{QAbstractButton::}{clicked()} signals from the \uicontrol{Start}
     and \uicontrol{Pause} buttons to the board, and from the \uicontrol{Quit} button to the
-    application's \l{QApplication::}{quit()} slot.
+    application's \l{QCoreApplication::quit()} slot.
 
     \snippet widgets/tetrix/tetrixwindow.cpp 4
     \snippet widgets/tetrix/tetrixwindow.cpp 5

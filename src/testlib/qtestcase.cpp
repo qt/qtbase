@@ -272,7 +272,7 @@ static void stackTrace()
 
    The QTRY_VERIFY2_WITH_TIMEOUT macro is similar to QTRY_VERIFY_WITH_TIMEOUT()
    except that it outputs a verbose \a message when \a condition is still false
-   after the specified timeout. The \a message is a plain C string.
+   after the specified \a timeout. The \a message is a plain C string.
 
    Example:
    \code

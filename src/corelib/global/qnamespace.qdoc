@@ -772,7 +772,7 @@
     \value UI_FadeTooltip Show tooltip fading effects.
     \value UI_AnimateToolBox Reserved
 
-    \sa QApplication::setEffectEnabled(), QApplication::setDesktopSettingsAware()
+    \sa QApplication::setEffectEnabled(), QGuiApplication::setDesktopSettingsAware()
 */
 
 /*! \enum Qt::AspectRatioMode
@@ -2443,7 +2443,7 @@
     When LayoutDirectionAuto is used in conjunction with text layouting, it will imply that the text
     directionality is determined from the content of the string to be layouted.
 
-    \sa QApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
+    \sa QGuiApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
 */
 
 /*!
