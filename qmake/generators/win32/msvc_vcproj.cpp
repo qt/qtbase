@@ -1307,7 +1307,8 @@ void VcprojGenerator::initDeploymentTool()
     }
     ProStringList dllPaths = project->values("QMAKE_DLL_PATHS");
     // Only deploy Qt libs for shared build
-    if (!dllPaths.isEmpty()) {
+    if (!dllPaths.isEmpty() &&
+        !(conf.WinRT && project->first("MSVC_VER").toQString() == "14.0")) {
         // FIXME: This code should actually resolve the libraries from all Qt modules.
         ProStringList arg = project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE");
         for (ProStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {

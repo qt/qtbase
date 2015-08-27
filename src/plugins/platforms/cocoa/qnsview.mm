@@ -134,7 +134,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 {
     self = [super initWithFrame : NSMakeRect(0,0, 300,300)];
     if (self) {
-        m_pixelRatio = 1.;
+        m_backingStore = 0;
         m_maskImage = 0;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
@@ -376,7 +376,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         if (!m_platformWindow->m_inSetGeometry)
             QWindowSystemInterface::flushWindowSystemEvents();
         else
-            m_backingStore = QImage();
+            m_backingStore = 0;
     }
 }
 
@@ -481,12 +481,16 @@ QT_WARNING_POP
 
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
-    m_backingStore = backingStore->toImage();
-    m_pixelRatio = backingStore->getBackingStoreDevicePixelRatio();
-    m_backingStoreOffset = offset * m_pixelRatio;
-    foreach (QRect rect, region.rects()) {
+    m_backingStore = backingStore;
+    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
+    foreach (QRect rect, region.rects())
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
-    }
+}
+
+- (void)clearBackingStore:(QCocoaBackingStore *)backingStore
+{
+    if (backingStore == m_backingStore)
+        m_backingStore = 0;
 }
 
 - (BOOL) hasMask
@@ -549,7 +553,7 @@ QT_WARNING_POP
     if (m_platformWindow->m_drawContentBorderGradient)
         NSDrawWindowBackground(dirtyRect);
 
-    if (m_backingStore.isNull())
+    if (!m_backingStore)
         return;
 
     // Calculate source and target rects. The target rect is the dirtyRect:
@@ -557,10 +561,11 @@ QT_WARNING_POP
 
     // The backing store source rect will be larger on retina displays.
     // Scale dirtyRect by the device pixel ratio:
-    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * m_pixelRatio,
-                                         dirtyRect.origin.y * m_pixelRatio,
-                                         dirtyRect.size.width * m_pixelRatio,
-                                         dirtyRect.size.height * m_pixelRatio);
+    const qreal devicePixelRatio = m_backingStore->getBackingStoreDevicePixelRatio();
+    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
+                                         dirtyRect.origin.y * devicePixelRatio,
+                                         dirtyRect.size.width * devicePixelRatio,
+                                         dirtyRect.size.height * devicePixelRatio);
 
     NSGraphicsContext *nsGraphicsContext = [NSGraphicsContext currentContext];
     CGContextRef cgContext = (CGContextRef) [nsGraphicsContext graphicsPort];
@@ -586,7 +591,7 @@ QT_WARNING_POP
         dirtyBackingRect.size.width,
         dirtyBackingRect.size.height
     );
-    CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore);
+    CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore->toImage());
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
 
     // Optimization: Copy frame buffer content instead of blending for

@@ -88,10 +88,10 @@ private:
     QKeySequence::SequenceMatch state();
     void dispatchEvent(QKeyEvent *e);
 
-    QKeySequence::SequenceMatch find(QKeyEvent *e);
+    QKeySequence::SequenceMatch find(QKeyEvent *e, int ignoredModifiers = 0);
     QKeySequence::SequenceMatch matches(const QKeySequence &seq1, const QKeySequence &seq2) const;
     QVector<const QShortcutEntry *> matches() const;
-    void createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl);
+    void createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, int ignoredModifiers);
     void clearSequence(QVector<QKeySequence> &ksl);
     int translateModifiers(Qt::KeyboardModifiers modifiers);
 

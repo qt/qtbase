@@ -1681,6 +1681,7 @@ bool QTime::setHMS(int h, int m, int s, int ms)
 
 QTime QTime::addSecs(int s) const
 {
+    s %= SECS_PER_DAY;
     return addMSecs(s * 1000);
 }
 

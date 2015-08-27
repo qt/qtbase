@@ -2208,17 +2208,17 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event)
 
     switch (ev->evtype) {
     case XI_ButtonPress:
-        qCDebug(lcQpaXInput, "XI2 mouse press, button %d", button);
+        qCDebug(lcQpaXInput, "XI2 mouse press, button %d, time %d", button, ev->time);
         conn->setButton(button, true);
         handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
         break;
     case XI_ButtonRelease:
-        qCDebug(lcQpaXInput, "XI2 mouse release, button %d", button);
+        qCDebug(lcQpaXInput, "XI2 mouse release, button %d, time %d", button, ev->time);
         conn->setButton(button, false);
         handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time);
         break;
     case XI_Motion:
-        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d", event_x, event_y);
+        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d, time %d", event_x, event_y, ev->time);
         handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time);
         break;
     default:

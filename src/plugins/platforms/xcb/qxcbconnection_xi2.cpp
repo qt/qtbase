@@ -967,15 +967,6 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
     xXIGenericDeviceEvent *xiEvent = static_cast<xXIGenericDeviceEvent *>(event);
     xXIDeviceEvent *xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(xiEvent);
 
-#ifdef XCB_USE_XINPUT22
-    // Synthesize mouse events since otherwise there are no mouse events from
-    // the pen on the XI 2.2+ path.
-    if (xi2MouseEvents() && eventListener)
-        eventListener->handleXIMouseEvent(reinterpret_cast<xcb_ge_event_t *>(event));
-#else
-    Q_UNUSED(eventListener);
-#endif
-
     switch (xiEvent->evtype) {
     case XI_ButtonPress: {
         Qt::MouseButton b = xiToQtMouseButton(xiDeviceEvent->detail);
@@ -1058,6 +1049,16 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
         handled = false;
         break;
     }
+
+#ifdef XCB_USE_XINPUT22
+    // Synthesize mouse events since otherwise there are no mouse events from
+    // the pen on the XI 2.2+ path.
+    if (xi2MouseEvents() && eventListener)
+        eventListener->handleXIMouseEvent(reinterpret_cast<xcb_ge_event_t *>(event));
+#else
+    Q_UNUSED(eventListener);
+#endif
+
     return handled;
 }
 

@@ -263,6 +263,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     groupId(). You can examine a file's permissions and ownership in a
     single statement using the permission() function.
 
+    \target NTFS permissions
     \note On NTFS file systems, ownership and permissions checking is
     disabled by default for performance reasons. To enable it,
     include the following line:
@@ -893,6 +894,9 @@ QDir QFileInfo::absoluteDir() const
 /*!
     Returns \c true if the user can read the file; otherwise returns \c false.
 
+    \note If the \l{NTFS permissions} check has not been enabled, the result
+    on Windows will merely reflect whether the file exists.
+
     \sa isWritable(), isExecutable(), permission()
 */
 bool QFileInfo::isReadable() const
@@ -910,6 +914,9 @@ bool QFileInfo::isReadable() const
 
 /*!
     Returns \c true if the user can write to the file; otherwise returns \c false.
+
+    \note If the \l{NTFS permissions} check has not been enabled, the result on
+    Windows will merely reflect whether the file is marked as Read Only.
 
     \sa isReadable(), isExecutable(), permission()
 */
@@ -1137,7 +1144,8 @@ QString QFileInfo::readLink() const
     returned.
 
     This function can be time consuming under Unix (in the order of
-    milliseconds).
+    milliseconds). On Windows, it will return an empty string unless
+    the \l{NTFS permissions} check has been enabled.
 
     \sa ownerId(), group(), groupId()
 */
@@ -1217,6 +1225,9 @@ uint QFileInfo::groupId() const
     On systems where files do not have permissions this function
     always returns \c true.
 
+    \note The result might be inaccurate on Windows if the
+    \l{NTFS permissions} check has not been enabled.
+
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 10
 
@@ -1240,6 +1251,9 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
 /*!
     Returns the complete OR-ed together combination of
     QFile::Permissions for the file.
+
+    \note The result might be inaccurate on Windows if the
+    \l{NTFS permissions} check has not been enabled.
 */
 QFile::Permissions QFileInfo::permissions() const
 {

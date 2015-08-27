@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -139,7 +139,7 @@ QT_BEGIN_NAMESPACE
     Unix environment allows both variable names and contents to contain arbitrary
     binary data (except for the NUL character). QProcessEnvironment will preserve
     such variables, but does not support manipulating variables whose names or
-    values are not encodable by the current locale settings (see
+    values cannot be encoded by the current locale settings (see
     QTextCodec::codecForLocale).
 
     On Windows, the variable names are case-insensitive, but case-preserving.
@@ -395,8 +395,8 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     Use with the QProcess::setEnvironment function is not recommended due to
     potential encoding problems under Unix, and worse performance.
 
-    \sa systemEnvironment(), QProcess::systemEnvironment(), QProcess::environment(),
-        QProcess::setEnvironment()
+    \sa systemEnvironment(), QProcess::systemEnvironment(),
+        QProcess::setProcessEnvironment()
 */
 QStringList QProcessEnvironment::toStringList() const
 {
@@ -545,7 +545,7 @@ void QProcessPrivate::Channel::clear()
     QProcess can merge the two output channels, so that standard
     output and standard error data from the running process both use
     the standard output channel. Call setProcessChannelMode() with
-    MergedChannels before starting the process to activative
+    MergedChannels before starting the process to activate
     this feature. You also have the option of forwarding the output of
     the running process to the calling, main process, by passing
     ForwardedChannels as the argument. It is also possible to forward
@@ -556,7 +556,7 @@ void QProcessPrivate::Channel::clear()
 
     Certain processes need special environment settings in order to
     operate. You can set environment variables for your process by
-    calling setEnvironment(). To set a working directory, call
+    calling setProcessEnvironment(). To set a working directory, call
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
 
@@ -1328,7 +1328,7 @@ QProcess::InputChannelMode QProcess::inputChannelMode() const
 /*!
     \since 5.2
 
-    Sets the channel mode of the QProcess standard intput
+    Sets the channel mode of the QProcess standard input
     channel to the \a mode specified.
     This mode will be used the next time start() is called.
 
@@ -2195,6 +2195,7 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
     qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
 
+    stdinChannel.buffer.clear();
     stdoutChannel.buffer.clear();
     stderrChannel.buffer.clear();
 
@@ -2393,7 +2394,7 @@ void QProcess::setArguments(const QStringList &arguments)
     The process may not exit as a result of calling this function (it is given
     the chance to prompt the user for any unsaved files, etc).
 
-    On Windows, terminate() posts a WM_CLOSE message to all toplevel windows
+    On Windows, terminate() posts a WM_CLOSE message to all top-level windows
     of the process and then to the main thread of the process itself. On Unix
     and OS X the \c SIGTERM signal is sent.
 
@@ -2589,14 +2590,14 @@ QT_END_INCLUDE_NAMESPACE
 
     This function does not cache the system environment. Therefore, it's
     possible to obtain an updated version of the environment if low-level C
-    library functions like \tt setenv ot \tt putenv have been called.
+    library functions like \tt setenv or \tt putenv have been called.
 
     However, note that repeated calls to this function will recreate the
     list of environment variables, which is a non-trivial operation.
 
     \note For new code, it is recommended to use QProcessEnvironment::systemEnvironment()
 
-    \sa QProcessEnvironment::systemEnvironment(), environment(), setEnvironment()
+    \sa QProcessEnvironment::systemEnvironment(), setProcessEnvironment()
 */
 QStringList QProcess::systemEnvironment()
 {
@@ -2619,7 +2620,7 @@ QStringList QProcess::systemEnvironment()
     It is returned as a QProcessEnvironment. This function does not
     cache the system environment. Therefore, it's possible to obtain
     an updated version of the environment if low-level C library
-    functions like \tt setenv ot \tt putenv have been called.
+    functions like \tt setenv or \tt putenv have been called.
 
     However, note that repeated calls to this function will recreate the
     QProcessEnvironment object, which is a non-trivial operation.

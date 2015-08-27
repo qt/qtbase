@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,21 +31,32 @@
 **
 ****************************************************************************/
 
-#include "../tst_qmimedatabase.h"
-#include <QDir>
-#include <QFile>
-#include <QtTest/QtTest>
-#include <qstandardpaths.h>
+#include <stdio.h>
 
-#include "../tst_qmimedatabase.cpp"
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#  include <windows.h>
 
-void tst_QMimeDatabase::initTestCaseInternal()
+void sleepForever()
 {
-#ifdef QT_NO_PROCESS
-    QSKIP("No qprocess support", SkipAll);
+    ::Sleep(INFINITE);
+}
 #else
-    const QString mimeDirName = m_globalXdgDir + QStringLiteral("/mime");
-    runUpdateMimeDatabase(mimeDirName);
-    QVERIFY(QFile::exists(mimeDirName + QStringLiteral("/mime.cache")));
+#  include <unistd.h>
+
+void sleepForever()
+{
+    ::pause();
+}
 #endif
+
+int main()
+{
+    puts("ready.");
+    fflush(stdout);
+    fprintf(stderr, "ready.\n");
+    fflush(stderr);
+
+    // sleep forever, simulating a hung application
+    sleepForever();
+    return 0;
 }

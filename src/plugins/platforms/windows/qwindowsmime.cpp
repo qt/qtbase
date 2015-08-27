@@ -990,12 +990,11 @@ QVector<FORMATETC> QWindowsMimeImage::formatsForMime(const QString &mimeType, co
 {
     QVector<FORMATETC> formatetcs;
     if (mimeData->hasImage() && mimeType == QLatin1String("application/x-qt-image")) {
-        //add DIBV5 if image has alpha channel
+        //add DIBV5 if image has alpha channel. Do not add CF_PNG here as it will confuse MS Office (QTBUG47656).
         QImage image = qvariant_cast<QImage>(mimeData->imageData());
         if (!image.isNull() && image.hasAlphaChannel())
             formatetcs += setCf(CF_DIBV5);
         formatetcs += setCf(CF_DIB);
-        formatetcs += setCf(CF_PNG); // QTBUG-86848, Paste into GIMP queries for PNG.
     }
     return formatetcs;
 }
@@ -1024,11 +1023,7 @@ bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMi
     const QImage image = qvariant_cast<QImage>(mimeData->imageData());
     if (image.isNull())
         return false;
-    // QTBUG-11463, deny CF_DIB support for images with alpha to prevent loss of
-    // transparency in conversion.
-    return cf == CF_DIBV5
-        || (cf == CF_DIB && !image.hasAlphaChannel())
-        || cf == int(CF_PNG);
+    return cf == CF_DIBV5 || (cf == CF_DIB) || cf == int(CF_PNG);
 }
 
 bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const

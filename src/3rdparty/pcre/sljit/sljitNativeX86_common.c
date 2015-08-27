@@ -744,8 +744,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 		break;
 	case SLJIT_LUMUL:
 	case SLJIT_LSMUL:
-	case SLJIT_LUDIV:
-	case SLJIT_LSDIV:
+	case SLJIT_UDIVMOD:
+	case SLJIT_SDIVMOD:
+	case SLJIT_UDIVI:
+	case SLJIT_SDIVI:
 		compiler->flags_saved = 0;
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 #ifdef _WIN64
@@ -763,9 +765,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 #endif
 		compiler->mode32 = op & SLJIT_INT_OP;
 #endif
+		SLJIT_COMPILE_ASSERT((SLJIT_UDIVMOD & 0x2) == 0 && SLJIT_UDIVI - 0x2 == SLJIT_UDIVMOD, bad_div_opcode_assignments);
 
 		op = GET_OPCODE(op);
-		if (op == SLJIT_LUDIV) {
+		if ((op | 0x2) == SLJIT_UDIVI) {
 #if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64)
 			EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_R1, 0);
 			inst = emit_x86_instruction(compiler, 1, SLJIT_R1, 0, SLJIT_R1, 0);
@@ -776,7 +779,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 			*inst = XOR_r_rm;
 		}
 
-		if (op == SLJIT_LSDIV) {
+		if ((op | 0x2) == SLJIT_SDIVI) {
 #if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64)
 			EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_R1, 0);
 #endif
@@ -807,10 +810,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 		FAIL_IF(!inst);
 		INC_SIZE(2);
 		*inst++ = GROUP_F7;
-		*inst = MOD_REG | ((op >= SLJIT_LUDIV) ? reg_map[TMP_REG1] : reg_map[SLJIT_R1]);
+		*inst = MOD_REG | ((op >= SLJIT_UDIVMOD) ? reg_map[TMP_REG1] : reg_map[SLJIT_R1]);
 #else
 #ifdef _WIN64
-		size = (!compiler->mode32 || op >= SLJIT_LUDIV) ? 3 : 2;
+		size = (!compiler->mode32 || op >= SLJIT_UDIVMOD) ? 3 : 2;
 #else
 		size = (!compiler->mode32) ? 3 : 2;
 #endif
@@ -819,11 +822,11 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 		INC_SIZE(size);
 #ifdef _WIN64
 		if (!compiler->mode32)
-			*inst++ = REX_W | ((op >= SLJIT_LUDIV) ? REX_B : 0);
-		else if (op >= SLJIT_LUDIV)
+			*inst++ = REX_W | ((op >= SLJIT_UDIVMOD) ? REX_B : 0);
+		else if (op >= SLJIT_UDIVMOD)
 			*inst++ = REX_B;
 		*inst++ = GROUP_F7;
-		*inst = MOD_REG | ((op >= SLJIT_LUDIV) ? reg_lmap[TMP_REG1] : reg_lmap[SLJIT_R1]);
+		*inst = MOD_REG | ((op >= SLJIT_UDIVMOD) ? reg_lmap[TMP_REG1] : reg_lmap[SLJIT_R1]);
 #else
 		if (!compiler->mode32)
 			*inst++ = REX_W;
@@ -838,15 +841,21 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op0(struct sljit_compiler *compiler
 		case SLJIT_LSMUL:
 			*inst |= IMUL;
 			break;
-		case SLJIT_LUDIV:
+		case SLJIT_UDIVMOD:
+		case SLJIT_UDIVI:
 			*inst |= DIV;
 			break;
-		case SLJIT_LSDIV:
+		case SLJIT_SDIVMOD:
+		case SLJIT_SDIVI:
 			*inst |= IDIV;
 			break;
 		}
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) && !defined(_WIN64)
-		EMIT_MOV(compiler, SLJIT_R1, 0, TMP_REG1, 0);
+		if (op <= SLJIT_SDIVMOD)
+			EMIT_MOV(compiler, SLJIT_R1, 0, TMP_REG1, 0);
+#else
+		if (op >= SLJIT_UDIVI)
+			EMIT_MOV(compiler, SLJIT_R1, 0, TMP_REG1, 0);
 #endif
 		break;
 	}
@@ -1907,60 +1916,62 @@ static sljit_si emit_test_binary(struct sljit_compiler *compiler,
 		return SLJIT_SUCCESS;
 	}
 
-	if (FAST_IS_REG(src1)) {
+	if (!(src1 & SLJIT_IMM)) {
 		if (src2 & SLJIT_IMM) {
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 			if (IS_HALFWORD(src2w) || compiler->mode32) {
-				inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src2w, src1, 0);
+				inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src2w, src1, src1w);
 				FAIL_IF(!inst);
 				*inst = GROUP_F7;
 			}
 			else {
 				FAIL_IF(emit_load_imm64(compiler, TMP_REG2, src2w));
-				inst = emit_x86_instruction(compiler, 1, TMP_REG2, 0, src1, 0);
+				inst = emit_x86_instruction(compiler, 1, TMP_REG2, 0, src1, src1w);
 				FAIL_IF(!inst);
 				*inst = TEST_rm_r;
 			}
 #else
-			inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src2w, src1, 0);
+			inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src2w, src1, src1w);
 			FAIL_IF(!inst);
 			*inst = GROUP_F7;
 #endif
+			return SLJIT_SUCCESS;
 		}
-		else {
+		else if (FAST_IS_REG(src1)) {
 			inst = emit_x86_instruction(compiler, 1, src1, 0, src2, src2w);
 			FAIL_IF(!inst);
 			*inst = TEST_rm_r;
+			return SLJIT_SUCCESS;
 		}
-		return SLJIT_SUCCESS;
 	}
 
-	if (FAST_IS_REG(src2)) {
+	if (!(src2 & SLJIT_IMM)) {
 		if (src1 & SLJIT_IMM) {
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 			if (IS_HALFWORD(src1w) || compiler->mode32) {
-				inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src1w, src2, 0);
+				inst = emit_x86_instruction(compiler, 1, SLJIT_IMM, src1w, src2, src2w);
 				FAIL_IF(!inst);
 				*inst = GROUP_F7;
 			}
 			else {
 				FAIL_IF(emit_load_imm64(compiler, TMP_REG2, src1w));
-				inst = emit_x86_instruction(compiler, 1, TMP_REG2, 0, src2, 0);
+				inst = emit_x86_instruction(compiler, 1, TMP_REG2, 0, src2, src2w);
 				FAIL_IF(!inst);
 				*inst = TEST_rm_r;
 			}
 #else
-			inst = emit_x86_instruction(compiler, 1, src1, src1w, src2, 0);
+			inst = emit_x86_instruction(compiler, 1, src1, src1w, src2, src2w);
 			FAIL_IF(!inst);
 			*inst = GROUP_F7;
 #endif
+			return SLJIT_SUCCESS;
 		}
-		else {
+		else if (FAST_IS_REG(src2)) {
 			inst = emit_x86_instruction(compiler, 1, src2, 0, src1, src1w);
 			FAIL_IF(!inst);
 			*inst = TEST_rm_r;
+			return SLJIT_SUCCESS;
 		}
-		return SLJIT_SUCCESS;
 	}
 
 	EMIT_MOV(compiler, TMP_REG1, 0, src1, src1w);

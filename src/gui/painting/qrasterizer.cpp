@@ -863,8 +863,8 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             const Q16Dot16 iLeft = int(left);
             const Q16Dot16 iRight = int(right);
             const Q16Dot16 leftWidth = IntToQ16Dot16(iLeft + 1)
-                                       - FloatToQ16Dot16(left);
-            const Q16Dot16 rightWidth = FloatToQ16Dot16(right)
+                                       - qSafeFloatToQ16Dot16(left);
+            const Q16Dot16 rightWidth = qSafeFloatToQ16Dot16(right)
                                         - IntToQ16Dot16(iRight);
 
             Q16Dot16 coverage[3];
@@ -898,8 +898,8 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
             const Q16Dot16 iTopFP = IntToQ16Dot16(int(pa.y()));
             const Q16Dot16 iBottomFP = IntToQ16Dot16(int(pb.y()));
-            const Q16Dot16 yPa = FloatToQ16Dot16(pa.y());
-            const Q16Dot16 yPb = FloatToQ16Dot16(pb.y());
+            const Q16Dot16 yPa = qSafeFloatToQ16Dot16(pa.y());
+            const Q16Dot16 yPb = qSafeFloatToQ16Dot16(pb.y());
             for (Q16Dot16 yFP = iTopFP; yFP <= iBottomFP; yFP += Q16Dot16Factor) {
                 const Q16Dot16 rowHeight = qMin(yFP + Q16Dot16Factor, yPb)
                                            - qMax(yFP, yPa);
@@ -983,16 +983,16 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             const Q16Dot16 iRightFP = IntToQ16Dot16(int(right.y()));
             const Q16Dot16 iBottomFP = IntToQ16Dot16(int(bottomBound));
 
-            Q16Dot16 leftIntersectAf = FloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topLeftSlope);
-            Q16Dot16 rightIntersectAf = FloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topRightSlope);
+            Q16Dot16 leftIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topLeftSlope);
+            Q16Dot16 rightIntersectAf = qSafeFloatToQ16Dot16(top.x() + (int(topBound) - top.y()) * topRightSlope);
             Q16Dot16 leftIntersectBf = 0;
             Q16Dot16 rightIntersectBf = 0;
 
             if (iLeftFP < iTopFP)
-                leftIntersectBf = FloatToQ16Dot16(left.x() + (int(topBound) - left.y()) * bottomLeftSlope);
+                leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + (int(topBound) - left.y()) * bottomLeftSlope);
 
             if (iRightFP < iTopFP)
-                rightIntersectBf = FloatToQ16Dot16(right.x() + (int(topBound) - right.y()) * bottomRightSlope);
+                rightIntersectBf = qSafeFloatToQ16Dot16(right.x() + (int(topBound) - right.y()) * bottomRightSlope);
 
             Q16Dot16 rowTop, rowBottomLeft, rowBottomRight, rowTopLeft, rowTopRight, rowBottom;
             Q16Dot16 topLeftIntersectAf, topLeftIntersectBf, topRightIntersectAf, topRightIntersectBf;
@@ -1000,10 +1000,10 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
             int leftMin, leftMax, rightMin, rightMax;
 
-            const Q16Dot16 yTopFP = FloatToQ16Dot16(top.y());
-            const Q16Dot16 yLeftFP = FloatToQ16Dot16(left.y());
-            const Q16Dot16 yRightFP = FloatToQ16Dot16(right.y());
-            const Q16Dot16 yBottomFP = FloatToQ16Dot16(bottom.y());
+            const Q16Dot16 yTopFP = qSafeFloatToQ16Dot16(top.y());
+            const Q16Dot16 yLeftFP = qSafeFloatToQ16Dot16(left.y());
+            const Q16Dot16 yRightFP = qSafeFloatToQ16Dot16(right.y());
+            const Q16Dot16 yBottomFP = qSafeFloatToQ16Dot16(bottom.y());
 
             rowTop = qMax(iTopFP, yTopFP);
             topLeftIntersectAf = leftIntersectAf +
@@ -1021,7 +1021,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
                 if (yFP == iLeftFP) {
                     const int y = Q16Dot16ToInt(yFP);
-                    leftIntersectBf = FloatToQ16Dot16(left.x() + (y - left.y()) * bottomLeftSlope);
+                    leftIntersectBf = qSafeFloatToQ16Dot16(left.x() + (y - left.y()) * bottomLeftSlope);
                     topLeftIntersectBf = leftIntersectBf + Q16Dot16Multiply(bottomLeftSlopeFP, rowTopLeft - yFP);
                     bottomLeftIntersectAf = leftIntersectAf + Q16Dot16Multiply(topLeftSlopeFP, rowBottomLeft - yFP);
                 } else {
@@ -1031,7 +1031,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
                 if (yFP == iRightFP) {
                     const int y = Q16Dot16ToInt(yFP);
-                    rightIntersectBf = FloatToQ16Dot16(right.x() + (y - right.y()) * bottomRightSlope);
+                    rightIntersectBf = qSafeFloatToQ16Dot16(right.x() + (y - right.y()) * bottomRightSlope);
                     topRightIntersectBf = rightIntersectBf + Q16Dot16Multiply(bottomRightSlopeFP, rowTopRight - yFP);
                     bottomRightIntersectAf = rightIntersectAf + Q16Dot16Multiply(topRightSlopeFP, rowBottomRight - yFP);
                 } else {

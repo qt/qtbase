@@ -9,7 +9,8 @@
   <Identity
     Name=\"$${WINRT_MANIFEST.identity}\"
     Publisher=\"$${WINRT_MANIFEST.publisherid}\"
-    Version=\"$${WINRT_MANIFEST.version}\" />
+    Version=\"$${WINRT_MANIFEST.version}\"
+    ProcessorArchitecture=\"$${WINRT_MANIFEST.architecture}\" />
 
   <mp:PhoneIdentity PhoneProductId=\"$${WINRT_MANIFEST.identity}\" PhonePublisherId=\"$${WINRT_MANIFEST.phone_publisher_id}\"/>
 
@@ -20,7 +21,7 @@
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name=\"Windows.Universal\" MinVersion=\"10.0.10069.0\" MaxVersionTested=\"10.0.10069.0\" />
+    <TargetDeviceFamily Name=\"Windows.Universal\" MinVersion=\"10.0.10069.0\" MaxVersionTested=\"10.0.10069.0\" />$${WINRT_MANIFEST.dependencies}
   </Dependencies>
 
   <Resources>

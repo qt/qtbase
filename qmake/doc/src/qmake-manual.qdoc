@@ -1714,6 +1714,25 @@
 
     See \l{Creating Frameworks} for more information about creating frameworks.
 
+    \target QMAKE_HOST
+    \section1 QMAKE_HOST
+
+    Provides information about the host machine running qmake.
+    For example, you can retrieve the host machine architecture from
+    \c{QMAKE_HOST.arch}.
+
+    \table
+    \header \li Keys               \li Values
+    \row    \li .arch              \li Host architecture
+    \row    \li .os                \li Host OS
+    \row    \li .cpu_count         \li Number of available cpus
+    \row    \li .name              \li Host computer name
+    \row    \li .version           \li Host OS version number
+    \row    \li .version_string    \li Host OS version string
+    \endtable
+
+    \snippet code/doc_src_qmake-manual.pro 187
+
     \target QMAKE_INCDIR
     \section1 QMAKE_INCDIR
 

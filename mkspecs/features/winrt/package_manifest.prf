@@ -58,9 +58,11 @@
         VCLIBS = Microsoft.VCLibs.$$replace(MSVC_VER, \\., ).00
         winphone: VCLIBS = $${VCLIBS}.Phone
         CONFIG(debug, debug|release): \
-            WINRT_MANIFEST.dependencies += $${VCLIBS}.Debug
+            VCLIBS = $${VCLIBS}.Debug
         else: \
-            WINRT_MANIFEST.dependencies += $$VCLIBS
+            VCLIBS = $${VCLIBS}
+        contains(MSVC_VER, "14.0"): VCLIBS = "$${VCLIBS}\" MinVersion=\"14.0.0.0\" Publisher=\"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+        WINRT_MANIFEST.dependencies += $$VCLIBS
     }
 
     # Provide default values for required variables
@@ -122,12 +124,11 @@
     }
 
     # Dependencies are given as a string list. The CRT dependency is added automatically above.
+    # For MSVC2015 the dependencies are added in conjunction with TargetDeviceFamily
     WINRT_MANIFEST.dependencies = $$unique(WINRT_MANIFEST.dependencies)
     !isEmpty(WINRT_MANIFEST.dependencies) {
-        MANIFEST_DEPENDENCIES += "<Dependencies>"
         for(DEPENDENCY, WINRT_MANIFEST.dependencies): \
             MANIFEST_DEPENDENCIES += "  <PackageDependency Name=\"$$DEPENDENCY\" />"
-        MANIFEST_DEPENDENCIES += "</Dependencies>"
 
         WINRT_MANIFEST.dependencies = $$join(MANIFEST_DEPENDENCIES, $$INDENT, $$INDENT)
     }
@@ -157,6 +158,14 @@
         icon_$${ICON_NAME}.CONFIG = verbatim
         QMAKE_SUBSTITUTES += icon_$${ICON_NAME}
         WINRT_MANIFEST.$${ICON_NAME} = assets/$$basename(ICON_FILE)
+    }
+
+    !contains(TEMPLATE, "vc.*") {
+        winrt_manifest_install.files = $$manifest_file.output
+        winrt_manifest_install.path = $$target.path
+        winrt_assets_install.files = $$BUILD_DIR/assets/*
+        winrt_assets_install.path = $$target.path/assets
+        INSTALLS += winrt_manifest_install winrt_assets_install
     }
 
     QMAKE_SUBSTITUTES += manifest_file
