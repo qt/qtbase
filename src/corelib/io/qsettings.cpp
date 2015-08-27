@@ -2403,12 +2403,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
                             from a 64-bit application running on 64-bit Windows.
                             On 32-bit Windows or from a 32-bit application on 64-bit Windows,
                             this works the same as specifying NativeFormat.
-                            This enum value was added in Qt 5.6.
+                            This enum value was added in Qt 5.7.
     \value Registry64Format Windows only: Explicitly access the 64-bit system registry
                             from a 32-bit application running on 64-bit Windows.
                             On 32-bit Windows or from a 64-bit application on 64-bit Windows,
                             this works the same as specifying NativeFormat.
-                            This enum value was added in Qt 5.6.
+                            This enum value was added in Qt 5.7.
     \value IniFormat        Store the settings in INI files.
     \value InvalidFormat    Special value returned by registerFormat().
     \omitvalue CustomFormat1
