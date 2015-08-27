@@ -581,34 +581,70 @@ qreal QFontEngine::minLeftBearing() const
     return m_minLeftBearing;
 }
 
+#define q16Dot16ToFloat(i) ((i) / 65536.0)
+
+#define kMinLeftSideBearingOffset 12
+#define kMinRightSideBearingOffset 14
+
 qreal QFontEngine::minRightBearing() const
 {
     if (m_minRightBearing == kBearingNotInitialized) {
 
-        // To balance performance and correctness we only look at a subset of the
-        // possible glyphs in the font, based on which characters are more likely
-        // to have a left or right bearing.
-        static const ushort characterSubset[] = {
-            '(', 'C', 'F', 'K', 'V', 'X', 'Y', ']', '_', 'f', 'r', '|',
-            127, 205, 645, 884, 922, 1070, 12386
-        };
+        // Try the 'hhea' font table first, which covers the entire font
+        QByteArray hheaTable = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+        if (hheaTable.size() >= int(kMinRightSideBearingOffset + sizeof(qint16))) {
+            const uchar *tableData = reinterpret_cast<const uchar *>(hheaTable.constData());
+            Q_ASSERT(q16Dot16ToFloat(qFromBigEndian<quint32>(tableData)) == 1.0);
 
-        // The font may have minimum bearings larger than 0, so we have to start at the max
-        m_minLeftBearing = m_minRightBearing = std::numeric_limits<qreal>::max();
+            qint16 minLeftSideBearing = qFromBigEndian<qint16>(tableData + kMinLeftSideBearingOffset);
+            qint16 minRightSideBearing = qFromBigEndian<qint16>(tableData + kMinRightSideBearingOffset);
 
-        for (uint i = 0; i < (sizeof(characterSubset) / sizeof(ushort)); ++i) {
-            const glyph_t glyph = glyphIndex(characterSubset[i]);
-            if (!glyph)
-                continue;
+            // The table data is expressed as FUnits, meaning we have to take the number
+            // of units per em into account. Since pixelSize already has taken DPI into
+            // account we can use that directly instead of the point size.
+            int unitsPerEm = emSquareSize().toInt();
+            qreal funitToPixelFactor = fontDef.pixelSize / unitsPerEm;
 
-            glyph_metrics_t glyphMetrics = const_cast<QFontEngine *>(this)->boundingBox(glyph);
+            // Some fonts on OS X (such as Gurmukhi Sangam MN, Khmer MN, Lao Sangam MN, etc.), have
+            // invalid values for their NBSPACE left bearing, causing the 'hhea' minimum bearings to
+            // be way off. We detect this by assuming that the minimum bearsings are within a certain
+            // range of the em square size.
+            static const int largestValidBearing = 4 * unitsPerEm;
 
-            // Glyphs with no contours shouldn't contribute to bearings
-            if (!glyphMetrics.width || !glyphMetrics.height)
-                continue;
+            if (qAbs(minLeftSideBearing) < largestValidBearing)
+                m_minLeftBearing = minLeftSideBearing * funitToPixelFactor;
+            if (qAbs(minRightSideBearing) < largestValidBearing)
+                m_minRightBearing = minRightSideBearing * funitToPixelFactor;
+        }
 
-            m_minLeftBearing = qMin(m_minLeftBearing, glyphMetrics.leftBearing().toReal());
-            m_minRightBearing = qMin(m_minRightBearing, glyphMetrics.rightBearing().toReal());
+        // Fallback in case of missing 'hhea' table (bitmap fonts e.g.) or broken 'hhea' values
+        if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized) {
+
+            // To balance performance and correctness we only look at a subset of the
+            // possible glyphs in the font, based on which characters are more likely
+            // to have a left or right bearing.
+            static const ushort characterSubset[] = {
+                '(', 'C', 'F', 'K', 'V', 'X', 'Y', ']', '_', 'f', 'r', '|',
+                127, 205, 645, 884, 922, 1070, 12386
+            };
+
+            // The font may have minimum bearings larger than 0, so we have to start at the max
+            m_minLeftBearing = m_minRightBearing = std::numeric_limits<qreal>::max();
+
+            for (uint i = 0; i < (sizeof(characterSubset) / sizeof(ushort)); ++i) {
+                const glyph_t glyph = glyphIndex(characterSubset[i]);
+                if (!glyph)
+                    continue;
+
+                glyph_metrics_t glyphMetrics = const_cast<QFontEngine *>(this)->boundingBox(glyph);
+
+                // Glyphs with no contours shouldn't contribute to bearings
+                if (!glyphMetrics.width || !glyphMetrics.height)
+                    continue;
+
+                m_minLeftBearing = qMin(m_minLeftBearing, glyphMetrics.leftBearing().toReal());
+                m_minRightBearing = qMin(m_minRightBearing, glyphMetrics.rightBearing().toReal());
+            }
         }
 
         if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized)
