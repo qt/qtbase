@@ -71,7 +71,7 @@ struct QWindowsLibEGL
     EGLSurface (EGLAPIENTRY * eglGetCurrentSurface)(EGLint readdraw);
     EGLDisplay (EGLAPIENTRY * eglGetCurrentDisplay)(void);
     EGLBoolean (EGLAPIENTRY * eglSwapBuffers)(EGLDisplay dpy, EGLSurface surface);
-    __eglMustCastToProperFunctionPointerType (EGLAPIENTRY * eglGetProcAddress)(const char *procname);
+    QFunctionPointer (EGLAPIENTRY *eglGetProcAddress)(const char *procname);
 
     EGLDisplay (EGLAPIENTRY * eglGetPlatformDisplayEXT)(EGLenum platform, void *native_display, const EGLint *attrib_list);
 

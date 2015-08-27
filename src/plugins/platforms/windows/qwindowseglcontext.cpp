@@ -152,7 +152,7 @@ bool QWindowsLibEGL::init()
     eglGetCurrentSurface = RESOLVE((EGLSurface (EGLAPIENTRY *)(EGLint )), eglGetCurrentSurface);
     eglGetCurrentDisplay = RESOLVE((EGLDisplay (EGLAPIENTRY *)(void)), eglGetCurrentDisplay);
     eglSwapBuffers = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface)), eglSwapBuffers);
-    eglGetProcAddress = RESOLVE((__eglMustCastToProperFunctionPointerType (EGLAPIENTRY * )(const char *)), eglGetProcAddress);
+    eglGetProcAddress = RESOLVE((QFunctionPointer (EGLAPIENTRY * )(const char *)), eglGetProcAddress);
 
     if (!eglGetError || !eglGetDisplay || !eglInitialize || !eglGetProcAddress)
         return false;
