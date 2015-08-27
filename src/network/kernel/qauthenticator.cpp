@@ -85,6 +85,7 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
     \li Digest-MD5
   \endlist
 
+  \target qauthenticator-options
   \section1 Options
 
   In addition to the username and password required for authentication, a
@@ -104,8 +105,8 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
   \section2 Basic
 
   \table
-    \header \li Option \li Direction \li Description
-    \row \li \tt{realm} \li Incoming \li Contains the realm of the authentication, the same as realm()
+    \header \li Option \li Direction \li Type \li Description
+    \row \li \tt{realm} \li Incoming \li QString \li Contains the realm of the authentication, the same as realm()
   \endtable
 
   The Basic authentication mechanism supports no outgoing options.
@@ -119,8 +120,8 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
   \section2 Digest-MD5
 
   \table
-    \header \li Option \li Direction \li Description
-    \row \li \tt{realm} \li Incoming \li Contains the realm of the authentication, the same as realm()
+    \header \li Option \li Direction \li Type \li Description
+    \row \li \tt{realm} \li Incoming \li QString \li Contains the realm of the authentication, the same as realm()
   \endtable
 
   The Digest-MD5 authentication mechanism supports no outgoing options.
@@ -130,7 +131,7 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
 
 
 /*!
-  Constructs an empty authentication object
+  Constructs an empty authentication object.
 */
 QAuthenticator::QAuthenticator()
     : d(0)
@@ -138,7 +139,7 @@ QAuthenticator::QAuthenticator()
 }
 
 /*!
-  Destructs the object
+  Destructs the object.
 */
 QAuthenticator::~QAuthenticator()
 {
@@ -207,7 +208,7 @@ bool QAuthenticator::operator==(const QAuthenticator &other) const
 */
 
 /*!
-  returns the user used for authentication.
+  Returns the user used for authentication.
 */
 QString QAuthenticator::user() const
 {
@@ -227,7 +228,7 @@ void QAuthenticator::setUser(const QString &user)
 }
 
 /*!
-  returns the password used for authentication.
+  Returns the password used for authentication.
 */
 QString QAuthenticator::password() const
 {
@@ -260,7 +261,7 @@ void QAuthenticator::detach()
 }
 
 /*!
-  returns the realm requiring authentication.
+  Returns the realm requiring authentication.
 */
 QString QAuthenticator::realm() const
 {
@@ -279,10 +280,11 @@ void QAuthenticator::setRealm(const QString &realm)
 /*!
     \since 4.7
     Returns the value related to option \a opt if it was set by the server.
-    See \l{QAuthenticator#Options} for more information on incoming options.
+    See the \l{QAuthenticator#qauthenticator-options}{Options section} for
+    more information on incoming options.
     If option \a opt isn't found, an invalid QVariant will be returned.
 
-    \sa options(), QAuthenticator#Options
+    \sa options(), {QAuthenticator#qauthenticator-options}{QAuthenticator options}
 */
 QVariant QAuthenticator::option(const QString &opt) const
 {
@@ -292,10 +294,10 @@ QVariant QAuthenticator::option(const QString &opt) const
 /*!
     \since 4.7
     Returns all incoming options set in this QAuthenticator object by parsing
-    the server reply. See \l{QAuthenticator#Options} for more information
-    on incoming options.
+    the server reply. See the \l{QAuthenticator#qauthenticator-options}{Options section}
+    for more information on incoming options.
 
-    \sa option(), QAuthenticator#Options
+    \sa option(), {QAuthenticator#qauthenticator-options}{QAuthenticator options}
 */
 QVariantHash QAuthenticator::options() const
 {
@@ -306,9 +308,9 @@ QVariantHash QAuthenticator::options() const
     \since 4.7
 
     Sets the outgoing option \a opt to value \a value.
-    See \l{QAuthenticator#Options} for more information on outgoing options.
+    See the \l{QAuthenticator#qauthenticator-options}{Options section} for more information on outgoing options.
 
-    \sa options(), option(), QAuthenticator#Options
+    \sa options(), option(), {QAuthenticator#qauthenticator-options}{QAuthenticator options}
 */
 void QAuthenticator::setOption(const QString &opt, const QVariant &value)
 {
@@ -318,7 +320,10 @@ void QAuthenticator::setOption(const QString &opt, const QVariant &value)
 
 
 /*!
-    Returns \c true if the authenticator is null.
+    Returns \c true if the object has not been initialized. Returns
+    \c false if non-const member functions have been called, or
+    the content was constructed or copied from another initialized
+    QAuthenticator object.
 */
 bool QAuthenticator::isNull() const
 {
