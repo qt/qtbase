@@ -82,17 +82,17 @@ class QWinRTScreen : public QPlatformScreen
 public:
     explicit QWinRTScreen(ABI::Windows::UI::Xaml::IWindow *xamlWindow);
     ~QWinRTScreen();
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    int depth() const Q_DECL_OVERRIDE;
+    QImage::Format format() const Q_DECL_OVERRIDE;
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
     qreal scaleFactor() const;
-    QPlatformCursor *cursor() const;
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     Qt::KeyboardModifiers keyboardModifiers() const;
 
-    Qt::ScreenOrientation nativeOrientation() const;
-    Qt::ScreenOrientation orientation() const;
+    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
 
     QWindow *topWindow() const;
     void addWindow(QWindow *window);

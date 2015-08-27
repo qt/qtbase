@@ -419,9 +419,7 @@ public:
 #endif // Q_OS_WINPHONE
 
     QScopedPointer<QWinRTCursor> cursor;
-
     QHash<quint32, QWindowSystemInterface::TouchPoint> touchPoints;
-
     QSizeF logicalSize;
     QSurfaceFormat surfaceFormat;
     qreal logicalDpi;
