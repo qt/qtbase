@@ -45,20 +45,20 @@
 #include "settingstree.h"
 
 MainWindow::MainWindow()
+    : settingsTree(new SettingsTree)
+    , locationDialog(Q_NULLPTR)
 {
-    settingsTree = new SettingsTree;
     setCentralWidget(settingsTree);
 
-    locationDialog = 0;
-
     createActions();
-    createMenus();
 
     autoRefreshAct->setChecked(true);
     fallbacksAct->setChecked(true);
 
-    setWindowTitle(tr("Settings Editor"));
-    resize(500, 600);
+    setWindowTitle(QCoreApplication::applicationName());
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+    adjustSize();
+    move((availableGeometry.width() - width()) / 2, (availableGeometry.height() - height()) / 2);
 }
 
 void MainWindow::openSettings()
@@ -66,49 +66,60 @@ void MainWindow::openSettings()
     if (!locationDialog)
         locationDialog = new LocationDialog(this);
 
-    if (locationDialog->exec()) {
-        QSettings *settings = new QSettings(locationDialog->format(),
-                                            locationDialog->scope(),
-                                            locationDialog->organization(),
-                                            locationDialog->application());
-        setSettingsObject(settings);
-        fallbacksAct->setEnabled(true);
-    }
+    if (locationDialog->exec() != QDialog::Accepted)
+        return;
+
+    SettingsPtr settings(new QSettings(locationDialog->format(),
+                                       locationDialog->scope(),
+                                       locationDialog->organization(),
+                                       locationDialog->application()));
+
+    setSettingsObject(settings);
+    fallbacksAct->setEnabled(true);
 }
 
 void MainWindow::openIniFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open INI File"),
-                               "", tr("INI Files (*.ini *.conf)"));
-    if (!fileName.isEmpty()) {
-        QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
-        setSettingsObject(settings);
-        fallbacksAct->setEnabled(false);
-    }
+    const QString directory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    const QString fileName =
+        QFileDialog::getOpenFileName(this, tr("Open INI File"),
+                                     directory, tr("INI Files (*.ini *.conf)"));
+    if (fileName.isEmpty())
+        return;
+
+    SettingsPtr settings(new QSettings(fileName, QSettings::IniFormat));
+
+    setSettingsObject(settings);
+    fallbacksAct->setEnabled(false);
 }
 
 void MainWindow::openPropertyList()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                               tr("Open Property List"),
-                               "", tr("Property List Files (*.plist)"));
-    if (!fileName.isEmpty()) {
-        QSettings *settings = new QSettings(fileName, QSettings::NativeFormat);
-        setSettingsObject(settings);
-        fallbacksAct->setEnabled(false);
-    }
+    const QString directory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    const QString fileName =
+        QFileDialog::getOpenFileName(this, tr("Open Property List"),
+                                     directory, tr("Property List Files (*.plist)"));
+    if (fileName.isEmpty())
+        return;
+
+    SettingsPtr settings(new QSettings(fileName, QSettings::NativeFormat));
+    setSettingsObject(settings);
+    fallbacksAct->setEnabled(false);
 }
 
 void MainWindow::openRegistryPath()
 {
-    QString path = QInputDialog::getText(this, tr("Open Registry Path"),
-                           tr("Enter the path in the Windows registry:"),
-                           QLineEdit::Normal, "HKEY_CURRENT_USER\\");
-    if (!path.isEmpty()) {
-        QSettings *settings = new QSettings(path, QSettings::NativeFormat);
-        setSettingsObject(settings);
-        fallbacksAct->setEnabled(false);
-    }
+    const QString path =
+        QInputDialog::getText(this, tr("Open Registry Path"),
+                              tr("Enter the path in the Windows registry:"),
+                              QLineEdit::Normal, "HKEY_CURRENT_USER\\");
+    if (path.isEmpty())
+        return;
+
+    SettingsPtr settings(new QSettings(path, QSettings::NativeFormat));
+
+    setSettingsObject(settings);
+    fallbacksAct->setEnabled(false);
 }
 
 void MainWindow::about()
@@ -120,88 +131,59 @@ void MainWindow::about()
 
 void MainWindow::createActions()
 {
-    openSettingsAct = new QAction(tr("&Open Application Settings..."), this);
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+
+    QAction *openSettingsAct = fileMenu->addAction(tr("&Open Application Settings..."), this, &MainWindow::openSettings);
     openSettingsAct->setShortcuts(QKeySequence::Open);
-    connect(openSettingsAct, SIGNAL(triggered()), this, SLOT(openSettings()));
 
-    openIniFileAct = new QAction(tr("Open I&NI File..."), this);
+    QAction *openIniFileAct = fileMenu->addAction(tr("Open I&NI File..."), this, &MainWindow::openIniFile);
     openIniFileAct->setShortcut(tr("Ctrl+N"));
-    connect(openIniFileAct, SIGNAL(triggered()), this, SLOT(openIniFile()));
 
-    openPropertyListAct = new QAction(tr("Open Mac &Property List..."), this);
+#ifdef Q_OS_OSX
+    QAction *openPropertyListAct = fileMenu->addAction(tr("Open Apple &Property List..."), this, &MainWindow::openPropertyList);
     openPropertyListAct->setShortcut(tr("Ctrl+P"));
-    connect(openPropertyListAct, SIGNAL(triggered()),
-            this, SLOT(openPropertyList()));
+#endif // Q_OS_OSX
 
-    openRegistryPathAct = new QAction(tr("Open Windows &Registry Path..."),
-                                      this);
+#ifdef Q_OS_WIN
+    QAction *openRegistryPathAct = fileMenu->addAction(tr("Open Windows &Registry Path..."), this, &MainWindow::openRegistryPath);
     openRegistryPathAct->setShortcut(tr("Ctrl+G"));
-    connect(openRegistryPathAct, SIGNAL(triggered()),
-            this, SLOT(openRegistryPath()));
+#endif // Q_OS_WIN
 
-    refreshAct = new QAction(tr("&Refresh"), this);
+    fileMenu->addSeparator();
+
+    refreshAct = fileMenu->addAction(tr("&Refresh"), settingsTree, &SettingsTree::refresh);
     refreshAct->setShortcut(tr("Ctrl+R"));
     refreshAct->setEnabled(false);
-    connect(refreshAct, SIGNAL(triggered()), settingsTree, SLOT(refresh()));
 
-    exitAct = new QAction(tr("E&xit"), this);
+    fileMenu->addSeparator();
+
+    QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
     exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    autoRefreshAct = new QAction(tr("&Auto-Refresh"), this);
+    QMenu *optionsMenu = menuBar()->addMenu(tr("&Options"));
+
+    autoRefreshAct = optionsMenu->addAction(tr("&Auto-Refresh"));
     autoRefreshAct->setShortcut(tr("Ctrl+A"));
     autoRefreshAct->setCheckable(true);
     autoRefreshAct->setEnabled(false);
-    connect(autoRefreshAct, SIGNAL(triggered(bool)),
-            settingsTree, SLOT(setAutoRefresh(bool)));
-    connect(autoRefreshAct, SIGNAL(triggered(bool)),
-            refreshAct, SLOT(setDisabled(bool)));
+    connect(autoRefreshAct, &QAction::triggered,
+            settingsTree, &SettingsTree::setAutoRefresh);
+    connect(autoRefreshAct, &QAction::triggered,
+            refreshAct, &QAction::setDisabled);
 
-    fallbacksAct = new QAction(tr("&Fallbacks"), this);
+    fallbacksAct = optionsMenu->addAction(tr("&Fallbacks"));
     fallbacksAct->setShortcut(tr("Ctrl+F"));
     fallbacksAct->setCheckable(true);
     fallbacksAct->setEnabled(false);
-    connect(fallbacksAct, SIGNAL(triggered(bool)),
-            settingsTree, SLOT(setFallbacksEnabled(bool)));
+    connect(fallbacksAct, &QAction::triggered,
+            settingsTree, &SettingsTree::setFallbacksEnabled);
 
-    aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-
-#ifndef Q_OS_MAC
-    openPropertyListAct->setEnabled(false);
-#endif
-#ifndef Q_OS_WIN
-    openRegistryPathAct->setEnabled(false);
-#endif
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QCoreApplication::quit);
 }
 
-void MainWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(openSettingsAct);
-    fileMenu->addAction(openIniFileAct);
-    fileMenu->addAction(openPropertyListAct);
-    fileMenu->addAction(openRegistryPathAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(refreshAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
-
-    optionsMenu = menuBar()->addMenu(tr("&Options"));
-    optionsMenu->addAction(autoRefreshAct);
-    optionsMenu->addAction(fallbacksAct);
-
-    menuBar()->addSeparator();
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-}
-
-void MainWindow::setSettingsObject(QSettings *settings)
+void MainWindow::setSettingsObject(const SettingsPtr &settings)
 {
     settings->setFallbacksEnabled(fallbacksAct->isChecked());
     settingsTree->setSettingsObject(settings);
@@ -209,14 +191,14 @@ void MainWindow::setSettingsObject(QSettings *settings)
     refreshAct->setEnabled(true);
     autoRefreshAct->setEnabled(true);
 
-    QString niceName = settings->fileName();
-    niceName.replace("\\", "/");
-    int pos = niceName.lastIndexOf("/");
+    QString niceName = QDir::cleanPath(settings->fileName());
+    int pos = niceName.lastIndexOf(QLatin1Char('/'));
     if (pos != -1)
         niceName.remove(0, pos + 1);
 
     if (!settings->isWritable())
         niceName = tr("%1 (read only)").arg(niceName);
 
-    setWindowTitle(tr("%1 - %2").arg(niceName).arg(tr("Settings Editor")));
+    setWindowTitle(tr("%1 - %2").arg(niceName, QCoreApplication::applicationName()));
+    statusBar()->showMessage(tr("Opened \"%1\"").arg(QDir::toNativeSeparators(settings->fileName())));
 }
