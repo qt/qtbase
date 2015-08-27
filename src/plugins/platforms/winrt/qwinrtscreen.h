@@ -61,6 +61,9 @@ namespace ABI {
                 struct IDependencyObject;
                 struct IWindow;
             }
+            namespace ViewManagement {
+                struct IStatusBar;
+            }
         }
         namespace Graphics {
             namespace Display {
@@ -83,6 +86,9 @@ public:
     explicit QWinRTScreen(ABI::Windows::UI::Xaml::IWindow *xamlWindow);
     ~QWinRTScreen();
     QRect geometry() const Q_DECL_OVERRIDE;
+#ifdef Q_OS_WINPHONE
+    QRect availableGeometry() const Q_DECL_OVERRIDE;
+#endif
     int depth() const Q_DECL_OVERRIDE;
     QImage::Format format() const Q_DECL_OVERRIDE;
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
@@ -105,6 +111,10 @@ public:
     ABI::Windows::UI::Core::ICoreWindow *coreWindow() const;
     ABI::Windows::UI::Xaml::IDependencyObject *canvas() const;
 
+#ifdef Q_OS_WINPHONE
+    void setStatusBarVisibility(bool visible, QWindow *window);
+#endif
+
 private:
     void handleExpose();
 
@@ -123,6 +133,11 @@ private:
 
     HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
     HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
+
+#ifdef Q_OS_WINPHONE
+    HRESULT onStatusBarShowing(ABI::Windows::UI::ViewManagement::IStatusBar *, IInspectable *);
+    HRESULT onStatusBarHiding(ABI::Windows::UI::ViewManagement::IStatusBar *, IInspectable *);
+#endif
 
     QScopedPointer<QWinRTScreenPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTScreen)

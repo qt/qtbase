@@ -61,6 +61,7 @@ public:
     WId winId() const Q_DECL_OVERRIDE;
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
 private:
     QScopedPointer<QWinRTWindowPrivate> d_ptr;

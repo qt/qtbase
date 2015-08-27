@@ -64,8 +64,21 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::UI;
+using namespace ABI::Windows::UI::Xaml;
+using namespace ABI::Windows::UI::Xaml::Controls;
 
 QT_BEGIN_NAMESPACE
+
+static void setUIElementVisibility(IUIElement *uiElement, bool visibility)
+{
+    Q_ASSERT(uiElement);
+    QEventDispatcherWinRT::runOnXamlThread([uiElement, visibility]() {
+        HRESULT hr;
+        hr = uiElement->put_Visibility(visibility ? Visibility_Visible : Visibility_Collapsed);
+        Q_ASSERT_SUCCEEDED(hr);
+        return S_OK;
+    });
+}
 
 class QWinRTWindowPrivate
 {
@@ -74,8 +87,11 @@ public:
 
     QSurfaceFormat surfaceFormat;
     QString windowTitle;
+    Qt::WindowState state;
 
-    ComPtr<Xaml::Controls::ISwapChainPanel> swapChainPanel;
+    ComPtr<ISwapChainPanel> swapChainPanel;
+    ComPtr<ICanvasStatics> canvas;
+    ComPtr<IUIElement> uiElement;
 };
 
 QWinRTWindow::QWinRTWindow(QWindow *window)
@@ -101,24 +117,26 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     d->surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 
     HRESULT hr;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Controls_Canvas).Get(),
+                                IID_PPV_ARGS(&d->canvas));
+    Q_ASSERT_SUCCEEDED(hr);
     hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
         // Create a new swapchain and place it inside the canvas
         HRESULT hr;
         hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Controls_SwapChainPanel).Get(),
                                 &d->swapChainPanel);
         Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<Xaml::IUIElement> uiElement;
-        hr = d->swapChainPanel.As(&uiElement);
+        hr = d->swapChainPanel.As(&d->uiElement);
         Q_ASSERT_SUCCEEDED(hr);
 
-        ComPtr<Xaml::IDependencyObject> canvas = d->screen->canvas();
-        ComPtr<Xaml::Controls::IPanel> panel;
+        ComPtr<IDependencyObject> canvas = d->screen->canvas();
+        ComPtr<IPanel> panel;
         hr = canvas.As(&panel);
         Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<IVector<Xaml::UIElement *>> children;
+        ComPtr<IVector<UIElement *>> children;
         hr = panel->get_Children(&children);
         Q_ASSERT_SUCCEEDED(hr);
-        hr = children->Append(uiElement.Get());
+        hr = children->Append(d->uiElement.Get());
         Q_ASSERT_SUCCEEDED(hr);
         return S_OK;
     });
@@ -134,20 +152,18 @@ QWinRTWindow::~QWinRTWindow()
     HRESULT hr;
     hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
         HRESULT hr;
-        ComPtr<Xaml::IDependencyObject> canvas = d->screen->canvas();
-        ComPtr<Xaml::Controls::IPanel> panel;
+        ComPtr<IDependencyObject> canvas = d->screen->canvas();
+        ComPtr<IPanel> panel;
         hr = canvas.As(&panel);
         Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<IVector<Xaml::UIElement *>> children;
+        ComPtr<IVector<UIElement *>> children;
         hr = panel->get_Children(&children);
         Q_ASSERT_SUCCEEDED(hr);
 
-        ComPtr<Xaml::IUIElement> uiElement;
-        hr = d->swapChainPanel.As(&uiElement);
         Q_ASSERT_SUCCEEDED(hr);
         quint32 index;
         boolean found;
-        hr = children->IndexOf(uiElement.Get(), &index, &found);
+        hr = children->IndexOf(d->uiElement.Get(), &index, &found);
         Q_ASSERT_SUCCEEDED(hr);
         if (found) {
             hr = children->RemoveAt(index);
@@ -181,7 +197,8 @@ void QWinRTWindow::setGeometry(const QRect &rect)
     Q_D(QWinRTWindow);
 
     if (window()->isTopLevel()) {
-        QPlatformWindow::setGeometry(d->screen->geometry());
+        QPlatformWindow::setGeometry(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint
+                                     ? d->screen->geometry() : d->screen->availableGeometry());
         QWindowSystemInterface::handleGeometryChange(window(), geometry());
     } else {
         QPlatformWindow::setGeometry(rect);
@@ -191,10 +208,16 @@ void QWinRTWindow::setGeometry(const QRect &rect)
     HRESULT hr;
     hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
         HRESULT hr;
+        const QRect windowGeometry = geometry();
+        const QPointF topLeft= QPointF(windowGeometry.topLeft()) / d->screen->scaleFactor();
+        hr = d->canvas->SetTop(d->uiElement.Get(), topLeft.y());
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = d->canvas->SetLeft(d->uiElement.Get(), topLeft.x());
+        Q_ASSERT_SUCCEEDED(hr);
         ComPtr<Xaml::IFrameworkElement> frameworkElement;
         hr = d->swapChainPanel.As(&frameworkElement);
         Q_ASSERT_SUCCEEDED(hr);
-        const QSizeF size = QSizeF(geometry().size()) / d->screen->scaleFactor();
+        const QSizeF size = QSizeF(windowGeometry.size()) / d->screen->scaleFactor();
         hr = frameworkElement->put_Width(size.width());
         Q_ASSERT_SUCCEEDED(hr);
         hr = frameworkElement->put_Height(size.height());
@@ -209,10 +232,13 @@ void QWinRTWindow::setVisible(bool visible)
     Q_D(QWinRTWindow);
     if (!window()->isTopLevel())
         return;
-    if (visible)
+    if (visible) {
         d->screen->addWindow(window());
-    else
+        setUIElementVisibility(d->uiElement.Get(), d->state != Qt::WindowMinimized);
+    } else {
         d->screen->removeWindow(window());
+        setUIElementVisibility(d->uiElement.Get(), false);
+    }
 }
 
 void QWinRTWindow::setWindowTitle(const QString &title)
@@ -247,6 +273,25 @@ WId QWinRTWindow::winId() const
 qreal QWinRTWindow::devicePixelRatio() const
 {
     return screen()->devicePixelRatio();
+}
+
+void QWinRTWindow::setWindowState(Qt::WindowState state)
+{
+    Q_D(QWinRTWindow);
+    if (d->state == state)
+        return;
+
+#ifdef Q_OS_WINPHONE
+    d->screen->setStatusBarVisibility(state == Qt::WindowMaximized || state == Qt::WindowNoState, window());
+#endif
+
+    if (state == Qt::WindowMinimized)
+        setUIElementVisibility(d->uiElement.Get(), false);
+
+    if (d->state == Qt::WindowMinimized)
+        setUIElementVisibility(d->uiElement.Get(), true);
+
+    d->state = state;
 }
 
 QT_END_NAMESPACE
