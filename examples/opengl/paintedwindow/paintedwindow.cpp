@@ -83,9 +83,11 @@ PaintedWindow::PaintedWindow()
     m_targetOrientation = contentOrientation();
     m_nextTargetOrientation = Qt::PrimaryOrientation;
 
-    connect(screen(), SIGNAL(orientationChanged(Qt::ScreenOrientation)), this, SLOT(orientationChanged(Qt::ScreenOrientation)));
-    connect(m_animation, SIGNAL(finished()), this, SLOT(rotationDone()));
-    connect(this, SIGNAL(rotationChanged(qreal)), this, SLOT(paint()));
+    connect(screen(), &QScreen::orientationChanged, this, &PaintedWindow::orientationChanged);
+    connect(m_animation, &QAbstractAnimation::finished, this, &PaintedWindow::rotationDone);
+    typedef void (PaintedWindow::*PaintedWindowVoidSlot)();
+    connect(this, &PaintedWindow::rotationChanged,
+            this, static_cast<PaintedWindowVoidSlot>(&PaintedWindow::paint));
 }
 
 void PaintedWindow::exposeEvent(QExposeEvent *)

@@ -59,8 +59,8 @@ Window::Window()
             glWidgets[i][j]->rotateBy(+42 * 16, +42 * 16, -21 * 16);
             mainLayout->addWidget(glWidgets[i][j], i, j);
 
-            connect(glWidgets[i][j], SIGNAL(clicked()),
-                    this, SLOT(setCurrentGlWidget()));
+            connect(glWidgets[i][j], &GLWidget::clicked,
+                    this, &Window::setCurrentGlWidget);
         }
     }
     setLayout(mainLayout);
@@ -68,7 +68,7 @@ Window::Window()
     currentGlWidget = glWidgets[0][0];
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(rotateOneStep()));
+    connect(timer, &QTimer::timeout, this, &Window::rotateOneStep);
     timer->start(20);
 
     setWindowTitle(tr("Textures"));

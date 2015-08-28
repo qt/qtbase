@@ -119,7 +119,7 @@ void Renderer::setAnimating(HelloWindow *window, bool animating)
     if (animating) {
         m_windows << window;
         if (m_windows.size() == 1)
-            QTimer::singleShot(0, this, SLOT(render()));
+            QTimer::singleShot(0, this, &Renderer::render);
     } else {
         m_currentWindow = 0;
         m_windows.removeOne(window);
@@ -184,7 +184,7 @@ void Renderer::render()
 
     m_fAngle += 1.0f;
 
-    QTimer::singleShot(0, this, SLOT(render()));
+    QTimer::singleShot(0, this, &Renderer::render);
 }
 
 Q_GLOBAL_STATIC(QMutex, initMutex)

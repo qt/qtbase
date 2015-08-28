@@ -92,7 +92,7 @@ GLWindow::GLWindow()
     rAnim->setLoopCount(-1);
     rAnim->start();
 
-    QTimer::singleShot(4000, this, SLOT(startSecondStage()));
+    QTimer::singleShot(4000, this, &GLWindow::startSecondStage);
 }
 
 GLWindow::~GLWindow()
