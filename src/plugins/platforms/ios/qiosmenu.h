@@ -135,6 +135,7 @@ private:
     void toggleShowUsingUIMenuController(bool show);
     void toggleShowUsingUIPickerView(bool show);
     QIOSMenuItemList visibleMenuItems() const;
+    QIOSMenuItemList filterFirstResponderActions(const QIOSMenuItemList &menuItems);
     void repositionMenu();
 };
 
