@@ -47,6 +47,7 @@ namespace ABI {
             class StorageFile;
             class StorageFolder;
             struct IStorageFile;
+            struct IStorageFolder;
         }
         namespace Foundation {
             enum class AsyncStatus;
@@ -71,6 +72,9 @@ public:
     void exec() Q_DECL_OVERRIDE;
     bool show(Qt::WindowFlags, Qt::WindowModality, QWindow *) Q_DECL_OVERRIDE;
     void hide() Q_DECL_OVERRIDE;
+#ifdef Q_OS_WINPHONE
+    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+#endif
 
     bool defaultNameFilterDisables() const Q_DECL_OVERRIDE { return false; }
     void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
@@ -81,13 +85,19 @@ public:
     void selectNameFilter(const QString &selectedNameFilter) Q_DECL_OVERRIDE;
     QString selectedNameFilter() const;
 
-private:
+#ifndef Q_OS_WINPHONE
     HRESULT onSingleFilePicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFile *> *,
                                ABI::Windows::Foundation::AsyncStatus);
     HRESULT onMultipleFilesPicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Storage::StorageFile *> *> *,
                                   ABI::Windows::Foundation::AsyncStatus);
     HRESULT onSingleFolderPicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFolder *> *,
                                  ABI::Windows::Foundation::AsyncStatus);
+#endif
+
+private:
+    HRESULT onFilesPicked(ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Storage::StorageFile *> *files);
+    HRESULT onFolderPicked(ABI::Windows::Storage::IStorageFolder *folder);
+    HRESULT onFilePicked(ABI::Windows::Storage::IStorageFile *file);
     void appendFile(IInspectable *);
 
     QScopedPointer<QWinRTFileDialogHelperPrivate> d_ptr;
