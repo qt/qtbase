@@ -277,6 +277,11 @@ void QIOSMenuItem::setRole(QPlatformMenuItem::MenuRole role)
     m_role = role;
 }
 
+void QIOSMenuItem::setShortcut(const QKeySequence &sequence)
+{
+    m_shortcut = sequence;
+}
+
 void QIOSMenuItem::setEnabled(bool enabled)
 {
     m_enabled = enabled;
