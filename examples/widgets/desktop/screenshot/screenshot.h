@@ -73,25 +73,14 @@ private slots:
     void updateCheckBox();
 
 private:
-    void createOptionsGroupBox();
-    void createButtonsLayout();
-    QPushButton *createButton(const QString &text, QWidget *receiver, const char *member);
     void updateScreenshotLabel();
 
     QPixmap originalPixmap;
 
     QLabel *screenshotLabel;
-    QGroupBox *optionsGroupBox;
     QSpinBox *delaySpinBox;
-    QLabel *delaySpinBoxLabel;
     QCheckBox *hideThisWindowCheckBox;
     QPushButton *newScreenshotButton;
-    QPushButton *saveScreenshotButton;
-    QPushButton *quitScreenshotButton;
-
-    QVBoxLayout *mainLayout;
-    QGridLayout *optionsGroupBoxLayout;
-    QHBoxLayout *buttonsLayout;
 };
 //! [0]
 
