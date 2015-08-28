@@ -220,8 +220,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         ++edition;
     }
 
-    // The following line was changed to fix QTBUG-27798
-    //codeIndent = config.getInt(CONFIG_CODEINDENT);
+    codeIndent = config.getInt(CONFIG_CODEINDENT); // QTBUG-27798
+    codePrefix = config.getString(CONFIG_CODEPREFIX);
+    codeSuffix = config.getString(CONFIG_CODESUFFIX);
 
     /*
       The help file write should be allocated once and only once
@@ -584,23 +585,23 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         break;
     case Atom::Code:
         out() << "<pre class=\"cpp\">"
-              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative))
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative), codePrefix, codeSuffix)
               << "</pre>\n";
         break;
     case Atom::Qml:
         out() << "<pre class=\"qml\">"
-              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative))
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative), codePrefix, codeSuffix)
               << "</pre>\n";
         break;
     case Atom::JavaScript:
         out() << "<pre class=\"js\">"
-              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative))
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative), codePrefix, codeSuffix)
               << "</pre>\n";
         break;
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
               << "<pre class=\"cpp\">"
-              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative))
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),relative), codePrefix, codeSuffix)
               << "</pre>\n";
         break;
     case Atom::CodeOld:
@@ -608,7 +609,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         // fallthrough
     case Atom::CodeBad:
         out() << "<pre class=\"cpp\">"
-              << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
+              << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))), codePrefix, codeSuffix)
               << "</pre>\n";
         break;
     case Atom::DivLeft:
@@ -2370,7 +2371,7 @@ void HtmlGenerator::generateIncludes(const Aggregate *inner, CodeMarker *marker)
         out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,
                                                         marker->markedUpIncludes(inner->includes())),
-                                                 inner))
+                                                 inner), codePrefix, codeSuffix)
               << "</pre>";
     }
 }

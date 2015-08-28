@@ -185,6 +185,13 @@
     to adjust the appearance of certain types of HTML elements, this
     level of indentation is not always required.
 
+    \target codeprefix-variable
+    \target codesuffix-variable
+    \section1 codeprefix, codesuffix
+
+    The \c codeprefix and \c codesuffix variables specify a pair of
+    strings that each code snippet is enclosed in.
+
     \target defines-variable
     \section1 defines
 

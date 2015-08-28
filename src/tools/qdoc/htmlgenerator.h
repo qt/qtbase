@@ -233,6 +233,8 @@ private:
 
     QHash<QString, QString> refMap;
     int codeIndent;
+    QString codePrefix;
+    QString codeSuffix;
     HelpProjectWriter *helpProjectWriter;
     bool inObsoleteLink;
     QRegExp funcLeftParen;

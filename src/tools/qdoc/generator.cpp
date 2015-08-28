@@ -2115,11 +2115,14 @@ void Generator::terminateGenerator()
   Trims trailing whitespace off the \a string and returns
   the trimmed string.
  */
-QString Generator::trimmedTrailing(const QString& string)
+QString Generator::trimmedTrailing(const QString& string, const QString &prefix, const QString &suffix)
 {
     QString trimmed = string;
     while (trimmed.length() > 0 && trimmed[trimmed.length() - 1].isSpace())
         trimmed.truncate(trimmed.length() - 1);
+
+    trimmed.append(suffix);
+    trimmed.prepend(prefix);
     return trimmed;
 }
 

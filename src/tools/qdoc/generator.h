@@ -139,7 +139,9 @@ protected:
     static QString outputSuffix(const Node* node);
     static void singularPlural(Text& text, const NodeList& nodes);
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
-    static QString trimmedTrailing(const QString &string);
+    static QString trimmedTrailing(const QString &string,
+                                   const QString &prefix,
+                                   const QString &suffix);
     static QString sinceTitles[];
 
     void initializeTextOutput();
