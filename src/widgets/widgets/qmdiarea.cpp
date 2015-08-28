@@ -380,7 +380,7 @@ void IconTiler::rearrange(QList<QWidget *> &widgets, const QRect &domain) const
         return;
 
     const int n = widgets.size();
-    const int width = widgets.at(0)->width();
+    const int width = qMax(widgets.at(0)->width(), 1);
     const int height = widgets.at(0)->height();
     const int ncols = qMax(domain.width() / width, 1);
     const int nrows = n / ncols + ((n % ncols) ? 1 : 0);
@@ -938,7 +938,7 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
         if (!sanityCheck(child, "QMdiArea::rearrange") || !child->isVisible())
             continue;
         if (rearranger->type() == Rearranger::IconTiler) {
-            if (child->isMinimized() && !child->isShaded() && !(child->windowFlags() & Qt::FramelessWindowHint))
+            if (child->isMinimized() && !child->isShaded())
                 widgets.append(child);
         } else {
             if (child->isMinimized() && !child->isShaded())

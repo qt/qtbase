@@ -2655,7 +2655,7 @@ void QMdiSubWindow::showShaded()
     resize(d->internalMinimumSize);
 
     // Hide the internal widget if not already hidden by the user.
-    if (d->baseWidget && !d->baseWidget->isHidden()) {
+    if (d->baseWidget && !d->baseWidget->isHidden() && !(windowFlags() & Qt::FramelessWindowHint)) {
         d->baseWidget->hide();
         d->isWidgetHiddenByUs = true;
     }
