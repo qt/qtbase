@@ -62,8 +62,10 @@ include($$PWD/../../../platformsupport/eventdispatchers/eventdispatchers.pri)
 include($$PWD/../../../platformsupport/fontdatabases/basic/basic.pri)
 INCLUDEPATH += $$PWD/../../../platformsupport/eventdispatchers
 
-LIBS += -lppapi -lppapi_cpp -lppapi_gles2
-
-!pnacl:nacl-newlib {
-    LIBS += -lerror_handling
+# Pepper dependenices
+emscripten {
+    include(pepper.js.pri)
+} else {
+    LIBS += -lppapi -lppapi_cpp -lppapi_gles2
+    !pnacl:nacl-newlib: LIBS += -lerror_handling
 }

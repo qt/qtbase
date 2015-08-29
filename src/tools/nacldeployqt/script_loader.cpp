@@ -14,9 +14,10 @@ const char * loaderScript = R"STRING_DELIMITER(
 //      type : "application/pnacl",
 //   });
 //
-// - Create Qt/NaCl <embed> element
+// - Create Qt/NaCl <embed> element, add it to the DOM, call load()
 //  var qtEmbed = qt.createQtElement();
 //  topLevelElement.appendChild(qtEmbed);
+//  qt.load()
 //
 // - Post messages (will end up in QPepperInstance::HandleMessage)
 //  qt.postMessage(message)
@@ -123,7 +124,28 @@ function handleMessageEvent(messageEvent)
     }
 }
 
-function createQtElement()
+function loadScript(src, onload)
+{
+    var script = document.createElement('script')
+    script.src = src
+    script.onload = function () {
+        onload()
+    };
+    document.head.appendChild(script); //or something of the likes
+}
+
+// Create Qt container element, possibly re-using existingElement
+function createQtElement(existingElement)
+{
+    var element
+    if (config.type == "emscripten")
+        element = createEmscriptenElement(existingElement)
+    else
+        element = createNaClElement(existingElement)
+    return element
+}
+
+function createNaClElement(existingElement)
 {
     // Create NaCl <embed> element.
     var embed = document.createElement("EMBED");
@@ -140,8 +162,8 @@ function createQtElement()
     }
 
     // Create container div which handles load and message events
-    var listener = document.createElement("div");
-    listener.setAttribute("class", "qt-nacl-container");
+    var listener = existingElement || document.createElement("div");
+    listener.className = "qt-container"
     listener.addEventListener('message', handleMessageEvent, true);
     listener.appendChild(embed);
     listener.embed = embed;
@@ -152,6 +174,40 @@ function createQtElement()
     return listener;
 }
 
+function createEmscriptenElement(existingElement)
+{
+    var listener = existingElement || document.createElement("div");
+    listener.className = "qt-container"
+    listener.addEventListener('message', handleMessageEvent, true);
+    
+    self.embed = listener;
+    self.listener = listener;
+    return listener;
+}
+
+function load()
+{
+    // for emscripten loading starts after the element has
+    // been added to the DOM.
+    if (config.type == "emscripten")
+        loadEmscripten()
+}
+
+function loadEmscripten()
+{
+    var width = self.listener.offsetWidth
+    var height = self.listener.offsetHeight
+
+    var embed = document.createElement("div");
+    self.listener.appendChild(embed);
+    self.listener.embed = embed;
+
+    loadScript(config.src, function(){
+        CreateInstance(width, height, embed);
+        embed.finishLoading();
+    })
+}
+
 function postMessage(message) {
     self.embed.postMessage(message)
 }
@@ -159,6 +215,7 @@ function postMessage(message) {
 // return object with public API
 return {
     createQtElement : createQtElement,
+    load : load,
     postMessage : postMessage
 }
 

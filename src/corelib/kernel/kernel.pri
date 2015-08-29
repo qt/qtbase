@@ -124,7 +124,7 @@ mac {
 }
 
 nacl {
-    LIBS += -lppapi -lppapi_cpp
+    !emscripten: LIBS += -lppapi -lppapi_cpp
     SOURCES += kernel/qfunctions_nacl.cpp
     HEADERS += kernel/qfunctions_nacl.h
 }

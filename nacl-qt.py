@@ -23,12 +23,17 @@ parser.add_argument('-d', '--dryrun',   action='store_true',   help='dry run. pr
 args = parser.parse_args()
 
 # use default values for missing command line configuration values
-platforms = ['pnacl'] if args.platform == None else args.platform
+platforms = args.platform # no default platform
 variants = ['release'] if args.variant == None else args.variant
 actions = ['configure', 'build'] if args.action == None else args.action
 modules = ['qtbase'] if args.module == None else args.module
 configure = [] if args.configure == None else args.configure
 dryrun = args.dryrun
+
+# print help and exit if no platform was specified
+if len(platforms) == 0:
+    parser.print_help()
+    exit(0)
 
 print ''
 print 'platforms : ' + ' '.join(platforms)
@@ -38,7 +43,7 @@ print 'modules   : ' + ' '.join(modules)
 print 'conf. args: ' + ' '.join(configure)
 print ''
 
-# find the Qt root dir (expect the stnadard setup with qtbase, qtdeclarative, ect subdirs)
+# find the Qt root dir (expect the standard setup with qtbase, qtdeclarative, ect subdirs)
 scriptfile =  __file__
 qtbasedir = path.abspath(path.dirname(scriptfile))
 qtdir = path.dirname(qtbasedir)

@@ -31,7 +31,10 @@ public:
 private:
     QByteArray mainHtmlFileName;
     QHash<QByteArray, QByteArray> templateReplacements;
-    bool isPNaCl;
+    enum DeploymentType { NaCl, PNaCl, Emscripten };
+    const char *deploymentTypeNames[3] = { "NaCl", "PNaCl", "Emscripten"};
+    DeploymentType deploymentType;
+
     QString appName;
     QString nmf;
     QSet<QByteArray> permissions;
@@ -64,11 +67,18 @@ int QtNaclDeployer::deploy()
         outDir.append("/");
     QDir().mkpath(outDir);
 
-    isPNaCl = binary.endsWith(".bc");
+    // Guess deployment type based on filename extension.
+    if (binary.endsWith(".bc"))
+        deploymentType = PNaCl;
+    else if (binary.endsWith(".js"))
+        deploymentType = Emscripten;
+    else
+        deploymentType = NaCl;
 
     QString appName = binary;
     appName.replace(".nexe", "");
     appName.replace(".bc", "");
+    appName.replace(".js", "");
     nmf = appName + ".nmf";
 
     if (!QFile(binary).exists()) {
@@ -83,16 +93,20 @@ int QtNaclDeployer::deploy()
 
     // Set up template replacements. There is one global map
     // for all templates.
+    const char *apptypes[3] = { "application/x-nacl", "application/x-pnacl", "emscripten"};
+    const char *extension[3] = { ".nmf", ".nmf", ".js" };
+
     templateReplacements["%MAINHTML%"] = mainHtmlFileName;
     templateReplacements["%APPNAME%"] = appName.toUtf8();
-    templateReplacements["%APPTYPE%"] = isPNaCl ? "application/x-pnacl" : "application/x-nacl";
+    templateReplacements["%APPSOURCE%"] = appName.toUtf8() + extension[deploymentType];
+    templateReplacements["%APPTYPE%"] = apptypes[deploymentType];
     templateReplacements["%CHROMEAPP%"] = isApp ? "true;" : "false;";
     templateReplacements["%PERMISSIONS%"] = quote(permissions.toList()).join(", ");
 
     // Get the NaCl SDK root from environment
     QString naclSdkRoot = qgetenv("NACL_SDK_ROOT");
     if (naclSdkRoot.isEmpty()) {
-        qDebug() << "Plese set NACL_SDK_ROOT";
+        qDebug() << "Please set NACL_SDK_ROOT";
         qDebug() << "For example: /Users/foo/nacl_sdk/pepper_35";
         return 0;
     }
@@ -127,7 +141,10 @@ int QtNaclDeployer::deploy()
     if (!testlibMode) {
         qDebug() << " ";
         qDebug() << "Deploying" << binary;
-        qDebug() << "Using SDK" << naclSdkRoot;
+        qDebug() << "Build Type:" << deploymentTypeNames[deploymentType];
+        if (deploymentType != Emscripten) {           // (Emscripten builds are not actually using
+            qDebug() << "Using SDK" << naclSdkRoot;   // the SDK at deploy time)
+        }
         qDebug() << "Qt libs in" << qtLibDir;
         qDebug() << "Output directory:" << QDir(outDir).canonicalPath();
         qDebug() << " ";
@@ -155,7 +172,7 @@ int QtNaclDeployer::deploy()
 
     // On PNaCl, the output from "make" is a bitcode .bc file. Create
     // a .pexe suitable for distribution using "pnacl-finalize".
-    if (isPNaCl) {
+    if (deploymentType == PNaCl) {
         finalBinary.replace(".bc", ".pexe");
         QString finalizeCommand = pnaclFinalize + " -o " + outDir + finalBinary + " " + binary;
         runCommand(finalizeCommand);
@@ -166,7 +183,8 @@ int QtNaclDeployer::deploy()
     const QString finalBinaryPath = outDir + finalBinary;
 
     // create the .nmf manifest file
-    QString nmfCommand = QStringLiteral("python ") + createNmf
+    if (deploymentType != Emscripten) {
+        QString nmfCommand = QStringLiteral("python ") + createNmf
                 + " -o " + nmfFilePath
                 + " -L " + qtLibDir           // Add Qt libs search payh
                 + " -s  . "                   // copy dependencies 
@@ -174,7 +192,8 @@ int QtNaclDeployer::deploy()
                 + " " + finalBinaryPath
                 + " " + (debug ? binary : QString("")); // deploy .bc when debugging (adds a "pnacl-debug" section to the nmf)
     
-    runCommand(nmfCommand.toLatin1().constData());
+        runCommand(nmfCommand.toLatin1().constData());
+    }
 
     // select template. See the template_*.cpp files.
     if (tmplate.isEmpty())
@@ -444,7 +463,7 @@ int main(int argc, char **argv)
 
     // Get target binary file name from command line, or find one
     // in the currrent directory
-    QStringList binaries = QDir().entryList(QStringList() << "*.nexe" << "*.bc", QDir::Files);
+    QStringList binaries = QDir().entryList(QStringList() << "*.nexe" << "*.bc" << "*.js", QDir::Files);
     if (args.count() == 0) {
         if (binaries.count() == 0) {
             parser.showHelp(0);
