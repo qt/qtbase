@@ -34,6 +34,8 @@
 #include "qwindowcontainer_p.h"
 #include "qwidget_p.h"
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #include <QDebug>
 
 #include <QMdiSubWindow>
@@ -195,6 +197,13 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
         qWarning("QWindowContainer: embedded window cannot be null");
         return;
     }
+
+    // The embedded QWindow must use the same logic as QWidget when it comes to the surface type.
+    // Otherwise we may end up with BadMatch failures on X11.
+    if (embeddedWindow->surfaceType() == QSurface::RasterSurface
+        && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
+        && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets))
+        embeddedWindow->setSurfaceType(QSurface::RasterGLSurface);
 
     d->window = embeddedWindow;
     d->window->setParent(&d->fakeParent);

@@ -389,7 +389,8 @@ void QXcbWindow::create()
     resolveFormat();
 
 #ifdef XCB_USE_XLIB
-    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
+    if (window()->surfaceType() != QSurface::RasterSurface
+     && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
         XVisualInfo *visualInfo = Q_NULLPTR;
         if (connection()->hasDefaultVisualId())
             visualInfo = CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(this);
