@@ -1382,7 +1382,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 
     Signals are not blocked by default.
 
-    \sa blockSignals()
+    \sa blockSignals(), QSignalBlocker
 */
 
 /*!
@@ -1397,7 +1397,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 
     Signals emitted while being blocked are not buffered.
 
-    \sa signalsBlocked()
+    \sa signalsBlocked(), QSignalBlocker
 */
 
 bool QObject::blockSignals(bool block) Q_DECL_NOTHROW
