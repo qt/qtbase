@@ -172,7 +172,7 @@ QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
     CGAffineTransform transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100)
+    if (fontDef.stretch && fontDef.stretch != 100)
         transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
     return transform;
 }

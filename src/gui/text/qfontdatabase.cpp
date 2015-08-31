@@ -951,12 +951,14 @@ QFontEngine *loadSingleEngine(int script,
             }
         }
 
-        // If the font data's native stretch matches the requested stretch we need to set stretch to 100
-        // to avoid the fontengine synthesizing stretch. If they didn't match exactly we need to calculate
-        // the new stretch factor. This only done if not matched by styleName.
+        // To avoid synthesized stretch we need a matching stretch to be 100 after this point.
+        // If stretch didn't match exactly we need to calculate the new stretch factor.
+        // This only done if not matched by styleName.
         if (style->key.stretch != 0 && request.stretch != 0
             && (request.styleName.isEmpty() || request.styleName != style->styleName)) {
-            def.stretch = (request.stretch * 100 + 50) / style->key.stretch;
+            def.stretch = (request.stretch * 100 + style->key.stretch / 2) / style->key.stretch;
+        } else {
+            def.stretch = 100;
         }
 
         engine = pfdb->fontEngine(def, size->handle);
@@ -1219,7 +1221,8 @@ static int match(int script, const QFontDef &request,
     QtFontStyle::Key styleKey;
     styleKey.style = request.style;
     styleKey.weight = request.weight;
-    styleKey.stretch = request.stretch;
+    // Prefer a stretch closest to 100.
+    styleKey.stretch = request.stretch ? request.stretch : 100;
     char pitch = request.ignorePitch ? '*' : request.fixedPitch ? 'm' : 'p';
 
 
@@ -2740,8 +2743,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
     if (req.pointSize < 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
-    if (req.stretch == 0)
-        req.stretch = 100;
 
     // respect the fallback families that might be passed through the request
     const QStringList fallBackFamilies = familyList(req);

@@ -101,8 +101,6 @@ void tst_QFontCache::engineData()
     }
     if (req.pointSize < 0)
         req.pointSize = req.pixelSize*72.0/d->dpi;
-    if (req.stretch == 0)
-        req.stretch = 100;
 
     req.family = cacheKey;
 

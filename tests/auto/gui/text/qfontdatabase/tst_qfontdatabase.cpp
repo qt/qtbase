@@ -64,6 +64,8 @@ private slots:
     void aliases();
     void fallbackFonts();
 
+    void liberationFont();
+
 private:
     const QString m_testFont;
 };
@@ -273,6 +275,24 @@ void tst_QFontDatabase::fallbackFonts()
         QCOMPARE(run.glyphIndexes().size(), 1);
         QVERIFY(run.glyphIndexes().at(0) != 0);
     }
+}
+
+void tst_QFontDatabase::liberationFont()
+{
+    QString libSans("Liberation Sans");
+    QString libSansNarrow("Liberation Sans Narrow");
+
+    QFontDatabase db;
+    if (!db.hasFamily(libSans) || !db.hasFamily(libSansNarrow))
+        QSKIP("Requires Liberation Sans installed");
+
+    QFont fontLS(libSans);
+    QFont fontLSN(libSansNarrow);
+
+    QFontMetrics fmLS(fontLS);
+    QFontMetrics fmLSN(fontLSN);
+
+    QVERIFY(fmLS.width(QStringLiteral("foo bar")) > fmLSN.width(QStringLiteral("foo bar")));
 }
 
 QTEST_MAIN(tst_QFontDatabase)
