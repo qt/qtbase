@@ -35,6 +35,7 @@
 #define QSIGNALTRANSITION_H
 
 #include <QtCore/qabstracttransition.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,6 +53,18 @@ public:
     QSignalTransition(QState *sourceState = Q_NULLPTR);
     QSignalTransition(const QObject *sender, const char *signal,
                       QState *sourceState = Q_NULLPTR);
+#ifdef Q_QDOC
+    QSignalTransition(const QObject *object, PointerToMemberFunction signal,
+                      QState *sourceState = Q_NULLPTR);
+#elif defined(Q_COMPILER_DELEGATING_CONSTRUCTORS)
+    template <typename Func>
+    QSignalTransition(const typename QtPrivate::FunctionPointer<Func>::Object *obj,
+                      Func sig, QState *srcState = Q_NULLPTR)
+    : QSignalTransition(obj, QMetaMethod::fromSignal(sig).methodSignature().constData(), srcState)
+    {
+    }
+#endif
+
     ~QSignalTransition();
 
     QObject *senderObject() const;

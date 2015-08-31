@@ -238,6 +238,9 @@ private slots:
 
     void multiTargetTransitionInsideParallelStateGroup();
     void signalTransitionNormalizeSignature();
+#ifdef Q_COMPILER_DELEGATING_CONSTRUCTORS
+    void createPointerToMemberSignalTransition();
+#endif
     void createSignalTransitionWhenRunning();
     void createEventTransitionWhenRunning();
     void signalTransitionSenderInDifferentThread();
@@ -5875,6 +5878,31 @@ void tst_QStateMachine::signalTransitionNormalizeSignature()
     TEST_ACTIVE_CHANGED(s0, 2);
     TEST_ACTIVE_CHANGED(s1, 1);
 }
+
+#ifdef Q_COMPILER_DELEGATING_CONSTRUCTORS
+void tst_QStateMachine::createPointerToMemberSignalTransition()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    DEFINE_ACTIVE_SPY(s1);
+    machine.setInitialState(s1);
+    machine.start();
+    TEST_ACTIVE_CHANGED(s1, 1);
+    QTRY_VERIFY(machine.configuration().contains(s1));
+
+    QState *s2 = new QState(&machine);
+    DEFINE_ACTIVE_SPY(s2);
+    SignalEmitter emitter;
+    QSignalTransition *t1 = new QSignalTransition(&emitter, &SignalEmitter::signalWithNoArg, s1);
+    QCOMPARE(t1->sourceState(), s1);
+    t1->setTargetState(s2);
+    s1->addTransition(t1);
+    emitter.emitSignalWithNoArg();
+    TEST_ACTIVE_CHANGED(s1, 2);
+    TEST_ACTIVE_CHANGED(s2, 1);
+    QTRY_VERIFY(machine.configuration().contains(s2));
+}
+#endif
 
 void tst_QStateMachine::createSignalTransitionWhenRunning()
 {
