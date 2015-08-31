@@ -817,7 +817,7 @@ FunctionNode *Aggregate::findFunctionNode(const QString& name, const QString& pa
     FunctionNode* fn = pfn;
     if (fn) {
         const QVector<Parameter>* funcParams = &(fn->parameters());
-        if (params.isEmpty() && funcParams->isEmpty())
+        if (params.isEmpty() && funcParams->isEmpty() && !fn->isInternal())
             return fn;
         bool isQPrivateSignal = false; // Not used in the search
         QVector<Parameter> testParams;
@@ -829,7 +829,7 @@ FunctionNode *Aggregate::findFunctionNode(const QString& name, const QString& pa
         int i = -1;
         while (fn) {
             if (testParams.size() == funcParams->size()) {
-                if (testParams.isEmpty())
+                if (testParams.isEmpty() && !fn->isInternal())
                     return fn;
                 bool different = false;
                 for (int j=0; j<testParams.size(); j++) {
@@ -838,7 +838,7 @@ FunctionNode *Aggregate::findFunctionNode(const QString& name, const QString& pa
                         break;
                     }
                 }
-                if (!different)
+                if (!different && !fn->isInternal())
                     return fn;
             }
             if (++i < funcs.size()) {
@@ -848,19 +848,30 @@ FunctionNode *Aggregate::findFunctionNode(const QString& name, const QString& pa
             else
                 fn = 0;
         }
-        if (!fn && !testParams.empty())
-            return 0;
+        /*
+          Most \l commands that link to functions don't include
+          the parameter declarations in the function signature,
+          so if the \l is meant to go to a function that does
+          have parameters, the algorithm above won't find it.
+          Therefore we must return the pointer to the function
+          in the primary function map in the cases where the
+          parameters should have been specified in the \l command.
+          But if the primary function is marked internal, search
+          the secondary list to find one that is not marked internal.
+        */
+        if (!fn) {
+            if (!testParams.empty())
+                return 0;
+            if (pfn && !pfn->isInternal())
+                return pfn;
+            foreach (Node* n, funcs) {
+                fn = static_cast<FunctionNode*>(n);
+                if (!fn->isInternal())
+                    return fn;
+            }
+        }
     }
-    /*
-      Most \l commands that link to functions don't include
-      the parameter declarations in the function signature,
-      so if the \l is meant to go to a function that does
-      have parameters, the algorithm above won't find it.
-      Therefore we must return the pointer to the function
-      in the primary function map in the cases where the
-      parameters should have been specified in the \l command.
-    */
-    return (fn ? fn : pfn);
+    return fn;
 }
 
 /*!

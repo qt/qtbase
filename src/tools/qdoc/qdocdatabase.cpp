@@ -1673,8 +1673,6 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     Atom* atom = const_cast<Atom*>(a);
     QStringList targetPath = atom->string().split("#");
     QString first = targetPath.first().trimmed();
-    if (Generator::debugging())
-        qDebug() << "  first:" << first;
 
     Tree* domain = 0;
     Node::Genus genus = Node::DontCare;
@@ -1725,8 +1723,6 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
         }
         else if (first.endsWith(QChar(')'))) {
             node = findFunctionNode(first, relative, genus);
-            if (Generator::debugging())
-                qDebug() << "  node:" << node;
         }
         else {
             node = findNodeForTarget(targetPath, relative, genus, ref);
