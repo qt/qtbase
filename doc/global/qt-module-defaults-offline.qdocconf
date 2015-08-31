@@ -7,7 +7,11 @@ include(qt-cpp-defines.qdocconf)
 include(compat.qdocconf)
 include(manifest-meta.qdocconf)
 include(fileextensions.qdocconf)
-include(qt-html-templates-offline.qdocconf)
+
+# By default, select the 'simple' offline template, suited for rendering
+# HTML with QTextBrowser.
+include(qt-html-templates-offline-simple.qdocconf)
+#include(qt-html-templates-offline.qdocconf)
 
 #extra configuration data such as file extensions
 include(config.qdocconf)
