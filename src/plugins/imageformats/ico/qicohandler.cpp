@@ -100,9 +100,10 @@ public:
 
     static bool write(QIODevice *device, const QVector<QImage> &images);
 
+    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
+
 private:
     bool readHeader();
-    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
 
     bool readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header);
     void findColorInfo(QImage & image);
@@ -341,7 +342,7 @@ bool ICOReader::readHeader()
 
 bool ICOReader::readIconEntry(int index, ICONDIRENTRY *iconEntry)
 {
-    if (iod) {
+    if (readHeader()) {
         if (iod->seek(startpos + ICONDIR_SIZE + (index * ICONDIRENTRY_SIZE))) {
             return readIconDirEntry(iod, iconEntry);
         }
@@ -558,10 +559,10 @@ QImage ICOReader::iconAt(int index)
                 if (icoAttrib.ncolors > 256) //color table can't be more than 256
                     return img;
                 icoAttrib.w = iconEntry.bWidth;
-                if (icoAttrib.w == 0)
+                if (icoAttrib.w == 0) // means 256 pixels
                     icoAttrib.w = header.biWidth;
                 icoAttrib.h = iconEntry.bHeight;
-                if (icoAttrib.h == 0)
+                if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
 
                 QImage::Format format = QImage::Format_ARGB32;
@@ -779,17 +780,11 @@ QtIcoHandler::~QtIcoHandler()
 QVariant QtIcoHandler::option(ImageOption option) const
 {
     if (option == Size) {
-        QIODevice *device = QImageIOHandler::device();
-        qint64 oldPos = device->pos();
         ICONDIRENTRY iconEntry;
-        if (device->seek(oldPos + ICONDIR_SIZE + (m_currentIconIndex * ICONDIRENTRY_SIZE))) {
-            if (readIconDirEntry(device, &iconEntry)) {
-                device->seek(oldPos);
-                return QSize(iconEntry.bWidth, iconEntry.bHeight);
-            }
+        if (m_pICOReader->readIconEntry(m_currentIconIndex, &iconEntry)) {
+                return QSize(iconEntry.bWidth ? iconEntry.bWidth : 256,
+                            iconEntry.bHeight ? iconEntry.bHeight : 256);
         }
-        if (!device->isSequential())
-            device->seek(oldPos);
     }
     return QVariant();
 }

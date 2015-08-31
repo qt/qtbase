@@ -324,6 +324,11 @@ void tst_QIcoImageFormat::pngCompression()
 
     QImage image;
     reader.jumpToImage(index);
+
+    QSize size = reader.size();
+    QCOMPARE(size.width(), width);
+    QCOMPARE(size.height(), height);
+
     reader.read(&image);
 
     QCOMPARE(image.width(), width);
