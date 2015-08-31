@@ -482,7 +482,8 @@ public:
         AA_DontShowIconsInMenus = 2,
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
-        AA_MacPluginApplication = 5,
+        AA_PluginApplication = 5,
+        AA_MacPluginApplication = AA_PluginApplication,  // ### Qt 6: remove me
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,

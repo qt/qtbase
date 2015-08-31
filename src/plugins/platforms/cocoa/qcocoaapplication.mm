@@ -181,7 +181,7 @@ QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_MacPluginApplication))
+    if (QCoreApplication::testAttribute(Qt::AA_PluginApplication))
         // In a plugin we cannot chain sendEvent hooks: a second plugin could
         // store the implementation of the first, which during the program flow
         // can be unloaded.
@@ -207,7 +207,7 @@ void qt_redirectNSApplicationSendEvent()
 
 void qt_resetNSApplicationSendEvent()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_MacPluginApplication))
+    if (QCoreApplication::testAttribute(Qt::AA_PluginApplication))
         return;
 
 

@@ -316,7 +316,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     // ### For AA_MacPluginApplication we don't want to load the menu nib.
     // Qt 4 also does not set the application delegate, so that behavior
     // is matched here.
-    if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+    if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
 
         // Set app delegate, link to the current delegate (if any)
         QCocoaApplicationDelegate *newDelegate = [QCocoaApplicationDelegate sharedDelegate];
@@ -343,7 +343,7 @@ QCocoaIntegration::~QCocoaIntegration()
     qt_resetNSApplicationSendEvent();
 
     QMacAutoReleasePool pool;
-    if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+    if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
         // remove the apple event handlers installed by QCocoaApplicationDelegate
         QCocoaApplicationDelegate *delegate = [QCocoaApplicationDelegate sharedDelegate];
         [delegate removeAppleEventHandlers];
