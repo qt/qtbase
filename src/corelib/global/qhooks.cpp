@@ -37,7 +37,7 @@ QT_BEGIN_NAMESPACE
 
 // Only add to the end, and bump version if you do.
 quintptr Q_CORE_EXPORT qtHookData[] = {
-    2, // hook data version
+    3, // hook data version
     QHooks::LastHookIndex, // size of qtHookData
     QT_VERSION,
 
@@ -52,6 +52,15 @@ quintptr Q_CORE_EXPORT qtHookData[] = {
     0,
 
     // Startup, void(*)(), called once QCoreApplication is operational
+    0,
+
+    // TypeInformationVersion, an integral value, bumped whenever private
+    // object sizes or member offsets that are used in Qt Creator's
+    // data structure "pretty printing" change.
+    //
+    // The required sizes and offsets are tested in tests/auto/other/toolsupport.
+    // When this fails and the change was intentional, adjust the test and
+    // adjust this value here.
     0
 };
 

@@ -46,7 +46,7 @@ private slots:
 
 void tst_QHooks::testVersion()
 {
-    QVERIFY(qtHookData[QHooks::HookDataVersion] >= 1);
+    QVERIFY(qtHookData[QHooks::HookDataVersion] >= 3);
     QCOMPARE(qtHookData[QHooks::HookDataSize], (quintptr)QHooks::LastHookIndex);
     QCOMPARE(qtHookData[QHooks::QtVersion], (quintptr)QT_VERSION);
 }

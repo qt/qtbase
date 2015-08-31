@@ -29,6 +29,16 @@
 
 #include <QtTest>
 
+//
+// Note:
+//
+// When this test here fails and the change leading to the failure
+// intentionally changed a private class, adjust the test here and bump
+// the TypeInformationVersion field in src/corelib/global/qhooks.cpp
+// in the same commit as the modification to the private class.
+//
+
+
 // Don't do this at home. This is test code, not production.
 #define protected public
 #define private public

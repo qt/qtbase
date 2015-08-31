@@ -50,6 +50,7 @@ enum HookIndex {
     AddQObject = 3,
     RemoveQObject = 4,
     Startup = 5,
+    TypeInformationVersion = 6,
     LastHookIndex
 };
 
