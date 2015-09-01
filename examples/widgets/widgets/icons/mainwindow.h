@@ -49,9 +49,10 @@
 QT_BEGIN_NAMESPACE
 class QAction;
 class QActionGroup;
-class QGroupBox;
+class QLabel;
 class QMenu;
 class QRadioButton;
+class QButtonGroup;
 class QTableWidget;
 QT_END_NAMESPACE
 class IconPreviewArea;
@@ -65,51 +66,47 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
 
+    void loadImages(const QStringList &fileNames);
+
+    void show();
+
 private slots:
     void about();
     void changeStyle(bool checked);
-    void changeSize(bool checked = true);
+    void changeSize(int, bool);
+    void triggerChangeSize();
     void changeIcon();
-    void addImages();
+    void addSampleImages();
+    void addOtherImages();
     void removeAllImages();
+    void useHighDpiPixmapsChanged(int checkState);
+    void screenChanged();
 
 private:
-    void createPreviewGroupBox();
-    void createImagesGroupBox();
-    void createIconSizeGroupBox();
+    QWidget *createImagesGroupBox();
+    QWidget *createIconSizeGroupBox();
+    QWidget *createHighDpiIconSizeGroupBox();
     void createActions();
-    void createMenus();
     void createContextMenu();
     void checkCurrentStyle();
+    void addImages(const QString &directory);
 
-    QWidget *centralWidget;
-
-    QGroupBox *previewGroupBox;
     IconPreviewArea *previewArea;
 
-    QGroupBox *imagesGroupBox;
     QTableWidget *imagesTable;
 
-    QGroupBox *iconSizeGroupBox;
-    QRadioButton *smallRadioButton;
-    QRadioButton *largeRadioButton;
-    QRadioButton *toolBarRadioButton;
-    QRadioButton *listViewRadioButton;
-    QRadioButton *iconViewRadioButton;
-    QRadioButton *tabBarRadioButton;
-    QRadioButton *otherRadioButton;
+    QButtonGroup *sizeButtonGroup;
     IconSizeSpinBox *otherSpinBox;
 
-    QMenu *fileMenu;
-    QMenu *viewMenu;
-    QMenu *helpMenu;
-    QAction *addImagesAct;
+    QLabel *devicePixelRatioLabel;
+    QLabel *screenNameLabel;
+
+    QAction *addOtherImagesAct;
+    QAction *addSampleImagesAct;
     QAction *removeAllImagesAct;
-    QAction *exitAct;
     QAction *guessModeStateAct;
+    QAction *nativeFileDialogAct;
     QActionGroup *styleActionGroup;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
 };
 //! [0]
 
