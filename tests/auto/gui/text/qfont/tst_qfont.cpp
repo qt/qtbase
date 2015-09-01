@@ -608,6 +608,11 @@ void tst_QFont::serialize_data()
     font.setStyleName("Regular Black Condensed");
     // This wasn't read until 5.4.
     QTest::newRow("styleName") << font << QDataStream::Qt_5_4;
+
+    font = basicFont;
+    font.setCapitalization(QFont::AllUppercase);
+    // This wasn't read until 5.6.
+    QTest::newRow("capitalization") << font << QDataStream::Qt_5_6;
 }
 
 void tst_QFont::serialize()
