@@ -143,7 +143,7 @@
 
     if (uiWindow.screen != [UIScreen mainScreen] && self.subviews.count == 1) {
         // Removing the last view of an external screen, go back to mirror mode
-        uiWindow.screen = nil;
+        uiWindow.screen = [UIScreen mainScreen];
         uiWindow.hidden = YES;
     }
 }
