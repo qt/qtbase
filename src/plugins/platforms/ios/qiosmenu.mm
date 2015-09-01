@@ -369,7 +369,7 @@ void QIOSMenu::syncMenuItem(QPlatformMenuItem *)
 
     switch (m_effectiveMenuType) {
     case EditMenu:
-        [m_menuController setVisibleMenuItems:visibleMenuItems()];
+        [m_menuController setVisibleMenuItems:filterFirstResponderActions(visibleMenuItems())];
         break;
     default:
         [m_pickerView setVisibleMenuItems:visibleMenuItems() selectItem:m_targetItem];
