@@ -288,7 +288,8 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
     }
 
     TimeSpan period;
-    period.Duration = interval ? (interval * 10000) : 1; // TimeSpan is based on 100-nanosecond units
+    // TimeSpan is based on 100-nanosecond units
+    period.Duration = qMax(qint64(1), qint64(interval) * 10000);
     const HANDLE handle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE | EVENT_MODIFY_STATE);
     const HANDLE cancelHandle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE|EVENT_MODIFY_STATE);
     HRESULT hr = runOnXamlThread([&]() {
