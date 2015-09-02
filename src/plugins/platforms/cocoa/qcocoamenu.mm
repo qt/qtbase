@@ -464,6 +464,13 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
     NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
+    QScreen *screen = 0;
+    if (parentWindow)
+        screen = parentWindow->screen();
+    if (!screen && !QGuiApplication::screens().isEmpty())
+        screen = QGuiApplication::screens().at(0);
+    Q_ASSERT(screen);
+
     // Ideally, we would call -popUpMenuPositioningItem:atLocation:inView:.
     // However, this showed not to work with modal windows where the menu items
     // would appear disabled. So, we resort to a more artisanal solution. Note
@@ -480,6 +487,21 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         [popupCell setTransparent:YES];
         [popupCell setMenu:m_nativeMenu];
         [popupCell selectItem:nsItem];
+
+        int availableHeight = screen->availableSize().height();
+        const QPoint &globalPos = parentWindow->mapToGlobal(pos);
+        int menuHeight = m_nativeMenu.size.height;
+        if (globalPos.y() + menuHeight > availableHeight) {
+            // Maybe we need to fix the vertical popup position but we don't know the
+            // exact popup height at the moment (and Cocoa is just guessing) nor its
+            // position. So, instead of translating by the popup's full height, we need
+            // to estimate where the menu will show up and translate by the remaining height.
+            float idx = ([m_nativeMenu indexOfItem:nsItem] + 1.0f) / m_nativeMenu.numberOfItems;
+            float heightBelowPos = (1.0 - idx) * menuHeight;
+            if (globalPos.y() + heightBelowPos > availableHeight)
+                pos.setY(pos.y() - globalPos.y() + availableHeight - heightBelowPos);
+        }
+
         NSRect cellFrame = NSMakeRect(pos.x(), pos.y(), m_nativeMenu.minimumWidth, 10);
         [popupCell performClickWithFrame:cellFrame inView:view];
     } else {
@@ -488,22 +510,21 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         if (view) {
             // convert coordinates from view to the view's window
             nsPos = [view convertPoint:nsPos toView:nil];
-        } else if (!QGuiApplication::screens().isEmpty()) {
-            QScreen *screen = QGuiApplication::screens().at(0);
+        } else {
             nsPos.y = screen->availableVirtualSize().height() - nsPos.y;
         }
 
         if (view) {
             // Finally, we need to synthesize an event.
             NSEvent *menuEvent = [NSEvent mouseEventWithType:NSRightMouseDown
-                    location:nsPos
-                    modifierFlags:0
-                    timestamp:0
-                    windowNumber:view ? view.window.windowNumber : 0
-                                        context:nil
-                                        eventNumber:0
-                                        clickCount:1
-                                        pressure:1.0];
+                                          location:nsPos
+                                          modifierFlags:0
+                                          timestamp:0
+                                          windowNumber:view ? view.window.windowNumber : 0
+                                          context:nil
+                                          eventNumber:0
+                                          clickCount:1
+                                          pressure:1.0];
             [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
         } else {
             [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:0];
