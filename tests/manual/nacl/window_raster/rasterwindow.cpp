@@ -40,68 +40,162 @@
 
 #include "rasterwindow.h"
 
-RasterWindow::RasterWindow(QWindow *parent)
-    : QWindow(parent)
-    , m_update_pending(false)
+RasterWindow::RasterWindow()
+:m_eventCount(0)
+,m_pressed(false)
 {
-    m_backingStore = new QBackingStore(this);
-    create();
+
 }
 
-
-bool RasterWindow::event(QEvent *event)
+void RasterWindow::paintEvent(QPaintEvent * event)
 {
-    if (event->type() == QEvent::UpdateRequest) {
-        m_update_pending = false;
-        renderNow();
-        return true;
+    QRect r = event->rect();
+    qDebug() << "repaint" << r;
+
+    QPainter p(this);
+
+    QColor fillColor(0, 102, 153);
+    QColor fillColor2(0, 85, 123);
+
+    int tileSize = 40;
+    for (int i = -tileSize * 2; i < r.width() + tileSize * 2; i += tileSize) {
+        for (int j = -tileSize * 2; j < r.height() + tileSize * 2; j += tileSize) {
+            QRect rect(i + (m_offset.x() % tileSize * 2), j + (m_offset.y() % tileSize * 2), tileSize, tileSize);
+            int colorIndex = abs((i/tileSize - j/tileSize) % 2);
+            p.fillRect(rect, colorIndex == 0 ? fillColor : fillColor2);
+        }
     }
-    return QWindow::event(event);
+
+    QRect g = geometry();
+    QRect sg = this->screen()->geometry();
+    QString text;
+    text += QString("Window Geometry: %1 %2 %3 %4\n").arg(g.x()).arg(g.y()).arg(g.width()).arg(g.height());
+    text += QString("Window devicePixelRatio: %1\n").arg(devicePixelRatio());
+    text += QString("Screen Geometry: %1 %2 %3 %4\n").arg(sg.x()).arg(sg.y()).arg(sg.width()).arg(sg.height());
+    text += QString("Received Event Count: %1\n").arg(m_eventCount);
+
+    p.drawText(QRectF(0, 0, width(), height()), Qt::AlignCenter, text);
+}
+void RasterWindow::exposeEvent(QExposeEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::exposeEvent(ev);
+    incrementEventCount();
 }
 
-void RasterWindow::renderLater()
+void RasterWindow::focusInEvent(QFocusEvent * ev)
 {
-    if (!m_update_pending) {
-        m_update_pending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::focusInEvent(ev);
+    incrementEventCount();
 }
 
-void RasterWindow::resizeEvent(QResizeEvent *resizeEvent)
+void RasterWindow::focusOutEvent(QFocusEvent * ev)
 {
-    qDebug() << "RasterWindow::resizeEvent" << resizeEvent->size();
-    m_backingStore->resize(resizeEvent->size());
-    if (isExposed())
-        renderNow();
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::focusOutEvent(ev);
+    incrementEventCount();
 }
 
-void RasterWindow::exposeEvent(QExposeEvent *)
+void RasterWindow::hideEvent(QHideEvent * ev)
 {
-    qDebug() << "RasterWindow::exposeEvent";
-    if (isExposed()) {
-        renderNow();
-    }
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::hideEvent(ev);
+    incrementEventCount();
 }
 
-void RasterWindow::renderNow()
+void RasterWindow::keyPressEvent(QKeyEvent * ev)
 {
-    if (!isExposed())
-        return;
-
-    QRect rect(0, 0, width(), height());
-    m_backingStore->beginPaint(rect);
-
-    QPaintDevice *device = m_backingStore->paintDevice();
-    QPainter painter(device);
-
-    painter.fillRect(0, 0, width(), height(), Qt::darkGreen);
-    render(&painter);
-
-    m_backingStore->endPaint();
-    m_backingStore->flush(rect);
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::keyPressEvent(ev);
+    incrementEventCount();
 }
 
-void RasterWindow::render(QPainter *painter)
+void RasterWindow::keyReleaseEvent(QKeyEvent * ev)
 {
-    painter->drawText(QRectF(0, 0, width(), height()), Qt::AlignCenter, QStringLiteral("QWindow"));
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::keyReleaseEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::mouseDoubleClickEvent(QMouseEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::mouseDoubleClickEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::mouseMoveEvent(QMouseEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::mouseMoveEvent(ev);
+    incrementEventCount();
+
+    if (m_pressed)
+        m_offset += ev->localPos().toPoint() - m_lastPos;
+    m_lastPos = ev->localPos().toPoint();
+}
+
+void RasterWindow::mousePressEvent(QMouseEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::mousePressEvent(ev);
+    incrementEventCount();
+    m_pressed = true;
+}
+
+void RasterWindow::mouseReleaseEvent(QMouseEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::mouseReleaseEvent(ev);
+    incrementEventCount();
+    m_pressed = false;
+}
+
+void RasterWindow::moveEvent(QMoveEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::moveEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::resizeEvent(QResizeEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::resizeEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::showEvent(QShowEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::showEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::tabletEvent(QTabletEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::tabletEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::touchEvent(QTouchEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::touchEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::wheelEvent(QWheelEvent * ev)
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    QRasterWindow::wheelEvent(ev);
+    incrementEventCount();
+}
+
+void RasterWindow::incrementEventCount()
+{
+    ++m_eventCount;
+    update();
 }

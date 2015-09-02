@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = main
+TARGET = rasterwindow
 DEPENDPATH += .
 
 # should be set by Qt, but isn't

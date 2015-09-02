@@ -43,27 +43,36 @@
 
 #include <QtGui>
 
-class RasterWindow : public QWindow
+class RasterWindow : public QRasterWindow
 {
-    Q_OBJECT
 public:
-    explicit RasterWindow(QWindow *parent = 0);
+    RasterWindow();
 
-    virtual void render(QPainter *painter);
+    virtual void paintEvent(QPaintEvent * event);
 
-public slots:
-    void renderLater();
-    void renderNow();
-
-protected:
-    bool event(QEvent *event);
-
-    void resizeEvent(QResizeEvent *event);
-    void exposeEvent(QExposeEvent *event);
-
+    virtual void exposeEvent(QExposeEvent * ev);
+    virtual void focusInEvent(QFocusEvent * ev);
+    virtual void focusOutEvent(QFocusEvent * ev);
+    virtual void hideEvent(QHideEvent * ev);
+    virtual void keyPressEvent(QKeyEvent * ev);
+    virtual void keyReleaseEvent(QKeyEvent * ev);
+    virtual void mouseDoubleClickEvent(QMouseEvent * ev);
+    virtual void mouseMoveEvent(QMouseEvent * ev);
+    virtual void mousePressEvent(QMouseEvent * ev);
+    virtual void mouseReleaseEvent(QMouseEvent * ev);
+    virtual void moveEvent(QMoveEvent * ev);
+//    virtual bool nativeEvent(const QByteArray & eventType, void * message, long * result);
+    virtual void resizeEvent(QResizeEvent * ev);
+    virtual void showEvent(QShowEvent * ev);
+    virtual void tabletEvent(QTabletEvent * ev);
+    virtual void touchEvent(QTouchEvent * ev);
+    virtual void wheelEvent(QWheelEvent * ev);
 private:
-    QBackingStore *m_backingStore;
-    bool m_update_pending;
+    void incrementEventCount();
+    int m_eventCount;
+    QPoint m_offset;
+    QPoint m_lastPos;
+    bool m_pressed;
 };
 
 #endif // RASTERWINDOW_H
