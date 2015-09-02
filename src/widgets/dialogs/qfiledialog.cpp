@@ -2851,6 +2851,9 @@ void QFileDialogPrivate::createWidgets()
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
 #endif // QT_NO_FSCOMPLETER
+
+    qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
