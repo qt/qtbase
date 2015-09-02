@@ -2796,33 +2796,34 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
         appName[0] = 0;
 
     const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-    fprintf(stderr, "A crash occurred in %s.\n\n"
-                    "Exception address: 0x%p\n"
-                    "Exception code   : 0x%lx\n",
-            appName, exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+    printf("A crash occurred in %s.\n\n"
+           "Exception address: 0x%p\n"
+           "Exception code   : 0x%lx\n",
+           appName, exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
 
     DebugSymbolResolver resolver(GetCurrentProcess());
     if (resolver.isValid()) {
         DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
         if (exceptionSymbol.name) {
-            fprintf(stderr, "Nearby symbol    : %s\n", exceptionSymbol.name);
+            printf("Nearby symbol    : %s\n", exceptionSymbol.name);
             delete [] exceptionSymbol.name;
         }
         void *stack[maxStackFrames];
-        fputs("\nStack:\n", stderr);
+        fputs("\nStack:\n", stdout);
         const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
         for (unsigned f = 0; f < frameCount; ++f)     {
             DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
             if (symbol.name) {
-                fprintf(stderr, "#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
+                printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
                 delete [] symbol.name;
             } else {
-                fprintf(stderr, "#%3u: Unable to obtain symbol\n", f + 1);
+                printf("#%3u: Unable to obtain symbol\n", f + 1);
             }
         }
     }
 
-    fputc('\n', stderr);
+    fputc('\n', stdout);
+    fflush(stdout);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

@@ -625,6 +625,13 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 
     for (int n = 0; n < loggers.count(); ++n) {
         QString logger = loggers[n];
+#if defined(Q_OS_WIN)
+        if (n == 0 && subdir == QLatin1String("crashes")) { // Remove stack trace which is output to stdout.
+            const int exceptionLogStart = actualOutputs.first().indexOf("A crash occurred in ");
+            if (exceptionLogStart >= 0)
+                actualOutputs[0].truncate(exceptionLogStart);
+        }
+#endif // Q_OS_WIN
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         const QString expectedFileName = expectedFileNameFromTest(subdir, logger);
         QList<QByteArray> exp = expectedResult(expectedFileName);
