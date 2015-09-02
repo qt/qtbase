@@ -77,6 +77,13 @@ QSize QIconEngine::actualSize(const QSize &size, QIcon::Mode /*mode*/, QIcon::St
     return size;
 }
 
+/*!
+    \since 5.6
+    Constructs the icon engine.
+ */
+QIconEngine::QIconEngine()
+{
+}
 
 /*!
   Destroys the icon engine.
