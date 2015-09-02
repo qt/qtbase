@@ -231,6 +231,7 @@ public:
 QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     : QDialog(parent)
 {
+    setWindowTitle(tr("Printer Properties"));
     QVBoxLayout *lay = new QVBoxLayout(this);
     this->setLayout(lay);
     QWidget *content = new QWidget(this);
