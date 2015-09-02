@@ -61,7 +61,8 @@ public:
         DeviceTypeUnknown,
         DeviceTypePointer,
         DeviceTypeKeyboard,
-        DeviceTypeTouch
+        DeviceTypeTouch,
+        DeviceTypeTablet
     };
 
     QInputDeviceManager(QObject *parent = 0);

@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVTABLET_P_H
-#define QEVDEVTABLET_P_H
+#ifndef QEVDEVTABLETHANDLER_P_H
+#define QEVDEVTABLETHANDLER_P_H
 
 //
 //  W A R N I N G
@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSocketNotifier;
 class QEvdevTabletData;
 
 class QEvdevTabletHandler : public QObject
@@ -59,29 +60,37 @@ class QEvdevTabletHandler : public QObject
     Q_OBJECT
 
 public:
-    explicit QEvdevTabletHandler(const QString &spec = QString(), QObject *parent = 0);
+    explicit QEvdevTabletHandler(const QString &device, const QString &spec = QString(), QObject *parent = 0);
     ~QEvdevTabletHandler();
+
+    qint64 deviceId() const;
 
 private slots:
     void readData();
 
 private:
+    bool queryLimits();
+
+    int m_fd;
+    QString m_device;
+    QSocketNotifier *m_notifier;
     QEvdevTabletData *d;
 };
 
 class QEvdevTabletHandlerThread : public QDaemonThread
 {
 public:
-    explicit QEvdevTabletHandlerThread(const QString &spec, QObject *parent = 0);
+    explicit QEvdevTabletHandlerThread(const QString &device, const QString &spec, QObject *parent = 0);
     ~QEvdevTabletHandlerThread();
     void run() Q_DECL_OVERRIDE;
     QEvdevTabletHandler *handler() { return m_handler; }
 
 private:
+    QString m_device;
     QString m_spec;
     QEvdevTabletHandler *m_handler;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEVDEVTABLET_P_H
+#endif // QEVDEVTABLETHANDLER_P_H

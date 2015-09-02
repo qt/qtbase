@@ -31,14 +31,14 @@
 **
 ****************************************************************************/
 
-#include "qevdevtablet_p.h"
-#include <qpa/qwindowsysteminterface.h>
+#include "qevdevtablethandler_p.h"
+
 #include <QStringList>
 #include <QSocketNotifier>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <qpa/qwindowsysteminterface.h>
 #include <linux/input.h>
 
 QT_BEGIN_NAMESPACE
@@ -49,16 +49,11 @@ class QEvdevTabletData
 {
 public:
     QEvdevTabletData(QEvdevTabletHandler *q_ptr);
-    bool queryLimits();
-    void testGrab();
+
     void processInputEvent(input_event *ev);
-    void reportProximityEnter();
-    void reportProximityLeave();
     void report();
 
     QEvdevTabletHandler *q;
-    QSocketNotifier *notifier;
-    int fd;
     int lastEventType;
     QString devName;
     struct {
@@ -73,55 +68,11 @@ public:
 };
 
 QEvdevTabletData::QEvdevTabletData(QEvdevTabletHandler *q_ptr)
-    : q(q_ptr), notifier(0), fd(-1), lastEventType(0)
+    : q(q_ptr), lastEventType(0)
 {
     memset(&minValues, 0, sizeof(minValues));
     memset(&maxValues, 0, sizeof(maxValues));
     memset(&state, 0, sizeof(state));
-}
-
-bool QEvdevTabletData::queryLimits()
-{
-    bool ok = true;
-    input_absinfo absInfo;
-    memset(&absInfo, 0, sizeof(input_absinfo));
-    ok &= ioctl(fd, EVIOCGABS(ABS_X), &absInfo) >= 0;
-    if (ok) {
-        minValues.x = absInfo.minimum;
-        maxValues.x = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: min X: %d max X: %d", minValues.x, maxValues.x);
-    }
-    ok &= ioctl(fd, EVIOCGABS(ABS_Y), &absInfo) >= 0;
-    if (ok) {
-        minValues.y = absInfo.minimum;
-        maxValues.y = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: min Y: %d max Y: %d", minValues.y, maxValues.y);
-    }
-    if (ioctl(fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
-        minValues.p = absInfo.minimum;
-        maxValues.p = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: min pressure: %d max pressure: %d", minValues.p, maxValues.p);
-    }
-    if (ioctl(fd, EVIOCGABS(ABS_DISTANCE), &absInfo) >= 0) {
-        minValues.d = absInfo.minimum;
-        maxValues.d = absInfo.maximum;
-        qCDebug(qLcEvdevTablet, "evdevtablet: min distance: %d max distance: %d", minValues.d, maxValues.d);
-    }
-    char name[128];
-    if (ioctl(fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
-        devName = QString::fromLocal8Bit(name);
-        qCDebug(qLcEvdevTablet, "evdevtablet: device name: %s", name);
-    }
-    return ok;
-}
-
-void QEvdevTabletData::testGrab()
-{
-    bool grabSuccess = !ioctl(fd, EVIOCGRAB, (void *) 1);
-    if (grabSuccess)
-        ioctl(fd, EVIOCGRAB, (void *) 0);
-    else
-        qWarning("evdevtablet: ERROR: The device is grabbed by another process. No events will be read.");
 }
 
 void QEvdevTabletData::processInputEvent(input_event *ev)
@@ -167,20 +118,10 @@ void QEvdevTabletData::processInputEvent(input_event *ev)
     lastEventType = ev->type;
 }
 
-void QEvdevTabletData::reportProximityEnter()
-{
-    QWindowSystemInterface::handleTabletEnterProximityEvent(QTabletEvent::Stylus, state.tool, 1);
-}
-
-void QEvdevTabletData::reportProximityLeave()
-{
-    QWindowSystemInterface::handleTabletLeaveProximityEvent(QTabletEvent::Stylus, state.tool, 1);
-}
-
 void QEvdevTabletData::report()
 {
     if (!state.lastReportTool && state.tool)
-        reportProximityEnter();
+        QWindowSystemInterface::handleTabletEnterProximityEvent(QTabletEvent::Stylus, state.tool, q->deviceId());
 
     qreal nx = (state.x - minValues.x) / qreal(maxValues.x - minValues.x);
     qreal ny = (state.y - minValues.y) / qreal(maxValues.y - minValues.y);
@@ -194,16 +135,17 @@ void QEvdevTabletData::report()
         pointer = state.lastReportTool;
     }
 
-    qreal pressure = (state.p - minValues.p) / qreal(maxValues.p - minValues.p);
+    int pressureRange = maxValues.p - minValues.p;
+    qreal pressure = pressureRange ? (state.p - minValues.p) / qreal(pressureRange) : qreal(1);
 
     if (state.down || state.lastReportDown) {
         QWindowSystemInterface::handleTabletEvent(0, state.down, QPointF(), globalPos,
                                                   QTabletEvent::Stylus, pointer,
-                                                  pressure, 0, 0, 0, 0, 0, 1, qGuiApp->keyboardModifiers());
+                                                  pressure, 0, 0, 0, 0, 0, q->deviceId(), qGuiApp->keyboardModifiers());
     }
 
     if (state.lastReportTool && !state.tool)
-        reportProximityLeave();
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(QTabletEvent::Stylus, state.tool, q->deviceId());
 
     state.lastReportDown = state.down;
     state.lastReportTool = state.tool;
@@ -211,50 +153,85 @@ void QEvdevTabletData::report()
 }
 
 
-QEvdevTabletHandler::QEvdevTabletHandler(const QString &spec, QObject *parent)
-    : QObject(parent), d(0)
+QEvdevTabletHandler::QEvdevTabletHandler(const QString &device, const QString &spec, QObject *parent)
+    : QObject(parent), m_fd(-1), m_device(device), m_notifier(0), d(0)
 {
+    Q_UNUSED(spec)
+
     setObjectName(QLatin1String("Evdev Tablet Handler"));
+
+    qCDebug(qLcEvdevTablet, "evdevtablet: using %s", qPrintable(device));
+
+    m_fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
+    if (m_fd < 0) {
+        qErrnoWarning(errno, "evdevtablet: Cannot open input device %s", qPrintable(device));
+        return;
+    }
+
+    bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
+    if (grabSuccess)
+        ioctl(m_fd, EVIOCGRAB, (void *) 0);
+    else
+        qWarning("evdevtablet: %s: The device is grabbed by another process. No events will be read.", qPrintable(device));
+
     d = new QEvdevTabletData(this);
-    QString dev;
-    QStringList args = spec.split(QLatin1Char(':'));
-    for (int i = 0; i < args.count(); ++i) {
-        if (args.at(i).startsWith(QLatin1String("/dev/"))) {
-            dev = args.at(i);
-            break;
-        }
-    }
-    if (dev.isEmpty()) {
-        QScopedPointer<QDeviceDiscovery> deviceDiscovery(
-                    QDeviceDiscovery::create(QDeviceDiscovery::Device_Tablet, this));
-        if (deviceDiscovery) {
-            QStringList devices = deviceDiscovery->scanConnectedDevices();
-            if (!devices.isEmpty())
-                dev = devices.at(0);
-        }
-    }
-    if (!dev.isEmpty()) {
-        qCDebug(qLcEvdevTablet, "evdevtablet: using %s", qPrintable(dev));
-        d->fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
-        if (d->fd >= 0) {
-            d->testGrab();
-            if (d->queryLimits()) {
-                d->notifier = new QSocketNotifier(d->fd, QSocketNotifier::Read, this);
-                connect(d->notifier, SIGNAL(activated(int)), this, SLOT(readData()));
-            }
-        } else {
-            qErrnoWarning(errno, "evdevtablet: Cannot open input device");
-        }
-    }
+    if (!queryLimits())
+        qWarning("evdevtablet: %s: Unset or invalid ABS limits. Behavior will be unspecified.", qPrintable(device));
+
+    m_notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
+    connect(m_notifier, &QSocketNotifier::activated, this, &QEvdevTabletHandler::readData);
 }
 
 QEvdevTabletHandler::~QEvdevTabletHandler()
 {
-    delete d->notifier;
-    if (d->fd >= 0)
-        QT_CLOSE(d->fd);
+    if (m_fd >= 0)
+        QT_CLOSE(m_fd);
 
     delete d;
+}
+
+qint64 QEvdevTabletHandler::deviceId() const
+{
+    return m_fd;
+}
+
+bool QEvdevTabletHandler::queryLimits()
+{
+    bool ok = true;
+    input_absinfo absInfo;
+    memset(&absInfo, 0, sizeof(input_absinfo));
+    ok &= ioctl(m_fd, EVIOCGABS(ABS_X), &absInfo) >= 0;
+    if (ok) {
+        d->minValues.x = absInfo.minimum;
+        d->maxValues.x = absInfo.maximum;
+        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min X: %d max X: %d", qPrintable(m_device),
+                d->minValues.x, d->maxValues.x);
+    }
+    ok &= ioctl(m_fd, EVIOCGABS(ABS_Y), &absInfo) >= 0;
+    if (ok) {
+        d->minValues.y = absInfo.minimum;
+        d->maxValues.y = absInfo.maximum;
+        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min Y: %d max Y: %d", qPrintable(m_device),
+                d->minValues.y, d->maxValues.y);
+    }
+    if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
+        d->minValues.p = absInfo.minimum;
+        d->maxValues.p = absInfo.maximum;
+        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min pressure: %d max pressure: %d", qPrintable(m_device),
+                d->minValues.p, d->maxValues.p);
+    }
+    if (ioctl(m_fd, EVIOCGABS(ABS_DISTANCE), &absInfo) >= 0) {
+        d->minValues.d = absInfo.minimum;
+        d->maxValues.d = absInfo.maximum;
+        qCDebug(qLcEvdevTablet, "evdevtablet: %s: min distance: %d max distance: %d", qPrintable(m_device),
+                d->minValues.d, d->maxValues.d);
+    }
+    char name[128];
+    if (ioctl(m_fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
+        d->devName = QString::fromLocal8Bit(name);
+        qCDebug(qLcEvdevTablet, "evdevtablet: %s: device name: %s", qPrintable(m_device), name);
+    }
+    return ok;
 }
 
 void QEvdevTabletHandler::readData()
@@ -262,18 +239,18 @@ void QEvdevTabletHandler::readData()
     static input_event buffer[32];
     int n = 0;
     for (; ;) {
-        int result = QT_READ(d->fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
+        int result = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
         if (!result) {
-            qWarning("evdevtablet: Got EOF from input device");
+            qWarning("evdevtablet: %s: Got EOF from input device", qPrintable(m_device));
             return;
         } else if (result < 0) {
             if (errno != EINTR && errno != EAGAIN) {
-                qErrnoWarning(errno, "evdevtablet: Could not read from input device");
+                qErrnoWarning(errno, "evdevtablet: %s: Could not read from input device", qPrintable(m_device));
                 if (errno == ENODEV) { // device got disconnected -> stop reading
-                    delete d->notifier;
-                    d->notifier = 0;
-                    QT_CLOSE(d->fd);
-                    d->fd = -1;
+                    delete m_notifier;
+                    m_notifier = 0;
+                    QT_CLOSE(m_fd);
+                    m_fd = -1;
                 }
                 return;
             }
@@ -291,8 +268,8 @@ void QEvdevTabletHandler::readData()
 }
 
 
-QEvdevTabletHandlerThread::QEvdevTabletHandlerThread(const QString &spec, QObject *parent)
-    : QDaemonThread(parent), m_spec(spec), m_handler(0)
+QEvdevTabletHandlerThread::QEvdevTabletHandlerThread(const QString &device, const QString &spec, QObject *parent)
+    : QDaemonThread(parent), m_device(device), m_spec(spec), m_handler(0)
 {
     start();
 }
@@ -305,7 +282,7 @@ QEvdevTabletHandlerThread::~QEvdevTabletHandlerThread()
 
 void QEvdevTabletHandlerThread::run()
 {
-    m_handler = new QEvdevTabletHandler(m_spec);
+    m_handler = new QEvdevTabletHandler(m_device, m_spec);
     exec();
     delete m_handler;
     m_handler = 0;
