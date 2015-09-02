@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qglobal
 QT = core testlib
 SOURCES = tst_qglobal.cpp

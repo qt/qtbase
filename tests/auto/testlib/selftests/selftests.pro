@@ -9,4 +9,3 @@ INSTALLS =
 QT = core
 
 
-CONFIG += parallel_test

@@ -16,4 +16,3 @@ HEADERS += tokenizers/basic/basic.h                     \
            tokenizers/withNamespace/withNamespace.h
 
 QT = core testlib
-CONFIG += parallel_test

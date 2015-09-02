@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qtranslator
 QT = core testlib
 SOURCES = tst_qtranslator.cpp

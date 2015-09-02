@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_quuid
 QT = core testlib
 SOURCES = ../tst_quuid.cpp

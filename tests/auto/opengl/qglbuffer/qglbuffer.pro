@@ -3,7 +3,6 @@
 ############################################################
 
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qglbuffer
 requires(qtHaveModule(opengl))
 QT += opengl widgets testlib

@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qeventloop
 QT = core network testlib core-private
 SOURCES = $$PWD/tst_qeventloop.cpp

@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qmovie
 QT += testlib
 qtHaveModule(widgets): QT += widgets

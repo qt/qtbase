@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qcommandlineparser
 QT = core testlib
 SOURCES = tst_qcommandlineparser.cpp

@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qtconcurrentmedian
 QT = core testlib concurrent
 SOURCES = tst_qtconcurrentmedian.cpp

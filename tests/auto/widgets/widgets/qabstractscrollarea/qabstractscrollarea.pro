@@ -3,7 +3,6 @@
 ############################################################
 
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qabstractscrollarea
 QT += widgets testlib
 SOURCES += tst_qabstractscrollarea.cpp

@@ -13,7 +13,7 @@ equals(FORCE, cxx11) {
     suffix = $$TYPE
 }
 
-CONFIG += testcase parallel_test
+CONFIG += testcase
 QT = core testlib
 TARGET = tst_qatomicinteger_$$lower($$suffix)
 SOURCES = $$PWD/tst_qatomicinteger.cpp

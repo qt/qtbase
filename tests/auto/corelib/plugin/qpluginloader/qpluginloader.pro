@@ -12,4 +12,3 @@ TARGET = tst_qpluginloader
 INSTALLS =
 
 
-CONFIG += parallel_test

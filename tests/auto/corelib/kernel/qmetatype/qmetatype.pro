@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qmetatype
 QT = core testlib
 INCLUDEPATH += $$PWD/../../../other/qvariant_common

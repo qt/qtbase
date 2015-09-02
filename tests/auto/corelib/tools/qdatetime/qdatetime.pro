@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qdatetime
 QT = core-private testlib
 SOURCES = tst_qdatetime.cpp

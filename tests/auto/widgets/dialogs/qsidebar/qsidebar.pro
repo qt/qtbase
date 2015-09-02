@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 
 QT += core-private
 QT += widgets widgets-private testlib

@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qsocketnotifier
 QT = core-private network-private testlib
 SOURCES = tst_qsocketnotifier.cpp

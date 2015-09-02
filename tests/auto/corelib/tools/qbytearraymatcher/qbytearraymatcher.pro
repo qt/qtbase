@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qbytearraymatcher
 QT = core testlib
 SOURCES = tst_qbytearraymatcher.cpp

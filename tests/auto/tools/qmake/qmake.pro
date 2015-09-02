@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 # Allow more time since examples are compiled, which may take longer on Windows.
 win32:testcase.timeout=900
 TARGET = tst_qmake

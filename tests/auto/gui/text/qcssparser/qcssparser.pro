@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qcssparser
 SOURCES += tst_qcssparser.cpp
 QT += xml gui-private testlib

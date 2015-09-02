@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 
 SOURCES += tst_qsslerror.cpp
 win32:!wince: LIBS += -lws2_32

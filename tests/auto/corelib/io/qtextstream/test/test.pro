@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = ../tst_qtextstream
 QT = core network testlib
 SOURCES = ../tst_qtextstream.cpp

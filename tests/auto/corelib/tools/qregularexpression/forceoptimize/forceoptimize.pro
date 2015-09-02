@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 TARGET = tst_qregularexpression_forceoptimize
 QT = core testlib
 HEADERS = ../tst_qregularexpression.h

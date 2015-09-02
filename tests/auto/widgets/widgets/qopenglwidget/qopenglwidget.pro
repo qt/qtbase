@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qopenglwidget
 QT += gui-private core-private testlib widgets
 

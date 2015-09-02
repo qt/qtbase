@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qsqltablemodel
 SOURCES  += tst_qsqltablemodel.cpp
 

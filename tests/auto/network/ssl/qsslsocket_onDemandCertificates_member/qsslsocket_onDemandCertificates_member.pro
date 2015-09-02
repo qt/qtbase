@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 testcase.timeout = 300 # this test is slow
 
 SOURCES += tst_qsslsocket_onDemandCertificates_member.cpp

@@ -5,4 +5,3 @@ QT += widgets testlib
 QT += core-private
 
 SOURCES  += tst_qgraphicsobject.cpp
-CONFIG += parallel_test

@@ -25,4 +25,3 @@ mac {
 SUBDIRS += tst_qplugin.pro
 
 
-CONFIG += parallel_test

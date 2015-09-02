@@ -1,4 +1,4 @@
-CONFIG += testcase parallel_test
+CONFIG += testcase
 CONFIG -= app_bundle debug_and_release_target
 contains(QT_CONFIG, c++11): CONFIG += c++11 c++14
 TARGET = ../tst_qlogging

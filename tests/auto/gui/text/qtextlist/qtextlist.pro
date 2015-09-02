@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG += parallel_test
 TARGET = tst_qtextlist
 
 QT += core-private gui-private testlib
