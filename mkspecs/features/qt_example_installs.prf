@@ -9,6 +9,8 @@
 # We mean it.
 #
 
+contains(TEMPLATE, "vc.*"): return()
+
 defineTest(addInstallFiles) {
     for(sf, 2) {
         sf = $$relative_path($$sf, $$_PRO_FILE_PWD_)
