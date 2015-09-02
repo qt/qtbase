@@ -2677,6 +2677,14 @@ bool Configure::verifyConfiguration()
         }
     }
 
+    if (dictionary["OPENGL"] == "no" || dictionary["OPENGL_ES_2"] == "no") {
+        if (dictionary.value("XQMAKESPEC").startsWith("winphone") ||
+                dictionary.value("XQMAKESPEC").startsWith("winrt")) {
+            cout << "ERROR: Option -no-opengl is not valid for WinRT." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
+    }
+
     if (prompt)
         promptKeyPress();
 
