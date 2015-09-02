@@ -34,13 +34,8 @@
 #include "zconf.h"
 
 #include <qglobal.h>
-#if defined(QT_VISIBILITY_AVAILABLE)
-# undef ZEXTERN
-# define ZEXTERN __attribute__((visibility("default")))
-#else
-# undef ZEXTERN
-# define ZEXTERN Q_DECL_EXPORT
-#endif
+#undef ZEXTERN
+#define ZEXTERN Q_CORE_EXPORT
 
 #ifdef __cplusplus
 extern "C" {
