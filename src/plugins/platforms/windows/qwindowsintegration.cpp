@@ -220,11 +220,13 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     if (tabletAbsoluteRange >= 0)
         m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
-        m_context.setProcessDpiAwareness(dpiAwareness);
+        if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
+            m_context.setProcessDpiAwareness(dpiAwareness);
+            qCDebug(lcQpaWindows)
+                << __FUNCTION__ << "DpiAwareness=" << dpiAwareness;
+        }
         dpiAwarenessSet = true;
     }
-    qCDebug(lcQpaWindows)
-        << __FUNCTION__ << "DpiAwareness=" << dpiAwareness;
 
     QTouchDevice *touchDevice = m_context.touchDevice();
     if (touchDevice) {
