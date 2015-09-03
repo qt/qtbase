@@ -1284,7 +1284,7 @@ bool QAbstractSocketPrivate::readFromSocket()
         buffer.chop(bytesToRead);
         return true;
     }
-    buffer.chop(bytesToRead - (readBytes < 0 ? qint64(0) : readBytes));
+    buffer.chop(bytesToRead - ((readBytes < 0 || !q->isReadable()) ? qint64(0) : readBytes));
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::readFromSocket() got %lld bytes, buffer size = %lld",
            readBytes, buffer.size());

@@ -201,6 +201,7 @@ private slots:
     void setSocketOption();
     void clientSendDataOnDelayedDisconnect();
     void serverDisconnectWithBuffered();
+    void socketDiscardDataInWriteMode();
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -3024,6 +3025,37 @@ void tst_QTcpSocket::serverDisconnectWithBuffered()
     QVERIFY(spyStateChanged.count() > 0);
     QVERIFY(qvariant_cast<QAbstractSocket::SocketState>(spyStateChanged.last().first())
             == QAbstractSocket::UnconnectedState);
+
+    delete socket;
+}
+
+// Test buffered sockets discard input when opened in WriteOnly mode
+void tst_QTcpSocket::socketDiscardDataInWriteMode()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer tcpServer;
+    QTcpSocket *socket = newSocket();
+
+    QVERIFY(tcpServer.listen(QHostAddress::LocalHost));
+    socket->connectToHost(tcpServer.serverAddress(), tcpServer.serverPort(),
+                          QIODevice::WriteOnly);
+    QVERIFY(socket->waitForConnected(5000)); // ready for write
+    QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
+
+    // Accept connection on server side
+    QVERIFY2(tcpServer.waitForNewConnection(5000), "Network timeout");
+    QTcpSocket *newConnection = tcpServer.nextPendingConnection();
+    // Send one char and drop link
+    QVERIFY(newConnection != NULL);
+    QVERIFY(newConnection->putChar(0));
+    QVERIFY(newConnection->flush());
+    delete newConnection;
+
+    QVERIFY(socket->waitForReadyRead(5000)); // discard input
+    QVERIFY(socket->atEnd());
 
     delete socket;
 }
