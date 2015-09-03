@@ -84,7 +84,7 @@ struct QShortcutEntry
     QShortcutMap::ContextMatcher contextMatcher;
 };
 
-#if 0 //ndef QT_NO_DEBUG_STREAM
+#ifdef Dump_QShortcutMap
 /*! \internal
     QDebug operator<< for easy debug output of the shortcut entries.
 */
@@ -99,7 +99,7 @@ static QDebug &operator<<(QDebug &dbg, const QShortcutEntry *se)
         << "), owner(" << se->owner << ')';
     return dbg;
 }
-#endif // QT_NO_DEBUGSTREAM
+#endif // Dump_QShortcutMap
 
 /* \internal
     Private data for QShortcutMap
