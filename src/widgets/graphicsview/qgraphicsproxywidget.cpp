@@ -879,6 +879,19 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         break;
     }
 #endif
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd: {
+        if (event->spontaneous())
+            qt_sendSpontaneousEvent(d->widget, event);
+        else
+            QApplication::sendEvent(d->widget, event);
+
+        if (event->isAccepted())
+            return true;
+
+        break;
+   }
     default:
         break;
     }
