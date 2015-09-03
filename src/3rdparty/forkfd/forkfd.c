@@ -648,7 +648,7 @@ err_free:
 }
 #endif // FORKFD_NO_FORKFD
 
-#if defined(_POSIX_SPAWN) && !defined(FORKFD_NO_SPAWNFD)
+#if _POSIX_SPAWN > 0 && !defined(FORKFD_NO_SPAWNFD)
 int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_actions_t *file_actions,
             posix_spawnattr_t *attrp, char *const argv[], char *const envp[])
 {
