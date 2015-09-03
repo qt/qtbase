@@ -226,16 +226,15 @@ qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
                 index = 0;
             }
 
-            do {
-                if (*ptr++ == c)
-                    return index + pos;
-            } while (++index < nextBlockIndex);
+            const char *findPtr = reinterpret_cast<const char *>(memchr(ptr, c,
+                                                                        nextBlockIndex - index));
+            if (findPtr)
+                return qint64(findPtr - ptr) + index + pos;
 
-            if (index == maxLength)
+            if (nextBlockIndex == maxLength)
                 return -1;
-        } else {
-            index = nextBlockIndex;
         }
+        index = nextBlockIndex;
     }
     return -1;
 }
