@@ -196,8 +196,9 @@ void QWinRTWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWinRTWindow);
 
-    if (window()->isTopLevel()) {
-        QPlatformWindow::setGeometry(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint
+    const Qt::WindowFlags windowFlags = window()->flags();
+    if (window()->isTopLevel() && (windowFlags & Qt::WindowType_Mask) == Qt::Window) {
+        QPlatformWindow::setGeometry(windowFlags & Qt::MaximizeUsingFullscreenGeometryHint
                                      ? d->screen->geometry() : d->screen->availableGeometry());
         QWindowSystemInterface::handleGeometryChange(window(), geometry());
     } else {
