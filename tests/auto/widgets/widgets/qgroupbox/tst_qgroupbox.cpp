@@ -67,7 +67,7 @@ private slots:
     void toggledVsClicked();
     void childrenAreDisabled();
     void propagateFocus();
-    void task_QTBUG_19170_ignoreMouseReleseEvent();
+    void task_QTBUG_19170_ignoreMouseReleaseEvent();
     void task_QTBUG_15519_propagateMouseEvents();
 
 private:
@@ -477,7 +477,7 @@ void tst_QGroupBox::propagateFocus()
     QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
-void tst_QGroupBox::task_QTBUG_19170_ignoreMouseReleseEvent()
+void tst_QGroupBox::task_QTBUG_19170_ignoreMouseReleaseEvent()
 {
     QGroupBox box;
     box.setCheckable(true);
