@@ -51,7 +51,9 @@ public:
     QMenu *colorSwatchMenu() const { return menu; }
 
 protected:
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+#endif // QT_NO_CONTEXTMENU
     void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
 
 private slots:

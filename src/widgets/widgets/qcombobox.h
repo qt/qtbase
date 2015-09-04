@@ -229,7 +229,9 @@ protected:
 #ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
 #endif
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *e) Q_DECL_OVERRIDE;
+#endif // QT_NO_CONTEXTMENU
     void inputMethodEvent(QInputMethodEvent *) Q_DECL_OVERRIDE;
     void initStyleOption(QStyleOptionComboBox *option) const;
 

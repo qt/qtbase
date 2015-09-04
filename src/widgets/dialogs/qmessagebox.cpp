@@ -89,16 +89,14 @@ public:
     {
     public:
         TextEdit(QWidget *parent=0) : QTextEdit(parent) { }
+#ifndef QT_NO_CONTEXTMENU
         void contextMenuEvent(QContextMenuEvent * e) Q_DECL_OVERRIDE
         {
-#ifndef QT_NO_CONTEXTMENU
             QMenu *menu = createStandardContextMenu();
             menu->setAttribute(Qt::WA_DeleteOnClose);
             menu->popup(e->globalPos());
-#else
-            Q_UNUSED(e);
-#endif
         }
+#endif // QT_NO_CONTEXTMENU
     };
 
     QMessageBoxDetailsText(QWidget *parent=0)

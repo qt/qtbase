@@ -2243,6 +2243,7 @@ void tst_QLineEdit::deleteSelectedText()
     edit.setText(text);
     edit.selectAll();
 
+#ifndef QT_NO_CONTEXTMENU
     QMenu *menu = edit.createStandardContextMenu();
     for (int i = 0; i < menu->actions().count(); ++i) {
         QAction *current = menu->actions().at(i);
@@ -2251,6 +2252,7 @@ void tst_QLineEdit::deleteSelectedText()
             QVERIFY(edit.text().isEmpty());
         }
     }
+#endif // QT_NO_CONTEXTMENU
 
 }
 

@@ -227,8 +227,10 @@ private slots:
     void render_data();
     void render();
     void renderItemsWithNegativeWidthOrHeight();
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent();
     void contextMenuEvent_ItemIgnoresTransformations();
+#endif
     void update();
     void update2();
     void views();
@@ -2712,6 +2714,7 @@ void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
     QCOMPARE(actual, expected);
 }
 
+#ifndef QT_NO_CONTEXTMENU
 void tst_QGraphicsScene::contextMenuEvent()
 {
     QGraphicsScene scene;
@@ -2794,6 +2797,7 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
         QVERIFY(!event.isAccepted());
     }
 }
+#endif // QT_NO_CONTEXTMENU
 
 void tst_QGraphicsScene::update()
 {

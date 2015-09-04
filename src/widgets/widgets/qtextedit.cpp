@@ -1060,6 +1060,8 @@ bool QTextEdit::event(QEvent *e)
                || e->type() == QEvent::ToolTip) {
         d->sendControlEvent(e);
     }
+#else
+    Q_UNUSED(d)
 #endif // QT_NO_CONTEXTMENU
 #ifdef QT_KEYPAD_NAVIGATION
     if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {

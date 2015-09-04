@@ -162,7 +162,9 @@ private slots:
     void fontPropagation();
     void dontCrashWhenDie();
     void createProxyForChildWidget();
+#ifndef QT_NO_CONTEXTMENU
     void actionsContextMenu();
+#endif // QT_NO_CONTEXTMENU
     void actionsContextMenu_data();
     void deleteProxyForChildWidget();
     void bypassGraphicsProxyWidget_data();
@@ -3071,6 +3073,7 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     delete boxProxy;
 }
 
+#ifndef QT_NO_CONTEXTMENU
 class ContextMenuWidget : public QLabel
 {
     Q_OBJECT
@@ -3119,6 +3122,7 @@ private:
     bool m_embeddedPopupSet;
     QTimer *m_timer;
 };
+#endif // QT_NO_CONTEXTMENU
 
 void tst_QGraphicsProxyWidget::actionsContextMenu_data()
 {
@@ -3131,6 +3135,7 @@ void tst_QGraphicsProxyWidget::actionsContextMenu_data()
     QTest::newRow("with actionsContextMenu without focus") << true << false;
 }
 
+#ifndef QT_NO_CONTEXTMENU
 void tst_QGraphicsProxyWidget::actionsContextMenu()
 {
     QFETCH(bool, hasFocus);
@@ -3185,7 +3190,7 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     }
 
 }
-
+#endif // QT_NO_CONTEXTMENU
 
 void tst_QGraphicsProxyWidget::deleteProxyForChildWidget()
 {

@@ -882,13 +882,11 @@ void QLabel::mouseReleaseEvent(QMouseEvent *ev)
     d->sendControlEvent(ev);
 }
 
+#ifndef QT_NO_CONTEXTMENU
 /*!\reimp
 */
 void QLabel::contextMenuEvent(QContextMenuEvent *ev)
 {
-#ifdef QT_NO_CONTEXTMENU
-    Q_UNUSED(ev);
-#else
     Q_D(QLabel);
     if (!d->isTextLabel) {
         ev->ignore();
@@ -902,8 +900,8 @@ void QLabel::contextMenuEvent(QContextMenuEvent *ev)
     ev->accept();
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->popup(ev->globalPos());
-#endif
 }
+#endif // QT_NO_CONTEXTMENU
 
 /*!
     \reimp

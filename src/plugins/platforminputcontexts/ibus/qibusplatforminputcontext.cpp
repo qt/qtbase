@@ -366,6 +366,7 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     bool retval = reply.value();
     qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
     if (!retval) {
+#ifndef QT_NO_CONTEXTMENU
         QWindow *window = dynamic_cast<QWindow *>(input);
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
@@ -374,6 +375,7 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
                                                            globalPos, modifiers);
         }
+#endif // QT_NO_CONTEXTMENU
         QKeyEvent event(type, qtcode, modifiers, code, sym,
                         state, string, isAutoRepeat, count);
         event.setTimestamp(time);

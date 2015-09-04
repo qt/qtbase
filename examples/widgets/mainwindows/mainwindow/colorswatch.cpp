@@ -468,11 +468,13 @@ void ColorSwatch::tabInto(QAction *action)
         mainWindow->tabifyDockWidget(target, this);
 }
 
+#ifndef QT_NO_CONTEXTMENU
 void ColorSwatch::contextMenuEvent(QContextMenuEvent *event)
 {
     event->accept();
     menu->exec(event->globalPos());
 }
+#endif // QT_NO_CONTEXTMENU
 
 void ColorSwatch::resizeEvent(QResizeEvent *e)
 {

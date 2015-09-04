@@ -385,7 +385,9 @@ private slots:
     void itemContainsChildrenInShape2();
     void ancestorFlags();
     void untransformable();
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEventPropagation();
+#endif // QT_NO_CONTEXTMENU
     void itemIsMovable();
     void boundingRegion_data();
     void boundingRegion();
@@ -5193,6 +5195,7 @@ public:
     }
 
 protected:
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *)
     {
         if (harakiri == 3) {
@@ -5200,6 +5203,7 @@ protected:
             delete this;
         }
     }
+#endif // QT_NO_CONTEXTMENU
 
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event)
     {
@@ -5378,11 +5382,13 @@ void tst_QGraphicsItem::deleteItemInEventHandlers()
         if (!item->dead)
             scene.advance();
 
+#ifndef QT_NO_CONTEXTMENU
         if (!item->dead) {
             QContextMenuEvent event(QContextMenuEvent::Other,
                                     view.mapFromScene(item->scenePos()));
             QCoreApplication::sendEvent(view.viewport(), &event);
         }
+#endif // QT_NO_CONTEXTMENU
         if (!item->dead)
             QTest::mouseMove(view.viewport(), view.mapFromScene(item->scenePos()));
         if (!item->dead)
@@ -6276,6 +6282,7 @@ void tst_QGraphicsItem::untransformable()
     }
 }
 
+#ifndef QT_NO_CONTEXTMENU
 class ContextMenuItem : public QGraphicsRectItem
 {
 public:
@@ -6339,6 +6346,7 @@ void tst_QGraphicsItem::contextMenuEventPropagation()
     QCOMPARE(bottomItem->gotEvent, false);
     QCOMPARE(topItem->eventWasAccepted, true);
 }
+#endif // QT_NO_CONTEXTMENU
 
 void tst_QGraphicsItem::itemIsMovable()
 {

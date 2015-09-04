@@ -469,10 +469,12 @@ void tst_QGraphicsView::interactive()
         QCOMPARE(item->events.size(), i * 5 + 5);
         QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
         QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
+#ifndef QT_NO_CONTEXTMENU
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
         QCOMPARE(item->events.size(), i * 5 + 6);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
+#endif // QT_NO_CONTEXTMENU
     }
 
     view.setInteractive(false);
@@ -484,10 +486,12 @@ void tst_QGraphicsView::interactive()
         sendMouseRelease(view.viewport(), itemPoint);
         QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
+#ifndef QT_NO_CONTEXTMENU
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
         QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
+#endif // QT_NO_CONTEXTMENU
     }
 }
 

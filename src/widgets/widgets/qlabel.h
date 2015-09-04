@@ -132,7 +132,9 @@ protected:
     void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
+#ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *ev) Q_DECL_OVERRIDE;
+#endif // QT_NO_CONTEXTMENU
     void focusInEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
     void focusOutEvent(QFocusEvent *ev) Q_DECL_OVERRIDE;
     bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;

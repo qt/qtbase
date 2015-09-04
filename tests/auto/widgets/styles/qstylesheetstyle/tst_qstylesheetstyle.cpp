@@ -1471,12 +1471,14 @@ void tst_QStyleSheetStyle::embeddedFonts()
     QCOMPARE(spin.font().pixelSize(), 32);
     QCOMPARE(embedded->font().pixelSize(), 32);
 
+#ifndef QT_NO_CONTEXTMENU
     QMenu *menu = embedded->createStandardContextMenu();
     menu->show();
     QTest::qWait(20);
     QVERIFY(menu);
     QVERIFY(menu->font().pixelSize() != 32);
     QCOMPARE(menu->font().pixelSize(), qApp->font(menu).pixelSize());
+#endif // QT_NO_CONTEXTMENU
 
     //task 242556
     QComboBox box;

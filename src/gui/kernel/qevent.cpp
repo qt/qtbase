@@ -3940,9 +3940,11 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         QtDebugUtils::formatQEnum(dbg, static_cast<const QApplicationStateChangeEvent *>(e)->applicationState());
         dbg << ')';
         break;
+#  ifndef QT_NO_CONTEXTMENU
     case QEvent::ContextMenu:
         dbg << "QContextMenuEvent(" << static_cast<const QContextMenuEvent *>(e)->pos() << ')';
         break;
+#  endif // !QT_NO_CONTEXTMENU
 #  ifndef QT_NO_TABLETEVENT
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:

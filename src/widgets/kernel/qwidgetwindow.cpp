@@ -283,7 +283,7 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::ContextMenu:
         handleContextMenuEvent(static_cast<QContextMenuEvent *>(event));
         return true;
-#endif
+#endif // QT_NO_CONTEXTMENU
 
     // Handing show events to widgets (see below) here would cause them to be triggered twice
     case QEvent::Show:
@@ -510,8 +510,12 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 popupEvent = popupChild;
             QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
             QApplication::sendSpontaneousEvent(popupEvent, &e);
-#endif
         }
+#else
+            Q_UNUSED(contextMenuTrigger)
+            Q_UNUSED(oldOpenPopupCount)
+        }
+#endif
 
         if (releaseAfter) {
             qt_button_down = 0;
