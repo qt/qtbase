@@ -400,11 +400,11 @@ void tst_QGuiApplication::keyboardModifiers()
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // shortcut events
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_5, Qt::MetaModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_5, Qt::MetaModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::MetaModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_Period, Qt::NoModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_Period, Qt::NoModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_0, Qt::ControlModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_0, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // key events

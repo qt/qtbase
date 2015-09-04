@@ -61,7 +61,7 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 
 namespace QTest
 {
-    enum KeyAction { Press, Release, Click };
+    enum KeyAction { Press, Release, Click, Shortcut };
 
     static void simulateEvent(QWindow *window, bool press, int code,
                               Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
@@ -94,6 +94,12 @@ namespace QTest
         }
 
         bool repeat = false;
+
+        if (action == Shortcut) {
+            int timestamp = 0;
+            qt_sendShortcutOverrideEvent(window, timestamp, code, modifier, text, repeat);
+            return;
+        }
 
         if (action == Press) {
             if (modifier & Qt::ShiftModifier)
