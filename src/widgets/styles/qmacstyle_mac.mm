@@ -4266,7 +4266,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QPalette np = tab->palette;
                     np.setColor(QPalette::WindowText, shadowColor);
 
-                    QRect nr = subElementRect(SE_TabBarTabText, opt, w);
+                    QRect nr = proxy()->subElementRect(SE_TabBarTabText, opt, w);
                     nr.moveTop(-1);
                     int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
                     proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
