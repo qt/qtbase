@@ -1300,10 +1300,12 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     memset(&event, 0, sizeof(event));
 
     const xcb_window_t eventListener = xcb_generate_id(m_connection);
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
+    xcb_screen_t *screen = it.data;
     Q_XCB_CALL(xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                                 eventListener, m_screens.at(0)->root(),
+                                 eventListener, screen->root,
                                  0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                                 m_screens.at(0)->screen()->root_visual, 0, 0));
+                                 screen->root_visual, 0, 0));
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
