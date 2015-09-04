@@ -875,16 +875,6 @@ QWindowList QGuiApplication::topLevelWindows()
     return topLevelWindows;
 }
 
-/*!
-    Returns the primary (or default) screen of the application, or null if there is none
-
-    This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    On some platforms, it may be null when there are actually no screens connected.
-    It is not possible to start a new QGuiApplication while there are no screens.
-    Applications which were running at the time the primary screen was removed
-    will stop rendering graphics until one or more screens are restored.
-*/
 QScreen *QGuiApplication::primaryScreen()
 {
     if (QGuiApplicationPrivate::screen_list.isEmpty())
@@ -906,7 +896,7 @@ QList<QScreen *> QGuiApplication::screens()
 
     This signal is emitted whenever a new screen \a screen has been added to the system.
 
-    \sa screens(), primaryScreen(), screenRemoved()
+    \sa screens(), primaryScreen, screenRemoved()
 */
 
 /*!
@@ -921,18 +911,23 @@ QList<QScreen *> QGuiApplication::screens()
     \since 5.4
 */
 
+
 /*!
-    \fn void QGuiApplication::primaryScreenChanged(QScreen *screen)
+    \property QGuiApplication::primaryScreen
 
-    This signal is emitted whenever the primary \a screen changes. This way
-    applications can keep track of the primaryScreen and react if there is a
-    new primary screen.
+    \brief the primary (or default) screen of the application, or null if there is none.
 
-    \sa primaryScreen
+    This will be the screen where QWindows are initially shown, unless otherwise specified.
 
-    \since 5.6
+    On some platforms, it may be null when there are actually no screens connected.
+    It is not possible to start a new QGuiApplication while there are no screens.
+    Applications which were running at the time the primary screen was removed
+    will stop rendering graphics until one or more screens are restored.
+
+    The primaryScreenChanged signal was introduced in Qt 5.6.
+
+    \sa screens()
 */
-
 
 /*!
     Returns the highest screen device pixel ratio found on
