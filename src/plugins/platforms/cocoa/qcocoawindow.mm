@@ -345,7 +345,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
-    , m_ignoreWindowShouldClose(false)
     , m_inConstructor(true)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
@@ -1219,9 +1218,10 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 bool QCocoaWindow::windowShouldClose()
 {
-    // might have been set from qnsview.mm
-    if (m_ignoreWindowShouldClose)
-       return false;
+   // This callback should technically only determine if the window
+   // should (be allowed to) close, but since our QPA API to determine
+   // that also involves actually closing the window we do both at the
+   // same time, instead of doing the latter in windowWillClose.
     bool accepted = false;
     QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();

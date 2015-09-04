@@ -3778,6 +3778,12 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 
     Q_Q(QFileDialog);
+
+    if (event->matches(QKeySequence::Cancel)) {
+        q->hide();
+        return true;
+    }
+
     switch (event->key()) {
     case Qt::Key_Backspace:
         _q_navigateToParent();
@@ -3793,9 +3799,6 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
             return true;
         }
         break;
-    case Qt::Key_Escape:
-        q->hide();
-        return true;
     default:
         break;
     }
@@ -3982,7 +3985,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape && key != Qt::Key_Back)
+    if (!e->matches(QKeySequence::Cancel) && key != Qt::Key_Back)
         e->accept();
 }
 

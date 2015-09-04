@@ -654,8 +654,9 @@ void QComboBoxPrivateContainer::changeEvent(QEvent *e)
 bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 {
     switch (e->type()) {
-    case QEvent::ShortcutOverride:
-        switch (static_cast<QKeyEvent*>(e)->key()) {
+    case QEvent::ShortcutOverride: {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(e);
+        switch (keyEvent->key()) {
         case Qt::Key_Enter:
         case Qt::Key_Return:
 #ifdef QT_KEYPAD_NAVIGATION
@@ -667,17 +668,21 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             }
             return true;
         case Qt::Key_Down:
-            if (!(static_cast<QKeyEvent*>(e)->modifiers() & Qt::AltModifier))
+            if (!(keyEvent->modifiers() & Qt::AltModifier))
                 break;
             // fall through
         case Qt::Key_F4:
-        case Qt::Key_Escape:
             combo->hidePopup();
             return true;
         default:
+            if (keyEvent->matches(QKeySequence::Cancel)) {
+                combo->hidePopup();
+                return true;
+            }
             break;
         }
-    break;
+        break;
+    }
     case QEvent::MouseMove:
         if (isVisible()) {
             QMouseEvent *m = static_cast<QMouseEvent *>(e);

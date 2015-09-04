@@ -291,6 +291,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
     \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter, Meta+O     \li Shift+Enter    \li Shift+Enter
     \row    \li Backspace             \li (none)                          \li Meta+H                 \li (none)         \li (none)
+    \row    \li Cancel                \li Escape                          \li Escape, Ctrl+.         \li Escape         \li Escape
     \endtable
 
     Note that, since the key sequences used for the standard shortcuts differ
@@ -752,6 +753,7 @@ static const struct {
     \value ZoomIn           Zoom in.
     \value ZoomOut          Zoom out.
     \value FullScreen       Toggle the window state to/from full screen.
+    \value Cancel           Cancel the current operation.
 */
 
 /*!

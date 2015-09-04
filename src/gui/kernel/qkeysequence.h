@@ -137,7 +137,8 @@ public:
         FullScreen,
         Deselect,
         DeleteCompleteLine,
-        Backspace
+        Backspace,
+        Cancel
      };
      Q_ENUM(StandardKey)
 

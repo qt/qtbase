@@ -1337,6 +1337,11 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         }
 
         // default implementation for keys not handled by the widget when popup is open
+        if (ke->matches(QKeySequence::Cancel)) {
+            d->popup->hide();
+            return true;
+        }
+
         switch (key) {
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:
@@ -1357,7 +1362,6 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
             break;
 
         case Qt::Key_Backtab:
-        case Qt::Key_Escape:
             d->popup->hide();
             break;
 

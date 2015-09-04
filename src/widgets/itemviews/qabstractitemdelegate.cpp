@@ -455,6 +455,12 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
         if (editorHandlesKeyEvent(editor, keyEvent))
             return false;
 
+        if (keyEvent->matches(QKeySequence::Cancel)) {
+            // don't commit data
+            emit q->closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
+            return true;
+        }
+
         switch (keyEvent->key()) {
         case Qt::Key_Tab:
             if (tryFixup(editor)) {
@@ -479,10 +485,6 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
             QMetaObject::invokeMethod(q, "_q_commitDataAndCloseEditor",
                                       Qt::QueuedConnection, Q_ARG(QWidget*, editor));
             return false;
-        case Qt::Key_Escape:
-            // don't commit data
-            emit q->closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
-            return true;
         default:
             return false;
         }
@@ -509,7 +511,7 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
             emit q->closeEditor(editor, QAbstractItemDelegate::NoHint);
         }
     } else if (event->type() == QEvent::ShortcutOverride) {
-        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape) {
+        if (static_cast<QKeyEvent*>(event)->matches(QKeySequence::Cancel)) {
             event->accept();
             return true;
         }
