@@ -271,3 +271,17 @@
 
     \sa screenCount
 */
+
+
+/*!
+    \fn void QDesktopWidget::primaryScreenChanged()
+
+    \since 5.6
+
+    \brief This signal is emitted whenever the primary screen changes.
+
+    \note This doesn't mean the QDesktopWidget::primaryScreen index will
+    necessarily be different, but now it will refer to the new primary screen.
+
+    \sa primaryScreen, screenGeometry()
+*/

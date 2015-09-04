@@ -305,13 +305,10 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                     screen->updateRefreshRate(output.mode);
 
                 // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
-                // TODO: add a proper mechanism for updating primary screen
                 if (!wasPrimary && screen->isPrimary()) {
-                    QScreen *realScreen = static_cast<QPlatformScreen*>(screen)->screen();
-                    QGuiApplicationPrivate::screen_list.removeOne(realScreen);
-                    QGuiApplicationPrivate::screen_list.prepend(realScreen);
-                    m_screens.removeOne(screen);
-                    m_screens.prepend(screen);
+                    const int idx = m_screens.indexOf(screen);
+                    m_screens.swap(0, idx);
+                    QXcbIntegration::instance()->setPrimaryScreen(screen);
                 }
                 qCDebug(lcQpaScreen) << "output has changed" << screen;
             }

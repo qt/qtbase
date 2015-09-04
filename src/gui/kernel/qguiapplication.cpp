@@ -921,6 +921,18 @@ QList<QScreen *> QGuiApplication::screens()
     \since 5.4
 */
 
+/*!
+    \fn void QGuiApplication::primaryScreenChanged(QScreen *screen)
+
+    This signal is emitted whenever the primary \a screen changes. This way
+    applications can keep track of the primaryScreen and react if there is a
+    new primary screen.
+
+    \sa primaryScreen
+
+    \since 5.6
+*/
+
 
 /*!
     Returns the highest screen device pixel ratio found on
