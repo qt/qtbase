@@ -1441,12 +1441,17 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
         text = QCFString::toQString(characters);
 
-    QWindow *focusWindow = [self topLevelWindow];
+    QWindow *window = [self topLevelWindow];
+
+    // Popups implicitly grab key events; forward to the active popup if there is one.
+    // This allows popups to e.g. intercept shortcuts and close the popup in response.
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
+        window = popup->window();
 
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
-            m_sendKeyEvent = !QWindowSystemInterface::handleShortcutEvent(focusWindow, timestamp, keyCode,
+            m_sendKeyEvent = !QWindowSystemInterface::handleShortcutEvent(window, timestamp, keyCode,
                 modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
         }
 
@@ -1469,7 +1474,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
 
     m_sendKeyEvent = false;
