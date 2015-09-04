@@ -638,7 +638,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \row \li quit or exit
          \li Application Menu | Quit <application name>
          \li If this entry is not found a default Quit item will be
-            created to call QApplication::quit()
+            created to call QCoreApplication::quit()
     \endtable
 
     You can override this behavior by using the QAction::menuRole()

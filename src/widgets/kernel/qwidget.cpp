@@ -8328,8 +8328,8 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     otherwise returns \c false.
 
     First it sends the widget a QCloseEvent. The widget is
-    \l{hide()}{hidden} if it \l{QCloseEvent::accept()}{accepts}
-    the close event. If it \l{QCloseEvent::ignore()}{ignores}
+    \l{hide()}{hidden} if it \l{QEvent::accept()}{accepts}
+    the close event. If it \l{QEvent::ignore()}{ignores}
     the event, nothing happens. The default
     implementation of QWidget::closeEvent() accepts the close event.
 
@@ -9302,12 +9302,12 @@ void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
     subclass to receive wheel events for the widget.
 
     If you reimplement this handler, it is very important that you
-    \l{QWheelEvent}{ignore()} the event if you do not handle
+    \l{QEvent}{ignore()} the event if you do not handle
     it, so that the widget's parent can interpret it.
 
     The default implementation ignores the event.
 
-    \sa QWheelEvent::ignore(), QWheelEvent::accept(), event(),
+    \sa QEvent::ignore(), QEvent::accept(), event(),
     QWheelEvent
 */
 
@@ -9323,12 +9323,12 @@ void QWidget::wheelEvent(QWheelEvent *event)
     subclass to receive tablet events for the widget.
 
     If you reimplement this handler, it is very important that you
-    \l{QTabletEvent}{ignore()} the event if you do not handle
+    \l{QEvent}{ignore()} the event if you do not handle
     it, so that the widget's parent can interpret it.
 
     The default implementation ignores the event.
 
-    \sa QTabletEvent::ignore(), QTabletEvent::accept(), event(),
+    \sa QEvent::ignore(), QEvent::accept(), event(),
     QTabletEvent
 */
 
@@ -9388,7 +9388,7 @@ void QWidget::keyPressEvent(QKeyEvent *event)
     need to call QKeyEvent::accept() - just do not call the base class
     implementation if you act upon the key.
 
-    \sa keyPressEvent(), QKeyEvent::ignore(), setFocusPolicy(),
+    \sa keyPressEvent(), QEvent::ignore(), setFocusPolicy(),
     focusInEvent(), focusOutEvent(), event(), QKeyEvent
 */
 
