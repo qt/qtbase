@@ -1960,7 +1960,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
     const bool button = opt->type == QStyleOption::SO_Button;
     const bool viewItem = opt->type == QStyleOption::SO_ViewItem;
     const bool pressed = bdi->state == kThemeStatePressed;
-    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
+    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
 
     if (button && pressed) {
         if (bdi->kind == kThemePushButton) {
@@ -3601,6 +3601,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
     const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
+    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -3812,13 +3813,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             // No default button pulsating animation on Yosemite,
             // so we have to do few things differently.
-            const bool yosemiteOrLater = QSysInfo::QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
             // a focused auto-default button within an active window
             // takes precedence over a normal default button
             if (btn->features & QStyleOptionButton::AutoDefaultButton
                     && opt->state & State_Active && opt->state & State_HasFocus) {
-                if (yosemiteOrLater)
+                if (usingYosemiteOrLater)
                     d->autoDefaultButton = opt->styleObject;
                 else
                     d->setAutoDefaultButton(opt->styleObject);
@@ -3829,7 +3829,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!d->autoDefaultButton) {
                 if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
                     d->defaultButton = opt->styleObject;
-                    if (!yosemiteOrLater && !d->animation(opt->styleObject))
+                    if (!usingYosemiteOrLater && !d->animation(opt->styleObject))
                         d->startAnimation(new QStyleAnimation(opt->styleObject));
                 } else if (d->defaultButton == opt->styleObject) {
                     if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
@@ -3851,7 +3851,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIThemeButtonDrawInfo bdi;
             d->initHIThemePushButton(btn, w, tds, &bdi);
 
-            if (yosemiteOrLater) {
+            if (usingYosemiteOrLater) {
                 if (!hasMenu) {
                     // HITheme is not drawing a nice focus frame around buttons.
                     // We'll do it ourselves further down.
@@ -3904,7 +3904,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 newRect.size.width -= QMacStylePrivate::PushButtonRightOffset - 4;
             }
 
-            if (hasMenu && yosemiteOrLater && bdi.kind != kThemeBevelButton) {
+            if (hasMenu && usingYosemiteOrLater && bdi.kind != kThemeBevelButton) {
                 QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
                 cw.first = QCocoaPullDownButton;
                 NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
@@ -3918,7 +3918,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             else
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
 
-            if (yosemiteOrLater && btn->state & State_HasFocus) {
+            if (usingYosemiteOrLater && btn->state & State_HasFocus) {
                 CGRect focusRect = newRect;
                 if (bdi.kind == kThemePushButton)
                     focusRect.size.height += 1; // Another thing HITheme and Cocoa seem to disagree about.
@@ -3949,7 +3949,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 qt_drawFocusRingOnPath(cg, pushButtonFocusRingPath);
             }
 
-            if (hasMenu && (!yosemiteOrLater || bdi.kind == kThemeBevelButton)) {
+            if (hasMenu && (!usingYosemiteOrLater || bdi.kind == kThemeBevelButton)) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
                 QRect ir = btn->rect;
                 int arrowXOffset = bdi.kind == kThemePushButton ? 6 :
@@ -4121,8 +4121,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
             }
 
-            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
-
             HIThemeTabDrawInfo tdi;
             tdi.version = 1;
             tdi.style = kThemeTabNonFront;
@@ -4234,7 +4232,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
-            bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
 
             if (selected && !myTab.documentMode
                 && (!usingYosemiteOrLater || myTab.state & State_Active))
@@ -4682,7 +4679,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.value = pb->progress;
             tdi.attributes = vertical ? 0 : kThemeTrackHorizontal;
 
-            const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
             if (isIndeterminate || (tdi.value < tdi.max && !usingYosemiteOrLater)) {
                 if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                     tdi.trackInfo.progress.phase = animation->animationStep();
@@ -4765,8 +4761,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIThemeSplitterDrawInfo sdi;
             sdi.version = qt_mac_hitheme_version;
             sdi.state = tds;
-            sdi.adornment = qt_mac_is_metal(w) ? kHIThemeSplitterAdornmentMetal
-                                               : kHIThemeSplitterAdornmentNone;
+            sdi.adornment = qt_mac_is_metal(w) || usingYosemiteOrLater ?
+                        kHIThemeSplitterAdornmentMetal : kHIThemeSplitterAdornmentNone;
             HIRect hirect = qt_hirectForQRect(opt->rect);
             HIThemeDrawPaneSplitter(&hirect, &sdi, cg, kHIThemeOrientationNormal);
         } else {
@@ -5301,6 +5297,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
     const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
+    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
     switch (cc) {
     case CC_Slider:
     case CC_ScrollBar:
@@ -5378,7 +5375,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     tdi.attributes |= kThemeTrackHideTrack;
             }
 
-            const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
             const bool isHorizontal = slider->orientation == Qt::Horizontal;
 
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, opt, widget)) {
@@ -5754,7 +5750,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         break;
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
-            const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion > QSysInfo::MV_10_9;
             HIThemeButtonDrawInfo bdi;
             d->initComboboxBdi(combo, &bdi, widget, tds);
             HIRect rect = qt_hirectForQRect(combo->rect);
