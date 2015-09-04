@@ -1029,8 +1029,10 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     when keys are pressed or released.
 
     A key event contains a special accept flag that indicates whether
-    the receiver will handle the key event. This flag is set by default,
-    so there is no need to call accept() when acting on a key event.
+    the receiver will handle the key event. This flag is set by default
+    for QEvent::KeyPress and QEvent::KeyRelease, so there is no need to
+    call accept() when acting on a key event. For QEvent::ShortcutOverride
+    the receiver needs to explicitly accept the event to trigger the override.
     Calling ignore() on a key event will propagate it to the parent widget.
     The event is propagated up the parent widget chain until a widget
     accepts it or an event filter consumes it.
@@ -1065,6 +1067,8 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const 
       nScanCode(0), nVirtualKey(0), nModifiers(0),
       c(count), autor(autorep)
 {
+     if (type == QEvent::ShortcutOverride)
+        ignore();
 }
 
 /*!
@@ -1092,6 +1096,8 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
       nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers),
       c(count), autor(autorep)
 {
+    if (type == QEvent::ShortcutOverride)
+        ignore();
 }
 
 

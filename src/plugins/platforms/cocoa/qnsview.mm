@@ -1446,10 +1446,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
-            QKeyEvent override(QEvent::ShortcutOverride, keyCode, modifiers,
-                nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
-            override.setTimestamp(timestamp);
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutOverrideEvent(focusWindow, &override);
+            m_sendKeyEvent = !QWindowSystemInterface::handleShortcutEvent(focusWindow, timestamp, keyCode,
+                modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
         }
 
         QObject *fo = QGuiApplication::focusObject();
