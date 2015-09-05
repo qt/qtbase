@@ -655,6 +655,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2015:
         t << _slnHeader140;
+        break;
     case NET2013:
         t << _slnHeader120;
         break;
