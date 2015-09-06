@@ -83,10 +83,6 @@ using namespace ABI::Windows::Networking::Sockets;
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_MACX)
-#include <CoreServices/CoreServices.h>
-#endif
-
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
 #include <private/qjni_p.h>
 #endif
@@ -1864,25 +1860,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
 #include "qnamespace.h"
 QT_END_INCLUDE_NAMESPACE
-
-#if defined(Q_OS_OSX)
-
-Q_CORE_EXPORT OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref)
-{
-    return FSPathMakeRef(reinterpret_cast<const UInt8 *>(file.toUtf8().constData()), fsref, 0);
-}
-
-Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1)
-{
-    Q_UNUSED(encoding);
-    Q_UNUSED(len);
-    CFStringGetPascalString(QCFString(s), str, 256, CFStringGetSystemEncoding());
-}
-
-Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
-    return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
-}
-#endif // defined(Q_OS_OSX)
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {

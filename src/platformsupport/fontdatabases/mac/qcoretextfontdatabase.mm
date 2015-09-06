@@ -721,8 +721,8 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
                                           kATSOptionFlagsDefault, &fontContainer);
         } else {
             FSRef ref;
-            OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
-            if (qt_mac_create_fsref(fileName, &ref) != noErr)
+            if (FSPathMakeRef(reinterpret_cast<const UInt8 *>(fileName.toUtf8().constData()),
+                              &ref, 0) != noErr)
                 return QStringList();
             e = ATSFontActivateFromFileReference(&ref, kATSFontContextLocal, kATSFontFormatUnspecified, 0,
                                                  kATSOptionFlagsDefault, &fontContainer);

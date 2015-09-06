@@ -57,10 +57,6 @@
 
 #include "qglobal.h"
 
-#ifdef Q_OS_MACX
-#include <CoreServices/CoreServices.h>
-#endif
-
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
 #endif

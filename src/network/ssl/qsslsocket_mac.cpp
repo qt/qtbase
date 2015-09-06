@@ -51,6 +51,10 @@
 #include <algorithm>
 #include <cstddef>
 
+#ifdef Q_OS_OSX
+#include <CoreServices/CoreServices.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_securetransport_mutex, (QMutex::Recursive))

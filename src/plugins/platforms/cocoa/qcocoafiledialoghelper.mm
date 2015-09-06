@@ -588,9 +588,6 @@ void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_filterSelected(int menuInd
     emit filterSelected(menuIndex >= 0 && menuIndex < filters.size() ? filters.at(menuIndex) : QString());
 }
 
-extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
-extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1); // qglobal.cpp
-
 void QCocoaFileDialogHelper::setDirectory(const QUrl &directory)
 {
     if (mDelegate)
