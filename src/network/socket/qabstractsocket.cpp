@@ -723,7 +723,7 @@ bool QAbstractSocketPrivate::canReadNotification()
         }
     }
 
-    // only emit readyRead() when not recursing, and only if there is data available
+    // Only emit readyRead() if there is data available.
     bool hasData = newBytes > 0
 #ifndef QT_NO_UDPSOCKET
         || (!isBuffered && socketType != QAbstractSocket::TcpSocket && socketEngine && socketEngine->hasPendingDatagrams())
@@ -731,11 +731,8 @@ bool QAbstractSocketPrivate::canReadNotification()
         || (!isBuffered && socketType == QAbstractSocket::TcpSocket && socketEngine)
         ;
 
-    if (!emittedReadyRead && hasData) {
-        QScopedValueRollback<bool> r(emittedReadyRead);
-        emittedReadyRead = true;
-        emit q->readyRead();
-    }
+    if (hasData)
+        emitReadyRead();
 
     // If we were closed as a result of the readyRead() signal,
     // return.
@@ -794,12 +791,12 @@ void QAbstractSocketPrivate::canCloseNotification()
             // then occur when we read from the socket again and fail
             // in canReadNotification or by the manually created
             // closeNotification below.
-            emit q->readyRead();
+            emitReadyRead();
 
             QMetaObject::invokeMethod(socketEngine, "closeNotification", Qt::QueuedConnection);
         }
     } else if (socketType == QAbstractSocket::TcpSocket && socketEngine) {
-        emit q->readyRead();
+        emitReadyRead();
     }
 }
 
@@ -1303,6 +1300,21 @@ bool QAbstractSocketPrivate::readFromSocket()
     }
 
     return true;
+}
+
+/*! \internal
+
+    Prevents from the recursive readyRead() emission.
+*/
+void QAbstractSocketPrivate::emitReadyRead()
+{
+    Q_Q(QAbstractSocket);
+    // Only emit readyRead() when not recursing.
+    if (!emittedReadyRead) {
+        QScopedValueRollback<bool> r(emittedReadyRead);
+        emittedReadyRead = true;
+        emit q->readyRead();
+    }
 }
 
 /*! \internal

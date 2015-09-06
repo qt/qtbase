@@ -135,6 +135,7 @@ public:
     void fetchConnectionParameters();
     void setupSocketNotifiers();
     bool readFromSocket();
+    void emitReadyRead();
 
     qint64 readBufferMaxSize;
     QRingBuffer writeBuffer;
