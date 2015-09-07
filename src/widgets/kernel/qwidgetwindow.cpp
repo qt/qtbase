@@ -552,6 +552,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         translated.setTimestamp(event->timestamp());
         QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
                                             &qt_button_down, qt_last_mouse_receiver);
+        event->setAccepted(translated.isAccepted());
     }
 #ifndef QT_NO_CONTEXTMENU
     if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton
