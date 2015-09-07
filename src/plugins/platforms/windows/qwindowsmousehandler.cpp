@@ -368,7 +368,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                              QWindowsKeyMapper::queryKeyboardModifiers(),
                                              source);
     m_previousCaptureWindow = hasCapture ? window : 0;
-    return true;
+    // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND
+    // is sent for unhandled WM_XBUTTONDOWN.
+    return (msg.message != WM_XBUTTONUP && msg.message != WM_XBUTTONDOWN && msg.message != WM_XBUTTONDBLCLK)
+        || QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 static bool isValidWheelReceiver(QWindow *candidate)
