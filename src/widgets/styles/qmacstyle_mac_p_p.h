@@ -172,6 +172,9 @@ public:
     QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
+    QAquaWidgetSize effectiveAquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
+                             QStyle::ContentsType ct = QStyle::CT_CustomBase,
+                             QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
     void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
                           HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const;
     inline int animateSpeed(Animates) const { return 33; }

@@ -1105,6 +1105,17 @@ static void qt_drawFocusRingOnPath(CGContextRef cg, NSBezierPath *focusRingPath)
     CGContextRestoreGState(cg);
 }
 
+QAquaWidgetSize QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
+                                                            const QWidget *widg,
+                                                            QStyle::ContentsType ct,
+                                                            QSize szHint, QSize *insz) const
+{
+    QAquaWidgetSize sz = aquaSizeConstrain(option, widg, ct, szHint, insz);
+    if (sz == QAquaSizeUnknown)
+        return QAquaSizeLarge;
+    return sz;
+}
+
 QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                                        QStyle::ContentsType ct, QSize szHint, QSize *insz) const
 {
@@ -2525,29 +2536,10 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         }
         break;
     case PM_ScrollBarExtent: {
-        if ([NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay) {
-            switch (d->aquaSizeConstrain(opt, widget)) {
-            case QAquaSizeUnknown:
-            case QAquaSizeLarge:
-                ret = QSysInfo::macVersion() >= QSysInfo::MV_10_8 ? 16 : 9;
-                break;
-            case QAquaSizeMini:
-            case QAquaSizeSmall:
-                ret =  QSysInfo::macVersion() >= QSysInfo::MV_10_8 ? 14 : 7;
-                break;
-            }
-            break;
-        }
-        switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricScrollBarWidth, &ret);
-            break;
-        case QAquaSizeMini:
-        case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallScrollBarWidth, &ret);
-            break;
-        }
+        const QAquaWidgetSize size = d->effectiveAquaSizeConstrain(opt, widget);
+        ret = static_cast<SInt32>([NSScroller
+            scrollerWidthForControlSize:static_cast<NSControlSize>(size)
+                          scrollerStyle:[NSScroller preferredScrollerStyle]]);
         break; }
     case PM_IndicatorHeight: {
         switch (d->aquaSizeConstrain(opt, widget)) {
