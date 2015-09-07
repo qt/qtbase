@@ -105,7 +105,8 @@ public:
     void setIsMask(bool isMask);
     bool isMask() const;
 
-    static QIcon fromTheme(const QString &name, const QIcon &fallback = QIcon());
+    static QIcon fromTheme(const QString &name);
+    static QIcon fromTheme(const QString &name, const QIcon &fallback);
     static bool hasThemeIcon(const QString &name);
 
     static QStringList themeSearchPaths();

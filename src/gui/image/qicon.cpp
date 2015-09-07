@@ -1143,8 +1143,7 @@ QString QIcon::themeName()
     \since 4.6
 
     Returns the QIcon corresponding to \a name in the current
-    icon theme. If no such icon is found in the current theme
-    \a fallback is returned instead.
+    icon theme.
 
     The latest version of the freedesktop icon specification and naming
     specification can be obtained here:
@@ -1158,11 +1157,6 @@ QString QIcon::themeName()
 
     \snippet code/src_gui_image_qicon.cpp 3
 
-    Or if you want to provide a guaranteed fallback for platforms that
-    do not support theme icons, you can use the second argument:
-
-    \snippet code/src_gui_image_qicon.cpp 4
-
     \note By default, only X11 will support themed icons. In order to
     use themed icons on Mac and Windows, you will have to bundle a
     compliant theme in one of your themeSearchPaths() and set the
@@ -1170,7 +1164,7 @@ QString QIcon::themeName()
 
     \sa themeName(), setThemeName(), themeSearchPaths()
 */
-QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
+QIcon QIcon::fromTheme(const QString &name)
 {
     QIcon icon;
 
@@ -1186,7 +1180,26 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         qtIconCache()->insert(name, cachedIcon);
     }
 
-    if (qApp && icon.availableSizes().isEmpty())
+    return icon;
+}
+
+/*!
+    \overload
+
+    Returns the QIcon corresponding to \a name in the current
+    icon theme. If no such icon is found in the current theme
+    \a fallback is returned instead.
+
+    If you want to provide a guaranteed fallback for platforms that
+    do not support theme icons, you can use the second argument:
+
+    \snippet code/src_gui_image_qicon.cpp 4
+*/
+QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
+{
+    QIcon icon = fromTheme(name);
+
+    if (icon.isNull() || icon.availableSizes().isEmpty())
         return fallback;
 
     return icon;
