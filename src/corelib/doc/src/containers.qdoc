@@ -169,8 +169,8 @@
     convenience, the containers are forward declared in \c
     <QtContainerFwd>.
 
-    \keyword assignable data type
-    \keyword assignable data types
+    \target assignable data type
+    \target assignable data types
 
     The values stored in the various containers can be of any
     \e{assignable data type}. To qualify, a type must provide a
@@ -220,7 +220,7 @@
     \codeline
     \snippet streaming/main.cpp 2
 
-    \keyword default-constructed value
+    \target default-constructed value
 
     The documentation of certain container class functions refer to
     \e{default-constructed values}; for example, QVector
@@ -546,7 +546,7 @@
      The above example only shows a problem with QVector, but
      the problem exists for all the implicitly shared Qt containers.
 
-    \keyword foreach
+    \target foreach
     \section1 The foreach Keyword
 
     If you just want to iterate over all the items in a container
@@ -655,11 +655,11 @@
     To describe algorithmic complexity, we use the following
     terminology, based on the "big Oh" notation:
 
-    \keyword constant time
-    \keyword logarithmic time
-    \keyword linear time
-    \keyword linear-logarithmic time
-    \keyword quadratic time
+    \target constant time
+    \target logarithmic time
+    \target linear time
+    \target linear-logarithmic time
+    \target quadratic time
 
     \list
     \li \b{Constant time:} O(1). A function is said to run in constant

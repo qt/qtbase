@@ -71,8 +71,8 @@
     data. The shared data is deleted when the reference count becomes
     zero.
 
-    \keyword deep copy
-    \keyword shallow copy
+    \target deep copy
+    \target shallow copy
 
     When dealing with shared objects, there are two ways of copying an
     object. We usually speak about \e deep and \e shallow copies. A deep
@@ -142,6 +142,6 @@
     (QMap, QVector, etc.) while you use
     \l{STL-style iterators}{STL-style iterator}. See \l{Implicit sharing iterator problem}.
 
-    \keyword implicitly shared classes
+    \target implicitly shared classes
     \annotatedlist shared
 */

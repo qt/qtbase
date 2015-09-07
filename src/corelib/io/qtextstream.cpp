@@ -121,7 +121,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     digits of the generated number. Some extra number formatting
     options are also available through setNumberFlags().
 
-    \keyword QTextStream manipulators
+    \target QTextStream manipulators
 
     Like \c <iostream> in the standard C++ library, QTextStream also
     defines several global manipulator functions:

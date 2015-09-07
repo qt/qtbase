@@ -492,7 +492,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
          when it is followed by 'char'.
     \endtable
 
-    \keyword QRegExp wildcard matching
+    \target QRegExp wildcard matching
     \section1 Wildcard Matching
 
     Most command shells such as \e bash or \e cmd.exe support "file
