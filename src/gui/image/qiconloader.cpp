@@ -587,6 +587,11 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
             name = m_info.iconName;
         }
         break;
+    case QIconEngine::IsNullHook:
+        {
+            *reinterpret_cast<bool*>(data) = m_info.entries.isEmpty();
+        }
+        break;
     default:
         QIconEngine::virtual_hook(id, data);
     }
