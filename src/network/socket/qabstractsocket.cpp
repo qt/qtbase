@@ -816,8 +816,7 @@ bool QAbstractSocketPrivate::canWriteNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::canWriteNotification() flushing");
 #endif
-    qint64 tmp = writeBuffer.size();
-    flush();
+    bool dataWasWritten = writeToSocket();
 
     if (socketEngine) {
 #if defined (Q_OS_WIN)
@@ -829,7 +828,7 @@ bool QAbstractSocketPrivate::canWriteNotification()
 #endif
     }
 
-    return (writeBuffer.size() < tmp);
+    return dataWasWritten;
 }
 
 /*! \internal
@@ -851,21 +850,20 @@ void QAbstractSocketPrivate::connectionNotification()
 
 /*! \internal
 
-    Writes pending data in the write buffers to the socket. The
-    function writes as much as it can without blocking.
+    Writes one pending data block in the write buffer to the socket.
 
     It is usually invoked by canWriteNotification after one or more
     calls to write().
 
     Emits bytesWritten().
 */
-bool QAbstractSocketPrivate::flush()
+bool QAbstractSocketPrivate::writeToSocket()
 {
     Q_Q(QAbstractSocket);
     if (!socketEngine || !socketEngine->isValid() || (writeBuffer.isEmpty()
         && socketEngine->bytesToWrite() == 0)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::flush() nothing to do: valid ? %s, writeBuffer.isEmpty() ? %s",
+    qDebug("QAbstractSocketPrivate::writeToSocket() nothing to do: valid ? %s, writeBuffer.isEmpty() ? %s",
            (socketEngine && socketEngine->isValid()) ? "yes" : "no", writeBuffer.isEmpty() ? "yes" : "no");
 #endif
 
@@ -885,7 +883,8 @@ bool QAbstractSocketPrivate::flush()
         socketError = socketEngine->error();
         q->setErrorString(socketEngine->errorString());
 #if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug() << "QAbstractSocketPrivate::flush() write error, aborting." << socketEngine->errorString();
+        qDebug() << "QAbstractSocketPrivate::writeToSocket() write error, aborting."
+                 << socketEngine->errorString();
 #endif
         emit q->error(socketError);
         // an unexpected error so close the socket.
@@ -894,7 +893,7 @@ bool QAbstractSocketPrivate::flush()
     }
 
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocketPrivate::flush() %lld bytes written to the network",
+    qDebug("QAbstractSocketPrivate::writeToSocket() %lld bytes written to the network",
            written);
 #endif
 
@@ -915,7 +914,23 @@ bool QAbstractSocketPrivate::flush()
     if (state == QAbstractSocket::ClosingState)
         q->disconnectFromHost();
 
-    return true;
+    return written > 0;
+}
+
+/*! \internal
+
+    Writes pending data in the write buffers to the socket. The function
+    writes as much as it can without blocking. If any data was written,
+    this function returns true; otherwise false is returned.
+*/
+bool QAbstractSocketPrivate::flush()
+{
+    bool dataWasWritten = false;
+
+    while (!writeBuffer.isEmpty() && writeToSocket())
+        dataWasWritten = true;
+
+    return dataWasWritten;
 }
 
 #ifndef QT_NO_NETWORKPROXY
