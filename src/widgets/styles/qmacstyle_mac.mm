@@ -2481,32 +2481,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_TitleBarHeight:
-        if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
-            HIThemeWindowDrawInfo wdi;
-            wdi.version = qt_mac_hitheme_version;
-            wdi.state = kThemeStateActive;
-            wdi.windowType = QtWinType;
-            if (tb->titleBarState)
-                wdi.attributes = kThemeWindowHasFullZoom | kThemeWindowHasCloseBox
-                                  | kThemeWindowHasCollapseBox;
-            else if (tb->titleBarFlags & Qt::WindowSystemMenuHint)
-                wdi.attributes = kThemeWindowHasCloseBox;
-            else
-                wdi.attributes = 0;
-            wdi.titleHeight = tb->rect.height();
-            wdi.titleWidth = tb->rect.width();
-            QCFType<HIShapeRef> region;
-            HIRect hirect = qt_hirectForQRect(tb->rect);
-            if (hirect.size.width <= 0)
-                hirect.size.width = 100;
-            if (hirect.size.height <= 0)
-                hirect.size.height = 30;
-
-            HIThemeGetWindowShape(&hirect, &wdi, kWindowTitleBarRgn, &region);
-            HIRect rect;
-            ptrHIShapeGetBounds(region, &rect);
-            ret = int(rect.size.height);
-        }
+        // Always use NSTitledWindowMask since we never need any other type of window here
+        ret = int([NSWindow frameRectForContentRect:NSZeroRect
+                                          styleMask:NSTitledWindowMask].size.height);
         break;
     case PM_TabBarTabVSpace:
         ret = 4;
