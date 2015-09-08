@@ -1162,6 +1162,10 @@ QString QIcon::themeName()
     compliant theme in one of your themeSearchPaths() and set the
     appropriate themeName().
 
+    \note Qt will make use of GTK's icon-theme.cache if present to speed up
+    the lookup. These caches can be generated using gtk-update-icon-cache:
+    \l{https://developer.gnome.org/gtk3/stable/gtk-update-icon-cache.html}.
+
     \sa themeName(), setThemeName(), themeSearchPaths()
 */
 QIcon QIcon::fromTheme(const QString &name)

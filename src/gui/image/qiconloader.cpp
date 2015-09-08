@@ -155,6 +155,141 @@ QStringList QIconLoader::themeSearchPaths() const
     return m_iconDirs;
 }
 
+/*!
+    \class QIconCacheGtkReader
+    \internal
+    Helper class that reads and looks up into the icon-theme.cache generated with
+    gtk-update-icon-cache. If at any point we detect a corruption in the file
+    (because the offsets point at wrong locations for example), the reader
+    is marked as invalid.
+*/
+class QIconCacheGtkReader
+{
+public:
+    explicit QIconCacheGtkReader(const QString &themeDir);
+    QVector<const char *> lookup(const QString &);
+    bool isValid() const { return m_isValid; }
+private:
+    QFile m_file;
+    const unsigned char *m_data;
+    quint64 m_size;
+    bool m_isValid;
+
+    quint16 read16(uint offset)
+    {
+        if (offset > m_size - 2 || (offset & 0x1)) {
+            m_isValid = false;
+            return 0;
+        }
+        return m_data[offset+1] | m_data[offset] << 8;
+    }
+    quint32 read32(uint offset)
+    {
+        if (offset > m_size - 4 || (offset & 0x3)) {
+            m_isValid = false;
+            return 0;
+        }
+        return m_data[offset+3] | m_data[offset+2] << 8
+            | m_data[offset+1] << 16 | m_data[offset] << 24;
+    }
+};
+
+
+QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
+    : m_isValid(false)
+{
+    QFileInfo info(dirName + QLatin1Literal("/icon-theme.cache"));
+    if (!info.exists() || info.lastModified() < QFileInfo(dirName).lastModified())
+        return;
+    m_file.setFileName(info.absoluteFilePath());
+    if (!m_file.open(QFile::ReadOnly))
+        return;
+    m_size = m_file.size();
+    m_data = m_file.map(0, m_size);
+    if (!m_data)
+        return;
+    if (read16(0) != 1) // VERSION_MAJOR
+        return;
+
+    m_isValid = true;
+
+    // Check that all the directories are older than the cache
+    auto lastModified = info.lastModified();
+    quint32 dirListOffset = read32(8);
+    quint32 dirListLen = read32(dirListOffset);
+    for (uint i = 0; i < dirListLen; ++i) {
+        quint32 offset = read32(dirListOffset + 4 + 4 * i);
+        if (!m_isValid || offset >= m_size || lastModified < QFileInfo(dirName + QLatin1Char('/')
+                + QString::fromUtf8(reinterpret_cast<const char*>(m_data + offset))).lastModified()) {
+            m_isValid = false;
+            return;
+        }
+    }
+}
+
+static quint32 icon_name_hash(const char *p)
+{
+    quint32 h = static_cast<signed char>(*p);
+    for (p += 1; *p != '\0'; p++)
+        h = (h << 5) - h + *p;
+    return h;
+}
+
+/*! \internal
+    lookup the icon name and return the list of subdirectories in which an icon
+    with this name is present. The char* are pointers to the mapped data.
+    For example, this would return { "32x32/apps", "24x24/apps" , ... }
+ */
+QVector<const char *> QIconCacheGtkReader::lookup(const QString &name)
+{
+    QVector<const char *> ret;
+    if (!isValid())
+        return ret;
+
+    QByteArray nameUtf8 = name.toUtf8();
+    quint32 hash = icon_name_hash(nameUtf8);
+
+    quint32 hashOffset = read32(4);
+    quint32 hashBucketCount = read32(hashOffset);
+
+    if (!isValid() || hashBucketCount == 0) {
+        m_isValid = false;
+        return ret;
+    }
+
+    quint32 bucketIndex = hash % hashBucketCount;
+    quint32 bucketOffset = read32(hashOffset + 4 + bucketIndex * 4);
+    while (bucketOffset > 0 && bucketOffset <= m_size - 12) {
+        quint32 nameOff = read32(bucketOffset + 4);
+        if (nameOff < m_size && strcmp(reinterpret_cast<const char*>(m_data + nameOff), nameUtf8) == 0) {
+            quint32 dirListOffset = read32(8);
+            quint32 dirListLen = read32(dirListOffset);
+
+            quint32 listOffset = read32(bucketOffset+8);
+            quint32 listLen = read32(listOffset);
+
+            if (!m_isValid || listOffset + 4 + 8 * listLen > m_size) {
+                m_isValid = false;
+                return ret;
+            }
+
+            ret.reserve(listLen);
+            for (uint j = 0; j < listLen && m_isValid; ++j) {
+                quint32 dirIndex = read16(listOffset + 4 + 8 * j);
+                quint32 o = read32(dirListOffset + 4 + dirIndex*4);
+                if (!m_isValid || dirIndex >= dirListLen || o >= m_size) {
+                    m_isValid = false;
+                    return ret;
+                }
+                ret.append(reinterpret_cast<const char*>(m_data) + o);
+            }
+            return ret;
+        }
+        bucketOffset = read32(bucketOffset);
+    }
+    return ret;
+}
+
 QIconTheme::QIconTheme(const QString &themeName)
         : m_valid(false)
 {
@@ -166,8 +301,10 @@ QIconTheme::QIconTheme(const QString &themeName)
         QString themeDir = iconDir.path() + QLatin1Char('/') + themeName;
         QFileInfo themeDirInfo(themeDir);
 
-        if (themeDirInfo.isDir())
+        if (themeDirInfo.isDir()) {
             m_contentDirs << themeDir;
+            m_gtkCaches << QSharedPointer<QIconCacheGtkReader>::create(themeDir);
+        }
 
         if (!m_valid) {
             themeIndex.setFileName(themeDir + QLatin1String("/index.theme"));
@@ -257,7 +394,6 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     }
 
     const QStringList contentDirs = theme.contentDirs();
-    const QVector<QIconDirInfo> subDirs = theme.keyList();
 
     QString iconNameFallback = iconName;
 
@@ -268,6 +404,29 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
 
         // Add all relevant files
         for (int i = 0; i < contentDirs.size(); ++i) {
+            QVector<QIconDirInfo> subDirs = theme.keyList();
+
+            // Try to reduce the amount of subDirs by looking in the GTK+ cache in order to save
+            // a massive amount of file stat (especially if the icon is not there)
+            auto cache = theme.m_gtkCaches.at(i);
+            if (cache->isValid()) {
+                auto result = cache->lookup(iconNameFallback);
+                if (cache->isValid()) {
+                    const QVector<QIconDirInfo> subDirsCopy = subDirs;
+                    subDirs.clear();
+                    subDirs.reserve(result.count());
+                    foreach (const char *s, result) {
+                        QString path = QString::fromUtf8(s);
+                        auto it = std::find_if(subDirsCopy.cbegin(), subDirsCopy.cend(),
+                                               [&](const QIconDirInfo &info) {
+                                                   return info.path == path; } );
+                        if (it != subDirsCopy.cend()) {
+                            subDirs.append(*it);
+                        }
+                    }
+                }
+            }
+
             QString contentDir = contentDirs.at(i) + QLatin1Char('/');
             for (int j = 0; j < subDirs.size() ; ++j) {
                 const QIconDirInfo &dirInfo = subDirs.at(j);
