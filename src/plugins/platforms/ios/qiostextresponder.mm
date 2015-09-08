@@ -738,6 +738,15 @@
     return toCGRect(startRect.united(endRect));
 }
 
+- (NSArray *)selectionRectsForRange:(UITextRange *)range
+{
+    Q_UNUSED(range);
+    // This method is supposed to return a rectangle for each line with selection. Since we don't
+    // expose an API in Qt/IM for getting this information, and since we never seems to be getting
+    // a call from UIKit for this, we return an empty array until a need arise.
+    return [[NSArray new] autorelease];
+}
+
 - (CGRect)caretRectForPosition:(UITextPosition *)position
 {
     Q_UNUSED(position);
