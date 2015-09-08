@@ -2,7 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2015 The Qt Company Ltd.
-## Copyright (C) 2013 Intel Corporation.
+## Copyright (C) 2015 Intel Corporation.
 ## Contact: http://www.qt.io/licensing/
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -662,6 +662,7 @@ CFG_SYSTEM_PROXIES=no
 CFG_ANDROID_STYLE_ASSETS=yes
 CFG_GSTREAMER=auto
 CFG_GSTREAMER_VERSION=""
+CFG_ATOMIC64=auto
 
 # Target architecture
 CFG_ARCH=
@@ -4389,6 +4390,15 @@ if compileTest common/c++default "default C++ standard edition"; then
     fi
 fi
 
+# Detect whether 64-bit std::atomic works -- some 32-bit platforms require extra library support
+if compileTest common/atomic64 "64-bit std::atomic"; then
+    CFG_ATOMIC64=yes
+elif compileTest common/atomic64 "64-bit std::atomic in -latomic" -latomic; then
+    CFG_ATOMIC64=libatomic
+else
+    CFG_ATOMIC64=no
+fi
+
 # detect sse2 support
 if [ "${CFG_SSE2}" = "auto" ]; then
     if compileTest common/sse2 "sse2"; then
@@ -6127,6 +6137,10 @@ if [ "$CFG_STDCXX" != "c++98" ]; then
     fi
 fi
 
+if [ "$CFG_ATOMIC64" = "libatomic" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG atomic64-libatomic"
+fi
+
 if [ "$CFG_SILENT" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG silent"
 fi
@@ -6679,6 +6693,10 @@ EOF
 else
     "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
     echo "#define QT_POINTER_SIZE $?" >>"$outpath/src/corelib/global/qconfig.h.new"
+fi
+
+if [ "$CFG_ATOMIC64" = "no" ]; then
+    echo "#define QT_NO_STD_ATOMIC64" >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
 
 #REDUCE_RELOCATIONS is a elf/unix only thing, so not in windows configure.exe
