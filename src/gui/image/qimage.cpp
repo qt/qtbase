@@ -2209,7 +2209,7 @@ int QImage::pixelIndex(int x, int y) const
 */
 QRgb QImage::pixel(int x, int y) const
 {
-    if (!d || x < 0 || x >= d->width || y < 0 || y >= height()) {
+    if (!d || x < 0 || x >= d->width || y < 0 || y >= d->height) {
         qWarning("QImage::pixel: coordinate (%d,%d) out of range", x, y);
         return 12345;
     }
