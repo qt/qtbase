@@ -1189,7 +1189,9 @@ bool Aggregate::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 void Aggregate::addChild(Node *child)
 {
     children_.append(child);
-    if ((child->type() == Function) || (child->type() == QmlMethod)) {
+    if (child->type() == Function
+            || child->type() == QmlMethod
+            || child->type() == QmlSignal) {
         FunctionNode *func = static_cast<FunctionNode*>(child);
         QString name = func->name();
         if (!primaryFunctionMap_.contains(name)) {
@@ -1234,7 +1236,9 @@ void Aggregate::removeChild(Node *child)
 {
     children_.removeAll(child);
     enumChildren_.removeAll(child);
-    if (child->type() == Function) {
+    if (child->type() == Function
+            || child->type() == QmlMethod
+            || child->type() == QmlSignal) {
         QMap<QString, Node *>::Iterator primary = primaryFunctionMap_.find(child->name());
         NodeList& overloads = secondaryFunctionMap_[child->name()];
         if (primary != primaryFunctionMap_.end() && *primary == child) {
