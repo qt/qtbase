@@ -286,9 +286,9 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
     case QFontEngine::Format_Mono:
         m_image = QImage(width, height, QImage::Format_Mono);
         break;
-    case QFontEngine::Format_A8: {
+    case QFontEngine::Format_A8:
         m_image = QImage(width, height, QImage::Format_Alpha8);
-        break;   }
+        break;
     case QFontEngine::Format_A32:
         m_image = QImage(width, height, QImage::Format_RGB32);
         break;
