@@ -1713,7 +1713,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // should first send a move event followed by a button changed event. Since this is not the case
         // with the current event, we split it in two.
         QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(
-                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
+                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers, e->source);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
             mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         e->buttons = buttons;
