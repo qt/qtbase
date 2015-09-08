@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -192,6 +192,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
+    dictionary[ "ATOMIC64" ]        = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -2195,6 +2196,12 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "OBJCOPY")
         available = tryCompileProject("unix/objcopy");
 
+    else if (part == "ATOMIC64")
+        available = tryCompileProject("common/atomic64");
+
+    else if (part == "ATOMIC64-LIBATOMIC")
+        available = tryCompileProject("common/atomic64", "LIBS+=-latomic");
+
     else if (part == "ZLIB")
         available = findFile("zlib.h");
 
@@ -2342,6 +2349,10 @@ void Configure::autoDetection()
         if (!dictionary["QMAKESPEC"].contains("msvc"))
             dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
     }
+
+    if (dictionary["ATOMIC64"] == "auto")
+        dictionary["ATOMIC64"] = checkAvailability("ATOMIC64") ? "yes" :
+                                 checkAvailability("ATOMIC64-LIBATOMIC") ? "libatomic" : "no";
 
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
@@ -2861,6 +2872,9 @@ void Configure::generateOutputVars()
             version.remove(QLatin1Char('.'));
         }
     }
+
+    if (dictionary["ATOMIC64"] == "libatomic")
+        qmakeConfig += "atomic64-libatomic";
 
     if (dictionary[ "ACCESSIBILITY" ] == "yes")
         qtConfig += "accessibility";
@@ -3661,6 +3675,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
+        if (dictionary["ATOMIC64"] == "no")          qconfigList += "QT_NO_STD_ATOMIC64";
 
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
