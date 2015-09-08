@@ -2214,7 +2214,7 @@ QRgb QImage::pixel(int x, int y) const
         return 12345;
     }
 
-    const uchar * s = constScanLine(y);
+    const uchar *s = d->data + y * d->bytes_per_line;
     switch(d->format) {
     case Format_Mono:
         return d->colortable.at((*(s + (x >> 3)) >> (~x & 7)) & 1);
