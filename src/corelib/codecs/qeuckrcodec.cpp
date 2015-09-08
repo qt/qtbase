@@ -108,7 +108,7 @@ QByteArray QEucKrCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             ++invalid;
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;
@@ -3421,7 +3421,7 @@ QByteArray QCP949Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             }
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;

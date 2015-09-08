@@ -138,7 +138,7 @@ QByteArray QGb18030Codec::convertFromUnicode(const QChar *uc, int len, Converter
             ++invalid;
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;
@@ -415,7 +415,7 @@ QByteArray QGbkCodec::convertFromUnicode(const QChar *uc, int len, ConverterStat
             ++invalid;
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;
@@ -566,7 +566,7 @@ QByteArray QGb2312Codec::convertFromUnicode(const QChar *uc, int len, ConverterS
             ++invalid;
         }
     }
-    rstr.resize(cursor - (uchar*)rstr.constData());
+    rstr.resize(cursor - (const uchar*)rstr.constData());
 
     if (state) {
         state->invalidChars += invalid;
