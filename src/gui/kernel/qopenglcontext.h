@@ -241,6 +241,8 @@ private:
     void setTextureFunctions(QOpenGLTextureHelper* textureFuncs);
 
     void destroy();
+
+    Q_PRIVATE_SLOT(d_func(), void _q_screenDestroyed(QObject *object))
 };
 
 QT_END_NAMESPACE
