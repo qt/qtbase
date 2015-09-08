@@ -1834,6 +1834,7 @@ void QStateMachinePrivate::_q_start()
         unregisterAllTransitions();
         emitFinished();
         emit q->runningChanged(false);
+        exitInterpreter();
     } else {
         _q_process();
     }
@@ -1928,6 +1929,8 @@ void QStateMachinePrivate::_q_process()
         break;
     }
     endMacrostep(didChange);
+    if (stopProcessingReason == Finished)
+        exitInterpreter();
 }
 
 void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
@@ -2057,6 +2060,8 @@ void QStateMachinePrivate::noMicrostep()
   4) the state machine either enters an infinite loop, or stops (runningChanged(false),
      and either finished or stopped are emitted), or processedPendingEvents() is called.
   5) if the machine is not in an infinite loop endMacrostep is called
+  6) when the machine is finished and all processing (like signal emission) is done,
+     exitInterpreter() is called. (This is the same name as the SCXML specification uses.)
 
   didChange is set to true if at least one microstep was performed, it is possible
   that the machine returned to exactly the same state as before, but some transitions
@@ -2077,6 +2082,9 @@ void QStateMachinePrivate::endMacrostep(bool didChange)
     Q_UNUSED(didChange);
 }
 
+void QStateMachinePrivate::exitInterpreter()
+{
+}
 
 void QStateMachinePrivate::emitStateFinished(QState *forState, QFinalState *guiltyState)
 {
