@@ -45,9 +45,11 @@ private slots:
 
 void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+#if defined(QT_NO_PROCESS)
+    QSKIP("QProcess not supported");
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     QSKIP("Not supported on Android");
-#endif
+#else
 
     // based on testcase provided in QTBUG-39488
     QByteArray msg = "Hello World";
@@ -78,6 +80,7 @@ void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
     QCOMPARE(process.exitCode(), 0);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(process.readAll().trimmed(), msg);
+#endif
 }
 
 QTEST_MAIN(tst_QProcess_and_GuiEventLoop)
