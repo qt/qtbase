@@ -3030,9 +3030,6 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
         d->showPopupFromMouseEvent(e);
 }
 
-/*!
-    \reimp
-*/
 void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
 {
     Q_Q(QComboBox);

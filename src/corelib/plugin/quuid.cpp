@@ -857,7 +857,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa QUuid::variant()
 */
 
 /*!
@@ -871,7 +871,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa QUuid::variant()
 */
 
 /*!
