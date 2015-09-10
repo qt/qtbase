@@ -42,6 +42,8 @@
 
 QT_USE_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &offset, NSUInteger *start = 0, NSUInteger *end = 0)
 {
     Q_ASSERT(line == -1 || offset == -1);
@@ -580,3 +582,5 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
 }
 
 @end
+
+#endif // QT_NO_ACCESSIBILITY

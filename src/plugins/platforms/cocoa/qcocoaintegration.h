@@ -121,7 +121,9 @@ public:
     QCoreTextFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
     QCocoaNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
     QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
+#ifndef QT_NO_ACCESSIBILITY
     QCocoaAccessibility *accessibility() const Q_DECL_OVERRIDE;
+#endif
     QCocoaClipboard *clipboard() const Q_DECL_OVERRIDE;
     QCocoaDrag *drag() const Q_DECL_OVERRIDE;
 

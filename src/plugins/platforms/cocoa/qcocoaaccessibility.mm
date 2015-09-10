@@ -37,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QCocoaAccessibility::QCocoaAccessibility()
 {
 
@@ -373,6 +375,8 @@ id getValueAttribute(QAccessibleInterface *interface)
 }
 
 } // namespace QCocoaAccessible
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

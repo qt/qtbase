@@ -37,6 +37,8 @@
 
 #include "qt_mac_p.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSAccessibility.h>
 
@@ -56,4 +58,6 @@
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
-#endif
+#endif // QT_NO_ACCESSIBILITY
+
+#endif // QCOCOAACCESIBILITYELEMENT_H

@@ -502,14 +502,12 @@ QPlatformInputContext *QCocoaIntegration::inputContext() const
     return mInputContext.data();
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QCocoaAccessibility *QCocoaIntegration::accessibility() const
 {
-#ifndef QT_NO_ACCESSIBILITY
     return mAccessibility.data();
-#else
-    return 0;
-#endif
 }
+#endif
 
 QCocoaClipboard *QCocoaIntegration::clipboard() const
 {
