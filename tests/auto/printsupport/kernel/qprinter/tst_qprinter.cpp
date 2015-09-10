@@ -1628,7 +1628,24 @@ void tst_QPrinter::resolution()
         // Test set/get
         int expected = 333;
 #ifdef Q_OS_MAC
-        // Set resolution does nothing on OSX, see QTBUG-7000
+        // QMacPrintEngine chooses the closest supported resolution.
+        const QList<int> all_supported = native.supportedResolutions();
+        foreach (int supported, all_supported) {
+            // Test setting a supported resolution
+            int requested = supported;
+            native.setResolution(requested);
+            QCOMPARE(native.resolution(), requested);
+
+            // Test setting an unsupported resolution
+            do {
+                requested += 5;
+            } while (all_supported.contains(requested));
+            native.setResolution(requested);
+            int result = native.resolution();
+            QVERIFY(all_supported.contains(result));
+            QVERIFY(qAbs(result - requested) <= qAbs(supported - requested));
+        }
+
         expected = native.resolution();
 #endif // Q_OS_MAC
         native.setResolution(expected);

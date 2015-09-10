@@ -470,7 +470,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->embedFonts = value.toBool();
         break;
     case PPK_Resolution:  {
-        // TODO It appears the old code didn't actually set the resolution???  Can we delete all this???
         int bestResolution = 0;
         int dpi = value.toInt();
         int bestDistance = INT_MAX;
@@ -486,7 +485,17 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                 }
             }
         }
-        PMSessionValidatePageFormat(d->session(), d->format(), kPMDontWantBoolean);
+        PMResolution resolution;
+        resolution.hRes = resolution.vRes = bestResolution;
+        if (PMPrinterSetOutputResolution(d->m_printDevice->macPrinter(), d->settings(), &resolution) == noErr) {
+            // Setting the resolution succeeded.
+            // Now try to read the actual resolution selected by the OS.
+            if (PMPrinterGetOutputResolution(d->m_printDevice->macPrinter(), d->settings(), &d->resolution) != noErr) {
+                // Reading the resolution somehow failed; d->resolution is in undefined state.
+                // So use the value which was acceptable to PMPrinterSetOutputResolution.
+                d->resolution = resolution;
+            }
+        }
         break;
     }
     case PPK_CollateCopies:
