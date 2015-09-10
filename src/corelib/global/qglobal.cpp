@@ -1169,7 +1169,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems such as OS X and iOS.
+    Defined on Darwin-based operating systems such as OS X, iOS, watchOS, and tvOS.
 */
 
 /*!
@@ -1184,6 +1184,20 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on iOS.
+ */
+
+/*!
+    \macro Q_OS_WATCHOS
+    \relates <QtGlobal>
+
+    Defined on watchOS.
+ */
+
+/*!
+    \macro Q_OS_TVOS
+    \relates <QtGlobal>
+
+    Defined on tvOS.
  */
 
 /*!

@@ -41,9 +41,11 @@
 /*
    The operating system, must be one of: (Q_OS_x)
 
-     DARWIN   - Any Darwin system (OS X, iOS)
+     DARWIN   - Any Darwin system (OS X, iOS, watchOS, tvOS)
      OSX      - OS X
      IOS      - iOS
+     WATCHOS  - watchOS
+     TVOS     - tvOS
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
@@ -88,15 +90,23 @@
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
 #  include <TargetConditionals.h>
 #  if defined(TARGET_OS_MAC) && TARGET_OS_MAC
-#  define Q_OS_DARWIN
-#  define Q_OS_BSD4
-#  ifdef __LP64__
-#    define Q_OS_DARWIN64
-#  else
-#    define Q_OS_DARWIN32
-#  endif
+#    define Q_OS_DARWIN
+#    define Q_OS_BSD4
+#    ifdef __LP64__
+#      define Q_OS_DARWIN64
+#    else
+#      define Q_OS_DARWIN32
+#    endif
 #    if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#      define Q_OS_IOS
+#      if defined(TARGET_OS_TV) && TARGET_OS_TV
+#        define Q_OS_TVOS
+#      elif defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
+#        define Q_OS_WATCHOS
+#      else
+#        // TARGET_OS_IOS is only available in newer SDKs,
+#        // so assume any other iOS-based platform is iOS for now
+#        define Q_OS_IOS
+#      endif
 #    else
 #      // there is no "real" OS X define (rdar://22640089),
 #      // assume any non iOS-based platform is OS X for now
