@@ -88,6 +88,8 @@ public:
     QSurfaceFormat surfaceFormat;
     QString windowTitle;
     Qt::WindowState state;
+    EGLDisplay display;
+    EGLSurface surface;
 
     ComPtr<ISwapChainPanel> swapChainPanel;
     ComPtr<ICanvasStatics> canvas;
@@ -100,6 +102,8 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
 {
     Q_D(QWinRTWindow);
 
+    d->surface = EGL_NO_SURFACE;
+    d->display = EGL_NO_DISPLAY;
     d->screen = static_cast<QWinRTScreen *>(screen());
     setWindowFlags(window->flags());
     setWindowState(window->windowState());
@@ -170,6 +174,11 @@ QWinRTWindow::~QWinRTWindow()
         return S_OK;
     });
     RETURN_VOID_IF_FAILED("Failed to completely destroy window resources, likely because the application is shutting down");
+
+    EGLBoolean value = eglDestroySurface(d->display, d->surface);
+    d->surface = EGL_NO_SURFACE;
+    if (value == EGL_FALSE)
+        qCritical("Failed to destroy EGL window surface: 0x%x", eglGetError());
 }
 
 QSurfaceFormat QWinRTWindow::format() const
@@ -291,6 +300,28 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
         setUIElementVisibility(d->uiElement.Get(), true);
 
     d->state = state;
+}
+
+EGLSurface QWinRTWindow::eglSurface() const
+{
+    Q_D(const QWinRTWindow);
+    return d->surface;
+}
+
+void QWinRTWindow::createEglSurface(EGLDisplay display, EGLConfig config)
+{
+    Q_D(QWinRTWindow);
+    if (d->surface == EGL_NO_SURFACE) {
+        d->display = display;
+        QEventDispatcherWinRT::runOnXamlThread([this, d, display, config]() {
+            d->surface = eglCreateWindowSurface(display, config,
+                                                reinterpret_cast<EGLNativeWindowType>(winId()),
+                                                nullptr);
+            if (d->surface == EGL_NO_SURFACE)
+                qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
+            return S_OK;
+        });
+    }
 }
 
 QT_END_NAMESPACE
