@@ -72,9 +72,15 @@ class QPlatformDropQtResponse;
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
+    struct SynchronousDelivery {};
+    struct AsynchronousDelivery {};
+    struct DefaultDelivery {};
+
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
@@ -88,7 +94,9 @@ public:
     static bool handleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
                                       quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static bool handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static bool handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
     static bool handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
@@ -135,8 +143,11 @@ public:
     static void registerTouchDevice(const QTouchDevice *device);
     static void unregisterTouchDevice(const QTouchDevice *device);
     static bool isTouchDeviceRegistered(const QTouchDevice *device);
+
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchCancelEvent(QWindow *w, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
@@ -145,7 +156,10 @@ public:
     // rect is relative to parent
     static void handleGeometryChange(QWindow *w, const QRect &newRect, const QRect &oldRect = QRect());
     static void handleCloseEvent(QWindow *w, bool *accepted = Q_NULLPTR);
+
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleEnterEvent(QWindow *w, const QPointF &local = QPointF(), const QPointF& global = QPointF());
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleLeaveEvent(QWindow *w);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
     static void handleWindowActivated(QWindow *w, Qt::FocusReason r = Qt::OtherFocusReason);
