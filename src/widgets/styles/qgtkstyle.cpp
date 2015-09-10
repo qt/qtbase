@@ -3633,6 +3633,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
                 QFont font = widget->font();
                 font.setBold(true);
                 fontMetrics = QFontMetrics(font);
+#ifndef QT_NO_ACCESSIBILITY
             } else if (QStyleHelper::isInstanceOf(groupBox->styleObject, QAccessible::Grouping)) {
                 QVariant var = groupBox->styleObject->property("font");
                 if (var.isValid() && var.canConvert<QFont>()) {
@@ -3640,6 +3641,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
                     font.setBold(true);
                     fontMetrics = QFontMetrics(font);
                 }
+#endif // QT_NO_ACCESSIBILITY
             }
 
             QSize textRect = fontMetrics.boundingRect(groupBox->text).size() + QSize(4, 4);
