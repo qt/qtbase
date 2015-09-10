@@ -133,6 +133,7 @@ public:
     bool isPrimary() const { return m_primary; }
 
     int screenNumber() const { return m_virtualDesktop->number(); }
+    static int virtualDesktopNumberStatic(const QScreen *screen);
 
     xcb_screen_t *screen() const { return m_virtualDesktop->screen(); }
     xcb_window_t root() const { return screen()->root; }

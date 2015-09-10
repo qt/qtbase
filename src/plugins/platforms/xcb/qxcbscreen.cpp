@@ -438,6 +438,14 @@ void QXcbScreen::setOutput(xcb_randr_output_t outputId,
     // TODO: Send an event to the QScreen instance that the screen changed its name
 }
 
+int QXcbScreen::virtualDesktopNumberStatic(const QScreen *screen)
+{
+    if (screen && screen->handle())
+        return static_cast<const QXcbScreen *>(screen->handle())->screenNumber();
+
+    return 0;
+}
+
 /*!
     \brief handle the XCB screen change event and update properties
 

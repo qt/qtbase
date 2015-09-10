@@ -48,6 +48,7 @@
 
 #include <QtPlatformHeaders/qxcbwindowfunctions.h>
 #include <QtPlatformHeaders/qxcbintegrationfunctions.h>
+#include <QtPlatformHeaders/qxcbscreenfunctions.h>
 
 #ifndef QT_NO_DBUS
 #include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
@@ -367,6 +368,10 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbWindowFunctions::visualIdIdentifier()) {
         return QFunctionPointer(QXcbWindowFunctions::VisualId(QXcbWindow::visualIdStatic));
     }
+
+    if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
+        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(QXcbScreen::virtualDesktopNumberStatic));
+
     return Q_NULLPTR;
 }
 
