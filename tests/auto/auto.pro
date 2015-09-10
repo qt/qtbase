@@ -22,7 +22,7 @@ installed_cmake.depends = cmake
 ios: SUBDIRS  = corelib gui
 
 wince:                                      SUBDIRS -= printsupport
-cross_compile:                              SUBDIRS -= tools
+cross_compile:                              SUBDIRS -= tools cmake installed_cmake
 !qtHaveModule(opengl):                      SUBDIRS -= opengl
 !qtHaveModule(gui):                         SUBDIRS -= gui cmake
 !qtHaveModule(widgets):                     SUBDIRS -= widgets
