@@ -1219,6 +1219,13 @@ void QObject::setObjectName(const QString &name)
     The event() function can be reimplemented to customize the
     behavior of an object.
 
+    Make sure you call the parent event class implementation
+    for all the events you did not handle.
+
+    Example:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 52
+
     \sa installEventFilter(), timerEvent(), QCoreApplication::sendEvent(),
     QCoreApplication::postEvent()
 */
