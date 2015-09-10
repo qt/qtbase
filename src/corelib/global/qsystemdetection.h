@@ -41,8 +41,7 @@
 /*
    The operating system, must be one of: (Q_OS_x)
 
-     DARWIN   - Any Darwin system
-     MAC      - OS X and iOS
+     DARWIN   - Any Darwin system (OS X, iOS)
      OSX      - OS X
      IOS      - iOS
      MSDOS    - MS-DOS and Windows
@@ -87,12 +86,24 @@
 */
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
+#  include <TargetConditionals.h>
+#  if defined(TARGET_OS_MAC) && TARGET_OS_MAC
 #  define Q_OS_DARWIN
 #  define Q_OS_BSD4
 #  ifdef __LP64__
 #    define Q_OS_DARWIN64
 #  else
 #    define Q_OS_DARWIN32
+#  endif
+#    if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#      define Q_OS_IOS
+#    else
+#      // there is no "real" OS X define (rdar://22640089),
+#      // assume any non iOS-based platform is OS X for now
+#      define Q_OS_OSX
+#    endif
+#  else
+#    error "Qt has not been ported to this Apple platform - see http://www.qt.io/developers"
 #  endif
 #elif defined(ANDROID)
 #  define Q_OS_ANDROID
@@ -181,26 +192,24 @@
 #  define Q_OS_WIN
 #endif
 
-#if defined(Q_OS_DARWIN)
-#  define Q_OS_MAC
-#  if defined(Q_OS_DARWIN64)
-#     define Q_OS_MAC64
-#  elif defined(Q_OS_DARWIN32)
-#     define Q_OS_MAC32
-#  endif
-#  include <TargetConditionals.h>
-#  if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#     define Q_OS_IOS
-#  elif defined(TARGET_OS_MAC) && TARGET_OS_MAC
-#     define Q_OS_OSX
-#     define Q_OS_MACX // compatibility synonym
-#  endif
-#endif
-
 #if defined(Q_OS_WIN)
 #  undef Q_OS_UNIX
 #elif !defined(Q_OS_UNIX)
 #  define Q_OS_UNIX
+#endif
+
+// Compatibility synonyms
+#ifdef Q_OS_DARWIN
+#define Q_OS_MAC
+#endif
+#ifdef Q_OS_DARWIN32
+#define Q_OS_MAC32
+#endif
+#ifdef Q_OS_DARWIN64
+#define Q_OS_MAC64
+#endif
+#ifdef Q_OS_OSX
+#define Q_OS_MACX
 #endif
 
 #ifdef Q_OS_DARWIN
