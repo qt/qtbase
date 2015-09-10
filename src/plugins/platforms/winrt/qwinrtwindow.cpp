@@ -159,8 +159,6 @@ QWinRTWindow::~QWinRTWindow()
         ComPtr<IVector<UIElement *>> children;
         hr = panel->get_Children(&children);
         Q_ASSERT_SUCCEEDED(hr);
-
-        Q_ASSERT_SUCCEEDED(hr);
         quint32 index;
         boolean found;
         hr = children->IndexOf(d->uiElement.Get(), &index, &found);
