@@ -1905,7 +1905,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (!w->isVisible() || w->data->is_closing)
             break;
         QWindow *window = w->windowHandle();
-        if (!w->close()) // Qt::WA_DeleteOnClose may cause deletion.
+        if (!window->close()) // Qt::WA_DeleteOnClose may cause deletion.
             return false;
         if (window)
             processedWindows->append(window);
@@ -1917,7 +1917,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (w->isVisible() && w->windowType() != Qt::Desktop &&
                 !w->testAttribute(Qt::WA_DontShowOnScreen) && !w->data->is_closing) {
             QWindow *window = w->windowHandle();
-            if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
+            if (!window->close())  // Qt::WA_DeleteOnClose may cause deletion.
                 return false;
             if (window)
                 processedWindows->append(window);
