@@ -61,7 +61,8 @@ class QMimeMagicRule
 public:
     enum Type { Invalid = 0, String, Host16, Host32, Big16, Big32, Little16, Little32, Byte };
 
-    QMimeMagicRule(Type type, const QByteArray &value, int startPos, int endPos, const QByteArray &mask = QByteArray());
+    QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
+                   const QByteArray &mask, QString *errorString);
     QMimeMagicRule(const QMimeMagicRule &other);
     ~QMimeMagicRule();
 

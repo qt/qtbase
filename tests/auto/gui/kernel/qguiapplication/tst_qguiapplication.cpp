@@ -60,6 +60,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void cleanup();
     void displayName();
     void firstWindowTitle();
@@ -83,6 +84,21 @@ private slots:
     void settableStyleHints_data();
     void settableStyleHints(); // Needs to run last as it changes style hints.
 };
+
+void tst_QGuiApplication::initTestCase()
+{
+#ifdef QT_QPA_DEFAULT_PLATFORM_NAME
+    if ((QString::compare(QStringLiteral(QT_QPA_DEFAULT_PLATFORM_NAME),
+         QStringLiteral("eglfs"), Qt::CaseInsensitive) == 0) ||
+        (QString::compare(QString::fromLatin1(qgetenv("QT_QPA_PLATFORM")),
+         QStringLiteral("eglfs"), Qt::CaseInsensitive) == 0)) {
+        // Set env variables to disable input and cursor because eglfs is single fullscreen window
+        // and trying to initialize input and cursor will crash test.
+        qputenv("QT_QPA_EGLFS_DISABLE_INPUT", "1");
+        qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
+    }
+#endif
+}
 
 void tst_QGuiApplication::cleanup()
 {

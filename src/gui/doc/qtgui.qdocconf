@@ -37,7 +37,8 @@ depends += \
     qtqml \
     qtquick \
     qtwidgets \
-    qtdoc
+    qtdoc \
+    qmake
 
 headerdirs  += ..
 

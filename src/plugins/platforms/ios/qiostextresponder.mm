@@ -333,65 +333,73 @@
 
 #ifndef QT_NO_SHORTCUT
 
+- (void)sendShortcut:(QKeySequence::StandardKey)standardKey
+{
+    const int keys = QKeySequence(standardKey)[0];
+    Qt::Key key = Qt::Key(keys & 0x0000FFFF);
+    Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keys & 0xFFFF0000);
+    [self sendKeyPressRelease:key modifiers:modifiers];
+}
+
 - (void)cut:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_X modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Cut];
 }
 
 - (void)copy:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_C modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Copy];
 }
 
 - (void)paste:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_V modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Paste];
 }
 
 - (void)selectAll:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_A modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::SelectAll];
 }
 
 - (void)delete:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_Delete modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Delete];
 }
 
 - (void)toggleBoldface:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_B modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Bold];
 }
 
 - (void)toggleItalics:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_I modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Italic];
 }
 
 - (void)toggleUnderline:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_U modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Underline];
 }
 
 // -------------------------------------------------------------------------
 
 - (void)undo
 {
-    [self sendKeyPressRelease:Qt::Key_Z modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Undo];
     [self rebuildUndoStack];
 }
 
 - (void)redo
 {
-    [self sendKeyPressRelease:Qt::Key_Z modifiers:Qt::ControlModifier|Qt::ShiftModifier];
+    [self sendShortcut:QKeySequence::Redo];
     [self rebuildUndoStack];
 }
 
@@ -728,6 +736,15 @@
     }
 
     return toCGRect(startRect.united(endRect));
+}
+
+- (NSArray *)selectionRectsForRange:(UITextRange *)range
+{
+    Q_UNUSED(range);
+    // This method is supposed to return a rectangle for each line with selection. Since we don't
+    // expose an API in Qt/IM for getting this information, and since we never seems to be getting
+    // a call from UIKit for this, we return an empty array until a need arise.
+    return [[NSArray new] autorelease];
 }
 
 - (CGRect)caretRectForPosition:(UITextPosition *)position

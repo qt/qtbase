@@ -1170,7 +1170,7 @@ QImageIOHandler::Transformations QImageReader::transformation() const
 
     Sets if images returned by read() should have transformation metadata automatically applied.
 
-    \sa autoTransform(), transform(), read()
+    \sa autoTransform(), transformation(), read()
 */
 void QImageReader::setAutoTransform(bool enabled)
 {

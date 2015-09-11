@@ -1090,8 +1090,11 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
         buf.buf = &c;
         buf.len = sizeof(c);
         DWORD flags = MSG_PEEK;
-        if (::WSARecvFrom(socketDescriptor, &buf, 1, 0, &flags, 0,0,0,0) == SOCKET_ERROR)
-            return 0;
+        if (::WSARecvFrom(socketDescriptor, &buf, 1, 0, &flags, 0,0,0,0) == SOCKET_ERROR) {
+            int err = WSAGetLastError();
+            if (err != WSAECONNRESET && err != WSAENETRESET)
+                return 0;
+        }
     }
     return nbytes;
 }
@@ -1119,14 +1122,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     int err = WSAGetLastError();
     if (ret == SOCKET_ERROR && err !=  WSAEMSGSIZE) {
         WS_ERROR_DEBUG(err);
-        if (err == WSAECONNRESET || err == WSAENETRESET) {
-            // Discard error message to prevent QAbstractSocket from
-            // getting this message repeatedly after reenabling the
-            // notifiers.
-            flags = 0;
-            ::WSARecvFrom(socketDescriptor, &buf, 1, &available, &flags,
-                          &storage.a, &storageSize, 0, 0);
-        }
+        result = (err == WSAECONNRESET || err == WSAENETRESET);
     } else {
         // If there's no error, or if our buffer was too small, there must be
         // a pending datagram.
@@ -1179,12 +1175,21 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
         if (recvResult != SOCKET_ERROR) {
             ret = qint64(bytesRead);
             break;
-        } else if (recvResult == SOCKET_ERROR && err == WSAEMSGSIZE) {
-           bufferCount += 5;
-           delete[] buf;
-        } else if (recvResult == SOCKET_ERROR) {
-            WS_ERROR_DEBUG(err);
-            ret = -1;
+        } else {
+            switch (err) {
+            case WSAEMSGSIZE:
+                bufferCount += 5;
+                delete[] buf;
+                continue;
+            case WSAECONNRESET:
+            case WSAENETRESET:
+                ret = 0;
+                break;
+            default:
+                WS_ERROR_DEBUG(err);
+                ret = -1;
+                break;
+            }
             break;
         }
     }

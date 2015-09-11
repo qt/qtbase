@@ -387,7 +387,7 @@ QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
         bmm.fill(Qt::color1);
     }
 
-    d = QCursorData::setBitmap(bm, bmm, hotX, hotY);
+    d = QCursorData::setBitmap(bm, bmm, hotX, hotY, pixmap.devicePixelRatio());
     d->pixmap = pixmap;
 }
 
@@ -430,7 +430,7 @@ QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
 QCursor::QCursor(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
     : d(0)
 {
-    d = QCursorData::setBitmap(bitmap, mask, hotX, hotY);
+    d = QCursorData::setBitmap(bitmap, mask, hotX, hotY, 1.0);
 }
 
 /*!
@@ -650,7 +650,7 @@ void QCursorData::initialize()
     QCursorData::initialized = true;
 }
 
-QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
+QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY, qreal devicePixelRatio)
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
@@ -664,8 +664,8 @@ QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, 
     d->bm  = new QBitmap(bitmap);
     d->bmm = new QBitmap(mask);
     d->cshape = Qt::BitmapCursor;
-    d->hx = hotX >= 0 ? hotX : bitmap.width() / 2;
-    d->hy = hotY >= 0 ? hotY : bitmap.height() / 2;
+    d->hx = hotX >= 0 ? hotX : bitmap.width() / 2 / devicePixelRatio;
+    d->hy = hotY >= 0 ? hotY : bitmap.height() / 2 / devicePixelRatio;
 
     return d;
 }

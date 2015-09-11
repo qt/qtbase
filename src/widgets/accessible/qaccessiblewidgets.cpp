@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qaccessiblewidgets.h"
+#include "qaccessiblewidgets_p.h"
 #include "qabstracttextdocumentlayout.h"
 #include "qapplication.h"
 #include "qclipboard.h"

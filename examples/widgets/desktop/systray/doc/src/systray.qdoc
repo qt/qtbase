@@ -1,0 +1,183 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example desktop/systray
+    \title System Tray Icon Example
+
+
+    The System Tray Icon example shows how to add an icon with a menu
+    and popup messages to a desktop environment's system tray.
+
+    \image systemtray-example.png Screenshot of the System Tray Icon.
+
+    Modern operating systems usually provide a special area on the
+    desktop, called the system tray or notification area, where
+    long-running applications can display icons and short messages.
+
+    This example consists of one single class, \c Window, providing
+    the main application window (i.e., an editor for the system tray
+    icon) and the associated icon.
+
+    \image systemtray-editor.png
+
+    The editor allows the user to choose the preferred icon as well as
+    set the balloon message's type and duration. The user can also
+    edit the message's title and body. Finally, the editor provide a
+    checkbox controlling whether the icon is actually shown in the
+    system tray, or not.
+
+    \section1 Window Class Definition
+
+    The \c Window class inherits QWidget:
+
+    \snippet desktop/systray/window.h 0
+
+    We implement several private slots to respond to user
+    interaction. The other private functions are only convenience
+    functions provided to simplify the constructor.
+
+    The tray icon is an instance of the QSystemTrayIcon class. To
+    check whether a system tray is present on the user's desktop, call
+    the static QSystemTrayIcon::isSystemTrayAvailable()
+    function. Associated with the icon, we provide a menu containing
+    the typical \gui minimize, \gui maximize, \gui restore and \gui
+    quit actions. We reimplement the QWidget::setVisible() function to
+    update the tray icon's menu whenever the editor's appearance
+    changes, e.g., when maximizing or minimizing the main application
+    window.
+
+    Finally, we reimplement QWidget's \l {QWidget::}{closeEvent()}
+    function to be able to inform the user (when closing the editor
+    window) that the program will keep running in the system tray
+    until the user chooses the \gui Quit entry in the icon's context
+    menu.
+
+    \section1 Window Class Implementation
+
+    When constructing the editor widget, we first create the various
+    editor elements before we create the actual system tray icon:
+
+    \snippet desktop/systray/window.cpp 0
+
+    We ensure that the application responds to user input by
+    connecting most of the editor's input widgets (including the
+    system tray icon) to the application's private slots. But note the
+    visibility checkbox; its \l {QCheckBox::}{toggled()} signal is
+    connected to the \e {icon}'s \l {QSystemTrayIcon::}{setVisible()}
+    function instead.
+
+    \snippet desktop/systray/window.cpp 3
+
+    The \c setIcon() slot is triggered whenever the current index in
+    the icon combobox changes, i.e., whenever the user chooses another
+    icon in the editor. Note that it is also called when the user
+    activates the tray icon with the left mouse button, triggering the
+    icon's \l {QSystemTrayIcon::}{activated()} signal. We will come
+    back to this signal shortly.
+
+    The QSystemTrayIcon::setIcon() function sets the \l
+    {QSystemTrayIcon::}{icon} property that holds the actual system
+    tray icon. On Windows, the system tray icon size is 16x16; on X11,
+    the preferred size is 22x22. The icon will be scaled to the
+    appropriate size as necessary.
+
+    Note that on X11, due to a limitation in the system tray
+    specification, mouse clicks on transparent areas in the icon are
+    propagated to the system tray. If this behavior is unacceptable,
+    we suggest using an icon with no transparency.
+
+    \snippet desktop/systray/window.cpp 4
+
+    Whenever the user activates the system tray icon, it emits its \l
+    {QSystemTrayIcon::}{activated()} signal passing the triggering
+    reason as parameter. QSystemTrayIcon provides the \l
+    {QSystemTrayIcon::}{ActivationReason} enum to describe how the
+    icon was activated.
+
+    In the constructor, we connected our icon's \l
+    {QSystemTrayIcon::}{activated()} signal to our custom \c
+    iconActivated() slot: If the user has clicked the icon using the
+    left mouse button, this function changes the icon image by
+    incrementing the icon combobox's current index, triggering the \c
+    setIcon() slot as mentioned above. If the user activates the icon
+    using the middle mouse button, it calls the custom \c
+    showMessage() slot:
+
+    \snippet desktop/systray/window.cpp 5
+
+    When the \e showMessage() slot is triggered, we first retrieve the
+    message icon depending on the currently chosen message type. The
+    QSystemTrayIcon::MessageIcon enum describes the icon that is shown
+    when a balloon message is displayed. Then we call
+    QSystemTrayIcon's \l {QSystemTrayIcon::}{showMessage()} function
+    to show the message with the title, body, and icon for the time
+    specified in milliseconds.
+
+    OS X users note: The Growl notification system must be
+    installed for QSystemTrayIcon::showMessage() to display messages.
+
+    QSystemTrayIcon also has the corresponding, \l {QSystemTrayIcon::}
+    {messageClicked()} signal, which is emitted when the user clicks a
+    message displayed by \l {QSystemTrayIcon::}{showMessage()}.
+
+    \snippet desktop/systray/window.cpp 6
+
+    In the constructor, we connected the \l
+    {QSystemTrayIcon::}{messageClicked()} signal to our custom \c
+    messageClicked() slot that simply displays a message using the
+    QMessageBox class.
+
+    QMessageBox provides a modal dialog with a short message, an icon,
+    and buttons laid out depending on the current style. It supports
+    four severity levels: "Question", "Information", "Warning" and
+    "Critical". The easiest way to pop up a message box in Qt is to
+    call one of the associated static functions, e.g.,
+    QMessageBox::information().
+
+    As we mentioned earlier, we reimplement a couple of QWidget's
+    virtual functions:
+
+    \snippet desktop/systray/window.cpp 1
+
+    Our reimplementation of the QWidget::setVisible() function updates
+    the tray icon's menu whenever the editor's appearance changes,
+    e.g., when maximizing or minimizing the main application window,
+    before calling the base class implementation.
+
+    \snippet desktop/systray/window.cpp 2
+
+    We have reimplemented the QWidget::closeEvent() event handler to
+    receive widget close events, showing the above message to the
+    users when they are closing the editor window.
+
+    In addition to the functions and slots discussed above, we have
+    also implemented several convenience functions to simplify the
+    constructor: \c createIconGroupBox(), \c createMessageGroupBox(),
+    \c createActions() and \c createTrayIcon(). See the \l
+    {desktop/systray/window.cpp}{window.cpp} file for details.
+*/

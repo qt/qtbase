@@ -27,23 +27,15 @@
 
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-deployment-qnx.html
-    \title Qt Creator: Deploying Applications to QNX Devices
+    \title Qt Creator: Deploying Applications to QNX Neutrino Devices
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-developing-baremetal.html
     \title Qt Creator: Connecting Bare Metal Devices
 */
 /*!
-    \externalpage http://doc.qt.io/qtcreator/creator-developing-bb10.html
-    \title Qt Creator: Connecting BlackBerry 10 Devices
-*/
-/*!
     \externalpage http://doc.qt.io/qtcreator/creator-developing-qnx.html
     \title Qt Creator: Connecting QNX Devices
-*/
-/*!
-    \externalpage http://doc.qt.io/qtcreator/creator-deployment-bb10.html
-    \title Qt Creator: Deploying Applications to BlackBerry 10 Devices
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-developing-generic-linux.html
@@ -98,7 +90,19 @@
     \title Qt Creator: Creating Screens
 */
 /*!
-    \externalpage http://doc.qt.io/qtcreator/creator-qml-application.html
+    \externalpage http://doc.qt.io/qtcreator/creator-qtquick-designer-extensions.html
+    \title Qt Creator: Using Qt Quick Designer Extensions
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qmldesigner-pathview-editor.html
+    \title Qt Creator: Editing PathView Properties
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qmldesigner-connections.html
+    \title Qt Creator: Adding Connections
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qtcreator-transitions-example.html
     \title Qt Creator: Creating a Qt Quick Application
 */
 /*!
@@ -279,7 +283,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-testing.html
-    \title Qt Creator: Debugging and Analyzing
+    \title Qt Creator: Testing
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-deployment.html
@@ -296,10 +300,6 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-design-mode.html
     \title Qt Creator: Designing User Interfaces
-*/
-/*!
-    \externalpage http://doc.qt.io/qtcreator/creator-publish-ovi.html
-    \title Qt Creator: Publishing
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-glossary.html
@@ -476,7 +476,7 @@
     \title Qt Creator: Adding Debuggers
 */
 /*!
-    \externalpage http://doc.qt.io/qtcreator/creator-mobile-app-tutorial.html
+    \externalpage http://doc.qt.io/qtcreator/qtcreator-accelbubble-example.html
     \title Qt Creator: Creating a Mobile Application
 */
 /*!
@@ -500,6 +500,18 @@
     \title Qt Creator: Qt Quick UI Forms
 */
 /*!
+    \externalpage http://doc.qt.io/qtcreator/qtcreator-uiforms-example.html
+    \title Qt Creator: Using Qt Quick UI Forms
+*/
+/*!
     \externalpage http://doc.qt.io/qtcreator/creator-clang-static-analyzer.html
     \title Qt Creator: Using Clang Static Analyzer
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-cpu-usage-analyzer.html
+    \title Qt Creator: Analyzing CPU Usage
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-autotest.html
+    \title Qt Creator: Running Autotests
 */

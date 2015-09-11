@@ -115,6 +115,14 @@ struct QSockNot {
 };
 typedef QHash<int, QSockNot *> QSNDict;
 
+struct QSockFd {
+    long event;
+    bool selected;
+
+    explicit inline QSockFd(long ev = 0) : event(ev), selected(false) { }
+};
+typedef QHash<int, QSockFd> QSFDict;
+
 struct WinTimerInfo {                           // internal timer info
     QObject *dispatcher;
     int timerId;
@@ -169,7 +177,8 @@ public:
     QSNDict sn_read;
     QSNDict sn_write;
     QSNDict sn_except;
-    void doWsaAsyncSelect(int socket);
+    QSFDict active_fd;
+    void doWsaAsyncSelect(int socket, long event);
 
     QList<QWinEventNotifier *> winEventNotifierList;
     void activateEventNotifier(QWinEventNotifier * wen);

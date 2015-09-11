@@ -805,7 +805,7 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
             home += QLatin1Char('/');
         if (!cur.isEmpty() && cur.at(cur.length()-1) != QLatin1Char('/'))
             cur += QLatin1Char('/');
-        if (cur.left(home.length()) != home)
+        if (!cur.startsWith(home))
             cur = home;
         if (QGuiApplication::platformName() == QLatin1String("xcb")) {
             if (printer->docName().isEmpty()) {

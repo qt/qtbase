@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     elliptic-curve cipher algorithms.
 
     Elliptic curves can be constructed from a "short name" (SN) (fromShortName()),
-    and by a call to QSslSocket::supportedEllipticCurves().
+    and by a call to QSslConfiguration::supportedEllipticCurves().
 
     QSslEllipticCurve instances can be compared for equality and can be used as keys
     in QHash and QSet. They cannot be used as key in a QMap.
@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
     Constructs an invalid elliptic curve.
 
-    \sa isValid(), QSslSocket::supportedEllipticCurves()
+    \sa isValid(), QSslConfiguration::supportedEllipticCurves()
 */
 
 /*!
@@ -136,7 +136,6 @@ QT_BEGIN_NAMESPACE
     \relates QSslEllipticCurve
 
     Returns true if the curve \a lhs represents the same curve of \a rhs;
-    false otherwise.
 */
 
 /*!

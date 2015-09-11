@@ -98,42 +98,6 @@ public:
     QTcpSocket and QUdpSocket provide notification through signals, so
     there is normally no need to use a QSocketNotifier on them.
 
-    \section1 Notes for Windows Users
-
-    The socket passed to QSocketNotifier will become non-blocking, even if
-    it was created as a blocking socket.
-    The activated() signal is sometimes triggered by high general activity
-    on the host, even if there is nothing to read. A subsequent read from
-    the socket can then fail, the error indicating that there is no data
-    available (e.g., \c{WSAEWOULDBLOCK}). This is an operating system
-    limitation, and not a bug in QSocketNotifier.
-
-    To ensure that the socket notifier handles read notifications correctly,
-    follow these steps when you receive a notification:
-
-    \list 1
-    \li Disable the notifier.
-    \li Read data from the socket.
-    \li Re-enable the notifier if you are interested in more data (such as after
-       having written a new command to a remote server).
-    \endlist
-
-    To ensure that the socket notifier handles write notifications correctly,
-    follow these steps when you receive a notification:
-
-    \list 1
-    \li Disable the notifier.
-    \li Write as much data as you can (before \c EWOULDBLOCK is returned).
-    \li Re-enable notifier if you have more data to write.
-    \endlist
-
-    \b{Further information:}
-    On Windows, Qt always disables the notifier after getting a notification,
-    and only re-enables it if more data is expected. For example, if data is
-    read from the socket and it can be used to read more, or if reading or
-    writing is not possible because the socket would block, in which case
-    it is necessary to wait before attempting to read or write again.
-
     \sa QFile, QProcess, QTcpSocket, QUdpSocket
 */
 

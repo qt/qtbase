@@ -4,12 +4,12 @@ contains(QT_CONFIG, accessibility) {
     HEADERS += \
         accessible/qaccessiblewidget.h \
         accessible/qaccessiblewidgetfactory_p.h \
-        accessible/complexwidgets.h \
-        accessible/itemviews.h \
-        accessible/qaccessiblemenu.h \
-        accessible/qaccessiblewidgets.h \
-        accessible/rangecontrols.h \
-        accessible/simplewidgets.h
+        accessible/complexwidgets_p.h \
+        accessible/itemviews_p.h \
+        accessible/qaccessiblemenu_p.h \
+        accessible/qaccessiblewidgets_p.h \
+        accessible/rangecontrols_p.h \
+        accessible/simplewidgets_p.h
 
     SOURCES += \
         accessible/qaccessiblewidget.cpp \

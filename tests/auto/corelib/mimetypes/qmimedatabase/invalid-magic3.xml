@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/invalid-magic3">
+      <comment>mask has wrong size</comment>
+      <magic>
+          <match value="foo" type="string" mask="0xffff" offset="0"/>
+      </magic>
+  </mime-type>
+</mime-info>
