@@ -44,7 +44,6 @@
 QT_BEGIN_NAMESPACE
 
 class QMimeTypePrivate;
-class QFileinfo;
 class QStringList;
 class QMimeType;
 
