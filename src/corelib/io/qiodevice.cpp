@@ -1289,6 +1289,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
         const char *startOfBlock = data;
 
         qint64 writtenSoFar = 0;
+        const qint64 savedPos = d->pos;
 
         forever {
             const char *endOfBlock = startOfBlock;
@@ -1300,7 +1301,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
                 qint64 ret = writeData(startOfBlock, blockSize);
                 if (ret <= 0) {
                     if (writtenSoFar && !sequential)
-                        d->buffer.skip(writtenSoFar);
+                        d->buffer.skip(d->pos - savedPos);
                     return writtenSoFar ? writtenSoFar : ret;
                 }
                 if (!sequential) {
@@ -1316,7 +1317,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
             qint64 ret = writeData("\r\n", 2);
             if (ret <= 0) {
                 if (writtenSoFar && !sequential)
-                    d->buffer.skip(writtenSoFar);
+                    d->buffer.skip(d->pos - savedPos);
                 return writtenSoFar ? writtenSoFar : ret;
             }
             if (!sequential) {
@@ -1329,7 +1330,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
         }
 
         if (writtenSoFar && !sequential)
-            d->buffer.skip(writtenSoFar);
+            d->buffer.skip(d->pos - savedPos);
         return writtenSoFar;
     }
 #endif
