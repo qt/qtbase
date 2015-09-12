@@ -52,7 +52,6 @@
 //
 
 #include "private/qiodevice_p.h"
-#include "private/qringbuffer_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +76,6 @@ protected:
     void setError(QFileDevice::FileError err, int errNum);
 
     mutable QAbstractFileEngine *fileEngine;
-    QRingBuffer writeBuffer;
     mutable qint64 cachedSize;
 
     QFileDevice::FileHandleFlags handleFlags;

@@ -48,13 +48,16 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int QFILE_WRITEBUFFER_SIZE = 16384;
+#ifndef QFILE_WRITEBUFFER_SIZE
+#define QFILE_WRITEBUFFER_SIZE 16384
+#endif
 
 QFileDevicePrivate::QFileDevicePrivate()
     : fileEngine(0),
-      writeBuffer(QFILE_WRITEBUFFER_SIZE), cachedSize(0),
+      cachedSize(0),
       error(QFile::NoError), lastWasWrite(false)
 {
+    writeBufferChunkSize = QFILE_WRITEBUFFER_SIZE;
 }
 
 QFileDevicePrivate::~QFileDevicePrivate()
@@ -274,14 +277,6 @@ QString QFileDevice::fileName() const
     return QString();
 }
 
-static inline qint64 _qfile_writeData(QAbstractFileEngine *engine, QRingBuffer *buffer)
-{
-    qint64 ret = engine->write(buffer->readPointer(), buffer->nextDataBlockSize());
-    if (ret > 0)
-        buffer->free(ret);
-    return ret;
-}
-
 /*!
     Flushes any buffered data to the file. Returns \c true if successful;
     otherwise returns \c false.
@@ -295,8 +290,11 @@ bool QFileDevice::flush()
     }
 
     if (!d->writeBuffer.isEmpty()) {
-        qint64 size = d->writeBuffer.size();
-        if (_qfile_writeData(d->fileEngine, &d->writeBuffer) != size) {
+        qint64 size = d->writeBuffer.nextDataBlockSize();
+        qint64 written = d->fileEngine->write(d->writeBuffer.readPointer(), size);
+        if (written > 0)
+            d->writeBuffer.free(written);
+        if (written != size) {
             QFileDevice::FileError err = d->fileEngine->error();
             if (err == QFileDevice::UnspecifiedError)
                 err = QFileDevice::WriteError;
@@ -488,9 +486,10 @@ bool QFileDevicePrivate::putCharHelper(char c)
 
     // Cutoff for code that doesn't only touch the buffer.
     qint64 writeBufferSize = writeBuffer.size();
-    if ((openMode & QIODevice::Unbuffered) || writeBufferSize + 1 >= QFILE_WRITEBUFFER_SIZE
+    if ((openMode & QIODevice::Unbuffered) || writeBufferSize + 1 >= writeBufferChunkSize
 #ifdef Q_OS_WIN
-        || ((openMode & QIODevice::Text) && c == '\n' && writeBufferSize + 2 >= QFILE_WRITEBUFFER_SIZE)
+        || ((openMode & QIODevice::Text) && c == '\n'
+            && writeBufferSize + 2 >= writeBufferChunkSize)
 #endif
         ) {
         return QIODevicePrivate::putCharHelper(c);
@@ -544,14 +543,14 @@ qint64 QFileDevice::writeData(const char *data, qint64 len)
     bool buffered = !(d->openMode & Unbuffered);
 
     // Flush buffered data if this read will overflow.
-    if (buffered && (d->writeBuffer.size() + len) > QFILE_WRITEBUFFER_SIZE) {
+    if (buffered && (d->writeBuffer.size() + len) > d->writeBufferChunkSize) {
         if (!flush())
             return -1;
     }
 
     // Write directly to the engine if the block size is larger than
     // the write buffer size.
-    if (!buffered || len > QFILE_WRITEBUFFER_SIZE) {
+    if (!buffered || len > d->writeBufferChunkSize) {
         const qint64 ret = d->fileEngine->write(data, len);
         if (ret < 0) {
             QFileDevice::FileError err = d->fileEngine->error();
