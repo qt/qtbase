@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QIODEVICE_BUFFERSIZE
-#define QIODEVICE_BUFFERSIZE Q_INT64_C(16384)
+#define QIODEVICE_BUFFERSIZE 16384
 #endif
 
 Q_CORE_EXPORT int qt_subtract_from_timeout(int timeout, int elapsed);
@@ -125,6 +125,8 @@ public:
     int writeChannelCount;
     int currentReadChannel;
     int currentWriteChannel;
+    int readBufferChunkSize;
+    int writeBufferChunkSize;
     qint64 transactionPos;
     bool transactionStarted;
     bool baseReadLineDataCalled;
