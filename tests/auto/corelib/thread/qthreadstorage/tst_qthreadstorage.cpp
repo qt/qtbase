@@ -240,7 +240,7 @@ void tst_QThreadStorage::adoptedThreads()
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(Pointer::count, c);
+    QTRY_COMPARE(Pointer::count, c);
 }
 
 QBasicAtomicInt cleanupOrder = Q_BASIC_ATOMIC_INITIALIZER(0);
