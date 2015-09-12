@@ -94,7 +94,7 @@
 #  else
 #    define Q_OS_DARWIN32
 #  endif
-#elif defined(ANDROID)
+#elif defined(__ANDROID__) || defined(ANDROID)
 #  define Q_OS_ANDROID
 #  define Q_OS_LINUX
 #elif defined(__CYGWIN__)
