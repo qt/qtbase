@@ -2503,7 +2503,7 @@ static bool debuggerPresent()
         return false;
     }
     buffer[size] = 0;
-    const char tracerPidToken[] = "TracerPid:";
+    const char tracerPidToken[] = "\nTracerPid:";
     char *tracerPid = strstr(buffer, tracerPidToken);
     if (!tracerPid) {
         close(fd);
