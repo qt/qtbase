@@ -659,10 +659,11 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
         for (int i=0; i<id.idCount; i++) {
 
             QImage image = images[i];
-            // Scale down the image if it is larger than 128 pixels in either width or height
-            if (image.width() > 128 || image.height() > 128)
+            // Scale down the image if it is larger than 256 pixels in either width or height
+            // because this is a maximum size of image in the ICO file.
+            if (image.width() > 256 || image.height() > 256)
             {
-                image = image.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                image = image.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             }
             QImage maskImage(image.width(), image.height(), QImage::Format_Mono);
             image = image.convertToFormat(QImage::Format_ARGB32);
@@ -894,9 +895,10 @@ bool QtIcoHandler::jumpToImage(int imageNumber)
 {
     if (imageNumber < imageCount()) {
         m_currentIconIndex = imageNumber;
+        return true;
     }
 
-    return imageNumber < imageCount();
+    return false;
 }
 
 /*! \reimp
