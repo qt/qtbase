@@ -554,11 +554,19 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             QColor arrowColor = header->palette.foreground().color();
             QPoint offset = QPoint(0, -1);
 
+#if defined(Q_OS_LINUX)
             if (header->sortIndicator & QStyleOptionHeader::SortUp) {
                 arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor);
             } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
                 arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor, 180);
             }
+#else
+            if (header->sortIndicator & QStyleOptionHeader::SortUp) {
+                arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor, 180);
+            } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
+                arrow = colorizedImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_arrow.png"), arrowColor);
+            }
+#endif
 
             if (!arrow.isNull()) {
                 r.setSize(QSize(arrow.width()/2, arrow.height()/2));
