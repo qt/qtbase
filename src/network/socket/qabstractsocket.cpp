@@ -562,7 +562,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       socketEngine(0),
       cachedSocketDescriptor(-1),
       readBufferMaxSize(0),
-      writeBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       isBuffered(false),
       connectTimer(0),
       disconnectTimer(0),
@@ -572,6 +571,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       socketError(QAbstractSocket::UnknownSocketError),
       preferredNetworkLayerProtocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
+    writeBufferChunkSize = QABSTRACTSOCKET_BUFFERSIZE;
 }
 
 /*! \internal
@@ -860,15 +860,16 @@ bool QAbstractSocketPrivate::writeToSocket()
            written);
 #endif
 
-    // Remove what we wrote so far.
-    writeBuffer.free(written);
     if (written > 0) {
+        // Remove what we wrote so far.
+        writeBuffer.free(written);
         // Don't emit bytesWritten() recursively.
         if (!emittedBytesWritten) {
             QScopedValueRollback<bool> r(emittedBytesWritten);
             emittedBytesWritten = true;
             emit q->bytesWritten(written);
         }
+        emit q->channelBytesWritten(0, written);
     }
 
     if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled()
@@ -1295,6 +1296,7 @@ void QAbstractSocketPrivate::emitReadyRead()
         emittedReadyRead = true;
         emit q->readyRead();
     }
+    emit q->channelReadyRead(0);
 }
 
 /*! \internal
@@ -1307,6 +1309,18 @@ void QAbstractSocketPrivate::fetchConnectionParameters()
 
     peerName = hostName;
     if (socketEngine) {
+        if (q->isReadable()) {
+            const int inboundStreamCount = socketEngine->inboundStreamCount();
+            setReadChannelCount(qMax(1, inboundStreamCount));
+            if (inboundStreamCount == 0)
+                readChannelCount = 0;
+        }
+        if (q->isWritable()) {
+            const int outboundStreamCount = socketEngine->outboundStreamCount();
+            setWriteChannelCount(qMax(1, outboundStreamCount));
+            if (outboundStreamCount == 0)
+                writeChannelCount = 0;
+        }
         socketEngine->setReadNotificationEnabled(true);
         socketEngine->setWriteNotificationEnabled(true);
         localPort = socketEngine->localPort();
@@ -1629,8 +1643,8 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     d->preferredNetworkLayerProtocol = protocol;
     d->hostName = hostName;
     d->port = port;
-    d->buffer.clear();
-    d->writeBuffer.clear();
+    d->setReadChannelCount(0);
+    d->setWriteChannelCount(0);
     d->abortCalled = false;
     d->pendingClose = false;
     if (d->state != BoundState) {
@@ -1663,6 +1677,8 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
         openMode |= QAbstractSocket::Unbuffered; // QUdpSocket
 
     QIODevice::open(openMode);
+    d->readChannelCount = d->writeChannelCount = 0;
+
     d->state = HostLookupState;
     emit stateChanged(d->state);
 
@@ -1725,11 +1741,11 @@ void QAbstractSocket::connectToHost(const QHostAddress &address, quint16 port,
 */
 qint64 QAbstractSocket::bytesToWrite() const
 {
-    Q_D(const QAbstractSocket);
+    const qint64 pendingBytes = QIODevice::bytesToWrite();
 #if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::bytesToWrite() == %lld", d->writeBuffer.size());
+    qDebug("QAbstractSocket::bytesToWrite() == %lld", pendingBytes);
 #endif
-    return d->writeBuffer.size();
+    return pendingBytes;
 }
 
 /*!
@@ -1868,8 +1884,8 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
     Q_D(QAbstractSocket);
 
     d->resetSocketLayer();
-    d->writeBuffer.clear();
-    d->buffer.clear();
+    d->setReadChannelCount(0);
+    d->setWriteChannelCount(0);
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
     if (!d->socketEngine) {
         d->setError(UnsupportedSocketOperationError, tr("Operation on socket is not supported"));
@@ -1889,6 +1905,23 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
         d->socketEngine->setReceiver(d);
 
     QIODevice::open(openMode);
+
+    if (socketState == ConnectedState) {
+        if (isReadable()) {
+            const int inboundStreamCount = d->socketEngine->inboundStreamCount();
+            d->setReadChannelCount(qMax(1, inboundStreamCount));
+            if (inboundStreamCount == 0)
+                d->readChannelCount = 0;
+        }
+        if (isWritable()) {
+            const int outboundStreamCount = d->socketEngine->outboundStreamCount();
+            d->setWriteChannelCount(qMax(1, outboundStreamCount));
+            if (outboundStreamCount == 0)
+                d->writeChannelCount = 0;
+        }
+    } else {
+        d->readChannelCount = d->writeChannelCount = 0;
+    }
 
     if (d->state != socketState) {
         d->state = socketState;
@@ -2337,7 +2370,7 @@ void QAbstractSocket::abort()
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::abort()");
 #endif
-    d->writeBuffer.clear();
+    d->setWriteChannelCount(0);
     if (d->state == UnconnectedState)
         return;
 #ifndef QT_NO_SSL
@@ -2489,8 +2522,10 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
            qt_prettyDebug(data, qMin((int)size, 32), size).data(),
            size, written);
 #endif
-        if (written >= 0)
+        if (written >= 0) {
             emit bytesWritten(written);
+            emit channelBytesWritten(0, written);
+        }
         return written;
     }
 
@@ -2741,7 +2776,7 @@ void QAbstractSocket::disconnectFromHost()
     d->peerPort = 0;
     d->localAddress.clear();
     d->peerAddress.clear();
-    d->writeBuffer.clear();
+    d->setWriteChannelCount(0);
 
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::disconnectFromHost() disconnected!");

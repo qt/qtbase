@@ -83,6 +83,8 @@ QAbstractSocketEnginePrivate::QAbstractSocketEnginePrivate()
     , socketProtocol(QAbstractSocket::UnknownNetworkLayerProtocol)
     , localPort(0)
     , peerPort(0)
+    , inboundStreamCount(0)
+    , outboundStreamCount(0)
     , receiver(0)
 {
 }
@@ -259,6 +261,16 @@ quint16 QAbstractSocketEngine::peerPort() const
 void QAbstractSocketEngine::setPeerPort(quint16 port)
 {
     d_func()->peerPort = port;
+}
+
+int QAbstractSocketEngine::inboundStreamCount() const
+{
+    return d_func()->inboundStreamCount;
+}
+
+int QAbstractSocketEngine::outboundStreamCount() const
+{
+    return d_func()->outboundStreamCount;
 }
 
 QT_END_NAMESPACE

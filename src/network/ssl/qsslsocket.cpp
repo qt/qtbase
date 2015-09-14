@@ -512,6 +512,8 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
     setPeerPort(d->plainSocket->peerPort());
     setPeerAddress(d->plainSocket->peerAddress());
     setPeerName(d->plainSocket->peerName());
+    d->readChannelCount = d->plainSocket->readChannelCount();
+    d->writeChannelCount = d->plainSocket->writeChannelCount();
     return retVal;
 }
 
@@ -1925,6 +1927,7 @@ void QSslSocket::connectToHost(const QString &hostName, quint16 port, OpenMode o
     d->plainSocket->setProxy(proxy());
 #endif
     QIODevice::open(openMode);
+    d->readChannelCount = d->writeChannelCount = 0;
     d->plainSocket->connectToHost(hostName, port, openMode, d->preferredNetworkLayerProtocol);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
 }
@@ -2271,8 +2274,14 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->connect(plainSocket, SIGNAL(readyRead()),
                q, SLOT(_q_readyReadSlot()),
                Qt::DirectConnection);
+    q->connect(plainSocket, SIGNAL(channelReadyRead(int)),
+               q, SLOT(_q_channelReadyReadSlot(int)),
+               Qt::DirectConnection);
     q->connect(plainSocket, SIGNAL(bytesWritten(qint64)),
                q, SLOT(_q_bytesWrittenSlot(qint64)),
+               Qt::DirectConnection);
+    q->connect(plainSocket, SIGNAL(channelBytesWritten(int, qint64)),
+               q, SLOT(_q_channelBytesWrittenSlot(int, qint64)),
                Qt::DirectConnection);
 #ifndef QT_NO_NETWORKPROXY
     q->connect(plainSocket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -2327,6 +2336,7 @@ bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstrac
     localPort = plainSocket->localPort();
     localAddress = plainSocket->localAddress();
     cachedSocketDescriptor = plainSocket->socketDescriptor();
+    readChannelCount = writeChannelCount = 0;
     return ret;
 }
 
@@ -2342,6 +2352,8 @@ void QSslSocketPrivate::_q_connectedSlot()
     q->setPeerAddress(plainSocket->peerAddress());
     q->setPeerName(plainSocket->peerName());
     cachedSocketDescriptor = plainSocket->socketDescriptor();
+    readChannelCount = plainSocket->readChannelCount();
+    writeChannelCount = plainSocket->writeChannelCount();
 
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcSsl) << "QSslSocket::_q_connectedSlot()";
@@ -2447,6 +2459,16 @@ void QSslSocketPrivate::_q_readyReadSlot()
 /*!
     \internal
 */
+void QSslSocketPrivate::_q_channelReadyReadSlot(int channel)
+{
+    Q_Q(QSslSocket);
+    if (mode == QSslSocket::UnencryptedMode)
+        emit q->channelReadyRead(channel);
+}
+
+/*!
+    \internal
+*/
 void QSslSocketPrivate::_q_bytesWrittenSlot(qint64 written)
 {
     Q_Q(QSslSocket);
@@ -2460,6 +2482,16 @@ void QSslSocketPrivate::_q_bytesWrittenSlot(qint64 written)
         emit q->encryptedBytesWritten(written);
     if (state == QAbstractSocket::ClosingState && writeBuffer.isEmpty())
         q->disconnectFromHost();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_channelBytesWrittenSlot(int channel, qint64 written)
+{
+    Q_Q(QSslSocket);
+    if (mode == QSslSocket::UnencryptedMode)
+        emit q->channelBytesWritten(channel, written);
 }
 
 /*!

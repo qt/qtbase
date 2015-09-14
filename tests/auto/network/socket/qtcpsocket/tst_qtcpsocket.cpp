@@ -478,6 +478,8 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->localAddress(), QHostAddress());
     QCOMPARE((int) socket->peerPort(), 0);
     QCOMPARE(socket->peerAddress(), QHostAddress());
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
     QCOMPARE(socket->error(), QTcpSocket::UnknownSocketError);
     QCOMPARE(socket->errorString(), QString("Unknown error"));
 
@@ -594,6 +596,8 @@ void tst_QTcpSocket::bind()
         } while (randomPort && attemptsLeft);
 
         QCOMPARE(socket->state(), QAbstractSocket::BoundState);
+        QCOMPARE(socket->readChannelCount(), 0);
+        QCOMPARE(socket->writeChannelCount(), 0);
         boundPort = socket->localPort();
         if (port)
             QCOMPARE(int(boundPort), port);
@@ -729,6 +733,8 @@ void tst_QTcpSocket::setSocketDescriptor()
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
@@ -764,6 +770,8 @@ void tst_QTcpSocket::blockingIMAP()
     QVERIFY(socket->waitForConnected(10000));
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
     QVERIFY(socket->isValid());
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
 
     // Read greeting
     QVERIFY(socket->waitForReadyRead(5000));
@@ -820,6 +828,8 @@ void tst_QTcpSocket::blockingIMAP()
 
     // Check that it's closed
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     delete socket;
 }
@@ -860,6 +870,8 @@ void tst_QTcpSocket::timeoutConnect()
     QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
     QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     timer.start();
     socket->connectToHost(address, 1357);
@@ -906,6 +918,8 @@ void tst_QTcpSocket::nonBlockingIMAP()
     }
 
     QCOMPARE(socket->state(), QTcpSocket::ConnectedState);
+    QCOMPARE(socket->readChannelCount(), 1);
+    QCOMPARE(socket->writeChannelCount(), 1);
 
     enterLoop(30);
     if (timeout()) {
@@ -971,6 +985,8 @@ void tst_QTcpSocket::nonBlockingIMAP()
 
     // Check that it's closed
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QCOMPARE(socket->readChannelCount(), 0);
+    QCOMPARE(socket->writeChannelCount(), 0);
 
     delete socket;
 }

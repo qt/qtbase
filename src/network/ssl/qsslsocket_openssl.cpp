@@ -851,6 +851,7 @@ void QSslSocketBackendPrivate::transmit()
                     emit q->bytesWritten(totalBytesWritten);
                     emittedBytesWritten = false;
                 }
+                emit q->channelBytesWritten(0, totalBytesWritten);
             }
         }
 
@@ -954,6 +955,7 @@ void QSslSocketBackendPrivate::transmit()
                 if (readyReadEmittedPointer)
                     *readyReadEmittedPointer = true;
                 emit q->readyRead();
+                emit q->channelReadyRead(0);
                 transmitting = true;
                 continue;
             }

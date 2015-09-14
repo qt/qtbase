@@ -922,6 +922,7 @@ void QNativeSocketEngine::close()
     d->localAddress.clear();
     d->peerPort = 0;
     d->peerAddress.clear();
+    d->inboundStreamCount = d->outboundStreamCount = 0;
     if (d->readNotifier) {
         qDeleteInEventHandler(d->readNotifier);
         d->readNotifier = 0;

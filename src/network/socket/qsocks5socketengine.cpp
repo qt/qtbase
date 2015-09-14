@@ -887,6 +887,7 @@ void QSocks5SocketEnginePrivate::parseRequestMethodReply()
         localPort = port;
 
         if (mode == ConnectMode) {
+            inboundStreamCount = outboundStreamCount = 1;
             socks5State = Connected;
             // notify the upper layer that we're done
             q->setState(QAbstractSocket::ConnectedState);
@@ -1047,6 +1048,7 @@ bool QSocks5SocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
         d->localAddress = bindData->localAddress;
         d->peerPort = bindData->peerPort;
         d->peerAddress = bindData->peerAddress;
+        d->inboundStreamCount = d->outboundStreamCount = 1;
         delete bindData;
 
         QObject::connect(d->data->controlSocket, SIGNAL(connected()), this, SLOT(_q_controlSocketConnected()),
@@ -1486,6 +1488,7 @@ void QSocks5SocketEngine::close()
         }
         d->data->controlSocket->close();
     }
+    d->inboundStreamCount = d->outboundStreamCount = 0;
 #ifndef QT_NO_UDPSOCKET
     if (d->udpData && d->udpData->udpSocket)
         d->udpData->udpSocket->close();

@@ -576,6 +576,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         d->state = Connected;
         setLocalAddress(d->socket->localAddress());
         setLocalPort(d->socket->localPort());
+        d->inboundStreamCount = d->outboundStreamCount = 1;
         setState(QAbstractSocket::ConnectedState);
         d->authenticator.detach();
         priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
