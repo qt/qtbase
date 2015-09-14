@@ -26,7 +26,7 @@ qhp.QtPrintSupport.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtprintsupport/qtprintsupport.tags
 
-depends                 += qtcore qtgui qtwidgets qtdoc
+depends                 += qtcore qtgui qtwidgets qtdoc qmake
 
 headerdirs  += ..
 
