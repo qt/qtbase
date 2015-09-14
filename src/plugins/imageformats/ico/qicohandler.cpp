@@ -779,11 +779,29 @@ QtIcoHandler::~QtIcoHandler()
 
 QVariant QtIcoHandler::option(ImageOption option) const
 {
-    if (option == Size) {
+    if (option == Size || option == ImageFormat) {
         ICONDIRENTRY iconEntry;
         if (m_pICOReader->readIconEntry(m_currentIconIndex, &iconEntry)) {
-                return QSize(iconEntry.bWidth ? iconEntry.bWidth : 256,
-                            iconEntry.bHeight ? iconEntry.bHeight : 256);
+            switch (option) {
+                case Size:
+                    return QSize(iconEntry.bWidth ? iconEntry.bWidth : 256,
+                                iconEntry.bHeight ? iconEntry.bHeight : 256);
+
+                case ImageFormat:
+                    switch (iconEntry.wBitCount) {
+                        case 2:
+                            return QImage::Format_Mono;
+                        case 24:
+                            return QImage::Format_RGB32;
+                        case 32:
+                            return QImage::Format_ARGB32;
+                        default:
+                            return QImage::Format_Indexed8;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
     return QVariant();
@@ -791,7 +809,7 @@ QVariant QtIcoHandler::option(ImageOption option) const
 
 bool QtIcoHandler::supportsOption(ImageOption option) const
 {
-    return option == Size;
+    return (option == Size || option == ImageFormat);
 }
 
 /*!
