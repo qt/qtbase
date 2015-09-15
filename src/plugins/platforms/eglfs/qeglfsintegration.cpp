@@ -129,13 +129,14 @@ void QEglFSIntegration::initialize()
 
     m_vtHandler.reset(new QFbVtHandler);
 
-    if (!m_disableInputHandlers)
-        createInputHandlers();
-
     if (qt_egl_device_integration()->usesDefaultScreen())
         addScreen(new QEglFSScreen(display()));
     else
         qt_egl_device_integration()->screenInit();
+
+    // Input code may rely on the screens, so do it only after the screen init.
+    if (!m_disableInputHandlers)
+        createInputHandlers();
 }
 
 void QEglFSIntegration::destroy()
