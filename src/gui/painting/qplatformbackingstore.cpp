@@ -48,6 +48,16 @@
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <qpa/qplatformgraphicsbufferhelper.h>
 
+#ifndef GL_TEXTURE_BASE_LEVEL
+#define GL_TEXTURE_BASE_LEVEL             0x813C
+#endif
+#ifndef GL_TEXTURE_MAX_LEVEL
+#define GL_TEXTURE_MAX_LEVEL              0x813D
+#endif
+#ifndef GL_UNPACK_ROW_LENGTH
+#define GL_UNPACK_ROW_LENGTH              0x0CF2
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPlatformBackingStorePrivate
@@ -311,12 +321,11 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
                 funcs->glDeleteTextures(1, &d_ptr->textureId);
             funcs->glGenTextures(1, &d_ptr->textureId);
             funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
-#ifndef QT_OPENGL_ES_2
-            if (!QOpenGLContext::currentContext()->isOpenGLES()) {
+            QOpenGLContext *ctx = QOpenGLContext::currentContext();
+            if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
                 funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
                 funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
             }
-#endif
             funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -435,18 +444,16 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
         image = image.convertToFormat(QImage::Format_RGBA8888);
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
-
     if (resized) {
         if (d_ptr->textureId)
             funcs->glDeleteTextures(1, &d_ptr->textureId);
         funcs->glGenTextures(1, &d_ptr->textureId);
         funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
-#ifndef QT_OPENGL_ES_2
-        if (!QOpenGLContext::currentContext()->isOpenGLES()) {
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
             funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
             funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
         }
-#endif
         funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -459,15 +466,13 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
         QRect imageRect = image.rect();
         QRect rect = dirtyRegion.boundingRect() & imageRect;
 
-#ifndef QT_OPENGL_ES_2
-        if (!QOpenGLContext::currentContext()->isOpenGLES()) {
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                                    image.constScanLine(rect.y()) + rect.x() * 4);
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        } else
-#endif
-        {
+        } else {
             // if the rect is wide enough it's cheaper to just
             // extend it instead of doing an image copy
             if (rect.width() >= imageRect.width() / 2) {
