@@ -702,13 +702,18 @@ QRect QPlatformWindow::windowFrameGeometry() const
     a resize/move event for platforms that support it, for example to
     implement heightForWidth().
 */
-QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+
+QRectF QPlatformWindow::closestAcceptableGeometry(const QWindow *qWindow, const QRectF &nativeRect)
 {
-    QWindow *qWindow = window();
     const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
-    const QRectF correctedGeometryF = qt_window_private(qWindow)->closestAcceptableGeometry(rectF);
+    const QRectF correctedGeometryF = qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(rectF);
     return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
         ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
+}
+
+QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const
+{
+    return QPlatformWindow::closestAcceptableGeometry(window(), nativeRect);
 }
 
 /*!

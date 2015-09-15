@@ -140,6 +140,7 @@ public:
     QRect windowGeometry() const;
     QRect windowFrameGeometry() const;
     QRectF windowClosestAcceptableGeometry(const QRectF &nativeRect) const;
+    static QRectF closestAcceptableGeometry(const QWindow *w, const QRectF &nativeRect);
 
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);

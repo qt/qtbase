@@ -1825,7 +1825,7 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
     const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
                                        windowPos->cx, windowPos->cy);
     const QRect suggestedGeometry = suggestedFrameGeometry - margins;
-    const QRectF correctedGeometryF = qWindow->handle()->windowClosestAcceptableGeometry(suggestedGeometry);
+    const QRectF correctedGeometryF = QPlatformWindow::closestAcceptableGeometry(qWindow, suggestedGeometry);
     if (!correctedGeometryF.isValid())
         return false;
     const QRect correctedFrameGeometry = correctedGeometryF.toRect() + margins;
