@@ -48,3 +48,22 @@ information about a particular change.
 ****************************************************************************
 *                                Tools                                     *
 ****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-46125] Fixed misuse of target linker features for host tools.
+ - [QTBUG-46473] QML plugin DLLs now have version information.
+
+qmake
+-----
+
+ - [QTBUG-46824][Darwin] Characters in the bundle identifier which
+   the App Store considers invalid are now substituted.
+ - [QTBUG-47065][Unix] Fixed use of CONFIG+=separate_debug_info together
+   with CONFIG+=unversioned_libname.
+ - [QTBUG-47450][Xcode] Fixed Info.plist creation in shadow builds.
+ - [QTBUG-47775][Darwin] Fixed Info.plist creation when bundle name
+   contains spaces.
+ - [QTBUG-48110][VS] Fixed VS2015 solution file generation.
+ - [MSVC][nmake] Fixed use of VS2013 mkspecs from VS2015 shell.
