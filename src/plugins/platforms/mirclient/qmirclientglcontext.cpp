@@ -39,6 +39,7 @@
 #include "qmirclientwindow.h"
 #include "qmirclientlogging.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #if !defined(QT_NO_DEBUG)
 static void printOpenGLESConfig() {
@@ -103,6 +104,15 @@ bool QMirClientOpenGLContext::makeCurrent(QPlatformSurface* surface)
     ASSERT(eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext) == EGL_TRUE);
     printOpenGLESConfig();
 #endif
+
+    // When running on the emulator, shaders will be compiled using a thin wrapper around the desktop drivers.
+    // These wrappers might not support the precision qualifiers, so set the workaround flag to true.
+    const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0) {
+        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
+        ctx_d->workaround_missingPrecisionQualifiers = true;
+    }
+
     return true;
 }
 
