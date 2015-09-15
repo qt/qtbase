@@ -190,8 +190,13 @@ static void formatApplicationState(QDebug debug)
         debug << "\n  QGuiApplication::modalWindow    = ";
         formatObject(mw, debug);
     }
-    debug << "\n  QGuiApplication::focusWindow    = ";
-    formatObject(QGuiApplication::focusWindow(), debug);
+    const QObject *focusObject = QGuiApplication::focusObject();
+    const QObject *focusWindow = QGuiApplication::focusWindow();
+    debug << "\n  QGuiApplication::focusObject    = ";
+    formatObject(focusObject, debug);
+    if (focusWindow && focusWindow != focusObject)
+        debug << "\n  QGuiApplication::focusWindow    = ";
+    formatObject(focusWindow, debug);
 #endif // HAVE_GUI_APPLICATION
 }
 
