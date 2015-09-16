@@ -73,13 +73,18 @@ public:
         delete connection;
     }
 
+    static QString getSocketPath();
     static QDBusConnection *createConnection();
+
+    void initBus();
+    void createBusProxy();
 
     QDBusConnection *connection;
     QIBusProxy *bus;
     QIBusInputContextProxy *context;
 
     bool valid;
+    bool busConnected;
     QString predit;
     bool needsSurroundingText;
 };
@@ -88,12 +93,21 @@ public:
 QIBusPlatformInputContext::QIBusPlatformInputContext ()
     : d(new QIBusPlatformInputContextPrivate())
 {
-    if (d->context) {
-        connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
-        connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
-        connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
-        connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
+    QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
+    QFile file(socketPath);
+    if (file.open(QFile::ReadOnly)) {
+        // If KDE session save is used or restart ibus-daemon,
+        // the applications could run before ibus-daemon runs.
+        // We watch the getSocketPath() to get the launching ibus-daemon.
+        m_socketWatcher.addPath(socketPath);
+        connect(&m_socketWatcher, SIGNAL(fileChanged(QString)), this, SLOT(socketChanged(QString)));
     }
+
+    m_timer.setSingleShot(true);
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(connectToBus()));
+
+    connectToContextSignals();
+
     QInputMethod *p = qApp->inputMethod();
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
     m_eventFilterUseSynchronousMode = false;
@@ -117,7 +131,7 @@ bool QIBusPlatformInputContext::isValid() const
 
 void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     if (a == QInputMethod::Click)
@@ -128,7 +142,7 @@ void QIBusPlatformInputContext::reset()
 {
     QPlatformInputContext::reset();
 
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     d->context->Reset();
@@ -139,7 +153,7 @@ void QIBusPlatformInputContext::commit()
 {
     QPlatformInputContext::commit();
 
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     QObject *input = qApp->focusObject();
@@ -193,7 +207,7 @@ void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 
 void QIBusPlatformInputContext::cursorRectChanged()
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     QRect r = qApp->inputMethod()->cursorRectangle().toRect();
@@ -211,7 +225,7 @@ void QIBusPlatformInputContext::cursorRectChanged()
 
 void QIBusPlatformInputContext::setFocusObject(QObject *object)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return;
 
     if (debug)
@@ -291,7 +305,7 @@ void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
 
 bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
 {
-    if (!d->valid)
+    if (!d->busConnected)
         return false;
 
     if (!inputMethodAccepted())
@@ -398,12 +412,65 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     call->deleteLater();
 }
 
+void QIBusPlatformInputContext::socketChanged(const QString &str)
+{
+    qCDebug(qtQpaInputMethods) << "socketChanged";
+    Q_UNUSED (str);
+
+    m_timer.stop();
+
+    if (d->context)
+        disconnect(d->context);
+    if (d->connection)
+        d->connection->disconnectFromBus(QLatin1String("QIBusProxy"));
+
+    m_timer.start(100);
+}
+
+// When getSocketPath() is modified, the bus is not established yet
+// so use m_timer.
+void QIBusPlatformInputContext::connectToBus()
+{
+    qCDebug(qtQpaInputMethods) << "QIBusPlatformInputContext::connectToBus";
+    d->initBus();
+    connectToContextSignals();
+
+    if (m_socketWatcher.files().size() == 0)
+        m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
+}
+
+void QIBusPlatformInputContext::connectToContextSignals()
+{
+    if (d->context) {
+        connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
+        connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+        connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
+        connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
+    }
+}
+
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
-    : connection(createConnection()),
+    : connection(0),
       bus(0),
       context(0),
       valid(false),
+      busConnected(false),
       needsSurroundingText(false)
+{
+    valid = !QStandardPaths::findExecutable(QString::fromLocal8Bit("ibus-daemon"), QStringList()).isEmpty();
+    if (!valid)
+        return;
+    initBus();
+}
+
+void QIBusPlatformInputContextPrivate::initBus()
+{
+    connection = createConnection();
+    busConnected = false;
+    createBusProxy();
+}
+
+void QIBusPlatformInputContextPrivate::createBusProxy()
 {
     if (!connection || !connection->isConnected())
         return;
@@ -440,11 +507,11 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS|IBUS_CAP_SURROUNDING_TEXT);
 
     if (debug)
-        qDebug(">>>> valid!");
-    valid = true;
+        qDebug(">>>> bus connected!");
+    busConnected = true;
 }
 
-QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
+QString QIBusPlatformInputContextPrivate::getSocketPath()
 {
     QByteArray display(qgetenv("DISPLAY"));
     QByteArray host = "unix";
@@ -462,9 +529,14 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
-    QFile file(QDir::homePath() + QLatin1String("/.config/ibus/bus/") +
+    return QDir::homePath() + QLatin1String("/.config/ibus/bus/") +
                QLatin1String(QDBusConnection::localMachineId()) +
-               QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber));
+               QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber);
+}
+
+QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
+{
+    QFile file(getSocketPath());
 
     if (!file.open(QFile::ReadOnly))
         return 0;

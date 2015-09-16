@@ -37,7 +37,9 @@
 
 #include <QtCore/qpointer.h>
 #include <QtDBus/qdbuspendingreply.h>
+#include <QFileSystemWatcher>
 #include <QLoggingCategory>
+#include <QTimer>
 #include <QWindow>
 
 QT_BEGIN_NAMESPACE
@@ -96,10 +98,16 @@ public Q_SLOTS:
     void deleteSurroundingText(int offset, uint n_chars);
     void surroundingTextRequired();
     void filterEventFinished(QDBusPendingCallWatcher *call);
+    void socketChanged(const QString &str);
+    void connectToBus();
 
 private:
     QIBusPlatformInputContextPrivate *d;
     bool m_eventFilterUseSynchronousMode;
+    QFileSystemWatcher m_socketWatcher;
+    QTimer m_timer;
+
+    void connectToContextSignals();
 };
 
 QT_END_NAMESPACE
