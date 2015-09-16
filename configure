@@ -5729,7 +5729,8 @@ if [ "$CFG_EGLFS" != "no" ]; then
         else
             CFG_EGLFS_BRCM=no
         fi
-        if compileTest qpa/eglfs-mali "eglfs-mali"; then
+        if compileTest qpa/eglfs-mali "eglfs-mali" \
+            || compileTest qpa/eglfs-mali-2 "eglfs-mali-2"; then
             CFG_EGLFS_MALI=yes
         else
             CFG_EGLFS_MALI=no

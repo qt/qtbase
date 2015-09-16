@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include "qeglfsmaliintegration.h"
-#include <EGL/fbdev_window.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -42,6 +41,11 @@
 #include <private/qcore_unix_p.h>
 
 QT_BEGIN_NAMESPACE
+
+struct fbdev_window {
+    unsigned short width;
+    unsigned short height;
+};
 
 void QEglFSMaliIntegration::platformInit()
 {
