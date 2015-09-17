@@ -47,6 +47,7 @@
 
 #include "qiosmenu.h"
 #include "qiosfiledialog.h"
+#include "qiosmessagedialog.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -85,6 +86,7 @@ bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
     switch (type) {
     case FileDialog:
+    case MessageDialog:
         return true;
     default:
         return false;
@@ -96,6 +98,9 @@ QPlatformDialogHelper *QIOSTheme::createPlatformDialogHelper(QPlatformTheme::Dia
     switch (type) {
     case FileDialog:
         return new QIOSFileDialog();
+        break;
+    case MessageDialog:
+        return new QIOSMessageDialog();
         break;
     default:
         return 0;
