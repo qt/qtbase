@@ -198,12 +198,19 @@ public:
     static int mousePressY;
     static int mouse_double_click_distance;
     static QPointF lastCursorPosition;
-    static Qt::MouseButtons tabletState;
-    static QWindow *tabletPressTarget;
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
     static bool highDpiScalingUpdated;
+
+    struct TabletPointData {
+        TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(Q_NULLPTR) {}
+        qint64 deviceId;
+        Qt::MouseButtons state;
+        QWindow *target;
+    };
+    static QVector<TabletPointData> tabletDevicePoints;
+    static TabletPointData &tabletDevicePoint(qint64 deviceId);
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;

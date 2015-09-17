@@ -124,8 +124,6 @@ Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
 QPointF QGuiApplicationPrivate::lastCursorPosition(qInf(), qInf());
 
-Qt::MouseButtons QGuiApplicationPrivate::tabletState = Qt::NoButton;
-QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
 QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
 
 QString QGuiApplicationPrivate::styleOverride;
@@ -133,6 +131,8 @@ QString QGuiApplicationPrivate::styleOverride;
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
+
+QVector<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
@@ -2198,12 +2198,26 @@ void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate:
     QGuiApplication::sendSpontaneousEvent(qApp, &event);
 }
 
+QGuiApplicationPrivate::TabletPointData &QGuiApplicationPrivate::tabletDevicePoint(qint64 deviceId)
+{
+    for (int i = 0; i < tabletDevicePoints.size(); ++i) {
+        TabletPointData &pointData = tabletDevicePoints[i];
+        if (pointData.deviceId == deviceId)
+            return pointData;
+    }
+
+    tabletDevicePoints.append(TabletPointData(deviceId));
+    return tabletDevicePoints.last();
+}
+
 void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::TabletEvent *e)
 {
 #ifndef QT_NO_TABLETEVENT
+    TabletPointData &pointData = tabletDevicePoint(e->uid);
+
     QEvent::Type type = QEvent::TabletMove;
-    if (e->buttons != tabletState)
-        type = (e->buttons > tabletState) ? QEvent::TabletPress : QEvent::TabletRelease;
+    if (e->buttons != pointData.state)
+        type = (e->buttons > pointData.state) ? QEvent::TabletPress : QEvent::TabletRelease;
 
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
@@ -2219,14 +2233,14 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         }
         if (!window)
             return;
-        tabletPressTarget = window;
+        pointData.target = window;
     } else {
         if (e->nullWindow()) {
-            window = tabletPressTarget;
+            window = pointData.target;
             localValid = false;
         }
         if (type == QEvent::TabletRelease)
-            tabletPressTarget = 0;
+            pointData.target = Q_NULLPTR;
         if (!window)
             return;
     }
@@ -2235,7 +2249,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         QPointF delta = e->global - e->global.toPoint();
         local = window->mapFromGlobal(e->global.toPoint()) + delta;
     }
-    Qt::MouseButtons stateChange = e->buttons ^ tabletState;
+    Qt::MouseButtons stateChange = e->buttons ^ pointData.state;
     Qt::MouseButton button = Qt::NoButton;
     for (int check = Qt::LeftButton; check <= int(Qt::MaxMouseButton); check = check << 1) {
         if (check & stateChange) {
@@ -2249,7 +2263,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
                     e->modifiers, e->uid, button, e->buttons);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
-    tabletState = e->buttons;
+    pointData.state = e->buttons;
 #else
     Q_UNUSED(e)
 #endif
@@ -2261,7 +2275,7 @@ void QGuiApplicationPrivate::processTabletEnterProximityEvent(QWindowSystemInter
     QTabletEvent ev(QEvent::TabletEnterProximity, QPointF(), QPointF(),
                     e->device, e->pointerType, 0, 0, 0,
                     0, 0, 0,
-                    Qt::NoModifier, e->uid, Qt::NoButton, tabletState);
+                    Qt::NoModifier, e->uid, Qt::NoButton, tabletDevicePoint(e->uid).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else
@@ -2275,7 +2289,7 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
     QTabletEvent ev(QEvent::TabletLeaveProximity, QPointF(), QPointF(),
                     e->device, e->pointerType, 0, 0, 0,
                     0, 0, 0,
-                    Qt::NoModifier, e->uid, Qt::NoButton, tabletState);
+                    Qt::NoModifier, e->uid, Qt::NoButton, tabletDevicePoint(e->uid).state);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(qGuiApp, &ev);
 #else

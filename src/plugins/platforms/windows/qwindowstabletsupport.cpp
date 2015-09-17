@@ -391,6 +391,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
 
     const int currentDevice = m_devices.at(m_currentDevice).currentDevice;
     const int currentPointer = m_devices.at(m_currentDevice).currentPointerType;
+    const qint64 uniqueId = m_devices.at(m_currentDevice).uniqueId;
 
     // The tablet can be used in 2 different modes, depending on it settings:
     // 1) Absolute (pen) mode:
@@ -407,7 +408,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
-        << "target:" << QGuiApplicationPrivate::tabletPressTarget;
+        << "target:" << QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target;
 
     const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
@@ -420,7 +421,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         QPointF globalPosF = m_oldGlobalPosF;
         m_oldGlobalPosF = m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
 
-        QWindow *target = QGuiApplicationPrivate::tabletPressTarget; // Pass to window that grabbed it.
+        QWindow *target = QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target; // Pass to window that grabbed it.
         QPoint globalPos = globalPosF.toPoint();
 
         // Get Mouse Position and compare to tablet info
@@ -484,7 +485,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                                                   static_cast<Qt::MouseButtons>(packet.pkButtons),
                                                   pressureNew, tiltX, tiltY,
                                                   tangentialPressure, rotation, z,
-                                                  m_devices.at(m_currentDevice).uniqueId,
+                                                  uniqueId,
                                                   keyboardModifiers);
     }
     return true;
