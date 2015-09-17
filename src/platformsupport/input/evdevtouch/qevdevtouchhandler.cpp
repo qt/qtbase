@@ -531,9 +531,16 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             it.next();
             Contact &contact(it.value());
             int key = m_typeB ? it.key() : contact.trackingId;
-            if (!m_contacts.contains(key)) {
-                contact.state = Qt::TouchPointReleased;
-                addTouchPoint(contact, &combinedStates);
+            if (m_typeB) {
+                if (contact.trackingId != m_contacts[key].trackingId && contact.state) {
+                    contact.state = Qt::TouchPointReleased;
+                    addTouchPoint(contact, &combinedStates);
+                }
+            } else {
+                if (!m_contacts.contains(key)) {
+                    contact.state = Qt::TouchPointReleased;
+                    addTouchPoint(contact, &combinedStates);
+                }
             }
         }
 
