@@ -121,6 +121,13 @@ static QSet<QByteArray> keywords()
     #endif
 #endif
 
+#ifdef Q_PROCESSOR_X86
+            << "x86"
+#endif
+#ifdef Q_PROCESSOR_ARM
+            << "arm"
+#endif
+
 #ifdef Q_AUTOTEST_EXPORT
             << "developer-build"
 #endif
