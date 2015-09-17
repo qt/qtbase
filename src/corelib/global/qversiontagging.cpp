@@ -33,18 +33,25 @@
 
 #include "qglobal.h"
 
-#if defined(Q_CC_GNU) && defined(Q_OS_LINUX) && defined(Q_PROCESSOR_X86) && !defined(QT_STATIC)
+#if defined(Q_CC_GNU) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)) && defined(Q_PROCESSOR_X86) && !defined(QT_STATIC)
 # define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
 # define SSYM QT_STRINGIFY(SYM)
 
 asm(
+// ASM macro that makes one ELF versioned symbol
+".macro     make_versioned_symbol    plainsym versionedsym\n"
+".globl     plainsym\n"
+".type      plainsym, @object\n"
+".size      plainsym, 1\n"
+".symver    plainsym, versionedsym\n"
+"plainsym :\n"
+".endm\n"
+
 // ASM macro that makes one ELF versioned symbol qt_version_tag{sep}Qt_{major}.{minor}
 // that is an alias to qt_version_tag_{major}_{minor}.
 // The {sep} parameter must be @ for all old versions and @@ for the current version.
 ".macro      make_one_tag    major minor sep\n"
-".globl      " SSYM "_\\major\\()_\\minor\n"                        // make the symbol global
-SSYM "_\\major\\()_\\minor:\n"                                      // declare it
-"    .symver " SSYM "_\\major\\()_\\minor, " SSYM "\\sep\\()Qt_\\major\\().\\minor\n"
+"       make_versioned_symbol   " SSYM "_\\major\\()_\\minor, " SSYM "\\sep\\()Qt_\\major\\().\\minor\n"
 ".endm\n"
 
 ".altmacro\n"
