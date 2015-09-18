@@ -276,7 +276,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedGlesRenderers()
 {
     const GpuDescription gpu = GpuDescription::detect();
     const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, true);
-    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
     return result;
 }
 
@@ -284,7 +284,7 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::supportedRenderers()
 {
     const GpuDescription gpu = GpuDescription::detect();
     const QWindowsOpenGLTester::Renderers result = detectSupportedRenderers(gpu, false);
-    qDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
+    qCDebug(lcQpaGl) << __FUNCTION__ << gpu << "renderer: " << result;
     return result;
 }
 
