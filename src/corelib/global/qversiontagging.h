@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,22 +46,93 @@
 QT_BEGIN_NAMESPACE
 
 /*
- * Ugly hack warning and explanation:
+ * Explanation
  *
- * This file causes all ELF modules, be they libraries or applications, to use the
- * qt_version_tag symbol that is present in QtCore. Such symbol is versioned,
- * so the linker will automatically pull the current Qt version and add it to
- * the ELF header of the library/application. The assembly produces one section
- * called ".qtversion" containing two 32-bit values. The first is a
- * relocation to the qt_version_tag symbol (which is what causes the ELF
- * version to get used). The second value is the current Qt version at the time
- * of compilation.
+ * This file causes all libraries, plugins, and applications that #include this
+ * file to automatically pull in a symbol found in QtCore that encodes the
+ * current Qt version number at the time of compilation. The relocation is
+ * designed so that it's impossible for the dynamic linker to perform lazy
+ * binding. Instead, it must resolve at load time or fail. That way, attempting
+ * to load such a library or plugin while an older QtCore is loaded will fail.
+ * Similarly, if an older QtCore is found when launching an application, the
+ * application will fail to launch.
+ *
+ * It's also possible to inspect which version is required by decoding the
+ * .qtversion section. The second pointer-sized variable is the required
+ * version, for example, for Qt 6.4.1:
+ *
+ *      Hex dump of section [18] '.qtversion', 16 bytes at offset 0x1ee48:
+ *        0x00000000 b0ffffff ffffffff 01040600 00000000 ................
+ *                                     ^^^^^^^^ ^^^^^^^^
  *
  * There will only be one copy of the section in the output library or application.
+ *
+ * This functionality can be disabled by defining QT_NO_VERSION_TAGGING. It's
+ * disabled if Qt was built statically.
+ *
+ * Windows notes:
+ *
+ *  On Windows, the address of a __declspec(dllimport) variable is not a
+ *  constant expression, unlike Unix systems. So we instead use the address of
+ *  the import variable, which is created by prefixing the external name with
+ *  "__imp_". Using that variable causes an import of the corresponding symbol
+ *  from QtCore DLL.
+ *
+ *  With MinGW (GCC and Clang), we use a C++17 inline variable, so the compiler
+ *  and linker automatically merge the variables. The "used" __attribute__
+ *  tells the compiler to always emit that variable, whether it's used or not.
+ *
+ *  MSVC has no equivalent to that attribute, so instead we create an extern
+ *  const variable and tell the linker to merge them all via
+ *  __declspec(selectany).
+ *
+ * ELF notes (Linux, FreeBSD):
+ *
+ *  The symbol in question is simply "qt_version_tag" in both QtCore and in
+ *  this ELF module, but it has an ELF version attached to it (see
+ *  qversiontagging.cpp and QtFlagHandlingHelpers.cmake). That way, the error
+ *  message from the dynamic linker will say it can't find version "Qt_6.x".
+ *
+ *  This is currently implemented only for x86 by way of inline assembly. We
+ *  inform the the linker to merge all TUs' .qtversion sections by way of the
+ *  "comdat" attribute in the .section directive. The first pointer-sized
+ *  variable is a GOT reference to qt_version_tag (that is: the address of
+ *  qt_version_tag is stored in the .got section and the linker inserts the
+ *  displacement to that pointer).
  */
+
+namespace QtPrivate {
+struct QVersionTag
+{
+    const void *symbol;
+    quintptr version;
+    constexpr QVersionTag(const void *sym, int currentVersion = QT_VERSION)
+        : symbol(sym), version(currentVersion)
+    {}
+};
+}
 
 #if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_NO_VERSION_TAGGING) || defined(QT_STATIC)
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
+#elif defined(Q_OS_WIN)
+#  ifdef _WIN64
+//   64-bit calling convention does not prepend a _
+#    define QT_MANGLE_IMPORT_PREFIX     __imp_
+#  else
+//   32-bit convention does prepend a _
+#    define QT_MANGLE_IMPORT_PREFIX     _imp__
+#  endif
+#  ifdef Q_CC_MSVC
+#    pragma section(".qtversion",read,shared)
+#    define QT_VERSION_TAG_SECTION      __declspec(allocate(".qtversion"))
+#    define QT_VERSION_TAG_ATTRIBUTE    __declspec(selectany) extern const
+#  else
+#    define QT_VERSION_TAG_ATTRIBUTE    __attribute__((used)) constexpr inline
+#  endif
+#  define QT_VERSION_TAG2(sym, imp)     \
+    extern "C" const char * const imp;  \
+    QT_VERSION_TAG_ATTRIBUTE QT_VERSION_TAG_SECTION QtPrivate::QVersionTag sym ## _used(&imp)
+#  define QT_VERSION_TAG(sym, imp)       QT_VERSION_TAG2(sym, imp)
 #elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
 #    if defined(Q_PROCESSOR_X86_64) && QT_POINTER_SIZE == 8     // x86-64 64-bit
@@ -69,7 +140,7 @@ QT_BEGIN_NAMESPACE
 #    else                                                       // x86 or x86-64 32-bit (x32)
 #      define QT_VERSION_TAG_RELOC(sym) ".long " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOT\n"
 #    endif
-#    define QT_VERSION_TAG(sym) \
+#    define QT_VERSION_TAG(sym, imp)    \
     asm (   \
     ".section .qtversion, \"aG\", @progbits, " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) ", comdat\n" \
     ".align 8\n" \
@@ -81,8 +152,25 @@ QT_BEGIN_NAMESPACE
 #  endif
 #endif
 
+#ifdef Q_OF_ELF
+#  define QT_VERSION_TAG_SYMBOL(prefix, sym, m, n)      sym
+#else
+#  define QT_VERSION_TAG_SYMBOL2(prefix, sym, m, n)     prefix ## sym ## _ ## m ## _ ## n
+#  define QT_VERSION_TAG_SYMBOL(prefix, sym, m, n)      QT_VERSION_TAG_SYMBOL2(prefix, sym, m, n)
+#endif
+
 #if defined(QT_VERSION_TAG)
-QT_VERSION_TAG(qt_version_tag);
+#  ifndef QT_VERSION_TAG_SECTION
+#    define QT_VERSION_TAG_SECTION          __attribute__((section(".qtversion")))
+#  endif
+#  define QT_MANGLED_VERSION_TAG_IMPORT     QT_VERSION_TAG_SYMBOL(QT_MANGLE_IMPORT_PREFIX, qt_version_tag, QT_VERSION_MAJOR, QT_VERSION_MINOR)
+#  define QT_MANGLED_VERSION_TAG            QT_VERSION_TAG_SYMBOL(, QT_MANGLE_NAMESPACE(qt_version_tag), QT_VERSION_MAJOR, QT_VERSION_MINOR)
+
+QT_VERSION_TAG(QT_MANGLED_VERSION_TAG, QT_MANGLED_VERSION_TAG_IMPORT);
+
+#  undef QT_MANGLED_VERSION_TAG
+#  undef QT_MANGLED_VERSION_TAG_IMPORT
+#  undef QT_VERSION_TAG_SECTION
 #endif
 
 QT_END_NAMESPACE

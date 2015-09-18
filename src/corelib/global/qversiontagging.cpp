@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qglobal.h"
+#include "qversiontagging.h"
 
 #define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
 //#define SSYM QT_STRINGIFY(SYM)
@@ -47,10 +48,17 @@
     Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0; \
     asm(".symver " QT_STRINGIFY(sym) "_" QT_STRINGIFY(m) "_" QT_STRINGIFY(n) ", " \
         QT_STRINGIFY(sym) separator "Qt_" QT_STRINGIFY(m) "." QT_STRINGIFY(n))
+
+#elif defined(Q_OS_WIN)
+#  define make_versioned_symbol2(sym, m, n, separator)     \
+    Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0;
+
 #else
 #  define make_versioned_symbol2(sym, m, n, separator)
 #endif
 #define make_versioned_symbol(sym, m, n, separator)    make_versioned_symbol2(sym, m, n, separator)
+
+QT_BEGIN_NAMESPACE
 
 extern "C" {
 #if QT_VERSION_MINOR > 0
@@ -108,3 +116,7 @@ make_versioned_symbol(SYM, QT_VERSION_MAJOR, 15, "@");
 // the default version:
 make_versioned_symbol(SYM, QT_VERSION_MAJOR, QT_VERSION_MINOR, "@@");
 }
+
+static_assert(std::is_trivially_destructible_v<QtPrivate::QVersionTag>);
+
+QT_END_NAMESPACE
