@@ -539,23 +539,16 @@ fi
 #-----------------------------------------------------------------------------
 # Qt version detection
 #-----------------------------------------------------------------------------
-QT_VERSION=`grep '^# *define *QT_VERSION_STR' "$relpath"/src/corelib/global/qglobal.h`
+QT_VERSION=
 QT_MAJOR_VERSION=
 QT_MINOR_VERSION=0
 QT_PATCH_VERSION=0
-if [ -n "$QT_VERSION" ]; then
-   QT_VERSION=`echo $QT_VERSION | sed 's,^# *define *QT_VERSION_STR *"*\([^ ]*\)"$,\1,'`
-   MAJOR=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\1,'`
-   if [ -n "$MAJOR" ]; then
-     MINOR=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\2,'`
-      PATCH=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\3,'`
-      QT_MAJOR_VERSION="$MAJOR"
-      [ -z "$MINOR" ] || QT_MINOR_VERSION="$MINOR"
-      [ -z "$PATCH" ] || QT_PATCH_VERSION="$PATCH"
-   fi
-fi
+eval `sed -n -e 's/^MODULE_VERSION = \(\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*\)$/QT_VERSION=\1\
+    QT_MAJOR_VERSION=\2\
+    QT_MINOR_VERSION=\3\
+    QT_PATCH_VERSION=\4/p' < "$relpath"/.qmake.conf`
 if [ -z "$QT_MAJOR_VERSION" ]; then
-   echo "Cannot process version from qglobal.h: $QT_VERSION"
+   echo "Cannot process version from .qmake.conf"
    echo "Cannot proceed."
    exit 1
 fi
@@ -3952,7 +3945,7 @@ if [ -e "$relpath/.git" ]; then
         exit 1
     fi
 
-    "$relpath/bin/syncqt.pl" -minimal -module QtCore "$relpath" || exit 1
+    "$relpath/bin/syncqt.pl" -version $QT_VERSION -minimal -module QtCore "$relpath" || exit 1
 fi
 
 # $1: input variable name (awk regexp)
@@ -4094,6 +4087,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
         echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
+        echo "QT_MAJOR_VERSION = $QT_MAJOR_VERSION" >> "$mkfile"
+        echo "QT_MINOR_VERSION = $QT_MINOR_VERSION" >> "$mkfile"
+        echo "QT_PATCH_VERSION = $QT_PATCH_VERSION" >> "$mkfile"
         echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
         echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
         echo "QTOBJS =" $EXTRA_OBJS >> "$mkfile"
@@ -6690,13 +6686,22 @@ echo "Done running configuration tests."
 # part of configuration information goes into qconfig.h
 #-------------------------------------------------------------------------------
 
+# start with Qt's version number
+cat > "$outpath/src/corelib/global/qconfig.h.new" <<EOF
+#define QT_VERSION_MAJOR    $QT_MAJOR_VERSION
+#define QT_VERSION_MINOR    $QT_MINOR_VERSION
+#define QT_VERSION_PATCH    $QT_PATCH_VERSION
+#define QT_VERSION_STR      "$QT_VERSION"
+
+EOF
+
 case "$CFG_QCONFIG" in
 full)
-    echo "/* Everything */" >"$outpath/src/corelib/global/qconfig.h.new"
+    echo "/* Everything */" >>"$outpath/src/corelib/global/qconfig.h.new"
     ;;
 *)
     tmpconfig="$outpath/src/corelib/global/qconfig.h.new"
-    echo "#ifndef QT_BOOTSTRAPPED" >"$tmpconfig"
+    echo "#ifndef QT_BOOTSTRAPPED" >>"$tmpconfig"
     cat "$CFG_QCONFIG_PATH" >>"$tmpconfig"
     echo "#endif" >>"$tmpconfig"
     ;;
