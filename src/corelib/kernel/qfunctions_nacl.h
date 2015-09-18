@@ -54,86 +54,84 @@
 #endif
 QT_BEGIN_NAMESPACE
 
-
 extern "C" {
-//void pthread_cleanup_push(void (*handler)(void *), void *arg);
-//void pthread_cleanup_pop(int execute);
+//void pthread_cleanup_push(void (*handler)(void *), void *arg) __attribute__((weak));
+//void pthread_cleanup_pop(int execute) __attribute__((weak));
 
 
 #ifdef Q_OS_NACL_NEWLIB
-
-int pthread_setcancelstate(int state, int *oldstate);
-int pthread_setcanceltype(int type, int *oldtype);
-void pthread_testcancel(void);
-int pthread_cancel(pthread_t thread);
+int pthread_setcancelstate(int state, int *oldstate) __attribute__((weak)) __attribute__((weak));
+int pthread_setcanceltype(int type, int *oldtype) __attribute__((weak)) __attribute__((weak));
+void pthread_testcancel(void) __attribute__((weak)) __attribute__((weak));
+int pthread_cancel(pthread_t thread) __attribute__((weak)) __attribute__((weak));
 
 int pthread_attr_setinheritsched(pthread_attr_t *attr,
-    int inheritsched);
+    int inheritsched) __attribute__((weak)) __attribute__((weak));
 int pthread_attr_getinheritsched(const pthread_attr_t *attr,
-    int *inheritsched);
+    int *inheritsched) __attribute__((weak)) __attribute__((weak));
 
 // No condition variable attributes on pnacl, and no dummy pthread_condattr_* either
-int pthread_condattr_init(pthread_condattr_t *);
-int pthread_condattr_destroy(pthread_condattr_t *);
+int pthread_condattr_init(pthread_condattr_t *) __attribute__((weak)) __attribute__((weak));
+int pthread_condattr_destroy(pthread_condattr_t *) __attribute__((weak)) __attribute__((weak));
 
-pid_t getpid(void);
-uid_t geteuid(void);
-int gethostname(char *name, size_t namelen);
+pid_t getpid(void) __attribute__((weak)) __attribute__((weak));
+uid_t geteuid(void) __attribute__((weak)) __attribute__((weak));
+int gethostname(char *name, size_t namelen) __attribute__((weak)) __attribute__((weak));
 
 // Several function declarations in the newlib headers are
 // disabled with a '#ifndef __STRICT_ANSI__' flag.
 // ### find a better way.
 #ifndef Q_OS_PNACL
 
-int	_EXFUN(fseeko, (FILE *, _off_t, int));
-off_t	_EXFUN(ftello, ( FILE *));
+int	_EXFUN(fseeko, (FILE *, _off_t, int)) __attribute__((weak));
+off_t	_EXFUN(ftello, ( FILE *)) __attribute__((weak));
 
-int	_EXFUN(fileno, (FILE *));
-int	_EXFUN(getw, (FILE *));
-int	_EXFUN(pclose, (FILE *));
-FILE *  _EXFUN(popen, (const char *, const char *));
-int	_EXFUN(putw, (int, FILE *));
-void    _EXFUN(setbuffer, (FILE *, char *, int));
-int	_EXFUN(setlinebuf, (FILE *));
-int	_EXFUN(getc_unlocked, (FILE *));
-int	_EXFUN(getchar_unlocked, (void));
-void	_EXFUN(flockfile, (FILE *));
-int	_EXFUN(ftrylockfile, (FILE *));
-void	_EXFUN(funlockfile, (FILE *));
-int	_EXFUN(putc_unlocked, (int, FILE *));
-int	_EXFUN(putchar_unlocked, (int));
+int	_EXFUN(fileno, (FILE *)) __attribute__((weak));
+int	_EXFUN(getw, (FILE *)) __attribute__((weak));
+int	_EXFUN(pclose, (FILE *)) __attribute__((weak));
+FILE *  _EXFUN(popen, (const char *, const char *)) __attribute__((weak));
+int	_EXFUN(putw, (int, FILE *)) __attribute__((weak));
+void    _EXFUN(setbuffer, (FILE *, char *, int)) __attribute__((weak));
+int	_EXFUN(setlinebuf, (FILE *)) __attribute__((weak));
+int	_EXFUN(getc_unlocked, (FILE *)) __attribute__((weak));
+int	_EXFUN(getchar_unlocked, (void)) __attribute__((weak));
+void	_EXFUN(flockfile, (FILE *)) __attribute__((weak));
+int	_EXFUN(ftrylockfile, (FILE *)) __attribute__((weak));
+void	_EXFUN(funlockfile, (FILE *)) __attribute__((weak));
+int	_EXFUN(putc_unlocked, (int, FILE *)) __attribute__((weak));
+int	_EXFUN(putchar_unlocked, (int)) __attribute__((weak));
 
-char * _EXFUN(mkdtemp,(char *));
+char * _EXFUN(mkdtemp,(char *)) __attribute__((weak));
 #endif
 #endif
 
 // event dispatcher, select
 //struct fd_set;
 //struct timeval;
-int fcntl(int fildes, int cmd, ...);
-int sigaction(int sig, const struct sigaction * act, struct sigaction * oact);
+int fcntl(int fildes, int cmd, ...) __attribute__((weak));
+int sigaction(int sig, const struct sigaction * act, struct sigaction * oact) __attribute__((weak));
 
 #ifndef Q_OS_NACL_EMSCRIPTEN
 typedef long off64_t;
-off64_t ftello64(void *stream);
-off64_t lseek64(int fildes, off_t offset, int whence);
-int open64(const char *path, int oflag, ...);
+off64_t ftello64(void *stream) __attribute__((weak));
+off64_t lseek64(int fildes, off_t offset, int whence) __attribute__((weak));
+int open64(const char *path, int oflag, ...) __attribute__((weak));
 #endif
 
-long pathconf(const char *, int);
-//long int pathconf (__const char *__path, int __name) __THROW __nonnull ((1));
+long pathconf(const char *, int) __attribute__((weak));
+//long int pathconf (__const char *__path, int __name) __THROW __nonnull ((1)) __attribute__((weak));
 
 #ifdef Q_OS_NACL_NEWLIB
-char * getenv(const char *name);
-int putenv(char *string);
-int setenv(const char *name, const char *value, int overwrite);
-int unsetenv(const char *name);
+char * getenv(const char *name) __attribute__((weak));
+int putenv(char *string) __attribute__((weak));
+int setenv(const char *name, const char *value, int overwrite) __attribute__((weak));
+int unsetenv(const char *name) __attribute__((weak));
 #endif
 
 }
 
-int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, struct timeval * timeout);
-int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, const struct timespec * timeout, const sigset_t * sigmask);
+int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, struct timeval * timeout) __attribute__((weak));
+int pselect(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, const struct timespec * timeout, const sigset_t * sigmask) __attribute__((weak));
 
 QT_END_NAMESPACE
 
