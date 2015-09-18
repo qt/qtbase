@@ -196,10 +196,14 @@ unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
     } else {
         current = Qt_$$QT_MAJOR_VERSION
         verscript_content = "$$current { *; };"
-        for(i, 0..$$section(VERSION, ., 1, 1)) {
+        isEmpty(QT_NAMESPACE): tag_symbol = qt_version_tag
+        else:                  tag_symbol = qt_version_tag_$$QT_NAMESPACE
+
+        for(i, 0..$$QT_MINOR_VERSION) {
             previous = $$current
             current = Qt_$${QT_MAJOR_VERSION}.$$i
-            verscript_content += "$$current {} $$previous;"
+            equals(i, $$QT_MINOR_VERSION): verscript_content += "$$current { $$tag_symbol; } $$previous;"
+            else:                          verscript_content += "$$current {} $$previous;"
         }
     }
     write_file($$verscript, verscript_content)|error("Aborting.")

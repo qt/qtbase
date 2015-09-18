@@ -33,37 +33,54 @@
 
 #include "qglobal.h"
 
-#if defined(Q_CC_GNU) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)) && defined(Q_PROCESSOR_X86) && !defined(QT_STATIC)
-# define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
-# define SSYM QT_STRINGIFY(SYM)
+#define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
+//#define SSYM QT_STRINGIFY(SYM)
 
-asm(
-// ASM macro that makes one ELF versioned symbol
-".macro     make_versioned_symbol    plainsym versionedsym\n"
-".globl     plainsym\n"
-".type      plainsym, @object\n"
-".size      plainsym, 1\n"
-".symver    plainsym, versionedsym\n"
-"plainsym :\n"
-".endm\n"
-
-// ASM macro that makes one ELF versioned symbol qt_version_tag{sep}Qt_{major}.{minor}
-// that is an alias to qt_version_tag_{major}_{minor}.
-// The {sep} parameter must be @ for all old versions and @@ for the current version.
-".macro      make_one_tag    major minor sep\n"
-"       make_versioned_symbol   " SSYM "_\\major\\()_\\minor, " SSYM "\\sep\\()Qt_\\major\\().\\minor\n"
-".endm\n"
-
-".altmacro\n"
-".bss\n"
-".set qt_version_major, " QT_STRINGIFY(QT_VERSION) " >> 16\n"       // set qt_version_major
-".set qt_version_minor, 0\n"                                        // set qt_version_minor to 0 (it will grow to the current)
-".rept (" QT_STRINGIFY(QT_VERSION) " >> 8) & 0xff\n"                // repeat minor version times (0 to N-1)
-"    make_one_tag    %qt_version_major, %qt_version_minor, @\n"
-"    .set qt_version_minor, (qt_version_minor + 1)\n"
-".endr\n"
-"    make_one_tag    %qt_version_major, %qt_version_minor, @@\n"    // call the macro for the current version
-"    .space  1\n"                                                   // variable is 1 byte, value 0
-);
-
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+#  define make_versioned_symbol2(sym, m, n, separator)     \
+    Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0; \
+    asm(".symver " QT_STRINGIFY(sym) "_" QT_STRINGIFY(m) "_" QT_STRINGIFY(n) ", " \
+        QT_STRINGIFY(sym) separator "Qt_" QT_STRINGIFY(m) "." QT_STRINGIFY(n))
+#else
+#  define make_versioned_symbol2(sym, m, n, separator)
 #endif
+#define make_versioned_symbol(sym, m, n, separator)    make_versioned_symbol2(sym, m, n, separator)
+
+extern "C" {
+#if QT_VERSION_MINOR > 0
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 0, "@");
+#endif
+#if QT_VERSION_MINOR > 1
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 1, "@");
+#endif
+#if QT_VERSION_MINOR > 2
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 2, "@");
+#endif
+#if QT_VERSION_MINOR > 3
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 3, "@");
+#endif
+#if QT_VERSION_MINOR > 4
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 4, "@");
+#endif
+#if QT_VERSION_MINOR > 5
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 5, "@");
+#endif
+#if QT_VERSION_MINOR > 6
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 6, "@");
+#endif
+#if QT_VERSION_MINOR > 7
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 7, "@");
+#endif
+#if QT_VERSION_MINOR > 8
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 8, "@");
+#endif
+#if QT_VERSION_MINOR > 9
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 9, "@");
+#endif
+#if QT_VERSION_MINOR > 10
+#  error "Please update this file with more Qt versions."
+#endif
+
+// the default version:
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, QT_VERSION_MINOR, "@@");
+}
