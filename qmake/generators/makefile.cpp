@@ -877,7 +877,6 @@ MakefileGenerator::processPrlFile(QString &file)
     if(QMakeMetaInfo::libExists(file)) {
         try_replace_file = true;
         meta_file = file;
-        file = "";
     } else {
         QString tmp = file;
         int ext = tmp.lastIndexOf('.');
@@ -904,14 +903,14 @@ MakefileGenerator::processPrlFile(QString &file)
                 foreach (const ProString &def, libinfo.values("QMAKE_PRL_DEFINES"))
                     if (!defs.contains(def) && prl_defs.contains(def))
                         defs.append(def);
-                if(try_replace_file && !libinfo.isEmpty("QMAKE_PRL_TARGET")) {
-                    QString dir;
-                    int slsh = real_meta_file.lastIndexOf('/');
-                    if(slsh != -1)
-                        dir = real_meta_file.left(slsh+1);
-                    file = libinfo.first("QMAKE_PRL_TARGET").toQString();
-                    if(QDir::isRelativePath(file))
-                        file.prepend(dir);
+                if (try_replace_file) {
+                    ProString tgt = libinfo.first("QMAKE_PRL_TARGET");
+                    if (!tgt.isEmpty()) {
+                        int off = qMax(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1;
+                        debug_msg(1, "  Replacing library reference %s with %s",
+                                     file.mid(off).toLatin1().constData(), tgt.toQString().toLatin1().constData());
+                        file.replace(off, 1000, tgt.toQString());
+                    }
                 }
             }
         }
