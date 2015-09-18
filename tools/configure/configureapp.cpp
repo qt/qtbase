@@ -3856,13 +3856,17 @@ void Configure::displayConfig()
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
-    sout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
-    sout << "SSE3 support................" << dictionary[ "SSE3" ] << endl;
-    sout << "SSSE3 support..............." << dictionary[ "SSSE3" ] << endl;
-    sout << "SSE4.1 support.............." << dictionary[ "SSE4_1" ] << endl;
-    sout << "SSE4.2 support.............." << dictionary[ "SSE4_2" ] << endl;
-    sout << "AVX support................." << dictionary[ "AVX" ] << endl;
-    sout << "AVX2 support................" << dictionary[ "AVX2" ] << endl;
+    sout << "SSE support................."
+         << (dictionary[ "SSE2" ] == "no" ? "<none>" : "SSE2")
+         << (dictionary[ "SSE3" ] == "no" ? "" : " SSE3")
+         << (dictionary[ "SSSE3" ] == "no" ? "" : " SSSE3")
+         << (dictionary[ "SSE4_1" ] == "no" ? "" : " SSE4.1")
+         << (dictionary[ "SSE4_2" ] == "no" ? "" : " SSE4.2")
+         << endl;
+    sout << "AVX support................."
+         << (dictionary[ "AVX" ] == "no" ? "<none>" : "AVX")
+         << (dictionary[ "AVX2" ] == "no" ? "" : " AVX2")
+         << endl;
     sout << "AVX512 support.............."
          << (dictionary[ "AVX512" ].isEmpty() ? QString("<none>") : dictionary[ "AVX512" ].toUpper()) << endl;
     sout << "NEON support................" << dictionary[ "NEON" ] << endl;

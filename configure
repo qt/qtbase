@@ -4409,9 +4409,11 @@ else
 fi
 
 # detect sse2 support
+CFG_SSE_LIST=
 if [ "${CFG_SSE2}" = "auto" ]; then
     if compileTest common/sse2 "sse2"; then
        CFG_SSE2=yes
+       CFG_SSE_LIST=SSE2
     else
        CFG_SSE2=no
     fi
@@ -4424,6 +4426,7 @@ fi
 if [ "${CFG_SSE3}" = "auto" ]; then
     if compileTest common/sse3 "sse3"; then
        CFG_SSE3=yes
+       CFG_SSE_LIST="$CFG_SSE_LIST SSE3"
     else
        CFG_SSE3=no
     fi
@@ -4436,6 +4439,7 @@ fi
 if [ "${CFG_SSSE3}" = "auto" ]; then
     if compileTest common/ssse3 "ssse3"; then
        CFG_SSSE3=yes
+       CFG_SSE_LIST="$CFG_SSE_LIST SSSE3"
     else
        CFG_SSSE3=no
     fi
@@ -4448,6 +4452,7 @@ fi
 if [ "${CFG_SSE4_1}" = "auto" ]; then
     if compileTest common/sse4_1 "sse4_1"; then
        CFG_SSE4_1=yes
+       CFG_SSE_LIST="$CFG_SSE_LIST SSE4.1"
     else
        CFG_SSE4_1=no
     fi
@@ -4460,12 +4465,14 @@ fi
 if [ "${CFG_SSE4_2}" = "auto" ]; then
     if compileTest common/sse4_2 "sse4_2"; then
        CFG_SSE4_2=yes
+       CFG_SSE_LIST="$CFG_SSE_LIST SSE4.2"
     else
        CFG_SSE4_2=no
     fi
 fi
 
 # detect avx support
+CFG_AVX_LIST=
 if [ "${CFG_SSE4_2}" = "no" ]; then
     CFG_AVX=no
 fi
@@ -4483,11 +4490,13 @@ if [ "${CFG_AVX}" = "auto" ]; then
                        ;;
                    *)
                        CFG_AVX=yes
+                       CFG_AVX_LIST=AVX
                        ;;
                esac
                ;;
            *)
                CFG_AVX=yes
+               CFG_AVX_LIST=AVX
                ;;
        esac
     else
@@ -4502,6 +4511,7 @@ fi
 if [ "${CFG_AVX2}" = "auto" ]; then
     if compileTest common/avx2 "avx2"; then
        CFG_AVX2=yes
+       CFG_AVX_LIST="$CFG_AVX_LIST AVX2"
     else
        CFG_AVX2=no
     fi
@@ -7204,9 +7214,8 @@ echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
-    echo "    SSE2/SSE3/SSSE3 ...... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
-    echo "    SSE4.1/SSE4.2 ........ ${CFG_SSE4_1}/${CFG_SSE4_2}"
-    echo "    AVX/AVX2 ............. ${CFG_AVX}/${CFG_AVX2}"
+    echo "    SSE .................. ${CFG_SSE_LIST:-<none>}"
+    echo "    AVX .................. ${CFG_AVX_LIST:-<none>}"
     echo "    AVX512 ............... ${CFG_AVX512_UPPER:-<none>}"
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "    Neon ................. ${CFG_NEON}"
