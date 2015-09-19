@@ -168,9 +168,9 @@ public:
     Format format() const;
 
 #if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QIMAGE_COMPAT_CPP)
-    QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const & Q_REQUIRED_RESULT
+    Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const & Q_REQUIRED_RESULT
     { return convertToFormat_helper(f, flags); }
-    QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) && Q_REQUIRED_RESULT
+    Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) && Q_REQUIRED_RESULT
     {
         if (convertToFormat_inplace(f, flags))
             return std::move(*this);
