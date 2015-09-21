@@ -1971,7 +1971,8 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         // and other messages.
     } else if (event->type == atom(QXcbAtom::_COMPIZ_DECOR_PENDING)
             || event->type == atom(QXcbAtom::_COMPIZ_DECOR_REQUEST)
-            || event->type == atom(QXcbAtom::_COMPIZ_DECOR_DELETE_PIXMAP)) {
+            || event->type == atom(QXcbAtom::_COMPIZ_DECOR_DELETE_PIXMAP)
+            || event->type == atom(QXcbAtom::_COMPIZ_TOOLKIT_ACTION)) {
         //silence the _COMPIZ messages for now
     } else {
         qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
