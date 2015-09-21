@@ -686,7 +686,16 @@ void QCocoaWindow::setVisible(bool visible)
                     cocoaEventDispatcherPrivate->beginModalSession(window());
                     m_hasModalSession = true;
                 } else if ([m_nsWindow canBecomeKeyWindow]) {
-                    [m_nsWindow makeKeyAndOrderFront:nil];
+                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
+                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = 0;
+                    if (cocoaEventDispatcher)
+                        cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+
+                    if (!(cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->currentModalSession()))
+                        [m_nsWindow makeKeyAndOrderFront:nil];
+                    else
+                        [m_nsWindow orderFront:nil];
+
                     foreach (QCocoaWindow *childWindow, m_childWindows)
                         childWindow->show(true);
                 } else {
