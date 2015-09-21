@@ -51,9 +51,7 @@
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
-#ifndef Q_OS_WINPHONE
 #include <windows.globalization.h>
-#endif
 #endif // Q_OS_WINRT
 
 QT_BEGIN_NAMESPACE
@@ -639,7 +637,6 @@ QVariant QSystemLocalePrivate::uiLanguages()
     return QStringList(QString::fromLatin1(winLangCodeToIsoName(GetUserDefaultUILanguage())));
 #else // !Q_OS_WINRT
     QStringList result;
-#ifndef Q_OS_WINPHONE
     ComPtr<ABI::Windows::Globalization::IApplicationLanguagesStatics> appLanguagesStatics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Globalization_ApplicationLanguages).Get(), &appLanguagesStatics))) {
         qWarning("Could not obtain ApplicationLanguagesStatic");
@@ -661,9 +658,6 @@ QVariant QSystemLocalePrivate::uiLanguages()
         PCWSTR rawString = language.GetRawBuffer(&length);
         result << QString::fromWCharArray(rawString, length);
     }
-#else // !Q_OS_WINPHONE
-    result << QString::fromWCharArray(lcName);
-#endif // Q_OS_WINPHONE
 
     return result;
 #endif // Q_OS_WINRT
