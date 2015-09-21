@@ -259,13 +259,9 @@ void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, const QStr
 QTEST_MAIN(tst_Lancelot)
 #undef main
 
-QT_BEGIN_NAMESPACE
-extern Q_DECL_IMPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
-QT_END_NAMESPACE
-
 int main(int argc, char *argv[])
 {
-    qt_qhash_seed.store(0);   // Avoid rendering variations caused by QHash randomization
+    qSetGlobalQHashSeed(0);   // Avoid rendering variations caused by QHash randomization
 
     QBaselineTest::handleCmdLineArgs(&argc, &argv);
     return _realmain(argc, argv);

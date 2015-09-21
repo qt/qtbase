@@ -1037,6 +1037,9 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &key, const T &value) 
     return n;
 }
 
+Q_CORE_EXPORT int qGlobalQHashSeed();
+Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
+
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Hash)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Hash)
 
