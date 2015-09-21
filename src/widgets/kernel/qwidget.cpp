@@ -5203,7 +5203,7 @@ QPixmap QWidget::grab(const QRect &rectangle)
     QPixmap res(r.size());
     if (!d->isOpaque)
         res.fill(Qt::transparent);
-    render(&res, QPoint(), QRegion(r), renderFlags);
+    d->render(&res, QPoint(), QRegion(r), renderFlags);
 
     d->dirtyOpaqueChildren = oldDirtyOpaqueChildren;
     return res;
