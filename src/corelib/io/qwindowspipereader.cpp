@@ -187,7 +187,7 @@ void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
         pipeBroken = true;
         break;
     default:
-        emit winError(errorCode, QLatin1String("QWindowsPipeReader::completeAsyncRead"));
+        emit winError(errorCode, QLatin1String("QWindowsPipeReader::notified"));
         pipeBroken = true;
         break;
     }
