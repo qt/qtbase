@@ -1344,6 +1344,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         [m_contentView setHidden: YES];
     }
 
+    m_nsWindow.ignoresMouseEvents =
+        (window()->flags() & Qt::WindowTransparentForInput) == Qt::WindowTransparentForInput;
+
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
