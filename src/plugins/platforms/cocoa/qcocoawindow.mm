@@ -652,7 +652,7 @@ void QCocoaWindow::setVisible(bool visible)
 
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
-        if (m_windowModality != window()->modality())
+        if (m_windowModality != window()->modality() || isNativeWindowTypeInconsistent())
             recreateWindow(parent());
 
         // Register popup windows. The Cocoa platform plugin will forward mouse events
@@ -1529,6 +1529,17 @@ void QCocoaWindow::removeChildWindow(QCocoaWindow *child)
 {
     m_childWindows.removeOne(child);
     [m_nsWindow removeChildWindow:child->m_nsWindow];
+}
+
+bool QCocoaWindow::isNativeWindowTypeInconsistent()
+{
+    if (!m_nsWindow)
+        return false;
+
+    const bool isPanel = [m_nsWindow isKindOfClass:[QNSPanel class]];
+    const bool usePanel = shouldUseNSPanel();
+
+    return isPanel != usePanel;
 }
 
 void QCocoaWindow::removeMonitor()

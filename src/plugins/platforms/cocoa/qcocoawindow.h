@@ -275,6 +275,7 @@ protected:
     void syncWindowState(Qt::WindowState newState);
     void reinsertChildWindow(QCocoaWindow *child);
     void removeChildWindow(QCocoaWindow *child);
+    bool isNativeWindowTypeInconsistent();
 
 // private:
 public: // for QNSView
