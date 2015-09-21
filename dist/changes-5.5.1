@@ -21,6 +21,11 @@ information about a particular change.
 *                        Important Behavior Changes                        *
 ****************************************************************************
 
+ - [QTBUG-47316] QDebug output for QStrings changed compared to Qt 5.5.0 to
+   more closely match the output of previous Qt versions. Like Qt 5.5.0,
+   QDebug will escape non-printable characters, the backslash and quote
+   characters, but will no longer escape the printable characters.
+
 ****************************************************************************
 *                          Future Direction Notice                         *
 ****************************************************************************
@@ -40,10 +45,76 @@ information about a particular change.
 *                               Library                                    *
 ****************************************************************************
 
+QtCore
+------
+
+ - Logging framework:
+   * Fixed a bug that would cause a
+     "%{time boot}" field in the logging framework's pattern to always
+     display the same value, instead of the time since boot.
+
+ - QDate/QTime:
+   * Fixed a minor source-incompatibility between Qt 5.4 and 5.5.0
+     involving sets of functions overloaded on QTime and some integer or
+     QDate and some integer.
+
+ - QDir:
+   * QDir::relativeFilePath() now returns "." instead of an empty string if
+     the given path is the same as the directory.
+
+ - QLoggingCategory:
+   * Fixed behavior of default severity passed to constructor or
+     Q_LOGGING_CATEGORY with regards to QtInfoMsg, which was previously
+     treated as being more severe than QtFatalMsg.
+
+ - QTimeZone:
+   * [QTBUG-47037] Fixed a wrong timezone conversion when the POSIX
+     timezone rule contains a fractional timezone (e.g. VET4:30).
+
+QtNetwork
+---------
+
+ - [QTBUG-47048] Fix HTTP issues with "Unknown Error" and "Connection
+   Closed"
+   [ChangeLog][QtNetwork][Sockets] Read OS/encrypted read buffers when
+   connection closed by server.
+
+QtSql
+-----
+
+ - QSqlDatabase:
+   * [QTBUG-47784][QTBUG-47452] Fixed a bug where opening a connection to a
+     MySQL database using the QMYSQL plugin would always return true even
+     if the server was unreachable. This bug could also lead to crashes
+     depending on the platform used.
+
+QtWidgets
+---------
+
+ - Important behavior changes:
+   * [QTBUG-46379] Tooltips on OS X are now transparent for mouse events.
+
 ****************************************************************************
-*                      Platform Specific Changes                           *
+*                         Platform Specific Changes                        *
 ****************************************************************************
 
+Windows
+-------
+
+ - Text:
+   * [QTBUG-46963] Fixed crash in DirectWrite engine when constructing a
+     QRawFont from raw font data.
+
+****************************************************************************
+*                         Compiler Specific Changes                        *
+****************************************************************************
+
+GCC
+---
+
+ - Fixed a regression introduced Qt 5.5.0 that generated lots of
+   compiler warnings in Qt public headers when using the (deprecated)
+   version 4.5 of GCC.
 
 ****************************************************************************
 *                                Tools                                     *
