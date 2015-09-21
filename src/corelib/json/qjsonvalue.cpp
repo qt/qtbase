@@ -438,7 +438,7 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 
     The QJsonValue types will be converted as follows:
 
-    \value Null     \l {QVariant::}{QVariant()}
+    \value Null     QMetaType::Nullptr
     \value Bool     QMetaType::Bool
     \value Double   QMetaType::Double
     \value String   QString
@@ -466,6 +466,7 @@ QVariant QJsonValue::toVariant() const
                QJsonObject(d, static_cast<QJsonPrivate::Object *>(base)).toVariantMap() :
                QVariantMap();
     case Null:
+        return QVariant::fromValue(nullptr);
     case Undefined:
         break;
     }

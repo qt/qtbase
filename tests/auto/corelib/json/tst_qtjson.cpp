@@ -1186,14 +1186,14 @@ void tst_QtJson::toVariantMap()
 
     QCOMPARE(map.size(), 3);
     QCOMPARE(map.value("Key"), QVariant(QString("Value")));
-    QCOMPARE(map.value("null"), QVariant());
+    QCOMPARE(map.value("null"), QVariant::fromValue(nullptr));
     QCOMPARE(map.value("Array").type(), QVariant::List);
     QVariantList list = map.value("Array").toList();
     QCOMPARE(list.size(), 4);
     QCOMPARE(list.at(0), QVariant(true));
     QCOMPARE(list.at(1), QVariant(999.));
     QCOMPARE(list.at(2), QVariant(QLatin1String("string")));
-    QCOMPARE(list.at(3), QVariant());
+    QCOMPARE(list.at(3), QVariant::fromValue(nullptr));
 }
 
 void tst_QtJson::toVariantHash()
@@ -1215,14 +1215,14 @@ void tst_QtJson::toVariantHash()
 
     QCOMPARE(hash.size(), 3);
     QCOMPARE(hash.value("Key"), QVariant(QString("Value")));
-    QCOMPARE(hash.value("null"), QVariant());
+    QCOMPARE(hash.value("null"), QVariant::fromValue(nullptr));
     QCOMPARE(hash.value("Array").type(), QVariant::List);
     QVariantList list = hash.value("Array").toList();
     QCOMPARE(list.size(), 4);
     QCOMPARE(list.at(0), QVariant(true));
     QCOMPARE(list.at(1), QVariant(999.));
     QCOMPARE(list.at(2), QVariant(QLatin1String("string")));
-    QCOMPARE(list.at(3), QVariant());
+    QCOMPARE(list.at(3), QVariant::fromValue(nullptr));
 }
 
 void tst_QtJson::toVariantList()
@@ -1246,14 +1246,14 @@ void tst_QtJson::toVariantList()
 
     QCOMPARE(list.size(), 3);
     QCOMPARE(list[0], QVariant(QString("Value")));
-    QCOMPARE(list[1], QVariant());
+    QCOMPARE(list[1], QVariant::fromValue(nullptr));
     QCOMPARE(list[2].type(), QVariant::List);
     QVariantList vlist = list[2].toList();
     QCOMPARE(vlist.size(), 4);
     QCOMPARE(vlist.at(0), QVariant(true));
     QCOMPARE(vlist.at(1), QVariant(999.));
     QCOMPARE(vlist.at(2), QVariant(QLatin1String("string")));
-    QCOMPARE(vlist.at(3), QVariant());
+    QCOMPARE(vlist.at(3), QVariant::fromValue(nullptr));
 }
 
 void tst_QtJson::toJson()
