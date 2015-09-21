@@ -1,9 +1,11 @@
 /***************************************************************************
 **
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,7 +33,8 @@
 **
 ****************************************************************************/
 
-#include "qpixmapstyle.h"
+#include "qpixmapstyle_p.h"
+#include "qpixmapstyle_p_p.h"
 
 #include <QDebug>
 #include <QTextEdit>
@@ -55,15 +58,47 @@
 
 QT_BEGIN_NAMESPACE
 
-QPixmapStyle::QPixmapStyle() :
-    QCommonStyle()
+/*!
+    \class QPixmapStyle
+    \brief The QPixmapStyle class provides mechanism for writing pixmap based styles.
+
+    \since 5.7
+    \ingroup appearance
+    \inmodule QtWidgets
+    \internal
+
+    This is a convenience class that enables the implementation of a widget style using
+    pixmaps, on the same fashion used by the \l{BorderImage} QML type.
+
+    In order to style a QWidget, one simply needs to call QPixmapStyle::addDescriptor()
+    or QPixmapStyle::addPixmap() with the id of the component to be styled, the path of
+    the image to be used, the margins and the tiling rules:
+
+    \snippet styles/qcustompixmapstyle.cpp 0
+
+    \sa QStyle, QCommonStyle
+*/
+
+/*!
+    \internal
+
+    Constructs a QPixmapStyle object.
+*/
+QPixmapStyle::QPixmapStyle()
+    : QCommonStyle(*new QPixmapStylePrivate)
 {
 }
 
+/*!
+    Destroys the QPixmapStyle object.
+*/
 QPixmapStyle::~QPixmapStyle()
 {
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::polish(QApplication *application)
 {
     QCommonStyle::polish(application);
@@ -72,13 +107,21 @@ void QPixmapStyle::polish(QApplication *application)
 #endif
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::polish(QPalette &palette)
 {
     palette = proxy()->standardPalette();
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::polish(QWidget *widget)
 {
+    Q_D(QPixmapStyle);
+
     // Don't fill the interior of the QTextEdit
     if (qobject_cast<QTextEdit*>(widget)) {
         QPalette p = widget->palette();
@@ -91,7 +134,7 @@ void QPixmapStyle::polish(QWidget *widget)
         pb->setAlignment(Qt::AlignCenter);
         // Change the font size if needed, as it's used to compute the minimum size
         QFont font = pb->font();
-        font.setPixelSize(m_descriptors.value(PB_HBackground).size.height()/2);
+        font.setPixelSize(d->descriptors.value(PB_HBackground).size.height()/2);
         pb->setFont(font);
     }
 
@@ -116,8 +159,8 @@ void QPixmapStyle::polish(QWidget *widget)
 
         QFrame *frame = qobject_cast<QFrame*>(list->parent());
         if (frame) {
-            const Descriptor &desc = m_descriptors.value(DD_PopupDown);
-            const Pixmap &pix = m_pixmaps.value(DD_ItemSeparator);
+            const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_PopupDown);
+            const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ItemSeparator);
             frame->setContentsMargins(pix.margins.left(), desc.margins.top(),
                                       pix.margins.right(), desc.margins.bottom());
             frame->setAttribute(Qt::WA_TranslucentBackground);
@@ -147,6 +190,17 @@ void QPixmapStyle::polish(QWidget *widget)
     QCommonStyle::polish(widget);
 }
 
+/*!
+    \reimp
+*/
+void QPixmapStyle::unpolish(QApplication *application)
+{
+    QCommonStyle::unpolish(application);
+}
+
+/*!
+    \reimp
+*/
 void QPixmapStyle::unpolish(QWidget *widget)
 {
     if (qobject_cast<QSlider*>(widget) ||
@@ -163,6 +217,9 @@ void QPixmapStyle::unpolish(QWidget *widget)
     QCommonStyle::unpolish(widget);
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                                  QPainter *painter, const QWidget *widget) const
 {
@@ -199,9 +256,14 @@ void QPixmapStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *o
     }
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::drawControl(ControlElement element, const QStyleOption *option,
                                QPainter *painter, const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     switch (element) {
     case CE_ProgressBarGroove:
         drawProgressBarBackground(option, painter, widget);
@@ -215,8 +277,8 @@ void QPixmapStyle::drawControl(ControlElement element, const QStyleOption *optio
     case CE_ShapedFrame:
         // NOTE: This will break if the private API of QComboBox changes drastically
         if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0) {
-            const Descriptor &desc = m_descriptors.value(DD_PopupDown);
-            const Pixmap &pix = m_pixmaps.value(DD_ItemSeparator);
+            const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_PopupDown);
+            const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ItemSeparator);
             QRect rect = option->rect;
             rect.adjust(-pix.margins.left(), -desc.margins.top(),
                         pix.margins.right(), desc.margins.bottom());
@@ -232,6 +294,9 @@ void QPixmapStyle::drawControl(ControlElement element, const QStyleOption *optio
     }
 }
 
+/*!
+    \reimp
+*/
 void QPixmapStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *option,
                                       QPainter *painter, const QWidget *widget) const
 {
@@ -250,6 +315,9 @@ void QPixmapStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
     }
 }
 
+/*!
+    \reimp
+*/
 QSize QPixmapStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
                                      const QSize &contentsSize, const QWidget *widget) const
 {
@@ -272,14 +340,19 @@ QSize QPixmapStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
     return QCommonStyle::sizeFromContents(type, option, contentsSize, widget);
 }
 
+/*!
+    \reimp
+*/
 QRect QPixmapStyle::subElementRect(SubElement element, const QStyleOption *option,
                                    const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     switch (element) {
     case SE_LineEditContents:
     {
         QRect rect = QCommonStyle::subElementRect(element, option, widget);
-        const Descriptor &desc = m_descriptors.value(LE_Enabled);
+        const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
         rect.adjust(desc.margins.left(), desc.margins.top(),
                     -desc.margins.right(), -desc.margins.bottom());
         rect = visualRect(option->direction, option->rect, rect);
@@ -291,6 +364,9 @@ QRect QPixmapStyle::subElementRect(SubElement element, const QStyleOption *optio
     return QCommonStyle::subElementRect(element, option, widget);
 }
 
+/*!
+    \reimp
+*/
 QRect QPixmapStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *option,
                                    SubControl sc, const QWidget *widget) const
 {
@@ -305,45 +381,51 @@ QRect QPixmapStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
     return QCommonStyle::subControlRect(cc, option, sc, widget);
 }
 
+/*!
+    \reimp
+*/
 int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
                               const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     switch (metric) {
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
         return 0;
     case PM_DefaultFrameWidth:
         if (qobject_cast<const QTextEdit*>(widget)) {
-            const Descriptor &desc = m_descriptors.value(LE_Enabled);
+            const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
             return qMax(qMax(desc.margins.left(), desc.margins.right()),
                         qMax(desc.margins.top(), desc.margins.bottom()));
         }
         return 0;
     case PM_IndicatorWidth:
-        return m_pixmaps.value(CB_Enabled).pixmap.width();
+        return d->pixmaps.value(CB_Enabled).pixmap.width();
     case PM_IndicatorHeight:
-        return m_pixmaps.value(CB_Enabled).pixmap.height();
+        return d->pixmaps.value(CB_Enabled).pixmap.height();
     case PM_CheckBoxLabelSpacing:
     {
-        const Pixmap &pix = m_pixmaps.value(CB_Enabled);
+        const QPixmapStylePixmap &pix = d->pixmaps.value(CB_Enabled);
         return qMax(qMax(pix.margins.left(), pix.margins.right()),
                     qMax(pix.margins.top(), pix.margins.bottom()));
     }
     case PM_ExclusiveIndicatorWidth:
-        return m_pixmaps.value(RB_Enabled).pixmap.width();
+        return d->pixmaps.value(RB_Enabled).pixmap.width();
     case PM_ExclusiveIndicatorHeight:
-        return m_pixmaps.value(RB_Enabled).pixmap.height();
+        return d->pixmaps.value(RB_Enabled).pixmap.height();
     case PM_RadioButtonLabelSpacing:
     {
-        const Pixmap &pix = m_pixmaps.value(RB_Enabled);
+        const QPixmapStylePixmap &pix = d->pixmaps.value(RB_Enabled);
         return qMax(qMax(pix.margins.left(), pix.margins.right()),
                     qMax(pix.margins.top(), pix.margins.bottom()));
     }
     case PM_SliderThickness:
         if (const QStyleOptionSlider *slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const Descriptor desc = m_descriptors.value(slider->orientation == Qt::Horizontal
-                                                        ? SG_HEnabled : SG_VEnabled);
+            const QPixmapStyleDescriptor desc =
+                d->descriptors.value(slider->orientation == Qt::Horizontal
+                                     ? SG_HEnabled : SG_VEnabled);
             return slider->orientation == Qt::Horizontal
                                                 ? desc.size.height() : desc.size.width();
         }
@@ -351,8 +433,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_SliderControlThickness:
         if (const QStyleOptionSlider *slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const Pixmap pix = m_pixmaps.value(slider->orientation == Qt::Horizontal
-                                               ? SH_HEnabled : SH_VEnabled);
+            const QPixmapStylePixmap pix =
+                    d->pixmaps.value(slider->orientation == Qt::Horizontal
+                                     ? SH_HEnabled : SH_VEnabled);
             return slider->orientation == Qt::Horizontal
                                                 ? pix.pixmap.height() : pix.pixmap.width();
         }
@@ -360,8 +443,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_SliderLength:
         if (const QStyleOptionSlider *slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const Pixmap pix = m_pixmaps.value(slider->orientation == Qt::Horizontal
-                                                ? SH_HEnabled : SH_VEnabled);
+            const QPixmapStylePixmap pix =
+                    d->pixmaps.value(slider->orientation == Qt::Horizontal
+                                     ? SH_HEnabled : SH_VEnabled);
             return slider->orientation == Qt::Horizontal
                                                 ? pix.pixmap.width() : pix.pixmap.height();
         }
@@ -369,8 +453,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_ScrollBarExtent:
         if (const QStyleOptionSlider *slider =
                     qstyleoption_cast<const QStyleOptionSlider*>(option)) {
-            const Descriptor desc = m_descriptors.value(slider->orientation == Qt::Horizontal
-                                                        ? SB_Horizontal : SB_Vertical);
+            const QPixmapStyleDescriptor desc =
+                    d->descriptors.value(slider->orientation == Qt::Horizontal
+                                         ? SB_Horizontal : SB_Vertical);
             return slider->orientation == Qt::Horizontal
                                                 ? desc.size.height() : desc.size.width();
         }
@@ -383,6 +468,9 @@ int QPixmapStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     return QCommonStyle::pixelMetric(metric, option, widget);
 }
 
+/*!
+    \reimp
+*/
 int QPixmapStyle::styleHint(StyleHint hint, const QStyleOption *option,
                             const QWidget *widget, QStyleHintReturn *returnData) const
 {
@@ -397,6 +485,9 @@ int QPixmapStyle::styleHint(StyleHint hint, const QStyleOption *option,
     return QCommonStyle::styleHint(hint, option, widget, returnData);
 }
 
+/*!
+    \reimp
+*/
 QStyle::SubControl QPixmapStyle::hitTestComplexControl(QStyle::ComplexControl control,
                                                        const QStyleOptionComplex *option,
                                                        const QPoint &pos,
@@ -413,8 +504,13 @@ QStyle::SubControl QPixmapStyle::hitTestComplexControl(QStyle::ComplexControl co
     return sc;
 }
 
+/*!
+    \reimp
+*/
 bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
 {
+    Q_D(QPixmapStyle);
+
     if (QSlider *slider = qobject_cast<QSlider*>(watched)) {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
@@ -453,7 +549,7 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
             int yPopup = widget->geometry().top();
             int yCombo = widget->parentWidget()->mapToGlobal(QPoint(0, 0)).y();
             QRect geom = widget->geometry();
-            const Descriptor &desc = m_descriptors.value(DD_ButtonEnabled);
+            const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
             const bool up = yPopup < yCombo;
             geom.moveTop(geom.top() + (up ? desc.margins.top() : -desc.margins.bottom()));
             widget->setGeometry(geom);
@@ -465,12 +561,28 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
     return QCommonStyle::eventFilter(watched, event);
 }
 
+/*!
+    \fn void QPixmapStyle::addDescriptor(QPixmapStyle::ControlDescriptor control, const QString &fileName, QMargins margins, QTileRules tileRules)
+
+    Associates the pixmap having the given \a fileName with the given \a control. The \a margins parameter describe the boundaries
+    of the pixmap's top-left, top-right, bottom-left and bottom-right corners, as well as the left, right, top and bottorm segments
+    and the middle. The \a tileRules parameter describes how QPixmapStyle is supposed to handle the scaling of the center of the  pixmap.
+
+    Use QPixmapStyle::addPixmap() for controls that are not resizable.
+
+    \snippet styles/qcustompixmapstyle.cpp 1
+
+    \sa addPixmap, copyDescriptor
+
+*/
 void QPixmapStyle::addDescriptor(QPixmapStyle::ControlDescriptor control, const QString &fileName,
                                  QMargins margins, QTileRules tileRules)
 {
-    Descriptor desc;
+    Q_D(QPixmapStyle);
 
+    QPixmapStyleDescriptor desc;
     QImage image(fileName);
+
     if (image.isNull())
         return;
 
@@ -479,45 +591,86 @@ void QPixmapStyle::addDescriptor(QPixmapStyle::ControlDescriptor control, const 
     desc.tileRules = tileRules;
     desc.size = image.size();
 
-    m_descriptors[control] = desc;
+    d->descriptors[control] = desc;
 }
+
+/*!
+    \fn void QPixmapStyle::copyDescriptor(QPixmapStyle::ControlDescriptor source, QPixmapStyle::ControlDescriptor dest)
+
+    Copies the data associated with the \a source descriptor to the \a dest descriptor.
+
+    \snippet styles/qcustompixmapstyle.cpp 2
+*/
 
 void QPixmapStyle::copyDescriptor(QPixmapStyle::ControlDescriptor source,
                                   QPixmapStyle::ControlDescriptor dest)
 {
-    m_descriptors[dest] = m_descriptors.value(source);
+    Q_D(QPixmapStyle);
+    d->descriptors[dest] = d->descriptors.value(source);
 }
 
+/*!
+    \fn void QPixmapStyle::drawCachedPixmap(QPixmapStyle::ControlDescriptor control, const QRect &rect, QPainter *painter) const
+
+    Draws the image associated with the current \a control on the given \a rect using the given \a painter.
+*/
 void QPixmapStyle::drawCachedPixmap(QPixmapStyle::ControlDescriptor control, const QRect &rect,
                                     QPainter *p) const
 {
-    if (!m_descriptors.contains(control))
+    Q_D(const QPixmapStyle);
+    if (!d->descriptors.contains(control))
         return;
-    const Descriptor &desc = m_descriptors.value(control);
-    const QPixmap pix = getCachedPixmap(control, desc, rect.size());
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(control);
+    const QPixmap pix = d->getCachedPixmap(control, desc, rect.size());
     Q_ASSERT(!pix.isNull());
     p->drawPixmap(rect, pix);
 }
 
+/*!
+    \fn void QPixmapStyle::addPixmap(ControlPixmap control, const QString &fileName, QMargins margins)
+
+    Use this function to style statically sized controls such as check boxes.
+
+    \sa addDescriptor, copyPixmap
+*/
 void QPixmapStyle::addPixmap(ControlPixmap control, const QString &fileName,
                              QMargins margins)
 {
-    Pixmap pix;
+    Q_D(QPixmapStyle);
 
+    QPixmapStylePixmap pix;
     QPixmap image(fileName);
+
     if (image.isNull())
         return;
 
     pix.pixmap = image;
     pix.margins = margins;
 
-    m_pixmaps[control] = pix;
+    d->pixmaps[control] = pix;
 }
 
+/*
+    \fn void QPixmapStyle::copyPixmap(QPixmapStyle::ControlPixmap source, QPixmapStyle::ControlPixmap dest)
+
+    Copies the data associated with the \a source pixmap to the \a dest pixmap.
+
+    \sa addPixmap, addDescriptor, copyDescriptor
+*/
 void QPixmapStyle::copyPixmap(QPixmapStyle::ControlPixmap source, QPixmapStyle::ControlPixmap dest)
 {
-    m_pixmaps[dest] = m_pixmaps.value(source);
+    Q_D(QPixmapStyle);
+    d->pixmaps[dest] = d->pixmaps.value(source);
 }
+
+/*!
+    \internal
+
+    Constructs a QPixmapStyle object.
+*/
+QPixmapStyle::QPixmapStyle(QPixmapStylePrivate &dd)
+    : QCommonStyle(dd)
+{}
 
 void QPixmapStyle::drawPushButton(const QStyleOption *option,
                                   QPainter *painter, const QWidget *) const
@@ -559,6 +712,8 @@ void QPixmapStyle::drawTextEdit(const QStyleOption *option,
 void QPixmapStyle::drawCheckBox(const QStyleOption *option,
                                 QPainter *painter, const QWidget *) const
 {
+    Q_D(const QPixmapStyle);
+
     const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton*>(option);
 
     const bool down = button->state & State_Sunken;
@@ -570,12 +725,14 @@ void QPixmapStyle::drawCheckBox(const QStyleOption *option,
         control = on ? (down ? CB_PressedChecked : CB_Checked) : (down ? CB_Pressed : CB_Enabled);
     else
         control = on ? CB_DisabledChecked : CB_Disabled;
-    painter->drawPixmap(button->rect, m_pixmaps.value(control).pixmap);
+    painter->drawPixmap(button->rect, d->pixmaps.value(control).pixmap);
 }
 
 void QPixmapStyle::drawRadioButton(const QStyleOption *option,
                                    QPainter *painter, const QWidget *) const
 {
+    Q_D(const QPixmapStyle);
+
     const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton*>(option);
 
     const bool down = button->state & State_Sunken;
@@ -587,12 +744,14 @@ void QPixmapStyle::drawRadioButton(const QStyleOption *option,
         control = on ? RB_Checked : (down ? RB_Pressed : RB_Enabled);
     else
         control = on ? RB_DisabledChecked : RB_Disabled;
-    painter->drawPixmap(button->rect, m_pixmaps.value(control).pixmap);
+    painter->drawPixmap(button->rect, d->pixmaps.value(control).pixmap);
 }
 
 void QPixmapStyle::drawPanelItemViewItem(const QStyleOption *option, QPainter *painter,
                                          const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     ControlPixmap cp = ID_Separator;
     ControlDescriptor cd = ID_Selected;
 
@@ -601,7 +760,7 @@ void QPixmapStyle::drawPanelItemViewItem(const QStyleOption *option, QPainter *p
         cd = DD_ItemSelected;
     }
 
-    QPixmap pix = m_pixmaps.value(cp).pixmap;
+    QPixmap pix = d->pixmaps.value(cp).pixmap;
     QRect rect = option->rect;
     rect.setBottom(rect.top() + pix.height()-1);
     painter->drawPixmap(rect, pix);
@@ -676,6 +835,8 @@ void QPixmapStyle::drawProgressBarFill(const QStyleOption *option,
 void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
                               QPainter *painter, const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
     if (!slider)
         return;
@@ -704,8 +865,8 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
                 control = enabled ? (pressed ? SG_VActivePressed : SG_VActiveEnabled )
                                   : SG_VActiveDisabled;
             }
-            const Descriptor &desc = m_descriptors.value(control);
-            const QPixmap pix = getCachedPixmap(control, desc, groove.size());
+            const QPixmapStyleDescriptor &desc = d->descriptors.value(control);
+            const QPixmap pix = d->getCachedPixmap(control, desc, groove.size());
             if (!pix.isNull()) {
                 groove.setRight(orient == Qt::Horizontal
                                ? handle.center().x() : handle.center().y());
@@ -720,7 +881,7 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
                 pix = enabled ? (pressed ? SH_HPressed : SH_HEnabled) : SH_HDisabled;
             else
                 pix = enabled ? (pressed ? SH_VPressed : SH_VEnabled) : SH_VDisabled;
-            painter->drawPixmap(handle, m_pixmaps.value(pix).pixmap);
+            painter->drawPixmap(handle, d->pixmaps.value(pix).pixmap);
         }
     }
 }
@@ -728,6 +889,8 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
 void QPixmapStyle::drawComboBox(const QStyleOptionComplex *option,
                                 QPainter *painter, const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     const bool enabled = option->state & State_Enabled;
     const bool pressed = widget->property("_pixmapstyle_combobox_pressed").toBool();
     const bool opened = option->state & State_On;
@@ -739,7 +902,7 @@ void QPixmapStyle::drawComboBox(const QStyleOptionComplex *option,
     ControlPixmap cp = enabled ? (opened ? DD_ArrowOpen
                                     : (pressed ? DD_ArrowPressed : DD_ArrowEnabled))
                                     : DD_ArrowDisabled;
-    Pixmap pix = m_pixmaps.value(cp);
+    QPixmapStylePixmap pix = d->pixmaps.value(cp);
     QRect rect = comboBoxSubControlRect(option, SC_ComboBoxArrow, widget);
     painter->drawPixmap(rect, pix.pixmap);
 }
@@ -764,7 +927,9 @@ QSize QPixmapStyle::pushButtonSizeFromContents(const QStyleOption *option,
                                                const QSize &contentsSize,
                                                const QWidget *widget) const
 {
-    const Descriptor &desc = m_descriptors.value(PB_Enabled);
+    Q_D(const QPixmapStyle);
+
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(PB_Enabled);
     const int bm = proxy()->pixelMetric(PM_ButtonMargin, option, widget);
 
     int w = contentsSize.width();
@@ -772,25 +937,29 @@ QSize QPixmapStyle::pushButtonSizeFromContents(const QStyleOption *option,
     w += desc.margins.left() + desc.margins.right() + bm;
     h += desc.margins.top() + desc.margins.bottom() + bm;
 
-    return computeSize(desc, w, h);
+    return d->computeSize(desc, w, h);
 }
 
 QSize QPixmapStyle::lineEditSizeFromContents(const QStyleOption *,
                                              const QSize &contentsSize, const QWidget *) const
 {
-    const Descriptor &desc = m_descriptors.value(LE_Enabled);
+    Q_D(const QPixmapStyle);
+
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
     const int border = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth);
 
     int w = contentsSize.width() + border + desc.margins.left() + desc.margins.right();
     int h = contentsSize.height() + border + desc.margins.top() + desc.margins.bottom();
 
-    return computeSize(desc, w, h);
+    return d->computeSize(desc, w, h);
 }
 
 QSize QPixmapStyle::progressBarSizeFromContents(const QStyleOption *option,
                                                 const QSize &contentsSize,
                                                 const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     bool vertical = false;
     if (const QStyleOptionProgressBar *pb =
                     qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
@@ -798,10 +967,10 @@ QSize QPixmapStyle::progressBarSizeFromContents(const QStyleOption *option,
     }
     QSize result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
     if (vertical) {
-        const Descriptor desc = m_descriptors.value(PB_VBackground);
+        const QPixmapStyleDescriptor desc = d->descriptors.value(PB_VBackground);
         return QSize(desc.size.height(), result.height());
     } else {
-        const Descriptor desc = m_descriptors.value(PB_HBackground);
+        const QPixmapStyleDescriptor desc = d->descriptors.value(PB_HBackground);
         return QSize(result.width(), desc.size.height());
     }
 }
@@ -810,13 +979,15 @@ QSize QPixmapStyle::sliderSizeFromContents(const QStyleOption *option,
                                            const QSize &contentsSize,
                                            const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(option);
     if (!slider)
         return QSize();
 
     QSize result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
 
-    const Descriptor desc = m_descriptors.value(slider->orientation == Qt::Horizontal
+    const QPixmapStyleDescriptor desc = d->descriptors.value(slider->orientation == Qt::Horizontal
                                                 ? SG_HEnabled : SG_VEnabled);
 
     if (slider->orientation == Qt::Horizontal)
@@ -829,16 +1000,20 @@ QSize QPixmapStyle::comboBoxSizeFromContents(const QStyleOption *option,
                                              const QSize &contentsSize,
                                              const QWidget *widget) const
 {
-    const Descriptor &desc = m_descriptors.value(DD_ButtonEnabled);
+    Q_D(const QPixmapStyle);
+
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
 
     QSize result = QCommonStyle::sizeFromContents(CT_ComboBox, option, contentsSize, widget);
-    return computeSize(desc, result.width(), result.height());
+    return d->computeSize(desc, result.width(), result.height());
 }
 
 QSize QPixmapStyle::itemViewSizeFromContents(const QStyleOption *option,
                                              const QSize &contentsSize,
                                              const QWidget *widget) const
 {
+    Q_D(const QPixmapStyle);
+
     QSize size = QCommonStyle::sizeFromContents(CT_ItemViewItem, option, contentsSize, widget);
 
     ControlPixmap cp = ID_Separator;
@@ -848,8 +1023,8 @@ QSize QPixmapStyle::itemViewSizeFromContents(const QStyleOption *option,
         cd = DD_ItemSelected;
     }
 
-    const Descriptor &desc = m_descriptors.value(cd);
-    const Pixmap &pix = m_pixmaps.value(cp);
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(cd);
+    const QPixmapStylePixmap &pix = d->pixmaps.value(cp);
     size.setHeight(qMax(size.height(),
                         desc.size.height() + pix.pixmap.height()));
     return size;
@@ -858,9 +1033,11 @@ QSize QPixmapStyle::itemViewSizeFromContents(const QStyleOption *option,
 QRect QPixmapStyle::comboBoxSubControlRect(const QStyleOptionComplex *option,
                                            QStyle::SubControl sc, const QWidget *) const
 {
+    Q_D(const QPixmapStyle);
+
     QRect r = option->rect; // Default size
-    const Pixmap &pix = m_pixmaps.value(DD_ArrowEnabled);
-    const Descriptor &desc = m_descriptors.value(DD_ButtonEnabled);
+    const QPixmapStylePixmap &pix = d->pixmaps.value(DD_ArrowEnabled);
+    const QPixmapStyleDescriptor &desc = d->descriptors.value(DD_ButtonEnabled);
 
     switch (sc) {
     case SC_ComboBoxArrow:
@@ -933,7 +1110,7 @@ QRect QPixmapStyle::scrollBarSubControlRect(const QStyleOptionComplex *option,
     return QRect();
 }
 
-static QPixmap scale(int w, int h, const QPixmap &pixmap, const QPixmapStyle::Descriptor &desc)
+QPixmap QPixmapStylePrivate::scale(int w, int h, const QPixmap &pixmap, const QPixmapStyleDescriptor &desc)
 {
     QPixmap result(w, h);
     {
@@ -947,12 +1124,15 @@ static QPixmap scale(int w, int h, const QPixmap &pixmap, const QPixmapStyle::De
     return result;
 }
 
-QPixmap QPixmapStyle::getCachedPixmap(ControlDescriptor control, const Descriptor &desc,
-                                      const QSize &size) const
+QPixmap QPixmapStylePrivate::getCachedPixmap(QPixmapStyle::ControlDescriptor control,
+                                             const QPixmapStyleDescriptor &desc,
+                                             const QSize &size) const
 {
+    Q_Q(const QPixmapStyle);
+
     const QString sizeString = QString::number(size.width()) % QLatin1Char('*')
             % QString::number(size.height());
-    const QString key = QLatin1String(metaObject()->className()) % QString::number(control)
+    const QString key = QLatin1String(q->metaObject()->className()) % QString::number(control)
             % QLatin1Char('@') % sizeString;
 
     QPixmap result;
@@ -965,7 +1145,7 @@ QPixmap QPixmapStyle::getCachedPixmap(ControlDescriptor control, const Descripto
     return result;
 }
 
-QSize QPixmapStyle::computeSize(const QPixmapStyle::Descriptor &desc, int width, int height) const
+QSize QPixmapStylePrivate::computeSize(const QPixmapStyleDescriptor &desc, int width, int height) const
 {
     if (desc.tileRules.horizontal != Qt::RepeatTile)
         width = qMax(width, desc.size.width());

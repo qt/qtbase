@@ -34,7 +34,7 @@
 #ifndef QBB10DARKSTYLE_H
 #define QBB10DARKSTYLE_H
 
-#include "qpixmapstyle.h"
+#include <QPixmapStyle>
 
 QT_BEGIN_NAMESPACE
 

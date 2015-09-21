@@ -1,9 +1,11 @@
 /***************************************************************************
 **
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -34,30 +36,20 @@
 #ifndef QPIXMAPSTYLE_H
 #define QPIXMAPSTYLE_H
 
-#include <QCommonStyle>
-#include <QString>
-#include <QPixmap>
-#include <QMargins>
-#include <QTileRules>
-#include <QHash>
-#include <QPainter>
+#include <QtWidgets/QCommonStyle>
+#include <QtWidgets/QTileRules>
 
 QT_BEGIN_NAMESPACE
 
-class QPixmapStyle : public QCommonStyle
+class QPixmapStylePrivate;
+
+class Q_WIDGETS_EXPORT QPixmapStyle : public QCommonStyle
 {
     Q_OBJECT
 
 public:
-    struct Descriptor {
-        QString fileName;
-        QSize size;
-        QMargins margins;
-        QTileRules tileRules;
-    };
-
     enum ControlDescriptor {
-        BG_Background=0,
+        BG_Background,
         LE_Enabled,             // QLineEdit
         LE_Disabled,
         LE_Focused,
@@ -96,10 +88,6 @@ public:
         SB_Vertical
     };
 
-    struct Pixmap {
-        QPixmap pixmap;
-        QMargins margins;
-    };
     enum ControlPixmap {
         CB_Enabled,             // QCheckBox
         CB_Checked,
@@ -130,35 +118,35 @@ public:
     QPixmapStyle();
     ~QPixmapStyle();
 
-    void polish(QApplication *application);
-    void polish(QPalette &palette);
-    void polish(QWidget *widget);
-    void unpolish(QWidget *widget);
+    void polish(QApplication *application) Q_DECL_OVERRIDE;
+    void polish(QPalette &palette) Q_DECL_OVERRIDE;
+    void polish(QWidget *widget) Q_DECL_OVERRIDE;
+    void unpolish(QApplication *application) Q_DECL_OVERRIDE;
+    void unpolish(QWidget *widget) Q_DECL_OVERRIDE;
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-            QPainter *painter, const QWidget *widget = 0) const;
+            QPainter *painter, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
     void drawControl(ControlElement element, const QStyleOption *option,
-            QPainter *painter, const QWidget *widget = 0) const;
+            QPainter *painter, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *option,
-                            QPainter *painter, const QWidget *widget=0) const;
+                            QPainter *painter, const QWidget *widget=0) const Q_DECL_OVERRIDE;
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option,
-            const QSize &contentsSize, const QWidget *widget = 0) const;
+            const QSize &contentsSize, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
     QRect subElementRect(SubElement element, const QStyleOption *option,
-            const QWidget *widget = 0) const;
+            const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *option,
-                         SubControl sc, const QWidget *widget = 0) const;
+                         SubControl sc, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
 
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0,
-            const QWidget *widget = 0) const;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = Q_NULLPTR,
+            const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
     int styleHint(StyleHint hint, const QStyleOption *option,
-                  const QWidget *widget, QStyleHintReturn *returnData) const;
+                  const QWidget *widget, QStyleHintReturn *returnData) const Q_DECL_OVERRIDE;
     SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
-                                     const QPoint &pos, const QWidget *widget) const;
+                                     const QPoint &pos, const QWidget *widget) const Q_DECL_OVERRIDE;
 
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
 
-protected:
     void addDescriptor(ControlDescriptor control, const QString &fileName,
                        QMargins margins = QMargins(),
                        QTileRules tileRules = QTileRules(Qt::RepeatTile, Qt::RepeatTile));
@@ -169,6 +157,7 @@ protected:
                    QMargins margins = QMargins());
     void copyPixmap(ControlPixmap source, ControlPixmap dest);
 
+protected:
     void drawPushButton(const QStyleOption *option,
                         QPainter *painter, const QWidget *widget) const;
     void drawLineEdit(const QStyleOption *option,
@@ -207,20 +196,16 @@ protected:
     QSize itemViewSizeFromContents(const QStyleOption *option,
                                    const QSize &contentsSize, const QWidget *widget) const;
 
-    QRect comboBoxSubControlRect(const QStyleOptionComplex *option,
-                                 SubControl sc, const QWidget *widget) const;
-    QRect scrollBarSubControlRect(const QStyleOptionComplex *option,
-                                  SubControl sc, const QWidget *widget) const;
+    QRect comboBoxSubControlRect(const QStyleOptionComplex *option, QPixmapStyle::SubControl sc,
+                                 const QWidget *widget) const;
+    QRect scrollBarSubControlRect(const QStyleOptionComplex *option, QPixmapStyle::SubControl sc,
+                                  const QWidget *widget) const;
+
+protected:
+    QPixmapStyle(QPixmapStylePrivate &dd);
 
 private:
-    QPixmap getCachedPixmap(ControlDescriptor control,
-                            const Descriptor &desc, const QSize &size) const;
-
-    QSize computeSize(const Descriptor &desc, int width, int height) const;
-
-private:
-    QHash<ControlDescriptor, Descriptor> m_descriptors;
-    QHash<ControlPixmap, Pixmap> m_pixmaps;
+    Q_DECLARE_PRIVATE(QPixmapStyle)
 };
 
 QT_END_NAMESPACE

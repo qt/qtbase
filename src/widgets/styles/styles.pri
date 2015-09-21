@@ -14,7 +14,9 @@ HEADERS += \
         styles/qproxystyle_p.h \
         styles/qcommonstyle_p.h \
         styles/qstylepainter.h \
-        styles/qstylesheetstyle_p.h
+        styles/qstylesheetstyle_p.h \
+        styles/qpixmapstyle_p.h \
+        styles/qpixmapstyle_p_p.h
 
 SOURCES += \
         styles/qdrawutil.cpp \
@@ -28,7 +30,8 @@ SOURCES += \
         styles/qproxystyle.cpp \
         styles/qstylepainter.cpp \
         styles/qstylesheetstyle.cpp \
-        styles/qstylesheetstyle_default.cpp
+        styles/qstylesheetstyle_default.cpp \
+        styles/qpixmapstyle.cpp
 
 wince* {
     RESOURCES += styles/qstyle_wince.qrc

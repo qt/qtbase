@@ -1,9 +1,9 @@
-/***************************************************************************
+/****************************************************************************
 **
-** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,32 +31,56 @@
 **
 ****************************************************************************/
 
-#ifndef QBB10BRIGHTSTYLE_H
-#define QBB10BRIGHTSTYLE_H
+#ifndef QPIXMAPSTYLE_P_H
+#define QPIXMAPSTYLE_P_H
 
-#include <QPixmapStyle>
+#include "qpixmapstyle_p.h"
+#include "qcommonstyle_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QBB10BrightStyle : public QPixmapStyle
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+struct QPixmapStyleDescriptor
 {
-    Q_OBJECT
+    QString fileName;
+    QSize size;
+    QMargins margins;
+    QTileRules tileRules;
+};
+
+struct QPixmapStylePixmap
+{
+    QPixmap pixmap;
+    QMargins margins;
+};
+
+class QPixmapStylePrivate : public QCommonStylePrivate
+{
+    Q_DECLARE_PUBLIC(QPixmapStyle)
 
 public:
-    QBB10BrightStyle();
-    ~QBB10BrightStyle();
+    QHash<QPixmapStyle::ControlDescriptor, QPixmapStyleDescriptor> descriptors;
+    QHash<QPixmapStyle::ControlPixmap, QPixmapStylePixmap> pixmaps;
 
-    void polish(QApplication *application);
-    void polish(QWidget *widget);
+    static QPixmap scale(int w, int h, const QPixmap &pixmap, const QPixmapStyleDescriptor &desc);
 
-    QPalette standardPalette() const;
+    QPixmap getCachedPixmap(QPixmapStyle::ControlDescriptor control,
+                            const QPixmapStyleDescriptor &desc,
+                            const QSize &size) const;
 
-    void drawControl(ControlElement element, const QStyleOption *option,
-            QPainter *painter, const QWidget *widget = 0) const;
-    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget) const;
+    QSize computeSize(const QPixmapStyleDescriptor &desc, int width, int height) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QBB10BRIGHTSTYLE_H
+#endif // QPIXMAPSTYLE_P_H
