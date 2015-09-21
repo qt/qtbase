@@ -38,6 +38,7 @@
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <linux/input.h>
 
@@ -604,9 +605,10 @@ void QEvdevTouchScreenData::reportPoints()
         QWindow *win = QGuiApplication::focusWindow();
         if (!win)
             return;
-        winRect = win->geometry();
+        winRect = QHighDpi::toNativePixels(win->geometry(), win);
     } else {
-        winRect = QGuiApplication::primaryScreen()->geometry();
+        QScreen *primary = QGuiApplication::primaryScreen();
+        winRect = QHighDpi::toNativePixels(primary->geometry(), primary);
     }
 
     const int hw_w = hw_range_x_max - hw_range_x_min;
