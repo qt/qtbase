@@ -486,9 +486,14 @@ bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfa
     return accepted;
 }
 
-void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
+void QWindowSystemInterface::registerTouchDevice(const QTouchDevice *device)
 {
     QTouchDevicePrivate::registerDevice(device);
+}
+
+void QWindowSystemInterface::unregisterTouchDevice(const QTouchDevice *device)
+{
+    QTouchDevicePrivate::unregisterDevice(device);
 }
 
 void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,

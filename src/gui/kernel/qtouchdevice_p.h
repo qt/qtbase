@@ -65,6 +65,7 @@ public:
     int maxTouchPoints;
 
     static void registerDevice(const QTouchDevice *dev);
+    static void unregisterDevice(const QTouchDevice *dev);
     static bool isRegistered(const QTouchDevice *dev);
 };
 
