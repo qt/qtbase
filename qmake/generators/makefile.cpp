@@ -872,64 +872,56 @@ MakefileGenerator::init()
 bool
 MakefileGenerator::processPrlFile(QString &file)
 {
-    bool ret = false, try_replace_file=false;
-    QString meta_file, orig_file = file;
-    if(QMakeMetaInfo::libExists(file)) {
+    bool try_replace_file = false;
+    QString f = fileFixify(file, FileFixifyBackwards);
+    QString meta_file = QMakeMetaInfo::findLib(f);
+    if (!meta_file.isEmpty()) {
         try_replace_file = true;
-        meta_file = file;
     } else {
-        QString tmp = file;
+        QString tmp = f;
         int ext = tmp.lastIndexOf('.');
         if(ext != -1)
             tmp = tmp.left(ext);
-        meta_file = tmp;
+        meta_file = QMakeMetaInfo::findLib(tmp);
     }
-//    meta_file = fileFixify(meta_file);
-    QString real_meta_file = Option::normalizePath(meta_file);
-    if(!meta_file.isEmpty()) {
-        QString f = fileFixify(real_meta_file, FileFixifyBackwards);
-        if(QMakeMetaInfo::libExists(f)) {
-            QMakeMetaInfo libinfo(project);
-            debug_msg(1, "Processing PRL file: %s", real_meta_file.toLatin1().constData());
-            if(!libinfo.readLib(f)) {
-                fprintf(stderr, "Error processing meta file: %s\n", real_meta_file.toLatin1().constData());
-            } else if(project->isActiveConfig("no_read_prl_" + libinfo.type().toLower())) {
-                debug_msg(2, "Ignored meta file %s [%s]", real_meta_file.toLatin1().constData(), libinfo.type().toLatin1().constData());
-            } else {
-                ret = true;
-                project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
-                ProStringList &defs = project->values("DEFINES");
-                const ProStringList &prl_defs = project->values("PRL_EXPORT_DEFINES");
-                foreach (const ProString &def, libinfo.values("QMAKE_PRL_DEFINES"))
-                    if (!defs.contains(def) && prl_defs.contains(def))
-                        defs.append(def);
-                if (try_replace_file) {
-                    ProString tgt = libinfo.first("QMAKE_PRL_TARGET");
-                    if (!tgt.isEmpty()) {
-                        int off = qMax(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1;
-                        debug_msg(1, "  Replacing library reference %s with %s",
-                                     file.mid(off).toLatin1().constData(), tgt.toQString().toLatin1().constData());
-                        file.replace(off, 1000, tgt.toQString());
-                    }
-                }
-            }
-        }
-        if(ret) {
-            QString mf = QMakeMetaInfo::findLib(meta_file);
-            if(project->values("QMAKE_PRL_INTERNAL_FILES").indexOf(mf) == -1)
-               project->values("QMAKE_PRL_INTERNAL_FILES").append(mf);
-            if(project->values("QMAKE_INTERNAL_INCLUDED_FILES").indexOf(mf) == -1)
-               project->values("QMAKE_INTERNAL_INCLUDED_FILES").append(mf);
+    if (meta_file.isEmpty())
+        return false;
+    QMakeMetaInfo libinfo(project);
+    debug_msg(1, "Processing PRL file: %s", meta_file.toLatin1().constData());
+    if (!libinfo.readLib(meta_file)) {
+        fprintf(stderr, "Error processing meta file %s\n", meta_file.toLatin1().constData());
+        return false;
+    }
+    if (project->isActiveConfig("no_read_prl_" + libinfo.type().toLower())) {
+        debug_msg(2, "Ignored meta file %s [%s]",
+                     meta_file.toLatin1().constData(), libinfo.type().toLatin1().constData());
+        return false;
+    }
+    project->values("QMAKE_CURRENT_PRL_LIBS") = libinfo.values("QMAKE_PRL_LIBS");
+    ProStringList &defs = project->values("DEFINES");
+    const ProStringList &prl_defs = project->values("PRL_EXPORT_DEFINES");
+    foreach (const ProString &def, libinfo.values("QMAKE_PRL_DEFINES"))
+        if (!defs.contains(def) && prl_defs.contains(def))
+            defs.append(def);
+    if (try_replace_file) {
+        ProString tgt = libinfo.first("QMAKE_PRL_TARGET");
+        if (tgt.isEmpty()) {
+            fprintf(stderr, "Error: %s does not define QMAKE_PRL_TARGET\n",
+                            meta_file.toLatin1().constData());
+        } else {
+            int off = qMax(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1;
+            debug_msg(1, "  Replacing library reference %s with %s",
+                         file.mid(off).toLatin1().constData(),
+                         tgt.toQString().toLatin1().constData());
+            file.replace(off, 1000, tgt.toQString());
         }
     }
-    if(try_replace_file && file.isEmpty()) {
-#if 0
-        warn_msg(WarnLogic, "Found prl [%s] file with no target [%s]!", meta_file.toLatin1().constData(),
-                 orig_file.toLatin1().constData());
-#endif
-        file = orig_file;
-    }
-    return ret;
+    QString mf = fileFixify(meta_file);
+    if (!project->values("QMAKE_PRL_INTERNAL_FILES").contains(mf))
+       project->values("QMAKE_PRL_INTERNAL_FILES").append(mf);
+    if (!project->values("QMAKE_INTERNAL_INCLUDED_FILES").contains(mf))
+       project->values("QMAKE_INTERNAL_INCLUDED_FILES").append(mf);
+    return true;
 }
 
 void

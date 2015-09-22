@@ -48,10 +48,8 @@ QMakeMetaInfo::QMakeMetaInfo(QMakeProject *_conf)
 
 
 bool
-QMakeMetaInfo::readLib(QString lib)
+QMakeMetaInfo::readLib(const QString &meta_file)
 {
-    QString meta_file = findLib(lib);
-
     if(cache_vars.contains(meta_file)) {
         vars = cache_vars[meta_file];
         return true;
@@ -84,10 +82,8 @@ QMakeMetaInfo::readLib(QString lib)
 
 
 QString
-QMakeMetaInfo::findLib(QString lib)
+QMakeMetaInfo::findLib(const QString &lib)
 {
-    lib = Option::normalizePath(lib);
-
     QString ret;
     QString extns[] = { Option::prl_ext, /*Option::pkgcfg_ext, Option::libtool_ext,*/ QString() };
     for(int extn = 0; !extns[extn].isNull(); extn++) {

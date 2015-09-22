@@ -833,8 +833,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                encode the version number in the Project file which might be a bad
                                things in days to come? --Sam
                             */
-                            QString lib_file = (*lit) + Option::dir_sep + lib;
-                            if(QMakeMetaInfo::libExists(lib_file)) {
+                            QString lib_file = QMakeMetaInfo::findLib(Option::normalizePath((*lit) + Option::dir_sep + lib));
+                            if (!lib_file.isEmpty()) {
                                 QMakeMetaInfo libinfo(project);
                                 if(libinfo.readLib(lib_file)) {
                                     if(!libinfo.isEmpty("QMAKE_PRL_TARGET")) {

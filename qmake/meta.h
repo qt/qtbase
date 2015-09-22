@@ -55,11 +55,11 @@ class QMakeMetaInfo
 public:
     QMakeMetaInfo(QMakeProject *_conf);
 
-    bool readLib(QString lib);
-    static QString findLib(QString lib);
-    static bool libExists(QString lib);
-    QString type() const;
+    // These functions expect the path to be normalized
+    static QString findLib(const QString &lib);
+    bool readLib(const QString &meta_file);
 
+    QString type() const;
     bool isEmpty(const ProKey &v);
     ProStringList &values(const ProKey &v);
     ProString first(const ProKey &v);
@@ -90,9 +90,6 @@ inline ProString QMakeMetaInfo::first(const ProKey &v)
 
 inline ProValueMap &QMakeMetaInfo::variables()
 { return vars; }
-
-inline bool QMakeMetaInfo::libExists(QString lib)
-{ return !findLib(lib).isNull(); }
 
 QT_END_NAMESPACE
 
