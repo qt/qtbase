@@ -151,7 +151,8 @@ QPdfWriter::QPdfWriter(const QString &filename)
   Constructs a PDF writer that will write the pdf to \a device.
   */
 QPdfWriter::QPdfWriter(QIODevice *device)
-    : QObject(*new QPdfWriterPrivate)
+    : QObject(*new QPdfWriterPrivate),
+      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
 {
     Q_D(QPdfWriter);
 
