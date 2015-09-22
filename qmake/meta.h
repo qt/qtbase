@@ -52,7 +52,6 @@ class QMakeMetaInfo
     ProValueMap vars;
     QString meta_type;
     static QHash<QString, ProValueMap> cache_vars;
-    void clear();
 public:
     QMakeMetaInfo(QMakeProject *_conf);
 

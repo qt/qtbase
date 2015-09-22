@@ -50,7 +50,6 @@ QMakeMetaInfo::QMakeMetaInfo(QMakeProject *_conf)
 bool
 QMakeMetaInfo::readLib(QString lib)
 {
-    clear();
     QString meta_file = findLib(lib);
 
     if(cache_vars.contains(meta_file)) {
@@ -81,13 +80,6 @@ QMakeMetaInfo::readLib(QString lib)
     if(ret)
         cache_vars.insert(meta_file, vars);
     return ret;
-}
-
-
-void
-QMakeMetaInfo::clear()
-{
-    vars.clear();
 }
 
 
