@@ -266,11 +266,6 @@ void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &cal
     Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments);
 }
 
-QString NmakeMakefileGenerator::getPdbTarget()
-{
-    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
-}
-
 QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -288,7 +283,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     if (project->isActiveConfig("debug_info")) {
         if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
-            QString pdb_target = getPdbTarget();
+            QString pdb_target = project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb";
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
