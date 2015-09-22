@@ -376,6 +376,7 @@ QAlphaPaintEnginePrivate::QAlphaPaintEnginePrivate()
         m_pic(0),
         m_picengine(0),
         m_picpainter(0),
+        m_numberOfCachedRects(0),
         m_hasalpha(false),
         m_alphaPen(false),
         m_alphaBrush(false),
@@ -426,7 +427,14 @@ void QAlphaPaintEnginePrivate::addAlphaRect(const QRectF &rect)
 
 bool QAlphaPaintEnginePrivate::canSeeTroughBackground(bool somethingInRectHasAlpha, const QRectF &rect) const
 {
-    return somethingInRectHasAlpha && m_dirtyrgn.intersects(rect.toAlignedRect());
+    if (somethingInRectHasAlpha) {
+        if (m_dirtyRects.count() != m_numberOfCachedRects) {
+            m_cachedDirtyRgn.setRects(m_dirtyRects.constData(), m_dirtyRects.count());
+            m_numberOfCachedRects = m_dirtyRects.count();
+        }
+        return m_cachedDirtyRgn.intersects(rect.toAlignedRect());
+    }
+    return false;
 }
 
 void QAlphaPaintEnginePrivate::drawAlphaImage(const QRectF &rect)
