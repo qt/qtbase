@@ -43,6 +43,10 @@
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qglobal.h>
+
+
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
@@ -375,6 +379,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         updating = false;
 
 #ifndef QT_NO_LIBRARY
+        bool envOK  = false;
+        const int skipGeneric = qgetenv("QT_EXCLUDE_GENERIC_BEARER").toInt(&envOK);
         QBearerEngine *generic = 0;
         QFactoryLoader *l = loader();
         const PluginKeyMap keyMap = l->keyMap();
@@ -409,8 +415,10 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             }
         }
 
-        if (generic)
-            sessionEngines.append(generic);
+        if (generic) {
+            if (!envOK || skipGeneric <= 0)
+                sessionEngines.append(generic);
+        }
 #endif // QT_NO_LIBRARY
     }
 
