@@ -477,7 +477,12 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
     Q_ASSERT(m_touchDevice);
-    const QRect screenGeometry = window->screen()->geometry();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
 
     const int winTouchPointCount = msg.wParam;
     QScopedArrayPointer<TOUCHINPUT> winTouchInputs(new TOUCHINPUT[winTouchPointCount]);
@@ -569,7 +574,12 @@ bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
     if (gi.dwID != GID_DIRECTMANIPULATION)
         return true;
     static QPoint lastTouchPos;
-    const QRect screenGeometry = window->screen()->geometry();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
     QWindowSystemInterface::TouchPoint touchPoint;
     static QWindowSystemInterface::TouchPoint touchPoint2;
     touchPoint.id = 0;//gi.dwInstanceID;

@@ -1637,8 +1637,12 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
 bool QWindowsWindow::isFullScreen_sys() const
 {
     const QWindow *w = window();
-    return w->isTopLevel()
-        && geometry_sys() == QHighDpi::toNativePixels(w->screen()->geometry(), w);
+    if (!w->isTopLevel())
+        return false;
+    const QScreen *screen = w->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    return screen && geometry_sys() == QHighDpi::toNativePixels(screen->geometry(), w);
 }
 
 /*!
@@ -1708,7 +1712,9 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
             const QScreen *screen = window()->screen();
-            const QRect r = QHighDpi::toNativePixels(screen->geometry(), window());
+            if (!screen)
+                screen = QGuiApplication::primaryScreen();
+            const QRect r = screen ? QHighDpi::toNativePixels(screen->geometry(), window()) : m_savedFrameGeometry;
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
