@@ -307,7 +307,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
 
-    if (dictionary["QMAKESPEC"] == QString("win32-g++")) {
+    if (dictionary["QMAKESPEC"].startsWith("win32-g++")) {
         const QString zero = QStringLiteral("0");
         const QStringList parts = Environment::gccVersion().split(QLatin1Char('.'));
         dictionary["QT_GCC_MAJOR_VERSION"] = parts.value(0, zero);
@@ -1428,7 +1428,7 @@ void Configure::parseCmdLine()
             dictionary[ "QMAKESPEC" ].endsWith("-msvc2015")) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "nmake";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
-        } else if (dictionary[ "QMAKESPEC" ] == QString("win32-g++")) {
+        } else if (dictionary[ "QMAKESPEC" ].startsWith(QLatin1String("win32-g++"))) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "mingw32-make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.unix";
         } else {
@@ -4313,8 +4313,8 @@ void Configure::buildQmake()
                            (QFile::exists(sourcePath + "/.git") ? ".." : sourcePath)
                            + "/include") << endl;
                 stream << "QT_VERSION = " << dictionary["VERSION"] << endl;
-                if (dictionary[ "QMAKESPEC" ] == QString("win32-g++")) {
-                    stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\win32-g++" << endl
+                if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
+                    stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
                            << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl
                            << "EXTRA_CXXFLAGS = -DUNICODE -ffunction-sections" << endl
                            << "EXTRA_LFLAGS = -Wl,--gc-sections" << endl
