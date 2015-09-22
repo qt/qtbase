@@ -219,21 +219,24 @@ void QWindowsInputContext::updateEnabled()
         const bool accepted = inputMethodAccepted();
         if (QWindowsContext::verbose > 1)
             qCDebug(lcQpaInputMethods) << __FUNCTION__ << window << "accepted=" << accepted;
-        if (accepted) {
-            // Re-enable IME by associating default context saved on first disabling.
-            if (platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
-                ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
-                platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
-            }
-        } else {
-            // Disable IME by associating 0 context. Store context first time.
-            if (!platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
-                const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
-                platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
-                if (!QWindowsInputContext::m_defaultContext && oldImC)
-                    QWindowsInputContext::m_defaultContext = oldImC;
-            }
-        }
+            QWindowsInputContext::setWindowsImeEnabled(platformWindow, accepted);
+    }
+}
+
+void QWindowsInputContext::setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled)
+{
+    if (!platformWindow || platformWindow->testFlag(QWindowsWindow::InputMethodDisabled) == !enabled)
+        return;
+    if (enabled) {
+        // Re-enable Windows IME by associating default context saved on first disabling.
+        ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
+        platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
+    } else {
+        // Disable Windows IME by associating 0 context. Store context first time.
+        const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
+        platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
+        if (!QWindowsInputContext::m_defaultContext && oldImC)
+            QWindowsInputContext::m_defaultContext = oldImC;
     }
 }
 
@@ -304,11 +307,6 @@ void QWindowsInputContext::invokeAction(QInputMethod::Action action, int cursorP
     const HWND imeWindow = ImmGetDefaultIMEWnd(m_compositionContext.hwnd);
     SendMessage(imeWindow, m_WM_MSIME_MOUSE, MAKELONG(MAKEWORD(MK_LBUTTON, cursorPosition == 0 ? 2 : 1), cursorPosition), (LPARAM)himc);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
-}
-
-QWindowsInputContext *QWindowsInputContext::instance()
-{
-    return static_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
 }
 
 static inline QString getCompositionString(HIMC himc, DWORD dwIndex)

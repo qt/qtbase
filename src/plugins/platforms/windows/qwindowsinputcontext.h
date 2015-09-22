@@ -42,6 +42,7 @@
 QT_BEGIN_NAMESPACE
 
 class QInputMethodEvent;
+class QWindowsWindow;
 
 class QWindowsInputContext : public QPlatformInputContext
 {
@@ -62,13 +63,13 @@ public:
     explicit QWindowsInputContext();
     ~QWindowsInputContext();
 
+    static void setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled);
+
     bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
     void reset() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
     void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
-
-    static QWindowsInputContext *instance();
 
     bool startComposition(HWND hwnd);
     bool composition(HWND hwnd, LPARAM lParam);
