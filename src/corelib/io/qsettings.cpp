@@ -453,14 +453,23 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 
         default: {
 #ifndef QT_NO_DATASTREAM
+            QDataStream::Version version;
+            const char *typeSpec;
+            if (v.type() == QVariant::DateTime) {
+                version = QDataStream::Qt_5_6;
+                typeSpec = "@DateTime(";
+            } else {
+                version = QDataStream::Qt_4_0;
+                typeSpec = "@Variant(";
+            }
             QByteArray a;
             {
                 QDataStream s(&a, QIODevice::WriteOnly);
-                s.setVersion(QDataStream::Qt_4_0);
+                s.setVersion(version);
                 s << v;
             }
 
-            result = QLatin1String("@Variant(");
+            result = QLatin1String(typeSpec);
             result += QString::fromLatin1(a.constData(), a.size());
             result += QLatin1Char(')');
 #else
@@ -480,11 +489,21 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
         if (s.endsWith(QLatin1Char(')'))) {
             if (s.startsWith(QLatin1String("@ByteArray("))) {
                 return QVariant(s.toLatin1().mid(11, s.size() - 12));
-            } else if (s.startsWith(QLatin1String("@Variant("))) {
+            } else if (s.startsWith(QLatin1String("@Variant("))
+                       || s.startsWith(QLatin1String("@DateTime("))) {
 #ifndef QT_NO_DATASTREAM
-                QByteArray a(s.toLatin1().mid(9));
+                QDataStream::Version version;
+                int offset;
+                if (s.at(1) == QLatin1Char('D')) {
+                    version = QDataStream::Qt_5_6;
+                    offset = 10;
+                } else {
+                    version = QDataStream::Qt_4_0;
+                    offset = 9;
+                }
+                QByteArray a(s.toLatin1().mid(offset));
                 QDataStream stream(&a, QIODevice::ReadOnly);
-                stream.setVersion(QDataStream::Qt_4_0);
+                stream.setVersion(version);
                 QVariant result;
                 stream >> result;
                 return result;
