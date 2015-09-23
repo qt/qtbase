@@ -51,43 +51,61 @@ Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
 
 ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
-    if (lib.startsWith("/LIBPATH:"))
+    if (lib.startsWith("-l"))  // Fallback for unresolved -l libs.
+        return escapeFilePath(lib.mid(2) + QLatin1String(".lib"));
+    if (lib.startsWith("-L"))  // Lib search path. Needed only by -l above.
         return QLatin1String("/LIBPATH:")
-                + escapeFilePath(Option::fixPathToTargetOS(lib.mid(9).toQString(), false));
-
-    // This must be a fully resolved library path.
+                + escapeFilePath(Option::fixPathToTargetOS(lib.mid(2).toQString(), false));
     return escapeFilePath(Option::fixPathToTargetOS(lib.toQString(), false));
+}
+
+MakefileGenerator::LibFlagType
+Win32MakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
+{
+    LibFlagType ret = MakefileGenerator::parseLibFlag(flag, arg);
+    if (ret != LibFlagFile)
+        return ret;
+    // MSVC compatibility. This should be deprecated.
+    if (flag.startsWith("/LIBPATH:")) {
+        *arg = flag.mid(9);
+        return LibFlagPath;
+    }
+    // These are pure qmake inventions. They *really* should be deprecated.
+    if (flag.startsWith("/L")) {
+        *arg = flag.mid(2);
+        return LibFlagPath;
+    }
+    if (flag.startsWith("/l")) {
+        *arg = flag.mid(2);
+        return LibFlagLib;
+    }
+    return LibFlagFile;
 }
 
 bool
 Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
+    ProStringList impexts = project->values("QMAKE_LIB_EXTENSIONS");
+    if (impexts.isEmpty())
+        impexts = project->values("QMAKE_EXTENSION_STATICLIB");
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
   for (int i = 0; lflags[i]; i++) {
     ProStringList &l = project->values(lflags[i]);
     for (ProStringList::Iterator it = l.begin(); it != l.end();) {
-        QString opt = (*it).toQString();
-        if(opt.startsWith("/LIBPATH:")) {
-            QString libpath = opt.mid(9);
-            QMakeLocalFileName lp(libpath);
+        const ProString &opt = *it;
+        ProString arg;
+        LibFlagType type = parseLibFlag(opt, &arg);
+        if (type == LibFlagPath) {
+            QMakeLocalFileName lp(arg.toQString());
             if (dirs.contains(lp)) {
                 it = l.erase(it);
                 continue;
             }
             dirs.append(lp);
-            (*it) = "/LIBPATH:" + lp.real();
-        } else if(opt.startsWith("-L") || opt.startsWith("/L")) {
-            QString libpath = Option::fixPathToTargetOS(opt.mid(2), false, false);
-            QMakeLocalFileName lp(libpath);
-            if (dirs.contains(lp)) {
-                it = l.erase(it);
-                continue;
-            }
-            dirs.append(lp);
-            (*it) = "/LIBPATH:" + lp.real();
-        } else if(opt.startsWith("-l") || opt.startsWith("/l")) {
-            QString lib = opt.mid(2);
+            (*it) = "-L" + lp.real();
+        } else if (type == LibFlagLib) {
+            QString lib = arg.toQString();
             ProString verovr =
                     project->first(ProKey("QMAKE_" + lib.toUpper() + "_VERSION_OVERRIDE"));
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
@@ -97,22 +115,26 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     (*it) = cand;
                     goto found;
                 }
-                QString extension = verovr + ".lib";
-                if (exists((*dir_it).local() + '/' + lib + extension)) {
-                    (*it) = cand + extension;
-                    goto found;
+                QString libBase = (*dir_it).local() + '/' + lib + verovr;
+                for (ProStringList::ConstIterator extit = impexts.begin();
+                     extit != impexts.end(); ++extit) {
+                    if (exists(libBase + '.' + *extit)) {
+                        (*it) = cand + verovr + '.' + *extit;
+                        goto found;
+                    }
                 }
             }
-            (*it) = lib + ".lib";
+            // We assume if it never finds it that it's correct
           found: ;
-        } else if (linkPrl) {
-            if (fileInfo(opt).isAbsolute()) {
-                if (processPrlFile(opt))
-                    (*it) = opt;
+        } else if (linkPrl && type == LibFlagFile) {
+            QString lib = opt.toQString();
+            if (fileInfo(lib).isAbsolute()) {
+                if (processPrlFile(lib))
+                    (*it) = lib;
             } else {
                 for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
                      dir_it != dirs.end(); ++dir_it) {
-                    QString cand = (*dir_it).real() + Option::dir_sep + opt;
+                    QString cand = (*dir_it).real() + Option::dir_sep + lib;
                     if (processPrlFile(cand)) {
                         (*it) = cand;
                         break;
@@ -131,7 +153,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         ProStringList lopts;
         for (int lit = 0; lit < l.size(); ++lit) {
             ProString opt = l.at(lit);
-            if (opt.startsWith("/LIBPATH:")) {
+            if (opt.startsWith(QLatin1String("-L"))) {
                 if (!lopts.contains(opt))
                     lopts.append(opt);
             } else {
@@ -174,7 +196,6 @@ void Win32MakefileGenerator::processVars()
     fixTargetExt();
     processRcFileVar();
 
-    ProString libArg = project->first("QMAKE_L_FLAG");
     ProStringList libs;
     ProStringList &libDir = project->values("QMAKE_LIBDIR");
     for (ProStringList::Iterator libDir_it = libDir.begin(); libDir_it != libDir.end(); ++libDir_it) {
@@ -182,7 +203,7 @@ void Win32MakefileGenerator::processVars()
         if (!lib.isEmpty()) {
             if (lib.endsWith('\\'))
                 lib.chop(1);
-            libs << libArg + Option::fixPathToTargetOS(lib, false, false);
+            libs << QLatin1String("-L") + lib;
         }
     }
     project->values("QMAKE_LIBS") += libs + project->values("LIBS");

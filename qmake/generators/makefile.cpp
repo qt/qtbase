@@ -2729,6 +2729,22 @@ MakefileGenerator::fileInfo(QString file) const
     return fi;
 }
 
+MakefileGenerator::LibFlagType
+MakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
+{
+    if (flag.startsWith("-L")) {
+        *arg = flag.mid(2);
+        return LibFlagPath;
+    }
+    if (flag.startsWith("-l")) {
+        *arg = flag.mid(2);
+        return LibFlagLib;
+    }
+    if (flag.startsWith('-'))
+        return LibFlagOther;
+    return LibFlagFile;
+}
+
 ProStringList
 MakefileGenerator::fixLibFlags(const ProKey &var)
 {

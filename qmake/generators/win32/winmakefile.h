@@ -59,6 +59,7 @@ protected:
 
     virtual bool findLibraries(bool linkPrl, bool mergeLflags);
 
+    virtual LibFlagType parseLibFlag(const ProString &flag, ProString *arg);
     virtual ProString fixLibFlag(const ProString &lib);
 
     void processVars();

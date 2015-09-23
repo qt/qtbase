@@ -62,84 +62,21 @@ QString MingwMakefileGenerator::getManifestFileForRcFile() const
 
 ProString MingwMakefileGenerator::fixLibFlag(const ProString &lib)
 {
-    if (lib.startsWith("lib"))
-        return QStringLiteral("-l") + escapeFilePath(lib.mid(3));
-    return escapeFilePath(lib);
+    if (lib.startsWith("-l"))  // Fallback for unresolved -l libs.
+        return QLatin1String("-l") + escapeFilePath(lib.mid(2));
+    if (lib.startsWith("-L"))  // Lib search path. Needed only by -l above.
+        return QLatin1String("-L")
+                + escapeFilePath(Option::fixPathToTargetOS(lib.mid(2).toQString(), false));
+    if (lib.startsWith("lib"))  // Fallback for unresolved MSVC-style libs.
+        return QLatin1String("-l") + escapeFilePath(lib.mid(3).toQString());
+    return escapeFilePath(Option::fixPathToTargetOS(lib.toQString(), false));
 }
 
-bool MingwMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
+MakefileGenerator::LibFlagType
+MingwMakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
 {
-    QList<QMakeLocalFileName> dirs;
-  static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
-    static const QLatin1String extens[] =
-        { QLatin1String(".dll.a"), QLatin1String(".a"), QLatin1String(0) };
-  for (int i = 0; lflags[i]; i++) {
-    ProStringList &l = project->values(lflags[i]);
-    ProStringList::Iterator it = l.begin();
-    while (it != l.end()) {
-        if ((*it).startsWith("-l")) {
-            QString steam = (*it).mid(2).toQString();
-            ProString verovr =
-                    project->first(ProKey("QMAKE_" + steam.toUpper() + "_VERSION_OVERRIDE"));
-            for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
-                QString cand = (*dir_it).real() + Option::dir_sep + steam;
-                if (linkPrl && processPrlFile(cand)) {
-                    (*it) = cand;
-                    goto found;
-                }
-                QString libBase = (*dir_it).local() + '/' + steam + verovr;
-                for (int e = 0; extens[e].data(); e++) {
-                    if (exists(libBase + extens[e])) {
-                        (*it) = cand + verovr + extens[e];
-                        goto found;
-                    }
-                }
-            }
-            // We assume if it never finds it that its correct
-          found: ;
-        } else if ((*it).startsWith("-L")) {
-            QMakeLocalFileName f((*it).mid(2).toQString());
-            dirs.append(f);
-            *it = "-L" + f.real();
-        } else if (linkPrl && !(*it).startsWith('-')) {
-            QString prl = (*it).toQString();
-            if (fileInfo(prl).isAbsolute()) {
-                if (processPrlFile(prl))
-                    (*it) = prl;
-            } else {
-                for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
-                    QString cand = (*dir_it).real() + Option::dir_sep + prl;
-                    if (processPrlFile(cand)) {
-                        (*it) = cand;
-                        break;
-                    }
-                }
-            }
-        }
-
-        ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
-        for (int prl = 0; prl < prl_libs.size(); ++prl)
-            it = l.insert(++it, prl_libs.at(prl));
-        prl_libs.clear();
-        ++it;
-    }
-    if (mergeLflags) {
-        ProStringList lopts;
-        for (int lit = 0; lit < l.size(); ++lit) {
-            ProString opt = l.at(lit);
-            if (opt.startsWith("-L")) {
-                if (!lopts.contains(opt))
-                    lopts.append(opt);
-            } else {
-                // Make sure we keep the dependency order of libraries
-                lopts.removeAll(opt);
-                lopts.append(opt);
-            }
-        }
-        l = lopts;
-    }
-  }
-    return true;
+    // Skip MSVC handling from Win32MakefileGenerator
+    return MakefileGenerator::parseLibFlag(flag, arg);
 }
 
 bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
@@ -249,8 +186,6 @@ void MingwMakefileGenerator::init()
     }
 
     project->values("TARGET_PRL").append(project->first("TARGET"));
-
-    project->values("QMAKE_L_FLAG") << "-L";
 
     processVars();
 

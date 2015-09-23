@@ -809,8 +809,6 @@ void VcprojGenerator::init()
     else if (project->first("TEMPLATE") == "vclib")
         project->values("QMAKE_LIB_FLAG").append("1");
 
-    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
-
     processVars();
 
     // set /VERSION for EXE/DLL header

@@ -220,6 +220,8 @@ protected:
 
     QString filePrefixRoot(const QString &, const QString &);
 
+    enum LibFlagType { LibFlagLib, LibFlagPath, LibFlagFile, LibFlagOther };
+    virtual LibFlagType parseLibFlag(const ProString &flag, ProString *arg);
     ProStringList fixLibFlags(const ProKey &var);
     virtual ProString fixLibFlag(const ProString &lib);
 

@@ -368,8 +368,6 @@ void NmakeMakefileGenerator::init()
         return;
     }
 
-    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
-
     processVars();
 
     project->values("QMAKE_LIBS") += project->values("RES_FILE");
