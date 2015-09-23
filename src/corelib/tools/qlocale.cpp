@@ -2742,9 +2742,9 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
                                     const QChar exponential, const QChar group, const QChar decimal,
                                     double d, int precision, DoubleForm form, int width, unsigned flags)
 {
-    if (precision == -1)
+    if (precision < 0)
         precision = 6;
-    if (width == -1)
+    if (width < 0)
         width = 0;
 
     bool negative = false;
