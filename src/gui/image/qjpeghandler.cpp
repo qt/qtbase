@@ -68,6 +68,7 @@ extern "C" {
 }
 
 QT_BEGIN_NAMESPACE
+QT_WARNING_DISABLE_GCC("-Wclobbered")
 
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dst, const uchar *src, int len);
 typedef void (QT_FASTCALL *Rgb888ToRgb32Converter)(quint32 *dst, const uchar *src, int len);
