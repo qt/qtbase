@@ -1177,8 +1177,6 @@ void UnixMakefileGenerator::init2()
         }
         if(!project->isEmpty("TARGET"))
             project->values("TARGET").first().prepend(project->first("DESTDIR"));
-       if (!project->values("QMAKE_CYGWIN_EXE").isEmpty())
-            project->values("TARGET_EXT").append(".exe");
     } else if (project->isActiveConfig("staticlib")) {
         project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
         project->values("TARGET").first() += "." + project->first("QMAKE_EXTENSION_STATICLIB");
