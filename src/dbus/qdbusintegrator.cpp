@@ -2278,7 +2278,7 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
     sig.append(signal.methodSignature());
     if (!prepareHook(hook, key, service, path, interface, QString(), QStringList(), receiver, sig,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
-        return;                 // don't connect
+        return;                 // don't disconnect
 
     Q_ASSERT(thread() != QThread::currentThread());
     emit signalNeedsDisconnecting(key, hook);

@@ -91,6 +91,8 @@ public:
     { return QDBusConnectionPrivate::d(connection); }
 
     void _q_serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+
+    static void finishDisconnectNotify(QDBusAbstractInterface *iface, int signalId);
 };
 
 QT_END_NAMESPACE
