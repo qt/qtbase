@@ -1140,6 +1140,7 @@ void QTextHtmlParserNode::setListStyle(const QVector<QCss::Value> &cssValues)
     for (int i = 0; i < cssValues.count(); ++i) {
         if (cssValues.at(i).type == QCss::Value::KnownIdentifier) {
             switch (static_cast<QCss::KnownValue>(cssValues.at(i).variant.toInt())) {
+                case QCss::Value_None: hasOwnListStyle = true; listStyle = QTextListFormat::ListStyleUndefined; break;
                 case QCss::Value_Disc: hasOwnListStyle = true; listStyle = QTextListFormat::ListDisc; break;
                 case QCss::Value_Square: hasOwnListStyle = true; listStyle = QTextListFormat::ListSquare; break;
                 case QCss::Value_Circle: hasOwnListStyle = true; listStyle = QTextListFormat::ListCircle; break;
@@ -1495,6 +1496,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                             node->listStyle = QTextListFormat::ListDisc;
                         else if (value == QLatin1String("circle"))
                             node->listStyle = QTextListFormat::ListCircle;
+                        else if (value == QLatin1String("none"))
+                            node->listStyle = QTextListFormat::ListStyleUndefined;
                     }
                 }
                 break;
