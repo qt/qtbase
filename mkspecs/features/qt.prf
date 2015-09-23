@@ -161,7 +161,8 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 !no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
         contains(qt_module_deps, core) {
-    relative_qt_rpath:defined(target.path, var) {
+    relative_qt_rpath:contains(INSTALLS, target):\
+            isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
         mac {
             if(equals(TEMPLATE, app):app_bundle)|\
                     if(equals(TEMPLATE, lib):plugin:plugin_bundle) {
