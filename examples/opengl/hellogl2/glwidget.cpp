@@ -55,8 +55,11 @@ GLWidget::GLWidget(QWidget *parent)
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
     m_transparent = QCoreApplication::arguments().contains(QStringLiteral("--transparent"));
-    if (m_transparent)
-        setAttribute(Qt::WA_TranslucentBackground);
+    if (m_transparent) {
+        QSurfaceFormat fmt = format();
+        fmt.setAlphaBufferSize(8);
+        setFormat(fmt);
+    }
 }
 
 GLWidget::~GLWidget()
