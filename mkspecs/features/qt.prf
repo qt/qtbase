@@ -173,11 +173,17 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
             } else {
                 binpath = $$target.path
             }
-            QMAKE_RPATHDIR += @loader_path/$$relative_path($$[QT_INSTALL_LIBS], $$binpath)
+            rpath = @loader_path
         } else {
             QMAKE_LFLAGS += -Wl,-z,origin
-            QMAKE_RPATHDIR += $ORIGIN/$$relative_path($$[QT_INSTALL_LIBS], $$target.path)
+            binpath = $$target.path
+            rpath = $ORIGIN
         }
+        # NOT the /dev property, as INSTALLS use host paths
+        relpath = $$relative_path($$[QT_INSTALL_LIBS], $$binpath)
+        !equals(relpath, .): \
+            rpath = $$rpath/$$relpath
+        QMAKE_RPATHDIR += $$rpath
     } else {
         QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
     }
