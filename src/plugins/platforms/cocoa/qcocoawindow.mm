@@ -1350,6 +1350,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         }
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
+        if ([m_contentView superview])
+            [m_contentView removeFromSuperview];
+
         [m_parentCocoaWindow->m_contentView addSubview : m_contentView];
         QRect rect = windowGeometry();
         // Prevent setting a (0,0) window size; causes opengl context
