@@ -316,6 +316,7 @@ tst_Selftests::tst_Selftests()
 
 void tst_Selftests::initTestCase()
 {
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     //Detect the location of the sub programs
     QString subProgram = QLatin1String("float/float");
 #if defined(Q_OS_WIN)

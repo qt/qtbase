@@ -483,11 +483,11 @@ void tst_QFiledialog::completer()
 
     if (startPath.isEmpty()) {
         tempDir.reset(new QTemporaryDir);
-        QVERIFY(tempDir->isValid());
+        QVERIFY2(tempDir->isValid(), qPrintable(tempDir->errorString()));
         startPath = tempDir->path();
         for (int i = 0; i < 10; ++i) {
             TemporaryFilePtr file(new QTemporaryFile(startPath + QStringLiteral("/rXXXXXX")));
-            QVERIFY(file->open());
+            QVERIFY2(file->open(), qPrintable(file->errorString()));
             files.append(file);
         }
     }
@@ -889,7 +889,7 @@ void tst_QFiledialog::selectFile()
     QScopedPointer<QTemporaryFile> tempFile;
     if (file == QLatin1String("temp")) {
         tempFile.reset(new QTemporaryFile(QDir::tempPath() + QStringLiteral("/aXXXXXX")));
-        QVERIFY(tempFile->open());
+        QVERIFY2(tempFile->open(), qPrintable(tempFile->errorString()));
         file = tempFile->fileName();
     }
 
@@ -927,7 +927,7 @@ void tst_QFiledialog::selectFileWrongCaseSaveAs()
 void tst_QFiledialog::selectFiles()
 {
     QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     const QString tempPath = tempDir.path();
     {
     QNonNativeFileDialog fd;

@@ -171,7 +171,7 @@ void tst_QFileDialog2::cleanupSettingsFile()
 
 void tst_QFileDialog2::initTestCase()
 {
-    QVERIFY(tempDir.isValid());
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     QStandardPaths::setTestModeEnabled(true);
     cleanupSettingsFile();
 }
@@ -243,13 +243,13 @@ void tst_QFileDialog2::deleteDirAndFiles()
     QTemporaryFile *t;
     t = new QTemporaryFile(tempPath + "/foo/aXXXXXX");
     t->setAutoRemove(false);
-    t->open();
+    QVERIFY2(t->open(), qPrintable(t->errorString()));
     t->close();
     delete t;
 
     t = new QTemporaryFile(tempPath + "/foo/B/yXXXXXX");
     t->setAutoRemove(false);
-    t->open();
+    QVERIFY2(t->open(), qPrintable(t->errorString()));
     t->close();
     delete t;
     FriendlyQFileDialog fd;
@@ -849,7 +849,7 @@ void tst_QFileDialog2::task228844_ensurePreviousSorting()
     current.mkdir("f");
     current.mkdir("g");
     QTemporaryFile *tempFile = new QTemporaryFile(current.absolutePath() + "/rXXXXXX");
-    tempFile->open();
+    QVERIFY2(tempFile->open(), qPrintable(tempFile->errorString()));
     current.cdUp();
 
     QNonNativeFileDialog fd;
@@ -1108,6 +1108,7 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     QString tempPath = tempDir.path();
     QTemporaryFile *t;
     t = new QTemporaryFile;
+    QVERIFY2(t->open(), qPrintable(t->errorString()));
     t->open();
     QNonNativeFileDialog fd(0, "TestFileDialog");
 
@@ -1209,7 +1210,7 @@ void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 {
     QString tempPath = tempDir.path();
     QTemporaryFile temporaryFile(tempPath + "/tst_qfiledialog2_lineEditSelectAll.XXXXXX");
-    QVERIFY(temporaryFile.open());
+    QVERIFY2(temporaryFile.open(), qPrintable(temporaryFile.errorString()));
     QNonNativeFileDialog fd(0, "TestFileDialog", temporaryFile.fileName());
 
     fd.setDirectory(tempPath);

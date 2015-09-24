@@ -416,7 +416,7 @@ void tst_QImageWriter::testCanWrite()
     {
         // check if canWrite won't leave an empty file
         QTemporaryDir dir;
-        QVERIFY(dir.isValid());
+        QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
         QString fileName(dir.path() + QLatin1String("/001.garble"));
         QVERIFY(!QFileInfo(fileName).exists());
         QImageWriter writer(fileName);
@@ -524,7 +524,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     {
         // 1) Via QImageWriter's API, with a standard temp file name
         QTemporaryFile file;
-        QVERIFY(file.open());
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         QImageWriter writer(&file, "PNG");
         if (writer.canWrite())
             QVERIFY(writer.write(image));
@@ -538,7 +538,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     {
         // 2) Via QImage's API, with a standard temp file name
         QTemporaryFile file;
-        QVERIFY(file.open());
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         QVERIFY(image.save(&file, "PNG"));
         file.reset();
         QImage tmp;
@@ -548,7 +548,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     {
         // 3) Via QImageWriter's API, with a named temp file
         QTemporaryFile file("tempXXXXXX");
-        QVERIFY(file.open());
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         QImageWriter writer(&file, "PNG");
         QVERIFY(writer.write(image));
 #if defined(Q_OS_WINCE)
@@ -559,7 +559,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     {
         // 4) Via QImage's API, with a named temp file
         QTemporaryFile file("tempXXXXXX");
-        QVERIFY(file.open());
+        QVERIFY2(file.open(), qPrintable(file.errorString()));
         QVERIFY(image.save(&file, "PNG"));
         file.reset();
         QImage tmp;

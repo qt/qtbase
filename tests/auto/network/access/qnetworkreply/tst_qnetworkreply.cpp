@@ -1679,7 +1679,7 @@ void tst_QNetworkReply::getFromFile()
     // create the file:
     QTemporaryFile file(QDir::currentPath() + "/temp-XXXXXX");
     file.setAutoRemove(true);
-    QVERIFY(file.open());
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QNetworkRequest request(QUrl::fromLocalFile(file.fileName()));
     QNetworkReplyPtr reply;
@@ -3065,7 +3065,7 @@ void tst_QNetworkReply::ioGetFromFile()
 {
     QTemporaryFile file(QDir::currentPath() + "/temp-XXXXXX");
     file.setAutoRemove(true);
-    QVERIFY(file.open());
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QFETCH(QByteArray, data);
     QCOMPARE(file.write(data), data.size());
@@ -5353,7 +5353,7 @@ void tst_QNetworkReply::chaining()
 {
     QTemporaryFile sourceFile(QDir::currentPath() + "/temp-XXXXXX");
     sourceFile.setAutoRemove(true);
-    QVERIFY(sourceFile.open());
+    QVERIFY2(sourceFile.open(), qPrintable(sourceFile.errorString()));
 
     QFETCH(QByteArray, data);
     QCOMPARE(sourceFile.write(data), data.size());
@@ -7194,6 +7194,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QByteArray postData = "ACT=100";
 
     QTemporaryDir tempDir(QDir::tempPath() + "/tmp_cache_28035");
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     tempDir.setAutoRemove(true);
 
     QNetworkDiskCache *diskCache = new QNetworkDiskCache();

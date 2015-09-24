@@ -3331,7 +3331,7 @@ void tst_QSettings::dontReorderIniKeysNeedlessly()
     QString outFileName2;
 
     QTemporaryFile outFile;
-    outFile.open();
+    QVERIFY2(outFile.open(), qPrintable(outFile.errorString()));
     outFile.write(contentsBefore);
     outFileName = outFile.fileName();
     outFile.close();

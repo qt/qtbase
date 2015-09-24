@@ -80,6 +80,7 @@ void tst_QLockFile::initTestCase()
 #elif defined(QT_NO_PROCESS)
     QSKIP("This test requires QProcess support");
 #else
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("qlockfiletesthelper")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));

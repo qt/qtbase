@@ -99,7 +99,7 @@ static inline QByteArray msgCannotOpen(const QFileDevice &f)
 void tst_QSaveFile::transactionalWrite()
 {
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile::remove(targetFile);
     QSaveFile file(targetFile);
@@ -134,7 +134,7 @@ void tst_QSaveFile::saveTwice()
     // Check that we can reuse a QSaveFile object
     // (and test the case of an existing target file)
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
@@ -153,7 +153,7 @@ void tst_QSaveFile::saveTwice()
 void tst_QSaveFile::textStreamManualFlush()
 {
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
@@ -174,7 +174,7 @@ void tst_QSaveFile::textStreamManualFlush()
 void tst_QSaveFile::textStreamAutoFlush()
 {
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
@@ -206,7 +206,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 #endif
     QFETCH(bool, directWriteFallback);
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     QVERIFY(QFile(dir.path()).setPermissions(QFile::ReadOwner | QFile::ExeOwner));
     PermissionRestorer permissionRestorer(dir.path());
 
@@ -264,7 +264,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
 #endif
     // Setup an existing but readonly file
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile file(targetFile);
     PermissionRestorer permissionRestorer(targetFile);
@@ -285,7 +285,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
 void tst_QSaveFile::transactionalWriteCanceled()
 {
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile::remove(targetFile);
     QSaveFile file(targetFile);
@@ -313,7 +313,7 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
         QSKIP("Test is not applicable with root privileges");
 #endif
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
@@ -347,7 +347,7 @@ void tst_QSaveFile::symlink()
 #ifdef Q_OS_UNIX
     QByteArray someData = "some data";
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
 
     const QString targetFile = dir.path() + QLatin1String("/outfile");
     const QString linkFile = dir.path() + QLatin1String("/linkfile");
@@ -400,7 +400,7 @@ void tst_QSaveFile::symlink()
 
     // link to a link in another directory
     QTemporaryDir dir2;
-    QVERIFY(dir2.isValid());
+    QVERIFY2(dir2.isValid(), qPrintable(dir2.errorString()));
 
     const QString linkFile2 = dir2.path() + QLatin1String("/linkfile");
     QVERIFY(QFile::link(linkFile, linkFile2));
@@ -458,7 +458,7 @@ void tst_QSaveFile::symlink()
 void tst_QSaveFile::directory()
 {
     QTemporaryDir dir;
-    QVERIFY(dir.isValid());
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
 
     const QString subdir = dir.path() + QLatin1String("/subdir");
     QVERIFY(QDir(dir.path()).mkdir(QStringLiteral("subdir")));

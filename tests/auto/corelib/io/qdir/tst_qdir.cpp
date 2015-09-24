@@ -845,8 +845,8 @@ void tst_QDir::entryListTimedSort()
     QTemporaryFile aFile(entrylistPath + "A-XXXXXX.qws");
     QTemporaryFile bFile(entrylistPath + "B-XXXXXX.qws");
 
-    QVERIFY(aFile.open());
-    QVERIFY(bFile.open());
+    QVERIFY2(aFile.open(), qPrintable(aFile.errorString()));
+    QVERIFY2(bFile.open(), qPrintable(bFile.errorString()));
     {
         QProcess p;
         p.start(touchBinary, QStringList() << "-t" << "201306021513" << aFile.fileName());

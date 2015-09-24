@@ -392,7 +392,7 @@ tst_QFile::tst_QFile() : m_oldDir(QDir::currentPath())
 
 void tst_QFile::initTestCase()
 {
-    QVERIFY(m_temporaryDir.isValid());
+    QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
     QVERIFY(!m_stdinProcessDir.isEmpty());
     m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");

@@ -317,7 +317,7 @@ static QFileInfoPrivate* getPrivate(QFileInfo &info)
 void tst_QFileInfo::copy()
 {
     QTemporaryFile t;
-    t.open();
+    QVERIFY2(t.open(), qPrintable(t.errorString()));
     QFileInfo info(t.fileName());
     QVERIFY(info.exists());
 
@@ -612,7 +612,7 @@ void tst_QFileInfo::canonicalPath()
 {
     QTemporaryFile tempFile;
     tempFile.setAutoRemove(true);
-    tempFile.open();
+    QVERIFY2(tempFile.open(), qPrintable(tempFile.errorString()));
     QFileInfo fi(tempFile.fileName());
     QCOMPARE(fi.canonicalPath(), QFileInfo(QDir::tempPath()).canonicalFilePath());
 }

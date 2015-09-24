@@ -150,7 +150,11 @@ int tst_QDBusMarshall::fileDescriptorForTest()
 {
     if (!tempFile.isOpen()) {
         tempFile.setFileTemplate(QDir::tempPath() + "/qdbusmarshalltestXXXXXX.tmp");
-        tempFile.open();
+        if (!tempFile.open()) {
+            qWarning("%s: Cannot create temporary file: %s", Q_FUNC_INFO,
+                     qPrintable(tempFile.errorString()));
+            return 0;
+        }
     }
     return tempFile.handle();
 }
