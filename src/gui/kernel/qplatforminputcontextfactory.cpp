@@ -65,15 +65,17 @@ QString QPlatformInputContextFactory::requested()
 QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 {
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
+    if (!key.isEmpty()) {
+        QStringList paramList = key.split(QLatin1Char(':'));
+        const QString platform = paramList.takeFirst().toLower();
 
-    QPlatformInputContext *ic = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>
-                                             (loader(), platform, paramList);
-    if (ic && ic->isValid())
-        return ic;
+        QPlatformInputContext *ic = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>
+                                                 (loader(), platform, paramList);
+        if (ic && ic->isValid())
+            return ic;
 
-    delete ic;
+        delete ic;
+    }
 #endif
     return 0;
 }
