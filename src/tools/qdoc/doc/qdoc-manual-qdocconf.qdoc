@@ -734,6 +734,18 @@
     command to render a superscript asterisk, but only when generating
     HTML.
 
+    A macro can also take up to seven parameters:
+
+    \badcode
+        macro.hello            = "Hello \1!"
+    \endcode
+
+    Parameters are passed to macros the same way as to other commands:
+
+    \badcode
+    \hello World
+    \endcode
+
     See also \l {alias-variable} {alias}.
 
     \target manifestmeta-variable
