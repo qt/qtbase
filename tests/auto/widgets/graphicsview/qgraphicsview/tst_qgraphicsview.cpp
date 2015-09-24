@@ -145,7 +145,7 @@ class tst_QGraphicsView : public QObject
 
 public:
     tst_QGraphicsView()
-        : platformName(qApp->platformName().toLower())
+        : platformName(QGuiApplication::platformName().toLower())
     { }
 private slots:
     void initTestCase();

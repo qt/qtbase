@@ -288,7 +288,7 @@ void tst_QOpenGlConfig::testBugList()
 
 void tst_QOpenGlConfig::testDefaultWindowsBlacklist()
 {
-    if (qGuiApp->platformName() != QStringLiteral("windows"))
+    if (QGuiApplication::platformName().compare(QLatin1String("windows"), Qt::CaseInsensitive))
         QSKIP("Only applicable to Windows");
 
     QFile f(QStringLiteral(":/qt-project.org/windows/openglblacklists/default.json"));

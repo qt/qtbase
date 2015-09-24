@@ -463,7 +463,7 @@ void tst_QFileDialog2::task180459_lastDirectory_data()
 
 void tst_QFileDialog2::task180459_lastDirectory()
 {
-    if (qApp->platformName().toLower() == QStringLiteral("cocoa"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
         QSKIP("Insignificant on OSX"); //QTBUG-39183
     //first visit the temp directory and close the dialog
     QNonNativeFileDialog *dlg = new QNonNativeFileDialog(0, "", tempDir.path());

@@ -2364,7 +2364,7 @@ void tst_QTreeView::selectionOrderTest()
 
 void tst_QTreeView::selection()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     QTreeView treeView;

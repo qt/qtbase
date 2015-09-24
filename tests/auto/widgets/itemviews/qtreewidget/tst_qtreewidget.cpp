@@ -3413,7 +3413,7 @@ void tst_QTreeWidget::taskQTBUG_34717_collapseAtBottom()
 
 void tst_QTreeWidget::task20345_sortChildren()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     // This test case is considered successful if it is executed (no crash in sorting)

@@ -155,7 +155,7 @@ void tst_QGuiApplication::focusObject()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QObject obj1, obj2, obj3;
@@ -326,7 +326,7 @@ void tst_QGuiApplication::changeFocusWindow()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();

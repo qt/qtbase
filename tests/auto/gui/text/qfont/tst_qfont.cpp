@@ -149,7 +149,7 @@ void tst_QFont::exactMatch()
 #endif
 
 
-    if (QGuiApplication::platformName() == QLatin1String("xcb")) {
+    if (!QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive)) {
         QVERIFY(QFont("sans").exactMatch());
         QVERIFY(QFont("sans-serif").exactMatch());
         QVERIFY(QFont("serif").exactMatch());
