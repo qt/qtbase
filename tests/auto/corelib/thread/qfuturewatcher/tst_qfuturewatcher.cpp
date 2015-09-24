@@ -68,6 +68,7 @@ private slots:
     void incrementalFilterResults();
     void qfutureSynchronizer();
     void warnRace();
+    void matchFlags();
 };
 
 void sleeper()
@@ -929,6 +930,18 @@ void tst_QFutureWatcher::warnRace()
     mutex.unlock();
     future.waitForFinished();
 }
+
+void tst_QFutureWatcher::matchFlags()
+{
+    /* Regression test: expect a default watcher to be in the same state as a
+     * default future. */
+    QFutureWatcher<int> watcher;
+    QFuture<int> future;
+    QCOMPARE(watcher.isStarted(), future.isStarted());
+    QCOMPARE(watcher.isCanceled(), future.isCanceled());
+    QCOMPARE(watcher.isFinished(), future.isFinished());
+}
+
 
 QTEST_MAIN(tst_QFutureWatcher)
 #include "tst_qfuturewatcher.moc"

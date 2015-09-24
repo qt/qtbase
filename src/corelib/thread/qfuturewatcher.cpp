@@ -248,7 +248,7 @@ bool QFutureWatcherBase::isStarted() const
 /*! \fn bool QFutureWatcher::isFinished() const
 
     Returns \c true if the asynchronous computation represented by the future()
-    has finished; otherwise returns \c false.
+    has finished, or if no future has been set; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isFinished() const
 {
@@ -379,7 +379,8 @@ void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
 */
 QFutureWatcherBasePrivate::QFutureWatcherBasePrivate()
     : maximumPendingResultsReady(QThread::idealThreadCount() * 2),
-      resultAtConnected(0)
+      resultAtConnected(0),
+      finished(true) /* the initial m_future is a canceledResult(), with Finished set */
 { }
 
 /*!
@@ -400,7 +401,7 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
         d->pendingResultsReady.store(0);
         qDeleteAll(d->pendingCallOutEvents);
         d->pendingCallOutEvents.clear();
-        d->finished = false;
+        d->finished = false; /* May soon be amended, during connectOutputInterface() */
     }
 
     futureInterface().d->disconnectOutputInterface(d_func());
