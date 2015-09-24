@@ -121,10 +121,12 @@ void Node::removeRelates()
     if (!relatesTo_)
         return;
 
-    if (relatesTo_->isDocumentNode() && !relatesTo_->parent())
+    if (relatesTo_->isDocumentNode() && !relatesTo_->parent()) {
         delete relatesTo_;
-    else
+        relatesTo_ = 0;
+    } else {
         relatesTo_->removeRelated(this);
+    }
 }
 
 /*!
@@ -739,8 +741,8 @@ void Node::setLocation(const Location& t)
  */
 Aggregate::~Aggregate()
 {
-    deleteChildren();
     removeFromRelated();
+    deleteChildren();
 }
 
 /*!
@@ -1062,7 +1064,13 @@ void Aggregate::removeFromRelated()
  */
 void Aggregate::deleteChildren()
 {
-    NodeList childrenCopy = children_; // `children_` will be changed in ~Node()
+    NodeList childrenCopy = children_;
+    // Clear internal collections before deleting child nodes
+    children_.clear();
+    childMap_.clear();
+    enumChildren_.clear();
+    primaryFunctionMap_.clear();
+    secondaryFunctionMap_.clear();
     qDeleteAll(childrenCopy);
 }
 
