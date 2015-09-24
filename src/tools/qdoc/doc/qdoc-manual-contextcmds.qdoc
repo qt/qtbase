@@ -269,7 +269,7 @@
         library.} It is provided to keep old source code
         working. We strongly advise against using it in new
         code. See the \l
-        {http://doc.qt.digia.com/4.0/porting4.html} {Porting
+        {http://doc.qt.io/qt-4.8/porting4.html} {Porting
         Guide} for more information.
     \endquotation
 
