@@ -304,15 +304,6 @@ void QFutureWatcherBase::waitForFinished()
     futureInterface().waitForFinished();
 }
 
-/*! \fn void QFutureWatcher::setPendingResultsLimit(int limit)
-
-    The setPendingResultsLimit() provides throttling control. When the number
-    of pending resultReadyAt() or resultsReadyAt() signals exceeds the
-    \a limit, the computation represented by the future will be throttled
-    automatically. The computation will resume once the number of pending
-    signals drops below the \a limit.
-*/
-
 bool QFutureWatcherBase::event(QEvent *event)
 {
     Q_D(QFutureWatcherBase);
@@ -342,6 +333,14 @@ bool QFutureWatcherBase::event(QEvent *event)
     return QObject::event(event);
 }
 
+/*! \fn void QFutureWatcher::setPendingResultsLimit(int limit)
+
+    The setPendingResultsLimit() provides throttling control. When the number
+    of pending resultReadyAt() or resultsReadyAt() signals exceeds the
+    \a limit, the computation represented by the future will be throttled
+    automatically. The computation will resume once the number of pending
+    signals drops below the \a limit.
+*/
 void QFutureWatcherBase::setPendingResultsLimit(int limit)
 {
     Q_D(QFutureWatcherBase);
