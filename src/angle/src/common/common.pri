@@ -48,4 +48,10 @@ winrt|if(msvc:!win32-msvc2005:!win32-msvc2008:!win32-msvc2010) {
     }
 }
 
+# static builds should still link ANGLE dynamically when dynamic GL is enabled
+static:contains(QT_CONFIG, dynamicgl) {
+    CONFIG -= static
+    CONFIG += shared
+}
+
 static: DEFINES *= LIBGLESV2_EXPORT_H_ ANGLE_EXPORT=
