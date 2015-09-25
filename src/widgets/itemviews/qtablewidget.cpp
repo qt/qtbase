@@ -555,9 +555,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
 
     LessThan compare = (order == Qt::AscendingOrder ? &itemLessThan : &itemGreaterThan);
     std::stable_sort(sorting.begin(), sorting.end(), compare);
-
-    QModelIndexList oldPersistentIndexes = persistentIndexList();
-    QModelIndexList newPersistentIndexes = oldPersistentIndexes;
+    QModelIndexList oldPersistentIndexes, newPersistentIndexes;
     QVector<QTableWidgetItem*> newTable = tableItems;
     QVector<QTableWidgetItem*> newVertical = verticalHeaderItems;
     QVector<QTableWidgetItem*> colItems = columnItems(column);
@@ -573,7 +571,12 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
             newRow = oldRow;
         vit = colItems.insert(vit, item);
         if (newRow != oldRow) {
-            changed = true;
+            if (!changed) {
+                emit layoutAboutToBeChanged();
+                oldPersistentIndexes = persistentIndexList();
+                newPersistentIndexes = oldPersistentIndexes;
+                changed = true;
+            }
             // move the items @ oldRow to newRow
             int cc = columnCount();
             QVector<QTableWidgetItem*> rowItems(cc);
@@ -600,7 +603,6 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
     }
 
     if (changed) {
-        emit layoutAboutToBeChanged();
         tableItems = newTable;
         verticalHeaderItems = newVertical;
         changePersistentIndexList(oldPersistentIndexes,
