@@ -367,8 +367,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     uint leadingIncluded : 1;
     QFixed height() const { return ascent + descent
                             + (leadingIncluded?  qMax(QFixed(),leading) : QFixed()); }
-    QFixed base() const { return ascent
-                          + (leadingIncluded ? qMax(QFixed(),leading) : QFixed()); }
+    QFixed base() const { return ascent; }
     void setDefaultHeight(QTextEngine *eng);
     void operator+=(const QScriptLine &other);
 };

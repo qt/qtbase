@@ -65,6 +65,7 @@ private slots:
     void inFontUcs4();
     void lineWidth();
     void mnemonicTextWidth();
+    void leadingBelowLine();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -343,5 +344,16 @@ void tst_QFontMetrics::mnemonicTextWidth()
     QCOMPARE(fm.size(Qt::TextShowMnemonic, f1), fm.size(Qt::TextShowMnemonic, f2));
     QCOMPARE(fm.size(Qt::TextHideMnemonic, f1), fm.size(Qt::TextHideMnemonic, f2));
 }
+
+void tst_QFontMetrics::leadingBelowLine()
+{
+    QScriptLine line;
+    line.leading = 10;
+    line.leadingIncluded = true;
+    line.ascent = 5;
+    QCOMPARE(line.height(), line.ascent + line.descent + line.leading);
+    QCOMPARE(line.base(), line.ascent);
+}
+
 QTEST_MAIN(tst_QFontMetrics)
 #include "tst_qfontmetrics.moc"
