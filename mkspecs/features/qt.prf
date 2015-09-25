@@ -119,12 +119,6 @@ for(ever) {
             !mac|!contains(MODULE_CONFIG, lib_bundle): \
                 MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
 
-            win32 {
-                # Make sure the version number isn't appended again to the lib name
-                QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE = 0
-                QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE = 0
-            }
-
             isEmpty(LINKAGE) {
                 !isEmpty(MODULE_LIBS_ADD): \
                     LINKAGE = -L$$MODULE_LIBS_ADD
