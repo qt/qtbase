@@ -88,12 +88,12 @@ public:
 
     inline QVertexIndexVector &operator = (const QVertexIndexVector &other)
     {
-         if (t == UnsignedInt)
-           indices32 = other.indices32;
-         else
-           indices16 = other.indices16;
+        if (t == UnsignedInt)
+            indices32 = other.indices32;
+        else
+            indices16 = other.indices16;
 
-         return *this;
+        return *this;
     }
 
 private:
