@@ -63,6 +63,9 @@ public:
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+#ifdef Q_OS_NACL_EMSCRIPTEN
+    void requestUpdate() Q_DECL_OVERRIDE;
+#endif
 
 private:
     QPepperCompositor *m_compositor;

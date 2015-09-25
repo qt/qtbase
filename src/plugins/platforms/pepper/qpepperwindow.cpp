@@ -42,6 +42,7 @@
 
 #include <QtCore/QDebug>
 #include <QtGui/QSurface>
+#include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -155,5 +156,15 @@ bool QPepperWindow::setMouseGrabEnabled(bool grab)
     Q_UNUSED(grab);
     return false;
 }
+
+#ifdef Q_OS_NACL_EMSCRIPTEN
+void QPepperWindow::requestUpdate()
+{
+    // Work around missing timer event(?) when using the default
+    // QPlatformWindow requestUpdate() implementation.
+    QWindowPrivate *wp = (QWindowPrivate *) QObjectPrivate::get(window());
+    wp->deliverUpdateRequest();
+}
+#endif
 
 QT_END_NAMESPACE
