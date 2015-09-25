@@ -272,7 +272,12 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
     QAbstractSocket::SocketState socketState = socket->state();
 
     // resend this request after we receive the disconnected signal
-    if (socketState == QAbstractSocket::ClosingState) {
+    // If !socket->isOpen() then we have already called close() on the socket, but there was still a
+    // pending connectToHost() for which we hadn't seen a connected() signal, yet. The connected()
+    // has now arrived (as indicated by socketState != ClosingState), but we cannot send anything on
+    // such a socket anymore.
+    if (socketState == QAbstractSocket::ClosingState ||
+            (socketState != QAbstractSocket::UnconnectedState && !socket->isOpen())) {
         if (reply)
             resendCurrent = true;
         return false;
