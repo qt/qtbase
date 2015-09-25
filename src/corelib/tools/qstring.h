@@ -1228,13 +1228,13 @@ inline bool QByteArray::operator==(const QString &s) const
 inline bool QByteArray::operator!=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) != 0; }
 inline bool QByteArray::operator<(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) < 0; }
-inline bool QByteArray::operator>(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) > 0; }
+inline bool QByteArray::operator>(const QString &s) const
+{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) < 0; }
 inline bool QByteArray::operator<=(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) <= 0; }
-inline bool QByteArray::operator>=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) >= 0; }
+inline bool QByteArray::operator>=(const QString &s) const
+{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) <= 0; }
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 #ifndef QT_NO_CAST_TO_ASCII
