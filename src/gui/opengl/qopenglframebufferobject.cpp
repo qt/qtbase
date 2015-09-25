@@ -951,8 +951,8 @@ QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
 }
 
 /*!
-    Creates and attaches an additional texture or renderbuffer of size \a width
-    and \a height.
+    Creates and attaches an additional texture or renderbuffer of \a size width
+    and height.
 
     There is always an attachment at GL_COLOR_ATTACHMENT0. Call this function
     to set up additional attachments at GL_COLOR_ATTACHMENT1,
@@ -1142,7 +1142,7 @@ GLuint QOpenGLFramebufferObject::texture() const
 
     \since 5.6
 
-    \sa takeTextures(), texture()
+    \sa takeTexture(), texture()
 */
 QVector<GLuint> QOpenGLFramebufferObject::textures() const
 {
@@ -1172,7 +1172,7 @@ QVector<GLuint> QOpenGLFramebufferObject::textures() const
 
    \since 5.3
 
-   \sa texture(), bind(), release(), takeTextures()
+   \sa texture(), bind(), release()
  */
 GLuint QOpenGLFramebufferObject::takeTexture()
 {

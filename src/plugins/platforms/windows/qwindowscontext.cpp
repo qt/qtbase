@@ -33,6 +33,7 @@
 ****************************************************************************/
 
 #include "qwindowscontext.h"
+#include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
 #include "qwindowsguieventdispatcher.h"
@@ -907,16 +908,30 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             return true;
         }
     }
+    if (et & QtWindows::InputMethodEventFlag) {
+        QWindowsInputContext *windowsInputContext =
+            qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
+        // Disable IME assuming this is a special implementation hooking into keyboard input.
+        // "Real" IME implementations should use a native event filter intercepting IME events.
+        if (!windowsInputContext) {
+            QWindowsInputContext::setWindowsImeEnabled(platformWindow, false);
+            return false;
+        }
+        switch (et) {
+        case QtWindows::InputMethodStartCompositionEvent:
+            return windowsInputContext->startComposition(hwnd);
+        case QtWindows::InputMethodCompositionEvent:
+            return windowsInputContext->composition(hwnd, lParam);
+        case QtWindows::InputMethodEndCompositionEvent:
+            return windowsInputContext->endComposition(hwnd);
+        case QtWindows::InputMethodRequest:
+            return windowsInputContext->handleIME_Request(wParam, lParam, result);
+        default:
+            break;
+        }
+    } // InputMethodEventFlag
 
     switch (et) {
-    case QtWindows::InputMethodStartCompositionEvent:
-        return QWindowsInputContext::instance()->startComposition(hwnd);
-    case QtWindows::InputMethodCompositionEvent:
-        return QWindowsInputContext::instance()->composition(hwnd, lParam);
-    case QtWindows::InputMethodEndCompositionEvent:
-        return QWindowsInputContext::instance()->endComposition(hwnd);
-    case QtWindows::InputMethodRequest:
-        return QWindowsInputContext::instance()->handleIME_Request(wParam, lParam, result);
     case QtWindows::GestureEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
         return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);

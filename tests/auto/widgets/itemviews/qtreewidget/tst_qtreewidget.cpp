@@ -161,6 +161,7 @@ private slots:
     void taskQTBUG2844_visualItemRect();
     void setChildIndicatorPolicy();
 
+    void taskQTBUG_34717_collapseAtBottom();
     void task20345_sortChildren();
     void getMimeDataWithInvalidItem();
 
@@ -3378,9 +3379,41 @@ void tst_QTreeWidget::setChildIndicatorPolicy()
     QTRY_COMPARE(delegate.numPaints, 1);
 }
 
+// From QTBUG_34717 (QTreeWidget crashes when scrolling to the end
+// of an expanded tree, then collapse all)
+// The test passes simply if it doesn't crash.
+void tst_QTreeWidget::taskQTBUG_34717_collapseAtBottom()
+{
+    struct PublicTreeWidget: public QTreeWidget
+    {
+        inline int sizeHintForColumn(int column) const { return QTreeWidget::sizeHintForColumn(column); }
+    };
+    PublicTreeWidget treeWidget;
+    treeWidget.header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    treeWidget.setColumnCount(2);
+    QTreeWidgetItem *mainItem = new QTreeWidgetItem(&treeWidget, QStringList() << "Root");
+    for (int i = 0; i < 200; ++i) {
+        QTreeWidgetItem *item = new QTreeWidgetItem(mainItem, QStringList(QString("Item")));
+        new QTreeWidgetItem(item, QStringList() << "Child" << "1");
+        new QTreeWidgetItem(item, QStringList() << "Child" << "2");
+        new QTreeWidgetItem(item, QStringList() << "Child" << "3");
+    }
+    treeWidget.show();
+    treeWidget.expandAll();
+    treeWidget.scrollToBottom();
+    treeWidget.collapseAll();
+
+    treeWidget.setAnimated(true);
+    treeWidget.expandAll();
+    treeWidget.scrollToBottom();
+    mainItem->setExpanded(false);
+
+    QVERIFY(treeWidget.sizeHintForColumn(1) >= 0);
+}
+
 void tst_QTreeWidget::task20345_sortChildren()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     // This test case is considered successful if it is executed (no crash in sorting)

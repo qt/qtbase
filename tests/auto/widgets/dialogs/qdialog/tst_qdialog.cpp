@@ -557,7 +557,7 @@ void tst_QDialog::snapToDefaultButton()
 #ifdef QT_NO_CURSOR
     QSKIP("Test relies on there being a cursor");
 #else
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: Wayland does not support setting the cursor position.");
 
     QPoint topLeftPos = QApplication::desktop()->availableGeometry().topLeft();

@@ -33,7 +33,7 @@
     desktop.
 
     \brief The Screenshot example shows how to take a screenshot of the
-    desktop using QApplication and QDesktopWidget. It also shows how
+    desktop using QScreen. It also shows how
     to use QTimer to provide a single-shot timer, and how to
     reimplement the QWidget::resizeEvent() event handler to make sure
     that an application resizes smoothly and without data loss.
@@ -73,12 +73,9 @@
        \uicontrol {Hide This Window} option.
     \endlist
 
-    We also declare some private functions: We use the \c
-    createOptionsGroupBox(), \c createButtonsLayout() and \c
-    createButton() functions when we construct the widget. And we call
-    the private \c updateScreenshotLabel() function whenever a new
-    screenshot is taken or when a resize event changes the size of the
-    screenshot preview label.
+    We also declare the private function \c updateScreenshotLabel() which
+    is called whenever a new screenshot is taken or when a resize event
+    changes the size of the screenshot preview label.
 
     In addition we need to store the screenshot's original pixmap. The
     reason is that when we display the preview of the screenshot, we
@@ -100,11 +97,18 @@
     aligned in the center of the \c Screenshot widget, and set its
     minimum size.
 
+    Next, we create a group box that will contain all of the options'
+    widgets. Then we create a QSpinBox and a QLabel for the \uicontrol
+    {Screenshot Delay} option, and connect the spinbox to the \c
+    updateCheckBox() slot. Finally, we create a QCheckBox for the \uicontrol
+    {Hide This Window} option, add all the options' widgets to a
+    QGridLayout installed on the group box.
+
     We create the applications's buttons and the group box containing
     the application's options, and put it all into a main
     layout. Finally we take the initial screenshot, and set the initial
     delay and the window title, before we resize the widget to a
-    suitable size.
+    suitable size depending on the screen geometry.
 
     \snippet desktop/screenshot/screenshot.cpp 1
 
@@ -151,34 +155,37 @@
     QFileDialog enables a user to traverse the file system in order to
     select one or many files or a directory. The easiest way to create
     a QFileDialog is to use the convenience static
-    functions.
+    functions. Here, we instantiate the dialog on the stack in order
+    to be able to set up the supported mime types of QImageWriter,
+    allowing the user to save in a variety of formats.
 
     We define the default file format to be png, and we make the file
-    dialog's initial path the path the application is run from. We
-    create the file dialog using the static
-    QFileDialog::getSaveFileName() function which returns a file name
-    selected by the user. The file does not have to exist. If the file
+    dialog's initial path the location of pictures as obtained from
+    QStandardPaths, defaulting to the path the application is run from.
+
+    We run the dialog by invoking QDialog::exec() and return if the
+    user canceled the dialog. If the dialog has been accepted, we
+    obtain a file name by calling QFileDialog::selectedFiles().
+    The file does not have to exist. If the file
     name is valid, we use the QPixmap::save() function to save the
     screenshot's original pixmap in that file.
 
     \snippet desktop/screenshot/screenshot.cpp 4
 
-    The \c shootScreen() slot is called to take the screenshot. If the
-    user has chosen to delay the screenshot, we make the application
+    The \c shootScreen() slot is called to take the screenshot.
+
+    First, we find the instance of QScreen the window is located
+    by retrieving the QWindow and its QScreen, defaulting
+    to the primary screen. If no screen can be found, we return.
+    Although this is unlikely to happen, applications should check
+    for null pointers since there might be situations in which no
+    screen is connected.
+
+    If the user has chosen to delay the screenshot, we make the application
     beep when the screenshot is taken using the static
     QApplication::beep() function.
 
-    The QApplication class manages the GUI application's control flow
-    and main settings. It contains the main event loop, where all
-    events from the window system and other sources are processed and
-    dispatched.
-
-    \snippet desktop/screenshot/screenshot.cpp 5
-
-    Using the static function QApplication::primaryScreen(), we
-    obtain the QScreen object for the application's main screen.
-
-    We take the screenshot using the QScreen::grabWindow()
+    We then take the screenshot using the QScreen::grabWindow()
     function. The function grabs the contents of the window passed as
     an argument, makes a pixmap out of it and returns that pixmap.
     The window id can be obtained with QWidget::winId() or QWindow::winId().
@@ -199,37 +206,6 @@
 
     The \c updateCheckBox() slot is called whenever the user changes
     the delay using the \uicontrol {Screenshot Delay} option.
-
-    \snippet desktop/screenshot/screenshot.cpp 7
-
-    The private \c createOptionsGroupBox() function is called from the
-    constructor.
-
-    First we create a group box that will contain all of the options'
-    widgets. Then we create a QSpinBox and a QLabel for the \uicontrol
-    {Screenshot Delay} option, and connect the spinbox to the \c
-    updateCheckBox() slot. Finally, we create a QCheckBox for the \uicontrol
-    {Hide This Window} option, add all the options' widgets to a
-    QGridLayout and install the layout on the group box.
-
-    Note that we don't have to specify any parents for the widgets
-    when we create them. The reason is that when we add a widget to a
-    layout and install the layout on another widget, the layout's
-    widgets are automatically reparented to the widget the layout is
-    installed on.
-
-    \snippet desktop/screenshot/screenshot.cpp 8
-
-    The private \c createButtonsLayout() function is called from the
-    constructor. We create the application's buttons using the private
-    \c createButton() function, and add them to a QHBoxLayout.
-
-    \snippet desktop/screenshot/screenshot.cpp 9
-
-    The private \c createButton() function is called from the \c
-    createButtonsLayout() function. It simply creates a QPushButton
-    with the provided text, connects it to the provided receiver and
-    slot, and returns a pointer to the button.
 
     \snippet desktop/screenshot/screenshot.cpp 10
 

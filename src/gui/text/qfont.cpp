@@ -2218,6 +2218,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
     }
     if (s.version() >= QDataStream::Qt_5_4)
         s << (quint8)font.d->request.hintingPreference;
+    if (s.version() >= QDataStream::Qt_5_6)
+        s << (quint8)font.d->capital;
     return s;
 }
 
@@ -2308,7 +2310,11 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         s >> value;
         font.d->request.hintingPreference = QFont::HintingPreference(value);
     }
-
+    if (s.version() >= QDataStream::Qt_5_6) {
+        quint8 value;
+        s >> value;
+        font.d->capital = QFont::Capitalization(value);
+    }
     return s;
 }
 

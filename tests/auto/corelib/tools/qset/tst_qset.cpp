@@ -970,24 +970,6 @@ void tst_QSet::initializerList()
 #endif
 }
 
-QT_BEGIN_NAMESPACE
-extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
-QT_END_NAMESPACE
-
-class QtQHashSeedSaver {
-    int oldSeed, newSeed;
-public:
-    explicit QtQHashSeedSaver(int seed)
-        : oldSeed(qt_qhash_seed.fetchAndStoreRelaxed(seed)),
-          newSeed(seed)
-    {}
-    ~QtQHashSeedSaver()
-    {
-        // only restore when no-one else changed the seed in the meantime:
-        qt_qhash_seed.testAndSetRelaxed(newSeed, oldSeed);
-    }
-};
-
 void tst_QSet::qhash()
 {
     //
@@ -995,14 +977,14 @@ void tst_QSet::qhash()
     //
     {
         // create some deterministic initial state:
-        const QtQHashSeedSaver seed1(0);
+        qSetGlobalQHashSeed(0);
 
         QSet<int> s1;
         s1.reserve(4);
         s1 << 400 << 300 << 200 << 100;
 
         // also change the seed:
-        const QtQHashSeedSaver seed2(0x10101010);
+        qSetGlobalQHashSeed(0x10101010);
 
         QSet<int> s2;
         s2.reserve(100); // provoke different bucket counts
@@ -1049,7 +1031,7 @@ void tst_QSet::intersects()
     s1 << 200;
     QVERIFY(s1.intersects(s2));
 
-    const QtQHashSeedSaver seedSaver(0x10101010);
+    qSetGlobalQHashSeed(0x10101010);
     QSet<int> s3;
     s3 << 500;
     QVERIFY(!s1.intersects(s3));

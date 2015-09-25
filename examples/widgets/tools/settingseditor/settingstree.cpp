@@ -45,18 +45,18 @@
 
 SettingsTree::SettingsTree(QWidget *parent)
     : QTreeWidget(parent)
+    , autoRefresh(false)
 {
     setItemDelegate(new VariantDelegate(this));
 
     QStringList labels;
     labels << tr("Setting") << tr("Type") << tr("Value");
     setHeaderLabels(labels);
-    header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(2, QHeaderView::Stretch);
 
-    settings = 0;
     refreshTimer.setInterval(2000);
-    autoRefresh = false;
 
     groupIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),
                         QIcon::Normal, QIcon::Off);
@@ -64,34 +64,37 @@ SettingsTree::SettingsTree(QWidget *parent)
                         QIcon::Normal, QIcon::On);
     keyIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
 
-    connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(maybeRefresh()));
+    connect(&refreshTimer, &QTimer::timeout, this, &SettingsTree::maybeRefresh);
 }
 
-void SettingsTree::setSettingsObject(QSettings *settings)
+SettingsTree::~SettingsTree()
 {
-    delete this->settings;
-    this->settings = settings;
+}
+
+void SettingsTree::setSettingsObject(const SettingsPtr &newSettings)
+{
+    settings = newSettings;
     clear();
 
-    if (settings) {
-        settings->setParent(this);
+    if (settings.isNull()) {
+        refreshTimer.stop();
+    } else {
         refresh();
         if (autoRefresh)
             refreshTimer.start();
-    } else {
-        refreshTimer.stop();
     }
 }
 
 QSize SettingsTree::sizeHint() const
 {
-    return QSize(800, 600);
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+    return QSize(availableGeometry.width() * 2 / 3, availableGeometry.height() * 2 / 3);
 }
 
 void SettingsTree::setAutoRefresh(bool autoRefresh)
 {
     this->autoRefresh = autoRefresh;
-    if (settings) {
+    if (!settings.isNull()) {
         if (autoRefresh) {
             maybeRefresh();
             refreshTimer.start();
@@ -103,7 +106,7 @@ void SettingsTree::setAutoRefresh(bool autoRefresh)
 
 void SettingsTree::setFallbacksEnabled(bool enabled)
 {
-    if (settings) {
+    if (!settings.isNull()) {
         settings->setFallbacksEnabled(enabled);
         refresh();
     }
@@ -117,17 +120,17 @@ void SettingsTree::maybeRefresh()
 
 void SettingsTree::refresh()
 {
-    if (!settings)
+    if (settings.isNull())
         return;
 
-    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
-               this, SLOT(updateSetting(QTreeWidgetItem*)));
+    disconnect(this, &QTreeWidget::itemChanged,
+               this, &SettingsTree::updateSetting);
 
     settings->sync();
     updateChildItems(0);
 
-    connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
-            this, SLOT(updateSetting(QTreeWidgetItem*)));
+    connect(this, &QTreeWidget::itemChanged,
+            this, &SettingsTree::updateSetting);
 }
 
 bool SettingsTree::event(QEvent *event)
@@ -144,7 +147,7 @@ void SettingsTree::updateSetting(QTreeWidgetItem *item)
     QString key = item->text(0);
     QTreeWidgetItem *ancestor = item->parent();
     while (ancestor) {
-        key.prepend(ancestor->text(0) + "/");
+        key.prepend(ancestor->text(0) + QLatin1Char('/'));
         ancestor = ancestor->parent();
     }
 
@@ -162,8 +165,8 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
         int childIndex = findChild(parent, group, dividerIndex);
         if (childIndex != -1) {
             child = childAt(parent, childIndex);
-            child->setText(1, "");
-            child->setText(2, "");
+            child->setText(1, QString());
+            child->setText(2, QString());
             child->setData(2, Qt::UserRole, QVariant());
             moveItemForward(parent, childIndex, dividerIndex);
         } else {
@@ -177,7 +180,7 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
         settings->endGroup();
     }
 
-    foreach (QString key, settings->childKeys()) {
+    foreach (const QString &key, settings->childKeys()) {
         QTreeWidgetItem *child;
         int childIndex = findChild(parent, key, 0);
 

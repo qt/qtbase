@@ -253,7 +253,6 @@ private slots:
     void taskQTBUG_25333_adjustViewOptionsForIndex();
     void taskQTBUG_18539_emitLayoutChanged();
     void taskQTBUG_8176_emitOnExpandAll();
-    void taskQTBUG_34717_collapseAtBottom();
     void taskQTBUG_37813_crash();
     void taskQTBUG_45697_crash();
     void testInitialFocus();
@@ -2365,7 +2364,7 @@ void tst_QTreeView::selectionOrderTest()
 
 void tst_QTreeView::selection()
 {
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This causes a crash triggered by setVisible(false)");
 
     QTreeView treeView;
@@ -4281,35 +4280,6 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
 
     QCOMPARE(spy.size(), 2); // item and item5 are expanded
     QCOMPARE(spy2.size(), 1); // item2 is collapsed
-}
-
-// From QTBUG_34717 (QTreeWidget crashes when scrolling to the end
-// of an expanded tree, then collapse all)
-// The test passes simply if it doesn't crash.
-void tst_QTreeView::taskQTBUG_34717_collapseAtBottom()
-{
-    QTreeWidget treeWidget;
-    treeWidget.header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    treeWidget.setColumnCount(2);
-    QTreeWidgetItem *mainItem = new QTreeWidgetItem(&treeWidget, QStringList() << "Root");
-    for (int i = 0; i < 200; ++i) {
-        QTreeWidgetItem *item = new QTreeWidgetItem(mainItem, QStringList(QString("Item")));
-        new QTreeWidgetItem(item, QStringList() << "Child" << "1");
-        new QTreeWidgetItem(item, QStringList() << "Child" << "2");
-        new QTreeWidgetItem(item, QStringList() << "Child" << "3");
-    }
-    treeWidget.show();
-    treeWidget.expandAll();
-    treeWidget.scrollToBottom();
-    treeWidget.collapseAll();
-
-    treeWidget.setAnimated(true);
-    treeWidget.expandAll();
-    treeWidget.scrollToBottom();
-    mainItem->setExpanded(false);
-
-    PublicView *pview = (PublicView*) &treeWidget;
-    QVERIFY(pview->sizeHintForColumn(1) >= 0);
 }
 
 void tst_QTreeView::testInitialFocus()

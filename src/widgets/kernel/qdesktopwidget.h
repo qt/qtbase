@@ -77,6 +77,7 @@ Q_SIGNALS:
     void resized(int);
     void workAreaResized(int);
     void screenCountChanged(int);
+    void primaryScreenChanged();
 
 protected:
     void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;

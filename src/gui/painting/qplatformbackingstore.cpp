@@ -300,11 +300,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     }
 
     funcs->glEnable(GL_BLEND);
-    funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // Do not write out alpha. We need blending, but only for RGB. The toplevel may have
-    // alpha enabled in which case blending (writing out < 1.0 alpha values) would lead to
-    // semi-transparency even when it is not wanted.
-    funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    funcs->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
     // Backingstore texture with the normal widgets.
     GLuint textureId = 0;
@@ -364,7 +360,6 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             blit(textures, i, window, deviceWindowRect, d_ptr->blitter);
     }
 
-    funcs->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     funcs->glDisable(GL_BLEND);
     d_ptr->blitter->release();
 

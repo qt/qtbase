@@ -39,7 +39,7 @@
 
 #include "../tst_qmimedatabase.cpp"
 
-void tst_QMimeDatabase::init()
+void tst_QMimeDatabase::initTestCaseInternal()
 {
 #ifdef QT_NO_PROCESS
     QSKIP("No qprocess support", SkipAll);

@@ -627,7 +627,7 @@ void tst_QWidget::getSetCheck()
 }
 
 tst_QWidget::tst_QWidget()
-    : m_platform(qApp->platformName().toLower())
+    : m_platform(QGuiApplication::platformName().toLower())
     , m_windowsAnimationsEnabled(windowsAnimationsEnabled())
 {
     if (m_windowsAnimationsEnabled) // Disable animations which can interfere with screen grabbing in moveChild(), showAndMoveChild()

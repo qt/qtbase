@@ -207,21 +207,10 @@ void tst_QEventLoop::processEvents()
     QCOMPARE(awakeSpy.count(), 1);
 
     // allow any session manager to complete its handshake, so that
-    // there are no pending events left.
+    // there are no pending events left. This tests that we are able
+    // to process all events from the queue, otherwise it will hang.
     while (eventLoop.processEvents())
         ;
-
-    // On mac we get application started events at this point,
-    // so process events one more time just to be sure.
-    eventLoop.processEvents();
-
-    // no events to process, QEventLoop::processEvents() should return
-    // false
-    aboutToBlockSpy.clear();
-    awakeSpy.clear();
-    QVERIFY(!eventLoop.processEvents());
-    QCOMPARE(aboutToBlockSpy.count(), 0);
-    QCOMPARE(awakeSpy.count(), 1);
 
     // make sure the test doesn't block forever
     int timerId = startTimer(100);

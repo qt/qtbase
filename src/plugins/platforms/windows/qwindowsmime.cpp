@@ -299,8 +299,6 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
     return true;
 }
 
-//#define QMIME_DEBUG
-
 // helpers for using global memory
 
 static int getCf(const FORMATETC &formatetc)
@@ -379,6 +377,73 @@ static bool canGetData(int cf, IDataObject * pDataObj)
     }
     return true;
 }
+
+#ifndef QT_NO_DEBUG_OUTPUT
+QDebug operator<<(QDebug d, const FORMATETC &tc)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "FORMATETC(cfFormat=" << tc.cfFormat << ' ';
+    switch (tc.cfFormat) {
+    case CF_TEXT:
+        d << "CF_TEXT";
+        break;
+    case CF_BITMAP:
+        d << "CF_BITMAP";
+        break;
+    case CF_TIFF:
+        d << "CF_TIFF";
+        break;
+    case CF_OEMTEXT:
+        d << "CF_OEMTEXT";
+        break;
+    case CF_DIB:
+        d << "CF_DIB";
+        break;
+    case CF_DIBV5:
+        d << "CF_DIBV5";
+        break;
+    case CF_UNICODETEXT:
+        d << "CF_UNICODETEXT";
+        break;
+#ifndef Q_OS_WINCE
+    case CF_ENHMETAFILE:
+        d << "CF_ENHMETAFILE";
+        break;
+#endif // !Q_OS_WINCE
+    default:
+        d << QWindowsMimeConverter::clipboardFormatName(tc.cfFormat);
+        break;
+    }
+    d << ", dwAspect=" << tc.dwAspect << ", lindex=" << tc.lindex
+        << ", tymed=" << tc.tymed << ", ptd=" << tc.ptd << ')';
+    return d;
+}
+
+QDebug operator<<(QDebug d, IDataObject *dataObj)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d.noquote();
+    d << "IDataObject(";
+    if (dataObj) { // Output formats contained in IDataObject.
+        IEnumFORMATETC *enumFormatEtc;
+        if (SUCCEEDED(dataObj->EnumFormatEtc(DATADIR_GET, &enumFormatEtc)) && enumFormatEtc) {
+            FORMATETC formatEtc[1];
+            ULONG fetched;
+            if (SUCCEEDED(enumFormatEtc->Reset())) {
+                while (SUCCEEDED(enumFormatEtc->Next(1, formatEtc, &fetched)) && fetched)
+                    d << formatEtc[0] << ',';
+                enumFormatEtc->Release();
+            }
+        }
+    } else {
+        d << '0';
+    }
+    d << ')';
+    return d;
+}
+#endif // !QT_NO_DEBUG_OUTPUT
 
 /*!
     \class QWindowsMime
@@ -894,11 +959,7 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
     QVariant result;
     if (canConvertToMime(mime, pDataObj)) {
         QByteArray html = getData(CF_HTML, pDataObj);
-#ifdef QMIME_DEBUG
-        qDebug("QWindowsMimeHtml::convertToMime");
-        qDebug("raw :");
-        qDebug(html);
-#endif
+        qCDebug(lcQpaMime) << __FUNCTION__ << "raw:" << html;
         int start = html.indexOf("StartHTML:");
         int end = html.indexOf("EndHTML:");
 
@@ -990,13 +1051,14 @@ QVector<FORMATETC> QWindowsMimeImage::formatsForMime(const QString &mimeType, co
 {
     QVector<FORMATETC> formatetcs;
     if (mimeData->hasImage() && mimeType == QLatin1String("application/x-qt-image")) {
-        //add DIBV5 if image has alpha channel
+        //add DIBV5 if image has alpha channel. Do not add CF_PNG here as it will confuse MS Office (QTBUG47656).
         QImage image = qvariant_cast<QImage>(mimeData->imageData());
         if (!image.isNull() && image.hasAlphaChannel())
             formatetcs += setCf(CF_DIBV5);
         formatetcs += setCf(CF_DIB);
-        formatetcs += setCf(CF_PNG); // QTBUG-86848, Paste into GIMP queries for PNG.
     }
+    if (!formatetcs.isEmpty())
+        qCDebug(lcQpaMime) << __FUNCTION__ << mimeType << formatetcs;
     return formatetcs;
 }
 
@@ -1024,11 +1086,7 @@ bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMi
     const QImage image = qvariant_cast<QImage>(mimeData->imageData());
     if (image.isNull())
         return false;
-    // QTBUG-11463, deny CF_DIB support for images with alpha to prevent loss of
-    // transparency in conversion.
-    return cf == CF_DIBV5
-        || (cf == CF_DIB && !image.hasAlphaChannel())
-        || cf == int(CF_PNG);
+    return cf == CF_DIBV5 || (cf == CF_DIB) || cf == int(CF_PNG);
 }
 
 bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
@@ -1221,9 +1279,7 @@ QVariant QBuiltInMimes::convertToMime(const QString &mimeType, IDataObject *pDat
     if (canConvertToMime(mimeType, pDataObj)) {
         QByteArray data = getData(inFormats.key(mimeType), pDataObj);
         if (!data.isEmpty()) {
-#ifdef QMIME_DEBUG
-            qDebug("QBuiltInMimes::convertToMime()");
-#endif
+            qCDebug(lcQpaMime) << __FUNCTION__;
             if (mimeType == QLatin1String("text/html") && preferredType == QVariant::String) {
                 // text/html is in wide chars on windows (compatible with Mozilla)
                 val = QString::fromWCharArray((const wchar_t *)data.data());
@@ -1331,6 +1387,8 @@ QVector<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, con
         that->formats.insert(cf, mimeType);
         formatetcs += setCf(cf);
     }
+    if (!formatetcs.isEmpty())
+        qCDebug(lcQpaMime) << __FUNCTION__ << mimeType << formatetcs;
     return formatetcs;
 }
 static const char x_qt_windows_mime[] = "application/x-qt-windows-mime;value=\"";
@@ -1405,11 +1463,8 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
     if (!format.isEmpty())
         return format;
 
-    wchar_t buffer[256];
-    int len = GetClipboardFormatName(getCf(formatetc), buffer, 256);
-
-    if (len) {
-        QString clipFormat = QString::fromWCharArray(buffer, len);
+    const QString clipFormat = QWindowsMimeConverter::clipboardFormatName(getCf(formatetc));
+    if (!clipFormat.isEmpty()) {
 #ifndef QT_NO_DRAGANDDROP
         if (QInternalMimeData::canReadData(clipFormat))
             format = clipFormat;
@@ -1475,15 +1530,12 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
     if (hr == NOERROR) {
         FORMATETC fmtetc;
         while (S_OK == fmtenum->Next(1, &fmtetc, 0)) {
-#if defined(QMIME_DEBUG)
-            wchar_t buf[256] = {0};
-            GetClipboardFormatName(fmtetc.cfFormat, buf, 255);
-            qDebug("CF = %d : %s", fmtetc.cfFormat, qPrintable(QString::fromWCharArray(buf)));
-#endif
             for (int i= m_mimes.size() - 1; i >= 0; --i) {
                 QString format = m_mimes.at(i)->mimeForFormat(fmtetc);
                 if (!format.isEmpty() && !formats.contains(format)) {
                     formats += format;
+                    if (QWindowsContext::verbose > 1 && lcQpaMime().isDebugEnabled())
+                        qCDebug(lcQpaMime) << __FUNCTION__ << fmtetc << format;
                 }
             }
             // as documented in MSDN to avoid possible memleak
@@ -1499,6 +1551,7 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
 QWindowsMime * QWindowsMimeConverter::converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     ensureInitialized();
+    qCDebug(lcQpaMime) << __FUNCTION__ << formatetc;
     for (int i = m_mimes.size()-1; i >= 0; --i) {
         if (m_mimes.at(i)->canConvertFromMime(formatetc, mimeData))
             return m_mimes.at(i);
@@ -1531,6 +1584,13 @@ void QWindowsMimeConverter::ensureInitialized() const
                 << new QWindowsMimeHtml << new QBuiltInMimes;
         m_internalMimeCount = m_mimes.size();
     }
+}
+
+QString QWindowsMimeConverter::clipboardFormatName(int cf)
+{
+    wchar_t buf[256] = {0};
+    return GetClipboardFormatName(cf, buf, 255)
+        ? QString::fromWCharArray(buf) : QString();
 }
 
 QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,

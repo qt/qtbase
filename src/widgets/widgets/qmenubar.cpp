@@ -638,7 +638,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \row \li quit or exit
          \li Application Menu | Quit <application name>
          \li If this entry is not found a default Quit item will be
-            created to call QApplication::quit()
+            created to call QCoreApplication::quit()
     \endtable
 
     You can override this behavior by using the QAction::menuRole()
@@ -1044,8 +1044,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
             d->activeMenu = 0;
+            menu->setAttribute(Qt::WA_NoMouseReplay);
             menu->hide();
-            d->closePopupMode = 1;
         }
     } else {
         d->setCurrentAction(action, true);

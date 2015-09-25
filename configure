@@ -2,7 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2015 The Qt Company Ltd.
-## Copyright (C) 2013 Intel Corporation.
+## Copyright (C) 2015 Intel Corporation.
 ## Contact: http://www.qt.io/licensing/
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -662,6 +662,7 @@ CFG_SYSTEM_PROXIES=no
 CFG_ANDROID_STYLE_ASSETS=yes
 CFG_GSTREAMER=auto
 CFG_GSTREAMER_VERSION=""
+CFG_ATOMIC64=auto
 
 # Target architecture
 CFG_ARCH=
@@ -769,7 +770,7 @@ CFG_SANITIZE_MEMORY=no
 CFG_SANITIZE_UNDEFINED=no
 CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
-CFG_CXX11=auto
+CFG_STDCXX=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
 CFG_HEADERSCLEAN=auto
@@ -935,6 +936,7 @@ while [ "$#" -gt 0 ]; do
     -sdk| \
     -arch| \
     -host-arch| \
+    -c++std | \
     -mysql_config| \
     -psql_config| \
     -qpa| \
@@ -1402,18 +1404,6 @@ while [ "$#" -gt 0 ]; do
             ;;
         unixware7-g++)
             PLATFORM=unixware-g++
-            ;;
-        macx-g++-64)
-            PLATFORM=macx-g++
-	    NATIVE_64_ARCH=
-            case `uname -p` in
-            i386) NATIVE_64_ARCH="x86_64" ;;
-            powerpc) NATIVE_64_ARCH="ppc64" ;;
-            *)   echo "WARNING: Can't detect CPU architecture for macx-g++-64" ;;
-            esac
-	    if [ ! -z "$NATIVE_64_ARCH" ]; then
-		QTCONFIG_CONFIG="$QTCONFIG_CONFIG $NATIVE_64_ARCH"
-            fi
             ;;
         esac
         ;;
@@ -2234,11 +2224,30 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     c++11)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_CXX11="$VAL"
+        if [ "$VAL" = "yes" ]; then
+            CFG_STDCXX="c++11"
+        elif [ "$VAL" = "no" ]; then
+            CFG_STDCXX="c++98"
         else
             UNKNOWN_OPT=yes
         fi
+        ;;
+    c++std)
+        case "$VAL" in
+            c++98|c++11|c++14|c++1z|auto)
+                CFG_STDCXX="$VAL"
+                ;;
+            98|11|14|1z)
+                CFG_STDCXX="c++$VAL"
+                ;;
+            1y|c++1y)
+                CFG_STDCXX="c++14"
+                ;;
+            *)
+                echo >&2 "Invalid C++ edition: $VAL; valid options are: c++98 c++11 c++14 c++1z auto"
+                ERROR=yes
+                ;;
+        esac
         ;;
     system-proxies)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2411,8 +2420,8 @@ Configure options:
     -confirm-license ... Automatically acknowledge the license (use with
                          either -opensource or -commercial)
 
-    -no-c++11 .......... Do not compile Qt with C++11 support enabled.
- +  -c++11 ............. Compile Qt with C++11 support enabled.
+    -c++std <edition> .. Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)
+                         Default: highest supported
 
  *  -shared ............ Create and use shared Qt libraries.
     -static ............ Create and use static Qt libraries.
@@ -2649,14 +2658,14 @@ Additional options:
     -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  *  -eglfs ............. Compile EGLFS support.
 
+    -no-kms ............ Do not compile EGLFS KMS backend.
+ *  -kms ............... Compile EGLFS KMS backend.
+
     -no-directfb ....... Do not compile DirectFB support.
  *  -directfb .......... Compile DirectFB support.
 
     -no-linuxfb ........ Do not compile Linux Framebuffer support.
  *  -linuxfb ........... Compile Linux Framebuffer support.
-
-    -no-kms ............ Do not compile KMS support.
- *  -kms ............... Compile KMS support (Requires EGL).
 
  *  -no-mirclient....... Do not compile Mir client support.
     -mirclient.......... Compile Mir client support.
@@ -2690,7 +2699,7 @@ Additional options:
     -no-gstreamer ....... Do not support GStreamer.
  +  -gstreamer <version>  Enable GStreamer support
                           With no parameter, this will attempt to auto-detect GStreamer 0.10 and
-                          1.0. GStreamer 0.10 is used by default when available.
+                          1.0. GStreamer 1.0 is used by default when available.
                           Use 0.10 or 1.0 for <version> to override auto-detection.
 
  *  -no-system-proxies .. Do not use system network proxies by default.
@@ -2725,7 +2734,7 @@ MacOS/iOS options:
 
  *  -securetransport ... Use SecureTransport instead of OpenSSL
 
-    -no-securetransport  Do not use SecureTransport, either use OpenSSL or dot not use any SSL backend
+    -no-securetransport  Do not use SecureTransport, either use OpenSSL or do not use any SSL backend
                          at all (if combined with -no-openssl).
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
@@ -3179,13 +3188,13 @@ if [ "$XPLATFORM_ANDROID" = "yes" ]; then
             ;;
         macx-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
-            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
                 CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
             fi
             ;;
         win32-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=windows
-            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
                 CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
             fi
             ;;
@@ -4323,24 +4332,71 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     fi
 fi
 
-# Detect C++11 support
-if [ "$CFG_CXX11" != "no" ]; then
-    # Configure detects compiler features based on cross compiler, so we need
-    # to explicitly disable C++11 on Mac to avoid breaking builds where the
-    # host compiler does not support it.
-    if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
-        CFG_CXX11="no"
-    elif compileTest common/c++11 "C++11"; then
-        CFG_CXX11="yes"
-    elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-        echo "C++11 support cannot be enabled due to functionality tests!"
-        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-        echo " If you believe this message is in error you may use the continue"
-        echo " switch (-continue) to $0 to continue."
-        exit 101
+# Detect C++11 & up support
+# Configure detects compiler features based on cross compiler, so we need
+# to explicitly disable C++11 on Mac to avoid breaking builds where the
+# host compiler does not support it.
+stdcxx_error=false
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    CFG_STDCXX="c++98"
+elif [ "$CFG_STDCXX" = "c++98" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++11 "C++11"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
     else
-        CFG_CXX11="no"
+        CFG_STDCXX="c++98"
     fi
+elif [ "$CFG_STDCXX" = "c++11" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++14 "C++14"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
+    else
+        CFG_STDCXX="c++11"
+    fi
+elif [ "$CFG_STDCXX" = "c++14" ]; then
+    : # CFG_STDCXX is correct
+elif ! compileTest common/c++1z "C++1z"; then
+    if [ "$CFG_STDCXX" != "auto" ]; then
+        stdcxx_error=true
+    else
+        CFG_STDCXX="c++14"
+    fi
+else
+    CFG_STDCXX="c++1z"
+fi
+
+if $stdcxx_error && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+    echo "$CFG_STDCXX support cannot be enabled due to functionality tests!"
+    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+    echo " If you believe this message is in error you may use the continue"
+    echo " switch (-continue) to $0 to continue."
+    exit 101
+fi
+
+# Detect which edition of the C++ standard the compiler defaults to
+CFG_STDCXX_DEFAULT=199711
+if compileTest common/c++default "default C++ standard edition"; then
+    if [ -e "$outpath/config.tests/common/c++default/c++default.ii" ]; then
+        CFG_STDCXX_DEFAULT=`sed -n '/^[0-9]/s/L//p' "$outpath/config.tests/common/c++default/c++default.ii"`
+    else
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            echo "Failed to run the preprocessor, something is wrong with your compiler"
+        fi
+        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            exit 101
+        fi
+    fi
+fi
+
+# Detect whether 64-bit std::atomic works -- some 32-bit platforms require extra library support
+if compileTest common/atomic64 "64-bit std::atomic"; then
+    CFG_ATOMIC64=yes
+elif compileTest common/atomic64 "64-bit std::atomic in -latomic" -latomic; then
+    CFG_ATOMIC64=libatomic
+else
+    CFG_ATOMIC64=no
 fi
 
 # detect sse2 support
@@ -6026,12 +6082,12 @@ fi
 
 # detect GStreamer support
 if [ "$CFG_GSTREAMER" = "auto" ] || [ "$CFG_GSTREAMER" = "yes" ]; then
-    if compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
-        CFG_GSTREAMER=yes
-        CFG_GSTREAMER_VERSION=0.10
-    elif compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
+    if compileTest unix/gstreamer "GStreamer 1.0" -config gst-1.0; then
         CFG_GSTREAMER=yes
         CFG_GSTREAMER_VERSION=1.0
+    elif compileTest unix/gstreamer "GStreamer 0.10" -config gst-0.10; then
+        CFG_GSTREAMER=yes
+        CFG_GSTREAMER_VERSION=0.10
     else
         if [ "$CFG_GSTREAMER" = "yes" ]; then
             echo "GStreamer support cannot be enabled due to functionality tests!"
@@ -6069,7 +6125,19 @@ fi
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
 
-[ "$CFG_CXX11" = "yes" ] && QT_CONFIG="$QT_CONFIG c++11"
+if [ "$CFG_STDCXX" != "c++98" ]; then
+    QT_CONFIG="$QT_CONFIG c++11"
+    if [ "$CFG_STDCXX" != "c++11" ]; then
+        QT_CONFIG="$QT_CONFIG c++14"
+        if [ "$CFG_STDCXX" != "c++14" ]; then
+            QT_CONFIG="$QT_CONFIG c++1z"
+        fi
+    fi
+fi
+
+if [ "$CFG_ATOMIC64" = "libatomic" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG atomic64-libatomic"
+fi
 
 if [ "$CFG_SILENT" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG silent"
@@ -6625,6 +6693,10 @@ else
     echo "#define QT_POINTER_SIZE $?" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
+if [ "$CFG_ATOMIC64" = "no" ]; then
+    echo "#define QT_NO_STD_ATOMIC64" >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 #REDUCE_RELOCATIONS is a elf/unix only thing, so not in windows configure.exe
 if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
     echo "#define QT_REDUCE_RELOCATIONS" >>"$outpath/src/corelib/global/qconfig.h.new"
@@ -6891,6 +6963,7 @@ fi
 if [ -n "$RPATH_FLAGS" ]; then
     echo "QMAKE_RPATHDIR += $RPATH_FLAGS" >> "$QTCONFIG.tmp"
 fi
+echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT" >> "$QTCONFIG.tmp"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
@@ -7085,7 +7158,7 @@ else
 fi
 unset build_mode release
 echo "  Using sanitizer(s)...... $CFG_SANITIZERS"
-echo "  Using C++11 ............ $CFG_CXX11"
+echo "  Using C++ standard ..... $CFG_STDCXX"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
 echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"

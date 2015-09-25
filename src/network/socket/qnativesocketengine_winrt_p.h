@@ -58,8 +58,7 @@ class QNativeSocketEnginePrivate;
 
 struct WinRtDatagram {
     QByteArray data;
-    int port;
-    QHostAddress address;
+    QIpPacketHeader header;
 };
 
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
@@ -97,10 +96,8 @@ public:
     qint64 read(char *data, qint64 maxlen);
     qint64 write(const char *data, qint64 len);
 
-    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
-                            quint16 *port = 0);
-    qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,
-                             quint16 port);
+    qint64 readDatagram(char *data, qint64 maxlen, QIpPacketHeader *, PacketHeaderOptions);
+    qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header);
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
 

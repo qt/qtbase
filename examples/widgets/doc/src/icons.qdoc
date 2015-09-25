@@ -254,6 +254,21 @@
     generated pixmaps corresponding to an icon's possible states and
     modes at a given size.
 
+    \snippet widgets/icons/iconpreviewarea.cpp 42
+
+    We would like the table columns to  be in the order QIcon::Normal,
+    QIcon::Active, QIcon::Disabled, QIcon::Selected and the rows in the order
+    QIcon::Off, QIcon::On, which does not match the enumeration. The above code
+    provides arrays allowing to map from enumeration value to row/column
+    (by using QVector::indexOf()) and back by using the array index and lists
+    of the matching strings. Qt's containers can be easily populated by
+    using C++ 11 initializer lists. If the compiler does not provide that feature,
+    a pattern like
+
+    \snippet widgets/icons/iconpreviewarea.cpp 43
+
+    can be used.
+
     We need two public functions to set the current icon and the
     icon's size. In addition the class has three private functions: We
     use the \c createHeaderLabel() and \c createPixmapLabel()
@@ -326,7 +341,12 @@
 
     For each mode, and for each state, we retrieve a pixmap using the
     QIcon::pixmap() function, which generates a pixmap corresponding
-    to the given state, mode and size.
+    to the given state, mode and size. We pass the QWindows instance
+    obtained by calling QWidget::windowHandle() on the top level
+    widget (QWidget::nativeParentWidget()) in order to retrieve
+    the pixmap that matches best.
+    We format a tooltip displaying size, actual size and device pixel
+    ratio.
 
     \section2 MainWindow Class Definition
 
@@ -347,8 +367,14 @@
     \li The \c changeSize() slot changes the size of the preview area's icon.
     \li The \c changeIcon() slot updates the set of pixmaps available to the
        icon displayed in the preview area.
-    \li The \c addImage() slot allows the user to load a new image into the
-       application.
+    \li The \c addSampleImages() slot allows the user to load a new image
+        from the samples provided  into the application.
+    \li The \c addOtherImages() slot allows the user to load a new image from
+        the directory obtained by calling
+        QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).
+    \li The \c screenChanged() updates the display in the \uicontrol{High DPI}
+        group box to correctly display the parameters of the current screen
+        the window is located on.
     \endlist
 
     In addition we declare several private functions to simplify the
@@ -362,8 +388,7 @@
     widget and its child widgets, and put them in a grid layout. Then
     we create the menus with their associated entries and actions.
 
-    Before we resize the application window to a suitable size, we set
-    the window title and determine the current style for the
+    We set the window title and determine the current style for the
     application. We also enable the icon size spin box by clicking the
     associated radio button, making the current value of the spin box
     the icon's initial size.
@@ -421,21 +446,27 @@
     The \c changeSize() slot sets the size for the preview area's
     icon.
 
-    To determine the new size we first check if the spin box is
+    It is invoked by the QButtonGroup whose members are radio buttons for
+    controlling the icon size.  In \c createIconSizeGroupBox(), each button is
+    assigned a QStyle::PixelMetric value as an id, which is passed as a
+    parameter to the slot.
+
+    The special value \c OtherSize indicates that the spin box is
     enabled. If it is, we extract the extent of the new size from the
-    box. If it's not, we search through the predefined size options,
-    extract the QStyle::PixelMetric and use the QStyle::pixelMetric()
-    function to determine the extent. Then we create a QSize object
-    based on the extent, and use that object to set the size of the
-    preview area's icon.
+    box. If it's not, we query the style for the metric. Then we create
+    a QSize object based on the extent, and use that object to set the
+    size of the preview area's icon.
 
     \snippet widgets/icons/mainwindow.cpp 12
 
-    The first thing we do when the \c addImage() slot is called, is to
-    show a file dialog to the user. The easiest way to create a file
-    dialog is to use QFileDialog's static functions. Here we use the
-    \l {QFileDialog::getOpenFileNames()}{getOpenFileNames()} function
-    that will return one or more existing files selected by the user.
+    The function \c addImages() is called by the slot addSampleImages()
+    passing the samples directory, or by the slot addOtherImages()
+    passing the directory obtained by querying
+    QStandardPaths::standardLocations().
+
+    The first thing we do is to show a file dialog to the user.
+    We initialize it to show the filters returned by
+    QImageReader::supportedMimeTypes().
 
     For each of the files the file dialog returns, we add a row to the
     table widget. The table widget is listing the images the user has
@@ -446,9 +477,13 @@
 
     We retrieve the image name using the QFileInfo::baseName()
     function that returns the base name of the file without the path,
-    and create the first table widget item in the row. Then we add the
-    file's complete name to the item's data. Since an item can hold
-    several information pieces, we need to assign the file name a role
+    and create the first table widget item in the row.
+    We check if a high resolution version of the image exists (identified by
+    the suffix \c @2x on the base name) and display that along with the size
+    in the tooltip.
+
+    We add the file's complete name to the item's data. Since an item can
+    hold several information pieces, we need to assign the file name a role
     that will distinguish it from other data. This role can be Qt::UserRole
     or any value above it.
 
@@ -465,7 +500,7 @@
     contains "_act", "_dis", or "_sel", the modes are changed to
     Active, Disabled, or Selected. And if the file name contains
     "_on", the state is changed to On. The sample files in the
-    example's \c images subdirectory respect this naming convension.
+    example's \c images subdirectory respect this naming convention.
 
     \snippet widgets/icons/mainwindow.cpp 18
     \snippet widgets/icons/mainwindow.cpp 19
@@ -482,7 +517,6 @@
     make sure that the new image's check box is enabled.
 
     \snippet widgets/icons/mainwindow.cpp 6
-    \snippet widgets/icons/mainwindow.cpp 7
 
     The \c changeIcon() slot is called when the user alters the set
     of images listed in the QTableWidget, to update the QIcon object
@@ -562,7 +596,7 @@
     \snippet widgets/icons/mainwindow.cpp 25
 
     At the end, we connect the QTableWidget::itemChanged() signal to
-    the \c changeIcon() slot to ensuret that the preview area is in
+    the \c changeIcon() slot to ensure that the preview area is in
     sync with the image table.
 
     \image icons_size_groupbox.png Screenshot of the icon size group box
@@ -574,7 +608,14 @@
     \snippet widgets/icons/mainwindow.cpp 26
 
     First we create a group box that will contain all the widgets;
-    then we create the radio buttons and the spin box.
+    then we create the radio buttons and the spin box. We add the
+    radio buttons to an instance of QButtonGroup, using the value
+    of the QStyle::PixelMetric they represent as an integer id.
+
+    \snippet widgets/icons/mainwindow.cpp 40
+
+    We introduce an enumeration constant \c OtherSize to represent
+    a custom size.
 
     The spin box is not a regular QSpinBox but an \c IconSizeSpinBox.
     The \c IconSizeSpinBox class inherits QSpinBox and reimplements
@@ -602,19 +643,16 @@
     In particular we create the \c styleActionGroup based on the
     currently available GUI styles using
     QStyleFactory. QStyleFactory::keys() returns a list of valid keys,
-    typically including "windows", "cleanlooks" and
-    "plastique". Depending on the platform, "windowsxp", "windowsvista", "gtk" and
-    "macintosh" may be available.
+    typically including "windows" and "fusion". Depending on the platform,
+    "windowsvista" and "macintosh" may be available.
 
     We create one action for each key, and adds the action to the
     action group. Also, for each action, we call QAction::setData()
     with the style name. We will retrieve it later using
     QAction::data().
 
-    \snippet widgets/icons/mainwindow.cpp 29
-
-    In the \c createMenu() function, we add the previously created
-    actions to the \uicontrol File, \uicontrol View and \uicontrol Help menus.
+    As we go along, we create the \uicontrol File, \uicontrol View and
+    \uicontrol Help menus and add the actions to them.
 
     The QMenu class provides a menu widget for use in menu bars,
     context menus, and other popup menus. We put each menu in the
@@ -656,6 +694,13 @@
     Q_ASSERT() macro to make sure that QStyleFactory::create()
     returned a valid pointer.
 
+    \snippet widgets/icons/mainwindow.cpp 44
+
+    We overload the show() function to set up the updating of the
+    current screen in \c screenChanged(). After calling QWidget::show(),
+    the QWindow associated with the QWidget is created and we can
+    connect to its QWindow::screenChanged() signal.
+
     \section2 IconSizeSpinBox Class Definition
 
     \snippet widgets/icons/iconsizespinbox.h 0
@@ -690,7 +735,7 @@
     reimplement the \c valueFromText() function to interpret the
     parameter text and return the associated int value.
 
-    We parse the text using a regular expression (a QRegExp). We
+    We parse the text using a regular expression (a QRegularExpression). We
     define an expression that matches one or several digits,
     optionally followed by whitespace, an "x" or the times symbol,
     whitespace and one or several digits again.
@@ -748,7 +793,7 @@
     index for editing. The parent widget and style option are used to
     control the appearance of the editor widget.
 
-    Our reimplementation create and populate a combobox instead of
+    Our reimplementation creates and populates a combobox instead of
     the default line edit. The contents of the combobox depends on
     the column in the table for which the editor is requested. Column
     1 contains the QIcon modes, whereas column 2 contains the QIcon
@@ -786,4 +831,12 @@
     triggered the slot. This signal must be emitted when the editor
     widget has completed editing the data, and wants to write it back
     into the model.
+
+    \section2 The Implementation of the Function main()
+
+    \snippet widgets/icons/main.cpp 45
+
+    We use QCommandLineParser to handle any command line options or parameters
+    passed to the application. Then, we resize the main window according
+    to the available screen geometry and show it.
 */

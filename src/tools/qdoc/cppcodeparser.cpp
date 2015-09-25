@@ -924,10 +924,19 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_RELATES) {
         QStringList path = arg.split("::");
         Node* n = qdb_->findRelatesNode(path);
-        if (!n)
-            doc.location().warning(tr("Cannot find '%1' in '\\%2'").arg(arg).arg(COMMAND_RELATES));
-        else
+        if (!n) {
+            // Store just a string to write to the index file
+            if (Generator::preparing())
+                node->setRelates(arg);
+            else
+                doc.location().warning(tr("Cannot find '%1' in '\\%2'").arg(arg).arg(COMMAND_RELATES));
+
+        }
+        else if (node->parent() != n)
             node->setRelates(static_cast<Aggregate*>(n));
+        else
+            doc.location().warning(tr("Invalid use of '\\%1' (already a member of '%2')")
+                                   .arg(COMMAND_RELATES, arg));
     }
     else if (command == COMMAND_CONTENTSPAGE) {
         setLink(node, Node::ContentsLink, arg);

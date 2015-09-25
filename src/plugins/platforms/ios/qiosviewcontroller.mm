@@ -143,7 +143,7 @@
 
     if (uiWindow.screen != [UIScreen mainScreen] && self.subviews.count == 1) {
         // Removing the last view of an external screen, go back to mirror mode
-        uiWindow.screen = nil;
+        uiWindow.screen = [UIScreen mainScreen];
         uiWindow.hidden = YES;
     }
 }
@@ -190,8 +190,9 @@
 
 - (void)setBounds:(CGRect)newBounds
 {
+    Q_UNUSED(newBounds);
     CGRect transformedWindowBounds = [self convertRect:self.window.bounds fromView:self.window];
-    [super setBounds:CGRectMake(0, 0, CGRectGetWidth(newBounds), CGRectGetHeight(transformedWindowBounds))];
+    [super setBounds:CGRectMake(0, 0, CGRectGetWidth(transformedWindowBounds), CGRectGetHeight(transformedWindowBounds))];
 }
 
 - (void)setCenter:(CGPoint)newCenter

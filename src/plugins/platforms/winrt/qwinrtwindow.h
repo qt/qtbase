@@ -39,6 +39,7 @@
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +62,10 @@ public:
     WId winId() const Q_DECL_OVERRIDE;
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+
+    EGLSurface eglSurface() const;
+    void createEglSurface(EGLDisplay display, EGLConfig config);
 
 private:
     QScopedPointer<QWinRTWindowPrivate> d_ptr;

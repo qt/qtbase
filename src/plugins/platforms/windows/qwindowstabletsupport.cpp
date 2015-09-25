@@ -54,7 +54,7 @@
 #include <QtCore/private/qsystemlibrary_p.h>
 
 // Note: The definition of the PACKET structure in pktdef.h depends on this define.
-#define PACKETDATA (PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_CURSOR | PK_Z)
+#define PACKETDATA (PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_CURSOR | PK_Z | PK_TIME)
 #include <pktdef.h>
 
 QT_BEGIN_NAMESPACE
@@ -342,17 +342,18 @@ QWindowsTabletDeviceData QWindowsTabletSupport::tabletInit(const quint64 uniqueI
 
 bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, LPARAM lParam)
 {
-    if (!LOWORD(lParam)) {
-        qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(m_devices.at(m_currentDevice).currentDevice,
-                                                                m_devices.at(m_currentDevice).currentPointerType,
-                                                                m_devices.at(m_currentDevice).uniqueId);
-        return true;
-    }
     PACKET proximityBuffer[1]; // we are only interested in the first packet in this case
     const int totalPacks = QWindowsTabletSupport::m_winTab32DLL.wTPacketsGet(m_context, 1, proximityBuffer);
     if (!totalPacks)
         return false;
+    if (!LOWORD(lParam)) {
+        qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
+                                                                m_devices.at(m_currentDevice).currentDevice,
+                                                                m_devices.at(m_currentDevice).currentPointerType,
+                                                                m_devices.at(m_currentDevice).uniqueId);
+        return true;
+    }
     const UINT currentCursor = proximityBuffer[0].pkCursor;
     UINT physicalCursorId;
     QWindowsTabletSupport::m_winTab32DLL.wTInfo(WTI_CURSORS + currentCursor, CSR_PHYSID, &physicalCursorId);
@@ -370,7 +371,8 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
     m_devices[m_currentDevice].currentPointerType = pointerType(currentCursor);
     qCDebug(lcQpaTablet) << "enter proximity for device #"
         << m_currentDevice << m_devices.at(m_currentDevice);
-    QWindowSystemInterface::handleTabletEnterProximityEvent(m_devices.at(m_currentDevice).currentDevice,
+    QWindowSystemInterface::handleTabletEnterProximityEvent(proximityBuffer[0].pkTime,
+                                                            m_devices.at(m_currentDevice).currentDevice,
                                                             m_devices.at(m_currentDevice).currentPointerType,
                                                             m_devices.at(m_currentDevice).uniqueId);
     return true;
@@ -473,7 +475,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
 
-        QWindowSystemInterface::handleTabletEvent(target, QPointF(localPos), globalPosF,
+        QWindowSystemInterface::handleTabletEvent(target, packet.pkTime, QPointF(localPos), globalPosF,
                                                   currentDevice, currentPointer,
                                                   static_cast<Qt::MouseButtons>(packet.pkButtons),
                                                   pressureNew, tiltX, tiltY,

@@ -138,6 +138,9 @@ public:
     bool writeToSocket();
     void emitReadyRead();
 
+    void setError(QAbstractSocket::SocketError errorCode, const QString &errorString);
+    void setErrorAndEmit(QAbstractSocket::SocketError errorCode, const QString &errorString);
+
     qint64 readBufferMaxSize;
     QRingBuffer writeBuffer;
 

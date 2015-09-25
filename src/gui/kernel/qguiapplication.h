@@ -71,6 +71,7 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
     Q_PROPERTY(QString platformName READ platformName STORED false)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
+    Q_PROPERTY(QScreen *primaryScreen READ primaryScreen NOTIFY primaryScreenChanged STORED false)
 
 public:
 #ifdef Q_QDOC
@@ -162,6 +163,7 @@ Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
     void screenRemoved(QScreen *screen);
+    void primaryScreenChanged(QScreen *screen);
     void lastWindowClosed();
     void focusObjectChanged(QObject *focusObject);
     void focusWindowChanged(QWindow *focusWindow);

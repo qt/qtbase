@@ -2508,7 +2508,7 @@ QDebug operator<<(QDebug debug, const QWindow *window)
     QDebugStateSaver saver(debug);
     debug.nospace();
     if (window) {
-        debug << window->metaObject()->className() << '(' << (void *)window;
+        debug << window->metaObject()->className() << '(' << (const void *)window;
         if (!window->objectName().isEmpty())
             debug << ", name=" << window->objectName();
         if (debug.verbosity() > 2) {

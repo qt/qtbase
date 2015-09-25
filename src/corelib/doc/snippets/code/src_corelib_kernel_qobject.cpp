@@ -486,6 +486,33 @@ QObject::connect(socket, &QTcpSocket::connected, this, [=] () {
     }, Qt::AutoConnection);
 //! [51]
 
+//! [52]
+class MyClass : public QWidget
+{
+    Q_OBJECT
+
+public:
+    MyClass(QWidget *parent = 0);
+    ~MyClass();
+
+    bool event(QEvent* ev)
+    {
+        if (ev->type() == QEvent::PolishRequest) {
+            // overwrite handling of PolishRequest if any
+            doThings();
+            return true;
+        } else  if (ev->type() == QEvent::Show) {
+            // complement handling of Show if any
+            doThings2();
+            QWidget::event(ev);
+            return true;
+        }
+        // Make sure the rest of events are handled
+        return QWidget::event(ev);
+    }
+};
+//! [52]
+
 //! [meta data]
 //: This is a comment for the translator.
 //= qtn_foo_bar

@@ -1219,6 +1219,13 @@ void QObject::setObjectName(const QString &name)
     The event() function can be reimplemented to customize the
     behavior of an object.
 
+    Make sure you call the parent event class implementation
+    for all the events you did not handle.
+
+    Example:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 52
+
     \sa installEventFilter(), timerEvent(), QCoreApplication::sendEvent(),
     QCoreApplication::postEvent()
 */
@@ -1382,7 +1389,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 
     Signals are not blocked by default.
 
-    \sa blockSignals()
+    \sa blockSignals(), QSignalBlocker
 */
 
 /*!
@@ -1395,7 +1402,9 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
     Note that the destroyed() signal will be emitted even if the signals
     for this object have been blocked.
 
-    \sa signalsBlocked()
+    Signals emitted while being blocked are not buffered.
+
+    \sa signalsBlocked(), QSignalBlocker
 */
 
 bool QObject::blockSignals(bool block) Q_DECL_NOTHROW

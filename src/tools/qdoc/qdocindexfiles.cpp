@@ -100,6 +100,7 @@ void QDocIndexFiles::destroyQDocIndexFiles()
  */
 void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
 {
+    relatedList_.clear();
     foreach (const QString& indexFile, indexFiles) {
         QString msg = "Loading index file: " + indexFile;
         Location::logToStdErr(msg);
@@ -146,9 +147,7 @@ void QDocIndexFiles::readIndexFile(const QString& path)
         indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
     }
     project_ = attrs.value(QLatin1String("project")).toString();
-
     basesList_.clear();
-    relatedList_.clear();
 
     NamespaceNode* root = qdb_->newIndexTree(project_);
 
@@ -730,17 +729,37 @@ void QDocIndexFiles::resolveIndex()
                 pair.first->addUnresolvedBaseClass(Node::Public, basePath, QString());
         }
     }
+    // No longer needed.
+    basesList_.clear();
+}
+
+/*
+    Goes though the list of nodes that are related to other aggregates
+    that were read from all index files, and tries to find the aggregate
+    nodes from the database. Calls the node's setRelates() for each
+    aggregate that is found in the local module (primary tree).
+
+    This function is meant to be called before starting the doc generation,
+    after all the index files are read.
+ */
+void QDocIndexFiles::resolveRelates()
+{
+    if (relatedList_.isEmpty())
+        return;
+
+    // Restrict searching only to the local (primary) tree
+    QVector<Tree*> searchOrder = qdb_->searchOrder();
+    qdb_->setLocalSearch();
 
     QPair<FunctionNode*,QString> relatedPair;
     foreach (relatedPair, relatedList_) {
         QStringList path = relatedPair.second.split("::");
         Node* n = qdb_->findRelatesNode(path);
         if (n)
-            relatedPair.first->setRelates(static_cast<ClassNode*>(n));
+            relatedPair.first->setRelates(static_cast<Aggregate*>(n));
     }
-
-    // No longer needed.
-    basesList_.clear();
+    // Restore original search order
+    qdb_->setSearchOrder(searchOrder);
     relatedList_.clear();
 }
 

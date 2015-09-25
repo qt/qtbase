@@ -972,7 +972,7 @@ QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
     QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false << false;
     QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false << false;
     QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false << false;
-    QTest::newRow("FlagsDataEnum") << ::qMetaTypeId<FlagsDataEnum>() << false << true << false << true;
+    QTest::newRow("FlagsDataEnum") << ::qMetaTypeId<FlagsDataEnum>() << true << true << false << true;
 
     // invalid ids.
     QTest::newRow("-1") << -1 << false << false << false << false;
@@ -1052,9 +1052,9 @@ void tst_QMetaType::flagsBinaryCompatibility5_0()
     QFETCH(quint32, id);
     QFETCH(quint32, flags);
 
-    quint32 mask_5_0 = 0x1ff; // Only compare the values that were already defined in 5.0
+    quint32 mask_5_0 = 0x1fb; // Only compare the values that were already defined in 5.0
 
-    QCOMPARE(quint32(QMetaType::typeFlags(id)) & mask_5_0, flags);
+    QCOMPARE(quint32(QMetaType::typeFlags(id)) & mask_5_0, flags & mask_5_0);
 }
 
 void tst_QMetaType::construct_data()

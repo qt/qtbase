@@ -368,7 +368,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                              QWindowsKeyMapper::queryKeyboardModifiers(),
                                              source);
     m_previousCaptureWindow = hasCapture ? window : 0;
-    return true;
+    // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND
+    // is sent for unhandled WM_XBUTTONDOWN.
+    return (msg.message != WM_XBUTTONUP && msg.message != WM_XBUTTONDOWN && msg.message != WM_XBUTTONDBLCLK)
+        || QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 static bool isValidWheelReceiver(QWindow *candidate)
@@ -474,7 +477,12 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
     Q_ASSERT(m_touchDevice);
-    const QRect screenGeometry = window->screen()->geometry();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
 
     const int winTouchPointCount = msg.wParam;
     QScopedArrayPointer<TOUCHINPUT> winTouchInputs(new TOUCHINPUT[winTouchPointCount]);
@@ -566,7 +574,12 @@ bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
     if (gi.dwID != GID_DIRECTMANIPULATION)
         return true;
     static QPoint lastTouchPos;
-    const QRect screenGeometry = window->screen()->geometry();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return true;
+    const QRect screenGeometry = screen->geometry();
     QWindowSystemInterface::TouchPoint touchPoint;
     static QWindowSystemInterface::TouchPoint touchPoint2;
     touchPoint.id = 0;//gi.dwInstanceID;

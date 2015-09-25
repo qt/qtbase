@@ -128,7 +128,7 @@ private slots:
     void taskQTBUG4965_escapeEaten();
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
-    void closeOnSecondClick();
+    void closeOnSecondClickAndOpenOnThirdClick();
     void cornerWidgets_data();
     void cornerWidgets();
 
@@ -1312,7 +1312,7 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
 }
 
-void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd click.
+void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu should close on 2nd click.
 {
     QMainWindow mainWindow;
     mainWindow.resize(300, 200);
@@ -1322,17 +1322,20 @@ void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd
 #endif
     QMenuBar *menuBar = mainWindow.menuBar();
     menuBar->setNativeMenuBar(false);
-    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("closeOnSecondClick"));
+    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("OpenCloseOpen"));
     fileMenu->addAction(QStringLiteral("Quit"));
     mainWindow.show();
     QApplication::setActiveWindow(&mainWindow);
     QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
     const QPoint center = menuBar->actionGeometry(fileMenu->menuAction()).center();
+    const QPoint globalPos = menuBar->mapToGlobal(center);
     QTest::mouseMove(menuBar, center);
     QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
     QTRY_VERIFY(fileMenu->isVisible());
-    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTest::mouseClick(fileMenu, Qt::LeftButton, 0, fileMenu->mapFromGlobal(globalPos));
     QTRY_VERIFY(!fileMenu->isVisible());
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(fileMenu->isVisible());
 }
 
 Q_DECLARE_METATYPE(Qt::Corner)

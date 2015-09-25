@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,33 +31,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "tst_qdbusconnection.h"
+
 #include <qcoreapplication.h>
 #include <qdebug.h>
 
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
-
-class BaseObject: public QObject
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.BaseObject")
-public:
-    BaseObject(QObject *parent = 0) : QObject(parent) { }
-public slots:
-    void anotherMethod() { }
-};
-
-class MyObject: public BaseObject
-{
-    Q_OBJECT
-public slots:
-    void method(const QDBusMessage &msg);
-
-public:
-    static QString path;
-    int callCount;
-    MyObject(QObject *parent = 0) : BaseObject(parent), callCount(0) {}
-};
 
 void MyObject::method(const QDBusMessage &msg)
 {
@@ -65,19 +47,6 @@ void MyObject::method(const QDBusMessage &msg)
     //qDebug() << msg;
 }
 
-class MyObjectWithoutInterface: public QObject
-{
-    Q_OBJECT
-public slots:
-    void method(const QDBusMessage &msg);
-
-public:
-    static QString path;
-    static QString interface;
-    int callCount;
-    MyObjectWithoutInterface(QObject *parent = 0) : QObject(parent), callCount(0) {}
-};
-
 void MyObjectWithoutInterface::method(const QDBusMessage &msg)
 {
     path = msg.path();
@@ -85,72 +54,6 @@ void MyObjectWithoutInterface::method(const QDBusMessage &msg)
     ++callCount;
     //qDebug() << msg;
 }
-
-class tst_QDBusConnection: public QObject
-{
-    Q_OBJECT
-
-    int signalsReceived;
-public slots:
-    void oneSlot() { ++signalsReceived; }
-    void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
-    void secondCallWithCallback();
-
-private slots:
-    void noConnection();
-    void connectToBus();
-    void connectToPeer();
-    void connect();
-    void send();
-    void sendWithGui();
-    void sendAsync();
-    void sendSignal();
-    void sendSignalToName();
-    void sendSignalToOtherName();
-
-    void registerObject_data();
-    void registerObject();
-    void registerObjectWithInterface_data();
-    void registerObjectWithInterface();
-    void registerObjectPeer_data();
-    void registerObjectPeer();
-    void registerObject2();
-    void registerObjectPeer2();
-
-    void registerQObjectChildren();
-    void registerQObjectChildrenPeer();
-
-    void callSelf();
-    void callSelfByAnotherName_data();
-    void callSelfByAnotherName();
-    void multipleInterfacesInQObject();
-
-    void slotsWithLessParameters();
-    void nestedCallWithCallback();
-
-    void serviceRegistrationRaceCondition();
-
-    void registerVirtualObject();
-    void callVirtualObject();
-    void callVirtualObjectLocal();
-
-public:
-    QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
-    bool callMethod(const QDBusConnection &conn, const QString &path);
-    bool callMethod(const QDBusConnection &conn, const QString &path, const QString &interface);
-    bool callMethodPeer(const QDBusConnection &conn, const QString &path);
-};
-
-class QDBusSpy: public QObject
-{
-    Q_OBJECT
-public slots:
-    void handlePing(const QString &str) { args.clear(); args << str; }
-    void asyncReply(const QDBusMessage &msg) { args = msg.arguments(); }
-
-public:
-    QList<QVariant> args;
-};
 
 void tst_QDBusConnection::noConnection()
 {
@@ -187,12 +90,13 @@ void tst_QDBusConnection::sendSignal()
     msg << QLatin1String("ping");
 
     QVERIFY(con.send(msg));
-
-    QTest::qWait(1000);
 }
 
 void tst_QDBusConnection::sendSignalToName()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");  // because of the qWait()
+
     QDBusSpy spy;
 
     QDBusConnection con = QDBusConnection::sessionBus();
@@ -215,6 +119,9 @@ void tst_QDBusConnection::sendSignalToName()
 
 void tst_QDBusConnection::sendSignalToOtherName()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");  // because of the qWait()
+
     QDBusSpy spy;
 
     QDBusConnection con = QDBusConnection::sessionBus();
@@ -252,6 +159,9 @@ void tst_QDBusConnection::send()
 
 void tst_QDBusConnection::sendWithGui()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     QDBusConnection con = QDBusConnection::sessionBus();
 
     QVERIFY(con.isConnected());
@@ -268,6 +178,9 @@ void tst_QDBusConnection::sendWithGui()
 
 void tst_QDBusConnection::sendAsync()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
 
@@ -288,6 +201,9 @@ void tst_QDBusConnection::connect()
     QDBusSpy spy;
 
     QDBusConnection con = QDBusConnection::sessionBus();
+
+    if (!QCoreApplication::instance())
+        return;         // cannot receive signals in this thread without QCoreApplication
 
     con.connect(con.baseService(), "/org/kde/selftest", "org.kde.selftest", "ping", &spy,
                  SLOT(handlePing(QString)));
@@ -482,58 +398,6 @@ void tst_QDBusConnection::registerObjectWithInterface()
     QVERIFY(!callMethod(con, path, interface));
 }
 
-class MyServer : public QDBusServer
-{
-    Q_OBJECT
-public:
-    MyServer(QString path) : m_path(path), m_connections()
-    {
-        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
-    }
-
-    bool registerObject(const QDBusConnection& c)
-    {
-        QDBusConnection conn(c);
-        if (!conn.registerObject(m_path, &m_obj, QDBusConnection::ExportAllSlots))
-            return false;
-        if (!(conn.objectRegisteredAt(m_path) == &m_obj))
-            return false;
-        return true;
-    }
-
-    bool registerObject()
-    {
-        Q_FOREACH (const QString &name, m_connections) {
-            if (!registerObject(QDBusConnection(name)))
-                return false;
-        }
-        return true;
-    }
-
-    void unregisterObject()
-    {
-        Q_FOREACH (const QString &name, m_connections) {
-            QDBusConnection c(name);
-            c.unregisterObject(m_path);
-        }
-    }
-
-public slots:
-    void handleConnection(const QDBusConnection& c)
-    {
-        m_connections << c.name();
-        QVERIFY(isConnected());
-        QVERIFY(c.isConnected());
-        QVERIFY(registerObject(c));
-    }
-
-private:
-    MyObject m_obj;
-    QString m_path;
-    QStringList m_connections;
-};
-
-
 void tst_QDBusConnection::registerObjectPeer_data()
 {
     QTest::addColumn<QString>("path");
@@ -547,16 +411,22 @@ void tst_QDBusConnection::registerObjectPeer_data()
 
 void tst_QDBusConnection::registerObjectPeer()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     QFETCH(QString, path);
 
     MyServer server(path);
 
     QDBusConnection::connectToPeer(server.address(), "beforeFoo");
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 
     {
         QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
 
-        QCoreApplication::processEvents();
+        QTestEventLoop::instance().enterLoop(2);
+        QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(con.isConnected());
 
         MyObject obj;
@@ -565,6 +435,7 @@ void tst_QDBusConnection::registerObjectPeer()
     }
 
     QDBusConnection::connectToPeer(server.address(), "afterFoo");
+    QTestEventLoop::instance().enterLoop(2);
 
     {
         QDBusConnection con("foo");
@@ -617,7 +488,6 @@ void tst_QDBusConnection::registerObject2()
         MyObject obj;
         QVERIFY(con.registerObject("/", &obj, QDBusConnection::ExportAllSlots));
         QVERIFY(callMethod(con, "/"));
-        qDebug() << obj.path;
         QCOMPARE(obj.path, QString("/"));
     }
     // make sure it's gone
@@ -629,7 +499,6 @@ void tst_QDBusConnection::registerObject2()
         QVERIFY(con.registerObject("/p1", &obj, QDBusConnection::ExportAllSlots));
         QVERIFY(!callMethod(con, "/"));
         QVERIFY(callMethod(con, "/p1"));
-        qDebug() << obj.path;
         QCOMPARE(obj.path, QString("/p1"));
 
         // re-register it somewhere else
@@ -693,38 +562,15 @@ void tst_QDBusConnection::registerObject2()
     }
 }
 
-class MyServer2 : public QDBusServer
-{
-    Q_OBJECT
-public:
-    MyServer2() : m_conn("none")
-    {
-        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
-    }
-
-    QDBusConnection connection()
-    {
-        return m_conn;
-    }
-
-public slots:
-    void handleConnection(const QDBusConnection& c)
-    {
-        m_conn = c;
-        QVERIFY(isConnected());
-        QVERIFY(m_conn.isConnected());
-    }
-
-private:
-    MyObject m_obj;
-    QDBusConnection m_conn;
-};
-
 void tst_QDBusConnection::registerObjectPeer2()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     MyServer2 server;
     QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
-    QCoreApplication::processEvents();
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(con.isConnected());
 
     QDBusConnection srv_con = server.connection();
@@ -741,7 +587,6 @@ void tst_QDBusConnection::registerObjectPeer2()
         MyObject obj;
         QVERIFY(con.registerObject("/", &obj, QDBusConnection::ExportAllSlots));
         QVERIFY(callMethodPeer(srv_con, "/"));
-        qDebug() << obj.path;
         QCOMPARE(obj.path, QString("/"));
     }
     // make sure it's gone
@@ -753,7 +598,6 @@ void tst_QDBusConnection::registerObjectPeer2()
         QVERIFY(con.registerObject("/p1", &obj, QDBusConnection::ExportAllSlots));
         QVERIFY(!callMethodPeer(srv_con, "/"));
         QVERIFY(callMethodPeer(srv_con, "/p1"));
-        qDebug() << obj.path;
         QCOMPARE(obj.path, QString("/p1"));
 
         // re-register it somewhere else
@@ -877,8 +721,13 @@ void tst_QDBusConnection::registerQObjectChildren()
 
 void tst_QDBusConnection::registerQObjectChildrenPeer()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     MyServer2 server;
     QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QCoreApplication::processEvents();
     QVERIFY(con.isConnected());
 
@@ -968,22 +817,6 @@ bool tst_QDBusConnection::callMethodPeer(const QDBusConnection &conn, const QStr
     return (MyObject::path == path);
 }
 
-class TestObject : public QObject
-{
-Q_OBJECT
-public:
-    TestObject(QObject *parent = 0) : QObject(parent) {}
-    ~TestObject() {}
-
-    QString func;
-
-public slots:
-    void test0() { func = "test0"; }
-    void test1(int i) { func = "test1 " + QString::number(i); }
-    int test2() { func = "test2"; return 43; }
-    int test3(int i) { func = "test2"; return i + 1; }
-};
-
 void tst_QDBusConnection::callSelf()
 {
     TestObject testObject;
@@ -1020,6 +853,9 @@ void tst_QDBusConnection::callSelfByAnotherName_data()
 
 void tst_QDBusConnection::callSelfByAnotherName()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     static int counter = 0;
     QString sname = serviceName() + QString::number(counter++);
 
@@ -1092,6 +928,9 @@ void tst_QDBusConnection::multipleInterfacesInQObject()
 
 void tst_QDBusConnection::slotsWithLessParameters()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     QDBusConnection con = QDBusConnection::sessionBus();
 
     QDBusMessage signal = QDBusMessage::createSignal("/", "org.qtproject.TestCase",
@@ -1118,7 +957,6 @@ void tst_QDBusConnection::slotsWithLessParameters()
 
 void tst_QDBusConnection::secondCallWithCallback()
 {
-    qDebug("Hello");
     QDBusConnection con = QDBusConnection::sessionBus();
     QDBusMessage msg = QDBusMessage::createMethodCall(con.baseService(), "/test", QString(),
                                                       "test0");
@@ -1127,6 +965,9 @@ void tst_QDBusConnection::secondCallWithCallback()
 
 void tst_QDBusConnection::nestedCallWithCallback()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     TestObject testObject;
     QDBusConnection connection = QDBusConnection::sessionBus();
     QVERIFY(connection.registerObject("/test", &testObject,
@@ -1142,22 +983,11 @@ void tst_QDBusConnection::nestedCallWithCallback()
     QCOMPARE(signalsReceived, 1);
 }
 
-class RaceConditionSignalWaiter : public QObject
-{
-    Q_OBJECT
-public:
-    int count;
-    RaceConditionSignalWaiter() : count (0) {}
-    virtual ~RaceConditionSignalWaiter() {}
-
-public slots:
-    void countUp() { ++count; emit done(); }
-signals:
-    void done();
-};
-
 void tst_QDBusConnection::serviceRegistrationRaceCondition()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     // There was a race condition in the updating of list of name owners in
     // Qt D-Bus. When the user connects to a signal coming from a given
     // service, we must listen for NameOwnerChanged signals relevant to that
@@ -1208,39 +1038,6 @@ void tst_QDBusConnection::serviceRegistrationRaceCondition()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recv.count, 1);
 }
-
-class VirtualObject: public QDBusVirtualObject
-{
-    Q_OBJECT
-public:
-    VirtualObject() :success(true) {}
-
-    QString introspect(const QString & /* path */) const
-    {
-        return QString();
-    }
-
-    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
-        ++callCount;
-        lastMessage = message;
-
-        if (success) {
-            QDBusMessage reply = message.createReply(replyArguments);
-            connection.send(reply);
-        }
-        emit messageReceived(message);
-        return success;
-    }
-signals:
-    void messageReceived(const QDBusMessage &message) const;
-
-public:
-    mutable QDBusMessage lastMessage;
-    QVariantList replyArguments;
-    mutable int callCount;
-    bool success;
-};
-
 
 void tst_QDBusConnection::registerVirtualObject()
 {
@@ -1324,6 +1121,9 @@ void tst_QDBusConnection::registerVirtualObject()
 
 void tst_QDBusConnection::callVirtualObject()
 {
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
 
@@ -1381,7 +1181,6 @@ void tst_QDBusConnection::callVirtualObject()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QTest::qWait(100);
     QVERIFY(errorReply.isError());
-    qDebug() << errorReply.reply().arguments();
     QCOMPARE(errorReply.reply().errorName(), QString("org.freedesktop.DBus.Error.UnknownObject"));
 
     QDBusConnection::disconnectFromBus("con2");
@@ -1422,7 +1221,7 @@ void tst_QDBusConnection::callVirtualObjectLocal()
 QString MyObject::path;
 QString MyObjectWithoutInterface::path;
 QString MyObjectWithoutInterface::interface;
+
+#ifndef tst_QDBusConnection
 QTEST_MAIN(tst_QDBusConnection)
-
-#include "tst_qdbusconnection.moc"
-
+#endif

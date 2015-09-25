@@ -36,10 +36,16 @@
     QRgba64 is a 64-bit data-structure containing four 16-bit color channels: Red, green, blue and alpha.
 
     QRgba64 can be used a replacement for QRgb when higher precision is needed. In particular a
-    premultiplied QRgba64 can operate on unpremultipled QRgb without loss of precision except
+    premultiplied QRgba64 can operate on unpremultiplied QRgb without loss of precision except
     for alpha 0.
 
     \sa QRgb, QColor
+*/
+
+/*!
+    \fn QRgba64 QRgba64::operator=(quint64 rgba)
+
+    Assigns the value \a rgba to this instance of QRgba64 and returns it.
 */
 
 /*!
@@ -75,27 +81,83 @@
 */
 
 /*!
+    \fn bool QRgba64::isOpaque() const
+
+    Returns whether the color is fully opaque.
+
+    \sa isTransparent(), alpha()
+*/
+
+/*!
+    \fn bool QRgba64::isTransparent() const
+
+    Returns whether the color is transparent.
+
+    \sa isOpaque(), alpha()
+*/
+
+/*!
     \fn quint16 QRgba64::red() const
 
     Returns the 16-bit red color component.
+
+    \sa setRed()
+*/
+
+/*!
+    \fn QRgba64::setRed(quint16 red)
+
+    Sets the red color component of this color to \a red.
+
+    \sa red()
 */
 
 /*!
     \fn quint16 QRgba64::green() const
 
     Returns the 16-bit green color component.
+
+    \sa setGreen()
+*/
+
+/*!
+    \fn QRgba64::setGreen(quint16 green)
+
+    Sets the green color component of this color to \a green.
+
+    \sa green()
 */
 
 /*!
     \fn quint16 QRgba64::blue() const
 
     Returns the 16-bit blue color component.
+
+    \sa setBlue()
+*/
+
+/*!
+    \fn QRgba64::setBlue(quint16 blue)
+
+    Sets the blue color component of this color to \a blue.
+
+    \sa blue()
 */
 
 /*!
     \fn quint16 QRgba64::alpha() const
 
     Returns the 16-bit alpha channel.
+
+    \sa setAlpha()
+*/
+
+/*!
+    \fn QRgba64::setAlpha(quint16 alpha)
+
+    Sets the alpha of this color to \a alpha.
+
+    \sa alpha()
 */
 
 /*!

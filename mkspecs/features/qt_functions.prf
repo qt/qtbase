@@ -38,22 +38,12 @@ defineTest(qtAddLibrary) {
     # Reverse-engineer the module name from the library name.
     for(var, QT_MODULES) {
         isEqual(QT.$${var}.name, $$1) {
-            qtAddModule($$var, LIBS)
+            QT += $$var
+            export(QT)
             return(true)
         }
     }
     error("No module matching library '$$1' found.")
-}
-
-# target variable, flag source variable
-defineTest(qtProcessModuleFlags) {
-    for(flag, $$2) {
-        contains(flag, ^-.*): \
-            $$1 -= $$replace(flag, ^-, )
-        else: \
-            $$1 += $$flag
-    }
-    export($$1)
 }
 
 # qt module
@@ -61,137 +51,6 @@ defineTest(qtHaveModule) {
     !isEmpty(QT.$$replace(1, -, _).name): \
         return(true)
     return(false)
-}
-
-# qt module, libs variable
-defineTest(qtAddModule) {
-    MODULE_NAME = $$eval(QT.$${1}.name)
-    MODULE_INCLUDES = $$eval(QT.$${1}.includes)
-    MODULE_LIBS = $$eval(QT.$${1}.libs)
-    MODULE_CONFIG = $$eval(QT.$${1}.module_config)
-
-    contains(MODULE_CONFIG, internal_module) {
-        using_privates = true
-        export(using_privates)
-    }
-    contains(MODULE_CONFIG, ltcg): CONFIG += link_ltcg
-
-    qtProcessModuleFlags(CONFIG, QT.$${1}.CONFIG)
-    qtProcessModuleFlags(DEFINES, QT.$${1}.DEFINES)
-
-    MODULE_INCLUDES -= $$QMAKE_DEFAULT_INCDIRS
-    MODULE_LIBS_ADD = $$MODULE_LIBS
-    MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
-
-    unset(LINKAGE)
-    mac:contains(MODULE_CONFIG, lib_bundle) {
-          FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
-          !qt_no_framework_direct_includes {
-               INCLUDEPATH *= $$FRAMEWORK_INCLUDE
-          }
-          contains(MODULE_CONFIG, internal_module): \
-               INCLUDEPATH += \
-                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION) \
-                    $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION)/$$MODULE_NAME
-          QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
-          export(QMAKE_FRAMEWORKPATH)
-          !contains(MODULE_CONFIG, no_link): \
-               LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
-    } else {
-          INCLUDEPATH *= $$MODULE_INCLUDES
-    }
-    export(INCLUDEPATH)
-
-    # Only link to this module if a libs directory is set, else this is just a module
-    # to give access to sources or include files, and not for linking.
-    !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link) {
-
-        # Re-insert the major version in the library name (cf qt5LibraryTarget above)
-        # unless it's a framework build
-        !mac|!contains(MODULE_CONFIG, lib_bundle): \
-            MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
-
-        win32 {
-            # Make sure the version number isn't appended again to the lib name
-            ver_var    = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE
-            dver_var   = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE
-            $$ver_var  = 0
-            $$dver_var = 0
-            export($$ver_var)
-            export($$dver_var)
-        }
-
-        isEmpty(LINKAGE) {
-            !isEmpty(MODULE_LIBS_ADD): \
-                LINKAGE = -L$$MODULE_LIBS_ADD
-            lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
-            LINKAGE += -l$$lib
-
-            contains(QT_CONFIG, rpath) {
-                QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
-                export(QMAKE_RPATHDIR)
-            }
-
-            contains(MODULE_CONFIG, staticlib) {
-                PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-                export(PRE_TARGETDEPS)
-            }
-        }
-
-        $$2 += $$LINKAGE
-        export($$2)
-
-        !isEmpty(QMAKE_LSB) {
-            !isEmpty(MODULE_LIBS_ADD): \
-                QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
-            QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
-            QMAKE_LIBDIR *= /opt/lsb/lib
-            export(QMAKE_LFLAGS)
-            export(QMAKE_LIBDIR)
-        }
-    }
-}
-
-# qt variable, libs variable
-defineTest(qtAddModules) {
-    # qmake variables cannot contain dashes, so normalize the names first
-    $$1 = $$replace($$1, -private$, _private)
-    # Topological resolution of modules based on their QT.<module>.depends variable
-    $$1 = $$resolve_depends($$1, "QT.")
-    # Finally actually add the modules
-    unset(BAD_QT)
-    for(QTLIB, $$1) {
-        QTLIBNAME = $$eval(QT.$${QTLIB}.name)
-        isEmpty(QTLIBNAME) {
-            BAD_QT += $$QTLIB
-            next()
-        }
-
-        target_qt:isEqual(TARGET, $$QTLIBNAME) {
-            warning("$$TARGET cannot have a $$1 of $$QTLIB")
-            next()
-        }
-
-        qtAddModule($$QTLIB, $$2)
-    }
-    !isEmpty(BAD_QT):error("Unknown module(s) in $$1: $$replace(BAD_QT, _private$, -private)")
-}
-
-defineTest(qtAddRpathLink) {
-    # -rpath-link is used by the linker to find dependencies of dynamic
-    # libraries which were NOT specified on the command line.
-    # This means that paths of direct dependencies (QT & QT_PRIVATE)
-    # don't need to appear here. However, their private dependencies'
-    # paths OTOH need to be put there.
-    pubqt = $$replace(1, -private$, _private)
-    pubdep = $$resolve_depends(pubqt, "QT.")
-    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".run_depends")
-    privdep -= $$pubdep
-    rpaths =
-    for(dep, privdep): \
-        rpaths += $$eval(QT.$${dep}.libs)
-    QMAKE_RPATHLINKDIR *= $$unique(rpaths)
-    export(QMAKE_RPATHLINKDIR)
 }
 
 # variable, default, [suffix for variable for system() use], [prepare primary variable for system() use]

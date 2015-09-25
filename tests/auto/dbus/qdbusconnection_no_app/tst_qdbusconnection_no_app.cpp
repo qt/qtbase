@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,34 +31,7 @@
 **
 ****************************************************************************/
 
-#ifndef QKMSNATIVEINTERFACE_H
-#define QKMSNATIVEINTERFACE_H
+// Ugly hack, look away
+#include "../qdbusconnection/tst_qdbusconnection.cpp"
 
-#include "qkmsscreen.h"
-
-#include <qpa/qplatformnativeinterface.h>
-
-class QKmsNativeInterface : public QPlatformNativeInterface
-{
-public:
-    enum ResourceType {
-        EglDisplay,
-        EglContext
-    };
-
-    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
-
-    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
-
-    void *eglDisplay();
-    void *eglDisplayForWindow(QWindow *window);
-    void *eglContextForWindow(QWindow *window);
-    static void *eglContextForContext(QOpenGLContext *context);
-
-private:
-    static QKmsScreen *qPlatformScreenForWindow(QWindow *window);
-};
-
-
-#endif // QKMSNATIVEINTERFACE_H
+QTEST_APPLESS_MAIN(tst_QDBusConnection_NoApplication)

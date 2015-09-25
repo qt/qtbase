@@ -1270,7 +1270,7 @@ QAction::MenuRole QAction::menuRole() const
     For example:
     \snippet code/src_gui_kernel_qaction.cpp 0
 
-    \sa QAction::icon, QApplication::setAttribute()
+    \sa QAction::icon, QCoreApplication::setAttribute()
 */
 void QAction::setIconVisibleInMenu(bool visible)
 {

@@ -301,12 +301,12 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     quint32 sym = keyEvent->nativeVirtualKey();
     quint32 code = keyEvent->nativeScanCode();
     quint32 state = keyEvent->nativeModifiers();
+    quint32 ibusState = state;
 
     if (keyEvent->type() != QEvent::KeyPress)
-        state |= IBUS_RELEASE_MASK;
+        ibusState |= IBUS_RELEASE_MASK;
 
-    code -= 8; // ###
-    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code, state);
+    QDBusPendingReply<bool> reply = d->context->ProcessKeyEvent(sym, code - 8, ibusState);
 
     if (m_eventFilterUseSynchronousMode || reply.isFinished()) {
         bool retval = reply.value();
@@ -315,17 +315,36 @@ bool QIBusPlatformInputContext::filterEvent(const QEvent *event)
     }
 
     Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+    const int qtcode = keyEvent->key();
+
+    // From QKeyEvent::modifiers()
+    switch (qtcode) {
+    case Qt::Key_Shift:
+        modifiers ^= Qt::ShiftModifier;
+        break;
+    case Qt::Key_Control:
+        modifiers ^= Qt::ControlModifier;
+        break;
+    case Qt::Key_Alt:
+        modifiers ^= Qt::AltModifier;
+        break;
+    case Qt::Key_Meta:
+        modifiers ^= Qt::MetaModifier;
+        break;
+    case Qt::Key_AltGr:
+        modifiers ^= Qt::GroupSwitchModifier;
+        break;
+    }
 
     QVariantList args;
     args << QVariant::fromValue(keyEvent->timestamp());
     args << QVariant::fromValue(static_cast<uint>(keyEvent->type()));
-    args << QVariant::fromValue(keyEvent->key());
+    args << QVariant::fromValue(qtcode);
     args << QVariant::fromValue(code) << QVariant::fromValue(sym) << QVariant::fromValue(state);
     args << QVariant::fromValue(keyEvent->text());
     args << QVariant::fromValue(keyEvent->isAutoRepeat());
-    args << QVariant::fromValue(keyEvent->count());
 
-    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, qApp->focusObject(), modifiers, args);
+    QIBusFilterEventWatcher *watcher = new QIBusFilterEventWatcher(reply, this, QGuiApplication::focusWindow(), modifiers, args);
     QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &QIBusPlatformInputContext::filterEventFinished);
 
     return true;
@@ -343,9 +362,9 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
 
     // Use watcher's window instead of the current focused window
     // since there is a time lag until filterEventFinished() returns.
-    QObject *input = watcher->input();
+    QWindow *window = watcher->window();
 
-    if (!input) {
+    if (!window) {
         call->deleteLater();
         return;
     }
@@ -360,14 +379,12 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     const quint32 state = args.at(5).toUInt();
     const QString string = args.at(6).toString();
     const bool isAutoRepeat = args.at(7).toBool();
-    const int count = args.at(8).toInt();
 
     // copied from QXcbKeyboard::handleKeyEvent()
     bool retval = reply.value();
     qCDebug(qtQpaInputMethods) << "filterEventFinished return" << code << sym << state << retval;
     if (!retval) {
 #ifndef QT_NO_CONTEXTMENU
-        QWindow *window = dynamic_cast<QWindow *>(input);
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
             && window != NULL) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
@@ -376,10 +393,9 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
                                                            globalPos, modifiers);
         }
 #endif // QT_NO_CONTEXTMENU
-        QKeyEvent event(type, qtcode, modifiers, code, sym,
-                        state, string, isAutoRepeat, count);
-        event.setTimestamp(time);
-        QCoreApplication::sendEvent(input, &event);
+        QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
+                                                       code, sym, state, string, isAutoRepeat);
+
     }
     call->deleteLater();
 }

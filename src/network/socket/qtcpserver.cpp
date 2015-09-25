@@ -559,6 +559,10 @@ QTcpSocket *QTcpServer::nextPendingConnection()
     may not be usable with native socket functions, and should only be
     used with QTcpSocket::setSocketDescriptor().
 
+    \note If another socket is created in the reimplementation
+    of this method, it needs to be added to the Pending Connections mechanism
+    by calling addPendingConnection().
+
     \note If you want to handle an incoming connection as a new QTcpSocket
     object in another thread you have to pass the socketDescriptor
     to the other thread and create the QTcpSocket object there and

@@ -42,10 +42,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 class QAction;
-class QMenu;
 class QSettings;
 QT_END_NAMESPACE
 class LocationDialog;
@@ -56,6 +56,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    typedef QSharedPointer<QSettings> SettingsPtr;
+
     MainWindow();
 
 private slots:
@@ -67,25 +69,13 @@ private slots:
 
 private:
     void createActions();
-    void createMenus();
-    void setSettingsObject(QSettings *settings);
+    void setSettingsObject(const SettingsPtr &settings);
 
     SettingsTree *settingsTree;
     LocationDialog *locationDialog;
-
-    QMenu *fileMenu;
-    QMenu *optionsMenu;
-    QMenu *helpMenu;
-    QAction *openSettingsAct;
-    QAction *openIniFileAct;
-    QAction *openPropertyListAct;
-    QAction *openRegistryPathAct;
     QAction *refreshAct;
-    QAction *exitAct;
     QAction *autoRefreshAct;
     QAction *fallbacksAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
 };
 
 #endif

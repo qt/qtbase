@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -205,11 +206,6 @@ DEFINEFUNC(dbus_bool_t        , dbus_connection_send_with_reply, (DBusConnection
                                                                   DBusPendingCall           **pending_return,
                                                                   int                         timeout_milliseconds),
            (connection, message, pending_return, timeout_milliseconds), return)
-DEFINEFUNC(DBusMessage *      , dbus_connection_send_with_reply_and_block, (DBusConnection             *connection,
-                                                                            DBusMessage                *message,
-                                                                            int                         timeout_milliseconds,
-                                                                            DBusError                  *error),
-           (connection, message, timeout_milliseconds, error), return)
 DEFINEFUNC(void               , dbus_connection_set_exit_on_disconnect, (DBusConnection             *connection,
                                                                          dbus_bool_t                 exit_on_disconnect),
            (connection, exit_on_disconnect), )

@@ -155,6 +155,8 @@ win32 {
                 OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
                 HEADERS += io/qfilesystemwatcher_fsevents_p.h
                 LIBS += -framework DiskArbitration -framework IOKit
+            } else:ios {
+                LIBS += -framework MobileCoreServices
             }
         } else:blackberry {
             SOURCES += \

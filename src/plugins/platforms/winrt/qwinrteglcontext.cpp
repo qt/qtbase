@@ -56,7 +56,6 @@ public:
     EGLDisplay eglDisplay;
     EGLConfig eglConfig;
     EGLContext eglContext;
-    QHash<QPlatformSurface *, EGLSurface> surfaceForWindow;
 };
 
 QWinRTEGLContext::QWinRTEGLContext(QOpenGLContext *context)
@@ -70,8 +69,6 @@ QWinRTEGLContext::QWinRTEGLContext(QOpenGLContext *context)
 QWinRTEGLContext::~QWinRTEGLContext()
 {
     Q_D(QWinRTEGLContext);
-    foreach (const EGLSurface &surface, d->surfaceForWindow)
-        eglDestroySurface(d->eglDisplay, surface);
     if (d->eglContext != EGL_NO_CONTEXT)
         eglDestroyContext(d->eglDisplay, d->eglContext);
     if (d->eglDisplay != EGL_NO_DISPLAY)
@@ -112,23 +109,13 @@ bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
     Q_D(QWinRTEGLContext);
     Q_ASSERT(windowSurface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
-    EGLSurface surface = d->surfaceForWindow.value(windowSurface);
-    if (surface == EGL_NO_SURFACE) {
-        QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
-        HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([this, d, window, &surface]() {
-            surface = eglCreateWindowSurface(d->eglDisplay, d->eglConfig,
-                                             reinterpret_cast<EGLNativeWindowType>(window->winId()),
-                                             nullptr);
-            if (surface == EGL_NO_SURFACE) {
-                qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
-                return E_FAIL;
-            }
-            return S_OK;
-        });
-        if (FAILED(hr))
-            return false;
-        d->surfaceForWindow.insert(windowSurface, surface);
-    }
+    QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
+    if (window->eglSurface() == EGL_NO_SURFACE)
+        window->createEglSurface(d->eglDisplay, d->eglConfig);
+
+    EGLSurface surface = window->eglSurface();
+    if (surface == EGL_NO_SURFACE)
+        return false;
 
     const bool ok = eglMakeCurrent(d->eglDisplay, surface, surface, d->eglContext);
     if (!ok) {
@@ -153,7 +140,8 @@ void QWinRTEGLContext::swapBuffers(QPlatformSurface *windowSurface)
     Q_D(QWinRTEGLContext);
     Q_ASSERT(windowSurface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
-    eglSwapBuffers(d->eglDisplay, d->surfaceForWindow.value(windowSurface));
+    const QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
+    eglSwapBuffers(d->eglDisplay, window->eglSurface());
 }
 
 QSurfaceFormat QWinRTEGLContext::format() const

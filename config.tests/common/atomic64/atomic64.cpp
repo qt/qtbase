@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,41 +31,24 @@
 **
 ****************************************************************************/
 
-#ifndef QKMSCONTEXT_H
-#define QKMSCONTEXT_H
+#include <atomic>
+#include <cstdint>
 
-#include <qpa/qplatformopenglcontext.h>
-
-#define EGL_EGLEXT_PROTOTYPES 1
-#include <EGL/egl.h>
-
-QT_BEGIN_NAMESPACE
-
-class QKmsDevice;
-
-class QKmsContext : public QPlatformOpenGLContext
+void test(volatile std::atomic<std::int64_t> &a)
 {
-public:
-    QKmsContext(QOpenGLContext *context, QKmsDevice *device);
+    std::int64_t v = a.load(std::memory_order_acquire);
+    while (!a.compare_exchange_strong(v, v + 1,
+                                      std::memory_order_acq_rel,
+                                      std::memory_order_acquire)) {
+        v = a.exchange(v - 1);
+    }
 
-    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    void doneCurrent() Q_DECL_OVERRIDE;
-    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    void (*getProcAddress(const QByteArray &procName)) () Q_DECL_OVERRIDE;
+    a.store(v + 1, std::memory_order_release);
+}
 
-    bool isValid() const Q_DECL_OVERRIDE;
-
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
-
-    EGLContext eglContext() const;
-
-private:
-    EGLContext m_eglContext;
-    QSurfaceFormat m_format;
-
-    QKmsDevice *m_device;
-};
-
-QT_END_NAMESPACE
-
-#endif // QKMSCONTEXT_H
+int main(int, char **)
+{
+    void *ptr = (void*)0xffffffc0; // any random pointer
+    test(*reinterpret_cast<std::atomic<std::int64_t> *>(ptr));
+    return 0;
+}

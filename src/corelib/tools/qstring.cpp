@@ -2680,6 +2680,8 @@ bool operator==(const QString &s1, const QString &s2)
 
 /*!
     \overload operator==()
+    Returns \c true if this string is equal to \a other; otherwise
+    returns \c false.
 */
 bool QString::operator==(QLatin1String other) const
 {
@@ -2738,7 +2740,7 @@ bool operator<(const QString &s1, const QString &s2)
 }
 /*!
    \overload operator<()
-   \relates QString
+
     Returns \c true if this string is lexically less than the parameter
     string called \a other; otherwise returns \c false.
 */
@@ -2843,7 +2845,7 @@ bool QString::operator<(QLatin1String other) const
 
 /*!
    \overload operator>()
-   \relates QString
+
     Returns \c true if this string is lexically greater than the parameter
     string \a other; otherwise returns \c false.
 */
@@ -3614,9 +3616,14 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 }
 
 /*!
-  \overload count()
+    \overload count()
 
-  Returns the number of occurrences of character \a ch in the string.
+    Returns the number of occurrences of character \a ch in the string.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa contains(), indexOf()
 */
 
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const

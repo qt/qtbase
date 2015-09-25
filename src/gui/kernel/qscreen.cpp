@@ -698,7 +698,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
-    debug << "QScreen(" << (void *)screen;
+    debug << "QScreen(" << (const void *)screen;
     if (screen) {
         debug << ", name=" << screen->name();
         if (debug.verbosity() > 2) {

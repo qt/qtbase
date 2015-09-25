@@ -37,7 +37,9 @@
 #include "qwinrtinputcontext.h"
 #include "qwinrtscreen.h"
 #include <QtGui/QWindow>
+#include <private/qeventdispatcher_winrt_p.h>
 
+#include <functional>
 #include <wrl.h>
 #include <roapi.h>
 #include <windows.ui.viewmanagement.h>
@@ -163,10 +165,14 @@ void QWinRTInputContext::showInputPanel()
     if (FAILED(hr))
         return;
 
-    boolean success;
-    hr = inputPane->TryShow(&success);
-    if (FAILED(hr))
-        qErrnoWarning(hr, "Failed to show input panel.");
+    QEventDispatcherWinRT::runOnXamlThread([&inputPane]() {
+        HRESULT hr;
+        boolean success;
+        hr = inputPane->TryShow(&success);
+        if (FAILED(hr) || !success)
+            qErrnoWarning(hr, "Failed to show input panel.");
+        return hr;
+    });
 }
 
 void QWinRTInputContext::hideInputPanel()
@@ -176,10 +182,14 @@ void QWinRTInputContext::hideInputPanel()
     if (FAILED(hr))
         return;
 
-    boolean success;
-    hr = inputPane->TryHide(&success);
-    if (FAILED(hr))
-        qErrnoWarning(hr, "Failed to hide input panel.");
+    QEventDispatcherWinRT::runOnXamlThread([&inputPane]() {
+        HRESULT hr;
+        boolean success;
+        hr = inputPane->TryHide(&success);
+        if (FAILED(hr) || !success)
+            qErrnoWarning(hr, "Failed to hide input panel.");
+        return hr;
+    });
 }
 
 #endif // Q_OS_WINPHONE

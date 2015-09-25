@@ -62,10 +62,10 @@ static inline qreal initialScaleFactor()
         }
     } else {
         if (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)) {
-            qWarning() << "Warning:" << legacyDevicePixelEnvVar << "is deprecated. Instead use:";
-            qWarning() << "   " << autoScreenEnvVar << "to enable platform plugin controlled per-screen factors.";
-            qWarning() << "   " << screenFactorsEnvVar << "to set per-screen factors.";
-            qWarning() << "   " << scaleFactorEnvVar << "to set the application global scale factor.";
+            qWarning() << "Warning:" << legacyDevicePixelEnvVar << "is deprecated. Instead use:" << endl
+                       << "   " << autoScreenEnvVar << "to enable platform plugin controlled per-screen factors." << endl
+                       << "   " << screenFactorsEnvVar << "to set per-screen factors." << endl
+                       << "   " << scaleFactorEnvVar << "to set the application global scale factor.";
 
             int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
             if (dpr > 0)

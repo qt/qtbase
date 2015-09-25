@@ -65,6 +65,7 @@ class QDocIndexFiles
     void readIndexFile(const QString& path);
     void readIndexSection(QXmlStreamReader &reader, Node* current, const QString& indexUrl);
     void resolveIndex();
+    void resolveRelates();
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
 

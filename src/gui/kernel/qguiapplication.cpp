@@ -99,6 +99,9 @@
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include <QtCore/qt_windows.h>
 #  include <QtCore/QLibraryInfo>
+# if defined(Q_OS_WINPHONE)
+#   include <Objbase.h>
+# endif
 #endif // Q_OS_WIN && !Q_OS_WINCE
 
 #include <ctype.h>
@@ -450,8 +453,7 @@ static QWindowGeometrySpecification windowGeometrySpecification;
         \row
         \li  Miscellaneous
         \li  startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop
@@ -907,16 +909,6 @@ QWindowList QGuiApplication::topLevelWindows()
     return topLevelWindows;
 }
 
-/*!
-    Returns the primary (or default) screen of the application, or null if there is none
-
-    This will be the screen where QWindows are initially shown, unless otherwise specified.
-
-    On some platforms, it may be null when there are actually no screens connected.
-    It is not possible to start a new QGuiApplication while there are no screens.
-    Applications which were running at the time the primary screen was removed
-    will stop rendering graphics until one or more screens are restored.
-*/
 QScreen *QGuiApplication::primaryScreen()
 {
     if (QGuiApplicationPrivate::screen_list.isEmpty())
@@ -938,7 +930,7 @@ QList<QScreen *> QGuiApplication::screens()
 
     This signal is emitted whenever a new screen \a screen has been added to the system.
 
-    \sa screens(), primaryScreen(), screenRemoved()
+    \sa screens(), primaryScreen, screenRemoved()
 */
 
 /*!
@@ -953,6 +945,23 @@ QList<QScreen *> QGuiApplication::screens()
     \since 5.4
 */
 
+
+/*!
+    \property QGuiApplication::primaryScreen
+
+    \brief the primary (or default) screen of the application, or null if there is none.
+
+    This will be the screen where QWindows are initially shown, unless otherwise specified.
+
+    On some platforms, it may be null when there are actually no screens connected.
+    It is not possible to start a new QGuiApplication while there are no screens.
+    Applications which were running at the time the primary screen was removed
+    will stop rendering graphics until one or more screens are restored.
+
+    The primaryScreenChanged signal was introduced in Qt 5.6.
+
+    \sa screens()
+*/
 
 /*!
     Returns the highest screen device pixel ratio found on
@@ -1257,6 +1266,16 @@ void QGuiApplicationPrivate::init()
 #ifndef QT_NO_SESSIONMANAGER
     QString session_id;
     QString session_key;
+# if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    wchar_t guidstr[40];
+    GUID guid;
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_id = QString::fromWCharArray(guidstr);
+    CoCreateGuid(&guid);
+    StringFromGUID2(guid, guidstr, 40);
+    session_key = QString::fromWCharArray(guidstr);
+# endif
 #endif
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
@@ -1738,7 +1757,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // should first send a move event followed by a button changed event. Since this is not the case
         // with the current event, we split it in two.
         QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(
-                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers);
+                    e->window.data(), e->timestamp, e->type, e->localPos, e->globalPos, e->buttons, e->modifiers, e->source);
         if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
             mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         e->buttons = buttons;
@@ -1834,6 +1853,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     QGuiApplication::sendSpontaneousEvent(window, &ev);
+    e->eventAccepted = ev.isAccepted();
     if (!e->synthetic() && !ev.isAccepted()
         && !frameStrut
         && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {

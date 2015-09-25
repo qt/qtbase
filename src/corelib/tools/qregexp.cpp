@@ -116,6 +116,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     A good text on regexps is \e {Mastering Regular Expressions}
     (Third Edition) by Jeffrey E. F.  Friedl, ISBN 0-596-52812-4.
 
+    \note In Qt 5, the new QRegularExpression class provides a Perl
+    compatible implementation of regular expressions and is recommended
+    in place of QRegExp.
+
     \tableofcontents
 
     \section1 Introduction
@@ -488,7 +492,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
          when it is followed by 'char'.
     \endtable
 
-    \keyword QRegExp wildcard matching
+    \target QRegExp wildcard matching
     \section1 Wildcard Matching
 
     Most command shells such as \e bash or \e cmd.exe support "file

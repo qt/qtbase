@@ -729,7 +729,7 @@ int main(int argc, char **argv)
         Location::startLoggingProgress();
 
     /*
-      The default indent for code is 4.
+      The default indent for code is 0.
       The default value for false is 0.
       The default supported file extensions are cpp, h, qdoc and qml.
       The default language is c++.
@@ -738,7 +738,7 @@ int main(int argc, char **argv)
       And those are all the default values for configuration variables.
      */
     if (defaults.isEmpty()) {
-        defaults.insert(CONFIG_CODEINDENT, QLatin1String("4"));
+        defaults.insert(CONFIG_CODEINDENT, QLatin1String("0"));
         defaults.insert(CONFIG_FALSEHOODS, QLatin1String("0"));
         defaults.insert(CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml"));
         defaults.insert(CONFIG_LANGUAGE, QLatin1String("Cpp"));

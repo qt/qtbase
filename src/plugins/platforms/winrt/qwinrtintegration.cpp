@@ -188,9 +188,9 @@ bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case ThreadedPixmaps:
     case OpenGL:
     case ApplicationState:
-        return true;
     case NonFullScreenWindows:
-        return false;
+    case MultipleWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

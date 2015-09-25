@@ -127,14 +127,13 @@ static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
 #ifdef QT_NO_GETIFADDRS
 // getifaddrs not available
 
-static const int STORAGEBUFFER_GROWTH = 256;
-
 static QSet<QByteArray> interfaceNames(int socket)
 {
     QSet<QByteArray> result;
 #ifdef QT_NO_IPV6IFNAME
     QByteArray storageBuffer;
     struct ifconf interfaceList;
+    static const int STORAGEBUFFER_GROWTH = 256;
 
     forever {
         // grow the storage buffer
@@ -186,9 +185,14 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
     QNetworkInterfacePrivate *iface = 0;
     int ifindex = 0;
 
-#ifndef QT_NO_IPV6IFNAME
+#if !defined(QT_NO_IPV6IFNAME) || defined(SIOCGIFINDEX)
     // Get the interface index
+#  ifdef SIOCGIFINDEX
+    if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
+        ifindex = req.ifr_ifindex;
+#  else
     ifindex = if_nametoindex(req.ifr_name);
+#  endif
 
     // find the interface data
     QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
@@ -214,6 +218,27 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
         iface = new QNetworkInterfacePrivate;
         iface->index = ifindex;
         interfaces << iface;
+    }
+
+    return iface;
+}
+
+static QList<QNetworkInterfacePrivate *> interfaceListing()
+{
+    QList<QNetworkInterfacePrivate *> interfaces;
+
+    int socket;
+    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
+        return interfaces;      // error
+
+    QSet<QByteArray> names = interfaceNames(socket);
+    QSet<QByteArray>::ConstIterator it = names.constBegin();
+    for ( ; it != names.constEnd(); ++it) {
+        ifreq req;
+        memset(&req, 0, sizeof(ifreq));
+        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
+
+        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
 #ifdef SIOCGIFNAME
         // Get the canonical name
@@ -242,27 +267,6 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
             iface->hardwareAddress = iface->makeHwAddress(6, addr);
         }
 #endif
-    }
-
-    return iface;
-}
-
-static QList<QNetworkInterfacePrivate *> interfaceListing()
-{
-    QList<QNetworkInterfacePrivate *> interfaces;
-
-    int socket;
-    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-        return interfaces;      // error
-
-    QSet<QByteArray> names = interfaceNames(socket);
-    QSet<QByteArray>::ConstIterator it = names.constBegin();
-    for ( ; it != names.constEnd(); ++it) {
-        ifreq req;
-        memset(&req, 0, sizeof(ifreq));
-        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
-
-        QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
         // Get the interface broadcast address
         QNetworkAddressEntry entry;

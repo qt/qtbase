@@ -181,6 +181,7 @@ private slots:
     void mapToGlobal();
     void mapToGlobalWithoutScene();
     void QTBUG_43780_visibility();
+    void forwardTouchEvent();
 };
 
 // Subclass that exposes the protected functions.
@@ -3763,6 +3764,74 @@ void tst_QGraphicsProxyWidget::QTBUG_43780_visibility()
     label->show();
     QTRY_VERIFY(label->isVisible());
     QVERIFY(comboPopup->isVisible());
+}
+
+class TouchWidget : public QWidget
+{
+public:
+    TouchWidget(QWidget *parent = 0) : QWidget(parent) {}
+
+    bool event(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+            event->accept();
+            return true;
+            break;
+        default:
+            break;
+        }
+
+        return QWidget::event(event);
+    }
+};
+
+// QTBUG_45737
+void tst_QGraphicsProxyWidget::forwardTouchEvent()
+{
+    QGraphicsScene *scene = new QGraphicsScene;
+
+    TouchWidget *widget = new TouchWidget;
+
+    widget->setAttribute(Qt::WA_AcceptTouchEvents);
+
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
+
+    proxy->setAcceptTouchEvents(true);
+    proxy->setWidget(widget);
+
+    scene->addItem(proxy);
+
+    QGraphicsView *view = new QGraphicsView(scene);
+
+    view->show();
+
+    EventSpy eventSpy(widget);
+
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+
+    QCOMPARE(eventSpy.counts[QEvent::TouchBegin], 0);
+    QCOMPARE(eventSpy.counts[QEvent::TouchUpdate], 0);
+    QCOMPARE(eventSpy.counts[QEvent::TouchEnd], 0);
+
+    QTest::touchEvent(view, device).press(0, QPoint(10, 10), view);
+    QTest::touchEvent(view, device).move(0, QPoint(15, 15), view);
+    QTest::touchEvent(view, device).move(0, QPoint(16, 16), view);
+    QTest::touchEvent(view, device).release(0, QPoint(15, 15), view);
+
+    QApplication::processEvents();
+
+    QCOMPARE(eventSpy.counts[QEvent::TouchBegin], 1);
+    QCOMPARE(eventSpy.counts[QEvent::TouchUpdate], 2);
+    QCOMPARE(eventSpy.counts[QEvent::TouchEnd], 1);
+
+    delete view;
+    delete proxy;
+    delete scene;
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

@@ -199,32 +199,44 @@ void QWindowsInputContext::reset()
     doneContext();
 }
 
-void QWindowsInputContext::setFocusObject(QObject *object)
+void QWindowsInputContext::setFocusObject(QObject *)
 {
     // ### fixme: On Windows 8.1, it has been observed that the Input context
     // remains active when this happens resulting in a lock-up. Consecutive
     // key events still have VK_PROCESSKEY set and are thus ignored.
     if (m_compositionContext.isComposing)
-        imeNotifyCancelComposition(m_compositionContext.hwnd);
+        reset();
+    updateEnabled();
+}
 
+void QWindowsInputContext::updateEnabled()
+{
+    if (!QGuiApplication::focusObject())
+        return;
     const QWindow *window = QGuiApplication::focusWindow();
-    if (object && window && window->handle()) {
+    if (window && window->handle()) {
         QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(window);
-        if (inputMethodAccepted()) {
-            // Re-enable IME by associating default context saved on first disabling.
-            if (platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
-                ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
-                platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
-            }
-        } else {
-            // Disable IME by associating 0 context. Store context first time.
-            if (!platformWindow->testFlag(QWindowsWindow::InputMethodDisabled)) {
-                const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
-                platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
-                if (!QWindowsInputContext::m_defaultContext && oldImC)
-                    QWindowsInputContext::m_defaultContext = oldImC;
-            }
-        }
+        const bool accepted = inputMethodAccepted();
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaInputMethods) << __FUNCTION__ << window << "accepted=" << accepted;
+            QWindowsInputContext::setWindowsImeEnabled(platformWindow, accepted);
+    }
+}
+
+void QWindowsInputContext::setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled)
+{
+    if (!platformWindow || platformWindow->testFlag(QWindowsWindow::InputMethodDisabled) == !enabled)
+        return;
+    if (enabled) {
+        // Re-enable Windows IME by associating default context saved on first disabling.
+        ImmAssociateContext(platformWindow->handle(), QWindowsInputContext::m_defaultContext);
+        platformWindow->clearFlag(QWindowsWindow::InputMethodDisabled);
+    } else {
+        // Disable Windows IME by associating 0 context. Store context first time.
+        const HIMC oldImC = ImmAssociateContext(platformWindow->handle(), 0);
+        platformWindow->setFlag(QWindowsWindow::InputMethodDisabled);
+        if (!QWindowsInputContext::m_defaultContext && oldImC)
+            QWindowsInputContext::m_defaultContext = oldImC;
     }
 }
 
@@ -234,6 +246,8 @@ void QWindowsInputContext::setFocusObject(QObject *object)
 
 void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 {
+    if (queries & Qt::ImEnabled)
+        updateEnabled();
     QPlatformInputContext::update(queries);
 }
 
@@ -293,11 +307,6 @@ void QWindowsInputContext::invokeAction(QInputMethod::Action action, int cursorP
     const HWND imeWindow = ImmGetDefaultIMEWnd(m_compositionContext.hwnd);
     SendMessage(imeWindow, m_WM_MSIME_MOUSE, MAKELONG(MAKEWORD(MK_LBUTTON, cursorPosition == 0 ? 2 : 1), cursorPosition), (LPARAM)himc);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
-}
-
-QWindowsInputContext *QWindowsInputContext::instance()
-{
-    return static_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
 }
 
 static inline QString getCompositionString(HIMC himc, DWORD dwIndex)

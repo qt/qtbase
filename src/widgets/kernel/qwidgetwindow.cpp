@@ -445,11 +445,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 receiver = popupChild;
             if (receiver != popup)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
-            QWidget *alien = m_widget->childAt(m_widget->mapFromGlobal(event->globalPos()));
+            QWidget *alien = receiver->childAt(receiver->mapFromGlobal(event->globalPos()));
             QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
                           event->button(), event->buttons(), event->modifiers(), event->source());
             e.setTimestamp(event->timestamp());
-            QApplicationPrivate::sendMouseEvent(receiver, &e, alien, m_widget, &qt_button_down, qt_last_mouse_receiver);
+            QApplicationPrivate::sendMouseEvent(receiver, &e, alien, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
             qt_last_mouse_receiver = receiver;
         } else {
             // close disabled popups when a mouse button is pressed or released
@@ -556,6 +556,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         translated.setTimestamp(event->timestamp());
         QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
                                             &qt_button_down, qt_last_mouse_receiver);
+        event->setAccepted(translated.isAccepted());
     }
 #ifndef QT_NO_CONTEXTMENU
     if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton
@@ -711,6 +712,7 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
 {
     bool is_closing = m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
     event->setAccepted(is_closing);
+    QWindow::event(event); // Call QWindow QCloseEvent handler.
 }
 
 #ifndef QT_NO_WHEELEVENT

@@ -51,6 +51,7 @@
 #include <QMutex>
 #include <QList>
 #include <QWaitCondition>
+#include <QAtomicInt>
 
 QT_BEGIN_NAMESPACE
 
@@ -481,6 +482,7 @@ public:
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
+    static void postWindowSystemEvent(WindowSystemEvent *ev);
     static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;
@@ -488,6 +490,7 @@ public:
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
+    static QAtomicInt eventAccepted;
 
     static QList<QTouchEvent::TouchPoint>
         fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,

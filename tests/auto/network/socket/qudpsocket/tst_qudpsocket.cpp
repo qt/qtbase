@@ -56,7 +56,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QHostAddress)
-Q_DECLARE_METATYPE(QNetworkInterface)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 
@@ -848,7 +847,11 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
     QTest::addColumn<bool>("bind");
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
 
     QTest::newRow("localhost-unbound") << false << localhost;
     QTest::newRow("localhost-bound") << true << localhost;
@@ -858,6 +861,8 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
 
 void tst_QUdpSocket::writeDatagramToNonExistingPeer()
 {
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(bool, bind);
     QFETCH(QHostAddress, peerAddress);
 
@@ -879,7 +884,11 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 {
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
-    QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+    QList<QHostAddress> serverAddresses(QHostInfo::fromName(QtNetworkSettings::serverName()).addresses());
+    if (serverAddresses.isEmpty())
+        return;
+
+    QHostAddress remote = serverAddresses.first();
     // write (required to be connected)
     QTest::newRow("localhost") << localhost;
     QTest::newRow("remote") << remote;
@@ -888,6 +897,8 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 void tst_QUdpSocket::writeToNonExistingPeer()
 {
     QSKIP("Connected-mode UDP sockets and their behaviour are erratic");
+    if (QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().isEmpty())
+        QFAIL("Could not find test server address");
     QFETCH(QHostAddress, peerAddress);
     quint16 peerPort = 34534;
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
@@ -1114,6 +1125,9 @@ void tst_QUdpSocket::multicastTtlOption_data()
 
 void tst_QUdpSocket::multicastTtlOption()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, ttl);
@@ -1156,6 +1170,9 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
 
 void tst_QUdpSocket::multicastLoopbackOption()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(int, loopback);
@@ -1186,6 +1203,9 @@ void tst_QUdpSocket::multicastJoinBeforeBind_data()
 
 void tst_QUdpSocket::multicastJoinBeforeBind()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH(QHostAddress, groupAddress);
 
     QUdpSocket udpSocket;
@@ -1206,6 +1226,9 @@ void tst_QUdpSocket::multicastLeaveAfterClose_data()
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, groupAddress);
     if (setProxy)
@@ -1247,6 +1270,9 @@ void tst_QUdpSocket::setMulticastInterface_data()
 
 void tst_QUdpSocket::setMulticastInterface()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QNetworkInterface, iface);
     QFETCH(QHostAddress, address);
@@ -1295,6 +1321,9 @@ void tst_QUdpSocket::multicast_data()
 
 void tst_QUdpSocket::multicast()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support multicast.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, bindAddress);
     QFETCH(bool, bindResult);

@@ -518,7 +518,7 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_OS_MAC
     QSKIP("QTBUG-25298: This test is unstable on Mac.");
 #endif
-    if (qApp->platformName().toLower() == QStringLiteral("xcb"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive))
         QSKIP("QTBUG-25298: Unstable on some X11 window managers");
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());

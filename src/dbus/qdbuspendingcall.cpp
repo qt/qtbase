@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -231,7 +232,7 @@ void QDBusPendingCallPrivate::waitForFinished()
     if (replyMessage.type() != QDBusMessage::InvalidMessage)
         return;                 // already finished
 
-    connection->waitForFinished(this);
+    waitForFinishedCondition.wait(&mutex);
 }
 
 /*!

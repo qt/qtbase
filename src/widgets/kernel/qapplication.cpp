@@ -339,8 +339,7 @@ void QApplicationPrivate::createEventDispatcher()
         \li  Miscellaneous
         \li  closeAllWindows(),
             startingUp(),
-            closingDown(),
-            type().
+            closingDown().
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
@@ -558,7 +557,7 @@ void QApplicationPrivate::process_cmdline()
             and will make the application wait until a debugger connects to it.
     \endlist
 
-    \sa arguments()
+    \sa QCoreApplication::arguments()
 */
 
 #ifdef Q_QDOC
@@ -1906,7 +1905,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (!w->isVisible() || w->data->is_closing)
             break;
         QWindow *window = w->windowHandle();
-        if (!w->close()) // Qt::WA_DeleteOnClose may cause deletion.
+        if (!window->close()) // Qt::WA_DeleteOnClose may cause deletion.
             return false;
         if (window)
             processedWindows->append(window);
@@ -1918,7 +1917,7 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
         if (w->isVisible() && w->windowType() != Qt::Desktop &&
                 !w->testAttribute(Qt::WA_DontShowOnScreen) && !w->data->is_closing) {
             QWindow *window = w->windowHandle();
-            if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
+            if (!window->close())  // Qt::WA_DeleteOnClose may cause deletion.
                 return false;
             if (window)
                 processedWindows->append(window);
@@ -1951,7 +1950,7 @@ bool QApplicationPrivate::tryCloseAllWindows()
     \l quitOnLastWindowClosed to false.
 
     \sa quitOnLastWindowClosed, lastWindowClosed(), QWidget::close(),
-    QWidget::closeEvent(), lastWindowClosed(), quit(), topLevelWidgets(),
+    QWidget::closeEvent(), lastWindowClosed(), QCoreApplication::quit(), topLevelWidgets(),
     QWidget::isWindow()
 */
 void QApplication::closeAllWindows()
@@ -2969,8 +2968,8 @@ int QApplication::startDragDistance()
     application will have time to exit its event loop and execute code at the
     end of the \c{main()} function, after the QApplication::exec() call.
 
-    \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
-        QCoreApplication::exec()
+    \sa quitOnLastWindowClosed, QCoreApplication::quit(), QCoreApplication::exit(),
+        QCoreApplication::processEvents(), QCoreApplication::exec()
 */
 int QApplication::exec()
 {

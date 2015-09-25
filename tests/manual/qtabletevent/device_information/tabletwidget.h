@@ -65,6 +65,7 @@ private:
     qreal mPress, mTangential, mRot;
     qint64 mUnique;
     bool mMouseToo;
+    ulong mTimestamp;
 };
 
 #endif // TABLETWIDGET_H

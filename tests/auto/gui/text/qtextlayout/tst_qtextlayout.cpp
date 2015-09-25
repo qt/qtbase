@@ -1985,7 +1985,12 @@ void tst_QTextLayout::textWidthVsWIdth()
                        "./libs -I/home/ettrich/dev/creator/tools -I../../plugins -I../../shared/scriptwrapper -I../../libs/3rdparty/botan/build -Idialogs -Iactionmanager -Ieditorma"
                        "nager -Iprogressmanager -Iscriptmanager -I.moc/debug-shared -I.uic -o .obj/debug-shared/sidebar.o sidebar.cpp"));
 
-    // textWidth includes right bearing, but it should never be LARGER than width if there is space for at least one character
+    // The naturalTextWidth includes right bearing, but should never be LARGER than line width if
+    // there is space for at least one character. Unfortunately that assumption may not hold if the
+    // font engine fails to report an accurate minimum right bearing for the font, eg. when the
+    // minimum right bearing reported by the font engine doesn't cover all the glyphs in the font.
+    // The result is that this test may fail in some cases. We should fix this by running the test
+    // with a font that we know have no suprising right bearings. See qtextlayout.cpp for details.
     for (int width = 100; width < 1000; ++width) {
         layout.beginLayout();
         QTextLine line = layout.createLine();

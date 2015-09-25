@@ -243,11 +243,11 @@ public class QtActivity extends Activity
             @SuppressWarnings("rawtypes")
             Class loaderClass = m_classLoader.loadClass(loaderParams.getString(LOADER_CLASS_NAME_KEY)); // load QtLoader class
             Object qtLoader = loaderClass.newInstance(); // create an instance
-            Method perpareAppMethod = qtLoader.getClass().getMethod("loadApplication",
+            Method prepareAppMethod = qtLoader.getClass().getMethod("loadApplication",
                                                                     Activity.class,
                                                                     ClassLoader.class,
                                                                     Bundle.class);
-            if (!(Boolean)perpareAppMethod.invoke(qtLoader, this, m_classLoader, loaderParams))
+            if (!(Boolean)prepareAppMethod.invoke(qtLoader, this, m_classLoader, loaderParams))
                 throw new Exception("");
 
             QtApplication.setQtActivityDelegate(qtLoader);

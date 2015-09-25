@@ -132,12 +132,6 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
 {
     HRESULT hr = ResultFromScode(DATA_E_FORMATETC);
 
-    if (QWindowsContext::verbose > 1 && lcQpaMime().isDebugEnabled()) {
-        wchar_t buf[256] = {0};
-        GetClipboardFormatName(pformatetc->cfFormat, buf, 255);
-        qCDebug(lcQpaMime) <<__FUNCTION__ << "CF = " << pformatetc->cfFormat << QString::fromWCharArray(buf);
-    }
-
     if (data) {
         const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
         if (QWindowsMime *converter = mc.converterFromMime(*pformatetc, data))
@@ -145,11 +139,8 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
                 hr = ResultFromScode(S_OK);
     }
 
-    if (QWindowsContext::verbose > 1) {
-        wchar_t buf[256] = {0};
-        GetClipboardFormatName(pformatetc->cfFormat, buf, 255);
-        qCDebug(lcQpaMime) <<__FUNCTION__ << "CF = " << pformatetc->cfFormat << " returns 0x" << int(hr) << dec;
-    }
+    if (QWindowsContext::verbose > 1 && lcQpaMime().isDebugEnabled())
+        qCDebug(lcQpaMime) <<__FUNCTION__ << *pformatetc << "returns" << hex << showbase << quint64(hr);
 
     return hr;
 }
@@ -211,7 +202,7 @@ STDMETHODIMP
 QWindowsOleDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppenumFormatEtc)
 {
      if (QWindowsContext::verbose > 1)
-         qCDebug(lcQpaMime) << __FUNCTION__;
+         qCDebug(lcQpaMime) << __FUNCTION__ << "dwDirection=" << dwDirection;
 
     if (!data)
         return ResultFromScode(DATA_E_FORMATETC);
@@ -274,7 +265,7 @@ QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs) 
     m_dwRefs(1), m_nIndex(0), m_isNull(false)
 {
     if (QWindowsContext::verbose > 1)
-        qCDebug(lcQpaMime) << __FUNCTION__;
+        qCDebug(lcQpaMime) << __FUNCTION__ << fmtetcs;
     m_lpfmtetcs.reserve(fmtetcs.count());
     for (int idx = 0; idx < fmtetcs.count(); ++idx) {
         LPFORMATETC destetc = new FORMATETC();

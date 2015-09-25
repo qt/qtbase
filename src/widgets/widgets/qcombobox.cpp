@@ -1772,6 +1772,8 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     connect(d->lineEdit, SIGNAL(editingFinished()), this, SLOT(_q_editingFinished()));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(editTextChanged(QString)));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(currentTextChanged(QString)));
+    connect(d->lineEdit, SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateMicroFocus()));
+    connect(d->lineEdit, SIGNAL(selectionChanged()), this, SLOT(updateMicroFocus()));
     d->lineEdit->setFrame(false);
     d->lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     d->updateFocusPolicy();
@@ -3028,9 +3030,6 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
         d->showPopupFromMouseEvent(e);
 }
 
-/*!
-    \reimp
-*/
 void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
 {
     Q_Q(QComboBox);

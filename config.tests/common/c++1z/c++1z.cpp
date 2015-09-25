@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the configuration module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,36 +31,10 @@
 **
 ****************************************************************************/
 
-#include "qkmswindow.h"
-#include "qkmsscreen.h"
+#if __cplusplus > 201402L
+// Compiler claims to support experimental C++1z, trust it
+#else
+#  error "__cplusplus must be > 201402L (the value for C++14)"
+#endif
 
-#include <qpa/qwindowsysteminterface.h>
-#include <qpa/qplatformwindow_p.h>
-
-QT_BEGIN_NAMESPACE
-
-QKmsWindow::QKmsWindow(QWindow *window)
-    : QPlatformWindow(window)
-{
-    Q_D(QPlatformWindow);
-    m_screen = QPlatformScreen::platformScreenForWindow(window);
-    static_cast<QKmsScreen *>(m_screen)->initializeWithFormat(window->requestedFormat());
-    setGeometry(d->rect); // rect is set to window->geometry() in base ctor
-}
-
-void QKmsWindow::setGeometry(const QRect &rect)
-{
-    // All windows must be fullscreen
-    QRect fullscreenRect = m_screen->availableGeometry();
-    if (rect != fullscreenRect)
-        QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
-
-    QPlatformWindow::setGeometry(fullscreenRect);
-}
-
-QSurfaceFormat QKmsWindow::format() const
-{
-    return static_cast<QKmsScreen *>(m_screen)->surfaceFormat();
-}
-
-QT_END_NAMESPACE
+int main(int, char **) { return 0; }

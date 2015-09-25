@@ -79,8 +79,6 @@ public:
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
 
-    static QWindowsScreen *screenOf(const QWindow *w = 0);
-
     QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
     QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
     int depth() const Q_DECL_OVERRIDE { return m_data.depth; }

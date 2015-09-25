@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the configuration module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,42 +31,10 @@
 **
 ****************************************************************************/
 
-#ifndef QBACKINGSTORE_KMS_H
-#define QBACKINGSTORE_KMS_H
-
-#include <qpa/qplatformbackingstore.h>
-#include <QtGui/QOpenGLFunctions>
-#include <QImage>
-
-QT_BEGIN_NAMESPACE
-
-class QOpenGLContext;
-class QOpenGLShaderProgram;
-
-class QKmsBackingStore : public QPlatformBackingStore, public QOpenGLFunctions
-{
-public:
-    QKmsBackingStore(QWindow *window);
-    ~QKmsBackingStore();
-
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-
-    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
-
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
-
-    QImage toImage() const Q_DECL_OVERRIDE { return m_image; }
-
-private:
-    QOpenGLContext *m_context;
-    QImage m_image;
-    uint m_texture;
-    QOpenGLShaderProgram *m_program;
-    QRegion m_dirty;
-    bool m_initialized;
-};
-
-QT_END_NAMESPACE
-
+#if __cplusplus > 201103L
+// Compiler claims to support C++14, trust it
+#else
+#  error "__cplusplus must be > 201103L (the value of C++11)"
 #endif
+
+int main(int, char **) { return 0; }

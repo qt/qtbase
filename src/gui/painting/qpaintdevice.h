@@ -81,7 +81,7 @@ public:
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
-    static inline qreal devicePixelRatioFScale() {return 10000000.0; }
+    static inline qreal devicePixelRatioFScale() { return 0x10000; }
 protected:
     QPaintDevice() Q_DECL_NOEXCEPT;
     virtual int metric(PaintDeviceMetric metric) const;

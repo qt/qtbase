@@ -162,15 +162,15 @@ SOURCES += \
     $$ANGLE_DIR/src/third_party/compiler/ArrayBoundsClamper.cpp
 
 
-# NOTE: 'win_flex' and 'bison' can be found in qt5/gnuwin32/bin
-flex.commands = $$addGnuPath(win_flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}
+# NOTE: 'flex' and 'bison' can be found in qt5/gnuwin32/bin
+flex.commands = $$addGnuPath(flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}
 flex.output = ${QMAKE_FILE_BASE}_lex.cpp
 flex.input = FLEX_SOURCES
 flex.dependency_type = TYPE_C
 flex.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += flex
 
-bison.commands = $$addGnuPath(win_bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_BASE}_tab.h \
+bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_BASE}_tab.h \
                 --output=${QMAKE_FILE_BASE}_tab.cpp ${QMAKE_FILE_NAME}
 bison.output = ${QMAKE_FILE_BASE}_tab.h
 bison.input = BISON_SOURCES

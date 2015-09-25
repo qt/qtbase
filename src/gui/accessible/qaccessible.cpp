@@ -451,7 +451,6 @@ QAccessibleInterface::~QAccessibleInterface()
 
 /*!
     \typedef QAccessible::Id
-    \relates QAccessible
 
     Synonym for unsigned, used by the QAccessibleInterface cache.
 */

@@ -286,6 +286,7 @@ namespace QXcbAtom {
         _COMPIZ_DECOR_PENDING,
         _COMPIZ_DECOR_REQUEST,
         _COMPIZ_DECOR_DELETE_PIXMAP,
+        _COMPIZ_TOOLKIT_ACTION,
 
         NPredefinedAtoms,
 
@@ -522,6 +523,7 @@ private:
     bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
     void initializeScreens();
     void updateScreens(const xcb_randr_notify_event_t *event);
+    bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -574,7 +576,7 @@ private:
     QHash<int, ScrollingDevice> m_scrollingDevices;
 
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
-    static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
+    static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
 #endif
 
     xcb_connection_t *m_connection;

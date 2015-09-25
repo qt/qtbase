@@ -50,6 +50,8 @@ private Q_SLOTS:
     void qthash();
     void range();
     void rangeCommutative();
+
+    void setGlobalQHashSeed();
 };
 
 void tst_QHashFunctions::qhash()
@@ -205,6 +207,22 @@ void tst_QHashFunctions::rangeCommutative()
     static const size_t numHashables = sizeof hashables / sizeof *hashables;
     // compile check: is qHash() found using ADL?
     (void)qHashRangeCommutative(hashables, hashables + numHashables);
+}
+
+void tst_QHashFunctions::setGlobalQHashSeed()
+{
+    // Setter works as advertised
+    qSetGlobalQHashSeed(0x10101010);
+    QCOMPARE(qGlobalQHashSeed(), 0x10101010);
+
+    // Creating a new QHash doesn't reset the seed
+    QHash<QString, int> someHash;
+    someHash.insert("foo", 42);
+    QCOMPARE(qGlobalQHashSeed(), 0x10101010);
+
+    // Reset works as advertised
+    qSetGlobalQHashSeed(-1);
+    QVERIFY(qGlobalQHashSeed() != -1);
 }
 
 QTEST_APPLESS_MAIN(tst_QHashFunctions)

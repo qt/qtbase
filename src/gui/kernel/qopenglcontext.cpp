@@ -462,8 +462,7 @@ QPlatformOpenGLContext *QOpenGLContext::shareHandle() const
 QOpenGLContext::QOpenGLContext(QObject *parent)
     : QObject(*new QOpenGLContextPrivate(), parent)
 {
-    Q_D(QOpenGLContext);
-    d->screen = QGuiApplication::primaryScreen();
+    setScreen(QGuiApplication::primaryScreen());
 }
 
 /*!
@@ -499,9 +498,20 @@ void QOpenGLContext::setShareContext(QOpenGLContext *shareContext)
 void QOpenGLContext::setScreen(QScreen *screen)
 {
     Q_D(QOpenGLContext);
+    if (d->screen)
+        disconnect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(_q_screenDestroyed(QObject*)));
     d->screen = screen;
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
+    if (d->screen)
+        connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(_q_screenDestroyed(QObject*)));
+}
+
+void QOpenGLContextPrivate::_q_screenDestroyed(QObject *object)
+{
+    Q_Q(QOpenGLContext);
+    if (object == static_cast<QObject *>(screen))
+        q->setScreen(0);
 }
 
 /*!
@@ -1625,5 +1635,7 @@ void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContextGroup *group, QOpenG
     Q_ASSERT(m_groups.contains(group));
     m_groups.removeOne(group);
 }
+
+#include "moc_qopenglcontext.cpp"
 
 QT_END_NAMESPACE

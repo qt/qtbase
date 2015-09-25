@@ -243,7 +243,7 @@ void QDialogPrivate::deletePlatformHelper()
     \section1 Escape Key
 
     If the user presses the Esc key in a dialog, QDialog::reject()
-    will be called. This will cause the window to close: The \l{QCloseEvent}{close event} cannot be \l{QCloseEvent::ignore()}{ignored}.
+    will be called. This will cause the window to close: The \l{QCloseEvent}{close event} cannot be \l{QEvent::ignore()}{ignored}.
 
     \section1 Extensibility
 
@@ -565,7 +565,7 @@ int QDialog::exec()
   last window closed, the QApplication::lastWindowClosed() signal is
   emitted.
 
-  \sa accept(), reject(), QApplication::activeWindow(), QApplication::quit()
+  \sa accept(), reject(), QApplication::activeWindow(), QCoreApplication::quit()
 */
 
 void QDialog::done(int r)

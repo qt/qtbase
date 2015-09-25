@@ -98,12 +98,12 @@ public:
     static bool handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static bool handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
-    static void handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    static bool handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1);
-    static void handleExtendedKeyEvent(QWindow *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    static bool handleExtendedKeyEvent(QWindow *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
@@ -127,7 +127,8 @@ public:
         QVector<QPointF> rawPositions; // in screen coordinates
     };
 
-    static void registerTouchDevice(QTouchDevice *device);
+    static void registerTouchDevice(const QTouchDevice *device);
+    static void unregisterTouchDevice(const QTouchDevice *device);
     static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
@@ -213,7 +214,7 @@ public:
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static void setSynchronousWindowSystemEvents(bool enable);
-    static void flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
+    static bool flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();
 };

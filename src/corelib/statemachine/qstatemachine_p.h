@@ -133,6 +133,7 @@ public:
     virtual void processedPendingEvents(bool didChange);
     virtual void beginMacrostep();
     virtual void endMacrostep(bool didChange);
+    virtual void exitInterpreter();
     void exitStates(QEvent *event, const QList<QAbstractState *> &statesToExit_sorted,
                     const QHash<QAbstractState*, QVector<QPropertyAssignment> > &assignmentsForEnteredStates);
     QList<QAbstractState*> computeExitSet(const QList<QAbstractTransition*> &enabledTransitions, CalculationCache *cache);

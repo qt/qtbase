@@ -857,7 +857,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa QUuid::variant()
 */
 
 /*!
@@ -871,7 +871,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
-    \sa variant()
+    \sa QUuid::variant()
 */
 
 /*!
@@ -891,7 +891,7 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 
     \sa variant(), version()
 */
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <objbase.h> // For CoCreateGuid
@@ -905,7 +905,7 @@ QUuid QUuid::createUuid()
     return result;
 }
 
-#else // !Q_OS_WIN32
+#else // Q_OS_WIN
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qdatetime.h"
@@ -989,7 +989,7 @@ QUuid QUuid::createUuid()
 
     return result;
 }
-#endif // !Q_OS_WIN32
+#endif // !Q_OS_WIN
 
 /*!
     \fn bool QUuid::operator==(const GUID &guid) const

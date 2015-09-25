@@ -88,6 +88,25 @@
     errorString() can be called to determine the cause of the error.
 */
 
+/*!
+    \enum QAbstractSocketEngine::PacketHeaderOption
+
+    Specifies which fields in the IP packet header are desired in the call to
+    readDatagram().
+
+    \value WantNone             caller isn't interested in the packet metadata
+    \value WantDatagramSender   caller wants the sender address and port number
+    \value WantDatagramDestination caller wants the packet's destination address and port number
+                                   (this option is useful to distinguish multicast packets from unicast)
+    \value WantDatagramHopLimit caller wants the packet's remaining hop limit or time to live
+                                (this option is useful in IPv4 multicasting, where the TTL is used
+                                to indicate the realm)
+    \value WantAll              this is a catch-all value to indicate the caller is
+                                interested in all the available information
+
+    \sa readDatagram(), QUdpDatagram
+*/
+
 #include "qnativesocketengine_p.h"
 
 #include <qabstracteventdispatcher.h>
@@ -152,10 +171,6 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
     Constructs the private class and initializes all data members.
-
-    On Windows, WSAStartup is called "recursively" for every
-    concurrent QNativeSocketEngine. This is safe, because WSAStartup and
-    WSACleanup are reference counted.
 */
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     socketDescriptor(-1),
@@ -163,6 +178,9 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     writeNotifier(0),
     exceptNotifier(0)
 {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    QSysInfo::machineHostName();        // this initializes ws2_32.dll
+#endif
 }
 
 /*! \internal
@@ -395,13 +413,18 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         return false;
     }
 
-    // Set the broadcasting flag if it's a UDP socket.
-    if (socketType == QAbstractSocket::UdpSocket
-        && !setOption(BroadcastSocketOption, 1)) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
-        close();
-        return false;
+    if (socketType == QAbstractSocket::UdpSocket) {
+        // Set the broadcasting flag if it's a UDP socket.
+        if (!setOption(BroadcastSocketOption, 1)) {
+            d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                        QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
+            close();
+            return false;
+        }
+
+        // Set some extra flags that are interesting to us, but accept failure
+        setOption(ReceivePacketInformation, 1);
+        setOption(ReceiveHopLimit, 1);
     }
 
 
@@ -760,9 +783,8 @@ qint64 QNativeSocketEngine::pendingDatagramSize() const
 /*!
     Reads up to \a maxSize bytes of a datagram from the socket,
     stores it in \a data and returns the number of bytes read. The
-    address and port of the sender are stored in \a address and \a
-    port. If either of these pointers is 0, the corresponding value is
-    discarded.
+    address, port, and other IP header fields are stored in \a header
+    according to the request in \a options.
 
     To avoid unnecessarily loss of data, call pendingDatagramSize() to
     determine the size of the pending message before reading it. If \a
@@ -772,20 +794,23 @@ qint64 QNativeSocketEngine::pendingDatagramSize() const
 
     \sa hasPendingDatagrams()
 */
-qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxSize, QHostAddress *address,
-                                      quint16 *port)
+qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxSize, QIpPacketHeader *header,
+                                         PacketHeaderOptions options)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::readDatagram(), -1);
     Q_CHECK_TYPE(QNativeSocketEngine::readDatagram(), QAbstractSocket::UdpSocket, -1);
 
-    return d->nativeReceiveDatagram(data, maxSize, address, port);
+    return d->nativeReceiveDatagram(data, maxSize, header, options);
 }
 
 /*!
     Writes a UDP datagram of size \a size bytes to the socket from
-    \a data to the address \a host on port \a port, and returns the
-    number of bytes written, or -1 if an error occurred.
+    \a data to the destination contained in \a header, and returns the
+    number of bytes written, or -1 if an error occurred. If \a header
+    contains other settings like hop limit or source address, this function
+    will try to pass them to the operating system too, but will not
+    indicate an error if it could not pass them.
 
     Only one datagram is sent, and if there is too much data to fit
     into a single datagram, the operation will fail and error()
@@ -795,18 +820,19 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxSize, QHostAddres
     disadvised, as even if they are sent successfully, they are likely
     to be fragmented before arriving at their destination.
 
-    Experience has shown that it is in general safe to send datagrams
-    no larger than 512 bytes.
+    Experience has shown that it is in general safe to send IPv4 datagrams
+    no larger than 512 bytes or IPv6 datagrams no larger than 1280 (the
+    minimum MTU).
 
     \sa readDatagram()
 */
-qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 size,
-                                       const QHostAddress &host, quint16 port)
+qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 size, const QIpPacketHeader &header)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::writeDatagram(), -1);
     Q_CHECK_TYPE(QNativeSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
-    return d->nativeSendDatagram(data, size, d->adjustAddressProtocol(host), port);
+
+    return d->nativeSendDatagram(data, size, header);
 }
 
 /*!

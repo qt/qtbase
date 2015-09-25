@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -192,6 +192,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
+    dictionary[ "ATOMIC64" ]        = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -238,7 +239,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "COMPILE_EXAMPLES" ] = "yes";
 
-    dictionary[ "C++11" ]           = "auto";
+    dictionary[ "C++STD" ]          = "auto";
 
     dictionary[ "USE_GOLD_LINKER" ] = "no";
 
@@ -463,9 +464,29 @@ void Configure::parseCmdLine()
         }
 
         else if (configCmdLine.at(i) == "-c++11")
-            dictionary[ "C++11" ] = "yes";
+            dictionary[ "C++STD" ] = "c++11";
         else if (configCmdLine.at(i) == "-no-c++11")
-            dictionary[ "C++11" ] = "no";
+            dictionary[ "C++STD" ] = "c++98";
+        else if (configCmdLine.at(i) == "-c++std") {
+            ++i;
+            if (i == argCount)
+                break;
+
+            QString level = configCmdLine.at(i);
+            if (level == "c++98" || level == "c++11" || level == "c++14" || level == "c++1z"
+                    || level == "auto") {
+                dictionary[ "C++STD" ] = level;
+            } else if (level == "98" || level == "11" || level == "14" || level == "1z") {
+                dictionary[ "C++STD" ] = "c++" + level;
+            } else {
+                dictionary[ "DONE" ] = "error";
+                cout << "ERROR: invalid C++ standard " << level
+                     << "; valid options are: c++98 c++11 c++14 c++1z auto" << endl;
+                return;
+            }
+        }
+
+
         else if (configCmdLine.at(i) == "-use-gold-linker")
             dictionary[ "USE_GOLD_LINKER" ] = "yes";
         else if (configCmdLine.at(i) == "-no-use-gold-linker")
@@ -1790,8 +1811,8 @@ bool Configure::displayHelp()
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
-        desc("C++11", "yes", "-c++11",                  "Compile Qt with C++11 support enabled.");
-        desc("C++11", "no", "-no-c++11",                "Do not compile Qt with C++11 support enabled.\n");
+        desc(        "-c++std <edition>",               "Compile Qt with C++ standard edition (c++98, c++11, c++14, c++1z)\n"
+                                                        "Default: highest supported. This option is not supported for MSVC.\n");
 
         desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
         desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
@@ -2116,7 +2137,7 @@ QString Configure::defaultTo(const QString &option)
         return "no";
 
     // keep 'auto' default for msvc, since we can't set the language supported
-    if (option == "C++11"
+    if (option == "C++STD"
         && dictionary["QMAKESPEC"].contains("msvc"))
         return "auto";
 
@@ -2193,6 +2214,12 @@ bool Configure::checkAvailability(const QString &part)
 
     else if (part == "OBJCOPY")
         available = tryCompileProject("unix/objcopy");
+
+    else if (part == "ATOMIC64")
+        available = tryCompileProject("common/atomic64");
+
+    else if (part == "ATOMIC64-LIBATOMIC")
+        available = tryCompileProject("common/atomic64", "LIBS+=-latomic");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -2337,10 +2364,37 @@ void Configure::autoDetection()
     // Auto-detect CPU architectures.
     detectArch();
 
-    if (dictionary["C++11"] == "auto") {
-        if (!dictionary["QMAKESPEC"].contains("msvc"))
-            dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
+    if (dictionary["C++STD"] == "auto" && !dictionary["QMAKESPEC"].contains("msvc")) {
+        if (!tryCompileProject("common/c++11")) {
+            dictionary["C++STD"] = "c++98";
+        } else if (!tryCompileProject("common/c++14")) {
+            dictionary["C++STD"] = "c++11";
+        } else if (!tryCompileProject("common/c++1z")) {
+            dictionary["C++STD"] = "c++14";
+        } else {
+            dictionary["C++STD"] = "c++1z";
+        }
     }
+
+    if (!dictionary["QMAKESPEC"].contains("msvc")) {
+        if (tryCompileProject("common/c++default", QString(), false)) {
+            QFile iiFile(buildPath + "/config.tests/common/c++default/c++default.ii");
+            if (iiFile.open(QIODevice::ReadOnly)) {
+                QString content = QString::fromUtf8(iiFile.readAll());
+                QRegExp expr("\\b([0-9]+)L\\b");
+                if (expr.indexIn(content) != -1)
+                    dictionary["CFG_STDCXX_DEFAULT"] = expr.cap(1);
+            }
+        }
+        if (dictionary["CFG_STDCXX_DEFAULT"].isEmpty()) {
+            cout << "Could not determine the C++ standard the compiler uses by default, assuming C++98." << endl;
+            dictionary["CFG_STDCXX_DEFAULT"] = "199711";
+        }
+    }
+
+    if (dictionary["ATOMIC64"] == "auto")
+        dictionary["ATOMIC64"] = checkAvailability("ATOMIC64") ? "yes" :
+                                 checkAvailability("ATOMIC64-LIBATOMIC") ? "libatomic" : "no";
 
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
@@ -2527,16 +2581,11 @@ void Configure::autoDetection()
 bool Configure::verifyConfiguration()
 {
     bool prompt = false;
-    if (dictionary["C++11"] != "auto"
+    if (dictionary["C++STD"] != "auto"
             && dictionary["QMAKESPEC"].contains("msvc")) {
-        cout << "WARNING: Qt does not support disabling or enabling any existing C++11 support "
-                "with MSVC compilers.";
-        if (dictionary["C++11"] == "yes")
-            cout << "Therefore -c++11 is ignored." << endl << endl;
-        else
-            cout << "Therefore -no-c++11 is ignored." << endl << endl;
-
-        dictionary["C++11"] = "auto";
+        cout << "WARNING: It is not possible to change the C++ standard edition with MSVC compilers. "
+                "Therefore, the option -c++std " << dictionary["C++STD"] << " was ignored." << endl << endl;
+        dictionary["C++STD"] = "auto";
     }
 
     if (dictionary["STATIC_RUNTIME"] == "yes" && dictionary["SHARED"] == "yes") {
@@ -2638,6 +2687,14 @@ bool Configure::verifyConfiguration()
         }
     }
 
+    if (dictionary["OPENGL"] == "no" || dictionary["OPENGL_ES_2"] == "no") {
+        if (dictionary.value("XQMAKESPEC").startsWith("winphone") ||
+                dictionary.value("XQMAKESPEC").startsWith("winrt")) {
+            cout << "ERROR: Option -no-opengl is not valid for WinRT." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
+    }
+
     if (prompt)
         promptKeyPress();
 
@@ -2678,8 +2735,14 @@ void Configure::generateOutputVars()
         qtConfig += "release";
     }
 
-    if (dictionary[ "C++11" ] == "yes")
+    if (dictionary[ "C++STD" ] == "c++11")
         qtConfig += "c++11";
+    else if (dictionary[ "C++STD" ] == "c++14")
+        qtConfig += "c++11 c++14";
+    else if (dictionary[ "C++STD" ] == "c++1z")
+        qtConfig += "c++11 c++14 c++1z";
+    if (!dictionary[ "CFG_STDCXX_DEFAULT" ].isEmpty())
+        qmakeVars += "QT_COMPILER_STDCXX = " + dictionary[ "CFG_STDCXX_DEFAULT" ];
 
     if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
         qmakeConfig += "use_gold_linker";
@@ -2863,6 +2926,9 @@ void Configure::generateOutputVars()
             version.remove(QLatin1Char('.'));
         }
     }
+
+    if (dictionary["ATOMIC64"] == "libatomic")
+        qmakeConfig += "atomic64-libatomic";
 
     if (dictionary[ "ACCESSIBILITY" ] == "yes")
         qtConfig += "accessibility";
@@ -3288,7 +3354,8 @@ void Configure::detectArch()
     QDir::setCurrent(oldpwd);
 }
 
-bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions)
+bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions,
+                                  bool distClean)
 {
     QString oldpwd = QDir::currentPath();
 
@@ -3331,7 +3398,8 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         //cout << output << endl;
 
         // clean up
-        Environment::execute(command + " distclean 2>&1");
+        if (distClean)
+            Environment::execute(command + " distclean 2>&1");
     }
 
     QDir::setCurrent(oldpwd);
@@ -3664,6 +3732,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
+        if (dictionary["ATOMIC64"] == "no")          qconfigList += "QT_NO_STD_ATOMIC64";
 
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
@@ -3751,7 +3820,7 @@ void Configure::displayConfig()
     }
     if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
         sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
-    sout << "C++11 support..............." << dictionary[ "C++11" ] << endl;
+    sout << "C++ language standard......." << dictionary[ "C++STD" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;

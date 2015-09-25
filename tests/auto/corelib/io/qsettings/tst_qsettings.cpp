@@ -37,6 +37,7 @@
 #include <QtCore/QSettings>
 #include <private/qsettings_p.h>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
@@ -1202,6 +1203,9 @@ void tst_QSettings::testVariantTypes()
     QList<QVariant> l4;
     l4 << QVariant(m2) << QVariant(l2) << QVariant(l3);
     testVal("key13", l4, QVariantList, List);
+    QDateTime dt = QDateTime::currentDateTime();
+    dt.setOffsetFromUtc(3600);
+    testVal("key14", dt, QDateTime, DateTime);
 
     // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.

@@ -221,5 +221,5 @@ void RenderWindow::render()
     // only here to make the UI widgets more responsive on slower machines. We
     // can afford it since our rendering is so lightweight.
     const int interval = 5;
-    QTimer::singleShot(interval, this, SLOT(render()));
+    QTimer::singleShot(interval, this, &RenderWindow::render);
 }

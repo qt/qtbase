@@ -415,10 +415,22 @@ void QHostInfo::setErrorString(const QString &str)
 /*!
     \fn QString QHostInfo::localHostName()
 
-    Returns the host name of this machine.
+    Returns this machine's host name, if one is configured. Note that hostnames
+    are not guaranteed to be globally unique, especially if they were
+    configured automatically.
 
-    \sa hostName()
+    This function does not guarantee the returned host name is a Fully
+    Qualified Domain Name (FQDN). For that, use fromName() to resolve the
+    returned name to an FQDN.
+
+    This function returns the same as QSysInfo::machineHostName().
+
+    \sa hostName(), localDomainName()
 */
+QString QHostInfo::localHostName()
+{
+    return QSysInfo::machineHostName();
+}
 
 /*!
     \fn QString QHostInfo::localDomainName()

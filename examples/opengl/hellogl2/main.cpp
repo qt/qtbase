@@ -59,6 +59,10 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(fmt);
 
     MainWindow mainWindow;
+    if (QCoreApplication::arguments().contains(QStringLiteral("--transparent"))) {
+        mainWindow.setAttribute(Qt::WA_TranslucentBackground);
+        mainWindow.setAttribute(Qt::WA_NoSystemBackground, false);
+    }
     mainWindow.resize(mainWindow.sizeHint());
     int desktopArea = QApplication::desktop()->width() *
                      QApplication::desktop()->height();

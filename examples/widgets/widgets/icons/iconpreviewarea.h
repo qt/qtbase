@@ -43,6 +43,8 @@
 
 #include <QIcon>
 #include <QWidget>
+#include <QStringList>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -54,10 +56,15 @@ class IconPreviewArea : public QWidget
     Q_OBJECT
 
 public:
-    IconPreviewArea(QWidget *parent = 0);
+    explicit IconPreviewArea(QWidget *parent = Q_NULLPTR);
 
     void setIcon(const QIcon &icon);
     void setSize(const QSize &size);
+
+    static QVector<QIcon::Mode> iconModes();
+    static QVector<QIcon::State> iconStates();
+    static QStringList iconModeNames();
+    static QStringList iconStateNames();
 
 private:
     QLabel *createHeaderLabel(const QString &text);

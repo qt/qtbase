@@ -171,7 +171,7 @@ void tst_QGuiApplication::focusObject()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QObject obj1, obj2, obj3;
@@ -342,7 +342,7 @@ void tst_QGuiApplication::changeFocusWindow()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (qApp->platformName().toLower() == QLatin1String("wayland"))
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
@@ -416,11 +416,11 @@ void tst_QGuiApplication::keyboardModifiers()
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // shortcut events
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_5, Qt::MetaModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_5, Qt::MetaModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::MetaModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_Period, Qt::NoModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_Period, Qt::NoModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_0, Qt::ControlModifier);
+    QTest::keyEvent(QTest::Shortcut, window.data(), Qt::Key_0, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // key events

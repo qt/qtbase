@@ -270,6 +270,8 @@ public:
     static QHash<QOpenGLContext *, bool> makeCurrentTracker;
     static QMutex makeCurrentTrackerMutex;
 #endif
+
+    void _q_screenDestroyed(QObject *object);
 };
 
 Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);

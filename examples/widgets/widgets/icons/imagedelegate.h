@@ -49,7 +49,7 @@ class ImageDelegate : public QItemDelegate
     Q_OBJECT
 
 public:
-    ImageDelegate(QObject *parent = 0);
+    explicit ImageDelegate(QObject *parent = Q_NULLPTR);
 //! [0]
 
 //! [1]

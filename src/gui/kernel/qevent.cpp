@@ -171,6 +171,8 @@ QInputEvent::~QInputEvent()
     \fn ulong QInputEvent::timestamp() const
 
     Returns the window system's timestamp for this event.
+    It will normally be in milliseconds since some arbitrary point
+    in time, such as the time when the system was started.
 */
 
 /*! \fn void QInputEvent::setTimestamp(ulong atimestamp)

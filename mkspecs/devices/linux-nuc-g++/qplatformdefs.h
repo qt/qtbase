@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,28 +31,4 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatformintegrationplugin.h>
-#include "qkmsintegration.h"
-
-QT_BEGIN_NAMESPACE
-
-class QKmsIntegrationPlugin : public QPlatformIntegrationPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "kms.json")
-public:
-    QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
-};
-
-QPlatformIntegration *QKmsIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (!system.compare(QLatin1String("kms"), Qt::CaseInsensitive))
-        return new QKmsIntegration;
-
-    return 0;
-}
-
-QT_END_NAMESPACE
-
-#include "main.moc"
+#include "../../linux-g++/qplatformdefs.h"

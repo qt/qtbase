@@ -70,6 +70,7 @@ extern "C" {
 #include <qdir.h>
 #include <qstandardpaths.h>
 #include <qfunctions_winrt.h>
+#include <qcoreapplication.h>
 
 #include <wrl.h>
 #include <Windows.ApplicationModel.core.h>
@@ -108,6 +109,24 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
 #endif // !Q_OS_WINPHONE
     defaultMessageHandler(type, context, message);
 }
+
+class QActivationEvent : public QEvent
+{
+public:
+    explicit QActivationEvent(IInspectable *args)
+        : QEvent(QEvent::WinEventAct)
+    {
+        setAccepted(false);
+        args->AddRef();
+        d = reinterpret_cast<QEventPrivate *>(args);
+    }
+
+    ~QActivationEvent() {
+        IUnknown *args = reinterpret_cast<IUnknown *>(d);
+        args->Release();
+        d = nullptr;
+    }
+};
 
 class AppContainer : public RuntimeClass<Xaml::IApplicationOverrides>
 {
@@ -158,7 +177,10 @@ public:
 private:
     HRESULT __stdcall OnActivated(IActivatedEventArgs *args) Q_DECL_OVERRIDE
     {
-        return base->OnActivated(args);
+        QAbstractEventDispatcher *dispatcher = QCoreApplication::eventDispatcher();
+        if (dispatcher)
+            QCoreApplication::postEvent(dispatcher, new QActivationEvent(args));
+        return S_OK;
     }
 
     HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) Q_DECL_OVERRIDE

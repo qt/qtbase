@@ -1681,6 +1681,7 @@ bool QTime::setHMS(int h, int m, int s, int ms)
 
 QTime QTime::addSecs(int s) const
 {
+    s %= SECS_PER_DAY;
     return addMSecs(s * 1000);
 }
 
@@ -4791,23 +4792,21 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
         // From 4.0 to 5.1 (except 5.0) we used QDateTimePrivate::Spec
         dateAndTime = dateTime.d->getDateTime();
         out << dateAndTime;
-        if (out.version() >= QDataStream::Qt_4_0) {
-            switch (dateTime.timeSpec()) {
-            case Qt::UTC:
-                out << (qint8)QDateTimePrivate::UTC;
-                break;
-            case Qt::OffsetFromUTC:
-                out << (qint8)QDateTimePrivate::OffsetFromUTC;
-                break;
-            case Qt::TimeZone:
+        switch (dateTime.timeSpec()) {
+        case Qt::UTC:
+            out << (qint8)QDateTimePrivate::UTC;
+            break;
+        case Qt::OffsetFromUTC:
+            out << (qint8)QDateTimePrivate::OffsetFromUTC;
+            break;
+        case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
-                out << (qint8)QDateTimePrivate::TimeZone;
-                break;
+            out << (qint8)QDateTimePrivate::TimeZone;
+            break;
 #endif // QT_BOOTSTRAPPED
-            case Qt::LocalTime:
-                out << (qint8)QDateTimePrivate::LocalUnknown;
-                break;
-            }
+        case Qt::LocalTime:
+            out << (qint8)QDateTimePrivate::LocalUnknown;
+            break;
         }
 
     } else { // version < QDataStream::Qt_4_0

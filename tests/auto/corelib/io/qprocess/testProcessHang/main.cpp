@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2015 Intel Corporation.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,36 +31,32 @@
 **
 ****************************************************************************/
 
-#ifndef QKMSCURSOR_H
-#define QKMSCURSOR_H
+#include <stdio.h>
 
-#include <qpa/qplatformcursor.h>
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#  include <windows.h>
 
-struct gbm_device;
-struct gbm_bo;
-
-QT_BEGIN_NAMESPACE
-
-class QKmsScreen;
-
-class QKmsCursor : public QPlatformCursor
+void sleepForever()
 {
-public:
-    QKmsCursor(QKmsScreen *screen);
-    ~QKmsCursor();
+    ::Sleep(INFINITE);
+}
+#else
+#  include <unistd.h>
 
-    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
-    void changeCursor(QCursor *windowCursor, QWindow *window) Q_DECL_OVERRIDE;
+void sleepForever()
+{
+    ::pause();
+}
+#endif
 
-private:
-    QKmsScreen *m_screen;
-    gbm_device *m_graphicsBufferManager;
-    gbm_bo *m_cursorBufferObject;
-    QPlatformCursorImage *m_cursorImage;
-    bool m_moved;
-    QSize m_cursorSize;
-};
+int main()
+{
+    puts("ready.");
+    fflush(stdout);
+    fprintf(stderr, "ready.\n");
+    fflush(stderr);
 
-QT_END_NAMESPACE
-
-#endif // QKMSCURSOR_H
+    // sleep forever, simulating a hung application
+    sleepForever();
+    return 0;
+}

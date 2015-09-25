@@ -721,12 +721,8 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
                                     QString& ref) const
 {
     const Node* node = 0;
-    QString p;
-    if (path.size() > 1)
-        p = path.join(QString("::"));
-    else if ((genus == Node::DontCare) || (genus == Node::DOC)) {
-        p = path.at(0);
-        node = findDocumentNodeByTitle(p);
+    if ((genus == Node::DontCare) || (genus == Node::DOC)) {
+        node = findDocumentNodeByTitle(path.at(0));
         if (node) {
             if (!target.isEmpty()) {
                 ref = getRef(target, node);
@@ -737,7 +733,8 @@ const Node* Tree::findNodeForTarget(const QStringList& path,
                 return node;
         }
     }
-    node = findUnambiguousTarget(p, ref);
+
+    node = findUnambiguousTarget(path.join(QStringLiteral("::")), ref);
     if (node) {
         if (!target.isEmpty()) {
             ref = getRef(target, node);

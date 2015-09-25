@@ -197,7 +197,7 @@
 
 
     \section2 Stretch Factors
-    \keyword stretch factor
+    \target stretch factor
 
     Widgets are normally created without any stretch factor set. When they are
     laid out in a layout the widgets are given a share of space in accordance

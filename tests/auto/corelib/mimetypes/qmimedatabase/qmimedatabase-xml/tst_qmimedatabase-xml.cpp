@@ -33,7 +33,7 @@
 
 #include "../tst_qmimedatabase.h"
 
-void tst_QMimeDatabase::init()
+void tst_QMimeDatabase::initTestCaseInternal()
 {
     qputenv("QT_NO_MIME_CACHE", "1");
 }

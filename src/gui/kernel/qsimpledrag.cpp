@@ -149,7 +149,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         {
             QPoint nativePosition = getNativeMousePos(e, o);
             move(nativePosition);
-            return true; // Eat all mouse events
+            return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
             disableEventFilter();
@@ -160,8 +160,8 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
                 cancel();
             }
             exitDndEventLoop();
-            return true; // Eat all mouse events
-        case QEvent::MouseButtonPress:
+            QCoreApplication::postEvent(o, new QMouseEvent(*static_cast<QMouseEvent *>(e)));
+            return true; // defer mouse release events until drag event loop has returned
         case QEvent::MouseButtonDblClick:
         case QEvent::Wheel:
             return true;

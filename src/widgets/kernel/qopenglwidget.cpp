@@ -425,7 +425,12 @@ QT_BEGIN_NAMESPACE
 
   Note that this does not apply when there are no other widgets underneath and
   the intention is to have a semi-transparent window. In that case the
-  traditional approach of setting Qt::WA_TranslucentBackground is sufficient.
+  traditional approach of setting Qt::WA_TranslucentBackground
+  on the top-level window is sufficient. Note that if the transparent areas are
+  only desired in the QOpenGLWidget, then Qt::WA_NoSystemBackground will need
+  to be turned back to \c false after enabling Qt::WA_TranslucentBackground.
+  Additionally, requesting an alpha channel for the QOpenGLWidget's context via
+  setFormat() may be necessary too, depending on the system.
 
   QOpenGLWidget supports multiple update behaviors, just like QOpenGLWindow. In
   preserved mode the rendered content from the previous paintGL() call is
@@ -607,7 +612,7 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
     // with the palette's background color.
     if (w->autoFillBackground()) {
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        if (w->testAttribute(Qt::WA_TranslucentBackground)) {
+        if (w->format().hasAlpha()) {
             f->glClearColor(0, 0, 0, 0);
         } else {
             QColor c = w->palette().brush(w->backgroundRole()).color();
@@ -955,13 +960,12 @@ QOpenGLWidget::UpdateBehavior QOpenGLWidget::updateBehavior() const
   OpenGL widgets, individual calls to this function can be replaced by one single call to
   QSurfaceFormat::setDefaultFormat() before creating the first widget.
 
-  \note Requesting an alpha buffer via this function, or by setting
-  Qt::WA_TranslucentBackground, will not lead to the desired results when the intention is
-  to make other widgets beneath visible. Instead, use Qt::WA_AlwaysStackOnTop to enable
-  semi-transparent QOpenGLWidget instances with other widgets visible underneath. Keep in
-  mind however that this breaks the stacking order, so it will no longer be possible to
-  have other widgets on top of the QOpenGLWidget. When the intention is to have a
-  semi-transparent top-level window, Qt::WA_TranslucentBackground is sufficient.
+  \note Requesting an alpha buffer via this function will not lead to the
+  desired results when the intention is to make other widgets beneath visible.
+  Instead, use Qt::WA_AlwaysStackOnTop to enable semi-transparent QOpenGLWidget
+  instances with other widgets visible underneath. Keep in mind however that
+  this breaks the stacking order, so it will no longer be possible to have
+  other widgets on top of the QOpenGLWidget.
 
   \sa format(), Qt::WA_AlwaysStackOnTop, QSurfaceFormat::setDefaultFormat()
  */

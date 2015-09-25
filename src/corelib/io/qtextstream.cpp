@@ -121,7 +121,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     digits of the generated number. Some extra number formatting
     options are also available through setNumberFlags().
 
-    \keyword QTextStream manipulators
+    \target QTextStream manipulators
 
     Like \c <iostream> in the standard C++ library, QTextStream also
     defines several global manipulator functions:
@@ -2800,7 +2800,7 @@ QTextStream &scientific(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignLeft)
     on \a stream and returns \a stream.
 
-    \sa right(), center(), {QTextStream manipulators}
+    \sa {QTextStream::}{right()}, {QTextStream::}{center()}, {QTextStream manipulators}
 */
 QTextStream &left(QTextStream &stream)
 {
@@ -2814,7 +2814,7 @@ QTextStream &left(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignRight)
     on \a stream and returns \a stream.
 
-    \sa left(), center(), {QTextStream manipulators}
+    \sa {QTextStream::}{left()}, {QTextStream::}{center()}, {QTextStream manipulators}
 */
 QTextStream &right(QTextStream &stream)
 {
@@ -2828,7 +2828,7 @@ QTextStream &right(QTextStream &stream)
     Calls QTextStream::setFieldAlignment(QTextStream::AlignCenter)
     on \a stream and returns \a stream.
 
-    \sa left(), right(), {QTextStream manipulators}
+    \sa {QTextStream::}{left()}, {QTextStream::}{right()}, {QTextStream manipulators}
 */
 QTextStream &center(QTextStream &stream)
 {

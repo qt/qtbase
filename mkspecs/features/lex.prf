@@ -26,7 +26,7 @@
                    $(MOVE) $$intermediate_file ${QMAKE_FILE_OUT} $$escape_expand(\\n\\t)
         unset(intermediate_file)
     }
-    lex.output = $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}_lex$${first(QMAKE_EXT_CPP)}
+    lex.output = $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_MOD_LEX}$${first(QMAKE_EXT_CPP)}
 
     silent:lex.commands = @echo Lex ${QMAKE_FILE_IN} && $$lex.commands
     QMAKE_EXTRA_COMPILERS += lex

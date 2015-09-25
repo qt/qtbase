@@ -94,14 +94,14 @@ void QXcbWMSupport::updateVirtualRoots()
     int offset = 0;
     int remaining = 0;
     do {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_ATOM, offset, 1024);
+        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
         xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
         if (!reply)
             break;
 
         remaining = 0;
 
-        if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
+        if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
             int len = xcb_get_property_value_length(reply)/sizeof(xcb_window_t);
             xcb_window_t *roots = (xcb_window_t *)xcb_get_property_value(reply);
             int s = net_virtual_roots.size();

@@ -212,6 +212,9 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
     int blue_scale = 0;
     int alpha_scale = 0;
 
+    if (!d->isSequential())
+        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4 ? BMP_WIN : bi.biSize)); // goto start of colormap or masks
+
     if (bi.biSize >= BMP_WIN4 || (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32))) {
         if (d->read((char *)&red_mask, sizeof(red_mask)) != sizeof(red_mask))
             return false;
@@ -298,9 +301,6 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
 
     image.setDotsPerMeterX(bi.biXPelsPerMeter);
     image.setDotsPerMeterY(bi.biYPelsPerMeter);
-
-    if (!d->isSequential())
-        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4? BMP_WIN : bi.biSize)); // goto start of colormap
 
     if (ncols > 0) {                                // read color table
         uchar rgb[4];

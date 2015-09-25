@@ -160,6 +160,11 @@ Q_SIGNALS:
     void reject();
 };
 
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QPlatformDialogHelper::StandardButton)
+Q_DECLARE_METATYPE(QPlatformDialogHelper::ButtonRole)
+QT_BEGIN_NAMESPACE
+
 class Q_GUI_EXPORT QColorDialogOptions
 {
 public:

@@ -1347,7 +1347,6 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (info.watermark && !info.sideWidget) {
         minimumSize.setHeight(mainLayout->totalSizeHint().height());
-        maximumSize.setHeight(mainLayout->totalSizeHint().height());
     }
     if (q->minimumWidth() == minimumWidth) {
         minimumWidth = minimumSize.width();

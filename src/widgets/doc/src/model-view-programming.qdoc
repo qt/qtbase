@@ -2301,7 +2301,7 @@
     {fetchMore()} must be reimplemented as their default implementation returns
     false and does nothing.
 
-    \keyword Model/View Classes
+    \target Model/View Classes
     \section1 The Model/View Classes
 
     These classes use the model/view design pattern in which the

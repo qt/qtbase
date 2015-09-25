@@ -121,13 +121,13 @@ int main(int argc, char *argv[])
     }
 
     for (int i = 0; i < renderThreads.size(); ++i) {
-        QObject::connect(qGuiApp, SIGNAL(lastWindowClosed()), renderThreads.at(i), SLOT(quit()));
+        QObject::connect(qGuiApp, &QGuiApplication::lastWindowClosed, renderThreads.at(i), &QThread::quit);
         renderThreads.at(i)->start();
     }
 
     // Quit after 10 seconds. For platforms that do not have windows that are closeable.
     if (QCoreApplication::arguments().contains(QStringLiteral("--timeout")))
-        QTimer::singleShot(10000, qGuiApp, SLOT(quit()));
+        QTimer::singleShot(10000, qGuiApp, &QCoreApplication::quit);
 
     const int exitValue = app.exec();
 

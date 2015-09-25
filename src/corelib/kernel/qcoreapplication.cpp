@@ -937,18 +937,14 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 /*!
     \property QCoreApplication::quitLockEnabled
 
-    Returns \c true if the use of the QEventLoopLocker feature can cause the
-    application to quit, otherwise returns \c false.
+    \brief Whether the use of the QEventLoopLocker feature can cause the
+    application to quit.
+
+    The default is \c true.
 
     \sa QEventLoopLocker
 */
 
-/*!
-    Returns \c true if the use of the QEventLoopLocker feature can cause the
-    application to quit, otherwise returns \c false.
-
-    \sa QEventLoopLocker
- */
 bool QCoreApplication::isQuitLockEnabled()
 {
     return quitLockRefEnabled;
@@ -956,14 +952,6 @@ bool QCoreApplication::isQuitLockEnabled()
 
 static bool doNotify(QObject *, QEvent *);
 
-/*!
-    Enables the ability of the QEventLoopLocker feature to quit
-    the application.
-
-    If disabled, the use of QEventLoopLocker will not quit the application.
-
-    \sa QEventLoopLocker
- */
 void QCoreApplication::setQuitLockEnabled(bool enabled)
 {
     quitLockRefEnabled = enabled;
@@ -1819,7 +1807,7 @@ void QCoreApplicationPrivate::maybeQuit()
     Tells the application to exit with return code 0 (success).
     Equivalent to calling QCoreApplication::exit(0).
 
-    It's common to connect the QApplication::lastWindowClosed() signal
+    It's common to connect the QGuiApplication::lastWindowClosed() signal
     to quit(), and you also often connect e.g. QAbstractButton::clicked() or
     signals in QAction, QMenu, or QMenuBar to it.
 
@@ -1827,7 +1815,7 @@ void QCoreApplicationPrivate::maybeQuit()
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
 
-    \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
+    \sa exit(), aboutToQuit(), QGuiApplication::lastWindowClosed()
 */
 
 void QCoreApplication::quit()
@@ -2530,17 +2518,6 @@ QStringList QCoreApplication::libraryPaths()
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = new QStringList;
         coreappdata()->app_libpaths.reset(app_libpaths);
-        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
-        if (QFile::exists(installPathPlugins)) {
-            // Make sure we convert from backslashes to slashes.
-            installPathPlugins = QDir(installPathPlugins).canonicalPath();
-            if (!app_libpaths->contains(installPathPlugins))
-                app_libpaths->append(installPathPlugins);
-        }
-
-        // If QCoreApplication is not yet instantiated,
-        // make sure we add the application path when we construct the QCoreApplication
-        if (self) self->d_func()->appendApplicationPathToLibraryPaths();
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
@@ -2553,6 +2530,18 @@ QStringList QCoreApplication::libraryPaths()
                 }
             }
         }
+
+        QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        if (QFile::exists(installPathPlugins)) {
+            // Make sure we convert from backslashes to slashes.
+            installPathPlugins = QDir(installPathPlugins).canonicalPath();
+            if (!app_libpaths->contains(installPathPlugins))
+                app_libpaths->append(installPathPlugins);
+        }
+
+        // If QCoreApplication is not yet instantiated,
+        // make sure we add the application path when we construct the QCoreApplication
+        if (self) self->d_func()->appendApplicationPathToLibraryPaths();
     }
     return *(coreappdata()->app_libpaths);
 }

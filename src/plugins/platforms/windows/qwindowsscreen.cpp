@@ -276,18 +276,6 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
     return result;
 }
 
-QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
-{
-    if (w)
-        if (const QScreen *s = w->screen())
-            if (QPlatformScreen *pscr = s->handle())
-                return static_cast<QWindowsScreen *>(pscr);
-    if (const QScreen *ps = QGuiApplication::primaryScreen())
-        if (QPlatformScreen *ppscr = ps->handle())
-            return static_cast<QWindowsScreen *>(ppscr);
-    return 0;
-}
-
 qreal QWindowsScreen::pixelDensity() const
 {
     const qreal physicalDpi = m_data.geometry.width() / m_data.physicalSizeMM.width() * qreal(25.4);

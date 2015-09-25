@@ -165,6 +165,8 @@ struct ConfigStrings
     static QString BASEDIR;
     static QString BUILDVERSION;
     static QString CODEINDENT;
+    static QString CODEPREFIX;
+    static QString CODESUFFIX;
     static QString CPPCLASSESPAGE;
     static QString DEFINES;
     static QString DEPENDS;
@@ -241,6 +243,8 @@ struct ConfigStrings
 #define CONFIG_BASEDIR ConfigStrings::BASEDIR
 #define CONFIG_BUILDVERSION ConfigStrings::BUILDVERSION
 #define CONFIG_CODEINDENT ConfigStrings::CODEINDENT
+#define CONFIG_CODEPREFIX ConfigStrings::CODEPREFIX
+#define CONFIG_CODESUFFIX ConfigStrings::CODESUFFIX
 #define CONFIG_CPPCLASSESPAGE ConfigStrings::CPPCLASSESPAGE
 #define CONFIG_DEFINES ConfigStrings::DEFINES
 #define CONFIG_DEPENDS ConfigStrings::DEPENDS

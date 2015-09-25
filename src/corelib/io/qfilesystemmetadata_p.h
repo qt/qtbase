@@ -93,7 +93,7 @@ public:
         LinkType            = 0x00010000,
         FileType            = 0x00020000,
         DirectoryType       = 0x00040000,
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_DARWIN)
         BundleType          = 0x00080000,
         AliasType           = 0x08000000,
 #else
@@ -243,7 +243,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemMetaData::MetaDataFlags)
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_DARWIN)
 inline bool QFileSystemMetaData::isBundle() const                   { return (entryFlags & BundleType); }
 inline bool QFileSystemMetaData::isAlias() const                    { return (entryFlags & AliasType); }
 #else

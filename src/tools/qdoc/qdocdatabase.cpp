@@ -276,7 +276,7 @@ const QVector<Tree*>& QDocForest::indexSearchOrder()
 NamespaceNode* QDocForest::newIndexTree(const QString& module)
 {
     primaryTree_ = new Tree(module, qdb_);
-    forest_.insert(module, primaryTree_);
+    forest_.insert(module.toLower(), primaryTree_);
     return primaryTree_->root();
 }
 
@@ -306,15 +306,12 @@ const Node* QDocForest::findNodeForTarget(QStringList& targetPath,
 {
     int flags = SearchBaseClasses | SearchEnumValues;
 
-    QString entity = targetPath.at(0);
-    targetPath.removeFirst();
+    QString entity = targetPath.takeFirst();
     QStringList entityPath = entity.split("::");
 
     QString target;
-    if (!targetPath.isEmpty()) {
-        target = targetPath.at(0);
-        targetPath.removeFirst();
-    }
+    if (!targetPath.isEmpty())
+        target = targetPath.takeFirst();
 
     foreach (Tree* t, searchOrder()) {
         const Node* n = t->findNodeForTarget(entityPath, target, relative, flags, genus, ref);
@@ -1295,6 +1292,10 @@ void QDocDatabase::resolveIssues() {
     resolveQmlInheritance(primaryTreeRoot());
     primaryTree()->resolveTargets(primaryTreeRoot());
     primaryTree()->resolveCppToQmlLinks();
+    if (!Generator::singleExec()) {
+        QDocIndexFiles::qdocIndexFiles()->resolveRelates();
+        QDocIndexFiles::destroyQDocIndexFiles();
+    }
 }
 
 void QDocDatabase::resolveStuff()
@@ -1305,7 +1306,6 @@ void QDocDatabase::resolveStuff()
     primaryTree()->resolveCppToQmlLinks();
     primaryTree()->resolveUsingClauses();
     resolveNamespaces();
-    primaryTreeRoot()->normalizeOverloads();
 }
 
 /*!
@@ -1495,7 +1495,6 @@ void QDocDatabase::readIndexes(const QStringList& t)
             qDebug() << "This index file is already in memory:" << f;
     }
     QDocIndexFiles::qdocIndexFiles()->readIndexes(indexFiles);
-    QDocIndexFiles::destroyQDocIndexFiles();
 }
 
 /*!
@@ -1699,35 +1698,26 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
             function = first.left(position);
             node = domain->findFunctionNode(function, params, 0, genus);
         }
-        else {
+        if (!node) {
             int flags = SearchBaseClasses | SearchEnumValues;
             QStringList nodePath = first.split("::");
             QString target;
             targetPath.removeFirst();
-            if (!targetPath.isEmpty()) {
-                target = targetPath.at(0);
-                targetPath.removeFirst();
-            }
+            if (!targetPath.isEmpty())
+                target = targetPath.takeFirst();
             if (relative && relative->tree()->physicalModuleName() != domain->physicalModuleName())
                 relative = 0;
-            node = domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
-            return node;
+            return domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
         }
     }
     else {
-        if (first.endsWith(".html")) {
+        if (first.endsWith(".html"))
             node = findNodeByNameAndType(QStringList(first), Node::Document);
-            // the path may also refer to an example file with .html extension
-            if (!node && first.contains("/"))
-                return findNodeForTarget(targetPath, relative, genus, ref);
-        }
         else if (first.endsWith(QChar(')'))) {
             node = findFunctionNode(first, relative, genus);
         }
-        else {
-            node = findNodeForTarget(targetPath, relative, genus, ref);
-            return node;
-        }
+        if (!node)
+            return findNodeForTarget(targetPath, relative, genus, ref);
     }
 
     if (node && ref.isEmpty()) {

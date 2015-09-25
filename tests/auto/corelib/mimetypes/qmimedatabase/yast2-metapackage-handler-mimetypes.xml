@@ -7,7 +7,7 @@
     <glob pattern="*.ymp"/>
   </mime-type>
 
-  <mime-type type="text/x-suse-ymu">
+  <mime-type type="text/x-SuSE-ymu">
     <comment>URL of a YaST Meta Package</comment>
     <glob pattern="*.ymu"/>
   </mime-type>

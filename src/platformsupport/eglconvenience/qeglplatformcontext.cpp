@@ -241,7 +241,8 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
 
 void QEGLPlatformContext::initialize()
 {
-    updateFormatFromGL();
+    if (m_eglContext != EGL_NO_CONTEXT)
+        updateFormatFromGL();
 }
 
 // Base implementation for pbuffers. Subclasses will handle the specialized cases for

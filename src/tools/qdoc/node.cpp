@@ -106,8 +106,27 @@ Node::~Node()
 {
     if (parent_)
         parent_->removeChild(this);
+
     if (relatesTo_)
+        removeRelates();
+}
+
+/*!
+    Removes this node from the aggregate's list of related
+    nodes, or if this node has created a dummy "relates"
+    aggregate, deletes it.
+*/
+void Node::removeRelates()
+{
+    if (!relatesTo_)
+        return;
+
+    if (relatesTo_->isDocumentNode() && !relatesTo_->parent()) {
+        delete relatesTo_;
+        relatesTo_ = 0;
+    } else {
         relatesTo_->removeRelated(this);
+    }
 }
 
 /*!
@@ -463,11 +482,22 @@ bool Node::fromFlagValue(FlagValue fv, bool defaultValue)
  */
 void Node::setRelates(Aggregate *pseudoParent)
 {
-    if (relatesTo_) {
-        relatesTo_->removeRelated(this);
-    }
+    if (pseudoParent == parent())
+        return;
+
+    removeRelates();
     relatesTo_ = pseudoParent;
-    pseudoParent->related_.append(this);
+    pseudoParent->addRelated(this);
+}
+
+/*!
+  Sets the (unresolved) entity \a name that this node relates to.
+ */
+void Node::setRelates(const QString& name)
+{
+    removeRelates();
+    // Create a dummy aggregate for writing the name into the index
+    relatesTo_ = new DocumentNode(0, name, Node::NoSubtype, Node::NoPageType);
 }
 
 /*!
@@ -711,8 +741,8 @@ void Node::setLocation(const Location& t)
  */
 Aggregate::~Aggregate()
 {
-    deleteChildren();
     removeFromRelated();
+    deleteChildren();
 }
 
 /*!
@@ -945,8 +975,9 @@ void Aggregate::makeUndocumentedChildrenInternal()
 }
 
 /*!
-  This is where we should set the overload numbers, including
-  the related non-members.
+  This is where we set the overload numbers for function nodes.
+  \note Overload numbers for related non-members are handled
+  separately.
  */
 void Aggregate::normalizeOverloads()
 {
@@ -1018,23 +1049,6 @@ void Aggregate::normalizeOverloads()
         ++p;
     }
     /*
-      Add the related non-members here.
-     */
-    if (!related_.isEmpty()) {
-        foreach (Node* n, related_) {
-            if (n->isFunction()) {
-                FunctionNode* fn = static_cast<FunctionNode*>(n);
-                QMap<QString, Node *>::Iterator p = primaryFunctionMap_.find(fn->name());
-                if (p != primaryFunctionMap_.end()) {
-                    secondaryFunctionMap_[fn->name()].append(fn);
-                    fn->setOverloadNumber(secondaryFunctionMap_[fn->name()].size());
-                }
-                else
-                    fn->setOverloadNumber(0);
-            }
-        }
-    }
-    /*
       Recursive part.
      */
     NodeList::ConstIterator c = childNodes().constBegin();
@@ -1061,7 +1075,13 @@ void Aggregate::removeFromRelated()
  */
 void Aggregate::deleteChildren()
 {
-    NodeList childrenCopy = children_; // `children_` will be changed in ~Node()
+    NodeList childrenCopy = children_;
+    // Clear internal collections before deleting child nodes
+    children_.clear();
+    childMap_.clear();
+    enumChildren_.clear();
+    primaryFunctionMap_.clear();
+    secondaryFunctionMap_.clear();
     qDeleteAll(childrenCopy);
 }
 
@@ -1188,7 +1208,9 @@ bool Aggregate::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 void Aggregate::addChild(Node *child)
 {
     children_.append(child);
-    if ((child->type() == Function) || (child->type() == QmlMethod)) {
+    if (child->type() == Function
+            || child->type() == QmlMethod
+            || child->type() == QmlSignal) {
         FunctionNode *func = static_cast<FunctionNode*>(child);
         QString name = func->name();
         if (!primaryFunctionMap_.contains(name)) {
@@ -1233,7 +1255,9 @@ void Aggregate::removeChild(Node *child)
 {
     children_.removeAll(child);
     enumChildren_.removeAll(child);
-    if (child->type() == Function) {
+    if (child->type() == Function
+            || child->type() == QmlMethod
+            || child->type() == QmlSignal) {
         QMap<QString, Node *>::Iterator primary = primaryFunctionMap_.find(child->name());
         NodeList& overloads = secondaryFunctionMap_[child->name()];
         if (primary != primaryFunctionMap_.end() && *primary == child) {
@@ -1333,10 +1357,49 @@ QString Node::physicalModuleName() const
 }
 
 /*!
+  Removes a node from the list of nodes related to this one.
+  If it is a function node, also remove from the primary/
+  secondary function maps.
  */
 void Aggregate::removeRelated(Node *pseudoChild)
 {
     related_.removeAll(pseudoChild);
+
+    if (pseudoChild->isFunction()) {
+        QMap<QString, Node *>::Iterator p = primaryFunctionMap_.find(pseudoChild->name());
+        while (p != primaryFunctionMap_.end()) {
+            if (p.value() == pseudoChild) {
+                primaryFunctionMap_.erase(p);
+                break;
+            }
+            ++p;
+        }
+        NodeList& overloads = secondaryFunctionMap_[pseudoChild->name()];
+        overloads.removeAll(pseudoChild);
+    }
+}
+
+/*!
+  Adds \a pseudoChild to the list of nodes related to this one. Resolve a correct
+  overload number for a related non-member function.
+ */
+void Aggregate::addRelated(Node *pseudoChild)
+{
+    related_.append(pseudoChild);
+
+    if (pseudoChild->isFunction()) {
+        FunctionNode* fn = static_cast<FunctionNode*>(pseudoChild);
+        if (primaryFunctionMap_.contains(pseudoChild->name())) {
+            secondaryFunctionMap_[pseudoChild->name()].append(pseudoChild);
+            fn->setOverloadNumber(secondaryFunctionMap_[pseudoChild->name()].size());
+            fn->setOverloadFlag(true);
+        }
+        else {
+            primaryFunctionMap_.insert(pseudoChild->name(), pseudoChild);
+            fn->setOverloadNumber(0);
+            fn->setOverloadFlag(false);
+        }
+    }
 }
 
 /*!
@@ -2096,7 +2159,7 @@ QString FunctionNode::signature(bool values) const
 PropertyNode::FunctionRole PropertyNode::role(const FunctionNode* fn) const
 {
     for (int i=0; i<4; i++) {
-        if (functions_[i].contains((Node*)fn))
+        if (functions_[i].contains(const_cast<FunctionNode*>(fn)))
             return (FunctionRole) i;
     }
     return Notifier;

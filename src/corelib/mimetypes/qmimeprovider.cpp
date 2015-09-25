@@ -79,10 +79,9 @@ Q_CORE_EXPORT int qmime_secondsBetweenChecks = 5; // exported for the unit test
 
 bool QMimeProviderBase::shouldCheck()
 {
-    const QDateTime now = QDateTime::currentDateTime();
-    if (m_lastCheck.isValid() && m_lastCheck.secsTo(now) < qmime_secondsBetweenChecks)
+    if (m_lastCheck.isValid() && m_lastCheck.elapsed() < qmime_secondsBetweenChecks * 1000)
         return false;
-    m_lastCheck = now;
+    m_lastCheck.start();
     return true;
 }
 
@@ -562,10 +561,13 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // load comment and globPatterns
 
     const QString file = data.name + QLatin1String(".xml");
-    const QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file);
+    // shared-mime-info since 1.3 lowercases the xml files
+    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file.toLower());
     if (mimeFiles.isEmpty()) {
-        // TODO: ask Thiago about this
-        qWarning() << "No file found for" << file << ", even though the file appeared in a directory listing.";
+        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file); // pre-1.3
+    }
+    if (mimeFiles.isEmpty()) {
+        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.";
         qWarning() << "Either it was just removed, or the directory doesn't have executable permission...";
         qWarning() << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
         return;
@@ -626,7 +628,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     // Let's assume that shared-mime-info is at least version 0.70
     // Otherwise we would need 1) a version check, and 2) code for parsing patterns from the globs file.
 #if 1
-    if (!mainPattern.isEmpty() && data.globPatterns.first() != mainPattern) {
+    if (!mainPattern.isEmpty() && (data.globPatterns.isEmpty() || data.globPatterns.first() != mainPattern)) {
         // ensure it's first in the list of patterns
         data.globPatterns.removeAll(mainPattern);
         data.globPatterns.prepend(mainPattern);

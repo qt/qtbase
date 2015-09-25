@@ -2403,7 +2403,6 @@ QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 
 /*!
     \fn QRectF QRectF::marginsAdded(const QMarginsF &margins) const
-    \relates QRectF
     \since 5.3
 
     Returns a rectangle grown by the \a margins.
@@ -2413,7 +2412,6 @@ QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 
 /*!
     \fn QRectF QRectF::marginsRemoved(const QMarginsF &margins) const
-    \relates QRectF
     \since 5.3
 
     Removes the \a margins from the rectangle, shrinking it.
@@ -2423,7 +2421,6 @@ QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 
 /*!
     \fn QRectF QRectF::operator+=(const QMarginsF &margins)
-    \relates QRectF
     \since 5.3
 
     Adds the \a margins to the rectangle, growing it.
@@ -2433,7 +2430,6 @@ QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
 
 /*!
     \fn QRectF QRectF::operator-=(const QMarginsF &margins)
-    \relates QRectF
     \since 5.3
 
     Returns a rectangle shrunk by the \a margins.

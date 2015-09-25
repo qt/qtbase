@@ -157,6 +157,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     Order of evaluation:
     \list
+    \li [QLibraryInfo::DataPath]/qtlogging.ini
     \li QtProject/qtlogging.ini
     \li \l setFilterRules()
     \li \c QT_LOGGING_CONF

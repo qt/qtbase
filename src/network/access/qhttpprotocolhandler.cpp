@@ -237,7 +237,12 @@ void QHttpProtocolHandler::_q_readyRead()
     }
 
     if (m_channel->isSocketWaiting() || m_channel->isSocketReading()) {
-        m_channel->state = QHttpNetworkConnectionChannel::ReadingState;
+        if (m_socket->bytesAvailable()) {
+            // We might get a spurious call from readMoreLater()
+            // call of the QHttpNetworkConnection even while the socket is disconnecting.
+            // Therefore check if there is actually bytes available before changing the channel state.
+            m_channel->state = QHttpNetworkConnectionChannel::ReadingState;
+        }
         if (m_reply)
             _q_receiveReply();
     }
@@ -250,7 +255,6 @@ bool QHttpProtocolHandler::sendRequest()
     if (!m_reply) {
         // heh, how should that happen!
         qWarning() << "QAbstractProtocolHandler::sendRequest() called without QHttpNetworkReply";
-        m_channel->state = QHttpNetworkConnectionChannel::IdleState;
         return false;
     }
 

@@ -43,6 +43,10 @@
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
 
+#include <QtCore/qbytearray.h>
+#include <QtCore/qglobal.h>
+
+
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
@@ -375,6 +379,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         updating = false;
 
 #ifndef QT_NO_LIBRARY
+        bool envOK  = false;
+        const int skipGeneric = qgetenv("QT_EXCLUDE_GENERIC_BEARER").toInt(&envOK);
         QBearerEngine *generic = 0;
         QFactoryLoader *l = loader();
         const PluginKeyMap keyMap = l->keyMap();
@@ -409,8 +415,10 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             }
         }
 
-        if (generic)
-            sessionEngines.append(generic);
+        if (generic) {
+            if (!envOK || skipGeneric <= 0)
+                sessionEngines.append(generic);
+        }
 #endif // QT_NO_LIBRARY
     }
 
@@ -466,15 +474,18 @@ QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines() const
 void QNetworkConfigurationManagerPrivate::startPolling()
 {
     QMutexLocker locker(&mutex);
-
-    if(!pollTimer) {
+    if (!pollTimer) {
         pollTimer = new QTimer(this);
-        pollTimer->setInterval(10000);
+        bool ok;
+        int interval = qgetenv("QT_BEARER_POLL_TIMEOUT").toInt(&ok);
+        if (!ok)
+            interval = 10000;//default 10 seconds
+        pollTimer->setInterval(interval);
         pollTimer->setSingleShot(true);
         connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollEngines()));
     }
 
-    if(pollTimer->isActive())
+    if (pollTimer->isActive())
         return;
 
     foreach (QBearerEngine *engine, sessionEngines) {
@@ -483,6 +494,7 @@ void QNetworkConfigurationManagerPrivate::startPolling()
             break;
         }
     }
+    performAsyncConfigurationUpdate();
 }
 
 void QNetworkConfigurationManagerPrivate::pollEngines()

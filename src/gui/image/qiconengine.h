@@ -44,6 +44,7 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QIconEngine
 {
 public:
+    QIconEngine();
     virtual ~QIconEngine();
     virtual void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) = 0;
     virtual QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);

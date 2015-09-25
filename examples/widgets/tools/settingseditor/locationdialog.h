@@ -50,6 +50,7 @@ class QDialogButtonBox;
 class QGroupBox;
 class QLabel;
 class QTableWidget;
+class QTableWidgetItem;
 QT_END_NAMESPACE
 
 class LocationDialog : public QDialog
@@ -66,6 +67,7 @@ public:
 
 private slots:
     void updateLocationsTable();
+    void itemActivated(QTableWidgetItem *);
 
 private:
     QLabel *formatLabel;

@@ -51,6 +51,7 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +78,7 @@ public:
     QMimeDatabasePrivate *m_db;
 protected:
     bool shouldCheck();
-    QDateTime m_lastCheck;
+    QElapsedTimer m_lastCheck;
 };
 
 /*

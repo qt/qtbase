@@ -115,7 +115,7 @@
 #  else
 #    error "Qt has not been ported to this Apple platform - see http://www.qt.io/developers"
 #  endif
-#elif defined(ANDROID)
+#elif defined(__ANDROID__) || defined(ANDROID)
 #  define Q_OS_ANDROID
 #  define Q_OS_LINUX
 #elif defined(__CYGWIN__)

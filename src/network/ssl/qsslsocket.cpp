@@ -499,8 +499,7 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
         d->createPlainSocket(openMode);
     bool retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
-    setSocketError(d->plainSocket->error());
-    setErrorString(d->plainSocket->errorString());
+    d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     setSocketState(state);
     setOpenMode(openMode);
     setLocalPort(d->plainSocket->localPort());
@@ -1532,8 +1531,7 @@ bool QSslSocket::waitForConnected(int msecs)
     bool retVal = d->plainSocket->waitForConnected(msecs);
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        setSocketError(d->plainSocket->error());
-        setErrorString(d->plainSocket->errorString());
+        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     }
     return retVal;
 }
@@ -1688,8 +1686,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
     bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        setSocketError(d->plainSocket->error());
-        setErrorString(d->plainSocket->errorString());
+        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     }
     return retVal;
 }
@@ -2402,15 +2399,22 @@ void QSslSocketPrivate::_q_stateChangedSlot(QAbstractSocket::SocketState state)
 */
 void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
 {
-    Q_Q(QSslSocket);
+    Q_UNUSED(error)
 #ifdef QSSLSOCKET_DEBUG
+    Q_Q(QSslSocket);
     qCDebug(lcSsl) << "QSslSocket::_q_errorSlot(" << error << ')';
     qCDebug(lcSsl) << "\tstate =" << q->state();
     qCDebug(lcSsl) << "\terrorString =" << q->errorString();
 #endif
-    q->setSocketError(plainSocket->error());
-    q->setErrorString(plainSocket->errorString());
-    emit q->error(error);
+    // this moves encrypted bytes from plain socket into our buffer
+    if (plainSocket->bytesAvailable()) {
+        qint64 tmpReadBufferMaxSize = readBufferMaxSize;
+        readBufferMaxSize = 0; // reset temporarily so the plain sockets completely drained drained
+        transmit();
+        readBufferMaxSize = tmpReadBufferMaxSize;
+    }
+
+    setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
 }
 
 /*!
@@ -2475,7 +2479,6 @@ void QSslSocketPrivate::_q_flushReadBuffer()
 */
 void QSslSocketPrivate::_q_resumeImplementation()
 {
-    Q_Q(QSslSocket);
     if (plainSocket)
         plainSocket->resume();
     paused = false;
@@ -2483,9 +2486,7 @@ void QSslSocketPrivate::_q_resumeImplementation()
         if (verifyErrorsHaveBeenIgnored()) {
             continueHandshake();
         } else {
-            q->setErrorString(sslErrors.first().errorString());
-            q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
-            emit q->error(QAbstractSocket::SslHandshakeFailedError);
+            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.first().errorString());
             plainSocket->disconnectFromHost();
             return;
         }

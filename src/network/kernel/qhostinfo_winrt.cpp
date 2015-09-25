@@ -130,45 +130,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     return results;
 }
 
-QString QHostInfo::localHostName()
-{
-    ComPtr<INetworkInformationStatics> statics;
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &statics);
-
-    ComPtr<IVectorView<HostName *>> hostNames;
-    statics->GetHostNames(&hostNames);
-    if (!hostNames)
-        return QString();
-
-    unsigned int size;
-    hostNames->get_Size(&size);
-    if (size == 0)
-        return QString();
-
-    for (unsigned int i = 0; i < size; ++i) {
-        ComPtr<IHostName> hostName;
-        hostNames->GetAt(i, &hostName);
-        HostNameType type;
-        hostName->get_Type(&type);
-        if (type != HostNameType_DomainName)
-            continue;
-
-        HString name;
-        hostName->get_CanonicalName(name.GetAddressOf());
-        UINT32 length;
-        PCWSTR rawString = name.GetRawBuffer(&length);
-        return QString::fromWCharArray(rawString, length);
-    }
-    ComPtr<IHostName> firstHost;
-    hostNames->GetAt(0, &firstHost);
-
-    HString name;
-    firstHost->get_CanonicalName(name.GetAddressOf());
-    UINT32 length;
-    PCWSTR rawString = name.GetRawBuffer(&length);
-    return QString::fromWCharArray(rawString, length);
-}
-
 // QString QHostInfo::localDomainName() defined in qnetworkinterface_win.cpp
 
 QT_END_NAMESPACE

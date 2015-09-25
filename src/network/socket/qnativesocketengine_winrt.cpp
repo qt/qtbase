@@ -538,18 +538,19 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
     return bytesWritten;
 }
 
-qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress *addr, quint16 *port)
+qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHeader *header,
+                                         PacketHeaderOptions)
 {
     Q_D(QNativeSocketEngine);
-    if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty())
+    if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
+        if (header)
+            header->clear();
         return -1;
+    }
 
     WinRtDatagram datagram = d->pendingDatagrams.takeFirst();
-    if (addr)
-        *addr = datagram.address;
-
-    if (port)
-        *port = datagram.port;
+    if (header)
+        *header = datagram.header;
 
     QByteArray readOrigin;
     // Do not read the whole datagram. Put the rest of it back into the "queue"
@@ -564,7 +565,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress
     return readOrigin.length();
 }
 
-qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QHostAddress &addr, quint16 port)
+qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QIpPacketHeader &header)
 {
     Q_D(QNativeSocketEngine);
     if (d->socketType != QAbstractSocket::UdpSocket)
@@ -576,13 +577,13 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QH
     HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
                                     &hostNameFactory);
     RETURN_IF_FAILED("Could not obtain hostname factory", return -1);
-    const QString addressString = addr.toString();
+    const QString addressString = header.destinationAddress.toString();
     HStringReference hostNameRef(reinterpret_cast<LPCWSTR>(addressString.utf16()));
     hostNameFactory->CreateHostName(hostNameRef.Get(), &remoteHost);
 
     ComPtr<IAsyncOperation<IOutputStream *>> streamOperation;
     ComPtr<IOutputStream> stream;
-    const QString portString = QString::number(port);
+    const QString portString = QString::number(header.destinationPort);
     HStringReference portRef(reinterpret_cast<LPCWSTR>(portString.utf16()));
     hr = d->udpSocket()->GetOutputStreamAsync(remoteHost.Get(), portRef.Get(), &streamOperation);
     RETURN_IF_FAILED("Failed to get output stream to socket", return -1);
@@ -1230,11 +1231,11 @@ HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, I
     remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
     RETURN_OK_IF_FAILED("Could not obtain remote host's canonical name");
     returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
-    datagram.address = returnAddress;
+    datagram.header.senderAddress = returnAddress;
     HString remotePort;
     hr = args->get_RemotePort(remotePort.GetAddressOf());
     RETURN_OK_IF_FAILED("Could not obtain remote port");
-    datagram.port = qt_QStringFromHString(remotePort).toInt();
+    datagram.header.senderPort = qt_QStringFromHString(remotePort).toInt();
 
     ComPtr<IDataReader> reader;
     hr = args->GetDataReader(&reader);

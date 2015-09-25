@@ -221,12 +221,8 @@ QT_END_NAMESPACE
             const QWindowList topLevels = QGuiApplication::topLevelWindows();
             for (int i = 0; i < topLevels.size(); ++i) {
                 QWindow *topLevelWindow = topLevels.at(i);
-                // Widgets have alreay received a CloseEvent from the QApplication
-                // QCloseEvent handler. (see canQuit above). Prevent running the
-                // CloseEvent logic twice, call close() directly.
-                if (topLevelWindow->inherits("QWidgetWindow"))
-                    topLevelWindow->close();
-                else
+                // Already closed windows will not have a platform window, skip those
+                if (topLevelWindow->handle())
                     QWindowSystemInterface::handleCloseEvent(topLevelWindow);
             }
             QWindowSystemInterface::flushWindowSystemEvents();

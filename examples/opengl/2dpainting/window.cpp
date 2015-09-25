@@ -66,8 +66,8 @@ Window::Window()
     setLayout(layout);
 
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), native, SLOT(animate()));
-    connect(timer, SIGNAL(timeout()), openGL, SLOT(animate()));
+    connect(timer, &QTimer::timeout, native, &Widget::animate);
+    connect(timer, &QTimer::timeout, openGL, &GLWidget::animate);
     timer->start(50);
 }
 //! [0]

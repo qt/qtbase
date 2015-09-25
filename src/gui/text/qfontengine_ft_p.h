@@ -208,8 +208,6 @@ private:
     virtual QFixed averageCharWidth() const Q_DECL_OVERRIDE;
 
     virtual qreal maxCharWidth() const Q_DECL_OVERRIDE;
-    virtual qreal minLeftBearing() const Q_DECL_OVERRIDE;
-    virtual qreal minRightBearing() const Q_DECL_OVERRIDE;
     virtual QFixed lineThickness() const Q_DECL_OVERRIDE;
     virtual QFixed underlinePosition() const Q_DECL_OVERRIDE;
 
@@ -324,8 +322,6 @@ private:
     int xsize;
     int ysize;
 
-    mutable QFixed lbearing;
-    mutable QFixed rbearing;
     QFixed line_thickness;
     QFixed underline_position;
 

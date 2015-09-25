@@ -541,17 +541,21 @@ QRect QStyle::itemPixmapRect(const QRect &rect, int alignment, const QPixmap &pi
     QRect result;
     int x, y, w, h;
     rect.getRect(&x, &y, &w, &h);
+
+    const int pixmapWidth = pixmap.width()/pixmap.devicePixelRatio();
+    const int pixmapHeight = pixmap.height()/pixmap.devicePixelRatio();
+
     if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
-        y += h/2 - pixmap.height()/2;
+        y += h/2 - pixmapHeight/2;
     else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
-        y += h - pixmap.height();
+        y += h - pixmapHeight;
     if ((alignment & Qt::AlignRight) == Qt::AlignRight)
-        x += w - pixmap.width();
+        x += w - pixmapWidth;
     else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
-        x += w/2 - pixmap.width()/2;
+        x += w/2 - pixmapWidth/2;
     else if ((alignment & Qt::AlignLeft) != Qt::AlignLeft && QApplication::isRightToLeft())
-        x += w - pixmap.width();
-    result = QRect(x, y, pixmap.width(), pixmap.height());
+        x += w - pixmapWidth;
+    result = QRect(x, y, pixmapWidth, pixmapHeight);
     return result;
 }
 
@@ -2263,8 +2267,9 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
     standard palette is not used. In particular, the Windows XP,
     Vista, and Mac styles do not use the standard palette, but make
     use of native theme engines. With these styles, you should not set
-    the palette with QApplication::setStandardPalette().
+    the palette with QApplication::setPalette().
 
+    \sa QApplication::setPalette()
  */
 QPalette QStyle::standardPalette() const
 {

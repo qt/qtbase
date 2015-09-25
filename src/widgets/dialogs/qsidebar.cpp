@@ -60,6 +60,8 @@ void QSideBarDelegate::initStyleOption(QStyleOptionViewItem *option,
 }
 
 /*!
+    \internal
+    \class QUrlModel
     QUrlModel lets you have indexes from a QFileSystemModel to a list.  When QFileSystemModel
     changes them QUrlModel will automatically update.
 

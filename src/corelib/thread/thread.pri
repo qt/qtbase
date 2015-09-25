@@ -46,21 +46,21 @@ SOURCES += thread/qatomic.cpp \
 unix:SOURCES += thread/qthread_unix.cpp \
                          thread/qwaitcondition_unix.cpp
 
-win32:SOURCES += thread/qmutex_win.cpp \
-                 thread/qthread_win.cpp \
+win32:SOURCES += thread/qthread_win.cpp \
 		 thread/qwaitcondition_win.cpp
 
-integrity:SOURCES += thread/qmutex_unix.cpp \
-                thread/qthread_unix.cpp \
+integrity:SOURCES += thread/qthread_unix.cpp \
 		thread/qwaitcondition_unix.cpp
 
-unix: {
-    mac {
-        SOURCES += thread/qmutex_mac.cpp
-    } else:linux-*:!linux-lsb-* {
-        SOURCES += thread/qmutex_linux.cpp
-    } else {
-        SOURCES += thread/qmutex_unix.cpp
-    }
+false {
+    # files #included by others, but listed here so IDEs parsing this file know
+    # they are part of QtCore. Usually, qmake can find out that certain files
+    # are #included by others and thus remove from SOURCES, but it gets lost
+    # with qmutex.cpp.
+    SOURCES += \
+        thread/qmutex_linux.cpp \
+        thread/qmutex_mac.cpp \
+        thread/qmutex_unix.cpp \
+        thread/qmutex_win.cpp
 }
 

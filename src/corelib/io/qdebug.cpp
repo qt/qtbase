@@ -697,7 +697,7 @@ QDebug &QDebug::resetFormat()
 
 /*!
     \class QDebugStateSaver
-
+    \inmodule QtCore
     \brief Convenience class for custom QDebug operators
 
     Saves the settings used by QDebug, and restores them upon destruction,
