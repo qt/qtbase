@@ -62,6 +62,10 @@ if (ret == false) \
 QVERIFY(ret); \
 }
 
+typedef void (QProcess::*QProcessFinishedSignal1)(int);
+typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
+typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
+
 class tst_QProcess : public QObject
 {
     Q_OBJECT
@@ -260,7 +264,7 @@ void tst_QProcess::simpleStart()
     process = new QProcess;
     QSignalSpy spy(process, &QProcess::stateChanged);
     QVERIFY(spy.isValid());
-    connect(process, SIGNAL(readyRead()), this, SLOT(readFromProcess()));
+    connect(process, &QIODevice::readyRead, this, &tst_QProcess::readFromProcess);
 
     /* valgrind dislike SUID binaries(those that have the `s'-flag set), which
      * makes it fail to start the process. For this reason utilities like `ping' won't
@@ -356,8 +360,8 @@ void tst_QProcess::crashTest()
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QSignalSpy spy(process, &QProcess::errorOccurred);
-    QSignalSpy spy2(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
-    QSignalSpy spy3(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy spy2(process, static_cast<QProcessErrorSignal>(&QProcess::error));
+    QSignalSpy spy3(process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
@@ -394,13 +398,14 @@ void tst_QProcess::crashTest2()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
-    QSignalSpy spy(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::errorOccurred));
-    QSignalSpy spy2(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy spy(process, static_cast<QProcessErrorSignal>(&QProcess::errorOccurred));
+    QSignalSpy spy2(process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
 
-    QObject::connect(process, SIGNAL(finished(int)), this, SLOT(exitLoopSlot()));
+    QObject::connect(process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
+                     this, &tst_QProcess::exitLoopSlot);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
@@ -439,7 +444,7 @@ void tst_QProcess::echoTest()
     QFETCH(QByteArray, input);
 
     process = new QProcess;
-    connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
+    connect(process, &QIODevice::readyRead, this, &tst_QProcess::exitLoopSlot);
 
     process->start("testProcessEcho/testProcessEcho");
     QVERIFY(process->waitForStarted(5000));
@@ -489,7 +494,7 @@ void tst_QProcess::echoTest2()
 {
 
     process = new QProcess;
-    connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
+    connect(process, &QIODevice::readyRead, this, &tst_QProcess::exitLoopSlot);
 
     process->start("testProcessEcho2/testProcessEcho2");
     QVERIFY(process->waitForStarted(5000));
@@ -676,7 +681,7 @@ void tst_QProcess::readTimeoutAndThenCrash()
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     QSignalSpy spy(process, &QProcess::errorOccurred);
-    QSignalSpy spy2(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy spy2(process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
 
@@ -751,14 +756,15 @@ void tst_QProcess::restartProcessDeadlock()
     // because of the way QProcessManager uses its locks.
     QProcess proc;
     process = &proc;
-    connect(process, SIGNAL(finished(int)), this, SLOT(restartProcess()));
+    connect(process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
+            this, &tst_QProcess::restartProcess);
 
     process->start("testProcessEcho/testProcessEcho");
 
     QCOMPARE(process->write("", 1), qlonglong(1));
     QVERIFY(process->waitForFinished(5000));
 
-    process->disconnect(SIGNAL(finished(int)));
+    QObject::disconnect(process, static_cast<QProcessFinishedSignal1>(&QProcess::finished), Q_NULLPTR, Q_NULLPTR);
 
     QCOMPARE(process->write("", 1), qlonglong(1));
     QVERIFY(process->waitForFinished(5000));
@@ -878,7 +884,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 {
 
     QProcess proc;
-    connect(&proc, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
+    connect(&proc, &QIODevice::readyRead, this, &tst_QProcess::exitLoopSlot);
     QSignalSpy spy(&proc, &QProcess::readyRead);
     QVERIFY(spy.isValid());
 
@@ -898,7 +904,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
     QVERIFY(QTestEventLoop::instance().timeout());
     QVERIFY(!proc.waitForReadyRead(250));
 
-    QObject::disconnect(&proc, SIGNAL(readyRead()), 0, 0);
+    QObject::disconnect(&proc, &QIODevice::readyRead, Q_NULLPTR, Q_NULLPTR);
     proc.write("B");
     QVERIFY(proc.waitForReadyRead(5000));
 
@@ -960,30 +966,30 @@ public:
 
     SoftExitProcess(int n) : waitedForFinished(false), n(n), killing(false)
     {
-        connect(this, SIGNAL(finished(int,QProcess::ExitStatus)),
-                this, SLOT(finishedSlot(int,QProcess::ExitStatus)));
+        connect(this, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
+                this, &SoftExitProcess::finishedSlot);
 
         switch (n) {
         case 0:
             setReadChannelMode(QProcess::MergedChannels);
-            connect(this, SIGNAL(readyRead()), this, SLOT(terminateSlot()));
+            connect(this, &QIODevice::readyRead, this, &SoftExitProcess::terminateSlot);
             break;
         case 1:
-            connect(this, SIGNAL(readyReadStandardOutput()),
-                    this, SLOT(terminateSlot()));
+            connect(this, &QProcess::readyReadStandardOutput,
+                    this, &SoftExitProcess::terminateSlot);
             break;
         case 2:
-            connect(this, SIGNAL(readyReadStandardError()),
-                    this, SLOT(terminateSlot()));
+            connect(this, &QProcess::readyReadStandardError,
+                    this, &SoftExitProcess::terminateSlot);
             break;
         case 3:
-            connect(this, SIGNAL(started()),
-                    this, SLOT(terminateSlot()));
+            connect(this, &QProcess::started,
+                    this, &SoftExitProcess::terminateSlot);
             break;
         case 4:
         default:
-            connect(this, SIGNAL(stateChanged(QProcess::ProcessState)),
-                    this, SLOT(terminateSlot()));
+            connect(this, &QProcess::stateChanged,
+                    this, &SoftExitProcess::terminateSlot);
             break;
         }
     }
@@ -1179,8 +1185,8 @@ protected:
         exitCode = 90210;
 
         QProcess process;
-        connect(&process, SIGNAL(finished(int)), this, SLOT(catchExitCode(int)),
-                Qt::DirectConnection);
+        connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
+                this, &TestThread::catchExitCode, Qt::DirectConnection);
 
         process.start("testProcessEcho/testProcessEcho");
 
@@ -1260,8 +1266,9 @@ void tst_QProcess::waitForFinishedWithTimeout()
 void tst_QProcess::waitForReadyReadInAReadyReadSlot()
 {
     process = new QProcess(this);
-    connect(process, SIGNAL(readyRead()), this, SLOT(waitForReadyReadInAReadyReadSlotSlot()));
-    connect(process, SIGNAL(finished(int)), this, SLOT(exitLoopSlot()));
+    connect(process, &QIODevice::readyRead, this, &tst_QProcess::waitForReadyReadInAReadyReadSlotSlot);
+    connect(process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
+            this, &tst_QProcess::exitLoopSlot);
     bytesAvailable = 0;
 
     process->start("testProcessEcho/testProcessEcho");
@@ -1299,7 +1306,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
 void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
 {
     process = new QProcess(this);
-    connect(process, SIGNAL(bytesWritten(qint64)), this, SLOT(waitForBytesWrittenInABytesWrittenSlotSlot()));
+    connect(process, &QIODevice::bytesWritten, this, &tst_QProcess::waitForBytesWrittenInABytesWrittenSlotSlot);
     bytesAvailable = 0;
 
     process->start("testProcessEcho/testProcessEcho");
@@ -1525,9 +1532,9 @@ void tst_QProcess::failToStart()
     QProcess process;
     QSignalSpy stateSpy(&process, &QProcess::stateChanged);
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy errorSpy2(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
-    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
-    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(stateSpy.isValid());
     QVERIFY(errorSpy.isValid());
@@ -1597,9 +1604,9 @@ void tst_QProcess::failToStartWithWait()
     QProcess process;
     QEventLoop loop;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy errorSpy2(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
-    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
-    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(errorSpy2.isValid());
@@ -1629,9 +1636,9 @@ void tst_QProcess::failToStartWithEventLoop()
     QProcess process;
     QEventLoop loop;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy errorSpy2(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
-    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
-    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(errorSpy2.isValid());
@@ -1669,7 +1676,7 @@ void tst_QProcess::failToStartEmptyArgs()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
 
     QProcess process;
-    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy errorSpy(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(errorSpy.isValid());
 
     switch (startOverload) {
@@ -1893,9 +1900,9 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
 
     QProcess process;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy errorSpy2(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
-    QSignalSpy finishedSpy1(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
-    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
+    QSignalSpy finishedSpy1(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(errorSpy2.isValid());
@@ -2291,7 +2298,7 @@ void tst_QProcess::invalidProgramString()
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     QSignalSpy spy(&process, &QProcess::errorOccurred);
-    QSignalSpy spy2(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy spy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
 
@@ -2309,7 +2316,7 @@ void tst_QProcess::onlyOneStartedSignal()
     QProcess process;
 
     QSignalSpy spyStarted(&process,  &QProcess::started);
-    QSignalSpy spyFinished(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
+    QSignalSpy spyFinished(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
 
     QVERIFY(spyStarted.isValid());
     QVERIFY(spyFinished.isValid());
@@ -2335,7 +2342,7 @@ class BlockOnReadStdOut : public QObject
 public:
     BlockOnReadStdOut(QProcess *process)
     {
-        connect(process, SIGNAL(readyReadStandardOutput()), SLOT(block()));
+        connect(process, &QProcess::readyReadStandardOutput, this, &BlockOnReadStdOut::block);
     }
 
 public slots:
@@ -2350,7 +2357,8 @@ void tst_QProcess::finishProcessBeforeReadingDone()
     QProcess process;
     BlockOnReadStdOut blocker(&process);
     QEventLoop loop;
-    connect(&process, SIGNAL(finished(int)), &loop, SLOT(quit()));
+    connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
+            &loop, &QEventLoop::quit);
     process.start("testProcessOutput/testProcessOutput");
     QVERIFY(process.waitForStarted());
     loop.exec();
