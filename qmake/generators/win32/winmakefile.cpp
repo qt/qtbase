@@ -49,33 +49,6 @@ Win32MakefileGenerator::Win32MakefileGenerator() : MakefileGenerator()
 {
 }
 
-int
-Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem)
-{
-    QString bd = Option::normalizePath(d);
-    if(!exists(bd))
-        return -1;
-
-    QMakeMetaInfo libinfo(project);
-    bool libInfoRead = libinfo.readLib(bd + '/' + stem);
-
-    // If the library, for which we're trying to find the highest version
-    // number, is a static library
-    if (libInfoRead && libinfo.values("QMAKE_PRL_CONFIG").contains("staticlib"))
-        return -1;
-
-    const ProStringList &vover = project->values(ProKey("QMAKE_" + stem.toUpper() + "_VERSION_OVERRIDE"));
-    if (!vover.isEmpty())
-        return vover.first().toInt();
-
-    int biggest=-1;
-    if(libInfoRead
-       && !libinfo.values("QMAKE_PRL_CONFIG").contains("staticlib")
-       && !libinfo.isEmpty("QMAKE_PRL_VERSION"))
-       biggest = libinfo.first("QMAKE_PRL_VERSION").toQString().replace(".", "").toInt();
-    return biggest;
-}
-
 ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
 {
     if (lib.startsWith("/LIBPATH:"))
@@ -114,31 +87,37 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
             dirs.append(lp);
             (*it) = "/LIBPATH:" + lp.real();
         } else if(opt.startsWith("-l") || opt.startsWith("/l")) {
-            QString lib = opt.right(opt.length() - 2), out;
-            if(!lib.isEmpty()) {
-                for(QList<QMakeLocalFileName>::Iterator it = dirs.begin();
-                    it != dirs.end(); ++it) {
-                    QString extension;
-                    int ver = findHighestVersion((*it).local(), lib);
-                    if(ver > 0)
-                        extension += QString::number(ver);
-                    extension += ".lib";
-                    QString libBase = (*it).local() + '/' + lib;
-                    if ((linkPrl && processPrlFile(libBase))
-                            || exists(libBase + extension)) {
-                        out = (*it).real() + Option::dir_sep + lib + extension;
+            QString lib = opt.mid(2);
+            ProString verovr =
+                    project->first(ProKey("QMAKE_" + lib.toUpper() + "_VERSION_OVERRIDE"));
+            for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
+                 dir_it != dirs.end(); ++dir_it) {
+                QString cand = (*dir_it).real() + Option::dir_sep + lib;
+                if (linkPrl && processPrlFile(cand)) {
+                    (*it) = cand;
+                    goto found;
+                }
+                QString extension = verovr + ".lib";
+                if (exists((*dir_it).local() + '/' + lib + extension)) {
+                    (*it) = cand + extension;
+                    goto found;
+                }
+            }
+            (*it) = lib + ".lib";
+          found: ;
+        } else if (linkPrl) {
+            if (fileInfo(opt).isAbsolute()) {
+                if (processPrlFile(opt))
+                    (*it) = opt;
+            } else {
+                for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
+                     dir_it != dirs.end(); ++dir_it) {
+                    QString cand = (*dir_it).real() + Option::dir_sep + opt;
+                    if (processPrlFile(cand)) {
+                        (*it) = cand;
                         break;
                     }
                 }
-            }
-            if(out.isEmpty())
-                out = lib + ".lib";
-            (*it) = out;
-        } else if (linkPrl && !processPrlFile(opt) && QDir::isRelativePath(opt)) {
-            for (QList<QMakeLocalFileName>::Iterator it = dirs.begin(); it != dirs.end(); ++it) {
-                QString prl = (*it).local() + '/' + opt;
-                if (processPrlFile(prl))
-                    break;
             }
         }
 
@@ -242,6 +221,7 @@ void Win32MakefileGenerator::fixTargetExt()
     } else {
         project->values("TARGET_EXT").append("." + project->first("QMAKE_EXTENSION_STATICLIB"));
         project->values("TARGET").first() = project->first("QMAKE_PREFIX_STATICLIB") + project->first("TARGET");
+        project->values("LIB_TARGET").prepend(project->first("TARGET") + project->first("TARGET_EXT"));  // for the .prl only
     }
 }
 

@@ -908,6 +908,9 @@ MakefileGenerator::processPrlFile(QString &file)
         if (tgt.isEmpty()) {
             fprintf(stderr, "Error: %s does not define QMAKE_PRL_TARGET\n",
                             meta_file.toLatin1().constData());
+        } else if (!tgt.contains('.')) {
+            fprintf(stderr, "Error: %s defines QMAKE_PRL_TARGET without extension\n",
+                            meta_file.toLatin1().constData());
         } else {
             int off = qMax(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1;
             debug_msg(1, "  Replacing library reference %s with %s",
@@ -954,10 +957,6 @@ qv(const ProStringList &val)
 void
 MakefileGenerator::writePrlFile(QTextStream &t)
 {
-    ProString target = project->first("TARGET");
-    int slsh = target.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        target.chopFront(slsh + 1);
     QString bdir = Option::output_dir;
     if(bdir.isEmpty())
         bdir = qmake_getpwd();
@@ -967,7 +966,7 @@ MakefileGenerator::writePrlFile(QTextStream &t)
 
     if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
         t << "QMAKE_PRL_SOURCE_DIR =" << qv(project->first("QMAKE_ABSOLUTE_SOURCE_PATH")) << endl;
-    t << "QMAKE_PRL_TARGET =" << qv(target) << endl;
+    t << "QMAKE_PRL_TARGET =" << qv(project->first("LIB_TARGET")) << endl;
     if(!project->isEmpty("PRL_EXPORT_DEFINES"))
         t << "QMAKE_PRL_DEFINES =" << qv(project->values("PRL_EXPORT_DEFINES")) << endl;
     if(!project->isEmpty("PRL_EXPORT_CFLAGS"))

@@ -57,7 +57,6 @@ protected:
 
     virtual void writeRcFilePart(QTextStream &t);
 
-    int findHighestVersion(const QString &dir, const QString &stem);
     virtual bool findLibraries(bool linkPrl, bool mergeLflags);
 
     virtual ProString fixLibFlag(const ProString &lib);

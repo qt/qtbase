@@ -71,39 +71,48 @@ bool MingwMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
     QList<QMakeLocalFileName> dirs;
   static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    static const QLatin1String extens[] =
+        { QLatin1String(".dll.a"), QLatin1String(".a"), QLatin1String(0) };
   for (int i = 0; lflags[i]; i++) {
     ProStringList &l = project->values(lflags[i]);
     ProStringList::Iterator it = l.begin();
     while (it != l.end()) {
         if ((*it).startsWith("-l")) {
             QString steam = (*it).mid(2).toQString();
-            QString out;
+            ProString verovr =
+                    project->first(ProKey("QMAKE_" + steam.toUpper() + "_VERSION_OVERRIDE"));
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
-                QString extension;
-                int ver = findHighestVersion((*dir_it).local(), steam);
-                if (ver > 0)
-                    extension += QString::number(ver);
-                QString libBase = (*dir_it).local() + '/' + steam;
-                if ((linkPrl && processPrlFile(libBase))
-                    || exists(libBase + extension + ".a")
-                    || exists(libBase + extension + ".dll.a")) {
-                        out = *it + extension;
-                        break;
+                QString cand = (*dir_it).real() + Option::dir_sep + steam;
+                if (linkPrl && processPrlFile(cand)) {
+                    (*it) = cand;
+                    goto found;
+                }
+                QString libBase = (*dir_it).local() + '/' + steam + verovr;
+                for (int e = 0; extens[e].data(); e++) {
+                    if (exists(libBase + extens[e])) {
+                        (*it) = cand + verovr + extens[e];
+                        goto found;
+                    }
                 }
             }
-            if (!out.isEmpty()) // We assume if it never finds it that its correct
-                (*it) = out;
+            // We assume if it never finds it that its correct
+          found: ;
         } else if ((*it).startsWith("-L")) {
             QMakeLocalFileName f((*it).mid(2).toQString());
             dirs.append(f);
             *it = "-L" + f.real();
         } else if (linkPrl && !(*it).startsWith('-')) {
             QString prl = (*it).toQString();
-            if (!processPrlFile(prl) && QDir::isRelativePath(prl)) {
+            if (fileInfo(prl).isAbsolute()) {
+                if (processPrlFile(prl))
+                    (*it) = prl;
+            } else {
                 for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
-                    prl = (*dir_it).local() + '/' + *it;
-                    if (processPrlFile(prl))
+                    QString cand = (*dir_it).real() + Option::dir_sep + prl;
+                    if (processPrlFile(cand)) {
+                        (*it) = cand;
                         break;
+                    }
                 }
             }
         }

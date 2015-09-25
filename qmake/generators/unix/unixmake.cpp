@@ -275,6 +275,11 @@ UnixMakefileGenerator::init()
 
     init2();
     project->values("QMAKE_INTERNAL_PRL_LIBS") << "QMAKE_LIBS";
+    ProString target = project->first("TARGET");
+    int slsh = target.lastIndexOf(Option::dir_sep);
+    if (slsh != -1)
+        target.chopFront(slsh + 1);
+    project->values("LIB_TARGET").prepend(target);
     if(!project->isEmpty("QMAKE_MAX_FILES_PER_AR")) {
         bool ok;
         int max_files = project->first("QMAKE_MAX_FILES_PER_AR").toInt(&ok);
