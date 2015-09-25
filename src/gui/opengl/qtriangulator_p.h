@@ -93,6 +93,7 @@ public:
         else
             indices16 = other.indices16;
 
+        t = other.t;
         return *this;
     }
 
