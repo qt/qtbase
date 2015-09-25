@@ -36,6 +36,7 @@
 #include "private/qhttpnetworkconnection_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 #include <QAuthenticator>
+#include <QTcpServer>
 
 #include "../../../network-settings.h"
 
@@ -106,6 +107,8 @@ private Q_SLOTS:
 
     void getAndThenDeleteObject();
     void getAndThenDeleteObject_data();
+
+    void overlappingCloseAndWrite();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -1112,6 +1115,57 @@ void tst_QHttpNetworkConnection::getAndThenDeleteObject()
     }
 }
 
+class TestTcpServer : public QTcpServer
+{
+    Q_OBJECT
+public:
+    TestTcpServer() : errorCodeReports(0)
+    {
+        connect(this, &QTcpServer::newConnection, this, &TestTcpServer::onNewConnection);
+        QVERIFY(listen(QHostAddress::LocalHost));
+    }
+
+    int errorCodeReports;
+
+public slots:
+    void onNewConnection()
+    {
+        QTcpSocket *socket = nextPendingConnection();
+        if (!socket)
+            return;
+        // close socket instantly!
+        connect(socket, &QTcpSocket::readyRead, socket, &QTcpSocket::close);
+    }
+
+    void onReply(QNetworkReply::NetworkError code)
+    {
+        QCOMPARE(code, QNetworkReply::RemoteHostClosedError);
+        ++errorCodeReports;
+    }
+};
+
+void tst_QHttpNetworkConnection::overlappingCloseAndWrite()
+{
+    // server accepts connections, but closes the socket instantly
+    TestTcpServer server;
+    QNetworkAccessManager accessManager;
+
+    // ten requests are scheduled. All should result in an RemoteHostClosed...
+    QUrl url;
+    url.setScheme(QStringLiteral("http"));
+    url.setHost(server.serverAddress().toString());
+    url.setPort(server.serverPort());
+    for (int i = 0; i < 10; ++i) {
+        QNetworkRequest request(url);
+        QNetworkReply *reply = accessManager.get(request);
+        // Not using Qt5 connection syntax here because of overly baroque syntax to discern between
+        // different error() methods.
+        QObject::connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+                         &server, SLOT(onReply(QNetworkReply::NetworkError)));
+    }
+
+    QTRY_COMPARE(server.errorCodeReports, 10);
+}
 
 
 QTEST_MAIN(tst_QHttpNetworkConnection)
