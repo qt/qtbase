@@ -333,9 +333,8 @@ void tst_QProcess::execute()
 
 void tst_QProcess::startDetached()
 {
-    QProcess proc;
-    QVERIFY(proc.startDetached("testProcessNormal/testProcessNormal",
-                               QStringList() << "arg1" << "arg2"));
+    QVERIFY(QProcess::startDetached("testProcessNormal/testProcessNormal",
+                                    QStringList() << "arg1" << "arg2"));
 #ifdef QPROCESS_USE_SPAWN
     QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
 #endif
@@ -479,6 +478,8 @@ void tst_QProcess::echoTest()
     process.write("", 1);
 
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -530,6 +531,8 @@ void tst_QProcess::echoTest2()
 
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -546,6 +549,8 @@ void tst_QProcess::echoTestGui()
     process.write("q");
 
     QVERIFY(process.waitForFinished(50000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     QCOMPARE(process.readAllStandardOutput(), QByteArray("Hello"));
     QCOMPARE(process.readAllStandardError(), QByteArray("Hello"));
@@ -584,6 +589,8 @@ void tst_QProcess::batFiles()
     proc.start(batFile, QStringList());
 
     QVERIFY(proc.waitForFinished(5000));
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(proc.exitCode(), 0);
 
     QVERIFY(proc.bytesAvailable() > 0);
 
@@ -650,6 +657,8 @@ void tst_QProcess::loopBackTest()
 
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -730,6 +739,8 @@ void tst_QProcess::deadWhileReading()
 
     QCOMPARE(output.count("\n"), 10*1024);
     process.waitForFinished();
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -754,6 +765,8 @@ void tst_QProcess::restartProcessDeadlock()
 
     QCOMPARE(process.write("", 1), qlonglong(1));
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 
 void tst_QProcess::restartProcess()
@@ -788,6 +801,8 @@ void tst_QProcess::closeWriteChannel()
     if (more.state() == QProcess::Running)
         more.write("q");
     QVERIFY(more.waitForFinished(5000));
+    QCOMPARE(more.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(more.exitCode(), 0);
 }
 #endif
 
@@ -818,6 +833,8 @@ void tst_QProcess::closeReadChannel()
 
         proc.write("", 1);
         QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(proc.exitCode(), 0);
     }
 }
 #endif
@@ -898,6 +915,8 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 
     proc.write("", 1);
     QVERIFY(proc.waitForFinished(5000));
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(proc.exitCode(), 0);
 }
 #endif
 
@@ -1078,6 +1097,8 @@ void tst_QProcess::mergedChannels()
 
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -1116,6 +1137,8 @@ void tst_QProcess::forwardedChannels()
     QCOMPARE(process.write("input"), 5);
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     const char *err;
     switch (process.exitCode()) {
     case 0: err = "ok"; break;
@@ -1155,6 +1178,8 @@ void tst_QProcess::atEnd()
 
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -1269,6 +1294,8 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
 
     process.disconnect();
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     QVERIFY(process.bytesAvailable() > bytesAvailable);
 }
 #endif
@@ -1307,6 +1334,8 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     process.write("", 1);
     process.disconnect();
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -1401,6 +1430,8 @@ void tst_QProcess::spaceArgsTest()
             errorMessage = startFailMessage(program, process);
         QVERIFY2(started, errorMessage.constData());
         QVERIFY(process.waitForFinished(timeOutMS));
+        QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(process.exitCode(), 0);
 
 #if !defined(Q_OS_WINCE)
         QStringList actual = QString::fromLatin1(process.readAll()).split("|");
@@ -1460,6 +1491,8 @@ void tst_QProcess::nativeArguments()
     QVERIFY(proc.waitForStarted(10000));
     QVERIFY(proc.waitForFinished(10000));
 #endif
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(proc.exitCode(), 0);
 
 #if defined(Q_OS_WINCE)
     // WinCE test outputs to a file, so check that
@@ -1696,6 +1729,8 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
 
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 #ifndef Q_OS_WINCE
@@ -1840,6 +1875,8 @@ void tst_QProcess::spaceInName()
     QVERIFY(process.waitForStarted());
     process.write("", 1);
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 #endif
 
@@ -1921,6 +1958,8 @@ void tst_QProcess::setStandardInputFile()
     process.start("testProcessEcho/testProcessEcho");
 
     QPROCESS_VERIFY(process, waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
         QByteArray all = process.readAll();
     QCOMPARE(all.size(), int(sizeof data) - 1); // testProcessEcho drops the ending \0
     QVERIFY(all == data);
@@ -1993,6 +2032,8 @@ void tst_QProcess::setStandardOutputFile()
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
     QPROCESS_VERIFY(process,waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     // open the file again and verify the data
     QVERIFY(file.open(QIODevice::ReadOnly));
@@ -2022,6 +2063,8 @@ void tst_QProcess::setStandardOutputFileNullDevice()
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
     QPROCESS_VERIFY(process,waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
 
     QVERIFY(!QFileInfo(QProcess::nullDevice()).isFile());
@@ -2038,6 +2081,8 @@ void tst_QProcess::setStandardOutputFileAndWaitForBytesWritten()
     process.write(testdata, sizeof testdata);
     process.waitForBytesWritten();
     QPROCESS_VERIFY(process, waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     // open the file again and verify the data
     QVERIFY(file.open(QIODevice::ReadOnly));
@@ -2078,7 +2123,11 @@ void tst_QProcess::setStandardOutputProcess()
         source.waitForBytesWritten();
     source.closeWriteChannel();
     QPROCESS_VERIFY(source, waitForFinished());
+    QCOMPARE(source.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(source.exitCode(), 0);
     QPROCESS_VERIFY(sink, waitForFinished());
+    QCOMPARE(sink.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(sink.exitCode(), 0);
     QByteArray all = sink.readAll();
 
     if (!merged)
@@ -2092,25 +2141,34 @@ void tst_QProcess::setStandardOutputProcess()
 // Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::fileWriterProcess()
 {
-    QString stdinStr;
-    for (int i = 0; i < 5000; ++i)
-        stdinStr += QString::fromLatin1("%1 -- testing testing 1 2 3\n").arg(i);
+    const QByteArray line = QByteArrayLiteral(" -- testing testing 1 2 3\n");
+    QByteArray stdinStr;
+    stdinStr.reserve(5000 * (4 + line.size()) + 1);
+    for (int i = 0; i < 5000; ++i) {
+        stdinStr += QByteArray::number(i);
+        stdinStr += line;
+    }
 
     QTime stopWatch;
     stopWatch.start();
+    const QString fileName = QLatin1String("fileWriterProcess.txt");
+
     do {
-        QFile::remove("fileWriterProcess.txt");
+        if (QFile::exists(fileName))
+            QVERIFY(QFile::remove(fileName));
         QProcess process;
         process.start("fileWriterProcess/fileWriterProcess",
                       QIODevice::ReadWrite | QIODevice::Text);
-        process.write(stdinStr.toLatin1());
+        process.write(stdinStr);
         process.closeWriteChannel();
         while (process.bytesToWrite()) {
             QVERIFY(stopWatch.elapsed() < 3500);
             QVERIFY(process.waitForBytesWritten(2000));
         }
         QVERIFY(process.waitForFinished());
-        QCOMPARE(QFile("fileWriterProcess.txt").size(), qint64(stdinStr.size()));
+        QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(process.exitCode(), 0);
+        QCOMPARE(QFile(fileName).size(), qint64(stdinStr.size()));
     } while (stopWatch.elapsed() < 3000);
 }
 #endif
@@ -2170,6 +2228,8 @@ void tst_QProcess::switchReadChannels()
     process.write(data);
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     for (int i = 0; i < 4; ++i) {
         process.setReadChannel(QProcess::StandardOutput);
@@ -2199,6 +2259,8 @@ void tst_QProcess::discardUnwantedOutput()
     process.write("Hello, World");
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     process.setReadChannel(QProcess::StandardOutput);
     QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
@@ -2220,6 +2282,8 @@ void tst_QProcess::setWorkingDirectory()
     process.start(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
 
     QVERIFY2(process.waitForFinished(), process.errorString().toLocal8Bit());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 
     QByteArray workingDir = process.readAllStandardOutput();
     QCOMPARE(QDir("test").canonicalPath(), QDir(workingDir.constData()).canonicalPath());
@@ -2254,8 +2318,11 @@ void tst_QProcess::startFinishStartFinish()
         QCOMPARE(QString::fromLatin1(process.readLine().trimmed()),
                  QString("0 -this is a number"));
 #endif
-        if (process.state() != QProcess::NotRunning)
+        if (process.state() != QProcess::NotRunning) {
             QVERIFY(process.waitForFinished(10000));
+            QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+            QCOMPARE(process.exitCode(), 0);
+        }
     }
 }
 
@@ -2308,6 +2375,8 @@ void tst_QProcess::onlyOneStartedSignal()
 
     process.start("testProcessNormal/testProcessNormal");
     QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
     QCOMPARE(spyStarted.count(), 1);
     QCOMPARE(spyFinished.count(), 1);
 }
@@ -2342,6 +2411,8 @@ void tst_QProcess::finishProcessBeforeReadingDone()
             QRegExp(QStringLiteral("[\r\n]")), QString::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -2358,14 +2429,17 @@ void tst_QProcess::startStopStartStop()
     QProcess process;
     process.start("testProcessNormal/testProcessNormal");
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
     process.start("testExitCodes/testExitCodes", QStringList() << "1");
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 1);
 
     process.start("testProcessNormal/testProcessNormal");
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 }
 
@@ -2437,6 +2511,7 @@ void tst_QProcess::startStopStartStopBuffers()
     process.write("line3\n");
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
     if (channelMode2 == QProcess::MergedChannels) {
