@@ -323,6 +323,8 @@ void tst_QTextDocument::find_data()
                                        << 15 << 6 << 11;
 
     QTest::newRow("nbsp") << "Hello" + QString(QChar(QChar::Nbsp)) +"World" << " " << int(QTextDocument::FindCaseSensitively) << 0 << 5 << 6;
+
+    QTest::newRow("from-the-end") << "Hello World" << "Hello World" << int(QTextDocument::FindCaseSensitively| QTextDocument::FindBackward) << 11 << 0 << 11;
 }
 
 void tst_QTextDocument::find()
