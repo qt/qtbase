@@ -468,6 +468,24 @@ void tst_QTextDocument::findMultiple()
     cursor = doc->find(expr, cursor);
     QCOMPARE(cursor.selectionStart(), text.lastIndexOf("bar"));
     QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
+
+    QRegularExpression regularExpression("bar");
+
+    cursor.movePosition(QTextCursor::End);
+    cursor = doc->find(regularExpression, cursor, QTextDocument::FindBackward);
+    QCOMPARE(cursor.selectionStart(), text.lastIndexOf("bar"));
+    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
+    cursor = doc->find(regularExpression, cursor, QTextDocument::FindBackward);
+    QCOMPARE(cursor.selectionStart(), text.indexOf("bar"));
+    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor = doc->find(regularExpression, cursor);
+    QCOMPARE(cursor.selectionStart(), text.indexOf("bar"));
+    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
+    cursor = doc->find(regularExpression, cursor);
+    QCOMPARE(cursor.selectionStart(), text.lastIndexOf("bar"));
+    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
 }
 
 void tst_QTextDocument::basicIsModifiedChecks()
