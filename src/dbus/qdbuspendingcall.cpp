@@ -181,7 +181,6 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 
 void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
 {
-    expectedReplyCount = count;
     if (count == 0) {
         expectedReplySignature = QLatin1String(""); // not null
         return;

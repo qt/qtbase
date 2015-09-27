@@ -89,7 +89,6 @@ public:
     QDBusMessage replyMessage;
     DBusPendingCall *pending;
     QString expectedReplySignature;
-    int expectedReplyCount;
     // }
 
     QDBusPendingCallPrivate(const QDBusMessage &sent, QDBusConnectionPrivate *connection)
