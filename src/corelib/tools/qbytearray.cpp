@@ -578,8 +578,8 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             qWarning("qUncompress: Input data is corrupted");
         return QByteArray();
     }
-    ulong expectedSize = (data[0] << 24) | (data[1] << 16) |
-                       (data[2] <<  8) | (data[3]      );
+    ulong expectedSize = uint((data[0] << 24) | (data[1] << 16) |
+                              (data[2] <<  8) | (data[3]      ));
     ulong len = qMax(expectedSize, 1ul);
     QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
 
