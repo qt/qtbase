@@ -148,7 +148,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
 #endif
 
     ElfSectionHeader strtab;
-    qulonglong soff = e_shoff + e_shentsize * (e_shtrndx);
+    qulonglong soff = e_shoff + qelfword_t(e_shentsize) * qelfword_t(e_shtrndx);
 
     if ((soff + e_shentsize) > fdlen || soff % 4 || soff == 0) {
         if (lib)
