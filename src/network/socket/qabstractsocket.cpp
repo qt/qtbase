@@ -2485,8 +2485,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
             // Buffer what was not written yet
             char *ptr = d->writeBuffer.reserve(size - written);
             memcpy(ptr, data + written, size - written);
-            if (d->socketEngine)
-                d->socketEngine->setWriteNotificationEnabled(true);
+            d->socketEngine->setWriteNotificationEnabled(true);
         }
         return size; // size=actually written + what has been buffered
     } else if (!d->isBuffered && d->socketType != TcpSocket) {
