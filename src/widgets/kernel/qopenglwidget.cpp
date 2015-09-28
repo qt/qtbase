@@ -877,10 +877,21 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     if (!inPaintGL)
         render();
 
-    resolveSamples();
-    q->makeCurrent();
+    if (resolvedFbo) {
+        resolveSamples();
+        resolvedFbo->bind();
+    } else {
+        q->makeCurrent();
+    }
+
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
     res.setDevicePixelRatio(q->devicePixelRatioF());
+
+    // While we give no guarantees of what is going to be left bound, prefer the
+    // multisample fbo instead of the resolved one. Clients may continue to
+    // render straight after calling this function.
+    if (resolvedFbo)
+        q->makeCurrent();
 
     return res;
 }
