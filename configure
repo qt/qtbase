@@ -3339,6 +3339,8 @@ fi
 # tests that don't need qmake (must be run before displaying help)
 #-------------------------------------------------------------------------------
 
+echo "Running configuration tests (phase 1)..."
+
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
     if [ "$XPLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
@@ -3610,6 +3612,8 @@ unset tty
 [ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
 eval "`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog" | tee $tty`"
 unset tty
+
+echo "Done running configuration tests."
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -4112,7 +4116,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     fi
 fi # Build qmake
 
-echo "Running configuration tests..."
+echo "Running configuration tests (phase 2)..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
@@ -6640,6 +6644,8 @@ s/icpc version \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\) .*$/QT_ICC_MAJOR_VERSION=\1; Q
     #
     ;;
 esac
+
+echo "Done running configuration tests."
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h

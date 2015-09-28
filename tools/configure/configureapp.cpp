@@ -2577,6 +2577,8 @@ void Configure::autoDetection()
         dictionary["QT_POINTER_SIZE"] = "8";
     else
         dictionary["QT_POINTER_SIZE"] = "4";
+
+    cout << "Done running configuration tests." << endl;
 }
 
 bool Configure::verifyConfiguration()
