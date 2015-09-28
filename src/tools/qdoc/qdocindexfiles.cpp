@@ -946,27 +946,27 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     }
 
     writer.writeAttribute("name", objName);
-    if (node->isQmlModule()) {
-        logicalModuleName = node->logicalModuleName();
-        logicalModuleVersion = node->logicalModuleVersion();
-        if (!logicalModuleName.isEmpty()) {
-            writer.writeAttribute("qml-module-name", logicalModuleName);
-            if (node->isQmlModule())
-                writer.writeAttribute("qml-module-version", logicalModuleVersion);
-            if (!qmlFullBaseName.isEmpty())
-                writer.writeAttribute("qml-base-type", qmlFullBaseName);
+
+    // Write module and base type info for QML/JS types
+    if (node->type() == Node::QmlType || node->type() == Node::QmlModule) {
+        QString baseNameAttr("qml-base-type");
+        QString moduleNameAttr("qml-module-name");
+        QString moduleVerAttr("qml-module-version");
+        if (node->isJsNode()) {
+            baseNameAttr = "js-base-type";
+            moduleNameAttr = "js-module-name";
+            moduleVerAttr = "js-module-version";
         }
-    }
-    else if (node->isJsModule()) {
-        logicalModuleName = node->logicalModuleName();
-        logicalModuleVersion = node->logicalModuleVersion();
-        if (!logicalModuleName.isEmpty()) {
-            writer.writeAttribute("js-module-name", logicalModuleName);
-            if (node->isQmlModule())
-                writer.writeAttribute("js-module-version", logicalModuleVersion);
-            if (!qmlFullBaseName.isEmpty())
-                writer.writeAttribute("js-base-type", qmlFullBaseName);
+        if (node->type() == Node::QmlModule) {
+            logicalModuleName = node->logicalModuleName();
+            logicalModuleVersion = node->logicalModuleVersion();
         }
+        if (!logicalModuleName.isEmpty())
+            writer.writeAttribute(moduleNameAttr, logicalModuleName);
+        if (!logicalModuleVersion.isEmpty())
+            writer.writeAttribute(moduleVerAttr, logicalModuleVersion);
+        if (!qmlFullBaseName.isEmpty())
+            writer.writeAttribute(baseNameAttr, qmlFullBaseName);
     }
 
     QString href;
