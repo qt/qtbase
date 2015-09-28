@@ -1579,7 +1579,11 @@ QVector<FORMATETC> QWindowsMimeConverter::allFormatsForMime(const QMimeData *mim
 void QWindowsMimeConverter::ensureInitialized() const
 {
     if (m_mimes.isEmpty()) {
-        m_mimes << new QWindowsMimeImage << new QLastResortMimes
+        m_mimes
+#ifndef QT_NO_IMAGEFORMAT_BMP
+                << new QWindowsMimeImage
+#endif //QT_NO_IMAGEFORMAT_BMP
+                << new QLastResortMimes
                 << new QWindowsMimeText << new QWindowsMimeURI
                 << new QWindowsMimeHtml << new QBuiltInMimes;
         m_internalMimeCount = m_mimes.size();
