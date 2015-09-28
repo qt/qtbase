@@ -52,15 +52,11 @@ public:
     QEglFSKmsInterruptHandler(QEglFSKmsScreen *screen) : m_screen(screen) {
         m_vtHandler = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->vtHandler();
         connect(m_vtHandler, &QFbVtHandler::interrupted, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
-        connect(m_vtHandler, &QFbVtHandler::suspendRequested, this, &QEglFSKmsInterruptHandler::handleSuspendRequest);
+        connect(m_vtHandler, &QFbVtHandler::aboutToSuspend, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
     }
 
 public slots:
     void restoreVideoMode() { m_screen->restoreMode(); }
-    void handleSuspendRequest() {
-        m_screen->restoreMode();
-        m_vtHandler->suspend();
-    }
 
 private:
     QFbVtHandler *m_vtHandler;
