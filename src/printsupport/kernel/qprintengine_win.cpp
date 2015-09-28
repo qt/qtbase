@@ -93,9 +93,10 @@ static QByteArray msgBeginFailed(const char *function, const DOCINFO &d)
 {
     QString result;
     QTextStream str(&result);
-    str << "QWin32PrintEngine::begin: " << function << " failed, document \""
-        << QString::fromWCharArray(d.lpszDocName) << '"';
-    if (d.lpszOutput[0])
+    str << "QWin32PrintEngine::begin: " << function << " failed";
+    if (d.lpszDocName && d.lpszDocName[0])
+       str << ", document \"" << QString::fromWCharArray(d.lpszDocName) << '"';
+    if (d.lpszOutput && d.lpszOutput[0])
         str << ", file \"" << QString::fromWCharArray(d.lpszOutput) << '"';
     return result.toLocal8Bit();
 }
