@@ -49,6 +49,8 @@ EGLBoolean EGLAPIENTRY QuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surfa
     // validate the attribute parameter
     switch (attribute)
     {
+      case EGL_DEVICE_EXT:
+        break;
       case EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE:
         if (!display->getExtensions().surfaceD3DTexture2DShareHandle)
         {

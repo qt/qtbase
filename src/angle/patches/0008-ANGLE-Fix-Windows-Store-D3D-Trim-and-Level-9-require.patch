@@ -1,0 +1,63 @@
+From f6d73de2a8a36becb8a2e0cce84475e91f1f63b4 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@intopalo.com>
+Date: Mon, 28 Sep 2015 22:43:13 +0300
+Subject: [PATCH] ANGLE: Fix Windows Store D3D Trim and Level 9 requirements
+
+Due to additional validation not covered in previous patches, the Windows
+Store certification compatibility had regressed. These changes ensure that
+the required D3D behaviors are met.
+
+Change-Id: I0a74f0d2fecaa87d4a9409da3a7a194254609759
+---
+ .../src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp    | 19 +++++++++++++++++--
+ .../angle/src/libGLESv2/entry_points_egl_ext.cpp      |  2 ++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+index 5291a3a..ea5953f 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+@@ -293,10 +293,25 @@ Renderer11::Renderer11(egl::Display *display)
+ #if defined(ANGLE_ENABLE_WINDOWS_STORE)
+     if (requestedMajorVersion == EGL_DONT_CARE || requestedMajorVersion >= 9)
+ #else
+-    if (requestedMajorVersion == 9 && requestedMinorVersion == 3)
++    if (requestedMajorVersion == 9)
+ #endif
+     {
+-        mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
++        switch (requestedMinorVersion) {
++#if defined(ANGLE_ENABLE_WINDOWS_STORE)
++          case EGL_DONT_CARE:
++          case 1:
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_1);
++            // fall through
++          case 2:
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_2);
++            // fall through
++#endif
++          case 3:
++            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
++            break;
++          default:
++            break;
++        }
+     }
+ 
+     EGLint requestedDeviceType = attributes.get(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE,
+diff --git a/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp b/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
+index 62f3ca1..02b6631 100644
+--- a/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/entry_points_egl_ext.cpp
+@@ -49,6 +49,8 @@ EGLBoolean EGLAPIENTRY QuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surfa
+     // validate the attribute parameter
+     switch (attribute)
+     {
++      case EGL_DEVICE_EXT:
++        break;
+       case EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE:
+         if (!display->getExtensions().surfaceD3DTexture2DShareHandle)
+         {
+-- 
+2.5.1.windows.1
+

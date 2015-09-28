@@ -293,10 +293,25 @@ Renderer11::Renderer11(egl::Display *display)
 #if defined(ANGLE_ENABLE_WINDOWS_STORE)
     if (requestedMajorVersion == EGL_DONT_CARE || requestedMajorVersion >= 9)
 #else
-    if (requestedMajorVersion == 9 && requestedMinorVersion == 3)
+    if (requestedMajorVersion == 9)
 #endif
     {
-        mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
+        switch (requestedMinorVersion) {
+#if defined(ANGLE_ENABLE_WINDOWS_STORE)
+          case EGL_DONT_CARE:
+          case 1:
+            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_1);
+            // fall through
+          case 2:
+            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_2);
+            // fall through
+#endif
+          case 3:
+            mAvailableFeatureLevels.push_back(D3D_FEATURE_LEVEL_9_3);
+            break;
+          default:
+            break;
+        }
     }
 
     EGLint requestedDeviceType = attributes.get(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE,
