@@ -147,18 +147,19 @@ void QWindowsPipeWriter::run()
             DWORD written = 0;
             if (!WriteFile(writePipe, ptrData + totalWritten,
                            maxlen - totalWritten, &written, &overl)) {
-
-                if (GetLastError() == 0xE8/*NT_STATUS_INVALID_USER_BUFFER*/) {
+                const DWORD writeError = GetLastError();
+                if (writeError == 0xE8/*NT_STATUS_INVALID_USER_BUFFER*/) {
                     // give the os a rest
                     msleep(100);
                     continue;
                 }
 #ifndef Q_OS_WINCE
-                if (GetLastError() == ERROR_IO_PENDING) {
-                  if (!GetOverlappedResult(writePipe, &overl, &written, TRUE)) {
-                      return;
-                  }
-                } else {
+                if (writeError != ERROR_IO_PENDING) {
+                    qErrnoWarning(writeError, "QWindowsPipeWriter: async WriteFile failed.");
+                    return;
+                }
+                if (!GetOverlappedResult(writePipe, &overl, &written, TRUE)) {
+                    qErrnoWarning(GetLastError(), "QWindowsPipeWriter: GetOverlappedResult failed.");
                     return;
                 }
 #else
