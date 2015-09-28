@@ -559,7 +559,8 @@ public:
           flushPending(false),
           paintDevice(0),
           updateBehavior(QOpenGLWidget::NoPartialUpdate),
-          requestedSamples(0)
+          requestedSamples(0),
+          inPaintGL(false)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -602,6 +603,7 @@ public:
     QSurfaceFormat requestedFormat;
     QOpenGLWidget::UpdateBehavior updateBehavior;
     int requestedSamples;
+    bool inPaintGL;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -823,7 +825,9 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
 
     f->glViewport(0, 0, q->width() * q->devicePixelRatioF(), q->height() * q->devicePixelRatioF());
+    inPaintGL = true;
     q->paintGL();
+    inPaintGL = false;
     flushPending = true;
 
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
@@ -870,7 +874,9 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     if (!initialized)
         return QImage();
 
-    render();
+    if (!inPaintGL)
+        render();
+
     resolveSamples();
     q->makeCurrent();
     QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
