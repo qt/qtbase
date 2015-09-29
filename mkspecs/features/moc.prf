@@ -16,7 +16,7 @@ MOC_INCLUDEPATH = $$QMAKESPEC $$_PRO_FILE_PWD_ $$MOC_INCLUDEPATH $$QMAKE_DEFAULT
 # has too many includes. We do this to overcome a command-line limit on Win < XP
 WIN_INCLUDETEMP=
 win32:count(MOC_INCLUDEPATH, 40, >) {
-    WIN_INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
+    WIN_INCLUDETEMP = $$MOC_DIR/mocinclude.opt
 
     WIN_INCLUDETEMP_CONT =
     for (inc, MOC_INCLUDEPATH): \
