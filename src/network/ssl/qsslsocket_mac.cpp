@@ -51,7 +51,90 @@
 #include <algorithm>
 #include <cstddef>
 
+#include <QtCore/private/qcore_mac_p.h>
+
+#ifdef Q_OS_OSX
+#include <CoreServices/CoreServices.h>
+#endif
+
 QT_BEGIN_NAMESPACE
+
+static SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
+{
+    const bool isServer = mode == QSslSocket::SslServerMode;
+    SSLContextRef context = Q_NULLPTR;
+
+#ifndef Q_OS_OSX
+    const SSLProtocolSide side = isServer ? kSSLServerSide : kSSLClientSide;
+    // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
+    context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
+    if (!context)
+        qCWarning(lcSsl) << "SSLCreateContext failed";
+#else // Q_OS_OSX
+
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+        const SSLProtocolSide side = isServer ? kSSLServerSide : kSSLClientSide;
+        // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
+        context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
+        if (!context)
+            qCWarning(lcSsl) << "SSLCreateContext failed";
+    } else {
+#else
+    {
+#endif
+        const OSStatus errCode = SSLNewContext(isServer, &context);
+        if (errCode != noErr || !context)
+            qCWarning(lcSsl) << "SSLNewContext failed with error:" << errCode;
+    }
+#endif // !Q_OS_OSX
+
+    return context;
+}
+
+static void qt_releaseSecureTransportContext(SSLContextRef context)
+{
+    if (!context)
+        return;
+
+#ifndef Q_OS_OSX
+    CFRelease(context);
+#else
+
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_NA)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
+        CFRelease(context);
+    } else {
+#else
+    {
+#endif
+        const OSStatus errCode = SSLDisposeContext(context);
+        if (errCode != noErr)
+            qCWarning(lcSsl) << "SSLDisposeContext failed with error:" << errCode;
+    }
+#endif // !Q_OS_OSX
+}
+
+QSecureTransportContext::QSecureTransportContext(SSLContextRef c)
+    : context(c)
+{
+}
+
+QSecureTransportContext::~QSecureTransportContext()
+{
+    qt_releaseSecureTransportContext(context);
+}
+
+QSecureTransportContext::operator SSLContextRef()const
+{
+    return context;
+}
+
+void QSecureTransportContext::reset(SSLContextRef newContext)
+{
+    qt_releaseSecureTransportContext(context);
+    context = newContext;
+}
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_securetransport_mutex, (QMutex::Recursive))
 
@@ -140,7 +223,7 @@ void QSslSocketPrivate::ensureInitialized()
     // from QSslCertificatePrivate's ctor.
     s_loadedCiphersAndCerts = true;
 
-    QCFType<SSLContextRef> context(SSLCreateContext(Q_NULLPTR, kSSLClientSide, kSSLStreamType));
+    const QSecureTransportContext context(qt_createSecureTransportContext(QSslSocket::SslClientMode));
     if (context) {
         QList<QSslCipher> ciphers;
         QList<QSslCipher> defaultCiphers;
@@ -167,7 +250,6 @@ void QSslSocketPrivate::ensureInitialized()
         if (!s_loadRootCertsOnDemand)
             setDefaultCaCertificates(systemCaCertificates());
     } else {
-        qCWarning(lcSsl) << "SSLCreateContext failed";
         s_loadedCiphersAndCerts = false;
     }
 
@@ -652,11 +734,7 @@ bool QSslSocketBackendPrivate::initSslContext()
     Q_ASSERT_X(!context, Q_FUNC_INFO, "invalid socket state, context is not null");
     Q_ASSERT(plainSocket);
 
-    SSLProtocolSide side = kSSLClientSide;
-    if (mode == QSslSocket::SslServerMode)
-        side = kSSLServerSide;
-
-    context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
+    context.reset(qt_createSecureTransportContext(mode));
     if (!context) {
         setError("SSLCreateContext failed", QAbstractSocket::SslInternalError);
         return false;
@@ -752,7 +830,7 @@ bool QSslSocketBackendPrivate::initSslContext()
 
 void QSslSocketBackendPrivate::destroySslContext()
 {
-    context = Q_NULLPTR;
+    context.reset(Q_NULLPTR);
 }
 
 static QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase);
