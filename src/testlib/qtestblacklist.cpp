@@ -109,7 +109,9 @@ static QSet<QByteArray> keywords()
 #ifdef Q_CC_MSVC
             << "msvc"
     #ifdef _MSC_VER
-        #if _MSC_VER == 1800
+        #if _MSC_VER == 1900
+            << "msvc-2015"
+        #elif _MSC_VER == 1800
             << "msvc-2013"
         #elif _MSC_VER == 1700
             << "msvc-2012"
