@@ -56,11 +56,6 @@ QString MingwMakefileGenerator::escapeDependencyPath(const QString &path) const
     return ret;
 }
 
-QString MingwMakefileGenerator::getLibTarget()
-{
-    return QString("lib" + project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".a");
-}
-
 QString MingwMakefileGenerator::getManifestFileForRcFile() const
 {
     return project->first("QMAKE_MANIFEST").toQString();
@@ -230,8 +225,7 @@ void MingwMakefileGenerator::init()
         QString destDir = "";
         if(!project->first("DESTDIR").isEmpty())
             destDir = Option::fixPathToTargetOS(project->first("DESTDIR") + Option::dir_sep, false, false);
-        project->values("MINGW_IMPORT_LIB").prepend(destDir + "lib" + project->first("TARGET")
-                                                         + project->first("TARGET_VERSION_EXT") + ".a");
+        project->values("MINGW_IMPORT_LIB").prepend(destDir + project->first("LIB_TARGET"));
         project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + fileVar("MINGW_IMPORT_LIB"));
     }
 

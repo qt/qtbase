@@ -45,14 +45,6 @@ QT_BEGIN_NAMESPACE
 void
 UnixMakefileGenerator::init()
 {
-    if(project->isEmpty("QMAKE_EXTENSION_SHLIB")) {
-        if(project->isEmpty("QMAKE_CYGWIN_SHLIB")) {
-            project->values("QMAKE_EXTENSION_SHLIB").append("so");
-        } else {
-            project->values("QMAKE_EXTENSION_SHLIB").append("dll");
-        }
-    }
-
     ProStringList &configs = project->values("CONFIG");
     if(project->isEmpty("ICON") && !project->isEmpty("RC_FILE"))
         project->values("ICON") = project->values("RC_FILE");
@@ -702,7 +694,6 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
     } else if(project->first("TEMPLATE") == "app") {
         target = "$(QMAKE_TARGET)";
     } else if(project->first("TEMPLATE") == "lib") {
-        if(project->isEmpty("QMAKE_CYGWIN_SHLIB")) {
             if (!project->isActiveConfig("staticlib")
                     && !project->isActiveConfig("plugin")
                     && !project->isActiveConfig("unversioned_libname")) {
@@ -712,7 +703,6 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                     links << "$(TARGET0)";
                 }
             }
-        }
     }
     for(int i = 0; i < targets.size(); ++i) {
         QString src = targets.at(i).toQString(),

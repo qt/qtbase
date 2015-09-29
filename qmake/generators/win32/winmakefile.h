@@ -66,7 +66,6 @@ protected:
     void processVars();
     void fixTargetExt();
     void processRcFileVar();
-    virtual QString getLibTarget();
     static QString cQuoted(const QString &str);
     virtual QString getManifestFileForRcFile() const;
 };

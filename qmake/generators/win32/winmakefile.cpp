@@ -318,14 +318,12 @@ void Win32MakefileGenerator::processVars()
 
 void Win32MakefileGenerator::fixTargetExt()
 {
-    if (project->isEmpty("QMAKE_EXTENSION_STATICLIB"))
-        project->values("QMAKE_EXTENSION_STATICLIB").append("lib");
-    if (project->isEmpty("QMAKE_EXTENSION_SHLIB"))
-        project->values("QMAKE_EXTENSION_SHLIB").append("dll");
-
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         project->values("TARGET_EXT").append(".exe");
     } else if (project->isActiveConfig("shared")) {
+        project->values("LIB_TARGET").prepend(project->first("QMAKE_PREFIX_STATICLIB")
+                                              + project->first("TARGET") + project->first("TARGET_VERSION_EXT")
+                                              + '.' + project->first("QMAKE_EXTENSION_STATICLIB"));
         project->values("TARGET_EXT").append(project->first("TARGET_VERSION_EXT") + "."
                 + project->first("QMAKE_EXTENSION_SHLIB"));
         project->values("TARGET").first() = project->first("QMAKE_PREFIX_SHLIB") + project->first("TARGET");
@@ -782,11 +780,6 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
     }
 }
 
-QString Win32MakefileGenerator::getLibTarget()
-{
-    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".lib");
-}
-
 QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -833,7 +826,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             }
         }
         if(project->isActiveConfig("shared") && !project->isActiveConfig("plugin")) {
-            QString lib_target = getLibTarget();
+            ProString lib_target = project->first("LIB_TARGET");
             QString src_targ = escapeFilePath(
                     (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR"))
                     + lib_target);
