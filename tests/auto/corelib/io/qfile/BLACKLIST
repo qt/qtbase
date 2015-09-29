@@ -1,0 +1,5 @@
+# QTBUG-48455
+[readLineStdin]
+msvc-2015
+[readLineStdin_lineByLine]
+msvc-2015
