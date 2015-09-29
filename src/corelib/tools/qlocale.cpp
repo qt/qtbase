@@ -3460,11 +3460,22 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
     return format.arg(str, sym);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 /*!
     \since 4.8
     \overload
 */
 QString QLocale::toCurrencyString(double value, const QString &symbol) const
+{
+    return toCurrencyString(value, symbol, d->m_data->m_currency_digits);
+}
+#endif
+
+/*!
+    \since 5.7
+    \overload
+ */
+QString QLocale::toCurrencyString(double value, const QString &symbol, int precision) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {
@@ -3482,7 +3493,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol) const
         size = data->m_currency_negative_format_size;
         value = -value;
     }
-    QString str = toString(value, 'f', d->m_data->m_currency_digits);
+    QString str = toString(value, 'f', precision == -1 ? d->m_data->m_currency_digits : precision);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);

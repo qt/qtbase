@@ -2187,12 +2187,18 @@ void tst_QLocale::currency()
     QCOMPARE(c.toCurrencyString(qlonglong(-1234)), QString("-1234"));
     QCOMPARE(c.toCurrencyString(double(1234.56)), QString("1234.56"));
     QCOMPARE(c.toCurrencyString(double(-1234.56)), QString("-1234.56"));
+    QCOMPARE(c.toCurrencyString(double(-1234.5678)), QString("-1234.57"));
+    QCOMPARE(c.toCurrencyString(double(-1234.5678), NULL, 4), QString("-1234.5678"));
+    QCOMPARE(c.toCurrencyString(double(-1234.56), NULL, 4), QString("-1234.5600"));
 
     const QLocale en_US("en_US");
     QCOMPARE(en_US.toCurrencyString(qulonglong(1234)), QString("$1,234"));
     QCOMPARE(en_US.toCurrencyString(qlonglong(-1234)), QString("$-1,234"));
     QCOMPARE(en_US.toCurrencyString(double(1234.56)), QString("$1,234.56"));
     QCOMPARE(en_US.toCurrencyString(double(-1234.56)), QString("$-1,234.56"));
+    QCOMPARE(en_US.toCurrencyString(double(-1234.5678)), QString("$-1,234.57"));
+    QCOMPARE(en_US.toCurrencyString(double(-1234.5678), NULL, 4), QString("$-1,234.5678"));
+    QCOMPARE(en_US.toCurrencyString(double(-1234.56), NULL, 4), QString("$-1,234.5600"));
 
     const QLocale ru_RU("ru_RU");
     QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
