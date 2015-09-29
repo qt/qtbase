@@ -4,7 +4,7 @@
     "entries": [
         {
             "id": 1,
-            "description": "Desktop OpenGL is unreliable on some Intel HD laptops (QTBUG-43263, QTBUG-42240)",
+            "description": "Desktop OpenGL is unreliable on some Intel HD laptops (QTBUG-43263)",
             "vendor_id": "0x8086",
             "device_id": [ "0x0A16" ],
             "os": {
@@ -42,6 +42,18 @@
            "features": [
                "disable_desktopgl"
            ]
+       },
+       {
+           "id": 4,
+          "description": "Intel HD Graphics 3000 crashes when initializing the OpenGL driver (QTBUG-42240)",
+          "vendor_id": "0x8086",
+          "device_id": [ "0x0102", "0x0116" ],
+          "os": {
+              "type": "win"
+          },
+          "features": [
+              "disable_desktopgl"
+          ]
        }
     ]
 }
