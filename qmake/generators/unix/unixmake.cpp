@@ -125,10 +125,23 @@ UnixMakefileGenerator::init()
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
         for (int i = 0; i < rpathdirs.size(); ++i) {
             QString rpathdir = rpathdirs[i].toQString();
-            if (rpathdir.length() > 1 && rpathdir.at(0) == '$' && rpathdir.at(1) != '(')
+            if (rpathdir.length() > 1 && rpathdir.at(0) == '$' && rpathdir.at(1) != '(') {
                 rpathdir.replace(0, 1, "\\$$");  // Escape from make and the shell
-            else if (!rpathdir.startsWith('@'))
-                rpathdir = QFileInfo(rpathdir).absoluteFilePath();
+            } else if (!rpathdir.startsWith('@') && fileInfo(rpathdir).isRelative()) {
+                QString rpathbase = project->first("QMAKE_REL_RPATH_BASE").toQString();
+                if (rpathbase.isEmpty()) {
+                    fprintf(stderr, "Error: This platform does not support relative paths in QMAKE_RPATHDIR (%s)\n",
+                                    rpathdir.toLatin1().constData());
+                    continue;
+                }
+                if (rpathbase.startsWith('$'))
+                    rpathbase.replace(0, 1, "\\$$");  // Escape from make and the shell
+                if (rpathdir == ".")
+                    rpathdir = rpathbase;
+                else
+                    rpathdir.prepend(rpathbase + '/');
+                project->values("QMAKE_LFLAGS").insertUnique(project->values("QMAKE_LFLAGS_REL_RPATH"));
+            }
             project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + escapeFilePath(rpathdir);
         }
     }
