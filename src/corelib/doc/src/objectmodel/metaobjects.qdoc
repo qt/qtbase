@@ -32,7 +32,7 @@
 
     \ingroup qt-basic-concepts
     \keyword meta-object
-    \target Meta-Object System
+    \keyword Meta-Object System
 
     Qt's meta-object system provides the signals and slots mechanism for
     inter-object communication, run-time type information, and the dynamic

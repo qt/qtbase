@@ -4466,7 +4466,7 @@
 */
 
 /*!
-    \target qmake-getting-started
+    \keyword qmake-getting-started
     \page qmake-tutorial.html
     \title Getting Started
     \contentspage {qmake Manual}{Contents}
