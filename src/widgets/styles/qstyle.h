@@ -171,6 +171,7 @@ public:
         PE_IndicatorToolBarSeparator,
         PE_PanelTipLabel,
         PE_IndicatorTabTear,
+        PE_IndicatorTabTearLeft = PE_IndicatorTabTear,
         PE_PanelScrollAreaCorner,
 
         PE_Widget,
@@ -185,6 +186,8 @@ public:
 
         PE_IndicatorTabClose,
         PE_PanelMenu,
+
+        PE_IndicatorTabTearRight,
 
         // do not add any values below/greater this
         PE_CustomBase = 0xf000000
@@ -302,6 +305,7 @@ public:
         SE_ItemViewItemCheckIndicator = SE_ViewItemCheckIndicator,
 
         SE_TabBarTearIndicator,
+        SE_TabBarTearIndicatorLeft = SE_TabBarTearIndicator,
 
         SE_TreeViewDisclosureItem,
 
@@ -340,6 +344,10 @@ public:
         SE_ShapedFrameContents,
 
         SE_ToolBarHandle,
+
+        SE_TabBarScrollLeftButton,
+        SE_TabBarScrollRightButton,
+        SE_TabBarTearIndicatorRight,
 
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000

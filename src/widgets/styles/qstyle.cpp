@@ -691,7 +691,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PE_PanelToolBar  The panel for a toolbar.
     \value PE_PanelTipLabel The panel for a tip label.
     \value PE_FrameTabBarBase The frame that is drawn for a tab bar, ususally drawn for a tab bar that isn't part of a tab widget.
-    \value PE_IndicatorTabTear An indicator that a tab is partially scrolled out of the visible tab bar when there are many tabs.
+    \value PE_IndicatorTabTear Deprecated. Use \l{PE_IndicatorTabTearLeft} instead.
+    \value PE_IndicatorTabTearLeft An indicator that a tab is partially scrolled out on the left side of the visible tab bar when there are many tabs.
+    \value PE_IndicatorTabTearRight An indicator that a tab is partially scrolled out on the right side of the visible tab bar when there are many tabs.
     \value PE_IndicatorColumnViewArrow An arrow in a QColumnView.
 
     \value PE_Widget  A plain QWidget.
@@ -1057,7 +1059,12 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SE_ItemViewItemCheckIndicator Area for a view item's check mark.
 
-    \value SE_TabBarTearIndicator Area for the tear indicator on a tab bar with scroll arrows.
+    \value SE_TabBarTearIndicator Deprecated. Use SE_TabBarTearIndicatorLeft instead.
+    \value SE_TabBarTearIndicatorLeft Area for the tear indicator on the left side of a tab bar with scroll arrows.
+    \value SE_TabBarTearIndicatorRight Area for the tear indicator on the right side of a tab bar with scroll arrows.
+
+    \value SE_TabBarScrollLeftButton Area for the scroll left button on a tab bar with scroll buttons.
+    \value SE_TabBarScrollRightButton Area for the scroll right button on a tab bar with scroll buttons.
 
     \value SE_TreeViewDisclosureItem Area for the actual disclosure item in a tree branch.
 

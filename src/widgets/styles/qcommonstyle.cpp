@@ -552,18 +552,31 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_IndicatorTabTear:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             bool rtl = tab->direction == Qt::RightToLeft;
-            QRect rect = tab->rect;
+            const bool horizontal = tab->rect.height() > tab->rect.width();
+            const int margin = 4;
             QPainterPath path;
 
-            rect.setTop(rect.top() + ((tab->state & State_Selected) ? 1 : 3));
-            rect.setBottom(rect.bottom() - ((tab->state & State_Selected) ? 0 : 2));
+            if (horizontal) {
+                QRect rect = tab->rect.adjusted(rtl ? margin : 0, 0, rtl ? 1 : -margin, 0);
+                rect.setTop(rect.top() + ((tab->state & State_Selected) ? 1 : 3));
+                rect.setBottom(rect.bottom() - ((tab->state & State_Selected) ? 0 : 2));
 
-            path.moveTo(QPoint(rtl ? rect.right() : rect.left(), rect.top()));
-            int count = 4;
-            for(int jags = 1; jags <= count; ++jags, rtl = !rtl)
-                path.lineTo(QPoint(rtl ? rect.left() : rect.right(), rect.top() + jags * rect.height()/count));
+                path.moveTo(QPoint(rtl ? rect.right() : rect.left(), rect.top()));
+                int count = 4;
+                for (int jags = 1; jags <= count; ++jags, rtl = !rtl)
+                    path.lineTo(QPoint(rtl ? rect.left() : rect.right(), rect.top() + jags * rect.height()/count));
+            } else {
+                QRect rect = tab->rect.adjusted(0, 0, 0, -margin);
+                rect.setLeft(rect.left() + ((tab->state & State_Selected) ? 1 : 3));
+                rect.setRight(rect.right() - ((tab->state & State_Selected) ? 0 : 2));
 
-            p->setPen(QPen(tab->palette.light(), qreal(.8)));
+                path.moveTo(QPoint(rect.left(), rect.top()));
+                int count = 4;
+                for (int jags = 1; jags <= count; ++jags, rtl = !rtl)
+                    path.lineTo(QPoint(rect.left() + jags * rect.width()/count, rtl ? rect.top() : rect.bottom()));
+            }
+
+            p->setPen(QPen(tab->palette.dark(), qreal(.8)));
             p->setBrush(tab->palette.background());
             p->setRenderHint(QPainter::Antialiasing);
             p->drawPath(path);
@@ -2796,13 +2809,13 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             case QTabBar::TriangularNorth:
             case QTabBar::RoundedSouth:
             case QTabBar::TriangularSouth:
-                r.setRect(tab->rect.left(), tab->rect.top(), 4, opt->rect.height());
+                r.setRect(tab->rect.left(), tab->rect.top(), 8, opt->rect.height());
                 break;
             case QTabBar::RoundedWest:
             case QTabBar::TriangularWest:
             case QTabBar::RoundedEast:
             case QTabBar::TriangularEast:
-                r.setRect(tab->rect.left(), tab->rect.top(), opt->rect.width(), 4);
+                r.setRect(tab->rect.left(), tab->rect.top(), opt->rect.width(), 8);
                 break;
             default:
                 break;
@@ -2810,6 +2823,23 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;
+    case SE_TabBarScrollLeftButton: {
+        const bool vertical = opt->rect.width() < opt->rect.height();
+        const Qt::LayoutDirection ld = widget->layoutDirection();
+        const int buttonWidth = qMax(pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
+        const int buttonOverlap = pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, 0, widget);
+
+        r = vertical ? QRect(0, opt->rect.height() - (buttonWidth * 2) + buttonOverlap, opt->rect.width(), buttonWidth)
+            : QStyle::visualRect(ld, opt->rect, QRect(opt->rect.width() - (buttonWidth * 2) + buttonOverlap, 0, buttonWidth, opt->rect.height()));
+        break; }
+    case SE_TabBarScrollRightButton: {
+        const bool vertical = opt->rect.width() < opt->rect.height();
+        const Qt::LayoutDirection ld = widget->layoutDirection();
+        const int buttonWidth = qMax(pixelMetric(QStyle::PM_TabBarScrollButtonWidth, 0, widget), QApplication::globalStrut().width());
+
+        r = vertical ? QRect(0, opt->rect.height() - buttonWidth, opt->rect.width(), buttonWidth)
+            : QStyle::visualRect(ld, opt->rect, QRect(opt->rect.width() - buttonWidth, 0, buttonWidth, opt->rect.height()));
+        break; }
 #endif
     case SE_TreeViewDisclosureItem:
         r = opt->rect;
