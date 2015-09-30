@@ -1177,8 +1177,8 @@ void QDBusConnectionPrivate::createBusService()
     ref.deref(); // busService has increased the refcounting to us
                  // avoid cyclic refcounting
 
-    QObject::connect(this, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
-                     busService, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
+    QObject::connect(this, &QDBusConnectionPrivate::callWithCallbackFailed,
+                     busService, emit &QDBusConnectionInterface::callWithCallbackFailed,
                      Qt::QueuedConnection);
 }
 

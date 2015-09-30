@@ -158,10 +158,10 @@ QDBusConnectionInterface::QDBusConnectionInterface(const QDBusConnection &connec
                              QDBusUtil::dbusPath(),
                              DBUS_INTERFACE_DBUS, connection, parent)
 {
-    connect(this, SIGNAL(NameAcquired(QString)), this, SIGNAL(serviceRegistered(QString)));
-    connect(this, SIGNAL(NameLost(QString)), this, SIGNAL(serviceUnregistered(QString)));
-    connect(this, SIGNAL(NameOwnerChanged(QString,QString,QString)),
-            this, SIGNAL(serviceOwnerChanged(QString,QString,QString)));
+    connect(this, &QDBusConnectionInterface::NameAcquired, this, emit &QDBusConnectionInterface::serviceRegistered);
+    connect(this, &QDBusConnectionInterface::NameLost, this, emit &QDBusConnectionInterface::serviceUnregistered);
+    connect(this, &QDBusConnectionInterface::NameOwnerChanged,
+            this, emit &QDBusConnectionInterface::serviceOwnerChanged);
 }
 
 /*!

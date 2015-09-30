@@ -208,14 +208,14 @@ static dbus_bool_t qDBusAddWatch(DBusWatch *watch, void *data)
         watcher.watch = watch;
         watcher.read = new QSocketNotifier(fd, QSocketNotifier::Read, d);
         watcher.read->setEnabled(q_dbus_watch_get_enabled(watch));
-        d->connect(watcher.read, SIGNAL(activated(int)), SLOT(socketRead(int)));
+        d->connect(watcher.read, &QSocketNotifier::activated, d, &QDBusConnectionPrivate::socketRead);
     }
     if (flags & DBUS_WATCH_WRITABLE) {
         //qDebug("addWriteWatch %d", fd);
         watcher.watch = watch;
         watcher.write = new QSocketNotifier(fd, QSocketNotifier::Write, d);
         watcher.write->setEnabled(q_dbus_watch_get_enabled(watch));
-        d->connect(watcher.write, SIGNAL(activated(int)), SLOT(socketWrite(int)));
+        d->connect(watcher.write, &QSocketNotifier::activated, d, &QDBusConnectionPrivate::socketWrite);
     }
     d->watchers.insertMulti(fd, watcher);
 
@@ -1892,8 +1892,8 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         if (sendMode == QDBus::BlockWithGui) {
             pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
             QEventLoop loop;
-            loop.connect(pcall->watcherHelper, SIGNAL(reply(QDBusMessage)), SLOT(quit()));
-            loop.connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), SLOT(quit()));
+            loop.connect(pcall->watcherHelper, &QDBusPendingCallWatcherHelper::reply, &loop, &QEventLoop::quit);
+            loop.connect(pcall->watcherHelper, &QDBusPendingCallWatcherHelper::error, &loop, &QEventLoop::quit);
 
             // enter the event loop and wait for a reply
             loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
@@ -2078,7 +2078,7 @@ void QDBusConnectionPrivate::addSignalHook(const QString &key, const SignalHook 
     }
 
     signalHooks.insertMulti(key, hook);
-    connect(hook.obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
+    connect(hook.obj, &QObject::destroyed, this, &QDBusConnectionPrivate::objectDestroyed,
             Qt::ConnectionType(Qt::BlockingQueuedConnection | Qt::UniqueConnection));
 
     MatchRefCountHash::iterator mit = matchRefCounts.find(hook.matchRule);
@@ -2204,7 +2204,7 @@ QDBusConnectionPrivate::removeSignalHookNoLock(SignalHookHash::Iterator it)
 
 void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 {
-    connect(node->obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
+    connect(node->obj, &QObject::destroyed, this, &QDBusConnectionPrivate::objectDestroyed,
             Qt::ConnectionType(Qt::BlockingQueuedConnection | Qt::UniqueConnection));
 
     if (node->flags & (QDBusConnection::ExportAdaptors
