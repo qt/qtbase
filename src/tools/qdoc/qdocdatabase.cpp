@@ -1296,6 +1296,8 @@ void QDocDatabase::resolveIssues() {
         QDocIndexFiles::qdocIndexFiles()->resolveRelates();
         QDocIndexFiles::destroyQDocIndexFiles();
     }
+    if (Generator::generating())
+        resolveNamespaces();
 }
 
 void QDocDatabase::resolveStuff()
@@ -1326,8 +1328,10 @@ void QDocDatabase::resolveNamespaces()
         int count = nmm_.remove(s);
         if (count > 1) {
             foreach (Node* n, nodes) {
-                if (n->isNamespace() && n->wasSeen()) {
+                // Treat public namespaces from index trees as 'seen'
+                if (n->isNamespace() && (n->wasSeen() || (n->isIndexNode() && n->access() == Node::Public))) {
                     ns = static_cast<NamespaceNode*>(n);
+                    ns->markSeen();
                     break;
                 }
             }
