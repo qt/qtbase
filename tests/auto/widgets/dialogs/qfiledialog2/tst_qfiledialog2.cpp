@@ -81,6 +81,12 @@ public:
     }
 };
 
+static QByteArray msgDoesNotExist(const QString &name)
+{
+    return (QLatin1Char('"') + QDir::toNativeSeparators(name)
+        + QLatin1String("\" does not exist.")).toLocal8Bit();
+}
+
 class tst_QFileDialog2 : public QObject
 {
 Q_OBJECT
@@ -307,7 +313,7 @@ void tst_QFileDialog2::unc()
 #else
     QString dir(QDir::currentPath());
 #endif
-    QVERIFY(QFile::exists(dir));
+    QVERIFY2(QFile::exists(dir), msgDoesNotExist(dir).constData());
     QNonNativeFileDialog fd(0, QString(), dir);
     QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
     QVERIFY(model);
