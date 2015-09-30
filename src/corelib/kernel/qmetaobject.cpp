@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -3068,7 +3068,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             if (t == QMetaType::UnknownType)
                 return false;
         }
-        if (t != QMetaType::QVariant && t != (uint)value.userType() && (t < QMetaType::User && !v.convert((QVariant::Type)t)))
+        if (t != QMetaType::QVariant && int(t) != value.userType() && !v.convert(t))
             return false;
     }
 

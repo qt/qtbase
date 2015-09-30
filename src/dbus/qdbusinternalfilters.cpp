@@ -366,6 +366,9 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
         value = other;
     }
 
+    if (mp.userType() == qMetaTypeId<QDBusVariant>())
+        value = QVariant::fromValue(QDBusVariant(value));
+
     // the property type here should match
     return mp.write(obj, value) ? PropertyWriteSuccess : PropertyWriteFailed;
 }
