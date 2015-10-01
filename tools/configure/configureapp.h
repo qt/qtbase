@@ -93,6 +93,8 @@ public:
 private:
     bool checkAngleAvailability(QString *errorMessage = 0) const;
 
+    int verbose;
+
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
     QStringList allBuildParts;

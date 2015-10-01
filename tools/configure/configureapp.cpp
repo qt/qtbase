@@ -83,7 +83,7 @@ static inline void promptKeyPress()
         exit(0);      // Exit cleanly for Ctrl+C
 }
 
-Configure::Configure(int& argc, char** argv)
+Configure::Configure(int& argc, char** argv) : verbose(0)
 {
     // Default values for indentation
     optionIndent = 4;
@@ -383,6 +383,7 @@ void Configure::parseCmdLine()
         configCmdLine.clear();
         reloadCmdLine();
     }
+
     else if (configCmdLine.at(i) == "-loadconfig") {
         ++i;
         if (i != argCount) {
@@ -419,6 +420,10 @@ void Configure::parseCmdLine()
             || configCmdLine.at(i) == "-h"
             || configCmdLine.at(i) == "-?")
             dictionary[ "HELP" ] = "yes";
+
+        else if (configCmdLine.at(i) == "-v" || configCmdLine.at(i) == "-verbose") {
+            ++verbose;
+        }
 
         else if (configCmdLine.at(i) == "-qconfig") {
             ++i;
@@ -2058,6 +2063,7 @@ bool Configure::displayHelp()
         desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
+        desc(                   "-v, -verbose",         "Run configure tests with verbose output.\n");
 
         // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
         desc("Qt for Windows CE only:\n\n");
@@ -3377,7 +3383,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
     }
 
     // run qmake
-    QString command = QString("%1 %2 %3 2>&1")
+    QString command = QString("%1 %2 %3")
         .arg(QDir::toNativeSeparators(QDir(newpwd).relativeFilePath(buildPath + "/bin/qmake.exe")),
              QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
              extraOptions);
@@ -3389,6 +3395,11 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         addSysroot(&command);
     }
 
+    if (verbose)
+        cout << qPrintable(command) << endl;
+    else
+        command += " 2>&1";
+
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
@@ -3398,7 +3409,10 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         command = dictionary[ "MAKE" ];
         if (command.contains("nmake") || command.contains("jom"))
             command += " /NOLOGO";
-        command += " -s 2>&1";
+        if (verbose)
+            cout << qPrintable(command) << endl;
+        else
+            command += " -s 2>&1";
         output = Environment::execute(command, &code);
         //cout << output << endl;
 
