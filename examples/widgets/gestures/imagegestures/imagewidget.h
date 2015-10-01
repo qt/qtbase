@@ -77,7 +77,6 @@ private:
     void swipeTriggered(QSwipeGesture*);
 //! [class definition begin]
 
-    void updateImage();
     QImage loadImage(const QString &fileName);
     void loadImage();
     void goNextImage();

@@ -200,7 +200,6 @@ void ImageWidget::openDirectory(const QString &path)
 
 QImage ImageWidget::loadImage(const QString &fileName)
 {
-    qDebug() << position << files << fileName;
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     qCDebug(lcExample) << "loading" << QDir::toNativeSeparators(fileName) << position << '/' << files.size();

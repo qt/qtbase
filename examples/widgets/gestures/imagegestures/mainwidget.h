@@ -57,8 +57,6 @@ public slots:
     void openDirectory(const QString &path);
 
 private:
-    bool loadImage(const QString &fileName);
-
     ImageWidget *imageWidget;
 };
 
