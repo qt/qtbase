@@ -1860,10 +1860,6 @@ void tst_QWidget::activation()
     QCOMPARE(QApplication::activeWindow(), &widget1);
     widget2.showNormal();
     QTest::qWait(waitTime);
-#ifndef Q_OS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
-        QEXPECT_FAIL("", "MS introduced new behavior after XP", Continue);
-#endif
     QTest::qWait(waitTime);
     QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.hide();
