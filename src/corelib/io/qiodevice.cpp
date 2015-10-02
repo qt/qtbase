@@ -83,6 +83,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
 
 static void checkWarnMessage(const QIODevice *device, const char *function, const char *what)
 {
+#ifndef QT_NO_WARNING_OUTPUT
     QDebug d = qWarning();
     d.noquote();
     d.nospace();
@@ -98,6 +99,11 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
     Q_UNUSED(device)
 #endif // !QT_NO_QOBJECT
     d << ": " << what;
+#else
+    Q_UNUSED(device);
+    Q_UNUSED(function);
+    Q_UNUSED(what);
+#endif // QT_NO_WARNING_OUTPUT
 }
 
 #define CHECK_MAXLEN(function, returnType) \

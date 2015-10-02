@@ -90,11 +90,38 @@ qint64 QWindowsPipeWriter::write(const char *ptr, qint64 maxlen)
     return maxlen;
 }
 
+class QPipeWriterOverlapped
+{
+public:
+    QPipeWriterOverlapped()
+    {
+        overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    }
+
+    ~QPipeWriterOverlapped()
+    {
+        CloseHandle(overlapped.hEvent);
+    }
+
+    void prepare()
+    {
+        const HANDLE hEvent = overlapped.hEvent;
+        ZeroMemory(&overlapped, sizeof overlapped);
+        overlapped.hEvent = hEvent;
+    }
+
+    OVERLAPPED *operator&()
+    {
+        return &overlapped;
+    }
+
+private:
+    OVERLAPPED overlapped;
+};
+
 void QWindowsPipeWriter::run()
 {
-    OVERLAPPED overl;
-    memset(&overl, 0, sizeof overl);
-    overl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    QPipeWriterOverlapped overl;
     forever {
         lock.lock();
         while(data.isEmpty() && (!quitNow)) {
@@ -115,26 +142,24 @@ void QWindowsPipeWriter::run()
         const char *ptrData = copy.data();
         qint64 maxlen = copy.size();
         qint64 totalWritten = 0;
-        overl.Offset = 0;
-        overl.OffsetHigh = 0;
+        overl.prepare();
         while ((!quitNow) && totalWritten < maxlen) {
             DWORD written = 0;
             if (!WriteFile(writePipe, ptrData + totalWritten,
                            maxlen - totalWritten, &written, &overl)) {
-
-                if (GetLastError() == 0xE8/*NT_STATUS_INVALID_USER_BUFFER*/) {
+                const DWORD writeError = GetLastError();
+                if (writeError == 0xE8/*NT_STATUS_INVALID_USER_BUFFER*/) {
                     // give the os a rest
                     msleep(100);
                     continue;
                 }
 #ifndef Q_OS_WINCE
-                if (GetLastError() == ERROR_IO_PENDING) {
-                  if (!GetOverlappedResult(writePipe, &overl, &written, TRUE)) {
-                      CloseHandle(overl.hEvent);
-                      return;
-                  }
-                } else {
-                    CloseHandle(overl.hEvent);
+                if (writeError != ERROR_IO_PENDING) {
+                    qErrnoWarning(writeError, "QWindowsPipeWriter: async WriteFile failed.");
+                    return;
+                }
+                if (!GetOverlappedResult(writePipe, &overl, &written, TRUE)) {
+                    qErrnoWarning(GetLastError(), "QWindowsPipeWriter: GetOverlappedResult failed.");
                     return;
                 }
 #else
@@ -154,7 +179,6 @@ void QWindowsPipeWriter::run()
         emit bytesWritten(totalWritten);
         emit canWrite();
     }
-    CloseHandle(overl.hEvent);
 }
 
 #endif //QT_NO_THREAD

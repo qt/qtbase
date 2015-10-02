@@ -67,18 +67,20 @@ QWindowsGuiEventDispatcher::QWindowsGuiEventDispatcher(QObject *parent) :
 
 bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    const QEventLoop::ProcessEventsFlags oldFlags = m_flags;
     m_flags = flags;
     if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
         qCDebug(lcQpaEvents) << '>' << __FUNCTION__ << objectName() << flags;
     const bool rc = QEventDispatcherWin32::processEvents(flags);
     if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
         qCDebug(lcQpaEvents) << '<' << __FUNCTION__ << "returns" << rc;
+    m_flags = oldFlags;
     return rc;
 }
 
 void QWindowsGuiEventDispatcher::sendPostedEvents()
 {
-    QCoreApplication::sendPostedEvents();
+    QEventDispatcherWin32::sendPostedEvents();
     QWindowSystemInterface::sendWindowSystemEvents(m_flags);
 }
 

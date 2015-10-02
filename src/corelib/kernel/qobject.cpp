@@ -1485,7 +1485,7 @@ void QObject::moveToThread(QThread *targetThread)
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread, d->threadData->thread, targetData ? targetData->thread : Q_NULLPTR);
+                 currentData->thread.load(), d->threadData->thread.load(), targetData ? targetData->thread.load() : Q_NULLPTR);
 
 #ifdef Q_OS_MAC
         qWarning("You might be loading two sets of Qt binaries into the same process. "

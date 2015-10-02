@@ -2833,6 +2833,13 @@ void QFileDialogPrivate::createWidgets()
     if (qFileDialogUi)
         return;
     Q_Q(QFileDialog);
+
+    // This function is sometimes called late (e.g as a fallback from setVisible). In that case we
+    // need to ensure that the following UI code (setupUI in particular) doesn't reset any explicitly
+    // set window state or geometry.
+    QSize preSize = q->testAttribute(Qt::WA_Resized) ? q->size() : QSize();
+    Qt::WindowStates preState = q->windowState();
+
     model = new QFileSystemModel(q);
     model->setFilter(options->filter());
     model->setObjectName(QLatin1String("qt_filesystem_model"));
@@ -2878,6 +2885,9 @@ void QFileDialogPrivate::createWidgets()
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
 #endif // QT_NO_FSCOMPLETER
+
+    qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
@@ -2991,7 +3001,8 @@ void QFileDialogPrivate::createWidgets()
     lineEdit()->selectAll();
     _q_updateOkButton();
     retranslateStrings();
-    q->resize(q->sizeHint());
+    q->resize(preSize.isValid() ? preSize : q->sizeHint());
+    q->setWindowState(preState);
 }
 
 void QFileDialogPrivate::_q_showHeader(QAction *action)

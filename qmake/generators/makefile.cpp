@@ -3253,7 +3253,8 @@ MakefileGenerator::writePkgConfigFile()
         int suffix = bundle.lastIndexOf(".framework");
         if (suffix != -1)
             bundle = bundle.left(suffix);
-        pkgConfiglibName = "-framework " + bundle + " ";
+        t << "-framework ";
+        pkgConfiglibName = bundle.toQString();
     } else {
         if (!project->values("QMAKE_DEFAULT_LIBDIRS").contains(libDir))
             t << "-L${libdir} ";

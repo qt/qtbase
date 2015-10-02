@@ -655,6 +655,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2015:
         t << _slnHeader140;
+        break;
     case NET2013:
         t << _slnHeader120;
         break;
@@ -1036,6 +1037,17 @@ void VcprojGenerator::initConfiguration()
     conf.suppressUnknownOptionWarnings = project->isActiveConfig("suppress_vcproj_warnings");
     conf.CompilerVersion = which_dotnet_version(project->first("MSVC_VER").toLatin1());
 
+    if (conf.CompilerVersion >= NET2012) {
+        conf.WinRT = project->isActiveConfig("winrt");
+        if (conf.WinRT) {
+            conf.WinPhone = project->isActiveConfig("winphone");
+            // Saner defaults
+            conf.compiler.UsePrecompiledHeader = pchNone;
+            conf.compiler.CompileAsWinRT = _False;
+            conf.linker.GenerateWindowsMetadata = _False;
+        }
+    }
+
     initCompilerTool();
 
     // Only on configuration per build
@@ -1080,17 +1092,6 @@ void VcprojGenerator::initConfiguration()
         const QString targetSuffix = targetInfo.suffix();
         if (!isStandardSuffix(targetSuffix))
             conf.PrimaryOutputExtension = '.' + targetSuffix;
-    }
-
-    if (conf.CompilerVersion >= NET2012) {
-        conf.WinRT = project->isActiveConfig("winrt");
-        if (conf.WinRT) {
-            conf.WinPhone = project->isActiveConfig("winphone");
-            // Saner defaults
-            conf.compiler.UsePrecompiledHeader = pchNone;
-            conf.compiler.CompileAsWinRT = _False;
-            conf.linker.GenerateWindowsMetadata = _False;
-        }
     }
 
     conf.Name = project->values("BUILD_NAME").join(' ');

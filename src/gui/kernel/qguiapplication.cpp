@@ -1131,7 +1131,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
-    QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
 
     QByteArray platformName;
@@ -1161,7 +1161,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             arg.remove(0, 1);
         if (arg == "-platformpluginpath") {
             if (++i < argc)
-                platformPluginPath = QLatin1String(argv[i]);
+                platformPluginPath = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];

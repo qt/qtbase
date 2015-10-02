@@ -31,107 +31,104 @@
 **
 ****************************************************************************/
 
-#ifndef COMPLEXWIDGETS_H
-#define COMPLEXWIDGETS_H
+#ifndef QACCESSIBLEMENU_H
+#define QACCESSIBLEMENU_H
 
-#include <QtCore/qpointer.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtWidgets/qaccessiblewidget.h>
-#include <QtWidgets/qabstractitemview.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-class QAbstractButton;
-class QHeaderView;
-class QTabBar;
-class QComboBox;
-class QTitleBar;
-class QAbstractScrollArea;
-class QScrollArea;
+#ifndef QT_NO_MENU
+class QMenu;
+class QMenuBar;
+class QAction;
 
-#ifndef QT_NO_SCROLLAREA
-class QAccessibleAbstractScrollArea : public QAccessibleWidget
+class QAccessibleMenu : public QAccessibleWidget
 {
 public:
-    explicit QAccessibleAbstractScrollArea(QWidget *widget);
+    explicit QAccessibleMenu(QWidget *w);
 
-    enum AbstractScrollAreaElement {
-        Self = 0,
-        Viewport,
-        HorizontalContainer,
-        VerticalContainer,
-        CornerWidget,
-        Undefined
-    };
+    int childCount() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
+
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    int indexOfChild( const QAccessibleInterface *child ) const Q_DECL_OVERRIDE;
+
+protected:
+    QMenu *menu() const;
+};
+
+#ifndef QT_NO_MENUBAR
+class QAccessibleMenuBar : public QAccessibleWidget
+{
+public:
+    explicit QAccessibleMenuBar(QWidget *w);
 
     QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
     int childCount() const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
-    bool isValid() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
 
-//protected:
-    QAbstractScrollArea *abstractScrollArea() const;
-
-private:
-    QWidgetList accessibleChildren() const;
-    AbstractScrollAreaElement elementType(QWidget *widget) const;
-    bool isLeftToRight() const;
-};
-
-class QAccessibleScrollArea : public QAccessibleAbstractScrollArea
-{
-public:
-    explicit QAccessibleScrollArea(QWidget *widget);
-};
-#endif // QT_NO_SCROLLAREA
-
-#ifndef QT_NO_TABBAR
-class QAccessibleTabBar : public QAccessibleWidget
-{
-public:
-    explicit QAccessibleTabBar(QWidget *w);
-    ~QAccessibleTabBar();
-
-    int childCount() const Q_DECL_OVERRIDE;
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-
-    QAccessibleInterface* child(int index) const Q_DECL_OVERRIDE;
     int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
 
 protected:
-    QTabBar *tabBar() const;
-    mutable QHash<int, QAccessible::Id> m_childInterfaces;
+    QMenuBar *menuBar() const;
 };
-#endif // QT_NO_TABBAR
+#endif // QT_NO_MENUBAR
 
-#ifndef QT_NO_COMBOBOX
-class QAccessibleComboBox : public QAccessibleWidget
+
+class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface
 {
 public:
-    explicit QAccessibleComboBox(QWidget *w);
+    explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
+
+    ~QAccessibleMenuItem();
+    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
 
     int childCount() const Q_DECL_OVERRIDE;
     QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
-    QAccessibleInterface* child(int index) const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface * child) const Q_DECL_OVERRIDE;
 
+    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    QObject * object() const Q_DECL_OVERRIDE;
+    QRect rect() const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
+    void setText(QAccessible::Text t, const QString & text) Q_DECL_OVERRIDE;
+    QAccessible::State state() const Q_DECL_OVERRIDE;
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
     // QAccessibleActionInterface
     QStringList actionNames() const Q_DECL_OVERRIDE;
-    QString localizedActionDescription(const QString &actionName) const Q_DECL_OVERRIDE;
     void doAction(const QString &actionName) Q_DECL_OVERRIDE;
     QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
 
+    QWidget *owner() const;
 protected:
-    QComboBox *comboBox() const;
+    QAction *action() const;
+private:
+    QAction *m_action;
+    QPointer<QWidget> m_owner; // can hold either QMenu or the QMenuBar that contains the action
 };
-#endif // QT_NO_COMBOBOX
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_NO_MENU
 
 QT_END_NAMESPACE
-
-#endif // COMPLEXWIDGETS_H
+#endif // QT_NO_ACCESSIBILITY
+#endif // QACCESSIBLEMENU_H

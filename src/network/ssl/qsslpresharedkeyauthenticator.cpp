@@ -257,7 +257,6 @@ int QSslPreSharedKeyAuthenticator::maximumPreSharedKeyLength() const
     identity hint, identity, pre shared key, maximum length for the identity
     and maximum length for the pre shared key.
 
-    \sa operator!=(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
 */
 bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
 {
@@ -277,7 +276,6 @@ bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKey
     Returns true if the authenticator object \a lhs is different than \a rhs;
     false otherwise.
 
-    \sa operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
 */
 
 QT_END_NAMESPACE

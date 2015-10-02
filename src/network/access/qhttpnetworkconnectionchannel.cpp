@@ -205,6 +205,26 @@ void QHttpNetworkConnectionChannel::close()
 }
 
 
+void QHttpNetworkConnectionChannel::abort()
+{
+    if (!socket)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else if (socket->state() == QAbstractSocket::UnconnectedState)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else
+        state = QHttpNetworkConnectionChannel::ClosingState;
+
+    // pendingEncrypt must only be true in between connected and encrypted states
+    pendingEncrypt = false;
+
+    if (socket) {
+        // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
+        // there is no socket yet.
+        socket->abort();
+    }
+}
+
+
 bool QHttpNetworkConnectionChannel::sendRequest()
 {
     Q_ASSERT(!protocolHandler.isNull());
@@ -1080,6 +1100,8 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     connection->d_func()->pauseConnection();
     if (pendingEncrypt && !reply)
         connection->d_func()->dequeueRequest(socket);
+    if (reply) // a reply was actually dequeued.
+        reply->d_func()->connectionChannel = this; // set correct channel like in sendRequest() and queueRequest();
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP) {
         if (reply)
             emit reply->sslErrors(errors);

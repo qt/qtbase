@@ -43,6 +43,7 @@
 #include <qwindow.h>
 #include <qlibrary.h>
 #include <qimage.h>
+#include <QtCore/qbytearray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1275,9 +1276,19 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     // Without GL_UNSIGNED_INT_8_8_8_8_REV, GL_BGRA only makes sense on little endian.
-    const bool supports_bgra = context->isOpenGLES()
-            ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
-            : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
+    const bool has_bgra_ext = context->isOpenGLES()
+                              ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
+                              : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
+
+    const char *renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
+    const char *ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
+
+    // Blacklist PowerVR Rogue G6200 as it has problems with its BGRA support.
+    const bool blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
+                             && ::strstr(ver, "1.3") != 0);
+
+    const bool supports_bgra = has_bgra_ext && !blackListed;
+
     if (supports_bgra) {
         QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
         funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());

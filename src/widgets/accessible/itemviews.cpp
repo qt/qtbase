@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "itemviews.h"
+#include "itemviews_p.h"
 
 #include <qheaderview.h>
 #include <qtableview.h>

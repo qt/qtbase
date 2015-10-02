@@ -799,13 +799,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
         return styleMask;
     if ((type & Qt::Popup) == Qt::Popup) {
         if (!windowIsPopupType(type)) {
-            styleMask = NSUtilityWindowMask;
+            styleMask = NSUtilityWindowMask | NSResizableWindowMask;
             if (!(flags & Qt::CustomizeWindowHint)) {
-                styleMask |= NSResizableWindowMask | NSClosableWindowMask |
-                             NSMiniaturizableWindowMask | NSTitledWindowMask;
+                styleMask |= NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask;
             } else {
-                if (flags & Qt::WindowMaximizeButtonHint)
-                    styleMask |= NSResizableWindowMask;
                 if (flags & Qt::WindowTitleHint)
                     styleMask |= NSTitledWindowMask;
                 if (flags & Qt::WindowCloseButtonHint)
@@ -1351,6 +1348,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         [m_contentView setFrame:frame];
         [m_contentView setHidden: YES];
     }
+
+    m_nsWindow.ignoresMouseEvents =
+        (window()->flags() & Qt::WindowTransparentForInput) == Qt::WindowTransparentForInput;
 
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))

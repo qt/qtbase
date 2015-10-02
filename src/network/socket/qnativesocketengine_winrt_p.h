@@ -207,13 +207,15 @@ private:
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
     QEventLoop eventLoop;
     QAbstractSocket *sslSocket;
+    EventRegistrationToken connectionToken;
 
     HRESULT handleBindCompleted(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
     HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
                               ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
-    void handleConnectionErrors(ABI::Windows::Foundation::IAsyncAction *connectAction, bool *errorsOccured);
+    HRESULT handleConnectToHost(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
+    void handleConnectionEstablished(ABI::Windows::Foundation::IAsyncAction *action);
     HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
 };
 
