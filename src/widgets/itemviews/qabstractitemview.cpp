@@ -3020,8 +3020,8 @@ int QAbstractItemView::sizeHintForRow(int row) const
         const QModelIndex index = d->model->index(row, c, d->root);
         if (QWidget *editor = d->editorForIndex(index).widget.data())
             height = qMax(height, editor->height());
-        int hint = d->delegateForIndex(index)->sizeHint(option, index).height();
-        height = qMax(height, hint);
+        if (const QAbstractItemDelegate *delegate = d->delegateForIndex(index))
+            height = qMax(height, delegate->sizeHint(option, index).height());
     }
     return height;
 }
@@ -3050,8 +3050,8 @@ int QAbstractItemView::sizeHintForColumn(int column) const
         const QModelIndex index = d->model->index(r, column, d->root);
         if (QWidget *editor = d->editorForIndex(index).widget.data())
             width = qMax(width, editor->sizeHint().width());
-        int hint = d->delegateForIndex(index)->sizeHint(option, index).width();
-        width = qMax(width, hint);
+        if (const QAbstractItemDelegate *delegate = d->delegateForIndex(index))
+            width = qMax(width, delegate->sizeHint(option, index).width());
     }
     return width;
 }
