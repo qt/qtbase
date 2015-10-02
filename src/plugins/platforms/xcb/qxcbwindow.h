@@ -176,7 +176,6 @@ public Q_SLOTS:
 protected:
     virtual void resolveFormat() { m_format = window()->requestedFormat(); }
     virtual void *createVisual() { return Q_NULLPTR; }
-    virtual bool supportsSyncProtocol() { return !window()->supportsOpenGL(); }
 
     QXcbScreen *parentScreen();
 
