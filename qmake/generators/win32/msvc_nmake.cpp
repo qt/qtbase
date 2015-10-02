@@ -448,6 +448,8 @@ QStringList NmakeMakefileGenerator::sourceFilesForImplicitRulesFilter()
 
 void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 {
+    t << "####### Implicit rules\n\n";
+
     t << ".SUFFIXES:";
     for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
         t << " " << (*cit);

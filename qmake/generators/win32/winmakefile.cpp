@@ -570,7 +570,6 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "DESTDIR_TARGET = " << fileVar("DEST_TARGET") << endl;
     t << endl;
 
-    t << "####### Implicit rules\n\n";
     writeImplicitRulesPart(t);
 
     t << "####### Build rules\n\n";
@@ -642,16 +641,6 @@ void Win32MakefileGenerator::writeObjectsPart(QTextStream &t)
 
 void Win32MakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 {
-    t << ".SUFFIXES:";
-    for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-        t << " " << (*cppit);
-    for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-        t << " " << (*cit);
-    t << endl << endl;
-    for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-        t << (*cppit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CXX_IMP") << endl << endl;
-    for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-        t << (*cit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CC_IMP") << endl << endl;
 }
 
 void Win32MakefileGenerator::writeBuildRulesPart(QTextStream &)

@@ -298,17 +298,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     /* rules */
     t << "first:" << (!project->isActiveConfig("no_default_goal_deps") ? " all" : "") << "\n";
-    t << "####### Implicit rules\n\n";
-    t << ".SUFFIXES: " << Option::obj_ext;
-    for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-        t << " " << (*cit);
-    for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-        t << " " << (*cppit);
-    t << endl << endl;
-    for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
-        t << (*cppit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CXX_IMP") << endl << endl;
-    for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
-        t << (*cit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CC_IMP") << endl << endl;
 
     if(include_deps) {
         if (project->isActiveConfig("gcc_MD_depends")) {
