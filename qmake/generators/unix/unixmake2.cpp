@@ -1001,15 +1001,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
 
-            if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c" + header_suffix;
-            if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c++" + header_suffix;
-            if(project->isActiveConfig("objective_c")) {
-                if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c" + header_suffix;
-                if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c++" + header_suffix;
+            foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+                if (project->isEmpty(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE")))
+                    continue;
+                ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
+                if (language.isEmpty())
+                    continue;
+
+                precomp_files += precomph_out_dir + header_prefix + language + header_suffix;
             }
         }
         t << "-$(DEL_FILE) " << escapeFilePaths(precomp_files).join(' ') << "\n\t";
@@ -1064,17 +1063,16 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
         t << "###### Precompiled headers\n";
-        QString comps[] = { "C", "CXX", "OBJC", "OBJCXX", QString() };
-        for(int i = 0; !comps[i].isNull(); i++) {
-            QString pchFlags = var(ProKey("QMAKE_" + comps[i] + "FLAGS_PRECOMPILE"));
+        foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+            QString pchFlags = var(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE"));
             if(pchFlags.isEmpty())
                 continue;
 
             QString cflags;
-            if(comps[i] == "OBJC" || comps[i] == "OBJCXX")
+            if (compiler == "C" || compiler == "OBJC")
                 cflags += " $(CFLAGS)";
             else
-                cflags += " $(" + comps[i] + "FLAGS)";
+                cflags += " $(CXXFLAGS)";
 
             ProString pchBaseName = project->first("QMAKE_ORIG_TARGET");
             ProString pchOutput;
@@ -1102,21 +1100,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                   ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
                 pchOutput += Option::dir_sep;
-                QString pchOutputDir = pchOutput.toQString(), pchOutputFile;
+                QString pchOutputDir = pchOutput.toQString();
 
-                if(comps[i] == "C") {
-                    pchOutputFile = "c";
-                } else if(comps[i] == "CXX") {
-                    pchOutputFile = "c++";
-                } else if(project->isActiveConfig("objective_c")) {
-                    if(comps[i] == "OBJC")
-                        pchOutputFile = "objective-c";
-                    else if(comps[i] == "OBJCXX")
-                        pchOutputFile = "objective-c++";
-                }
-                if(pchOutputFile.isEmpty())
+                QString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler)).toQString();
+                if (language.isEmpty())
                     continue;
-                pchOutput += header_prefix + pchOutputFile + header_suffix;
+
+                pchOutput += header_prefix + language + header_suffix;
 
                 t << escapeDependencyPath(pchOutput) << ": " << escapeDependencyPath(pchInput) << ' '
                   << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
@@ -1126,14 +1116,14 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     .replace("${QMAKE_PCH_OUTPUT_BASE}", escapeFilePath(pchBaseName.toQString()))
                     .replace("${QMAKE_PCH_OUTPUT}", escapeFilePath(pchOutput.toQString()));
 
-            QString compiler;
-            if(comps[i] == "C" || comps[i] == "OBJC" || comps[i] == "OBJCXX")
-                compiler = "$(CC)";
+            QString compilerExecutable;
+            if (compiler == "C" || compiler == "OBJC")
+                compilerExecutable = "$(CC)";
             else
-                compiler = "$(CXX)";
+                compilerExecutable = "$(CXX)";
 
             // compile command
-            t << "\n\t" << compiler << cflags << " $(INCPATH) " << pchFlags << endl << endl;
+            t << "\n\t" << compilerExecutable << cflags << " $(INCPATH) " << pchFlags << endl << endl;
         }
     }
 

@@ -32,7 +32,6 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.version) {
 !equals(MAKEFILE_GENERATOR, XCODE) {
     QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
     QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
-    QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
     QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
 }
 
@@ -80,6 +79,5 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {
     version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
     QMAKE_CFLAGS += $$version_min_flag
     QMAKE_CXXFLAGS += $$version_min_flag
-    QMAKE_OBJECTIVE_CFLAGS += $$version_min_flag
     QMAKE_LFLAGS += $$version_min_flag
 }

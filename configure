@@ -318,7 +318,7 @@ macSDKify()
                 val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
                 echo "$var=$val"
             ;;
-            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_OBJECTIVE_CFLAGS=*)
+            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*)
                 echo "$line -isysroot $sysroot $version_min_flag"
             ;;
             QMAKE_LFLAGS=*)
@@ -6413,7 +6413,6 @@ if [ '!' -z "$W_FLAGS" ]; then
     # add the user defined warning flags
     QMakeVar add QMAKE_CFLAGS_WARN_ON "$W_FLAGS"
     QMakeVar add QMAKE_CXXFLAGS_WARN_ON "$W_FLAGS"
-    QMakeVar add QMAKE_OBJECTIVE_CFLAGS_WARN_ON "$W_FLAGS"
 fi
 
 if [ "$XPLATFORM_MINGW" = "yes" ]; then

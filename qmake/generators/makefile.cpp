@@ -378,6 +378,13 @@ MakefileGenerator::init()
 
     ProValueMap &v = project->variables();
 
+    v["QMAKE_BUILTIN_COMPILERS"] = ProStringList() << "C" << "CXX";
+
+    v["QMAKE_LANGUAGE_C"] = ProString("c");
+    v["QMAKE_LANGUAGE_CXX"] = ProString("c++");
+    v["QMAKE_LANGUAGE_OBJC"] = ProString("objective-c");
+    v["QMAKE_LANGUAGE_OBJCXX"] = ProString("objective-c++");
+
     if (v["TARGET"].isEmpty())
         warn_msg(WarnLogic, "TARGET is empty");
 
@@ -1136,12 +1143,28 @@ MakefileGenerator::writeObj(QTextStream &t, const char *src)
           << " " << escapeDependencyPaths(findDependencies(srcf)).join(" \\\n\t\t");
 
         ProKey comp;
-        for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit) {
-            if((*sit).endsWith((*cppit))) {
-                comp = "QMAKE_RUN_CXX";
-                break;
+        foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+            // Unfortunately we were not consistent about the C++ naming
+            ProString extensionSuffix = compiler;
+            if (extensionSuffix == "CXX")
+                extensionSuffix = ProString("CPP");
+
+            // Nor the C naming
+            ProString compilerSuffix = compiler;
+            if (compilerSuffix == "C")
+                compilerSuffix = ProString("CC");
+
+            foreach (const ProString &extension, project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
+                if ((*sit).endsWith(extension)) {
+                    comp = ProKey("QMAKE_RUN_" + compilerSuffix);
+                    break;
+                }
             }
+
+            if (!comp.isNull())
+                break;
         }
+
         if (comp.isEmpty())
             comp = "QMAKE_RUN_CC";
         if (!project->isEmpty(comp)) {

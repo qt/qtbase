@@ -145,14 +145,16 @@ UnixMakefileGenerator::init()
 
     MakefileGenerator::init();
 
-    QString comps[] = { "C", "CXX", "OBJC", "OBJCXX", QString() };
-    for(int i = 0; !comps[i].isNull(); i++) {
+    if (project->isActiveConfig("objective_c"))
+        project->values("QMAKE_BUILTIN_COMPILERS") << "OBJC" << "OBJCXX";
+
+    foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
         QString compile_flag = var("QMAKE_COMPILE_FLAG");
         if(compile_flag.isEmpty())
             compile_flag = "-c";
 
         if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
-            QString pchFlags = var(ProKey("QMAKE_" + comps[i] + "FLAGS_USE_PRECOMPILE"));
+            QString pchFlags = var(ProKey("QMAKE_" + compiler + "FLAGS_USE_PRECOMPILE"));
 
             QString pchBaseName;
             if(!project->isEmpty("PRECOMPILED_DIR")) {
@@ -179,22 +181,11 @@ UnixMakefileGenerator::init()
                     pchBaseName += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
 
                 pchBaseName += Option::dir_sep;
-                QString pchOutputFile;
 
-                if(comps[i] == "C") {
-                    pchOutputFile = "c";
-                } else if(comps[i] == "CXX") {
-                    pchOutputFile = "c++";
-                } else if(project->isActiveConfig("objective_c")) {
-                    if(comps[i] == "OBJC")
-                        pchOutputFile = "objective-c";
-                    else if(comps[i] == "OBJCXX")
-                        pchOutputFile = "objective-c++";
-                }
-
-                if(!pchOutputFile.isEmpty()) {
+                ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
+                if (!language.isEmpty()) {
                     pchFlags.replace("${QMAKE_PCH_OUTPUT}",
-                                     escapeFilePath(pchBaseName + pchOutputFile + headerSuffix));
+                                     escapeFilePath(pchBaseName + language + headerSuffix));
                 }
             }
 
@@ -202,23 +193,27 @@ UnixMakefileGenerator::init()
                 compile_flag += " " + pchFlags;
         }
 
-        QString cflags;
-        if(comps[i] == "OBJC" || comps[i] == "OBJCXX")
-            cflags += " $(CFLAGS)";
-        else
-            cflags += " $(" + comps[i] + "FLAGS)";
-        compile_flag += cflags + " $(INCPATH)";
+        QString compilerExecutable;
+        if (compiler == "C" || compiler == "OBJC") {
+            compilerExecutable = "$(CC)";
+            compile_flag += " $(CFLAGS)";
+        } else {
+            compilerExecutable = "$(CXX)";
+            compile_flag += " $(CXXFLAGS)";
+        }
 
-        QString compiler = comps[i];
-        if (compiler == "C")
-            compiler = "CC";
+        compile_flag += " $(INCPATH)";
 
-        const ProKey runComp("QMAKE_RUN_" + compiler);
+        ProString compilerVariable = compiler;
+        if (compilerVariable == "C")
+            compilerVariable = ProString("CC");
+
+        const ProKey runComp("QMAKE_RUN_" + compilerVariable);
         if(project->isEmpty(runComp))
-            project->values(runComp).append("$(" + compiler + ") " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "$obj $src");
-        const ProKey runCompImp("QMAKE_RUN_" + compiler + "_IMP");
+            project->values(runComp).append(compilerExecutable + " " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "$obj $src");
+        const ProKey runCompImp("QMAKE_RUN_" + compilerVariable + "_IMP");
         if(project->isEmpty(runCompImp))
-            project->values(runCompImp).append("$(" + compiler + ") " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "\"$@\" \"$<\"");
+            project->values(runCompImp).append(compilerExecutable + " " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "\"$@\" \"$<\"");
     }
 
     if (project->isActiveConfig("mac") && !project->isEmpty("TARGET") &&
@@ -306,10 +301,11 @@ UnixMakefileGenerator::init()
 }
 
 QStringList
-&UnixMakefileGenerator::findDependencies(const QString &file)
+&UnixMakefileGenerator::findDependencies(const QString &f)
 {
-    QStringList &ret = MakefileGenerator::findDependencies(file);
+    QStringList &ret = MakefileGenerator::findDependencies(f);
     if (doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
+        ProString file = f;
         QString header_prefix;
         if(!project->isEmpty("PRECOMPILED_DIR"))
             header_prefix = project->first("PRECOMPILED_DIR").toQString();
@@ -329,45 +325,33 @@ QStringList
             QString header_suffix = project->isActiveConfig("clang_pch_style")
                     ? project->first("QMAKE_PCH_OUTPUT_EXT").toQString() : "";
             header_prefix += Option::dir_sep + project->first("QMAKE_PRECOMP_PREFIX");
-            for(QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
-                if(file.endsWith(*it)) {
-                    if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE")) {
-                        QString precomp_c_h = header_prefix + "c" + header_suffix;
-                        if(!ret.contains(precomp_c_h))
-                            ret += precomp_c_h;
-                    }
-                    if(project->isActiveConfig("objective_c")) {
-                        if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE")) {
-                            QString precomp_objc_h = header_prefix + "objective-c" + header_suffix;
-                            if(!ret.contains(precomp_objc_h))
-                                ret += precomp_objc_h;
-                        }
-                        if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
-                            if(!ret.contains(precomp_objcpp_h))
-                                ret += precomp_objcpp_h;
-                        }
-                    }
-                    break;
+
+            foreach (const ProString &compiler, project->values("QMAKE_BUILTIN_COMPILERS")) {
+                if (project->isEmpty(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE")))
+                    continue;
+
+                ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
+                if (language.isEmpty())
+                    continue;
+
+                // Unfortunately we were not consistent about the C++ naming
+                ProString extensionSuffix = compiler;
+                if (extensionSuffix == "CXX")
+                    extensionSuffix = ProString("CPP");
+
+                foreach (const ProString &extension, project->values(ProKey("QMAKE_EXT_" + extensionSuffix))) {
+                    if (!file.endsWith(extension.toQString()))
+                        continue;
+
+                    QString precompiledHeader = header_prefix + language + header_suffix;
+                    if (!ret.contains(precompiledHeader))
+                        ret += precompiledHeader;
+
+                    goto foundPrecompiledDependency;
                 }
             }
-            for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
-                if(file.endsWith(*it)) {
-                    if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE")) {
-                        QString precomp_cpp_h = header_prefix + "c++" + header_suffix;
-                        if(!ret.contains(precomp_cpp_h))
-                            ret += precomp_cpp_h;
-                    }
-                    if(project->isActiveConfig("objective_c")) {
-                        if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
-                            if(!ret.contains(precomp_objcpp_h))
-                                ret += precomp_objcpp_h;
-                        }
-                    }
-                    break;
-                }
-            }
+          foundPrecompiledDependency:
+            ; // Hurray!!
         }
     }
     return ret;
