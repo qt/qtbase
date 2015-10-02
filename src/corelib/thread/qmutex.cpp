@@ -571,19 +571,26 @@ FreeList *freelist()
     return &list;
 }
 #else
+static QBasicAtomicPointer<FreeList> freeListPtr;
+
 FreeList *freelist()
 {
-    static QAtomicPointer<FreeList> list;
-    FreeList *local = list.loadAcquire();
+    FreeList *local = freeListPtr.loadAcquire();
     if (!local) {
         local = new FreeList;
-        if (!list.testAndSetRelease(0, local)) {
+        if (!freeListPtr.testAndSetRelease(0, local)) {
             delete local;
-            local = list.loadAcquire();
+            local = freeListPtr.loadAcquire();
         }
     }
     return local;
 }
+
+static void qFreeListDeleter()
+{
+    delete freeListPtr.load();
+}
+Q_DESTRUCTOR_FUNCTION(qFreeListDeleter)
 #endif
 }
 

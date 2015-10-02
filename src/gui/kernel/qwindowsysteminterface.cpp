@@ -232,6 +232,7 @@ bool QWindowSystemInterface::tryHandleShortcutOverrideEvent(QWindow *w, QKeyEven
 {
 #ifndef QT_NO_SHORTCUT
     Q_ASSERT(ev->type() == QKeyEvent::ShortcutOverride);
+    QGuiApplicationPrivate::modifier_buttons = ev->modifiers();
 
     QObject *focus = w->focusObject();
     if (!focus)

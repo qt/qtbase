@@ -101,8 +101,6 @@ template <typename StringType> struct QStringAlgorithms
 
         if (begin == str.cbegin() && end == str.cend())
             return str;
-        if (begin == end)
-            return StringType();
         if (!isConst && str.isDetached())
             return trimmed_helper_inplace(str, begin, end);
         return StringType(begin, end - begin);

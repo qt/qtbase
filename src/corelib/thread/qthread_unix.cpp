@@ -222,7 +222,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->isAdopted = true;
         data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread;
+            QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
     return data;
 }

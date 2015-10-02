@@ -57,6 +57,7 @@ class QDBusPlatformMenuItem : public QPlatformMenuItem
 
 public:
     QDBusPlatformMenuItem(quintptr tag = 0LL);
+    ~QDBusPlatformMenuItem();
 
     quintptr tag()const Q_DECL_OVERRIDE { return m_tag; }
     void setTag(quintptr tag) Q_DECL_OVERRIDE;

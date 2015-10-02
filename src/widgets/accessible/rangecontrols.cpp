@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "rangecontrols.h"
+#include "rangecontrols_p.h"
 
 #include <qslider.h>
 #include <qdial.h>
@@ -47,7 +47,7 @@
 #include <qmath.h>
 #include <private/qmath_p.h>
 
-#include "simplewidgets.h" // let spinbox use line edit's interface
+#include "simplewidgets_p.h" // let spinbox use line edit's interface
 
 QT_BEGIN_NAMESPACE
 

@@ -62,7 +62,7 @@ public:
     void setRole(MenuRole role) Q_DECL_OVERRIDE;
     void setCheckable(bool) Q_DECL_OVERRIDE {}
     void setChecked(bool) Q_DECL_OVERRIDE {}
-    void setShortcut(const QKeySequence&) Q_DECL_OVERRIDE {}
+    void setShortcut(const QKeySequence&) Q_DECL_OVERRIDE;
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
     void setIconSize(int) Q_DECL_OVERRIDE {}
 
@@ -73,6 +73,7 @@ public:
     bool m_enabled;
     bool m_separator;
     QIOSMenu *m_menu;
+    QKeySequence m_shortcut;
 
 private:
     QString removeMnemonics(const QString &original);
@@ -134,6 +135,7 @@ private:
     void toggleShowUsingUIMenuController(bool show);
     void toggleShowUsingUIPickerView(bool show);
     QIOSMenuItemList visibleMenuItems() const;
+    QIOSMenuItemList filterFirstResponderActions(const QIOSMenuItemList &menuItems);
     void repositionMenu();
 };
 

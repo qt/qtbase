@@ -285,23 +285,11 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
         return false;
     }
     d->socketState = QAbstractSocket::ConnectingState;
-    hr = QWinRTFunctions::await(d->connectOp);
-    RETURN_FALSE_IF_FAILED("Connection could not be established");
-    bool connectionErrors = false;
-    d->handleConnectionErrors(d->connectOp.Get(), &connectionErrors);
-    if (connectionErrors)
-        return false;
-    d->connectOp.Reset();
+    hr = d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
+                                         d, &QNativeSocketEnginePrivate::handleConnectToHost).Get());
+    Q_ASSERT_SUCCEEDED(hr);
 
-    d->socketState = QAbstractSocket::ConnectedState;
-    emit connectionReady();
-
-    // Delay the reader so that the SSL socket can upgrade
-    if (d->sslSocket)
-        connect(d->sslSocket, SIGNAL(encrypted()), SLOT(establishRead()));
-    else
-        establishRead();
-    return true;
+    return d->socketState == QAbstractSocket::ConnectedState;
 }
 
 bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
@@ -330,8 +318,7 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
             return false;
         }
 
-        EventRegistrationToken token;
-        d->tcpListener->add_ConnectionReceived(Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(), &token);
+        d->tcpListener->add_ConnectionReceived(Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(), &d->connectionToken);
         hr = d->tcpListener->BindEndpointAsync(hostAddress.Get(), portString.Get(), &op);
         if (FAILED(hr)) {
             qErrnoWarning(hr, "Unable to bind socket."); // ### Set error message
@@ -688,6 +675,14 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
 {
     Q_UNUSED(msecs);
     Q_UNUSED(timedOut);
+    Q_D(QNativeSocketEngine);
+    if (d->socketState == QAbstractSocket::ConnectingState) {
+        HRESULT hr = QWinRTFunctions::await(d->connectOp, QWinRTFunctions::ProcessMainThreadEvents);
+        if (SUCCEEDED(hr)) {
+            d->handleConnectionEstablished(d->connectOp.Get());
+            return true;
+        }
+    }
     return false;
 }
 
@@ -728,7 +723,6 @@ void QNativeSocketEngine::setWriteNotificationEnabled(bool enable)
         if (bytesToWrite())
             return; // will be emitted as a result of bytes written
         writeNotification();
-        d->notifyOnWrite = false;
     }
 }
 
@@ -785,9 +779,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             qWarning("Failed to create stream socket");
             return false;
         }
-        EventRegistrationToken token;
         socketDescriptor = qintptr(socket.Detach());
-        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &token);
+        udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &connectionToken);
         break;
     }
     default:
@@ -815,11 +808,19 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , closingDown(false)
     , socketDescriptor(-1)
     , sslSocket(Q_NULLPTR)
+    , connectionToken( { -1 } )
 {
 }
 
 QNativeSocketEnginePrivate::~QNativeSocketEnginePrivate()
 {
+    if (socketDescriptor == -1 || connectionToken.value == -1)
+        return;
+
+    if (socketType == QAbstractSocket::UdpSocket)
+        udpSocket()->remove_MessageReceived(connectionToken);
+    else if (socketType == QAbstractSocket::TcpSocket)
+        tcpListener->remove_ConnectionReceived(connectionToken);
 }
 
 void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, ErrorString errorString) const
@@ -1119,10 +1120,19 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     return S_OK;
 }
 
-void QNativeSocketEnginePrivate::handleConnectionErrors(IAsyncAction *connectAction, bool *errorsOccured)
+HRESULT QNativeSocketEnginePrivate::handleConnectToHost(IAsyncAction *action, AsyncStatus)
 {
-    bool error = true;
-    HRESULT hr = connectAction->GetResults();
+    handleConnectionEstablished(action);
+    return S_OK;
+}
+
+void QNativeSocketEnginePrivate::handleConnectionEstablished(IAsyncAction *action)
+{
+    Q_Q(QNativeSocketEngine);
+    if (wasDeleted || !connectOp) // Protect against a late callback
+        return;
+
+    HRESULT hr = action->GetResults();
     switch (hr) {
     case 0x8007274c: // A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
         setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
@@ -1140,13 +1150,32 @@ void QNativeSocketEnginePrivate::handleConnectionErrors(IAsyncAction *connectAct
         if (FAILED(hr)) {
             setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
             socketState = QAbstractSocket::UnconnectedState;
-        } else {
-            error = false;
         }
         break;
     }
-    if (errorsOccured)
-        *errorsOccured = error;
+
+    // The callback might be triggered several times if we do not cancel/reset it here
+    if (connectOp) {
+        ComPtr<IAsyncInfo> info;
+        connectOp.As(&info);
+        if (info) {
+            info->Cancel();
+            info->Close();
+        }
+        connectOp.Reset();
+    }
+
+    socketState = QAbstractSocket::ConnectedState;
+    emit q->connectionReady();
+
+    if (socketType != QAbstractSocket::TcpSocket)
+        return;
+
+    // Delay the reader so that the SSL socket can upgrade
+    if (sslSocket)
+        QObject::connect(qobject_cast<QSslSocket *>(sslSocket), &QSslSocket::encrypted, q, &QNativeSocketEngine::establishRead);
+    else
+        q->establishRead();
 }
 
 HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *asyncInfo, AsyncStatus status)
@@ -1166,7 +1195,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     hr = buffer->get_Length(&bufferLength);
     Q_ASSERT_SUCCEEDED(hr);
     if (!bufferLength) {
-        if (q->isReadNotificationEnabled())
+        if (notifyOnRead)
             emit q->readReady();
         return S_OK;
     }
@@ -1190,7 +1219,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     readBytes.seek(readPos);
     readMutex.unlock();
 
-    if (q->isReadNotificationEnabled())
+    if (notifyOnRead)
         emit q->readReady();
 
     ComPtr<IInputStream> stream;

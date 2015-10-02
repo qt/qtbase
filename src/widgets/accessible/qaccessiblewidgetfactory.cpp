@@ -31,12 +31,12 @@
 **
 ****************************************************************************/
 
-#include "qaccessiblewidgets.h"
-#include "qaccessiblemenu.h"
-#include "simplewidgets.h"
-#include "rangecontrols.h"
-#include "complexwidgets.h"
-#include "itemviews.h"
+#include "qaccessiblewidgets_p.h"
+#include "qaccessiblemenu_p.h"
+#include "simplewidgets_p.h"
+#include "rangecontrols_p.h"
+#include "complexwidgets_p.h"
+#include "itemviews_p.h"
 
 #include <qpushbutton.h>
 #include <qtoolbutton.h>
