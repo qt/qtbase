@@ -1091,14 +1091,16 @@ void QLabel::paintEvent(QPaintEvent *)
     if (d->pixmap && !d->pixmap->isNull()) {
         QPixmap pix;
         if (d->scaledcontents) {
-            if (!d->scaledpixmap || d->scaledpixmap->size() != cr.size()) {
+            QSize scaledSize = cr.size() * devicePixelRatioF();
+            if (!d->scaledpixmap || d->scaledpixmap->size() != scaledSize) {
                 if (!d->cachedimage)
                     d->cachedimage = new QImage(d->pixmap->toImage());
                 delete d->scaledpixmap;
                 QImage scaledImage =
-                    d->cachedimage->scaled(cr.size() * devicePixelRatioF(),
+                    d->cachedimage->scaled(scaledSize,
                                            Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 d->scaledpixmap = new QPixmap(QPixmap::fromImage(scaledImage));
+                d->scaledpixmap->setDevicePixelRatio(devicePixelRatioF());
             }
             pix = *d->scaledpixmap;
         } else
