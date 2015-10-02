@@ -44,6 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio);
 static QString resolveFileName(QString fileName, QUrl *url, qreal targetDevicePixelRatio)
 {
     // We might use the fileName for loading if url loading fails
@@ -62,19 +63,8 @@ static QString resolveFileName(QString fileName, QUrl *url, qreal targetDevicePi
     if (targetDevicePixelRatio <= 1.0)
         return fileName;
 
-    // try to find a 2x version
-
-    const int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
-    if (dotIndex != -1) {
-        QString at2xfileName = fileName;
-        at2xfileName.insert(dotIndex, QStringLiteral("@2x"));
-        if (QFile::exists(at2xfileName))  {
-            fileName = at2xfileName;
-            *url = QUrl(fileName);
-        }
-    }
-
-    return fileName;
+    // try to find a Nx version
+    return qt_findAtNxFile(fileName, targetDevicePixelRatio);
 }
 
 
