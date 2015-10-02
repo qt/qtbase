@@ -156,12 +156,13 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
         if (func->metaness() != FunctionNode::MacroWithoutParams) {
             synopsis += "(";
             if (!func->parameters().isEmpty()) {
-                //synopsis += QLatin1Char(' ');
                 QVector<Parameter>::ConstIterator p = func->parameters().constBegin();
                 while (p != func->parameters().constEnd()) {
                     if (p != func->parameters().constBegin())
                         synopsis += ", ";
                     synopsis += typified((*p).dataType());
+                    if (!(*p).dataType().isEmpty())
+                        synopsis += QLatin1Char(' ');
                     if (style != Subpage && !(*p).name().isEmpty())
                         synopsis +=
                                 "<@param>" + protect((*p).name()) + "</@param>";
@@ -170,7 +171,6 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
                         synopsis += " = " + protect((*p).defaultValue());
                     ++p;
                 }
-                //synopsis += QLatin1Char(' ');
             }
             synopsis += QLatin1Char(')');
         }
@@ -334,7 +334,7 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
                     synopsis += ", ";
                 synopsis += typified((*p).dataType());
                 if (!(*p).name().isEmpty()) {
-                    if (!synopsis.endsWith(QLatin1Char('(')))
+                    if (!(*p).dataType().isEmpty())
                         synopsis += QLatin1Char(' ');
                     synopsis += "<@param>" + protect((*p).name()) + "</@param>";
                 }
