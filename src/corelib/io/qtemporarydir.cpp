@@ -49,6 +49,10 @@
 #include <private/qfilesystemengine_p.h>
 #endif
 
+#if !defined(Q_OS_WIN)
+#include <errno.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //************* QTemporaryDirPrivate
