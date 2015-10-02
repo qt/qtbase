@@ -202,6 +202,7 @@ public:
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
+    static bool highDpiScalingUpdated;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;
