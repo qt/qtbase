@@ -845,13 +845,10 @@ QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
 void QCocoaEventDispatcherPrivate::waitingObserverCallback(CFRunLoopObserverRef,
                                                           CFRunLoopActivity activity, void *info)
 {
-    QCocoaEventDispatcher *dispatcher = static_cast<QCocoaEventDispatcher *>(info);
-    if (activity == kCFRunLoopBeforeWaiting) {
-        dispatcher->d_func()->cfSocketNotifier.enableSocketNotifiers();
-        emit dispatcher->aboutToBlock();
-    } else {
-        emit dispatcher->awake();
-    }
+    if (activity == kCFRunLoopBeforeWaiting)
+        emit static_cast<QCocoaEventDispatcher*>(info)->aboutToBlock();
+    else
+        emit static_cast<QCocoaEventDispatcher*>(info)->awake();
 }
 
 void QCocoaEventDispatcherPrivate::processPostedEvents()

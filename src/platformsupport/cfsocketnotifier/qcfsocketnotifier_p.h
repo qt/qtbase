@@ -53,14 +53,11 @@
 QT_BEGIN_NAMESPACE
 
 struct MacSocketInfo {
-    MacSocketInfo() : socket(0), runloop(0), readNotifier(0), writeNotifier(0),
-        readEnabled(false), writeEnabled(false) {}
+    MacSocketInfo() : socket(0), runloop(0), readNotifier(0), writeNotifier(0) {}
     CFSocketRef socket;
     CFRunLoopSourceRef runloop;
     QObject *readNotifier;
     QObject *writeNotifier;
-    bool readEnabled;
-    bool writeEnabled;
 };
 typedef QHash<int, MacSocketInfo *> MacSocketHash;
 
@@ -84,7 +81,6 @@ public:
     void setMaybeCancelWaitForMoreEventsCallback(MaybeCancelWaitForMoreEventsFn callBack);
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
-    void enableSocketNotifiers();
     void removeSocketNotifiers();
 
     MacSocketHash macSockets;
