@@ -407,6 +407,7 @@ public:
     VirtualObject() :success(true) {}
 
     QString introspect(const QString &path) const {
+        Q_ASSERT(QThread::currentThread() == thread());
         if (path == "/some/path/superNode")
             return "zitroneneis";
         if (path == "/some/path/superNode/foo")
@@ -417,6 +418,7 @@ public:
     }
 
     bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+        Q_ASSERT(QThread::currentThread() == thread());
         ++callCount;
         lastMessage = message;
 
