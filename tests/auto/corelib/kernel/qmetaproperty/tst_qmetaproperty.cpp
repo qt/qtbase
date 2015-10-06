@@ -55,7 +55,7 @@ class tst_QMetaProperty : public QObject
     Q_OBJECT
     Q_PROPERTY(EnumType value WRITE setValue READ getValue)
     Q_PROPERTY(EnumType value2 WRITE set_value READ get_value)
-    Q_PROPERTY(QString value7 MEMBER value7)
+    Q_PROPERTY(QString value7 MEMBER value7 RESET resetValue7)
     Q_PROPERTY(int value8 READ value8)
     Q_PROPERTY(int value9 READ value9 CONSTANT)
     Q_PROPERTY(int value10 READ value10 FINAL)
@@ -79,6 +79,7 @@ public:
     void set_value(EnumType) {}
     EnumType get_value() const { return EnumType1; }
 
+    void resetValue7() { value7 = QStringLiteral("reset"); }
     int value8() const { return 1; }
     int value9() const { return 1; }
     int value10() const { return 1; }
@@ -236,6 +237,17 @@ void tst_QMetaProperty::conversion()
     QVERIFY(!customP.write(this, QVariant::fromValue(this)));
     QVERIFY(!value7P.write(this, QVariant::fromValue(this)));
     QVERIFY(!value7P.write(this, QVariant::fromValue<QObject*>(this)));
+
+    // none of this should have changed the values
+    QCOMPARE(value7, hello);
+    QCOMPARE(custom.str, hello);
+
+    // Empty variant should be converted to default object
+    QVERIFY(customP.write(this, QVariant()));
+    QCOMPARE(custom.str, QString());
+    // or reset resetable
+    QVERIFY(value7P.write(this, QVariant()));
+    QCOMPARE(value7, QLatin1Literal("reset"));
 }
 
 QTEST_MAIN(tst_QMetaProperty)

@@ -3831,7 +3831,7 @@ int QObjectPrivate::signalIndex(const char *signalName,
   \b{Note:} Dynamic properties starting with "_q_" are reserved for internal
   purposes.
 
-  \sa property(), metaObject(), dynamicPropertyNames()
+  \sa property(), metaObject(), dynamicPropertyNames(), QMetaProperty::write()
 */
 bool QObject::setProperty(const char *name, const QVariant &value)
 {
