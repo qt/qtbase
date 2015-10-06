@@ -1867,7 +1867,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 
         if ([bv isKindOfClass:[NSButton class]]) {
             NSButton *bc = (NSButton *)bv;
-            bc.title = nil;
+            bc.title = @"";
         }
 
         if ([bv isKindOfClass:[NSControl class]]) {
