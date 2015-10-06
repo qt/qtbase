@@ -139,6 +139,7 @@ public:
     QRect adjustedControlRect(const QRect &) const;
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
+    bool inSelection(int x) const;
     QRect cursorRect() const;
     void setCursorVisible(bool visible);
 
