@@ -133,7 +133,7 @@ private:
     // window to send events to (always valid if current_target)
     xcb_window_t current_proxy_target;
 
-    QXcbScreen *current_screen;
+    QXcbVirtualDesktop *current_virtual_desktop;
 
     // 10 minute timer used to discard old XdndDrop transactions
     enum { XdndDropTransactionTimeout = 600000 };

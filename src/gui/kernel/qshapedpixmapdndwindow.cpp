@@ -38,8 +38,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QShapedPixmapWindow::QShapedPixmapWindow()
-    : QWindow(),
+QShapedPixmapWindow::QShapedPixmapWindow(QScreen *screen)
+    : QWindow(screen),
       m_backingStore(0)
 {
     QSurfaceFormat format;

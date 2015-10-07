@@ -61,6 +61,15 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
     delete m_xSettings;
 }
 
+QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
+{
+    foreach (QXcbScreen *screen, connection()->screens()) {
+        if (screen->virtualDesktop() == this && screen->nativeGeometry().contains(pos))
+            return screen;
+    }
+    return Q_NULLPTR;
+}
+
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
 {
     if (!m_xSettings) {

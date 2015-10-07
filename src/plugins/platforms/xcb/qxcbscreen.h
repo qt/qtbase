@@ -64,6 +64,8 @@ public:
     int number() const { return m_number; }
     QSize size() const { return QSize(m_screen->width_in_pixels, m_screen->height_in_pixels); }
     QSize physicalSize() const { return QSize(m_screen->width_in_millimeters, m_screen->height_in_millimeters); }
+    xcb_window_t root() const { return m_screen->root; }
+    QXcbScreen *screenAt(const QPoint &pos) const;
 
     QXcbXSettings *xSettings() const;
 
@@ -104,6 +106,7 @@ public:
     void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
     void removeVirtualSibling(QPlatformScreen *s) { m_siblings.removeOne(s); }
     void addVirtualSibling(QPlatformScreen *s) { ((QXcbScreen *) s)->isPrimary() ? m_siblings.prepend(s) : m_siblings.append(s); }
+    QXcbVirtualDesktop *virtualDesktop() const { return m_virtualDesktop; }
 
     void setPrimary(bool primary) { m_primary = primary; }
     bool isPrimary() const { return m_primary; }
