@@ -159,7 +159,7 @@ public:
     static const Node *nodeForString(const QString& string);
     static QString stringForNode(const Node *node);
 
-    QString typified(const QString &string);
+    QString typified(const QString &string, bool trailingSpace = false);
 
 protected:
     virtual QString sortName(const Node *node, const QString* name = 0);
