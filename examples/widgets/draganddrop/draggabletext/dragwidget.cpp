@@ -40,13 +40,23 @@
 
 #include <QtWidgets>
 
-#include "draglabel.h"
 #include "dragwidget.h"
+
+static QLabel *createDragLabel(const QString &text, QWidget *parent)
+{
+    QLabel *label = new QLabel(text, parent);
+    label->setAutoFillBackground(true);
+    label->setFrameShape(QFrame::Panel);
+    label->setFrameShadow(QFrame::Raised);
+    return label;
+}
+
+static QString hotSpotMimeDataKey() { return QStringLiteral("application/x-hotspot"); }
 
 DragWidget::DragWidget(QWidget *parent)
     : QWidget(parent)
 {
-    QFile dictionaryFile(":/dictionary/words.txt");
+    QFile dictionaryFile(QStringLiteral(":/dictionary/words.txt"));
     dictionaryFile.open(QIODevice::ReadOnly);
     QTextStream inputStream(&dictionaryFile);
 
@@ -57,7 +67,7 @@ DragWidget::DragWidget(QWidget *parent)
         QString word;
         inputStream >> word;
         if (!word.isEmpty()) {
-            DragLabel *wordLabel = new DragLabel(word, this);
+            QLabel *wordLabel = createDragLabel(word, this);
             wordLabel->move(x, y);
             wordLabel->show();
             wordLabel->setAttribute(Qt::WA_DeleteOnClose);
@@ -68,12 +78,6 @@ DragWidget::DragWidget(QWidget *parent)
             }
         }
     }
-
-    /*
-    QPalette newPalette = palette();
-    newPalette.setColor(QPalette::Window, Qt::white);
-    setPalette(newPalette);
-    */
 
     setAcceptDrops(true);
     setMinimumSize(400, qMax(200, y));
@@ -98,19 +102,19 @@ void DragWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasText()) {
         const QMimeData *mime = event->mimeData();
-        QStringList pieces = mime->text().split(QRegExp("\\s+"),
+        QStringList pieces = mime->text().split(QRegularExpression(QStringLiteral("\\s+")),
                              QString::SkipEmptyParts);
         QPoint position = event->pos();
         QPoint hotSpot;
 
-        QList<QByteArray> hotSpotPos = mime->data("application/x-hotspot").split(' ');
+        QByteArrayList hotSpotPos = mime->data(hotSpotMimeDataKey()).split(' ');
         if (hotSpotPos.size() == 2) {
             hotSpot.setX(hotSpotPos.first().toInt());
             hotSpot.setY(hotSpotPos.last().toInt());
         }
 
-        foreach (QString piece, pieces) {
-            DragLabel *newLabel = new DragLabel(piece, this);
+        foreach (const QString &piece, pieces) {
+            QLabel *newLabel = createDragLabel(piece, this);
             newLabel->move(position - hotSpot);
             newLabel->show();
             newLabel->setAttribute(Qt::WA_DeleteOnClose);
@@ -127,18 +131,15 @@ void DragWidget::dropEvent(QDropEvent *event)
     } else {
         event->ignore();
     }
-    foreach (QObject *child, children()) {
-        if (child->inherits("QWidget")) {
-            QWidget *widget = static_cast<QWidget *>(child);
-            if (!widget->isVisible())
-                widget->deleteLater();
-        }
+    foreach (QWidget *widget, findChildren<QWidget *>()) {
+        if (!widget->isVisible())
+            widget->deleteLater();
     }
 }
 
 void DragWidget::mousePressEvent(QMouseEvent *event)
 {
-    QLabel *child = static_cast<QLabel*>(childAt(event->pos()));
+    QLabel *child = qobject_cast<QLabel*>(childAt(event->pos()));
     if (!child)
         return;
 
@@ -146,8 +147,8 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 
     QMimeData *mimeData = new QMimeData;
     mimeData->setText(child->text());
-    mimeData->setData("application/x-hotspot",
-                      QByteArray::number(hotSpot.x()) + " " + QByteArray::number(hotSpot.y()));
+    mimeData->setData(hotSpotMimeDataKey(),
+                      QByteArray::number(hotSpot.x()) + ' ' + QByteArray::number(hotSpot.y()));
 
     QPixmap pixmap(child->size());
     child->render(&pixmap);

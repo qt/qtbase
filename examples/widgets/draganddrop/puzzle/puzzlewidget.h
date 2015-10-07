@@ -75,7 +75,6 @@ protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    int findPiece(const QRect &pieceRect) const;
     const QRect targetSquare(const QPoint &position) const;
 
     QList<QPixmap> piecePixmaps;

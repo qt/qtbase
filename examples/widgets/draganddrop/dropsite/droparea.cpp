@@ -92,10 +92,8 @@ void DropArea::dropEvent(QDropEvent *event)
     } else if (mimeData->hasUrls()) {
         QList<QUrl> urlList = mimeData->urls();
         QString text;
-        for (int i = 0; i < urlList.size() && i < 32; ++i) {
-            QString url = urlList.at(i).path();
-            text += url + QString("\n");
-        }
+        for (int i = 0; i < urlList.size() && i < 32; ++i)
+            text += urlList.at(i).path() + QLatin1Char('\n');
         setText(text);
     } else {
         setText(tr("Cannot display data"));
