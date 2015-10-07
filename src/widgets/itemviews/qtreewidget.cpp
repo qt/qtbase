@@ -3386,7 +3386,7 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
 
             // Remove the items
             QList<QTreeWidgetItem *> taken;
-            for (int i = indexes.count() - 1; i >= 0; --i) {
+            for (int i = 0; i < indexes.count(); ++i) {
                 QTreeWidgetItem *parent = itemFromIndex(indexes.at(i));
                 if (!parent || !parent->parent()) {
                     taken.append(takeTopLevelItem(indexes.at(i).row()));
