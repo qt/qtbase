@@ -1062,7 +1062,7 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
 
     if (const QPlatformWindow *handle = w->handle()) {
         const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(handle);
-        if (ww->isEmbedded(0)) {
+        if (ww->isEmbedded()) {
             HWND parentHWND = GetAncestor(ww->handle(), GA_PARENT);
             const HWND desktopHwnd = GetDesktopWindow();
             const QWindowsContext *ctx = QWindowsContext::instance();
@@ -1140,7 +1140,7 @@ bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
     }
 
     if (!m_data.embedded && parent())
-        return parent()->isEmbedded(0);
+        return parent()->isEmbedded();
 
     return m_data.embedded;
 }
