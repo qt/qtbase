@@ -2689,7 +2689,10 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
     // System menu events.
     if (d->systemMenu && d->systemMenu == object) {
         if (event->type() == QEvent::MouseButtonDblClick) {
-            close();
+            const QMouseEvent *mouseEvent = static_cast<const QMouseEvent *>(event);
+            const QAction *action = d->systemMenu->actionAt(mouseEvent->pos());
+            if (!action || action->isEnabled())
+                close();
         } else if (event->type() == QEvent::MouseMove) {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
             d->hoveredSubControl = d->getSubControl(mapFromGlobal(mouseEvent->globalPos()));
