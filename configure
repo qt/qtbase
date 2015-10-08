@@ -675,7 +675,6 @@ OPT_OBSOLETE_HOST_ARG=no
 
 CFG_USE_GNUMAKE=no
 CFG_XINPUT2=auto
-CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=yes
 CFG_XKBCOMMON_EVDEV=auto
@@ -1552,13 +1551,6 @@ while [ "$#" -gt 0 ]; do
      xinput2)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XINPUT2="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    xinput)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
-            CFG_XINPUT="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5515,7 +5507,6 @@ if [ "$CFG_XINPUT2" != "no" ]; then
             QMakeVar set QMAKE_LIBXI_VERSION_PATCH "$QMAKE_LIBXI_VERSION_PATCH"
         fi
         CFG_XINPUT2=yes
-        CFG_XINPUT=no
     else
         if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "XInput2 support cannot be enabled due to functionality tests!"
@@ -6834,13 +6825,11 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
 [ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
 [ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
-[ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
 [ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
 [ "$CFG_XINERAMA" = "runtime" ]  && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINERAMA"
 [ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
-[ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
@@ -7302,7 +7291,6 @@ if [ "$CFG_XCB" != "no" ]; then
     report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
     report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
-    report_support "      Xi ................." "$CFG_XINPUT" runtime "loaded at runtime"
     report_support "      Xi2 ................" "$CFG_XINPUT2" runtime "loaded at runtime"
     report_support "      Xinerama ..........." "$CFG_XINERAMA" runtime "loaded at runtime"
     report_support "      Xrandr ............." "$CFG_XRANDR" runtime "loaded at runtime"
