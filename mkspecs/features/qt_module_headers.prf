@@ -92,7 +92,7 @@ headersclean:!internal_module {
                  -DQT_NO_URL_CAST_FROM_STRING=1 \
                  -DQT_NO_CAST_FROM_BYTEARRAY=1 \
                  -DQT_NO_KEYWORDS=1 \
-                 -DQT_USE_FAST_CONCATENATION \
+                 -DQT_USE_QSTRINGBUILDER \
                  -DQT_USE_FAST_OPERATOR_PLUS \
                  -Dsignals=int \
                  -Dslots=int \
