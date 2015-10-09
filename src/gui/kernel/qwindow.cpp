@@ -2295,7 +2295,7 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
         && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
         return d->platformWindow->mapToGlobal(pos);
     }
-    return pos + d_func()->globalPosition();
+    return pos + d->globalPosition();
 }
 
 
@@ -2315,7 +2315,7 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
         && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded(0))) {
         return d->platformWindow->mapFromGlobal(pos);
     }
-    return pos - d_func()->globalPosition();
+    return pos - d->globalPosition();
 }
 
 
