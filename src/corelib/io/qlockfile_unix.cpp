@@ -171,8 +171,10 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         }
     }
     // Ensure nobody else can delete the file while we have it
-    if (!setNativeLocks(fd))
-        qWarning() << "setNativeLocks failed:" << strerror(errno);
+    if (!setNativeLocks(fd)) {
+        const int errnoSaved = errno;
+        qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
+    }
 
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
         close(fd);
