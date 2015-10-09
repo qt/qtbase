@@ -463,10 +463,15 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             location = Location(parent->name().toLower() + ".html");
 
         while (reader.readNextStartElement()) {
+            QXmlStreamAttributes childAttributes = reader.attributes();
             if (reader.name() == QLatin1String("value")) {
-                QXmlStreamAttributes childAttributes = reader.attributes();
+
                 EnumItem item(childAttributes.value(QLatin1String("name")).toString(), childAttributes.value(QLatin1String("value")).toString());
                 enumNode->addItem(item);
+            } else if (reader.name() == QLatin1String("keyword")) {
+                insertTarget(TargetRec::Keyword, childAttributes, enumNode);
+            } else if (reader.name() == QLatin1String("target")) {
+                insertTarget(TargetRec::Target, childAttributes, enumNode);
             }
             reader.skipCurrentElement();
         }
@@ -552,8 +557,8 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
          */
 
         while (reader.readNextStartElement()) {
+            QXmlStreamAttributes childAttributes = reader.attributes();
             if (reader.name() == QLatin1String("parameter")) {
-                QXmlStreamAttributes childAttributes = reader.attributes();
                 // Do not use the default value for the parameter; it is not
                 // required, and has been known to cause problems.
                 Parameter parameter(childAttributes.value(QLatin1String("left")).toString(),
@@ -561,6 +566,10 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
                                     childAttributes.value(QLatin1String("name")).toString(),
                                     QString()); // childAttributes.value(QLatin1String("default"))
                 functionNode->addParameter(parameter);
+            } else if (reader.name() == QLatin1String("keyword")) {
+                insertTarget(TargetRec::Keyword, childAttributes, functionNode);
+            } else if (reader.name() == QLatin1String("target")) {
+                insertTarget(TargetRec::Target, childAttributes, functionNode);
             }
             reader.skipCurrentElement();
         }
@@ -581,18 +590,15 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             location = Location(parent->name().toLower() + ".html");
     }
     else if (elementName == QLatin1String("keyword")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Keyword, current, 1);
+        insertTarget(TargetRec::Keyword, attributes, current);
         goto done;
     }
     else if (elementName == QLatin1String("target")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Target, current, 2);
+        insertTarget(TargetRec::Target, attributes, current);
         goto done;
     }
     else if (elementName == QLatin1String("contents")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Contents, current, 3);
+        insertTarget(TargetRec::Contents, attributes, current);
         goto done;
     }
     else
@@ -700,6 +706,30 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             break;
         }
     }
+}
+
+void QDocIndexFiles::insertTarget(TargetRec::TargetType type,
+                               const QXmlStreamAttributes &attributes,
+                               Node *node)
+{
+    int priority;
+    switch (type) {
+    case TargetRec::Keyword:
+        priority = 1;
+        break;
+    case TargetRec::Target:
+        priority = 2;
+        break;
+    case TargetRec::Contents:
+        priority = 3;
+        break;
+    default:
+        return;
+    }
+
+    QString name = attributes.value(QLatin1String("name")).toString();
+    QString title = attributes.value(QLatin1String("title")).toString();
+    qdb_->insertTarget(name, title, type, node, priority);
 }
 
 /*!
