@@ -75,13 +75,13 @@ public:
 
         QOffscreenScreen::windowContainingCursor = containing ? containing->handle() : 0;
     }
-
+#ifndef QT_NO_CURSOR
     void changeCursor(QCursor *windowCursor, QWindow *window) Q_DECL_OVERRIDE
     {
         Q_UNUSED(windowCursor);
         Q_UNUSED(window);
     }
-
+#endif
 private:
     QPoint m_pos;
 };
