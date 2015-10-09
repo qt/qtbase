@@ -102,7 +102,7 @@ static qreal easeInCubic(qreal t)
 }
 
 /**
- * Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
+ * Easing equation function for a cubic (t^3) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -154,7 +154,7 @@ static qreal easeInQuart(qreal t)
 }
 
 /**
- * Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
+ * Easing equation function for a quartic (t^4) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -205,7 +205,7 @@ static qreal easeInQuint(qreal t)
 }
 
 /**
- * Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
+ * Easing equation function for a quintic (t^5) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -256,7 +256,7 @@ static qreal easeInSine(qreal t)
 }
 
 /**
- * Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
+ * Easing equation function for a sinusoidal (sin(t)) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -301,7 +301,7 @@ static qreal easeInExpo(qreal t)
 }
 
 /**
- * Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
+ * Easing equation function for an exponential (2^t) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -350,7 +350,7 @@ static qreal easeInCirc(qreal t)
 }
 
 /**
- * Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
+ * Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @return		The correct value.
@@ -438,7 +438,7 @@ static qreal easeOutElastic_helper(qreal t, qreal /*b*/, qreal c, qreal /*d*/, q
 }
 
 /**
- * Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.
+ * Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @param a		Amplitude.
@@ -503,7 +503,7 @@ static qreal easeInBack(qreal t, qreal s)
 }
 
 /**
- * Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
+ * Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @param s		Overshoot ammount: higher s means greater overshoot (0 produces cubic easing with no overshoot, and the default value of 1.70158 produces an overshoot of 10 percent).
@@ -566,7 +566,7 @@ static qreal easeOutBounce_helper(qreal t, qreal c, qreal a)
 }
 
 /**
- * Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
+ * Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating to zero velocity.
  *
  * @param t		Current time (in frames or seconds).
  * @param a		Amplitude.
