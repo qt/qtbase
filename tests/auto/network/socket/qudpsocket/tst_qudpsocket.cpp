@@ -117,6 +117,7 @@ private slots:
     void readyRead();
     void readyReadForEmptyDatagram();
     void asyncReadDatagram();
+    void writeInHostLookupState();
 
 protected slots:
     void empty_readyReadSlot();
@@ -1723,6 +1724,18 @@ void tst_QUdpSocket::asyncReadDatagram()
 
     delete m_asyncSender;
     delete m_asyncReceiver;
+}
+
+void tst_QUdpSocket::writeInHostLookupState()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QUdpSocket socket;
+    socket.connectToHost("nosuchserver.qt-project.org", 80);
+    QCOMPARE(socket.state(), QUdpSocket::HostLookupState);
+    QVERIFY(!socket.putChar('0'));
 }
 
 QTEST_MAIN(tst_QUdpSocket)
