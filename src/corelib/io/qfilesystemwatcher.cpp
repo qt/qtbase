@@ -296,7 +296,9 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 
     QFileSystemWatcherEngine *engine = 0;
 
-    if(!objectName().startsWith(QLatin1String("_qt_autotest_force_engine_"))) {
+    const QString on = objectName();
+
+    if (!on.startsWith(QLatin1String("_qt_autotest_force_engine_"))) {
         // Normal runtime case - search intelligently for best engine
         if(d->native) {
             engine = d->native;
@@ -307,7 +309,7 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 
     } else {
         // Autotest override case - use the explicitly selected engine only
-        QString forceName = objectName().mid(26);
+        const QStringRef forceName = on.midRef(26);
         if(forceName == QLatin1String("poller")) {
             qDebug() << "QFileSystemWatcher: skipping native engine, using only polling engine";
             d_func()->initPollerEngine();

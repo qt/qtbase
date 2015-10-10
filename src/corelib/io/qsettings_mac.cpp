@@ -403,11 +403,11 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
     }
 
     while ((nextDot = domainName.indexOf(QLatin1Char('.'), curPos)) != -1) {
-        javaPackageName.prepend(domainName.mid(curPos, nextDot - curPos));
+        javaPackageName.prepend(domainName.midRef(curPos, nextDot - curPos));
         javaPackageName.prepend(QLatin1Char('.'));
         curPos = nextDot + 1;
     }
-    javaPackageName.prepend(domainName.mid(curPos));
+    javaPackageName.prepend(domainName.midRef(curPos));
     javaPackageName = javaPackageName.toLower();
     if (curPos == 0)
         javaPackageName.prepend(QLatin1String("com."));
