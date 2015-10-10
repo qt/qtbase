@@ -99,19 +99,14 @@ Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain)
     if (containsTLDEntry(domain))
         return true;
 
-    if (domain.contains(QLatin1Char('.'))) {
-        int count = domain.size() - domain.indexOf(QLatin1Char('.'));
-        QString wildCardDomain;
-        wildCardDomain.reserve(count + 1);
-        wildCardDomain.append(QLatin1Char('*'));
-        wildCardDomain.append(domain.right(count));
+    const int dot = domain.indexOf(QLatin1Char('.'));
+    if (dot >= 0) {
+        int count = domain.size() - dot;
+        QString wildCardDomain = QLatin1Char('*') + domain.rightRef(count);
         // 2. if table contains '*.bar.com',
         // test if table contains '!foo.bar.com'
         if (containsTLDEntry(wildCardDomain)) {
-            QString exceptionDomain;
-            exceptionDomain.reserve(domain.size() + 1);
-            exceptionDomain.append(QLatin1Char('!'));
-            exceptionDomain.append(domain);
+            QString exceptionDomain = QLatin1Char('!') + domain;
             return (! containsTLDEntry(exceptionDomain));
         }
     }
