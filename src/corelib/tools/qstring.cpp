@@ -1818,6 +1818,17 @@ QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 
     Assigns the Latin-1 string \a str to this string.
 */
+QString &QString::operator=(QLatin1String other)
+{
+    if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+        d->size = other.size();
+        d->data()[other.size()] = 0;
+        qt_from_latin1(d->data(), other.latin1(), other.size());
+    } else {
+        *this = fromLatin1(other.latin1(), other.size());
+    }
+    return *this;
+}
 
 /*! \fn QString &QString::operator=(const QByteArray &ba)
 
@@ -1868,7 +1879,16 @@ QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 */
 QString &QString::operator=(QChar ch)
 {
-    return operator=(QString(ch));
+    if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+        // re-use existing capacity:
+        ushort *dat = d->data();
+        dat[0] = ch.unicode();
+        dat[1] = 0;
+        d->size = 1;
+    } else {
+        operator=(QString(ch));
+    }
+    return *this;
 }
 
 /*!
