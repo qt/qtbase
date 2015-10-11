@@ -1846,8 +1846,7 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize(viewport()->width() + (qq->verticalScrollBar()->maximum() > 0 ? qq->verticalScrollBar()->width() : 0),
-                             viewport()->height() + (qq->horizontalScrollBar()->maximum() > 0 ? qq->horizontalScrollBar()->height() : 0));
+    const QSize viewportSize = qq->contentsRect().size();
 
     bool verticalWantsToShow = contentsSize.height() > viewportSize.height();
     bool horizontalWantsToShow;
@@ -1877,8 +1876,7 @@ void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize(viewport()->width() + (qq->verticalScrollBar()->maximum() > 0 ? qq->verticalScrollBar()->width() : 0),
-                             viewport()->height() + (qq->horizontalScrollBar()->maximum() > 0 ? qq->horizontalScrollBar()->height() : 0));
+    const QSize viewportSize = qq->contentsRect().size();
 
     bool horizontalWantsToShow = contentsSize.width() > viewportSize.width();
     bool verticalWantsToShow;

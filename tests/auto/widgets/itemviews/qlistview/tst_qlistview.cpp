@@ -148,6 +148,7 @@ private slots:
     void spacing();
     void testScrollToWithHidden();
     void testViewOptions();
+    void taskQTBUG_39902_mutualScrollBars_data();
     void taskQTBUG_39902_mutualScrollBars();
 };
 
@@ -2359,8 +2360,21 @@ private:
     QStyle* m_oldStyle;
 };
 
+void tst_QListView::taskQTBUG_39902_mutualScrollBars_data()
+{
+    QTest::addColumn<QAbstractItemView::ScrollMode>("horizontalScrollMode");
+    QTest::addColumn<QAbstractItemView::ScrollMode>("verticalScrollMode");
+    QTest::newRow("per item / per item") << QAbstractItemView::ScrollPerItem << QAbstractItemView::ScrollPerItem;
+    QTest::newRow("per pixel / per item") << QAbstractItemView::ScrollPerPixel << QAbstractItemView::ScrollPerItem;
+    QTest::newRow("per item / per pixel") << QAbstractItemView::ScrollPerItem << QAbstractItemView::ScrollPerPixel;
+    QTest::newRow("per pixel / per pixel") << QAbstractItemView::ScrollPerPixel << QAbstractItemView::ScrollPerPixel;
+}
+
 void tst_QListView::taskQTBUG_39902_mutualScrollBars()
 {
+    QFETCH(QAbstractItemView::ScrollMode, horizontalScrollMode);
+    QFETCH(QAbstractItemView::ScrollMode, verticalScrollMode);
+
     QWidget window;
     window.resize(400, 300);
     QListView *view = new QListView(&window);
@@ -2371,6 +2385,9 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
     for (int i = 0; i < model.rowCount(); ++i)
         model.setData(model.index(i, 0), itemSize, Qt::SizeHintRole);
     view->setModel(&model);
+
+    view->setVerticalScrollMode(verticalScrollMode);
+    view->setHorizontalScrollMode(horizontalScrollMode);
 
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
@@ -2412,7 +2429,7 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
     QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
     QTRY_VERIFY(view->verticalScrollBar()->isVisible());
 
-    // now remove just one single pixel in with -> both scroll bars will show up since they depend on each other
+    // now remove just one single pixel in width -> both scroll bars will show up since they depend on each other
     view->resize(itemSize.width() + view->frameWidth() * 2 - 1, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
     QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
     QTRY_VERIFY(view->verticalScrollBar()->isVisible());
@@ -2421,6 +2438,11 @@ void tst_QListView::taskQTBUG_39902_mutualScrollBars()
     view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2);
     QTRY_VERIFY(!view->horizontalScrollBar()->isVisible());
     QTRY_VERIFY(!view->verticalScrollBar()->isVisible());
+
+   // now remove just one single pixel in height -> both scroll bars will show up since they depend on each other
+    view->resize(itemSize.width() + view->frameWidth() * 2, model.rowCount() * itemSize.height() + view->frameWidth() * 2 - 1);
+    QTRY_VERIFY(view->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(view->verticalScrollBar()->isVisible());
 }
 
 QTEST_MAIN(tst_QListView)
