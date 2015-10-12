@@ -4,7 +4,7 @@
 
 load(qt_parts)
 
-SUBDIRS += qmake/qmake-docs.pro
+SUBDIRS += qmake/qmake-aux.pro
 
 cross_compile: CONFIG += nostrip
 
@@ -36,15 +36,6 @@ QMAKE_DISTCLEAN += \
 CONFIG -= qt
 
 ### installations ####
-
-#qmake
-qmake.path = $$[QT_HOST_BINS]
-equals(QMAKE_HOST.os, Windows) {
-   qmake.files = $$OUT_PWD/bin/qmake.exe
-} else {
-   qmake.files = $$OUT_PWD/bin/qmake
-}
-INSTALLS += qmake
 
 #licheck
 licheck.path = $$[QT_HOST_BINS]

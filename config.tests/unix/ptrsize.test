@@ -4,6 +4,8 @@ QMKSPEC=$1
 VERBOSE=$2
 SRCDIR=$3
 OUTDIR=$4
+QMAKE=$5
+QTCONF=$6
 
 LFLAGS=$SYSROOT_FLAG
 CXXFLAGS=$SYSROOT_FLAG
@@ -13,7 +15,7 @@ CXXFLAGS=$SYSROOT_FLAG
 
 # build and run a test program
 test -d "$OUTDIR/config.tests/unix/ptrsize" || mkdir -p "$OUTDIR/config.tests/unix/ptrsize"
-"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG-=app_bundle" "QMAKE_LFLAGS*=$LFLAGS" "QMAKE_CXXFLAGS*=$CXXFLAGS" "$SRCDIR/config.tests/unix/ptrsize/ptrsizetest.pro" -o "$OUTDIR/config.tests/unix/ptrsize/Makefile" >/dev/null 2>&1
+"$QMAKE" -qtconf "$QTCONF" -nocache -spec "$QMKSPEC" "CONFIG-=app_bundle" "QMAKE_LFLAGS*=$LFLAGS" "QMAKE_CXXFLAGS*=$CXXFLAGS" "$SRCDIR/config.tests/unix/ptrsize/ptrsizetest.pro" -o "$OUTDIR/config.tests/unix/ptrsize/Makefile" >/dev/null 2>&1
 cd "$OUTDIR/config.tests/unix/ptrsize"
 
 if [ "$VERBOSE" = "yes" ]; then

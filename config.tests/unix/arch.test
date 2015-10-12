@@ -6,7 +6,9 @@ SRCDIR=$3
 OUTDIR=$4
 RESULTFILE=$5
 TARGET=$6
-shift 6
+QMAKE=$7
+QTCONF=$8
+shift 8
 
 if [ "$TARGET" = "host" ]; then
     VARPREFIX="CFG_HOST"
@@ -44,7 +46,7 @@ done
 test -d "$OUTDIR/config.tests/arch" || mkdir -p "$OUTDIR/config.tests/arch"
 cd "$OUTDIR/config.tests/arch"
 [ -f Makefile ] && $MAKE distclean >/dev/null 2>&1
-OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "INCLUDEPATH+=$INCLUDEPATH" "CONFIG-=app_bundle" "$SRCDIR/config.tests/arch/arch$PROSUFFIX.pro" >/dev/null 2>&1 || echo "qmake is broken" >&2
+OUTDIR=$OUTDIR "$QMAKE" -qtconf "$QTCONF" -nocache -spec "$QMKSPEC" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "INCLUDEPATH+=$INCLUDEPATH" "CONFIG-=app_bundle" "$SRCDIR/config.tests/arch/arch$PROSUFFIX.pro" >/dev/null 2>&1 || echo "qmake is broken" >&2
 
 
 ARCH=""

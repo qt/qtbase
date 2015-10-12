@@ -104,9 +104,11 @@ QT_CONFIG=
 SUPPORTED=
 QMAKE_VARS_FILE=.qmake.vars
 DEVICE_VARS_FILE=.device.vars
+HOST_VARS_FILE=.host.vars
 
 :> "$QMAKE_VARS_FILE"
 :> "$DEVICE_VARS_FILE"
+:> "$HOST_VARS_FILE"
 
 #-------------------------------------------------------------------------------
 # utility functions
@@ -195,15 +197,15 @@ expandQMakeConf()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            expandQMakeConf "$conf_file"
+            expandQMakeConf "$conf_file" "$2"
         ;;
         *load\(device_config\)*)
-            conf_file="$DEVICE_VARS_FILE"
+            conf_file="$2"
             if [ ! -f  "$conf_file" ]; then
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            expandQMakeConf "$conf_file"
+            expandQMakeConf "$conf_file" "$2"
         ;;
         *)
             echo "$line"
@@ -336,7 +338,7 @@ macSDKify()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables "host_build"`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" "$HOST_VARS_FILE" | extractQMakeVariables "host_build"`
         if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
     getSingleQMakeVariable "$1" "$specvals"
@@ -345,7 +347,7 @@ getQMakeConf()
 getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
-        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables "!host_build"`
+        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" "$DEVICE_VARS_FILE" | extractQMakeVariables "!host_build"`
         if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
@@ -478,6 +480,23 @@ resolveDeviceMkspec()
 }
 
 #-------------------------------------------------------------------------------
+# Host options
+#-------------------------------------------------------------------------------
+HostVar()
+{
+    case "$1" in
+        set)
+            eq="="
+            ;;
+        *)
+            echo >&2 "BUG: wrong command to QMakeVar: $1"
+            ;;
+    esac
+
+    echo "$2" "$eq" "$3" >> "$HOST_VARS_FILE"
+}
+
+#-------------------------------------------------------------------------------
 # operating system detection
 #-------------------------------------------------------------------------------
 
@@ -502,12 +521,10 @@ BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
 fi
-BUILD_ON_MSYS=no
 HOST_DIRLIST_SEP=":"
 DEV_NULL=/dev/null
 if [ "$OSTYPE" = "msys" ]; then
     HOST_DIRLIST_SEP=";"
-    BUILD_ON_MSYS=yes
     DEV_NULL=/tmp/empty-file
     echo "" > $DEV_NULL
     relpath=`(cd "$relpath"; pwd -W)`
@@ -918,6 +935,7 @@ while [ "$#" -gt 0 ]; do
     -hostlibdir| \
     -extprefix| \
     -sysroot| \
+    -external-hostbindir| \
     -depths| \
     -make| \
     -nomake| \
@@ -926,6 +944,7 @@ while [ "$#" -gt 0 ]; do
     -xplatform| \
     -device| \
     -device-option| \
+    -host-option| \
     -sdk| \
     -arch| \
     -host-arch| \
@@ -1245,6 +1264,10 @@ while [ "$#" -gt 0 ]; do
     gcc-sysroot)
         CFG_GCC_SYSROOT="$VAL"
         ;;
+    external-hostbindir)
+        CFG_HOST_QT_TOOLS_PATH="$VAL"
+        HostVar set HOST_QT_TOOLS "$VAL"
+        ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
         ;;
@@ -1418,6 +1441,11 @@ while [ "$#" -gt 0 ]; do
         DEV_VAR=`echo $VAL | cut -d '=' -f 1`
         DEV_VAL=`echo $VAL | cut -d '=' -f 2-`
         DeviceVar set $DEV_VAR "$DEV_VAL"
+        ;;
+    host-option)
+        HOST_VAR=`echo $VAL | cut -d '=' -f 1`
+        HOST_VAL=`echo $VAL | cut -d '=' -f 2-`
+        HostVar set $HOST_VAR "$HOST_VAL"
         ;;
     qpa)
         QT_QPA_DEFAULT_PLATFORM="$VAL"
@@ -2644,6 +2672,8 @@ Additional options:
     -device-option <key=value> ... Add device specific options for the device mkspec
                                    (experimental)
 
+    -host-option <key=value> ..... Add host specific options for the host mkspec
+
  *  -no-separate-debug-info . Do not store debug information in a separate file.
     -separate-debug-info .... Strip debug information into a separate file.
 
@@ -2674,6 +2704,9 @@ Additional options:
 
     -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.
     -no-gcc-sysroot ..... When using -sysroot, it disables the passing of --sysroot to the compiler
+
+    -external-hostbindir <path> .. Path to Qt tools built for this machine. Use this when -platform
+                                   does not match the current system, i.e., to make a Canadian Cross Build.
 
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
@@ -4008,7 +4041,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
-        if [ "$BUILD_ON_MSYS" = "yes" ]; then
+        case `basename "$PLATFORM"` in
+        win32-g++*)
             EXTRA_CFLAGS="-DUNICODE"
             EXTRA_CXXFLAGS="-DUNICODE"
             EXTRA_OBJS="qfilesystemengine_win.o \
@@ -4027,7 +4061,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
             EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
             EXEEXT=".exe"
-        else
+            ;;
+        *)
             EXTRA_OBJS="qfilesystemengine_unix.o \
                         qfilesystemiterator_unix.o \
                         qfsfileengine_unix.o \
@@ -4037,7 +4072,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                         \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp\""
             EXEEXT=
-        fi
+            ;;
+        esac
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "COCOA_LFLAGS =-framework Foundation -framework CoreServices" >>"$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
@@ -4058,6 +4094,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
         fi
+
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
@@ -4127,13 +4164,25 @@ QTCONFFILE="$outpath/bin/qt.conf"
 cat > "$QTCONFFILE" <<EOF
 [EffectivePaths]
 Prefix=..
+[Paths]
+Prefix=$QT_EXT_PREFIX
+TargetSpec=$XQMAKESPEC
+HostSpec=$QMAKESPEC
 EOF
+if [ -n "$CFG_SYSROOT" ]; then
+    cat >> "$QTCONFFILE" <<EOF
+Sysroot=$CFG_SYSROOT
+EOF
+fi
 if [ x"$relpath" != x"$outpath" ]; then
     cat >> "$QTCONFFILE" <<EOF
 [EffectiveSourcePaths]
 Prefix=$relpath
 EOF
 fi
+
+[ -z "$CFG_HOST_QT_TOOLS_PATH" ] && CFG_HOST_QT_TOOLS_PATH="$outpath/bin"
+CFG_QMAKE_PATH="$CFG_HOST_QT_TOOLS_PATH/qmake"
 
 #-------------------------------------------------------------------------------
 # write out device config before we run the test.
@@ -4147,9 +4196,20 @@ else
 fi
 
 #-------------------------------------------------------------------------------
+# write out host config.
+#-------------------------------------------------------------------------------
+HOST_VARS_OUTFILE="$outpath/mkspecs/qhost.pri"
+if cmp -s "$HOST_VARS_FILE" "$HOST_VARS_OUTFILE"; then
+    rm -f "$HOST_VARS_FILE"
+else
+    mv -f $HOST_VARS_FILE "$HOST_VARS_OUTFILE"
+    HOST_VARS_FILE="$HOST_VARS_OUTFILE"
+fi
+
+#-------------------------------------------------------------------------------
 # Verify makespec
 #-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
+QMAKE_OUTPUT=`"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
 if [ $? != "0" ]; then
     echo "Failed to process makespec for platform '$XPLATFORM'"
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -4165,7 +4225,7 @@ fi
 #-------------------------------------------------------------------------------
 if [ -z "$PKG_CONFIG" ]; then
     # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG="`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" "CONFIG=" $DEV_NULL 2>&1 | sed -n -e 's,^PKG_CONFIG = \(.*\),\1,p'`"
+    PKG_CONFIG="`"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" -E -nocache -spec "$XQMAKESPEC" "CONFIG=" $DEV_NULL 2>&1 | sed -n -e 's,^PKG_CONFIG = \(.*\),\1,p'`"
     [ -n "$PKG_CONFIG" ] && [ "$OPT_VERBOSE" = "yes" ] && echo "Found pkg-config from mkspec: $PKG_CONFIG"
 fi
 if [ -z "$PKG_CONFIG" ]; then
@@ -4240,7 +4300,7 @@ compileTest()
     if [ "$CFG_SHARED" = "no" ]; then
         test_config="$QMAKE_CONFIG static"
     fi
-    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" "$CFG_QMAKE_PATH" "$QTCONFFILE" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
 compileTestWithPkgConfig()
@@ -4289,7 +4349,7 @@ compileTestWithPkgConfig()
 
 # Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target" $I_FLAGS $D_FLAGS $L_FLAGS
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target" $CFG_QMAKE_PATH $QTCONFFILE $I_FLAGS $D_FLAGS $L_FLAGS
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else
@@ -4302,7 +4362,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "host" $I_FLAGS $D_FLAGS $L_FLAGS
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "host" $CFG_QMAKE_PATH $QTCONFFILE $I_FLAGS $D_FLAGS $L_FLAGS
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
@@ -4553,7 +4613,7 @@ fi
 
 # detect mips_dsp support
 if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSP}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" "$CFG_QMAKE_PATH" "$QTCONFFILE" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
         CFG_MIPS_DSP=yes
     else
         CFG_MIPS_DSP=no
@@ -4564,7 +4624,7 @@ fi
 
 # detect mips_dspr2 support
 if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSPR2}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dspr2 "mips_dspr2" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dspr2 "mips_dspr2" "$CFG_QMAKE_PATH" "$QTCONFFILE" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
         CFG_MIPS_DSPR2=yes
     else
         CFG_MIPS_DSPR2=no
@@ -6767,7 +6827,7 @@ if [ "$XPLATFORM_MAC" = "yes" ]; then
 #endif
 EOF
 else
-    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" >&3
+    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$CFG_QMAKE_PATH" "$QTCONFFILE" >&3
     echo "#define QT_POINTER_SIZE $?"
 fi
 
@@ -7437,7 +7497,7 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
         cd ..
     fi
 
-    "$outpath/bin/qmake" "$relpathMangled"
+    "$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled"
 
 ) || exit
 
