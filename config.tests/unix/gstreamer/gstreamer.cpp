@@ -37,6 +37,5 @@
 
 int main(int, char**)
 {
-    gst_is_initialized();
     return 0;
 }
