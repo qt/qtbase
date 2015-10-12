@@ -72,6 +72,7 @@ private slots:
     void singleShotStaticFunctionZeroTimeout();
     void recurseOnTimeoutAndStopTimer();
     void singleShotToFunctors();
+    void crossThreadSingleShotToFunctor();
 
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
@@ -875,6 +876,29 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
     slotRepeater.repeatThisSlot();
     QTest::qWait(100);
     QVERIFY(timerHelper.count > 5);
+}
+
+struct DummyFunctor {
+    void operator()() {}
+};
+
+void tst_QTimer::crossThreadSingleShotToFunctor()
+{
+    // We're testing for crashes here, so the test simply running to
+    // completion is considered a success
+    QThread t;
+    t.start();
+
+    QObject* o = new QObject();
+    o->moveToThread(&t);
+
+    for (int i = 0; i < 10000; i++) {
+        QTimer::singleShot(0, o, DummyFunctor());
+    }
+
+    t.quit();
+    t.wait();
+    delete o;
 }
 
 QTEST_MAIN(tst_QTimer)

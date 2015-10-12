@@ -278,15 +278,10 @@ QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObj
 {
     timerId = startTimer(msec, timerType);
     if (r && thread() != r->thread()) {
-        // We need the invocation to happen in the receiver object's thread.
-        // So, move QSingleShotTimer to the correct thread. Before that occurs, we
-        // shall remove the parent from the object.
+        // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
         setParent(0);
         moveToThread(r->thread());
-
-        // Given we're also parentless now, we should take defence against leaks
-        // in case the application quits before we expire.
-        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
     }
 }
 
