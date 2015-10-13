@@ -915,7 +915,8 @@ MakefileGenerator::processPrlFile(QString &file)
         if (tgt.isEmpty()) {
             fprintf(stderr, "Error: %s does not define QMAKE_PRL_TARGET\n",
                             meta_file.toLatin1().constData());
-        } else if (!tgt.contains('.')) {
+        } else if (!tgt.contains('.')
+                   && !libinfo.values("QMAKE_PRL_CONFIG").contains("lib_bundle")) {
             fprintf(stderr, "Error: %s defines QMAKE_PRL_TARGET without extension\n",
                             meta_file.toLatin1().constData());
         } else {
