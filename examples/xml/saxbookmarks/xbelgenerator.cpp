@@ -81,8 +81,8 @@ QString XbelGenerator::escapedAttribute(const QString &str)
 {
     QString result = escapedText(str);
     result.replace("\"", "&quot;");
-    result.prepend("\"");
-    result.append("\"");
+    result.prepend(QLatin1Char('"'));
+    result.append(QLatin1Char('"'));
     return result;
 }
 

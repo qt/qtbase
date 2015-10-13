@@ -319,9 +319,9 @@ RenderOptionsDialog::RenderOptionsDialog()
                 while (++it != tokens.end()) {
                     m_parameterNames << name;
                     if (!singleElement) {
-                        m_parameterNames.back() += "[";
+                        m_parameterNames.back() += '[';
                         m_parameterNames.back() += counter + counterPos;
-                        m_parameterNames.back() += "]";
+                        m_parameterNames.back() += ']';
                         int j = 8; // position of last digit
                         ++counter[j];
                         while (j > 0 && counter[j] > '9') {

@@ -111,8 +111,8 @@ void RegularExpressionDialog::refresh()
     QString escaped = pattern;
     escaped.replace(QLatin1String("\\"), QLatin1String("\\\\"));
     escaped.replace(QLatin1String("\""), QLatin1String("\\\""));
-    escaped.prepend(QLatin1String("\""));
-    escaped.append(QLatin1String("\""));
+    escaped.prepend(QLatin1Char('"'));
+    escaped.append(QLatin1Char('"'));
     escapedPatternLineEdit->setText(escaped);
 
     QRegularExpression rx(pattern);

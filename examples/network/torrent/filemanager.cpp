@@ -219,8 +219,8 @@ bool FileManager::generateFiles()
         QString prefix;
         if (!destinationPath.isEmpty()) {
             prefix = destinationPath;
-            if (!prefix.endsWith("/"))
-                prefix += "/";
+            if (!prefix.endsWith('/'))
+                prefix += '/';
             QDir dir;
             if (!dir.mkpath(prefix)) {
                 errString = tr("Failed to create directory %1").arg(prefix);
@@ -261,13 +261,13 @@ bool FileManager::generateFiles()
 
         if (!destinationPath.isEmpty()) {
             prefix = destinationPath;
-            if (!prefix.endsWith("/"))
-                prefix += "/";
+            if (!prefix.endsWith('/'))
+                prefix += '/';
         }
         if (!metaInfo.name().isEmpty()) {
             prefix += metaInfo.name();
-            if (!prefix.endsWith("/"))
-                prefix += "/";
+            if (!prefix.endsWith('/'))
+                prefix += '/';
         }
         if (!dir.mkpath(prefix)) {
             errString = tr("Failed to create directory %1").arg(prefix);

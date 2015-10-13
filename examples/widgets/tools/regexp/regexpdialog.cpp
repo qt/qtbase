@@ -153,8 +153,8 @@ void RegExpDialog::refresh()
     QString escaped = pattern;
     escaped.replace("\\", "\\\\");
     escaped.replace("\"", "\\\"");
-    escaped.prepend("\"");
-    escaped.append("\"");
+    escaped.prepend('"');
+    escaped.append('"');
     escapedPatternLineEdit->setText(escaped);
 
     QRegExp rx(pattern);
