@@ -685,6 +685,7 @@ CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
 CFG_EGLFS_BRCM=no
+CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
@@ -5746,6 +5747,11 @@ if [ "$CFG_EGLFS" != "no" ]; then
         else
             CFG_EGLFS_BRCM=no
         fi
+        if compileTest qpa/eglfs-egldevice "eglfs-egldevice"; then
+            CFG_EGLFS_EGLDEVICE=yes
+        else
+            CFG_EGLFS_EGLDEVICE=no
+        fi
         if compileTest qpa/eglfs-mali "eglfs-mali" \
             || compileTest qpa/eglfs-mali-2 "eglfs-mali-2"; then
             CFG_EGLFS_MALI=yes
@@ -6193,6 +6199,9 @@ fi
 # eglfs backends
 if [ "$CFG_EGLFS_BRCM" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_brcm"
+fi
+if [ "$CFG_EGLFS_EGLDEVICE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_egldevice"
 fi
 if [ "$CFG_EGLFS_MALI" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_mali"
@@ -7259,7 +7268,8 @@ report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
 report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
-report_support "      EGLFS i.MX6....... ." "$CFG_EGLFS_VIV"
+report_support "      EGLFS i.MX6 ........" "$CFG_EGLFS_VIV"
+report_support "      EGLFS EGLDevice ...." "$CFG_EGLFS_EGLDEVICE"
 report_support "      EGLFS KMS .........." "$CFG_KMS"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
 report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
