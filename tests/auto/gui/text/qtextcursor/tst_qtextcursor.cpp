@@ -175,7 +175,7 @@ void tst_QTextCursor::navigation1()
 {
 
     cursor.insertText("Hello World");
-    QVERIFY(doc->toPlainText() == "Hello World");
+    QCOMPARE(doc->toPlainText(), QLatin1String("Hello World"));
 
     cursor.movePosition(QTextCursor::End);
     QCOMPARE(cursor.position(), 11);
@@ -205,7 +205,7 @@ void tst_QTextCursor::navigation1()
     doc->undo();
 
     doc->undo();
-    QVERIFY(doc->toPlainText() == "Hello World");
+    QCOMPARE(doc->toPlainText(), QLatin1String("Hello World"));
 
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 6);

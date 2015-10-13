@@ -107,7 +107,7 @@ void tst_QTranslator::load()
     QTranslator tor( 0 );
     tor.load("hellotr_la");
     QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 }
 
 void tst_QTranslator::load2()
@@ -118,7 +118,7 @@ void tst_QTranslator::load2()
     QByteArray data = file.readAll();
     tor.load((const uchar *)data.constData(), data.length());
     QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 }
 
 class TranslatorThread : public QThread
@@ -129,7 +129,7 @@ class TranslatorThread : public QThread
 
         if (tor.isEmpty())
             qFatal("Could not load translation");
-        if (tor.translate("QPushButton", "Hello world!") !=  QString::fromLatin1("Hallo Welt!"))
+        if (tor.translate("QPushButton", "Hello world!") !=  QLatin1String("Hallo Welt!"))
             qFatal("Test string was not translated correctlys");
     }
 };
@@ -212,9 +212,9 @@ void tst_QTranslator::plural()
     tor.load("hellotr_la");
     QVERIFY(!tor.isEmpty());
     QCoreApplication::installTranslator(&tor);
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QString::fromLatin1("Hallo 0 Welten!"));
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QString::fromLatin1("Hallo 1 Welt!"));
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QString::fromLatin1("Hallo 2 Welten!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QLatin1String("Hallo 0 Welten!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QLatin1String("Hallo 1 Welt!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QLatin1String("Hallo 2 Welten!"));
 }
 
 void tst_QTranslator::translate_qm_file_generated_with_msgfmt()
@@ -240,7 +240,7 @@ void tst_QTranslator::loadFromResource()
     QTranslator tor;
     tor.load(":/tst_qtranslator/hellotr_la.qm");
     QVERIFY(!tor.isEmpty());
-    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 }
 
 void tst_QTranslator::loadDirectory()
@@ -260,16 +260,16 @@ void tst_QTranslator::dependencies()
         QTranslator tor;
         tor.load("dependencies_la");
         QVERIFY(!tor.isEmpty());
-        QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+        QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
 
         // plural
         QCoreApplication::installTranslator(&tor);
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QString::fromLatin1("Hallo 0 Welten!"));
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QString::fromLatin1("Hallo 1 Welt!"));
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QString::fromLatin1("Hallo 2 Welten!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QLatin1String("Hallo 0 Welten!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QLatin1String("Hallo 1 Welt!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QLatin1String("Hallo 2 Welten!"));
 
         // pick up translation from the file with dependencies
-        QCOMPARE(tor.translate("QPushButton", "It's a small world"), QString::fromLatin1("Es ist eine kleine Welt"));
+        QCOMPARE(tor.translate("QPushButton", "It's a small world"), QLatin1String("Es ist eine kleine Welt"));
     }
 
     {
@@ -279,7 +279,7 @@ void tst_QTranslator::dependencies()
         QByteArray data = file.readAll();
         tor.load((const uchar *)data.constData(), data.length());
         QVERIFY(!tor.isEmpty());
-        QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+        QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
     }
 }
 

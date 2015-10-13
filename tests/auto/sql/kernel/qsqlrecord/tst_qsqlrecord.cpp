@@ -484,7 +484,7 @@ void tst_QSqlRecord::setValue()
     QVERIFY( rec2.value( 3 ) == QVariant(bval) );
 
     rec2.setValue( "string", "__Harry__" );
-    QVERIFY( rec2.value( 0 ) == "__Harry__" );
+    QCOMPARE(rec2.value(0).toString(), QLatin1String("__Harry__"));
 
     for ( i = 0; i < 4; ++i )
         QVERIFY( !rec2.isNull( i ) );
@@ -501,7 +501,7 @@ void tst_QSqlRecord::value()
     QSqlRecord rec2;
     rec2.append( QSqlField( "string", QVariant::String ) );
     rec2.setValue( "string", "Harry" );
-    QVERIFY( rec2.value( "string" ) == "Harry" );
+    QCOMPARE(rec2.value("string").toString(), QLatin1String("Harry"));
 }
 
 QTEST_MAIN(tst_QSqlRecord)

@@ -510,24 +510,24 @@ void tst_QHash::key()
         QCOMPARE(hash1.key(1, def), def);
 
         hash1.insert("one", 1);
-        QCOMPARE(hash1.key(1), QString("one"));
-        QCOMPARE(hash1.key(1, def), QString("one"));
+        QCOMPARE(hash1.key(1), QLatin1String("one"));
+        QCOMPARE(hash1.key(1, def), QLatin1String("one"));
         QCOMPARE(hash1.key(2), QString());
         QCOMPARE(hash1.key(2, def), def);
 
         hash1.insert("two", 2);
-        QCOMPARE(hash1.key(1), QString("one"));
-        QCOMPARE(hash1.key(1, def), QString("one"));
-        QCOMPARE(hash1.key(2), QString("two"));
-        QCOMPARE(hash1.key(2, def), QString("two"));
+        QCOMPARE(hash1.key(1), QLatin1String("one"));
+        QCOMPARE(hash1.key(1, def), QLatin1String("one"));
+        QCOMPARE(hash1.key(2), QLatin1String("two"));
+        QCOMPARE(hash1.key(2, def), QLatin1String("two"));
         QCOMPARE(hash1.key(3), QString());
         QCOMPARE(hash1.key(3, def), def);
 
         hash1.insert("deux", 2);
-        QCOMPARE(hash1.key(1), QString("one"));
-        QCOMPARE(hash1.key(1, def), QString("one"));
-        QVERIFY(hash1.key(2) == "deux" || hash1.key(2) == "two");
-        QVERIFY(hash1.key(2, def) == "deux" || hash1.key(2, def) == "two");
+        QCOMPARE(hash1.key(1), QLatin1String("one"));
+        QCOMPARE(hash1.key(1, def), QLatin1String("one"));
+        QVERIFY(hash1.key(2) == QLatin1String("deux") || hash1.key(2) == QLatin1String("two"));
+        QVERIFY(hash1.key(2, def) == QLatin1String("deux") || hash1.key(2, def) == QLatin1String("two"));
         QCOMPARE(hash1.key(3), QString());
         QCOMPARE(hash1.key(3, def), def);
     }
@@ -628,8 +628,8 @@ void tst_QHash::find()
     map1.insert(1,"Mayer");
     map1.insert(2,"Hej");
 
-    QVERIFY(map1.find(1).value() == "Mayer");
-    QVERIFY(map1.find(2).value() == "Hej");
+    QCOMPARE(map1.find(1).value(), QLatin1String("Mayer"));
+    QCOMPARE(map1.find(2).value(), QLatin1String("Hej"));
 
     for(i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
@@ -661,8 +661,8 @@ void tst_QHash::constFind()
     map1.insert(1,"Mayer");
     map1.insert(2,"Hej");
 
-    QVERIFY(map1.constFind(1).value() == "Mayer");
-    QVERIFY(map1.constFind(2).value() == "Hej");
+    QCOMPARE(map1.constFind(1).value(), QLatin1String("Mayer"));
+    QCOMPARE(map1.constFind(2).value(), QLatin1String("Hej"));
 
     for(i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
@@ -706,7 +706,7 @@ void tst_QHash::take()
     map.insert(2, "zwei");
     map.insert(3, "drei");
 
-    QVERIFY(map.take(3) == "drei");
+    QCOMPARE(map.take(3), QLatin1String("drei"));
     QVERIFY(!map.contains(3));
 }
 

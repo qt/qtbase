@@ -148,14 +148,14 @@ void tst_QVarLengthArray::oldTests()
         QVarLengthArray<QString> sa(10);
         sa[0] = "Hello";
         sa[9] = "World";
-        QVERIFY(*sa.data() == "Hello");
-        QVERIFY(sa[9] == "World");
+        QCOMPARE(*sa.data(), QLatin1String("Hello"));
+        QCOMPARE(sa[9], QLatin1String("World"));
         sa.reserve(512);
-        QVERIFY(*sa.data() == "Hello");
-        QVERIFY(sa[9] == "World");
+        QCOMPARE(*sa.data(), QLatin1String("Hello"));
+        QCOMPARE(sa[9], QLatin1String("World"));
         sa.resize(512);
-        QVERIFY(*sa.data() == "Hello");
-        QVERIFY(sa[9] == "World");
+        QCOMPARE(*sa.data(), QLatin1String("Hello"));
+        QCOMPARE(sa[9], QLatin1String("World"));
     }
     {
         int arr[2] = {1, 2};

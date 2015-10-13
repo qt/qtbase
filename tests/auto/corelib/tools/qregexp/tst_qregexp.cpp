@@ -880,19 +880,19 @@ void tst_QRegExp::caretAnchoredOptimization()
 {
     QString s = "---babnana----";
     s.replace( QRegExp("^-*|(-*)$"), "" );
-    QVERIFY(s == "babnana");
+    QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
     s.replace( QRegExp("^-*|(-{0,})$"), "" );
-    QVERIFY(s == "babnana");
+    QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
     s.replace( QRegExp("^-*|(-{1,})$"), "" );
-    QVERIFY(s == "babnana");
+    QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
     s.replace( QRegExp("^-*|(-+)$"), "" );
-    QVERIFY(s == "babnana");
+    QCOMPARE(s, QLatin1String("babnana"));
 }
 
 void tst_QRegExp::isEmpty()

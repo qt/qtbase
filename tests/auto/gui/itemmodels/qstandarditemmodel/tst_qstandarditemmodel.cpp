@@ -256,7 +256,7 @@ void tst_QStandardItemModel::insertRow()
         QCOMPARE(rcLast[RowsInserted], expectedRow);
 
         //check that the inserted item has different DisplayRole than initial items
-        QVERIFY(m_model->data(m_model->index(expectedRow, 0), Qt::DisplayRole).toString() != "initialitem");
+        QVERIFY(m_model->data(m_model->index(expectedRow, 0), Qt::DisplayRole).toString() != QLatin1String("initialitem"));
     } else {
         // We inserted something outside the bounds, do nothing
         QCOMPARE(m_model->rowCount(), defaultSize);
@@ -365,7 +365,7 @@ void tst_QStandardItemModel::insertColumn()
         QCOMPARE(rcLast[ColumnsInserted], expectedColumn);
 
         //check that the inserted item has different DisplayRole than initial items
-        QVERIFY(m_model->data(m_model->index(0, expectedColumn), Qt::DisplayRole).toString() != "initialitem");
+        QVERIFY(m_model->data(m_model->index(0, expectedColumn), Qt::DisplayRole).toString() != QLatin1String("initialitem"));
     } else {
         // We inserted something outside the bounds, do nothing
         QCOMPARE(m_model->columnCount(), defaultSize);
@@ -729,8 +729,8 @@ void tst_QStandardItemModel::data()
         }
     }
 
-    QVERIFY(m_model->data(m_model->index(0, 0), Qt::DisplayRole).toString() == "initialitem");
-    QVERIFY(m_model->data(m_model->index(0, 0), Qt::ToolTipRole).toString() == "tooltip");
+    QCOMPARE(m_model->data(m_model->index(0, 0), Qt::DisplayRole).toString(), QLatin1String("initialitem"));
+    QCOMPARE(m_model->data(m_model->index(0, 0), Qt::ToolTipRole).toString(), QLatin1String("tooltip"));
 
 }
 

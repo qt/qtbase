@@ -189,7 +189,7 @@ private slots:
     }
     void slotError(QLocalSocket::LocalSocketError newError)
     {
-        QVERIFY(errorString() != "Unknown error");
+        QVERIFY(errorString() != QLatin1String("Unknown error"));
         QCOMPARE(error(), newError);
     }
     void slotStateChanged(QLocalSocket::LocalSocketState newState)

@@ -493,8 +493,8 @@ void tst_QFormLayout::addRow()
 
     QVERIFY(layout->itemAt(0, QFormLayout::LabelRole)->widget() == lbl1);
     QVERIFY(layout->itemAt(1, QFormLayout::LabelRole)->widget() == lbl2);
-    QVERIFY(layout->itemAt(2, QFormLayout::LabelRole)->widget()->property("text") == "Foo:");
-    QVERIFY(layout->itemAt(3, QFormLayout::LabelRole)->widget()->property("text") == "Bar:");
+    QCOMPARE(layout->itemAt(2, QFormLayout::LabelRole)->widget()->property("text").toString(), QLatin1String("Foo:"));
+    QCOMPARE(layout->itemAt(3, QFormLayout::LabelRole)->widget()->property("text").toString(), QLatin1String("Bar:"));
     QVERIFY(layout->itemAt(4, QFormLayout::LabelRole) == 0);
     QVERIFY(layout->itemAt(5, QFormLayout::LabelRole) == 0);
 

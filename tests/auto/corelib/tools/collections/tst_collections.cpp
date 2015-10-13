@@ -517,11 +517,11 @@ void tst_Collections::list()
         QList<QString> list = vector.toList();
 
         QVERIFY(list.size() == 5);
-        QVERIFY(list.at(0) == "99");
-        QVERIFY(list.at(4) == "100");
+        QCOMPARE(list.at(0), QLatin1String("99"));
+        QCOMPARE(list.at(4), QLatin1String("100"));
         list[0] = "10";
-        QVERIFY(list.at(0) == "10");
-        QVERIFY(vector.at(0) == "99");
+        QCOMPARE(list.at(0), QLatin1String("10"));
+        QCOMPARE(vector.at(0), QLatin1String("99"));
 
     }
 
@@ -533,15 +533,15 @@ void tst_Collections::list()
         QVERIFY((*it)[0] == QChar('H'));
         QVERIFY(it->constData()[0] == QChar('H'));
         it->replace(QChar('H'), QChar('X'));
-        QVERIFY(list.first() == "Xello");
+        QCOMPARE(list.first(), QLatin1String("Xello"));
 
         QList<QString>::const_iterator cit = list.constBegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
 
         cit = list.cbegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(),QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
     }
 
     {
@@ -575,10 +575,10 @@ void tst_Collections::list()
         list << "alpha" << "beta";
         list += list;
         QVERIFY(list.size() == 4);
-        QVERIFY(list.at(0) == "alpha");
-        QVERIFY(list.at(1) == "beta");
-        QVERIFY(list.at(2) == "alpha");
-        QVERIFY(list.at(3) == "beta");
+        QCOMPARE(list.at(0), QLatin1String("alpha"));
+        QCOMPARE(list.at(1), QLatin1String("beta"));
+        QCOMPARE(list.at(2), QLatin1String("alpha"));
+        QCOMPARE(list.at(3), QLatin1String("beta"));
     }
 
     // test endcases for inserting into a qlist
@@ -954,15 +954,15 @@ void tst_Collections::linkedList()
         QVERIFY((*it)[0] == QChar('H'));
         QVERIFY(it->constData()[0] == QChar('H'));
         it->replace(QChar('H'), QChar('X'));
-        QVERIFY(list.first() == "Xello");
+        QCOMPARE(list.first(), QLatin1String("Xello"));
 
         QLinkedList<QString>::const_iterator cit = list.constBegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
 
         cit = list.cbegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
     }
 
     {
@@ -970,10 +970,10 @@ void tst_Collections::linkedList()
         list << "alpha" << "beta";
         list += list;
         QVERIFY(list.size() == 4);
-        QVERIFY(*list.begin() == "alpha");
-        QVERIFY(*(list.begin() + 1) == "beta");
-        QVERIFY(*(list.begin() + 2) == "alpha");
-        QVERIFY(*(list.begin() + 3) == "beta");
+        QCOMPARE(*list.begin(), QLatin1String("alpha"));
+        QCOMPARE(*(list.begin() + 1), QLatin1String("beta"));
+        QCOMPARE(*(list.begin() + 2), QLatin1String("alpha"));
+        QCOMPARE(*(list.begin() + 3), QLatin1String("beta"));
     }
 
     {
@@ -1054,8 +1054,8 @@ void tst_Collections::vector()
     QVector<QString> vec;
     vec << "foo" << "bar";
     vec.reserve( 512 );
-    QVERIFY(vec[0] == "foo");
-    QVERIFY(vec[1] == "bar");
+    QCOMPARE(vec[0], QLatin1String("foo"));
+    QCOMPARE(vec[1], QLatin1String("bar"));
 
     int initialLargeStaticCount = LargeStatic::count;
     {
@@ -1070,10 +1070,10 @@ void tst_Collections::vector()
         vector << "alpha" << "beta";
         vector += vector;
         QVERIFY(vector.size() == 4);
-        QVERIFY(vector.at(0) == "alpha");
-        QVERIFY(vector.at(1) == "beta");
-        QVERIFY(vector.at(2) == "alpha");
-        QVERIFY(vector.at(3) == "beta");
+        QCOMPARE(vector.at(0), QLatin1String("alpha"));
+        QCOMPARE(vector.at(1), QLatin1String("beta"));
+        QCOMPARE(vector.at(2), QLatin1String("alpha"));
+        QCOMPARE(vector.at(3), QLatin1String("beta"));
     }
 
     int originalLargeStaticCount = LargeStatic::count;
@@ -1594,15 +1594,15 @@ void tst_Collections::hash()
         QVERIFY((*it)[0] == QChar('H'));
         QVERIFY(it->constData()[0] == QChar('H'));
         it->replace(QChar('H'), QChar('X'));
-        QVERIFY(*hash.begin() == "Xello");
+        QCOMPARE(*hash.begin(), QLatin1String("Xello"));
 
         QHash<int, QString>::const_iterator cit = hash.constBegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
 
         cit = hash.cbegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
     }
 
     {
@@ -1915,15 +1915,15 @@ void tst_Collections::map()
         QVERIFY((*it)[0] == QChar('H'));
         QVERIFY(it->constData()[0] == QChar('H'));
         it->replace(QChar('H'), QChar('X'));
-        QVERIFY(*map.begin() == "Xello");
+        QCOMPARE(*map.begin(), QLatin1String("Xello"));
 
         QMap<int, QString>::const_iterator cit = map.constBegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
 
         cit = map.cbegin();
-        QVERIFY((*cit).toLower() == "xello");
-        QVERIFY(cit->toUpper() == "XELLO");
+        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
+        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
     }
 
     {
@@ -2005,17 +2005,17 @@ void tst_Collections::qstring()
 
     QVERIFY(hello.left(0) == "");
     QVERIFY(!hello.left(0).isNull());
-    QVERIFY(hello.left(1) == "h");
-    QVERIFY(hello.left(2) == "he");
-    QVERIFY(hello.left(200) == "hello");
+    QCOMPARE(hello.left(1), QLatin1String("h"));
+    QCOMPARE(hello.left(2), QLatin1String("he"));
+    QCOMPARE(hello.left(200), QLatin1String("hello"));
     QVERIFY(hello.left(hello.size()) == hello);
     QVERIFY(hello.left(hello.size()+1) == hello);
 
     QVERIFY(hello.right(0) == "");
     QVERIFY(!hello.right(0).isNull());
-    QVERIFY(hello.right(1) == "o");
-    QVERIFY(hello.right(2) == "lo");
-    QVERIFY(hello.right(200) == "hello");
+    QCOMPARE(hello.right(1), QLatin1String("o"));
+    QCOMPARE(hello.right(2), QLatin1String("lo"));
+    QCOMPARE(hello.right(200), QLatin1String("hello"));
     QVERIFY(hello.right(hello.size()) == hello);
     QVERIFY(hello.right(hello.size()+1) == hello);
 
@@ -2023,16 +2023,16 @@ void tst_Collections::qstring()
     QVERIFY(hello.mid(0, 1) == "h");
     QVERIFY(hello.mid(0, 2) == "he");
     QVERIFY(hello.mid(0, 200) == "hello");
-    QVERIFY(hello.mid(0) == "hello");
+    QCOMPARE(hello.mid(0), QLatin1String("hello"));
     QVERIFY(hello.mid(0, hello.size()) == hello);
     QVERIFY(hello.mid(0, hello.size()+1) == hello);
 
     QVERIFY(hello.mid(hello.size()-0) == "");
     QVERIFY(hello.mid(hello.size()-0).isEmpty());
     QVERIFY(!hello.mid(hello.size()-0).isNull());
-    QVERIFY(hello.mid(hello.size()-1) == "o");
-    QVERIFY(hello.mid(hello.size()-2) == "lo");
-    QVERIFY(hello.mid(hello.size()-200) == "hello");
+    QCOMPARE(hello.mid(hello.size()-1), QLatin1String("o"));
+    QCOMPARE(hello.mid(hello.size()-2), QLatin1String("lo"));
+    QCOMPARE(hello.mid(hello.size()-200), QLatin1String("hello"));
 
     QString null;
     QString nonNull = "";
@@ -2048,7 +2048,7 @@ void tst_Collections::qstring()
 
     QString fill = "123";
     fill.fill('a');
-    QVERIFY(fill == "aaa");
+    QCOMPARE(fill, QLatin1String("aaa"));
 
     s.clear();
     s = hello;
@@ -2060,15 +2060,15 @@ void tst_Collections::qstring()
     QVERIFY(s == helloWorld);
     s = "012345";
     s.insert(3, 'E');
-    QVERIFY(s == "012E345");
+    QCOMPARE(s, QLatin1String("012E345"));
     s.insert(3, "INSID");
-    QVERIFY(s == "012INSIDE345");
+    QCOMPARE(s, QLatin1String("012INSIDE345"));
     s = "short";
     s.insert(7, 'E');
-    QVERIFY(s == "short  E");
+    QCOMPARE(s, QLatin1String("short  E"));
     s = "short";
     s.insert(7, "END");
-    QVERIFY(s == "short  END");
+    QCOMPARE(s, QLatin1String("short  END"));
 
     QVERIFY(QString::fromLatin1("hello") == "hello");
 
@@ -2125,25 +2125,25 @@ void tst_Collections::qstring()
     s += QChar((uchar) 0xb0);
     QVERIFY(s.toUtf8() != s.toLatin1());
     QCOMPARE(s[s.length()-1].unicode(), (ushort)0xb0);
-    QVERIFY(s.left(s.length()-1) == "ascii");
+    QCOMPARE(s.left(s.length()-1), QLatin1String("ascii"));
 
     QVERIFY(s == QString::fromUtf8(s.toUtf8().constData()));
 
     s = "12";
     s.append('3');
     s += '4';
-    QVERIFY(s == "1234");
+    QCOMPARE(s, QLatin1String("1234"));
 
     s = "repend";
     s.prepend('p');
-    QVERIFY(s == "prepend");
+    QCOMPARE(s, QLatin1String("prepend"));
     s.prepend("abc ");
-    QVERIFY(s == "abc prepend");
+    QCOMPARE(s, QLatin1String("abc prepend"));
 
     s = "   whitespace        ";
-    QVERIFY(s.trimmed() == "whitespace");
+    QCOMPARE(s.trimmed(), QLatin1String("whitespace"));
     s = "    lots      of  stuff       ";
-    QVERIFY(s.simplified() == "lots of stuff");
+    QCOMPARE(s.simplified(), QLatin1String("lots of stuff"));
 
     s = "a hat, a stick, a ski";
     QVERIFY(s[2] == 'h');
@@ -2152,17 +2152,17 @@ void tst_Collections::qstring()
 
     s = "12223";
     s.remove(1, 2);
-    QVERIFY(s == "123");
+    QCOMPARE(s, QLatin1String("123"));
 
     s = "(%1)(%2)";
     s = s.arg("foo").arg(7);
-    QVERIFY(s == "(foo)(7)");
+    QCOMPARE(s, QLatin1String("(foo)(7)"));
 
     s = "stl rocks";
     std::string stl_string = s.toStdString(); // TODO: std::string stl_string = s does not work.
-    QVERIFY(s == "stl rocks");
+    QCOMPARE(s, QLatin1String("stl rocks"));
     s = QString::fromStdString(stl_string); // TODO: s = stl_string does not work.
-    QVERIFY(s == "stl rocks");
+    QCOMPARE(s, QLatin1String("stl rocks"));
 
     {
         QString str("Bananas");
@@ -2178,10 +2178,10 @@ void tst_Collections::qstring()
 
     QString str = "Hello";
     QString cstr = QString::fromRawData(str.unicode(), str.length());
-    QVERIFY(str == "Hello");
-    QVERIFY(cstr == "Hello");
+    QCOMPARE(str, QLatin1String("Hello"));
+    QCOMPARE(cstr, QLatin1String("Hello"));
     cstr.clear();
-    QVERIFY(str == "Hello");
+    QCOMPARE(str, QLatin1String("Hello"));
     QVERIFY(cstr.isEmpty());
 
     {
@@ -2328,7 +2328,7 @@ void tst_Collections::pair()
 
     QPair<int, QString> a(1, "Zebra"), b(2, "Ying"), c(3, "Yang"), d(3, "Ying"), e(5, "Alabama");
     QVERIFY(a.first == 1);
-    QVERIFY(a.second == "Zebra");
+    QCOMPARE(a.second, QLatin1String("Zebra"));
     QVERIFY(a == qMakePair(1, QString("Zebra")));
 
     QVERIFY(a == a && b == b && c == c && d == d && e == e);

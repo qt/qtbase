@@ -737,7 +737,7 @@ void tst_QSet::stlMutableIterator()
         QSet<QString>::const_iterator k = set2.insert("foo");
         i = reinterpret_cast<QSet<QString>::iterator &>(k);
 // #endif
-        QVERIFY(*i == "foo");
+        QCOMPARE(*i, QLatin1String("foo"));
     }
 }
 

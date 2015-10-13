@@ -613,8 +613,8 @@ void tst_QSocks5SocketEngine::tcpSocketBlockingTest()
 
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
-    QString s = socket.readLine();
-    QVERIFY2(QtNetworkSettings::compareReplyIMAP(s.toLatin1()), s.toLatin1().constData());
+    QByteArray s = socket.readLine();
+    QVERIFY2(QtNetworkSettings::compareReplyIMAP(s), s.constData());
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -624,7 +624,7 @@ void tst_QSocks5SocketEngine::tcpSocketBlockingTest()
 
     // Read response
     s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "1 OK Completed\r\n");
+    QCOMPARE(s, QByteArrayLiteral("1 OK Completed\r\n"));
 
     // Write LOGOUT
     QCOMPARE((int) socket.write("2 LOGOUT\r\n", 10), 10);
@@ -634,13 +634,13 @@ void tst_QSocks5SocketEngine::tcpSocketBlockingTest()
 
     // Read two lines of respose
     s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "* BYE LOGOUT received\r\n");
+    QCOMPARE(s, QByteArrayLiteral("* BYE LOGOUT received\r\n"));
 
     if (!socket.canReadLine())
         QVERIFY(socket.waitForReadyRead(5000));
 
     s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "2 OK Completed\r\n");
+    QCOMPARE(s, QByteArrayLiteral("2 OK Completed\r\n"));
 
     // Close the socket
     socket.close();
@@ -715,7 +715,7 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
 
     // Read response
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
-    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(), "1 OK Completed\r\n");
+    QCOMPARE(tcpSocketNonBlocking_data.at(0), QLatin1String("1 OK Completed\r\n"));
     tcpSocketNonBlocking_data.clear();
 
 

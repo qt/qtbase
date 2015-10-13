@@ -201,9 +201,9 @@ void tst_QSqlField::name()
 {
     QSqlField field( "test", QVariant::String );
     QFETCH( QString, val );
-    QVERIFY( field.name() == "test" );
+    QCOMPARE(field.name(), QLatin1String("test"));
     field.setName( val );
-    QVERIFY( field.name() == val );
+    QCOMPARE(field.name(), val);
 }
 
 void tst_QSqlField::operator_Assign()
@@ -253,9 +253,9 @@ void tst_QSqlField::setName()
 {
     QSqlField field( "test", QVariant::String );
     QFETCH( QString, val );
-    QVERIFY( field.name() == "test" );
+    QCOMPARE(field.name(), QLatin1String("test"));
     field.setName( val );
-    QVERIFY( field.name() == val );
+    QCOMPARE(field.name(), val);
 }
 
 void tst_QSqlField::setNull()
@@ -273,16 +273,16 @@ void tst_QSqlField::setReadOnly()
     field.setValue( "test" );
     field.setReadOnly( true );
     field.setValue( "Harry" );
-    QVERIFY( field.value() == "test" );
+    QCOMPARE(field.value().toString(), QLatin1String("test"));
     field.clear();
-    QVERIFY( field.value() == "test" );
+    QCOMPARE(field.value().toString(), QLatin1String("test"));
     QVERIFY( !field.isNull() );
     field.clear();
-    QVERIFY( field.value() == "test" );
+    QCOMPARE(field.value().toString(), QLatin1String("test"));
     QVERIFY( !field.isNull() );
     field.setReadOnly( false );
     field.setValue( "Harry" );
-    QVERIFY( field.value() == "Harry" );
+    QCOMPARE(field.value().toString(), QLatin1String("Harry"));
     field.clear();
     QVERIFY( field.value() == QVariant().toString() );
     QVERIFY( field.isNull() );

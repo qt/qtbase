@@ -312,24 +312,24 @@ void tst_QAlgorithms::swap()
     {
         QString a = "1", b = "2";
         qSwap(a, b);
-        QVERIFY(a == "2");
-        QVERIFY(b == "1");
+        QCOMPARE(a, QLatin1String("2"));
+        QCOMPARE(b, QLatin1String("1"));
 
         qSwap(a, a);
-        QVERIFY(a == "2");
-        QVERIFY(b == "1");
+        QCOMPARE(a, QLatin1String("2"));
+        QCOMPARE(b, QLatin1String("1"));
 
         qSwap(b, b);
-        QVERIFY(a == "2");
-        QVERIFY(b == "1");
+        QCOMPARE(a, QLatin1String("2"));
+        QCOMPARE(b, QLatin1String("1"));
 
         qSwap(a, b);
-        QVERIFY(a == "1");
-        QVERIFY(b == "2");
+        QCOMPARE(a, QLatin1String("1"));
+        QCOMPARE(b, QLatin1String("2"));
 
         qSwap(b, a);
-        QVERIFY(a == "2");
-        QVERIFY(b == "1");
+        QCOMPARE(a, QLatin1String("2"));
+        QCOMPARE(b, QLatin1String("1"));
     }
 
     {

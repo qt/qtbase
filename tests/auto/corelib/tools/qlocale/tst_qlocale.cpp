@@ -1277,13 +1277,13 @@ void tst_QLocale::formatTimeZone()
     QLocale enUS("en_US");
 
     QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, 60 * 60);
-    QCOMPARE(enUS.toString(dt1, "t"), QString("UTC+01:00"));
+    QCOMPARE(enUS.toString(dt1, "t"), QLatin1String("UTC+01:00"));
 
     QDateTime dt2(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, -60 * 60);
-    QCOMPARE(enUS.toString(dt2, "t"), QString("UTC-01:00"));
+    QCOMPARE(enUS.toString(dt2, "t"), QLatin1String("UTC-01:00"));
 
     QDateTime dt3(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::UTC);
-    QCOMPARE(enUS.toString(dt3, "t"), QString("UTC"));
+    QCOMPARE(enUS.toString(dt3, "t"), QLatin1String("UTC"));
 
     // LocalTime should vary
     if (europeanTimeZone) {
@@ -1292,14 +1292,14 @@ void tst_QLocale::formatTimeZone()
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
 #endif // Q_OS_WIN
-        QCOMPARE(enUS.toString(dt4, "t"), QString("CET"));
+        QCOMPARE(enUS.toString(dt4, "t"), QLatin1String("CET"));
 
         // Time definitely in Daylight Time
         QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::LocalTime);
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
 #endif // Q_OS_WIN
-        QCOMPARE(enUS.toString(dt5, "t"), QString("CEST"));
+        QCOMPARE(enUS.toString(dt5, "t"), QLatin1String("CEST"));
     } else {
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
@@ -1308,13 +1308,13 @@ void tst_QLocale::formatTimeZone()
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
 #endif
-    QCOMPARE(enUS.toString(dt6, "t"), QString("CET"));
+    QCOMPARE(enUS.toString(dt6, "t"), QLatin1String("CET"));
 
     QDateTime dt7(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
 #endif
-    QCOMPARE(enUS.toString(dt7, "t"), QString("CEST"));
+    QCOMPARE(enUS.toString(dt7, "t"), QLatin1String("CEST"));
 
     // Current datetime should return current abbreviation
     QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),

@@ -844,7 +844,7 @@ void tst_QSslCertificate::nulInCN()
     QVERIFY(!cert.isNull());
 
     QString cn = cert.subjectInfo(QSslCertificate::CommonName)[0];
-    QVERIFY(cn != "www.bank.com");
+    QVERIFY(cn != QLatin1String("www.bank.com"));
 
     static const char realCN[] = "www.bank.com\0.badguy.com";
     QCOMPARE(cn, QString::fromLatin1(realCN, sizeof realCN - 1));

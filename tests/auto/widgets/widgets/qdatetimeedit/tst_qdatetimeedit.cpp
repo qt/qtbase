@@ -3436,7 +3436,7 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
 
         // it should create a new widget
         QVERIFY(edit.calendarWidget());
-        QVERIFY(edit.calendarWidget()->objectName() != "cw1");
+        QVERIFY(edit.calendarWidget()->objectName() != QLatin1String("cw1"));
     }
 }
 

@@ -969,61 +969,61 @@ void tst_QString::acc_01()
     QString f;
     f = e;
     f[7]='F';
-    QCOMPARE(e,(QString)"String E");
+    QCOMPARE(e, QLatin1String("String E"));
     char text[]="String f";
     f = text;
     text[7]='!';
-    QCOMPARE(f,(QString)"String f");
+    QCOMPARE(f, QLatin1String("String f"));
     f[7]='F';
     QCOMPARE(text[7],'!');
 
     a="";
     a[0]='A';
-    QCOMPARE(a,(QString)"A");
+    QCOMPARE(a, QLatin1String("A"));
     QCOMPARE(a.length(),1);
     a[1]='B';
-    QCOMPARE(a,(QString)"AB");
+    QCOMPARE(a, QLatin1String("AB"));
     QCOMPARE(a.length(),2);
     a[2]='C';
-    QCOMPARE(a,(QString)"ABC");
+    QCOMPARE(a, QLatin1String("ABC"));
     QCOMPARE(a.length(),3);
     a = QString();
     QVERIFY(a.isNull());
     a[0]='A';
-    QCOMPARE(a,(QString)"A");
+    QCOMPARE(a, QLatin1String("A"));
     QCOMPARE(a.length(),1);
     a[1]='B';
-    QCOMPARE(a,(QString)"AB");
+    QCOMPARE(a, QLatin1String("AB"));
     QCOMPARE(a.length(),2);
     a[2]='C';
-    QCOMPARE(a,(QString)"ABC");
+    QCOMPARE(a, QLatin1String("ABC"));
     QCOMPARE(a.length(),3);
 
     a="123";
     b="456";
     a[0]=a[1];
-    QCOMPARE(a,(QString)"223");
+    QCOMPARE(a, QLatin1String("223"));
     a[1]=b[1];
-    QCOMPARE(b,(QString)"456");
-    QCOMPARE(a,(QString)"253");
+    QCOMPARE(b, QLatin1String("456"));
+    QCOMPARE(a, QLatin1String("253"));
 
     char t[]="TEXT";
     a="A";
     a=t;
-    QCOMPARE(a,(QString)"TEXT");
+    QCOMPARE(a, QLatin1String("TEXT"));
     QCOMPARE(a,(QString)t);
     a[0]='X';
-    QCOMPARE(a,(QString)"XEXT");
+    QCOMPARE(a, QLatin1String("XEXT"));
     QCOMPARE(t[0],'T');
     t[0]='Z';
-    QCOMPARE(a,(QString)"XEXT");
+    QCOMPARE(a, QLatin1String("XEXT"));
 
     a="ABC";
     QCOMPARE(char(a.toLatin1()[1]),'B');
-    QCOMPARE(strcmp(a.toLatin1(),((QString)"ABC").toLatin1()),0);
-    QCOMPARE(a+="DEF",(QString)"ABCDEF");
-    QCOMPARE(a+='G',(QString)"ABCDEFG");
-    QCOMPARE(a+=((const char*)(0)),(QString)"ABCDEFG");
+    QCOMPARE(strcmp(a.toLatin1(), QByteArrayLiteral("ABC")), 0);
+    QCOMPARE(a+="DEF", QLatin1String("ABCDEF"));
+    QCOMPARE(a+='G', QLatin1String("ABCDEFG"));
+    QCOMPARE(a+=((const char*)(0)), QLatin1String("ABCDEFG"));
 
     // non-member operators
 
@@ -1045,11 +1045,11 @@ void tst_QString::acc_01()
     QVERIFY(a<=c);
     QVERIFY(!(c<=a));
     QVERIFY(!(d<=a));
-    QCOMPARE(QString(a+b),(QString)"ABCABC");
-    QCOMPARE(QString(a+"XXXX"),(QString)"ABCXXXX");
-    QCOMPARE(QString(a+'X'),(QString)"ABCX");
-    QCOMPARE(QString("XXXX"+a),(QString)"XXXXABC");
-    QCOMPARE(QString('X'+a),(QString)"XABC");
+    QCOMPARE(QString(a+b), QLatin1String("ABCABC"));
+    QCOMPARE(QString(a+"XXXX"), QLatin1String("ABCXXXX"));
+    QCOMPARE(QString(a+'X'), QLatin1String("ABCX"));
+    QCOMPARE(QString("XXXX"+a), QLatin1String("XXXXABC"));
+    QCOMPARE(QString('X'+a), QLatin1String("XABC"));
     a = (const char*)0;
     QVERIFY(a.isNull());
     QVERIFY(*a.toLatin1().constData() == '\0');
@@ -1115,7 +1115,7 @@ void tst_QString::constructor()
     QVERIFY(a == (QString)"");
     QCOMPARE(b,cb);
     QCOMPARE(c,cc);
-    QCOMPARE(d,(QString)"String D");
+    QCOMPARE(d, QLatin1String("String D"));
 
     QString nullStr;
     QVERIFY( nullStr.isNull() );
@@ -1204,11 +1204,11 @@ void tst_QString::truncate()
 {
     QString e("String E");
     e.truncate(4);
-    QCOMPARE(e,(QString)"Stri");
+    QCOMPARE(e, QLatin1String("Stri"));
 
     e = "String E";
     e.truncate(0);
-    QCOMPARE(e,(QString)"");
+    QCOMPARE(e, QLatin1String(""));
     QVERIFY(e.isEmpty());
     QVERIFY(!e.isNull());
 
@@ -1218,25 +1218,25 @@ void tst_QString::fill()
 {
     QString e;
     e.fill('e',1);
-    QCOMPARE(e,(QString)"e");
+    QCOMPARE(e, QLatin1String("e"));
     QString f;
     f.fill('f',3);
-    QCOMPARE(f,(QString)"fff");
+    QCOMPARE(f, QLatin1String("fff"));
     f.fill('F');
-    QCOMPARE(f,(QString)"FFF");
+    QCOMPARE(f, QLatin1String("FFF"));
 }
 
 void tst_QString::sprintf()
 {
     QString a;
     a.sprintf("COMPARE");
-    QCOMPARE(a,(QString)"COMPARE");
+    QCOMPARE(a, QLatin1String("COMPARE"));
     a.sprintf("%%%d",1);
-    QCOMPARE(a,(QString)"%1");
-    QCOMPARE(a.sprintf("X%dY",2),(QString)"X2Y");
-    QCOMPARE(a.sprintf("X%9iY", 50000 ),(QString)"X    50000Y");
-    QCOMPARE(a.sprintf("X%-9sY","hello"),(QString)"Xhello    Y");
-    QCOMPARE(a.sprintf("X%-9iY", 50000 ),(QString)"X50000    Y");
+    QCOMPARE(a, QLatin1String("%1"));
+    QCOMPARE(a.sprintf("X%dY",2), QLatin1String("X2Y"));
+    QCOMPARE(a.sprintf("X%9iY", 50000 ), QLatin1String("X    50000Y"));
+    QCOMPARE(a.sprintf("X%-9sY","hello"), QLatin1String("Xhello    Y"));
+    QCOMPARE(a.sprintf("X%-9iY", 50000 ), QLatin1String("X50000    Y"));
     QCOMPARE(a.sprintf("%lf", 1.23), QString("1.230000"));
     QCOMPARE(a.sprintf("%lf", 1.23456789), QString("1.234568"));
     QCOMPARE(a.sprintf("%p", (void *)0xbfffd350), QString("0xbfffd350"));
@@ -1253,13 +1253,13 @@ void tst_QString::sprintf()
     S1.sprintf("%f",d);
     QCOMPARE(S1, QString("-514.256830"));
 
-    QCOMPARE(a.sprintf("%.3s", "Hello" ),(QString)"Hel");
-    QCOMPARE(a.sprintf("%10.3s", "Hello" ),(QString)"       Hel");
-    QCOMPARE(a.sprintf("%.10s", "Hello" ),(QString)"Hello");
-    QCOMPARE(a.sprintf("%10.10s", "Hello" ),(QString)"     Hello");
-    QCOMPARE(a.sprintf("%-10.10s", "Hello" ),(QString)"Hello     ");
-    QCOMPARE(a.sprintf("%-10.3s", "Hello" ),(QString)"Hel       ");
-    QCOMPARE(a.sprintf("%-5.5s", "Hello" ),(QString)"Hello");
+    QCOMPARE(a.sprintf("%.3s", "Hello" ), QLatin1String("Hel"));
+    QCOMPARE(a.sprintf("%10.3s", "Hello" ), QLatin1String("       Hel"));
+    QCOMPARE(a.sprintf("%.10s", "Hello" ), QLatin1String("Hello"));
+    QCOMPARE(a.sprintf("%10.10s", "Hello" ), QLatin1String("     Hello"));
+    QCOMPARE(a.sprintf("%-10.10s", "Hello" ), QLatin1String("Hello     "));
+    QCOMPARE(a.sprintf("%-10.3s", "Hello" ), QLatin1String("Hel       "));
+    QCOMPARE(a.sprintf("%-5.5s", "Hello" ), QLatin1String("Hello"));
 
     // Check utf8 conversion for %s
     QCOMPARE(a.sprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
@@ -1809,9 +1809,9 @@ void tst_QString::left()
 {
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
-    QCOMPARE(a.left(3),(QString)"ABC");
+    QCOMPARE(a.left(3), QLatin1String("ABC"));
     QVERIFY(!a.left(0).isNull());
-    QCOMPARE(a.left(0),(QString)"");
+    QCOMPARE(a.left(0), QLatin1String(""));
 
     QString n;
     QVERIFY(n.left(3).isNull());
@@ -1827,10 +1827,10 @@ void tst_QString::leftRef()
 {
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
-    QCOMPARE(a.leftRef(3).toString(),(QString)"ABC");
+    QCOMPARE(a.leftRef(3).toString(), QLatin1String("ABC"));
 
     QVERIFY(a.leftRef(0).toString().isEmpty());
-    QCOMPARE(a.leftRef(0).toString(),(QString)"");
+    QCOMPARE(a.leftRef(0).toString(), QLatin1String(""));
 
     QString n;
     QVERIFY(n.leftRef(3).toString().isEmpty());
@@ -1846,8 +1846,8 @@ void tst_QString::right()
 {
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
-    QCOMPARE(a.right(3),(QString)"EFG");
-    QCOMPARE(a.right(0),(QString)"");
+    QCOMPARE(a.right(3), QLatin1String("EFG"));
+    QCOMPARE(a.right(0), QLatin1String(""));
 
     QString n;
     QVERIFY(n.right(3).isNull());
@@ -1862,8 +1862,8 @@ void tst_QString::rightRef()
 {
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
-    QCOMPARE(a.rightRef(3).toString(),(QString)"EFG");
-    QCOMPARE(a.rightRef(0).toString(),(QString)"");
+    QCOMPARE(a.rightRef(3).toString(), QLatin1String("EFG"));
+    QCOMPARE(a.rightRef(0).toString(), QLatin1String(""));
 
     QString n;
     QVERIFY(n.rightRef(3).toString().isEmpty());
@@ -1879,8 +1879,8 @@ void tst_QString::mid()
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
 
-    QCOMPARE(a.mid(3,3),(QString)"DEF");
-    QCOMPARE(a.mid(0,0),(QString)"");
+    QCOMPARE(a.mid(3,3), QLatin1String("DEF"));
+    QCOMPARE(a.mid(0,0), QLatin1String(""));
     QVERIFY(!a.mid(15,0).isNull());
     QVERIFY(a.mid(15,0).isEmpty());
     QVERIFY(!a.mid(15,1).isNull());
@@ -1958,8 +1958,8 @@ void tst_QString::midRef()
     QString a;
     a="ABCDEFGHIEfGEFG"; // 15 chars
 
-    QCOMPARE(a.midRef(3,3).toString(),(QString)"DEF");
-    QCOMPARE(a.midRef(0,0).toString(),(QString)"");
+    QCOMPARE(a.midRef(3,3).toString(), QLatin1String("DEF"));
+    QCOMPARE(a.midRef(0,0).toString(), QLatin1String(""));
     QVERIFY(!a.midRef(15,0).toString().isNull());
     QVERIFY(a.midRef(15,0).toString().isEmpty());
     QVERIFY(!a.midRef(15,1).toString().isNull());
@@ -2083,44 +2083,44 @@ void tst_QString::leftJustified()
 {
     QString a;
     a="ABC";
-    QCOMPARE(a.leftJustified(5,'-'),(QString)"ABC--");
-    QCOMPARE(a.leftJustified(4,'-'),(QString)"ABC-");
-    QCOMPARE(a.leftJustified(4),(QString)"ABC ");
-    QCOMPARE(a.leftJustified(3),(QString)"ABC");
-    QCOMPARE(a.leftJustified(2),(QString)"ABC");
-    QCOMPARE(a.leftJustified(1),(QString)"ABC");
-    QCOMPARE(a.leftJustified(0),(QString)"ABC");
+    QCOMPARE(a.leftJustified(5,'-'), QLatin1String("ABC--"));
+    QCOMPARE(a.leftJustified(4,'-'), QLatin1String("ABC-"));
+    QCOMPARE(a.leftJustified(4), QLatin1String("ABC "));
+    QCOMPARE(a.leftJustified(3), QLatin1String("ABC"));
+    QCOMPARE(a.leftJustified(2), QLatin1String("ABC"));
+    QCOMPARE(a.leftJustified(1), QLatin1String("ABC"));
+    QCOMPARE(a.leftJustified(0), QLatin1String("ABC"));
 
     QString n;
     QVERIFY(!n.leftJustified(3).isNull());
-    QCOMPARE(a.leftJustified(4,' ',true),(QString)"ABC ");
-    QCOMPARE(a.leftJustified(3,' ',true),(QString)"ABC");
-    QCOMPARE(a.leftJustified(2,' ',true),(QString)"AB");
-    QCOMPARE(a.leftJustified(1,' ',true),(QString)"A");
-    QCOMPARE(a.leftJustified(0,' ',true),(QString)"");
+    QCOMPARE(a.leftJustified(4,' ',true), QLatin1String("ABC "));
+    QCOMPARE(a.leftJustified(3,' ',true), QLatin1String("ABC"));
+    QCOMPARE(a.leftJustified(2,' ',true), QLatin1String("AB"));
+    QCOMPARE(a.leftJustified(1,' ',true), QLatin1String("A"));
+    QCOMPARE(a.leftJustified(0,' ',true), QLatin1String(""));
 }
 
 void tst_QString::rightJustified()
 {
     QString a;
     a="ABC";
-    QCOMPARE(a.rightJustified(5,'-'),(QString)"--ABC");
-    QCOMPARE(a.rightJustified(4,'-'),(QString)"-ABC");
-    QCOMPARE(a.rightJustified(4),(QString)" ABC");
-    QCOMPARE(a.rightJustified(3),(QString)"ABC");
-    QCOMPARE(a.rightJustified(2),(QString)"ABC");
-    QCOMPARE(a.rightJustified(1),(QString)"ABC");
-    QCOMPARE(a.rightJustified(0),(QString)"ABC");
+    QCOMPARE(a.rightJustified(5,'-'), QLatin1String("--ABC"));
+    QCOMPARE(a.rightJustified(4,'-'), QLatin1String("-ABC"));
+    QCOMPARE(a.rightJustified(4), QLatin1String(" ABC"));
+    QCOMPARE(a.rightJustified(3), QLatin1String("ABC"));
+    QCOMPARE(a.rightJustified(2), QLatin1String("ABC"));
+    QCOMPARE(a.rightJustified(1), QLatin1String("ABC"));
+    QCOMPARE(a.rightJustified(0), QLatin1String("ABC"));
 
     QString n;
     QVERIFY(!n.rightJustified(3).isNull());
-    QCOMPARE(a.rightJustified(4,'-',true),(QString)"-ABC");
-    QCOMPARE(a.rightJustified(4,' ',true),(QString)" ABC");
-    QCOMPARE(a.rightJustified(3,' ',true),(QString)"ABC");
-    QCOMPARE(a.rightJustified(2,' ',true),(QString)"AB");
-    QCOMPARE(a.rightJustified(1,' ',true),(QString)"A");
-    QCOMPARE(a.rightJustified(0,' ',true),(QString)"");
-    QCOMPARE(a,(QString)"ABC");
+    QCOMPARE(a.rightJustified(4,'-',true), QLatin1String("-ABC"));
+    QCOMPARE(a.rightJustified(4,' ',true), QLatin1String(" ABC"));
+    QCOMPARE(a.rightJustified(3,' ',true), QLatin1String("ABC"));
+    QCOMPARE(a.rightJustified(2,' ',true), QLatin1String("AB"));
+    QCOMPARE(a.rightJustified(1,' ',true), QLatin1String("A"));
+    QCOMPARE(a.rightJustified(0,' ',true), QLatin1String(""));
+    QCOMPARE(a, QLatin1String("ABC"));
 }
 
 void tst_QString::toUpper()
@@ -2302,21 +2302,21 @@ void tst_QString::trimmed()
 {
     QString a;
     a="Text";
-    QCOMPARE(a,(QString)"Text");
-    QCOMPARE(a.trimmed(),(QString)"Text");
-    QCOMPARE(a,(QString)"Text");
+    QCOMPARE(a, QLatin1String("Text"));
+    QCOMPARE(a.trimmed(), QLatin1String("Text"));
+    QCOMPARE(a, QLatin1String("Text"));
     a=" ";
-    QCOMPARE(a.trimmed(),(QString)"");
-    QCOMPARE(a,(QString)" ");
+    QCOMPARE(a.trimmed(), QLatin1String(""));
+    QCOMPARE(a, QLatin1String(" "));
     a=" a   ";
-    QCOMPARE(a.trimmed(),(QString)"a");
+    QCOMPARE(a.trimmed(), QLatin1String("a"));
 
     a="Text";
-    QCOMPARE(qMove(a).trimmed(),(QString)"Text");
+    QCOMPARE(qMove(a).trimmed(), QLatin1String("Text"));
     a=" ";
-    QCOMPARE(qMove(a).trimmed(),(QString)"");
+    QCOMPARE(qMove(a).trimmed(), QLatin1String(""));
     a=" a   ";
-    QCOMPARE(qMove(a).trimmed(),(QString)"a");
+    QCOMPARE(qMove(a).trimmed(), QLatin1String("a"));
 }
 
 void tst_QString::simplified_data()
@@ -2442,12 +2442,13 @@ void tst_QString::insert_special_cases()
     QCOMPARE(a.insert(1,'>'), QString("<>ABCABCABCABC"));
 
     a = "Meal";
-    QCOMPARE(a.insert(1, QLatin1String("ontr")), QString("Montreal"));
-    QCOMPARE(a.insert(4, ""), QString("Montreal"));
-    QCOMPARE(a.insert(3, QLatin1String("")), QString("Montreal"));
-    QCOMPARE(a.insert(3, QLatin1String(0)), QString("Montreal"));
-    QCOMPARE(a.insert(3, static_cast<const char *>(0)), QString("Montreal"));
-    QCOMPARE(a.insert(0, QLatin1String("a")), QString("aMontreal"));
+    const QString montreal = QStringLiteral("Montreal");
+    QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
+    QCOMPARE(a.insert(4, ""), montreal);
+    QCOMPARE(a.insert(3, QLatin1String("")), montreal);
+    QCOMPARE(a.insert(3, QLatin1String(0)), montreal);
+    QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
+    QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
 }
 
 void tst_QString::append_data(bool emptyIsNoop)
@@ -3558,12 +3559,12 @@ void tst_QString::toDouble()
 void tst_QString::setNum()
 {
     QString a;
-    QCOMPARE(a.setNum(123),(QString)"123");
-    QCOMPARE(a.setNum(-123),(QString)"-123");
-    QCOMPARE(a.setNum(0x123,16),(QString)"123");
-    QCOMPARE(a.setNum((short)123),(QString)"123");
-    QCOMPARE(a.setNum(123L),(QString)"123");
-    QCOMPARE(a.setNum(123UL),(QString)"123");
+    QCOMPARE(a.setNum(123), QLatin1String("123"));
+    QCOMPARE(a.setNum(-123), QLatin1String("-123"));
+    QCOMPARE(a.setNum(0x123,16), QLatin1String("123"));
+    QCOMPARE(a.setNum((short)123), QLatin1String("123"));
+    QCOMPARE(a.setNum(123L), QLatin1String("123"));
+    QCOMPARE(a.setNum(123UL), QLatin1String("123"));
     QCOMPARE(a.setNum(2147483647L), QString("2147483647")); // 32 bit LONG_MAX
     QCOMPARE(a.setNum(-2147483647L), QString("-2147483647")); // LONG_MIN + 1
     QCOMPARE(a.setNum(-2147483647L-1L), QString("-2147483648")); // LONG_MIN
@@ -3820,7 +3821,7 @@ void tst_QString::check_QDataStream()
     {
         QDataStream in(&ar,QIODevice::ReadOnly);
         in >> a;
-        QCOMPARE(a,(QString)"COMPARE Text");
+        QCOMPARE(a, QLatin1String("COMPARE Text"));
     }
 }
 
@@ -3835,7 +3836,7 @@ void tst_QString::check_QTextStream()
     {
         QTextStream in(&ar,QIODevice::ReadOnly);
         in >> a;
-        QCOMPARE(a,(QString)"This");
+        QCOMPARE(a, QLatin1String("This"));
     }
 }
 
@@ -4528,100 +4529,100 @@ void tst_QString::arg()
     QString s13( "%1% %x%c%2 %d%2-%" );
     QString s14( "%1%2%3" );
 
-    QCOMPARE( s4.arg("foo"), QString("[foo]") );
-    QCOMPARE( s5.arg("foo"), QString("[foo]") );
-    QCOMPARE( s6.arg("foo"), QString("[foo]") );
-    QCOMPARE( s7.arg("foo"), QString("[foo]") );
-    QCOMPARE( s8.arg("foo"), QString("[foo %1]") );
-    QCOMPARE( s8.arg("foo").arg("bar"), QString("[foo bar]") );
-    QCOMPARE( s8.arg("foo", "bar"), QString("[foo bar]") );
-    QCOMPARE( s9.arg("foo"), QString("[foo %3]") );
-    QCOMPARE( s9.arg("foo").arg("bar"), QString("[foo bar]") );
-    QCOMPARE( s9.arg("foo", "bar"), QString("[foo bar]") );
-    QCOMPARE( s10.arg("foo"), QString("[foo %2 %3]") );
-    QCOMPARE( s10.arg("foo").arg("bar"), QString("[foo bar %3]") );
-    QCOMPARE( s10.arg("foo", "bar"), QString("[foo bar %3]") );
-    QCOMPARE( s10.arg("foo").arg("bar").arg("baz"), QString("[foo bar baz]") );
-    QCOMPARE( s10.arg("foo", "bar", "baz"), QString("[foo bar baz]") );
-    QCOMPARE( s11.arg("foo"), QString("[%9 %3 foo]") );
-    QCOMPARE( s11.arg("foo").arg("bar"), QString("[%9 bar foo]") );
-    QCOMPARE( s11.arg("foo", "bar"), QString("[%9 bar foo]") );
-    QCOMPARE( s11.arg("foo").arg("bar").arg("baz"), QString("[baz bar foo]") );
-    QCOMPARE( s11.arg("foo", "bar", "baz"), QString("[baz bar foo]") );
+    QCOMPARE( s4.arg("foo"), QLatin1String("[foo]") );
+    QCOMPARE( s5.arg("foo"), QLatin1String("[foo]") );
+    QCOMPARE( s6.arg("foo"), QLatin1String("[foo]") );
+    QCOMPARE( s7.arg("foo"), QLatin1String("[foo]") );
+    QCOMPARE( s8.arg("foo"), QLatin1String("[foo %1]") );
+    QCOMPARE( s8.arg("foo").arg("bar"), QLatin1String("[foo bar]") );
+    QCOMPARE( s8.arg("foo", "bar"), QLatin1String("[foo bar]") );
+    QCOMPARE( s9.arg("foo"), QLatin1String("[foo %3]") );
+    QCOMPARE( s9.arg("foo").arg("bar"), QLatin1String("[foo bar]") );
+    QCOMPARE( s9.arg("foo", "bar"), QLatin1String("[foo bar]") );
+    QCOMPARE( s10.arg("foo"), QLatin1String("[foo %2 %3]") );
+    QCOMPARE( s10.arg("foo").arg("bar"), QLatin1String("[foo bar %3]") );
+    QCOMPARE( s10.arg("foo", "bar"), QLatin1String("[foo bar %3]") );
+    QCOMPARE( s10.arg("foo").arg("bar").arg("baz"), QLatin1String("[foo bar baz]") );
+    QCOMPARE( s10.arg("foo", "bar", "baz"), QLatin1String("[foo bar baz]") );
+    QCOMPARE( s11.arg("foo"), QLatin1String("[%9 %3 foo]") );
+    QCOMPARE( s11.arg("foo").arg("bar"), QLatin1String("[%9 bar foo]") );
+    QCOMPARE( s11.arg("foo", "bar"), QLatin1String("[%9 bar foo]") );
+    QCOMPARE( s11.arg("foo").arg("bar").arg("baz"), QLatin1String("[baz bar foo]") );
+    QCOMPARE( s11.arg("foo", "bar", "baz"), QLatin1String("[baz bar foo]") );
     QCOMPARE( s12.arg("a").arg("b").arg("c").arg("d").arg("e"),
-             QString("[e b c e a d]") );
-    QCOMPARE( s12.arg("a", "b", "c", "d").arg("e"), QString("[e b c e a d]") );
-    QCOMPARE( s12.arg("a").arg("b", "c", "d", "e"), QString("[e b c e a d]") );
+             QLatin1String("[e b c e a d]") );
+    QCOMPARE( s12.arg("a", "b", "c", "d").arg("e"), QLatin1String("[e b c e a d]") );
+    QCOMPARE( s12.arg("a").arg("b", "c", "d", "e"), QLatin1String("[e b c e a d]") );
     QCOMPARE( s13.arg("alpha").arg("beta"),
-             QString("alpha% %x%cbeta %dbeta-%") );
-    QCOMPARE( s13.arg("alpha", "beta"), QString("alpha% %x%cbeta %dbeta-%") );
-    QCOMPARE( s14.arg("a", "b", "c"), QString("abc") );
-    QCOMPARE( s8.arg("%1").arg("foo"), QString("[foo foo]") );
-    QCOMPARE( s8.arg("%1", "foo"), QString("[%1 foo]") );
-    QCOMPARE( s4.arg("foo", 2), QString("[foo]") );
-    QCOMPARE( s4.arg("foo", -2), QString("[foo]") );
-    QCOMPARE( s4.arg("foo", 10), QString("[       foo]") );
-    QCOMPARE( s4.arg("foo", -10), QString("[foo       ]") );
+             QLatin1String("alpha% %x%cbeta %dbeta-%") );
+    QCOMPARE( s13.arg("alpha", "beta"), QLatin1String("alpha% %x%cbeta %dbeta-%") );
+    QCOMPARE( s14.arg("a", "b", "c"), QLatin1String("abc") );
+    QCOMPARE( s8.arg("%1").arg("foo"), QLatin1String("[foo foo]") );
+    QCOMPARE( s8.arg("%1", "foo"), QLatin1String("[%1 foo]") );
+    QCOMPARE( s4.arg("foo", 2), QLatin1String("[foo]") );
+    QCOMPARE( s4.arg("foo", -2), QLatin1String("[foo]") );
+    QCOMPARE( s4.arg("foo", 10), QLatin1String("[       foo]") );
+    QCOMPARE( s4.arg("foo", -10), QLatin1String("[foo       ]") );
 
     QString firstName( "James" );
     QString lastName( "Bond" );
     QString fullName = QString( "My name is %2, %1 %2" )
                        .arg( firstName ).arg( lastName );
-    QCOMPARE( fullName, QString("My name is Bond, James Bond") );
+    QCOMPARE( fullName, QLatin1String("My name is Bond, James Bond") );
 
     // number overloads
-    QCOMPARE( s4.arg(0), QString("[0]") );
-    QCOMPARE( s4.arg(-1), QString("[-1]") );
-    QCOMPARE( s4.arg(4294967295UL), QString("[4294967295]") ); // ULONG_MAX 32
+    QCOMPARE( s4.arg(0), QLatin1String("[0]") );
+    QCOMPARE( s4.arg(-1), QLatin1String("[-1]") );
+    QCOMPARE( s4.arg(4294967295UL), QLatin1String("[4294967295]") ); // ULONG_MAX 32
     QCOMPARE( s4.arg(Q_INT64_C(9223372036854775807)), // LLONG_MAX
-             QString("[9223372036854775807]") );
+             QLatin1String("[9223372036854775807]") );
 
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"\" , 0");
     QCOMPARE( QString().arg(0), QString() );
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"\" , 0");
     QCOMPARE( QString("").arg(0), QString("") );
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \" \" , 0");
-    QCOMPARE( QString(" ").arg(0), QString(" ") );
+    QCOMPARE( QString(" ").arg(0), QLatin1String(" ") );
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%\" , 0");
-    QCOMPARE( QString("%").arg(0), QString("%") );
+    QCOMPARE( QString("%").arg(0), QLatin1String("%") );
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%%\" , 0");
-    QCOMPARE( QString("%%").arg(0), QString("%%") );
+    QCOMPARE( QString("%%").arg(0), QLatin1String("%%") );
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%%%\" , 0");
-    QCOMPARE( QString("%%%").arg(0), QString("%%%") );
-    QCOMPARE( QString("%%%1%%%2").arg("foo").arg("bar"), QString("%%foo%%bar") );
+    QCOMPARE( QString("%%%").arg(0), QLatin1String("%%%") );
+    QCOMPARE( QString("%%%1%%%2").arg("foo").arg("bar"), QLatin1String("%%foo%%bar") );
 
-    QCOMPARE( QString("%1").arg("hello", -10), QString("hello     ") );
-    QCOMPARE( QString("%1").arg("hello", -5), QString("hello") );
-    QCOMPARE( QString("%1").arg("hello", -2), QString("hello") );
-    QCOMPARE( QString("%1").arg("hello", 0), QString("hello") );
-    QCOMPARE( QString("%1").arg("hello", 2), QString("hello") );
-    QCOMPARE( QString("%1").arg("hello", 5), QString("hello") );
-    QCOMPARE( QString("%1").arg("hello", 10), QString("     hello") );
-    QCOMPARE( QString("%1%1").arg("hello"), QString("hellohello") );
-    QCOMPARE( QString("%2%1").arg("hello"), QString("%2hello") );
-    QCOMPARE( QString("%1%1").arg(QString::null), QString("") );
-    QCOMPARE( QString("%2%1").arg(""), QString("%2") );
+    QCOMPARE( QString("%1").arg("hello", -10), QLatin1String("hello     ") );
+    QCOMPARE( QString("%1").arg("hello", -5), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg("hello", -2), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg("hello", 0), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg("hello", 2), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg("hello", 5), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg("hello", 10), QLatin1String("     hello") );
+    QCOMPARE( QString("%1%1").arg("hello"), QLatin1String("hellohello") );
+    QCOMPARE( QString("%2%1").arg("hello"), QLatin1String("%2hello") );
+    QCOMPARE( QString("%1%1").arg(QString::null), QLatin1String("") );
+    QCOMPARE( QString("%2%1").arg(""), QLatin1String("%2") );
 
     QCOMPARE( QString("%2 %L1").arg(12345.6789).arg(12345.6789),
-             QString("12345.7 12.345,7") );
+             QLatin1String("12345.7 12.345,7") );
     QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 9).arg(12345.6789, 9),
-              QString("[  12345.7] [ 12.345,7]") );
+              QLatin1String("[  12345.7] [ 12.345,7]") );
     QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 9, 'g', 7).arg(12345.6789, 9, 'g', 7),
-              QString("[ 12345.68] [12.345,68]") );
+              QLatin1String("[ 12345.68] [12.345,68]") );
     QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')).arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
-              QString("[0012345.68] [012.345,68]") );
+              QLatin1String("[0012345.68] [012.345,68]") );
 
     QCOMPARE( QString("%2 %L1").arg(123456789).arg(123456789),
-             QString("123456789 123.456.789") );
+             QLatin1String("123456789 123.456.789") );
     QCOMPARE( QString("[%2] [%L1]").arg(123456789, 12).arg(123456789, 12),
-              QString("[   123456789] [ 123.456.789]") );
+              QLatin1String("[   123456789] [ 123.456.789]") );
     QCOMPARE( QString("[%2] [%L1]").arg(123456789, 13, 10, QLatin1Char('0')).arg(123456789, 12, 10, QLatin1Char('0')),
-              QString("[000123456789] [00123.456.789]") );
+              QLatin1String("[000123456789] [00123.456.789]") );
     QCOMPARE( QString("[%2] [%L1]").arg(123456789, 13, 16, QLatin1Char('0')).arg(123456789, 12, 16, QLatin1Char('0')),
-              QString("[0000075bcd15] [00000075bcd15]") );
+              QLatin1String("[0000075bcd15] [00000075bcd15]") );
 
     QCOMPARE( QString("%L2 %L1 %3").arg(12345.7).arg(123456789).arg('c'),
-             QString("123.456.789 12.345,7 c") );
+             QLatin1String("123.456.789 12.345,7 c") );
 
     // multi-digit replacement
     QString input("%%%L0 %1 %02 %3 %4 %5 %L6 %7 %8 %%% %090 %10 %11 %L12 %14 %L9888 %9999 %%%%%%%L");
@@ -4631,36 +4632,36 @@ void tst_QString::arg()
                  .arg("k").arg("l").arg("m")
                  .arg("n").arg("o").arg("p");
 
-    QCOMPARE(input, QString("%%A B C D E f g h i %%% j0 k l m n o88 p99 %%%%%%%L"));
+    QCOMPARE(input, QLatin1String("%%A B C D E f g h i %%% j0 k l m n o88 p99 %%%%%%%L"));
 
     QString str("%1 %2 %3 %4 %5 %6 %7 %8 %9 foo %10 %11 bar");
     str = str.arg("one", "2", "3", "4", "5", "6", "7", "8", "9");
     str = str.arg("ahoy", "there");
-    QCOMPARE(str, QString("one 2 3 4 5 6 7 8 9 foo ahoy there bar"));
+    QCOMPARE(str, QLatin1String("one 2 3 4 5 6 7 8 9 foo ahoy there bar"));
 
     QString str2("%123 %234 %345 %456 %567 %999 %1000 %1230");
     str2 = str2.arg("A", "B", "C", "D", "E", "F");
-    QCOMPARE(str2, QString("A B C D E F %1000 %1230"));
+    QCOMPARE(str2, QLatin1String("A B C D E F %1000 %1230"));
 
-    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar('0')), QString("-01"));
-    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar('0')), QString("-100"));
-    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar(' ')), QString(" -1"));
-    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar(' ')), QString("-100"));
-    QCOMPARE(QString("%1").arg(1U, 3, 10, QChar(' ')), QString("  1"));
-    QCOMPARE(QString("%1").arg(1000U, 3, 10, QChar(' ')), QString("1000"));
-    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar('x')), QString("x-1"));
-    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar('x')), QString("-100"));
-    QCOMPARE(QString("%1").arg(1U, 3, 10, QChar('x')), QString("xx1"));
-    QCOMPARE(QString("%1").arg(1000U, 3, 10, QChar('x')), QString("1000"));
+    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar('0')), QLatin1String("-01"));
+    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar('0')), QLatin1String("-100"));
+    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar(' ')), QLatin1String(" -1"));
+    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar(' ')), QLatin1String("-100"));
+    QCOMPARE(QString("%1").arg(1U, 3, 10, QChar(' ')), QLatin1String("  1"));
+    QCOMPARE(QString("%1").arg(1000U, 3, 10, QChar(' ')), QLatin1String("1000"));
+    QCOMPARE(QString("%1").arg(-1, 3, 10, QChar('x')), QLatin1String("x-1"));
+    QCOMPARE(QString("%1").arg(-100, 3, 10, QChar('x')), QLatin1String("-100"));
+    QCOMPARE(QString("%1").arg(1U, 3, 10, QChar('x')), QLatin1String("xx1"));
+    QCOMPARE(QString("%1").arg(1000U, 3, 10, QChar('x')), QLatin1String("1000"));
 
-    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('0')), QString("-01"));
-    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('0')), QString("-100"));
-    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar(' ')), QString(" -1"));
-    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar(' ')), QString("-100"));
-    QCOMPARE(QString("%1").arg(1., 3, 'g', -1, QChar('x')), QString("xx1"));
-    QCOMPARE(QString("%1").arg(1000., 3, 'g', -1, QChar('x')), QString("1000"));
-    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('x')), QString("x-1"));
-    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('x')), QString("-100"));
+    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('0')), QLatin1String("-01"));
+    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('0')), QLatin1String("-100"));
+    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar(' ')), QLatin1String(" -1"));
+    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar(' ')), QLatin1String("-100"));
+    QCOMPARE(QString("%1").arg(1., 3, 'g', -1, QChar('x')), QLatin1String("xx1"));
+    QCOMPARE(QString("%1").arg(1000., 3, 'g', -1, QChar('x')), QLatin1String("1000"));
+    QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('x')), QLatin1String("x-1"));
+    QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('x')), QLatin1String("-100"));
 
     QLocale::setDefault(QString("ar"));
     QCOMPARE( QString("%L1").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
@@ -4673,13 +4674,13 @@ void tst_QString::arg()
 
 void tst_QString::number()
 {
-    QCOMPARE( QString::number(int(0)), QString("0") );
-    QCOMPARE( QString::number((unsigned int)(11)), QString("11") );
-    QCOMPARE( QString::number(-22L), QString("-22") );
-    QCOMPARE( QString::number(333UL), QString("333") );
-    QCOMPARE( QString::number(4.4), QString("4.4") );
-    QCOMPARE( QString::number(Q_INT64_C(-555)), QString("-555") );
-    QCOMPARE( QString::number(Q_UINT64_C(6666)), QString("6666") );
+    QCOMPARE( QString::number(int(0)), QLatin1String("0") );
+    QCOMPARE( QString::number((unsigned int)(11)), QLatin1String("11") );
+    QCOMPARE( QString::number(-22L), QLatin1String("-22") );
+    QCOMPARE( QString::number(333UL), QLatin1String("333") );
+    QCOMPARE( QString::number(4.4), QLatin1String("4.4") );
+    QCOMPARE( QString::number(Q_INT64_C(-555)), QLatin1String("-555") );
+    QCOMPARE( QString::number(Q_UINT64_C(6666)), QLatin1String("6666") );
 }
 
 void tst_QString::capacity_data()

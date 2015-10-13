@@ -1223,16 +1223,16 @@ void tst_QSettings::remove()
 {
     QSettings settings0(QSettings::UserScope, "software.org", "KillerAPP");
     int initialNumKeys = settings0.allKeys().size();
-    QCOMPARE(settings0.value("key 1", "123").toString(), QString("123"));
+    QCOMPARE(settings0.value("key 1", "123").toString(), QLatin1String("123"));
     settings0.remove("key 1");
-    QCOMPARE(settings0.value("key 1", "456").toString(), QString("456"));
+    QCOMPARE(settings0.value("key 1", "456").toString(), QLatin1String("456"));
 
     settings0.setValue("key 1", "bubloo");
-    QCOMPARE(settings0.value("key 1").toString(), QString("bubloo"));
+    QCOMPARE(settings0.value("key 1").toString(), QLatin1String("bubloo"));
     settings0.remove("key 2");
-    QCOMPARE(settings0.value("key 1").toString(), QString("bubloo"));
+    QCOMPARE(settings0.value("key 1").toString(), QLatin1String("bubloo"));
     settings0.remove("key 1");
-    QCOMPARE(settings0.value("key 1", "789").toString(), QString("789"));
+    QCOMPARE(settings0.value("key 1", "789").toString(), QLatin1String("789"));
 
     /*
       Make sure that removing a key removes all the subkeys.

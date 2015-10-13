@@ -746,18 +746,18 @@ void tst_QUrlQuery::old_queryItems()
     url.removeAllQueryItems("1");
     QVERIFY(!url.hasQueryItem("1"));
 
-    QCOMPARE(url.queryItemValue("4").toLatin1().constData(), "a b");
-    QCOMPARE(url.queryItemValue("5").toLatin1().constData(), "&");
-    QCOMPARE(url.queryItemValue("tex").toLatin1().constData(), "a + b = c");
-    QCOMPARE(url.queryItemValue("foo bar").toLatin1().constData(), "hello world");
+    QCOMPARE(url.queryItemValue("4"), QLatin1String("a b"));
+    QCOMPARE(url.queryItemValue("5"), QLatin1String("&"));
+    QCOMPARE(url.queryItemValue("tex"), QLatin1String("a + b = c"));
+    QCOMPARE(url.queryItemValue("foo bar"), QLatin1String("hello world"));
 
     //url.setUrl("http://www.google.com/search?q=a+b");
     url.setQuery("q=a+b");
-    QCOMPARE(url.queryItemValue("q"), QString("a+b"));
+    QCOMPARE(url.queryItemValue("q"), QLatin1String("a+b"));
 
     //url.setUrl("http://www.google.com/search?q=a=b"); // invalid, but should be tolerated
     url.setQuery("q=a=b");
-    QCOMPARE(url.queryItemValue("q"), QString("a=b"));
+    QCOMPARE(url.queryItemValue("q"), QLatin1String("a=b"));
 }
 
 void tst_QUrlQuery::old_hasQueryItem_data()

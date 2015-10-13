@@ -1051,11 +1051,11 @@ void tst_QXmlStream::readNextStartElement() const
     QXmlStreamReader reader(in);
 
     QVERIFY(reader.readNextStartElement());
-    QVERIFY(reader.isStartElement() && reader.name() == "A");
+    QVERIFY(reader.isStartElement() && reader.name() == QLatin1String("A"));
 
     int amountOfB = 0;
     while (reader.readNextStartElement()) {
-        QVERIFY(reader.isStartElement() && reader.name() == "B");
+        QVERIFY(reader.isStartElement() && reader.name() == QLatin1String("B"));
         ++amountOfB;
         reader.skipCurrentElement();
     }
