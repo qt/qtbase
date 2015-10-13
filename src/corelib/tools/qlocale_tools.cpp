@@ -2614,4 +2614,14 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
     return s0;
 }
 
+QString qdtoa(qreal d, int *decpt, int *sign)
+{
+    char *result = 0;
+    char *constResult = 0;
+    constResult = qdtoa(d, 0, 0, decpt, sign, 0, &result);
+    const QString ret(QString::fromLatin1(result ? result : constResult));
+    free(result);
+    return ret;
+}
+
 QT_END_NAMESPACE
