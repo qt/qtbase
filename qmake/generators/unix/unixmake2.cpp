@@ -262,11 +262,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
                             << fileVarList("HEADERS") << ' ' << fileVarList("SOURCES") << endl;
     t << "QMAKE_TARGET  = " << fileVar("QMAKE_ORIG_TARGET") << endl;
-    // The comment is important for mingw32-make.exe on Windows as otherwise trailing slashes
-    // would be interpreted as line continuation. The lack of spacing between the value and the
-    // comment is also important as otherwise quoted use of "$(DESTDIR)" would include this
-    // spacing.
-    t << "DESTDIR       = " << fileVar("DESTDIR") << "#avoid trailing-slash linebreak\n";
+    QString destd = fileVar("DESTDIR");
+    // When building on non-MSys MinGW, the path ends with a backslash, which
+    // GNU make will interpret that as a line continuation. Doubling the backslash
+    // avoids the problem, at the cost of the variable containing *both* backslashes.
+    if (destd.endsWith('\\'))
+        destd += '\\';
+    t << "DESTDIR       = " << destd << endl;
     t << "TARGET        = " << fileVar("TARGET") << endl; // ### mixed use!
     if(project->isActiveConfig("plugin")) {
         t << "TARGETD       = " << fileVar("TARGET") << endl;
