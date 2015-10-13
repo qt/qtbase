@@ -1325,20 +1325,21 @@ bool QMYSQLDriver::open(const QString& db,
     if (writeTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
 #endif
-    if (mysql_real_connect(d->mysql,
-                              host.isNull() ? static_cast<const char *>(0)
-                                            : host.toLocal8Bit().constData(),
-                              user.isNull() ? static_cast<const char *>(0)
-                                            : user.toLocal8Bit().constData(),
-                              password.isNull() ? static_cast<const char *>(0)
-                                                : password.toLocal8Bit().constData(),
-                              db.isNull() ? static_cast<const char *>(0)
-                                          : db.toLocal8Bit().constData(),
-                              (port > -1) ? port : 0,
-                              unixSocket.isNull() ? static_cast<const char *>(0)
-                                          : unixSocket.toLocal8Bit().constData(),
-                              optionFlags))
-    {
+    MYSQL *mysql = mysql_real_connect(d->mysql,
+                                      host.isNull() ? static_cast<const char *>(0)
+                                                    : host.toLocal8Bit().constData(),
+                                      user.isNull() ? static_cast<const char *>(0)
+                                                    : user.toLocal8Bit().constData(),
+                                      password.isNull() ? static_cast<const char *>(0)
+                                                        : password.toLocal8Bit().constData(),
+                                      db.isNull() ? static_cast<const char *>(0)
+                                                  : db.toLocal8Bit().constData(),
+                                      (port > -1) ? port : 0,
+                                      unixSocket.isNull() ? static_cast<const char *>(0)
+                                                          : unixSocket.toLocal8Bit().constData(),
+                                      optionFlags);
+
+    if (mysql == d->mysql) {
         if (!db.isEmpty() && mysql_select_db(d->mysql, db.toLocal8Bit().constData())) {
             setLastError(qMakeError(tr("Unable to open database '%1'").arg(db), QSqlError::ConnectionError, d));
             mysql_close(d->mysql);
