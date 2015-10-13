@@ -4,7 +4,7 @@ project                 = QtWidgets
 description             = Qt Widgets Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = widgets
+examplesinstallpath     = qtbase/widgets
 
 qhp.projects            = QtWidgets
 

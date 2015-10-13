@@ -4,7 +4,7 @@ project                 = QtCore
 description             = Qt Core Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = corelib
+examplesinstallpath     = qtbase/corelib
 
 qhp.projects            = QtCore
 

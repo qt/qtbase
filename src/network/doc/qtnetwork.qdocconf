@@ -4,7 +4,7 @@ project                 = QtNetwork
 description             = Qt Network Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = network
+examplesinstallpath     = qtbase/network
 
 qhp.projects            = QtNetwork
 

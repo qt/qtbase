@@ -4,7 +4,7 @@ project                 = QtConcurrent
 description             = Qt Concurrent Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtconcurrent
+examplesinstallpath     = qtbase/qtconcurrent
 
 qhp.projects            = QtConcurrent
 

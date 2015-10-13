@@ -4,7 +4,7 @@ project                 = QtPlatformHeaders
 description             = Qt Platform Headers Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtplatformheaders
+examplesinstallpath     = qtbase/qtplatformheaders
 
 qhp.projects            = QtPlatformHeaders
 
