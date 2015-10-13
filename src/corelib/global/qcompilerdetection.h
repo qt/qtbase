@@ -572,6 +572,9 @@
 #      if _MSC_VER < 1900
 //       ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
 #        undef Q_COMPILER_UNICODE_STRINGS
+//       Even though ICC knows about ref-qualified members, MSVC 2013 or lower doesn't, so
+//       certain member functions (like QString::toUpper) may be missing from the DLLs.
+#        undef Q_COMPILER_REF_QUALIFIERS
 //       Disable constexpr unless the MS headers have constexpr in all the right places too
 //       (like std::numeric_limits<T>::max())
 #        undef Q_COMPILER_CONSTEXPR
