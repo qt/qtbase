@@ -615,8 +615,6 @@ CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
 CFG_XSYNC=auto
-CFG_XVIDEO=auto
-CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
 CFG_MTDEV=auto
@@ -1520,23 +1518,9 @@ while [ "$#" -gt 0 ]; do
         fi
 
         ;;
-    xinerama)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "runtime" ]; then
-            CFG_XINERAMA="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     xshape)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSHAPE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    xvideo)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_XVIDEO="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6817,17 +6801,14 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_XCURSOR" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XCURSOR"
 [ "$CFG_XFIXES" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XFIXES"
 [ "$CFG_FONTCONFIG" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FONTCONFIG"
-[ "$CFG_XINERAMA" = "no" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINERAMA"
 [ "$CFG_XKB" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XKB"
 [ "$CFG_XRANDR" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRANDR"
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
 [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
-[ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
 [ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 
 [ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
-[ "$CFG_XINERAMA" = "runtime" ]  && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINERAMA"
 [ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
@@ -7292,13 +7273,11 @@ if [ "$CFG_XCB" != "no" ]; then
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
     report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
     report_support "      Xi2 ................" "$CFG_XINPUT2" runtime "loaded at runtime"
-    report_support "      Xinerama ..........." "$CFG_XINERAMA" runtime "loaded at runtime"
     report_support "      Xrandr ............." "$CFG_XRANDR" runtime "loaded at runtime"
     report_support "      Xrender ............" "$CFG_XRENDER"
     report_support "      XKB ................" "$CFG_XKB"
     report_support "      XShape ............." "$CFG_XSHAPE"
     report_support "      XSync .............." "$CFG_XSYNC"
-    report_support "      XVideo ............." "$CFG_XVIDEO"
 fi
 report_support "  Session management ....." "$CFG_SM"
 if [ "$XPLATFORM_QNX" = "yes" ]; then
