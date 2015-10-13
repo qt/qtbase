@@ -588,8 +588,7 @@ QWindow *QWindow::parent() const
     Setting \a parent to be 0 will make the window become a top level window.
 
     If \a parent is a window created by fromWinId(), then the current window
-    will be embedded inside \a parent, if the platform supports it. Window
-    embedding is currently supported only by the X11 platform plugin.
+    will be embedded inside \a parent, if the platform supports it.
 */
 void QWindow::setParent(QWindow *parent)
 {
@@ -2377,9 +2376,11 @@ QWindow *QWindowPrivate::topLevelWindow() const
     Given the handle \a id to a native window, this method creates a QWindow
     object which can be used to represent the window when invoking methods like
     setParent() and setTransientParent().
-    This can be used, on platforms which support it, to embed a window inside a
-    container or to make a window stick on top of a window created by another
-    process.
+
+    This can be used, on platforms which support it, to embed a QWindow inside a
+    native window, or to embed a native window inside a QWindow.
+
+    If foreign windows are not supported, this function returns 0.
 
     \sa setParent()
     \sa setTransientParent()
