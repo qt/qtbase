@@ -12,6 +12,7 @@
 load(qt_app)
 
 CONFIG += console
+DEFINES *= QT_USE_QSTRINGBUILDER
 
 # If we are doing a prefix build, create a "module" pri which enables
 # qtPrepareTool() to work with the non-installed build.
