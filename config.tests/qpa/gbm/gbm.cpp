@@ -34,12 +34,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 extern "C" {
-#include <xf86drmMode.h>
-#include <xf86drm.h>
+#include <gbm.h>
 }
 
 int main(int, char **)
 {
-    drmModeCrtcPtr currentMode = drmModeGetCrtc(0, 0);
+    gbm_surface *surface = 0;
     return 0;
 }

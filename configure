@@ -689,6 +689,7 @@ CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
+CFG_GBM=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
 CFG_MIRCLIENT=auto
@@ -1828,6 +1829,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    gbm)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_GBM="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     linuxfb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LINUXFB="$VAL"
@@ -2667,8 +2675,11 @@ Additional options:
     -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  *  -eglfs ............. Compile EGLFS support.
 
-    -no-kms ............ Do not compile EGLFS KMS backend.
- *  -kms ............... Compile EGLFS KMS backend.
+    -no-kms ............ Do not compile backends for KMS.
+ *  -kms ............... Compile backends for KMS.
+
+    -no-gbm ............ Do not compile backends for GBM.
+ *  -gbm ............... Compile backends for GBM.
 
     -no-directfb ....... Do not compile DirectFB support.
  *  -directfb .......... Compile DirectFB support.
@@ -4717,13 +4728,6 @@ if [ "$CFG_EGLFS" = "yes" ]; then
     CFG_EGL=yes
 fi
 
-if [ "$CFG_KMS" = "yes" ]; then
-    if [ "$CFG_EGL" = "no" ]; then
-        echo "The KMS plugin requires EGL support and cannot be built"
-        exit 101
-    fi
-fi
-
 # auto-detect SQL-modules support
 for _SQLDR in $CFG_SQL_AVAILABLE; do
         case $_SQLDR in
@@ -5353,7 +5357,6 @@ ORIG_CFG_XCB="$CFG_XCB"
 ORIG_CFG_EGLFS="$CFG_EGLFS"
 ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
 ORIG_CFG_LINUXFB="$CFG_LINUXFB"
-ORIG_CFG_KMS="$CFG_KMS"
 ORIG_CFG_MIRCLIENT="$CFG_MIRCLIENT"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
@@ -5609,6 +5612,20 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_GBM" != "no" ]; then
+    if compileTest qpa/gbm "GBM"; then
+        CFG_GBM=yes
+    elif [ "$CFG_GBM" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        echo " GBM support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_GBM=no
+    fi
+fi
+
 if [ "$CFG_LINUXFB" != "no" ]; then
     if compileTest qpa/linuxfb "LinuxFB"; then
         CFG_LINUXFB=yes
@@ -5768,14 +5785,6 @@ if [ "$CFG_EGLFS" != "no" ]; then
     fi
 fi
 
-if [ "$CFG_KMS" = "yes" ]; then
-    if [ "$CFG_EGL" = "yes" ]; then
-        CFG_KMS="yes"
-    else
-        CFG_KMS="no"
-    fi
-fi
-
 # Detect accessibility support
 if [ "$CFG_ACCESSIBILITY" = "no" ]; then
     echo >&2 "Warning: Disabling Accessibility. This version of Qt is unsupported."
@@ -5821,6 +5830,9 @@ if [ "$CFG_DIRECTFB" = "yes" ]; then
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
     QMakeVar set QMAKE_LIBS_DIRECTFB "$QMAKE_LIBS_DIRECTFB"
 fi
+if [ "$CFG_GBM" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG gbm"
+fi
 if [ "$CFG_LINUXFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG linuxfb"
 fi
@@ -5832,9 +5844,9 @@ if [ "$CFG_MIRCLIENT" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]  && [ "$CFG_MIRCLIENT" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_MIRCLIENT" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ]  || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
         echo " -no-qpa-platform-guard to configure. Doing this will"
@@ -6202,6 +6214,12 @@ if [ "$CFG_EGLFS_BRCM" = "yes" ]; then
 fi
 if [ "$CFG_EGLFS_EGLDEVICE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_egldevice"
+fi
+if [ "$CFG_EGLFS" = "yes" ] && [ "$CFG_KMS" = "yes" ] && [ "$CFG_GBM" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_gbm"
+    CFG_EGLFS_GBM="yes"
+else
+    CFG_EGLFS_GBM="no"
 fi
 if [ "$CFG_EGLFS_MALI" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_mali"
@@ -7270,7 +7288,7 @@ report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
 report_support "      EGLFS i.MX6 ........" "$CFG_EGLFS_VIV"
 report_support "      EGLFS EGLDevice ...." "$CFG_EGLFS_EGLDEVICE"
-report_support "      EGLFS KMS .........." "$CFG_KMS"
+report_support "      EGLFS GBM .........." "$CFG_EGLFS_GBM"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
 report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
 report_support "      EGLFS X11 .........." "$CFG_EGL_X"
