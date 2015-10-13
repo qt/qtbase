@@ -51,7 +51,7 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
       m_backingStore(0),
       m_raster(false),
       m_winId(0),
-      m_surface(0),
+      m_surface(EGL_NO_SURFACE),
       m_window(0),
       m_flags(0)
 {
@@ -120,12 +120,13 @@ void QEglFSWindow::create()
     setGeometry(QRect()); // will become fullscreen
     QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 
-    EGLDisplay display = static_cast<QEglFSScreen *>(screen)->display();
-    QSurfaceFormat platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
-    m_config = QEglFSIntegration::chooseConfig(display, platformFormat);
-    m_format = q_glFormatFromConfig(display, m_config, platformFormat);
-
     resetSurface();
+
+    if (m_surface == EGL_NO_SURFACE) {
+        EGLint error = eglGetError();
+        eglTerminate(screen->display());
+        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
+    }
 
     screen->setPrimarySurface(m_surface);
 
@@ -158,15 +159,10 @@ void QEglFSWindow::destroy()
     QOpenGLCompositor::instance()->removeWindow(this);
 }
 
-// The virtual functions resetSurface and invalidateSurface may get overridden
-// in derived classes, for example in the Android port, to perform the native
-// window and surface creation differently.
-
 void QEglFSWindow::invalidateSurface()
 {
     if (m_surface != EGL_NO_SURFACE) {
-        EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
-        eglDestroySurface(display, m_surface);
+        eglDestroySurface(screen()->display(), m_surface);
         m_surface = EGL_NO_SURFACE;
     }
     qt_egl_device_integration()->destroyNativeWindow(m_window);
@@ -175,15 +171,13 @@ void QEglFSWindow::invalidateSurface()
 
 void QEglFSWindow::resetSurface()
 {
-    QEglFSScreen *nativeScreen = static_cast<QEglFSScreen *>(screen());
-    EGLDisplay display = nativeScreen->display();
-    m_window = qt_egl_device_integration()->createNativeWindow(this, nativeScreen->geometry().size(), m_format);
+    EGLDisplay display = screen()->display();
+    QSurfaceFormat platformFormat = qt_egl_device_integration()->surfaceFormatFor(window()->requestedFormat());
+
+    m_config = QEglFSIntegration::chooseConfig(display, platformFormat);
+    m_format = q_glFormatFromConfig(display, m_config, platformFormat);
+    m_window = qt_egl_device_integration()->createNativeWindow(this, screen()->geometry().size(), m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
-    if (m_surface == EGL_NO_SURFACE) {
-        EGLint error = eglGetError();
-        eglTerminate(display);
-        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
-    }
 }
 
 void QEglFSWindow::setVisible(bool visible)

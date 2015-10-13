@@ -106,11 +106,12 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig *config, const QVariant &nativeHandle)
+                                         EGLConfig *config, const QVariant &nativeHandle, Flags flags)
     : m_eglDisplay(display)
     , m_swapInterval(-1)
     , m_swapIntervalEnvChecked(false)
     , m_swapIntervalFromEnv(-1)
+    , m_flags(flags)
 {
     if (nativeHandle.isNull()) {
         m_eglConfig = config ? *config : q_configFromGLFormat(display, format);
@@ -291,7 +292,7 @@ void QEGLPlatformContext::updateFormatFromGL()
     // drivers (Mesa) when certain attributes are present (multisampling).
     EGLSurface tempSurface = EGL_NO_SURFACE;
     EGLContext tempContext = EGL_NO_CONTEXT;
-    if (!q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
+    if (m_flags.testFlag(NoSurfaceless) || !q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
         tempSurface = createTemporaryOffscreenSurface();
 
     EGLBoolean ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);

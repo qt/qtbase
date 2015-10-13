@@ -117,7 +117,7 @@ void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
 
-    m_display = eglGetDisplay(nativeDisplay());
+    m_display = qt_egl_device_integration()->createDisplay(nativeDisplay());
     if (m_display == EGL_NO_DISPLAY)
         qFatal("Could not open egl display");
 
@@ -179,7 +179,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowSystemInterface::flushWindowSystemEvents();
-    QEglFSWindow *w = new QEglFSWindow(window);
+    QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
     w->create();
     if (window->type() != Qt::ToolTip)
         w->requestActivateWindow();
@@ -213,10 +213,14 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
 {
     EGLDisplay dpy = surface->screen() ? static_cast<QEglFSScreen *>(surface->screen()->handle())->display() : display();
     QSurfaceFormat fmt = qt_egl_device_integration()->surfaceFormatFor(surface->requestedFormat());
-    if (qt_egl_device_integration()->supportsPBuffers())
-        return new QEGLPbuffer(dpy, fmt, surface);
-    else
+    if (qt_egl_device_integration()->supportsPBuffers()) {
+        QEGLPlatformContext::Flags flags = 0;
+        if (!qt_egl_device_integration()->supportsSurfacelessContexts())
+            flags |= QEGLPlatformContext::NoSurfaceless;
+        return new QEGLPbuffer(dpy, fmt, surface, flags);
+    } else {
         return new QEglFSOffscreenWindow(dpy, fmt, surface);
+    }
     // Never return null. Multiple QWindows are not supported by this plugin.
 }
 
@@ -433,6 +437,7 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
     };
 
     Chooser chooser(display);
+    chooser.setSurfaceType(qt_egl_device_integration()->surfaceType());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
 }
