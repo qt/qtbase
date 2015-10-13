@@ -154,7 +154,7 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
             synopsis = typified(func->returnType()) + QLatin1Char(' ');
         synopsis += name;
         if (func->metaness() != FunctionNode::MacroWithoutParams) {
-            synopsis += "(";
+            synopsis += QLatin1Char('(');
             if (!func->parameters().isEmpty()) {
                 QVector<Parameter>::ConstIterator p = func->parameters().constBegin();
                 while (p != func->parameters().constEnd()) {

@@ -1500,7 +1500,7 @@ void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
 
     // We have an overloaded signal, show an example
     QString code = "connect(" + objectName + ", static_cast<" + func->returnType()
-        + "(" + func->parent()->name() + "::*)(";
+        + QLatin1Char('(') + func->parent()->name() + "::*)(";
     for (int i = 0; i < func->parameters().size(); ++i) {
         if (i != 0)
             code += ", ";
@@ -1508,7 +1508,7 @@ void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
         code += p.dataType() + p.rightType();
     }
 
-    code += ")";
+    code += QLatin1Char(')');
     if (func->isConst())
         code += " const";
     code += ">(&" +  func->parent()->name() + "::" + func->name() + "),\n    [=](";
@@ -1519,7 +1519,7 @@ void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
         const Parameter &p = func->parameters().at(i);
         code += p.dataType();
         if (code[code.size()-1].isLetterOrNumber())
-            code += " ";
+            code += QLatin1Char(' ');
         code += p.name()  + p.rightType();
     }
 

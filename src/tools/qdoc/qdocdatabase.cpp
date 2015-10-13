@@ -340,10 +340,10 @@ void QDocForest::printLinkCounts(const QString& project)
     while (i != m.end()) {
         QString line = "  " + i.value();
         if (i.value() != module)
-            depends += " " + i.value();
+            depends += QLatin1Char(' ') + i.value();
         int pad = 30 - line.length();
         for (int k=0; k<pad; ++k)
-            line += " ";
+            line += QLatin1Char(' ');
         line += "%1";
         Location::null.report(line.arg(-(i.key())));
         ++i;
@@ -370,7 +370,7 @@ QString QDocForest::getLinkCounts(QStringList& strings, QVector<int>& counts)
         if (i.value() != module) {
             counts.append(-(i.key()));
             strings.append(i.value());
-            depends += " " + i.value();
+            depends += QLatin1Char(' ') + i.value();
         }
         ++i;
     }
@@ -1674,7 +1674,7 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     const Node* node = 0;
 
     Atom* atom = const_cast<Atom*>(a);
-    QStringList targetPath = atom->string().split("#");
+    QStringList targetPath = atom->string().split(QLatin1Char('#'));
     QString first = targetPath.first().trimmed();
     if (Generator::debugging())
         qDebug() << "  first:" << first;

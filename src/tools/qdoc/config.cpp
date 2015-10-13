@@ -493,7 +493,7 @@ QStringList Config::getCanonicalPathList(const QString& var, bool validate) cons
                     QDir dir(sl[i].simplified());
                     QString path = dir.path();
                     if (dir.isRelative())
-                        dir.setPath(d + "/" + path);
+                        dir.setPath(d + QLatin1Char('/') + path);
                     if (validate && !QFileInfo::exists(dir.path()))
                         lastLocation_.warning(tr("Cannot find file or directory: %1").arg(path));
                     else
@@ -889,7 +889,7 @@ QStringList Config::loadMaster(const QString& fileName)
     if (!fin.open(QFile::ReadOnly | QFile::Text)) {
         if (!Config::installDir.isEmpty()) {
             int prefix = location.filePath().length() - location.fileName().length();
-            fin.setFileName(Config::installDir + "/" + fileName.right(fileName.length() - prefix));
+            fin.setFileName(Config::installDir + QLatin1Char('/') + fileName.right(fileName.length() - prefix));
         }
         if (!fin.open(QFile::ReadOnly | QFile::Text))
             location.fatal(tr("Cannot open master qdocconf file '%1': %2").arg(fileName).arg(fin.errorString()));
@@ -945,7 +945,7 @@ void Config::load(Location location, const QString& fileName)
     if (!fin.open(QFile::ReadOnly | QFile::Text)) {
         if (!Config::installDir.isEmpty()) {
             int prefix = location.filePath().length() - location.fileName().length();
-            fin.setFileName(Config::installDir + "/" + fileName.right(fileName.length() - prefix));
+            fin.setFileName(Config::installDir + QLatin1Char('/') + fileName.right(fileName.length() - prefix));
         }
         if (!fin.open(QFile::ReadOnly | QFile::Text))
             location.fatal(tr("Cannot open file '%1': %2").arg(fileName).arg(fin.errorString()));

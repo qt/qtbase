@@ -624,7 +624,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiImport *import)
     QString version = document.mid(import->versionToken.offset, import->versionToken.length);
     QString importId = document.mid(import->importIdToken.offset, import->importIdToken.length);
     QString importUri = getFullyQualifiedId(import->importUri);
-    QString reconstructed = importUri + QString(" ") + version;
+    QString reconstructed = importUri + QLatin1Char(' ') + version;
     importList.append(ImportRec(name, version, importId, importUri));
 
     return true;

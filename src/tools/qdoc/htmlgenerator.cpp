@@ -1191,7 +1191,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         if (unit < 3) {
             out() << "id=\"" << Doc::canonicalTitle(Text::sectionHeading(atom).toString()) << "\"";
         }
-        out() << ">";
+        out() << '>';
         inSectionHeading_ = true;
         break;
     }
@@ -1228,18 +1228,18 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         if (!p1.isEmpty()) {
             if (p1 == QLatin1String("borderless"))
                 attr = p1;
-            else if (p1.contains("%"))
+            else if (p1.contains(QLatin1Char('%')))
                 width = p1;
         }
         if (!p2.isEmpty()) {
             if (p2 == QLatin1String("borderless"))
                 attr = p2;
-            else if (p2.contains("%"))
+            else if (p2.contains(QLatin1Char('%')))
                 width = p2;
         }
-        out() << "<div class=\"table\"><table class=\"" << attr << "\"";
+        out() << "<div class=\"table\"><table class=\"" << attr << '"';
         if (!width.isEmpty())
-            out() << " width=\"" << width << "\"";
+            out() << " width=\"" << width << '"';
         out() << ">\n ";
         numTableRows_ = 0;
     }
@@ -1288,7 +1288,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
                 out() << p;
             }
             else {
-                QStringList spans = p.split(",");
+                QStringList spans = p.split(QLatin1Char(','));
                 if (spans.size() == 2) {
                     if (spans.at(0) != "1")
                         out() << " colspan=\"" << spans.at(0) << '"';
@@ -2216,7 +2216,7 @@ void HtmlGenerator::generateRequisites(Aggregate *inner, CodeMarker *marker)
                 out() << "<tr>"
                     << "<td class=\"memItemLeft rightAlign topAlign\"> "
                     << *i << ":"
-                    << "</td><td class=\"memItemRight bottomAlign\"> ";
+                    "</td><td class=\"memItemRight bottomAlign\"> ";
 
                 if (*i == headerText)
                     out() << requisites.value(*i).toString();
@@ -2262,7 +2262,7 @@ void HtmlGenerator::generateQmlRequisites(QmlTypeNode *qcn, CodeMarker *marker)
     else
         logicalModuleVersion = qcn->logicalModuleVersion();
     text.clear();
-    text << "import " + qcn->logicalModuleName() + " " + logicalModuleVersion;
+    text << "import " + qcn->logicalModuleName() + QLatin1Char(' ') + logicalModuleVersion;
     requisites.insert(importText, text);
 
     //add the since and project into the map
@@ -3820,7 +3820,7 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
         int hashtag = link.lastIndexOf(QChar('#'));
         if (hashtag != -1)
             link.truncate(hashtag);
-        link += "#" + ref;
+        link += QLatin1Char('#') + ref;
     }
     return link;
 }

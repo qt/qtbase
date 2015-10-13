@@ -660,7 +660,7 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
 
         QString groupsAttr = attributes.value(QLatin1String("groups")).toString();
         if (!groupsAttr.isEmpty()) {
-            QStringList groupNames = groupsAttr.split(",");
+            QStringList groupNames = groupsAttr.split(QLatin1Char(','));
             foreach (const QString &name, groupNames) {
                 qdb_->addToGroup(name, node);
             }
@@ -1029,11 +1029,11 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                     baseStrings.insert(n->fullName());
             }
             if (!baseStrings.isEmpty())
-                writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
+                writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(QLatin1Char(',')));
             if (!node->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", node->physicalModuleName());
             if (!classNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", classNode->groupNames().join(","));
+                writer.writeAttribute("groups", classNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1044,7 +1044,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!namespaceNode->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", namespaceNode->physicalModuleName());
             if (!namespaceNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", namespaceNode->groupNames().join(","));
+                writer.writeAttribute("groups", namespaceNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1056,7 +1056,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("fulltitle", qcn->fullTitle());
             writer.writeAttribute("subtitle", qcn->subTitle());
             if (!qcn->groupNames().isEmpty())
-                writer.writeAttribute("groups", qcn->groupNames().join(","));
+                writer.writeAttribute("groups", qcn->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1098,7 +1098,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("module", node->physicalModuleName());
             }
             if (!docNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", docNode->groupNames().join(","));
+                writer.writeAttribute("groups", docNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1113,7 +1113,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1122,7 +1122,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
@@ -1138,7 +1138,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1147,7 +1147,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
@@ -1163,7 +1163,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1172,7 +1172,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);

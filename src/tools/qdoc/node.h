@@ -1134,7 +1134,7 @@ class CollectionNode : public Aggregate
 
     virtual QString logicalModuleName() const Q_DECL_OVERRIDE { return logicalModuleName_; }
     virtual QString logicalModuleVersion() const Q_DECL_OVERRIDE {
-        return logicalModuleVersionMajor_ + "." + logicalModuleVersionMinor_;
+        return logicalModuleVersionMajor_ + QLatin1Char('.') + logicalModuleVersionMinor_;
     }
     virtual QString logicalModuleIdentifier() const Q_DECL_OVERRIDE {
         return logicalModuleName_ + logicalModuleVersionMajor_;
