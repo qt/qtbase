@@ -735,7 +735,7 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
         formatSizeF(debug, screen->physicalSize());
         // TODO 5.6 if (debug.verbosity() > 2) {
         debug << ", screenNumber=" << screen->screenNumber();
-        debug << ", virtualSize=" << screen->virtualSize().width() << "x" << screen->virtualSize().height() << " (";
+        debug << ", virtualSize=" << screen->virtualSize().width() << 'x' << screen->virtualSize().height() << " (";
         formatSizeF(debug, screen->virtualSize());
         debug << "), nativeGeometry=";
         formatRect(debug, screen->nativeGeometry());

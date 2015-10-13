@@ -186,7 +186,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             }
             if (!found) {
                 QWindowsFileSystemWatcherEngineThread *thread = new QWindowsFileSystemWatcherEngineThread();
-                DEBUG() << "  ###Creating new thread" << thread << "(" << (threads.count()+1) << "threads)";
+                DEBUG() << "  ###Creating new thread" << thread << '(' << (threads.count()+1) << "threads)";
                 thread->handles.append(handle.handle);
                 thread->handleForDir.insert(QFileSystemWatcherPathKey(absolutePath), handle);
 

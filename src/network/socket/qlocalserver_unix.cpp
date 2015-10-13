@@ -209,7 +209,7 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
         QString name = QString::fromLatin1(addr.sun_path);
         if (!name.isEmpty()) {
             fullServerName = name;
-            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1String("/"))+1);
+            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1Char('/')) + 1);
             if (serverName.isEmpty()) {
                 serverName = fullServerName;
             }

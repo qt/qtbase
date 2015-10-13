@@ -386,7 +386,7 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
             if (main_bundle_identifier != NULL) {
                 QString bundle_identifier(qtKey(main_bundle_identifier));
                 // CFBundleGetIdentifier returns identifier separated by slashes rather than periods.
-                QStringList bundle_identifier_components = bundle_identifier.split(QLatin1String("/"));
+                QStringList bundle_identifier_components = bundle_identifier.split(QLatin1Char('/'));
                 // pre-reverse them so that when they get reversed again below, they are in the com.company.product format.
                 QStringList bundle_identifier_components_reversed;
                 for (int i=0; i<bundle_identifier_components.size(); ++i) {

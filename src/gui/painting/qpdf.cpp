@@ -1793,7 +1793,7 @@ void QPdfEnginePrivate::printString(const QString &string) {
             array.append(part[j]);
         }
     }
-    array.append(")");
+    array.append(')');
     write(array);
 }
 

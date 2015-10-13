@@ -170,7 +170,7 @@ QDebug operator<<(QDebug debug, QSslEllipticCurve curve)
 {
     QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
-    debug << "QSslEllipticCurve(" << curve.shortName() << ")";
+    debug << "QSslEllipticCurve(" << curve.shortName() << ')';
     return debug;
 }
 #endif

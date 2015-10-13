@@ -219,7 +219,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     for (int i = 0; i < connector->count_modes; i++) {
         const drmModeModeInfo &mode = connector->modes[i];
         qCDebug(qLcEglfsKmsDebug) << "mode" << i << mode.hdisplay << "x" << mode.vdisplay
-                                  << "@" << mode.vrefresh << "hz";
+                                  << '@' << mode.vrefresh << "hz";
         modes << connector->modes[i];
     }
 
@@ -278,7 +278,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         int height = modes[selected_mode].vdisplay;
         int refresh = modes[selected_mode].vrefresh;
         qCDebug(qLcEglfsKmsDebug) << "Selected mode" << selected_mode << ":" << width << "x" << height
-                                  << "@" << refresh << "hz for output" << connectorName;
+                                  << '@' << refresh << "hz for output" << connectorName;
     }
 
     QEglFSKmsOutput output = {

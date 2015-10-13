@@ -278,7 +278,7 @@ namespace QtAndroidInput
         }
 
 #ifdef QT_DEBUG_ANDROID_STYLUS
-        qDebug() << action << pointerType << buttonState << "@" << x << y << "pressure" << pressure << ": buttons" << buttons;
+        qDebug() << action << pointerType << buttonState << '@' << x << y << "pressure" << pressure << ": buttons" << buttons;
 #endif
 
         QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
@@ -681,7 +681,7 @@ namespace QtAndroidInput
             return Qt::Key_AudioCycleTrack;
 
         default:
-            qWarning() << "Unhandled key code " << key << "!";
+            qWarning() << "Unhandled key code " << key << '!';
             return 0;
         }
     }

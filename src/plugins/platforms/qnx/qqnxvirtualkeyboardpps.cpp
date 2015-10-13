@@ -121,7 +121,7 @@ bool QQnxVirtualKeyboardPps::connect()
     if (m_fd == -1)
     {
         qVirtualKeyboardDebug() << Q_FUNC_INFO << ": Unable to open" << ms_PPSPath
-                                               << ":" << strerror(errno);
+                                               << ':' << strerror(errno);
         close();
         return false;
     }

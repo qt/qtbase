@@ -148,7 +148,7 @@ bool QEvdevMouseHandler::getHardwareMaximum()
     qCDebug(qLcEvdevMouse) << "Absolute pointing device"
                            << "hardware max x" << m_hardwareWidth
                            << "hardware max y" << m_hardwareHeight
-                           << "hardware scalers x" << m_hardwareScalerX << "y" << m_hardwareScalerY;
+                           << "hardware scalers x" << m_hardwareScalerX << 'y' << m_hardwareScalerY;
 
     return true;
 }

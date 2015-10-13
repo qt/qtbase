@@ -326,7 +326,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         QByteArray host;
         if (add.setAddress(hostName)) {
             if (add.protocol() == QAbstractSocket::IPv6Protocol)
-                host = "[" + hostName.toLatin1() + "]";//format the ipv6 in the standard way
+                host = '[' + hostName.toLatin1() + ']'; //format the ipv6 in the standard way
             else
                 host = hostName.toLatin1();
 

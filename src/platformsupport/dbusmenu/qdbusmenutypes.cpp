@@ -247,7 +247,7 @@ QDebug operator<<(QDebug d, const QDBusMenuItem &item)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "QDBusMenuItem(id=" << item.m_id << ", properties=" << item.m_properties << ")";
+    d << "QDBusMenuItem(id=" << item.m_id << ", properties=" << item.m_properties << ')';
     return d;
 }
 

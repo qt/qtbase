@@ -109,7 +109,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
     default:
-        dbg.nospace() << "QMetaType::Type(" << d->type << ")";
+        dbg.nospace() << "QMetaType::Type(" << d->type << ')';
     }
 }
 #endif

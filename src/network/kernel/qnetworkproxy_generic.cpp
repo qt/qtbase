@@ -58,7 +58,7 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
         QString peerHostName = query.peerHostName();
 
         // Since we use suffix matching, "*" is our 'default' behaviour
-        if (token.startsWith("*"))
+        if (token.startsWith('*'))
             token = token.mid(1);
 
         // Harmonize trailing dot notation

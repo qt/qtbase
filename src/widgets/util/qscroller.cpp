@@ -976,7 +976,7 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
 {
     Q_D(QScroller);
 
-    qScrollerDebug() << "QScroller::handleInput(" << input << ", " << d->stateName(d->state) << ", " << position << ", " << timestamp << ")";
+    qScrollerDebug() << "QScroller::handleInput(" << input << ", " << d->stateName(d->state) << ", " << position << ", " << timestamp << ')';
     struct statechange {
         State state;
         Input input;
@@ -1296,7 +1296,7 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos,
     qreal lowerSnapPos = nextSnapPos(startPos, -1, orientation);
     qreal higherSnapPos = nextSnapPos(startPos, 1, orientation);
 
-    qScrollerDebug() << "  Real Delta:" << lowerSnapPos <<"-"<<nextSnap <<"-"<<higherSnapPos;
+    qScrollerDebug() << "  Real Delta:" << lowerSnapPos << '-' << nextSnap << '-' <<higherSnapPos;
 
     // - check if we can reach another snap point
     if (nextSnap > higherSnapPos || qIsNaN(higherSnapPos))
@@ -1703,7 +1703,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
     if (state == newstate)
         return;
 
-    qScrollerDebug() << q << "QScroller::setState(" << stateName(newstate) << ")";
+    qScrollerDebug() << q << "QScroller::setState(" << stateName(newstate) << ')';
 
     switch (newstate) {
     case QScroller::Inactive:

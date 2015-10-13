@@ -69,11 +69,11 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
 {
     QStringList result;
     if (styleHint == QFont::Monospace || styleHint == QFont::Courier)
-        result.append(QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";"));
+        result.append(QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(QLatin1Char(';')));
     else if (styleHint == QFont::Serif)
-        result.append(QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(";"));
+        result.append(QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(QLatin1Char(';')));
     else
-        result.append(QString(qgetenv("QT_ANDROID_FONTS")).split(";"));
+        result.append(QString(qgetenv("QT_ANDROID_FONTS")).split(QLatin1Char(';')));
     result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     return result;

@@ -190,7 +190,7 @@ QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w,
 #ifdef DEBUG_SPAN_UPDATE
 QDebug operator<<(QDebug str, const QSpanCollection::Span &span)
 {
-    str << "(" << span.top() << "," << span.left() << "," << span.bottom() << "," << span.right() << ")";
+    str << '(' << span.top() << ',' << span.left() << ',' << span.bottom() << ',' << span.right() << ')';
     return str;
 }
 #endif

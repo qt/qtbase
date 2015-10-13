@@ -174,7 +174,7 @@ static bool isGPUTestBlacklisted(const char *slot, const char *data = 0)
     if (gpuFeatures->find(disableKey) != gpuFeatures->end()) {
         QByteArray msg = QByteArrayLiteral("Skipped due to GPU blacklist: ") + disableKey;
         if (data)
-            msg += QByteArrayLiteral(":") + QByteArray(data);
+            msg += ':' + QByteArray(data);
         QTest::qSkip(msg.constData(), __FILE__, __LINE__);
         return true;
     }

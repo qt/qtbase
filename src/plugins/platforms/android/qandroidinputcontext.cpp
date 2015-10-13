@@ -342,7 +342,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtNativeInputConnectionClassName
-                    << "'";
+                    << '\'';
         return;
     }
 
@@ -350,7 +350,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
         qCritical() << "RegisterNatives failed for '"
                     << QtNativeInputConnectionClassName
-                    << "'";
+                    << '\'';
         return;
     }
 
@@ -358,7 +358,7 @@ QAndroidInputContext::QAndroidInputContext()
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtExtractedTextClassName
-                    << "'";
+                    << '\'';
         return;
     }
 

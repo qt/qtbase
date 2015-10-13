@@ -693,13 +693,13 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge,
     credentials += "uri=\"" + path + "\", ";
     if (!opaque.isEmpty())
         credentials += "opaque=\"" + opaque + "\", ";
-    credentials += "response=\"" + response + '\"';
+    credentials += "response=\"" + response + '"';
     if (!options.value("algorithm").isEmpty())
         credentials += ", algorithm=" + options.value("algorithm");
     if (!options.value("qop").isEmpty()) {
         credentials += ", qop=" + qop + ", ";
         credentials += "nc=" + nonceCountString + ", ";
-        credentials += "cnonce=\"" + cnonce + '\"';
+        credentials += "cnonce=\"" + cnonce + '"';
     }
 
     return credentials;
