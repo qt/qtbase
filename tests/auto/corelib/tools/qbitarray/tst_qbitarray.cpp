@@ -126,9 +126,9 @@ void tst_QBitArray::size()
     for (int j=0; j<len; j++) {
         bool b = a[j];
         if (b)
-            S+= "1";
+            S+= QLatin1Char('1');
         else
-            S+= "0";
+            S+= QLatin1Char('0');
     }
     QTEST(S,"res");
 }

@@ -1047,7 +1047,7 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("data14") << QString("132") << QString("Md") << invalidDate();
     QTest::newRow("data15") << february << QString("MMMM") << QDate(defDate().year(), 2, 1);
 
-    QString date = mon + " " + august + " 8 2005";
+    QString date = mon + QLatin1Char(' ') + august + " 8 2005";
     QTest::newRow("data16") << date << QString("ddd MMMM d yyyy") << QDate(2005, 8, 8);
     QTest::newRow("data17") << QString("2000:00") << QString("yyyy:yy") << QDate(2000, 1, 1);
     QTest::newRow("data18") << QString("1999:99") << QString("yyyy:yy") << QDate(1999, 1, 1);

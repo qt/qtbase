@@ -141,7 +141,7 @@ void tst_QNetworkInterface::dump()
             s.nospace() << ": " << qPrintable(e.ip().toString());
             if (!e.netmask().isNull())
                 s.nospace() << '/' << e.prefixLength()
-                            << " (" << qPrintable(e.netmask().toString()) << ")";
+                            << " (" << qPrintable(e.netmask().toString()) << ')';
             if (!e.broadcast().isNull())
                 s.nospace() << " broadcast " << qPrintable(e.broadcast().toString());
         }

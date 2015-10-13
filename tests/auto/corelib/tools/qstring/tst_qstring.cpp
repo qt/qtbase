@@ -1362,7 +1362,7 @@ void tst_QString::indexOf_data()
     QString s2;
     s2 += QChar(0x3bc);
     QTest::newRow( "data58" ) << s1 << s2 << 0 << false << 3;
-    s2.prepend("C");
+    s2.prepend(QLatin1Char('C'));
     QTest::newRow( "data59" ) << s1 << s2 << 0 << false << 2;
 
     QString veryBigHaystack(500, 'a');

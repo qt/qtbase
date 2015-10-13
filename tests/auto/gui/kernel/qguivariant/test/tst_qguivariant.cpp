@@ -380,7 +380,7 @@ void tst_QGuiVariant::toString_data()
 #ifndef Q_OS_MAC
         << QString( "Ctrl+A" );
 #else
-        << QString(QChar(0x2318)) + "A";
+        << QString(QChar(0x2318)) + QLatin1Char('A');
 #endif
 
     QFont font( "times", 12 );

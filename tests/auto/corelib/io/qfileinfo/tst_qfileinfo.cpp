@@ -1065,7 +1065,7 @@ void tst_QFileInfo::consistent()
 
     QFileInfo fi(file);
     QCOMPARE(fi.filePath(), expected);
-    QCOMPARE(fi.dir().path() + "/" + fi.fileName(), expected);
+    QCOMPARE(fi.dir().path() + QLatin1Char('/') + fi.fileName(), expected);
 }
 
 

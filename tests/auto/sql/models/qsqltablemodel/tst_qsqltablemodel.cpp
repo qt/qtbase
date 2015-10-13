@@ -1987,7 +1987,7 @@ void tst_QSqlTableModel::tableModifyWithBlank()
     //set a filter on the table so the only record we get is the one we just made
     //I could just do another setData command, but I want to make sure the TableModel
     //matches exactly what is stored in the database
-    model.setFilter("column1='"+timeString+"'"); //filter to get just the newly entered row
+    model.setFilter("column1='" + timeString + QLatin1Char('\'')); //filter to get just the newly entered row
     QVERIFY_SQL(model, select());
 
     //Make sure we only get one record, and that it is the one we just made

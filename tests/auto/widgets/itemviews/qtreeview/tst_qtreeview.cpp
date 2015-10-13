@@ -4286,7 +4286,7 @@ void tst_QTreeView::testInitialFocus()
 {
     QTreeWidget treeWidget;
     treeWidget.setColumnCount(5);
-    new QTreeWidgetItem(&treeWidget, QStringList(QString("1;2;3;4;5").split(";")));
+    new QTreeWidgetItem(&treeWidget, QStringList(QString("1;2;3;4;5").split(QLatin1Char(';'))));
     treeWidget.setTreePosition(2);
     treeWidget.header()->hideSection(0);      // make sure we skip hidden section(s)
     treeWidget.header()->swapSections(1, 2);  // make sure that we look for first visual index (and not first logical)

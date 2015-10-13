@@ -1984,15 +1984,15 @@ void tst_QByteArray::movablity()
     QCOMPARE(array.isEmpty(), newIsEmpty);
     QCOMPARE(array.isNull(), newIsNull);
     QCOMPARE(array.capacity(), newCapacity);
-    QVERIFY(array.startsWith("a"));
-    QVERIFY(array.endsWith("b"));
+    QVERIFY(array.startsWith('a'));
+    QVERIFY(array.endsWith('b'));
 
     QCOMPARE(copy.size(), newSize);
     QCOMPARE(copy.isEmpty(), newIsEmpty);
     QCOMPARE(copy.isNull(), newIsNull);
     QCOMPARE(copy.capacity(), newCapacity);
-    QVERIFY(copy.startsWith("a"));
-    QVERIFY(copy.endsWith("b"));
+    QVERIFY(copy.startsWith('a'));
+    QVERIFY(copy.endsWith('b'));
 
     // try to not crash
     array.squeeze();

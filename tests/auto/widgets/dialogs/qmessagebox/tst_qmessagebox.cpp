@@ -606,7 +606,7 @@ void tst_QMessageBox::detailsButtonText()
     QAbstractButton* btn = NULL;
     foreach(btn, list) {
         if (btn && (btn->inherits("QPushButton"))) {
-            if (btn->text().remove("&") != QMessageBox::tr("OK")
+            if (btn->text().remove(QLatin1Char('&')) != QMessageBox::tr("OK")
                 && btn->text() != QMessageBox::tr("Show Details...")) {
                 QFAIL(qPrintable(QString("Unexpected messagebox button text: %1").arg(btn->text())));
             }

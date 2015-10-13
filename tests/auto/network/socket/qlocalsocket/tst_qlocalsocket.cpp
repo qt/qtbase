@@ -534,7 +534,7 @@ void tst_QLocalSocket::sendData()
     if (server.hasPendingConnections()) {
         QString testLine = "test";
         for (int i = 0; i < 50000; ++i)
-            testLine += "a";
+            testLine += QLatin1Char('a');
         QLocalSocket *serverSocket = server.nextPendingConnection();
         QVERIFY(serverSocket);
         QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
@@ -1205,7 +1205,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
         QVERIFY2(server.fullServerName().at(0) == at, "abstract sockets should start with a '@'");
     } else {
         QCOMPARE(server.fullServerName(), path);
-        if (path.contains(QLatin1String("/"))) {
+        if (path.contains(QLatin1Char('/'))) {
             QVERIFY2(server.serverName() == path.mid(path.lastIndexOf(QLatin1Char('/'))+1), "server name invalid short name");
         } else {
             QVERIFY2(server.serverName() == path, "servier name doesn't match the path provided");

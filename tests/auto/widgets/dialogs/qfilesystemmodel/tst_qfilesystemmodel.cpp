@@ -1097,7 +1097,7 @@ void tst_QFileSystemModel::permissions() // checks QTBUG-20503
     QFETCH(bool, readOnly);
 
     const QString tmp = flatDirTestPath;
-    const QString file  = tmp + '/' + "f";
+    const QString file = tmp + QLatin1String("/f");
     QVERIFY(createFiles(tmp, QStringList() << "f"));
 
     QVERIFY(QFile::setPermissions(file,  QFile::Permissions(permissions)));

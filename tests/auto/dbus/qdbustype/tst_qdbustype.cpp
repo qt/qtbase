@@ -260,11 +260,11 @@ void tst_QDBusType::isValidArray()
     QFETCH(QString, data);
     QFETCH(bool, result);
 
-    data.prepend("a");
+    data.prepend(QLatin1Char('a'));
     QCOMPARE(bool(q_dbus_signature_validate_single(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSingleSignature(data), result);
 
-    data.prepend("a");
+    data.prepend(QLatin1Char('a'));
     QCOMPARE(bool(q_dbus_signature_validate_single(data.toLatin1(), 0)), result);
     QCOMPARE(QDBusUtil::isValidSingleSignature(data), result);
 }

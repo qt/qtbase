@@ -959,14 +959,14 @@ void tst_QSqlQuery::value()
 
         if (dbType == QSqlDriver::Interbase)
             QVERIFY( q.value( 1 ).toString().startsWith( "VarChar" + QString::number( i ) ) );
-        else if ( q.value( 1 ).toString().right( 1 ) == " " )
+        else if ( q.value( 1 ).toString().endsWith(QLatin1Char(' ')))
             QCOMPARE( q.value( 1 ).toString(), ( "VarChar" + QString::number( i ) + "            " ) );
         else
             QCOMPARE( q.value( 1 ).toString(), ( "VarChar" + QString::number( i ) ) );
 
         if (dbType == QSqlDriver::Interbase)
             QVERIFY( q.value( 2 ).toString().startsWith( "Char" + QString::number( i ) ) );
-        else if ( q.value( 2 ).toString().right( 1 ) != " " )
+        else if (!q.value( 2 ).toString().endsWith(QLatin1Char(' ')))
             QCOMPARE( q.value( 2 ).toString(), ( "Char" + QString::number( i ) ) );
         else
             QCOMPARE( q.value( 2 ).toString(), ( "Char" + QString::number( i ) + "               " ) );
@@ -3145,7 +3145,7 @@ void tst_QSqlQuery::sqlServerReturn0()
         "SELECT * FROM "+tableName+" WHERE ID = 2 "
         "RETURN 0"));
 
-    QVERIFY_SQL(q, exec("{CALL "+procName+"}"));
+    QVERIFY_SQL(q, exec("{CALL " + procName + QLatin1Char('}')));
 
     QVERIFY_SQL(q, next());
 }
@@ -3162,7 +3162,7 @@ void tst_QSqlQuery::QTBUG_551()
             TYPE IntType IS TABLE OF INTEGER      INDEX BY BINARY_INTEGER;\n\
             TYPE VCType  IS TABLE OF VARCHAR2(60) INDEX BY BINARY_INTEGER;\n\
             PROCEDURE P (Inp IN IntType,  Outp OUT VCType);\n\
-            END "+pkgname+";"));
+            END "+ pkgname + QLatin1Char(';')));
 
      QVERIFY_SQL(q, exec("CREATE OR REPLACE PACKAGE BODY "+pkgname+" IS\n\
             PROCEDURE P (Inp IN IntType,  Outp OUT VCType)\n\
@@ -3172,7 +3172,7 @@ void tst_QSqlQuery::QTBUG_551()
              Outp(2) := '2. Value is ' ||TO_CHAR(Inp(2));\n\
              Outp(3) := '3. Value is ' ||TO_CHAR(Inp(3));\n\
             END p;\n\
-            END "+pkgname+";"));
+            END " + pkgname + QLatin1Char(';')));
 
     QVariantList inLst, outLst, res_outLst;
 
@@ -3310,7 +3310,7 @@ void tst_QSqlQuery::QTBUG_6421()
     QVERIFY_SQL(q, exec("create index INDEX2 on "+tableName+" (COL2 desc)"));
     QVERIFY_SQL(q, exec("create index INDEX3 on "+tableName+" (COL3 desc)"));
     q.setForwardOnly(true);
-    QVERIFY_SQL(q, exec("select COLUMN_EXPRESSION from ALL_IND_EXPRESSIONS where TABLE_NAME='"+tableName+"'"));
+    QVERIFY_SQL(q, exec("select COLUMN_EXPRESSION from ALL_IND_EXPRESSIONS where TABLE_NAME='" + tableName + QLatin1Char('\'')));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), QLatin1String("\"COL1\""));
     QVERIFY_SQL(q, next());
@@ -3338,7 +3338,7 @@ void tst_QSqlQuery::QTBUG_6618()
                          "begin\n"
                          "    raiserror('" + errorString + "', 16, 1)\n"
                          "end\n" ));
-    q.exec("{call " + qTableName("tst_raiseError", __FILE__, db) + "}");
+    q.exec("{call " + qTableName("tst_raiseError", __FILE__, db) + QLatin1Char('}'));
     QVERIFY(q.lastError().text().contains(errorString));
 }
 
@@ -3430,7 +3430,7 @@ void tst_QSqlQuery::QTBUG_21884()
     QStringList stList;
     QString tableName(qTableName("bug21884", __FILE__, db));
     stList << "create table " + tableName + "(id integer primary key, note string)";
-    stList << "select * from " + tableName + ";";
+    stList << "select * from " + tableName + QLatin1Char(';');
     stList << "select * from " + tableName + ";  \t\n\r";
     stList << "drop table " + tableName;
 
@@ -3984,7 +3984,7 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
 {
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("DROP TABLE IF EXISTS " + tableName));
-    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id " + type + ")"));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id " + type + ')'));
 
     const int steps = 20;
     const T increment = max / steps - min / steps;
@@ -4001,7 +4001,7 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
             q.bindValue(0, v);
             QVERIFY_SQL(q, exec());
         } else {
-            QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (" + QString::number(v) + ")"));
+            QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (" + QString::number(v) + QLatin1Char(')')));
         }
         values[i] = v;
         v += increment;

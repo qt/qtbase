@@ -63,7 +63,7 @@ protected:
         label->setTextInteractionFlags(Qt::TextBrowserInteraction);
         label->setOpenExternalLinks(true);
 
-        QString link("<a href=" + path + ">" + path + "</a>");
+        QString link("<a href=" + path + QLatin1Char('>') + path + "</a>");
 
         label->setText(link);
         return label;

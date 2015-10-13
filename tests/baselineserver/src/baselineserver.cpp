@@ -259,7 +259,7 @@ bool BaselineHandler::establishConnection()
             logMsg += key + QLS(": '") + clientInfo.value(key) + QLS("', ");
     }
     qDebug() << runId << logtime() << "Connection established with" << clientInfo.value(PI_HostName)
-             << "[" << qPrintable(clientInfo.value(PI_HostAddress)) << "]" << logMsg
+             << '[' << qPrintable(clientInfo.value(PI_HostAddress)) << ']' << logMsg
              << "Overrides:" << clientInfo.overrides() << "AdHoc-Run:" << clientInfo.isAdHocRun();
 
     // ### Hardcoded backwards compatibility: add project field for certain existing clients that lack it

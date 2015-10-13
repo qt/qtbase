@@ -185,7 +185,7 @@ static void debug(const QVector<QCss::Symbol> &symbols, int index = -1)
 {
     qDebug() << "all symbols:";
     for (int i = 0; i < symbols.count(); ++i)
-        qDebug() << "(" << i << "); Token:" << tokenName(symbols.at(i).token) << "; Lexem:" << symbols.at(i).lexem();
+        qDebug() << '(' << i << "); Token:" << tokenName(symbols.at(i).token) << "; Lexem:" << symbols.at(i).lexem();
     if (index != -1)
         qDebug() << "failure at index" << index;
 }
@@ -1340,7 +1340,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
     QVERIFY(doc.setContent(QLatin1String("<!DOCTYPE test><test> <dummy/> </test>")));
 
     css.prepend("dummy {");
-    css.append("}");
+    css.append(QLatin1Char('}'));
 
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
@@ -1500,7 +1500,7 @@ void tst_QCssParser::gradient()
     QVERIFY(doc.setContent(QLatin1String("<!DOCTYPE test><test> <dummy/> </test>")));
 
     css.prepend("dummy {");
-    css.append("}");
+    css.append(QLatin1Char('}'));
 
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
@@ -1560,7 +1560,7 @@ void tst_QCssParser::extractFontFamily()
 {
     QFETCH(QString, css);
     css.prepend("dummy {");
-    css.append("}");
+    css.append(QLatin1Char('}'));
 
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
@@ -1618,7 +1618,7 @@ void tst_QCssParser::extractBorder()
     QFETCH(QColor, expectedTopColor);
 
     css.prepend("dummy {");
-    css.append("}");
+    css.append(QLatin1Char('}'));
 
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;

@@ -602,7 +602,7 @@ void tst_qfile::createSmallFiles()
     for (int i = 0; i < 1000; ++i)
 #endif
     {
-        QFile f(tmpDirName+"/"+QString::number(i));
+        QFile f(tmpDirName + QLatin1Char('/') + QString::number(i));
         f.open(QIODevice::WriteOnly);
         f.seek(511);
         f.putChar('\n');
@@ -641,7 +641,7 @@ void tst_qfile::readSmallFiles()
         case(QFileBenchmark): {
             QList<QFile*> fileList;
             Q_FOREACH(QString file, files) {
-                QFile *f = new QFile(tmpDirName+ "/" + file);
+                QFile *f = new QFile(tmpDirName + QLatin1Char('/') + file);
                 f->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(f);
             }
@@ -664,7 +664,7 @@ void tst_qfile::readSmallFiles()
         case(QFSFileEngineBenchmark): {
             QList<QFSFileEngine*> fileList;
             Q_FOREACH(QString file, files) {
-                QFSFileEngine *fse = new QFSFileEngine(tmpDirName+ "/" + file);
+                QFSFileEngine *fse = new QFSFileEngine(tmpDirName + QLatin1Char('/') + file);
                 fse->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(fse);
             }
@@ -685,7 +685,7 @@ void tst_qfile::readSmallFiles()
         case(PosixBenchmark): {
             QList<FILE*> fileList;
             Q_FOREACH(QString file, files) {
-                fileList.append(::fopen(QFile::encodeName(tmpDirName+ "/" + file).constData(), "rb"));
+                fileList.append(::fopen(QFile::encodeName(tmpDirName + QLatin1Char('/') + file).constData(), "rb"));
             }
 
             QBENCHMARK {

@@ -2555,8 +2555,8 @@ void tst_QtJson::nesting()
     QVERIFY(!doc.isNull());
     QCOMPARE(error.error, QJsonParseError::NoError);
 
-    json.prepend("[");
-    json.append("]");
+    json.prepend('[');
+    json.append(']');
     doc = QJsonDocument::fromJson(json, &error);
 
     QVERIFY(doc.isNull());
@@ -2574,8 +2574,8 @@ void tst_QtJson::nesting()
     QVERIFY(!doc.isNull());
     QCOMPARE(error.error, QJsonParseError::NoError);
 
-    json.prepend("[");
-    json.append("]");
+    json.prepend('[');
+    json.append(']');
     doc = QJsonDocument::fromJson(json, &error);
 
     QVERIFY(doc.isNull());
@@ -2589,7 +2589,7 @@ void tst_QtJson::longStrings()
     // in the data structures (for Latin1String in qjson_p.h)
     QString s(0x7ff0, 'a');
     for (int i = 0x7ff0; i < 0x8010; i++) {
-        s.append("c");
+        s.append(QLatin1Char('c'));
 
         QMap <QString, QVariant> map;
         map["key"] = s;
@@ -2608,7 +2608,7 @@ void tst_QtJson::longStrings()
 
     s = QString(0xfff0, 'a');
     for (int i = 0xfff0; i < 0x10010; i++) {
-        s.append("c");
+        s.append(QLatin1Char('c'));
 
         QMap <QString, QVariant> map;
         map["key"] = s;

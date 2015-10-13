@@ -1123,10 +1123,10 @@ void tst_QTextLayout::boundingRectTopLeft()
 void tst_QTextLayout::graphemeBoundaryForSurrogatePairs()
 {
     QString txt;
-    txt.append("a");
+    txt.append(QLatin1Char('a'));
     txt.append(0xd87e);
     txt.append(0xdc25);
-    txt.append("b");
+    txt.append(QLatin1Char('b'));
     QTextLayout layout(txt);
     QTextEngine *engine = layout.engine();
     const QCharAttributes *attrs = engine->attributes();

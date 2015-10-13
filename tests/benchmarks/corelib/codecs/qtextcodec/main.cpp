@@ -56,11 +56,11 @@ void tst_QTextCodec::codecForName() const
     QBENCHMARK {
         foreach(const QByteArray& c, codecs) {
             QVERIFY(QTextCodec::codecForName(c));
-            QVERIFY(QTextCodec::codecForName(c + "-"));
+            QVERIFY(QTextCodec::codecForName(c + '-'));
         }
         foreach(const QByteArray& c, codecs) {
-            QVERIFY(QTextCodec::codecForName(c + "+"));
-            QVERIFY(QTextCodec::codecForName(c + "*"));
+            QVERIFY(QTextCodec::codecForName(c + '+'));
+            QVERIFY(QTextCodec::codecForName(c + '*'));
         }
     }
 }

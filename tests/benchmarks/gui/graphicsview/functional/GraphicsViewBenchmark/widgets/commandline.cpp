@@ -100,7 +100,7 @@ bool readSettingsFromCommandLine(int argc, char *argv[],
                 return false;
             }
             else {
-                QStringList res = QString(argv[i+1]).split("x");
+                QStringList res = QString(argv[i+1]).split(QLatin1Char('x'));
                 if (res.count() != 2) {
                     printf("-resolution parameter UI resolution should be set in format WxH where width and height are positive values\n");
                     usage(argv[0]);

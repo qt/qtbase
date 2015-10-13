@@ -139,7 +139,7 @@ private slots:
 
             // update label, add ".0" if needed.
             QString number = QString::number(scalefactorF);
-            if (!number.contains("."))
+            if (!number.contains(QLatin1Char('.')))
                 number.append(".0");
             m_label->setText(number);
     }
@@ -203,8 +203,8 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
     foreach (QScreen *screen, screens) {
         // create scale control line
         QSize screenSize = screen->geometry().size();
-        QString screenId = screen->name() + " " + QString::number(screenSize.width())
-                                          + " " + QString::number(screenSize.height());
+        QString screenId = screen->name() + QLatin1Char(' ') + QString::number(screenSize.width())
+                                          + QLatin1Char(' ') + QString::number(screenSize.height());
         LabelSlider *slider = new LabelSlider(this, screenId, layout, layoutRow++);
         slider->setValue(getScreenFactorWithoutPixelDensity(screen) * 10);
 

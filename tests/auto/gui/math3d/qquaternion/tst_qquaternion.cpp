@@ -999,16 +999,16 @@ static QByteArray testnameForAxis(const QVector3D &axis)
         testname = "null";
     } else {
         if (axis.x()) {
-            testname += axis.x() < 0 ? "-" : "+";
-            testname += "X";
+            testname += axis.x() < 0 ? '-' : '+';
+            testname += 'X';
         }
         if (axis.y()) {
-            testname += axis.y() < 0 ? "-" : "+";
-            testname += "Y";
+            testname += axis.y() < 0 ? '-' : '+';
+            testname += 'Y';
         }
         if (axis.z()) {
-            testname += axis.z() < 0 ? "-" : "+";
-            testname += "Z";
+            testname += axis.z() < 0 ? '-' : '+';
+            testname += 'Z';
         }
     }
     return testname;

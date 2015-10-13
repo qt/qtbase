@@ -514,7 +514,7 @@ protected:
             path = parentIndex.child(source_row,0).data(Qt::DisplayRole).toString();
 
             do {
-              path = parentIndex.data(Qt::DisplayRole).toString() + "/" + path;
+              path = parentIndex.data(Qt::DisplayRole).toString() + QLatin1Char('/') + path;
               parentIndex = parentIndex.parent();
             } while(parentIndex.isValid());
 
@@ -897,7 +897,7 @@ void tst_QFileDialog2::task228844_ensurePreviousSorting()
 #else
     QTest::qWait(500);
 #endif
-    QCOMPARE(fd2.selectedFiles().first(), current.absolutePath() + QChar('/') + QLatin1String("g"));
+    QCOMPARE(fd2.selectedFiles().first(), current.absolutePath() + QLatin1String("/g"));
 
     QNonNativeFileDialog fd3(0, "This is a third file dialog", tempFile->fileName());
     fd3.restoreState(fd.saveState());

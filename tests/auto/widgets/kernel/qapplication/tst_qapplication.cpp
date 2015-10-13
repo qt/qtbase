@@ -502,7 +502,7 @@ static QString cstrings2QString( char **args )
     while ( args[i] ) {
         string += args[i];
         if ( args[i+1] )
-            string += " ";
+            string += QLatin1Char(' ');
         ++i;
     }
     return string;
@@ -1060,16 +1060,16 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
 #ifdef Q_OS_UNIX
     QByteArray validPath = QDir("/tmp").canonicalPath().toLatin1();
     QByteArray nonExistentPath = "/nonexistent";
-    QByteArray pluginPath = validPath + ":" + nonExistentPath;
+    QByteArray pluginPath = validPath + ':' + nonExistentPath;
 #elif defined(Q_OS_WIN)
 # ifdef Q_OS_WINCE
     QByteArray validPath = "/Temp";
     QByteArray nonExistentPath = "/nonexistent";
-    QByteArray pluginPath = validPath + ";" + nonExistentPath;
+    QByteArray pluginPath = validPath + ';' + nonExistentPath;
 # else
     QByteArray validPath = "C:\\windows";
     QByteArray nonExistentPath = "Z:\\nonexistent";
-    QByteArray pluginPath = validPath + ";" + nonExistentPath;
+    QByteArray pluginPath = validPath + ';' + nonExistentPath;
 # endif
 #endif
 

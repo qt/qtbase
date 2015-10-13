@@ -265,7 +265,7 @@ void tst_QTextCodec::fromUnicode()
         array is correct (no off by one, no trailing '\0').
     */
     QByteArray result = codec->fromUnicode(QString("abc"));
-    if (result.startsWith("a")) {
+    if (result.startsWith('a')) {
         QCOMPARE(result.size(), 3);
         QCOMPARE(result, QByteArray("abc"));
     } else {
@@ -573,7 +573,7 @@ void tst_QTextCodec::utf8Codec_data()
     str = "Prohl";
     str += QChar::ReplacementCharacter;
     str += QChar::ReplacementCharacter;
-    str += "e";
+    str += QLatin1Char('e');
     str += QChar::ReplacementCharacter;
     str += " plugin";
     str += QChar::ReplacementCharacter;

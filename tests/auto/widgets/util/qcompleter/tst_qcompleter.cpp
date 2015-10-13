@@ -61,7 +61,7 @@ public:
 
 protected:
     QStringList splitPath(const QString &path) const {
-        return csv ? path.split(",") : QCompleter::splitPath(path);
+        return csv ? path.split(QLatin1Char(',')) : QCompleter::splitPath(path);
     }
 
 private:

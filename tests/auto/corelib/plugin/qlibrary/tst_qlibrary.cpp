@@ -96,7 +96,7 @@
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
     QString appDir = QCoreApplication::applicationDirPath();
-    return appDir + "/" + PREFIX + fileName + SUFFIX;
+    return appDir + QLatin1Char('/') + PREFIX + fileName + SUFFIX;
 }
 
 QT_FORWARD_DECLARE_CLASS(QLibrary)

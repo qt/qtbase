@@ -1115,7 +1115,7 @@ void tst_QSqlRelationalTableModel::casing()
         QCOMPARE( rec.count(), 0);
 
         //try an owner that does exist
-        rec = db.driver()->record(db.userName() + "." + qTableName("CASETEST1", db).toUpper());
+        rec = db.driver()->record(db.userName() + QLatin1Char('.') + qTableName("CASETEST1", db).toUpper());
         QCOMPARE( rec.count(), 4);
     }
     QSqlRecord rec = db.driver()->record(qTableName("CASETEST1", db).toUpper());
@@ -1464,13 +1464,13 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("create schema " + qTableName("QTBUG_5373", __FILE__, db)));
     QVERIFY_SQL(q, exec("create schema " + qTableName("QTBUG_5373_s2", __FILE__, db)));
-    QVERIFY_SQL(q, exec("create table " + qTableName("QTBUG_5373", __FILE__, db) + "." + qTableName("document", __FILE__, db) +
+    QVERIFY_SQL(q, exec("create table " + qTableName("QTBUG_5373", __FILE__, db) + QLatin1Char('.') + qTableName("document", __FILE__, db) +
                         "(document_id int primary key, relatingid int, userid int)"));
-    QVERIFY_SQL(q, exec("create table " + qTableName("QTBUG_5373_s2", __FILE__, db) + "." + qTableName("user", __FILE__, db) +
+    QVERIFY_SQL(q, exec("create table " + qTableName("QTBUG_5373_s2", __FILE__, db) + QLatin1Char('.') + qTableName("user", __FILE__, db) +
                         "(userid int primary key, username char(40))"));
-    model.setTable(qTableName("QTBUG_5373", __FILE__, db) + "." + qTableName("document", __FILE__, db));
-    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__, db) + "." + qTableName("user", __FILE__, db), "userid", "username"));
-    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__, db) + "." + qTableName("user", __FILE__, db), "userid", "username"));
+    model.setTable(qTableName("QTBUG_5373", __FILE__, db) + QLatin1Char('.') + qTableName("document", __FILE__, db));
+    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__, db) + QLatin1Char('.') + qTableName("user", __FILE__, db), "userid", "username"));
+    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__, db) + QLatin1Char('.') + qTableName("user", __FILE__, db), "userid", "username"));
     QVERIFY_SQL(model, select());
 
     model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
@@ -1515,14 +1515,14 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
     //prepare test1 table
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + testTable1 + " (val1 INTEGER, id1 INTEGER PRIMARY KEY);"));
-    QVERIFY_SQL(q, exec("DELETE FROM " + testTable1 + ";"));
+    QVERIFY_SQL(q, exec("DELETE FROM " + testTable1 + QLatin1Char(';')));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(1, 10);"));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(2, 20);"));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(3, 30);"));
 
     //prepare test2 table
     QVERIFY_SQL(q, exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name TEXT);"));
-    QVERIFY_SQL(q, exec("DELETE FROM " + testTable2 + ";"));
+    QVERIFY_SQL(q, exec("DELETE FROM " + testTable2 + QLatin1Char(';')));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (10, 'Hervanta');"));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (20, 'Keskusta');"));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (30, 'Annala');"));

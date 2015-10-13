@@ -119,7 +119,7 @@ inline static QString qTableName(const QString& prefix, QSqlDatabase db)
     QString tableStr;
     if (db.driverName().toLower().contains("ODBC"))
         tableStr += QLatin1String("_odbc");
-    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + tableStr + "_" +
+    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + tableStr + QLatin1Char('_') +
                           qGetHostName(), QSqlDriver::TableName)),db);
 }
 
@@ -219,12 +219,12 @@ public:
         }
 
         // construct a stupid unique name
-        QString cName = QString::number( counter++ ) + "_" + driver + "@";
+        QString cName = QString::number( counter++ ) + QLatin1Char('_') + driver + QLatin1Char('@');
 
         cName += host.isEmpty() ? dbName : host;
 
         if ( port > 0 )
-            cName += ":" + QString::number( port );
+            cName += QLatin1Char(':') + QString::number( port );
 
         db = QSqlDatabase::addDatabase( driver, cName );
 
@@ -364,7 +364,7 @@ public:
     // for debugging only: outputs the connection as string
     static QString dbToString( const QSqlDatabase db )
     {
-        QString res = db.driverName() + "@";
+        QString res = db.driverName() + QLatin1Char('@');
 
         if ( db.driverName().startsWith( "QODBC" ) || db.driverName().startsWith( "QOCI" ) ) {
             res += db.databaseName();
@@ -373,7 +373,7 @@ public:
         }
 
         if ( db.port() > 0 ) {
-            res += ":" + QString::number( db.port() );
+            res += QLatin1Char(':') + QString::number( db.port() );
         }
 
         return res;
@@ -522,7 +522,7 @@ public:
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
-        result += err.databaseText() + "'";
+        result += err.databaseText() + QLatin1Char('\'');
         return result.toLocal8Bit();
     }
 
@@ -534,7 +534,7 @@ public:
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
-        result += err.databaseText() + "'";
+        result += err.databaseText() + QLatin1Char('\'');
         return result.toLocal8Bit();
     }
 

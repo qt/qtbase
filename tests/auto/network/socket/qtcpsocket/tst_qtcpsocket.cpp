@@ -1776,7 +1776,7 @@ void tst_QTcpSocket::atEnd()
     // Test server must use some vsFTPd 2.x.x version
     QVERIFY2(greeting.length() == sizeof("220 (vsFTPd 2.x.x)")-1, qPrintable(greeting));
     QVERIFY2(greeting.startsWith("220 (vsFTPd 2."), qPrintable(greeting));
-    QVERIFY2(greeting.endsWith(")"), qPrintable(greeting));
+    QVERIFY2(greeting.endsWith(QLatin1Char(')')), qPrintable(greeting));
 
     delete socket;
 }

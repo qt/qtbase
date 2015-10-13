@@ -42,9 +42,9 @@ TransferItem::TransferItem(const QNetworkRequest &r, const QString &u, const QSt
 void TransferItem::progress(qint64 sent, qint64 total)
 {
     if (total > 0)
-        qDebug() << (sent*100/total) << "%";
+        qDebug() << (sent*100/total) << '%';
     else
-        qDebug() << sent << "B";
+        qDebug() << sent << 'B';
 }
 
 void TransferItem::start()

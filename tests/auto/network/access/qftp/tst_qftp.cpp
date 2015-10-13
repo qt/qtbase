@@ -2048,10 +2048,10 @@ bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user
 
     addCommand( QFtp::ConnectToHost, ftp->connectToHost( host, port ) );
     addCommand( QFtp::Login, ftp->login( user, password ) );
-    if ( dirToCreate.startsWith( "/" ) )
+    if ( dirToCreate.startsWith( QLatin1Char('/') ) )
         addCommand( QFtp::Cd, ftp->cd( dirToCreate ) );
     else
-        addCommand( QFtp::Cd, ftp->cd( cdDir + "/" + dirToCreate ) );
+        addCommand( QFtp::Cd, ftp->cd( cdDir + QLatin1Char('/') + dirToCreate ) );
     addCommand( QFtp::Close, ftp->close() );
 
     inFileDirExistsFunction = true;

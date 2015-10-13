@@ -233,7 +233,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
 {
     if (QStringListModel *stringListModel = qobject_cast<QStringListModel *>(model)) {
         QString alphabet = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z";
-        stringListModel->setStringList( alphabet.split(",") );
+        stringListModel->setStringList( alphabet.split(QLatin1Char(',')) );
         return QModelIndex();
     }
 

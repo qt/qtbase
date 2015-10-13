@@ -141,7 +141,7 @@ void tst_QIcoImageFormat::canRead()
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     QCOMPARE(reader.canRead(), (isValid == 0 ? false : true));
 }
 
@@ -175,7 +175,7 @@ void tst_QIcoImageFormat::SequentialFile()
     QFETCH(QString, fileName);
     QFETCH(int, isValid);
 
-    QSequentialFile *file = new QSequentialFile(m_IconPath + "/" + fileName);
+    QSequentialFile *file = new QSequentialFile(m_IconPath + QLatin1Char('/') + fileName);
     QVERIFY(file);
     QVERIFY(file->open(QFile::ReadOnly));
     QImageReader reader(file);
@@ -212,7 +212,7 @@ void tst_QIcoImageFormat::imageCount()
     QFETCH(QString, fileName);
     QFETCH(int, count);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     QCOMPARE(reader.imageCount(), count);
 
 }
@@ -240,7 +240,7 @@ void tst_QIcoImageFormat::jumpToNextImage()
     QFETCH(QString, fileName);
     QFETCH(int, count);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     bool bJumped = reader.jumpToImage(0);
     while (bJumped) {
         count--;
@@ -263,7 +263,7 @@ void tst_QIcoImageFormat::loopCount()
     QFETCH(QString, fileName);
     QFETCH(int, count);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     QCOMPARE(reader.loopCount(), count);
 }
 
@@ -291,7 +291,7 @@ void tst_QIcoImageFormat::nextImageDelay()
     QFETCH(QString, fileName);
     QFETCH(int, count);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
     if (count == -1) {
         QCOMPARE(reader.nextImageDelay(), 0);
     } else {
@@ -320,7 +320,7 @@ void tst_QIcoImageFormat::pngCompression()
     QFETCH(int, width);
     QFETCH(int, height);
 
-    QImageReader reader(m_IconPath + "/" + fileName);
+    QImageReader reader(m_IconPath + QLatin1Char('/') + fileName);
 
     QImage image;
     reader.jumpToImage(index);

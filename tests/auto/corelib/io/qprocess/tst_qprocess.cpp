@@ -1421,11 +1421,11 @@ void tst_QProcess::spaceArgsTest()
         QCOMPARE(actual, args);
 #endif
 
-        if (program.contains(" "))
-            program = "\"" + program + "\"";
+        if (program.contains(QLatin1Char(' ')))
+            program = QLatin1Char('"') + program + QLatin1Char('"');
 
         if (!stringArgs.isEmpty())
-            program += QString::fromLatin1(" ") + stringArgs;
+            program += QLatin1Char(' ') + stringArgs;
 
         errorMessage.clear();
         process->start(program);
@@ -1479,9 +1479,9 @@ void tst_QProcess::nativeArguments()
     char buf[256];
     fgets(buf, 256, file);
     fclose(file);
-    QStringList actual = QString::fromLatin1(buf).split("|");
+    QStringList actual = QString::fromLatin1(buf).split(QLatin1Char('|'));
 #else
-    QStringList actual = QString::fromLatin1(proc.readAll()).split("|");
+    QStringList actual = QString::fromLatin1(proc.readAll()).split(QLatin1Char('|'));
 #endif
     QVERIFY(!actual.isEmpty());
     // not interested in the program name, it might be different.

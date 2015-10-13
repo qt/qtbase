@@ -821,7 +821,7 @@ void tst_qmessagehandler::qMessagePattern()
     // test QT_MESSAGE_PATTERN
     //
     QStringList environment = m_baseEnvironment;
-    environment.prepend("QT_MESSAGE_PATTERN=\"" + pattern + "\"");
+    environment.prepend("QT_MESSAGE_PATTERN=\"" + pattern + QLatin1Char('"'));
     process.setEnvironment(environment);
 
     process.start(appExe);

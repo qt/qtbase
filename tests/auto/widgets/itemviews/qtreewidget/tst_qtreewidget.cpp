@@ -2007,7 +2007,7 @@ void tst_QTreeWidget::columnCount()
 
 void tst_QTreeWidget::setHeaderLabels()
 {
-    QStringList list = QString("a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z").split(",");
+    QStringList list = QString("a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z").split(QLatin1Char(','));
     testWidget->setHeaderLabels(list);
     QCOMPARE(testWidget->header()->count(), list.count());
 }

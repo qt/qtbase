@@ -119,7 +119,7 @@ static QByteArray makeCanonical(const QString &filename,
                         if (notation.publicId().isEmpty()) {
                             writeDtd << " SYSTEM \'";
                             writeDtd << notation.systemId().toString();
-                            writeDtd << "\'";
+                            writeDtd << '\'';
                         } else {
                             writeDtd << " PUBLIC \'";
                             writeDtd << notation.publicId().toString();
@@ -127,10 +127,10 @@ static QByteArray makeCanonical(const QString &filename,
                             if (!notation.systemId().isEmpty() ) {
                                 writeDtd << " \'";
                                 writeDtd << notation.systemId().toString();
-                                writeDtd << "\'";
+                                writeDtd << '\'';
                             }
                         }
-                        writeDtd << ">";
+                        writeDtd << '>';
                         writeDtd << endl;
                     }
 
@@ -687,7 +687,7 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
 
     while (!reader.atEnd()) {
         reader.readNext();
-        writer << reader.tokenString() << "(";
+        writer << reader.tokenString() << '(';
         if (reader.isWhitespace())
             writer << " whitespace";
         if (reader.isCDATA())
@@ -695,42 +695,42 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
         if (reader.isStartDocument() && reader.isStandaloneDocument())
             writer << " standalone";
         if (!reader.text().isEmpty())
-            writer << " text=\"" << reader.text().toString() << "\"";
+            writer << " text=\"" << reader.text().toString() << '"';
         if (!reader.processingInstructionTarget().isEmpty())
-            writer << " processingInstructionTarget=\"" << reader.processingInstructionTarget().toString() << "\"";
+            writer << " processingInstructionTarget=\"" << reader.processingInstructionTarget().toString() << '"';
         if (!reader.processingInstructionData().isEmpty())
-            writer << " processingInstructionData=\"" << reader.processingInstructionData().toString() << "\"";
+            writer << " processingInstructionData=\"" << reader.processingInstructionData().toString() << '"';
         if (!reader.dtdName().isEmpty())
-            writer << " dtdName=\"" << reader.dtdName().toString() << "\"";
+            writer << " dtdName=\"" << reader.dtdName().toString() << '"';
         if (!reader.dtdPublicId().isEmpty())
-            writer << " dtdPublicId=\"" << reader.dtdPublicId().toString() << "\"";
+            writer << " dtdPublicId=\"" << reader.dtdPublicId().toString() << '"';
         if (!reader.dtdSystemId().isEmpty())
-            writer << " dtdSystemId=\"" << reader.dtdSystemId().toString() << "\"";
+            writer << " dtdSystemId=\"" << reader.dtdSystemId().toString() << '"';
         if (!reader.documentVersion().isEmpty())
-            writer << " documentVersion=\"" << reader.documentVersion().toString() << "\"";
+            writer << " documentVersion=\"" << reader.documentVersion().toString() << '"';
         if (!reader.documentEncoding().isEmpty())
-            writer << " documentEncoding=\"" << reader.documentEncoding().toString() << "\"";
+            writer << " documentEncoding=\"" << reader.documentEncoding().toString() << '"';
         if (!reader.name().isEmpty())
-            writer << " name=\"" << reader.name().toString() << "\"";
+            writer << " name=\"" << reader.name().toString() << '"';
         if (!reader.namespaceUri().isEmpty())
-            writer << " namespaceUri=\"" << reader.namespaceUri().toString() << "\"";
+            writer << " namespaceUri=\"" << reader.namespaceUri().toString() << '"';
         if (!reader.qualifiedName().isEmpty())
-            writer << " qualifiedName=\"" << reader.qualifiedName().toString() << "\"";
+            writer << " qualifiedName=\"" << reader.qualifiedName().toString() << '"';
         if (!reader.prefix().isEmpty())
-            writer << " prefix=\"" << reader.prefix().toString() << "\"";
+            writer << " prefix=\"" << reader.prefix().toString() << '"';
         if (reader.attributes().size()) {
             foreach(QXmlStreamAttribute attribute, reader.attributes()) {
                 writer << endl << "    Attribute(";
                 if (!attribute.name().isEmpty())
-                    writer << " name=\"" << attribute.name().toString() << "\"";
+                    writer << " name=\"" << attribute.name().toString() << '"';
                 if (!attribute.namespaceUri().isEmpty())
-                    writer << " namespaceUri=\"" << attribute.namespaceUri().toString() << "\"";
+                    writer << " namespaceUri=\"" << attribute.namespaceUri().toString() << '"';
                 if (!attribute.qualifiedName().isEmpty())
-                    writer << " qualifiedName=\"" << attribute.qualifiedName().toString() << "\"";
+                    writer << " qualifiedName=\"" << attribute.qualifiedName().toString() << '"';
                 if (!attribute.prefix().isEmpty())
-                    writer << " prefix=\"" << attribute.prefix().toString() << "\"";
+                    writer << " prefix=\"" << attribute.prefix().toString() << '"';
                 if (!attribute.value().isEmpty())
-                    writer << " value=\"" << attribute.value().toString() << "\"";
+                    writer << " value=\"" << attribute.value().toString() << '"';
                 writer << " )" << endl;
             }
         }
@@ -738,9 +738,9 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
             foreach(QXmlStreamNamespaceDeclaration namespaceDeclaration, reader.namespaceDeclarations()) {
                 writer << endl << "    NamespaceDeclaration(";
                 if (!namespaceDeclaration.prefix().isEmpty())
-                    writer << " prefix=\"" << namespaceDeclaration.prefix().toString() << "\"";
+                    writer << " prefix=\"" << namespaceDeclaration.prefix().toString() << '"';
                 if (!namespaceDeclaration.namespaceUri().isEmpty())
-                    writer << " namespaceUri=\"" << namespaceDeclaration.namespaceUri().toString() << "\"";
+                    writer << " namespaceUri=\"" << namespaceDeclaration.namespaceUri().toString() << '"';
                 writer << " )" << endl;
             }
         }
@@ -748,11 +748,11 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
             foreach(QXmlStreamNotationDeclaration notationDeclaration, reader.notationDeclarations()) {
                 writer << endl << "    NotationDeclaration(";
                 if (!notationDeclaration.name().isEmpty())
-                    writer << " name=\"" << notationDeclaration.name().toString() << "\"";
+                    writer << " name=\"" << notationDeclaration.name().toString() << '"';
                 if (!notationDeclaration.systemId().isEmpty())
-                    writer << " systemId=\"" << notationDeclaration.systemId().toString() << "\"";
+                    writer << " systemId=\"" << notationDeclaration.systemId().toString() << '"';
                 if (!notationDeclaration.publicId().isEmpty())
-                    writer << " publicId=\"" << notationDeclaration.publicId().toString() << "\"";
+                    writer << " publicId=\"" << notationDeclaration.publicId().toString() << '"';
                 writer << " )" << endl;
             }
         }
@@ -760,15 +760,15 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
             foreach(QXmlStreamEntityDeclaration entityDeclaration, reader.entityDeclarations()) {
                 writer << endl << "    EntityDeclaration(";
                 if (!entityDeclaration.name().isEmpty())
-                    writer << " name=\"" << entityDeclaration.name().toString() << "\"";
+                    writer << " name=\"" << entityDeclaration.name().toString() << '"';
                 if (!entityDeclaration.notationName().isEmpty())
-                    writer << " notationName=\"" << entityDeclaration.notationName().toString() << "\"";
+                    writer << " notationName=\"" << entityDeclaration.notationName().toString() << '"';
                 if (!entityDeclaration.systemId().isEmpty())
-                    writer << " systemId=\"" << entityDeclaration.systemId().toString() << "\"";
+                    writer << " systemId=\"" << entityDeclaration.systemId().toString() << '"';
                 if (!entityDeclaration.publicId().isEmpty())
-                    writer << " publicId=\"" << entityDeclaration.publicId().toString() << "\"";
+                    writer << " publicId=\"" << entityDeclaration.publicId().toString() << '"';
                 if (!entityDeclaration.value().isEmpty())
-                    writer << " value=\"" << entityDeclaration.value().toString() << "\"";
+                    writer << " value=\"" << entityDeclaration.value().toString() << '"';
                 writer << " )" << endl;
             }
         }

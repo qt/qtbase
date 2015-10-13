@@ -1346,14 +1346,14 @@ void tst_QSortFilterProxyModel::buildHierarchy(const QStringList &l, QAbstractIt
     QStack<QModelIndex> parent_stack;
     for (int i = 0; i < l.count(); ++i) {
         QString token = l.at(i);
-        if (token == "<") { // start table
+        if (token == QLatin1String("<")) { // start table
             ++ind;
             parent_stack.push(parent);
             row_stack.push(row);
             parent = m->index(row - 1, 0, parent);
             row = 0;
             QVERIFY(m->insertColumns(0, 1, parent)); // add column
-        } else if (token == ">") { // end table
+        } else if (token == QLatin1String(">")) { // end table
             --ind;
             parent = parent_stack.pop();
             row = row_stack.pop();
@@ -1376,14 +1376,14 @@ void tst_QSortFilterProxyModel::checkHierarchy(const QStringList &l, const QAbst
     QStack<QModelIndex> parent_stack;
     for (int i = 0; i < l.count(); ++i) {
         QString token = l.at(i);
-        if (token == "<") { // start table
+        if (token == QLatin1String("<")) { // start table
             ++indent;
             parent_stack.push(parent);
             row_stack.push(row);
             parent = m->index(row - 1, 0, parent);
             QVERIFY(parent.isValid());
             row = 0;
-        } else if (token == ">") { // end table
+        } else if (token == QLatin1String(">")) { // end table
             --indent;
             parent = parent_stack.pop();
             row = row_stack.pop();
@@ -1418,7 +1418,7 @@ void tst_QSortFilterProxyModel::filterTable()
     filter.setFilterRegExp("9");
 
     for (int i = 0; i < filter.rowCount(); ++i)
-        QVERIFY(filter.data(filter.index(i, 0)).toString().contains("9"));
+        QVERIFY(filter.data(filter.index(i, 0)).toString().contains(QLatin1Char('9')));
 }
 
 void tst_QSortFilterProxyModel::insertAfterSelect()
@@ -2625,7 +2625,7 @@ void tst_QSortFilterProxyModel::staticSorting()
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
     proxy.setDynamicSortFilter(false);
-    QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
+    QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(QLatin1Char(' '));
 
     // prepare model
     QStandardItem *root = model.invisibleRootItem ();
@@ -2680,7 +2680,7 @@ void tst_QSortFilterProxyModel::staticSorting()
 void tst_QSortFilterProxyModel::dynamicSorting()
 {
     QStringListModel model1;
-    const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
+    const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(QLatin1Char(' '));
     model1.setStringList(initial);
     QSortFilterProxyModel proxy1;
     proxy1.setDynamicSortFilter(false);
@@ -3078,7 +3078,7 @@ void tst_QSortFilterProxyModel::appearsAndSort()
 void tst_QSortFilterProxyModel::unnecessaryDynamicSorting()
 {
     QStringListModel model;
-    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    const QStringList initial = QString("bravo charlie delta echo").split(QLatin1Char(' '));
     model.setStringList(initial);
     QSortFilterProxyModel proxy;
     proxy.setDynamicSortFilter(false);
@@ -3162,7 +3162,7 @@ private:
 void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
 {
     QStringListModel model;
-    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    const QStringList initial = QString("bravo charlie delta echo").split(QLatin1Char(' '));
     model.setStringList(initial);
 
     QSortFilterProxyModel proxy;
@@ -3196,7 +3196,7 @@ static bool isValid(const QItemSelection &selection)
 void tst_QSortFilterProxyModel::mapSelectionFromSource()
 {
     QStringListModel model;
-    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    const QStringList initial = QString("bravo charlie delta echo").split(QLatin1Char(' '));
     model.setStringList(initial);
 
     QSortFilterProxyModel proxy;

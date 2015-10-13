@@ -79,7 +79,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
     tst_Databases::safeDropTable( db, relTEST1 );
     QString doubleField = (dbType == QSqlDriver::SQLite) ? "more_data double" : "more_data double(8,7)";
     QVERIFY_SQL( q, exec("create table " + relTEST1 +
-            " (id int not null primary key, name varchar(20), title_key int, another_title_key int, " + doubleField + ")"));
+            " (id int not null primary key, name varchar(20), title_key int, another_title_key int, " + doubleField + QLatin1Char(')')));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(1, 'harry', 1, 2, 1.234567)"));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(2, 'trond', 2, 1, 8.901234)"));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(3, 'vohi', 1, 2, 5.678901)"));

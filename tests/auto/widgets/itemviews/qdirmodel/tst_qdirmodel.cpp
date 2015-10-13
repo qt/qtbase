@@ -416,14 +416,14 @@ void tst_QDirModel::rowsAboutToBeRemoved_data()
 
 bool tst_QDirModel::rowsAboutToBeRemoved_init(const QString &test_path, const QStringList &initial_files)
 {
-    QString path = QDir::currentPath() + "/" + test_path;
+    QString path = QDir::currentPath() + QLatin1Char('/') + test_path;
     if (!QDir::current().mkdir(test_path) && false) { // FIXME
         qDebug() << "failed to create dir" << path;
         return false;
     }
 
     for (int i = 0; i < initial_files.count(); ++i) {
-        QFile file(path + "/" + initial_files.at(i));
+        QFile file(path + QLatin1Char('/') + initial_files.at(i));
         if (!file.open(QIODevice::WriteOnly)) {
             qDebug() << "failed to open file" << initial_files.at(i);
             return false;
@@ -443,7 +443,7 @@ bool tst_QDirModel::rowsAboutToBeRemoved_init(const QString &test_path, const QS
 
 bool tst_QDirModel::rowsAboutToBeRemoved_cleanup(const QString &test_path)
 {
-    QString path = QDir::currentPath() + "/" + test_path;
+    QString path = QDir::currentPath() + QLatin1Char('/') + test_path;
     QDir dir(path, "*", QDir::SortFlags(QDir::Name|QDir::IgnoreCase), QDir::Files);
     QStringList files = dir.entryList();
 
@@ -584,8 +584,8 @@ void tst_QDirModel::filePath()
     QString path = SRCDIR;
 #else
     QString path = QFileInfo(SRCDIR).absoluteFilePath();
-    if (!path.endsWith("/"))
-        path += "/";
+    if (!path.endsWith(QLatin1Char('/')))
+        path += QLatin1Char('/');
 #endif
     QCOMPARE(model.filePath(index), path + QString( "test.lnk"));
     model.setResolveSymlinks(true);

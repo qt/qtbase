@@ -217,7 +217,7 @@ struct FieldDef {
     {
         QString rt = typeName;
         rt.replace(QRegExp("\\s"), QString("_"));
-        int i = rt.indexOf("(");
+        int i = rt.indexOf(QLatin1Char('('));
         if (i == -1)
             i = rt.length();
         if (i > 20)

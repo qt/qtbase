@@ -2083,7 +2083,7 @@ void tst_QListView::taskQTBUG_12308_wrongFlowLayout()
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(QString("Item %L1").arg(i));
         lw.addItem(item);
-        if (!item->text().contains(QString::fromLatin1("1")))
+        if (!item->text().contains(QLatin1Char('1')))
             item->setHidden(true);
     }
     lw.show();

@@ -149,9 +149,10 @@ void atWrapper::ftpMgetDone( bool error)
     if ( mgetDirList.size() > 1 )
         for ( int i = 1; i < mgetDirList.size(); ++i )
         {
-            file = new QFile( QString( output ) + "/" + mgetDirList.at( 0 ) + "/" + mgetDirList.at( i ) );
+            file = new QFile( QString( output ) + QLatin1Char('/') + mgetDirList.at( 0 )
+                              + QLatin1Char('/') + mgetDirList.at( i ) );
             if (file->open(QIODevice::WriteOnly)) {
-                ftp.get( ftpBaseDir + "/" + mgetDirList.at( 0 ) + "/" + mgetDirList.at( i ), file );
+                ftp.get( ftpBaseDir + QLatin1Char('/') + mgetDirList.at( 0 ) + QLatin1Char('/') + mgetDirList.at( i ), file );
                 ftp.list(); //Only there to fill up a slot in the pendingCommands queue.
                 while ( ftp.hasPendingCommands() )
                     QCoreApplication::instance()->processEvents();
@@ -192,11 +193,11 @@ bool atWrapper::setupFTP()
     QString dir = "";
     ftpMkDir( ftpBaseDir );
 
-    ftpBaseDir += "/" + QLibraryInfo::buildKey();
+    ftpBaseDir += QLatin1Char('/') + QLibraryInfo::buildKey();
 
     ftpMkDir( ftpBaseDir );
 
-    ftpBaseDir += "/" + QString( qVersion() );
+    ftpBaseDir += QLatin1Char('/') + QString( qVersion() );
 
     ftpMkDir( ftpBaseDir );
 
@@ -209,9 +210,9 @@ bool atWrapper::setupFTP()
     {
         i.next();
         //qDebug() << "Creating dir with key:" << i.key();
-        ftpMkDir( ftpBaseDir + "/" +  QString( i.key() ) + ".failed" );
-        ftpMkDir( ftpBaseDir + "/" +  QString( i.key() ) + ".diff" );
-        if (!ftpMkDir( ftpBaseDir + "/" + QString( i.key() ) + ".baseline" ))
+        ftpMkDir( ftpBaseDir + QLatin1Char('/') +  QString( i.key() ) + ".failed" );
+        ftpMkDir( ftpBaseDir + QLatin1Char('/') +  QString( i.key() ) + ".diff" );
+        if (!ftpMkDir( ftpBaseDir + QLatin1Char('/') + QString( i.key() ) + ".baseline" ))
             haveBaseline = false;
     }
 
@@ -226,7 +227,7 @@ bool atWrapper::setupFTP()
     {
         j.next();
         rmDirList.clear();
-        rmDirList << ftpBaseDir + "/" + j.key() + ".failed" + "/";
+        rmDirList << ftpBaseDir + QLatin1Char('/') + j.key() + ".failed/";
         ftpRmDir( j.key() + ".failed" );
         ftp.rmdir( j.key() + ".failed" );
         ftp.mkdir( j.key() + ".failed" );
@@ -236,7 +237,7 @@ bool atWrapper::setupFTP()
             QCoreApplication::instance()->processEvents();
 
         rmDirList.clear();
-        rmDirList << ftpBaseDir + "/" + j.key() + ".diff" + "/";
+        rmDirList << ftpBaseDir + QLatin1Char('/') + j.key() + ".diff/";
         ftpRmDir( j.key() + ".diff" );
         ftp.rmdir( j.key() + ".diff" );
         ftp.mkdir( j.key() + ".diff" );
@@ -396,7 +397,7 @@ void atWrapper::createBaseline()
         for (int n = 0; n < list.size(); n++)
         {
             QFileInfo fileInfo = list.at( n );
-            QFile file( QString( output ) + "/" + i.key() + "/" + fileInfo.fileName() );
+            QFile file( QString( output ) + QLatin1Char('/') + i.key() + QLatin1Char('/') + fileInfo.fileName() );
             file.open( QIODevice::ReadOnly );
             QByteArray fileData = file.readAll();
             //qDebug() << "Sending up:" << fileInfo.fileName() << "with file size" << fileData.size();
@@ -470,9 +471,9 @@ bool atWrapper::diff( QString basedir, QString dir, QString target )
     //Comparing the two specified files, and then uploading them to
     //the ftp server if they differ
 
-    basedir += "/" + dir;
+    basedir += QLatin1Char('/') + dir;
     QString one = basedir + ".baseline/" + target;
-    QString two = basedir + "/" + target;
+    QString two = basedir + QLatin1Char('/') + target;
 
     QFile file( one );
 
@@ -517,7 +518,7 @@ void atWrapper::uploadDiff( QString basedir, QString dir, QString filename )
 
     qDebug() << basedir;
     QImage im1( basedir + ".baseline/" + filename );
-    QImage im2( basedir + "/" + filename );
+    QImage im2( basedir + QLatin1Char('/') + filename );
 
     QImage im3(im1.size(), QImage::Format_ARGB32);
 
@@ -591,16 +592,16 @@ bool atWrapper::loadConfig( QString path )
 
     QDir::current().mkdir( output );
 
-    output += "/" + QLibraryInfo::buildKey();
+    output += QLatin1Char('/') + QLibraryInfo::buildKey();
 
     QDir::current().mkdir( output );
 
-    output += "/" + QString( qVersion() );
+    output += QLatin1Char('/') + QString( qVersion() );
 
     QDir::current().mkdir( output );
 
 
-    ftpBaseDir += "/" + QHostInfo::localHostName().split( "." ).first();
+    ftpBaseDir += QLatin1Char('/') + QHostInfo::localHostName().split( QLatin1Char('.') ).first();
 
 
 /*

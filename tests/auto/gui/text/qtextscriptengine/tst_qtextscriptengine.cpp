@@ -130,7 +130,7 @@ struct ShapeTable {
 static void prepareShapingTest(const QFont &font, const ShapeTable *shape_table)
 {
     for (const ShapeTable *s = shape_table; s->unicode[0]; ++s) {
-        QByteArray testName = font.family().toLatin1() + ":";
+        QByteArray testName = font.family().toLatin1() + ':';
         QString string;
         for (const ushort *u = s->unicode; *u; ++u) {
             string.append(QChar(*u));

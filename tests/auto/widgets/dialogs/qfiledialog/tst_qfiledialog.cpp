@@ -956,7 +956,7 @@ void tst_QFiledialog::selectFiles()
     QListView* listView = fd.findChild<QListView*>("listView");
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
-        fd.selectFile(fd.directory().path() + "/" + list.at(i));
+        fd.selectFile(fd.directory().path() + QLatin1Char('/') + list.at(i));
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
         toSelect.append(listView->selectionModel()->selectedRows().last());
     }

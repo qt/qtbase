@@ -547,8 +547,8 @@ void tst_QWizard::setDefaultProperty()
 
     // make sure the data structure is reasonable
     for (int i = 0; i < 200000; ++i) {
-        wizard.setDefaultProperty("QLineEdit", QByteArray("x" + QByteArray::number(i)).constData(), 0);
-        wizard.setDefaultProperty("QLabel", QByteArray("y" + QByteArray::number(i)).constData(), 0);
+        wizard.setDefaultProperty("QLineEdit", QByteArray('x' + QByteArray::number(i)).constData(), 0);
+        wizard.setDefaultProperty("QLabel", QByteArray('y' + QByteArray::number(i)).constData(), 0);
     }
 }
 
@@ -2115,7 +2115,7 @@ void tst_QWizard::combinations()
     }
 
     if (minSizeTest)
-        qDebug() << "minimum sizes" << reason.latin1() << ";" << wizard.minimumSizeHint()
+        qDebug() << "minimum sizes" << reason.latin1() << ';' << wizard.minimumSizeHint()
                  << otor.latin1() << refMinSize;
 
     if (imageTest)

@@ -211,7 +211,7 @@ static QString settingsPath(const char *path = "")
 #else
     QString tempPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 #endif
-    if (tempPath.endsWith("/"))
+    if (tempPath.endsWith(QLatin1Char('/')))
         tempPath.truncate(tempPath.size() - 1);
     return QDir::toNativeSeparators(tempPath + "/tst_QSettings/" + QLatin1String(path));
 }

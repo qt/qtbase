@@ -147,7 +147,7 @@ void BearerEx::on_createSessionButton_clicked()
     QNetworkConfiguration networkConfiguration = qvariant_cast<QNetworkConfiguration>(item->data(Qt::UserRole));
     int newTabIndex = mainTabWidget->count();
     SessionTab* newTab = new SessionTab(&networkConfiguration,&m_NetworkConfigurationManager,eventListWidget,newTabIndex-1);
-    QString label = QString("S")+QString::number(newTabIndex-1);
+    QString label = QLatin1Char('S') + QString::number(newTabIndex-1);
     mainTabWidget->insertTab(newTabIndex,newTab,label);
     mainTabWidget->setCurrentIndex(newTabIndex);
 }
@@ -271,9 +271,11 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
         snapLabel->hide();
         snapLineEdit->hide();
         alrButton->hide();
-        iapLineEdit->setText(apNetworkConfiguration->name()+" ("+apNetworkConfiguration->identifier()+")");
+        iapLineEdit->setText(apNetworkConfiguration->name()+ " (" + apNetworkConfiguration->identifier()
+                             + QLatin1Char(')'));
     } else if (apNetworkConfiguration->type() == QNetworkConfiguration::ServiceNetwork) {
-        snapLineEdit->setText(apNetworkConfiguration->name()+" ("+apNetworkConfiguration->identifier()+")");
+        snapLineEdit->setText(apNetworkConfiguration->name()+ " (" + apNetworkConfiguration->identifier()
+                              + QLatin1Char(')'));
     }
     bearerLineEdit->setText(apNetworkConfiguration->bearerTypeName());
     sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
@@ -380,7 +382,7 @@ void SessionTab::newConfigurationActivated()
     msgBox.setDefaultButton(QMessageBox::Yes);
     if (msgBox.exec() == QMessageBox::Yes) {
         m_NetworkSession->accept();
-        iapLineEdit->setText(m_config.name()+" ("+m_config.identifier()+")");
+        iapLineEdit->setText(m_config.name() + " (" + m_config.identifier() + QLatin1Char(')'));
     } else {
         m_NetworkSession->reject();
     }
@@ -391,7 +393,7 @@ void SessionTab::preferredConfigurationChanged(const QNetworkConfiguration& conf
     m_config =  config;
     QMessageBox msgBox;
     msgBox.setText("Roaming to new configuration.");
-    msgBox.setInformativeText("Do you want to migrate to "+config.name()+"?");
+    msgBox.setInformativeText("Do you want to migrate to " + config.name() + QLatin1Char('?'));
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
     if (msgBox.exec() == QMessageBox::Yes) {
@@ -407,7 +409,7 @@ void SessionTab::opened()
     QFont font = listItem->font();
     font.setBold(true);
     listItem->setFont(font);
-    listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Opened"));
+    listItem->setText(QLatin1Char('S') + QString::number(m_index) + QLatin1String(" - Opened"));
     m_eventListWidget->addItem(listItem);
 
     QVariant identifier = m_NetworkSession->sessionProperty("ActiveConfiguration");
@@ -415,7 +417,7 @@ void SessionTab::opened()
         QString configId = identifier.toString();
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
         if (config.isValid()) {
-            iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
+            iapLineEdit->setText(config.name() + " (" + config.identifier() + QLatin1Char(')'));
         }
     }
     newState(m_NetworkSession->state()); // Update the "(open)"
@@ -438,7 +440,7 @@ void SessionTab::closed()
     QFont font = listItem->font();
     font.setBold(true);
     listItem->setFont(font);
-    listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Closed"));
+    listItem->setText(QLatin1Char('S') + QString::number(m_index) + QLatin1String(" - Closed"));
     m_eventListWidget->addItem(listItem);
 }
 
@@ -489,7 +491,7 @@ void SessionTab::stateChanged(QNetworkSession::State state)
     newState(state);
 
     QListWidgetItem* listItem = new QListWidgetItem();
-    listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+stateString(state));
+    listItem->setText(QLatin1Char('S') + QString::number(m_index) + QLatin1String(" - ") + stateString(state));
     m_eventListWidget->addItem(listItem);
 }
 
@@ -500,7 +502,7 @@ void SessionTab::newState(QNetworkSession::State state)
         QString configId = identifier.toString();
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
         if (config.isValid()) {
-            iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
+            iapLineEdit->setText(config.name() + " (" + config.identifier() + QLatin1Char(')'));
             bearerLineEdit->setText(config.bearerTypeName());
         }
     } else {
@@ -539,7 +541,7 @@ void SessionTab::error(QNetworkSession::SessionError error)
             errorString = "InvalidConfigurationError";
             break;
     }
-    listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+errorString);
+    listItem->setText(QLatin1Char('S') + QString::number(m_index) + QString(" - ") + errorString);
     m_eventListWidget->addItem(listItem);
 
     msgBox.setText(errorString);

@@ -285,7 +285,7 @@ void tst_QSqlQuery::benchmarkSelectPrepared()
     int expectedSum = 0;
     QString fillQuery = "INSERT INTO " + tableName + " VALUES (0)";
     for (int i = 1; i < NUM_ROWS; ++i) {
-        fillQuery += ", (" + QString::number(i) + ")";
+        fillQuery += ", (" + QString::number(i) + QLatin1Char(')');
         expectedSum += i;
     }
     QVERIFY_SQL(q, exec(fillQuery));

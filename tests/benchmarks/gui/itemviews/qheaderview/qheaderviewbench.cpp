@@ -130,7 +130,7 @@ void BenchQHeaderView::init()
     for (int i = 0; i < m_model->rowCount(); ++i) {
         m_model->setData(m_model->index(i, 0), QVariant(i));
         s.setNum(i);
-        s += ".";
+        s += QLatin1Char('.');
         s += 'a' + (i % 25);
         m_model->setData(m_model->index(i, 1), QVariant(s));
     }

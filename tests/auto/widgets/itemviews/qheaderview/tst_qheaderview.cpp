@@ -2492,7 +2492,7 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
 
     QString msg = "semantic problem at " + QString(__FILE__) + " (" + sline + ")";
     msg += "\nThe *expected* result was : {" + istr(x[0]) + istr(x[1]) + istr(x[2]) + istr(x[3])
-        + istr(x[4]) + istr(x[5]) + istr(x[6], false) + "}";
+        + istr(x[4]) + istr(x[5]) + istr(x[6], false) + QLatin1Char('}');
     msg += "\nThe calculated result was : {";
     msg += istr(chk_visual) + istr(chk_logical) + istr(chk_sizes) + istr(chk_hidden_size)
         + istr(chk_lookup_visual) + istr(chk_lookup_logical) + istr(header_lenght, false) + "};";
@@ -2570,7 +2570,7 @@ void tst_QHeaderView::additionalInit()
     for (int i = 0; i < model->rowCount(); ++i) {
         model->setData(model->index(i, 0), QVariant(i));
         s.setNum(i);
-        s += ".";
+        s += QLatin1Char('.');
         s += 'a' + (i % 25);
         model->setData(model->index(i, 1), QVariant(s));
     }

@@ -1063,7 +1063,7 @@ void tst_QDir::cd_data()
     QTest::addColumn<bool>("successExpected");
     QTest::addColumn<QString>("newDir");
 
-    int index = m_dataPath.lastIndexOf("/");
+    int index = m_dataPath.lastIndexOf(QLatin1Char('/'));
     QTest::newRow("cdUp") << m_dataPath << ".." << true << m_dataPath.left(index==0?1:index);
     QTest::newRow("cdUp non existent (relative dir)") << "anonexistingDir" << ".."
                                                       << true << m_dataPath;
@@ -1107,11 +1107,11 @@ void tst_QDir::setNameFilters_data()
     QTest::newRow("spaces2") << m_dataPath + "/testdir/spaces" << QStringList("*.bar")
                           << QStringList("foo.bar");
     QTest::newRow("spaces3") << m_dataPath + "/testdir/spaces" << QStringList("foo.*")
-                            << QString("foo. bar,foo.bar").split(",");
-    QTest::newRow("files1")  << m_dataPath + "/testdir/dir" << QString("*r.cpp *.pro").split(" ")
-                          << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(",");
+                            << QString("foo. bar,foo.bar").split(QLatin1Char(','));
+    QTest::newRow("files1")  << m_dataPath + "/testdir/dir" << QString("*r.cpp *.pro").split(QLatin1Char(' '))
+                          << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(QLatin1Char(','));
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
-                             << QString("file1.data,file2.data,file3.data").split(',');
+                             << QString("file1.data,file2.data,file3.data").split(QLatin1Char(','));
 }
 
 void tst_QDir::setNameFilters()

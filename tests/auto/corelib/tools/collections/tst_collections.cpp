@@ -3482,7 +3482,7 @@ template<class Container> void foreach_test_arrays(const Container &container)
 
 void tst_Collections::foreach_2()
 {
-    QStringList strlist = QString::fromLatin1("a,b,c,d,e,f,g,h,ih,kl,mn,op,qr,st,uvw,xyz").split(",");
+    QStringList strlist = QString::fromLatin1("a,b,c,d,e,f,g,h,ih,kl,mn,op,qr,st,uvw,xyz").split(QLatin1Char(','));
     foreach_test_arrays(strlist);
     foreach_test_arrays(QList<QString>(strlist));
     foreach_test_arrays(strlist.toVector());

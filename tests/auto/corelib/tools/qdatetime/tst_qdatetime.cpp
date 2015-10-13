@@ -2096,11 +2096,11 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data9") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data10") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data11") << date << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());
-    date = fri + " " + december + " 3 2004";
+    date = fri + QLatin1Char(' ') + december + " 3 2004";
     QTest::newRow("data12") << date << QString("ddd MMMM d yyyy") << QDateTime(QDate(2004, 12, 3), QTime());
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << invalidDateTime();
-    date = thu + " " + january + " 2004";
+    date = thu + QLatin1Char(' ') + january + " 2004";
     QTest::newRow("data15") << date << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zZ")

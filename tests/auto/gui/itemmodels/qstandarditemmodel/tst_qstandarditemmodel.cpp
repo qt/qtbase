@@ -1613,14 +1613,14 @@ void tst_QStandardItemModel::removeRowsAndColumns()
 #define VERIFY_MODEL \
     for (int c = 0; c < col_list.count(); c++) \
         for (int r = 0; r < row_list.count(); r++) \
-            QCOMPARE(model.item(r,c)->text() , row_list[r] + "x" + col_list[c]);
+            QCOMPARE(model.item(r,c)->text() , row_list[r] + QLatin1Char('x') + col_list[c]);
 
     QVector<QString> row_list = QString("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20").split(',').toVector();
     QVector<QString> col_list = row_list;
     QStandardItemModel model;
     for (int c = 0; c < col_list.count(); c++)
         for (int r = 0; r < row_list.count(); r++)
-            model.setItem(r, c, new QStandardItem(row_list[r] + "x" + col_list[c]));
+            model.setItem(r, c, new QStandardItem(row_list[r] + QLatin1Char('x') + col_list[c]));
     VERIFY_MODEL
 
     row_list.remove(3);
@@ -1642,14 +1642,14 @@ void tst_QStandardItemModel::removeRowsAndColumns()
     QList<QStandardItem *> row_taken = model.takeRow(6);
     QCOMPARE(row_taken.count(), col_list.count());
     for (int c = 0; c < col_list.count(); c++)
-        QCOMPARE(row_taken[c]->text() , row_list[6] + "x" + col_list[c]);
+        QCOMPARE(row_taken[c]->text() , row_list[6] + QLatin1Char('x') + col_list[c]);
     row_list.remove(6);
     VERIFY_MODEL
 
     QList<QStandardItem *> col_taken = model.takeColumn(10);
     QCOMPARE(col_taken.count(), row_list.count());
     for (int r = 0; r < row_list.count(); r++)
-        QCOMPARE(col_taken[r]->text() , row_list[r] + "x" + col_list[10]);
+        QCOMPARE(col_taken[r]->text() , row_list[r] + QLatin1Char('x') + col_list[10]);
     col_list.remove(10);
     VERIFY_MODEL
 }
@@ -1661,7 +1661,7 @@ void tst_QStandardItemModel::itemRoleNames()
     QStandardItemModel model;
     for (int c = 0; c < col_list.count(); c++)
         for (int r = 0; r < row_list.count(); r++)
-            model.setItem(r, c, new QStandardItem(row_list[r] + "x" + col_list[c]));
+            model.setItem(r, c, new QStandardItem(row_list[r] + QLatin1Char('x') + col_list[c]));
     VERIFY_MODEL
 
     QHash<int, QByteArray> newRoleNames;

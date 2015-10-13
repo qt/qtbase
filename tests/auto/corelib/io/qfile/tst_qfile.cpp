@@ -1994,7 +1994,7 @@ void tst_QFile::longFileName()
         QString line = ts.readLine();
         QCOMPARE(line, fileName);
     }
-    QString newName = fileName + QLatin1String("1");
+    QString newName = fileName + QLatin1Char('1');
     {
         QVERIFY(QFile::copy(fileName, newName));
         QFile file(newName);

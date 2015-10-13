@@ -141,7 +141,7 @@ void MiniHttpServerConnection::handlePendingRequest()
     }
 
     QUrl uri = QUrl::fromEncoded(request.mid(4, eol - int(strlen(http11)) - 4));
-    source.setFileName(":" + uri.path());
+    source.setFileName(QLatin1Char(':') + uri.path());
 
     // connection-close?
     request = request.toLower();

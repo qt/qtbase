@@ -2780,7 +2780,7 @@ void tst_QNetworkReply::postToHttpsMultipart()
 
     // hack for testing the setting of the content-type header by hand:
     if (contentType == "custom") {
-        QByteArray contentType("multipart/custom; boundary=\"" + multiPart->boundary() + "\"");
+        QByteArray contentType("multipart/custom; boundary=\"" + multiPart->boundary() + '"');
         request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
     }
 
@@ -2932,7 +2932,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QByteArray content = reply->readAll();
     //qDebug() << server.receivedData;
-    QByteArray hostinfo = "\r\nHost: " + hostfield + ":" + QByteArray::number(server.serverPort()) + "\r\n";
+    QByteArray hostinfo = "\r\nHost: " + hostfield + ':' + QByteArray::number(server.serverPort()) + "\r\n";
     QVERIFY(server.receivedData.contains(hostinfo));
     QCOMPARE(content, dataToSend);
     QCOMPARE(reply->url(), request.url());
@@ -4943,7 +4943,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int allowedDeviation = 16; // TODO find out why the send rate is 13% faster currently
         const int minRate = rate * 1024 * (100-allowedDeviation) / 100;
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
-        qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
+        qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << '?';
         // The test takes too long to run if sending enough data to overwhelm the
         // reciever's kernel buffers.
         //QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
@@ -5519,7 +5519,7 @@ void tst_QNetworkReply::sendCookies_data()
     list.clear();
     cookie = QNetworkCookie("a", "b");
     cookie.setPath("/");
-    cookie.setDomain("." + QtNetworkSettings::serverDomainName());
+    cookie.setDomain(QLatin1Char('.') + QtNetworkSettings::serverDomainName());
     list << cookie;
     QTest::newRow("domain-match") << list << "a=b";
 
@@ -5852,7 +5852,7 @@ void tst_QNetworkReply::httpConnectionCount()
     QCoreApplication::instance()->processEvents();
 
     for (int i = 0; i < 10; i++) {
-        QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/" +  QString::number(i)));
+        QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + QLatin1Char('/') +  QString::number(i)));
         QNetworkReply* reply = manager.get(request);
         reply->setParent(&server);
     }

@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
             headersFile=str.mid(10);
         else if (str == "--serial")
             dl.setQueueMode(DownloadManager::Serial);
-        else if (str.startsWith("-"))
+        else if (str.startsWith(QLatin1Char('-')))
             qDebug() << "unsupported option" << str;
         else {
             QUrl url(QUrl::fromUserInput(str));

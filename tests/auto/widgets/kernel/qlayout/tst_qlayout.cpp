@@ -195,7 +195,7 @@ void tst_QLayout::smartMaxSize()
                         int width = sz.width();
                         int expectedWidth = expectedWidths[expectedIndex];
                         if (width != expectedWidth) {
-                            qDebug() << "error at index" << expectedIndex << ":" << sizePolicy.horizontalPolicy() << align << minSize << sizeHint << maxSize << width;
+                            qDebug() << "error at index" << expectedIndex << ':' << sizePolicy.horizontalPolicy() << align << minSize << sizeHint << maxSize << width;
                             ++regressionCount;
                         }
                         ++expectedIndex;

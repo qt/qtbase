@@ -602,7 +602,7 @@ int main(int argc, char **argv)
                 pcmd.setType(type);
                 pcmd.setCheckersBackground(checkers_background);
                 pcmd.setContents(content);
-                QString file = QString(files.at(j)).replace(".", "_") + ".ps";
+                QString file = QString(files.at(j)).replace(QLatin1Char('.'), QLatin1Char('_')) + ".ps";
 
                 QPrinter p(highres ? QPrinter::HighResolution : QPrinter::ScreenResolution);
                 if (printdlg) {

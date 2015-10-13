@@ -370,7 +370,7 @@ void tst_QLocale::ctor()
                 && l.country() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                 + QLocale::languageToString(l.language()) \
-                + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
         QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
         QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
     }
@@ -431,8 +431,8 @@ void tst_QLocale::ctor()
         && l.country() == QLocale::exp_country, \
         QString("requested: \"" + QString(req_lc) + "\", got: " \
         + QLocale::languageToString(l.language()) \
-        + "/" + QLocale::scriptToString(l.script()) \
-        + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+        + QLatin1Char('/') + QLocale::scriptToString(l.script()) \
+        + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
     }
 
     TEST_CTOR("zh_CN", Chinese, SimplifiedHanScript, China)
@@ -606,7 +606,7 @@ void tst_QLocale::legacyNames()
                 && l.country() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                 + QLocale::languageToString(l.language()) \
-                + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
     }
 
     TEST_CTOR("mo_MD", Romanian, Moldova)
@@ -1460,9 +1460,9 @@ void tst_QLocale::macDefaultLocale()
     if (timeString.contains(QString("GMT"))) {
         QString expectedGMTSpecifierBase("GMT");
         if (diff >= 0)
-            expectedGMTSpecifierBase.append("+");
+            expectedGMTSpecifierBase.append(QLatin1Char('+'));
         else
-            expectedGMTSpecifierBase.append("-");
+            expectedGMTSpecifierBase.append(QLatin1Char('-'));
 
         QString expectedGMTSpecifier = expectedGMTSpecifierBase + QString("%1").arg(qAbs(diff));
         QString expectedGMTSpecifierZeroExtended = expectedGMTSpecifierBase + QString("0%1").arg(qAbs(diff));

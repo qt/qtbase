@@ -309,7 +309,7 @@ void Report::writeFunctionResults(const ImageItemList &list)
                 out << "<span style=\"color:green\"><small>No mismatch reported</small></span>";
                 break;
             default:
-                out << "?";
+                out << '?';
                 break;
             }
             out << "</td>\n";
@@ -401,14 +401,14 @@ QString Report::writeResultsXmlFiles()
     if (!cwd.exists(dir))
         cwd.mkpath(dir);
     foreach (const QString &func, itemLists.keys()) {
-        QFile f(dir + "/" + func + "-results.xml");
+        QFile f(dir + QLatin1Char('/') + func + "-results.xml");
         if (!f.open(QIODevice::WriteOnly))
             continue;
         QXmlStreamWriter s(&f);
         s.setAutoFormatting(true);
         s.writeStartDocument();
         foreach (QString key, plat.keys()) {
-            QString cmt = " " + key + "=\"" + plat.value(key) +"\" ";
+            QString cmt = QLatin1Char(' ') + key + "=\"" + plat.value(key) +"\" ";
             s.writeComment(cmt.replace("--", "[-]"));
         }
         s.writeStartElement("testsuite");

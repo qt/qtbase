@@ -296,7 +296,7 @@ bool TestCompiler::make( const QString &workPath, const QString &target, bool ex
 
 bool TestCompiler::exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version )
 {
-    QFileInfo f(destDir + "/" + targetName(buildType, exeName, version));
+    QFileInfo f(destDir + QLatin1Char('/') + targetName(buildType, exeName, version));
     return f.exists();
 }
 

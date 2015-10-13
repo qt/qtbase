@@ -201,7 +201,7 @@ QString TabletWidget::buttonsToString(Qt::MouseButtons bs)
         if (bs.testFlag(b))
             ret << buttonToString(b);
     }
-    return ret.join("|");
+    return ret.join(QLatin1Char('|'));
 }
 
 void TabletWidget::tabletEvent(QTabletEvent *event)

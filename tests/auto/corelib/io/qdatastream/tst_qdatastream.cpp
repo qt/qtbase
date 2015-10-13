@@ -301,7 +301,7 @@ void tst_QDataStream::cleanupTestCase()
 
 static int dataIndex(const QString &tag)
 {
-    int pos = tag.lastIndexOf("_");
+    int pos = tag.lastIndexOf(QLatin1Char('_'));
     if (pos >= 0) {
         int ret = 0;
         QString count = tag.mid(pos + 1);
@@ -338,7 +338,7 @@ void tst_QDataStream::stream_data(int noOfElements)
         for (int b=0; b<2; b++) {
             QString byte_order = b == 0 ? "BigEndian" : "LittleEndian";
 
-            QString tag = device + "_" + byte_order;
+            QString tag = device + QLatin1Char('_') + byte_order;
             for (int e=0; e<noOfElements; e++) {
                 QTest::newRow(qPrintable(tag + QString("_%1").arg(e))) << device << QString(byte_order);
             }

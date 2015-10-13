@@ -81,7 +81,8 @@ QString DummyDataGenerator::randomPhoneNumber(QString indexNumber)
     QString beginNumber = QString::number(555-index*2);
     QString endNumber = QString("0").repeated(4-indexNumber.length()) + indexNumber;
 
-    return countryCode +" " + areaCode +" " + beginNumber +" " + endNumber;
+    return countryCode + QLatin1Char(' ') + areaCode +QLatin1Char(' ') + beginNumber
+           + QLatin1Char(' ') + endNumber;
 }
 
 QString DummyDataGenerator::randomFirstName()

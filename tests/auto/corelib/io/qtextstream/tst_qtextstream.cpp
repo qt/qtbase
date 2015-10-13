@@ -1615,18 +1615,18 @@ void tst_QTextStream::forcePoint()
 {
     QString str;
     QTextStream stream(&str);
-    stream << fixed << forcepoint << 1.0 << " " << 1 << " " << 0 << " " << -1.0 << " " << -1;
+    stream << fixed << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.000000 1 0 -1.000000 -1"));
 
     str.clear();
     stream.seek(0);
-    stream << scientific << forcepoint << 1.0 << " " << 1 << " " << 0 << " " << -1.0 << " " << -1;
+    stream << scientific << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.000000e+00 1 0 -1.000000e+00 -1"));
 
     str.clear();
     stream.seek(0);
     stream.setRealNumberNotation(QTextStream::SmartNotation);
-    stream << forcepoint << 1.0 << " " << 1 << " " << 0 << " " << -1.0 << " " << -1;
+    stream << forcepoint << 1.0 << ' ' << 1 << ' ' << 0 << ' ' << -1.0 << ' ' << -1;
     QCOMPARE(str, QString("1.00000 1 0 -1.00000 -1"));
 
 }
@@ -1636,7 +1636,7 @@ void tst_QTextStream::forceSign()
 {
     QString str;
     QTextStream stream(&str);
-    stream << forcesign << 1.2 << " " << -1.2 << " " << 0;
+    stream << forcesign << 1.2 << ' ' << -1.2 << ' ' << 0;
     QCOMPARE(str, QString("+1.2 -1.2 +0"));
 }
 
@@ -1773,9 +1773,9 @@ void tst_QTextStream::nanInf()
 
     QString s;
     QTextStream out(&s);
-    out << qInf() << " " << -qInf() << " " << qQNaN()
-        << uppercasedigits << " "
-        << qInf() << " " << -qInf() << " " << qQNaN()
+    out << qInf() << ' ' << -qInf() << ' ' << qQNaN()
+        << uppercasedigits << ' '
+        << qInf() << ' ' << -qInf() << ' ' << qQNaN()
         << flush;
 
     QCOMPARE(s, QString("inf -inf nan INF -INF NAN"));
@@ -2565,7 +2565,7 @@ void tst_QTextStream::useCase1()
         stream.setCodec(QTextCodec::codecForName("ISO-8859-1"));
         stream.setAutoDetectUnicode(true);
 
-        stream << 4.15 << " " << QByteArray("abc") << " " << QString("ole");
+        stream << 4.15 << ' ' << QByteArray("abc") << ' ' << QString("ole");
     }
 
     file.seek(0);
@@ -2601,7 +2601,7 @@ void tst_QTextStream::useCase2()
     stream.setCodec(QTextCodec::codecForName("ISO-8859-1"));
     stream.setAutoDetectUnicode(true);
 
-    stream << 4.15 << " " << QByteArray("abc") << " " << QString("ole");
+    stream << 4.15 << ' ' << QByteArray("abc") << ' ' << QString("ole");
 
     file.close();
     QVERIFY(file.open(QFile::ReadWrite));

@@ -87,7 +87,7 @@ void PropertyField::propertyChanged()
             m_lastChangeTime = QTime::currentTime().addSecs(-5);
         }
 
-        qDebug() << "  " << QString::fromUtf8(m_prop.name()) << ":" << val;
+        qDebug() << "  " << QString::fromUtf8(m_prop.name()) << ':' << val;
         // If the value has recently changed, show the change
         if (text != m_lastText || m_lastChangeTime.elapsed() < 1000) {
             setText(m_lastTextShowing + " -> " + text);

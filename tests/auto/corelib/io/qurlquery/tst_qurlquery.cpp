@@ -103,7 +103,7 @@ static QByteArray prettyList(const T &items)
         first = false;
         result += prettyPair(it);
     }
-    result += ")";
+    result += QLatin1Char(')');
     return result.toLocal8Bit();
 }
 

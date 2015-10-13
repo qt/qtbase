@@ -222,46 +222,46 @@ QDebug operator<<(QDebug d, const QNativeEvent &e)
 
 QTextStream &operator<<(QTextStream &s, QNativeEvent *e)
 {
-    return s << e->eventId << " " << e->modifiers << " QNativeEvent";
+    return s << e->eventId << ' ' << e->modifiers << " QNativeEvent";
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeMouseEvent *e)
 {
-    return s << e->eventId << " " << e->globalPos.x() << " " << e->globalPos.y() << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->globalPos.x() << ' ' << e->globalPos.y() << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeMouseMoveEvent *e)
 {
-    return s << e->eventId << " " << e->globalPos.x() << " " << e->globalPos.y() << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->globalPos.x() << ' ' << e->globalPos.y() << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeMouseButtonEvent *e)
 {
-    return s << e->eventId << " " << e->globalPos.x() << " " << e->globalPos.y() << " " << e->button
-        << " " << e->clickCount << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->globalPos.x() << ' ' << e->globalPos.y() << ' ' << e->button
+        << ' ' << e->clickCount << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeMouseDragEvent *e)
 {
-    return s << e->eventId << " " << e->globalPos.x() << " " << e->globalPos.y() << " " << e->button << " " << e->clickCount
-        << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->globalPos.x() << ' ' << e->globalPos.y() << ' ' << e->button << ' ' << e->clickCount
+        << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeMouseWheelEvent *e)
 {
-    return s << e->eventId << " " << e->globalPos.x() << " " << e->globalPos.y() << " " << e->delta
-        << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->globalPos.x() << ' ' << e->globalPos.y() << ' ' << e->delta
+        << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeKeyEvent *e)
 {
-    return s << e->eventId << " " << e->press << " " << e->nativeKeyCode << " " << e->character
-        << " " << e->modifiers << " " << e->toString();
+    return s << e->eventId << ' ' << e->press << ' ' << e->nativeKeyCode << ' ' << e->character
+        << ' ' << e->modifiers << ' ' << e->toString();
 }
 
 QTextStream &operator<<(QTextStream &s, QNativeModifierEvent *e)
 {
-    return s << e->eventId << " " << e->modifiers << " " << e->nativeKeyCode << " " << e->toString();
+    return s << e->eventId << ' ' << e->modifiers << ' ' << e->nativeKeyCode << ' ' << e->toString();
 }
 
 

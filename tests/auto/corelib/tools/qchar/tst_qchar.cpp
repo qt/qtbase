@@ -756,7 +756,7 @@ void tst_QChar::normalization_data()
         if (comment >= 0)
             line = line.left(comment);
 
-        if (line.startsWith("@")) {
+        if (line.startsWith('@')) {
             if (line.startsWith("@Part") && line.size() > 5 && QChar(line.at(5)).isDigit())
                 part = QChar(line.at(5)).digitValue();
             continue;
