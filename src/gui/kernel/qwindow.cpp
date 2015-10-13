@@ -2382,6 +2382,11 @@ QWindow *QWindowPrivate::topLevelWindow() const
 
     If foreign windows are not supported, this function returns 0.
 
+    \note The resulting QWindow should not be used to manipulate the underlying
+    native window (besides re-parenting), or to observe state changes of the
+    native window. Any support for these kind of operations is incidental, highly
+    platform dependent and untested.
+
     \sa setParent()
     \sa setTransientParent()
 */
