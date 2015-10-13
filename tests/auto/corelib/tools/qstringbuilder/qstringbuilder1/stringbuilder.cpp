@@ -93,6 +93,11 @@ void runScenario()
     r = special + string;
     QCOMPARE(r, QString(special P string));
 
+    // self-assignment:
+    r = stringref.toString();
+    r = achar + r;
+    QCOMPARE(r, QString(achar P stringref));
+
 #ifdef Q_COMPILER_UNICODE_STRINGS
     r = QStringLiteral(UNICODE_LITERAL);
     r = r Q QStringLiteral(UNICODE_LITERAL);
