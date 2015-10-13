@@ -68,7 +68,7 @@ public:
 
     bool isInputPanelVisible() const;
 
-#ifdef Q_OS_WINPHONE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     void showInputPanel();
     void hideInputPanel();
 #endif
