@@ -144,11 +144,11 @@ void DomUI::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QLatin1String("stdsetdef")) {
-            setAttributeStdsetdef(attribute.value().toString().toInt());
+            setAttributeStdsetdef(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("stdSetDef")) {
-            setAttributeStdSetDef(attribute.value().toString().toInt());
+            setAttributeStdSetDef(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -1693,7 +1693,7 @@ void DomImageData::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QLatin1String("length")) {
-            setAttributeLength(attribute.value().toString().toInt());
+            setAttributeLength(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -2540,11 +2540,11 @@ void DomLayoutDefault::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("spacing")) {
-            setAttributeSpacing(attribute.value().toString().toInt());
+            setAttributeSpacing(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("margin")) {
-            setAttributeMargin(attribute.value().toString().toInt());
+            setAttributeMargin(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -2966,19 +2966,19 @@ void DomLayoutItem::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("row")) {
-            setAttributeRow(attribute.value().toString().toInt());
+            setAttributeRow(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("column")) {
-            setAttributeColumn(attribute.value().toString().toInt());
+            setAttributeColumn(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("rowspan")) {
-            setAttributeRowSpan(attribute.value().toString().toInt());
+            setAttributeRowSpan(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("colspan")) {
-            setAttributeColSpan(attribute.value().toString().toInt());
+            setAttributeColSpan(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("alignment")) {
@@ -3303,11 +3303,11 @@ void DomItem::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("row")) {
-            setAttributeRow(attribute.value().toString().toInt());
+            setAttributeRow(attribute.value().toInt());
             continue;
         }
         if (name == QLatin1String("column")) {
-            setAttributeColumn(attribute.value().toString().toInt());
+            setAttributeColumn(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -3474,7 +3474,7 @@ void DomWidget::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QLatin1String("native")) {
-            setAttributeNative(attribute.value().toString() == QLatin1String("true"));
+            setAttributeNative(attribute.value() == QLatin1String("true"));
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -3860,7 +3860,7 @@ void DomColor::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("alpha")) {
-            setAttributeAlpha(attribute.value().toString().toInt());
+            setAttributeAlpha(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -3989,7 +3989,7 @@ void DomGradientStop::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("position")) {
-            setAttributePosition(attribute.value().toString().toDouble());
+            setAttributePosition(attribute.value().toDouble());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -4135,43 +4135,43 @@ void DomGradient::read(QXmlStreamReader &reader)
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
         if (name == QLatin1String("startx")) {
-            setAttributeStartX(attribute.value().toString().toDouble());
+            setAttributeStartX(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("starty")) {
-            setAttributeStartY(attribute.value().toString().toDouble());
+            setAttributeStartY(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("endx")) {
-            setAttributeEndX(attribute.value().toString().toDouble());
+            setAttributeEndX(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("endy")) {
-            setAttributeEndY(attribute.value().toString().toDouble());
+            setAttributeEndY(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("centralx")) {
-            setAttributeCentralX(attribute.value().toString().toDouble());
+            setAttributeCentralX(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("centraly")) {
-            setAttributeCentralY(attribute.value().toString().toDouble());
+            setAttributeCentralY(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("focalx")) {
-            setAttributeFocalX(attribute.value().toString().toDouble());
+            setAttributeFocalX(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("focaly")) {
-            setAttributeFocalY(attribute.value().toString().toDouble());
+            setAttributeFocalY(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("radius")) {
-            setAttributeRadius(attribute.value().toString().toDouble());
+            setAttributeRadius(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("angle")) {
-            setAttributeAngle(attribute.value().toString().toDouble());
+            setAttributeAngle(attribute.value().toDouble());
             continue;
         }
         if (name == QLatin1String("type")) {
@@ -7262,7 +7262,7 @@ void DomProperty::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QLatin1String("stdset")) {
-            setAttributeStdset(attribute.value().toString().toInt());
+            setAttributeStdset(attribute.value().toInt());
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
