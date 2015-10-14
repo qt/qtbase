@@ -87,17 +87,9 @@ void QCocoaScreen::updateGeometry()
 
     NSRect frameRect = [nsScreen frame];
 
-    // Since Mavericks, there is a setting, System Preferences->Mission Control->
-    // Displays have separate Spaces.
-    BOOL spansDisplays = NO;
-#if QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_9)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_9)
-        spansDisplays = [NSScreen screensHaveSeparateSpaces];
-#endif
-    if (spansDisplays || m_screenIndex == 0) {
+    if (m_screenIndex == 0) {
         m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
-        // Displays have separate Spaces setting is on or this is the primary screen,
-        // the one that contains the menubar. Its origin should be
+        // This is the primary screen, the one that contains the menubar. Its origin should be
         // (0, 0), and it's the only one whose available geometry differs from its full geometry.
         NSRect visibleRect = [nsScreen visibleFrame];
         m_availableGeometry = QRect(visibleRect.origin.x,

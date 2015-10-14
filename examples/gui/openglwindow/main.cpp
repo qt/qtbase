@@ -57,8 +57,6 @@ public:
     void render() Q_DECL_OVERRIDE;
 
 private:
-    GLuint loadShader(GLenum type, const char *source);
-
     GLuint m_posAttr;
     GLuint m_colAttr;
     GLuint m_matrixUniform;
@@ -113,14 +111,6 @@ static const char *fragmentShaderSource =
 //! [3]
 
 //! [4]
-GLuint TriangleWindow::loadShader(GLenum type, const char *source)
-{
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, 0);
-    glCompileShader(shader);
-    return shader;
-}
-
 void TriangleWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
