@@ -146,8 +146,8 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
     int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
     if (id == -1)
-        qWarning("QXcbShmImage: shmget() failed (%d) for size %d (%dx%d)",
-                 errno, segmentSize, size.width(), size.height());
+        qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %d (%dx%d)",
+                 errno, strerror(errno), segmentSize, size.width(), size.height());
     else
         m_shm_info.shmid = id;
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
