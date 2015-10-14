@@ -55,7 +55,7 @@ class QShapedPixmapWindow : public QWindow
 {
     Q_OBJECT
 public:
-    QShapedPixmapWindow();
+    explicit QShapedPixmapWindow(QScreen *screen = 0);
     ~QShapedPixmapWindow();
 
     void render();

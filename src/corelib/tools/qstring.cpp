@@ -1509,7 +1509,7 @@ QString::QString(const QChar *unicode, int size)
     } else {
         if (size < 0) {
             size = 0;
-            while (unicode[size] != 0)
+            while (!unicode[size].isNull())
                 ++size;
         }
         if (!size) {

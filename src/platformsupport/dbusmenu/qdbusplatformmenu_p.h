@@ -33,6 +33,17 @@
 
 #ifndef QDBUSPLATFORMMENU_H
 #define QDBUSPLATFORMMENU_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 //
 //  W A R N I N G
 //  -------------
@@ -57,6 +68,7 @@ class QDBusPlatformMenuItem : public QPlatformMenuItem
 
 public:
     QDBusPlatformMenuItem(quintptr tag = 0LL);
+    ~QDBusPlatformMenuItem();
 
     quintptr tag()const Q_DECL_OVERRIDE { return m_tag; }
     void setTag(quintptr tag) Q_DECL_OVERRIDE;

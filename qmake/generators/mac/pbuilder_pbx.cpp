@@ -417,20 +417,24 @@ public:
     inline QString groupName() const { return group; }
     inline QString compilerName() const { return compiler; }
     inline bool isObjectOutput(const QString &file) const {
-        bool ret = object_output;
-        for(int i = 0; !ret && i < Option::c_ext.size(); ++i) {
-            if(file.endsWith(Option::c_ext.at(i))) {
-                ret = true;
-                break;
-            }
+        if (object_output)
+            return true;
+
+        if (file.endsWith(Option::objc_ext))
+            return true;
+        if (file.endsWith(Option::objcpp_ext))
+            return true;
+
+        for (int i = 0; i < Option::c_ext.size(); ++i) {
+            if (file.endsWith(Option::c_ext.at(i)))
+                return true;
         }
-        for(int i = 0; !ret && i < Option::cpp_ext.size(); ++i) {
-            if(file.endsWith(Option::cpp_ext.at(i))) {
-                ret = true;
-                break;
-            }
+        for (int i = 0; i < Option::cpp_ext.size(); ++i) {
+            if (file.endsWith(Option::cpp_ext.at(i)))
+                return true;
         }
-        return ret;
+
+        return false;
     }
 };
 
@@ -490,9 +494,9 @@ static QString xcodeFiletypeForFilename(const QString &filename)
             return "sourcecode.c.h";
     }
 
-    if (filename.endsWith(QStringLiteral(".mm")))
+    if (filename.endsWith(Option::objcpp_ext))
         return QStringLiteral("sourcecode.cpp.objcpp");
-    if (filename.endsWith(QStringLiteral(".m")))
+    if (filename.endsWith(Option::objc_ext))
         return QStringLiteral("sourcecode.c.objc");
     if (filename.endsWith(QStringLiteral(".framework")))
         return QStringLiteral("wrapper.framework");
@@ -816,7 +820,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             for(int x = 0; x < tmp.count();) {
                 bool remove = false;
                 QString library, name;
-                ProString opt = tmp[x].trimmed();
+                ProString opt = tmp[x];
                 if(opt.startsWith("-L")) {
                     QString r = opt.mid(2).toQString();
                     fixForOutput(r);
@@ -833,8 +837,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                encode the version number in the Project file which might be a bad
                                things in days to come? --Sam
                             */
-                            QString lib_file = (*lit) + Option::dir_sep + lib;
-                            if(QMakeMetaInfo::libExists(lib_file)) {
+                            QString lib_file = QMakeMetaInfo::findLib(Option::normalizePath((*lit) + Option::dir_sep + lib));
+                            if (!lib_file.isEmpty()) {
                                 QMakeMetaInfo libinfo(project);
                                 if(libinfo.readLib(lib_file)) {
                                     if(!libinfo.isEmpty("QMAKE_PRL_TARGET")) {

@@ -188,7 +188,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
             error = FT_New_Face(library, file.constData(), index, &face);
         }
         if (error != FT_Err_Ok) {
-            qDebug() << "FT_New_Face failed with index" << index << ":" << hex << error;
+            qDebug() << "FT_New_Face failed with index" << index << ':' << hex << error;
             break;
         }
         numFaces = face->num_faces;

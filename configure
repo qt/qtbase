@@ -318,7 +318,7 @@ macSDKify()
                 val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
                 echo "$var=$val"
             ;;
-            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_OBJECTIVE_CFLAGS=*)
+            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*)
                 echo "$line -isysroot $sysroot $version_min_flag"
             ;;
             QMAKE_LFLAGS=*)
@@ -682,9 +682,11 @@ CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
 CFG_EGLFS_BRCM=no
+CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
 CFG_DIRECTFB=auto
+CFG_GBM=auto
 CFG_LINUXFB=auto
 CFG_KMS=auto
 CFG_MIRCLIENT=auto
@@ -1811,6 +1813,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    gbm)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_GBM="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     linuxfb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LINUXFB="$VAL"
@@ -1970,7 +1979,8 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAL" = "no" ] || [ "$VAL" = "linked" ] || [ "$VAL" = "runtime" ]; then
             CFG_DBUS="$VAL"
         elif [ "$VAL" = "yes" ]; then
-            CFG_DBUS="runtime"
+            # keep as auto, we'll auto-detect whether to go linked or runtime later
+            CFG_DBUS=auto
         else
             UNKNOWN_OPT=yes
         fi
@@ -1979,6 +1989,13 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAL" = "yes" ]; then
 	    CFG_DBUS="linked"
 	else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    dbus-runtime)
+        if [ "$VAL" = "yes" ]; then
+            CFG_DBUS="runtime"
+        else
             UNKNOWN_OPT=yes
         fi
         ;;
@@ -2616,8 +2633,8 @@ Additional options:
     -pch ............... Use precompiled header support.
 
     -no-dbus ........... Do not compile the Qt D-Bus module.
- +  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
-    -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
+ +  -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
+    -dbus-runtime ...... Compile the Qt D-Bus module and dynamically load libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
@@ -2643,8 +2660,11 @@ Additional options:
     -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  *  -eglfs ............. Compile EGLFS support.
 
-    -no-kms ............ Do not compile EGLFS KMS backend.
- *  -kms ............... Compile EGLFS KMS backend.
+    -no-kms ............ Do not compile backends for KMS.
+ *  -kms ............... Compile backends for KMS.
+
+    -no-gbm ............ Do not compile backends for GBM.
+ *  -gbm ............... Compile backends for GBM.
 
     -no-directfb ....... Do not compile DirectFB support.
  *  -directfb .......... Compile DirectFB support.
@@ -3324,6 +3344,8 @@ fi
 # tests that don't need qmake (must be run before displaying help)
 #-------------------------------------------------------------------------------
 
+echo "Running configuration tests (phase 1)..."
+
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
     if [ "$XPLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
@@ -3595,6 +3617,8 @@ unset tty
 [ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
 eval "`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog" | tee $tty`"
 unset tty
+
+echo "Done running configuration tests."
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -4097,7 +4121,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     fi
 fi # Build qmake
 
-echo "Running configuration tests..."
+echo "Running configuration tests (phase 2)..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
@@ -4724,13 +4748,6 @@ if [ "$CFG_EGLFS" = "yes" ]; then
     CFG_EGL=yes
 fi
 
-if [ "$CFG_KMS" = "yes" ]; then
-    if [ "$CFG_EGL" = "no" ]; then
-        echo "The KMS plugin requires EGL support and cannot be built"
-        exit 101
-    fi
-fi
-
 # auto-detect SQL-modules support
 for _SQLDR in $CFG_SQL_AVAILABLE; do
         case $_SQLDR in
@@ -5043,10 +5060,10 @@ if [ "$CFG_ICONV" != "no" ]; then
 fi
 
 # auto-detect libdbus-1 support
-if [ "$CFG_DBUS" = "auto" ]; then
-    CFG_DBUS="runtime"
-fi
-if [ "$CFG_DBUS" = "linked" ]; then
+# auto: detect if libdbus-1 is present; if so, link to it
+# linked: fail if libdbus-1 is not present; otherwise link to it
+# runtime: no detection (cannot fail), load libdbus-1 at runtime
+if [ "$CFG_DBUS" = "auto" ] || [ "$CFG_DBUS" = "linked" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
         QT_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
@@ -5062,14 +5079,19 @@ if [ "$CFG_DBUS" = "linked" ]; then
             QT_CFLAGS_DBUS=`env -i PATH="$PATH" pkg-config --cflags dbus-1 2>/dev/null`
         fi
         QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
+        CFG_DBUS=linked
     else
-        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        # Failed to compile the test, so it's an error if CFG_DBUS is "linked"
+        if [ "$CFG_DBUS" = "linked" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
             [ -z "$PKG_CONFIG" ] && echo " Use of pkg-config is not enabled, maybe you want to pass -pkg-config?"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
             exit 101
+        else
+            # CFG_DBUS is "auto" here
+            CFG_DBUS=runtime
         fi
     fi
 fi
@@ -5353,7 +5375,6 @@ ORIG_CFG_XCB="$CFG_XCB"
 ORIG_CFG_EGLFS="$CFG_EGLFS"
 ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
 ORIG_CFG_LINUXFB="$CFG_LINUXFB"
-ORIG_CFG_KMS="$CFG_KMS"
 ORIG_CFG_MIRCLIENT="$CFG_MIRCLIENT"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
@@ -5608,6 +5629,20 @@ if [ "$CFG_DIRECTFB" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_GBM" != "no" ]; then
+    if compileTest qpa/gbm "GBM"; then
+        CFG_GBM=yes
+    elif [ "$CFG_GBM" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        echo " GBM support cannot be enabled due to functionality tests!"
+        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+        echo " If you believe this message is in error you may use the continue"
+        echo " switch (-continue) to $0 to continue."
+        exit 101
+    else
+        CFG_GBM=no
+    fi
+fi
+
 if [ "$CFG_LINUXFB" != "no" ]; then
     if compileTest qpa/linuxfb "LinuxFB"; then
         CFG_LINUXFB=yes
@@ -5746,7 +5781,13 @@ if [ "$CFG_EGLFS" != "no" ]; then
         else
             CFG_EGLFS_BRCM=no
         fi
-        if compileTest qpa/eglfs-mali "eglfs-mali"; then
+        if compileTest qpa/eglfs-egldevice "eglfs-egldevice"; then
+            CFG_EGLFS_EGLDEVICE=yes
+        else
+            CFG_EGLFS_EGLDEVICE=no
+        fi
+        if compileTest qpa/eglfs-mali "eglfs-mali" \
+            || compileTest qpa/eglfs-mali-2 "eglfs-mali-2"; then
             CFG_EGLFS_MALI=yes
         else
             CFG_EGLFS_MALI=no
@@ -5758,14 +5799,6 @@ if [ "$CFG_EGLFS" != "no" ]; then
         fi
     else
         CFG_EGLFS="no"
-    fi
-fi
-
-if [ "$CFG_KMS" = "yes" ]; then
-    if [ "$CFG_EGL" = "yes" ]; then
-        CFG_KMS="yes"
-    else
-        CFG_KMS="no"
     fi
 fi
 
@@ -5814,6 +5847,9 @@ if [ "$CFG_DIRECTFB" = "yes" ]; then
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
     QMakeVar set QMAKE_LIBS_DIRECTFB "$QMAKE_LIBS_DIRECTFB"
 fi
+if [ "$CFG_GBM" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG gbm"
+fi
 if [ "$CFG_LINUXFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG linuxfb"
 fi
@@ -5825,9 +5861,9 @@ if [ "$CFG_MIRCLIENT" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]  && [ "$CFG_MIRCLIENT" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_MIRCLIENT" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ]  || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
         echo " -no-qpa-platform-guard to configure. Doing this will"
@@ -6193,6 +6229,15 @@ fi
 if [ "$CFG_EGLFS_BRCM" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_brcm"
 fi
+if [ "$CFG_EGLFS_EGLDEVICE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_egldevice"
+fi
+if [ "$CFG_EGLFS" = "yes" ] && [ "$CFG_KMS" = "yes" ] && [ "$CFG_GBM" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs_gbm"
+    CFG_EGLFS_GBM="yes"
+else
+    CFG_EGLFS_GBM="no"
+fi
 if [ "$CFG_EGLFS_MALI" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_mali"
 fi
@@ -6415,7 +6460,6 @@ if [ '!' -z "$W_FLAGS" ]; then
     # add the user defined warning flags
     QMakeVar add QMAKE_CFLAGS_WARN_ON "$W_FLAGS"
     QMakeVar add QMAKE_CXXFLAGS_WARN_ON "$W_FLAGS"
-    QMakeVar add QMAKE_OBJECTIVE_CFLAGS_WARN_ON "$W_FLAGS"
 fi
 
 if [ "$XPLATFORM_MINGW" = "yes" ]; then
@@ -6659,6 +6703,8 @@ s/icpc version \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\) .*$/QT_ICC_MAJOR_VERSION=\1; Q
     #
     ;;
 esac
+
+echo "Done running configuration tests."
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7257,8 +7303,9 @@ report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
 report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
-report_support "      EGLFS i.MX6....... ." "$CFG_EGLFS_VIV"
-report_support "      EGLFS KMS .........." "$CFG_KMS"
+report_support "      EGLFS i.MX6 ........" "$CFG_EGLFS_VIV"
+report_support "      EGLFS EGLDevice ...." "$CFG_EGLFS_EGLDEVICE"
+report_support "      EGLFS GBM .........." "$CFG_EGLFS_GBM"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"
 report_support "      EGLFS Raspberry Pi ." "$CFG_EGLFS_BRCM"
 report_support "      EGLFS X11 .........." "$CFG_EGL_X"

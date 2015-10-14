@@ -3123,6 +3123,7 @@ QTimeZone QDateTime::timeZone() const
     case Qt::UTC:
         return QTimeZone::utc();
     case Qt::OffsetFromUTC:
+        return QTimeZone(d->m_offsetFromUtc);
     case Qt::TimeZone:
         Q_ASSERT(d->m_timeZone.isValid());
         return d->m_timeZone;

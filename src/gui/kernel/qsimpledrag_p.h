@@ -58,6 +58,7 @@ class QWindow;
 class QEventLoop;
 class QDropData;
 class QShapedPixmapWindow;
+class QScreen;
 
 class Q_GUI_EXPORT QBasicDrag : public QPlatformDrag, public QObject
 {
@@ -80,6 +81,7 @@ protected:
 
     void moveShapedPixmapWindow(const QPoint &deviceIndependentPosition);
     QShapedPixmapWindow *shapedPixmapWindow() const { return m_drag_icon_window; }
+    void recreateShapedPixmapWindow(QScreen *screen, const QPoint &pos);
     void updateCursor(Qt::DropAction action);
 
     bool canDrop() const { return m_can_drop; }

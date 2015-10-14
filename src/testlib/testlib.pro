@@ -92,7 +92,7 @@ mac {
         # don't know yet if the target that links to testlib will build under Xcode or not.
         # The corresponding flags for the target lives in xctest.prf, where we do know.
         QMAKE_LFLAGS += -F$${platform_dev_frameworks_path} -weak_framework XCTest
-        QMAKE_OBJECTIVE_CFLAGS += -F$${platform_dev_frameworks_path}
+        QMAKE_CXXFLAGS += -F$${platform_dev_frameworks_path}
         MODULE_CONFIG += xctest
     }
 }

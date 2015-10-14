@@ -194,7 +194,7 @@ void tst_QImageReader::initTestCase()
     prefix = QFINDTESTDATA("images/");
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
-   QVERIFY(m_temporaryDir.isValid());
+   QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
 }
 
 void tst_QImageReader::cleanupTestCase()

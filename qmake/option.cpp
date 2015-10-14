@@ -59,6 +59,8 @@ QStringList Option::h_ext;
 QString Option::cpp_moc_ext;
 QStringList Option::cpp_ext;
 QStringList Option::c_ext;
+QString Option::objc_ext;
+QString Option::objcpp_ext;
 QString Option::obj_ext;
 QString Option::lex_ext;
 QString Option::yacc_ext;
@@ -465,6 +467,8 @@ bool Option::postProcessProject(QMakeProject *project)
     Option::cpp_ext = project->values("QMAKE_EXT_CPP").toQStringList();
     Option::h_ext = project->values("QMAKE_EXT_H").toQStringList();
     Option::c_ext = project->values("QMAKE_EXT_C").toQStringList();
+    Option::objc_ext = project->first("QMAKE_EXT_OBJC").toQString();
+    Option::objcpp_ext = project->first("QMAKE_EXT_OBJCXX").toQString();
     Option::res_ext = project->first("QMAKE_EXT_RES").toQString();
     Option::pkgcfg_ext = project->first("QMAKE_EXT_PKGCONFIG").toQString();
     Option::libtool_ext = project->first("QMAKE_EXT_LIBTOOL").toQString();

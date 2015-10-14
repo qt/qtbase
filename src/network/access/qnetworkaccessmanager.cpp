@@ -278,7 +278,8 @@ static void ensureInitialized()
 
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 4
 
-    Network requests can be reenabled again by calling
+    Network requests can be re-enabled again, and this property will resume to
+    reflect the actual device state by calling
 
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 5
 
@@ -467,16 +468,12 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_D(QNetworkAccessManager);
-    if (!d->networkSessionRequired) {
-        // if a session is required, we track online state through
-        // the QNetworkSession's signals
-        connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
-                SLOT(_q_onlineStateChanged(bool)));
-    }
-    // we would need all active configurations to check for
-    // d->networkConfigurationManager.isOnline(), which is asynchronous
-    // and potentially expensive. We can just check the configuration here
-    d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
+    // if a session is required, we track online state through
+    // the QNetworkSession's signals if a request is already made.
+    // we need to track current accessibility state by default
+    //
+    connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
+            SLOT(_q_onlineStateChanged(bool)));
 #endif
 }
 
@@ -946,7 +943,8 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility accessible)
 {
     Q_D(QNetworkAccessManager);
-    d->defaultAccessControl = false;
+
+    d->defaultAccessControl = accessible == NotAccessible ? false : true;
 
     if (d->networkAccessible != accessible) {
         NetworkAccessibility previous = networkAccessible();
@@ -965,6 +963,10 @@ void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkA
 QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccessible() const
 {
     Q_D(const QNetworkAccessManager);
+
+    if (d->networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
+        return UnknownAccessibility;
+
     if (d->networkSessionRequired) {
         QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
         if (networkSession) {
@@ -1622,32 +1624,56 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;
-            networkAccessible = QNetworkAccessManager::NotAccessible;
-            emit q->networkAccessibleChanged(networkAccessible);
+            if (networkAccessible != QNetworkAccessManager::NotAccessible) {
+                networkAccessible = QNetworkAccessManager::NotAccessible;
+                emit q->networkAccessibleChanged(networkAccessible);
+            }
         }
     } else {
         if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
             online = true;
             if (defaultAccessControl)
-                networkAccessible = QNetworkAccessManager::Accessible;
-            emit q->networkAccessibleChanged(networkAccessible);
+                if (networkAccessible != QNetworkAccessManager::Accessible) {
+                    networkAccessible = QNetworkAccessManager::Accessible;
+                    emit q->networkAccessibleChanged(networkAccessible);
+                }
         }
     }
 }
 
 void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
 {
-    // if the user set a config, we only care whether this one is active.
+   Q_Q(QNetworkAccessManager);
+   // if the user set a config, we only care whether this one is active.
     // Otherwise, this QNAM is online if there is an online config.
     if (customNetworkConfiguration) {
         online = (networkConfiguration.state() & QNetworkConfiguration::Active);
     } else {
-        if (isOnline && online != isOnline) {
-            networkSessionStrongRef.clear();
-            networkSessionWeakRef.clear();
+        if (online != isOnline) {
+            if (isOnline) {
+                networkSessionStrongRef.clear();
+                networkSessionWeakRef.clear();
+            }
+            online = isOnline;
         }
-
-        online = isOnline;
+    }
+    if (online) {
+        if (defaultAccessControl) {
+            if (networkAccessible != QNetworkAccessManager::Accessible) {
+                networkAccessible = QNetworkAccessManager::Accessible;
+                emit q->networkAccessibleChanged(networkAccessible);
+            }
+        }
+    } else if (networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined)) {
+        if (networkAccessible != QNetworkAccessManager::UnknownAccessibility) {
+            networkAccessible = QNetworkAccessManager::UnknownAccessibility;
+            emit q->networkAccessibleChanged(networkAccessible);
+        }
+    } else {
+        if (networkAccessible != QNetworkAccessManager::NotAccessible) {
+            networkAccessible = QNetworkAccessManager::NotAccessible;
+            emit q->networkAccessibleChanged(networkAccessible);
+        }
     }
 }
 
@@ -1678,7 +1704,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
             break;
         }
         // putting the boundary into quotes, recommended in RFC 2046 section 5.1.1
-        contentType += "; boundary=\"" + multiPart->d_func()->boundary + "\"";
+        contentType += "; boundary=\"" + multiPart->d_func()->boundary + '"';
         newRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant(contentType));
     }
 

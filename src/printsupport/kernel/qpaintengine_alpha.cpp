@@ -146,8 +146,16 @@ void QAlphaPaintEngine::updateState(const QPaintEngineState &state)
 
     d->m_hasalpha = d->m_alphaOpacity || d->m_alphaBrush || d->m_alphaPen;
 
-    if (d->m_picengine)
+    if (d->m_picengine) {
+        const QPainter *p = painter();
+        d->m_picpainter->setPen(p->pen());
+        d->m_picpainter->setBrush(p->brush());
+        d->m_picpainter->setBrushOrigin(p->brushOrigin());
+        d->m_picpainter->setFont(p->font());
+        d->m_picpainter->setOpacity(p->opacity());
+        d->m_picpainter->setTransform(p->combinedTransform());
         d->m_picengine->updateState(state);
+    }
 }
 
 void QAlphaPaintEngine::drawPath(const QPainterPath &path)

@@ -299,7 +299,7 @@ void Widget::printFormat(const QSurfaceFormat &format)
     QString opts;
     for (size_t i = 0; i < sizeof(options) / sizeof(Option); ++i)
         if (format.testOption(options[i].option))
-            opts += QString::fromLatin1(options[i].str) + QStringLiteral(" ");
+            opts += QString::fromLatin1(options[i].str) + QLatin1Char(' ');
     m_output->append(tr("Options: %1").arg(opts));
 
     for (size_t i = 0; i < sizeof(renderables) / sizeof(Renderable); ++i)

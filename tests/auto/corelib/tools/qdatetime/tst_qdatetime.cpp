@@ -2170,6 +2170,7 @@ void tst_QDateTime::offsetFromUtc()
     // Offset constructor
     QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, 60 * 60);
     QCOMPARE(dt1.offsetFromUtc(), 60 * 60);
+    QVERIFY(dt1.timeZone().isValid());
     dt1 = QDateTime(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, -60 * 60);
     QCOMPARE(dt1.offsetFromUtc(), -60 * 60);
 

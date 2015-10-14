@@ -138,7 +138,7 @@ inline QChar QDirPrivate::getFilterSepChar(const QString &nameFilter)
 // static
 inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar sep)
 {
-    if (sep == 0)
+    if (sep.isNull())
         sep = getFilterSepChar(nameFilter);
     QStringList ret = nameFilter.split(sep);
     for (int i = 0; i < ret.count(); ++i)

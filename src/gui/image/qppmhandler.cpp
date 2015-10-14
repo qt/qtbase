@@ -182,7 +182,8 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     } else {                                        // read ascii data
         uchar *p;
         int n;
-        for (y=0; y<h; y++) {
+        char buf;
+        for (y = 0; (y < h) && (device->peek(&buf, 1) == 1); y++) {
             p = outImage->scanLine(y);
             n = pbm_bpl;
             if (nbits == 1) {

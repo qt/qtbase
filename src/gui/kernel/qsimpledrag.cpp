@@ -203,30 +203,33 @@ void QBasicDrag::restoreCursor()
 
 void QBasicDrag::startDrag()
 {
-    // ### TODO Check if its really necessary to have m_drag_icon_window
-    // when QDrag is used without a pixmap - QDrag::setPixmap()
-    if (!m_drag_icon_window)
-        m_drag_icon_window = new QShapedPixmapWindow();
-
-    m_drag_icon_window->setPixmap(m_drag->pixmap());
-    m_drag_icon_window->setHotspot(m_drag->hotSpot());
-
+    QPoint pos;
 #ifndef QT_NO_CURSOR
-    QPoint pos = QCursor::pos();
+    pos = QCursor::pos();
     if (pos.x() == int(qInf())) {
         // ### fixme: no mouse pos registered. Get pos from touch...
         pos = QPoint();
     }
-    m_drag_icon_window->updateGeometry(pos);
 #endif
-
-    m_drag_icon_window->setVisible(true);
-
+    recreateShapedPixmapWindow(Q_NULLPTR, pos);
     enableEventFilter();
 }
 
 void QBasicDrag::endDrag()
 {
+}
+
+void QBasicDrag::recreateShapedPixmapWindow(QScreen *screen, const QPoint &pos)
+{
+    delete m_drag_icon_window;
+    // ### TODO Check if its really necessary to have m_drag_icon_window
+    // when QDrag is used without a pixmap - QDrag::setPixmap()
+    m_drag_icon_window = new QShapedPixmapWindow(screen);
+
+    m_drag_icon_window->setPixmap(m_drag->pixmap());
+    m_drag_icon_window->setHotspot(m_drag->hotSpot());
+    m_drag_icon_window->updateGeometry(pos);
+    m_drag_icon_window->setVisible(true);
 }
 
 void QBasicDrag::cancel()

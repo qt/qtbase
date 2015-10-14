@@ -41,12 +41,7 @@
 #include <private/qeventloop_p.h>
 #include <private/qthread_p.h>
 
-#ifdef QT_GUI_LIB
-#include <QtGui/QGuiApplication>
-typedef QGuiApplication TestApplication;
-#else
 typedef QCoreApplication TestApplication;
-#endif
 
 class EventSpy : public QObject
 {

@@ -89,9 +89,9 @@ QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
     int len = code.length();
     if (len != 2 && len != 3)
         return QLocale::C;
-    ushort uc1 = len-- > 0 ? code[0].toLower().unicode() : 0;
-    ushort uc2 = len-- > 0 ? code[1].toLower().unicode() : 0;
-    ushort uc3 = len-- > 0 ? code[2].toLower().unicode() : 0;
+    ushort uc1 = code[0].toLower().unicode();
+    ushort uc2 = code[1].toLower().unicode();
+    ushort uc3 = len > 2 ? code[2].toLower().unicode() : 0;
 
     const unsigned char *c = language_code_list;
     for (; *c != 0; c += 3) {
@@ -145,9 +145,9 @@ QLocale::Country QLocalePrivate::codeToCountry(const QString &code)
     int len = code.length();
     if (len != 2 && len != 3)
         return QLocale::AnyCountry;
-    ushort uc1 = len-- > 0 ? code[0].toUpper().unicode() : 0;
-    ushort uc2 = len-- > 0 ? code[1].toUpper().unicode() : 0;
-    ushort uc3 = len-- > 0 ? code[2].toUpper().unicode() : 0;
+    ushort uc1 = code[0].toUpper().unicode();
+    ushort uc2 = code[1].toUpper().unicode();
+    ushort uc3 = len > 2 ? code[2].toUpper().unicode() : 0;
 
     const unsigned char *c = country_code_list;
     for (; *c != 0; c += 3) {

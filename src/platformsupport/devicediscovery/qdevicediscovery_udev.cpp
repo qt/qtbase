@@ -210,7 +210,7 @@ bool QDeviceDiscoveryUDev::checkDeviceType(udev_device *dev)
 
     if ((m_types & Device_Keyboard) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD"), "1") == 0 )) {
         const char *capabilities_key = udev_device_get_sysattr_value(dev, "capabilities/key");
-        QStringList val = QString::fromUtf8(capabilities_key).split(QString::fromUtf8(" "), QString::SkipEmptyParts);
+        QStringList val = QString::fromUtf8(capabilities_key).split(QLatin1Char(' '), QString::SkipEmptyParts);
         if (!val.isEmpty()) {
             bool ok;
             unsigned long long keys = val.last().toULongLong(&ok, 16);

@@ -325,13 +325,13 @@ void QCommandLineParser::setSingleDashWordOptionMode(QCommandLineParser::SingleD
 
     \sa setOptionsAfterPositionalArgumentsMode()
 
-    \since 5.5
+    \since 5.6
 */
 
 /*!
     Sets the parsing mode to \a parsingMode.
     This must be called before process() or parse().
-    \since 5.5
+    \since 5.6
 */
 void QCommandLineParser::setOptionsAfterPositionalArgumentsMode(QCommandLineParser::OptionsAfterPositionalArgumentsMode parsingMode)
 {

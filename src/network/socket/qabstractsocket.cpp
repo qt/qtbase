@@ -742,15 +742,9 @@ bool QAbstractSocketPrivate::canReadNotification()
         return true;
     }
 
-    if (socketEngine) {
-        // turn the socket engine off if we've either:
-        // - got pending datagrams
-        // - reached the buffer size limit
-        if (isBuffered)
-            socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
-        else if (socketType != QAbstractSocket::TcpSocket)
-            socketEngine->setReadNotificationEnabled(!socketEngine->hasPendingDatagrams());
-    }
+    // turn the socket engine off if we've reached the buffer size limit
+    if (socketEngine && isBuffered)
+        socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
 
     // reset the read socket notifier state if we reentered inside the
     // readyRead() connected slot.
@@ -2498,12 +2492,14 @@ qint64 QAbstractSocket::readLineData(char *data, qint64 maxlen)
 qint64 QAbstractSocket::writeData(const char *data, qint64 size)
 {
     Q_D(QAbstractSocket);
-    if (d->state == QAbstractSocket::UnconnectedState) {
+    if (d->state == QAbstractSocket::UnconnectedState
+        || (!d->socketEngine && d->socketType != TcpSocket && !d->isBuffered)) {
         d->setError(UnknownSocketError, tr("Socket is not connected"));
         return -1;
     }
 
-    if (!d->isBuffered && d->socketType == TcpSocket && d->writeBuffer.isEmpty()) {
+    if (!d->isBuffered && d->socketType == TcpSocket
+        && d->socketEngine && d->writeBuffer.isEmpty()) {
         // This code is for the new Unbuffered QTcpSocket use case
         qint64 written = d->socketEngine->write(data, size);
         if (written < 0) {
@@ -2513,8 +2509,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
             // Buffer what was not written yet
             char *ptr = d->writeBuffer.reserve(size - written);
             memcpy(ptr, data + written, size - written);
-            if (d->socketEngine)
-                d->socketEngine->setWriteNotificationEnabled(true);
+            d->socketEngine->setWriteNotificationEnabled(true);
         }
         return size; // size=actually written + what has been buffered
     } else if (!d->isBuffered && d->socketType != TcpSocket) {

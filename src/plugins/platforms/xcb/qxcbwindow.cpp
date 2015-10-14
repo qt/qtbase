@@ -775,6 +775,13 @@ void QXcbWindow::setVisible(bool visible)
         hide();
 }
 
+static inline bool testShowWithoutActivating(const QWindow *window)
+{
+    // QWidget-attribute Qt::WA_ShowWithoutActivating.
+    const QVariant showWithoutActivating = window->property("_q_showWithoutActivating");
+    return showWithoutActivating.isValid() && showWithoutActivating.toBool();
+}
+
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
@@ -822,7 +829,9 @@ void QXcbWindow::show()
         updateNetWmStateBeforeMap();
     }
 
-    if (connection()->time() != XCB_TIME_CURRENT_TIME)
+    if (testShowWithoutActivating(window()))
+        updateNetWmUserTime(0);
+    else if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
 
     if (window()->objectName() == QLatin1String("QSystemTrayIconSysWindow"))
@@ -1112,6 +1121,9 @@ void QXcbWindow::setMotifWindowFlags(Qt::WindowFlags flags)
         mwmhints.flags |= MWM_HINTS_DECORATIONS;
 
         bool customize = flags & Qt::CustomizeWindowHint;
+        if (type == Qt::Window && !customize)
+            flags |= Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
+
         if (!(flags & Qt::FramelessWindowHint) && !(customize && !(flags & Qt::WindowTitleHint))) {
             mwmhints.decorations |= MWM_DECOR_BORDER;
             mwmhints.decorations |= MWM_DECOR_RESIZEH;
@@ -1326,7 +1338,11 @@ void QXcbWindow::updateNetWmStateBeforeMap()
 void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
 {
     xcb_window_t wid = m_window;
-    connection()->setNetWmUserTime(timestamp);
+    // If timestamp == 0, then it means that the window should not be
+    // initially activated. Don't update global user time for this
+    // special case.
+    if (timestamp != 0)
+        connection()->setNetWmUserTime(timestamp);
 
     const bool isSupportedByWM = connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
     if (m_netWmUserTimeWindow || isSupportedByWM) {

@@ -1035,16 +1035,16 @@ bool QBasicAtomicOps<size>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<int size> template <typename T> inline
-bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
-    return testAndSetAcquire(_q_value, expectedValue, newValue);
+    return testAndSetAcquire(_q_value, expectedValue, newValue, currentValue);
 }
 
 template<int size> template <typename T> inline
-bool QBasicAtomicOps<size>::testAndSetOrdered(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<size>::testAndSetOrdered(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     orderedMemoryFence(_q_value);
-    return testAndSetAcquire(_q_value, expectedValue, newValue);
+    return testAndSetAcquire(_q_value, expectedValue, newValue, currentValue);
 }
 
 template<int size> template <typename T> inline

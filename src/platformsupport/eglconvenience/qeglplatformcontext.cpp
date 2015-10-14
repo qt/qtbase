@@ -39,6 +39,10 @@
 #include <QtPlatformHeaders/QEGLNativeContext>
 #include <QDebug>
 
+#ifdef Q_OS_ANDROID
+#include <QtCore/private/qjnihelpers_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -102,11 +106,12 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig *config, const QVariant &nativeHandle)
+                                         EGLConfig *config, const QVariant &nativeHandle, Flags flags)
     : m_eglDisplay(display)
     , m_swapInterval(-1)
     , m_swapIntervalEnvChecked(false)
     , m_swapIntervalFromEnv(-1)
+    , m_flags(flags)
 {
     if (nativeHandle.isNull()) {
         m_eglConfig = config ? *config : q_configFromGLFormat(display, format);
@@ -287,7 +292,7 @@ void QEGLPlatformContext::updateFormatFromGL()
     // drivers (Mesa) when certain attributes are present (multisampling).
     EGLSurface tempSurface = EGL_NO_SURFACE;
     EGLContext tempContext = EGL_NO_CONTEXT;
-    if (!q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
+    if (m_flags.testFlag(NoSurfaceless) || !q_hasEglExtension(m_eglDisplay, "EGL_KHR_surfaceless_context"))
         tempSurface = createTemporaryOffscreenSurface();
 
     EGLBoolean ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);
@@ -305,6 +310,14 @@ void QEGLPlatformContext::updateFormatFromGL()
                 QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
                 int major, minor;
                 if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
+#ifdef Q_OS_ANDROID
+                    // Some Android 4.2.2 devices report OpenGL ES 3.0 without the functions being available.
+                    static int apiLevel = QtAndroidPrivate::androidSdkVersion();
+                    if (apiLevel <= 17 && major >= 3) {
+                        major = 2;
+                        minor = 0;
+                    }
+#endif
                     m_format.setMajorVersion(major);
                     m_format.setMinorVersion(minor);
                 }

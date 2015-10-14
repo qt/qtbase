@@ -2321,7 +2321,7 @@ bool CppCodeParser::matchDocsAndStuff()
                     QString topics;
                     QSet<QString>::ConstIterator t = topicCommandsUsed.constBegin();
                     while (t != topicCommandsUsed.constEnd()) {
-                        topics += " \\" + *t + ",";
+                        topics += " \\" + *t + QLatin1Char(',');
                         ++t;
                     }
                     topics[topics.lastIndexOf(',')] = '.';

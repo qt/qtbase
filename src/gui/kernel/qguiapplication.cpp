@@ -1163,7 +1163,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
-    QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
 
     QByteArray platformName;
@@ -1193,7 +1193,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             arg.remove(0, 1);
         if (arg == "-platformpluginpath") {
             if (++i < argc)
-                platformPluginPath = QLatin1String(argv[i]);
+                platformPluginPath = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];
@@ -1946,19 +1946,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
             ) {
         window = QGuiApplication::focusWindow();
     }
-
-#if !defined(Q_OS_OSX)
-    // On OS X the shortcut override is checked earlier, see: QWindowSystemInterface::handleKeyEvent()
-    const bool checkShortcut = e->keyType == QEvent::KeyPress && window != 0;
-    if (checkShortcut) {
-        QKeyEvent override(QEvent::ShortcutOverride, e->key, e->modifiers,
-                     e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
-                     e->unicode, e->repeat, e->repeatCount);
-        override.setTimestamp(e->timestamp);
-        if (QWindowSystemInterface::tryHandleShortcutOverrideEvent(window, &override))
-            return;
-    }
-#endif // Q_OS_OSX
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,

@@ -225,8 +225,8 @@ void tst_QNumeric::addOverflow_data()
 // to QTest::toString and QTest::qCompare will remain.
 template <typename Int> static void addOverflow_template()
 {
-#if defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
-    QSKIP("Test disabled, this test generates an Internal Compiler Error compiling");
+#if defined(Q_CC_MSVC) && Q_CC_MSVC < 2000
+    QSKIP("Test disabled, this test generates an Internal Compiler Error compiling in release mode");
 #else
     const Int max = std::numeric_limits<Int>::max();
     Int r;

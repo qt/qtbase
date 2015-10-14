@@ -266,11 +266,6 @@ void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &cal
     Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments);
 }
 
-QString NmakeMakefileGenerator::getPdbTarget()
-{
-    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
-}
-
 QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -288,7 +283,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     if (project->isActiveConfig("debug_info")) {
         if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
-            QString pdb_target = getPdbTarget();
+            QString pdb_target = project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb";
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
@@ -373,8 +368,6 @@ void NmakeMakefileGenerator::init()
         return;
     }
 
-    project->values("QMAKE_L_FLAG") << "/LIBPATH:";
-
     processVars();
 
     project->values("QMAKE_LIBS") += project->values("RES_FILE");
@@ -419,21 +412,22 @@ void NmakeMakefileGenerator::init()
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
     }
 
-    ProString version = project->first("TARGET_VERSION_EXT");
+    ProString tgt = project->first("DESTDIR")
+                    + project->first("TARGET") + project->first("TARGET_VERSION_EXT");
     if(project->isActiveConfig("shared")) {
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
-        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".lib");
+        project->values("QMAKE_CLEAN").append(tgt + ".exp");
+        project->values("QMAKE_DISTCLEAN").append(tgt + ".lib");
     }
     if (project->isActiveConfig("debug_info")) {
-        QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";
+        QString pdbfile = tgt + ".pdb";
         QString escapedPdbFile = escapeFilePath(pdbfile);
         project->values("QMAKE_CFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_CXXFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_DISTCLEAN").append(pdbfile);
     }
     if (project->isActiveConfig("debug")) {
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".ilk");
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".idb");
+        project->values("QMAKE_CLEAN").append(tgt + ".ilk");
+        project->values("QMAKE_CLEAN").append(tgt + ".idb");
     } else {
         ProStringList &defines = project->values("DEFINES");
         if (!defines.contains("NDEBUG"))
@@ -454,6 +448,8 @@ QStringList NmakeMakefileGenerator::sourceFilesForImplicitRulesFilter()
 
 void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 {
+    t << "####### Implicit rules\n\n";
+
     t << ".SUFFIXES:";
     for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
         t << " " << (*cit);

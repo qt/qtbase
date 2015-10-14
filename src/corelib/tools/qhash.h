@@ -935,7 +935,7 @@ template <class Key, class T>
 class QMultiHash : public QHash<Key, T>
 {
 public:
-    QMultiHash() {}
+    QMultiHash() Q_DECL_NOTHROW {}
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiHash(std::initializer_list<std::pair<Key,T> > list)
     {
@@ -948,7 +948,10 @@ public:
     // compiler-generated destructor is fine!
 
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
-    void swap(QMultiHash &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
+#ifdef Q_COMPILER_RVALUE_REFS
+    QMultiHash(QHash<Key, T> &&other) Q_DECL_NOTHROW : QHash<Key, T>(std::move(other)) {}
+#endif
+    void swap(QMultiHash &other) Q_DECL_NOTHROW { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)
     { return QHash<Key, T>::insert(key, value); }

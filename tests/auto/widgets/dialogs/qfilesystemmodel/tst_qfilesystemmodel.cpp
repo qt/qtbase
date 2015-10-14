@@ -173,7 +173,7 @@ void tst_QFileSystemModel::cleanup()
 
 void tst_QFileSystemModel::initTestCase()
 {
-    QVERIFY(m_tempDir.isValid());
+    QVERIFY2(m_tempDir.isValid(), qPrintable(m_tempDir.errorString()));
     flatDirTestPath = m_tempDir.path();
 }
 
@@ -318,7 +318,7 @@ void tst_QFileSystemModel::readOnly()
 {
     QCOMPARE(model->isReadOnly(), true);
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
-    file.open();
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
     QModelIndex root = model->setRootPath(flatDirTestPath);
 
     QTRY_VERIFY(model->rowCount(root) > 0);
@@ -819,7 +819,7 @@ void tst_QFileSystemModel::setData()
 void tst_QFileSystemModel::sortPersistentIndex()
 {
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
-    file.open();
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
     QModelIndex root = model->setRootPath(flatDirTestPath);
     QTRY_VERIFY(model->rowCount(root) > 0);
 

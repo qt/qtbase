@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 #include <qdebug.h>
 #include <qdesktopservices.h>
+#include <qregularexpression.h>
 
 class tst_qdesktopservices : public QObject
 {
@@ -74,7 +75,9 @@ void tst_qdesktopservices::openUrl()
     QCOMPARE(QDesktopServices::openUrl(QUrl()), false);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // this test is only valid on windows on other systems it might mean open a new document in the application handling .file
-    QTest::ignoreMessage(QtWarningMsg, "ShellExecute 'file://invalid.file' failed (error 3).");
+    const QRegularExpression messagePattern("ShellExecute 'file://invalid\\.file' failed \\(error \\d+\\)\\.");
+    QVERIFY(messagePattern.isValid());
+    QTest::ignoreMessage(QtWarningMsg, messagePattern);
     QCOMPARE(QDesktopServices::openUrl(QUrl("file://invalid.file")), false);
 #endif
 }

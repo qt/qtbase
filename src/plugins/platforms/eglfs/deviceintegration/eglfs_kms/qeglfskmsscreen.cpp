@@ -52,15 +52,11 @@ public:
     QEglFSKmsInterruptHandler(QEglFSKmsScreen *screen) : m_screen(screen) {
         m_vtHandler = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->vtHandler();
         connect(m_vtHandler, &QFbVtHandler::interrupted, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
-        connect(m_vtHandler, &QFbVtHandler::suspendRequested, this, &QEglFSKmsInterruptHandler::handleSuspendRequest);
+        connect(m_vtHandler, &QFbVtHandler::aboutToSuspend, this, &QEglFSKmsInterruptHandler::restoreVideoMode);
     }
 
 public slots:
     void restoreVideoMode() { m_screen->restoreMode(); }
-    void handleSuspendRequest() {
-        m_screen->restoreMode();
-        m_vtHandler->suspend();
-    }
 
 private:
     QFbVtHandler *m_vtHandler;
@@ -319,6 +315,24 @@ qreal QEglFSKmsScreen::refreshRate() const
 {
     quint32 refresh = m_output.modes[m_output.mode].vrefresh;
     return refresh > 0 ? refresh : 60;
+}
+
+QPlatformScreen::SubpixelAntialiasingType QEglFSKmsScreen::subpixelAntialiasingTypeHint() const
+{
+    switch (m_output.subpixel) {
+    default:
+    case DRM_MODE_SUBPIXEL_UNKNOWN:
+    case DRM_MODE_SUBPIXEL_NONE:
+        return Subpixel_None;
+    case DRM_MODE_SUBPIXEL_HORIZONTAL_RGB:
+        return Subpixel_RGB;
+    case DRM_MODE_SUBPIXEL_HORIZONTAL_BGR:
+        return Subpixel_BGR;
+    case DRM_MODE_SUBPIXEL_VERTICAL_RGB:
+        return Subpixel_VRGB;
+    case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
+        return Subpixel_VBGR;
+    }
 }
 
 QPlatformScreen::PowerState QEglFSKmsScreen::powerState() const

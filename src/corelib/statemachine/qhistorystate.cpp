@@ -166,6 +166,8 @@ QHistoryState::~QHistoryState()
   Returns this history state's default transition. The default transition is
   taken when the history state has never been entered before. The target states
   of the default transition therefore make up the default state.
+
+  \since 5.6
 */
 QAbstractTransition *QHistoryState::defaultTransition() const
 {
@@ -178,6 +180,8 @@ QAbstractTransition *QHistoryState::defaultTransition() const
   This will set the source state of the \a transition to the history state.
 
   Note that the eventTest method of the \a transition will never be called.
+
+  \since 5.6
 */
 void QHistoryState::setDefaultTransition(QAbstractTransition *transition)
 {
@@ -288,6 +292,15 @@ bool QHistoryState::event(QEvent *e)
   This signal is emitted when the historyType property is changed.
 
   \sa QHistoryState::historyType
+*/
+
+/*!
+  \fn QHistoryState::defaultTransitionChanged()
+  \since 5.6
+
+  This signal is emitted when the defaultTransition property is changed.
+
+  \sa QHistoryState::defaultTransition
 */
 
 QT_END_NAMESPACE

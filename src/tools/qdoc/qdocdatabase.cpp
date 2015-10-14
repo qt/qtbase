@@ -340,10 +340,10 @@ void QDocForest::printLinkCounts(const QString& project)
     while (i != m.end()) {
         QString line = "  " + i.value();
         if (i.value() != module)
-            depends += " " + i.value();
+            depends += QLatin1Char(' ') + i.value();
         int pad = 30 - line.length();
         for (int k=0; k<pad; ++k)
-            line += " ";
+            line += QLatin1Char(' ');
         line += "%1";
         Location::null.report(line.arg(-(i.key())));
         ++i;
@@ -370,7 +370,7 @@ QString QDocForest::getLinkCounts(QStringList& strings, QVector<int>& counts)
         if (i.value() != module) {
             counts.append(-(i.key()));
             strings.append(i.value());
-            depends += " " + i.value();
+            depends += QLatin1Char(' ') + i.value();
         }
         ++i;
     }
@@ -1296,6 +1296,8 @@ void QDocDatabase::resolveIssues() {
         QDocIndexFiles::qdocIndexFiles()->resolveRelates();
         QDocIndexFiles::destroyQDocIndexFiles();
     }
+    if (Generator::generating())
+        resolveNamespaces();
 }
 
 void QDocDatabase::resolveStuff()
@@ -1326,8 +1328,10 @@ void QDocDatabase::resolveNamespaces()
         int count = nmm_.remove(s);
         if (count > 1) {
             foreach (Node* n, nodes) {
-                if (n->isNamespace() && n->wasSeen()) {
+                // Treat public namespaces from index trees as 'seen'
+                if (n->isNamespace() && (n->wasSeen() || (n->isIndexNode() && n->access() == Node::Public))) {
                     ns = static_cast<NamespaceNode*>(n);
+                    ns->markSeen();
                     break;
                 }
             }
@@ -1670,7 +1674,7 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* a, const Node* relative, Q
     const Node* node = 0;
 
     Atom* atom = const_cast<Atom*>(a);
-    QStringList targetPath = atom->string().split("#");
+    QStringList targetPath = atom->string().split(QLatin1Char('#'));
     QString first = targetPath.first().trimmed();
 
     Tree* domain = 0;

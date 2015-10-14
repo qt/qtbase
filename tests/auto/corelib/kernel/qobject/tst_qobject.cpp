@@ -1925,7 +1925,7 @@ void tst_QObject::property()
     QCOMPARE(object.property("string"), QVariant("String1"));
     QVERIFY(object.setProperty("string", "String2"));
     QCOMPARE(object.property("string"), QVariant("String2"));
-    QVERIFY(!object.setProperty("string", QVariant()));
+    QVERIFY(object.setProperty("string", QVariant()));
 
     const int idx = mo->indexOfProperty("variant");
     QVERIFY(idx != -1);
@@ -2027,7 +2027,7 @@ void tst_QObject::property()
     QCOMPARE(object.property("customString"), QVariant("String1"));
     QVERIFY(object.setProperty("customString", "String2"));
     QCOMPARE(object.property("customString"), QVariant("String2"));
-    QVERIFY(!object.setProperty("customString", QVariant()));
+    QVERIFY(object.setProperty("customString", QVariant()));
 }
 
 void tst_QObject::metamethod()

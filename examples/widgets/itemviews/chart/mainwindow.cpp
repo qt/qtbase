@@ -124,7 +124,7 @@ void MainWindow::loadFile(const QString &fileName)
         if (!line.isEmpty()) {
             model->insertRows(row, 1, QModelIndex());
 
-            QStringList pieces = line.split(",", QString::SkipEmptyParts);
+            QStringList pieces = line.split(',', QString::SkipEmptyParts);
             model->setData(model->index(row, 0, QModelIndex()),
                            pieces.value(0));
             model->setData(model->index(row, 1, QModelIndex()),

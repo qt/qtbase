@@ -463,10 +463,15 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             location = Location(parent->name().toLower() + ".html");
 
         while (reader.readNextStartElement()) {
+            QXmlStreamAttributes childAttributes = reader.attributes();
             if (reader.name() == QLatin1String("value")) {
-                QXmlStreamAttributes childAttributes = reader.attributes();
+
                 EnumItem item(childAttributes.value(QLatin1String("name")).toString(), childAttributes.value(QLatin1String("value")).toString());
                 enumNode->addItem(item);
+            } else if (reader.name() == QLatin1String("keyword")) {
+                insertTarget(TargetRec::Keyword, childAttributes, enumNode);
+            } else if (reader.name() == QLatin1String("target")) {
+                insertTarget(TargetRec::Target, childAttributes, enumNode);
             }
             reader.skipCurrentElement();
         }
@@ -552,8 +557,8 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
          */
 
         while (reader.readNextStartElement()) {
+            QXmlStreamAttributes childAttributes = reader.attributes();
             if (reader.name() == QLatin1String("parameter")) {
-                QXmlStreamAttributes childAttributes = reader.attributes();
                 // Do not use the default value for the parameter; it is not
                 // required, and has been known to cause problems.
                 Parameter parameter(childAttributes.value(QLatin1String("left")).toString(),
@@ -561,6 +566,10 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
                                     childAttributes.value(QLatin1String("name")).toString(),
                                     QString()); // childAttributes.value(QLatin1String("default"))
                 functionNode->addParameter(parameter);
+            } else if (reader.name() == QLatin1String("keyword")) {
+                insertTarget(TargetRec::Keyword, childAttributes, functionNode);
+            } else if (reader.name() == QLatin1String("target")) {
+                insertTarget(TargetRec::Target, childAttributes, functionNode);
             }
             reader.skipCurrentElement();
         }
@@ -581,18 +590,15 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             location = Location(parent->name().toLower() + ".html");
     }
     else if (elementName == QLatin1String("keyword")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Keyword, current, 1);
+        insertTarget(TargetRec::Keyword, attributes, current);
         goto done;
     }
     else if (elementName == QLatin1String("target")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Target, current, 2);
+        insertTarget(TargetRec::Target, attributes, current);
         goto done;
     }
     else if (elementName == QLatin1String("contents")) {
-        QString title = attributes.value(QLatin1String("title")).toString();
-        qdb_->insertTarget(name, title, TargetRec::Contents, current, 3);
+        insertTarget(TargetRec::Contents, attributes, current);
         goto done;
     }
     else
@@ -660,7 +666,7 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
 
         QString groupsAttr = attributes.value(QLatin1String("groups")).toString();
         if (!groupsAttr.isEmpty()) {
-            QStringList groupNames = groupsAttr.split(",");
+            QStringList groupNames = groupsAttr.split(QLatin1Char(','));
             foreach (const QString &name, groupNames) {
                 qdb_->addToGroup(name, node);
             }
@@ -700,6 +706,30 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
             break;
         }
     }
+}
+
+void QDocIndexFiles::insertTarget(TargetRec::TargetType type,
+                               const QXmlStreamAttributes &attributes,
+                               Node *node)
+{
+    int priority;
+    switch (type) {
+    case TargetRec::Keyword:
+        priority = 1;
+        break;
+    case TargetRec::Target:
+        priority = 2;
+        break;
+    case TargetRec::Contents:
+        priority = 3;
+        break;
+    default:
+        return;
+    }
+
+    QString name = attributes.value(QLatin1String("name")).toString();
+    QString title = attributes.value(QLatin1String("title")).toString();
+    qdb_->insertTarget(name, title, type, node, priority);
 }
 
 /*!
@@ -946,27 +976,27 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     }
 
     writer.writeAttribute("name", objName);
-    if (node->isQmlModule()) {
-        logicalModuleName = node->logicalModuleName();
-        logicalModuleVersion = node->logicalModuleVersion();
-        if (!logicalModuleName.isEmpty()) {
-            writer.writeAttribute("qml-module-name", logicalModuleName);
-            if (node->isQmlModule())
-                writer.writeAttribute("qml-module-version", logicalModuleVersion);
-            if (!qmlFullBaseName.isEmpty())
-                writer.writeAttribute("qml-base-type", qmlFullBaseName);
+
+    // Write module and base type info for QML/JS types
+    if (node->type() == Node::QmlType || node->type() == Node::QmlModule) {
+        QString baseNameAttr("qml-base-type");
+        QString moduleNameAttr("qml-module-name");
+        QString moduleVerAttr("qml-module-version");
+        if (node->isJsNode()) {
+            baseNameAttr = "js-base-type";
+            moduleNameAttr = "js-module-name";
+            moduleVerAttr = "js-module-version";
         }
-    }
-    else if (node->isJsModule()) {
-        logicalModuleName = node->logicalModuleName();
-        logicalModuleVersion = node->logicalModuleVersion();
-        if (!logicalModuleName.isEmpty()) {
-            writer.writeAttribute("js-module-name", logicalModuleName);
-            if (node->isQmlModule())
-                writer.writeAttribute("js-module-version", logicalModuleVersion);
-            if (!qmlFullBaseName.isEmpty())
-                writer.writeAttribute("js-base-type", qmlFullBaseName);
+        if (node->type() == Node::QmlModule) {
+            logicalModuleName = node->logicalModuleName();
+            logicalModuleVersion = node->logicalModuleVersion();
         }
+        if (!logicalModuleName.isEmpty())
+            writer.writeAttribute(moduleNameAttr, logicalModuleName);
+        if (!logicalModuleVersion.isEmpty())
+            writer.writeAttribute(moduleVerAttr, logicalModuleVersion);
+        if (!qmlFullBaseName.isEmpty())
+            writer.writeAttribute(baseNameAttr, qmlFullBaseName);
     }
 
     QString href;
@@ -1029,11 +1059,11 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                     baseStrings.insert(n->fullName());
             }
             if (!baseStrings.isEmpty())
-                writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
+                writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(QLatin1Char(',')));
             if (!node->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", node->physicalModuleName());
             if (!classNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", classNode->groupNames().join(","));
+                writer.writeAttribute("groups", classNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1044,7 +1074,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!namespaceNode->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", namespaceNode->physicalModuleName());
             if (!namespaceNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", namespaceNode->groupNames().join(","));
+                writer.writeAttribute("groups", namespaceNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1056,7 +1086,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("fulltitle", qcn->fullTitle());
             writer.writeAttribute("subtitle", qcn->subTitle());
             if (!qcn->groupNames().isEmpty())
-                writer.writeAttribute("groups", qcn->groupNames().join(","));
+                writer.writeAttribute("groups", qcn->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1098,7 +1128,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("module", node->physicalModuleName());
             }
             if (!docNode->groupNames().isEmpty())
-                writer.writeAttribute("groups", docNode->groupNames().join(","));
+                writer.writeAttribute("groups", docNode->groupNames().join(QLatin1Char(',')));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1113,7 +1143,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1122,7 +1152,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
@@ -1138,7 +1168,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1147,7 +1177,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
@@ -1163,7 +1193,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!cn->physicalModuleName().isEmpty())
                 writer.writeAttribute("module", cn->physicalModuleName());
             if (!cn->groupNames().isEmpty())
-                writer.writeAttribute("groups", cn->groupNames().join(","));
+                writer.writeAttribute("groups", cn->groupNames().join(QLatin1Char(',')));
             /*
               This is not read back in, so it probably
               shouldn't be written out in the first place.
@@ -1172,7 +1202,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 QStringList names;
                 foreach (const Node* member, cn->members())
                     names.append(member->name());
-                writer.writeAttribute("members", names.join(","));
+                writer.writeAttribute("members", names.join(QLatin1Char(',')));
             }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);

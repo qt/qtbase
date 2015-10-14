@@ -2479,7 +2479,7 @@ QDataStream &operator>>(QDataStream &in, QRegularExpression &re)
 QDebug operator<<(QDebug debug, const QRegularExpression &re)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "QRegularExpression(" << re.pattern() << ", " << re.patternOptions() << ")";
+    debug.nospace() << "QRegularExpression(" << re.pattern() << ", " << re.patternOptions() << ')';
     return debug;
 }
 
@@ -2521,7 +2521,7 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
         flags.chop(1);
     }
 
-    debug.nospace() << "QRegularExpression::PatternOptions(" << flags << ")";
+    debug.nospace() << "QRegularExpression::PatternOptions(" << flags << ')';
 
     return debug;
 }
@@ -2550,7 +2550,7 @@ QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match)
         for (int i = 0; i <= match.lastCapturedIndex(); ++i) {
             debug << i
                   << ":(" << match.capturedStart(i) << ", " << match.capturedEnd(i)
-                  << ", " << match.captured(i) << ")";
+                  << ", " << match.captured(i) << ')';
             if (i < match.lastCapturedIndex())
                 debug << ", ";
         }
@@ -2558,12 +2558,12 @@ QDebug operator<<(QDebug debug, const QRegularExpressionMatch &match)
         debug << ", has partial match: ("
               << match.capturedStart(0) << ", "
               << match.capturedEnd(0) << ", "
-              << match.captured(0) << ")";
+              << match.captured(0) << ')';
     } else {
         debug << ", no match";
     }
 
-    debug << ")";
+    debug << ')';
 
     return debug;
 }

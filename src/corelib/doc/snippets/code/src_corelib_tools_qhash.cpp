@@ -220,7 +220,7 @@ for (i = hash.begin(); i != hash.end(); ++i)
 //! [19]
 QHash<QString, int>::iterator i = hash.begin();
 while (i != hash.end()) {
-    if (i.key().startsWith("_"))
+    if (i.key().startsWith('_'))
         i = hash.erase(i);
     else
         ++i;
@@ -233,7 +233,7 @@ QHash<QString, int>::iterator i = hash.begin();
 while (i != hash.end()) {
     QHash<QString, int>::iterator prev = i;
     ++i;
-    if (prev.key().startsWith("_"))
+    if (prev.key().startsWith('_'))
         hash.erase(prev);
 }
 //! [20]
@@ -242,7 +242,7 @@ while (i != hash.end()) {
 //! [21]
 // WRONG
 while (i != hash.end()) {
-    if (i.key().startsWith("_"))
+    if (i.key().startsWith('_'))
         hash.erase(i);
     ++i;
 }

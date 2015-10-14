@@ -276,7 +276,7 @@ void Calculator::pointClicked()
 {
     if (waitingForOperand)
         display->setText("0");
-    if (!display->text().contains("."))
+    if (!display->text().contains('.'))
         display->setText(display->text() + tr("."));
     waitingForOperand = false;
 }

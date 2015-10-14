@@ -153,7 +153,7 @@ void Dialog::addTracks(int albumId, QStringList tracks)
     for (int i = 0; i < tracks.count(); i++) {
         QString trackNumber = QString::number(i);
         if (i < 10)
-            trackNumber.prepend("0");
+            trackNumber.prepend('0');
 
         QDomText textNode = albumDetails.createTextNode(tracks.at(i));
 

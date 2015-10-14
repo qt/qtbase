@@ -176,7 +176,7 @@ QMap<int, int> map;
 ...
 QMap<int, int>::const_iterator i;
 for (i = map.constBegin(); i != map.constEnd(); ++i)
-    qDebug() << i.key() << ":" << i.value();
+    qDebug() << i.key() << ':' << i.value();
 //! [13]
 
 
@@ -236,7 +236,7 @@ foreach (const QString &str, list) {
 QMap<QString, int> map;
 ...
 foreach (const QString &str, map.keys())
-    qDebug() << str << ":" << map.value(str);
+    qDebug() << str << ':' << map.value(str);
 //! [19]
 
 
@@ -245,7 +245,7 @@ QMultiMap<QString, int> map;
 ...
 foreach (const QString &str, map.uniqueKeys()) {
     foreach (int i, map.values(str))
-        qDebug() << str << ":" << i;
+        qDebug() << str << ':' << i;
 }
 //! [20]
 

@@ -2833,6 +2833,13 @@ void QFileDialogPrivate::createWidgets()
     if (qFileDialogUi)
         return;
     Q_Q(QFileDialog);
+
+    // This function is sometimes called late (e.g as a fallback from setVisible). In that case we
+    // need to ensure that the following UI code (setupUI in particular) doesn't reset any explicitly
+    // set window state or geometry.
+    QSize preSize = q->testAttribute(Qt::WA_Resized) ? q->size() : QSize();
+    Qt::WindowStates preState = q->windowState();
+
     model = new QFileSystemModel(q);
     model->setFilter(options->filter());
     model->setObjectName(QLatin1String("qt_filesystem_model"));
@@ -2878,6 +2885,9 @@ void QFileDialogPrivate::createWidgets()
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
 #endif // QT_NO_FSCOMPLETER
+
+    qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
+
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
@@ -2991,7 +3001,8 @@ void QFileDialogPrivate::createWidgets()
     lineEdit()->selectAll();
     _q_updateOkButton();
     retranslateStrings();
-    q->resize(q->sizeHint());
+    q->resize(preSize.isValid() ? preSize : q->sizeHint());
+    q->setWindowState(preState);
 }
 
 void QFileDialogPrivate::_q_showHeader(QAction *action)
@@ -3778,6 +3789,12 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 
     Q_Q(QFileDialog);
+
+    if (event->matches(QKeySequence::Cancel)) {
+        q->hide();
+        return true;
+    }
+
     switch (event->key()) {
     case Qt::Key_Backspace:
         _q_navigateToParent();
@@ -3793,9 +3810,6 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
             return true;
         }
         break;
-    case Qt::Key_Escape:
-        q->hide();
-        return true;
     default:
         break;
     }
@@ -3982,7 +3996,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape && key != Qt::Key_Back)
+    if (!e->matches(QKeySequence::Cancel) && key != Qt::Key_Back)
         e->accept();
 }
 

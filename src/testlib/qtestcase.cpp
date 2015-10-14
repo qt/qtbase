@@ -2597,9 +2597,13 @@ private:
 
 void FatalSignalHandler::signal(int signum)
 {
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     if (signum != SIGINT)
         stackTrace();
-    qFatal("Received signal %d", signum);
+    qFatal("Received signal %d\n"
+           "         Function time: %dms Total time: %dms",
+           signum, msecsFunctionTime, msecsTotalTime);
 #if defined(Q_OS_INTEGRITY)
     {
         struct sigaction act;
@@ -2794,12 +2798,15 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
     char appName[MAX_PATH];
     if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
         appName[0] = 0;
-
+    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-    printf("A crash occurred in %s.\n\n"
+    printf("A crash occurred in %s.\n"
+           "Function time: %dms Total time: %dms\n\n"
            "Exception address: 0x%p\n"
            "Exception code   : 0x%lx\n",
-           appName, exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+           appName, msecsFunctionTime, msecsTotalTime,
+           exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
 
     DebugSymbolResolver resolver(GetCurrentProcess());
     if (resolver.isValid()) {

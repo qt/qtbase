@@ -6457,7 +6457,7 @@ bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessag
             if (*expandedIt > entityCharacterLimit) {
                 if (errorMessage) {
                     *errorMessage = QString::fromLatin1("The XML entity \"%1\" expands to a string that is too large to process (%2 characters > %3).")
-                        .arg(entity, *expandedIt, entityCharacterLimit);
+                        .arg(entity, QString::number(*expandedIt), QString::number(entityCharacterLimit));
                 }
                 return true;
             }

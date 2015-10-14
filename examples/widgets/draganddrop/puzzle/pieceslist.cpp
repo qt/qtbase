@@ -57,7 +57,7 @@ PiecesList::PiecesList(int pieceSize, QWidget *parent)
 
 void PiecesList::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat("image/x-puzzle-piece"))
+    if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType()))
         event->accept();
     else
         event->ignore();
@@ -65,7 +65,7 @@ void PiecesList::dragEnterEvent(QDragEnterEvent *event)
 
 void PiecesList::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat("image/x-puzzle-piece")) {
+    if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())) {
         event->setDropAction(Qt::MoveAction);
         event->accept();
     } else {
@@ -75,8 +75,8 @@ void PiecesList::dragMoveEvent(QDragMoveEvent *event)
 
 void PiecesList::dropEvent(QDropEvent *event)
 {
-    if (event->mimeData()->hasFormat("image/x-puzzle-piece")) {
-        QByteArray pieceData = event->mimeData()->data("image/x-puzzle-piece");
+    if (event->mimeData()->hasFormat(PiecesList::puzzleMimeType())) {
+        QByteArray pieceData = event->mimeData()->data(PiecesList::puzzleMimeType());
         QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
         QPixmap pixmap;
         QPoint location;
@@ -112,7 +112,7 @@ void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)
     dataStream << pixmap << location;
 
     QMimeData *mimeData = new QMimeData;
-    mimeData->setData("image/x-puzzle-piece", itemData);
+    mimeData->setData(PiecesList::puzzleMimeType(), itemData);
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);

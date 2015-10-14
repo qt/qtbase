@@ -115,10 +115,13 @@ private slots:
     void linkLocalIPv4();
     void readyRead();
     void readyReadForEmptyDatagram();
+    void asyncReadDatagram();
+    void writeInHostLookupState();
 
 protected slots:
     void empty_readyReadSlot();
     void empty_connectedSlot();
+    void async_readDatagramSlot();
 
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -126,6 +129,8 @@ private:
     QNetworkConfiguration networkConfiguration;
     QSharedPointer<QNetworkSession> networkSession;
 #endif
+    QUdpSocket *m_asyncSender;
+    QUdpSocket *m_asyncReceiver;
 };
 
 static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
@@ -1668,6 +1673,68 @@ void tst_QUdpSocket::readyReadForEmptyDatagram()
     QCOMPARE(receiver.pendingDatagramSize(), qint64(0));
     QCOMPARE(receiver.bytesAvailable(), qint64(0));
     QCOMPARE(receiver.readDatagram(buf, sizeof buf), qint64(0));
+}
+
+void tst_QUdpSocket::async_readDatagramSlot()
+{
+    char buf[1];
+    QVERIFY(m_asyncReceiver->hasPendingDatagrams());
+    QCOMPARE(m_asyncReceiver->pendingDatagramSize(), qint64(1));
+    QCOMPARE(m_asyncReceiver->bytesAvailable(), qint64(1));
+    QCOMPARE(m_asyncReceiver->readDatagram(buf, sizeof(buf)), qint64(1));
+
+    if (buf[0] == '2') {
+        QTestEventLoop::instance().exitLoop();
+        return;
+    }
+
+    m_asyncSender->writeDatagram("2", makeNonAny(m_asyncReceiver->localAddress()), m_asyncReceiver->localPort());
+    // wait a little to ensure that the datagram we've just sent
+    // will be delivered on receiver side.
+    QTest::qSleep(100);
+}
+
+void tst_QUdpSocket::asyncReadDatagram()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    m_asyncSender = new QUdpSocket;
+    m_asyncReceiver = new QUdpSocket;
+#ifdef FORCE_SESSION
+    m_asyncSender->setProperty("_q_networksession", QVariant::fromValue(networkSession));
+    m_asyncReceiver->setProperty("_q_networksession", QVariant::fromValue(networkSession));
+#endif
+
+    QVERIFY(m_asyncReceiver->bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    quint16 port = m_asyncReceiver->localPort();
+    QVERIFY(port != 0);
+
+    QSignalSpy spy(m_asyncReceiver, SIGNAL(readyRead()));
+    connect(m_asyncReceiver, SIGNAL(readyRead()), SLOT(async_readDatagramSlot()));
+
+    m_asyncSender->writeDatagram("1", makeNonAny(m_asyncReceiver->localAddress()), port);
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(spy.count(), 2);
+
+    delete m_asyncSender;
+    delete m_asyncReceiver;
+}
+
+void tst_QUdpSocket::writeInHostLookupState()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QUdpSocket socket;
+    socket.connectToHost("nosuchserver.qt-project.org", 80);
+    QCOMPARE(socket.state(), QUdpSocket::HostLookupState);
+    QVERIFY(!socket.putChar('0'));
 }
 
 QTEST_MAIN(tst_QUdpSocket)

@@ -488,7 +488,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
     if (s.startsWith(QLatin1Char('@'))) {
         if (s.endsWith(QLatin1Char(')'))) {
             if (s.startsWith(QLatin1String("@ByteArray("))) {
-                return QVariant(s.toLatin1().mid(11, s.size() - 12));
+                return QVariant(s.midRef(11, s.size() - 12).toLatin1());
             } else if (s.startsWith(QLatin1String("@Variant("))
                        || s.startsWith(QLatin1String("@DateTime("))) {
 #ifndef QT_NO_DATASTREAM
@@ -501,7 +501,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
                     version = QDataStream::Qt_4_0;
                     offset = 9;
                 }
-                QByteArray a(s.toLatin1().mid(offset));
+                QByteArray a = s.midRef(offset).toLatin1();
                 QDataStream stream(&a, QIODevice::ReadOnly);
                 stream.setVersion(version);
                 QVariant result;
@@ -632,8 +632,9 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
     int startPos = result.size();
 
     result.reserve(startPos + str.size() * 3 / 2);
+    const QChar *unicode = str.unicode();
     for (i = 0; i < str.size(); ++i) {
-        uint ch = str.at(i).unicode();
+        uint ch = unicode[i].unicode();
         if (ch == ';' || ch == ',' || ch == '=')
             needsQuotes = true;
 
@@ -687,7 +688,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
 #ifndef QT_NO_TEXTCODEC
             } else if (useCodec) {
                 // slow
-                result += codec->fromUnicode(str.at(i));
+                result += codec->fromUnicode(&unicode[i], 1);
 #endif
             } else {
                 result += (char)ch;

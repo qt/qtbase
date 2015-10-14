@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/invalid-magic1">
+      <comment>wrong value for byte type</comment>
+      <magic>
+          <match value="foo" type="byte" offset="0"/>
+      </magic>
+  </mime-type>
+</mime-info>

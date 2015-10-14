@@ -387,7 +387,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     {
-        if (!pathElements.at(0).contains(QLatin1String(":"))) {
+        if (!pathElements.at(0).contains(QLatin1Char(':'))) {
             QString rootPath = QDir(longPath).rootPath();
             pathElements.prepend(rootPath);
         }

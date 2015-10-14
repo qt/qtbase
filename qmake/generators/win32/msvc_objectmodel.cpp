@@ -2412,7 +2412,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         // Make sure that all deps are only once
         QStringList uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
-            QString aDep = deps.at(c).trimmed();
+            QString aDep = deps.at(c);
             if (!aDep.isEmpty())
                 uniqDeps << aDep;
         }

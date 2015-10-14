@@ -413,7 +413,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
         case QVariant::Char:
-            *str = QString(*v_cast<QChar>(d));
+            *str = *v_cast<QChar>(d);
             break;
         case QMetaType::Char:
         case QMetaType::SChar:

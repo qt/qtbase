@@ -1,10 +1,8 @@
 QT += widgets
 
-HEADERS     = draglabel.h \
-              dragwidget.h
+HEADERS     = dragwidget.h
 RESOURCES   = draggabletext.qrc
-SOURCES     = draglabel.cpp \
-              dragwidget.cpp \
+SOURCES     = dragwidget.cpp \
               main.cpp
 
 # install

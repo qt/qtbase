@@ -54,9 +54,8 @@ protected:
     virtual bool doDepends() const { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
     virtual QString defaultInstall(const QString &);
     virtual ProString fixLibFlag(const ProString &lib);
-    virtual void processPrlFiles();
 
-    virtual bool findLibraries();
+    virtual bool findLibraries(bool linkPrl, bool mergeLflags);
     virtual QString escapeFilePath(const QString &path) const;
     ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
     virtual QStringList &findDependencies(const QString &);

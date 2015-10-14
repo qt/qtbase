@@ -1242,7 +1242,7 @@ void QSslSocket::setCiphers(const QString &ciphers)
 {
     Q_D(QSslSocket);
     d->configuration.ciphers.clear();
-    foreach (const QString &cipherName, ciphers.split(QLatin1String(":"),QString::SkipEmptyParts)) {
+    foreach (const QString &cipherName, ciphers.split(QLatin1Char(':'), QString::SkipEmptyParts)) {
         QSslCipher cipher(cipherName);
         if (!cipher.isNull())
             d->configuration.ciphers << cipher;

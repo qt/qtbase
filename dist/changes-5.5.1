@@ -1,0 +1,140 @@
+Qt 5.5.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.5.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://doc.qt.io/qt-5.5/
+
+The Qt version 5.5 series is binary compatible with the 5.4.x series.
+Applications compiled for 5.4 will continue to run with 5.5.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-47316] QDebug output for QStrings changed compared to Qt 5.5.0 to
+   more closely match the output of previous Qt versions. Like Qt 5.5.0,
+   QDebug will escape non-printable characters, the backslash and quote
+   characters, but will no longer escape the printable characters.
+
+****************************************************************************
+*                          Future Direction Notice                         *
+****************************************************************************
+
+ - Qt 5.7 will begin requiring certain C++11 features in order to
+   compile. Due to bugs in the Clang compiler that comes with XCode 5.0,
+   that version will not be supported, despite what was noted in the Qt
+   5.5.0 changelog.
+   The minimum compiler versions for Qt 5.7 release will be:
+   * Clang 3.3 (XCode 5.1 contains version 3.4)
+   * GCC 4.7
+   * Intel C++ Composer XE 2013 SP1 (compiler version 14.0) on Linux and OS X
+   * Intel C++ Composer XE 2016 (compiler version 16.0) on Windows
+   * Microsoft Visual Studio 2012 (compiler version 17.0)
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - Logging framework:
+   * Fixed a bug that would cause a
+     "%{time boot}" field in the logging framework's pattern to always
+     display the same value, instead of the time since boot.
+
+ - QDate/QTime:
+   * Fixed a minor source-incompatibility between Qt 5.4 and 5.5.0
+     involving sets of functions overloaded on QTime and some integer or
+     QDate and some integer.
+
+ - QDir:
+   * QDir::relativeFilePath() now returns "." instead of an empty string if
+     the given path is the same as the directory.
+
+ - QLoggingCategory:
+   * Fixed behavior of default severity passed to constructor or
+     Q_LOGGING_CATEGORY with regards to QtInfoMsg, which was previously
+     treated as being more severe than QtFatalMsg.
+
+ - QTimeZone:
+   * [QTBUG-47037] Fixed a wrong timezone conversion when the POSIX
+     timezone rule contains a fractional timezone (e.g. VET4:30).
+
+QtNetwork
+---------
+
+ - [QTBUG-47048] Fix HTTP issues with "Unknown Error" and "Connection
+   Closed"
+   [ChangeLog][QtNetwork][Sockets] Read OS/encrypted read buffers when
+   connection closed by server.
+
+QtSql
+-----
+
+ - QSqlDatabase:
+   * [QTBUG-47784][QTBUG-47452] Fixed a bug where opening a connection to a
+     MySQL database using the QMYSQL plugin would always return true even
+     if the server was unreachable. This bug could also lead to crashes
+     depending on the platform used.
+
+QtWidgets
+---------
+
+ - Important behavior changes:
+   * [QTBUG-46379] Tooltips on OS X are now transparent for mouse events.
+
+****************************************************************************
+*                         Platform Specific Changes                        *
+****************************************************************************
+
+Windows
+-------
+
+ - Text:
+   * [QTBUG-46963] Fixed crash in DirectWrite engine when constructing a
+     QRawFont from raw font data.
+
+****************************************************************************
+*                         Compiler Specific Changes                        *
+****************************************************************************
+
+GCC
+---
+
+ - Fixed a regression introduced Qt 5.5.0 that generated lots of
+   compiler warnings in Qt public headers when using the (deprecated)
+   version 4.5 of GCC.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-46125] Fixed misuse of target linker features for host tools.
+ - [QTBUG-46473] QML plugin DLLs now have version information.
+
+qmake
+-----
+
+ - [QTBUG-46824][Darwin] Characters in the bundle identifier which
+   the App Store considers invalid are now substituted.
+ - [QTBUG-47065][Unix] Fixed use of CONFIG+=separate_debug_info together
+   with CONFIG+=unversioned_libname.
+ - [QTBUG-47450][Xcode] Fixed Info.plist creation in shadow builds.
+ - [QTBUG-47775][Darwin] Fixed Info.plist creation when bundle name
+   contains spaces.
+ - [QTBUG-48110][VS] Fixed VS2015 solution file generation.
+ - [MSVC][nmake] Fixed use of VS2013 mkspecs from VS2015 shell.

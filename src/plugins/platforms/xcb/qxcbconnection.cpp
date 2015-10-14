@@ -476,7 +476,7 @@ void QXcbConnection::initializeScreens()
     // Push the screens to QApplication
     QXcbIntegration *integration = QXcbIntegration::instance();
     foreach (QXcbScreen* screen, m_screens) {
-        qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
+        qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ')';
         integration->screenAdded(screen, screen->isPrimary());
     }
 

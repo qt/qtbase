@@ -51,6 +51,8 @@ public:
     explicit PiecesList(int pieceSize, QWidget *parent = 0);
     void addPiece(QPixmap pixmap, QPoint location);
 
+    static QString puzzleMimeType() { return QStringLiteral("image/x-puzzle-piece"); }
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;

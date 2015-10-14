@@ -2452,7 +2452,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
         t.exec(query + whereList.join(QLatin1String(" or ")));
         while (t.next()) {
             if (t.value(0).toString() != d->user)
-                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }

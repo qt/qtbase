@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "simplewidgets.h"
+#include "simplewidgets_p.h"
 
 #include <qabstractbutton.h>
 #include <qcheckbox.h>

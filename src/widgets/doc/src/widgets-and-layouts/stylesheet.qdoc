@@ -2995,7 +2995,7 @@
         \li \b{Url} \target Url
         \li \tt{url(\e{filename})}
         \li \tt{\e{filename}} is the name of a file on the local disk
-           or stored using \l{the Qt Resource System}. Setting an
+           or stored using \l{The Qt Resource System}. Setting an
            image implicitly sets the width and height of the element.
 
     \endtable

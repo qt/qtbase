@@ -1221,16 +1221,14 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
         }
         break;
     }
-    case Qt::Key_Escape:
-        if (d->down) {
+    default:
+        if (e->matches(QKeySequence::Cancel) && d->down) {
             setDown(false);
             repaint(); //flush paint event before invoking potentially expensive operation
             QApplication::flush();
             d->emitReleased();
-            break;
+            return;
         }
-        // fall through
-    default:
         e->ignore();
     }
 }

@@ -156,16 +156,8 @@ QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
     result.reserve(hash.size());
-    Hash::ConstIterator it = hash.constBegin(),
-                       end = hash.constEnd();
-    for ( ; it != end; ++it) {
-        QString data = nameToString(it.key());
-        QString value = valueToString(it.value());
-        data.reserve(data.length() + value.length() + 1);
-        data.append(QLatin1Char('='));
-        data.append(value);
-        result << data;
-    }
+    for (Hash::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it)
+        result << nameToString(it.key()) + QLatin1Char('=') + valueToString(it.value());
     return result;
 }
 

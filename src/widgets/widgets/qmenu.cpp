@@ -2679,7 +2679,7 @@ QMenu::event(QEvent *e)
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down
                 || kev->key() == Qt::Key_Left || kev->key() == Qt::Key_Right
                 || kev->key() == Qt::Key_Enter || kev->key() == Qt::Key_Return
-                || kev->key() == Qt::Key_Escape) {
+                || kev->matches(QKeySequence::Cancel)) {
                 e->accept();
                 return true;
             }
@@ -2965,27 +2965,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         }
         break;
 
-    case Qt::Key_Escape:
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Back:
-#endif
-        key_consumed = true;
-        if (d->tornoff) {
-            close();
-            return;
-        }
-        {
-            QPointer<QWidget> caused = d->causedPopup.widget;
-            d->hideMenu(this); // hide after getting causedPopup
-#ifndef QT_NO_MENUBAR
-            if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
-                mb->d_func()->setCurrentAction(d->menuAction);
-                mb->d_func()->setKeyboardMode(true);
-            }
-#endif
-        }
-        break;
-
     case Qt::Key_Space:
         if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
             break;
@@ -3020,6 +2999,28 @@ void QMenu::keyPressEvent(QKeyEvent *e)
 #endif
     default:
         key_consumed = false;
+    }
+
+    if (!key_consumed && (e->matches(QKeySequence::Cancel)
+#ifdef QT_KEYPAD_NAVIGATION
+        || e->key() == Qt::Key_Back
+#endif
+    )) {
+        key_consumed = true;
+        if (d->tornoff) {
+            close();
+            return;
+        }
+        {
+            QPointer<QWidget> caused = d->causedPopup.widget;
+            d->hideMenu(this); // hide after getting causedPopup
+#ifndef QT_NO_MENUBAR
+            if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
+                mb->d_func()->setCurrentAction(d->menuAction);
+                mb->d_func()->setKeyboardMode(true);
+            }
+#endif
+        }
     }
 
     if (!key_consumed) {                                // send to menu bar

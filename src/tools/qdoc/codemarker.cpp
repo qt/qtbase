@@ -210,7 +210,7 @@ void CodeMarker::appendProtectedString(QString *output, const QStringRef &str)
     }
 }
 
-QString CodeMarker::typified(const QString &string)
+QString CodeMarker::typified(const QString &string, bool trailingSpace)
 {
     QString result;
     QString pendingWord;
@@ -253,6 +253,11 @@ QString CodeMarker::typified(const QString &string)
                 result += ch;
             }
         }
+    }
+    if (trailingSpace && string.size()) {
+        if (!string.endsWith(QLatin1Char('*'))
+                && !string.endsWith(QLatin1Char('&')))
+                result += QLatin1Char(' ');
     }
     return result;
 }

@@ -120,7 +120,9 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 // (if this list becomes too long, consider factoring into a separate file)
 Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
 Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
-
+#ifndef QT_BOOTSTRAPPED
+Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "configure test ptrsize failed to correctly determine QT_POINTER_SIZE");
+#endif
 
 /*!
     \class QFlag

@@ -32,17 +32,14 @@
 ****************************************************************************/
 
 #include <stdlib.h>
+#include <stdint.h>
 extern "C" {
-#include <gbm.h>
 #include <xf86drmMode.h>
 #include <xf86drm.h>
 }
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
 
 int main(int, char **)
 {
-    // Check for gbm_surface which is quite a recent addition.
-    gbm_surface *surface = 0;
+    drmModeCrtcPtr currentMode = drmModeGetCrtc(0, 0);
     return 0;
 }

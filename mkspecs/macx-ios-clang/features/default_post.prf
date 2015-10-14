@@ -93,6 +93,5 @@ macx-xcode {
 
     QMAKE_CFLAGS           += $$arch_flags
     QMAKE_CXXFLAGS         += $$arch_flags
-    QMAKE_OBJECTIVE_CFLAGS += $$arch_flags
     QMAKE_LFLAGS           += $$arch_flags
 }

@@ -39,6 +39,7 @@
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
 #include "qwindow.h"
+#include "qxcbcursor.h"
 #include <private/qdnd_p.h>
 #include <qdebug.h>
 #include <qevent.h>
@@ -160,7 +161,7 @@ void QXcbDrag::init()
     source_time = XCB_CURRENT_TIME;
     target_time = XCB_CURRENT_TIME;
 
-    current_screen = 0;
+    QXcbCursor::queryPointer(connection(), &current_virtual_desktop, 0);
     drag_types.clear();
 }
 
@@ -308,38 +309,20 @@ void QXcbDrag::move(const QPoint &globalPos)
     if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
         return;
 
-    const QList<QXcbScreen *> &screens = connection()->screens();
-    QXcbScreen *screen = connection()->primaryScreen();
-    for (int i = 0; i < screens.size(); ++i) {
-        if (screens.at(i)->geometry().contains(globalPos)) {
-            screen = screens.at(i);
-            break;
-        }
+    QXcbVirtualDesktop *virtualDesktop = Q_NULLPTR;
+    QPoint cursorPos;
+    QXcbCursor::queryPointer(connection(), &virtualDesktop, &cursorPos);
+    QXcbScreen *screen = virtualDesktop->screenAt(cursorPos);
+    QPoint deviceIndependentPos = QHighDpiScaling::mapPositionFromNative(globalPos, screen);
+
+    if (virtualDesktop != current_virtual_desktop) {
+        recreateShapedPixmapWindow(static_cast<QPlatformScreen*>(screen)->screen(), deviceIndependentPos);
+        current_virtual_desktop = virtualDesktop;
+    } else {
+        QBasicDrag::moveShapedPixmapWindow(deviceIndependentPos);
     }
 
-    QBasicDrag::moveShapedPixmapWindow(QHighDpiScaling::mapPositionFromNative(globalPos, screen));
-
-    if (screen != current_screen) {
-        // ### need to recreate the shaped pixmap window?
-//    int screen = QCursor::x11Screen();
-//    if ((qt_xdnd_current_screen == -1 && screen != X11->defaultScreen) || (screen != qt_xdnd_current_screen)) {
-//        // recreate the pixmap on the new screen...
-//        delete xdnd_data.deco;
-//        QWidget* parent = object->source()->window()->x11Info().screen() == screen
-//            ? object->source()->window() : QApplication::desktop()->screen(screen);
-//        xdnd_data.deco = new QShapedPixmapWidget(parent);
-//        if (!QWidget::mouseGrabber()) {
-//            updatePixmap();
-//            xdnd_data.deco->grabMouse();
-//        }
-//    }
-//    xdnd_data.deco->move(QCursor::pos() - xdnd_data.deco->pm_hot);
-        current_screen = screen;
-    }
-
-
-//    qt_xdnd_current_screen = screen;
-    xcb_window_t rootwin = current_screen->root();
+    xcb_window_t rootwin = current_virtual_desktop->root();
     xcb_translate_coordinates_reply_t *translate =
             ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x(), globalPos.y());
     if (!translate)

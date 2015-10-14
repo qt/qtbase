@@ -1288,7 +1288,7 @@ QVariant QStateMachinePrivate::savedValueForRestorable(const QList<QAbstractStat
                                                        QObject *object, const QByteArray &propertyName) const
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ")";
+    qDebug() << q_func() << ": savedValueForRestorable(" << exitedStates_sorted << object << propertyName << ')';
 #endif
     for (int i = exitedStates_sorted.size() - 1; i >= 0; --i) {
         QAbstractState *s = exitedStates_sorted.at(i);
@@ -1311,7 +1311,7 @@ void QStateMachinePrivate::registerRestorable(QAbstractState *state, QObject *ob
                                               const QVariant &value)
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": registerRestorable(" << state << object << propertyName << value << ")";
+    qDebug() << q_func() << ": registerRestorable(" << state << object << propertyName << value << ')';
 #endif
     RestorableId id(object, propertyName);
     QHash<RestorableId, QVariant> &restorables = registeredRestorablesForState[state];
@@ -1327,7 +1327,7 @@ void QStateMachinePrivate::unregisterRestorables(const QList<QAbstractState *> &
                                                  const QByteArray &propertyName)
 {
 #ifdef QSTATEMACHINE_RESTORE_PROPERTIES_DEBUG
-    qDebug() << q_func() << ": unregisterRestorables(" << states << object << propertyName << ")";
+    qDebug() << q_func() << ": unregisterRestorables(" << states << object << propertyName << ')';
 #endif
     RestorableId id(object, propertyName);
     for (int i = 0; i < states.size(); ++i) {

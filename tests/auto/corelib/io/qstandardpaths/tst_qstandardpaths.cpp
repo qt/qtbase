@@ -56,6 +56,7 @@ class tst_qstandardpaths : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void dump();
     void testDefaultLocations();
     void testCustomLocations();
@@ -127,6 +128,14 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "AppDataLocation",
     "AppConfigLocation"
 };
+
+void tst_qstandardpaths::initTestCase()
+{
+    QVERIFY2(m_localConfigTempDir.isValid(), qPrintable(m_localConfigTempDir.errorString()));
+    QVERIFY2(m_globalConfigTempDir.isValid(), qPrintable(m_globalConfigTempDir.errorString()));
+    QVERIFY2(m_localAppTempDir.isValid(), qPrintable(m_localAppTempDir.errorString()));
+    QVERIFY2(m_globalAppTempDir.isValid(), qPrintable(m_globalAppTempDir.errorString()));
+}
 
 void tst_qstandardpaths::dump()
 {

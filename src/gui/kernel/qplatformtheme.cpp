@@ -323,7 +323,9 @@ const QKeyBinding QPlatformThemePrivate::keyBindings[] = {
     {QKeySequence::FullScreen,              1,          Qt::Key_F11,                            KB_Win | KB_KDE},
     {QKeySequence::Deselect,                0,          Qt::CTRL | Qt::SHIFT | Qt::Key_A,       KB_X11},
     {QKeySequence::DeleteCompleteLine,      0,          Qt::CTRL | Qt::Key_U,                   KB_X11},
-    {QKeySequence::Backspace,               0,          Qt::META | Qt::Key_H,                   KB_Mac}
+    {QKeySequence::Backspace,               0,          Qt::META | Qt::Key_H,                   KB_Mac},
+    {QKeySequence::Cancel,                  0,          Qt::Key_Escape,                         KB_All},
+    {QKeySequence::Cancel,                  0,          Qt::CTRL | Qt::Key_Period,              KB_Mac}
 };
 
 const uint QPlatformThemePrivate::numberOfKeyBindings = sizeof(QPlatformThemePrivate::keyBindings)/(sizeof(QKeyBinding));

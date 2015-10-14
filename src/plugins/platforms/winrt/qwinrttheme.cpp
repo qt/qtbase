@@ -218,7 +218,7 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
     case QPlatformIntegration::KeyboardAutoRepeatRate:
         return defaultThemeHint(KeyboardAutoRepeatRate);
     case QPlatformIntegration::ShowIsFullScreen:
-        return true;
+        return false;
     case QPlatformIntegration::PasswordMaskDelay:
         return defaultThemeHint(PasswordMaskDelay);
     case QPlatformIntegration::FontSmoothingGamma:
@@ -232,7 +232,7 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
     case QPlatformIntegration::SetFocusOnTouchRelease:
         return false;
     case QPlatformIntegration::ShowIsMaximized:
-        return false;
+        return true;
     case QPlatformIntegration::MousePressAndHoldInterval:
         return defaultThemeHint(MousePressAndHoldInterval);
     default:

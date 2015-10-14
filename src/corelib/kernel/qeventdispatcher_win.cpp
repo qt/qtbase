@@ -390,6 +390,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
             QSockNot *sn = dict ? dict->value(wp) : 0;
             if (sn) {
+                d->doWsaAsyncSelect(sn->fd, 0);
+                d->active_fd[sn->fd].selected = false;
                 if (type < 3) {
                     QEvent event(QEvent::SockAct);
                     QCoreApplication::sendEvent(sn->obj, &event);
@@ -632,19 +634,12 @@ void QEventDispatcherWin32Private::sendTimerEvent(int timerId)
     }
 }
 
-void QEventDispatcherWin32Private::doWsaAsyncSelect(int socket)
+void QEventDispatcherWin32Private::doWsaAsyncSelect(int socket, long event)
 {
     Q_ASSERT(internalHwnd);
-    int sn_event = 0;
-    if (sn_read.contains(socket))
-        sn_event |= FD_READ | FD_CLOSE | FD_ACCEPT;
-    if (sn_write.contains(socket))
-        sn_event |= FD_WRITE | FD_CONNECT;
-    if (sn_except.contains(socket))
-        sn_event |= FD_OOB;
-    // BoundsChecker may emit a warning for WSAAsyncSelect when sn_event == 0
+    // BoundsChecker may emit a warning for WSAAsyncSelect when event == 0
     // This is a BoundsChecker bug and not a Qt bug
-    WSAAsyncSelect(socket, internalHwnd, sn_event ? int(WM_QT_SOCKETNOTIFIER) : 0, sn_event);
+    WSAAsyncSelect(socket, internalHwnd, event ? int(WM_QT_SOCKETNOTIFIER) : 0, event);
 }
 
 void QEventDispatcherWin32::createInternalHwnd()
@@ -656,13 +651,6 @@ void QEventDispatcherWin32::createInternalHwnd()
     d->internalHwnd = qt_create_internal_window(this);
 
     installMessageHook();
-
-    // register all socket notifiers
-    QList<int> sockets = (d->sn_read.keys().toSet()
-                          + d->sn_write.keys().toSet()
-                          + d->sn_except.keys().toSet()).toList();
-    for (int i = 0; i < sockets.count(); ++i)
-        d->doWsaAsyncSelect(sockets.at(i));
 
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
@@ -748,28 +736,40 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 msg = d->queuedSocketEvents.takeFirst();
             } else {
                 haveMessage = PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
-                if (haveMessage && (flags & QEventLoop::ExcludeUserInputEvents)
-                    && ((msg.message >= WM_KEYFIRST
-                         && msg.message <= WM_KEYLAST)
-                        || (msg.message >= WM_MOUSEFIRST
-                            && msg.message <= WM_MOUSELAST)
-                        || msg.message == WM_MOUSEWHEEL
-                        || msg.message == WM_MOUSEHWHEEL
-                        || msg.message == WM_TOUCH
+                if (haveMessage) {
+                    if ((flags & QEventLoop::ExcludeUserInputEvents)
+                        && ((msg.message >= WM_KEYFIRST
+                             && msg.message <= WM_KEYLAST)
+                            || (msg.message >= WM_MOUSEFIRST
+                                && msg.message <= WM_MOUSELAST)
+                            || msg.message == WM_MOUSEWHEEL
+                            || msg.message == WM_MOUSEHWHEEL
+                            || msg.message == WM_TOUCH
 #ifndef QT_NO_GESTURES
-                        || msg.message == WM_GESTURE
-                        || msg.message == WM_GESTURENOTIFY
+                            || msg.message == WM_GESTURE
+                            || msg.message == WM_GESTURENOTIFY
 #endif
-                        || msg.message == WM_CLOSE)) {
-                    // queue user input events for later processing
-                    haveMessage = false;
-                    d->queuedUserInputEvents.append(msg);
-                }
-                if (haveMessage && (flags & QEventLoop::ExcludeSocketNotifiers)
-                    && (msg.message == WM_QT_SOCKETNOTIFIER && msg.hwnd == d->internalHwnd)) {
-                    // queue socket events for later processing
-                    haveMessage = false;
-                    d->queuedSocketEvents.append(msg);
+                            || msg.message == WM_CLOSE)) {
+                        // queue user input events for later processing
+                        d->queuedUserInputEvents.append(msg);
+                        continue;
+                    }
+                    if ((flags & QEventLoop::ExcludeSocketNotifiers)
+                        && (msg.message == WM_QT_SOCKETNOTIFIER && msg.hwnd == d->internalHwnd)) {
+                        // queue socket events for later processing
+                        d->queuedSocketEvents.append(msg);
+                        continue;
+                    }
+                } else if (!(flags & QEventLoop::ExcludeSocketNotifiers)) {
+                    // register all socket notifiers
+                    for (QSFDict::iterator it = d->active_fd.begin(), end = d->active_fd.end();
+                         it != end; ++it) {
+                        QSockFd &sd = it.value();
+                        if (!sd.selected) {
+                            d->doWsaAsyncSelect(it.key(), sd.event);
+                            sd.selected = true;
+                        }
+                    }
                 }
             }
             if (!haveMessage) {
@@ -895,8 +895,25 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
     sn->fd  = sockfd;
     dict->insert(sn->fd, sn);
 
-    if (d->internalHwnd)
-        d->doWsaAsyncSelect(sockfd);
+    long event = 0;
+    if (d->sn_read.contains(sockfd))
+        event |= FD_READ | FD_CLOSE | FD_ACCEPT;
+    if (d->sn_write.contains(sockfd))
+        event |= FD_WRITE | FD_CONNECT;
+    if (d->sn_except.contains(sockfd))
+        event |= FD_OOB;
+
+    QSFDict::iterator it = d->active_fd.find(sockfd);
+    if (it != d->active_fd.end()) {
+        QSockFd &sd = it.value();
+        if (sd.selected) {
+            d->doWsaAsyncSelect(sockfd, 0);
+            sd.selected = false;
+        }
+        sd.event |= event;
+    } else {
+        d->active_fd.insert(sockfd, QSockFd(event));
+    }
 }
 
 void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
@@ -915,6 +932,19 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
 #endif
 
     Q_D(QEventDispatcherWin32);
+    QSFDict::iterator it = d->active_fd.find(sockfd);
+    if (it != d->active_fd.end()) {
+        QSockFd &sd = it.value();
+        if (sd.selected)
+            d->doWsaAsyncSelect(sockfd, 0);
+        const long event[3] = { FD_READ | FD_CLOSE | FD_ACCEPT, FD_WRITE | FD_CONNECT, FD_OOB };
+        sd.event ^= event[type];
+        if (sd.event == 0)
+            d->active_fd.erase(it);
+        else
+            sd.selected = false;
+    }
+
     QSNDict *sn_vec[3] = { &d->sn_read, &d->sn_write, &d->sn_except };
     QSNDict *dict = sn_vec[type];
     QSockNot *sn = dict->value(sockfd);
@@ -923,9 +953,6 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
 
     dict->remove(sockfd);
     delete sn;
-
-    if (d->internalHwnd)
-        d->doWsaAsyncSelect(sockfd);
 }
 
 void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
@@ -1163,6 +1190,7 @@ void QEventDispatcherWin32::closingDown()
         unregisterSocketNotifier((*(d->sn_write.begin()))->obj);
     while (!d->sn_except.isEmpty())
         unregisterSocketNotifier((*(d->sn_except.begin()))->obj);
+    Q_ASSERT(d->active_fd.isEmpty());
 
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)

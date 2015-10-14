@@ -74,6 +74,10 @@ void tst_QNetworkAccessManager::networkAccessible()
     // if there is no session, we cannot know in which state we are in
     QNetworkAccessManager::NetworkAccessibility initialAccessibility =
             manager.networkAccessible();
+
+    if (initialAccessibility == QNetworkAccessManager::UnknownAccessibility)
+          QSKIP("Unknown accessibility", SkipAll);
+
     QCOMPARE(manager.networkAccessible(), initialAccessibility);
 
     manager.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
@@ -94,29 +98,28 @@ void tst_QNetworkAccessManager::networkAccessible()
     QCOMPARE(manager.networkAccessible(), initialAccessibility);
 
     QNetworkConfigurationManager configManager;
-    bool sessionRequired = (configManager.capabilities()
-                            & QNetworkConfigurationManager::NetworkSessionRequired);
     QNetworkConfiguration defaultConfig = configManager.defaultConfiguration();
     if (defaultConfig.isValid()) {
         manager.setConfiguration(defaultConfig);
 
-        // the accessibility has not changed if no session is required
-        if (sessionRequired) {
-            QCOMPARE(spy.count(), 1);
-            QCOMPARE(spy.takeFirst().at(0).value<QNetworkAccessManager::NetworkAccessibility>(),
-                     QNetworkAccessManager::Accessible);
-        } else {
-            QCOMPARE(spy.count(), 0);
-        }
-        QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::Accessible);
+        QCOMPARE(spy.count(), 0);
+
+        if (defaultConfig.state().testFlag(QNetworkConfiguration::Active))
+            QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::Accessible);
+        else
+            QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
 
         manager.setNetworkAccessible(QNetworkAccessManager::NotAccessible);
 
-        QCOMPARE(spy.count(), 1);
-        QCOMPARE(QNetworkAccessManager::NetworkAccessibility(spy.takeFirst().at(0).toInt()),
-                 QNetworkAccessManager::NotAccessible);
-        QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
+        if (defaultConfig.state().testFlag(QNetworkConfiguration::Active)) {
+            QCOMPARE(spy.count(), 1);
+            QCOMPARE(QNetworkAccessManager::NetworkAccessibility(spy.takeFirst().at(0).toInt()),
+                     QNetworkAccessManager::NotAccessible);
+        } else {
+            QCOMPARE(spy.count(), 0);
+        }
     }
+    QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
 #endif
 }
 

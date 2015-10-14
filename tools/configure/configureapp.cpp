@@ -83,7 +83,7 @@ static inline void promptKeyPress()
         exit(0);      // Exit cleanly for Ctrl+C
 }
 
-Configure::Configure(int& argc, char** argv)
+Configure::Configure(int& argc, char** argv) : verbose(0)
 {
     // Default values for indentation
     optionIndent = 4;
@@ -383,6 +383,7 @@ void Configure::parseCmdLine()
         configCmdLine.clear();
         reloadCmdLine();
     }
+
     else if (configCmdLine.at(i) == "-loadconfig") {
         ++i;
         if (i != argCount) {
@@ -419,6 +420,10 @@ void Configure::parseCmdLine()
             || configCmdLine.at(i) == "-h"
             || configCmdLine.at(i) == "-?")
             dictionary[ "HELP" ] = "yes";
+
+        else if (configCmdLine.at(i) == "-v" || configCmdLine.at(i) == "-verbose") {
+            ++verbose;
+        }
 
         else if (configCmdLine.at(i) == "-qconfig") {
             ++i;
@@ -908,13 +913,15 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-no-qdbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-qdbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-no-dbus") {
             dictionary[ "DBUS" ] = "no";
         } else if (configCmdLine.at(i) == "-dbus") {
-            dictionary[ "DBUS" ] = "yes";
+            dictionary[ "DBUS" ] = "auto";
         } else if (configCmdLine.at(i) == "-dbus-linked") {
             dictionary[ "DBUS" ] = "linked";
+        } else if (configCmdLine.at(i) == "-dbus-runtime") {
+            dictionary[ "DBUS" ] = "runtime";
         } else if (configCmdLine.at(i) == "-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
@@ -2030,8 +2037,8 @@ bool Configure::displayHelp()
         desc("LIBPROXY", "no",   "-no-libproxy",        "Do not compile in libproxy support.");
         desc("LIBPROXY", "yes",  "-libproxy",           "Compile in libproxy support (for cross compilation targets).\n");
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
-        desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
+        desc("DBUS", "runtime",  "-dbus-runtime",       "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
@@ -2063,6 +2070,7 @@ bool Configure::displayHelp()
         desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
+        desc(                   "-v, -verbose",         "Run configure tests with verbose output.\n");
 
         // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
         desc("Qt for Windows CE only:\n\n");
@@ -2523,7 +2531,7 @@ void Configure::autoDetection()
     if (dictionary["LIBPROXY"] == "auto")
         dictionary["LIBPROXY"] = checkAvailability("LIBPROXY") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
-        dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
+        dictionary["DBUS"] = checkAvailability("DBUS") ? "linked" : "runtime";
     if (dictionary["QML_DEBUG"] == "auto")
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2604,6 +2612,8 @@ void Configure::autoDetection()
         dictionary["QT_POINTER_SIZE"] = "8";
     else
         dictionary["QT_POINTER_SIZE"] = "4";
+
+    cout << "Done running configuration tests." << endl;
 }
 
 bool Configure::verifyConfiguration()
@@ -2991,7 +3001,7 @@ void Configure::generateOutputVars()
     if (dictionary[ "LIBPROXY" ] == "yes")
         qtConfig += "libproxy";
 
-    if (dictionary[ "DBUS" ] == "yes")
+    if (dictionary[ "DBUS" ] == "runtime")
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
@@ -3101,7 +3111,7 @@ void Configure::generateOutputVars()
             qmakeVars += QString("OPENSSL_LIBS += -L%1/lib").arg(opensslPath);
         }
     }
-    if (dictionary[ "DBUS" ] != "no") {
+    if (dictionary[ "DBUS" ] == "linked") {
        if (!dbusPath.isEmpty()) {
            qmakeVars += QString("QT_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
            qmakeVars += QString("QT_LIBS_DBUS = -L%1/lib").arg(dbusPath);
@@ -3402,7 +3412,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
     }
 
     // run qmake
-    QString command = QString("%1 %2 %3 2>&1")
+    QString command = QString("%1 %2 %3")
         .arg(QDir::toNativeSeparators(QDir(newpwd).relativeFilePath(buildPath + "/bin/qmake.exe")),
              QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
              extraOptions);
@@ -3414,6 +3424,11 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         addSysroot(&command);
     }
 
+    if (verbose)
+        cout << qPrintable(command) << endl;
+    else
+        command += " 2>&1";
+
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
@@ -3423,7 +3438,10 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         command = dictionary[ "MAKE" ];
         if (command.contains("nmake") || command.contains("jom"))
             command += " /NOLOGO";
-        command += " -s 2>&1";
+        if (verbose)
+            cout << qPrintable(command) << endl;
+        else
+            command += " -s 2>&1";
         output = Environment::execute(command, &code);
         //cout << output << endl;
 

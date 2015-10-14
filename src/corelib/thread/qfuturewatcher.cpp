@@ -248,7 +248,7 @@ bool QFutureWatcherBase::isStarted() const
 /*! \fn bool QFutureWatcher::isFinished() const
 
     Returns \c true if the asynchronous computation represented by the future()
-    has finished; otherwise returns \c false.
+    has finished, or if no future has been set; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isFinished() const
 {
@@ -304,15 +304,6 @@ void QFutureWatcherBase::waitForFinished()
     futureInterface().waitForFinished();
 }
 
-/*! \fn void QFutureWatcher::setPendingResultsLimit(int limit)
-
-    The setPendingResultsLimit() provides throttling control. When the number
-    of pending resultReadyAt() or resultsReadyAt() signals exceeds the
-    \a limit, the computation represented by the future will be throttled
-    automatically. The computation will resume once the number of pending
-    signals drops below the \a limit.
-*/
-
 bool QFutureWatcherBase::event(QEvent *event)
 {
     Q_D(QFutureWatcherBase);
@@ -342,6 +333,14 @@ bool QFutureWatcherBase::event(QEvent *event)
     return QObject::event(event);
 }
 
+/*! \fn void QFutureWatcher::setPendingResultsLimit(int limit)
+
+    The setPendingResultsLimit() provides throttling control. When the number
+    of pending resultReadyAt() or resultsReadyAt() signals exceeds the
+    \a limit, the computation represented by the future will be throttled
+    automatically. The computation will resume once the number of pending
+    signals drops below the \a limit.
+*/
 void QFutureWatcherBase::setPendingResultsLimit(int limit)
 {
     Q_D(QFutureWatcherBase);
@@ -379,7 +378,8 @@ void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
 */
 QFutureWatcherBasePrivate::QFutureWatcherBasePrivate()
     : maximumPendingResultsReady(QThread::idealThreadCount() * 2),
-      resultAtConnected(0)
+      resultAtConnected(0),
+      finished(true) /* the initial m_future is a canceledResult(), with Finished set */
 { }
 
 /*!
@@ -400,7 +400,7 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
         d->pendingResultsReady.store(0);
         qDeleteAll(d->pendingCallOutEvents);
         d->pendingCallOutEvents.clear();
-        d->finished = false;
+        d->finished = false; /* May soon be amended, during connectOutputInterface() */
     }
 
     futureInterface().d->disconnectOutputInterface(d_func());

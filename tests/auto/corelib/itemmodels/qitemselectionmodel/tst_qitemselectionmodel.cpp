@@ -2808,7 +2808,7 @@ public:
     QModelIndex tl;
     QModelIndex br;
 public slots:
-    void changed(const QItemSelection &selected, const QItemSelection &deselected)
+    void changed(const QItemSelection &, const QItemSelection &deselected)
     {
         tl = deselected.first().topLeft();
         br = deselected.first().bottomRight();

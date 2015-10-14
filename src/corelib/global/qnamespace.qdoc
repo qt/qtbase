@@ -28,7 +28,7 @@
 /*!
     \namespace Qt
     \inmodule QtCore
-    \target Qt Namespace
+    \keyword Qt Namespace
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.
@@ -1729,6 +1729,17 @@
     \value Key_Zoom
     \value Key_Exit
     \value Key_Cancel
+    \value Key_MicVolumeUp
+    \value Key_Find
+    \value Key_Open
+    \value Key_MicVolumeDown
+    \value Key_New
+    \value Key_Settings
+    \value Key_Redo
+    \value Key_Exit
+    \value Key_Info
+    \value Key_Undo
+    \value Key_Guide
 
     \sa QKeyEvent::key()
 */
@@ -2420,7 +2431,7 @@
     \value WhatsThisCursor  \inlineimage cursor-whatsthis.png
                           An arrow with a question mark, typically used to indicate
                           the presence of What's This? help for a widget.
-    \value BusyCursor     \inlineimage cursor-wait.png
+    \value BusyCursor     \inlineimage cursor-busy.png
                           An hourglass or watch cursor, usually shown during
                           operations that allow the user to interact with
                           the application while they are performed in the
@@ -2730,7 +2741,7 @@
     "\l{http://bugreports.qt.io/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://doc.qt.digia.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://doc.qt.io/archives/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag, QTabBar::elideMode
 */

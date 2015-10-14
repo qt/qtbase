@@ -152,6 +152,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
         m_scrolling = false;
+        m_currentlyInterpretedKeyEvent = 0;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -709,8 +710,12 @@ QT_WARNING_POP
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
     if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        if (QNSView *popupView = popup->qtView())
-            targetView = popupView;
+        // Tooltips must be transparent for mouse events
+        // The bug reference is QTBUG-46379
+        if (!popup->m_windowFlags.testFlag(Qt::ToolTip)) {
+            if (QNSView *popupView = popup->qtView())
+                targetView = popupView;
+        }
     }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
@@ -1436,41 +1441,40 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
         text = QCFString::toQString(characters);
 
-    QWindow *focusWindow = [self topLevelWindow];
+    QWindow *window = [self topLevelWindow];
+
+    // Popups implicitly grab key events; forward to the active popup if there is one.
+    // This allows popups to e.g. intercept shortcuts and close the popup in response.
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
+        window = popup->window();
 
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
-            QKeyEvent override(QEvent::ShortcutOverride, keyCode, modifiers,
-                nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
-            override.setTimestamp(timestamp);
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutOverrideEvent(focusWindow, &override);
+            m_sendKeyEvent = !QWindowSystemInterface::handleShortcutEvent(window, timestamp, keyCode,
+                modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1);
         }
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {
-            // if escape is pressed we don't want interpretKeyEvents to close a dialog. This will be done via QWindowSystemInterface
-            if (keyCode == Qt::Key_Escape)
-                m_platformWindow->m_ignoreWindowShouldClose = true;
-
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
                 if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
                     // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
+                    m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
+                    m_currentlyInterpretedKeyEvent = 0;
                 }
             }
-
-            m_platformWindow->m_ignoreWindowShouldClose = false;;
         }
         if (m_resendKeyEvent)
             m_sendKeyEvent = true;
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
 
     m_sendKeyEvent = false;
@@ -1491,21 +1495,23 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
 }
 
-- (BOOL)performKeyEquivalent:(NSEvent *)nsevent
+- (void)cancelOperation:(id)sender
 {
-    NSString *chars = [nsevent charactersIgnoringModifiers];
+    Q_UNUSED(sender);
 
-    if ([nsevent type] == NSKeyDown && [chars length] > 0) {
-        QChar ch = [chars characterAtIndex:0];
-        Qt::Key qtKey = qt_mac_cocoaKey2QtKey(ch);
-        // check for Command + Key_Period
-        if ([nsevent modifierFlags] & NSCommandKeyMask
-                && qtKey == Qt::Key_Period) {
-            [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
-            return YES;
-        }
-    }
-    return [super performKeyEquivalent:nsevent];
+    NSEvent *currentEvent = [NSApp currentEvent];
+    if (!currentEvent || currentEvent.type != NSKeyDown)
+        return;
+
+    // Handling the key event may recurse back here through interpretKeyEvents
+    // (when IM is enabled), so we need to guard against that.
+    if (currentEvent == m_currentlyInterpretedKeyEvent)
+        return;
+
+    // Send Command+Key_Period and Escape as normal keypresses so that
+    // the key sequence is delivered through Qt. That way clients can
+    // intercept the shortcut and override its effect.
+    [self handleKeyEvent:currentEvent eventType:int(QEvent::KeyPress)];
 }
 
 - (void)flagsChanged:(NSEvent *)nsevent

@@ -35,6 +35,7 @@
 #define QDOCINDEXFILES_H
 
 #include "node.h"
+#include "tree.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -43,6 +44,7 @@ class Generator;
 class QStringList;
 class QDocDatabase;
 class QXmlStreamWriter;
+class QXmlStreamAttributes;
 
 class QDocIndexFiles
 {
@@ -64,6 +66,7 @@ class QDocIndexFiles
 
     void readIndexFile(const QString& path);
     void readIndexSection(QXmlStreamReader &reader, Node* current, const QString& indexUrl);
+    void insertTarget(TargetRec::TargetType type, const QXmlStreamAttributes &attributes, Node *node);
     void resolveIndex();
     void resolveRelates();
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);

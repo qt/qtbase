@@ -234,7 +234,7 @@ for (i = map.begin(); i != map.end(); ++i)
 //! [20]
 QMap<QString, int>::iterator i = map.begin();
 while (i != map.end()) {
-    if (i.key().startsWith("_"))
+    if (i.key().startsWith('_'))
         i = map.erase(i);
     else
         ++i;
@@ -247,7 +247,7 @@ QMap<QString, int>::iterator i = map.begin();
 while (i != map.end()) {
     QMap<QString, int>::iterator prev = i;
     ++i;
-    if (prev.key().startsWith("_"))
+    if (prev.key().startsWith('_'))
         map.erase(prev);
 }
 //! [21]
@@ -256,7 +256,7 @@ while (i != map.end()) {
 //! [22]
 // WRONG
 while (i != map.end()) {
-    if (i.key().startsWith("_"))
+    if (i.key().startsWith('_'))
         map.erase(i);
     ++i;
 }

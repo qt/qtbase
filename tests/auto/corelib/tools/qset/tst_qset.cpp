@@ -65,6 +65,7 @@ private slots:
     void begin();
     void end();
     void insert();
+    void reverseIterators();
     void setOperations();
     void stlIterator();
     void stlMutableIterator();
@@ -553,6 +554,21 @@ void tst_QSet::insert()
         QCOMPARE(set.size(), 1);
         QCOMPARE(set.find(searchKey)->id, id00.id);
     }
+}
+
+void tst_QSet::reverseIterators()
+{
+    QSet<int> s;
+    s << 1 << 17 << 61 << 127 << 911;
+    std::vector<int> v(s.begin(), s.end());
+    std::reverse(v.begin(), v.end());
+    const QSet<int> &cs = s;
+    QVERIFY(std::equal(v.begin(), v.end(), s.rbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), s.crbegin()));
+    QVERIFY(std::equal(v.begin(), v.end(), cs.rbegin()));
+    QVERIFY(std::equal(s.rbegin(), s.rend(), v.begin()));
+    QVERIFY(std::equal(s.crbegin(), s.crend(), v.begin()));
+    QVERIFY(std::equal(cs.rbegin(), cs.rend(), v.begin()));
 }
 
 void tst_QSet::setOperations()

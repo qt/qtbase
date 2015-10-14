@@ -326,7 +326,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         QByteArray host;
         if (add.setAddress(hostName)) {
             if (add.protocol() == QAbstractSocket::IPv6Protocol)
-                host = "[" + hostName.toLatin1() + "]";//format the ipv6 in the standard way
+                host = '[' + hostName.toLatin1() + ']'; //format the ipv6 in the standard way
             else
                 host = hostName.toLatin1();
 
@@ -888,8 +888,13 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
             // if HTTP mandates we should close
             // or the reply is not finished yet, e.g. it was aborted
             // we have to close that connection
-            if (reply->d_func()->isConnectionCloseEnabled() || !reply->isFinished())
-                channels[i].close();
+            if (reply->d_func()->isConnectionCloseEnabled() || !reply->isFinished()) {
+                if (reply->isAborted()) {
+                    channels[i].abort();
+                } else {
+                    channels[i].close();
+                }
+            }
 
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;

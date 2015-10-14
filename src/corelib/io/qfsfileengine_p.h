@@ -199,7 +199,6 @@ public:
     bool closeFileHandle;
 
     mutable uint is_sequential : 2;
-    mutable uint could_stat : 1;
     mutable uint tried_stat : 1;
 #if !defined(Q_OS_WINCE)
     mutable uint need_lstat : 1;

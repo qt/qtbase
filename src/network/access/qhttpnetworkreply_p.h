@@ -121,6 +121,9 @@ public:
     void setUserProvidedDownloadBuffer(char*);
     char* userProvidedDownloadBuffer();
 
+    void abort();
+
+    bool isAborted() const;
     bool isFinished() const;
 
     bool isPipeliningUsed() const;
@@ -214,7 +217,8 @@ public:
         SPDYSYNSent,
         SPDYUploading,
         SPDYHalfClosed,
-        SPDYClosed
+        SPDYClosed,
+        Aborted
     } state;
 
     QHttpNetworkRequest request;

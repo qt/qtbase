@@ -75,7 +75,9 @@ public:
     int setShortcutEnabled(bool enable, int id, QObject *owner, const QKeySequence &key = QKeySequence());
     int setShortcutAutoRepeat(bool on, int id, QObject *owner, const QKeySequence &key = QKeySequence());
 
-    bool tryShortcutEvent(QObject *o, QKeyEvent *e);
+    QKeySequence::SequenceMatch state();
+
+    bool tryShortcut(QKeyEvent *e);
     bool hasShortcutForKeySequence(const QKeySequence &seq) const;
 
 #ifdef Dump_QShortcutMap
@@ -85,7 +87,6 @@ public:
 private:
     void resetState();
     QKeySequence::SequenceMatch nextState(QKeyEvent *e);
-    QKeySequence::SequenceMatch state();
     void dispatchEvent(QKeyEvent *e);
 
     QKeySequence::SequenceMatch find(QKeyEvent *e, int ignoredModifiers = 0);

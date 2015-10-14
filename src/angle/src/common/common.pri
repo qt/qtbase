@@ -44,7 +44,7 @@ winrt|if(msvc:!win32-msvc2005:!win32-msvc2008:!win32-msvc2010) {
 
         # Similarly we want the MinGW linker to use the import libraries shipped with the compiler
         # instead of those from the SDK which cause a crash on startup.
-        LIBS_PRIVATE += -L\"$$DXLIB_DIR\"
+        LIBS_PRIVATE += -L$$DXLIB_DIR
     }
 }
 

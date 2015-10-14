@@ -216,12 +216,12 @@ inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
     return operator<<(debug, vec.toList());
 }
 
-template <class aKey, class aT>
-inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
+template <class Key, class T>
+inline QDebug operator<<(QDebug debug, const QMap<Key, T> &map)
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QMap(";
-    for (typename QMap<aKey, aT>::const_iterator it = map.constBegin();
+    for (typename QMap<Key, T>::const_iterator it = map.constBegin();
          it != map.constEnd(); ++it) {
         debug << '(' << it.key() << ", " << it.value() << ')';
     }
@@ -230,12 +230,12 @@ inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
     return debug.maybeSpace();
 }
 
-template <class aKey, class aT>
-inline QDebug operator<<(QDebug debug, const QHash<aKey, aT> &hash)
+template <class Key, class T>
+inline QDebug operator<<(QDebug debug, const QHash<Key, T> &hash)
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QHash(";
-    for (typename QHash<aKey, aT>::const_iterator it = hash.constBegin();
+    for (typename QHash<Key, T>::const_iterator it = hash.constBegin();
             it != hash.constEnd(); ++it)
         debug << '(' << it.key() << ", " << it.value() << ')';
     debug << ')';
@@ -276,7 +276,7 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     return debug.maybeSpace();
 }
 
-#ifndef QT_NO_QOBJECT
+#if !defined(QT_NO_QOBJECT) && !defined(Q_QDOC)
 Q_CORE_EXPORT QDebug qt_QMetaEnum_debugOperator(QDebug&, int value, const QMetaObject *meta, const char *name);
 Q_CORE_EXPORT QDebug qt_QMetaEnum_flagDebugOperator(QDebug &dbg, quint64 value, const QMetaObject *meta, const char *name);
 
@@ -305,7 +305,7 @@ inline typename QtPrivate::QEnableIf<
     !QtPrivate::IsQEnumHelper<T>::Value && !QtPrivate::IsQEnumHelper<QFlags<T> >::Value,
     QDebug>::Type
 qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
-#else // !QT_NO_QOBJECT
+#else // !QT_NO_QOBJECT && !Q_QDOC
 template <class T>
 inline QDebug qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 #endif

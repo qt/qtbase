@@ -777,10 +777,10 @@ void Widget::splitCaseSensitiveFunction()
     //! [62]
     QString str = "a,,b,c";
 
-    QStringList list1 = str.split(",");
+    QStringList list1 = str.split(',');
     // list1: [ "a", "", "b", "c" ]
 
-    QStringList list2 = str.split(",", QString::SkipEmptyParts);
+    QStringList list2 = str.split(',', QString::SkipEmptyParts);
     // list2: [ "a", "b", "c" ]
     //! [62]
 }

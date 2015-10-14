@@ -56,9 +56,10 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
+    void loadImage(const QString &path);
 
 public slots:
-    void openImage(const QString &path = QString());
+    void openImage();
     void setupPuzzle();
 
 private slots:

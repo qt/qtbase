@@ -60,7 +60,7 @@ VariantDelegate::VariantDelegate(QObject *parent)
 
     dateExp.setPattern("([0-9]{,4})-([0-9]{,2})-([0-9]{,2})");
     timeExp.setPattern("([0-9]{,2}):([0-9]{,2}):([0-9]{,2})");
-    dateTimeExp.setPattern(dateExp.pattern() + "T" + timeExp.pattern());
+    dateTimeExp.setPattern(dateExp.pattern() + 'T' + timeExp.pattern());
 }
 
 void VariantDelegate::paint(QPainter *painter,
@@ -217,7 +217,7 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         value = QSize(sizeExp.cap(1).toInt(), sizeExp.cap(2).toInt());
         break;
     case QVariant::StringList:
-        value = text.split(",");
+        value = text.split(',');
         break;
     case QVariant::Time:
         {

@@ -57,7 +57,8 @@ int main(int argc, char **argv)
 
     QFile f(args.at(1));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        fprintf(stderr, "Cannot open %s for writing", qPrintable(f.fileName()));
+        fprintf(stderr, "Cannot open %s for writing: %s\n",
+                qPrintable(f.fileName()), qPrintable(f.errorString()));
         return 1;
     }
 

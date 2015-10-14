@@ -74,7 +74,7 @@ class QLinkedList
     union { QLinkedListData *d; QLinkedListNode<T> *e; };
 
 public:
-    inline QLinkedList() : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
+    inline QLinkedList() Q_DECL_NOTHROW : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
 #if defined(Q_COMPILER_INITIALIZER_LISTS)
     inline QLinkedList(std::initializer_list<T> list)
@@ -86,11 +86,12 @@ public:
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QLinkedList(QLinkedList<T> &&other) : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
-    inline QLinkedList<T> &operator=(QLinkedList<T> &&other)
+    QLinkedList(QLinkedList<T> &&other) Q_DECL_NOTHROW
+        : d(other.d) { other.d = const_cast<QLinkedListData *>(&QLinkedListData::shared_null); }
+    QLinkedList<T> &operator=(QLinkedList<T> &&other) Q_DECL_NOTHROW
     { QLinkedList moved(std::move(other)); swap(moved); return *this; }
 #endif
-    inline void swap(QLinkedList<T> &other) { qSwap(d, other.d); }
+    inline void swap(QLinkedList<T> &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
     bool operator==(const QLinkedList<T> &l) const;
     inline bool operator!=(const QLinkedList<T> &l) const { return !(*this == l); }
 
@@ -182,14 +183,25 @@ public:
     friend class const_iterator;
 
     // stl style
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
     inline iterator begin() { detach(); return e->n; }
-    inline const_iterator begin() const { return e->n; }
-    inline const_iterator cbegin() const { return e->n; }
-    inline const_iterator constBegin() const { return e->n; }
+    inline const_iterator begin() const Q_DECL_NOTHROW { return e->n; }
+    inline const_iterator cbegin() const Q_DECL_NOTHROW { return e->n; }
+    inline const_iterator constBegin() const Q_DECL_NOTHROW { return e->n; }
     inline iterator end() { detach(); return e; }
-    inline const_iterator end() const { return e; }
-    inline const_iterator cend() const { return e; }
-    inline const_iterator constEnd() const { return e; }
+    inline const_iterator end() const Q_DECL_NOTHROW { return e; }
+    inline const_iterator cend() const Q_DECL_NOTHROW { return e; }
+    inline const_iterator constEnd() const Q_DECL_NOTHROW { return e; }
+
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);
     iterator erase(iterator first, iterator last);

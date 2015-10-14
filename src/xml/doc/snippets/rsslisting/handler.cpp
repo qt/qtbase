@@ -174,7 +174,7 @@ bool Handler::characters (const QString &chars)
 bool Handler::fatalError (const QXmlParseException & exception)
 {
     qWarning() << "Fatal error on line" << exception.lineNumber()
-               << ", column" << exception.columnNumber() << ":"
+               << ", column" << exception.columnNumber() << ':'
                << exception.message();
 
     return false;

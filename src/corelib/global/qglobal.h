@@ -602,7 +602,7 @@ public:
     QMacAutoReleasePool();
     ~QMacAutoReleasePool();
 private:
-    Q_DISABLE_COPY(QMacAutoReleasePool);
+    Q_DISABLE_COPY(QMacAutoReleasePool)
     NSAutoreleasePool *pool;
 };
 

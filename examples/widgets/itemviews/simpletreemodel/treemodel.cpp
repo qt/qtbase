@@ -180,7 +180,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
     while (number < lines.count()) {
         int position = 0;
         while (position < lines[number].length()) {
-            if (lines[number].mid(position, 1) != " ")
+            if (lines[number].at(position) != ' ')
                 break;
             position++;
         }

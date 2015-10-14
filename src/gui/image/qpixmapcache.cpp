@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     memory.
 
     The \e{Qt Quarterly} article
-    \l{http://doc.qt.digia.com/qq/qq12-qpixmapcache.html}{Optimizing
+    \l{http://doc.qt.io/archives/qq/qq12-qpixmapcache.html}{Optimizing
     with QPixmapCache} explains how to use QPixmapCache to speed up
     applications by caching the results of painting.
 

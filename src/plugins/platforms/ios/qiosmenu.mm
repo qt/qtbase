@@ -277,6 +277,11 @@ void QIOSMenuItem::setRole(QPlatformMenuItem::MenuRole role)
     m_role = role;
 }
 
+void QIOSMenuItem::setShortcut(const QKeySequence &sequence)
+{
+    m_shortcut = sequence;
+}
+
 void QIOSMenuItem::setEnabled(bool enabled)
 {
     m_enabled = enabled;
@@ -364,7 +369,7 @@ void QIOSMenu::syncMenuItem(QPlatformMenuItem *)
 
     switch (m_effectiveMenuType) {
     case EditMenu:
-        [m_menuController setVisibleMenuItems:visibleMenuItems()];
+        [m_menuController setVisibleMenuItems:filterFirstResponderActions(visibleMenuItems())];
         break;
     default:
         [m_pickerView setVisibleMenuItems:visibleMenuItems() selectItem:m_targetItem];
@@ -469,7 +474,7 @@ void QIOSMenu::toggleShowUsingUIMenuController(bool show)
 {
     if (show) {
         Q_ASSERT(!m_menuController);
-        m_menuController = [[QUIMenuController alloc] initWithVisibleMenuItems:visibleMenuItems()];
+        m_menuController = [[QUIMenuController alloc] initWithVisibleMenuItems:filterFirstResponderActions(visibleMenuItems())];
         repositionMenu();
         connect(qGuiApp->inputMethod(), &QInputMethod::keyboardRectangleChanged, this, &QIOSMenu::repositionMenu);
     } else {
@@ -540,6 +545,36 @@ QIOSMenuItemList QIOSMenu::visibleMenuItems() const
     }
 
     return visibleMenuItems;
+}
+
+QIOSMenuItemList QIOSMenu::filterFirstResponderActions(const QIOSMenuItemList &menuItems)
+{
+    // UIResponderStandardEditActions found in first responder will be prepended to the edit
+    // menu automatically (or e.g made available as buttons on the virtual keyboard). So we
+    // filter them out to avoid duplicates, and let first responder handle the actions instead.
+    // In case of QIOSTextResponder, edit actions will be converted to key events that ends up
+    // triggering the shortcuts of the filtered menu items.
+    QIOSMenuItemList filteredMenuItems;
+    UIResponder *responder = [UIResponder currentFirstResponder];
+
+    for (int i = 0; i < menuItems.count(); ++i) {
+        QIOSMenuItem *menuItem = menuItems.at(i);
+        QKeySequence shortcut = menuItem->m_shortcut;
+        if ((shortcut == QKeySequence::Cut && [responder canPerformAction:@selector(cut:) withSender:nil])
+                || (shortcut == QKeySequence::Copy && [responder canPerformAction:@selector(copy:) withSender:nil])
+                || (shortcut == QKeySequence::Paste && [responder canPerformAction:@selector(paste:) withSender:nil])
+                || (shortcut == QKeySequence::Delete && [responder canPerformAction:@selector(delete:) withSender:nil])
+                || (shortcut == QKeySequence::SelectAll && [responder canPerformAction:@selector(selectAll:) withSender:nil])
+                || (shortcut == QKeySequence::Undo && [responder canPerformAction:@selector(undo:) withSender:nil])
+                || (shortcut == QKeySequence::Redo && [responder canPerformAction:@selector(redo:) withSender:nil])
+                || (shortcut == QKeySequence::Bold && [responder canPerformAction:@selector(toggleBoldface:) withSender:nil])
+                || (shortcut == QKeySequence::Italic && [responder canPerformAction:@selector(toggleItalics:) withSender:nil])
+                || (shortcut == QKeySequence::Underline && [responder canPerformAction:@selector(toggleUnderline:) withSender:nil])) {
+            continue;
+        }
+        filteredMenuItems.append(menuItem);
+    }
+    return filteredMenuItems;
 }
 
 void QIOSMenu::repositionMenu()

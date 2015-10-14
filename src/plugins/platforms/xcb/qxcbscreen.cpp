@@ -61,6 +61,15 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
     delete m_xSettings;
 }
 
+QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
+{
+    foreach (QXcbScreen *screen, connection()->screens()) {
+        if (screen->virtualDesktop() == this && screen->nativeGeometry().contains(pos))
+            return screen;
+    }
+    return Q_NULLPTR;
+}
+
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
 {
     if (!m_xSettings) {
@@ -724,7 +733,7 @@ QDebug operator<<(QDebug debug, const QXcbScreen *screen)
         formatSizeF(debug, screen->physicalSize());
         // TODO 5.6 if (debug.verbosity() > 2) {
         debug << ", screenNumber=" << screen->screenNumber();
-        debug << ", virtualSize=" << screen->virtualSize().width() << "x" << screen->virtualSize().height() << " (";
+        debug << ", virtualSize=" << screen->virtualSize().width() << 'x' << screen->virtualSize().height() << " (";
         formatSizeF(debug, screen->virtualSize());
         debug << "), nativeGeometry=";
         formatRect(debug, screen->nativeGeometry());

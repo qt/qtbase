@@ -78,22 +78,8 @@ public:
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
-    static bool tryHandleShortcutOverrideEvent(QWindow *w, QKeyEvent *ev);
-
-    static bool tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
-
-    static bool tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                       const QString & text = QString(), bool autorep = false, ushort count = 1);
-
-    static bool tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
-                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
-                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static bool handleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
+                                      quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
     static bool handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static bool handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);

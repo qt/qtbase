@@ -231,6 +231,9 @@
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
 
+    self.undoManager.groupsByEvent = NO;
+    [self rebuildUndoStack];
+
     return self;
 }
 
@@ -346,41 +349,180 @@
 
 - (void)sendKeyPressRelease:(Qt::Key)key modifiers:(Qt::KeyboardModifiers)modifiers
 {
-    QKeyEvent press(QEvent::KeyPress, key, modifiers);
-    QKeyEvent release(QEvent::KeyRelease, key, modifiers);
-    [self sendEventToFocusObject:press];
-    [self sendEventToFocusObject:release];
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
+}
+
+#ifndef QT_NO_SHORTCUT
+
+- (void)sendShortcut:(QKeySequence::StandardKey)standardKey
+{
+    const int keys = QKeySequence(standardKey)[0];
+    Qt::Key key = Qt::Key(keys & 0x0000FFFF);
+    Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keys & 0xFFFF0000);
+    [self sendKeyPressRelease:key modifiers:modifiers];
 }
 
 - (void)cut:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_X modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Cut];
 }
 
 - (void)copy:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_C modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Copy];
 }
 
 - (void)paste:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_V modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Paste];
 }
 
 - (void)selectAll:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_A modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::SelectAll];
 }
 
 - (void)delete:(id)sender
 {
     Q_UNUSED(sender);
-    [self sendKeyPressRelease:Qt::Key_Delete modifiers:Qt::ControlModifier];
+    [self sendShortcut:QKeySequence::Delete];
 }
+
+- (void)toggleBoldface:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::Bold];
+}
+
+- (void)toggleItalics:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::Italic];
+}
+
+- (void)toggleUnderline:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::Underline];
+}
+
+// -------------------------------------------------------------------------
+
+- (void)undo
+{
+    [self sendShortcut:QKeySequence::Undo];
+    [self rebuildUndoStack];
+}
+
+- (void)redo
+{
+    [self sendShortcut:QKeySequence::Redo];
+    [self rebuildUndoStack];
+}
+
+- (void)registerRedo
+{
+    NSUndoManager *undoMgr = self.undoManager;
+    [undoMgr beginUndoGrouping];
+    [undoMgr registerUndoWithTarget:self selector:@selector(redo) object:nil];
+    [undoMgr endUndoGrouping];
+}
+
+- (void)rebuildUndoStack
+{
+    dispatch_async(dispatch_get_main_queue (), ^{
+        // Register dummy undo/redo operations to enable Cmd-Z and Cmd-Shift-Z
+        // Ensure we do this outside any undo/redo callback since NSUndoManager
+        // will treat registerUndoWithTarget as registering a redo when called
+        // from within a undo callback.
+        NSUndoManager *undoMgr = self.undoManager;
+        [undoMgr removeAllActions];
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(undo) object:nil];
+        [undoMgr endUndoGrouping];
+
+        // Schedule an operation that we immediately pop off to be able to schedule a redo
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(registerRedo) object:nil];
+        [undoMgr endUndoGrouping];
+        [undoMgr undo];
+
+        // Note that, perhaps because of a bug in UIKit, the buttons on the shortcuts bar ends up
+        // disabled if a undo/redo callback doesn't lead to a [UITextInputDelegate textDidChange].
+        // And we only call that method if Qt made changes to the text. The effect is that the buttons
+        // become disabled when there is nothing more to undo (Qt didn't change anything upon receiving
+        // an undo request). This seems to be OK behavior, so we let it stay like that unless it shows
+        // to cause problems.
+    });
+}
+
+// -------------------------------------------------------------------------
+
+- (void)keyCommandTriggered:(UIKeyCommand *)keyCommand
+{
+    Qt::Key key = Qt::Key_unknown;
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+
+    if (keyCommand.input == UIKeyInputLeftArrow)
+        key = Qt::Key_Left;
+    else if (keyCommand.input == UIKeyInputRightArrow)
+        key = Qt::Key_Right;
+    else if (keyCommand.input == UIKeyInputUpArrow)
+        key = Qt::Key_Up;
+    else if (keyCommand.input == UIKeyInputDownArrow)
+        key = Qt::Key_Down;
+    else
+        Q_UNREACHABLE();
+
+    if (keyCommand.modifierFlags & UIKeyModifierAlternate)
+        modifiers |= Qt::AltModifier;
+    if (keyCommand.modifierFlags & UIKeyModifierShift)
+        modifiers |= Qt::ShiftModifier;
+    if (keyCommand.modifierFlags & UIKeyModifierCommand)
+        modifiers |= Qt::ControlModifier;
+
+    [self sendKeyPressRelease:key modifiers:modifiers];
+}
+
+- (void)addKeyCommandsToArray:(NSMutableArray *)array key:(NSString *)key
+{
+    SEL s = @selector(keyCommandTriggered:);
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:0 action:s]];
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:UIKeyModifierShift action:s]];
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:UIKeyModifierAlternate action:s]];
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:UIKeyModifierAlternate|UIKeyModifierShift action:s]];
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:UIKeyModifierCommand action:s]];
+    [array addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:UIKeyModifierCommand|UIKeyModifierShift action:s]];
+}
+
+- (NSArray *)keyCommands
+{
+    // Since keyCommands is called for every key
+    // press/release, we cache the result
+    static dispatch_once_t once;
+    static NSMutableArray *array;
+
+    dispatch_once(&once, ^{
+        // We let Qt move the cursor around when the arrow keys are being used. This
+        // is normally implemented through UITextInput, but since IM in Qt have poor
+        // support for moving the cursor vertically, and even less support for selecting
+        // text across multiple paragraphs, we do this through key events.
+        array = [NSMutableArray new];
+        [self addKeyCommandsToArray:array key:UIKeyInputUpArrow];
+        [self addKeyCommandsToArray:array key:UIKeyInputDownArrow];
+        [self addKeyCommandsToArray:array key:UIKeyInputLeftArrow];
+        [self addKeyCommandsToArray:array key:UIKeyInputRightArrow];
+    });
+
+    return array;
+}
+
+#endif // QT_NO_SHORTCUT
 
 // -------------------------------------------------------------------------
 
@@ -540,7 +682,17 @@
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
 {
     int p = static_cast<QUITextPosition *>(position).index;
-    return [QUITextPosition positionWithIndex:(direction == UITextLayoutDirectionRight ? p + offset : p - offset)];
+
+    switch (direction) {
+    case UITextLayoutDirectionLeft:
+        return [QUITextPosition positionWithIndex:p - offset];
+    case UITextLayoutDirectionRight:
+        return [QUITextPosition positionWithIndex:p + offset];
+    default:
+        // Qt doesn't support getting the position above or below the current position, so
+        // for those cases we just return the current position, making it a no-op.
+        return position;
+    }
 }
 
 - (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction
@@ -606,6 +758,15 @@
     }
 
     return toCGRect(startRect.united(endRect));
+}
+
+- (NSArray *)selectionRectsForRange:(UITextRange *)range
+{
+    Q_UNUSED(range);
+    // This method is supposed to return a rectangle for each line with selection. Since we don't
+    // expose an API in Qt/IM for getting this information, and since we never seems to be getting
+    // a call from UIKit for this, we return an empty array until a need arise.
+    return [[NSArray new] autorelease];
 }
 
 - (CGRect)caretRectForPosition:(UITextPosition *)position
@@ -734,10 +895,10 @@
 
 - (void)deleteBackward
 {
-    // Since we're posting im events directly to the focus object, we should do the
-    // same for key events. Otherwise they might end up in a different place or out
-    // of sync with im events.
+    // UITextInput selects the text to be deleted before calling this method. To avoid
+    // drawing the selection, we flush after posting the key press/release.
     [self sendKeyPressRelease:Qt::Key_Backspace modifiers:Qt::NoModifier];
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 @end

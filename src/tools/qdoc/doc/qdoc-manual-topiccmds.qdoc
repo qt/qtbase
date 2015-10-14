@@ -812,7 +812,7 @@
 
                    <tr valign="top" bgcolor="#d0d0d0">
                    <td><b>
-                   <a href="http://doc.qt.digia.com/4.0/qftp.html">QFtp</a>
+                   <a href="http://doc.qt.io/archives/qt-4.7/qftp.html">QFtp</a>
                    </b></td>
                    <td>
                    Implementation of the FTP protocol
@@ -885,7 +885,7 @@
                <pre>#include &lt;Qt&gt;</pre>
                <ul>
                <li>
-               <a href="http://doc.qt.digia.com/4.0/qt-qt3.html">
+               <a href="http://doc.qt.io/archives/qt-4.7/qt-qt3.html">
                    Qt 3 support members</a></li>
                </ul>
 
@@ -893,7 +893,7 @@
                <h3>Types</h3>
                <ul>
                <li>flags
-               <a href="http://doc.qt.digia.com/4.0/qt.html#AlignmentFlag-enum">Alignment</a></b></li>
+               <a href="http://doc.qt.io/archives/qt-4.7/qt.html#AlignmentFlag-enum">Alignment</a></b></li>
                <li>...</li></ul>
                <hr />
                \endraw

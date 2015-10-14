@@ -258,6 +258,7 @@ tst_QTextStream::tst_QTextStream()
 
 void tst_QTextStream::initTestCase()
 {
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     QVERIFY(!m_rfc3261FilePath.isEmpty());
     QVERIFY(!m_shiftJisFilePath.isEmpty());
 

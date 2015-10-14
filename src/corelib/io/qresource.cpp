@@ -800,8 +800,8 @@ bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 {
     const QString root = mappingRoot();
     if(!root.isEmpty()) {
-        const QStringList root_segments = root.split(QLatin1Char('/'), QString::SkipEmptyParts),
-                          path_segments = path.split(QLatin1Char('/'), QString::SkipEmptyParts);
+        const QVector<QStringRef> root_segments = root.splitRef(QLatin1Char('/'), QString::SkipEmptyParts),
+                                  path_segments = path.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
         if(path_segments.size() <= root_segments.size()) {
             int matched = 0;
             for(int i = 0; i < path_segments.size(); ++i) {
@@ -811,7 +811,7 @@ bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
             }
             if(matched == path_segments.size()) {
                 if(match && root_segments.size() > matched)
-                    *match = root_segments.at(matched);
+                    *match = root_segments.at(matched).toString();
                 return true;
             }
         }

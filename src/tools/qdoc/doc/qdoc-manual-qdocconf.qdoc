@@ -1392,8 +1392,8 @@
     \endcode
 
     The complete variable entry in \l qtgui.qdocconf provides the
-    standard header of the \l {http://doc.qt.digia.com/}
-    {Qt Reference Documentation}.
+    standard header of the \l {http://doc.qt.io/qt-5/qtgui-index.html}
+    {Qt GUI Documentation}.
 
     \target HTML.style-variable
     \section1 HTML.style
@@ -1521,7 +1521,7 @@
 
     This makes sure that whenever \c qt.index is used to generate
     references to for example Qt classes, the base URL is \c
-    http://doc.qt.digia.com/4.7.
+    http://doc.qt.io/qt-4.8/.
 
     See also \l indexes.
 

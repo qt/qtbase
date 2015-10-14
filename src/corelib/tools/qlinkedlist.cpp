@@ -388,6 +388,52 @@ const QLinkedListData QLinkedListData::shared_null = {
     \sa constBegin(), end()
 */
 
+/*! \fn QLinkedList::reverse_iterator QLinkedList::rbegin()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the list, in reverse order.
+
+    \sa begin(), crbegin(), rend()
+*/
+
+/*! \fn QLinkedList::const_reverse_iterator QLinkedList::rbegin() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QLinkedList::const_reverse_iterator QLinkedList::crbegin() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    item in the list, in reverse order.
+
+    \sa begin(), rbegin(), rend()
+*/
+
+/*! \fn QLinkedList::reverse_iterator QLinkedList::rend()
+    \since 5.6
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last item in the list, in reverse order.
+
+    \sa end(), crend(), rbegin()
+*/
+
+/*! \fn QLinkedList::const_reverse_iterator QLinkedList::rend() const
+    \since 5.6
+    \overload
+*/
+
+/*! \fn QLinkedList::const_reverse_iterator QLinkedList::crend() const
+    \since 5.6
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
+    past the last item in the list, in reverse order.
+
+    \sa end(), rend(), rbegin()
+*/
+
 /*! \fn QLinkedList::iterator QLinkedList::insert(iterator before, const T &value)
 
     Inserts \a value in front of the item pointed to by the iterator
@@ -421,6 +467,38 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \typedef QLinkedList::ConstIterator
 
     Qt-style synonym for QLinkedList::const_iterator.
+*/
+
+/*! \typedef QLinkedList::reverse_iterator
+    \since 5.6
+
+    The QLinkedList::reverse_iterator typedef provides an STL-style non-const
+    reverse iterator for QLinkedList.
+
+    It is simply a typedef for \c{std::reverse_iterator<QLinkedList::iterator>}.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
+    \sa QLinkedList::rbegin(), QLinkedList::rend(), QLinkedList::const_reverse_iterator, QLinkedList::iterator
+*/
+
+/*! \typedef QLinkedList::const_reverse_iterator
+    \since 5.6
+
+    The QLinkedList::const_reverse_iterator typedef provides an STL-style const
+    reverse iterator for QLinkedList.
+
+    It is simply a typedef for \c{std::reverse_iterator<QLinkedList::const_iterator>}.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
+    \sa QLinkedList::rbegin(), QLinkedList::rend(), QLinkedList::reverse_iterator, QLinkedList::const_iterator
 */
 
 /*!
