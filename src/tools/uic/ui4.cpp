@@ -8776,6 +8776,8 @@ void DomSlots::setElementSlot(const QStringList& a)
 
 void DomPropertySpecifications::clear(bool clear_all)
 {
+    qDeleteAll(m_tooltip);
+    m_tooltip.clear();
     qDeleteAll(m_stringpropertyspecification);
     m_stringpropertyspecification.clear();
 
@@ -8793,6 +8795,8 @@ DomPropertySpecifications::DomPropertySpecifications()
 
 DomPropertySpecifications::~DomPropertySpecifications()
 {
+    qDeleteAll(m_tooltip);
+    m_tooltip.clear();
     qDeleteAll(m_stringpropertyspecification);
     m_stringpropertyspecification.clear();
 }
@@ -8804,6 +8808,12 @@ void DomPropertySpecifications::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
+            if (tag == QLatin1String("tooltip")) {
+                DomPropertyToolTip *v = new DomPropertyToolTip();
+                v->read(reader);
+                m_tooltip.append(v);
+                continue;
+            }
             if (tag == QLatin1String("stringpropertyspecification")) {
                 DomStringPropertySpecification *v = new DomStringPropertySpecification();
                 v->read(reader);
@@ -8830,6 +8840,10 @@ void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &t
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("propertyspecifications") : tagName.toLower());
 
+    for (int i = 0; i < m_tooltip.size(); ++i) {
+        DomPropertyToolTip* v = m_tooltip[i];
+        v->write(writer, QStringLiteral("tooltip"));
+    }
     for (int i = 0; i < m_stringpropertyspecification.size(); ++i) {
         DomStringPropertySpecification* v = m_stringpropertyspecification[i];
         v->write(writer, QStringLiteral("stringpropertyspecification"));
@@ -8840,10 +8854,82 @@ void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &t
     writer.writeEndElement();
 }
 
+void DomPropertySpecifications::setElementTooltip(const QList<DomPropertyToolTip*>& a)
+{
+    m_children |= Tooltip;
+    m_tooltip = a;
+}
+
 void DomPropertySpecifications::setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a)
 {
     m_children |= Stringpropertyspecification;
     m_stringpropertyspecification = a;
+}
+
+void DomPropertyToolTip::clear(bool clear_all)
+{
+
+    if (clear_all) {
+    m_text.clear();
+    m_has_attr_name = false;
+    }
+
+    m_children = 0;
+}
+
+DomPropertyToolTip::DomPropertyToolTip()
+{
+    m_children = 0;
+    m_has_attr_name = false;
+}
+
+DomPropertyToolTip::~DomPropertyToolTip()
+{
+}
+
+void DomPropertyToolTip::read(QXmlStreamReader &reader)
+{
+
+    foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
+        QStringRef name = attribute.name();
+        if (name == QLatin1String("name")) {
+            setAttributeName(attribute.value().toString());
+            continue;
+        }
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
+    }
+
+    for (bool finished = false; !finished && !reader.hasError();) {
+        switch (reader.readNext()) {
+        case QXmlStreamReader::StartElement : {
+            const QString tag = reader.name().toString().toLower();
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
+        }
+            break;
+        case QXmlStreamReader::EndElement :
+            finished = true;
+            break;
+        case QXmlStreamReader::Characters :
+            if (!reader.isWhitespace())
+                m_text.append(reader.text().toString());
+            break;
+        default :
+            break;
+        }
+    }
+}
+
+void DomPropertyToolTip::write(QXmlStreamWriter &writer, const QString &tagName) const
+{
+    writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("propertytooltip") : tagName.toLower());
+
+    if (hasAttributeName())
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
+
+    if (!m_text.isEmpty())
+        writer.writeCharacters(m_text);
+
+    writer.writeEndElement();
 }
 
 void DomStringPropertySpecification::clear(bool clear_all)
