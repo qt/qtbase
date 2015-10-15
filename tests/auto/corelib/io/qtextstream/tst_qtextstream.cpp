@@ -163,6 +163,7 @@ private slots:
     void string_write_operator_ToDevice_data();
     void string_write_operator_ToDevice();
     void latin1String_write_operator_ToDevice();
+    void stringref_write_operator_ToDevice();
 
     // other
     void skipWhiteSpace_data();
@@ -2550,6 +2551,22 @@ void tst_QTextStream::latin1String_write_operator_ToDevice()
 
     stream << QLatin1String("No explicit length");
     stream << QLatin1String("Explicit length - ignore this part", 15);
+    stream.flush();
+    QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
+}
+
+void tst_QTextStream::stringref_write_operator_ToDevice()
+{
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+    QTextStream stream(&buf);
+    stream.setCodec(QTextCodec::codecForName("ISO-8859-1"));
+    stream.setAutoDetectUnicode(true);
+
+    const QString expected = "No explicit lengthExplicit length";
+
+    stream << expected.leftRef(18);
+    stream << expected.midRef(18);
     stream.flush();
     QCOMPARE(buf.buffer().constData(), "No explicit lengthExplicit length");
 }
