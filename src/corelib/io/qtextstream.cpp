@@ -222,6 +222,8 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qbuffer.h"
 #include "qfile.h"
 #include "qnumeric.h"
+#include "qvarlengtharray.h"
+
 #ifndef Q_OS_WINCE
 #include <locale.h>
 #endif
@@ -896,13 +898,15 @@ inline void QTextStreamPrivate::putChar(QChar ch)
 */
 void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
 {
-    QString pad;
-    int padLeft = 0, padRight = 0;
-
-    // handle padding
     int padSize = params.fieldWidth - len;
-    if (padSize > 0) {
-        pad = QString(padSize, params.padChar);
+    if (Q_UNLIKELY(padSize > 0)) {
+        // handle padding
+        static const int PreallocatedPadding = 80; // typical line length
+        QVarLengthArray<QChar, PreallocatedPadding> pad(padSize);
+        std::fill_n(pad.begin(), padSize, params.padChar);
+
+        int padLeft = 0, padRight = 0;
+
         switch (params.fieldAlignment) {
         case QTextStream::AlignLeft:
             padRight = padSize;
@@ -925,11 +929,12 @@ void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
             padRight = padSize - padSize/2;
             break;
         }
+        write(pad.constData(), padLeft);
+        write(data, len);
+        write(pad.constData(), padRight);
+    } else {
+        write(data, len);
     }
-
-    write(pad.constData(), padLeft);
-    write(data, len);
-    write(pad.constData(), padRight);
 }
 
 /*!
