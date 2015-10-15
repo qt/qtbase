@@ -149,13 +149,11 @@ QPlatformServices *QPlatformIntegration::services() const
 /*!
     \fn QPlatformWindow *QPlatformIntegration::createPlatformWindow(QWindow *window) const
 
-    Factory function for QPlatformWindow. The \a window parameter is a pointer to the top level
-    window which the QPlatformWindow is supposed to be created for.
+    Factory function for QPlatformWindow. The \a window parameter is a pointer to the window
+    which the QPlatformWindow is supposed to be created for.
 
-    All top level windows have to have a QPlatformWindow, and it will be created when the
-    QPlatformWindow is set to be visible for the first time. If the top level window's flags are
-    changed, or if the top level window's QPlatformWindowFormat is changed, then the top level
-    window's QPlatformWindow is deleted and a new one is created.
+    All windows have to have a QPlatformWindow, and it will be created on-demand when the
+    QWindow is made visible for the first time, or explicitly through calling QWindow::create().
 
     In the constructor, of the QPlatformWindow, the window flags, state, title and geometry
     of the \a window should be applied to the underlying window. If the resulting flags or state
