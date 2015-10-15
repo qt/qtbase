@@ -4526,7 +4526,7 @@ if [ "${CFG_AVX512}" = "auto" ]; then
         CFG_AVX512=f
         CFG_AVX512_UPPER=AVX512F
         for feature in er cd pf dq bw vl ifma vbmi; do
-            if [ -n "BASH_VERSION" ] && [ "${BASH_VERSION%%.*}" -gt 3 ]; then
+            if [ -n "$BASH_VERSION" ] && [ "${BASH_VERSION%%.*}" -gt 3 ]; then
                 upper=${feature^^*}
             elif [ -n "$ZSH_VERSION" ]; then
                 upper=${(U)feature}
