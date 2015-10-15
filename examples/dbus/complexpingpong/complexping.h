@@ -49,7 +49,7 @@ class Ping: public QObject
 {
     Q_OBJECT
 public slots:
-    void start(const QString &, const QString &, const QString &);
+    void start(const QString &);
 public:
     QFile qstdin;
     QDBusInterface *iface;
