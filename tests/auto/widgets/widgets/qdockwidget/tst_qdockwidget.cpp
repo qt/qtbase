@@ -894,9 +894,6 @@ void tst_QDockWidget::task237438_setFloatingCrash()
 
 void tst_QDockWidget::task248604_infiniteResize()
 {
-#if defined Q_OS_BLACKBERRY
-    QSKIP("Top level window is stretched to fullscreen");
-#endif
     QDockWidget d;
     QTabWidget *t = new QTabWidget;
     t->addTab(new QWidget, "Foo");

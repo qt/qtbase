@@ -5,10 +5,9 @@ QT += platformsupport-private core-private gui-private
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
-!blackberry:CONFIG += qqnx_screeneventthread
+CONFIG += qqnx_screeneventthread
 
 # Uncomment these to enable debugging output for various aspects of the plugin
-#DEFINES += QQNXBPSEVENTFILTER_DEBUG
 #DEFINES += QQNXBUFFER_DEBUG
 #DEFINES += QQNXBUTTON_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
@@ -86,52 +85,20 @@ contains(QT_CONFIG, opengles2) {
     LIBS += -lEGL
 }
 
-CONFIG(blackberry) {
-    SOURCES += qqnxnavigatorbps.cpp \
-               qqnxeventdispatcher_blackberry.cpp \
-               qqnxbpseventfilter.cpp \
-               qqnxvirtualkeyboardbps.cpp \
-               qblackberrytheme.cpp \
-               qqnxsystemsettings.cpp
-
-    HEADERS += qqnxnavigatorbps.h \
-               qqnxeventdispatcher_blackberry.h \
-               qqnxbpseventfilter.h \
-               qqnxvirtualkeyboardbps.h  \
-               qblackberrytheme.h \
-               qqnxsystemsettings.h \
-               qqnxfiledialoghelper.h
-
-    LIBS += -lbps
-}
-
-CONFIG(blackberry) {
-    SOURCES += qqnxfiledialoghelper_bb10.cpp \
-               qqnxfilepicker.cpp \
-               qqnxnavigatorcover.cpp
-
-    HEADERS += qqnxfilepicker.h \
-               qqnxnavigatorcover.h
-}
-
 CONFIG(qqnx_pps) {
     DEFINES += QQNX_PPS
 
     SOURCES += qqnxclipboard.cpp \
-               qqnxbuttoneventnotifier.cpp
+               qqnxbuttoneventnotifier.cpp \
+               qqnxnavigatorpps.cpp \
+               qqnxnavigatoreventnotifier.cpp \
+               qqnxvirtualkeyboardpps.cpp
 
     HEADERS += qqnxclipboard.h \
-               qqnxbuttoneventnotifier.h
-
-    !blackberry {
-        SOURCES += qqnxnavigatorpps.cpp \
-                   qqnxnavigatoreventnotifier.cpp \
-                   qqnxvirtualkeyboardpps.cpp
-
-        HEADERS += qqnxnavigatorpps.h \
-                   qqnxnavigatoreventnotifier.h \
-                   qqnxvirtualkeyboardpps.h
-    }
+               qqnxbuttoneventnotifier.h \
+               qqnxnavigatorpps.h \
+               qqnxnavigatoreventnotifier.h \
+               qqnxvirtualkeyboardpps.h
 
     LIBS += -lpps
     !contains(DEFINES, QT_NO_CLIPBOARD): LIBS += -lclipboard

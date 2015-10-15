@@ -839,17 +839,6 @@ bool QProcessPrivate::waitForStarted(int msecs)
     return startedEmitted;
 }
 
-#ifdef Q_OS_BLACKBERRY
-QList<QSocketNotifier *> QProcessPrivate::defaultNotifiers() const
-{
-    QList<QSocketNotifier *> notifiers;
-    notifiers << stdoutChannel.notifier
-              << stderrChannel.notifier
-              << stdinChannel.notifier;
-    return notifiers;
-}
-#endif // Q_OS_BLACKBERRY
-
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
 #if defined (QPROCESS_DEBUG)
@@ -858,10 +847,6 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 
     QElapsedTimer stopWatch;
     stopWatch.start();
-
-#ifdef Q_OS_BLACKBERRY
-    QList<QSocketNotifier *> notifiers = defaultNotifiers();
-#endif
 
     forever {
         fd_set fdread;
@@ -885,11 +870,8 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-#ifdef Q_OS_BLACKBERRY
-        int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
-#else
         int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
-#endif
+
         if (ret < 0) {
             break;
         }
@@ -937,10 +919,6 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
-#ifdef Q_OS_BLACKBERRY
-    QList<QSocketNotifier *> notifiers = defaultNotifiers();
-#endif
-
     while (!stdinChannel.buffer.isEmpty()) {
         fd_set fdread;
         fd_set fdwrite;
@@ -964,11 +942,8 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-#ifdef Q_OS_BLACKBERRY
-        int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
-#else
         int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
-#endif
+
         if (ret < 0) {
             break;
         }
@@ -1010,10 +985,6 @@ bool QProcessPrivate::waitForFinished(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
-#ifdef Q_OS_BLACKBERRY
-    QList<QSocketNotifier *> notifiers = defaultNotifiers();
-#endif
-
     forever {
         fd_set fdread;
         fd_set fdwrite;
@@ -1037,11 +1008,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-#ifdef Q_OS_BLACKBERRY
-        int ret = bb_select(notifiers, nfds + 1, &fdread, &fdwrite, timeout);
-#else
         int ret = qt_select_msecs(nfds + 1, &fdread, &fdwrite, timeout);
-#endif
+
         if (ret < 0) {
             break;
         }

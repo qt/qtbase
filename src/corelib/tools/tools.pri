@@ -137,10 +137,6 @@ false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
                          tools/qbytearray_mac.mm \
                          tools/qdatetime_mac.mm
 }
-else:blackberry {
-    SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_blackberry.cpp tools/qtimezoneprivate_tz.cpp
-    HEADERS += tools/qlocale_blackberry.h
-}
 else:android {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_android.cpp
 }

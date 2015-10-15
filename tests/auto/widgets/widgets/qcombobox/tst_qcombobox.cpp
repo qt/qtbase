@@ -2400,7 +2400,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     QTest::qWaitForWindowExposed(comboBox.view());
     QTRY_VERIFY(comboBox.view()->isVisible());
 
-#if defined QT_BUILD_INTERNAL && !defined Q_OS_BLACKBERRY
+#if defined QT_BUILD_INTERNAL
     QFrame *container = comboBox.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
     QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));

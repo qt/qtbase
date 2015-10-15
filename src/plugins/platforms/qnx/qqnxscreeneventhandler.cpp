@@ -254,13 +254,8 @@ void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
                         "Failed to query event cap");
 
     int sequenceId = 0;
-#if defined(Q_OS_BLACKBERRY)
-    Q_SCREEN_CHECKERROR(
-            screen_get_event_property_iv(event, SCREEN_PROPERTY_SEQUENCE_ID, &sequenceId),
-            "Failed to query event seqId");
-#endif
-
     bool inject = true;
+
     Q_FOREACH (QQnxScreenEventFilter *filter, m_eventFilters) {
         if (filter->handleKeyboardEvent(flags, sym, modifiers, scan, cap, sequenceId)) {
             inject = false;

@@ -275,9 +275,6 @@ public slots:
     void dummySlot() {}
 
 private:
-#if defined Q_OS_BLACKBERRY
-    QScopedPointer<QWidget> rootWindow;
-#endif
     QString platformName;
 };
 
@@ -285,13 +282,6 @@ void tst_QGraphicsView::initTestCase()
 {
 #ifdef Q_OS_WINCE_WM
     qApp->setAutoMaximizeThreshold(-1);
-#endif
-
-#if defined Q_OS_BLACKBERRY
-    // On BlackBerry first window is always shown full screen. However, many tests rely on specific
-    // window sizes. Create a dummy full screen window, so subsequent windows have correct size.
-    rootWindow.reset(new QWidget);
-    rootWindow->show();
 #endif
 }
 

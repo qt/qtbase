@@ -44,7 +44,7 @@
 #include <sys/types.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -296,9 +296,9 @@ void tst_qstandardpaths::testDataLocation()
 {
     // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
-    // Blackberry OS, Android and WinRT are an exception to this case, owing to the fact that
+    // Android and WinRT are an exception to this case, owing to the fact that
     // applications are sandboxed.
-#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
@@ -327,7 +327,7 @@ void tst_qstandardpaths::testAppConfigLocation()
 {
     // On all platforms where applications are not sandboxed,
     // AppConfigLocation should be GenericConfigLocation / organization name / app name
-#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation), base + "/tst_qstandardpaths");
     QCoreApplication::setOrganizationName("Qt");

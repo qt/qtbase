@@ -820,8 +820,10 @@ void tst_QDoubleSpinBox::editingFinished()
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 4);
 
-    testFocusWidget->show(); // On BlackBerry this is our root window we need to show it again
-                             // otherwise subsequent tests will fail
+    // On some platforms this is our root window
+    // we need to show it again otherwise subsequent
+    // tests will fail
+    testFocusWidget->show();
 }
 
 void tst_QDoubleSpinBox::removeAll()

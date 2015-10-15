@@ -1513,7 +1513,7 @@ void tst_QWidget::mapFromAndTo()
     subWindow2->setGeometry(75, 75, 100, 100);
     subSubWindow->setGeometry(10, 10, 10, 10);
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_QNX) || defined(Q_OS_BLACKBERRY)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_QNX)
     //update visibility
     if (windowMinimized) {
         if (!windowHidden) {
@@ -7350,7 +7350,7 @@ void tst_QWidget::updateWhileMinimized()
 {
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
-#if defined(Q_OS_QNX) && !defined(Q_OS_BLACKBERRY)
+#if defined(Q_OS_QNX)
     QSKIP("Platform does not support showMinimized()");
 #endif
     UpdateWidget widget;
@@ -7902,7 +7902,7 @@ void tst_QWidget::doubleRepaint()
    // Minmize: Should not trigger a repaint.
    widget.showMinimized();
    QTest::qWait(10);
-#if defined(Q_OS_QNX) && !defined(Q_OS_BLACKBERRY)
+#if defined(Q_OS_QNX)
     QEXPECT_FAIL("", "Platform does not support showMinimized()", Continue);
 #endif
    QCOMPARE(widget.numPaintEvents, 0);

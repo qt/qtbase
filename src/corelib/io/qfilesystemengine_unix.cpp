@@ -694,16 +694,6 @@ QString QFileSystemEngine::tempPath()
 {
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
     return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
-#elif defined(Q_OS_BLACKBERRY)
-    QString temp = QFile::decodeName(qgetenv("TEMP"));
-    if (temp.isEmpty())
-        temp = QFile::decodeName(qgetenv("TMPDIR"));
-
-    if (temp.isEmpty()) {
-        qWarning("Neither the TEMP nor the TMPDIR environment variable is set, falling back to /var/tmp.");
-        temp = QLatin1String("/var/tmp");
-    }
-    return QDir::cleanPath(temp);
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())

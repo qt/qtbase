@@ -1609,11 +1609,6 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
 
 void tst_QAbstractItemView::testClickedSignal()
 {
-#if defined Q_OS_BLACKBERRY
-    QWidget rootWindow;
-    rootWindow.show();
-    QTest::qWaitForWindowExposed(&rootWindow);
-#endif
     QTableWidget view(5, 5);
 
     centerOnScreen(&view);

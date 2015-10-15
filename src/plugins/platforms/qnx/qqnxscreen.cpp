@@ -584,10 +584,6 @@ void QQnxScreen::addWindow(QQnxWindow *window)
         else
             m_childWindows.push_back(window);
         updateHierarchy();
-    } else {
-#if defined(Q_OS_BLACKBERRY)
-        m_coverWindow = window;
-#endif
     }
 }
 

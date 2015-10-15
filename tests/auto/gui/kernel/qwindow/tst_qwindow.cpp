@@ -370,12 +370,7 @@ void tst_QWindow::resizeEventAfterResize()
     // Make sure we get a resizeEvent after calling resize
     window.resize(m_testWindowSize);
 
-#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
-                              // so we only expect one resize event
-    QTRY_COMPARE(window.received(QEvent::Resize), 1);
-#else
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
-#endif
 }
 
 void tst_QWindow::positioning_data()
@@ -440,21 +435,15 @@ void tst_QWindow::positioning()
     window.reset();
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
-    // On BB10 the window is the root window and fullscreen, so nothing is resized.
-#if !defined(Q_OS_BLACKBERRY)
-    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
-#endif
 
+    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
     QTest::qWait(2000);
 
     window.reset();
     window.setWindowState(Qt::WindowNoState);
     QCoreApplication::processEvents();
-    // On BB10 the window is the root window and fullscreen, so nothing is resized.
-#if !defined(Q_OS_BLACKBERRY)
-    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
-#endif
 
+    QTRY_VERIFY(window.received(QEvent::Resize) > 0);
     QTest::qWait(2000);
 
     QTRY_COMPARE(originalPos, window.position());
@@ -1676,12 +1665,7 @@ void tst_QWindow::initialSize()
     Window w;
     w.setWidth(m_testWindowSize.width());
     w.showNormal();
-#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
-                              // so we only expect one resize event
-    QTRY_COMPARE(w.width(), qGuiApp->primaryScreen()->availableGeometry().width());
-#else
     QTRY_COMPARE(w.width(), m_testWindowSize.width());
-#endif
     QTRY_VERIFY(w.height() > 0);
     }
     {
@@ -1690,12 +1674,7 @@ void tst_QWindow::initialSize()
     w.resize(testSize);
     w.showNormal();
 
-#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
-                              // so we only expect one resize event
-    const QSize expectedSize = QGuiApplication::primaryScreen()->availableGeometry().size();
-#else
     const QSize expectedSize = testSize;
-#endif
     QTRY_COMPARE(w.size(), expectedSize);
     }
 }

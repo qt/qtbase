@@ -8,7 +8,6 @@ qtHaveModule(gui) {
     !contains(QT_DISABLED_FEATURES, imageformatplugin): SUBDIRS *= imageformats
     !contains(QT_DISABLED_FEATURES, library): SUBDIRS *= generic
 }
-qtHaveModule(widgets): SUBDIRS *= styles
 
 !winrt:!wince*:qtHaveModule(widgets):!contains(QT_DISABLED_FEATURES, printer) {
     SUBDIRS += printsupport

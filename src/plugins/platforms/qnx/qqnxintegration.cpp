@@ -52,12 +52,7 @@
 #include "qqnxeglwindow.h"
 #endif
 
-#if defined(Q_OS_BLACKBERRY)
-#include "qqnxbpseventfilter.h"
-#include "qqnxnavigatorbps.h"
-#include "qblackberrytheme.h"
-#include "qqnxvirtualkeyboardbps.h"
-#elif defined(QQNX_PPS)
+#if defined(QQNX_PPS)
 #include "qqnxnavigatorpps.h"
 #include "qqnxnavigatoreventnotifier.h"
 #include "qqnxvirtualkeyboardpps.h"
@@ -75,12 +70,7 @@
 #endif
 
 #include "private/qgenericunixfontdatabase_p.h"
-
-#if defined(Q_OS_BLACKBERRY)
-#include "qqnxeventdispatcher_blackberry.h"
-#else
 #include "private/qgenericunixeventdispatcher_p.h"
-#endif
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -120,16 +110,10 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
         options |= QQnxIntegration::AlwaysFlushScreenContext;
     }
 
-// On Blackberry the first window is treated as a root window
-#ifdef Q_OS_BLACKBERRY
-    if (!paramList.contains(QLatin1String("no-rootwindow"))) {
-        options |= QQnxIntegration::RootWindow;
-    }
-#else
     if (paramList.contains(QLatin1String("rootwindow"))) {
         options |= QQnxIntegration::RootWindow;
     }
-#endif
+
     return options;
 }
 
@@ -147,12 +131,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #endif
     , m_services(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
-#if defined(Q_OS_BLACKBERRY)
-    , m_eventDispatcher(new QQnxEventDispatcherBlackberry())
-    , m_bpsEventFilter(0)
-#else
     , m_eventDispatcher(createUnixEventDispatcher())
-#endif
     , m_nativeInterface(new QQnxNativeInterface(this))
     , m_screenEventHandler(new QQnxScreenEventHandler(this))
 #if !defined(QT_NO_CLIPBOARD)
@@ -169,8 +148,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     Q_SCREEN_CRITICALERROR(screen_create_context(&ms_screenContext, SCREEN_APPLICATION_CONTEXT),
                            "Failed to create screen context");
 
-    // Not on BlackBerry, it has specialized event dispatcher which also handles navigator events
-#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
+#if defined(QQNX_PPS)
     // Create/start navigator event notifier
     m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
 
@@ -190,8 +168,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     m_screenEventThread->start();
 #endif
 
-    // Not on BlackBerry, it has specialized event dispatcher which also handles virtual keyboard events
-#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
+#if defined(QQNX_PPS)
     // Create/start the keyboard class.
     m_virtualKeyboard = new QQnxVirtualKeyboardPps();
 
@@ -200,9 +177,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
 #endif
 
-#if defined(Q_OS_BLACKBERRY)
-    m_navigator = new QQnxNavigatorBps();
-#elif defined(QQNX_PPS)
+#if defined(QQNX_PPS)
     m_navigator = new QQnxNavigatorPps();
 #endif
 
@@ -210,33 +185,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     if (m_navigator)
         m_services = new QQnxServices(m_navigator);
 
-#if defined(Q_OS_BLACKBERRY)
-    QQnxVirtualKeyboardBps* virtualKeyboardBps = new QQnxVirtualKeyboardBps;
-
-#if defined(QQNX_SCREENEVENTTHREAD)
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, 0, virtualKeyboardBps);
-#else
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler, virtualKeyboardBps);
-#endif
-
-    m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
-
-    m_virtualKeyboard = virtualKeyboardBps;
-#endif
-
-    // Create displays for all possible screens (which may not be attached). We have to do this
-    // *after* the call to m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher). The
-    // reason for this is that we have to be registered for NAVIGATOR events before we create the
-    // QQnxScreen objects, and hence the QQnxRootWindow's. It is when the NAVIGATOR service sees
-    // the window creation that it starts sending us messages which results in a race if we
-    // create the displays first.
     createDisplays();
-
-#if !defined(QQNX_SCREENEVENTTHREAD) && defined(Q_OS_BLACKBERRY)
-    // Register for screen domain events with bps
-    Q_FOREACH (QQnxScreen *screen, m_screens)
-        m_bpsEventFilter->registerForScreenEvents(screen);
-#endif
 
     if (m_virtualKeyboard) {
         // TODO check if we need to do this for all screens or only the primary one
@@ -275,7 +224,7 @@ QQnxIntegration::~QQnxIntegration()
 #endif
 
     // Stop/destroy navigator event notifier
-#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
+#if defined(QQNX_PPS)
     delete m_navigatorEventNotifier;
 #endif
     delete m_navigatorEventHandler;
@@ -283,13 +232,6 @@ QQnxIntegration::~QQnxIntegration()
 #if defined(QQNX_SCREENEVENTTHREAD)
     // Stop/destroy screen event thread
     delete m_screenEventThread;
-#elif defined(Q_OS_BLACKBERRY)
-    Q_FOREACH (QQnxScreen *screen, m_screens)
-        m_bpsEventFilter->unregisterForScreenEvents(screen);
-#endif
-
-#if defined(Q_OS_BLACKBERRY)
-    delete m_bpsEventFilter;
 #endif
 
     // In case the event-dispatcher was never transferred to QCoreApplication
@@ -450,21 +392,6 @@ QPlatformServices * QQnxIntegration::services() const
     return m_services;
 }
 
-#if defined(Q_OS_BLACKBERRY)
-QStringList QQnxIntegration::themeNames() const
-{
-    return QStringList(QBlackberryTheme::name());
-}
-
-QPlatformTheme *QQnxIntegration::createPlatformTheme(const QString &name) const
-{
-    qIntegrationDebug() << Q_FUNC_INFO << "name =" << name;
-    if (name == QBlackberryTheme::name())
-        return new QBlackberryTheme(this);
-    return 0;
-}
-#endif
-
 QWindow *QQnxIntegration::window(screen_window_t qnxWindow)
 {
     qIntegrationDebug() << Q_FUNC_INFO;
@@ -601,7 +528,7 @@ QQnxIntegration::Options QQnxIntegration::ms_options = 0;
 
 bool QQnxIntegration::supportsNavigatorEvents() const
 {
-    // If QQNX_PPS or Q_OS_BLACKBERRY is defined then we have navigator
+    // If QQNX_PPS is defined then we have navigator
     return m_navigator != 0;
 }
 

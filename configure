@@ -2756,7 +2756,7 @@ Additional options:
     -warnings-are-errors  Make warnings be treated as errors
                           (enabled if -developer-build is active)
 
-QNX/Blackberry options:
+QNX options:
 
     -no-slog2 .......... Do not compile with slog2 support.
     -slog2 ............. Compile with slog2 support.
@@ -2999,7 +2999,7 @@ case "$XPLATFORM" in
     *win32-g++*)
         XPLATFORM_MINGW=yes
         ;;
-    *qnx-*|*blackberry-*)
+    *qnx-*)
         XPLATFORM_QNX=yes
         ;;
     *haiku-*)

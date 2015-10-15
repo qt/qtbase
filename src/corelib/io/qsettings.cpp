@@ -100,7 +100,7 @@ using namespace ABI::Windows::Storage;
 #define CSIDL_APPDATA           0x001a  // <username>\Application Data
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -1073,7 +1073,7 @@ static void initDefaultPaths(QMutexLocker *locker)
 #else
 
 #ifndef QSETTINGS_USE_QSTANDARDPATHS
-        // Non XDG platforms (OS X, iOS, Blackberry, Android...) have used this code path erroneously
+        // Non XDG platforms (OS X, iOS, Android...) have used this code path erroneously
         // for some time now. Moving away from that would require migrating existing settings.
         QString userPath;
         QByteArray env = qgetenv("XDG_CONFIG_HOME");
@@ -1140,7 +1140,6 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         org = QLatin1String("Unknown Organization");
     }
 
-#if !defined(Q_OS_BLACKBERRY)
     QString appFile = org + QDir::separator() + application + extension;
     QString orgFile = org + extension;
 
@@ -1155,13 +1154,6 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
     if (!application.isEmpty())
         confFiles[F_System | F_Application].reset(QConfFile::fromName(systemPath + appFile, false));
     confFiles[F_System | F_Organization].reset(QConfFile::fromName(systemPath + orgFile, false));
-#else
-    QString confName = getPath(format, QSettings::UserScope) + org;
-    if (!application.isEmpty())
-        confName += QDir::separator() + application;
-    confName += extension;
-    confFiles[SandboxConfFile].reset(QConfFile::fromName(confName, true));
-#endif
 
     for (i = 0; i < NumConfFiles; ++i) {
         if (confFiles[i]) {
@@ -2249,7 +2241,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     stored in the following registry path:
     \c{HKEY_LOCAL_MACHINE\Software\WOW6432node}.
 
-    On BlackBerry only a single file is used (see \l{Platform Limitations}).
     If the file format is NativeFormat, this is "Settings/MySoft/Star Runner.conf"
     in the application's home directory.
 
@@ -2277,7 +2268,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     %COMMON_APPDATA% path is usually \tt{C:\\Documents and
     Settings\\All Users\\Application Data}.
 
-    On BlackBerry only a single file is used (see \l{Platform Limitations}).
     If the file format is IniFormat, this is "Settings/MySoft/Star Runner.ini"
     in the application's home directory.
 
@@ -2382,15 +2372,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
        10.8 (Mountain Lion), only root can. However, 10.9 (Mavericks) changes
        that rule again but only for the native format (plist files).
 
-    \li On the BlackBerry platform, applications run in a sandbox. They are not
-       allowed to read or write outside of this sandbox. This involves the
-       following limitations:
-       \list
-       \li As there is only a single scope the scope is simply ignored,
-           i.e. there is no difference between SystemScope and UserScope.
-       \li The \l{Fallback Mechanism} is not applied, i.e. only a single
-          location is considered.
-       \li It is advised against setting and using custom file paths.
        \endlist
 
     \endlist

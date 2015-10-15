@@ -158,10 +158,6 @@ win32 {
             } else:ios {
                 LIBS += -framework MobileCoreServices
             }
-        } else:blackberry {
-            SOURCES += \
-                io/qstandardpaths_blackberry.cpp \
-                io/qstorageinfo_unix.cpp
         } else:android:!android-no-sdk {
             SOURCES += \
                 io/qstandardpaths_android.cpp \

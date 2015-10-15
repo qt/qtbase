@@ -82,7 +82,7 @@ void QQnxButtonEventNotifier::start()
     errno = 0;
     m_fd = qt_safe_open(ppsPath, O_RDONLY);
     if (m_fd == -1) {
-#if defined(Q_OS_BLACKBERRY) || defined (QQNXBUTTON_DEBUG)
+#if defined (QQNXBUTTON_DEBUG)
         qWarning("QQNX: failed to open buttons pps, errno=%d", errno);
 #endif
         return;

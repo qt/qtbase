@@ -87,10 +87,6 @@ using namespace ABI::Windows::Networking::Sockets;
 #include <private/qjni_p.h>
 #endif
 
-#if defined(Q_OS_BLACKBERRY)
-#  include <bps/deviceinfo.h>
-#endif
-
 #if defined(Q_OS_SOLARIS)
 #  include <sys/systeminfo.h>
 #endif
@@ -2517,7 +2513,7 @@ static QString unknownText()
 
     Note that this function may return surprising values: it returns "linux"
     for all operating systems running Linux (including Android), "qnx" for all
-    operating systems running QNX (including BlackBerry 10), "freebsd" for
+    operating systems running QNX, "freebsd" for
     Debian/kFreeBSD, and "darwin" for OS X and iOS. For information on the type
     of product the application is running on, see productType().
 
@@ -2542,7 +2538,7 @@ QString QSysInfo::kernelType()
 
     Returns the release version of the operating system kernel. On Windows, it
     returns the version of the NT or CE kernel. On Unix systems, including
-    Android, BlackBerry and OS X, it returns the same as the \c{uname -r}
+    Android and OS X, it returns the same as the \c{uname -r}
     command would return.
 
     If the version could not be determined, this function may return an empty
@@ -2583,10 +2579,6 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{BlackBerry note}: this function returns "blackberry" for QNX systems
-    running the BlackBerry userspace, but "qnx" for all other QNX-based
-    systems.
-
     \b{Darwin, OS X and iOS note}: this function returns "osx" for OS X
     systems, "ios" for iOS systems and "darwin" in case the system could not be
     determined.
@@ -2614,8 +2606,6 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_WIN)
     return QStringLiteral("windows");
 
-#elif defined(Q_OS_BLACKBERRY)
-    return QStringLiteral("blackberry");
 #elif defined(Q_OS_QNX)
     return QStringLiteral("qnx");
 
@@ -2644,7 +2634,7 @@ QString QSysInfo::productType()
     Returns the product version of the operating system in string form. If the
     version could not be determined, this function returns "unknown".
 
-    It will return the Android, BlackBerry, iOS, OS X, Windows full-product
+    It will return the Android, iOS, OS X, Windows full-product
     versions on those systems. In particular, on OS X, iOS and Windows, the
     returned string is similar to the macVersion() or windowsVersion() enums.
 
@@ -2655,7 +2645,7 @@ QString QSysInfo::productType()
     In all other Unix-type systems, this function always returns "unknown".
 
     \note The version string returned from this function is only guaranteed to
-    be orderable on Android, BlackBerry, OS X and iOS. On Windows, some Windows
+    be orderable on Android, OS X and iOS. On Windows, some Windows
     versions are text ("XP" and "Vista", for example). On Linux, the version of
     the distribution may jump unexpectedly, please refer to the distribution's
     documentation for versioning practices.
@@ -2673,18 +2663,11 @@ QString QSysInfo::productVersion()
         return QString::fromLatin1(version).toLower();
     // fall through
 
-// Android and Blackberry should not fall through to the Unix code
+// Android should not fall through to the Unix code
 #elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     return QJNIObjectPrivate::getStaticObjectField("android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString();
 #elif defined(Q_OS_ANDROID) // Q_OS_ANDROID_NO_SDK
     // TBD
-#elif defined(Q_OS_BLACKBERRY)
-    deviceinfo_details_t *deviceInfo;
-    if (deviceinfo_get_details(&deviceInfo) == BPS_SUCCESS) {
-        QString bbVersion = QString::fromLatin1(deviceinfo_details_get_device_os_version(deviceInfo));
-        deviceinfo_free_details(&deviceInfo);
-        return bbVersion;
-    }
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     findUnixOsVersion(unixOsVersion);
@@ -2760,8 +2743,6 @@ QString QSysInfo::prettyProductName()
     return QLatin1String("Windows ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_ANDROID)
     return QLatin1String("Android ") + productVersion();
-#elif defined(Q_OS_BLACKBERRY)
-    return QLatin1String("BlackBerry ") + productVersion();
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)
@@ -4257,7 +4238,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the debug message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. On Blackberry, the
+    console application; otherwise, it is sent to the debugger. On QNX, the
     message is sent to slogger2. This function does nothing if \c QT_NO_DEBUG_OUTPUT
     was defined during compilation.
 
@@ -4294,7 +4275,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the informational message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. On Blackberry the
+    console application; otherwise, it is sent to the debugger. On QNX the
     message is sent to slogger2. This function does nothing if \c QT_NO_INFO_OUTPUT
     was defined during compilation.
 
@@ -4330,7 +4311,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the warning message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On Blackberry the message is sent to slogger2. This
+    On QNX the message is sent to slogger2. This
     function does nothing if \c QT_NO_WARNING_OUTPUT was defined
     during compilation; it exits if the environment variable \c
     QT_FATAL_WARNINGS is not empty.
@@ -4364,7 +4345,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the critical message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On Blackberry the message is sent to slogger2.
+    On QNX the message is sent to slogger2
 
     It exits if the environment variable QT_FATAL_CRITICALS is not empty.
 
@@ -4397,7 +4378,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the fatal message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
-    On Blackberry the message is sent to slogger2.
+    On QNX the message is sent to slogger2
 
     If you are using the \b{default message handler} this function will
     abort on Unix systems to create a core dump. On Windows, for debug builds,

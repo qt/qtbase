@@ -47,12 +47,6 @@
 
 #include <QtCore/QDebug>
 
-#if defined(Q_OS_BLACKBERRY)
-#include "qqnxnavigatorcover.h"
-#include <sys/pps.h>
-#include <bps/navigator.h>
-#endif
-
 #include <errno.h>
 
 #if defined(QQNXWINDOW_DEBUG)
@@ -633,23 +627,7 @@ QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
 
 void QQnxWindow::minimize()
 {
-#if defined(Q_OS_BLACKBERRY)
-    qWindowDebug() << Q_FUNC_INFO;
-
-    pps_encoder_t encoder;
-
-    pps_encoder_initialize(&encoder, false);
-    pps_encoder_add_string(&encoder, "msg", "minimizeWindow");
-
-    if (navigator_raw_write(pps_encoder_buffer(&encoder),
-                pps_encoder_length(&encoder)) != BPS_SUCCESS) {
-        qWindowDebug() << Q_FUNC_INFO << "navigator_raw_write failed:" << strerror(errno);
-    }
-
-    pps_encoder_cleanup(&encoder);
-#else
     qWarning("Qt::WindowMinimized is not supported by this OS version");
-#endif
 }
 
 void QQnxWindow::setRotation(int rotation)
@@ -686,18 +664,8 @@ void QQnxWindow::initWindow()
     QQnxScreen *platformScreen = static_cast<QQnxScreen *>(window()->screen()->handle());
     setScreen(platformScreen);
 
-    if (window()->type() == Qt::CoverWindow) {
-#if defined(Q_OS_BLACKBERRY)
-        if (platformScreen->rootWindow()) {
-            screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
-                                          SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);
-            m_cover.reset(new QQnxNavigatorCover);
-        } else {
-            qWarning("No root window for cover window");
-        }
-#endif
+    if (window()->type() == Qt::CoverWindow)
         m_exposed = false;
-    }
 
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window());

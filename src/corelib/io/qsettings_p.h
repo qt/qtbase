@@ -236,16 +236,11 @@ public:
     because their values are respectively 1 and 2.
     */
     enum {
-#if !defined(Q_OS_BLACKBERRY)
         F_Application = 0x0,
         F_Organization = 0x1,
         F_User = 0x0,
         F_System = 0x2,
         NumConfFiles = 4
-#else
-        SandboxConfFile = 0,
-        NumConfFiles = 1
-#endif
     };
 
     QSettings::Format format;

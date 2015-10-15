@@ -92,8 +92,6 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     QString defaultsPath = "data/defaults.conf";
 #if defined(Q_OS_ANDROID)
     defaultsPath = "data/android/defaults.conf";
-#elif defined(Q_OS_BLACKBERRY)
-    defaultsPath = "data/blackberry/defaults.conf";
 #elif defined(Q_OS_IOS)
     defaultsPath = "data/ios/defaults.conf";
 #endif
@@ -116,7 +114,6 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     \code
     data/defaults.conf
     data/+android/defaults.conf
-    data/+blackberry/defaults.conf
     data/+ios/+en_GB/defaults.conf
     \endcode
 
@@ -127,9 +124,8 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     \code
     images/background.png
     images/+android/+en_GB/background.png
-    images/+blackberry/+en_GB/background.png
     \endcode
-    With those files available, you would select a different file on android and blackberry platforms,
+    With those files available, you would select a different file on the android platform,
     but only if the locale was en_GB.
 
     QFileSelector will not attempt to select if the base file does not exist. For error handling in
@@ -145,8 +141,8 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Selectors normally available are
     \list
     \li platform, any of the following strings which match the platform the application is running
-        on (list not exhaustive): android, blackberry, ios, osx, darwin, mac, linux, wince, unix,
-        windows. On Linux, if it can be determined, the name of the distribution too, like debian,
+        on (list not exhaustive): android, ios, osx, darwin, mac, linux, wince, unix, windows.
+        On Linux, if it can be determined, the name of the distribution too, like debian,
         fedora or opensuse.
     \li locale, same as QLocale().name().
     \endlist
@@ -368,8 +364,8 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY)
-    // we don't want "linux" for Android or "qnx" for Blackberry here
+#  if !defined(Q_OS_ANDROID)
+    // we don't want "linux" for Android
     ret << QSysInfo::kernelType();
 #     ifdef Q_OS_MAC
     ret << QStringLiteral("mac"); // compatibility, since kernelType() is "darwin"
@@ -377,7 +373,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #  endif
     QString productName = QSysInfo::productType();
     if (productName != QLatin1String("unknown"))
-        ret << productName; // "opensuse", "fedora", "osx", "ios", "blackberry", "android"
+        ret << productName; // "opensuse", "fedora", "osx", "ios", "android"
 #endif
     return ret;
 }

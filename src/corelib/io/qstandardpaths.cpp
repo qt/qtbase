@@ -210,66 +210,46 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     \table
-    \header \li Path type \li Blackberry \li Linux
+    \header \li Path type \li Linux
     \row \li DesktopLocation
-         \li "<APPROOT>/data"
          \li "~/Desktop"
     \row \li DocumentsLocation
-         \li "<APPROOT>/shared/documents"
          \li "~/Documents"
     \row \li FontsLocation
-         \li "/base/usr/fonts" (not writable)
          \li "~/.fonts"
     \row \li ApplicationsLocation
-         \li not supported (directory not readable)
          \li "~/.local/share/applications", "/usr/local/share/applications", "/usr/share/applications"
     \row \li MusicLocation
-         \li "<APPROOT>/shared/music"
          \li "~/Music"
     \row \li MoviesLocation
-         \li "<APPROOT>/shared/videos"
          \li "~/Videos"
     \row \li PicturesLocation
-         \li "<APPROOT>/shared/photos"
          \li "~/Pictures"
     \row \li TempLocation
-         \li "/var/tmp"
          \li "/tmp"
     \row \li HomeLocation
-         \li "<APPROOT>/data"
          \li "~"
     \row \li DataLocation
-         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li CacheLocation
-         \li "<APPROOT>/data/Cache"
          \li "~/.cache/<APPNAME>"
     \row \li GenericDataLocation
-         \li "<APPROOT>/shared/misc"
          \li "~/.local/share", "/usr/local/share", "/usr/share"
     \row \li RuntimeLocation
-         \li "/var/tmp"
          \li "/run/user/<USER>"
     \row \li ConfigLocation
-         \li "<APPROOT>/data/Settings"
          \li "~/.config", "/etc/xdg"
     \row \li GenericConfigLocation
-         \li "<APPROOT>/data/Settings"
          \li "~/.config", "/etc/xdg"
     \row \li DownloadLocation
-         \li "<APPROOT>/shared/downloads"
          \li "~/Downloads"
     \row \li GenericCacheLocation
-         \li "<APPROOT>/data/Cache" (there is no shared cache)
          \li "~/.cache"
     \row \li AppDataLocation
-         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li AppLocalDataLocation
-         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li AppConfigLocation
-         \li "<APPROOT>/data/Settings"
          \li "~/.config/<APPNAME>", "/etc/xdg/<APPNAME>"
     \endtable
 

@@ -42,7 +42,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQnxBpsEventFilter;
 #if defined(QQNX_SCREENEVENTTHREAD)
 class QQnxScreenEventThread;
 #endif
@@ -117,12 +116,6 @@ public:
 
     QPlatformServices *services() const;
 
-#if defined(Q_OS_BLACKBERRY)
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-    QQnxBpsEventFilter *bpsEventFilter() const { return m_bpsEventFilter; }
-#endif
-
     static QWindow *window(screen_window_t qnxWindow);
 
     QQnxScreen *screenForNative(screen_display_t qnxScreen) const;
@@ -156,9 +149,6 @@ private:
     QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
     mutable QAbstractEventDispatcher *m_eventDispatcher;
-#if defined(Q_OS_BLACKBERRY)
-    QQnxBpsEventFilter *m_bpsEventFilter;
-#endif
     QQnxNativeInterface *m_nativeInterface;
     QList<QQnxScreen*> m_screens;
     QQnxScreenEventHandler *m_screenEventHandler;

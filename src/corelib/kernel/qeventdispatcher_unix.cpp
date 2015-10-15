@@ -92,7 +92,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     bool pipefail = false;
 
     // initialize the common parts of the event loop
-#if defined(Q_OS_NACL) || defined (Q_OS_BLACKBERRY)
+#if defined(Q_OS_NACL)
    // do nothing.
 #elif defined(Q_OS_INTEGRITY)
     // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
@@ -143,7 +143,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
-#if defined(Q_OS_NACL) || defined (Q_OS_BLACKBERRY)
+#if defined(Q_OS_NACL)
    // do nothing.
 #elif defined(Q_OS_VXWORKS)
     close(thread_pipe[0]);

@@ -50,10 +50,6 @@
 #include <mach/mach_time.h>
 #endif
 
-#ifdef Q_OS_BLACKBERRY
-#include <qsocketnotifier.h>
-#endif // Q_OS_BLACKBERRY
-
 QT_BEGIN_NAMESPACE
 
 static inline bool time_update(struct timespec *tv, const struct timespec &start,
@@ -112,33 +108,5 @@ int qt_select_msecs(int nfds, fd_set *fdread, fd_set *fdwrite, int timeout)
     tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
     return qt_safe_select(nfds, fdread, fdwrite, 0, &tv);
 }
-
-#ifdef Q_OS_BLACKBERRY
-// The BlackBerry event dispatcher uses bps_get_event. Unfortunately, already registered
-// socket notifiers are disabled by a call to select. This is to rearm the standard streams.
-int bb_select(QList<QSocketNotifier *> socketNotifiers, int nfds, fd_set *fdread, fd_set *fdwrite,
-              int timeout)
-{
-    QList<bool> socketNotifiersEnabled;
-    socketNotifiersEnabled.reserve(socketNotifiers.count());
-    for (int a = 0; a < socketNotifiers.count(); ++a) {
-        if (socketNotifiers.at(a) && socketNotifiers.at(a)->isEnabled()) {
-            socketNotifiersEnabled.append(true);
-            socketNotifiers.at(a)->setEnabled(false);
-        } else {
-            socketNotifiersEnabled.append(false);
-        }
-    }
-
-    const int ret = qt_select_msecs(nfds, fdread, fdwrite, timeout);
-
-    for (int a = 0; a < socketNotifiers.count(); ++a) {
-        if (socketNotifiersEnabled.at(a) == true)
-            socketNotifiers.at(a)->setEnabled(true);
-    }
-
-    return ret;
-}
-#endif // Q_OS_BLACKBERRY
 
 QT_END_NAMESPACE

@@ -37,14 +37,11 @@
 
 #include <private/qcoreapplication_p.h>
 
-#if defined(Q_OS_BLACKBERRY)
-#  include <private/qeventdispatcher_blackberry_p.h>
-#else
-#  if !defined(QT_NO_GLIB)
-#    include "../kernel/qeventdispatcher_glib_p.h"
-#  endif
-#  include <private/qeventdispatcher_unix_p.h>
+#if !defined(QT_NO_GLIB)
+# include "../kernel/qeventdispatcher_glib_p.h"
 #endif
+
+#include <private/qeventdispatcher_unix_p.h>
 
 #include "qthreadstorage.h"
 
@@ -246,9 +243,6 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-#if defined(Q_OS_BLACKBERRY)
-    data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
-#else
 #if !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
@@ -257,7 +251,6 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     else
 #endif
     data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
-#endif
 
     data->eventDispatcher.load()->startingUp();
 }

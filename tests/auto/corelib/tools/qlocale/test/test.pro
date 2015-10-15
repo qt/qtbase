@@ -14,5 +14,3 @@ win32 {
 }
 
 TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp
-
-blackberry:LIBS += -lpps

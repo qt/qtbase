@@ -85,11 +85,6 @@ void *QQnxNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
 
 void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
-#ifdef Q_OS_BLACKBERRY
-    if (resource == "navigatorEventHandler")
-        return m_integration->navigatorEventHandler();
-#endif
-
     return 0;
 }
 

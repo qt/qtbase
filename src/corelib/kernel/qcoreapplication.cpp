@@ -66,16 +66,10 @@
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_BLACKBERRY)
-#    include "qeventdispatcher_blackberry_p.h"
-#    include <process.h>
-#    include <unistd.h>
-#  else
-#    if !defined(QT_NO_GLIB)
-#      include "qeventdispatcher_glib_p.h"
-#    endif
-#    include "qeventdispatcher_unix_p.h"
-#  endif
+# if !defined(QT_NO_GLIB)
+#  include "qeventdispatcher_glib_p.h"
+# endif
+# include "qeventdispatcher_unix_p.h"
 #endif
 #ifdef Q_OS_WIN
 # ifdef Q_OS_WINRT
@@ -335,34 +329,6 @@ struct QCoreApplicationData {
 #endif
     }
 
-#ifdef Q_OS_BLACKBERRY
-    //The QCoreApplicationData struct is only populated on demand, because it is rarely needed and would
-    //affect startup time
-    void loadManifest() {
-        static bool manifestLoadAttempt = false;
-        if (manifestLoadAttempt)
-            return;
-
-        manifestLoadAttempt = true;
-
-        QFile metafile(QStringLiteral("app/META-INF/MANIFEST.MF"));
-        if (!metafile.open(QIODevice::ReadOnly)) {
-            qWarning() << Q_FUNC_INFO << "Could not open application metafile for reading";
-        } else {
-            while (!metafile.atEnd() && (application.isEmpty() || applicationVersion.isEmpty() || orgName.isEmpty())) {
-                QByteArray line = metafile.readLine();
-                if (line.startsWith("Application-Name:"))
-                    application = QString::fromUtf8(line.mid(18).trimmed());
-                else if (line.startsWith("Application-Version:"))
-                    applicationVersion = QString::fromUtf8(line.mid(21).trimmed());
-                else if (line.startsWith("Package-Author:"))
-                    orgName = QString::fromUtf8(line.mid(16).trimmed());
-            }
-            metafile.close();
-        }
-    }
-#endif
-
     QString orgName, orgDomain;
     QString application; // application name, initially from argv[0], can then be modified.
     QString applicationVersion;
@@ -503,16 +469,12 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_BLACKBERRY)
-    eventDispatcher = new QEventDispatcherBlackberry(q);
-#  else
 #  if !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
 #  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
-#  endif
 #elif defined(Q_OS_WINRT)
     eventDispatcher = new QEventDispatcherWinRT(q);
 #elif defined(Q_OS_WIN)
@@ -2123,33 +2085,6 @@ QString QCoreApplication::applicationFilePath()
 #if defined(Q_OS_WIN)
     QCoreApplicationPrivate::setApplicationFilePath(QFileInfo(qAppFileName()).filePath());
     return *QCoreApplicationPrivate::cachedApplicationFilePath;
-#elif defined(Q_OS_BLACKBERRY)
-    if (!arguments().isEmpty()) { // args is never empty, but the navigator can change behaviour some day
-        QFileInfo fileInfo(arguments().at(0));
-        const bool zygotized = fileInfo.exists();
-        if (zygotized) {
-            // Handle the zygotized case:
-            QCoreApplicationPrivate::setApplicationFilePath(QDir::cleanPath(fileInfo.absoluteFilePath()));
-            return *QCoreApplicationPrivate::cachedApplicationFilePath;
-        }
-    }
-
-    // Handle the non-zygotized case:
-    const size_t maximum_path = static_cast<size_t>(pathconf("/",_PC_PATH_MAX));
-    char buff[maximum_path+1];
-    if (_cmdname(buff)) {
-        QCoreApplicationPrivate::setApplicationFilePath(QDir::cleanPath(QString::fromLocal8Bit(buff)));
-    } else {
-        qWarning("QCoreApplication::applicationFilePath: _cmdname() failed");
-        // _cmdname() won't fail, but just in case, fallback to the old method
-        QDir dir(QStringLiteral("./app/native/"));
-        QStringList executables = dir.entryList(QDir::Executable | QDir::Files);
-        if (!executables.empty()) {
-            //We assume that there is only one executable in the folder
-            QCoreApplicationPrivate::setApplicationFilePath(dir.absoluteFilePath(executables.first()));
-        }
-    }
-    return *QCoreApplicationPrivate::cachedApplicationFilePath;
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
     if(!qAppFileName_str.isEmpty()) {
@@ -2315,9 +2250,6 @@ QStringList QCoreApplication::arguments()
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
 
-    On BlackBerry this property is read-only. It is obtained from the
-    BAR application descriptor file.
-
     \sa organizationDomain, applicationName
 */
 
@@ -2342,9 +2274,6 @@ void QCoreApplication::setOrganizationName(const QString &orgName)
 
 QString QCoreApplication::organizationName()
 {
-#ifdef Q_OS_BLACKBERRY
-    coreappdata()->loadManifest();
-#endif
     return coreappdata()->orgName;
 }
 
@@ -2395,9 +2324,6 @@ QString QCoreApplication::organizationDomain()
 
     If not set, the application name defaults to the executable name (since 5.0).
 
-    On BlackBerry this property is read-only. It is obtained from the
-    BAR application descriptor file.
-
     \sa organizationName, organizationDomain, applicationVersion, applicationFilePath()
 */
 /*!
@@ -2423,9 +2349,6 @@ void QCoreApplication::setApplicationName(const QString &application)
 
 QString QCoreApplication::applicationName()
 {
-#ifdef Q_OS_BLACKBERRY
-    coreappdata()->loadManifest();
-#endif
     return coreappdata() ? coreappdata()->application : QString();
 }
 
@@ -2439,9 +2362,6 @@ Q_CORE_EXPORT QString qt_applicationName_noFallback()
     \property QCoreApplication::applicationVersion
     \since 4.4
     \brief the version of this application
-
-    On BlackBerry this property is read-only. It is obtained from the
-    BAR application descriptor file.
 
     \sa applicationName, organizationName, organizationDomain
 */
@@ -2464,9 +2384,6 @@ void QCoreApplication::setApplicationVersion(const QString &version)
 
 QString QCoreApplication::applicationVersion()
 {
-#ifdef Q_OS_BLACKBERRY
-    coreappdata()->loadManifest();
-#endif
     return coreappdata()->applicationVersion;
 }
 

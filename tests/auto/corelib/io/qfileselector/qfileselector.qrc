@@ -14,7 +14,6 @@
    <!-- platforms/test: deepest possible selection -->
    <file>platforms/test</file>
    <file>platforms/+unix/+android/test</file>
-   <file>platforms/+unix/+blackberry/test</file>
    <file>platforms/+unix/+darwin/+mac/+ios/test</file>
    <file>platforms/+unix/+darwin/+mac/+osx/test</file>
    <file>platforms/+unix/+darwin/+mac/test</file>
@@ -26,7 +25,6 @@
    <file>platforms/+windows/+winnt/test</file>
    <file>platforms/+windows/test</file>
    <file>platforms/+android/test</file>
-   <file>platforms/+blackberry/test</file>
    <file>platforms/+ios/test</file>
    <file>platforms/+osx/test</file>
    <file>platforms/+darwin/test</file>
@@ -38,7 +36,6 @@
    <!-- platforms/test2: shallow selection for the deepest selector -->
    <file>platforms/test2</file>
    <file>platforms/+android/test2</file>
-   <file>platforms/+blackberry/test2</file>
    <file>platforms/+ios/test2</file>
    <file>platforms/+osx/test2</file>
    <file>platforms/+haiku/test2</file>

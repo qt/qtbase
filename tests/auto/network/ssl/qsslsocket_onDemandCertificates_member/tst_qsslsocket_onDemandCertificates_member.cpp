@@ -215,7 +215,7 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     socket4->connectToHostEncrypted(host, 443);
 #ifdef QT_BUILD_INTERNAL
     bool rootCertLoadingAllowed = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
-#if defined(Q_OS_LINUX) || defined (Q_OS_BLACKBERRY)
+#if defined(Q_OS_LINUX)
     QCOMPARE(rootCertLoadingAllowed, true);
 #elif defined(Q_OS_MAC)
     QCOMPARE(rootCertLoadingAllowed, false);

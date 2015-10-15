@@ -92,9 +92,6 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
 
     On Mac, \a eventType is set to "mac_generic_NSEvent", and the \a message can be casted to an EventRef.
 
-    On Blackberry (not plain QNX) \a eventType is set to "bps_event_t", and the \a message can be casted
-    to a bps_event_t pointer.
-
     In your reimplementation of this function, if you want to filter
     the \a message out, i.e. stop it being handled further, return
     true; otherwise return false.

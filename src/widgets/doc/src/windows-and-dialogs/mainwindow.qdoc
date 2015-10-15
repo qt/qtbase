@@ -139,19 +139,6 @@
     depends on the result of QWidget::frameGeometry() and the
     capability of the window manager to do proper window placement,
     neither of which can be guaranteed.
-
-    \section2 BlackBerry Peculiarities
-
-    On the BlackBerry platform it is possible to set an alternate
-    cover window that is shown when the application is minimized.
-    The cover window must be a separate window with the
-    \l{Qt::CoverWindow} flag set.
-
-    The window should have a fixed size depending on the screen
-    resolution (e.g. for a 768x1280 screen, 334 pixels wide by 396
-    pixels high). The window can be rendered to as usual, however
-    updates should occur very infrequently (a few updates per minute
-    at most) in order save battery.
 */
 
 /*!

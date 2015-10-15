@@ -60,7 +60,6 @@ enum Platforms {
     WINDOWS_CE,
     WINDOWS_RT,
     QNX,
-    BLACKBERRY,
     ANDROID,
     OTHER
 };
@@ -1739,7 +1738,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ANGLE" ]               = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
-    } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+    } else if (platform() == QNX) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
         dictionary["QNX_IMF"]               = "auto";
@@ -1989,7 +1988,7 @@ bool Configure::displayHelp()
                                                         "by setting the QT_HARFBUZZ environment variable to \"old\".\n"
                                                         "See http://www.harfbuzz.org\n");
 
-        if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+        if (platform() == QNX) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
             desc("QNX_IMF", "yes",  "-imf",             "Compile with imf support.");
@@ -2294,7 +2293,7 @@ bool Configure::checkAvailability(const QString &part)
         available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
-            if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+            if (platform() == QNX) {
                 available = true;
                 dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3 -lz";
             } else {
@@ -2372,16 +2371,15 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "CUPS") {
         available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
-        available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
+        available = (platform() == QNX) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
     } else if (part == "QNX_IMF") {
         available = tryCompileProject("unix/qqnx_imf");
     } else if (part == "PPS") {
-        available = (platform() == QNX || platform() == BLACKBERRY) && tryCompileProject("unix/pps");
+        available = (platform() == QNX) && tryCompileProject("unix/pps");
     } else if (part == "LGMON") {
-        available = (platform() == QNX || platform() == BLACKBERRY)
-                    && tryCompileProject("unix/lgmon");
+        available = (platform() == QNX) && tryCompileProject("unix/lgmon");
     } else if (part == "NEON") {
         available = dictionary["QT_CPU_FEATURES"].contains("neon");
     } else if (part == "FONT_CONFIG") {
@@ -2585,11 +2583,11 @@ void Configure::autoDetection()
     if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
         dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
 
-    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
+    if (platform() == QNX && dictionary["SLOG2"] == "auto") {
         dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
     }
 
-    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["QNX_IMF"] == "auto") {
+    if (platform() == QNX && dictionary["QNX_IMF"] == "auto") {
         dictionary["QNX_IMF"] = checkAvailability("QNX_IMF") ? "yes" : "no";
     }
 
@@ -2597,7 +2595,7 @@ void Configure::autoDetection()
         dictionary["PPS"] = checkAvailability("PPS") ? "yes" : "no";
     }
 
-    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["LGMON"] == "auto") {
+    if (platform() == QNX && dictionary["LGMON"] == "auto") {
         dictionary["LGMON"] = checkAvailability("LGMON") ? "yes" : "no";
     }
 
@@ -3947,7 +3945,7 @@ void Configure::displayConfig()
     sout << "    HarfBuzz support........" << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
-    if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+    if (platform() == QNX) {
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
         sout << "    IMF support............." << dictionary[ "QNX_IMF" ] << endl;
         sout << "    PPS support............." << dictionary[ "PPS" ] << endl;
@@ -4719,8 +4717,6 @@ QString Configure::platformName() const
         return QStringLiteral("Qt for Windows Runtime");
     case QNX:
         return QStringLiteral("Qt for QNX");
-    case BLACKBERRY:
-        return QStringLiteral("Qt for Blackberry");
     case ANDROID:
         return QStringLiteral("Qt for Android");
     case OTHER:
@@ -4739,8 +4735,6 @@ QString Configure::qpaPlatformName() const
         return QStringLiteral("winrt");
     case QNX:
         return QStringLiteral("qnx");
-    case BLACKBERRY:
-        return QStringLiteral("blackberry");
     case ANDROID:
         return QStringLiteral("android");
     case OTHER:
@@ -4761,9 +4755,6 @@ int Configure::platform() const
 
     if (xQMakeSpec.contains("qnx"))
         return QNX;
-
-    if (xQMakeSpec.contains("blackberry"))
-        return BLACKBERRY;
 
     if (xQMakeSpec.contains("android"))
         return ANDROID;
