@@ -262,6 +262,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "PNG" ]             = "auto";
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
+    dictionary[ "DOUBLECONVERSION" ] = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
     dictionary[ "HARFBUZZ" ]        = "qt";
 
@@ -626,6 +627,14 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-system-libpng") {
             dictionary[ "LIBPNG" ] = "system";
         }
+
+        // Double Conversion -----------------------------------------
+        else if (configCmdLine.at(i) == "-no-doubleconversion")
+            dictionary[ "DOUBLECONVERSION" ] = "no";
+        else if (configCmdLine.at(i) == "-qt-doubleconversion")
+            dictionary[ "DOUBLECONVERSION" ] = "qt";
+        else if (configCmdLine.at(i) == "-system-doubleconversion")
+            dictionary[ "DOUBLECONVERSION" ] = "system";
 
         // Text Rendering --------------------------------------------
         else if (configCmdLine.at(i) == "-no-freetype")
@@ -1959,6 +1968,10 @@ bool Configure::displayHelp()
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
         desc("LIBJPEG", "system","-system-libjpeg",     "Use libjpeg from the operating system.\nSee http://www.ijg.org\n");
 
+        desc("DOUBLECONVERSION", "no",     "-no-doubleconversion",     "Use sscanf_l and snprintf_l for (imprecise) double conversion.");
+        desc("DOUBLECONVERSION", "qt",     "-qt-doubleconversion",     "Use the libdouble-conversion bundled with Qt.");
+        desc("DOUBLECONVERSION", "system", "-system-doubleconversion", "Use the libdouble-conversion provided by the system.");
+
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
         desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
@@ -2369,6 +2382,8 @@ bool Configure::checkAvailability(const QString &part)
         available = dictionary["QT_CPU_FEATURES"].contains("neon");
     } else if (part == "FONT_CONFIG") {
         available = tryCompileProject("unix/fontconfig");
+    } else if (part == "DOUBLECONVERSION") {
+        available = tryCompileProject("unix/doubleconversion");
     }
 
     return available;
@@ -2584,6 +2599,9 @@ void Configure::autoDetection()
 
     if (dictionary["FONT_CONFIG"] == "auto")
         dictionary["FONT_CONFIG"] = checkAvailability("FONT_CONFIG") ? "yes" : "no";
+
+    if (dictionary["DOUBLECONVERSION"] == "auto")
+        dictionary["DOUBLECONVERSION"] = checkAvailability("DOUBLECONVERSION") ? "system" : "qt";
 
     if (dictionary["DIRECTWRITE"] == "auto")
         dictionary["DIRECTWRITE"] = checkAvailability("DIRECTWRITE") ? "yes" : "no";
@@ -2832,6 +2850,14 @@ void Configure::generateOutputVars()
         qtConfig += "png";
     if (dictionary[ "LIBPNG" ] == "system")
         qtConfig += "system-png";
+
+    // Double conversion -----------------------------------------------
+    if (dictionary[ "DOUBLECONVERSION" ] == "qt")
+        qtConfig += "doubleconversion";
+    else if (dictionary[ "DOUBLECONVERSION" ] == "system")
+        qtConfig += "system-doubleconversion";
+    else if (dictionary[ "DOUBLECONVERSION" ] == "no")
+        qtConfig += "no-doubleconversion";
 
     // Text rendering --------------------------------------------------
     if (dictionary[ "FREETYPE" ] == "yes")
@@ -3911,6 +3937,7 @@ void Configure::displayConfig()
     sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
     sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
+    sout << "    DoubleConversion........" << dictionary[ "DOUBLECONVERSION" ] << endl;
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
     sout << "    Fontconfig support......" << dictionary[ "FONT_CONFIG" ] << endl;
     sout << "    HarfBuzz support........" << dictionary[ "HARFBUZZ" ] << endl;

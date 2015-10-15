@@ -24,6 +24,7 @@ HEADERS +=  \
         tools/qdatetime.h \
         tools/qdatetime_p.h \
         tools/qdatetimeparser_p.h \
+        tools/qdoublescanprint_p.h \
         tools/qeasingcurve.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
@@ -201,6 +202,14 @@ HEADERS += tools/qharfbuzz_p.h
 INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4 \
                ../3rdparty/sha3
+
+contains(QT_CONFIG, doubleconversion) {
+    include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
+} else:contains(QT_CONFIG, system-doubleconversion) {
+    LIBS_PRIVATE += -ldouble-conversion
+} else {
+    DEFINES += QT_NO_DOUBLECONVERSION
+}
 
 # Note: libm should be present by default becaue this is C++
 !macx-icc:!vxworks:!haiku:unix:LIBS_PRIVATE += -lm

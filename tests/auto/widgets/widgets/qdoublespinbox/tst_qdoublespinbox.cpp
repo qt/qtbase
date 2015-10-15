@@ -214,12 +214,15 @@ void tst_QDoubleSpinBox::setPrefixSuffix_data()
 
     QTest::newRow("data0") << QString() << QString() << 10.5 << 1 << "10.5" << "10.5" << false;
     QTest::newRow("data1") << QString() << "cm" << 10.5 << 2 << "10.50cm" << "10.50" << false;
-    QTest::newRow("data2") << "cm: " << QString() << 10.5 << 0 << "cm: 10" << "10" << false;
+
+    // 10.5 is rounded correctly to 11 when using libdouble-conversion, or incorrectly to 10 when
+    // using snprintf. This is not the point of this test, though.
+    QTest::newRow("data2") << "cm: " << QString() << 10.4 << 0 << "cm: 10" << "10" << false;
     QTest::newRow("data3") << "length: " << "cm" << 10.5 << 3 << "length: 10.500cm" << "10.500" << false;
 
     QTest::newRow("data4") << QString() << QString() << 10.5 << 1 << "10.5" << "10.5" << true;
     QTest::newRow("data5") << QString() << "cm" << 10.5 << 2 << "10.50cm" << "10.50" << true;
-    QTest::newRow("data6") << "cm: " << QString() << 10.5 << 0 << "cm: 10" << "10" << true;
+    QTest::newRow("data6") << "cm: " << QString() << 10.4 << 0 << "cm: 10" << "10" << true;
     QTest::newRow("data7") << "length: " << "cm" << 10.5 << 3 << "length: 10.500cm" << "10.500" << true;
 }
 

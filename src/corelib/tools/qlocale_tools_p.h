@@ -66,6 +66,10 @@
 
 QT_BEGIN_NAMESPACE
 
+double asciiToDouble(const char *num, int numLen, bool &ok, int &processed);
+void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
+                   bool &sign, int &length, int &decpt);
+
 QString qulltoa(qulonglong l, int base, const QChar _zero);
 QString qlltoa(qlonglong l, int base, const QChar zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
@@ -97,8 +101,6 @@ inline bool isZero(double d)
     }
 }
 
-Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
-                          int *sign, char **rve, char **digits_str);
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
 qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
 qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok);

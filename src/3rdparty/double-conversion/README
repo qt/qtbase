@@ -1,0 +1,8 @@
+This is a copy of the library for binary-decimal and decimal-binary
+conversion routines for IEEE doubles, available from
+
+    https://github.com/google/double-conversion
+
+commit 2fb03de56faa32bbba5e02222528e7b760f71d77
+
+See the LICENSE file for license information.

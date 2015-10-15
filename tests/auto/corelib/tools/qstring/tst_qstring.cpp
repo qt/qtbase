@@ -4679,6 +4679,11 @@ void tst_QString::number()
     QCOMPARE( QString::number(4.4), QLatin1String("4.4") );
     QCOMPARE( QString::number(Q_INT64_C(-555)), QLatin1String("-555") );
     QCOMPARE( QString::number(Q_UINT64_C(6666)), QLatin1String("6666") );
+
+#ifndef QT_NO_DOUBLECONVERSION // snprintf_l is too stupid for this
+    QCOMPARE( QString::number(12.05, 'f', 1), QString("12.1") );
+    QCOMPARE( QString::number(12.5, 'f', 0), QString("13") );
+#endif
 }
 
 void tst_QString::capacity_data()

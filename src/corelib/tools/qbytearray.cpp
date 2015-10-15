@@ -39,6 +39,7 @@
 #include "qlist.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qlocale_tools_p.h"
 #include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
 #include "qbytearray_p.h"
@@ -3694,7 +3695,13 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
 double QByteArray::toDouble(bool *ok) const
 {
-    return QLocaleData::bytearrayToDouble(nulTerminated().constData(), ok);
+    QByteArray nulled = nulTerminated();
+    bool nonNullOk = false;
+    int processed = 0;
+    double d = asciiToDouble(nulled.constData(), nulled.length(), nonNullOk, processed);
+    if (ok)
+        *ok = nonNullOk;
+    return d;
 }
 
 /*!

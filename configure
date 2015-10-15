@@ -647,6 +647,7 @@ CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
 CFG_EGL_X=auto
+CFG_DOUBLECONVERSION=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=qt
@@ -1764,6 +1765,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    doubleconversion)
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+            CFG_DOUBLECONVERSION="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     fontconfig)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_FONTCONFIG="$VAL"
@@ -2534,6 +2542,11 @@ Third Party Libraries:
     -qt-libjpeg ......... Use the libjpeg bundled with Qt.
  +  -system-libjpeg ..... Use libjpeg from the operating system.
                           See http://www.ijg.org
+
+    -no-doubleconversion ..... Use sscanf_l and snprintf_l for (imprecise) double conversion.
+    -qt-doubleconversion ..... Use the libdouble-conversion bundled with Qt.
+ +  -system-doubleconversion . Use the libdouble-conversion provided by the system.
+                               See https://github.com/google/double-conversion
 
     -no-freetype ........ Do not compile in Freetype2 support.
     -qt-freetype ........ Use the libfreetype bundled with Qt.
@@ -5931,6 +5944,24 @@ if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM
 fi
     fi
 
+# double-conversion support
+if [ "$CFG_DOUBLECONVERSION" = "no" ]; then
+    if ! compileTest common/xlocalescanprint "XLocaleScanPrint"; then
+        echo "Your C library does not provide sscanf_l or snprintf_l."
+        echo "You need to use libdouble-conversion for double/string conversion."
+        exit 1
+    fi
+elif [ "$CFG_DOUBLECONVERSION" != "qt" ]; then
+    if compileTest unix/doubleconversion "DoubleConversion"; then
+        CFG_DOUBLECONVERSION=system
+    elif [ "$CFG_DOUBLECONVERSION" = "system" ]; then
+        echo "No system libdouble-conversion found."
+        exit 1
+    else
+        CFG_DOUBLECONVERSION=qt
+    fi
+fi
+
 # freetype support
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_FREETYPE" = "auto" ] && CFG_FREETYPE=no
 if [ "$CFG_FREETYPE" = "auto" ]; then
@@ -6429,6 +6460,13 @@ if [ "$CFG_GIF" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-gif"
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
+fi
+if [ "$CFG_DOUBLECONVERSION" = "no" ]; then
+    QT_CONFIG="$QT_CONFIG no-doubleconversion"
+elif [ "$CFG_DOUBLECONVERSION" = "system" ]; then
+    QT_CONFIG="$QT_CONFIG system-doubleconversion"
+else
+    QT_CONFIG="$QT_CONFIG doubleconversion"
 fi
 if [ "$CFG_FREETYPE" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-freetype"
@@ -7345,6 +7383,7 @@ report_support "  ALSA ..................." "$CFG_ALSA"
 report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
+report_support "  DoubleConversion........" "$CFG_DOUBLECONVERSION" no "libc" system "system library" qt "bundled copy"
 report_support "  Evdev .................." "$CFG_EVDEV"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"

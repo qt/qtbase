@@ -38,6 +38,7 @@
 #ifndef QT_NO_VALIDATOR
 #include "private/qobject_p.h"
 #include "private/qlocale_p.h"
+#include "private/qnumeric_p.h"
 
 #include <limits.h>
 #include <cmath>
@@ -676,9 +677,9 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
     if (q->t < 0 && buff.startsWith('+'))
         return QValidator::Invalid;
 
-    bool ok, overflow;
-    double i = QLocaleData::bytearrayToDouble(buff.constData(), &ok, &overflow);
-    if (overflow)
+    bool ok = false;
+    double i = buff.toDouble(&ok); // returns 0.0 if !ok
+    if (i == qt_qnan())
         return QValidator::Invalid;
     if (!ok)
         return QValidator::Intermediate;

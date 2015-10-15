@@ -2749,51 +2749,30 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
         width = 0;
 
     bool negative = false;
-    bool special_number = false; // nan, +/-inf
     QString num_str;
 
-    // Detect special numbers (nan, +/-inf)
-    if (qt_is_inf(d)) {
-        num_str = QString::fromLatin1("inf");
-        special_number = true;
-        negative = d < 0;
-    } else if (qt_is_nan(d)) {
-        num_str = QString::fromLatin1("nan");
-        special_number = true;
-    }
+    int decpt;
+    int bufSize = 1;
+    if (form == DFDecimal) // optimize for numbers smaller than 512k
+        bufSize += ((d > (1 << 19) || d < -(1 << 19)) ? DoubleMaxDigitsBeforeDecimal : 6) +
+                precision;
+    else // Add extra digit due to different interpretations of precision. Also, "nan" has to fit.
+        bufSize += qMax(2, precision) + 1;
 
-    // Handle normal numbers
-    if (!special_number) {
-        int decpt, sign;
-        QString digits;
+    QVarLengthArray<char> buf(bufSize);
+    int length;
 
-        int mode;
-        if (form == DFDecimal)
-            mode = 3;
-        else
-            mode = 2;
+    doubleToAscii(d, form, precision, buf.data(), bufSize, negative, length, decpt);
 
-        /* This next bit is a bit quirky. In DFExponent form, the precision
-           is the number of digits after decpt. So that would suggest using
-           mode=3 for qdtoa. But qdtoa behaves strangely when mode=3 and
-           precision=0. So we get around this by using mode=2 and reasoning
-           that we want precision+1 significant digits, since the decimal
-           point in this mode is always after the first digit. */
-        int pr = precision;
-        if (form == DFExponent)
-            ++pr;
+    if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
+        num_str = QString::fromLatin1(buf.data(), length);
+    } else { // Handle normal numbers
 
-        char *rve = 0;
-        char *buff = 0;
-        QT_TRY {
-            digits = QLatin1String(qdtoa(d, mode, pr, &decpt, &sign, &rve, &buff));
-        } QT_CATCH(...) {
-            if (buff != 0)
-                free(buff);
-            QT_RETHROW;
-        }
-        if (buff != 0)
-            free(buff);
+        // Chop trailing zeros
+        int last_nonzero_idx = length - 1;
+        while (last_nonzero_idx > 0 && buf[last_nonzero_idx] == '0')
+             --last_nonzero_idx;
+        QString digits = QString::fromLatin1(buf.data(), last_nonzero_idx + 1);
 
         if (_zero.unicode() != '0') {
             ushort z = _zero.unicode() - '0';
@@ -2831,23 +2810,22 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
             }
         }
 
-        negative = sign != 0 && !isZero(d);
-    }
+        if (isZero(d))
+            negative = false;
 
-    // pad with zeros. LeftAdjusted overrides this flag). Also, we don't
-    // pad special numbers
-    if (flags & QLocaleData::ZeroPadded
-            && !(flags & QLocaleData::LeftAdjusted)
-            && !special_number) {
-        int num_pad_chars = width - num_str.length();
-        // leave space for the sign
-        if (negative
-                || flags & QLocaleData::AlwaysShowSign
-                || flags & QLocaleData::BlankBeforePositive)
-            --num_pad_chars;
+        // pad with zeros. LeftAdjusted overrides this flag). Also, we don't
+        // pad special numbers
+        if (flags & QLocaleData::ZeroPadded && !(flags & QLocaleData::LeftAdjusted)) {
+            int num_pad_chars = width - num_str.length();
+            // leave space for the sign
+            if (negative
+                    || flags & QLocaleData::AlwaysShowSign
+                    || flags & QLocaleData::BlankBeforePositive)
+                --num_pad_chars;
 
-        for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(_zero);
+            for (int i = 0; i < num_pad_chars; ++i)
+                num_str.prepend(_zero);
+        }
     }
 
     // add sign
@@ -3243,7 +3221,12 @@ double QLocaleData::stringToDouble(const QChar *begin, int len, bool *ok,
             *ok = false;
         return 0.0;
     }
-    return bytearrayToDouble(buff.constData(), ok);
+    int processed = 0;
+    bool nonNullOk = false;
+    double d = asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
+    if (ok)
+        *ok = nonNullOk;
+    return d;
 }
 
 qlonglong QLocaleData::stringToLongLong(const QChar *begin, int len, int base,
@@ -3274,53 +3257,15 @@ qulonglong QLocaleData::stringToUnsLongLong(const QChar *begin, int len, int bas
 
 double QLocaleData::bytearrayToDouble(const char *num, bool *ok, bool *overflow)
 {
-    if (ok != 0)
-        *ok = true;
-    if (overflow != 0)
-        *overflow = false;
-
-    if (*num == '\0') {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-
-    if (qstrcmp(num, "nan") == 0)
-        return qt_snan();
-
-    if (qstrcmp(num, "+inf") == 0 || qstrcmp(num, "inf") == 0)
-        return qt_inf();
-
-    if (qstrcmp(num, "-inf") == 0)
-        return -qt_inf();
-
-    bool _ok;
-    const char *endptr;
-    double d = qstrtod(num, &endptr, &_ok);
-
-    if (!_ok) {
-        // the only way strtod can fail with *endptr != '\0' on a non-empty
-        // input string is overflow
-        if (ok != 0)
-            *ok = false;
-        if (overflow != 0)
-            *overflow = *endptr != '\0';
-        return 0.0;
-    }
-
-    if (*endptr != '\0') {
-        // we stopped at a non-digit character after converting some digits
-        if (ok != 0)
-            *ok = false;
-        if (overflow != 0)
-            *overflow = false;
-        return 0.0;
-    }
-
-    if (ok != 0)
-        *ok = true;
-    if (overflow != 0)
-        *overflow = false;
+    bool nonNullOk = false;
+    int len = static_cast<int>(strlen(num));
+    Q_ASSERT(len >= 0);
+    int processed = 0;
+    double d = asciiToDouble(num, len, nonNullOk, processed);
+    if (ok)
+        *ok = nonNullOk;
+    if (overflow)
+        *overflow = processed < len;
     return d;
 }
 
