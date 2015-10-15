@@ -893,45 +893,66 @@ inline void QTextStreamPrivate::putChar(QChar ch)
         write(ch);
 }
 
+
+/*!
+    \internal
+*/
+QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
+{
+    Q_ASSERT(params.fieldWidth > len); // calling padding() when no padding is needed is an error
+
+    // Do NOT break NRVO in this function or kittens will die!
+
+    PaddingResult result;
+
+    const int padSize = params.fieldWidth - len;
+
+    result.padding.resize(padSize);
+    std::fill_n(result.padding.begin(), padSize, params.padChar);
+
+    switch (params.fieldAlignment) {
+    case QTextStream::AlignLeft:
+        result.left  = 0;
+        result.right = padSize;
+        break;
+    case QTextStream::AlignRight:
+    case QTextStream::AlignAccountingStyle:
+        result.left  = padSize;
+        result.right = 0;
+        break;
+    case QTextStream::AlignCenter:
+        result.left  = padSize/2;
+        result.right = padSize - padSize/2;
+        break;
+    }
+
+    return result;
+}
+
 /*!
     \internal
 */
 void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
 {
-    int padSize = params.fieldWidth - len;
-    if (Q_UNLIKELY(padSize > 0)) {
-        // handle padding
-        static const int PreallocatedPadding = 80; // typical line length
-        QVarLengthArray<QChar, PreallocatedPadding> pad(padSize);
-        std::fill_n(pad.begin(), padSize, params.padChar);
+    if (Q_UNLIKELY(params.fieldWidth > len)) {
 
-        int padLeft = 0, padRight = 0;
+        // handle padding:
 
-        switch (params.fieldAlignment) {
-        case QTextStream::AlignLeft:
-            padRight = padSize;
-            break;
-        case QTextStream::AlignRight:
-        case QTextStream::AlignAccountingStyle:
-            padLeft = padSize;
-            if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-                const QChar sign = len > 0 ? data[0] : QChar();
-                if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
-                    // write the sign before the padding, then skip it later
-                    write(&sign, 1);
-                    ++data;
-                    --len;
-                }
+        const PaddingResult pad = padding(len);
+
+        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
+            const QChar sign = len > 0 ? data[0] : QChar();
+            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+                // write the sign before the padding, then skip it later
+                write(&sign, 1);
+                ++data;
+                --len;
             }
-            break;
-        case QTextStream::AlignCenter:
-            padLeft = padSize/2;
-            padRight = padSize - padSize/2;
-            break;
         }
-        write(pad.constData(), padLeft);
+
+        write(pad.padding.constData(), pad.left);
         write(data, len);
-        write(pad.constData(), padRight);
+        write(pad.padding.constData(), pad.right);
     } else {
         write(data, len);
     }

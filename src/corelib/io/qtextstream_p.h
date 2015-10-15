@@ -173,6 +173,14 @@ public:
     inline void putChar(QChar ch);
     void putNumber(qulonglong number, bool negative);
 
+    struct PaddingResult {
+        enum { PreallocatedPadding = 80 }; // typical line length
+
+        int right, left;
+        QVarLengthArray<QChar, PreallocatedPadding> padding;
+    };
+    PaddingResult padding(int len) const;
+
     // buffers
     bool fillReadBuffer(qint64 maxBytes = -1);
     void resetReadBuffer();
