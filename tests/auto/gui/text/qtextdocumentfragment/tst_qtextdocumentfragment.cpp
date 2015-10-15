@@ -1177,9 +1177,11 @@ void tst_QTextDocumentFragment::copySubTable()
         fmt.setColumnWidthConstraints(constraints);
 
         QTextTable *table = cursor.insertTable(4, 4, fmt);
-        for (int row = 0; row < 4; ++row)
+        for (int row = 0; row < 4; ++row) {
+            const QString rowS = QString::number(row) + QLatin1Char('/');
             for (int col = 0; col < 4; ++col)
-                table->cellAt(row, col).firstCursorPosition().insertText(QString("%1/%2").arg(row).arg(col));
+                table->cellAt(row, col).firstCursorPosition().insertText(rowS + QString::number(col));
+        }
 
         QCOMPARE(table->format().columnWidthConstraints().count(), table->columns());
 

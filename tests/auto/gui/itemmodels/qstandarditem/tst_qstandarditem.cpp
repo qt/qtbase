@@ -140,7 +140,8 @@ void tst_QStandardItem::getSetData()
     QStandardItem item;
     for (int x = 0; x < 2; ++x) {
         for (int i = 1; i <= 2; ++i) {
-            QString text = QString("text %0").arg(i);
+            const QString iS = QString::number(i);
+            QString text = QLatin1String("text ") + iS;
             item.setText(text);
             QCOMPARE(item.text(), text);
 
@@ -150,15 +151,15 @@ void tst_QStandardItem::getSetData()
             item.setIcon(icon);
             QCOMPARE(item.icon(), icon);
 
-            QString toolTip = QString("toolTip %0").arg(i);
+            QString toolTip = QLatin1String("toolTip ") + iS;
             item.setToolTip(toolTip);
             QCOMPARE(item.toolTip(), toolTip);
 
-            QString statusTip = QString("statusTip %0").arg(i);
+            QString statusTip = QLatin1String("statusTip ") + iS;
             item.setStatusTip(statusTip);
             QCOMPARE(item.statusTip(), statusTip);
 
-            QString whatsThis = QString("whatsThis %0").arg(i);
+            QString whatsThis = QLatin1String("whatsThis ") + iS;
             item.setWhatsThis(whatsThis);
             QCOMPARE(item.whatsThis(), whatsThis);
 
@@ -188,11 +189,11 @@ void tst_QStandardItem::getSetData()
             item.setCheckState(checkState);
             QCOMPARE(item.checkState(), checkState);
 
-            QString accessibleText = QString("accessibleText %0").arg(i);
+            QString accessibleText = QLatin1String("accessibleText ") + iS;
             item.setAccessibleText(accessibleText);
             QCOMPARE(item.accessibleText(), accessibleText);
 
-            QString accessibleDescription = QString("accessibleDescription %0").arg(i);
+            QString accessibleDescription = QLatin1String("accessibleDescription ") + iS;
             item.setAccessibleDescription(accessibleDescription);
             QCOMPARE(item.accessibleDescription(), accessibleDescription);
 

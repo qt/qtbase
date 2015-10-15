@@ -916,21 +916,37 @@ void tst_QCssParser::marginValue_data()
     int ex = QFontMetrics(f).xHeight();
     int em = QFontMetrics(f).height();
 
+    const QString ex1234 = QString::number(ex) + QLatin1Char(' ') + QString::number(2 * ex)
+        + QLatin1Char(' ') + QString::number(3 * ex) + QLatin1Char(' ')
+        + QString::number(4 * ex);
+    const QString em2ex4 = QLatin1String("1 ") + QString::number(2*em) + QLatin1String(" 3 ")
+        + QString::number(4 * ex);
+
     QTest::newRow("one value") << "margin: 1px" << "1 1 1 1";
     QTest::newRow("two values") << "margin: 1px 2px" << "1 2 1 2";
     QTest::newRow("three value") << "margin: 1px 2px 3px" << "1 2 3 2";
     QTest::newRow("four values") << "margin: 1px 2px 3px 4px" << "1 2 3 4";
     QTest::newRow("default px") << "margin: 1 2 3 4" << "1 2 3 4";
     QTest::newRow("no unit") << "margin: 1 2 3 4" << "1 2 3 4";
-    QTest::newRow("em") << "margin: 1ex 2ex 3ex 4ex" << QString("%1 %2 %3 %4").arg(ex).arg(2*ex).arg(3*ex).arg(4*ex);
-    QTest::newRow("ex") << "margin: 1 2em 3px 4ex" << QString("%1 %2 %3 %4").arg(1).arg(2*em).arg(3).arg(4*ex);
+    QTest::newRow("em") << "margin: 1ex 2ex 3ex 4ex"
+        << (QString::number(ex) + QLatin1Char(' ') + QString::number(2 * ex)
+            + QLatin1Char(' ') + QString::number(3 * ex) + QLatin1Char(' ')
+            + QString::number(4 * ex));
+    QTest::newRow("ex") << "margin: 1 2em 3px 4ex"
+        << (QLatin1String("1 ") + QString::number(2 * em) + QLatin1String(" 3 ")
+           + QString::number(4 * ex));
 
     f.setPointSize(20);
     f.setBold(true);
     ex = QFontMetrics(f).xHeight();
     em = QFontMetrics(f).height();
-    QTest::newRow("em2") << "font: bold 20pt; margin: 1ex 2ex 3ex 4ex" << QString("%1 %2 %3 %4").arg(ex).arg(2*ex).arg(3*ex).arg(4*ex);
-    QTest::newRow("ex2") << "margin: 1 2em 3px 4ex; font-size: 20pt; font-weight: bold;" << QString("%1 %2 %3 %4").arg(1).arg(2*em).arg(3).arg(4*ex);
+    QTest::newRow("em2") << "font: bold 20pt; margin: 1ex 2ex 3ex 4ex"
+        << (QString::number(ex) + QLatin1Char(' ') + QString::number(2 * ex)
+            + QLatin1Char(' ') + QString::number(3 * ex) + QLatin1Char(' ')
+            + QString::number(4 * ex));
+    QTest::newRow("ex2") << "margin: 1 2em 3px 4ex; font-size: 20pt; font-weight: bold;"
+        << (QLatin1String("1 ") + QString::number(2 * em) + QLatin1String(" 3 ")
+            + QString::number(4 * ex));
 
     QTest::newRow("crap") << "margin: crap" << "0 0 0 0";
 }
@@ -963,7 +979,8 @@ void tst_QCssParser::marginValue()
     int p[4];
     int spacing;
     v.extractBox(m, p, &spacing);
-    QString str = QString("%1 %2 %3 %4").arg(m[0]).arg(m[1]).arg(m[2]).arg(m[3]);
+    QString str = QString::number(m[0]) + QLatin1Char(' ') + QString::number(m[1])
+        + QLatin1Char(' ') + QString::number(m[2]) + QLatin1Char(' ') + QString::number(m[3]);
     QCOMPARE(str, expectedMargin);
     }
 }
@@ -1090,7 +1107,7 @@ void tst_QCssParser::styleSelector()
     QFETCH(QString, xml);
     QFETCH(QString, elementToCheck);
 
-    QString css = QString("%1 { background-color: green }").arg(selector);
+    const QString css = selector + QLatin1String(" { background-color: green }");
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
     QVERIFY(parser.parse(&sheet));
@@ -1154,7 +1171,7 @@ void tst_QCssParser::specificity()
 {
     QFETCH(QString, selector);
 
-    QString css = QString("%1 { }").arg(selector);
+    QString css = selector + QLatin1String(" { }");
     QCss::Parser parser(css);
     QCss::StyleSheet sheet;
     QVERIFY(parser.parse(&sheet));

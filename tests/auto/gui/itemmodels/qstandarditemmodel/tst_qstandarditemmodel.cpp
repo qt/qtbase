@@ -300,7 +300,7 @@ void tst_QStandardItemModel::insertRowsItems()
     QStandardItemModel *m = qobject_cast<QStandardItemModel*>(m_model);
     QStandardItem *hiddenRoot = m->invisibleRootItem();
     for (int i = 0; i < 3; ++i)
-        items.append(new QStandardItem(QString("%1").arg(i + 10)));
+        items.append(new QStandardItem(QString::number(i + 10)));
     hiddenRoot->appendRows(items);
     QCOMPARE(m_model->rowCount(), rowCount + 3);
     QCOMPARE(m_model->index(rowCount + 0, 0).data().toInt(), 10);
@@ -874,7 +874,7 @@ void tst_QStandardItemModel::sort_data()
                                      << "zulu");
     QStringList list;
     for (int i=1000; i < 2000; ++i)
-        list.append(QString("Number: %1").arg(i));
+        list.append(QStringLiteral("Number: ") + QString::number(i));
     QTest::newRow("large set ascending") <<  static_cast<int>(Qt::AscendingOrder) << list << list;
 }
 
@@ -1336,7 +1336,7 @@ void tst_QStandardItemModel::useCase3()
     // create the tree structure first
     QStandardItem *childItem = 0;
     for (int i = 0; i < 100; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QStringLiteral("item ") + QString::number(i));
         if (childItem)
             item->appendRow(childItem);
         childItem = item;
@@ -1466,6 +1466,38 @@ struct FriendlyTreeView : public QTreeView
 #endif
 
 #ifdef QT_BUILD_INTERNAL
+
+static void populateDragAndDropModel(QStandardItemModel &model, int nRow, int nCol)
+{
+    const QString item = QStringLiteral("item ");
+    const QString dash = QStringLiteral(" - ");
+    for (int i = 0; i < nRow; ++i) {
+        const QString iS = QString::number(i);
+        QList<QStandardItem *> colItems1;
+        for (int c = 0 ; c < nCol; c ++)
+            colItems1 << new QStandardItem(item + iS + dash + QString::number(c));
+        model.appendRow(colItems1);
+
+        for (int j = 0; j < nRow; ++j) {
+            const QString jS = QString::number(j);
+            QList<QStandardItem *> colItems2;
+            for (int c = 0 ; c < nCol; c ++)
+                colItems2 << new QStandardItem(item + iS + QLatin1Char('/') + jS + dash + QString::number(c));
+            colItems1.at(0)->appendRow(colItems2);
+
+            for (int k = 0; k < nRow; ++k) {
+                QList<QStandardItem *> colItems3;
+                const QString kS = QString::number(k);
+                for (int c = 0 ; c < nCol; c ++)
+                    colItems3 << new QStandardItem(item + iS + QLatin1Char('/') + jS
+                                                   + QLatin1Char('/') + kS
+                                                   + dash + QString::number(c));
+                colItems2.at(0)->appendRow(colItems3);
+            }
+        }
+    }
+}
+
 void tst_QStandardItemModel::treeDragAndDrop()
 {
     const int nRow = 5;
@@ -1474,47 +1506,8 @@ void tst_QStandardItemModel::treeDragAndDrop()
     QStandardItemModel model;
     QStandardItemModel checkModel;
 
-    for (int i = 0; i < nRow; ++i) {
-        QList<QStandardItem *> colItems1;
-        for (int c = 0 ; c < nCol; c ++)
-            colItems1 << new QStandardItem(QString("item %1 - %0").arg(c).arg(i));
-        model.appendRow(colItems1);
-
-        for (int j = 0; j < nRow; ++j) {
-            QList<QStandardItem *> colItems2;
-            for (int c = 0 ; c < nCol; c ++)
-                colItems2 << new QStandardItem(QString("item %1/%2 - %0").arg(c).arg(i).arg(j));
-            colItems1.at(0)->appendRow(colItems2);
-
-            for (int k = 0; k < nRow; ++k) {
-                QList<QStandardItem *> colItems3;
-                for (int c = 0 ; c < nCol; c ++)
-                    colItems3 << new QStandardItem(QString("item %1/%2/%3 - %0").arg(c).arg(i).arg(j).arg(k));
-                colItems2.at(0)->appendRow(colItems3);
-            }
-        }
-    }
-
-    for (int i = 0; i < nRow; ++i) {
-        QList<QStandardItem *> colItems1;
-        for (int c = 0 ; c < nCol; c ++)
-            colItems1 << new QStandardItem(QString("item %1 - %0").arg(c).arg(i));
-        checkModel.appendRow(colItems1);
-
-        for (int j = 0; j < nRow; ++j) {
-            QList<QStandardItem *> colItems2;
-            for (int c = 0 ; c < nCol; c ++)
-                colItems2 << new QStandardItem(QString("item %1/%2 - %0").arg(c).arg(i).arg(j));
-            colItems1.at(0)->appendRow(colItems2);
-
-            for (int k = 0; k < nRow; ++k) {
-                QList<QStandardItem *> colItems3;
-                for (int c = 0 ; c < nCol; c ++)
-                    colItems3 << new QStandardItem(QString("item %1/%2/%3 - %0").arg(c).arg(i).arg(j).arg(k));
-                colItems2.at(0)->appendRow(colItems3);
-            }
-        }
-    }
+    populateDragAndDropModel(model, nRow, nCol);
+    populateDragAndDropModel(checkModel, nRow, nCol);
 
     QVERIFY(compareModels(&model, &checkModel));
 

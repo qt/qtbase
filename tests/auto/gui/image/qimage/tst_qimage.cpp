@@ -970,13 +970,17 @@ void tst_QImage::createAlphaMask_data()
     int alphas[] = { 0, 127, 255 };
 
     for (unsigned a1 = 0; a1 < sizeof(alphas) / sizeof(int); ++a1) {
+        const QByteArray a1B = QByteArray::number(alphas[a1]);
         for (unsigned a2 = 0; a2 < sizeof(alphas) / sizeof(int); ++a2) {
             if (a1 == a2)
                 continue;
+            const QByteArray a2B = QByteArray::number(alphas[a2]);
             for (int x=10; x<18; x+=3) {
+                const QByteArray xB = QByteArray::number(x);
                 for (int y=100; y<108; y+=3) {
-                    QTest::newRow(qPrintable(QString::fromLatin1("x=%1, y=%2, a1=%3, a2=%4").arg(x).arg(y).arg(alphas[a1]).arg(alphas[a2])))
-                        << x << y << alphas[a1] << alphas[a2];
+                    const QByteArray testName = "x=" + xB + ", y=" + QByteArray::number(y)
+                        + ", a1=" + a1B + ", a2=" + a2B;
+                    QTest::newRow(testName.constData()) << x << y << alphas[a1] << alphas[a2];
                 }
             }
         }
@@ -1073,34 +1077,34 @@ void tst_QImage::rotate_data()
     degrees << 0 << 90 << 180 << 270;
 
     foreach (int d, degrees) {
-        QString title = QString("%1 %2").arg(d);
-        QTest::newRow(qPrintable(title.arg("Format_RGB32")))
+        const QByteArray dB = QByteArray::number(d);
+        QTest::newRow((dB + " Format_RGB32").constData())
             << QImage::Format_RGB32 << d;
-        QTest::newRow(qPrintable(title.arg("Format_ARGB32")))
+        QTest::newRow((dB + " Format_ARGB32").constData())
             << QImage::Format_ARGB32 << d;
-        QTest::newRow(qPrintable(title.arg("Format_ARGB32_Premultiplied")))
+        QTest::newRow((dB + " Format_ARGB32_Premultiplied").constData())
             << QImage::Format_ARGB32_Premultiplied << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGB16")))
+        QTest::newRow((dB + " Format_RGB16").constData())
             << QImage::Format_RGB16 << d;
-        QTest::newRow(qPrintable(title.arg("Format_ARGB8565_Premultiplied")))
+        QTest::newRow((dB + " Format_ARGB8565_Premultiplied").constData())
             << QImage::Format_ARGB8565_Premultiplied << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGB666")))
+        QTest::newRow((dB + " Format_RGB666").constData())
             << QImage::Format_RGB666 << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGB555")))
+        QTest::newRow((dB + " Format_RGB555").constData())
             << QImage::Format_RGB555 << d;
-        QTest::newRow(qPrintable(title.arg("Format_ARGB8555_Premultiplied")))
+        QTest::newRow((dB + " Format_ARGB8555_Premultiplied").constData())
             << QImage::Format_ARGB8555_Premultiplied << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGB888")))
+        QTest::newRow((dB + " Format_RGB888").constData())
             << QImage::Format_RGB888 << d;
-        QTest::newRow(qPrintable(title.arg("Format_Indexed8")))
+        QTest::newRow((dB + " Format_Indexed8").constData())
             << QImage::Format_Indexed8 << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGBX8888")))
+        QTest::newRow((dB + " Format_RGBX8888").constData())
             << QImage::Format_RGBX8888 << d;
-        QTest::newRow(qPrintable(title.arg("Format_RGBA8888_Premultiplied")))
+        QTest::newRow((dB + " Format_RGBA8888_Premultiplied").constData())
             << QImage::Format_RGBA8888_Premultiplied << d;
-        QTest::newRow(qPrintable(title.arg("Format_Alpha8")))
+        QTest::newRow((dB + " Format_Alpha8").constData())
             << QImage::Format_Alpha8 << d;
-        QTest::newRow(qPrintable(title.arg("Format_Grayscale8")))
+        QTest::newRow((dB + " Format_Grayscale8").constData())
             << QImage::Format_Grayscale8 << d;
     }
 }
@@ -1624,9 +1628,11 @@ void tst_QImage::smoothScale2_data()
     int sizes[] = { 2, 3, 4, 6, 7, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128, 0 };
     QImage::Format formats[] = { QImage::Format_RGB32, QImage::Format_ARGB32_Premultiplied, QImage::Format_Invalid };
     for (int j = 0; formats[j] != QImage::Format_Invalid; ++j) {
-        QString formatstr = formats[j] == QImage::Format_RGB32 ? QStringLiteral("rgb32") : QStringLiteral("argb32pm");
+        QByteArray formatstr = formats[j] == QImage::Format_RGB32 ? QByteArrayLiteral("rgb32") : QByteArrayLiteral("argb32pm");
         for (int i = 0; sizes[i] != 0; ++i) {
-            QTest::newRow(QString("%1 %2x%2").arg(formatstr).arg(sizes[i]).toUtf8()) << (int)formats[j] << sizes[i];
+            const QByteArray sizeB = QByteArray::number(sizes[i]);
+            QTest::newRow((formatstr + ' ' + sizeB + 'x' + sizeB).constData())
+                << (int)formats[j] << sizes[i];
         }
     }
 }
@@ -2598,10 +2604,11 @@ void tst_QImage::genericRgbConversion_data()
     QTest::addColumn<QImage::Format>("dest_format");
 
     for (int i = QImage::Format_RGB32; i < QImage::Format_Alpha8; ++i) {
+        const QString formatI = formatToString(QImage::Format(i));
         for (int j = QImage::Format_RGB32; j < QImage::Format_Alpha8; ++j) {
             if (i == j)
                 continue;
-            QString test = QString::fromLatin1("%1 -> %2").arg(formatToString(QImage::Format(i))).arg(formatToString(QImage::Format(j)));
+            const QString test = formatI + QLatin1String(" -> ") + formatToString(QImage::Format(j));
             QTest::newRow(qPrintable(test)) << QImage::Format(i) << QImage::Format(j);
         }
     }

@@ -216,8 +216,8 @@ public:
 QString tst_QTextDocument::cssFontSizeString(const QFont &font)
 {
     return font.pointSize() >= 0
-            ? QStringLiteral("%1pt").arg(font.pointSizeF())
-            : QStringLiteral("%1px").arg(font.pixelSize());
+            ? QString::number(font.pointSizeF()) + QStringLiteral("pt")
+            : QString::number(font.pixelSize()) + QStringLiteral("px");
 }
 
 // Testing get/set functions
@@ -3082,7 +3082,7 @@ void tst_QTextDocument::baseUrl()
     document.setBaseUrl(base);
     QCOMPARE(document.baseUrl(), base);
 
-    document.setHtml(QString("<img src='%1'/>").arg(resource.toString()));
+    document.setHtml(QLatin1String("<img src='") + resource.toString() + QLatin1String("'/>"));
     document.resource(QTextDocument::ImageResource, resource);
     QCOMPARE(document.loadedResource(), loaded);
 }

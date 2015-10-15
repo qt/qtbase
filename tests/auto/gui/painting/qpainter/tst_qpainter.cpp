@@ -663,7 +663,7 @@ QColor tst_QPainter::baseColor( int k, int intensity )
 QImage tst_QPainter::getResImage( const QString &dir, const QString &addition, const QString &extension )
 {
     QImage res;
-    QString resFilename  = dir + QString( "/res_%1." ).arg( addition ) + extension;
+    QString resFilename  = dir + QLatin1String("/res_") + addition + QLatin1Char('.') + extension;
     if ( !res.load( resFilename ) ) {
         QWARN(QString("Could not load result data %s %1").arg(resFilename).toLatin1());
         return QImage();
@@ -674,14 +674,14 @@ QImage tst_QPainter::getResImage( const QString &dir, const QString &addition, c
 QBitmap tst_QPainter::getBitmap( const QString &dir, const QString &filename, bool mask )
 {
     QBitmap bm;
-    QString bmFilename = dir + QString( "/%1.xbm" ).arg( filename );
+    QString bmFilename = dir + QLatin1Char('/') + filename + QLatin1String(".xbm");
     if ( !bm.load( bmFilename ) ) {
         QWARN(QString("Could not load bitmap '%1'").arg(bmFilename).toLatin1());
         return QBitmap();
     }
     if ( mask ) {
         QBitmap mask;
-        QString maskFilename = dir + QString( "/%1-mask.xbm" ).arg( filename );
+        QString maskFilename = dir + QLatin1Char('/') + filename + QLatin1String("-mask.xbm");
         if (!mask.load(maskFilename)) {
             QWARN(QString("Could not load mask '%1'").arg(maskFilename).toLatin1());
             return QBitmap();
@@ -1521,10 +1521,11 @@ void tst_QPainter::drawEllipse_data()
     // ratio between width and hight is too large/small (task 114874). Those
     // ratios are therefore currently avoided.
     for (int w = 10; w < 128; w += 7) {
+        const QByteArray wB = QByteArray::number(w);
         for (int h = w/2; h < qMin(2*w, 128); h += 13) {
-            QString s = QString("%1x%2").arg(w).arg(h);
-            QTest::newRow(QString("%1 with pen").arg(s).toLatin1()) << QSize(w, h) << true;
-            QTest::newRow(QString("%1 no pen").arg(s).toLatin1()) << QSize(w, h) << false;
+            const QByteArray sB = wB + 'x' + QByteArray::number(h);
+            QTest::newRow((sB + " with pen").constData()) << QSize(w, h) << true;
+            QTest::newRow((sB + " no pen").constData()) << QSize(w, h) << false;
         }
     }
 }
@@ -1562,16 +1563,17 @@ void tst_QPainter::drawClippedEllipse_data()
     QTest::addColumn<QRect>("rect");
 
     for (int w = 20; w < 128; w += 7) {
+        const QByteArray wB = QByteArray::number(w);
         for (int h = w/2; h < qMin(2*w, 128); h += 13) {
-            QString s = QString("%1x%2").arg(w).arg(h);
-            QTest::newRow(QString("%1 top").arg(s).toLatin1()) << QRect(0, -h/2, w, h);
-            QTest::newRow(QString("%1 topright").arg(s).toLatin1()) << QRect(w/2, -h/2, w, h);
-            QTest::newRow(QString("%1 right").arg(s).toLatin1()) << QRect(w/2, 0, w, h);
-            QTest::newRow(QString("%1 bottomright").arg(s).toLatin1()) << QRect(w/2, h/2, w, h);
-            QTest::newRow(QString("%1 bottom").arg(s).toLatin1()) << QRect(0, h/2, w, h);
-            QTest::newRow(QString("%1 bottomleft").arg(s).toLatin1()) << QRect(-w/2, h/2, w, h);
-            QTest::newRow(QString("%1 left").arg(s).toLatin1()) << QRect(-w/2, 0, w, h);
-            QTest::newRow(QString("%1 topleft").arg(s).toLatin1()) << QRect(-w/2, -h/2, w, h);
+            const QByteArray sB = wB + 'x' + QByteArray::number(h);
+            QTest::newRow((sB + " top").constData()) << QRect(0, -h/2, w, h);
+            QTest::newRow((sB + " topright").constData()) << QRect(w/2, -h/2, w, h);
+            QTest::newRow((sB + " right").constData()) << QRect(w/2, 0, w, h);
+            QTest::newRow((sB + " bottomright").constData()) << QRect(w/2, h/2, w, h);
+            QTest::newRow((sB + " bottom").constData()) << QRect(0, h/2, w, h);
+            QTest::newRow((sB + " bottomleft").constData()) << QRect(-w/2, h/2, w, h);
+            QTest::newRow((sB + " left").constData()) << QRect(-w/2, 0, w, h);
+            QTest::newRow((sB + " topleft").constData()) << QRect(-w/2, -h/2, w, h);
         }
     }
 }
@@ -1678,13 +1680,14 @@ void tst_QPainter::fillData()
     QTest::addColumn<bool>("usePen");
 
     for (int w = 3; w < 50; w += 7) {
+        const QByteArray wB = QByteArray::number(w);
         for (int h = 3; h < 50; h += 11) {
             int x = w/2 + 5;
             int y = h/2 + 5;
-            QTest::newRow(QString("rect(%1, %2, %3, %4) with pen").arg(x).arg(y).arg(w).arg(h).toLatin1())
-                << QRect(x, y, w, h) << true;
-            QTest::newRow(QString("rect(%1, %2, %3, %4) no pen").arg(x).arg(y).arg(w).arg(h).toLatin1())
-                << QRect(x, y, w, h) << false;
+            const QByteArray rB = "rect(" + QByteArray::number(x) + ", " + QByteArray::number(y)
+                + ", " + QByteArray::number(w) + ", " + QByteArray::number(h) + ')';
+            QTest::newRow((rB + " with pen").constData()) << QRect(x, y, w, h) << true;
+            QTest::newRow((rB + " no pen").constData()) << QRect(x, y, w, h) << false;
         }
     }
 }
@@ -2167,21 +2170,23 @@ void tst_QPainter::clippedLines_data()
           << QLineF(15, 50, 66, 50);
 
     foreach (QLineF line, lines) {
-        QString desc = QString("line (%1, %2, %3, %4) %5").arg(line.x1())
-                       .arg(line.y1()).arg(line.x2()).arg(line.y2());
-        QTest::newRow(qPrintable(desc.arg(0))) << QSize(100, 100) << line
+        const QByteArray desc = "line (" + QByteArray::number(line.x1())
+            + ", " + QByteArray::number(line.y1()) + ", "
+            + QByteArray::number(line.x2()) + ", " + QByteArray::number(line.y2())
+            + ") ";
+        QTest::newRow((desc + '0').constData()) << QSize(100, 100) << line
                                    << QRect(15, 15, 49, 49)
                                    << QPen(Qt::black);
-        QTest::newRow(qPrintable(desc.arg(1))) << QSize(100, 100) << line
+        QTest::newRow((desc + '1').constData()) << QSize(100, 100) << line
                                    << QRect(15, 15, 50, 50)
                                    << QPen(Qt::black);
-        QTest::newRow(qPrintable(desc.arg(2))) << QSize(100, 100) << line
+        QTest::newRow((desc + '2').constData()) << QSize(100, 100) << line
                                    << QRect(15, 15, 51, 51)
                                    << QPen(Qt::black);
-        QTest::newRow(qPrintable(desc.arg(3))) << QSize(100, 100) << line
+        QTest::newRow((desc + '3').constData()) << QSize(100, 100) << line
                                    << QRect(15, 15, 51, 51)
                                    << QPen(Qt::NoPen);
-        QTest::newRow(qPrintable(desc.arg(4))) << QSize(100, 100) << line
+        QTest::newRow((desc + '4').constData()) << QSize(100, 100) << line
                                    << QRect(15, 15, 51, 51)
                                    << pen2;
     }

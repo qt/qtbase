@@ -445,7 +445,8 @@ void tst_QPixmap::scroll()
     else
         QVERIFY(pixmap.cacheKey() != oldKey);
 
-    QString fileName = QString(":/images/%1.png").arg(QTest::currentDataTag());
+    const QString fileName = QLatin1String(":/images/") + QLatin1String(QTest::currentDataTag())
+        + QLatin1String(".png");
     QPixmap output(fileName);
     QCOMPARE(input.isNull(), output.isNull());
     QVERIFY(lenientCompare(pixmap, output));
@@ -458,7 +459,7 @@ void tst_QPixmap::fill_data()
     QTest::addColumn<bool>("syscolor");
     QTest::addColumn<bool>("bitmap");
     for (int color = Qt::black; color < Qt::darkYellow; ++color)
-        QTest::newRow(QString("syscolor_%1").arg(color).toLatin1())
+        QTest::newRow(("syscolor_" + QByteArray::number(color)).constData())
             << uint(color) << true << false;
 
 #if defined (Q_OS_WINCE)
@@ -1000,7 +1001,9 @@ void tst_QPixmap::toWinHICON()
     HBITMAP bitmap = qt_pixmapToWinHBITMAP(empty, Alpha);
     SelectObject(bitmap_dc, bitmap);
 
-    QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
+    const QString fileName = image + QLatin1Char('_') + QString::number(width) + QLatin1Char('x')
+        + QString::number(height) + QLatin1String(".png");
+    QImage imageFromFile(fileName);
     imageFromFile = imageFromFile.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     HICON icon = qt_pixmapToWinHICON(QPixmap::fromImage(imageFromFile));
@@ -1036,7 +1039,9 @@ void tst_QPixmap::fromWinHICON()
     QImage imageFromHICON = qt_pixmapFromWinHICON(icon).toImage();
     DestroyIcon(icon);
 
-    QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
+    const QString fileName = image + QLatin1Char('_') + QString::number(width) + QLatin1Char('x')
+        + QString::number(height) + QLatin1String(".png");
+    QImage imageFromFile(fileName);
     imageFromFile = imageFromFile.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     // fuzzy comparison must be used, as the pixel values change slightly during conversion

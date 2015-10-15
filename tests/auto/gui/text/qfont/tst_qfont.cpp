@@ -679,7 +679,7 @@ static inline QByteArray msgNotAcceptableFont(const QString &defaultFamily, cons
 {
     QString res = QString::fromLatin1("Font family '%1' is not one of the following acceptable results: ").arg(defaultFamily);
     Q_FOREACH (const QString &family, acceptableFamilies)
-        res += QString::fromLatin1("\n %1").arg(family);
+        res += QLatin1String("\n ") + family;
     return res.toLocal8Bit();
 }
 

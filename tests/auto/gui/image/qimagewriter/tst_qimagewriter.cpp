@@ -271,8 +271,8 @@ void tst_QImageWriter::writeImage2_data()
         QImage image = image0.convertToFormat(imgFormat);
         initializePadding(&image);
         foreach (const QString format, formats) {
-            const QString fileName = QString("solidcolor_%1.%2").arg(imgFormat)
-                                     .arg(format);
+            const QString fileName = QLatin1String("solidcolor_")
+                + QString::number(imgFormat) + QLatin1Char('.') + format;
             QTest::newRow(fileName.toLatin1()) << fileName
                                                << format.toLatin1()
                                                << image;

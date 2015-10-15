@@ -135,7 +135,7 @@ void tst_QTextOdfWriter::testWriteParagraph_data()
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">foobar <text:s text:c=\"2\"/>word<text:tab/>tab x</text:span></text:p>";
     QTest::newRow("misc2") << "\t     \tFoo" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\"><text:tab/> <text:s text:c=\"4\"/><text:tab/>Foo</text:span></text:p>";
-    QTest::newRow("linefeed") << QString("line1%1line2").arg(QChar(0x2028)) <<
+    QTest::newRow("linefeed") << (QStringLiteral("line1") + QChar(0x2028) + QStringLiteral("line2")) <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">line1<text:line-break/>line2</text:span></text:p>";
     QTest::newRow("spaces") << "The quick brown fox jumped over the lazy dog" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">The quick brown fox jumped over the lazy dog</text:span></text:p>";
