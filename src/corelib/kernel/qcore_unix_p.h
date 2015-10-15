@@ -66,6 +66,28 @@
 #  include <ioLib.h>
 #endif
 
+#ifndef QT_NO_NATIVE_POLL
+# include <poll.h>
+#else
+struct pollfd {
+   int   fd;
+   short events, revents;
+};
+
+typedef unsigned long int nfds_t;
+
+# define POLLIN      0x001
+# define POLLPRI     0x002
+# define POLLOUT     0x004
+# define POLLERR     0x008
+# define POLLHUP     0x010
+# define POLLNVAL    0x020
+# define POLLRDNORM  0x040
+# define POLLRDBAND  0x080
+# define POLLWRNORM  0x100
+# define POLLWRBAND  0x200
+#endif
+
 struct sockaddr;
 
 #define EINTR_LOOP(var, cmd)                    \
@@ -302,6 +324,8 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 // in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
 timespec qt_gettime() Q_DECL_NOTHROW;
 void qt_nanosleep(timespec amount);
+
+Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
 
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timespec *tv);

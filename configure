@@ -745,6 +745,7 @@ CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
 CFG_EVENTFD=auto
 CFG_CLOEXEC=no
+CFG_POLL=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_USE_GOLD_LINKER=auto
@@ -6135,6 +6136,16 @@ if compileTest unix/cloexec "cloexec"; then
     CFG_CLOEXEC=yes
 fi
 
+if compileTest unix/ppoll "ppoll"; then
+    CFG_POLL="ppoll"
+elif compileTest unix/pollts "pollts"; then
+    CFG_POLL="pollts"
+elif compileTest unix/poll "poll"; then
+    CFG_POLL="poll"
+else
+    CFG_POLL="select"
+fi
+
 if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_SECURETRANSPORT" != "no" ] && ([ "$CFG_OPENSSL" = "no" ] || [ "$CFG_OPENSSL" = "auto" ]); then
     CFG_SECURETRANSPORT=yes
     CFG_OPENSSL=no
@@ -6444,6 +6455,10 @@ fi
 if [ "$CFG_CLOEXEC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG threadsafe-cloexec"
 fi
+if [ "$CFG_POLL" = "select" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NATIVE_POLL"
+fi
+QT_CONFIG="$QT_CONFIG poll_$CFG_POLL"
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
 elif [ "$CFG_LIBJPEG" = "system" ]; then

@@ -143,6 +143,10 @@ unix|integrity {
             kernel/qeventdispatcher_unix_p.h \
             kernel/qtimerinfo_unix_p.h
 
+    contains(QT_CONFIG, poll_poll): DEFINES += QT_HAVE_POLL
+    contains(QT_CONFIG, poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
+    contains(QT_CONFIG, poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
+
     contains(QT_CONFIG, glib) {
         SOURCES += \
             kernel/qeventdispatcher_glib.cpp
