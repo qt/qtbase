@@ -847,6 +847,21 @@ inline void QTextStreamPrivate::write(QChar ch)
 /*!
     \internal
 */
+void QTextStreamPrivate::write(QLatin1String data)
+{
+    if (string) {
+        // ### What about seek()??
+        string->append(data);
+    } else {
+        writeBuffer += data;
+        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
+            flushWriteBuffer();
+    }
+}
+
+/*!
+    \internal
+*/
 inline bool QTextStreamPrivate::getChar(QChar *ch)
 {
     if ((string && stringOffset == string->size())
@@ -955,6 +970,34 @@ void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
         write(pad.padding.constData(), pad.right);
     } else {
         write(data, len);
+    }
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QLatin1String data, bool number)
+{
+    if (Q_UNLIKELY(params.fieldWidth > data.size())) {
+
+        // handle padding
+
+        const PaddingResult pad = padding(data.size());
+
+        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
+            const QChar sign = data.size() > 0 ? QLatin1Char(*data.data()) : QChar();
+            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+                // write the sign before the padding, then skip it later
+                write(&sign, 1);
+                data = QLatin1String(data.data() + 1, data.size() - 1);
+            }
+        }
+
+        write(pad.padding.constData(), pad.left);
+        write(data);
+        write(pad.padding.constData(), pad.right);
+    } else {
+        write(data);
     }
 }
 
@@ -2529,14 +2572,13 @@ QTextStream &QTextStream::operator<<(const QString &string)
     \overload
 
     Writes \a string to the stream, and returns a reference to the
-    QTextStream. The contents of \a string are converted with the
-    QString constructor that takes a QLatin1String as argument.
+    QTextStream.
 */
 QTextStream &QTextStream::operator<<(QLatin1String string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString(string));
+    d->putString(string);
     return *this;
 }
 
