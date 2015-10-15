@@ -670,7 +670,7 @@ bool QIODevice::seek(qint64 pos)
         // operation will then refill the buffer. We can optimize this, if we
         // find that seeking backwards becomes a significant performance hit.
         d->buffer.clear();
-    else if (!d->buffer.isEmpty())
+    else
         d->buffer.skip(offset);
 
 #if defined QIODEVICE_DEBUG
