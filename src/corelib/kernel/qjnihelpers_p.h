@@ -76,6 +76,20 @@ namespace QtAndroidPrivate
         virtual void handleResume() {};
     };
 
+    class Q_CORE_EXPORT GenericMotionEventListener
+    {
+    public:
+        virtual ~GenericMotionEventListener() {}
+        virtual bool handleGenericMotionEvent(jobject event) = 0;
+    };
+
+    class Q_CORE_EXPORT KeyEventListener
+    {
+    public:
+        virtual ~KeyEventListener() {}
+        virtual bool handleKeyEvent(jobject event) = 0;
+    };
+
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
@@ -95,6 +109,12 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void handleResume();
     Q_CORE_EXPORT void registerResumePauseListener(ResumePauseListener *listener);
     Q_CORE_EXPORT void unregisterResumePauseListener(ResumePauseListener *listener);
+
+    Q_CORE_EXPORT void registerGenericMotionEventListener(GenericMotionEventListener *listener);
+    Q_CORE_EXPORT void unregisterGenericMotionEventListener(GenericMotionEventListener *listener);
+
+    Q_CORE_EXPORT void registerKeyEventListener(KeyEventListener *listener);
+    Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
 }
 
 QT_END_NAMESPACE

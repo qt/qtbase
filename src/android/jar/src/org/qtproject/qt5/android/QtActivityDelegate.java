@@ -59,6 +59,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -89,6 +90,7 @@ public class QtActivityDelegate
     private Method m_super_onKeyUp = null;
     private Method m_super_onConfigurationChanged = null;
     private Method m_super_onActivityResult = null;
+    private Method m_super_dispatchGenericMotionEvent = null;
 
     private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
@@ -475,6 +477,13 @@ public class QtActivityDelegate
             m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
             m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
             m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+            if (Build.VERSION.SDK_INT >= 12) {
+                try {
+                    m_super_dispatchGenericMotionEvent = m_activity.getClass().getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
+                } catch (Exception e) {
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -1043,6 +1052,9 @@ public class QtActivityDelegate
             QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
         }
 
+        if (QtNative.dispatchKeyEvent(event))
+            return true;
+
         try {
             return (Boolean) m_super_dispatchKeyEvent.invoke(m_activity, event);
         } catch (Exception e) {
@@ -1310,5 +1322,18 @@ public class QtActivityDelegate
             final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
+    }
+
+    public boolean dispatchGenericMotionEvent (MotionEvent ev)
+    {
+        if (m_started && QtNative.dispatchGenericMotionEvent(ev))
+            return true;
+
+        try {
+            return (Boolean) m_super_dispatchGenericMotionEvent.invoke(m_activity, ev);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

@@ -34,6 +34,7 @@
 #include "qjnihelpers_p.h"
 #include "qmutex.h"
 #include "qlist.h"
+#include "qvector.h"
 #include <QtCore/qrunnable.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,6 +55,40 @@ static void onAndroidUiThread(JNIEnv *, jclass, jlong thiz)
     runnable->run();
     if (runnable->autoDelete())
         delete runnable;
+}
+
+namespace {
+    struct GenericMotionEventListeners {
+        QMutex mutex;
+        QVector<QtAndroidPrivate::GenericMotionEventListener *> listeners;
+    };
+}
+Q_GLOBAL_STATIC(GenericMotionEventListeners, g_genericMotionEventListeners)
+
+static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
+{
+    jboolean ret = JNI_FALSE;
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    foreach (auto listener, g_genericMotionEventListeners()->listeners)
+        ret |= listener->handleGenericMotionEvent(event);
+    return ret;
+}
+
+namespace {
+    struct KeyEventListeners {
+        QMutex mutex;
+        QVector<QtAndroidPrivate::KeyEventListener *> listeners;
+    };
+}
+Q_GLOBAL_STATIC(KeyEventListeners, g_keyEventListeners)
+
+static jboolean dispatchKeyEvent(JNIEnv *, jclass, jobject event)
+{
+    jboolean ret = JNI_FALSE;
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    foreach (auto listener, g_keyEventListeners()->listeners)
+        ret |= listener->handleKeyEvent(event);
+    return ret;
 }
 
 namespace {
@@ -227,7 +262,9 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     g_javaVM = vm;
 
     static const JNINativeMethod methods[] = {
-        {"onAndroidUiThread", "(J)V", reinterpret_cast<void *>(onAndroidUiThread)}
+        {"onAndroidUiThread", "(J)V", reinterpret_cast<void *>(onAndroidUiThread)},
+        {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
+        {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
     };
 
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
@@ -272,6 +309,30 @@ void QtAndroidPrivate::runOnUiThread(QRunnable *runnable, JNIEnv *env)
     env->CallStaticVoidMethod(g_jNativeClass, g_runQtOnUiThreadMethodID, reinterpret_cast<jlong>(runnable));
     if (exceptionCheck(env) && runnable != 0 && runnable->autoDelete())
         delete runnable;
+}
+
+void QtAndroidPrivate::registerGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)
+{
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    g_genericMotionEventListeners()->listeners.push_back(listener);
+}
+
+void QtAndroidPrivate::unregisterGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)
+{
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    g_genericMotionEventListeners()->listeners.removeOne(listener);
+}
+
+void QtAndroidPrivate::registerKeyEventListener(QtAndroidPrivate::KeyEventListener *listener)
+{
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    g_keyEventListeners()->listeners.push_back(listener);
+}
+
+void QtAndroidPrivate::unregisterKeyEventListener(QtAndroidPrivate::KeyEventListener *listener)
+{
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    g_keyEventListeners()->listeners.removeOne(listener);
 }
 
 QT_END_NAMESPACE

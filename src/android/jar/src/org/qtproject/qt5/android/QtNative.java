@@ -48,6 +48,7 @@ import android.text.ClipboardManager;
 import android.os.Build;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
@@ -632,6 +633,11 @@ public class QtNative
     public static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
     public static native void keyboardVisibilityChanged(boolean visibility);
     // keyboard methods
+
+    // dispatch events methods
+    public static native boolean dispatchGenericMotionEvent(MotionEvent ev);
+    public static native boolean dispatchKeyEvent(KeyEvent event);
+    // dispatch events methods
 
     // surface methods
     public static native void setSurface(int id, Object surface, int w, int h);
