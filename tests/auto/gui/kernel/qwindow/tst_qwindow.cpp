@@ -58,6 +58,7 @@ class tst_QWindow: public QObject
     Q_OBJECT
 
 private slots:
+    void create();
     void eventOrderOnShow();
     void resizeEventAfterResize();
     void mapGlobal();
@@ -122,6 +123,36 @@ void tst_QWindow::initTestCase()
 void tst_QWindow::cleanup()
 {
     QVERIFY(QGuiApplication::allWindows().isEmpty());
+}
+
+void tst_QWindow::create()
+{
+    QWindow a;
+    QVERIFY2(!a.handle(), "QWindow should lazy init the platform window");
+
+    a.create();
+    QVERIFY2(a.handle(), "Explicitly creating a platform window should never fail");
+
+    QWindow b;
+    QWindow c(&b);
+    b.create();
+    QVERIFY(b.handle());
+    QVERIFY2(!c.handle(), "Creating a parent window should not automatically create children");
+
+    QWindow d;
+    QWindow e(&d);
+    e.create();
+    QVERIFY(e.handle());
+    QVERIFY2(d.handle(), "Creating a child window should automatically create parents");
+
+    QWindow f;
+    QWindow g(&f);
+    f.create();
+    QVERIFY(f.handle());
+    QPlatformWindow *platformWindow = f.handle();
+    g.create();
+    QVERIFY(g.handle());
+    QVERIFY2(f.handle() == platformWindow, "Creating a child window should not affect parent if already created");
 }
 
 void tst_QWindow::mapGlobal()

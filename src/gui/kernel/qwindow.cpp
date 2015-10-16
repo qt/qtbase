@@ -392,6 +392,9 @@ void QWindowPrivate::create(bool recursive)
     if (platformWindow)
         return;
 
+    if (q->parent())
+        q->parent()->create();
+
     platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
     Q_ASSERT(platformWindow);
 
