@@ -56,6 +56,12 @@
 #ifndef ABS_CNT
 #define ABS_CNT                 (ABS_MAX+1)
 #endif
+#ifndef ABS_MT_POSITION_X
+#define ABS_MT_POSITION_X       0x35
+#endif
+#ifndef ABS_MT_POSITION_Y
+#define ABS_MT_POSITION_Y       0x36
+#endif
 
 #define LONG_BITS (sizeof(long) * 8 )
 #define LONG_FIELD_SIZE(bits) ((bits / LONG_BITS) + 1)
@@ -113,67 +119,71 @@ QStringList QDeviceDiscoveryStatic::scanConnectedDevices()
 
 bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
 {
-    bool ret = false;
     int fd = QT_OPEN(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (!fd) {
         qWarning() << "Device discovery cannot open device" << device;
         return false;
     }
 
+    qCDebug(lcDD) << "doing static device discovery for " << device;
+
+    if ((m_types & Device_DRM) && device.contains(QString::fromLatin1(QT_DRM_DEVICE_PREFIX)))
+        return true;
+
+    long bitsAbs[LONG_FIELD_SIZE(ABS_CNT)];
     long bitsKey[LONG_FIELD_SIZE(KEY_CNT)];
-    if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(bitsKey)), bitsKey) >= 0 ) {
-        if (!ret && (m_types & Device_Keyboard)) {
-            if (testBit(KEY_Q, bitsKey)) {
-                qCDebug(lcDD) << "Found keyboard at" << device;
-                ret = true;
-            }
-        }
+    long bitsRel[LONG_FIELD_SIZE(REL_CNT)];
+    memset(bitsAbs, 0, sizeof(bitsAbs));
+    memset(bitsKey, 0, sizeof(bitsKey));
+    memset(bitsRel, 0, sizeof(bitsRel));
 
-        if (!ret && (m_types & Device_Mouse)) {
-            long bitsRel[LONG_FIELD_SIZE(REL_CNT)];
-            if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(bitsRel)), bitsRel) >= 0 ) {
-                if (testBit(REL_X, bitsRel) && testBit(REL_Y, bitsRel) && testBit(BTN_MOUSE, bitsKey)) {
-                    qCDebug(lcDD) << "Found mouse at" << device;
-                    ret = true;
-                }
-            }
-        }
+    ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(bitsAbs)), bitsAbs);
+    ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(bitsKey)), bitsKey);
+    ioctl(fd, EVIOCGBIT(EV_REL, sizeof(bitsRel)), bitsRel);
 
-        if (!ret && (m_types & (Device_Touchpad | Device_Touchscreen))) {
-            long bitsAbs[LONG_FIELD_SIZE(ABS_CNT)];
-            if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(bitsAbs)), bitsAbs) >= 0 ) {
-                if (testBit(ABS_X, bitsAbs) && testBit(ABS_Y, bitsAbs)) {
-                    if ((m_types & Device_Touchpad) && testBit(BTN_TOOL_FINGER, bitsKey)) {
-                        qCDebug(lcDD) << "Found touchpad at" << device;
-                        ret = true;
-                    } else if ((m_types & Device_Touchscreen) && testBit(BTN_TOUCH, bitsKey)) {
-                        qCDebug(lcDD) << "Found touchscreen at" << device;
-                        ret = true;
-                    } else if ((m_types & Device_Tablet) && (testBit(BTN_STYLUS, bitsKey) || testBit(BTN_TOOL_PEN, bitsKey))) {
-                        qCDebug(lcDD) << "Found tablet at" << device;
-                        ret = true;
-                    }
-                }
-            }
-        }
+    QT_CLOSE(fd);
 
-        if (!ret && (m_types & Device_Joystick)) {
-            long bitsAbs[LONG_FIELD_SIZE(ABS_CNT)];
-            if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(bitsAbs)), bitsAbs) >= 0 ) {
-                if ((m_types & Device_Joystick)
-                    && (testBit(BTN_A, bitsKey) || testBit(BTN_TRIGGER, bitsKey) || testBit(ABS_RX, bitsAbs))) {
-                    qCDebug(lcDD) << "Found joystick/gamepad at" << device;
-                    ret = true;
-                }
-            }
+    if ((m_types & Device_Keyboard)) {
+        if (testBit(KEY_Q, bitsKey)) {
+            qCDebug(lcDD) << "Found keyboard at" << device;
+            return true;
         }
     }
 
-    if (!ret && (m_types & Device_DRM) && device.contains(QString::fromLatin1(QT_DRM_DEVICE_PREFIX)))
-        ret = true;
+    if ((m_types & Device_Mouse)) {
+        if (testBit(REL_X, bitsRel) && testBit(REL_Y, bitsRel) && testBit(BTN_MOUSE, bitsKey)) {
+            qCDebug(lcDD) << "Found mouse at" << device;
+            return true;
+        }
+    }
 
-    QT_CLOSE(fd);
-    return ret;
+    if ((m_types & (Device_Touchpad | Device_Touchscreen))) {
+        if (testBit(ABS_X, bitsAbs) && testBit(ABS_Y, bitsAbs)) {
+            if ((m_types & Device_Touchpad) && testBit(BTN_TOOL_FINGER, bitsKey)) {
+                qCDebug(lcDD) << "Found touchpad at" << device;
+                return true;
+            } else if ((m_types & Device_Touchscreen) && testBit(BTN_TOUCH, bitsKey)) {
+                qCDebug(lcDD) << "Found touchscreen at" << device;
+                return true;
+            } else if ((m_types & Device_Tablet) && (testBit(BTN_STYLUS, bitsKey) || testBit(BTN_TOOL_PEN, bitsKey))) {
+                qCDebug(lcDD) << "Found tablet at" << device;
+                return true;
+            }
+        } else if (testBit(ABS_MT_POSITION_X, bitsAbs) &&
+                   testBit(ABS_MT_POSITION_Y, bitsAbs)) {
+            qCDebug(lcDD) << "Found new-style touchscreen at" << device;
+            return true;
+        }
+    }
+
+    if ((m_types & Device_Joystick)) {
+        if (testBit(BTN_A, bitsKey) || testBit(BTN_TRIGGER, bitsKey) || testBit(ABS_RX, bitsAbs)) {
+            qCDebug(lcDD) << "Found joystick/gamepad at" << device;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 QT_END_NAMESPACE
