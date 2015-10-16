@@ -900,6 +900,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     if (node->isQmlModule()) {
         logicalModuleName = node->logicalModuleName();
         logicalModuleVersion = node->logicalModuleVersion();
+        if (logicalModuleName.isEmpty()) {
+            logicalModuleName = node->name();
+        }
         if (!logicalModuleName.isEmpty()) {
             writer.writeAttribute("qml-module-name", logicalModuleName);
             if (node->isQmlModule())
