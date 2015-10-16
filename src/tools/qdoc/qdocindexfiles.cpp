@@ -315,15 +315,7 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
         bool readonly = false;
         if (attributes.value(QLatin1String("writable")) == QLatin1String("false"))
             readonly = true;
-        QmlPropertyNode* qpn = 0;
-        if (parent->isQmlType()) {
-            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
-            qpn = new QmlPropertyNode(qcn, name, type, attached);
-        }
-        else if (parent->isQmlPropertyGroup()) {
-            QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(parent);
-            qpn = new QmlPropertyNode(qpgn, name, type, attached);
-        }
+        QmlPropertyNode* qpn = new QmlPropertyNode(parent, name, type, attached);
         qpn->setReadOnly(readonly);
         node = qpn;
     }
@@ -335,15 +327,7 @@ void QDocIndexFiles::readIndexSection(QXmlStreamReader& reader,
         bool readonly = false;
         if (attributes.value(QLatin1String("writable")) == QLatin1String("false"))
             readonly = true;
-        QmlPropertyNode* qpn = 0;
-        if (parent->isJsType()) {
-            QmlTypeNode* qcn = static_cast<QmlTypeNode*>(parent);
-            qpn = new QmlPropertyNode(qcn, name, type, attached);
-        }
-        else if (parent->isJsPropertyGroup()) {
-            QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(parent);
-            qpn = new QmlPropertyNode(qpgn, name, type, attached);
-        }
+        QmlPropertyNode* qpn = new QmlPropertyNode(parent, name, type, attached);
         qpn->setGenus(Node::JS);
         qpn->setReadOnly(readonly);
         node = qpn;

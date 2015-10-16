@@ -4170,6 +4170,17 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
 #endif
     generateExtractionMark(node, MemberMark);
     generateKeywordAnchors(node);
+
+    QString qmlItemHeader("<div class=\"qmlproto\">\n"
+                          "<div class=\"table\"><table class=\"qmlname\">\n"
+                          "<tr valign=\"top\" class=\"odd\" id=\"%1\">\n"
+                          "<td class=\"%2\"><p>\n"
+                          "<a name=\"%3\"></a>");
+
+    QString qmlItemFooter("</p></td></tr>\n"
+                          "</table></div>\n"
+                          "</div>");
+
     out() << "<div class=\"qmlitem\">";
     QString nodeRef = refForNode(node);
     if (node->type() == Node::QmlPropertyGroup) {
@@ -4206,11 +4217,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
     }
     else if (node->type() == Node::QmlProperty) {
         qpn = static_cast<QmlPropertyNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<div class=\"table\"><table class=\"qmlname\">";
-        out() << "<tr valign=\"top\" class=\"odd\" id=\"" << nodeRef << "\">";
-        out() << "<td class=\"tblQmlPropNode\"><p>";
-        out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+        out() << qmlItemHeader.arg(nodeRef, "tblQmlPropNode", refForNode(qpn));
         if (!qpn->isReadOnlySet()) {
             if (qpn->declarativeCppNode())
                 qpn->setReadOnly(!qpn->isWritable());
@@ -4220,45 +4227,14 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
         if (qpn->isDefault())
             out() << "<span class=\"qmldefault\">default</span>";
         generateQmlItem(qpn, relative, marker, false);
-        out() << "</p></td></tr>";
-        out() << "</table></div>";
-        out() << "</div>";
+        out() << qmlItemFooter;
     }
-    else if (node->type() == Node::QmlSignal) {
-        const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<div class=\"table\"><table class=\"qmlname\">";
-        out() << "<tr valign=\"top\" class=\"odd\" id=\"" << nodeRef << "\">";
-        out() << "<td class=\"tblQmlFuncNode\"><p>";
-        out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
-        generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
-        out() << "</p></td></tr>";
-        out() << "</table></div>";
-        out() << "</div>";
-    }
-    else if (node->type() == Node::QmlSignalHandler) {
-        const FunctionNode* qshn = static_cast<const FunctionNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<div class=\"table\"><table class=\"qmlname\">";
-        out() << "<tr valign=\"top\" class=\"odd\" id=\"" << nodeRef << "\">";
-        out() << "<td class=\"tblQmlFuncNode\"><p>";
-        out() << "<a name=\"" + refForNode(qshn) + "\"></a>";
-        generateSynopsis(qshn,relative,marker,CodeMarker::Detailed,false);
-        out() << "</p></td></tr>";
-        out() << "</table></div>";
-        out() << "</div>";
-    }
-    else if (node->type() == Node::QmlMethod) {
-        const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<div class=\"table\"><table class=\"qmlname\">";
-        out() << "<tr valign=\"top\" class=\"odd\" id=\"" << nodeRef << "\">";
-        out() << "<td class=\"tblQmlFuncNode\"><p>";
-        out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
-        generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
-        out() << "</p></td></tr>";
-        out() << "</table></div>";
-        out() << "</div>";
+    else if (node->type() == Node::QmlSignal ||
+             node->type() == Node::QmlSignalHandler ||
+             node->type() == Node::QmlMethod) {
+        out() << qmlItemHeader.arg(nodeRef, "tblQmlFuncNode", refForNode(node));
+        generateSynopsis(node, relative, marker, CodeMarker::Detailed, false);
+        out() << qmlItemFooter;
     }
     out() << "<div class=\"qmldoc\">";
     generateStatus(node, marker);
