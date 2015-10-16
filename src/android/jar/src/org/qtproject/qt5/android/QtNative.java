@@ -55,6 +55,7 @@ import android.view.View;
 
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Iterator;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -62,6 +63,7 @@ import javax.net.ssl.X509TrustManager;
 public class QtNative
 {
     private static Activity m_activity = null;
+    private static boolean m_activityPaused = false;
     private static QtActivityDelegate m_activityDelegate = null;
     public static Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
 
@@ -166,14 +168,23 @@ public class QtNative
         }
     }
 
-    static public ArrayList<Runnable> getLostActions()
+    public static void setApplicationState(int state)
     {
-        return m_lostActions;
-    }
-
-    static public void clearLostActions()
-    {
-        m_lostActions.clear();
+        synchronized (m_mainActivityMutex) {
+            switch (state) {
+                case QtActivityDelegate.ApplicationActive:
+                    m_activityPaused = false;
+                    Iterator<Runnable> itr = m_lostActions.iterator();
+                    while (itr.hasNext())
+                        runAction(itr.next());
+                    m_lostActions.clear();
+                    break;
+                default:
+                    m_activityPaused = true;
+                    break;
+            }
+        }
+        updateApplicationState(state);
     }
 
     private static void runAction(Runnable action)
@@ -181,7 +192,7 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean actionIsQueued = m_activity != null && mainLooper != null && handler.post(action);
+            final boolean actionIsQueued = !m_activityPaused && m_activity != null && mainLooper != null && handler.post(action);
             if (!actionIsQueued)
                 m_lostActions.add(action);
         }

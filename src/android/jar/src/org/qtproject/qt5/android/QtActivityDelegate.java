@@ -77,7 +77,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class QtActivityDelegate
 {
@@ -211,10 +210,10 @@ public class QtActivityDelegate
     private final int EnterKeyPrevious = 7;
 
     // application state
-    private final int ApplicationSuspended = 0x0;
-    private final int ApplicationHidden = 0x1;
-    private final int ApplicationInactive = 0x2;
-    private final int ApplicationActive = 0x4;
+    public static final int ApplicationSuspended = 0x0;
+    public static final int ApplicationHidden = 0x1;
+    public static final int ApplicationInactive = 0x2;
+    public static final int ApplicationActive = 0x4;
 
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
@@ -902,24 +901,15 @@ public class QtActivityDelegate
 
     public void onPause()
     {
-        QtNative.updateApplicationState(ApplicationInactive);
+        QtNative.setApplicationState(ApplicationInactive);
     }
 
     public void onResume()
     {
-        // fire all lostActions
-        synchronized (QtNative.m_mainActivityMutex)
-        {
-            Iterator<Runnable> itr = QtNative.getLostActions().iterator();
-            while (itr.hasNext())
-                m_activity.runOnUiThread(itr.next());
-
-            QtNative.updateApplicationState(ApplicationActive);
-            if (m_started) {
-                QtNative.clearLostActions();
-                QtNative.updateWindow();
-                updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
-            }
+        QtNative.setApplicationState(ApplicationActive);
+        if (m_started) {
+            QtNative.updateWindow();
+            updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
         }
     }
 
@@ -942,7 +932,7 @@ public class QtActivityDelegate
 
     public void onStop()
     {
-        QtNative.updateApplicationState(ApplicationSuspended);
+        QtNative.setApplicationState(ApplicationSuspended);
     }
 
     public Object onRetainNonConfigurationInstance()
