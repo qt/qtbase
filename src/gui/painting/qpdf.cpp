@@ -377,8 +377,8 @@ QByteArray QPdf::generateDashes(const QPen &pen)
         s << dw;
     }
     s << ']';
-    //qDebug() << "dasharray: pen has" << dasharray;
-    //qDebug() << "  => " << result;
+    s << pen.dashOffset() * w;
+    s << " d\n";
     return result;
 }
 
@@ -1209,7 +1209,7 @@ void QPdfEngine::setPen()
     }
     *d->currentPage << pdfJoinStyle << "j ";
 
-    *d->currentPage << QPdf::generateDashes(d->pen) << " 0 d\n";
+    *d->currentPage << QPdf::generateDashes(d->pen);
 }
 
 
