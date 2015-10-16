@@ -406,13 +406,21 @@ void QWindowPrivate::create(bool recursive)
     QObjectList childObjects = q->children();
     for (int i = 0; i < childObjects.size(); i ++) {
         QObject *object = childObjects.at(i);
-        if (object->isWindowType()) {
-            QWindow *window = static_cast<QWindow *>(object);
-            if (recursive)
-                window->d_func()->create(true);
-            if (window->d_func()->platformWindow)
-                window->d_func()->platformWindow->setParent(platformWindow);
-        }
+        if (!object->isWindowType())
+            continue;
+
+        QWindow *childWindow = static_cast<QWindow *>(object);
+        if (recursive)
+            childWindow->d_func()->create(recursive);
+
+        // The child may have had deferred creation due to this window not being created
+        // at the time setVisible was called, so we re-apply the visible state, which
+        // may result in creating the child, and emitting the appropriate signals.
+        if (childWindow->isVisible())
+            childWindow->setVisible(true);
+
+        if (QPlatformWindow *childPlatformWindow = childWindow->d_func()->platformWindow)
+            childPlatformWindow->setParent(this->platformWindow);
     }
 
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
@@ -477,14 +485,23 @@ void QWindow::setVisible(bool visible)
 {
     Q_D(QWindow);
 
-    if (d->visible == visible)
+    if (d->visible != visible) {
+        d->visible = visible;
+        emit visibleChanged(visible);
+        d->updateVisibility();
+    } else if (d->platformWindow) {
+        // Visibility hasn't changed, and the platform window is in sync
         return;
-    d->visible = visible;
-    emit visibleChanged(visible);
-    d->updateVisibility();
+    }
 
-    if (!d->platformWindow)
-        create();
+    if (!d->platformWindow) {
+        // If we have a parent window, but the parent hasn't been created yet, we
+        // can defer creation until the parent is created or we're re-parented.
+        if (parent() && !parent()->handle())
+            return;
+        else
+            create();
+    }
 
     if (visible) {
         // remove posted quit events when showing a new window
@@ -523,6 +540,7 @@ void QWindow::setVisible(bool visible)
     if (visible && (d->hasCursor || QGuiApplication::overrideCursor()))
         d->applyCursor();
 #endif
+
     d->platformWindow->setVisible(visible);
 
     if (!visible) {
@@ -618,6 +636,12 @@ void QWindow::setParent(QWindow *parent)
         d->disconnectFromScreen();
     else
         d->connectToScreen(newScreen);
+
+    // If we were set visible, but not created because we were a child, and we're now
+    // re-parented into a created parent, or to being a top level, we need re-apply the
+    // visibility state, which will also create.
+    if (isVisible() && (!parent || parent->handle()))
+        setVisible(true);
 
     if (d->platformWindow) {
         if (parent)

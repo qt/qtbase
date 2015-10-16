@@ -60,6 +60,7 @@ class tst_QWindow: public QObject
 private slots:
     void create();
     void setParent();
+    void setVisible();
     void eventOrderOnShow();
     void resizeEventAfterResize();
     void mapGlobal();
@@ -184,6 +185,51 @@ void tst_QWindow::setParent()
     QVERIFY(g.handle());
     g.setParent(&f);
     QVERIFY2(f.handle(), "Making a created window a child of a non-created window should automatically create it");
+}
+
+void tst_QWindow::setVisible()
+{
+    QWindow a;
+    QWindow b(&a);
+    a.setVisible(true);
+    QVERIFY2(!b.handle(), "Making a top level window visible doesn't create its children");
+    QVERIFY2(!b.isVisible(), "Making a top level window visible doesn't make its children visible");
+    QVERIFY(QTest::qWaitForWindowExposed(&a));
+
+    QWindow c;
+    QWindow d(&c);
+    d.setVisible(true);
+    QVERIFY2(!c.handle(), "Making a child window visible doesn't create parent window if parent is hidden");
+    QVERIFY2(!c.isVisible(), "Making a child window visible doesn't make its parent visible");
+
+    QVERIFY2(!d.handle(), "Making a child window visible doesn't create platform window if parent is hidden");
+
+    c.create();
+    QVERIFY(c.handle());
+    QVERIFY2(d.handle(), "Creating a parent window should automatically create children if they are visible");
+    QVERIFY2(!c.isVisible(), "Creating a parent window should not make it visible just because it has visible children");
+
+    QWindow e;
+    QWindow f(&e);
+    f.setVisible(true);
+    QVERIFY(!f.handle());
+    QVERIFY(!e.handle());
+    f.setParent(0);
+    QVERIFY2(f.handle(), "Making a visible but not created child window top level should create it");
+    QVERIFY(QTest::qWaitForWindowExposed(&f));
+
+    QWindow g;
+    QWindow h;
+    QWindow i(&g);
+    i.setVisible(true);
+    h.setVisible(true);
+    QVERIFY(QTest::qWaitForWindowExposed(&h));
+    QVERIFY(!i.handle());
+    QVERIFY(!g.handle());
+    QVERIFY(h.handle());
+    i.setParent(&h);
+    QVERIFY2(i.handle(), "Making a visible but not created child window child of a created window should create it");
+    QVERIFY(QTest::qWaitForWindowExposed(&i));
 }
 
 void tst_QWindow::mapGlobal()
