@@ -67,6 +67,8 @@ private slots:
     void positioning_data();
     void positioning();
     void positioningDuringMinimized();
+    void childWindowPositioning_data();
+    void childWindowPositioning();
     void platformSurface();
     void isExposed();
     void isActive();
@@ -320,6 +322,19 @@ private:
     QPlatformSurfaceEvent::SurfaceEventType m_surfaceventType;
 };
 
+class ColoredWindow : public QRasterWindow {
+public:
+    explicit ColoredWindow(const QColor &color, QWindow *parent = 0) : QRasterWindow(parent), m_color(color) {}
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
+    {
+        QPainter p(this);
+        p.fillRect(QRect(QPoint(0, 0), size()), m_color);
+    }
+
+private:
+    const QColor m_color;
+};
+
 void tst_QWindow::eventOrderOnShow()
 {
     // Some platforms enforce minimum widths for windows, which can cause extra resize
@@ -500,6 +515,60 @@ void tst_QWindow::positioningDuringMinimized()
     QTRY_COMPARE(window.geometry(), newGeometry);
     window.setWindowState(Qt::WindowNoState);
     QTRY_COMPARE(window.geometry(), newGeometry);
+}
+
+void tst_QWindow::childWindowPositioning_data()
+{
+    QTest::addColumn<bool>("showInsteadOfCreate");
+
+    QTest::newRow("create") << false;
+    QTest::newRow("show") << true;
+}
+
+void tst_QWindow::childWindowPositioning()
+{
+    const QPoint topLeftOrigin(0, 0);
+
+    ColoredWindow topLevelWindowFirst(Qt::green);
+    topLevelWindowFirst.setObjectName("topLevelWindowFirst");
+    ColoredWindow childWindowAfter(Qt::yellow, &topLevelWindowFirst);
+    childWindowAfter.setObjectName("childWindowAfter");
+
+    topLevelWindowFirst.setFramePosition(m_availableTopLeft);
+    childWindowAfter.setFramePosition(topLeftOrigin);
+
+    ColoredWindow topLevelWindowAfter(Qt::green);
+    topLevelWindowAfter.setObjectName("topLevelWindowAfter");
+    ColoredWindow childWindowFirst(Qt::yellow, &topLevelWindowAfter);
+    childWindowFirst.setObjectName("childWindowFirst");
+
+    topLevelWindowAfter.setFramePosition(m_availableTopLeft);
+    childWindowFirst.setFramePosition(topLeftOrigin);
+
+    QFETCH(bool, showInsteadOfCreate);
+
+    QWindow* windows[] = { &topLevelWindowFirst, &childWindowAfter, &childWindowFirst, &topLevelWindowAfter, 0 };
+    for (int i = 0; windows[i]; ++i) {
+        QWindow *window = windows[i];
+        if (showInsteadOfCreate) {
+            window->showNormal();
+        } else {
+            window->create();
+        }
+    }
+
+    if (showInsteadOfCreate) {
+        QVERIFY(QTest::qWaitForWindowExposed(&topLevelWindowFirst));
+        QVERIFY(QTest::qWaitForWindowExposed(&topLevelWindowAfter));
+    }
+
+    // Creation order shouldn't affect the geometry
+    QCOMPARE(topLevelWindowFirst.geometry(), topLevelWindowAfter.geometry());
+    QCOMPARE(childWindowAfter.geometry(), childWindowFirst.geometry());
+
+    // Creation order shouldn't affect the child ending up at 0,0
+    QCOMPARE(childWindowFirst.framePosition(), topLeftOrigin);
+    QCOMPARE(childWindowAfter.framePosition(), topLeftOrigin);
 }
 
 class PlatformWindowFilter : public QObject
@@ -1772,19 +1841,6 @@ void tst_QWindow::modalWindowPosition()
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QCOMPARE(window.geometry(), origGeo);
 }
-
-class ColoredWindow : public QRasterWindow {
-public:
-    explicit ColoredWindow(const QColor &color, QWindow *parent = 0) : QRasterWindow(parent), m_color(color) {}
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
-    {
-        QPainter p(this);
-        p.fillRect(QRect(QPoint(0, 0), size()), m_color);
-    }
-
-private:
-    const QColor m_color;
-};
 
 static bool isNativeWindowVisible(const QWindow *window)
 {
