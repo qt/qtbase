@@ -622,14 +622,6 @@ void QXcbWindow::destroy()
         m_pendingSyncRequest->invalidate();
 }
 
-void QXcbWindow::maybeSetScreen(QXcbScreen *screen)
-{
-    if (!window()->screen() && screen->geometry().contains(geometry().topLeft())) {
-        QWindowSystemInterface::handleWindowScreenChanged(window(), static_cast<QPlatformScreen *>(screen)->screen());
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(0, 0), window()->size())));
-    }
-}
-
 void QXcbWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
@@ -845,15 +837,13 @@ void QXcbWindow::hide()
     Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
 
     // send synthetic UnmapNotify event according to icccm 4.1.4
-    if (xcbScreen()) {
-        xcb_unmap_notify_event_t event;
-        event.response_type = XCB_UNMAP_NOTIFY;
-        event.event = xcbScreen()->root();
-        event.window = m_window;
-        event.from_configure = false;
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
-                                  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
-    }
+    xcb_unmap_notify_event_t event;
+    event.response_type = XCB_UNMAP_NOTIFY;
+    event.event = xcbScreen()->root();
+    event.window = m_window;
+    event.from_configure = false;
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
+                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
 
     xcb_flush(xcb_connection());
 
@@ -1181,8 +1171,6 @@ void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
     event.data.data32[3] = 0;
     event.data.data32[4] = 0;
 
-    if (!xcbScreen())
-        return;
     Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, xcbScreen()->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
 }
 
@@ -1435,8 +1423,6 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
         xcb_parent_id = qXcbParent->xcb_window();
         m_embedded = qXcbParent->window()->type() == Qt::ForeignWindow;
     } else {
-        if (!xcbScreen())
-            return;
         xcb_parent_id = xcbScreen()->root();
         m_embedded = false;
     }
@@ -1992,7 +1978,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 {
     bool fromSendEvent = (event->response_type & 0x80);
     QPoint pos(event->x, event->y);
-    if (!parent() && !fromSendEvent && xcbScreen()) {
+    if (!parent() && !fromSendEvent) {
         // Do not trust the position, query it instead.
         xcb_translate_coordinates_cookie_t cookie = xcb_translate_coordinates(xcb_connection(), xcb_window(),
                                                                               xcbScreen()->root(), 0, 0);
@@ -2305,8 +2291,6 @@ void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
         return;
 
     const QPoint local(event->event_x, event->event_y);
-    if (!xcbScreen())
-        return;
     QPoint global = QPoint(event->root_x, event->root_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
@@ -2324,8 +2308,6 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
 
     if (enterWindow) {
         QPoint local(enter->event_x, enter->event_y);
-        if (!xcbScreen())
-            return;
         QPoint global = QPoint(event->root_x, event->root_y);
 
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
@@ -2341,8 +2323,6 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
     connection()->setTime(event->time);
 
     const bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
-    if (!xcbScreen())
-        return;
 
     if (event->atom == atom(QXcbAtom::_NET_WM_STATE) || event->atom == atom(QXcbAtom::WM_STATE)) {
         if (propertyDeleted)
@@ -2662,8 +2642,6 @@ bool QXcbWindow::needsSync() const
 
 void QXcbWindow::postSyncWindowRequest()
 {
-    if (!xcbScreen())
-        return;
     if (!m_pendingSyncRequest) {
         QXcbSyncWindowRequest *e = new QXcbSyncWindowRequest(this);
         m_pendingSyncRequest = e;

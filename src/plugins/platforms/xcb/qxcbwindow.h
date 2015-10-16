@@ -167,7 +167,6 @@ public:
 
     virtual void create();
     virtual void destroy();
-    void maybeSetScreen(QXcbScreen *screen);
     QXcbScreen *screenForNativeGeometry(const QRect &newGeometry) const;
 
 public Q_SLOTS:

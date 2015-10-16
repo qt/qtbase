@@ -518,15 +518,17 @@ private:
     void initializeXShape();
     void initializeXKB();
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* createScreen(QXcbVirtualDesktop *virtualDesktop,
-                             xcb_randr_output_t outputId = XCB_NONE,
-                             xcb_randr_get_output_info_reply_t *output = 0);
     QXcbScreen* findScreenForCrtc(xcb_window_t rootWindow, xcb_randr_crtc_t crtc);
     QXcbScreen* findScreenForOutput(xcb_window_t rootWindow, xcb_randr_output_t output);
     QXcbVirtualDesktop* virtualDesktopForRootWindow(xcb_window_t rootWindow);
-    bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
-    void initializeScreens();
     void updateScreens(const xcb_randr_notify_event_t *event);
+    bool checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output);
+    void updateScreen(QXcbScreen *screen, const xcb_randr_output_change_t &outputChange);
+    QXcbScreen *createScreen(QXcbVirtualDesktop *virtualDesktop,
+                             const xcb_randr_output_change_t &outputChange,
+                             xcb_randr_get_output_info_reply_t *outputInfo);
+    void destroyScreen(QXcbScreen *screen);
+    void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
 
     bool m_xi2Enabled;
