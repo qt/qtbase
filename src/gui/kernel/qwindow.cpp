@@ -612,20 +612,19 @@ void QWindow::setParent(QWindow *parent)
     }
 
     QObject::setParent(parent);
+    d->parentWindow = parent;
+
     if (parent)
         d->disconnectFromScreen();
     else
         d->connectToScreen(newScreen);
 
     if (d->platformWindow) {
-        if (parent && parent->d_func()->platformWindow) {
-            d->platformWindow->setParent(parent->d_func()->platformWindow);
-        } else {
-            d->platformWindow->setParent(0);
-        }
-    }
+        if (parent)
+            parent->create();
 
-    d->parentWindow = parent;
+        d->platformWindow->setParent(parent ? parent->d_func()->platformWindow : 0);
+    }
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
 }

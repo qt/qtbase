@@ -59,6 +59,7 @@ class tst_QWindow: public QObject
 
 private slots:
     void create();
+    void setParent();
     void eventOrderOnShow();
     void resizeEventAfterResize();
     void mapGlobal();
@@ -153,6 +154,36 @@ void tst_QWindow::create()
     g.create();
     QVERIFY(g.handle());
     QVERIFY2(f.handle() == platformWindow, "Creating a child window should not affect parent if already created");
+}
+
+void tst_QWindow::setParent()
+{
+    QWindow a;
+    QWindow b(&a);
+    QVERIFY2(b.parent() == &a, "Setting parent at construction time should work");
+    QVERIFY2(a.children().contains(&b), "Parent should have child in list of children");
+
+    QWindow c;
+    QWindow d;
+    d.setParent(&c);
+    QVERIFY2(d.parent() == &c, "Setting parent after construction should work");
+    QVERIFY2(c.children().contains(&d), "Parent should have child in list of children");
+
+    a.create();
+    b.setParent(0);
+    QVERIFY2(!b.handle(), "Making window top level shouild not automatically create it");
+
+    QWindow e;
+    c.create();
+    e.setParent(&c);
+    QVERIFY2(!e.handle(), "Making window a child of a created window should not automatically create it");
+
+    QWindow f;
+    QWindow g;
+    g.create();
+    QVERIFY(g.handle());
+    g.setParent(&f);
+    QVERIFY2(f.handle(), "Making a created window a child of a non-created window should automatically create it");
 }
 
 void tst_QWindow::mapGlobal()
