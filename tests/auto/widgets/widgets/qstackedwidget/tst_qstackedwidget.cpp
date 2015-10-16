@@ -149,7 +149,7 @@ private:
     void createWidgets() {
         for (int i = 0; i < m_n; ++i) {
             QLineEdit *le = new QLineEdit(this);
-            le->setObjectName(QString::fromLatin1("lineEdit%1").arg(i));
+            le->setObjectName(QLatin1String("lineEdit") + QString::number(i));
             layout ()->addWidget(le);
             m_les << le;
         }

@@ -338,9 +338,12 @@ public:
                 qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(),
                          idx.internalPointer());
             }
+            QString result = QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+                + QString::number(idx.column()) + QLatin1Char(',') +  QString::number(level(idx))
+                + QLatin1Char(']');
             if (idx.row() & 1)
-                return QString("[%1,%2,%3] - this item is extra wide").arg(idx.row()).arg(idx.column()).arg(level(idx));
-            return QString("[%1,%2,%3]").arg(idx.row()).arg(idx.column()).arg(level(idx));
+                result += QLatin1String(" - this item is extra wide");
+            return result;
         }
         if (decorationsEnabled && role == Qt::DecorationRole) {
             QPixmap pm(16,16);
@@ -2084,13 +2087,14 @@ void tst_QTreeView::rowsAboutToBeRemoved()
 {
     QStandardItemModel model(3, 1);
     for (int i = 0; i < model.rowCount(); i++) {
+        const QString iS = QString::number(i);
         QModelIndex index = model.index(i, 0, QModelIndex());
-        model.setData(index, QString("%1").arg(i));
+        model.setData(index, iS);
         model.insertRows(0, 4, index);
         model.insertColumns(0,1,index);
         for (int i1 = 0; i1 <  model.rowCount(index); i1++) {
             QModelIndex index2 = model.index(i1, 0, index);
-            model.setData(index2, QString("%1%2").arg(i).arg(i1));
+            model.setData(index2, iS + QString::number(i1));
         }
     }
 
@@ -2228,14 +2232,16 @@ void tst_QTreeView::resizeColumnToContents()
 {
     QStandardItemModel model(50,2);
     for (int r = 0; r < model.rowCount(); ++r) {
+        const QString rS = QString::number(r);
         for (int c = 0; c < model.columnCount(); ++c) {
             QModelIndex idx = model.index(r, c);
-            model.setData(idx, QString::fromLatin1("%1,%2").arg(r).arg(c) );
+            model.setData(idx, rS + QLatin1Char(',') + QString::number(c));
             model.insertColumns(0, 2, idx);
             model.insertRows(0, 6, idx);
             for (int i = 0; i < 6; ++i) {
+                const QString iS = QString::number(i);
                 for (int j = 0; j < 2 ; ++j) {
-                    model.setData(model.index(i, j, idx), QString::fromLatin1("child%1%2").arg(i).arg(j));
+                    model.setData(model.index(i, j, idx), QLatin1String("child") + iS + QString::number(j));
                 }
             }
         }
@@ -2390,7 +2396,7 @@ void tst_QTreeView::selectionWithHiddenItems()
 {
     QStandardItemModel model;
     for (int i = 0; i < model.rowCount(); ++i)
-        model.setData(model.index(i,0), QString("row %1").arg(i));
+        model.setData(model.index(i,0), QLatin1String("row ") + QString::number(i));
 
     QStandardItem item0("row 0");
     QStandardItem item1("row 1");
@@ -2464,7 +2470,7 @@ void tst_QTreeView::selectAll()
     QCOMPARE(view2.selectedIndexes().count(), model.rowCount() * model.columnCount());
 
     for (int i = 0; i < model.rowCount(); ++i)
-        model.setData(model.index(i,0), QString("row %1").arg(i));
+        model.setData(model.index(i,0), QLatin1String("row ") + QString::number(i));
     PublicView view;
     view.setModel(&model);
     int selectedCount = view.selectedIndexes().count();
@@ -2818,8 +2824,9 @@ public:
                 if (parentNode->isDead)
                     qFatal("%s: grandparentNode is dead!", Q_FUNC_INFO);
             }
-            return QString("[%1,%2,%3]").arg(idx.row()).arg(idx.column())
-                .arg(parentNode->isDead ? "dead" : "alive");
+            return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+                + QString::number(idx.column()) + QLatin1Char(',')
+                + QLatin1String(parentNode->isDead ? "dead" : "alive") + QLatin1Char(']');
         }
         return QVariant();
     }
@@ -3022,7 +3029,7 @@ void tst_QTreeView::filterProxyModelCrash()
     QStandardItemModel model;
     QList<QStandardItem *> items;
     for (int i = 0; i < 100; i++)
-        items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
+        items << new QStandardItem(QLatin1String("item ") + QString::number(i));
     model.appendColumn(items);
 
     QSortFilterProxyModel proxy;
@@ -3389,11 +3396,11 @@ void tst_QTreeView::task203696_hidingColumnsAndRowsn()
 {
     QTreeView view;
     QStandardItemModel *model = new QStandardItemModel(0, 3, &view);
-    for (int i = 0; i < 3; ++i)
-    {
+    for (int i = 0; i < 3; ++i) {
+        const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
         model->insertRow(model->rowCount());
         for (int j = 0; j < model->columnCount(); ++j)
-            model->setData(model->index(i, j), QString("row %1 col %2").arg(i).arg(j));
+            model->setData(model->index(i, j), prefix + QString::number(j));
     }
     view.setModel(model);
     view.show();
@@ -3415,8 +3422,9 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
         for (i = 0; i < 3; ++i)
         {
             model->insertRow(model->rowCount());
+            const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
             for (int j = 0; j < model->columnCount(); ++j) {
-                model->setData(model->index(i, j), QString("row %1 col %2").arg(i).arg(j));
+                model->setData(model->index(i, j), prefix + QString::number(j));
             }
         }
         int col;
@@ -3425,8 +3433,9 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
         for (i = 3; i < 6; ++i)
         {
             model->insertRow(model->rowCount());
+            const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
             for (int j = 0; j < model->columnCount(); ++j) {
-                model->setData(model->index(i, j), QString("row %1 col %2").arg(i).arg(j));
+                model->setData(model->index(i, j), prefix + QString::number(j));
             }
         }
         for (col = 0; col < pass; ++col)
@@ -3480,8 +3489,10 @@ void tst_QTreeView::task220298_selectColumns()
 
             virtual QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const
             {
-                if(role == Qt::DisplayRole)
-                    return QVariant(QString("%1-%2").arg(index.column()).arg(index.row()));
+                if (role == Qt::DisplayRole) {
+                    return QVariant(QString::number(index.column()) + QLatin1Char('-')
+                        + QString::number(index.row()));
+                }
                 return QVariant();
             }
 
@@ -3519,7 +3530,7 @@ void tst_QTreeView::task224091_appendColumns()
 
     QList<QStandardItem *> projlist;
     for (int k = 0; k < 10; ++k)
-        projlist.append(new QStandardItem(QString("Top Level %0").arg(k)));
+        projlist.append(new QStandardItem(QLatin1String("Top Level ") + QString::number(k)));
     model->appendColumn(projlist);
     model->invisibleRootItem()->appendRow(new QStandardItem("end"));
 
@@ -3746,7 +3757,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QVERIFY(QTest::qWaitForWindowExposed(&tree));
     QList<QStandardItem *> items;
     for(int i=0; i<100; ++i){
-        items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
+        items << new QStandardItem(QLatin1String("item ") + QString::number(i));
     }
     model.invisibleRootItem()->appendColumn(items);
     QTest::qWait(100);
@@ -3934,7 +3945,8 @@ void tst_QTreeView::taskQTBUG_6450_selectAllWith1stColumnHidden()
     QList<QTreeWidgetItem *> items;
     const int nrRows = 10;
     for (int i = 0; i < nrRows; ++i) {
-        items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("item: %1").arg(i))));
+        const QString text = QLatin1String("item: ") + QString::number(i);
+        items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(text)));
         items.last()->setText(1, QString("is an item"));
     }
     tree.insertTopLevelItems(0, items);
@@ -3965,9 +3977,11 @@ public:
 void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
 {
     QStandardItemModel model(10, 10, this);
-    for (int row = 0; row < 10; row++)
+    for (int row = 0; row < 10; row++) {
+        const QString prefix = QLatin1String("row ") + QString::number(row) + QLatin1String(", col ");
         for (int col = 0; col < 10; col++)
-            model.setItem(row, col, new QStandardItem(QString("row %0, col %1").arg(row).arg(col)));
+            model.setItem(row, col, new QStandardItem(prefix + QString::number(col)));
+    }
     TreeViewQTBUG_9216 view;
     view.setUniformRowHeights(true);
     view.setModel(&model);
@@ -4340,9 +4354,10 @@ void tst_QTreeView::taskQTBUG_37813_crash()
     treeWidget.setColumnCount(2);
     QList<QTreeWidgetItem *> items;
     for (int r = 0; r < 2; ++r) {
+        const QString prefix = QLatin1String("Row ") + QString::number(r) + QLatin1String(" Column ");
         QTreeWidgetItem *item = new QTreeWidgetItem();
         for (int c = 0; c < treeWidget.columnCount(); ++c)
-            item->setText(c, QString::fromLatin1("Row %1 Column %2").arg(r).arg(c));
+            item->setText(c, prefix + QString::number(c));
         items.append(item);
     }
     treeWidget.addTopLevelItems(items);

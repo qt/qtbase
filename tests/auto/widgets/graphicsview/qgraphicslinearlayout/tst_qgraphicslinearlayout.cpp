@@ -425,10 +425,11 @@ void tst_QGraphicsLinearLayout::dump_data()
     QTest::addColumn<int>("itemCount");
     QTest::addColumn<int>("layoutCount");
     for (int i = -1; i < 3; ++i) {
-        QTest::newRow(QString("%1, 0, 0").arg(i).toLatin1()) << 0 << 0;
-        QTest::newRow(QString("%1, 0, 5").arg(i).toLatin1()) << 5 << 5;
-        QTest::newRow(QString("%1, 5, 0").arg(i).toLatin1()) << 5 << 5;
-        QTest::newRow(QString("%1, 5, 5").arg(i).toLatin1()) << 5 << 5;
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow((iB + ", 0, 0").constData()) << 0 << 0;
+        QTest::newRow((iB + ", 0, 5").constData()) << 5 << 5;
+        QTest::newRow((iB + ", 5, 0").constData()) << 5 << 5;
+        QTest::newRow((iB + ", 5, 5").constData()) << 5 << 5;
     }
 }
 
@@ -511,11 +512,13 @@ void tst_QGraphicsLinearLayout::insertItem_data()
     QTest::addColumn<int>("insertItemAt");
     QTest::addColumn<bool>("isWidget");
     for (int i = -1; i < 4; ++i) {
+        const QByteArray iB = QByteArray::number(i);
         for (int j = 0; j < 2; ++j) {
-            QTest::newRow(QString("0, 0, %1 %2").arg(i).arg(j).toLatin1()) << 0 << 0 << i << (bool)j;
-            QTest::newRow(QString("1, 0, %1 %2").arg(i).arg(j).toLatin1()) << 1 << 0 << i << (bool)j;
-            QTest::newRow(QString("0, 1, %1 %2").arg(i).arg(j).toLatin1()) << 0 << 1 << i << (bool)j;
-            QTest::newRow(QString("2, 2, %1 %2").arg(i).arg(j).toLatin1()) << 2 << 2 << i << (bool)j;
+            const QByteArray postFix = iB + ' ' + QByteArray::number(j);
+            QTest::newRow(("0, 0, " + postFix).constData()) << 0 << 0 << i << (bool)j;
+            QTest::newRow(("1, 0, " + postFix).constData()) << 1 << 0 << i << (bool)j;
+            QTest::newRow(("0, 1, " + postFix).constData()) << 0 << 1 << i << (bool)j;
+            QTest::newRow(("2, 2, " + postFix).constData()) << 2 << 2 << i << (bool)j;
         }
     }
 }
@@ -565,11 +568,13 @@ void tst_QGraphicsLinearLayout::insertStretch_data()
     QTest::addColumn<int>("insertItemAt");
     QTest::addColumn<int>("stretch");
     for (int i = -1; i < 4; ++i) {
+        const QByteArray iB = QByteArray::number(i);
         for (int j = 0; j < 2; ++j) {
-            QTest::newRow(QString("0, 0, %1 %2").arg(i).arg(j).toLatin1()) << 0 << 0 << i << j;
-            QTest::newRow(QString("1, 0, %1 %2").arg(i).arg(j).toLatin1()) << 1 << 0 << i << j;
-            QTest::newRow(QString("0, 1, %1 %2").arg(i).arg(j).toLatin1()) << 0 << 1 << i << j;
-            QTest::newRow(QString("2, 2, %1 %2").arg(i).arg(j).toLatin1()) << 2 << 2 << i << j;
+            const QByteArray postFix = iB + ' ' + QByteArray::number(j);
+            QTest::newRow(("0, 0, " + postFix).constData()) << 0 << 0 << i << j;
+            QTest::newRow(("1, 0, " + postFix).constData()) << 1 << 0 << i << j;
+            QTest::newRow(("0, 1, " + postFix).constData()) << 0 << 1 << i << j;
+            QTest::newRow(("2, 2, " + postFix).constData()) << 2 << 2 << i << j;
         }
     }
 }
@@ -786,12 +791,13 @@ void tst_QGraphicsLinearLayout::removeAt_data()
     QTest::addColumn<int>("removeItemAt");
     QTest::addColumn<Qt::Orientation>("orientation");
     for (int i = -1; i < 4; ++i) {
+        const QByteArray iB = QByteArray::number(i);
         for (int k = 0; k < 2; ++k) {
             Qt::Orientation orientation = (k == 0) ? Qt::Vertical : Qt::Horizontal;
-            QTest::newRow(QString("0, 0, %1").arg(i).toLatin1()) << 0 << 0 << i << orientation;
-            QTest::newRow(QString("1, 0, %1").arg(i).toLatin1()) << 1 << 0 << i << orientation;
-            QTest::newRow(QString("0, 1, %1").arg(i).toLatin1()) << 0 << 1 << i << orientation;
-            QTest::newRow(QString("2, 2, %1").arg(i).toLatin1()) << 2 << 2 << i << orientation;
+            QTest::newRow(("0, 0, " + iB).constData()) << 0 << 0 << i << orientation;
+            QTest::newRow(("1, 0, " + iB).constData()) << 1 << 0 << i << orientation;
+            QTest::newRow(("0, 1, " + iB).constData()) << 0 << 1 << i << orientation;
+            QTest::newRow(("2, 2, " + iB).constData()) << 2 << 2 << i << orientation;
         }
     }
 }
@@ -840,10 +846,11 @@ void tst_QGraphicsLinearLayout::removeItem_data()
     QTest::addColumn<int>("layoutCount");
     QTest::addColumn<int>("removeItemAt");
     for (int i = -1; i < 4; ++i) {
-        QTest::newRow(QString("0, 0, %1").arg(i).toLatin1()) << 0 << 0 << i;
-        QTest::newRow(QString("1, 0, %1").arg(i).toLatin1()) << 1 << 0 << i;
-        QTest::newRow(QString("0, 1, %1").arg(i).toLatin1()) << 0 << 1 << i;
-        QTest::newRow(QString("2, 2, %1").arg(i).toLatin1()) << 2 << 2 << i;
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow(("0, 0, " + iB).constData()) << 0 << 0 << i;
+        QTest::newRow(("1, 0, " + iB).constData()) << 1 << 0 << i;
+        QTest::newRow(("0, 1, " + iB).constData()) << 0 << 1 << i;
+        QTest::newRow(("2, 2, " + iB).constData()) << 2 << 2 << i;
     }
 }
 

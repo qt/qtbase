@@ -5644,7 +5644,7 @@ void tst_QWidget::setToolTip()
     for (int pass = 0; pass < 2; ++pass) {
         QCursor::setPos(0, 0);
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
-        popup->setObjectName(QString::fromLatin1("tst_qwidget setToolTip #%1").arg(pass));
+        popup->setObjectName(QLatin1String("tst_qwidget setToolTip #") + QString::number(pass));
         popup->setWindowTitle(popup->objectName());
         popup->setGeometry(50, 50, 150, 50);
         QFrame *frame = new QFrame(popup.data());

@@ -288,14 +288,16 @@ void tst_QItemView::populate()
     const int baseInsert = 26;
 #endif
     for (int i = 0; i < 40; ++i) {
+        const QString iS = QString::number(i);
         parent = treeModel->index(0, 0, parent);
         treeModel->insertRows(0, baseInsert + i, parent);
         treeModel->insertColumns(0, baseInsert + i, parent);
         // Fill in some values to make it easier to debug
         for (int x = 0; x < treeModel->rowCount(); ++x) {
+            const QString xS = QString::number(x);
             for (int y = 0; y < treeModel->columnCount(); ++y) {
                 QModelIndex index = treeModel->index(x, y, parent);
-                treeModel->setData(index, QString("%1_%2_%3").arg(x).arg(y).arg(i));
+                treeModel->setData(index, xS + QLatin1Char('_') + QString::number(y) + QLatin1Char('_') + iS);
                 treeModel->setData(index, QVariant(QColor(Qt::blue)), Qt::TextColorRole);
             }
         }

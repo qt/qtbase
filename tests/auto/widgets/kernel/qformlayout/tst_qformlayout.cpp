@@ -184,7 +184,7 @@ void tst_QFormLayout::getItemPosition()
     QList<QLabel*> labels;
     QList<QLineEdit*> fields;
     for (int i = 0; i < 5; ++i) {
-        labels.append(new QLabel(QString("Label %1").arg(i+1)));
+        labels.append(new QLabel(QLatin1String("Label " ) + QString::number(i + 1)));
         fields.append(new QLineEdit);
         fl->addRow(labels[i], fields[i]);
     }

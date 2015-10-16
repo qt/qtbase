@@ -112,12 +112,14 @@ public:
         for (int j = 0; j < 10; ++j) {
             QStandardItem *parentItem = invisibleRootItem();
             for (int i = 0; i < 10; ++i) {
-                QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+                const QString iS =  QString::number(i);
+                const QString itemText = QLatin1String("item ") + iS;
+                QStandardItem *item = new QStandardItem(itemText);
                 parentItem->appendRow(item);
-                QStandardItem *item2 = new QStandardItem(QString("item %0").arg(i));
+                QStandardItem *item2 = new QStandardItem(itemText);
                 parentItem->appendRow(item2);
-                item2->appendRow(new QStandardItem(QString("item %0").arg(i)));
-                parentItem->appendRow(new QStandardItem(QString("file %0").arg(i)));
+                item2->appendRow(new QStandardItem(itemText));
+                parentItem->appendRow(new QStandardItem(QLatin1String("file ") + iS));
                 parentItem = item;
             }
         }

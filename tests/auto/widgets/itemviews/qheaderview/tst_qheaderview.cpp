@@ -270,7 +270,8 @@ public:
             wrongIndex = true;
             qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(), idx.internalPointer());
         }
-        return QString("[%1,%2,%3]").arg(idx.row()).arg(idx.column()).arg(0);//idx.data());
+        return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+            + QString::number(idx.column()) + QLatin1String(",0]");
     }
 
     void insertOneColumn(int col)
@@ -1567,7 +1568,7 @@ public:
             return QVariant();
         }
         if (role == Qt::DisplayRole) {
-            return QString::fromLatin1("%1,%2").arg(index.row()).arg(index.column());
+            return QString::number(index.row()) + QLatin1Char(',') + QString::number(index.column());
         }
         return QVariant();
     }
@@ -2240,13 +2241,21 @@ void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
     model.insertColumn(0, items);
 }
 
+static void setModelTexts(QStandardItemModel *model)
+{
+    const int columnCount = model->columnCount();
+    for (int i = 0, rowCount = model->rowCount(); i < rowCount; ++i) {
+        const QString prefix = QLatin1String("item [") + QString::number(i) + QLatin1Char(',');
+        for (int j = 0; j < columnCount; ++j)
+            model->setData(model->index(i, j), prefix + QString::number(j) + QLatin1Char(']'));
+    }
+}
+
 void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
 {
     QTableView view; // ### this test fails on QTableView &view = *m_tableview; !? + shadowing view member
     QStandardItemModel *model = new QStandardItemModel(4,3, &view);
-    for (int i = 0; i< model->rowCount(); ++i)
-        for (int j = 0; j< model->columnCount(); ++j)
-            model->setData(model->index(i,j), QString("item [%1,%2]").arg(i).arg(j));
+    setModelTexts(model);
     view.setModel(model);
     view.horizontalHeader()->setSectionsMovable(true);
     view.setSortingEnabled(true);
@@ -2322,9 +2331,7 @@ void tst_QHeaderView::initialSortOrderRole()
 {
     QTableView view; // ### Shadowing member view (of type QHeaderView)
     QStandardItemModel *model = new QStandardItemModel(4, 3, &view);
-    for (int i = 0; i< model->rowCount(); ++i)
-        for (int j = 0; j< model->columnCount(); ++j)
-            model->setData(model->index(i,j), QString("item [%1,%2]").arg(i).arg(j));
+    setModelTexts(model);
     QStandardItem *ascendingItem = new QStandardItem();
     QStandardItem *descendingItem = new QStandardItem();
     ascendingItem->setData(Qt::AscendingOrder, Qt::InitialSortOrderRole);

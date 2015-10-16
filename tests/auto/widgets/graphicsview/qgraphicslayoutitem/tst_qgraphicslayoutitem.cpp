@@ -146,7 +146,7 @@ void tst_QGraphicsLayoutItem::effectiveSizeHint_data()
     QTest::addColumn<Qt::SizeHint>("sizeHint");
     QTest::addColumn<QSizeF>("constraint");
     for (int i = 0; i < 15; ++i) {
-        QTestData &data = QTest::newRow(QString("%1").arg(i).toLatin1());
+        QTestData &data = QTest::newRow(QByteArray::number(i).constData());
         switch(i % 5) {
         case 0: data << Qt::MinimumSize; break;
         case 1: data << Qt::PreferredSize; break;

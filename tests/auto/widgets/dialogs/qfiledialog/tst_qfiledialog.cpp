@@ -942,7 +942,7 @@ void tst_QFiledialog::selectFiles()
 
     QString filesPath = fd.directory().absolutePath();
     for (int i=0; i < 5; ++i) {
-        QFile file(filesPath + QString::fromLatin1("/qfiledialog_auto_test_not_pres_%1").arg(i));
+        QFile file(filesPath + QLatin1String("/qfiledialog_auto_test_not_pres_") + QString::number(i));
         file.open(QIODevice::WriteOnly);
         file.resize(1024);
         file.flush();

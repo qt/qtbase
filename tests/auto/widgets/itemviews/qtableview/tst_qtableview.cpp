@@ -325,8 +325,10 @@ public:
             return QVariant();
         }
 
-        if (role == Qt::DisplayRole || role == Qt::EditRole)
-            return QString("[%1,%2,%3]").arg(idx.row()).arg(idx.column()).arg(0);
+        if (role == Qt::DisplayRole || role == Qt::EditRole) {
+            return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+                + QString::number(idx.column()) + QLatin1String(",0]");
+        }
 
         return QVariant();
     }
@@ -3802,7 +3804,7 @@ public:
                           int role = Qt::DisplayRole) const
     {
         if (role == Qt::DisplayRole)
-            return QString("%1 - %2").arg(index.column()).arg(index.row());
+            return QString::number(index.column()) + QLatin1String(" - ") + QString::number(index.row());
         return QVariant();
     }
 
@@ -3924,12 +3926,12 @@ void tst_QTableView::task227953_setRootIndex()
 
     //setup the first table as a child of the first item
     for ( int row = 0; row < 40; ++row ) {
-        item1.appendRow(QList<QStandardItem*>() << new QStandardItem(QString("row %0").arg(row)));
+        item1.appendRow(QList<QStandardItem*>() << new QStandardItem(QLatin1String("row ") + QString::number(row)));
     }
 
     //setup the second table as a child of the second item
     for ( int row = 0; row < 10; ++row ) {
-        item2.appendRow(QList<QStandardItem*>() << new QStandardItem(QString("row %0").arg(row)));
+        item2.appendRow(QList<QStandardItem*>() << new QStandardItem(QLatin1String("row ") + QString::number(row)));
     }
 
     tableView.setModel(&model);

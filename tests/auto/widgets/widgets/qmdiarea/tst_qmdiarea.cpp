@@ -621,6 +621,11 @@ void tst_QMdiArea::showWindows()
 
 //#define USE_SHOW
 
+static inline QString windowTitle(const QString &t, const QString &f)
+{
+    return t + QLatin1String(" - [") + f + QLatin1Char(']');
+}
+
 void tst_QMdiArea::changeWindowTitle()
 {
     const QString mwc = QString::fromLatin1("MainWindow's Caption");
@@ -648,7 +653,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), windowTitle(mwc, wc) );
 #endif
 
     mw->hide();
@@ -657,7 +662,7 @@ void tst_QMdiArea::changeWindowTitle()
     QVERIFY(QTest::qWaitForWindowExposed(mw));
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), windowTitle(mwc, wc) );
 #endif
 
 #ifdef USE_SHOW
@@ -675,11 +680,11 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
     qApp->processEvents();
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), windowTitle(mwc, wc) );
     widget->setWindowTitle( wc2 );
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc2) );
+    QCOMPARE( mw->windowTitle(), windowTitle(mwc, wc2) );
     mw->setWindowTitle( mwc2 );
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
+    QCOMPARE( mw->windowTitle(), windowTitle(mwc2, wc2) );
 #endif
 
     mw->show();
@@ -693,7 +698,7 @@ void tst_QMdiArea::changeWindowTitle()
 
     qApp->processEvents();
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
+    QCOMPARE( mw->windowTitle(), windowTitle(mwc2, wc2) );
 #endif
 #ifdef USE_SHOW
     widget->showNormal();
@@ -714,7 +719,7 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
     qApp->processEvents();
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
+    QCOMPARE( mw->windowTitle(), windowTitle(mwc2, wc2) );
 #endif
 
 #ifdef USE_SHOW
@@ -2321,7 +2326,7 @@ void tst_QMdiArea::setViewMode()
     iconPixmap.fill(Qt::red);
     for (int i = 0; i < 5; ++i) {
         QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
-        subWindow->setWindowTitle(QString(QLatin1String("Title %1")).arg(i));
+        subWindow->setWindowTitle(QLatin1String("Title ") + QString::number(i));
         subWindow->setWindowIcon(iconPixmap);
     }
 

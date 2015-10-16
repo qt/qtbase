@@ -66,8 +66,10 @@ static QStandardItemModel *testModel(QObject *parent = 0)
     QStandardItemModel *model = new QStandardItemModel(10, 10, parent);
 
     for (int row = 0; row < 10; ++row) {
+        const QString prefix = QLatin1String("item ") + QString::number(row)
+            + QLatin1Char(' ');
         for (int col = 0; col < 10; ++col)
-            model->setData(model->index(row, col), QString("item %1 %2").arg(row).arg(col));
+            model->setData(model->index(row, col), prefix + QString::number(col));
     }
 
     return model;

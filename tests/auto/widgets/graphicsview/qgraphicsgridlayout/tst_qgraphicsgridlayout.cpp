@@ -451,9 +451,10 @@ void tst_QGraphicsGridLayout::addItem_data()
         int column = b;
         int rowSpan = c;
         int columnSpan = d;
-        QString name = QString::fromLatin1("(%1,%2,%3,%4").arg(a).arg(b).arg(c).arg(d);
+        const QByteArray name = '(' + QByteArray::number(a) + ',' + QByteArray::number(b)
+            + ',' + QByteArray::number(c) + ',' + QByteArray::number(d);
         Qt::Alignment alignment = Qt::AlignLeft;
-        QTest::newRow(name.toLatin1()) << row << column << rowSpan << columnSpan << alignment;
+        QTest::newRow(name.constData()) << row << column << rowSpan << columnSpan << alignment;
     }}}}
 }
 
@@ -1107,7 +1108,8 @@ void tst_QGraphicsGridLayout::itemAt()
         if (i >= 0 && i < layout->count()) {
             QVERIFY(layout->itemAt(i));
         } else {
-            QTest::ignoreMessage(QtWarningMsg, QString::fromLatin1("QGraphicsGridLayout::itemAt: invalid index %1").arg(i).toLatin1().constData());
+            const QByteArray message = "QGraphicsGridLayout::itemAt: invalid index " + QByteArray::number(i);
+            QTest::ignoreMessage(QtWarningMsg, message.constData());
             QCOMPARE(layout->itemAt(i), static_cast<QGraphicsLayoutItem*>(0));
         }
     }

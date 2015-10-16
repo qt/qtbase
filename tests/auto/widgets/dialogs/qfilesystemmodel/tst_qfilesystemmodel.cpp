@@ -251,15 +251,17 @@ void tst_QFileSystemModel::naturalCompare_data()
     QTest::addColumn<int>("result");
     QTest::addColumn<int>("swap");
 
-#define ROWNAME(name) (qPrintable(QString("prefix=%1, postfix=%2, num=%3, i=%4, test=%5").arg(prefix).arg(postfix).arg(num).arg(i).arg(name)))
+#define ROWNAME(name) (("prefix=" + prefix.toLatin1() + ", postfix=" + postfix.toLatin1() \
+                        + ", num=" + num.toLatin1() + ", i=" + QByteArray::number(i) \
+                        + ", test=" + name).constData())
 
     for (int j = 0; j < 4; ++j) { // <- set a prefix and a postfix string (not numbers)
         QString prefix = (j == 0 || j == 1) ? "b" : "";
         QString postfix = (j == 1 || j == 2) ? "y" : "";
 
         for (int k = 0; k < 3; ++k) { // <- make 0 not a special case
-            QString num = QString("%1").arg(k);
-            QString nump = QString("%1").arg(k + 1);
+            const QString num = QString::number(k);
+            const QString nump = QString::number(k + 1);
             for (int i = 10; i < 12; ++i) { // <- swap s1 and s2 and reverse the result
                 QTest::newRow(ROWNAME("basic"))          << prefix + "0" + postfix << prefix + "0" + postfix << int(Qt::CaseInsensitive) << 0;
 
@@ -470,8 +472,9 @@ void tst_QFileSystemModel::rowsInserted_data()
     QTest::addColumn<int>("count");
     QTest::addColumn<int>("ascending");
     for (int i = 0; i < 4; ++i) {
-        QTest::newRow(QString("Qt::AscendingOrder %1").arg(i).toLocal8Bit().constData())  << i << (int)Qt::AscendingOrder;
-        QTest::newRow(QString("Qt::DescendingOrder %1").arg(i).toLocal8Bit().constData()) << i << (int)Qt::DescendingOrder;
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow(("Qt::AscendingOrder " + iB).constData()) << i << (int)Qt::AscendingOrder;
+        QTest::newRow(("Qt::DescendingOrder " + iB).constData()) << i << (int)Qt::DescendingOrder;
     }
 }
 
@@ -499,7 +502,7 @@ void tst_QFileSystemModel::rowsInserted()
     int oldCount = model->rowCount(root);
     QStringList files;
     for (int i = 0; i < count; ++i)
-        files.append(QString("c%1").arg(i));
+        files.append(QLatin1Char('c') + QString::number(i));
     QVERIFY(createFiles(tmp, files, 5));
     TRY_WAIT(model->rowCount(root) == oldCount + count);
     QTRY_COMPARE(model->rowCount(root), oldCount + count);
@@ -1019,8 +1022,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
 
     for (int i = 0; i < 3; ++i) {
         QLatin1Char c('a' + i);
-        dir.mkdir(QString("%1-dir").arg(c));
-        QFile file(flatDirTestPath + QString("/%1-file").arg(c));
+        dir.mkdir(c + QLatin1String("-dir"));
+        QFile file(flatDirTestPath + QLatin1Char('/') + c + QLatin1String("-file"));
         file.open(QIODevice::ReadWrite);
         file.close();
     }

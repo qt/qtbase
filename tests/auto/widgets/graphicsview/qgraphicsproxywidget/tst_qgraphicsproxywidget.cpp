@@ -543,14 +543,15 @@ void tst_QGraphicsProxyWidget::testEventFilter_data()
     QTest::newRow("none") << QEvent::None << false;
     for (int i = 0; i < 2; ++i) {
         bool fromObject = (i == 0);
-        QTest::newRow(QString("resize %1").arg(fromObject).toLatin1()) << QEvent::Resize << fromObject;
-        QTest::newRow(QString("move %1").arg(fromObject).toLatin1()) << QEvent::Move << fromObject;
-        QTest::newRow(QString("hide %1").arg(fromObject).toLatin1()) << QEvent::Hide << fromObject;
-        QTest::newRow(QString("show %1").arg(fromObject).toLatin1()) << QEvent::Show << fromObject;
-        QTest::newRow(QString("enabled %1").arg(fromObject).toLatin1()) << QEvent::EnabledChange << fromObject;
-        QTest::newRow(QString("focusIn %1").arg(fromObject).toLatin1()) << QEvent::FocusIn << fromObject;
-        QTest::newRow(QString("focusOut %1").arg(fromObject).toLatin1()) << QEvent::FocusOut << fromObject;
-        QTest::newRow(QString("keyPress %1").arg(fromObject).toLatin1()) << QEvent::KeyPress << fromObject;
+        const char fromObjectC = fromObject ? '1' : '0';
+        QTest::newRow((QByteArrayLiteral("resize ") + fromObjectC).constData()) << QEvent::Resize << fromObject;
+        QTest::newRow((QByteArrayLiteral("move ") + fromObjectC).constData()) << QEvent::Move << fromObject;
+        QTest::newRow((QByteArrayLiteral("hide ") + fromObjectC).constData()) << QEvent::Hide << fromObject;
+        QTest::newRow((QByteArrayLiteral("show ") + fromObjectC).constData()) << QEvent::Show << fromObject;
+        QTest::newRow((QByteArrayLiteral("enabled ") + fromObjectC).constData()) << QEvent::EnabledChange << fromObject;
+        QTest::newRow((QByteArrayLiteral("focusIn ") + fromObjectC).constData()) << QEvent::FocusIn << fromObject;
+        QTest::newRow((QByteArrayLiteral("focusOut ") + fromObjectC).constData()) << QEvent::FocusOut << fromObject;
+        QTest::newRow((QByteArrayLiteral("keyPress ") + fromObjectC).constData()) << QEvent::KeyPress << fromObject;
     }
 }
 
@@ -762,8 +763,10 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild_data()
                 bool hasWidget = (j == 0);
                 bool hasScene = (k == 0);
                 bool result = hasScene && hasWidget;
-                QString name = QString("Forward: %1, hasWidget: %2, hasScene: %3, result: %4").arg(next).arg(hasWidget).arg(hasScene).arg(result);
-                QTest::newRow(name.toLatin1()) << hasWidget << hasScene << next << result;
+                QByteArray name = QByteArrayLiteral("Forward: ") + (next ? '1' : '0')
+                    + ", hasWidget: " + (hasWidget ? '1' : '0') + ", hasScene: "
+                    + (hasScene ? '1' : '0') + ", result: " + (result ? '1' : '0');
+                QTest::newRow(name.constData()) << hasWidget << hasScene << next << result;
             }
         }
     }
@@ -1028,8 +1031,10 @@ void tst_QGraphicsProxyWidget::hoverMoveEvent_data()
                     bool hoverEnabled = (j == 0);
                     bool mouseTracking = (k == 0);
                     bool mouseDown = (l == 0);
-                    QString name = QString("hasWidget:%1, hover:%2, mouseTracking:%3, mouseDown: %4").arg(hasWidget).arg(hoverEnabled).arg(mouseTracking).arg(mouseDown);
-                    QTest::newRow(name.toLatin1()) << hasWidget << hoverEnabled << mouseTracking << mouseDown;
+                    QByteArray name = QByteArrayLiteral("hasWidget:") + (hasWidget ? '1' : '0') + ", hover:"
+                        + (hoverEnabled ? '1' : '0') + ", mouseTracking:"
+                        + (mouseTracking ? '1' : '0') + ", mouseDown: " + (mouseDown ? '1' : '0');
+                    QTest::newRow(name.constData()) << hasWidget << hoverEnabled << mouseTracking << mouseDown;
                 }
             }
         }

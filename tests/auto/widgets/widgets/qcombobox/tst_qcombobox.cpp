@@ -2308,9 +2308,10 @@ void tst_QComboBox::task191329_size()
 
     QStandardItemModel model(rows, 2);
     for (int row = 0; row < model.rowCount(); ++row) {
+        const QString rowS = QLatin1String("row ") + QString::number(row);
         for (int column = 0; column < model.columnCount(); ++column) {
-            QStandardItem *item = new QStandardItem(QString("row %0, column %1").arg(row).arg(column));
-            model.setItem(row, column, item);
+            const QString text = rowS + QLatin1String(", column ") + QString::number(column);
+            model.setItem(row, column, new QStandardItem(text));
         }
     }
     QTableView *table = new QTableView();
@@ -2860,10 +2861,11 @@ void tst_QComboBox::task_QTBUG_10491_currentIndexAndModelColumn()
 
     QStandardItemModel model(4, 4, &comboBox);
     for (int i = 0; i < 4; i++){
-        model.setItem(i, 0, new QStandardItem(QString("Employee Nr %1").arg(i)));
-        model.setItem(i, 1, new QStandardItem(QString("Street Nr %1").arg(i)));
-        model.setItem(i, 2, new QStandardItem(QString("Town Nr %1").arg(i)));
-        model.setItem(i, 3, new QStandardItem(QString("Phone Nr %1").arg(i)));
+        const QString iS = QString::number(i);
+        model.setItem(i, 0, new QStandardItem(QLatin1String("Employee Nr ") + iS));
+        model.setItem(i, 1, new QStandardItem(QLatin1String("Street Nr ") + iS));
+        model.setItem(i, 2, new QStandardItem(QLatin1String("Town Nr ") + iS));
+        model.setItem(i, 3, new QStandardItem(QLatin1String("Phone Nr ") + iS));
     }
     comboBox.setModel(&model);
     comboBox.setModelColumn(0);
@@ -2909,12 +2911,12 @@ void tst_QComboBox::itemData()
     // ensure that the currentText(), the DisplayRole and the EditRole
     // stay in sync when using QComboBox's default model
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
+        QString itemText = QLatin1String("item text ") + QString::number(i);
         comboBox.addItem(itemText);
     }
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
+        QString itemText = QLatin1String("item text ") + QString::number(i);
         QCOMPARE(comboBox.itemText(i), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);
@@ -2926,14 +2928,11 @@ void tst_QComboBox::itemData()
         QCOMPARE(comboBox.currentData(Qt::EditRole).toString(), itemText);
     }
 
-    for (int i = 0; i < itemCount; ++i) {
-        // now change by using setItemText
-        QString itemText = QString("setItemText %1").arg(i);
-        comboBox.setItemText(i, itemText);
-    }
+    for (int i = 0; i < itemCount; ++i) // now change by using setItemText
+        comboBox.setItemText(i, QLatin1String("setItemText ") + QString::number(i));
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("setItemText %1").arg(i);
+        QString itemText = QLatin1String("setItemText ") + QString::number(i);
         QCOMPARE(comboBox.itemText(i), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);
@@ -2947,12 +2946,12 @@ void tst_QComboBox::itemData()
 
     for (int i = 0; i < itemCount; ++i) {
         // now change by changing the DisplayRole's data
-        QString itemText = QString("setItemData(DisplayRole) %1").arg(i);
+        QString itemText = QLatin1String("setItemData(DisplayRole) ") + QString::number(i);
         comboBox.setItemData(i, QVariant(itemText), Qt::DisplayRole);
     }
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("setItemData(DisplayRole) %1").arg(i);
+        QString itemText = QLatin1String("setItemData(DisplayRole) ") + QString::number(i);
         QCOMPARE(comboBox.itemText(i), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);
@@ -2966,12 +2965,12 @@ void tst_QComboBox::itemData()
 
     for (int i = 0; i < itemCount; ++i) {
         // now change by changing the EditRole's data
-        QString itemText = QString("setItemData(EditRole) %1").arg(i);
+        QString itemText = QLatin1String("setItemData(EditRole) ") + QString::number(i);
         comboBox.setItemData(i, QVariant(itemText), Qt::EditRole);
     }
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("setItemData(EditRole) %1").arg(i);
+        QString itemText = QLatin1String("setItemData(EditRole) ") + QString::number(i);
         QCOMPARE(comboBox.itemText(i), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);
@@ -2988,14 +2987,14 @@ void tst_QComboBox::itemData()
 
     // set additional user data in the addItem call
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
-        QString itemDataText = QString("item data %1").arg(i);
-        comboBox.addItem(itemText, QVariant(itemDataText));
+        const QString iS = QString::number(i);
+        comboBox.addItem(QLatin1String("item text ") + iS, QVariant(QLatin1String("item data ") + iS));
     }
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
-        QString itemDataText = QString("item data %1").arg(i);
+        const QString iS = QString::number(i);
+        QString itemText = QLatin1String("item text ") + iS;
+        QString itemDataText = QLatin1String("item data ") + iS;
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i).toString(), itemDataText);
@@ -3018,8 +3017,9 @@ void tst_QComboBox::itemData()
     QString qtlogoPath = QFINDTESTDATA("qtlogo.png");
     QIcon icon = QIcon(QPixmap(qtlogoPath));
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
-        QString itemDataText = QString("item data %1").arg(i);
+        const QString iS = QString::number(i);
+        QString itemText = QLatin1String("item text ") + iS;
+        QString itemDataText = QLatin1String("item data ") + iS;
         double d = i;
         comboBox.addItem(itemText);
         comboBox.setItemData(i, QVariant(itemDataText), Qt::UserRole);
@@ -3028,8 +3028,9 @@ void tst_QComboBox::itemData()
     }
 
     for (int i = 0; i < itemCount; ++i) {
-        QString itemText = QString("item text %1").arg(i);
-        QString itemDataText = QString("item data %1").arg(i);
+        const QString iS = QString::number(i);
+        QString itemText = QLatin1String("item text ") + iS;
+        QString itemDataText = QLatin1String("item data ") + iS;
         double d = i;
         QCOMPARE(comboBox.itemData(i, Qt::DisplayRole).toString(), itemText);
         QCOMPARE(comboBox.itemData(i, Qt::EditRole).toString(), itemText);

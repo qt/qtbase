@@ -678,9 +678,9 @@ void tst_QSplitter::task187373_addAbstractScrollAreas_data()
     classNames << QLatin1String("QTreeView");
 
     foreach (QString className, classNames) {
-        QTest::newRow(qPrintable(QString("%1 1").arg(className))) << className << false << true;
-        QTest::newRow(qPrintable(QString("%1 2").arg(className))) << className << true << false;
-        QTest::newRow(qPrintable(QString("%1 3").arg(className))) << className << true << true;
+        QTest::newRow(qPrintable(className + QLatin1String(" 1"))) << className << false << true;
+        QTest::newRow(qPrintable(className + QLatin1String(" 2"))) << className << true << false;
+        QTest::newRow(qPrintable(className + QLatin1String(" 3"))) << className << true << true;
     }
 }
 

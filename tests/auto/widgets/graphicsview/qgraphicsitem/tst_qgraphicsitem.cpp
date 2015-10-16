@@ -4130,9 +4130,9 @@ public:
         font.setPointSize(4);
         painter->setFont(font);
         for (int x = -100; x < 100; x += 25) {
-            for (int y = -100; y < 100; y += 25) {
-                painter->drawText(QRectF(x, y, 25, 25), Qt::AlignCenter, QString("%1x%2").arg(x).arg(y));
-            }
+            const QString prefix = QString::number(x) + QLatin1Char('x');
+            for (int y = -100; y < 100; y += 25)
+                painter->drawText(QRectF(x, y, 25, 25), Qt::AlignCenter, prefix + QString::number(y));
         }
     }
 };
@@ -7658,7 +7658,9 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
     {
         QGraphicsRectItem::paint(painter, option, widget);
-        painter->drawText(boundingRect(), Qt::AlignCenter, QString("%1x%2\n%3x%4").arg(p.x()).arg(p.y()).arg(sp.x()).arg(sp.y()));
+        const QString text = QString::number(p.x()) + QLatin1Char('x') + QString::number(p.y())
+            + QLatin1Char('\n') + QString::number(sp.x()) + QLatin1Char('x') + QString::number(sp.y());
+        painter->drawText(boundingRect(), Qt::AlignCenter, text);
     }
 
 protected:
@@ -8246,10 +8248,11 @@ void tst_QGraphicsItem::sorting()
     QGraphicsScene scene;
     QGraphicsItem *grid[100][100];
     for (int x = 0; x < 100; ++x) {
+        const QString prefix = QString::number(x) + QLatin1Char('x');
         for (int y = 0; y < 100; ++y) {
             PainterItem *item = new PainterItem;
             item->setPos(x * 25, y * 25);
-            item->setData(0, QString("%1x%2").arg(x).arg(y));
+            item->setData(0, prefix + QString::number(y));
             grid[x][y] = item;
             scene.addItem(item);
         }

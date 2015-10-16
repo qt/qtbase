@@ -587,7 +587,7 @@ void tst_QGraphicsView::sceneRect_growing()
 
     QGraphicsScene scene;
     for (int i = 0; i < 100; ++i)
-        scene.addText(QString("(0, %1)").arg((i - 50) * 20))->setPos(0, (i - 50) * 20);
+        scene.addText(QLatin1String("(0, ") + QString::number((i - 50) * 20))->setPos(0, (i - 50) * 20);
 
     QGraphicsView view(&scene, &toplevel);
     view.setFixedSize(200, 200);

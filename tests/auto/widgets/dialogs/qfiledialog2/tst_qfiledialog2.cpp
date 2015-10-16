@@ -1149,7 +1149,7 @@ void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
     QLatin1String dirname("autotest_task257579");
     dir.rmdir(dirname); //makes sure it doesn't exist any more
     QVERIFY(dir.mkdir(dirname));
-    QString url = QString::fromLatin1("%1/%2/..").arg(dir.absolutePath()).arg(dirname);
+    QString url = dir.absolutePath() + QLatin1Char('/') + dirname + QLatin1String("/..");
     QNonNativeFileDialog fd;
     fd.setSidebarUrls(QList<QUrl>() << QUrl::fromLocalFile(url));
     QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");

@@ -105,7 +105,8 @@ void tst_QTreeWidgetItemIterator::initTestCase()
      */
     for (int i=0; i <= 16; ++i) {
         QTreeWidgetItem *top = new QTreeWidgetItem(testWidget);
-        top->setText(0, QString("top%1").arg(i));
+        const QString topS = QLatin1String("top") + QString::number(i);
+        top->setText(0, topS);
         switch (i) {
             case 0:  testWidget->setItemHidden(top, true);break;
             case 1:  testWidget->setItemHidden(top, false);break;
@@ -136,7 +137,7 @@ void tst_QTreeWidgetItemIterator::initTestCase()
         }
         for (int j=0; j <= 16; ++j) {
             QTreeWidgetItem *child = new QTreeWidgetItem(top);
-            child->setText(0, QString("top%1,child%2").arg(i).arg(j));
+            child->setText(0, topS + QLatin1String(",child") + QString::number(j));
             switch (j) {
                 case 0:  testWidget->setItemHidden(child, true);break;
                 case 1:  testWidget->setItemHidden(child, false);break;
@@ -1074,6 +1075,24 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget_data()
                 << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All << 1 << 3 << QString("top0,child1") << QString("top0,child1") << 0;
 }
 
+static void populate3Levels(QTreeWidget &tw, int topLevelItems, int childItems, int grandChildItems)
+{
+    for (int i1 = 0; i1 < topLevelItems; ++i1) {
+        QTreeWidgetItem *top = new QTreeWidgetItem(&tw);
+        const QString top1S = QLatin1String("top") + QString::number(i1);
+        top->setText(0, top1S);
+        for (int i2 = 0; i2 < childItems; ++i2) {
+            QTreeWidgetItem *child = new QTreeWidgetItem(top);
+            const QString childS = top1S + QLatin1String(",child") + QString::number(i2);
+            child->setText(0, childS);
+            for (int i3 = 0; i3 < grandChildItems; ++i3) {
+                QTreeWidgetItem *grandChild = new QTreeWidgetItem(child);
+                grandChild->setText(0, childS + QLatin1String(",grandchild") + QString::number(i3));
+            }
+        }
+    }
+}
+
 void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
 {
     QFETCH(int, topLevelItems);
@@ -1089,18 +1108,7 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
     QTreeWidget tw;
     tw.clear();
     tw.setColumnCount(2);
-    for (int i1=0; i1 < topLevelItems; ++i1) {
-        QTreeWidgetItem *top = new QTreeWidgetItem(&tw);
-        top->setText(0, QString("top%1").arg(i1));
-        for (int i2=0; i2 < childItems; ++i2) {
-            QTreeWidgetItem *child = new QTreeWidgetItem(top);
-            child->setText(0, QString("top%1,child%2").arg(i1).arg(i2));
-            for (int i3=0; i3 < grandChildItems; ++i3) {
-                QTreeWidgetItem *grandChild = new QTreeWidgetItem(child);
-                grandChild->setText(0, QString("top%1,child%2,grandchild%3").arg(i1).arg(i2).arg(i3));
-            }
-        }
-    }
+    populate3Levels(tw, topLevelItems, childItems, grandChildItems);
 
     QTreeWidgetItemIterator it(&tw, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     it+=expecteditemindex;
@@ -1161,18 +1169,7 @@ void tst_QTreeWidgetItemIterator::updateIteratorAfterDeletedItem_and_ContinueIte
     QTreeWidget tw;
     tw.clear();
     tw.setColumnCount(2);
-    for (int i1=0; i1 < topLevelItems; ++i1) {
-        QTreeWidgetItem *top = new QTreeWidgetItem(&tw);
-        top->setText(0, QString("top%1").arg(i1));
-        for (int i2=0; i2 < childItems; ++i2) {
-            QTreeWidgetItem *child = new QTreeWidgetItem(top);
-            child->setText(0, QString("top%1,child%2").arg(i1).arg(i2));
-            for (int i3=0; i3 < grandChildItems; ++i3) {
-                QTreeWidgetItem *grandChild = new QTreeWidgetItem(child);
-                grandChild->setText(0, QString("top%1,child%2,grandchild%3").arg(i1).arg(i2).arg(i3));
-            }
-        }
-    }
+    populate3Levels(tw, topLevelItems, childItems, grandChildItems);
 
     QTreeWidgetItemIterator it(&tw, QTreeWidgetItemIterator::All);
     it += iterator_initial_index;

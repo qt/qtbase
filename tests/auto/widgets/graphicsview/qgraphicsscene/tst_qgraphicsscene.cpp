@@ -2630,7 +2630,8 @@ void tst_QGraphicsScene::render()
     painter.end();
 
     const QString renderPath = QLatin1String(SRCDIR) + "/testData/render";
-    QString fileName = renderPath + QString("/%1.png").arg(QTest::currentDataTag());
+    QString fileName = renderPath + QLatin1Char('/') + QLatin1String(QTest::currentDataTag())
+        + QLatin1String(".png");
     QImage original(fileName);
     QVERIFY(!original.isNull());
 

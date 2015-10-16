@@ -554,7 +554,7 @@ void tst_QMenu::widgetActionFocus()
     QMenu m;
     QListWidget *l = new QListWidget(&m);
     for (int i = 1; i<3 ; i++)
-        l->addItem(QString("item%1").arg(i));
+        l->addItem(QStringLiteral("item" ) + QString::number(i));
     QWidgetAction *wa = new QWidgetAction(&m);
     wa->setDefaultWidget(l);
     m.addAction(wa);
@@ -747,7 +747,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
 
     uint i = 2;
     while (main.columnCount() < 2) {
-        main.addAction(QString("Item %1").arg(i));
+        main.addAction(QLatin1String("Item ") + QString::number(i));
         ++i;
         QVERIFY(i<1000);
     }
@@ -1021,7 +1021,7 @@ public:
     MyMenu() : m_currentIndex(0)
     {
         for (int i = 0; i < 2; ++i)
-            dialogActions[i] = addAction( QString("dialog %1").arg(i), dialogs + i, SLOT(exec()));
+            dialogActions[i] = addAction(QLatin1String("dialog ") + QString::number(i), dialogs + i, SLOT(exec()));
     }
 
     void activateAction(int index)

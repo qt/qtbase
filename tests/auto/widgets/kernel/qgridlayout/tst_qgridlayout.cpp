@@ -538,7 +538,8 @@ public:
     }
 private:
     void init(int numPixels = -1){
-        setText(QString::fromLatin1("(%1,%2)").arg(sh.width()).arg(sh.height()));
+        setText(QLatin1Char('(') + QString::number(sh.width())
+                + QLatin1Char(',') + QString::number(sh.height()) + QLatin1Char(')'));
         setFrameStyle(QFrame::Box | QFrame::Plain);
         setNumberOfPixels(numPixels);
     }
@@ -1432,8 +1433,9 @@ void tst_QGridLayout::layoutSpacing_data()
             w->setLayout(layout);
             int pw = up->sizeHint().width();
             int ph = up->sizeHint().height();
-            QByteArray testName = QString::fromLatin1("arrowpad with %1 empty rows, %2 empty columns").arg(yoff).arg(xoff).toLatin1();
-            QTest::newRow(testName.data())
+            QByteArray testName = "arrowpad with " + QByteArray::number(yoff)
+                + " empty rows, " + QByteArray::number(xoff) + " empty columns";
+            QTest::newRow(testName.constData())
                     << w << (PointList()
                     << QPoint(0 + pw + 5, 3)
                     << QPoint(0, 3 + ph + 10)
@@ -1686,7 +1688,7 @@ void tst_QGridLayout::replaceWidget()
     for (int n = 0; n < itemCount; ++n) {
         int x = n % 3;
         int y = n / 3;
-        labels[n] = new QLabel(QString("label %1").arg(n));
+        labels[n] = new QLabel(QLatin1String("label ") + QString::number(n));
         Qt::Alignment align = (n % 3 ? Qt::AlignLeft : Qt::AlignRight);
         l->addWidget(labels[n], x * 3, y * 3, (n % 2) + 1, (n + 1) % 2 + 1, align);
     }

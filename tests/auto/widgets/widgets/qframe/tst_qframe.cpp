@@ -73,22 +73,24 @@ static void provideFrameData()
 
     for (int lineWidth = 0; lineWidth < 3; ++lineWidth) {
         for (int midLineWidth = 0; midLineWidth < 3; ++midLineWidth) {
-            QTest::newRow(qPrintable(QStringLiteral("box_noshadow_%1_%2").arg(lineWidth).arg(midLineWidth)))
-                    << "box_noshadow" << lineWidth << midLineWidth << QFrame::Box << (QFrame::Shadow)0;
-            QTest::newRow(qPrintable(QStringLiteral("box_plain_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            const QByteArray postFix = '_' + QByteArray::number(lineWidth) + '_'
+                + QByteArray::number(midLineWidth);
+            QTest::newRow(("box_noshadow" + postFix).constData())
+                     << "box_noshadow" << lineWidth << midLineWidth << QFrame::Box << (QFrame::Shadow)0;
+            QTest::newRow(("box_plain" + postFix).constData())
                     << "box_plain" << lineWidth << midLineWidth << QFrame::Box << QFrame::Plain;
-            QTest::newRow(qPrintable(QStringLiteral("box_raised_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("box_raised" + postFix).constData())
                     << "box_raised" << lineWidth << midLineWidth << QFrame::Box << QFrame::Raised;
-            QTest::newRow(qPrintable(QStringLiteral("box_sunken_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("box_sunken" + postFix).constData())
                     << "box_sunken" << lineWidth << midLineWidth << QFrame::Box << QFrame::Sunken;
 
-            QTest::newRow(qPrintable(QStringLiteral("winpanel_noshadow_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("winpanel_noshadow" + postFix).constData())
                     << "winpanel_noshadow" << lineWidth << midLineWidth << QFrame::WinPanel << (QFrame::Shadow)0;
-            QTest::newRow(qPrintable(QStringLiteral("winpanel_plain_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("winpanel_plain" + postFix).constData())
                     << "winpanel_plain" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Plain;
-            QTest::newRow(qPrintable(QStringLiteral("winpanel_raised_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("winpanel_raised" + postFix).constData())
                     << "winpanel_raised" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Raised;
-            QTest::newRow(qPrintable(QStringLiteral("winpanel_sunken_%1_%2").arg(lineWidth).arg(midLineWidth)))
+            QTest::newRow(("winpanel_sunken" + postFix).constData())
                     << "winpanel_sunken" << lineWidth << midLineWidth << QFrame::WinPanel << QFrame::Sunken;
         }
     }
@@ -174,7 +176,10 @@ void tst_QFrame::testPainting()
 
     const QPixmap pixmap = frame.grab();
 
-    const QString referenceFilePath = QFINDTESTDATA(QStringLiteral("images/%1_%2_%3.png").arg(basename).arg(lineWidth).arg(midLineWidth));
+    const QString fileName = QLatin1String("images/") + basename + QLatin1Char('_')
+        + QString::number(lineWidth) + QLatin1Char('_') + QString::number(midLineWidth)
+        + QLatin1String(".png");
+    const QString referenceFilePath = QFINDTESTDATA(fileName);
     const QPixmap referencePixmap(referenceFilePath);
     QVERIFY2(!referencePixmap.isNull(), qPrintable(QStringLiteral("Could not load reference pixmap %1").arg(referenceFilePath)));
     QCOMPARE(pixmap, referencePixmap);

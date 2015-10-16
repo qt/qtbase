@@ -588,7 +588,7 @@ void tst_QGraphicsWidget::focusPolicy_data()
     QTest::addColumn<Qt::FocusPolicy>("focusPolicy2");
 
     for (int i = 0; i < 25; ++i) {
-        QTestData &data = QTest::newRow(QString("%1").arg(i).toLatin1());
+        QTestData &data = QTest::newRow(QByteArray::number(i).constData());
         switch(i % 5) {
         case 0: data << Qt::TabFocus; break;
         case 1: data << Qt::ClickFocus; break;
@@ -1499,7 +1499,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     for (i = 1; i < 4; ++i) {
         QGraphicsWidget *wid = new QGraphicsWidget;
         wid->setFocusPolicy(Qt::StrongFocus);
-        wid->setData(0, QString::fromLatin1("w%1").arg(i));
+        wid->setData(0, QLatin1Char('w') + QString::number(i));
         scene.addItem(wid);
         if (i == 1)
             w1 = wid;
@@ -1539,7 +1539,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     for (i = 1; i < 5; ++i) {
         QGraphicsWidget *wid = new QGraphicsWidget;
         wid->setFocusPolicy(Qt::StrongFocus);
-        wid->setData(0, QString::fromLatin1("w%1").arg(i));
+        wid->setData(0, QLatin1Char('w') + QString::number(i));
         scene.addItem(wid);
         if (i == 1)
             w1 = wid;

@@ -871,7 +871,7 @@ class DnDTestModel : public QStandardItemModel
 public:
     DnDTestModel() : QStandardItemModel(20, 20), dropAction_result(Qt::IgnoreAction) {
         for (int i = 0; i < rowCount(); ++i)
-            setData(index(i, 0), QString("%1").arg(i));
+            setData(index(i, 0), QString::number(i));
     }
     Qt::DropAction dropAction() const { return dropAction_result; }
 };
@@ -1276,9 +1276,9 @@ void tst_QAbstractItemView::task250754_fontChange()
 
     QStandardItemModel *m = new QStandardItemModel(this);
     for (int i=0; i<20; ++i) {
-        QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+        QStandardItem *item = new QStandardItem(QStringLiteral("Item number ") + QString::number(i));
         for (int j=0; j<5; ++j) {
-            QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
+            QStandardItem *child = new QStandardItem(QStringLiteral("Child Item number ") + QString::number(j));
             item->setChild(j, 0, child);
         }
         m->setItem(i, 0, item);
@@ -1368,7 +1368,7 @@ void tst_QAbstractItemView::shiftArrowSelectionAfterScrolling()
 {
     QStandardItemModel model;
     for (int i=0; i<10; ++i) {
-        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        QStandardItem *item = new QStandardItem(QString::number(i));
         model.setItem(i, 0, item);
     }
 
@@ -1405,7 +1405,7 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
 {
     QStandardItemModel model;
     for (int i=0; i<3; ++i) {
-        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        QStandardItem *item = new QStandardItem(QString::number(i));
         model.setItem(i, 0, item);
     }
 
@@ -1482,7 +1482,7 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
 {
     QStandardItemModel model;
     for (int i=0; i<3; ++i) {
-        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        QStandardItem *item = new QStandardItem(QString::number(i));
         model.setItem(i, 0, item);
     }
 

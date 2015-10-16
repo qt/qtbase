@@ -396,7 +396,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
 
         QMdiArea *nestedWorkspace = new QMdiArea; // :-)
         window->setWidget(nestedWorkspace);
-        window->widget()->setWindowTitle(QString::fromLatin1("Window %1").arg(i));
+        window->widget()->setWindowTitle(QLatin1String("Window ") + QString::number(i));
 
         workspace->addSubWindow(window);
         QVERIFY(!window->maximizedButtonsWidget());
@@ -423,8 +423,9 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QVERIFY(window->maximizedSystemMenuIconWidget());
         QCOMPARE(window->maximizedSystemMenuIconWidget(), qobject_cast<QWidget *>(mainWindow.menuBar()
                                                                     ->cornerWidget(Qt::TopLeftCorner)));
-        QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
-                                           .arg(originalWindowTitle, window->widget()->windowTitle()));
+        const QString expectedTitle = originalWindowTitle + QLatin1String(" - [")
+            + window->widget()->windowTitle() + QLatin1Char(']');
+        QCOMPARE(mainWindow.windowTitle(), expectedTitle);
 #endif
 
         // Check that nested child windows don't set window title
@@ -432,7 +433,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QMdiSubWindow *nestedWindow = new QMdiSubWindow;
         nestedWindow->setWidget(new QWidget);
         nestedWorkspace->addSubWindow(nestedWindow);
-        nestedWindow->widget()->setWindowTitle(QString::fromLatin1("NestedWindow %1").arg(i));
+        nestedWindow->widget()->setWindowTitle(QLatin1String("NestedWindow ") + QString::number(i));
         nestedWindow->showMaximized();
         qApp->processEvents();
         QVERIFY(nestedWindow->isMaximized());

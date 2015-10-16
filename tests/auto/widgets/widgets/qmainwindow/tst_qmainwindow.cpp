@@ -1369,7 +1369,7 @@ void tst_QMainWindow::restoreStateFromPreviousVersion()
         QVector<QDockWidget*> docks;
 
         for(int i = 0; i < 16; ++i) {
-            const QString name = QString::fromLatin1("dock %1").arg(i);
+            const QString name = QStringLiteral("dock ") + QString::number(i);
             QDockWidget *dock = new QDockWidget(name);
             docks += dock;
             dock->setObjectName(name);

@@ -180,12 +180,13 @@ protected:
             QKeyEvent *ke = static_cast<QKeyEvent*>(e);
             if (ke->modifiers() && ke->key() > Qt::Key_Any
                 && ke->key() < Qt::Key_ydiaeresis) {
+                const QChar c = QLatin1Char(char(ke->key()));
                 if (ke->modifiers() == Qt::ControlModifier)
-                    insertPlainText(QString("<Ctrl+%1>").arg(char(ke->key())));
+                    insertPlainText(QLatin1String("<Ctrl+") + c + QLatin1Char('>'));
                 else if (ke->modifiers() == Qt::AltModifier)
-                    insertPlainText(QString("<Alt+%1>").arg(char(ke->key())));
+                    insertPlainText(QLatin1String("<Alt+") + c + QLatin1Char('>'));
                 else if (ke->modifiers() == Qt::ShiftModifier)
-                    insertPlainText(QString("<Shift+%1>").arg(char(ke->key())));
+                    insertPlainText(QLatin1String("<Shift+") + c + QLatin1Char('>'));
                 return true;
             }
         }

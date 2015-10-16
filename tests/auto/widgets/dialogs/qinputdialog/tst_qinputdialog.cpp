@@ -168,10 +168,10 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
     const ValueType origValue = sbox->value();
 
     testInvalidateAndRestore<SpinBoxType, ValueType>(sbox, okButton, ledit);
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(sbox->minimum()));
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(sbox->maximum()));
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(sbox->minimum() - 1));
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(sbox->maximum() + 1));
+    testTypingValue<SpinBoxType>(sbox, okButton, QString::number(sbox->minimum()));
+    testTypingValue<SpinBoxType>(sbox, okButton, QString::number(sbox->maximum()));
+    testTypingValue<SpinBoxType>(sbox, okButton, QString::number(sbox->minimum() - 1));
+    testTypingValue<SpinBoxType>(sbox, okButton, QString::number(sbox->maximum() + 1));
     testTypingValue<SpinBoxType>(sbox, okButton, "0");
     testTypingValue<SpinBoxType>(sbox, okButton, "0.0");
     testTypingValue<SpinBoxType>(sbox, okButton, "foobar");

@@ -74,6 +74,15 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
+static QStringList generateList(const QString &prefix, int size)
+{
+    QStringList result;
+    result.reserve(size);
+    for (int i = 0; i < size; ++i)
+        result.append(prefix + QString::number(i));
+    return result;
+}
+
 class tst_QListView : public QObject
 {
     Q_OBJECT
@@ -255,7 +264,7 @@ public:
             wrongIndex = true;
             qWarning("got invalid modelIndex %d/%d", idx.row(), idx.column());
         }
-        return QString("%1/%2").arg(idx.row()).arg(idx.column());
+        return QString::number(idx.row()) + QLatin1Char('/') + QString::number(idx.column());
     }
 
     void removeLastRow()
@@ -364,10 +373,11 @@ void tst_QListView::cursorMove()
     view.setModel(&model);
 
     for (int j = 0; j < columns; ++j) {
+        const QString postfix = QLatin1Char(',') + QString::number(j) + QLatin1Char(']');
         view.setModelColumn(j);
         for (int i = 0; i < rows; ++i) {
             QModelIndex index = model.index(i, j);
-            model.setData(index, QString("[%1,%2]").arg(i).arg(j));
+            model.setData(index, QLatin1Char('[') + QString::number(i) + postfix);
             view.setCurrentIndex(index);
             QApplication::processEvents();
             QCOMPARE(view.currentIndex(), index);
@@ -468,7 +478,7 @@ void tst_QListView::hideRows()
     QStandardItemModel sim(0);
     QStandardItem *root = new QStandardItem("Root row");
     for (int i=0;i<5;i++)
-        root->appendRow(new QStandardItem(QString("Row %1").arg(i)));
+        root->appendRow(new QStandardItem(QLatin1String("Row ") + QString::number(i)));
     sim.appendRow(root);
     view.setModel(&sim);
     view.setRootIndex(root->index());
@@ -702,9 +712,11 @@ void tst_QListView::singleSelectionRemoveColumn()
     int numCols = 3;
     int numRows = 3;
     QStandardItemModel model(numCols, numRows);
-    for (int r = 0; r < numRows; ++r)
+    for (int r = 0; r < numRows; ++r) {
+        const QString prefix = QString::number(r) + QLatin1Char(',');
         for (int c = 0; c < numCols; ++c)
-            model.setData(model.index(r, c), QString("%1,%2").arg(r).arg(c));
+            model.setData(model.index(r, c), prefix + QString::number(c));
+    }
 
     QListView view;
     view.setModel(&model);
@@ -729,10 +741,11 @@ void tst_QListView::modelColumn()
     int numCols = 3;
     int numRows = 3;
     QStandardItemModel model(numCols, numRows);
-    for (int r = 0; r < numRows; ++r)
+    for (int r = 0; r < numRows; ++r) {
+        const QString prefix = QString::number(r) + QLatin1Char(',');
         for (int c = 0; c < numCols; ++c)
-            model.setData(model.index(r, c), QString("%1,%2").arg(r).arg(c));
-
+            model.setData(model.index(r, c), prefix + QString::number(c));
+    }
 
     QListView view;
     view.setModel(&model);
@@ -811,10 +824,7 @@ void tst_QListView::batchedMode()
 {
     const int rowCount = 3;
 
-    QStringList items;
-    for (int i = 0; i < rowCount; ++i)
-        items << QLatin1String("item ") + QString::number(i);
-    QStringListModel model(items);
+    QStringListModel model(generateList(QLatin1String("item "), rowCount));
 
     QListView view;
     view.setWindowTitle(QTest::currentTestFunction());
@@ -840,11 +850,7 @@ void tst_QListView::batchedMode()
 
 void tst_QListView::setCurrentIndex()
 {
-    QStringList items;
-    int i;
-    for (i=0; i <20; ++i)
-        items << QString("item %1").arg(i);
-    QStringListModel model(items);
+    QStringListModel model(generateList(QLatin1String("item "), 20));
 
     QListView view;
     view.setModel(&model);
@@ -866,7 +872,7 @@ void tst_QListView::setCurrentIndex()
             int offset = sb->value();
 
             // first "scroll" down, verify that we scroll one step at a time
-            i = 0;
+            int i = 0;
             for (i = 0; i < 20; ++i) {
                 QModelIndex idx = model.index(i,0);
                 view.setCurrentIndex(idx);
@@ -1289,7 +1295,7 @@ void tst_QListView::scrollBarRanges()
     QStringListModel model(&lv);
     QStringList list;
     for (int i = 0; i < rowCount; ++i)
-        list << QString::fromLatin1("Item %1").arg(i);
+        list << QLatin1String("Item ") + QString::number(i);
 
     model.setStringList(list);
     lv.setModel(&model);
@@ -1387,17 +1393,13 @@ void tst_QListView::scrollBarAsNeeded()
         QStringList list;
         int i;
         for (i = 0; i < rowCounts[r]; ++i)
-            list << QString::fromLatin1("Item %1").arg(i);
+            list << QLatin1String("Item ") + QString::number(i);
 
         model.setStringList(list);
         QApplication::processEvents();
         QTest::qWait(50);
 
-        QStringList replacement;
-        for (i = 0; i < itemCount; ++i) {
-            replacement << QString::fromLatin1("Item %1").arg(i);
-        }
-        model.setStringList(replacement);
+        model.setStringList(generateList(QLatin1String("Item "), itemCount));
 
         QApplication::processEvents();
 
@@ -1410,10 +1412,9 @@ void tst_QListView::moveItems()
 {
     QStandardItemModel model;
     for (int r = 0; r < 4; ++r) {
-        for (int c = 0; c < 4; ++c) {
-            QStandardItem* item = new QStandardItem(QString("standard item (%1,%2)").arg(r).arg(c));
-            model.setItem(r, c, item);
-        }
+        const QString prefix = QLatin1String("standard item (") + QString::number(r) + QLatin1Char(',');
+        for (int c = 0; c < 4; ++c)
+            model.setItem(r, c, new QStandardItem(prefix + QString::number(c) + QLatin1Char(')')));
     }
 
     PublicListView view;
@@ -1525,9 +1526,10 @@ void tst_QListView::emptyItemSize()
 {
     QStandardItemModel model;
     for (int r = 0; r < 4; ++r) {
-        QStandardItem* item = new QStandardItem(QString("standard item (%1)").arg(r));
-        model.setItem(r, 0, item);
+        const QString text = QLatin1String("standard item (") + QString::number(r) + QLatin1Char(')');
+        model.setItem(r, new QStandardItem(text));
     }
+
     model.setItem(4, 0, new QStandardItem());
 
     PublicListView view;
@@ -1994,12 +1996,7 @@ public:
 
 void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
 {
-    QStringList list;
-    const int nrItems = 8;
-    for (int i = 0; i < nrItems; i++)
-        list << QString::asprintf("item %d", i);
-
-    QStringListModel model(list);
+    QStringListModel model(generateList("item ", 8));
     ListView_9455 w;
     setFrameless(&w);
     w.setModel(&model);

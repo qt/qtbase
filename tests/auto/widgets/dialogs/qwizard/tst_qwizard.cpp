@@ -1625,7 +1625,7 @@ class SetPage : public Operation
         for (int j = 0; j < page; ++j)
             wizard->next();
     }
-    QString describe() const { return QString("set page %1").arg(page); }
+    QString describe() const { return QLatin1String("set page ") + QString::number(page); }
     const int page;
 public:
     SetPage(int page) : page(page) {}
@@ -1634,7 +1634,7 @@ public:
 class SetStyle : public Operation
 {
     void apply(QWizard *wizard) const { wizard->setWizardStyle(style); }
-    QString describe() const { return QString("set style %1").arg(style); }
+    QString describe() const { return QLatin1String("set style ") + QString::number(style); }
     const QWizard::WizardStyle style;
 public:
     SetStyle(QWizard::WizardStyle style) : style(style) {}
@@ -1697,7 +1697,8 @@ public:
 
 QString SetOption::describe() const
 {
-    return QString("set opt %1 %2").arg(OptionInfo::instance().tag(option)).arg(on);
+    return QLatin1String("set opt ") + OptionInfo::instance().tag(option)
+        + QLatin1Char(on ? '1' : '0');
 }
 
 Q_DECLARE_METATYPE(Operation *)
@@ -1726,7 +1727,7 @@ public:
     void createTestRows()
     {
         for (int i = 0; i < combinations.count(); ++i) {
-            QTest::newRow((name + QString(", row %1").arg(i)).toLatin1().data())
+            QTest::newRow((name.toLatin1() + ", row " + QByteArray::number(i)).constData())
                 << (i == 0) << (type == Equality) << *(combinations.at(i));
             ++nRows_;
         }
@@ -1827,7 +1828,7 @@ public:
         foreach (Operation * op, operations) {
             if (op) {
                 op->apply(this);
-                opsDescr += QString("(%1) ").arg(op->describe());
+                opsDescr += QLatin1Char('(') + op->describe() + QLatin1String(") ");
             }
         }
     }

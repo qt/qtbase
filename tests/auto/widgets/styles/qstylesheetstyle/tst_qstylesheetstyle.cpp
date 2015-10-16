@@ -1814,8 +1814,11 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
     QTableWidget widget(rowCount, columnCount);
 
     for (int row = 0; row < rowCount; ++row) {
-        for (int column = 0; column < columnCount; ++column)
-            widget.setItem(row, column, new QTableWidgetItem(QStringLiteral("row %1 column %2").arg(row + 1).arg(column + 1)));
+        for (int column = 0; column < columnCount; ++column) {
+            const QString t = QLatin1String("row ") + QString::number(row + 1)
+                + QLatin1String(" column ") + QString::number(column + 1);
+            widget.setItem(row, column, new QTableWidgetItem(t));
+        }
 
         // put no visible text for the vertical headers, but still put some text or they will collapse
         widget.setVerticalHeaderItem(row, new QTableWidgetItem(QStringLiteral("    ")));

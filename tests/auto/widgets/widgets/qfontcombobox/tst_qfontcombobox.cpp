@@ -248,7 +248,7 @@ void tst_QFontComboBox::writingSystem_data()
     QTest::newRow("Runic") << QFontDatabase::Runic;
 
     for (int i = 0; i < 31; ++i)
-        QTest::newRow(qPrintable(QString("enum %1").arg(i))) << (QFontDatabase::WritingSystem)i;
+        QTest::newRow(("enum " + QByteArray::number(i)).constData()) << (QFontDatabase::WritingSystem)i;
 }
 
 // public QFontDatabase::WritingSystem writingSystem() const

@@ -606,7 +606,7 @@ public slots:
     void updateTabText()
     {
         count++;
-        setTabText(0, QString("%1").arg(count));
+        setTabText(0, QString::number(count));
     }
 };
 

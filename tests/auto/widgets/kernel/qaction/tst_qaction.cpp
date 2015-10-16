@@ -334,9 +334,9 @@ void tst_QAction::task200823_tooltip()
     action->setShortcut(shortcut);
 
     // we want a non-standard tooltip that shows the shortcut
-    action->setToolTip(QString("%1 (%2)").arg(action->text()).arg(action->shortcut().toString()));
+    action->setToolTip(action->text() + QLatin1String(" (") + action->shortcut().toString() + QLatin1Char(')'));
 
-    QString ref = QString("foo (%1)").arg(QKeySequence(shortcut).toString());
+    QString ref = QLatin1String("foo (") + QKeySequence(shortcut).toString() + QLatin1Char(')');
     QCOMPARE(action->toolTip(), ref);
 }
 

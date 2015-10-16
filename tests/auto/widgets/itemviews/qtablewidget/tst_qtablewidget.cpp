@@ -1473,7 +1473,7 @@ void tst_QTableWidget::task262056_sortDuplicate()
     for (int i = 0; i<8; i++ ) {
         QTableWidgetItem *twi = new QTableWidgetItem(items.at(i));
         testWidget->setItem(i,0,twi);
-        testWidget->setItem(i,1,new QTableWidgetItem(QString("item %1").arg(i)));
+        testWidget->setItem(i,1,new QTableWidgetItem(QLatin1String("item ") + QString::number(i)));
     }
     testWidget->sortItems(0, Qt::AscendingOrder);
     QSignalSpy layoutChangedSpy(testWidget->model(), SIGNAL(layoutChanged()));

@@ -159,7 +159,7 @@ public:
         {
             setContentsMargins( 0,0,0,0 );
             if (name.isEmpty())
-                setData(0, QString::fromLatin1("w%1").arg(quintptr(this)));
+                setData(0, QLatin1Char('w') + QString::number(quintptr(this)));
             else
                 setData(0, name);
         }
@@ -1702,10 +1702,8 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
 
     // Create dummy widgets
     QList<QGraphicsWidget *> widgets;
-    for (int i = 0; i < widgetCount; ++i) {
-        TestWidget *w = new TestWidget(0, QString::fromLatin1("W%1").arg(i));
-        widgets << w;
-    }
+    for (int i = 0; i < widgetCount; ++i)
+        widgets << new TestWidget(0, QLatin1Char('W') + QString::number(i));
 
     // Setup anchor layout
     TheAnchorLayout *layout = new TheAnchorLayout;

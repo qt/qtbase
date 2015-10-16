@@ -2866,6 +2866,11 @@ void tst_QLineEdit::insert()
     QCOMPARE(testWidget->text(), QString("No Crash! This is a nice test"));
 }
 
+static inline QByteArray selectionTestName(int start, int length)
+{
+    return "selection start: " + QByteArray::number(start) + " length: " + QByteArray::number(length);
+}
+
 void tst_QLineEdit::setSelection_data()
 {
     QTest::addColumn<QString>("text");
@@ -2879,39 +2884,39 @@ void tst_QLineEdit::setSelection_data()
     int start, length, pos;
 
     start = 0; length = 1; pos = 1;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("A") << true;
 
     start = 0; length = 2; pos = 2;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("Ab") << true;
 
     start = 0; length = 4; pos = 4;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("Abc ") << true;
 
     start = -1; length = 0; pos = text.length();
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 
     start = 34; length = 1; pos = 35;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("z") << true;
 
     start = 34; length = 2; pos = 35;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("z") << true;
 
     start = 34; length = -1; pos = 33;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("y") << true;
 
     start = 1; length = -2; pos = 0;
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("A") << true;
 
     start = -1; length = -1; pos = text.length();
-    QTest::newRow(QString("selection start: %1 length: %2").arg(start).arg(length).toLatin1())
+    QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 }
 
@@ -3292,7 +3297,7 @@ void tst_QLineEdit::inlineCompletion()
     QStandardItem *root = model->invisibleRootItem();
     QStandardItem *items[5];
     for (int i = 0; i < 5; i++) {
-        items[i] = new QStandardItem(QString("item%1").arg(i));
+        items[i] = new QStandardItem(QLatin1String("item") + QString::number(i));
         if ((i+2)%2 == 0) { // disable 0,2,4
             items[i]->setFlags(items[i]->flags() & ~Qt::ItemIsEnabled);
         }

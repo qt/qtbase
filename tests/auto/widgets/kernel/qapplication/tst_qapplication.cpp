@@ -400,11 +400,12 @@ void tst_QApplication::setFont_data()
                 if (!sizes.size())
                     sizes = fdb.standardSizes();
                 if (sizes.size() > 0) {
-                    QTest::newRow(QString("data%1a").arg(cnt).toLatin1().constData())
+                    const QByteArray cntB = QByteArray::number(cnt);
+                    QTest::newRow(("data" + cntB + "a").constData())
                         << family
                         << sizes.first()
                         << false;
-                    QTest::newRow(QString("data%1b").arg(cnt).toLatin1().constData())
+                    QTest::newRow(("data" + cntB + "b").constData())
                         << family
                         << sizes.first()
                         << true;
