@@ -496,7 +496,8 @@ public:
         AA_UseSoftwareOpenGL = 17,
         AA_ShareOpenGLContexts = 18,
         AA_SetPalette = 19,
-        AA_NoHighDpiScaling = 20,
+        AA_EnableHighDpiScaling = 20,
+        AA_DisableHighDpiScaling = 21,
 
         // Add new attributes before this line
         AA_AttributeCount
