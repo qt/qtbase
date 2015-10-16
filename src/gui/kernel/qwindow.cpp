@@ -389,25 +389,31 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 void QWindowPrivate::create(bool recursive)
 {
     Q_Q(QWindow);
-    if (!platformWindow) {
-        platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
-        QObjectList childObjects = q->children();
-        for (int i = 0; i < childObjects.size(); i ++) {
-            QObject *object = childObjects.at(i);
-            if (object->isWindowType()) {
-                QWindow *window = static_cast<QWindow *>(object);
-                if (recursive)
-                    window->d_func()->create(true);
-                if (window->d_func()->platformWindow)
-                    window->d_func()->platformWindow->setParent(platformWindow);
-            }
-        }
+    if (platformWindow)
+        return;
 
-        if (platformWindow) {
-            QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
-            QGuiApplication::sendEvent(q, &e);
+    platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
+    Q_ASSERT(platformWindow);
+
+    if (!platformWindow) {
+        qWarning() << "Failed to create platform window for" << q << "with flags" << q->flags();
+        return;
+    }
+
+    QObjectList childObjects = q->children();
+    for (int i = 0; i < childObjects.size(); i ++) {
+        QObject *object = childObjects.at(i);
+        if (object->isWindowType()) {
+            QWindow *window = static_cast<QWindow *>(object);
+            if (recursive)
+                window->d_func()->create(true);
+            if (window->d_func()->platformWindow)
+                window->d_func()->platformWindow->setParent(platformWindow);
         }
     }
+
+    QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
+    QGuiApplication::sendEvent(q, &e);
 }
 
 void QWindowPrivate::clearFocusObject()
