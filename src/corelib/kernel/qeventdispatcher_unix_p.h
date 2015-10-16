@@ -59,38 +59,22 @@
 #include "QtCore/qvarlengtharray.h"
 #include "private/qtimerinfo_unix_p.h"
 
-#if !defined(Q_OS_VXWORKS)
-#  include <sys/time.h>
-#  if (!defined(Q_OS_HPUX) || defined(__ia64)) && !defined(Q_OS_NACL)
-#    include <sys/select.h>
-#  endif
-#endif
-
 QT_BEGIN_NAMESPACE
 
-struct QSockNot
-{
-    QSocketNotifier *obj;
-    int fd;
-    fd_set *queue;
-};
-
-class QSockNotType
-{
-public:
-    QSockNotType();
-    ~QSockNotType();
-
-    typedef QPodList<QSockNot*, 32> List;
-
-    List list;
-    fd_set select_fds;
-    fd_set enabled_fds;
-    fd_set pending_fds;
-
-};
-
 class QEventDispatcherUNIXPrivate;
+
+struct Q_CORE_EXPORT QSocketNotifierSetUNIX Q_DECL_FINAL
+{
+    inline QSocketNotifierSetUNIX() Q_DECL_NOTHROW;
+
+    inline bool isEmpty() const Q_DECL_NOTHROW;
+    inline short events() const Q_DECL_NOTHROW;
+
+    QSocketNotifier *notifiers[3];
+};
+
+Q_DECLARE_TYPEINFO(QSocketNotifierSetUNIX, Q_PRIMITIVE_TYPE);
+
 
 class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
 {
@@ -120,15 +104,6 @@ public:
 
 protected:
     QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent = 0);
-
-    void setSocketNotifierPending(QSocketNotifier *notifier);
-
-    int activateTimers();
-    int activateSocketNotifiers();
-
-    virtual int select(int nfds,
-                       fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                       timespec *timeout);
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate
@@ -139,27 +114,56 @@ public:
     QEventDispatcherUNIXPrivate();
     ~QEventDispatcherUNIXPrivate();
 
-    int doSelect(QEventLoop::ProcessEventsFlags flags, timespec *timeout);
-    virtual int initThreadWakeUp() Q_DECL_FINAL;
-    virtual int processThreadWakeUp(int nsel) Q_DECL_FINAL;
+    int processThreadWakeUp(const pollfd &pfd);
+
+    int activateTimers();
+
+    void markPendingSocketNotifiers();
+    int activateSocketNotifiers();
+    void setSocketNotifierPending(QSocketNotifier *notifier);
 
     // note for eventfd(7) support:
     // if thread_pipe[1] is -1, then eventfd(7) is in use and is stored in thread_pipe[0]
     int thread_pipe[2];
 
-    // highest fd for all socket notifiers
-    int sn_highest;
-    // 3 socket notifier types - read, write and exception
-    QSockNotType sn_vec[3];
+    QVector<pollfd> pollfds;
+
+    QHash<int, QSocketNotifierSetUNIX> socketNotifiers;
+    QVector<QSocketNotifier *> pendingNotifiers;
 
     QTimerInfoList timerList;
-
-    // pending socket notifiers list
-    QSockNotType::List sn_pending_list;
 
     QAtomicInt wakeUps;
     QAtomicInt interrupt; // bool
 };
+
+inline QSocketNotifierSetUNIX::QSocketNotifierSetUNIX() Q_DECL_NOTHROW
+{
+    notifiers[0] = 0;
+    notifiers[1] = 0;
+    notifiers[2] = 0;
+}
+
+inline bool QSocketNotifierSetUNIX::isEmpty() const Q_DECL_NOTHROW
+{
+    return !notifiers[0] && !notifiers[1] && !notifiers[2];
+}
+
+inline short QSocketNotifierSetUNIX::events() const Q_DECL_NOTHROW
+{
+    short result = 0;
+
+    if (notifiers[0])
+        result |= POLLIN;
+
+    if (notifiers[1])
+        result |= POLLOUT;
+
+    if (notifiers[2])
+        result |= POLLPRI;
+
+    return result;
+}
 
 QT_END_NAMESPACE
 
