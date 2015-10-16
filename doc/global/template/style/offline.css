@@ -266,7 +266,7 @@ footer and license
      float: left
  }
 
-  .navigationbar li a {
+  .navigationbar li a, .navigationbar td a {
       display: block;
       text-decoration: none;
       background: url(../images/arrow_bc.png);
@@ -274,6 +274,23 @@ footer and license
       background-position: right;
       padding-right: 17px;
   }
+
+table.buildversion {
+      float: right;
+      margin-top: -18px !important;
+}
+
+.navigationbar table {
+      border-radius: 0;
+      border: 0 none;
+      background-color: #F2F2F2;
+      margin: 0;
+}
+
+.navigationbar table td {
+    padding: 0;
+    border: 0 none;
+}
 
 #buildversion {
     font-style: italic;

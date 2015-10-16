@@ -125,9 +125,11 @@ private:
     };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
-    void generateNavigationBar(const QString& title,
-                             const Node *node,
-                             CodeMarker *marker);
+    void generateNavigationBar(const QString &title,
+                               const Node *node,
+                               CodeMarker *marker,
+                               const QString &buildversion,
+                               bool tableItems = false);
     void generateHeader(const QString& title,
                         const Node *node = 0,
                         CodeMarker *marker = 0);

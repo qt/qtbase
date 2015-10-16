@@ -1847,71 +1847,87 @@ QString HtmlGenerator::fileExtension() const
   Output navigation list in the html file.
  */
 void HtmlGenerator::generateNavigationBar(const QString &title,
-                                        const Node *node,
-                                        CodeMarker *marker)
+                                          const Node *node,
+                                          CodeMarker *marker,
+                                          const QString &buildversion,
+                                          bool tableItems)
 {
     if (noNavigationBar)
         return;
 
     Text navigationbar;
 
+    // Set list item types based on the navigation bar type
+    Atom::AtomType itemLeft = tableItems ?
+                Atom::TableItemLeft : Atom::ListItemLeft;
+    Atom::AtomType itemRight = tableItems ?
+                Atom::TableItemRight : Atom::ListItemRight;
+
     if (homepage == title)
         return;
     if (!homepage.isEmpty())
-        navigationbar << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::NavAutoLink, homepage)
-                    << Atom(Atom::ListItemRight);
+        navigationbar << Atom(itemLeft)
+                      << Atom(Atom::NavAutoLink, homepage)
+                      << Atom(itemRight);
     if (!landingpage.isEmpty() && landingpage != title)
-        navigationbar << Atom(Atom::ListItemLeft)
+        navigationbar << Atom(itemLeft)
                     << Atom(Atom::NavAutoLink, landingpage)
-                    << Atom(Atom::ListItemRight);
+                    << Atom(itemRight);
 
     if (node->isClass()) {
-        const ClassNode *cn = static_cast<const ClassNode *>(node);
-        QString name =  node->physicalModuleName();
-
         if (!cppclassespage.isEmpty())
-            navigationbar << Atom(Atom::ListItemLeft)
+            navigationbar << Atom(itemLeft)
                         << Atom(Atom::NavLink, cppclassespage)
                         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                         << Atom(Atom::String, QLatin1String("C++ Classes"))
                         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                        << Atom(Atom::ListItemRight);
+                        << Atom(itemRight);
 
-        if (!cn->name().isEmpty())
-            navigationbar << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::String, cn->name())
-                        << Atom(Atom::ListItemRight);
+        if (!node->name().isEmpty())
+            navigationbar << Atom(itemLeft)
+                        << Atom(Atom::String, node->name())
+                        << Atom(itemRight);
     }
     else if (node->isQmlType() || node->isQmlBasicType() ||
              node->isJsType() || node->isJsBasicType()) {
         if (!qmltypespage.isEmpty())
-            navigationbar << Atom(Atom::ListItemLeft)
+            navigationbar << Atom(itemLeft)
                           << Atom(Atom::NavLink, qmltypespage)
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                           << Atom(Atom::String, QLatin1String("QML Types"))
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                          << Atom(Atom::ListItemRight)
-                          << Atom(Atom::ListItemLeft)
+                          << Atom(itemRight)
+                          << Atom(itemLeft)
                           << Atom(Atom::String, title)
-                          << Atom(Atom::ListItemRight);
+                          << Atom(itemRight);
     }
     else {
         if (node->isExampleFile()) {
-            navigationbar << Atom(Atom::ListItemLeft)
+            navigationbar << Atom(itemLeft)
                           << Atom(Atom::NavLink, node->parent()->name())
                           << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
                           << Atom(Atom::String, node->parent()->title())
                           << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                          << Atom(Atom::ListItemRight);
+                          << Atom(itemRight);
 
         }
-        navigationbar << Atom(Atom::ListItemLeft)
+        navigationbar << Atom(itemLeft)
                       << Atom(Atom::String, title)
-                      << Atom(Atom::ListItemRight);
+                      << Atom(itemRight);
     }
 
     generateText(navigationbar, node, marker);
+
+    if (buildversion.isEmpty())
+        return;
+
+    if (tableItems) {
+        out() << "</tr></table><table class=\"buildversion\"><tr>\n"
+              << "<td id=\"buildversion\" width=\"100%\" align=\"right\">"
+              << buildversion << "</td>\n";
+    } else {
+        out() << "<li id=\"buildversion\">" << buildversion << "</li>\n";
+    }
 }
 
 void HtmlGenerator::generateHeader(const QString& title,
@@ -1990,9 +2006,8 @@ void HtmlGenerator::generateHeader(const QString& title,
 #endif
 
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
-    generateNavigationBar(title,node,marker);
-    if (!buildversion.isEmpty())
-        out() << "<li id=\"buildversion\">" << buildversion << "</li>\n";
+    bool usingTable = postHeader.trimmed().endsWith(QLatin1String("<tr>"));
+    generateNavigationBar(title, node, marker, buildversion, usingTable);
     out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
 
     navigationLinks.clear();
