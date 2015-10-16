@@ -151,6 +151,8 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
         return S_OK;
     });
     Q_ASSERT_SUCCEEDED(hr);
+
+    d->platformServices = new QWinRTServices;
 }
 
 QWinRTIntegration::~QWinRTIntegration()
