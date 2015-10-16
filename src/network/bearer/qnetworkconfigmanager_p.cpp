@@ -51,11 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
-#endif
-
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
     : QObject(), pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
@@ -382,7 +377,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         bool envOK  = false;
         const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
         QBearerEngine *generic = 0;
-        QFactoryLoader *l = loader();
+        static QFactoryLoader loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer"));
+        QFactoryLoader *l = &loader;
         const PluginKeyMap keyMap = l->keyMap();
         const PluginKeyMapConstIterator cend = keyMap.constEnd();
         QStringList addedEngines;
