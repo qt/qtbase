@@ -833,6 +833,10 @@ void CppCodeParser::processQmlProperties(const Doc& doc,
                     }
                 }
             }
+        } else if (qpgn) {
+            doc.startLocation().warning(
+                tr("Invalid use of '\\%1'; not allowed in a '\\%2'").arg(
+                    topic, qmlPropertyGroupTopic.topic));
         }
     }
 }
