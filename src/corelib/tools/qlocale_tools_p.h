@@ -81,13 +81,13 @@ enum PrecisionMode {
 };
 
 QString &decimalForm(QChar zero, QChar decimal, QChar group,
-                     QString &digits, int decpt, uint precision,
+                     QString &digits, int decpt, int precision,
                      PrecisionMode pm,
                      bool always_show_decpt,
                      bool thousands_group);
 QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
                       QChar group, QChar plus, QChar minus,
-                      QString &digits, int decpt, uint precision,
+                      QString &digits, int decpt, int precision,
                       PrecisionMode pm,
                       bool always_show_decpt);
 

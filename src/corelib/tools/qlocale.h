@@ -848,6 +848,10 @@ public:
     };
     Q_DECLARE_FLAGS(NumberOptions, NumberOption)
 
+    enum FloatingPointPrecisionOption {
+        FloatingPointShortest = -128
+    };
+
     enum CurrencySymbolFormat {
         CurrencyIsoCode,
         CurrencySymbol,

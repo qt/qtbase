@@ -2743,7 +2743,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
                                     const QChar exponential, const QChar group, const QChar decimal,
                                     double d, int precision, DoubleForm form, int width, unsigned flags)
 {
-    if (precision < 0)
+    if (precision != QLocale::FloatingPointShortest && precision < 0)
         precision = 6;
     if (width < 0)
         width = 0;
@@ -2753,7 +2753,9 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
 
     int decpt;
     int bufSize = 1;
-    if (form == DFDecimal) // optimize for numbers smaller than 512k
+    if (precision == QLocale::FloatingPointShortest)
+        bufSize += DoubleMaxSignificant;
+    else if (form == DFDecimal) // optimize for numbers between -512k and 512k
         bufSize += ((d > (1 << 19) || d < -(1 << 19)) ? DoubleMaxDigitsBeforeDecimal : 6) +
                 precision;
     else // Add extra digit due to different interpretations of precision. Also, "nan" has to fit.
@@ -2798,7 +2800,20 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
                 PrecisionMode mode = (flags & Alternate) ?
                             PMSignificantDigits : PMChopTrailingZeros;
 
-                if (decpt != digits.length() && (decpt <= -4 || decpt > precision))
+                int cutoff = precision < 0 ? 6 : precision;
+                // Find out which representation is shorter
+                if (precision == QLocale::FloatingPointShortest && decpt > 0) {
+                    cutoff = digits.length() + 4; // 'e', '+'/'-', one digit exponent
+                    if (decpt <= 10) {
+                        ++cutoff;
+                    } else {
+                        cutoff += decpt > 100 ? 2 : 1;
+                    }
+                    if (!always_show_decpt && digits.length() > decpt)
+                        ++cutoff; // decpt shown in exponent form, but not in decimal form
+                }
+
+                if (decpt != digits.length() && (decpt <= -4 || decpt > cutoff))
                     num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
                                            digits, decpt, precision, mode,
                                            always_show_decpt);

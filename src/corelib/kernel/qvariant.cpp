@@ -56,6 +56,7 @@
 #include "qbytearraylist.h"
 #endif
 #include "private/qvariant_p.h"
+#include "private/qlocale_p.h"
 #include "qmetatype_p.h"
 #include <qmetaobject.h>
 
@@ -70,18 +71,6 @@
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef DBL_MANT_DIG
-#  define DBL_MANT_DIG  53
-#endif
-#ifndef FLT_MANT_DIG
-#  define FLT_MANT_DIG  24
-#endif
-
-const int log10_2_10000 = 30103;    // log10(2) * 100000
-// same as C++11 std::numeric_limits<T>::max_digits10
-const int max_digits10_double = (DBL_MANT_DIG * log10_2_10000) / 100000 + 2;
-const int max_digits10_float = (FLT_MANT_DIG * log10_2_10000) / 100000 + 2;
 
 namespace {
 class HandlersManager
@@ -433,10 +422,10 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = QString::number(qMetaTypeUNumber(d));
             break;
         case QMetaType::Float:
-            *str = QString::number(d->data.f, 'g', max_digits10_float);
+            *str = QString::number(d->data.f, 'g', QLocale::FloatingPointShortest);
             break;
         case QVariant::Double:
-            *str = QString::number(d->data.d, 'g', max_digits10_double);
+            *str = QString::number(d->data.d, 'g', QLocale::FloatingPointShortest);
             break;
 #if !defined(QT_NO_DATESTRING)
         case QVariant::Date:
@@ -625,10 +614,10 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *ba = v_cast<QString>(d)->toUtf8();
             break;
         case QVariant::Double:
-            *ba = QByteArray::number(d->data.d, 'g', max_digits10_double);
+            *ba = QByteArray::number(d->data.d, 'g', QLocale::FloatingPointShortest);
             break;
         case QMetaType::Float:
-            *ba = QByteArray::number(d->data.f, 'g', max_digits10_float);
+            *ba = QByteArray::number(d->data.f, 'g', QLocale::FloatingPointShortest);
             break;
         case QMetaType::Char:
         case QMetaType::SChar:

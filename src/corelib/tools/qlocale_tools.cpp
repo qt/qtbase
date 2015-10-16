@@ -114,10 +114,16 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
     if (form == QLocaleData::DFExponent && precision >= 0)
         ++precision;
 
-    double_conversion::DoubleToStringConverter::DoubleToAscii(d,
-            form == QLocaleData::DFDecimal ? double_conversion::DoubleToStringConverter::FIXED :
-                                             double_conversion::DoubleToStringConverter::PRECISION,
-            precision, buf, bufSize, &sign, &length, &decpt);
+    double_conversion::DoubleToStringConverter::DtoaMode mode;
+    if (precision == QLocale::FloatingPointShortest) {
+        mode = double_conversion::DoubleToStringConverter::SHORTEST;
+    } else if (form == QLocaleData::DFSignificantDigits || form == QLocaleData::DFExponent) {
+        mode = double_conversion::DoubleToStringConverter::PRECISION;
+    } else {
+        mode = double_conversion::DoubleToStringConverter::FIXED;
+    }
+    double_conversion::DoubleToStringConverter::DoubleToAscii(d, mode, precision, buf, bufSize,
+                                                              &sign, &length, &decpt);
 #else // QT_NO_DOUBLECONVERSION || QT_BOOTSTRAPPED
 
     // Cut the precision at 999, to fit it into the format string. We can't get more than 17
@@ -126,6 +132,8 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
     // to honor higher precisions. We define that at more than 999 digits that is not the case.
     if (precision > 999)
         precision = 999;
+    else if (precision == QLocale::FloatingPointShortest)
+        precision = QLocaleData::DoubleMaxSignificant; // "shortest" mode not supported by snprintf
 
     if (isZero(d)) {
         // Negative zero is expected as simple "0", not "-0". We cannot do d < 0, though.
@@ -442,7 +450,7 @@ QString qlltoa(qlonglong l, int base, const QChar zero)
 }
 
 QString &decimalForm(QChar zero, QChar decimal, QChar group,
-                     QString &digits, int decpt, uint precision,
+                     QString &digits, int decpt, int precision,
                      PrecisionMode pm,
                      bool always_show_decpt,
                      bool thousands_group)
@@ -459,11 +467,11 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
 
     if (pm == PMDecimalDigits) {
         uint decimal_digits = digits.length() - decpt;
-        for (uint i = decimal_digits; i < precision; ++i)
+        for (int i = decimal_digits; i < precision; ++i)
             digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
-        for (uint i = digits.length(); i < precision; ++i)
+        for (int i = digits.length(); i < precision; ++i)
             digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
@@ -485,18 +493,18 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
 
 QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
                       QChar group, QChar plus, QChar minus,
-                      QString &digits, int decpt, uint precision,
+                      QString &digits, int decpt, int precision,
                       PrecisionMode pm,
                       bool always_show_decpt)
 {
     int exp = decpt - 1;
 
     if (pm == PMDecimalDigits) {
-        for (uint i = digits.length(); i < precision + 1; ++i)
+        for (int i = digits.length(); i < precision + 1; ++i)
             digits.append(zero);
     }
     else if (pm == PMSignificantDigits) {
-        for (uint i = digits.length(); i < precision; ++i)
+        for (int i = digits.length(); i < precision; ++i)
             digits.append(zero);
     }
     else { // pm == PMChopTrailingZeros
@@ -534,7 +542,7 @@ QString qdtoa(qreal d, int *decpt, int *sign)
 
     // Some versions of libdouble-conversion like an extra digit, probably for '\0'
     char result[QLocaleData::DoubleMaxSignificant + 1];
-    doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocaleData::DoubleMaxSignificant, result,
+    doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest, result,
                   QLocaleData::DoubleMaxSignificant + 1, nonNullSign, length, nonNullDecpt);
 
     // Skip trailing zeroes. The DoubleMaxSignificant precision is the worst case.

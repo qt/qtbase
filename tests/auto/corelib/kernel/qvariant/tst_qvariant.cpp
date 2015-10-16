@@ -56,6 +56,7 @@
 #include <QBuffer>
 #include "qnumeric.h"
 
+#include <private/qlocale_p.h>
 #include "tst_qvariant_common.h"
 
 class CustomNonQObject;
@@ -1028,7 +1029,11 @@ void tst_QVariant::toByteArray_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QByteArray( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QByteArray( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QByteArray( "123.456" );
-    QTest::newRow( "float" ) << QVariant( 123.456f ) << QByteArray( "123.456001" );
+
+    // Conversion from float to double adds bits of which the double-to-string converter doesn't
+    // know they're insignificant
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QByteArray( "123.45600128173828" );
+
     QTest::newRow( "longlong" ) << QVariant( (qlonglong)34 ) << QByteArray( "34" );
     QTest::newRow( "ulonglong" ) << QVariant( (qulonglong)34 ) << QByteArray( "34" );
 }
@@ -1054,7 +1059,11 @@ void tst_QVariant::toString_data()
     QTest::newRow( "int" ) << QVariant( -123 ) << QString( "-123" );
     QTest::newRow( "uint" ) << QVariant( (uint)123 ) << QString( "123" );
     QTest::newRow( "double" ) << QVariant( 123.456 ) << QString( "123.456" );
-    QTest::newRow( "float" ) << QVariant( 123.456f ) << QString( "123.456001" );
+
+    // Conversion from float to double adds bits of which the double-to-string converter doesn't
+    // know they're insignificant
+    QTest::newRow( "float" ) << QVariant( 123.456f ) << QString( "123.45600128173828" );
+
     QTest::newRow( "bool" ) << QVariant( true ) << QString( "true" );
     QTest::newRow( "qdate" ) << QVariant( QDate( 2002, 1, 1 ) ) << QString( "2002-01-01" );
     QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QString( "12:34:56" );
@@ -1411,12 +1420,28 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mUIntQString(QString("42"));
 
     QVariant mDouble(42.11);
+#ifdef QT_NO_DOUBLECONVERSION
+    // Without libdouble-conversion we don't get the shortest possible representation.
     QVariant mDoubleString(QByteArray("42.109999999999999"));
-    QVariant mDoubleQString(QString("42.109999999999999"));
+    QVariant mDoubleQString(QByteArray("42.109999999999999"));
+#else
+    // You cannot fool the double-to-string conversion into producing insignificant digits with
+    // libdouble-conversion. You can, of course, add insignificant digits to the string and fool
+    // the double-to-double comparison after converting the string to a double.
+    QVariant mDoubleString(QByteArray("42.11"));
+    QVariant mDoubleQString(QString("42.11"));
+#endif
 
+    // Float-to-double conversion produces insignificant extra bits.
     QVariant mFloat(42.11f);
-    QVariant mFloatString(QByteArray("42.1100006"));
-    QVariant mFloatQString(QString("42.1100006"));
+#ifdef QT_NO_DOUBLECONVERSION
+    // The trailing '2' is not significant, but snprintf doesn't know this.
+    QVariant mFloatString(QByteArray("42.110000610351562"));
+    QVariant mFloatQString(QString("42.110000610351562"));
+#else
+    QVariant mFloatString(QByteArray("42.11000061035156"));
+    QVariant mFloatQString(QString("42.11000061035156"));
+#endif
 
     QVariant mLongLong((qlonglong)-42);
     QVariant mLongLongString(QByteArray("-42"));
@@ -3374,10 +3399,11 @@ void tst_QVariant::numericalConvert()
     switch (v.userType())
     {
     case QVariant::Double:
-        QCOMPARE(v.toString() , QString::number(num, 'g', DBL_MANT_DIG * std::log10(2.) + 2));
+        QCOMPARE(v.toString() , QString::number(num, 'g', QLocale::FloatingPointShortest));
         break;
     case QMetaType::Float:
-        QCOMPARE(v.toString() , QString::number(float(num), 'g', FLT_MANT_DIG * std::log10(2.) + 2));
+        QCOMPARE(v.toString() ,
+                 QString::number(float(num), 'g', QLocale::FloatingPointShortest));
         break;
     }
 }
@@ -3613,8 +3639,17 @@ void tst_QVariant::moreCustomTypes()
     QCOMPARE(MyNotMovable::count, 0);
 
     {
+#ifdef QT_NO_DOUBLECONVERSION
+        // snprintf cannot do "shortest" conversion and always adds noise.
         PLAY_WITH_VARIANT(12.12, false, "12.119999999999999", 12.12, true);
-        PLAY_WITH_VARIANT(12.12f, false, "12.1199999", 12.12f, true);
+#else
+        // Double can be printed exactly with libdouble-conversion
+        PLAY_WITH_VARIANT(12.12, false, "12.12", 12.12, true);
+#endif
+
+        // Float is converted to double, adding insignificant bits
+        PLAY_WITH_VARIANT(12.12f, false, "12.119999885559082", 12.12f, true);
+
         PLAY_WITH_VARIANT('a', false, "a", 'a', true);
         PLAY_WITH_VARIANT((unsigned char)('a'), false, "a", 'a', true);
         PLAY_WITH_VARIANT( quint8(12), false, "\xc", 12, true);

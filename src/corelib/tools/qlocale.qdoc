@@ -941,6 +941,23 @@
 */
 
 /*!
+    \enum QLocale::FloatingPointPrecisionOption
+
+    This enum defines constants that can be given as precision to QString::number(),
+    QByteArray::number(), and QLocale::toString() when converting floats or doubles,
+    in order to express a variable number of digits as precision.
+
+    \value FloatingPointShortest The conversion algorithm will try to find the
+            shortest accurate representation for the given number. "Accurate" means
+            that you get the exact same number back from an inverse conversion on
+            the generated string representation.
+
+    \sa toString(), QString, QByteArray
+
+    \since 5.7
+*/
+
+/*!
     \enum QLocale::MeasurementSystem
 
     This enum defines which units are used for measurement.
