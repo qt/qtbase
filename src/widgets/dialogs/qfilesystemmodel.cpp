@@ -1111,10 +1111,10 @@ public:
         return false;
     }
 
-    bool operator()(const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &l,
-                           const QPair<QFileSystemModelPrivate::QFileSystemNode*, int> &r) const
+    bool operator()(const QFileSystemModelPrivate::QFileSystemNode *l,
+                    const QFileSystemModelPrivate::QFileSystemNode *r) const
     {
-        return compareNodes(l.first, r.first);
+        return compareNodes(l, r);
     }
 
 
@@ -1134,16 +1134,14 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     if (indexNode->children.count() == 0)
         return;
 
-    QList<QPair<QFileSystemModelPrivate::QFileSystemNode*, int> > values;
+    QVector<QFileSystemModelPrivate::QFileSystemNode*> values;
     QHash<QString, QFileSystemNode *>::const_iterator iterator;
-    int i = 0;
     for(iterator = indexNode->children.constBegin() ; iterator != indexNode->children.constEnd() ; ++iterator) {
         if (filtersAcceptsNode(iterator.value())) {
-            values.append(QPair<QFileSystemModelPrivate::QFileSystemNode*, int>((iterator.value()), i));
+            values.append(iterator.value());
         } else {
             iterator.value()->isVisible = false;
         }
-        i++;
     }
     QFileSystemModelSorter ms(column);
     std::sort(values.begin(), values.end(), ms);
@@ -1151,9 +1149,11 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     indexNode->visibleChildren.clear();
     //No more dirty item we reset our internal dirty index
     indexNode->dirtyChildrenIndex = -1;
-    for (int i = 0; i < values.count(); ++i) {
-        indexNode->visibleChildren.append(values.at(i).first->fileName);
-        values.at(i).first->isVisible = true;
+    const int numValues = values.count();
+    indexNode->visibleChildren.reserve(numValues);
+    for (int i = 0; i < numValues; ++i) {
+        indexNode->visibleChildren.append(values.at(i)->fileName);
+        values.at(i)->isVisible = true;
     }
 
     if (!disableRecursiveSort) {
