@@ -1768,26 +1768,6 @@ void QFileSystemModelPrivate::removeNode(QFileSystemModelPrivate::QFileSystemNod
         q->endRemoveRows();
 }
 
-/*
-    \internal
-    Helper functor used by addVisibleFiles()
-*/
-class QFileSystemModelVisibleFinder
-{
-public:
-    inline QFileSystemModelVisibleFinder(QFileSystemModelPrivate::QFileSystemNode *node, QFileSystemModelSorter *sorter) : parentNode(node), sorter(sorter) {}
-
-    bool operator()(const QString &, QString r) const
-    {
-        return sorter->compareNodes(parentNode->children.value(name), parentNode->children.value(r));
-    }
-
-    QString name;
-private:
-    QFileSystemModelPrivate::QFileSystemNode *parentNode;
-    QFileSystemModelSorter *sorter;
-};
-
 /*!
     \internal
 
