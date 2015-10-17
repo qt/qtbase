@@ -574,7 +574,7 @@ void QZipReaderPrivate::scanFiles()
     uchar tmp[4];
     device->read((char *)tmp, 4);
     if (readUInt(tmp) != 0x04034b50) {
-        qWarning() << "QZip: not a zip file!";
+        qWarning("QZip: not a zip file!");
         return;
     }
 
@@ -586,7 +586,7 @@ void QZipReaderPrivate::scanFiles()
     while (start_of_directory == -1) {
         const int pos = device->size() - int(sizeof(EndOfDirectory)) - i;
         if (pos < 0 || i > 65535) {
-            qWarning() << "QZip: EndOfDirectory not found";
+            qWarning("QZip: EndOfDirectory not found");
             return;
         }
 
@@ -603,7 +603,7 @@ void QZipReaderPrivate::scanFiles()
     ZDEBUG("start_of_directory at %d, num_dir_entries=%d", start_of_directory, num_dir_entries);
     int comment_length = readUShort(eod.comment_length);
     if (comment_length != i)
-        qWarning() << "QZip: failed to parse zip file.";
+        qWarning("QZip: failed to parse zip file.");
     comment = device->read(qMin(comment_length, i));
 
 
@@ -612,30 +612,30 @@ void QZipReaderPrivate::scanFiles()
         FileHeader header;
         int read = device->read((char *) &header.h, sizeof(CentralFileHeader));
         if (read < (int)sizeof(CentralFileHeader)) {
-            qWarning() << "QZip: Failed to read complete header, index may be incomplete";
+            qWarning("QZip: Failed to read complete header, index may be incomplete");
             break;
         }
         if (readUInt(header.h.signature) != 0x02014b50) {
-            qWarning() << "QZip: invalid header signature, index may be incomplete";
+            qWarning("QZip: invalid header signature, index may be incomplete");
             break;
         }
 
         int l = readUShort(header.h.file_name_length);
         header.file_name = device->read(l);
         if (header.file_name.length() != l) {
-            qWarning() << "QZip: Failed to read filename from zip index, index may be incomplete";
+            qWarning("QZip: Failed to read filename from zip index, index may be incomplete");
             break;
         }
         l = readUShort(header.h.extra_field_length);
         header.extra_field = device->read(l);
         if (header.extra_field.length() != l) {
-            qWarning() << "QZip: Failed to read extra field in zip file, skipping file, index may be incomplete";
+            qWarning("QZip: Failed to read extra field in zip file, skipping file, index may be incomplete");
             break;
         }
         l = readUShort(header.h.file_comment_length);
         header.file_comment = device->read(l);
         if (header.file_comment.length() != l) {
-            qWarning() << "QZip: Failed to read read file comment, index may be incomplete";
+            qWarning("QZip: Failed to read read file comment, index may be incomplete");
             break;
         }
 

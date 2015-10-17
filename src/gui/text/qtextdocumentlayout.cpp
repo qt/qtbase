@@ -1598,7 +1598,7 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
     // floats in other cells we must clear the list here.
     data(t)->floats.clear();
 
-//    qDebug() << "layoutCell done";
+//    qDebug("layoutCell done");
 
     return layoutStruct;
 }
@@ -2030,7 +2030,7 @@ void QTextDocumentLayoutPrivate::positionFloat(QTextFrame *frame, QTextLine *cur
 //         qDebug() << "have line: right=" << right << "left=" << left << "textWidth=" << currentLine->width();
         if (right - left < QFixed::fromReal(currentLine->naturalTextWidth()) + fd->size.width) {
             layoutStruct->pendingFloats.append(frame);
-//             qDebug() << "    adding to pending list";
+//             qDebug("    adding to pending list");
             return;
         }
     }
@@ -2543,7 +2543,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             contentHasAlignment = true;
 
         if (it.atEnd()) {
-            //qDebug() << "layout done!";
+            //qDebug("layout done!");
             currentLazyLayoutPosition = -1;
             QCheckPoint cp;
             cp.y = layoutStruct->y;

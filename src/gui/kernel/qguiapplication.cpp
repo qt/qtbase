@@ -1437,7 +1437,7 @@ void QGuiApplicationPrivate::init()
             typedef void (*TasInitialize)(void);
             TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
             if (Q_UNLIKELY(!initFunction)) {
-                qCritical() << "Library qttestability resolve failed!";
+                qCritical("Library qttestability resolve failed!");
             } else {
                 initFunction();
             }
@@ -1595,7 +1595,7 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
 {
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (!pi) {
-        qWarning() << "QGuiApplication::platformFunction(): Must construct a QGuiApplication before accessing a platform function";
+        qWarning("QGuiApplication::platformFunction(): Must construct a QGuiApplication before accessing a platform function");
         return Q_NULLPTR;
     }
 

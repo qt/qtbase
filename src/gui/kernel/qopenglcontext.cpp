@@ -1033,19 +1033,19 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
 
     if (!surface) {
-        qWarning() << "QOpenGLContext::swapBuffers() called with null argument";
+        qWarning("QOpenGLContext::swapBuffers() called with null argument");
         return;
     }
 
     if (!surface->supportsOpenGL()) {
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
+        qWarning("QOpenGLContext::swapBuffers() called with non-opengl surface");
         return;
     }
 
     if (surface->surfaceClass() == QSurface::Window
         && !qt_window_private(static_cast<QWindow *>(surface))->receivedExpose)
     {
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined";
+        qWarning("QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined");
     }
 
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
@@ -1054,7 +1054,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 
 #if !defined(QT_NO_DEBUG)
     if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
-        qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
+        qWarning("QOpenGLContext::swapBuffers() called without corresponding makeCurrent()");
 #endif
     if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
         functions()->glFlush();

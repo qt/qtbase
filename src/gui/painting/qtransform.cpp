@@ -53,6 +53,14 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DEBUG
+Q_NEVER_INLINE
+static void nanWarning(const char *func)
+{
+    qWarning("QTransform::%s with NaN called", func);
+}
+#endif // QT_NO_DEBUG
+
 #define Q_NEAR_CLIP (sizeof(qreal) == sizeof(double) ? 0.000001 : 0.0001)
 
 #ifdef MAP
@@ -418,7 +426,7 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
         return *this;
 #ifndef QT_NO_DEBUG
     if (qIsNaN(dx) | qIsNaN(dy)) {
-        qWarning() << "QTransform::translate with NaN called";
+        nanWarning("translate");
         return *this;
     }
 #endif
@@ -461,7 +469,7 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 {
 #ifndef QT_NO_DEBUG
     if (qIsNaN(dx) | qIsNaN(dy)) {
-        qWarning() << "QTransform::fromTranslate with NaN called";
+        nanWarning("fromTranslate");
         return QTransform();
 }
 #endif
@@ -486,7 +494,7 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
         return *this;
 #ifndef QT_NO_DEBUG
     if (qIsNaN(sx) | qIsNaN(sy)) {
-        qWarning() << "QTransform::scale with NaN called";
+        nanWarning("scale");
         return *this;
     }
 #endif
@@ -527,7 +535,7 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 {
 #ifndef QT_NO_DEBUG
     if (qIsNaN(sx) | qIsNaN(sy)) {
-        qWarning() << "QTransform::fromScale with NaN called";
+        nanWarning("fromScale");
         return QTransform();
 }
 #endif
@@ -552,7 +560,7 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
         return *this;
 #ifndef QT_NO_DEBUG
     if (qIsNaN(sh) | qIsNaN(sv)) {
-        qWarning() << "QTransform::shear with NaN called";
+        nanWarning("shear");
         return *this;
     }
 #endif
@@ -613,7 +621,7 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
         return *this;
 #ifndef QT_NO_DEBUG
     if (qIsNaN(a)) {
-        qWarning() << "QTransform::rotate with NaN called";
+        nanWarning("rotate");
         return *this;
     }
 #endif
@@ -704,7 +712,7 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
 {
 #ifndef QT_NO_DEBUG
     if (qIsNaN(a)) {
-        qWarning() << "QTransform::rotateRadians with NaN called";
+        nanWarning("rotateRadians");
         return *this;
     }
 #endif

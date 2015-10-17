@@ -54,7 +54,7 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
                                      QPlatformIntegration::StyleHint ih)
 {
     if (!QCoreApplication::instance()) {
-        qWarning() << "Must construct a QGuiApplication before accessing a platform theme hint.";
+        qWarning("Must construct a QGuiApplication before accessing a platform theme hint.");
         return QVariant();
     }
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {

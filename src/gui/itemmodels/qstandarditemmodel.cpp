@@ -3009,7 +3009,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
             itemsSet << item;
             stack.push(item);
         } else {
-            qWarning() << "QStandardItemModel::mimeData: No item associated with invalid index";
+            qWarning("QStandardItemModel::mimeData: No item associated with invalid index");
             return 0;
         }
     }

@@ -271,7 +271,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
 #ifndef QT_NO_TEXTHTMLPARSER
     if (format == "html" || format == "htm") {
         if (!d->device->isWritable() && ! d->device->open(QIODevice::WriteOnly)) {
-            qWarning() << "QTextDocumentWriter::write: the device can not be opened for writing";
+            qWarning("QTextDocumentWriter::write: the device can not be opened for writing");
             return false;
         }
         QTextStream ts(d->device);
@@ -285,7 +285,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
 #endif
     if (format == "txt" || format == "plaintext") {
         if (!d->device->isWritable() && ! d->device->open(QIODevice::WriteOnly)) {
-            qWarning() << "QTextDocumentWriter::write: the device can not be opened for writing";
+            qWarning("QTextDocumentWriter::write: the device can not be opened for writing");
             return false;
         }
         QTextStream ts(d->device);

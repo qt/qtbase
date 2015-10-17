@@ -91,7 +91,7 @@ bool QPicturePaintEngine::begin(QPaintDevice *pd)
 {
     Q_D(QPicturePaintEngine);
 #ifdef QT_PICTURE_DEBUG
-    qDebug() << "QPicturePaintEngine::begin()";
+    qDebug("QPicturePaintEngine::begin()");
 #endif
     Q_ASSERT(pd);
     QPicture *pic = static_cast<QPicture *>(pd);
@@ -124,7 +124,7 @@ bool QPicturePaintEngine::end()
 {
     Q_D(QPicturePaintEngine);
 #ifdef QT_PICTURE_DEBUG
-    qDebug() << "QPicturePaintEngine::end()";
+    qDebug("QPicturePaintEngine::end()");
 #endif
     d->pic_d->trecs++;
     d->s << (quint8) QPicturePrivate::PdcEnd << (quint8) 0;

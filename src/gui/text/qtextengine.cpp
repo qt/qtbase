@@ -816,7 +816,7 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
     }
 
 #if (BIDI_DEBUG >= 1)
-//     qDebug() << "visual order is:";
+//     qDebug("visual order is:");
 //     for (i = 0; i < numItems; i++)
 //         qDebug() << visualOrder[i];
 #endif

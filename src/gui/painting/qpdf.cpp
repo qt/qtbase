@@ -1951,7 +1951,7 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
         xprintf("/Interpolate true\n");
     int len = 0;
     if (dct) {
-        //qDebug() << "DCT";
+        //qDebug("DCT");
         xprintf("/Filter /DCTDecode\n>>\nstream\n");
         write(data);
         len = data.length();
@@ -2215,7 +2215,7 @@ int QPdfEnginePrivate::generateGradientShader(const QGradient *gradient, const Q
         return generateRadialGradientShader(static_cast<const QRadialGradient *>(gradient), matrix, alpha);
     case QGradient::ConicalGradient:
     default:
-        qWarning() << "Implement me!";
+        qWarning("Implement me!");
     }
     return 0;
 }

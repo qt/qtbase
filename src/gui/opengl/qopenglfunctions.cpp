@@ -273,7 +273,7 @@ QOpenGLFunctions::QOpenGLFunctions(QOpenGLContext *context)
     if (context && QOpenGLContextGroup::currentContextGroup() == context->shareGroup())
         d_ptr = qt_gl_functions(context);
     else
-        qWarning() << "QOpenGLFunctions created with non-current context";
+        qWarning("QOpenGLFunctions created with non-current context");
 }
 
 QOpenGLExtensions::QOpenGLExtensions()

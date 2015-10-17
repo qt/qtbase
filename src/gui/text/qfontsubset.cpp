@@ -798,7 +798,7 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
                     base -= 3;
                 } else {
                     // need to split
-//                     qDebug() << "  -> splitting";
+//                     qDebug("  -> splitting");
                     qint16 a, b, c, d;
                     base[6].x = base[3].x;
                     c = base[1].x;
@@ -859,7 +859,7 @@ static void getBounds(const QVector<TTF_POINT> &points, qint16 *xmin, qint16 *xm
 static int convertToRelative(QVector<TTF_POINT> *points)
 {
     // convert points to relative and setup flags
-//     qDebug() << "relative points:";
+//     qDebug("relative points:");
     qint16 prev_x = 0;
     qint16 prev_y = 0;
     int point_array_size = 0;
@@ -980,7 +980,7 @@ static QTtfGlyph generateGlyph(int index, const QPainterPath &path, qreal advanc
 //     qDebug() << "number of contours=" << endPoints.size();
 //     for (int i = 0; i < points.size(); ++i)
 //         qDebug() << "  point[" << i << "] = " << QPoint(points.at(i).x, points.at(i).y) << " flags=" << points.at(i).flags;
-//     qDebug() << "endPoints:";
+//     qDebug("endPoints:");
 //     for (int i = 0; i < endPoints.size(); ++i)
 //         qDebug() << endPoints.at(i);
 

@@ -1145,7 +1145,7 @@ qreal QWindow::devicePixelRatio() const
 void QWindow::setWindowState(Qt::WindowState state)
 {
     if (state == Qt::WindowActive) {
-        qWarning() << "QWindow::setWindowState does not accept Qt::WindowActive";
+        qWarning("QWindow::setWindowState does not accept Qt::WindowActive");
         return;
     }
 
@@ -2436,7 +2436,7 @@ QWindow *QWindowPrivate::topLevelWindow() const
 QWindow *QWindow::fromWinId(WId id)
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ForeignWindows)) {
-        qWarning() << "QWindow::fromWinId(): platform plugin does not support foreign windows.";
+        qWarning("QWindow::fromWinId(): platform plugin does not support foreign windows.");
         return 0;
     }
 
