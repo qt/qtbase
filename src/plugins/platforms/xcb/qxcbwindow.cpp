@@ -2198,11 +2198,14 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
     connection()->handleEnterEvent();
 #endif
 
-    if (ignoreEnterEvent(mode, detail))
+    const QPoint global = QPoint(root_x, root_y);
+
+    if (ignoreEnterEvent(mode, detail)
+            || (connection()->buttons() != Qt::NoButton
+                && QGuiApplicationPrivate::lastCursorPosition != global))
         return;
 
     const QPoint local(event_x, event_y);
-    QPoint global = QPoint(root_x, root_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
 
@@ -2211,7 +2214,11 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 {
     connection()->setTime(timestamp);
 
-    if (ignoreLeaveEvent(mode, detail))
+    const QPoint global(root_x, root_y);
+
+    if (ignoreLeaveEvent(mode, detail)
+            || (connection()->buttons() != Qt::NoButton
+                && QGuiApplicationPrivate::lastCursorPosition != global))
         return;
 
     EnterEventChecker checker;
