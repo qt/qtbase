@@ -7191,7 +7191,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
             ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
                                         8, image->bytesPerLine(), colorspace, flags);
         } else {
-            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
+            qDebug("qt_mac_cg_context: Unsupported pixmap class");
         }
 
         CGContextTranslateCTM(ret, 0, pm->height());
@@ -7203,7 +7203,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
         ///CGContextRetain(ret);
         //return ret;
-        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
+        qDebug("qt_mac_cg_context: not implemented: Widget class");
         return 0;
     }
     return 0;

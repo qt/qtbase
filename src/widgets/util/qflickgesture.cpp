@@ -155,9 +155,9 @@ public:
             mouseTarget = QApplication::widgetAt(pressDelayEvent->globalPos());
             mouseButton = pressDelayEvent->button();
             mouseEventSource = pressDelayEvent->source();
-            qFGDebug() << "QFG: consuming/delaying mouse press";
+            qFGDebug("QFG: consuming/delaying mouse press");
         } else {
-            qFGDebug() << "QFG: NOT consuming/delaying mouse press";
+            qFGDebug("QFG: NOT consuming/delaying mouse press");
         }
         e->setAccepted(true);
     }
@@ -194,7 +194,7 @@ public:
 
     void scrollerWasIntercepted()
     {
-        qFGDebug() << "QFG: deleting delayed mouse press, since scroller was only intercepted";
+        qFGDebug("QFG: deleting delayed mouse press, since scroller was only intercepted");
         if (pressDelayEvent) {
             // we still haven't even sent the press, so just throw it away now
             if (pressDelayTimer) {
@@ -210,7 +210,7 @@ public:
     {
         if (pressDelayEvent) {
             // we still haven't even sent the press, so just throw it away now
-            qFGDebug() << "QFG: deleting delayed mouse press, since scroller is active now";
+            qFGDebug("QFG: deleting delayed mouse press, since scroller is active now");
             if (pressDelayTimer) {
                 killTimer(pressDelayTimer);
                 pressDelayTimer = 0;

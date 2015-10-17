@@ -3281,7 +3281,7 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
         for (int i = 0; i < items.count(); ++i) {
             QTreeWidgetItem *item = items.at(i);
             if (!item) {
-                qWarning() << "QTreeWidget::mimeData: Null-item passed";
+                qWarning("QTreeWidget::mimeData: Null-item passed");
                 return 0;
             }
 

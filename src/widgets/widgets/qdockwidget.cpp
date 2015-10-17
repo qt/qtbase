@@ -245,7 +245,7 @@ bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 
 void QDockWidgetLayout::addItem(QLayoutItem*)
 {
-    qWarning() << "QDockWidgetLayout::addItem(): please use QDockWidgetLayout::setWidget()";
+    qWarning("QDockWidgetLayout::addItem(): please use QDockWidgetLayout::setWidget()");
     return;
 }
 
