@@ -594,12 +594,16 @@ QXcbWindow::~QXcbWindow()
 {
     if (window()->type() != Qt::ForeignWindow)
         destroy();
+    else if (connection()->mouseGrabber() == this)
+        connection()->setMouseGrabber(Q_NULLPTR);
 }
 
 void QXcbWindow::destroy()
 {
     if (connection()->focusWindow() == this)
         doFocusOut();
+    if (connection()->mouseGrabber() == this)
+        connection()->setMouseGrabber(Q_NULLPTR);
 
     if (m_syncCounter && m_usingSyncProtocol)
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
@@ -846,6 +850,9 @@ void QXcbWindow::hide()
                               XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
 
     xcb_flush(xcb_connection());
+
+    if (connection()->mouseGrabber() == this)
+        connection()->setMouseGrabber(Q_NULLPTR);
 
     m_mapped = false;
 }
@@ -2357,6 +2364,8 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             QWindowSystemInterface::handleWindowStateChanged(window(), newState);
             m_lastWindowStateEvent = newState;
             m_windowState = newState;
+            if (m_windowState == Qt::WindowMinimized && connection()->mouseGrabber() == this)
+                connection()->setMouseGrabber(Q_NULLPTR);
         }
         return;
     } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
@@ -2411,9 +2420,15 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QXcbWindow::setMouseGrabEnabled(bool grab)
 {
+    if (!grab && connection()->mouseGrabber() == this)
+        connection()->setMouseGrabber(Q_NULLPTR);
 #ifdef XCB_USE_XINPUT22
-    if (connection()->xi2MouseEvents())
-        return connection()->xi2SetMouseGrabEnabled(m_window, grab);
+    if (connection()->xi2MouseEvents()) {
+        bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
+        if (grab && result)
+            connection()->setMouseGrabber(this);
+        return result;
+    }
 #endif
     if (grab && !connection()->canGrab())
         return false;
@@ -2432,6 +2447,8 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(xcb_connection(), cookie, NULL);
     bool result = !(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
     free(reply);
+    if (result)
+        connection()->setMouseGrabber(this);
     return result;
 }
 

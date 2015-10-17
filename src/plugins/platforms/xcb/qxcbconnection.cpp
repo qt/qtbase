@@ -556,6 +556,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
+    , m_mouseGrabber(0)
     , m_clientLeader(0)
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
@@ -1351,6 +1352,10 @@ void QXcbEventReader::unlock()
 void QXcbConnection::setFocusWindow(QXcbWindow *w)
 {
     m_focusWindow = w;
+}
+void QXcbConnection::setMouseGrabber(QXcbWindow *w)
+{
+    m_mouseGrabber = w;
 }
 
 void QXcbConnection::grabServer()

@@ -469,6 +469,8 @@ public:
 
     QXcbWindow *focusWindow() const { return m_focusWindow; }
     void setFocusWindow(QXcbWindow *);
+    QXcbWindow *mouseGrabber() const { return m_mouseGrabber; }
+    void setMouseGrabber(QXcbWindow *);
 
     QByteArray startupId() const { return m_startupId; }
     void setStartupId(const QByteArray &nextId) { m_startupId = nextId; }
@@ -649,6 +651,7 @@ private:
     Qt::MouseButtons m_buttons;
 
     QXcbWindow *m_focusWindow;
+    QXcbWindow *m_mouseGrabber;
 
     xcb_window_t m_clientLeader;
     QByteArray m_startupId;
