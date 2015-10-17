@@ -119,7 +119,10 @@ public:
     Q_CORE_EXPORT void append(const QByteArray &qba);
 
     inline qint64 skip(qint64 length) {
-        return read(0, length);
+        qint64 bytesToSkip = qMin(length, bufferSize);
+
+        free(bytesToSkip);
+        return bytesToSkip;
     }
 
     Q_CORE_EXPORT qint64 readLine(char *data, qint64 maxLength);
