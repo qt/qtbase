@@ -65,7 +65,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 {
     // TODO: Add nameserver support for winRT
     if (!nameserver.isNull())
-        qWarning() << "Ignoring nameserver as its currently not supported on WinRT";
+        qWarning("Ignoring nameserver as its currently not supported on WinRT");
 
     // TODO: is there any way to do "proper" dns lookup?
     if (requestType != QDnsLookup::A && requestType != QDnsLookup::AAAA

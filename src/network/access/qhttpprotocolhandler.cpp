@@ -260,7 +260,7 @@ bool QHttpProtocolHandler::sendRequest()
 
     if (!m_reply) {
         // heh, how should that happen!
-        qWarning() << "QAbstractProtocolHandler::sendRequest() called without QHttpNetworkReply";
+        qWarning("QAbstractProtocolHandler::sendRequest() called without QHttpNetworkReply");
         return false;
     }
 

@@ -160,7 +160,7 @@ void QNetworkDiskCache::setCacheDirectory(const QString &cacheDir)
 qint64 QNetworkDiskCache::cacheSize() const
 {
 #if defined(QNETWORKDISKCACHE_DEBUG)
-    qDebug() << "QNetworkDiskCache::cacheSize()";
+    qDebug("QNetworkDiskCache::cacheSize()");
 #endif
     Q_D(const QNetworkDiskCache);
     if (d->cacheDirectory.isEmpty())
@@ -185,7 +185,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
         return 0;
 
     if (d->cacheDirectory.isEmpty()) {
-        qWarning() << "QNetworkDiskCache::prepare() The cache directory is not set";
+        qWarning("QNetworkDiskCache::prepare() The cache directory is not set");
         return 0;
     }
 
@@ -212,7 +212,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
             cacheItem->file = 0;
         }
         if (!cacheItem->file || !cacheItem->file->open()) {
-            qWarning() << "QNetworkDiskCache::prepare() unable to open temporary file";
+            qWarning("QNetworkDiskCache::prepare() unable to open temporary file");
             cacheItem.reset();
             return 0;
         }
@@ -448,7 +448,7 @@ void QNetworkDiskCache::updateMetaData(const QNetworkCacheMetaData &metaData)
     QIODevice *oldDevice = data(url);
     if (!oldDevice) {
 #if defined(QNETWORKDISKCACHE_DEBUG)
-        qDebug() << "QNetworkDiskCache::updateMetaData(), no device!";
+        qDebug("QNetworkDiskCache::updateMetaData(), no device!");
 #endif
         return;
     }
@@ -521,7 +521,7 @@ qint64 QNetworkDiskCache::expire()
         return d->currentCacheSize;
 
     if (cacheDirectory().isEmpty()) {
-        qWarning() << "QNetworkDiskCache::expire() The cache directory is not set";
+        qWarning("QNetworkDiskCache::expire() The cache directory is not set");
         return 0;
     }
 
@@ -584,7 +584,7 @@ qint64 QNetworkDiskCache::expire()
 void QNetworkDiskCache::clear()
 {
 #if defined(QNETWORKDISKCACHE_DEBUG)
-    qDebug() << "QNetworkDiskCache::clear()";
+    qDebug("QNetworkDiskCache::clear()");
 #endif
     Q_D(QNetworkDiskCache);
     qint64 size = d->maximumCacheSize;

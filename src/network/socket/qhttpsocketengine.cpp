@@ -510,7 +510,7 @@ void QHttpSocketEngine::slotSocketConnected()
     data += "\r\n";
 //     qDebug() << ">>>>>>>> sending request" << this;
 //     qDebug() << data;
-//     qDebug() << ">>>>>>>";
+//     qDebug(">>>>>>>");
     d->socket->write(data);
     d->state = ConnectSent;
 }

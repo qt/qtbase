@@ -352,7 +352,7 @@ void QSocks5BindStore::add(qintptr socketDescriptor, QSocks5BindData *bindData)
 {
     QMutexLocker lock(&mutex);
     if (store.contains(socketDescriptor)) {
-        // qDebug() << "delete it";
+        // qDebug("delete it");
     }
     bindData->timeStamp.start();
     store.insert(socketDescriptor, bindData);
@@ -1191,7 +1191,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketReadNotification()
         case Connected: {
             QByteArray buf;
             if (!data->authenticator->unSeal(data->controlSocket, &buf)) {
-                // qDebug() << "unseal error maybe need to wait for more data";
+                // qDebug("unseal error maybe need to wait for more data");
             }
             if (buf.size()) {
                 QSOCKS5_DEBUG << dump(buf);

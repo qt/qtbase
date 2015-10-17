@@ -234,7 +234,7 @@ bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *sock
                 emitError = false;
             }
             if (networkLayerState == QHttpNetworkConnectionPrivate::Unknown)
-                qWarning() << "We got a connection error when networkLayerState is Unknown";
+                qWarning("We got a connection error when networkLayerState is Unknown");
         }
     }
     return emitError;
@@ -1190,7 +1190,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
 #endif // QT_NO_SSL
         else {
             // Should not happen
-            qWarning() << "QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not dequeu request";
+            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not dequeu request");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }
