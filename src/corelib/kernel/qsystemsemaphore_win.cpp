@@ -101,7 +101,7 @@ void QSystemSemaphorePrivate::cleanHandle()
 {
     if (semaphore && !CloseHandle(semaphore)) {
 #if defined QSYSTEMSEMAPHORE_DEBUG
-        qDebug() << QLatin1String("QSystemSemaphorePrivate::CloseHandle: sem failed");
+        qDebug("QSystemSemaphorePrivate::CloseHandle: sem failed");
 #endif
     }
     semaphore = 0;
@@ -116,7 +116,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         if (0 == ReleaseSemaphore(semaphore, count, 0)) {
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-            qDebug() << QLatin1String("QSystemSemaphore::modifySemaphore ReleaseSemaphore failed");
+            qDebug("QSystemSemaphore::modifySemaphore ReleaseSemaphore failed");
 #endif
             return false;
         }
@@ -128,7 +128,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
 #endif
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-            qDebug() << QLatin1String("QSystemSemaphore::modifySemaphore WaitForSingleObject failed");
+            qDebug("QSystemSemaphore::modifySemaphore WaitForSingleObject failed");
 #endif
             return false;
         }

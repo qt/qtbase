@@ -55,7 +55,7 @@ void QCollatorPrivate::init()
     LocaleRef localeRef;
     int rc = LocaleRefFromLocaleString(locale.bcp47Name().toLocal8Bit(), &localeRef);
     if (rc != 0)
-        qWarning() << "couldn't initialize the locale";
+        qWarning("couldn't initialize the locale");
 
     UInt32 options = 0;
 
@@ -73,7 +73,7 @@ void QCollatorPrivate::init()
         &collator
     );
     if (status != 0)
-        qWarning() << "Couldn't initialize the collator";
+        qWarning("Couldn't initialize the collator");
 
     dirty = false;
 }

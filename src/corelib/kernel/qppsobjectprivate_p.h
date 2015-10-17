@@ -105,7 +105,7 @@ inline bool QPpsObjectPrivate::decoderPush(pps_decoder_t *decoder, const char *n
 {
     pps_decoder_error_t error = pps_decoder_push(decoder, name);
     if (error != PPS_DECODER_OK) {
-        qWarning() << "QPpsObjectPrivate::decodeData: pps_decoder_push failed";
+        qWarning("QPpsObjectPrivate::decodeData: pps_decoder_push failed");
         return false;
     }
     return true;
@@ -115,7 +115,7 @@ inline bool QPpsObjectPrivate::decoderPop(pps_decoder_t *decoder)
 {
     pps_decoder_error_t error = pps_decoder_pop(decoder);
     if (error != PPS_DECODER_OK) {
-        qWarning() << "QPpsObjectPrivate::decodeData: pps_decoder_pop failed";
+        qWarning("QPpsObjectPrivate::decodeData: pps_decoder_pop failed");
         return false;
     }
     return true;

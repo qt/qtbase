@@ -72,7 +72,7 @@ public:
     {
         int fd = qt_safe_open("/pps/.all", O_RDONLY);
         if (fd == -1) {
-            qWarning() << "qppsobject.cpp: qt_safe_open failed";
+            qWarning("qppsobject.cpp: qt_safe_open failed");
             value = -1;
         }
 
@@ -114,7 +114,7 @@ QPpsAttributeMap QPpsObjectPrivate::decode(const QByteArray &rawData, bool *ok)
         // no need to check ok in this case
         attributeMap = decodeObject(&decoder, ok);
     } else {
-        qWarning() << "QPpsObjectPrivate::decode: pps_decoder_initialize failed";
+        qWarning("QPpsObjectPrivate::decode: pps_decoder_initialize failed");
         *ok = false;
     }
 
@@ -162,7 +162,7 @@ QPpsAttribute QPpsObjectPrivate::decodeString(pps_decoder_t *decoder)
     pps_decoder_error_t error = pps_decoder_get_string(decoder, 0, &value);
 
     if (error != PPS_DECODER_OK) {
-        qWarning() << "QPpsObjectPrivate::decodeString: PPS_DECODER_GET_STRING failed";
+        qWarning("QPpsObjectPrivate::decodeString: PPS_DECODER_GET_STRING failed");
         return QPpsAttribute();
     }
 
@@ -189,19 +189,19 @@ QPpsAttribute QPpsObjectPrivate::decodeNumber(pps_decoder_t *decoder)
         case PPS_DECODER_CONVERSION_FAILED:
             error = pps_decoder_get_int64(decoder, 0, &llValue);
             if (error != PPS_DECODER_OK) {
-                qWarning() << "QPpsObjectPrivate::decodeNumber: failed to decode integer";
+                qWarning("QPpsObjectPrivate::decodeNumber: failed to decode integer");
                 return QPpsAttribute();
             }
             flags = readFlags(decoder);
             return QPpsAttributePrivate::createPpsAttribute(llValue, flags);
         default:
-            qWarning() << "QPpsObjectPrivate::decodeNumber: pps_decoder_get_int failed";
+            qWarning("QPpsObjectPrivate::decodeNumber: pps_decoder_get_int failed");
             return QPpsAttribute();
         }
     } else {
         pps_decoder_error_t error = pps_decoder_get_double(decoder, 0, &dValue);
         if (error != PPS_DECODER_OK) {
-            qWarning() << "QPpsObjectPrivate::decodeNumber: pps_decoder_get_double failed";
+            qWarning("QPpsObjectPrivate::decodeNumber: pps_decoder_get_double failed");
             return QPpsAttribute();
         }
         flags = readFlags(decoder);
@@ -215,7 +215,7 @@ QPpsAttribute QPpsObjectPrivate::decodeBool(pps_decoder_t *decoder)
     pps_decoder_error_t error = pps_decoder_get_bool(decoder, 0, &value);
 
     if (error != PPS_DECODER_OK) {
-        qWarning() << "QPpsObjectPrivate::decodeBool: pps_decoder_get_bool failed";
+        qWarning("QPpsObjectPrivate::decodeBool: pps_decoder_get_bool failed");
         return QPpsAttribute();
     }
 
@@ -278,7 +278,7 @@ QPpsAttribute QPpsObjectPrivate::decodeData(pps_decoder_t *decoder)
     case PPS_TYPE_NONE:
     case PPS_TYPE_UNKNOWN:
     default:
-        qWarning() << "QPpsObjectPrivate::decodeData: invalid pps_node_type";
+        qWarning("QPpsObjectPrivate::decodeData: invalid pps_node_type");
         return QPpsAttribute();
     }
 }
@@ -292,7 +292,7 @@ QPpsAttributeList QPpsObjectPrivate::decodeArray(pps_decoder_t *decoder, bool *o
         // Force movement to a specific index.
         pps_decoder_error_t error = pps_decoder_goto_index(decoder, i);
         if (error != PPS_DECODER_OK) {
-            qWarning() << "QPpsObjectPrivate::decodeArray: pps_decoder_goto_index failed";
+            qWarning("QPpsObjectPrivate::decodeArray: pps_decoder_goto_index failed");
             *ok = false;
             return QPpsAttributeList();
         }
@@ -319,7 +319,7 @@ QPpsAttributeMap QPpsObjectPrivate::decodeObject(pps_decoder_t *decoder, bool *o
         // Force movement to a specific index.
         pps_decoder_error_t error = pps_decoder_goto_index(decoder, i);
         if (error != PPS_DECODER_OK) {
-            qWarning() << "QPpsObjectPrivate::decodeObject: pps_decoder_goto_index failed";
+            qWarning("QPpsObjectPrivate::decodeObject: pps_decoder_goto_index failed");
             *ok = false;
             return QPpsAttributeMap();
         }
@@ -368,7 +368,7 @@ QVariant QPpsObjectPrivate::variantFromPpsAttribute(const QPpsAttribute &attribu
         return variantMapFromPpsAttributeMap(attribute.toMap());
     case QPpsAttribute::None:
     default:
-        qWarning() << "QPpsObjectPrivate::variantFromPpsAttribute: invalid attribute parameter";
+        qWarning("QPpsObjectPrivate::variantFromPpsAttribute: invalid attribute parameter");
         return QVariant();
     }
 }
@@ -385,7 +385,7 @@ QByteArray QPpsObjectPrivate::encode(const QVariantMap &ppsData, bool *ok)
         // The memory will be freed when pps_encoder_cleanup is called.
         rawData = pps_encoder_buffer(&encoder);
         if (!rawData) {
-            qWarning() << "QPpsObjectPrivate::encode: pps_encoder_buffer failed";
+            qWarning("QPpsObjectPrivate::encode: pps_encoder_buffer failed");
             *ok = false;
         }
     }
@@ -448,7 +448,7 @@ void QPpsObjectPrivate::encodeData(pps_encoder_t *encoder, const char *name, con
         errorFunction = QStringLiteral("pps_encoder_add_null");
         break;
     default:
-        qWarning() << "QPpsObjectPrivate::encodeData: the type of the parameter data is invalid";
+        qWarning("QPpsObjectPrivate::encodeData: the type of the parameter data is invalid");
         *ok = false;
         return;
     }
@@ -685,7 +685,7 @@ QByteArray QPpsObject::read(bool *ok)
 
     const int maxSize = ppsMaxSize->value;
     if (maxSize == -1) {
-        qWarning() << "QPpsObject::read: maxSize is equal to -1";
+        qWarning("QPpsObject::read: maxSize is equal to -1");
         safeAssign(ok, false);
         return QByteArray();
     }

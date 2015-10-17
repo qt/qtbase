@@ -376,7 +376,7 @@ QModelIndex QSortFilterProxyModelPrivate::proxy_to_source(const QModelIndex &pro
     if (!proxy_index.isValid())
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (proxy_index.model() != q_func()) {
-        qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapToSource";
+        qWarning("QSortFilterProxyModel: index from wrong model passed to mapToSource");
         Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapToSource");
         return QModelIndex();
     }
@@ -394,7 +394,7 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
     if (!source_index.isValid())
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (source_index.model() != model) {
-        qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapFromSource";
+        qWarning("QSortFilterProxyModel: index from wrong model passed to mapFromSource");
         Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapFromSource");
         return QModelIndex();
     }

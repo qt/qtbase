@@ -300,7 +300,7 @@ QJsonDocument Parser::parse(QJsonParseError *error)
 {
 #ifdef PARSER_DEBUG
     indent = 0;
-    qDebug() << ">>>>> parser begin";
+    qDebug(">>>>> parser begin");
 #endif
     // allocate some space
     dataLength = qMax(end - json, (ptrdiff_t) 256);
@@ -346,7 +346,7 @@ QJsonDocument Parser::parse(QJsonParseError *error)
 
 error:
 #ifdef PARSER_DEBUG
-    qDebug() << ">>>>> parser error";
+    qDebug(">>>>> parser error");
 #endif
     if (error) {
         error->offset = json - head;
