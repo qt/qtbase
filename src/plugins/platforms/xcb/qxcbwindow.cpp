@@ -372,7 +372,7 @@ void QXcbWindow::create()
             if (visual)
                 m_visualId = connection()->defaultVisualId();
             if (!visual)
-                qWarning() << "Could not use default visual id. Falling back to root_visual for screen.";
+                qWarning("Could not use default visual id. Falling back to root_visual for screen.");
         }
         if (!visual)
             visual = platformScreen->visualForId(m_visualId);

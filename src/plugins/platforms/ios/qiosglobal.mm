@@ -93,7 +93,7 @@ Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientat
         break;
     case UIDeviceOrientationFaceUp:
     case UIDeviceOrientationFaceDown:
-        qWarning() << "Falling back to Qt::PortraitOrientation for UIDeviceOrientationFaceUp/UIDeviceOrientationFaceDown";
+        qWarning("Falling back to Qt::PortraitOrientation for UIDeviceOrientationFaceUp/UIDeviceOrientationFaceDown");
         qtOrientation = Qt::PortraitOrientation;
         break;
     default:

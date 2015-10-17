@@ -122,7 +122,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
         if (size == 0) {
             // empty bundle; these are valid, but should they be allowed? the
             // spec is unclear on this...
-            qWarning() << "Empty bundle?";
+            qWarning("Empty bundle?");
             m_isValid = true;
             m_immediate = isImmediate;
             m_timeEpoch = oscTimeEpoch;
@@ -152,7 +152,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
                 m_timePico = oscTimePico;
                 m_messages.append(subMessage);
             } else {
-                qWarning() << "Invalid sub-message";
+                qWarning("Invalid sub-message");
                 return;
             }
         } else if (subdata.startsWith(bundleIdentifier)) {
@@ -166,7 +166,7 @@ QOscBundle::QOscBundle(const QByteArray &data)
                 m_bundles.append(subBundle);
             }
         } else {
-            qWarning() << "Malformed sub-data!";
+            qWarning("Malformed sub-data!");
             return;
         }
     }

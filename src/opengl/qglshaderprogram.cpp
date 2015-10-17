@@ -688,7 +688,7 @@ bool QGLShaderProgram::init()
     if (d->glfuncs->hasOpenGLFeature(QOpenGLFunctions::Shaders)) {
         GLuint program = d->glfuncs->glCreateProgram();
         if (!program) {
-            qWarning() << "QGLShaderProgram: could not create shader program";
+            qWarning("QGLShaderProgram: could not create shader program");
             return false;
         }
         if (d->programGuard)
@@ -696,7 +696,7 @@ bool QGLShaderProgram::init()
         d->programGuard = createSharedResourceGuard(context, program, freeProgramFunc);
         return true;
     } else {
-        qWarning() << "QGLShaderProgram: shader programs are not supported";
+        qWarning("QGLShaderProgram: shader programs are not supported");
         return false;
     }
 }

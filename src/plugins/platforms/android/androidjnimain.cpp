@@ -521,7 +521,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         }
         m_main = (Main)dlsym(m_mainLibraryHnd, "main");
     } else {
-        qWarning() << "No main library was specified; searching entire process (this is slow!)";
+        qWarning("No main library was specified; searching entire process (this is slow!)");
         m_main = (Main)dlsym(RTLD_DEFAULT, "main");
     }
 

@@ -187,7 +187,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
         m_xcb_image->data = (uint8_t *)malloc(segmentSize);
     } else {
         if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
-            qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
+            qWarning("QXcbBackingStore: Error while marking the shared memory segment to be destroyed");
     }
 
     m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;

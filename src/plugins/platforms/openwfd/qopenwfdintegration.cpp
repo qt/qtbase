@@ -79,7 +79,7 @@ QOpenWFDIntegration::QOpenWFDIntegration()
 QOpenWFDIntegration::~QOpenWFDIntegration()
 {
     //don't delete screens since they are deleted by the devices
-    qDebug() << "deleting platform integration";
+    qDebug("deleting platform integration");
     for (int i = 0; i < mDevices.size(); i++) {
         delete mDevices[i];
     }

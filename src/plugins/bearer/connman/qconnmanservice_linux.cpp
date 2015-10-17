@@ -162,7 +162,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("PropertyChanged"),
                                    this,SIGNAL(propertyChanged(QString,QDBusVariant)))) {
-            qWarning() << "PropertyChanged not connected";
+            qWarning("PropertyChanged not connected");
         }
     }
 
@@ -173,7 +173,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("ServicesChanged"),
                                this,SLOT(onServicesChanged(ConnmanMapList, QList<QDBusObjectPath>)))) {
-            qWarning() << "servicesChanged not connected";
+            qWarning("servicesChanged not connected");
         }
     }
 }

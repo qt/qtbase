@@ -169,7 +169,7 @@ void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
         // size in beginPaint().
 
         if (size != window()->size() && !window()->inherits("QWidgetWindow"))
-            qWarning() << "QIOSBackingStore needs to have the same size as its window";
+            qWarning("QIOSBackingStore needs to have the same size as its window");
 
         return;
     }

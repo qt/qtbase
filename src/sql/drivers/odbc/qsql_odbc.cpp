@@ -2195,7 +2195,7 @@ void QODBCDriverPrivate::checkHasSQLFetchScroll()
     SQLRETURN r = SQLGetFunctions(hDbc, SQL_API_SQLFETCHSCROLL, &sup);
     if ((r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) || sup != SQL_TRUE) {
         hasSQLFetchScroll = false;
-        qWarning() << "QODBCDriver::checkHasSQLFetchScroll: Warning - Driver doesn't support scrollable result sets, use forward only mode for queries";
+        qWarning("QODBCDriver::checkHasSQLFetchScroll: Warning - Driver doesn't support scrollable result sets, use forward only mode for queries");
     }
 }
 
@@ -2244,7 +2244,7 @@ bool QODBCDriver::beginTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning() << "QODBCDriver::beginTransaction: Database not open";
+        qWarning("QODBCDriver::beginTransaction: Database not open");
         return false;
     }
     SQLUINTEGER ac(SQL_AUTOCOMMIT_OFF);
@@ -2264,7 +2264,7 @@ bool QODBCDriver::commitTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning() << "QODBCDriver::commitTransaction: Database not open";
+        qWarning("QODBCDriver::commitTransaction: Database not open");
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,
@@ -2282,7 +2282,7 @@ bool QODBCDriver::rollbackTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning() << "QODBCDriver::rollbackTransaction: Database not open";
+        qWarning("QODBCDriver::rollbackTransaction: Database not open");
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,

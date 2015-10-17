@@ -1003,7 +1003,7 @@ QFontEngine *QCoreTextFontDatabase::freeTypeFontEngine(const QFontDef &fontDef, 
     }
 
     if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
-        qWarning() << "QCoreTextFontDatabase::freeTypefontEngine Failed to create engine";
+        qWarning("QCoreTextFontDatabase::freeTypefontEngine Failed to create engine");
         return Q_NULLPTR;
     }
     engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));

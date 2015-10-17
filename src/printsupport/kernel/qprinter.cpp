@@ -2135,7 +2135,7 @@ int QPrinter::toPage() const
 void QPrinter::setFromTo(int from, int to)
 {
     if (from > to) {
-        qWarning() << "QPrinter::setFromTo: 'from' must be less than or equal to 'to'";
+        qWarning("QPrinter::setFromTo: 'from' must be less than or equal to 'to'");
         from = to;
     }
     d->fromPage = from;

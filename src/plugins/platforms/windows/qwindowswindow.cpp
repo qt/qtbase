@@ -700,7 +700,7 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
         if ((flags & Qt::WindowStaysOnTopHint) || (type == Qt::ToolTip)) {
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, swpFlags);
             if (flags & Qt::WindowStaysOnBottomHint)
-                qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
+                qWarning("QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time");
         } else if (flags & Qt::WindowStaysOnBottomHint) {
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
         } else if (frameChange) { // Force WM_NCCALCSIZE with wParam=1 in case of custom margins.
@@ -2213,7 +2213,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             mmi->ptMaxPosition.x = availableGeometry.x();
             mmi->ptMaxPosition.y = availableGeometry.y();
         } else if (!screen){
-            qWarning() << "window()->screen() returned a null screen";
+            qWarning("window()->screen() returned a null screen");
         }
     }
 

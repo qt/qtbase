@@ -289,7 +289,7 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
 void QIBusPlatformInputContext::surroundingTextRequired()
 {
     if (debug)
-        qDebug() << "surroundingTextRequired";
+        qDebug("surroundingTextRequired");
     d->needsSurroundingText = true;
     update(Qt::ImSurroundingText);
 }

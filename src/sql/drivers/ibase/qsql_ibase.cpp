@@ -1297,7 +1297,7 @@ int QIBaseResult::size()
             if (ct == isc_info_req_select_count)
                 return val;
         }
-        //qDebug() << "size -1";
+        //qDebug("size -1");
         return -1;
 
         unsigned int i, result_size;

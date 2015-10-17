@@ -772,11 +772,11 @@ CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
         if (data && data->classId() == QPlatformPixmap::RasterClass) {
             image = data->buffer();
         } else {
-            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
+            qDebug("qt_mac_cg_context: Unsupported pixmap class");
         }
     } else if (pdev->devType() == QInternal::Widget) {
         // TODO test: image = static_cast<QImage *>(static_cast<const QWidget *>(pdev)->backingStore()->paintDevice());
-        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
+        qDebug("qt_mac_cg_context: not implemented: Widget class");
     }
 
     if (!image)

@@ -63,7 +63,7 @@ void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         return;
     QMacAccessibilityElement *element = [QMacAccessibilityElement elementWithId: event->uniqueId()];
     if (!element) {
-        qWarning() << "QCocoaAccessibility::notifyAccessibilityUpdate: invalid element";
+        qWarning("QCocoaAccessibility::notifyAccessibilityUpdate: invalid element");
         return;
     }
 
@@ -277,7 +277,7 @@ NSArray *unignoredChildren(QAccessibleInterface *interface)
         if (element)
             [kids addObject: element];
         else
-            qWarning() << "QCocoaAccessibility: invalid child";
+            qWarning("QCocoaAccessibility: invalid child");
     }
     return NSAccessibilityUnignoredChildren(kids);
 }

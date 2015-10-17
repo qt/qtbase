@@ -555,7 +555,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (id)accessibilityHitTest:(NSPoint)point {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid()) {
-//        qDebug() << "Hit test: INVALID";
+//        qDebug("Hit test: INVALID");
         return NSAccessibilityUnignoredAncestor(self);
     }
 
@@ -585,7 +585,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
 
     if (!iface || !iface->isValid()) {
-        qWarning() << "FocusedUIElement for INVALID";
+        qWarning("FocusedUIElement for INVALID");
         return nil;
     }
 

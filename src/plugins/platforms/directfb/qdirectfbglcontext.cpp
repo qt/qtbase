@@ -93,7 +93,7 @@ QFunctionPointer QDirectFbGLContext::getProcAddress(const char *procName)
 void QDirectFbGLContext::swapBuffers()
 {
 //    m_dfbGlContext->Unlock(m_dfbGlContext); //maybe not in doneCurrent()
-    qDebug() << "Swap buffers";
+    qDebug("Swap buffers");
 }
 
 QPlatformWindowFormat QDirectFbGLContext::platformWindowFormat() const

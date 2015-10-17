@@ -214,7 +214,7 @@ void QMirClientInput::customEvent(QEvent* event)
     const MirEvent *nativeEvent = ubuntuEvent->nativeEvent;
 
     if ((ubuntuEvent->window == nullptr) || (ubuntuEvent->window->window() == nullptr)) {
-        qWarning() << "Attempted to deliver an event to a non-existent window, ignoring.";
+        qWarning("Attempted to deliver an event to a non-existent window, ignoring.");
         return;
     }
 

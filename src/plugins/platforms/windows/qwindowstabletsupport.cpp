@@ -208,7 +208,7 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
     if (currentQueueSize != TabletPacketQSize) {
         if (!QWindowsTabletSupport::m_winTab32DLL.wTQueueSizeSet(context, TabletPacketQSize)) {
             if (!QWindowsTabletSupport::m_winTab32DLL.wTQueueSizeSet(context, currentQueueSize))  {
-                qWarning() << "Unable to set queue size on tablet. The tablet will not work.";
+                qWarning("Unable to set queue size on tablet. The tablet will not work.");
                 QWindowsTabletSupport::m_winTab32DLL.wTClose(context);
                 DestroyWindow(window);
                 return 0;

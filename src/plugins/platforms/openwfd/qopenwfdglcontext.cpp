@@ -61,7 +61,7 @@ bool QOpenWFDGLContext::makeCurrent(QPlatformSurface *surface)
     EGLDisplay display = mWfdDevice->eglDisplay();
     EGLContext context = mWfdDevice->eglContext();
     if (!eglMakeCurrent(display,EGL_NO_SURFACE,EGL_NO_SURFACE,context)) {
-        qDebug() << "GLContext: eglMakeCurrent FAILED!";
+        qDebug("GLContext: eglMakeCurrent FAILED!");
     }
 
     QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);

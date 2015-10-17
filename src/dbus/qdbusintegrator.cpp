@@ -1796,7 +1796,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
         if (e)
             connection->postEventToThread(MessageResultReceivedAction, call->receiver, e);
         else
-            qDBusDebug() << "Deliver failed!";
+            qDBusDebug("Deliver failed!");
     }
 
     if (call->pending) {

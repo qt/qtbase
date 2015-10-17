@@ -110,10 +110,10 @@ static void printBlob(NLA_BLOB *blob)
                  << "\tshared adapter name:" << blob->data.ICS.remote.sharedAdapterName;
         break;
     default:
-        qDebug() << "UNKNOWN BLOB TYPE";
+        qDebug("UNKNOWN BLOB TYPE");
     }
 
-    qDebug() << "===== END NLA_BLOB =====";
+    qDebug("===== END NLA_BLOB =====");
 }
 #endif
 
