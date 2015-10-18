@@ -3613,10 +3613,9 @@ END {
         print "DEFAULT_LIBDIRS=\"/lib\n/usr/lib\"\n";
 }'
 
-unset tty
-[ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
-eval "`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog" | tee $tty`"
-unset tty
+awkprog_result=`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog"`
+eval "$awkprog_result"
+[ "$OPT_VERBOSE" = "yes" ] && echo "$awkprog_result"
 
 echo "Done running configuration tests."
 
