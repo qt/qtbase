@@ -84,20 +84,20 @@ class QLatin1String
 {
 public:
     Q_DECL_CONSTEXPR inline QLatin1String() Q_DECL_NOTHROW : m_size(0), m_data(Q_NULLPTR) {}
-    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
-    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) : m_size(sz), m_data(s) {}
-    inline explicit QLatin1String(const QByteArray &s) : m_size(s.size()), m_data(s.constData()) {}
+    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) Q_DECL_NOTHROW : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
+    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) Q_DECL_NOTHROW : m_size(sz), m_data(s) {}
+    inline explicit QLatin1String(const QByteArray &s) Q_DECL_NOTHROW : m_size(s.size()), m_data(s.constData()) {}
 
-    inline const char *latin1() const { return m_data; }
-    inline int size() const { return m_size; }
-    inline const char *data() const { return m_data; }
+    Q_DECL_CONSTEXPR const char *latin1() const Q_DECL_NOTHROW { return m_data; }
+    Q_DECL_CONSTEXPR int size() const Q_DECL_NOTHROW { return m_size; }
+    Q_DECL_CONSTEXPR const char *data() const Q_DECL_NOTHROW { return m_data; }
 
-    inline bool operator==(const QString &s) const;
-    inline bool operator!=(const QString &s) const;
-    inline bool operator>(const QString &s) const;
-    inline bool operator<(const QString &s) const;
-    inline bool operator>=(const QString &s) const;
-    inline bool operator<=(const QString &s) const;
+    inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
+    inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
+    inline bool operator>(const QString &s) const Q_DECL_NOTHROW;
+    inline bool operator<(const QString &s) const Q_DECL_NOTHROW;
+    inline bool operator>=(const QString &s) const Q_DECL_NOTHROW;
+    inline bool operator<=(const QString &s) const Q_DECL_NOTHROW;
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
@@ -1131,34 +1131,34 @@ inline bool operator!=(QString::Null, QString::Null) { return false; }
 inline bool operator!=(QString::Null, const QString &s) { return !s.isNull(); }
 inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
 
-inline bool operator==(QLatin1String s1, QLatin1String s2)
+inline bool operator==(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { return (s1.size() == s2.size() && !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
-inline bool operator!=(QLatin1String s1, QLatin1String s2)
+inline bool operator!=(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { return (s1.size() != s2.size() || memcmp(s1.latin1(), s2.latin1(), s1.size())); }
-inline bool operator<(QLatin1String s1, QLatin1String s2)
+inline bool operator<(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
   return (r < 0) || (r == 0 && s1.size() < s2.size()); }
-inline bool operator<=(QLatin1String s1, QLatin1String s2)
+inline bool operator<=(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
   return (r < 0) || (r == 0 && s1.size() <= s2.size()); }
-inline bool operator>(QLatin1String s1, QLatin1String s2)
+inline bool operator>(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
   return (r > 0) || (r == 0 && s1.size() > s2.size()); }
-inline bool operator>=(QLatin1String s1, QLatin1String s2)
+inline bool operator>=(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
   return (r > 0) || (r == 0 && s1.size() >= s2.size()); }
 
-inline bool QLatin1String::operator==(const QString &s) const
+inline bool QLatin1String::operator==(const QString &s) const Q_DECL_NOTHROW
 { return s == *this; }
-inline bool QLatin1String::operator!=(const QString &s) const
+inline bool QLatin1String::operator!=(const QString &s) const Q_DECL_NOTHROW
 { return s != *this; }
-inline bool QLatin1String::operator>(const QString &s) const
+inline bool QLatin1String::operator>(const QString &s) const Q_DECL_NOTHROW
 { return s < *this; }
-inline bool QLatin1String::operator<(const QString &s) const
+inline bool QLatin1String::operator<(const QString &s) const Q_DECL_NOTHROW
 { return s > *this; }
-inline bool QLatin1String::operator>=(const QString &s) const
+inline bool QLatin1String::operator>=(const QString &s) const Q_DECL_NOTHROW
 { return s <= *this; }
-inline bool QLatin1String::operator<=(const QString &s) const
+inline bool QLatin1String::operator<=(const QString &s) const Q_DECL_NOTHROW
 { return s >= *this; }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
