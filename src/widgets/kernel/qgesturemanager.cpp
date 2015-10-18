@@ -66,7 +66,7 @@ static inline int panTouchPoints()
     static const char panTouchPointVariable[] = "QT_PAN_TOUCHPOINTS";
     if (qEnvironmentVariableIsSet(panTouchPointVariable)) {
         bool ok;
-        const int result = qgetenv(panTouchPointVariable).toInt(&ok);
+        const int result = qEnvironmentVariableIntValue(panTouchPointVariable, &ok);
         if (ok && result >= 1)
             return result;
         qWarning() << "Ignoring invalid value of " << panTouchPointVariable;
