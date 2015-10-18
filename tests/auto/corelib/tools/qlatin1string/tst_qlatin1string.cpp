@@ -46,6 +46,16 @@ private Q_SLOTS:
 
 void tst_QLatin1String::nullString()
 {
+    // default ctor
+    {
+        QLatin1String l1;
+        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(Q_NULLPTR));
+        QCOMPARE(l1.size(), 0);
+
+        QString s = l1;
+        QVERIFY(s.isNull());
+    }
+
     // from nullptr
     {
         const char *null = Q_NULLPTR;

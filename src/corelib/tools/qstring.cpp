@@ -8225,6 +8225,12 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
 */
 
+/*! \fn QLatin1String::QLatin1String()
+    \since 5.6
+
+    Constructs a QLatin1String object that stores a nullptr.
+*/
+
 /*! \fn QLatin1String::QLatin1String(const char *str)
 
     Constructs a QLatin1String object that stores \a str.
