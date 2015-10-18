@@ -8222,6 +8222,13 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
     \snippet code/src_corelib_tools_qstring.cpp 6
 
+    \note If the function you're calling with a QLatin1String
+    argument isn't actually overloaded to take QLatin1String, the
+    implicit conversion to QString will trigger a memory allocation,
+    which is usually what you want to avoid by using QLatin1String
+    in the first place. In those cases, using QStringLiteral may be
+    the better option.
+
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
 */
 
