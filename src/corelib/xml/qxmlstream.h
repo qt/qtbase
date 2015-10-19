@@ -54,12 +54,21 @@ public:
         :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
     inline QXmlStreamStringRef(const QString &aString):m_string(aString), m_position(0), m_size(aString.size()){}
     inline ~QXmlStreamStringRef(){}
+
+    void swap(QXmlStreamStringRef &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_string, other.m_string);
+        qSwap(m_position, other.m_position);
+        qSwap(m_size, other.m_size);
+    }
+
     inline void clear() { m_string.clear(); m_position = m_size = 0; }
     inline operator QStringRef() const { return QStringRef(&m_string, m_position, m_size); }
     inline const QString *string() const { return &m_string; }
     inline int position() const { return m_position; }
     inline int size() const { return m_size; }
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlStreamStringRef)
 
 
 class QXmlStreamReaderPrivate;
