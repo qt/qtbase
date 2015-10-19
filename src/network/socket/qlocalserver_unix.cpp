@@ -283,24 +283,39 @@ void QLocalServerPrivate::_q_onNewConnection()
 
 void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
 {
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(listenSocket, &readfds);
+    struct timespec tv, *ptv = nullptr;
 
-    struct timespec timeout;
-    timeout.tv_sec = msec / 1000;
-    timeout.tv_nsec = (msec % 1000) * 1000 * 1000;
+    if (msec >= 0) {
+        tv.tv_sec = msec / 1000;
+        tv.tv_nsec = (msec % 1000) * 1000 * 1000;
+        ptv = &tv;
+    }
 
-    int result = -1;
-    result = qt_safe_select(listenSocket + 1, &readfds, 0, 0, (msec == -1) ? 0 : &timeout);
-    if (-1 == result) {
+    struct pollfd pfd;
+    pfd.fd = listenSocket;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
+
+    switch (qt_safe_poll(&pfd, 1, ptv)) {
+    case 0:
+        if (timedOut)
+            *timedOut = true;
+
+        return;
+        break;
+    default:
+        if ((pfd.revents & POLLNVAL) == 0) {
+            _q_onNewConnection();
+            return;
+        }
+
+        errno = EBADF;
+        // FALLTHROUGH
+    case -1:
         setError(QLatin1String("QLocalServer::waitForNewConnection"));
         closeServer();
+        break;
     }
-    if (result > 0)
-        _q_onNewConnection();
-    if (timedOut)
-        *timedOut = (result == 0);
 }
 
 void QLocalServerPrivate::setError(const QString &function)
