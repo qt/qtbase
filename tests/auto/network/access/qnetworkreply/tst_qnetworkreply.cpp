@@ -125,9 +125,10 @@ class tst_QNetworkReply: public QObject
             qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
             seedCreated = true; // not thread-safe, but who cares
         }
-        QString s = QString("%1-%2-%3").arg(QTime(0,0,0).msecsTo(QTime::currentTime())).arg(QCoreApplication::applicationPid()).arg(qrand());
-        return s;
-    };
+        return QString::number(QTime(0, 0, 0).msecsTo(QTime::currentTime()))
+            + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid())
+            + QLatin1Char('-') + QString::number(qrand());
+    }
 
     static QString tempRedirectReplyStr() {
         QString s = "HTTP/1.1 307 Temporary Redirect\r\n"
@@ -514,16 +515,16 @@ namespace QTest {
     template<>
     char *toString(const QList<QNetworkCookie> &list)
     {
-        QString result = "QList(";
+        QByteArray result = "QList(";
         bool first = true;
         foreach (QNetworkCookie cookie, list) {
             if (!first)
                 result += ", ";
             first = false;
-            result += QString::fromLatin1("QNetworkCookie(%1)").arg(QLatin1String(cookie.toRawForm()));
+            result += "QNetworkCookie(" + cookie.toRawForm() + ')';
         }
-
-        return qstrdup(result.append(')').toLocal8Bit());
+        result.append(')');
+        return qstrdup(result.constData());
     }
 }
 
@@ -4816,7 +4817,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     server.listen(QHostAddress(QHostAddress::LocalHost), 0);
 
     // create the request
-    QUrl url = QUrl(QString("https://127.0.0.1:%1/").arg(server.serverPort()));
+    QUrl url = QUrl(QLatin1String("https://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest request(url);
 
     request.setRawHeader("Content-Type", "application/octet-stream");
@@ -5032,7 +5033,7 @@ void tst_QNetworkReply::emitAllUploadProgressSignals()
     server.listen(QHostAddress(QHostAddress::LocalHost), 0);
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
+    QUrl url = QUrl(QLatin1String("http://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest normalRequest(url);
     normalRequest.setRawHeader("Content-Type", "application/octet-stream");
 
@@ -5087,7 +5088,7 @@ void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
     server.listen(QHostAddress(QHostAddress::LocalHost), 0);
 
     // create the request
-    QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
+    QUrl url = QUrl(QLatin1String("http://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest request(url);
     request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, &buffer));
@@ -6465,9 +6466,10 @@ public slots:
             QByteArray data(amount, '@');
 
             if (chunkedEncoding) {
-                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toLatin1());
+                client->write(QByteArray::number(amount, 16).toUpper());
+                client->write("\r\n");
                 client->write(data.constData(), amount);
-                client->write(QString("\r\n").toLatin1());
+                client->write("\r\n");
             } else {
                 client->write(data.constData(), amount);
             }
@@ -8298,10 +8300,15 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
             server.m_expectedReplies = numUploads;
             server.listen(QHostAddress(QHostAddress::LocalHost), 0);
 
+            QString urlPrefix = QLatin1String("http");
+            if (withSsl)
+                urlPrefix += QLatin1Char('s');
+            urlPrefix += QLatin1String("://127.0.0.1:");
+            urlPrefix += QString::number(server.serverPort());
+            urlPrefix += QLatin1String("/file=");
             for (int i = 0; i < numUploads; i++) {
                 // create the request
-                QUrl url = QUrl(QString("http%1://127.0.0.1:%2/file=%3").arg(withSsl ? "s" : "").arg(server.serverPort()).arg(i));
-                QNetworkRequest request(url);
+                QNetworkRequest request(QUrl(urlPrefix + QString::number(i)));
                 QNetworkReply *reply = manager.put(request, sourceFile);
                 connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
                 connect(reply, SIGNAL(finished()), &server, SLOT(replyFinished()));

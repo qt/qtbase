@@ -275,7 +275,7 @@ void tst_QDnsLookup::lookup()
     QStringList mailExchanges;
     foreach (const QDnsMailExchangeRecord &record, lookup.mailExchangeRecords()) {
         QCOMPARE(record.name(), domain);
-        mailExchanges << QString("%1 %2").arg(QString::number(record.preference()), record.exchange());
+        mailExchanges << QString::number(record.preference()) + QLatin1Char(' ') + record.exchange();
     }
     QVERIFY2(mx_alternatives.contains(mailExchanges.join(';')),
              qPrintable("Actual: " + mailExchanges.join(';') + "\nExpected one of:\n" + mx_alternatives.join('\n')));
@@ -304,11 +304,9 @@ void tst_QDnsLookup::lookup()
     QStringList services;
     foreach (const QDnsServiceRecord &record, lookup.serviceRecords()) {
         QCOMPARE(record.name(), domain);
-        services << QString("%1 %2 %3 %4").arg(
-                QString::number(record.priority()),
-                QString::number(record.weight()),
-                QString::number(record.port()),
-                record.target());
+        services << (QString::number(record.priority()) + QLatin1Char(' ')
+                     + QString::number(record.weight()) + QLatin1Char(' ')
+                     + QString::number(record.port()) + QLatin1Char(' ') + record.target());
     }
     QVERIFY2(srv_alternatives.contains(services.join(';')),
              qPrintable("Actual: " + services.join(';') + "\nExpected one of:\n" + srv_alternatives.join('\n')));

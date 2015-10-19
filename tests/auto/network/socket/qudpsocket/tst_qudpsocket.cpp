@@ -1119,12 +1119,13 @@ void tst_QUdpSocket::multicastTtlOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow(QString("%1 0").arg(address.toString()).toLatin1()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1").arg(address.toString()).toLatin1()) << address << 1 << 1;
-        QTest::newRow(QString("%1 2").arg(address.toString()).toLatin1()) << address << 2 << 2;
-        QTest::newRow(QString("%1 128").arg(address.toString()).toLatin1()) << address << 128 << 128;
-        QTest::newRow(QString("%1 255").arg(address.toString()).toLatin1()) << address << 255 << 255;
-        QTest::newRow(QString("%1 1024").arg(address.toString()).toLatin1()) << address << 1024 << 1;
+        const QByteArray addressB = address.toString().toLatin1();
+        QTest::newRow((addressB + " 0").constData()) << address << 0 << 0;
+        QTest::newRow((addressB + " 1").constData()) << address << 1 << 1;
+        QTest::newRow((addressB + " 2").constData()) << address << 2 << 2;
+        QTest::newRow((addressB + " 128").constData()) << address << 128 << 128;
+        QTest::newRow((addressB + " 255").constData()) << address << 255 << 255;
+        QTest::newRow((addressB + " 1024").constData()) << address << 1024 << 1;
     }
 }
 
@@ -1163,13 +1164,14 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow(QString("%1 0").arg(address.toString()).toLatin1()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1").arg(address.toString()).toLatin1()) << address << 1 << 1;
-        QTest::newRow(QString("%1 2").arg(address.toString()).toLatin1()) << address << 2 << 1;
-        QTest::newRow(QString("%1 0 again").arg(address.toString()).toLatin1()) << address << 0 << 0;
-        QTest::newRow(QString("%1 2 again").arg(address.toString()).toLatin1()) << address << 2 << 1;
-        QTest::newRow(QString("%1 0 last time").arg(address.toString()).toLatin1()) << address << 0 << 0;
-        QTest::newRow(QString("%1 1 again").arg(address.toString()).toLatin1()) << address << 1 << 1;
+        const QByteArray addressB = address.toString().toLatin1();
+        QTest::newRow((addressB + " 0").constData()) << address << 0 << 0;
+        QTest::newRow((addressB + " 1").constData()) << address << 1 << 1;
+        QTest::newRow((addressB + " 2").constData()) << address << 2 << 1;
+        QTest::newRow((addressB + " 0 again").constData()) << address << 0 << 0;
+        QTest::newRow((addressB + " 2 again").constData()) << address << 2 << 1;
+        QTest::newRow((addressB + " 0 last time").constData()) << address << 0 << 0;
+        QTest::newRow((addressB + " 1 again").constData()) << address << 1 << 1;
     }
 }
 
@@ -1266,9 +1268,8 @@ void tst_QUdpSocket::setMulticastInterface_data()
         if ((iface.flags() & QNetworkInterface::IsUp) == 0)
             continue;
         foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
-            QTest::newRow(QString("%1:%2").arg(iface.name()).arg(entry.ip().toString()).toLatin1())
-                    << iface
-                    << entry.ip();
+            const QByteArray testName = iface.name().toLatin1() + ':' + entry.ip().toString().toLatin1();
+            QTest::newRow(testName.constData()) << iface << entry.ip();
         }
     }
 }

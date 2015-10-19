@@ -44,7 +44,7 @@
 
 #include <algorithm>
 
-#define TESTFILE QString("http://%1/qtest/cgi-bin/").arg(QtNetworkSettings::serverName())
+#define TESTFILE QLatin1String("http://") + QtNetworkSettings::serverName() + QLatin1String("/qtest/cgi-bin/")
 
 class tst_QAbstractNetworkCache : public QObject
 {

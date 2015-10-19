@@ -423,15 +423,15 @@ void tst_QSslCertificate::subjectAlternativeNames()
     QMapIterator<QSsl::AlternativeNameEntryType, QString> it(altSubjectNames);
     while (it.hasNext()) {
         it.next();
-        QString type;
+        QByteArray type;
         if (it.key() == QSsl::EmailEntry)
-            type = QLatin1String("email");
+            type = "email";
         else if (it.key() == QSsl::DnsEntry)
-            type = QLatin1String("DNS");
+            type = "DNS";
         else
             QFAIL("unsupported alternative name type");
-        QString entry = QString("%1:%2").arg(type).arg(it.value());
-        QVERIFY(fileContents.contains(entry.toLatin1()));
+        const QByteArray entry = type + ':' + it.value().toLatin1();
+        QVERIFY(fileContents.contains(entry));
     }
 
     // verify that each entry in fileContents is present in subjAltNames

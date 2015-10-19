@@ -132,8 +132,9 @@ int main(int argc, char** argv)
         return SESSION_OPEN_ERROR;
     }
 
-    QString output = QString("Started session for %1\n").arg(session->configuration().identifier());
-    oopSocket.write(output.toLatin1());
+    QByteArray output = "Started session for "
+        + session->configuration().identifier().toLatin1() + '\n';
+    oopSocket.write(output);
     oopSocket.waitForBytesWritten();
 
     oopSocket.waitForReadyRead();

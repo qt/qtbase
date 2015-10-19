@@ -327,8 +327,9 @@ void tst_QLocalSocket::listenAndConnect_data()
         int connections = i;
         if (i == 2)
             connections = 5;
-        QTest::newRow(QString("null %1").arg(i).toLatin1()) << QString() << false << connections;
-        QTest::newRow(QString("tst_localsocket %1").arg(i).toLatin1()) << "tst_localsocket" << true << connections;
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow(("null " + iB).constData()) << QString() << false << connections;
+        QTest::newRow(("tst_localsocket " + iB).constData()) << "tst_localsocket" << true << connections;
     }
 }
 

@@ -290,10 +290,11 @@ void tst_QFtp::init()
 
 #if !defined(Q_OS_WINCE)
     srand(time(0));
-    uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(rand()).arg((qulonglong)time(0));
+    uniqueExtension = QString::number((quintptr)this) + QString::number(rand())
+        + QString::number((qulonglong)time(0));
 #else
     srand(0);
-    uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(rand()).arg((qulonglong)(0));
+    uniqueExtension = QString::number((quintptr)this) + QString::number(rand()) + QLatin1Char('0');
 #endif
 }
 
@@ -643,19 +644,20 @@ void tst_QFtp::get_data()
 
     // test the two get() overloads in one routine
     for ( int i=0; i<2; i++ ) {
-        QTest::newRow( QString("relPath01_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow(("relPath01_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
                 << "qtest/rfc3252" << 1 << rfc3252 << (bool)(i==1);
-        QTest::newRow( QString("relPath02_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest")     << QString("password")
+        QTest::newRow(("relPath02_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest")     << QString("password")
                 << "qtest/rfc3252" << 1 << rfc3252 << (bool)(i==1);
 
-        QTest::newRow( QString("absPath01_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
+        QTest::newRow(("absPath01_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
                 << "/qtest/rfc3252" << 1 << rfc3252 << (bool)(i==1);
-        QTest::newRow( QString("absPath02_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest")     << QString("password")
+        QTest::newRow(("absPath02_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest")     << QString("password")
                 << "/var/ftp/qtest/rfc3252" << 1 << rfc3252 << (bool)(i==1);
 
-        QTest::newRow( QString("nonExist01_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
+        QTest::newRow(("nonExist01_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
                 << QString("foo")  << 0 << QByteArray() << (bool)(i==1);
-        QTest::newRow( QString("nonExist02_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
+        QTest::newRow(("nonExist02_" + iB).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
                 << QString("/foo") << 0 << QByteArray() << (bool)(i==1);
     }
 }
@@ -734,7 +736,7 @@ void tst_QFtp::put_data()
 
     // test the two put() overloads in one routine
     for ( int i=0; i<2; i++ ) {
-        QTest::newRow( QString("relPath01_%1").arg(i).toLatin1().constData() ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
+        QTest::newRow(("relPath01_" + QByteArray::number(i)).constData()) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString()
                 << QString("qtest/upload/rel01_%1") << rfc3252
                 << (bool)(i==1) << 1;
         /*

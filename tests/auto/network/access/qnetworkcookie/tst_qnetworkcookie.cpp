@@ -63,16 +63,16 @@ namespace QTest {
     template<>
     char *toString(const QList<QNetworkCookie> &list)
     {
-        QString result = "QList(";
+        QByteArray result = "QList(";
         bool first = true;
         foreach (QNetworkCookie cookie, list) {
             if (!first)
                 result += ", ";
             first = false;
-            result += QString::fromLatin1("QNetworkCookie(%1)").arg(QLatin1String(cookie.toRawForm()));
+            result += "QNetworkCookie(" + cookie.toRawForm() + ')';
         }
-
-        return qstrdup(result.append(')').toLocal8Bit());
+        result.append(')');
+        return qstrdup(result.constData());
     }
 }
 
