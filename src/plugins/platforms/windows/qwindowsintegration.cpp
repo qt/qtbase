@@ -230,17 +230,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
         << __FUNCTION__ << "DpiAwareness=" << dpiAwareness <<",Scaling="
         << QWindowsScaling::factor();
 
-    QTouchDevice *touchDevice = m_context.touchDevice();
-    if (touchDevice) {
-#ifdef Q_OS_WINCE
-        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
-#else
-        if (!(m_options & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)) {
-            touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
-        }
-#endif
-        QWindowSystemInterface::registerTouchDevice(touchDevice);
-    }
+    m_context.initTouch(m_options);
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

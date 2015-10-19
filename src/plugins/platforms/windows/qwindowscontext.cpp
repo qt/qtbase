@@ -33,6 +33,7 @@
 ****************************************************************************/
 
 #include "qwindowscontext.h"
+#include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
 #include "qwindowsguieventdispatcher.h"
@@ -201,12 +202,14 @@ void QWindowsUser32DLL::init()
 
 bool QWindowsUser32DLL::initTouch()
 {
-    QSystemLibrary library(QStringLiteral("user32"));
-    isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
-    registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
-    unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
-    getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
-    closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
+    if (!isTouchWindow && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+        QSystemLibrary library(QStringLiteral("user32"));
+        isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
+        registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
+        unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
+        getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
+        closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
+    }
     return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
 }
 
@@ -357,6 +360,36 @@ QWindowsContext::~QWindowsContext()
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
     m_instance = 0;
+}
+
+bool QWindowsContext::initTouch()
+{
+    return initTouch(QWindowsIntegration::instance()->options());
+}
+
+bool QWindowsContext::initTouch(unsigned integrationOptions)
+{
+    if (d->m_systemInfo & QWindowsContext::SI_SupportsTouch)
+        return true;
+
+    QTouchDevice *touchDevice = d->m_mouseHandler.ensureTouchDevice();
+    if (!touchDevice)
+        return false;
+
+#ifndef Q_OS_WINCE
+    if (!QWindowsContext::user32dll.initTouch()) {
+        delete touchDevice;
+        return false;
+    }
+#endif // !Q_OS_WINCE
+
+    if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
+        touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);
+
+    QWindowSystemInterface::registerTouchDevice(touchDevice);
+
+    d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
+    return true;
 }
 
 void QWindowsContext::setTabletAbsoluteRange(int a)
