@@ -329,7 +329,7 @@ void QLineEditIconButton::actionEvent(QActionEvent *e)
     switch (e->type()) {
     case QEvent::ActionChanged: {
         const QAction *action = e->action();
-        if (isVisible() != action->isVisible()) {
+        if (isVisibleTo(parentWidget()) != action->isVisible()) {
             setVisible(action->isVisible());
             if (QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget()))
                 static_cast<QLineEditPrivate *>(qt_widget_private(le))->positionSideWidgets();
@@ -433,13 +433,13 @@ void QLineEditPrivate::positionSideWidgets()
         QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
         foreach (const SideWidgetEntry &e, leftSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            if (e.widget->isVisible())
+            if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() + delta);
         }
         widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
         foreach (const SideWidgetEntry &e, rightSideWidgetList()) {
             e.widget->setGeometry(widgetGeometry);
-            if (e.widget->isVisible())
+            if (e.action->isVisible())
                 widgetGeometry.moveLeft(widgetGeometry.left() - delta);
         }
     }
