@@ -52,7 +52,10 @@ public:
     inline QXmlStreamStringRef():m_position(0), m_size(0){}
     inline QXmlStreamStringRef(const QStringRef &aString)
         :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
-    inline QXmlStreamStringRef(const QString &aString):m_string(aString), m_position(0), m_size(aString.size()){}
+    QXmlStreamStringRef(const QString &aString) : m_string(aString), m_position(0), m_size(m_string.size()) {}
+#ifdef Q_COMPILER_RVALUE_REFS
+    QXmlStreamStringRef(QString &&aString) Q_DECL_NOTHROW : m_string(std::move(aString)), m_position(0), m_size(m_string.size()) {}
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QXmlStreamStringRef(const QXmlStreamStringRef &other) // = default
