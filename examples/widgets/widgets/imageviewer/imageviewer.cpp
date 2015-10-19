@@ -76,7 +76,7 @@ bool ImageViewer::loadFile(const QString &fileName)
     if (newImage.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot load %1: %2")
-                                 .arg(QDir::toNativeSeparators(fileName)), reader.errorString());
+                                 .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
         return false;
     }
 //! [2]
