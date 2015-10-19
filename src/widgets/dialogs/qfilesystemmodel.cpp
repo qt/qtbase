@@ -243,7 +243,7 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
     Q_ASSERT(parentNode);
 
     // now get the internal pointer for the index
-    QString childName = parentNode->visibleChildren[d->translateVisibleLocation(parentNode, row)];
+    const QString &childName = parentNode->visibleChildren.at(d->translateVisibleLocation(parentNode, row));
     const QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
     Q_ASSERT(indexNode);
 
@@ -797,7 +797,7 @@ QString QFileSystemModelPrivate::name(const QModelIndex &index) const
         !resolvedSymLinks.isEmpty() && dirNode->isSymLink(/* ignoreNtfsSymLinks = */ true)) {
         QString fullPath = QDir::fromNativeSeparators(filePath(index));
         if (resolvedSymLinks.contains(fullPath))
-            return resolvedSymLinks[fullPath];
+            return resolvedSymLinks.value(fullPath);
     }
     return dirNode->fileName;
 }
@@ -1789,9 +1789,9 @@ void QFileSystemModelPrivate::addVisibleFiles(QFileSystemNode *parentNode, const
         parentNode->dirtyChildrenIndex = parentNode->visibleChildren.count();
 
     for (int i = 0; i < newFiles.count(); ++i) {
-            parentNode->visibleChildren.append(newFiles.at(i));
-            parentNode->children[newFiles.at(i)]->isVisible = true;
-        }
+        parentNode->visibleChildren.append(newFiles.at(i));
+        parentNode->children.value(newFiles.at(i))->isVisible = true;
+    }
     if (!indexHidden)
       q->endInsertRows();
 }
@@ -1813,7 +1813,7 @@ void QFileSystemModelPrivate::removeVisibleFile(QFileSystemNode *parentNode, int
     if (!indexHidden)
         q->beginRemoveRows(parent, translateVisibleLocation(parentNode, vLocation),
                                        translateVisibleLocation(parentNode, vLocation));
-    parentNode->children[parentNode->visibleChildren.at(vLocation)]->isVisible = false;
+    parentNode->children.value(parentNode->visibleChildren.at(vLocation))->isVisible = false;
     parentNode->visibleChildren.removeAt(vLocation);
     if (!indexHidden)
         q->endRemoveRows();
