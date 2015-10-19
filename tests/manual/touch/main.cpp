@@ -91,24 +91,6 @@ static void drawArrow(const QPointF &center, qreal length, qreal angleDegrees,
     painter.restore();
 }
 
-QDebug operator<<(QDebug debug, const QTouchDevice *d)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace();
-    debug << "QTouchDevice(" << d->name() << ',';
-    switch (d->type()) {
-    case QTouchDevice::TouchScreen:
-        debug << "TouchScreen";
-        break;
-    case QTouchDevice::TouchPad:
-        debug << "TouchPad";
-        break;
-    }
-    debug << ", capabilities=" << d->capabilities()
-        << ", maximumTouchPoints=" << d->maximumTouchPoints() << ')';
-    return debug;
-}
-
 // Hierarchy of classes containing gesture parameters and drawing functionality.
 class Gesture {
     Q_DISABLE_COPY(Gesture)
