@@ -1202,47 +1202,47 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
 
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(socketDescriptor, &fds);
-
-    struct timespec tv;
-    tv.tv_sec = timeout / 1000;
-    tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
-
-    int retval;
-    if (selectForRead)
-        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
-    else
-        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
-
-    return retval;
+    bool dummy;
+    return nativeSelect(timeout, selectForRead, !selectForRead, &dummy, &dummy);
 }
 
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
-    fd_set fdread;
-    FD_ZERO(&fdread);
+    struct timespec tv, *ptv = nullptr;
+
+    if (timeout >= 0) {
+        tv.tv_sec = timeout / 1000;
+        tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
+        ptv = &tv;
+    }
+
+    struct pollfd pfd;
+    pfd.fd = socketDescriptor;
+    pfd.events = 0;
+    pfd.revents = 0;
+
     if (checkRead)
-        FD_SET(socketDescriptor, &fdread);
+        pfd.events |= POLLIN;
 
-    fd_set fdwrite;
-    FD_ZERO(&fdwrite);
     if (checkWrite)
-        FD_SET(socketDescriptor, &fdwrite);
+        pfd.events |= POLLOUT;
 
-    struct timespec tv;
-    tv.tv_sec = timeout / 1000;
-    tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
-
-    int ret;
-    ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
+    const int ret = qt_safe_poll(&pfd, 1, ptv);
 
     if (ret <= 0)
         return ret;
-    *selectForRead = FD_ISSET(socketDescriptor, &fdread);
-    *selectForWrite = FD_ISSET(socketDescriptor, &fdwrite);
+
+    if (pfd.revents & POLLNVAL) {
+        errno = EBADF;
+        return -1;
+    }
+
+    static const short read_flags = POLLIN | POLLHUP | POLLERR;
+    static const short write_flags = POLLOUT | POLLERR;
+
+    *selectForRead = ((pfd.revents & read_flags) != 0);
+    *selectForWrite = ((pfd.revents & write_flags) != 0);
 
     return ret;
 }
