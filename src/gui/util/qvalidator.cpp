@@ -399,8 +399,8 @@ static qlonglong pow10(int exp)
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff,
-                                           -1, locale().numberOptions() & QLocale::RejectGroupSeparator)) {
+    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
+                                           locale().numberOptions())) {
         return Invalid;
     }
 
@@ -439,8 +439,8 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 void QIntValidator::fixup(QString &input) const
 {
     QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff,
-                                           -1, locale().numberOptions() & QLocale::RejectGroupSeparator)) {
+    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
+                                           locale().numberOptions())) {
         return;
     }
     bool ok, overflow;
@@ -663,8 +663,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 {
     Q_Q(const QDoubleValidator);
     QByteArray buff;
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec,
-                                         locale.numberOptions() & QLocale::RejectGroupSeparator)) {
+    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec, locale.numberOptions())) {
         return QValidator::Invalid;
     }
 

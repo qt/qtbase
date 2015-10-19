@@ -495,7 +495,8 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
                       QChar group, QChar plus, QChar minus,
                       QString &digits, int decpt, int precision,
                       PrecisionMode pm,
-                      bool always_show_decpt)
+                      bool always_show_decpt,
+                      bool leading_zero_in_exponent)
 {
     int exp = decpt - 1;
 
@@ -515,7 +516,7 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
 
     digits.append(exponential);
     digits.append(QLocaleData::longLongToString(zero, group, plus, minus,
-                   exp, 2, 10, -1, QLocaleData::AlwaysShowSign));
+                   exp, leading_zero_in_exponent ? 2 : 1, 10, -1, QLocaleData::AlwaysShowSign));
 
     return digits;
 }

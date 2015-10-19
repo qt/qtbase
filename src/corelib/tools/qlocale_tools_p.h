@@ -89,7 +89,8 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
                       QChar group, QChar plus, QChar minus,
                       QString &digits, int decpt, int precision,
                       PrecisionMode pm,
-                      bool always_show_decpt);
+                      bool always_show_decpt,
+                      bool leading_zero_in_exponent);
 
 inline bool isZero(double d)
 {

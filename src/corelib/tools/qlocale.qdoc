@@ -930,12 +930,22 @@
     conversions. They can be retrieved with numberOptions() and set with
     setNumberOptions().
 
+    \value DefaultNumberOptions This option represents the default behavior, with
+            group separators and with one leading zero in single digit exponents.
     \value OmitGroupSeparator If this option is set, the number-to-string functions
             will not insert group separators in their return values. The default
             is to insert group separators.
     \value RejectGroupSeparator If this option is set, the string-to-number functions
             will fail if they encounter group separators in their input. The default
             is to accept numbers containing correctly placed group separators.
+    \value OmitLeadingZeroInExponent If this option is set, the number-to-string
+            functions will not pad exponents with zeroes when printing floating point
+            numbers in scientific notation. The default is to add one leading zero to
+            single digit exponents.
+    \value RejectLeadingZeroInExponent If this option is set, the string-to-number
+            functions will fail if they encounter an exponent padded with zeroes when
+            parsing a floating point number in scientific notation. The default is to
+            accept such padding.
 
     \sa setNumberOptions(), numberOptions()
 */

@@ -195,12 +195,8 @@ public:
 
         ShowBase            = 0x80,
         UppercaseBase       = 0x100,
+        ZeroPadExponent     = 0x200,
         ForcePoint          = Alternate
-    };
-
-    enum GroupSeparatorMode {
-        FailOnGroupSeparators,
-        ParseGroupSeparators
     };
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
@@ -250,24 +246,26 @@ public:
         return float(d);
     }
 
-    double stringToDouble(const QChar *begin, int len, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    quint64 stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
+    double stringToDouble(const QChar *begin, int len, bool *ok,
+                          QLocale::NumberOptions number_options) const;
+    qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok,
+                            QLocale::NumberOptions number_options) const;
+    quint64 stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok,
+                                QLocale::NumberOptions number_options) const;
 
     // these functions are used in QIntValidator (QtGui)
     Q_CORE_EXPORT static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = 0);
     Q_CORE_EXPORT static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = 0);
     Q_CORE_EXPORT static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
 
-    bool numberToCLocale(const QChar *str, int len,
-                          GroupSeparatorMode group_sep_mode,
-                          CharBuff *result) const;
+    bool numberToCLocale(const QChar *str, int len, QLocale::NumberOptions number_options,
+                         CharBuff *result) const;
     inline char digitToCLocale(QChar c) const;
 
     // this function is used in QIntValidator (QtGui)
-    Q_CORE_EXPORT bool validateChars(const QString &str, NumberMode numMode,
-                                     QByteArray *buff, int decDigits = -1,
-                                     bool rejectGroupSeparators = false) const;
+    Q_CORE_EXPORT bool validateChars(
+            const QString &str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
+            QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
 public:
     quint16 m_language_id, m_script_id, m_country_id;
@@ -315,7 +313,9 @@ public:
 class Q_CORE_EXPORT QLocalePrivate
 {
 public:
-    static QLocalePrivate *create(const QLocaleData *data, int numberOptions = 0)
+    static QLocalePrivate *create(
+            const QLocaleData *data,
+            QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions)
     {
         QLocalePrivate *retval = new QLocalePrivate;
         retval->m_data = data;
@@ -362,7 +362,7 @@ public:
 
     const QLocaleData *m_data;
     QBasicAtomicInt ref;
-    quint16 m_numberOptions;
+    QLocale::NumberOptions m_numberOptions;
 };
 
 template <>

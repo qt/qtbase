@@ -43,6 +43,8 @@ class tst_QDoubleValidator : public QObject
 private slots:
     void validate_data();
     void validate();
+    void zeroPaddedExponent_data();
+    void zeroPaddedExponent();
     void validateThouSep_data();
     void validateThouSep();
     void validateIntEquiv_data();
@@ -240,6 +242,61 @@ void tst_QDoubleValidator::validate()
     dv.setNotation(QDoubleValidator::StandardNotation);
     QCOMPARE((int)dv.validate(value, dummy), (int)standard_state);
 }
+
+void tst_QDoubleValidator::zeroPaddedExponent_data()
+{
+    QTest::addColumn<double>("minimum");
+    QTest::addColumn<double>("maximum");
+    QTest::addColumn<int>("decimals");
+    QTest::addColumn<QString>("value");
+    QTest::addColumn<bool>("rejectZeroPaddedExponent");
+    QTest::addColumn<QValidator::State>("state");
+
+    QTest::newRow("data01") << 1229.0  << 1231.0  << 0 << QString("123e+1") << false << ACC;
+    QTest::newRow("data02") << 12290.0 << 12310.0 << 0 << QString("123e2")  << false << ACC;
+    QTest::newRow("data03") << 12.290  << 12.310  << 2 << QString("123e-")  << false << ITM;
+    QTest::newRow("data04") << 12.290  << 12.310  << 2 << QString("123e-1") << false << ACC;
+    QTest::newRow("data05") << 1.2290  << 1.2310  << 3 << QString("123e-2") << false << ACC;
+
+    QTest::newRow("data11") << 1229.0  << 1231.0  << 0 << QString("123e+1") << true << ACC;
+    QTest::newRow("data12") << 12290.0 << 12310.0 << 0 << QString("123e2")  << true << ACC;
+    QTest::newRow("data13") << 12.290  << 12.310  << 2 << QString("123e-")  << true << ITM;
+    QTest::newRow("data14") << 12.290  << 12.310  << 2 << QString("123e-1") << true << ACC;
+    QTest::newRow("data15") << 1.2290  << 1.2310  << 3 << QString("123e-2") << true << ACC;
+
+    QTest::newRow("data21") << 1229.0  << 1231.0  << 0 << QString("123e+01") << false << ACC;
+    QTest::newRow("data22") << 12290.0 << 12310.0 << 0 << QString("123e02")  << false << ACC;
+    QTest::newRow("data23") << 12.290  << 12.310  << 2 << QString("123e-0")  << false << ITM;
+    QTest::newRow("data24") << 12.290  << 12.310  << 2 << QString("123e-01") << false << ACC;
+    QTest::newRow("data25") << 1.2290  << 1.2310  << 3 << QString("123e-02") << false << ACC;
+
+    QTest::newRow("data31") << 1229.0  << 1231.0  << 0 << QString("123e+01") << true << INV;
+    QTest::newRow("data32") << 12290.0 << 12310.0 << 0 << QString("123e02")  << true << INV;
+    QTest::newRow("data33") << 12.290  << 12.310  << 2 << QString("123e-0")  << true << INV;
+    QTest::newRow("data34") << 12.290  << 12.310  << 2 << QString("123e-01") << true << INV;
+    QTest::newRow("data35") << 1.2290  << 1.2310  << 3 << QString("123e-02") << true << INV;
+
+}
+
+void tst_QDoubleValidator::zeroPaddedExponent()
+{
+    QFETCH(double, minimum);
+    QFETCH(double, maximum);
+    QFETCH(int, decimals);
+    QFETCH(QString, value);
+    QFETCH(bool, rejectZeroPaddedExponent);
+    QFETCH(QValidator::State, state);
+
+    QLocale locale(QLocale::C);
+    if (rejectZeroPaddedExponent)
+        locale.setNumberOptions(QLocale::RejectLeadingZeroInExponent);
+
+    QDoubleValidator dv(minimum, maximum, decimals, 0);
+    dv.setLocale(locale);
+    int dummy;
+    QCOMPARE((int)dv.validate(value, dummy), (int)state);
+}
+
 void tst_QDoubleValidator::notifySignals()
 {
     QLocale::setDefault(QLocale("C"));

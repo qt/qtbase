@@ -843,8 +843,11 @@ public:
 
     enum FormatType { LongFormat, ShortFormat, NarrowFormat };
     enum NumberOption {
+        DefaultNumberOptions = 0x0,
         OmitGroupSeparator = 0x01,
-        RejectGroupSeparator = 0x02
+        RejectGroupSeparator = 0x02,
+        OmitLeadingZeroInExponent = 0x04,
+        RejectLeadingZeroInExponent = 0x08
     };
     Q_DECLARE_FLAGS(NumberOptions, NumberOption)
 

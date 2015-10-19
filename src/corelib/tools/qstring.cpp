@@ -5877,7 +5877,7 @@ static void append_utf8(QString &qs, const char *cs, int len)
 
 static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
 {
-    uint flags = 0;
+    uint flags = QLocaleData::ZeroPadExponent;
     while (true) {
         switch (*c) {
         case '#': flags |= QLocaleData::Alternate; break;
@@ -6249,7 +6249,7 @@ qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int b
     }
 #endif
 
-    return QLocaleData::c()->stringToLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToLongLong(data, len, base, ok, QLocale::RejectGroupSeparator);
 }
 
 
@@ -6289,7 +6289,8 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     }
 #endif
 
-    return QLocaleData::c()->stringToUnsLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToUnsLongLong(data, len, base, ok,
+                                                 QLocale::RejectGroupSeparator);
 }
 
 /*!
@@ -6490,7 +6491,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
 double QString::toDouble(bool *ok) const
 {
-    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocale::RejectGroupSeparator);
 }
 
 /*!
@@ -7738,6 +7739,8 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
 
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::ThousandsGroup;
+        if (!(locale.numberOptions() & QLocale::OmitLeadingZeroInExponent))
+            flags |= QLocaleData::ZeroPadExponent;
         locale_arg = locale.d->m_data->doubleToString(a, prec, form, fieldWidth, flags);
     }
 
@@ -10458,7 +10461,7 @@ ushort QStringRef::toUShort(bool *ok, int base) const
 
 double QStringRef::toDouble(bool *ok) const
 {
-    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocale::RejectGroupSeparator);
 }
 
 /*!

@@ -1698,6 +1698,20 @@ void tst_QLocale::numberOptions()
 
     QLocale locale2 = locale;
     QCOMPARE(locale2.numberOptions(), QLocale::RejectGroupSeparator);
+
+    QCOMPARE(locale.toString(12.4, 'e', 2), QString("1.24e+01"));
+    locale.setNumberOptions(QLocale::OmitLeadingZeroInExponent);
+    QCOMPARE(locale.numberOptions(), QLocale::OmitLeadingZeroInExponent);
+    QCOMPARE(locale.toString(12.4, 'e', 2), QString("1.24e+1"));
+
+    locale.toDouble(QString("1.24e+01"), &ok);
+    QVERIFY(ok);
+    locale.setNumberOptions(QLocale::RejectLeadingZeroInExponent);
+    QCOMPARE(locale.numberOptions(), QLocale::RejectLeadingZeroInExponent);
+    locale.toDouble(QString("1.24e+1"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("1.24e+01"), &ok);
+    QVERIFY(!ok);
 }
 
 void tst_QLocale::negativeNumbers()

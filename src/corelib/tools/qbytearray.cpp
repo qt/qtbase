@@ -3930,10 +3930,10 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 QByteArray &QByteArray::setNum(double n, char f, int prec)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = 0;
+    uint flags = QLocaleData::ZeroPadExponent;
 
     if (qIsUpper(f))
-        flags = QLocaleData::CapitalEorX;
+        flags |= QLocaleData::CapitalEorX;
     f = qToLower(f);
 
     switch (f) {
