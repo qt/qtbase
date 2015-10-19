@@ -2557,7 +2557,9 @@ Additional options:
     -l <string> ........ Add an explicit library.
 
     -no-rpath .......... Do not use the library install path as a runtime
-                         library path.
+                         library path. On Apple platforms, this implies using
+                         absolute install names (based in -libdir) for dynamic
+                         libraries and frameworks.
  +  -rpath ............. Link Qt libraries and executables using the library
                          install path as a runtime library path. Equivalent
                          to -R install_libpath
