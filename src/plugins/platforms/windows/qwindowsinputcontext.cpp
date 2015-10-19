@@ -84,6 +84,18 @@ static inline void imeNotifyCancelComposition(HWND hwnd)
     ImmReleaseContext(hwnd, himc);
 }
 
+static inline LCID languageIdFromLocaleId(LCID localeId)
+{
+    return localeId & 0xFFFF;
+}
+
+static inline LCID currentInputLanguageId()
+{
+    return languageIdFromLocaleId(reinterpret_cast<quintptr>(GetKeyboardLayout(0)));
+}
+
+Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id); // from qlocale_win.cpp
+
 /*!
     \class QWindowsInputContext
     \brief Windows Input context implementation
@@ -153,7 +165,9 @@ QWindowsInputContext::CompositionContext::CompositionContext() :
 
 QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
-    m_endCompositionRecursionGuard(false)
+    m_endCompositionRecursionGuard(false),
+    m_languageId(currentInputLanguageId()),
+    m_locale(qt_localeFromLCID(m_languageId))
 {
     connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
             this, &QWindowsInputContext::cursorRectChanged);
@@ -371,7 +385,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     QWindow *window = QGuiApplication::focusWindow();
     if (!window)
         return false;
-    qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window << "language=" << m_languageId;
     if (!fo || QWindowsWindow::handleOf(window) != hwnd)
         return false;
     initContext(hwnd, fo);
@@ -553,6 +567,21 @@ bool QWindowsInputContext::handleIME_Request(WPARAM wParam,
         break;
     }
     return false;
+}
+
+void QWindowsInputContext::handleInputLanguageChanged(WPARAM wparam, LPARAM lparam)
+{
+    const LCID newLanguageId = languageIdFromLocaleId(lparam);
+    if (newLanguageId == m_languageId)
+        return;
+    const LCID oldLanguageId = m_languageId;
+    m_languageId = newLanguageId;
+    m_locale = qt_localeFromLCID(m_languageId);
+    emitLocaleChanged();
+
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << hex << showbase
+        << oldLanguageId  << "->" << newLanguageId << "Character set:"
+        << DWORD(wparam) << dec << noshowbase << m_locale;
 }
 
 /*!

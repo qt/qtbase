@@ -860,6 +860,11 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     return result;
 }
 
+static inline QWindowsInputContext *windowsInputContext()
+{
+    return qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
+}
+
 /*!
      \brief Main windows procedure registered for windows.
 
@@ -909,8 +914,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         }
     }
     if (et & QtWindows::InputMethodEventFlag) {
-        QWindowsInputContext *windowsInputContext =
-            qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
+        QWindowsInputContext *windowsInputContext = ::windowsInputContext();
         // Disable IME assuming this is a special implementation hooking into keyboard input.
         // "Real" IME implementations should use a native event filter intercepting IME events.
         if (!windowsInputContext) {
@@ -1006,11 +1010,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     }
 
     switch (et) {
+    case QtWindows::KeyboardLayoutChangeEvent:
+        if (QWindowsInputContext *wic = windowsInputContext())
+            wic->handleInputLanguageChanged(wParam, lParam); // fallthrough intended.
     case QtWindows::KeyDownEvent:
     case QtWindows::KeyEvent:
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
-    case QtWindows::KeyboardLayoutChangeEvent:
     case QtWindows::AppCommandEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
         return platformSessionManager()->isInteractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
