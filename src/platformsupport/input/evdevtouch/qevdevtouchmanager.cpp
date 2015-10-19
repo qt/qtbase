@@ -91,7 +91,6 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
 QEvdevTouchManager::~QEvdevTouchManager()
 {
     qDeleteAll(m_activeDevices);
-    updateInputDeviceCount();
 }
 
 void QEvdevTouchManager::addDevice(const QString &deviceNode)
