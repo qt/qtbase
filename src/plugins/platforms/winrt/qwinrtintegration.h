@@ -88,6 +88,7 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    void initialize() Q_DECL_OVERRIDE;
     QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
     QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
     QPlatformServices *services() const Q_DECL_OVERRIDE;

@@ -447,7 +447,7 @@ public:
 };
 
 // To be called from the XAML thread
-QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
+QWinRTScreen::QWinRTScreen()
     : d_ptr(new QWinRTScreenPrivate)
 {
     Q_D(QWinRTScreen);
@@ -455,7 +455,17 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
     d->touchDevice = Q_NULLPTR;
 
     HRESULT hr;
-    hr = xamlWindow->get_CoreWindow(&d->coreWindow);
+    ComPtr<Xaml::IWindowStatics> windowStatics;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Window).Get(),
+                                IID_PPV_ARGS(&windowStatics));
+    Q_ASSERT_SUCCEEDED(hr);
+    ComPtr<Xaml::IWindow> window;
+    hr = windowStatics->get_Current(&window);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = window->Activate();
+    Q_ASSERT_SUCCEEDED(hr);
+
+    hr = window->get_CoreWindow(&d->coreWindow);
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->coreWindow->Activate();
     Q_ASSERT_SUCCEEDED(hr);
@@ -464,35 +474,6 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
     hr = d->coreWindow->get_Bounds(&rect);
     Q_ASSERT_SUCCEEDED(hr);
     d->logicalSize = QSizeF(rect.Width, rect.Height);
-
-    hr = d->coreWindow->add_KeyDown(Callback<KeyHandler>(this, &QWinRTScreen::onKeyDown).Get(), &d->windowTokens[&ICoreWindow::remove_KeyDown]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_KeyUp(Callback<KeyHandler>(this, &QWinRTScreen::onKeyUp).Get(), &d->windowTokens[&ICoreWindow::remove_KeyUp]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_CharacterReceived(Callback<CharacterReceivedHandler>(this, &QWinRTScreen::onCharacterReceived).Get(), &d->windowTokens[&ICoreWindow::remove_CharacterReceived]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerEntered(Callback<PointerHandler>(this, &QWinRTScreen::onPointerEntered).Get(), &d->windowTokens[&ICoreWindow::remove_PointerEntered]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerExited(Callback<PointerHandler>(this, &QWinRTScreen::onPointerExited).Get(), &d->windowTokens[&ICoreWindow::remove_PointerExited]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerMoved(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerMoved]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerPressed(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerPressed]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerReleased(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerReleased]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerWheelChanged]);
-    Q_ASSERT_SUCCEEDED(hr);
-#ifndef Q_OS_WINPHONE
-    hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
-    Q_ASSERT_SUCCEEDED(hr);
-#endif
-    hr = d->coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &d->windowTokens[&ICoreWindow::remove_Activated]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_Closed(Callback<ClosedHandler>(this, &QWinRTScreen::onClosed).Get(), &d->windowTokens[&ICoreWindow::remove_Closed]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->coreWindow->add_VisibilityChanged(Callback<VisibilityChangedHandler>(this, &QWinRTScreen::onVisibilityChanged).Get(), &d->windowTokens[&ICoreWindow::remove_VisibilityChanged]);
-    Q_ASSERT_SUCCEEDED(hr);
 
     // Orientation handling
     ComPtr<IDisplayInformationStatics> displayInformationStatics;
@@ -508,12 +489,6 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
     hr = d->displayInformation->get_NativeOrientation(&displayOrientation);
     Q_ASSERT_SUCCEEDED(hr);
     d->nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
-
-    hr = d->displayInformation->add_OrientationChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onOrientationChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_OrientationChanged]);
-    Q_ASSERT_SUCCEEDED(hr);
-
-    hr = d->displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_DpiChanged]);
-    Q_ASSERT_SUCCEEDED(hr);
 
     // Set initial orientation & pixel density
     onDpiChanged(Q_NULLPTR, Q_NULLPTR);
@@ -542,7 +517,7 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
     ComPtr<Xaml::IUIElement> uiElement;
     hr = canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
-    hr = xamlWindow->put_Content(uiElement.Get());
+    hr = window->put_Content(uiElement.Get());
     Q_ASSERT_SUCCEEDED(hr);
     hr = canvas.As(&d->canvas);
     Q_ASSERT_SUCCEEDED(hr);
@@ -555,10 +530,6 @@ QWinRTScreen::QWinRTScreen(Xaml::IWindow *xamlWindow)
                                 IID_PPV_ARGS(&statusBarStatics));
     Q_ASSERT_SUCCEEDED(hr);
     hr = statusBarStatics->GetForCurrentView(&d->statusBar);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->statusBar->add_Showing(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarShowing).Get(), &d->statusBarTokens[&IStatusBar::remove_Showing]);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = d->statusBar->add_Hiding(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarHiding).Get(), &d->statusBarTokens[&IStatusBar::remove_Hiding]);
     Q_ASSERT_SUCCEEDED(hr);
 #endif // Q_OS_WINPHONE
 }
@@ -725,6 +696,50 @@ void QWinRTScreen::setStatusBarVisibility(bool visible, QWindow *window)
     });
 }
 #endif //Q_OS_WINPHONE
+
+void QWinRTScreen::initialize()
+{
+    Q_D(QWinRTScreen);
+    HRESULT hr;
+    hr = d->coreWindow->add_KeyDown(Callback<KeyHandler>(this, &QWinRTScreen::onKeyDown).Get(), &d->windowTokens[&ICoreWindow::remove_KeyDown]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_KeyUp(Callback<KeyHandler>(this, &QWinRTScreen::onKeyUp).Get(), &d->windowTokens[&ICoreWindow::remove_KeyUp]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_CharacterReceived(Callback<CharacterReceivedHandler>(this, &QWinRTScreen::onCharacterReceived).Get(), &d->windowTokens[&ICoreWindow::remove_CharacterReceived]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerEntered(Callback<PointerHandler>(this, &QWinRTScreen::onPointerEntered).Get(), &d->windowTokens[&ICoreWindow::remove_PointerEntered]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerExited(Callback<PointerHandler>(this, &QWinRTScreen::onPointerExited).Get(), &d->windowTokens[&ICoreWindow::remove_PointerExited]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerMoved(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerMoved]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerPressed(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerPressed]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerReleased(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerReleased]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &d->windowTokens[&ICoreWindow::remove_PointerWheelChanged]);
+    Q_ASSERT_SUCCEEDED(hr);
+#ifndef Q_OS_WINPHONE
+    hr = d->coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onSizeChanged).Get(), &d->windowTokens[&ICoreWindow::remove_SizeChanged]);
+    Q_ASSERT_SUCCEEDED(hr);
+#else
+    hr = d->statusBar->add_Showing(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarShowing).Get(), &d->statusBarTokens[&IStatusBar::remove_Showing]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->statusBar->add_Hiding(Callback<StatusBarHandler>(this, &QWinRTScreen::onStatusBarHiding).Get(), &d->statusBarTokens[&IStatusBar::remove_Hiding]);
+    Q_ASSERT_SUCCEEDED(hr);
+#endif
+    hr = d->coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &d->windowTokens[&ICoreWindow::remove_Activated]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_Closed(Callback<ClosedHandler>(this, &QWinRTScreen::onClosed).Get(), &d->windowTokens[&ICoreWindow::remove_Closed]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->coreWindow->add_VisibilityChanged(Callback<VisibilityChangedHandler>(this, &QWinRTScreen::onVisibilityChanged).Get(), &d->windowTokens[&ICoreWindow::remove_VisibilityChanged]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->displayInformation->add_OrientationChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onOrientationChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_OrientationChanged]);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = d->displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_DpiChanged]);
+    Q_ASSERT_SUCCEEDED(hr);
+    onVisibilityChanged(nullptr, nullptr);
+}
 
 QWindow *QWinRTScreen::topWindow() const
 {
@@ -1089,8 +1104,10 @@ HRESULT QWinRTScreen::onClosed(ICoreWindow *, ICoreWindowEventArgs *)
 
 HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *, IVisibilityChangedEventArgs *args)
 {
+    Q_D(QWinRTScreen);
     boolean visible;
-    args->get_Visible(&visible);
+    HRESULT hr = args ? args->get_Visible(&visible) : d->coreWindow->get_Visible(&visible);
+    RETURN_OK_IF_FAILED("Failed to get visbile.");
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
     if (visible)
         handleExpose();

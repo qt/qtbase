@@ -83,7 +83,7 @@ class QWinRTScreenPrivate;
 class QWinRTScreen : public QPlatformScreen
 {
 public:
-    explicit QWinRTScreen(ABI::Windows::UI::Xaml::IWindow *xamlWindow);
+    explicit QWinRTScreen();
     ~QWinRTScreen();
     QRect geometry() const Q_DECL_OVERRIDE;
 #ifdef Q_OS_WINPHONE
@@ -114,6 +114,8 @@ public:
 #ifdef Q_OS_WINPHONE
     void setStatusBarVisibility(bool visible, QWindow *window);
 #endif
+
+    void initialize();
 
 private:
     void handleExpose();

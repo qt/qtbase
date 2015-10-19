@@ -133,25 +133,13 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     Q_ASSERT_SUCCEEDED(hr);
 #endif // Q_OS_WINPHONE
 
-    hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
-        HRESULT hr;
-        ComPtr<Xaml::IWindowStatics> windowStatics;
-        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Window).Get(),
-                                    IID_PPV_ARGS(&windowStatics));
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<Xaml::IWindow> window;
-        hr = windowStatics->get_Current(&window);
-        Q_ASSERT_SUCCEEDED(hr);
-        hr = window->Activate();
-        Q_ASSERT_SUCCEEDED(hr);
-
-        d->mainScreen = new QWinRTScreen(window.Get());
-        d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
-        screenAdded(d->mainScreen);
+    QEventDispatcherWinRT::runOnXamlThread([d]() {
+        d->mainScreen = new QWinRTScreen;
         return S_OK;
     });
-    Q_ASSERT_SUCCEEDED(hr);
 
+    d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
+    screenAdded(d->mainScreen);
     d->platformServices = new QWinRTServices;
 }
 
@@ -182,6 +170,15 @@ bool QWinRTIntegration::succeeded() const
 QAbstractEventDispatcher *QWinRTIntegration::createEventDispatcher() const
 {
     return new QWinRTEventDispatcher;
+}
+
+void QWinRTIntegration::initialize()
+{
+    Q_D(const QWinRTIntegration);
+    QEventDispatcherWinRT::runOnXamlThread([d]() {
+        d->mainScreen->initialize();
+        return S_OK;
+    });
 }
 
 bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) const
