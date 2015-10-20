@@ -650,7 +650,7 @@ template <typename T> T PaintCommands::image_load(const QString &filepath)
         QDir dir = fi.absoluteDir();
         dir.cdUp();
         dir.cd("images");
-        QString fileName = QString("%1/%2").arg(dir.absolutePath()).arg(fi.fileName());
+        QString fileName = dir.absolutePath() + QLatin1Char('/') + fi.fileName();
         t = T(fileName);
         if (t.isNull() && !fileName.endsWith(".png")) {
             fileName.append(".png");
@@ -841,10 +841,11 @@ void PaintCommands::command_import(QRegExp re)
                qPrintable(fi.fileName()));
 
     QFileInfo fileinfo(*file);
-    m_commands[m_currentCommandIndex] = QString("# import file (%1) start").arg(fileinfo.fileName());
+    m_commands[m_currentCommandIndex] = QLatin1String("# import file (") + fileinfo.fileName()
+        + QLatin1String(") start");
     QString rawContent = QString::fromUtf8(file->readAll());
     QStringList importedData = rawContent.split('\n', QString::SkipEmptyParts);
-    importedData.append(QString("# import file (%1) end ---").arg(fileinfo.fileName()));
+    importedData.append(QLatin1String("# import file (") + fileinfo.fileName() + QLatin1String(") end ---"));
     insertAt(m_currentCommandIndex, importedData);
 
     if (m_verboseMode) {
@@ -862,13 +863,13 @@ void PaintCommands::command_begin_block(QRegExp re)
     if (m_verboseMode)
         printf(" -(lance) begin_block (%s)\n", qPrintable(blockName));
 
-    m_commands[m_currentCommandIndex] = QString("# begin block (%1)").arg(blockName);
+    m_commands[m_currentCommandIndex] = QLatin1String("# begin block (") + blockName + QLatin1Char(')');
     QStringList newBlock;
     int i = m_currentCommandIndex + 1;
     for (; i < m_commands.count(); ++i) {
         const QString &nextCmd = m_commands.at(i);
         if (nextCmd.startsWith("end_block")) {
-            m_commands[i] = QString("# end block (%1)").arg(blockName);
+            m_commands[i] = QLatin1String("# end block (") + blockName + QLatin1Char(')');
             break;
         }
         newBlock += nextCmd;
@@ -905,7 +906,7 @@ void PaintCommands::command_repeat_block(QRegExp re)
         return;
     }
 
-    m_commands[m_currentCommandIndex] = QString("# repeated block (%1)").arg(blockName);
+    m_commands[m_currentCommandIndex] = QLatin1String("# repeated block (") + blockName + QLatin1Char(')');
     insertAt(m_currentCommandIndex, block);
 }
 
@@ -946,7 +947,7 @@ void PaintCommands::command_drawPixmap(QRegExp re)
         QDir dir = fi.absoluteDir();
         dir.cdUp();
         dir.cd("images");
-        QString fileName = QString("%1/%2").arg(dir.absolutePath()).arg(re.cap(1));
+        QString fileName = dir.absolutePath() + QLatin1Char('/') + re.cap(1);
         pm = QPixmap(fileName);
         if (pm.isNull() && !fileName.endsWith(".png")) {
             fileName.append(".png");
@@ -995,7 +996,7 @@ void PaintCommands::command_drawImage(QRegExp re)
         QDir dir = fi.absoluteDir();
         dir.cdUp();
         dir.cd("images");
-        QString fileName = QString("%1/%2").arg(dir.absolutePath()).arg(re.cap(1));
+        QString fileName = dir.absolutePath() + QLatin1Char('/') + re.cap(1);
         im = QImage(fileName);
         if (im.isNull() && !fileName.endsWith(".png")) {
             fileName.append(".png");
@@ -1041,7 +1042,7 @@ void PaintCommands::command_drawTiledPixmap(QRegExp re)
         QDir dir = fi.absoluteDir();
         dir.cdUp();
         dir.cd("images");
-        QString fileName = QString("%1/%2").arg(dir.absolutePath()).arg(re.cap(1));
+        QString fileName = dir.absolutePath() + QLatin1Char('/') + re.cap(1);
         pm = QPixmap(fileName);
         if (pm.isNull() && !fileName.endsWith(".png")) {
             fileName.append(".png");

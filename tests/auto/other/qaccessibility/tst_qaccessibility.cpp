@@ -573,7 +573,7 @@ static QWidget *createWidgets()
 
     int i = 0;
     box->addWidget(new QComboBox(w));
-    box->addWidget(new QPushButton(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QPushButton(QLatin1String("widget text ") + QString::number(i++), w));
     box->addWidget(new QHeaderView(Qt::Vertical, w));
     box->addWidget(new QTreeView(w));
     box->addWidget(new QTreeWidget(w));
@@ -583,25 +583,25 @@ static QWidget *createWidgets()
     box->addWidget(new QTableWidget(w));
     box->addWidget(new QCalendarWidget(w));
     box->addWidget(new QDialogButtonBox(w));
-    box->addWidget(new QGroupBox(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QGroupBox(QLatin1String("widget text ") + QString::number(i++), w));
     box->addWidget(new QFrame(w));
-    box->addWidget(new QLineEdit(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QLineEdit(QLatin1String("widget text ") + QString::number(i++), w));
     box->addWidget(new QProgressBar(w));
     box->addWidget(new QTabWidget(w));
-    box->addWidget(new QCheckBox(QString::fromLatin1("widget text %1").arg(i++), w));
-    box->addWidget(new QRadioButton(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QCheckBox(QLatin1String("widget text ") + QString::number(i++), w));
+    box->addWidget(new QRadioButton(QLatin1String("widget text ") + QString::number(i++), w));
     box->addWidget(new QDial(w));
     box->addWidget(new QScrollBar(w));
     box->addWidget(new QSlider(w));
     box->addWidget(new QDateTimeEdit(w));
     box->addWidget(new QDoubleSpinBox(w));
     box->addWidget(new QSpinBox(w));
-    box->addWidget(new QLabel(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QLabel(QLatin1String("widget text ") + QString::number(i++), w));
     box->addWidget(new QLCDNumber(w));
     box->addWidget(new QStackedWidget(w));
     box->addWidget(new QToolBox(w));
-    box->addWidget(new QLabel(QString::fromLatin1("widget text %1").arg(i++), w));
-    box->addWidget(new QTextEdit(QString::fromLatin1("widget text %1").arg(i++), w));
+    box->addWidget(new QLabel(QLatin1String("widget text ") + QString::number(i++), w));
+    box->addWidget(new QTextEdit(QLatin1String("widget text ") + QString::number(i++), w));
 
     /* Not in the list
      * QAbstractItemView, QGraphicsView, QScrollArea,
@@ -2322,9 +2322,13 @@ void tst_QAccessibility::lineEditTextFunctions_data()
     QTest::newRow("char after 6") << "hello" << 2 << (int) QAccessible::CharBoundary << 3 << 6 << -1 << -1 << "";
 
     for (int i = -2; i < 6; ++i) {
-        QTest::newRow(QString::fromLatin1("line before %1").arg(i).toLocal8Bit().constData()) << "hello" << 0 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
-        QTest::newRow(QString::fromLatin1("line at %1").arg(i).toLocal8Bit().constData()) << "hello" << 1 << (int) QAccessible::LineBoundary << 3 << i << 0 << 5 << "hello";
-        QTest::newRow(QString::fromLatin1("line after %1").arg(i).toLocal8Bit().constData()) << "hello" << 2 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
+        const QByteArray iB = QByteArray::number(i);
+        QTest::newRow(("line before " + iB).constData())
+                      << "hello" << 0 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
+        QTest::newRow(("line at " + iB).constData())
+                      << "hello" << 1 << (int) QAccessible::LineBoundary << 3 << i << 0 << 5 << "hello";
+        QTest::newRow(("line after " + iB).constData())
+                      << "hello" << 2 << (int) QAccessible::LineBoundary << 3 << i << -1 << -1 << "";
     }
 }
 

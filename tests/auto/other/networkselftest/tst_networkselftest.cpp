@@ -986,8 +986,8 @@ void tst_NetworkSelfTest::smbServer()
     static const char contents[] = "This is 34 bytes. Do not change...";
 #ifdef Q_OS_WIN
     // use Windows's native UNC support to try and open a file on the server
-    QString filepath = QString("\\\\%1\\testshare\\test.pri").arg(QtNetworkSettings::winServerName());
-    FILE *f = fopen(filepath.toLatin1(), "rb");
+    QByteArray filepath = "\\\\" + QtNetworkSettings::winServerName().toLatin1() + "\\testshare\\test.pri";
+    FILE *f = fopen(filepath.constData(), "rb");
     QVERIFY2(f, qt_error_string().toLocal8Bit());
 
     char buf[128];
