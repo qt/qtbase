@@ -59,6 +59,25 @@
 
 QT_BEGIN_NAMESPACE
 
+static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
+{
+    QStyle::StandardPixmap stdIcon;
+    switch (icon) {
+    case QSystemTrayIcon::Information:
+        stdIcon = QStyle::SP_MessageBoxInformation;
+        break;
+    case QSystemTrayIcon::Warning:
+        stdIcon = QStyle::SP_MessageBoxWarning;
+        break;
+    case QSystemTrayIcon::Critical:
+        stdIcon = QStyle::SP_MessageBoxCritical;
+        break;
+    case QSystemTrayIcon::NoIcon:
+        return QIcon();
+    }
+    return QApplication::style()->standardIcon(stdIcon);
+}
+
 /*!
     \class QSystemTrayIcon
     \brief The QSystemTrayIcon class provides an icon for an application in the system tray.
@@ -382,11 +401,29 @@ bool QSystemTrayIcon::supportsMessages()
     \sa show(), supportsMessages()
   */
 void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,
-                            QSystemTrayIcon::MessageIcon icon, int msecs)
+                            QSystemTrayIcon::MessageIcon msgIcon, int msecs)
 {
     Q_D(QSystemTrayIcon);
     if (d->visible)
-        d->showMessage_sys(title, msg, icon, msecs);
+        d->showMessage_sys(title, msg, messageIcon2qIcon(msgIcon), msgIcon, msecs);
+}
+
+/*!
+    \fn void QSystemTrayIcon::showMessage(const QString &title, const QString &message, const QIcon &icon, int millisecondsTimeoutHint)
+
+    \overload showMessage()
+
+    Shows a balloon message for the entry with the given \a title, \a message,
+    and custom icon \a icon for the time specified in \a millisecondsTimeoutHint.
+
+    \since 5.9
+*/
+void QSystemTrayIcon::showMessage(const QString &title, const QString &msg,
+                            const QIcon &icon, int msecs)
+{
+    Q_D(QSystemTrayIcon);
+    if (d->visible)
+        d->showMessage_sys(title, msg, icon, QSystemTrayIcon::NoIcon, msecs);
 }
 
 void QSystemTrayIconPrivate::_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason reason)
@@ -398,9 +435,9 @@ void QSystemTrayIconPrivate::_q_emitActivated(QPlatformSystemTrayIcon::Activatio
 //////////////////////////////////////////////////////////////////////
 static QBalloonTip *theSolitaryBalloonTip = 0;
 
-void QBalloonTip::showBalloon(QSystemTrayIcon::MessageIcon icon, const QString& title,
-                              const QString& message, QSystemTrayIcon *trayIcon,
-                              const QPoint& pos, int timeout, bool showArrow)
+void QBalloonTip::showBalloon(const QIcon &icon, const QString &title,
+                              const QString &message, QSystemTrayIcon *trayIcon,
+                              const QPoint &pos, int timeout, bool showArrow)
 {
     hideBalloon();
     if (message.isEmpty() && title.isEmpty())
@@ -434,8 +471,8 @@ bool QBalloonTip::isBalloonVisible()
     return theSolitaryBalloonTip;
 }
 
-QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title,
-                         const QString& message, QSystemTrayIcon *ti)
+QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
+                         const QString &message, QSystemTrayIcon *ti)
     : QWidget(0, Qt::ToolTip), trayIcon(ti), timerId(-1)
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -482,26 +519,10 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
         msgLabel->setFixedSize(limit, msgLabel->heightForWidth(limit));
     }
 
-    QIcon si;
-    switch (icon) {
-    case QSystemTrayIcon::Warning:
-        si = style()->standardIcon(QStyle::SP_MessageBoxWarning);
-        break;
-    case QSystemTrayIcon::Critical:
-        si = style()->standardIcon(QStyle::SP_MessageBoxCritical);
-        break;
-    case QSystemTrayIcon::Information:
-        si = style()->standardIcon(QStyle::SP_MessageBoxInformation);
-        break;
-    case QSystemTrayIcon::NoIcon:
-    default:
-        break;
-    }
-
     QGridLayout *layout = new QGridLayout;
-    if (!si.isNull()) {
+    if (!icon.isNull()) {
         QLabel *iconLabel = new QLabel;
-        iconLabel->setPixmap(si.pixmap(iconSize, iconSize));
+        iconLabel->setPixmap(icon.pixmap(iconSize, iconSize));
         iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         iconLabel->setMargin(2);
         layout->addWidget(iconLabel, 0, 0);
@@ -703,25 +724,12 @@ void QSystemTrayIconPrivate::updateToolTip_sys_qpa()
 
 void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &title,
                                                  const QString &message,
-                                                 QSystemTrayIcon::MessageIcon icon,
+                                                 const QIcon &icon,
+                                                 QSystemTrayIcon::MessageIcon msgIcon,
                                                  int msecs)
 {
-    QIcon notificationIcon;
-    switch (icon) {
-    case QSystemTrayIcon::Information:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
-        break;
-    case QSystemTrayIcon::Warning:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
-        break;
-    case QSystemTrayIcon::Critical:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
-        break;
-    default:
-        break;
-    }
-    qpa_sys->showMessage(title, message, notificationIcon,
-                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
+    qpa_sys->showMessage(title, message, icon,
+                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(msgIcon), msecs);
 }
 
 void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const

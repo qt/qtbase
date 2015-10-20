@@ -161,10 +161,16 @@ void Window::iconActivated(QSystemTrayIcon::ActivationReason reason)
 void Window::showMessage()
 {
     showIconCheckBox->setChecked(true);
-    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(
+    QSystemTrayIcon::MessageIcon msgIcon = QSystemTrayIcon::MessageIcon(
             typeComboBox->itemData(typeComboBox->currentIndex()).toInt());
-    trayIcon->showMessage(titleEdit->text(), bodyEdit->toPlainText(), icon,
+    if (msgIcon == QSystemTrayIcon::NoIcon) {
+        QIcon icon(iconComboBox->itemIcon(iconComboBox->currentIndex()));
+        trayIcon->showMessage(titleEdit->text(), bodyEdit->toPlainText(), icon,
                           durationSpinBox->value() * 1000);
+    } else {
+        trayIcon->showMessage(titleEdit->text(), bodyEdit->toPlainText(), msgIcon,
+                          durationSpinBox->value() * 1000);
+    }
 }
 //! [5]
 
@@ -216,6 +222,8 @@ void Window::createMessageGroupBox()
     typeComboBox->addItem(style()->standardIcon(
             QStyle::SP_MessageBoxCritical), tr("Critical"),
             QSystemTrayIcon::Critical);
+    typeComboBox->addItem(QIcon(), tr("Custom icon"),
+            QSystemTrayIcon::NoIcon);
     typeComboBox->setCurrentIndex(1);
 
     durationLabel = new QLabel(tr("Duration:"));
