@@ -481,7 +481,7 @@ void tst_QSharedMemory::useTooMuchMemory()
     bool success = true;
     int count = 0;
     while (success) {
-        QString key = QString("maxmemorytest_%1").arg(count++);
+        QString key = QLatin1String("maxmemorytest_") + QString::number(count++);
         QSharedMemory *sm = new QSharedMemory(rememberKey(key));
         QVERIFY(sm);
         jail.append(sm);

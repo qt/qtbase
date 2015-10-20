@@ -69,8 +69,9 @@ void tst_QNoDebug::noDebugOutput() const
 void tst_QNoDebug::streaming() const
 {
     QDateTime dt(QDate(1,2,3),QTime(4,5,6));
-    const QString debugString = dt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"));
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QDateTime(%1 Qt::TimeSpec(LocalTime))").arg(debugString)));
+    const QByteArray debugString = dt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t")).toLatin1();
+    const QByteArray message = "QDateTime(" + debugString + " Qt::TimeSpec(LocalTime))";
+    QTest::ignoreMessage(QtWarningMsg, message.constData());
     qWarning() << dt;
 }
 

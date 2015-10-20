@@ -656,7 +656,7 @@ void tst_QRegularExpression::normalMatch_data()
     m.captured << "c123def" << "c12" << "3" << "def";
     offset = 2;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("match06-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("match06-offset" + QByteArray::number(i)).constData())
                 << QRegularExpression("(\\w*)(\\d+)(\\w*)")
                 << QStringLiteral("abc123def").mid(offset - i)
                 << i
@@ -669,7 +669,7 @@ void tst_QRegularExpression::normalMatch_data()
     m.captured << QString("");
     offset = 9;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("match07-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("match07-offset" + QByteArray::number(i)).constData())
                 << QRegularExpression("\\w*")
                 << QStringLiteral("abc123def").mid(offset - i)
                 << i
@@ -747,7 +747,7 @@ void tst_QRegularExpression::normalMatch_data()
     m.isValid = true;
     offset = 1;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("nomatch02-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("nomatch02-offset" + QByteArray::number(i)).constData())
             << QRegularExpression("(\\w+) (\\w+)")
             << QStringLiteral("a string").mid(offset - i)
             << i
@@ -759,7 +759,7 @@ void tst_QRegularExpression::normalMatch_data()
     m.isValid = true;
     offset = 9;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("nomatch03-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("nomatch03-offset" + QByteArray::number(i)).constData())
                 << QRegularExpression("\\w+")
                 << QStringLiteral("abc123def").mid(offset - i)
                 << i
@@ -930,7 +930,7 @@ void tst_QRegularExpression::partialMatch_data()
     m.captured << "def";
     offset = 1;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("softmatch08-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("softmatch08-offset" + QByteArray::number(i)).constData())
                 << QRegularExpression("abc\\w+X|defY")
                 << QStringLiteral("abcdef").mid(offset - i)
                 << i
@@ -1016,7 +1016,7 @@ void tst_QRegularExpression::partialMatch_data()
     m.captured << "def";
     offset = 1;
     for (int i = 0; i <= offset; ++i) {
-        QTest::newRow(QStringLiteral("hardmatch08-offset%1").arg(i).toUtf8().constData())
+        QTest::newRow(("hardmatch08-offset" + QByteArray::number(i)).constData())
                 << QRegularExpression("abc\\w+X|defY")
                 << QStringLiteral("abcdef").mid(offset - i)
                 << i

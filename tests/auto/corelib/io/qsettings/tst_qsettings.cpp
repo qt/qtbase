@@ -2621,7 +2621,7 @@ QString escapeWeirdChars(const QString &s)
         QChar c = s.at(i);
         if (c.unicode() < ' ' || c.unicode() > '~'
             || (escapeNextDigit && c.unicode() >= '0' && c.unicode() <= 'f')) {
-            result += QString("\\x%1").arg(c.unicode(), 0, 16);
+            result += QLatin1String("\\x") + QString::number(c.unicode(), 16);
             escapeNextDigit = true;
         } else {
             result += c;

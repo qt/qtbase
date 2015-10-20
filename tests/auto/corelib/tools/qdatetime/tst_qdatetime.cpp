@@ -1691,13 +1691,15 @@ void tst_QDateTime::operator_insert_extract_data()
     const int thisVersion = tmpDataStream.version();
     for (int version = QDataStream::Qt_1_0; version <= thisVersion; ++version) {
         const QDataStream::Version dataStreamVersion = static_cast<QDataStream::Version>(version);
-        QTest::newRow(QString::fromLatin1("v%1 WA => HAWAII %2").arg(dataStreamVersion).arg(positiveYear.toString()).toLocal8Bit().constData())
+        const QByteArray vN = QByteArray::number(dataStreamVersion);
+        const QByteArray pY = positiveYear.toString().toLatin1();
+        QTest::newRow(('v' + vN + " WA => HAWAII " + pY).constData())
             << positiveYear << westernAustralia << hawaii << dataStreamVersion;
-        QTest::newRow(QString::fromLatin1("v%1 WA => WA %2").arg(dataStreamVersion).arg(positiveYear.toString()).toLocal8Bit().constData())
+        QTest::newRow(('v' + vN + " WA => WA " + pY).constData())
             << positiveYear << westernAustralia << westernAustralia << dataStreamVersion;
-        QTest::newRow(QString::fromLatin1("v%1 HAWAII => WA %2").arg(dataStreamVersion).arg(negativeYear.toString()).toLocal8Bit().constData())
+        QTest::newRow(('v' + vN + " HAWAII => WA " + negativeYear.toString().toLatin1()).constData())
             << negativeYear << hawaii << westernAustralia << dataStreamVersion;
-        QTest::newRow(QString::fromLatin1("v%1 HAWAII => HAWAII %2").arg(dataStreamVersion).arg(positiveYear.toString()).toLocal8Bit().constData())
+        QTest::newRow(('v' + vN + " HAWAII => HAWAII " + pY).constData())
             << positiveYear << hawaii << hawaii << dataStreamVersion;
     }
 }

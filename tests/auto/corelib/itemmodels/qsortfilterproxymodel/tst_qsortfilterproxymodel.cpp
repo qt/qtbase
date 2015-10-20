@@ -341,7 +341,7 @@ void tst_QSortFilterProxyModel::sort_data()
 
     QStringList list;
     for (int i = 10000; i < 20000; ++i)
-        list.append(QString("Number: %1").arg(i));
+        list.append(QStringLiteral("Number: ") + QString::number(i));
     QTest::newRow("large set ascending") <<  static_cast<int>(Qt::AscendingOrder) << int(Qt::CaseSensitive) << list << list;
 }
 
@@ -2545,12 +2545,11 @@ void tst_QSortFilterProxyModel::sortStable()
 {
     QStandardItemModel* model = new QStandardItemModel(5, 2);
     for (int r = 0; r < 5; r++) {
+        const QString prefix = QLatin1String("Row:") + QString::number(r) + QLatin1String(", Column:");
         for (int c = 0; c < 2; c++)  {
-            QStandardItem* item = new QStandardItem(
-                    QString("Row:%0, Column:%1").arg(r).arg(c) );
+            QStandardItem* item = new QStandardItem(prefix + QString::number(c));
             for (int i = 0; i < 3; i++) {
-                QStandardItem* child = new QStandardItem(
-                        QString("Item %0").arg(i) );
+                QStandardItem* child = new QStandardItem(QLatin1String("Item ") + QString::number(i));
                 item->appendRow( child );
             }
             model->setItem(r, c, item);
@@ -2806,7 +2805,8 @@ public:
                 qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(),
                 idx.internalPointer());
             }
-            return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
+            return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+                + QString::number(idx.column()) + QLatin1Char(']');
         }
         return QVariant();
     }
@@ -2971,7 +2971,7 @@ void tst_QSortFilterProxyModel::doubleProxySelectionSetSourceModel()
     QStandardItemModel *model1 = new QStandardItemModel;
     QStandardItem *parentItem = model1->invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("model1 item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("model1 item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }
@@ -2979,7 +2979,7 @@ void tst_QSortFilterProxyModel::doubleProxySelectionSetSourceModel()
     QStandardItemModel *model2 = new QStandardItemModel;
     QStandardItem *parentItem2 = model2->invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("model2 item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("model2 item ") + QString::number(i));
         parentItem2->appendRow(item);
         parentItem2 = item;
     }
@@ -3554,11 +3554,11 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
     QStandardItem *parentItem = model.invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
         {
-            QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+            QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
             parentItem->appendRow(item);
         }
         {
-            QStandardItem *item = new QStandardItem(QString("item 1%0").arg(i));
+            QStandardItem *item = new QStandardItem(QLatin1String("item 1") + QString::number(i));
             parentItem->appendRow(item);
             parentItem = item;
         }
@@ -3855,9 +3855,10 @@ void tst_QSortFilterProxyModel::hierarchyFilterInvalidation()
 {
     QStandardItemModel model;
     for (int i = 0; i < 10; ++i) {
-        QStandardItem *child = new QStandardItem(QString("Row %1").arg(i));
+        const QString rowText = QLatin1String("Row ") + QString::number(i);
+        QStandardItem *child = new QStandardItem(rowText);
         for (int j = 0; j < 1; ++j) {
-            child->appendRow(new QStandardItem(QString("Row %1/%2").arg(i).arg(j)));
+            child->appendRow(new QStandardItem(rowText + QLatin1Char('/') + QString::number(j)));
         }
         model.appendRow(child);
     }
@@ -3916,7 +3917,7 @@ void tst_QSortFilterProxyModel::simpleFilterInvalidation()
 {
     QStandardItemModel model;
     for (int i = 0; i < 2; ++i) {
-        QStandardItem *child = new QStandardItem(QString("Row %1").arg(i));
+        QStandardItem *child = new QStandardItem(QLatin1String("Row ") + QString::number(i));
         child->appendRow(new QStandardItem("child"));
         model.appendRow(child);
     }

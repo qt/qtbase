@@ -150,7 +150,7 @@ void tst_QRingBuffer::readPointerAtPositionWriteRead()
     inData.putChar(0x23);
     inData.write("Qt rocks!");
     for (int i = 0; i < 5000; i++)
-        inData.write(QString("Number %1").arg(i).toUtf8());
+        inData.write("Number " + QByteArray::number(i));
     inData.reset();
     QVERIFY(inData.size() > 0);
 

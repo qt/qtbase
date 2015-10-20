@@ -340,7 +340,7 @@ void tst_QDataStream::stream_data(int noOfElements)
 
             QString tag = device + QLatin1Char('_') + byte_order;
             for (int e=0; e<noOfElements; e++) {
-                QTest::newRow(qPrintable(tag + QString("_%1").arg(e))) << device << QString(byte_order);
+                QTest::newRow(qPrintable(tag + QLatin1Char('_') + QString::number(e))) << device << byte_order;
             }
         }
     }
@@ -2072,7 +2072,7 @@ void tst_QDataStream::setVersion_data()
     QDataStream latest;
 
     for (int vers = 1; vers <= latest.version(); ++vers)
-        QTest::newRow(qPrintable(QString("v_%1").arg(vers))) << vers;
+        QTest::newRow(("v_" + QByteArray::number(vers)).constData()) << vers;
 }
 
 void tst_QDataStream::setVersion()

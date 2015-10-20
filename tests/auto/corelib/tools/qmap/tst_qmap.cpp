@@ -1062,7 +1062,7 @@ void tst_QMap::equal_range()
     QCOMPARE(cresult.second, cmap.cend());
 
     for (int i = -10; i < 10; i += 2)
-        map.insert(i, QString("%1").arg(i));
+        map.insert(i, QString::number(i));
 
     result = map.equal_range(0);
     QCOMPARE(result.first, map.find(0));

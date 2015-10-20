@@ -2391,6 +2391,7 @@ void tst_QVector::reallocAfterCopy_data()
     int result1, result2, result3, result4;
     int fill_size;
     for (int i = 70; i <= 100; i += 10) {
+        const QByteArray prefix = "reallocAfterCopy:" + QByteArray::number(i) + ',';
         fill_size = i - 20;
         for (int j = 0; j <= 3; j++) {
             if (j == 0) { // append
@@ -2414,7 +2415,8 @@ void tst_QVector::reallocAfterCopy_data()
                 result3 = i - 10;
                 result4 = i - 20;
             }
-            QTest::newRow(qPrintable(QString("reallocAfterCopy:%1,%2").arg(i).arg(j))) << i << fill_size << j << result1 << result2 << result3 << result4;
+            QTest::newRow((prefix + QByteArray::number(j)).constData())
+                    << i << fill_size << j << result1 << result2 << result3 << result4;
         }
     }
 }

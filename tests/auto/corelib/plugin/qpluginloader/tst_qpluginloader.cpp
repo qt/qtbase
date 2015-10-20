@@ -95,7 +95,8 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
-    QString libname = QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
+    QString name = QLatin1String("bin/") + QLatin1String(PREFIX) + fileName + QLatin1String(SUFFIX);
+    const QString libname = QFINDTESTDATA(name);
     QFileInfo fi(libname);
     if (fi.exists())
         return fi.canonicalFilePath();
@@ -386,7 +387,8 @@ void tst_QPluginLoader::loadMachO()
 void tst_QPluginLoader::loadGarbage()
 {
     for (int i=0; i<5; i++) {
-        QPluginLoader lib(QFINDTESTDATA(QString("elftest/garbage%1.so").arg(i+1)));
+        const QString name = QLatin1String("elftest/garbage") + QString::number(i + 1) + QLatin1String(".so");
+        QPluginLoader lib(QFINDTESTDATA(name));
         QCOMPARE(lib.load(), false);
         QVERIFY(lib.errorString() != QString("Unknown error"));
     }

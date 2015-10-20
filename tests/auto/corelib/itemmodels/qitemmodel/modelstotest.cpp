@@ -311,7 +311,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
                    Q_FUNC_INFO,
                    qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/test")));
         for (int i = 0; i < 26; ++i) {
-            QString subdir = QString("test/foo_%1").arg(i);
+            QString subdir = QLatin1String("test/foo_") + QString::number(i);
             if (!QDir::current().mkdir(subdir))
                 qFatal("%s: cannot create directory %s",
                        Q_FUNC_INFO,
@@ -350,7 +350,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         int items = 50;
 #endif
         while (items--)
-            listWidget->addItem(QString("item %1").arg(items));
+            listWidget->addItem(QLatin1String("item ") + QString::number(items));
         return QModelIndex();
     }
 
@@ -365,9 +365,10 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         treeWidget->setColumnCount(1);
         QTreeWidgetItem *parent;
         while (topItems--){
-            parent = new QTreeWidgetItem(treeWidget, QStringList(QString("top %1").arg(topItems)));
+            const QString tS = QString::number(topItems);
+            parent = new QTreeWidgetItem(treeWidget, QStringList(QLatin1String("top ") + tS));
             for (int i = 0; i < 20; ++i)
-                new QTreeWidgetItem(parent, QStringList(QString("child %1").arg(topItems)));
+                new QTreeWidgetItem(parent, QStringList(QLatin1String("child ") + tS));
         }
         return QModelIndex();
     }
@@ -387,7 +388,7 @@ void ModelsToTest::cleanupTestArea(QAbstractItemModel *model)
         if (QDir(QDir::currentPath()+"/test").exists())
         {
             for (int i = 0; i < 26; ++i) {
-                QString subdir(QString("test/foo_%1").arg(i));
+                QString subdir(QLatin1String("test/foo_") + QString::number(i));
                 if (!QDir::current().rmdir(subdir))
                     qFatal("%s: cannot remove directory %s",
                            Q_FUNC_INFO,

@@ -1974,8 +1974,9 @@ void tst_QItemSelectionModel::rowIntersectsSelection2()
 {
     QStandardItemModel m;
     for (int i=0; i<8; ++i) {
+        const QString text = QLatin1String("Item number ") + QString::number(i);
         for (int j=0; j<8; ++j) {
-            QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+            QStandardItem *item = new QStandardItem(text);
             if ((i % 2 == 0 && j == 0)  ||
                 (j % 2 == 0 && i == 0)  ||
                  j == 5 || i == 5 ) {
@@ -2021,7 +2022,7 @@ void tst_QItemSelectionModel::rowIntersectsSelection3()
     QStandardItemModel model;
     QStandardItem *parentItem = model.invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }
@@ -2046,7 +2047,7 @@ void tst_QItemSelectionModel::unselectable()
     QStandardItem *parentItem = model.invisibleRootItem();
 
     for (int i = 0; i < 10; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
     }
     QItemSelectionModel selectionModel(&model);
@@ -2093,7 +2094,8 @@ public:
     QVariant data(const QModelIndex &idx, int role) const
     {
         if (role == Qt::DisplayRole || role == Qt::EditRole)
-            return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
+            return QLatin1Char('[') + QString::number(idx.row()) + QLatin1Char(',')
+                + QString::number(idx.column()) + QLatin1Char(']');
         return QVariant();
     }
 
@@ -2202,7 +2204,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
 
     QStandardItem *parentItem = model.invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }
@@ -2225,13 +2227,14 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
 
     parentItem = model.invisibleRootItem();
     for (int i = 0; i < 2; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
     }
     for (int i = 0; i < 2; ++i) {
         parentItem = model.invisibleRootItem()->child(i, 0);
+        const QString prefix = QLatin1String("item ") + QString::number(i) + QLatin1Char('.');
         for (int j = 0; j < 2; ++j) {
-            QStandardItem *item = new QStandardItem(QString("item %0.%1").arg(i).arg(j));
+            QStandardItem *item = new QStandardItem(prefix + QString::number(j));
             parentItem->appendRow(item);
         }
     }
@@ -2304,13 +2307,12 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
 
     // Populate the tree view.
     for (unsigned int i = 0; i < cNumCols; i++)
-        model.setHeaderData( i, Qt::Horizontal, QString::fromLatin1("Column %1").arg(i));
+        model.setHeaderData( i, Qt::Horizontal, QLatin1String("Column ") + QString::number(i));
 
     for (unsigned int r = 0; r < cNumRows; r++) {
-        for (unsigned int c = 0; c < cNumCols; c++) {
-            model.setData(model.index(r, c, QModelIndex()),
-                          QString::fromLatin1("r:%1/c:%2").arg(r, c));
-        }
+        const QString prefix = QLatin1String("r:") + QString::number(r) + QLatin1String("/c:");
+        for (unsigned int c = 0; c < cNumCols; c++)
+            model.setData(model.index(r, c, QModelIndex()), prefix + QString::number(c));
     }
 
     QCOMPARE(model.rowCount(), int(cNumRows));
@@ -2412,15 +2414,16 @@ static QStandardItemModel* getModel(QObject *parent)
     for (int i = 0; i < 4; ++i) {
         QStandardItem *parentItem = model->invisibleRootItem();
         QList<QStandardItem*> list;
+        const QString prefix = QLatin1String("item ") + QString::number(i) + QLatin1String(", ");
         for (int j = 0; j < 4; ++j) {
-            list.append(new QStandardItem(QString("item %1, %2").arg(i).arg(j)));
+            list.append(new QStandardItem(prefix + QString::number(j)));
         }
         parentItem->appendRow(list);
         parentItem = list.first();
         for (int j = 0; j < 4; ++j) {
             QList<QStandardItem*> list;
             for (int k = 0; k < 4; ++k) {
-                list.append(new QStandardItem(QString("item %1, %2").arg(i).arg(j)));
+                list.append(new QStandardItem(prefix + QString::number(j)));
             }
             parentItem->appendRow(list);
         }

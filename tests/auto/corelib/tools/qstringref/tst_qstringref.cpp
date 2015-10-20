@@ -97,7 +97,7 @@ static QStringRef emptyRef()
 }
 
 #define CREATE_REF(string)                                              \
-    const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
+    const QString padded = QLatin1Char(' ') + string + QLatin1Char(' ');     \
     QStringRef ref = padded.midRef(1, padded.size() - 2);
 
 typedef QList<int> IntList;
@@ -317,8 +317,8 @@ void tst_QStringRef::indexOf()
     QFETCH(bool, bcs);
     QFETCH(int, resultpos);
 
-    const QString haystackPadded = QString::fromLatin1(" %1 ").arg(haystack);
-    const QString needlePadded = QString::fromLatin1(" %1 ").arg(needle);
+    const QString haystackPadded = QLatin1Char(' ') + haystack + QLatin1Char(' ');
+    const QString needlePadded = QLatin1Char(' ') + needle + QLatin1Char(' ');
     const QStringRef haystackRef(&haystackPadded, 1, haystack.size());
     const QStringRef needleRef(&needlePadded, 1, needle.size());
 
@@ -407,8 +407,8 @@ void tst_QStringRef::indexOf2()
     QFETCH(QString, needle);
     QFETCH(int, resultpos);
 
-    const QString haystackPadded = QString::fromLatin1(" %1 ").arg(haystack);
-    const QString needlePadded = QString::fromLatin1(" %1 ").arg(needle);
+    const QString haystackPadded = QLatin1Char(' ') + haystack + QLatin1Char(' ');
+    const QString needlePadded = QLatin1Char(' ') + needle + QLatin1Char(' ');
     const QStringRef haystackRef(&haystackPadded, 1, haystack.size());
     const QStringRef needleRef(&needlePadded, 1, needle.size());
 
@@ -490,8 +490,8 @@ void tst_QStringRef::lastIndexOf()
     QFETCH(int, expected);
     QFETCH(bool, caseSensitive);
 
-    const QString haystackPadded = QString::fromLatin1(" %1 ").arg(haystack);
-    const QString needlePadded = QString::fromLatin1(" %1 ").arg(needle);
+    const QString haystackPadded = QLatin1Char(' ') + haystack + QLatin1Char(' ');
+    const QString needlePadded = QLatin1Char(' ') + needle + QLatin1Char(' ');
     const QStringRef haystackRef(&haystackPadded, 1, haystack.size());
     const QStringRef needleRef(&needlePadded, 1, needle.size());
 

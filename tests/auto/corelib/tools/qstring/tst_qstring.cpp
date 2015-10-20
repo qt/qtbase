@@ -63,7 +63,7 @@
 #include <algorithm>
 
 #define CREATE_REF(string)                                              \
-    const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
+    const QString padded = QLatin1Char(' ') + string +  QLatin1Char(' '); \
     QStringRef ref = padded.midRef(1, padded.size() - 2);
 
 namespace {

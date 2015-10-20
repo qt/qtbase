@@ -1370,12 +1370,14 @@ void tst_QRegExp::escapeSequences()
 {
     QString perlSyntaxSpecialChars("0123456789afnrtvbBdDwWsSx\\|[]{}()^$?+*");
     QString w3cXmlSchema11SyntaxSpecialChars("cCiIpP"); // as well as the perl ones
+    QString pattern = QLatin1String("\\?");
     for (int i = ' '; i <= 127; ++i) {
         QLatin1Char c(i);
         if (perlSyntaxSpecialChars.indexOf(c) == -1) {
-            QRegExp rx(QString("\\%1").arg(c), Qt::CaseSensitive, QRegExp::RegExp);
+            pattern[1] = c;
+            QRegExp rx(pattern, Qt::CaseSensitive, QRegExp::RegExp);
             // we'll never have c == 'a' since it's a special character
-            QString s = QString("aaa%1aaa").arg(c);
+            const QString s = QLatin1String("aaa") + c + QLatin1String("aaa");
             QCOMPARE(rx.indexIn(s), 3);
 
             rx.setPatternSyntax(QRegExp::RegExp2);

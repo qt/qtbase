@@ -1697,9 +1697,11 @@ void tst_QLocale::testNames_data()
     for (int i = 0; i < locale_data_count; ++i) {
         const QLocaleData &item = locale_data[i];
 
-        const QString testName = QString::fromLatin1("data_%1 (%2/%3)").arg(i)
-                .arg(QLocale::languageToString((QLocale::Language)item.m_language_id))
-                .arg(QLocale::countryToString((QLocale::Country)item.m_country_id));
+
+        const QString testName = QLatin1String("data_") + QString::number(i) + QLatin1String(" (")
+            + QLocale::languageToString((QLocale::Language)item.m_language_id)
+            + QLatin1Char('/') + QLocale::countryToString((QLocale::Country)item.m_country_id)
+            + QLatin1Char(')');
         QTest::newRow(testName.toLatin1().constData()) << (int)item.m_language_id << (int)item.m_country_id;
     }
 }

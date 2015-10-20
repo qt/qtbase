@@ -146,7 +146,7 @@ void tst_QIdentityProxyModel::insertRows()
 {
     QStandardItem *parentItem = m_model->invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }
@@ -186,7 +186,7 @@ void tst_QIdentityProxyModel::removeRows()
 {
     QStandardItem *parentItem = m_model->invisibleRootItem();
     for (int i = 0; i < 4; ++i) {
-        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        QStandardItem *item = new QStandardItem(QLatin1String("item ") + QString::number(i));
         parentItem->appendRow(item);
         parentItem = item;
     }

@@ -239,8 +239,8 @@ void tst_QChar::isDigit_data()
 
     for (ushort ucs = 0; ucs < 256; ++ucs) {
         bool isDigit = (ucs <= '9' && ucs >= '0');
-        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
-        QTest::newRow(tag.toLatin1()) << ucs << isDigit;
+        const QByteArray tag = "0x" + QByteArray::number(ucs, 16);
+        QTest::newRow(tag.constData()) << ucs << isDigit;
     }
 }
 
@@ -266,8 +266,8 @@ void tst_QChar::isLetter_data()
     QTest::addColumn<bool>("expected");
 
     for (ushort ucs = 0; ucs < 256; ++ucs) {
-        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
-        QTest::newRow(tag.toLatin1()) << ucs << isExpectedLetter(ucs);
+        const QByteArray tag = "0x" + QByteArray::number(ucs, 16);
+        QTest::newRow(tag.constData()) << ucs << isExpectedLetter(ucs);
     }
 }
 
@@ -288,8 +288,8 @@ void tst_QChar::isLetterOrNumber_data()
                 || (ucs >= '0' && ucs <= '9')
                 || ucs == 0xB2 || ucs == 0xB3 || ucs == 0xB9
                 || (ucs >= 0xBC && ucs <= 0xBE);
-        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
-        QTest::newRow(tag.toLatin1()) << ucs << isLetterOrNumber;
+        const QByteArray tag = "0x" + QByteArray::number(ucs, 16);
+        QTest::newRow(tag.constData()) << ucs << isLetterOrNumber;
     }
 }
 
@@ -403,8 +403,8 @@ void tst_QChar::isSpace_data()
 
     for (ushort ucs = 0; ucs < 256; ++ucs) {
         bool isSpace = (ucs <= 0x0D && ucs >= 0x09) || ucs == 0x20 || ucs == 0xA0 || ucs == 0x85;
-        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
-        QTest::newRow(tag.toLatin1()) << ucs << isSpace;
+        const QByteArray tag = "0x" + QByteArray::number(ucs, 16);
+        QTest::newRow(tag.constData()) << ucs << isSpace;
     }
 }
 
@@ -793,8 +793,10 @@ void tst_QChar::normalization_data()
             }
         }
 
-        QString nm = QString("line #%1 (part %2").arg(linenum).arg(part);
-        QTest::newRow(nm.toLatin1()) << columns << part;
+
+        const QByteArray nm = "line #" + QByteArray::number(linenum) + " (part "
+            + QByteArray::number(part);
+        QTest::newRow(nm.constData()) << columns << part;
     }
 }
 

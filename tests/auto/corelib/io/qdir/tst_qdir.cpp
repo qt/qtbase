@@ -556,7 +556,7 @@ void tst_QDir::exists_data()
     char drive = 'Z';
     QString driv;
     do {
-        driv = QString::fromLatin1("%1:/").arg(drive);
+        driv = drive + QLatin1String(":/");
         if (!driveLetters.contains(driv)) break;
         --drive;
     } while (drive >= 'A');

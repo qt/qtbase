@@ -179,7 +179,7 @@ void tst_QLine::testIntersection_data()
         a = a.translated(1, 1);
         b = b.translated(1, 1);
 
-        QTest::newRow(qPrintable(QString::fromLatin1("rotation-%0").arg(i)))
+        QTest::newRow(("rotation-" + QByteArray::number(i)).constData())
             << (double)a.x1() << (double)a.y1() << (double)a.x2() << (double)a.y2()
             << (double)b.x1() << (double)b.y1() << (double)b.x2() << (double)b.y2()
             << int(QLineF::BoundedIntersection)
@@ -332,7 +332,7 @@ void tst_QLine::testAngle_data()
                               << 135.0;
 
     for (int i=0; i<180; ++i) {
-        QTest::newRow(QString("angle:%1").arg(i).toLatin1())
+        QTest::newRow(("angle:" + QByteArray::number(i)).constData())
             << 0.0 << 0.0 << double(cos(i*M_2PI/360)) << double(sin(i*M_2PI/360))
             << 0.0 << 0.0 << 1.0 << 0.0
             << double(i);
@@ -460,7 +460,7 @@ void tst_QLine::testAngleTo_data()
 
     for (int i = 0; i < 360; ++i) {
         const QLineF l = QLineF::fromPolar(1, i);
-        QTest::newRow(QString("angle:%1").arg(i).toLatin1())
+        QTest::newRow(("angle:" + QByteArray::number(i)).constData())
             << qreal(0.0) << qreal(0.0) << qreal(1.0) << qreal(0.0)
             << qreal(0.0) << qreal(0.0) << l.p2().x() << l.p2().y()
             << qreal(i);

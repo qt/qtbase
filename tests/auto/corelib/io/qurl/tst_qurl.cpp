@@ -2872,7 +2872,8 @@ void tst_QUrl::fromUserInput_data()
     int c = 0;
     while (it.hasNext()) {
         it.next();
-        QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.filePath() << QUrl::fromLocalFile(it.filePath());
+        QTest::newRow(("file-" + QByteArray::number(c++)).constData())
+                      << it.filePath() << QUrl::fromLocalFile(it.filePath());
     }
 
     // basic latin1
@@ -2960,7 +2961,8 @@ void tst_QUrl::fromUserInputWithCwd_data()
     while (it.hasNext()) {
         it.next();
         QUrl url = QUrl::fromLocalFile(it.filePath());
-        QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.fileName() << QDir::currentPath() << url << url;
+        QTest::newRow(("file-" + QByteArray::number(c++)).constData())
+                      << it.fileName() << QDir::currentPath() << url << url;
     }
     QDir parent = QDir::current();
     QVERIFY(parent.cdUp());

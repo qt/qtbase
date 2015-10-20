@@ -212,12 +212,12 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
     const_cast<char *>(baData)[baSize] = 'x';
     if ('x' != ba.constData()[baSize]) {
-        return QString::fromLatin1("*** Failed to replace null-terminator in "
-                "result ('%1') ***").arg(QString::fromLatin1(ba)).toLatin1();
+        return "*** Failed to replace null-terminator in "
+                "result ('" + ba + "') ***";
     }
     if (ba != baCopy) {
-        return QString::fromLatin1( "*** Result ('%1') differs from its copy "
-                "after null-terminator was replaced ***").arg(QString::fromLatin1(ba)).toLatin1();
+        return  "*** Result ('" + ba + "') differs from its copy "
+                "after null-terminator was replaced ***";
     }
     const_cast<char *>(baData)[baSize] = '\0'; // Restore sanity
 

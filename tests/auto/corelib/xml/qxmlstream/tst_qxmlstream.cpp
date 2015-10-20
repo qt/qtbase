@@ -157,7 +157,7 @@ static QByteArray makeCanonical(const QString &filename,
                                  text.indexOf(QLatin1Char(13), p),
                                  text.indexOf(QLatin1Char(9), p))) >= 0) {
                     writer.writeCharacters(text.mid(p, i - p));
-                    writer.writeEntityReference(QString("#%1").arg(text.at(i).unicode()));
+                    writer.writeEntityReference(QLatin1Char('#') + QString::number(text.at(i).unicode()));
                     p = i + 1;
                 }
                 writer.writeCharacters(text.mid(p));
@@ -357,7 +357,7 @@ public:
             QFile inputFile(inputFilePath);
             if(!inputFile.open(QIODevice::ReadOnly))
             {
-                failures.append(qMakePair(id, QString::fromLatin1("Failed to open input file %1").arg(inputFilePath)));
+                failures.append(qMakePair(id, QLatin1String("Failed to open input file ") + inputFilePath));
                 return true;
             }
 
@@ -365,8 +365,8 @@ public:
             {
                 if(isWellformed(&inputFile, ParseSinglePass))
                 {
-                     failures.append(qMakePair(id, QString::fromLatin1("Failed to flag %1 as not well-formed.")
-                                                   .arg(inputFilePath)));
+                     failures.append(qMakePair(id, QLatin1String("Failed to flag ") + inputFilePath
+                                                   + QLatin1String(" as not well-formed.")));
 
                      /* Exit, the incremental test will fail as well, no need to flood the output. */
                      return true;
@@ -376,8 +376,8 @@ public:
 
                 if(isWellformed(&inputFile, ParseIncrementally))
                 {
-                     failures.append(qMakePair(id, QString::fromLatin1("Failed to flag %1 as not well-formed with incremental parsing.")
-                                                   .arg(inputFilePath)));
+                     failures.append(qMakePair(id, QLatin1String("Failed to flag ") + inputFilePath
+                                                   + QLatin1String(" as not well-formed with incremental parsing.")));
                 }
                 else
                     successes.append(id);
@@ -402,7 +402,7 @@ public:
 
                     if(!expectedFile.open(QIODevice::ReadOnly))
                     {
-                        failures.append(qMakePair(id, QString::fromLatin1("Failed to open baseline %1").arg(expectedFilePath)));
+                        failures.append(qMakePair(id, QLatin1String("Failed to open baseline ") + expectedFilePath));
                         return true;
                     }
 
@@ -665,8 +665,10 @@ void tst_QXmlStream::reportSuccess_data() const
 
     const int len = m_handler.successes.count();
 
-    for(int i = 0; i < len; ++i)
-        QTest::newRow(qPrintable(QString("%1. %2").arg(i).arg(m_handler.successes.at(i)))) << false;
+    for (int i = 0; i < len; ++i) {
+        const QByteArray testName = QByteArray::number(i) + ". " + m_handler.successes.at(i).toLatin1();
+        QTest::newRow(testName.constData()) << false;
+    }
 
     if(len == 0)
         QTest::newRow("No test cases succeeded.") << true;
@@ -978,7 +980,8 @@ void tst_QXmlStream::writeAttributesWithSpace() const
     writer.writeEmptyElement("A");
     writer.writeAttribute("attribute", QStringLiteral("value") + QChar(QChar::Nbsp));
     writer.writeEndDocument();
-    QString s = QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><A attribute=\"value%1\"/>\n").arg(QChar(QChar::Nbsp));
+    QString s = QLatin1String("<?xml version=\"1.0\" encoding=\"UTF-8\"?><A attribute=\"value")
+        + QChar(QChar::Nbsp) + QLatin1String("\"/>\n");
     QCOMPARE(buffer.buffer().data(), s.toUtf8().data());
 }
 

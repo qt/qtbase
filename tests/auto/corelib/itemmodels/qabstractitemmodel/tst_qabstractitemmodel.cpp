@@ -157,9 +157,10 @@ QtTestModel::QtTestModel(int rows, int columns, QObject *parent)
 {
     table.resize(rows);
     for (int r = 0; r < rows; ++r) {
+        const QString prefix = QString::number(r) + QLatin1Char('/');
         table[r].resize(columns);
         for (int c = 0; c < columns; ++c)
-            table[r][c] = QString("%1/%2").arg(r).arg(c);
+            table[r][c] = prefix + QString::number(c);
     }
 }
 

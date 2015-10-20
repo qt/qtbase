@@ -166,8 +166,8 @@ static void generateDataFromFile(const QString &fname)
             }
         }
 
-        QString nm = QString("line #%1: %2").arg(linenum).arg(comments);
-        QTest::newRow(nm.toLatin1()) << testString << expectedBreakPositions;
+        const QByteArray nm = "line #" + QByteArray::number(linenum) + ": " + comments.toLatin1();
+        QTest::newRow(nm.constData()) << testString << expectedBreakPositions;
     }
 }
 #endif
