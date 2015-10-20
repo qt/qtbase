@@ -1,16 +1,8 @@
-#include standard set of HTML header and footer.
-include(html-config.qdocconf)
-include(html-header-offline.qdocconf)
-include(html-footer.qdocconf)
-
-# Uncomment if navigation bar is not wanted
-#HTML.nonavigationbar      = "true"
-
 # Specify a custom CSS file used by this template
 HTML.stylesheets  += template/style/offline-simple.css
 qhp.extraFiles    += style/offline-simple.css
 
-# override the header styles
+# Override the header styles
 HTML.headerstyles  = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline-simple.css\" />\n" \
     "  <script type=\"text/javascript\">\n" \
