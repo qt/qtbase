@@ -36,6 +36,7 @@
 #include <QtCore/qsocketnotifier.h>
 #include <QtCore/qthread.h>
 
+QT_BEGIN_NAMESPACE
 
 /**************************************************************************
     Socket Notifiers
@@ -301,3 +302,5 @@ void QCFSocketNotifier::enableSocketNotifiers(CFRunLoopObserverRef ref, CFRunLoo
         }
     }
 }
+
+QT_END_NAMESPACE
