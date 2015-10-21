@@ -828,7 +828,11 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
                                                          QAbstractSocketEngine::PacketHeaderOptions options)
 {
     // we use quintptr to force the alignment
-    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int)) + sizeof(quintptr) - 1) / sizeof(quintptr)];
+    quintptr cbuf[(CMSG_SPACE(sizeof(struct in6_pktinfo)) + CMSG_SPACE(sizeof(int))
+#if !defined(IP_PKTINFO) && defined(IP_RECVIF) && defined(Q_OS_BSD4)
+                   + CMSG_SPACE(sizeof(sockaddr_dl))
+#endif
+                   + sizeof(quintptr) - 1) / sizeof(quintptr)];
 
     struct msghdr msg;
     struct iovec vec;
