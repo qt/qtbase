@@ -35,6 +35,7 @@
 #define QEGLFSSCREEN_H
 
 #include "qeglfsglobal.h"
+#include <QtCore/QPointer>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +74,7 @@ private:
     void setPrimarySurface(EGLSurface surface);
 
     EGLDisplay m_dpy;
-    QWindow *m_pointerWindow;
+    QPointer<QWindow> m_pointerWindow;
     EGLSurface m_surface;
     QPlatformCursor *m_cursor;
 
