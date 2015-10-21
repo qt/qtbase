@@ -589,6 +589,9 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384:
         ciph.d->name = QLatin1String("ECDHE-RSA-AES256-SHA384");
         break;
+    case TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
+        ciph.d->name = QLatin1String("ECDHE-RSA-AES256-GCM-SHA384");
+        break;
     default:
         return ciph;
     }
@@ -636,6 +639,10 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
             ciph.d->encryptionMethod = QLatin1String("AES(128)");
             ciph.d->bits = 128;
             ciph.d->supportedBits = 128;
+        } else if (ciph.d->name.contains("AES256-GCM")) {
+            ciph.d->encryptionMethod = QLatin1String("AESGCM(256)");
+            ciph.d->bits = 256;
+            ciph.d->supportedBits = 256;
         } else if (ciph.d->name.contains("AES256-")) {
             ciph.d->encryptionMethod = QLatin1String("AES(256)");
             ciph.d->bits = 256;
