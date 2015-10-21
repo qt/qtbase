@@ -642,7 +642,8 @@ void QPixmapCache::remove(const Key &key)
 void QPixmapCache::clear()
 {
     QT_TRY {
-        pm_cache()->clear();
+        if (pm_cache.exists())
+            pm_cache->clear();
     } QT_CATCH(const std::bad_alloc &) {
         // if we ran out of memory during pm_cache(), it's no leak,
         // so just ignore it.
