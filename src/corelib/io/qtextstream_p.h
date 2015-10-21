@@ -169,6 +169,7 @@ public:
     inline void write(QChar ch);
     void write(const QChar *data, int len);
     void write(QLatin1String data);
+    void writePadding(int len);
     inline void putString(const QString &ch, bool number = false) { putString(ch.constData(), ch.length(), number); }
     void putString(const QChar *data, int len, bool number = false);
     void putString(QLatin1String data, bool number = false);
@@ -176,10 +177,7 @@ public:
     void putNumber(qulonglong number, bool negative);
 
     struct PaddingResult {
-        enum { PreallocatedPadding = 80 }; // typical line length
-
         int left, right;
-        QVarLengthArray<QChar, PreallocatedPadding> padding;
     };
     PaddingResult padding(int len) const;
 

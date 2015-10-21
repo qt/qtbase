@@ -862,6 +862,21 @@ void QTextStreamPrivate::write(QLatin1String data)
 /*!
     \internal
 */
+void QTextStreamPrivate::writePadding(int len)
+{
+    if (string) {
+        // ### What about seek()??
+        string->resize(string->size() + len, params.padChar);
+    } else {
+        writeBuffer.resize(writeBuffer.size() + len, params.padChar);
+        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
+            flushWriteBuffer();
+    }
+}
+
+/*!
+    \internal
+*/
 inline bool QTextStreamPrivate::getChar(QChar *ch)
 {
     if ((string && stringOffset == string->size())
@@ -916,31 +931,24 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
 {
     Q_ASSERT(params.fieldWidth > len); // calling padding() when no padding is needed is an error
 
-    // Do NOT break NRVO in this function or kittens will die!
-
-    PaddingResult result;
+    int left = 0, right = 0;
 
     const int padSize = params.fieldWidth - len;
 
-    result.padding.resize(padSize);
-    std::fill_n(result.padding.begin(), padSize, params.padChar);
-
     switch (params.fieldAlignment) {
     case QTextStream::AlignLeft:
-        result.left  = 0;
-        result.right = padSize;
+        right = padSize;
         break;
     case QTextStream::AlignRight:
     case QTextStream::AlignAccountingStyle:
-        result.left  = padSize;
-        result.right = 0;
+        left  = padSize;
         break;
     case QTextStream::AlignCenter:
-        result.left  = padSize/2;
-        result.right = padSize - padSize/2;
+        left  = padSize/2;
+        right = padSize - padSize/2;
         break;
     }
-
+    const PaddingResult result = { left, right };
     return result;
 }
 
@@ -965,9 +973,9 @@ void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
             }
         }
 
-        write(pad.padding.constData(), pad.left);
+        writePadding(pad.left);
         write(data, len);
-        write(pad.padding.constData(), pad.right);
+        writePadding(pad.right);
     } else {
         write(data, len);
     }
@@ -993,9 +1001,9 @@ void QTextStreamPrivate::putString(QLatin1String data, bool number)
             }
         }
 
-        write(pad.padding.constData(), pad.left);
+        writePadding(pad.left);
         write(data);
-        write(pad.padding.constData(), pad.right);
+        writePadding(pad.right);
     } else {
         write(data);
     }
