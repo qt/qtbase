@@ -625,7 +625,7 @@ void Widget::resizeFunction()
 
     //! [46]
     QString t = "Hello";
-    t += QString(10, 'X');
+    r.resize(t.size() + 10, 'X');
     // t == "HelloXXXXXXXXXX"
     //! [46]
 

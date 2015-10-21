@@ -1652,9 +1652,7 @@ QString::QString(QChar ch)
     \snippet qstring/main.cpp 45
 
     If you want to append a certain number of identical characters to
-    the string, use \l operator+=() as follows rather than resize():
-
-    \snippet qstring/main.cpp 46
+    the string, use the \l {QString::}{resize(int, QChar)} overload.
 
     If you want to expand the string so that it reaches a certain
     width and fill the new positions with a particular character, use
@@ -1692,6 +1690,25 @@ void QString::resize(int size)
             d->data()[size] = '\0';
         }
     }
+}
+
+/*!
+    \overload
+    \since 5.7
+
+    Unlike \l {QString::}{resize(int)}, this overload
+    initializes the new characters to \a fillChar:
+
+    \snippet qstring/main.cpp 46
+*/
+
+void QString::resize(int size, QChar fillChar)
+{
+    const int oldSize = length();
+    resize(size);
+    const int difference = length() - oldSize;
+    if (difference > 0)
+        std::fill_n(d->begin() + oldSize, difference, fillChar.unicode());
 }
 
 /*! \fn int QString::capacity() const

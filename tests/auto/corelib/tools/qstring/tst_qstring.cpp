@@ -556,6 +556,7 @@ private slots:
     void nanAndInf();
     void compare_data();
     void compare();
+    void resize();
     void resizeAfterFromRawData();
     void resizeAfterReserve();
     void resizeWithNegative() const;
@@ -6011,6 +6012,22 @@ void tst_QString::compare()
         QCOMPARE(sign(QString::compare(QLatin1String(s1.toLatin1()), s2)), csr);
         QCOMPARE(sign(QString::compare(QLatin1String(s1.toLatin1()), s2, Qt::CaseInsensitive)), cir);
     }
+}
+
+void tst_QString::resize()
+{
+    QString s = QLatin1String("hello world");
+
+    s.resize(5);
+    QCOMPARE(s, QLatin1String("hello"));
+    s.resize(8);
+    QCOMPARE(s.size(), 8);
+    QVERIFY(s.startsWith(QLatin1String("hello")));
+
+    s.resize(10, QLatin1Char('n'));
+    QCOMPARE(s.size(), 10);
+    QVERIFY(s.startsWith(QLatin1String("hello")));
+    QCOMPARE(s.right(2), QLatin1String("nn"));
 }
 
 void tst_QString::resizeAfterFromRawData()

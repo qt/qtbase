@@ -233,6 +233,7 @@ public:
     inline int length() const;
     inline bool isEmpty() const;
     void resize(int size);
+    void resize(int size, QChar fillChar);
 
     QString &fill(QChar c, int size = -1);
     void truncate(int pos);
