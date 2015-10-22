@@ -62,6 +62,7 @@ HEADERS +=  \
         tools/qstringiterator_p.h \
         tools/qstringlist.h \
         tools/qstringmatcher.h \
+        tools/qstringview.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
         tools/qtools_p.h \
@@ -106,6 +107,7 @@ SOURCES += \
         tools/qstring.cpp \
         tools/qstringbuilder.cpp \
         tools/qstringlist.cpp \
+        tools/qstringview.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
         tools/qunicodetools.cpp \

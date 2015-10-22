@@ -56,6 +56,7 @@ SUBDIRS=\
     qstringlist \
     qstringmatcher \
     qstringref \
+    qstringview \
     qtextboundaryfinder \
     qtime \
     qtimezone \

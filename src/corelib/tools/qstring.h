@@ -73,6 +73,10 @@ Q_FORWARD_DECLARE_CF_TYPE(CFString);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 #endif
 
+#ifndef QT_STRINGVIEW_LEVEL
+#  define QT_STRINGVIEW_LEVEL 1
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QCharRef;
@@ -83,6 +87,7 @@ class QString;
 class QStringList;
 class QTextCodec;
 class QStringRef;
+class QStringView;
 template <typename T> class QVector;
 
 class QLatin1String
@@ -875,6 +880,7 @@ private:
     friend class QCharRef;
     friend class QTextCodec;
     friend class QStringRef;
+    friend class QStringView;
     friend class QByteArray;
     friend class QCollator;
     friend struct QAbstractConcatenable;
@@ -1573,6 +1579,10 @@ inline QStringRef::QStringRef(const QString *aString, int aPosition, int aSize)
 
 inline QStringRef::QStringRef(const QString *aString)
     :m_string(aString), m_position(0), m_size(aString?aString->size() : 0){}
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#include <QtCore/qstringview.h>
+QT_END_INCLUDE_NAMESPACE
 
 // QStringRef <> QStringRef
 Q_CORE_EXPORT bool operator==(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;
