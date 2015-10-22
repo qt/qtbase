@@ -41,6 +41,7 @@
 #include "qcocoahelpers.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
+#include "qcocoainputcontext.h"
 #include <qpa/qplatformintegration.h>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -214,6 +215,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                                           selector:@selector(updateGeometry)
                                           name:NSViewFrameDidChangeNotification
                                           object:self];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
+                                          name:NSTextInputContextKeyboardSelectionDidChangeNotification
+                                          object:nil];
 
     return self;
 }
@@ -461,6 +467,15 @@ QT_WARNING_POP
         Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
                                    Qt::WindowFullScreen : Qt::WindowNoState;
         [self notifyWindowStateChanged:newState];
+    }
+}
+
+- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
+{
+    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
+    if (([NSApp keyWindow] == [self window]) && [[self window] firstResponder] == self) {
+        QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext());
+        ic->updateLocale();
     }
 }
 
