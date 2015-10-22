@@ -6738,19 +6738,6 @@ if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD"
 fi
 
-if [ "$XPLATFORM_MAC" = "yes" ]; then
-    cat <<EOF
-#if defined(__LP64__)
-# define QT_POINTER_SIZE 8
-#else
-# define QT_POINTER_SIZE 4
-#endif
-EOF
-else
-    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" >&3
-    echo "#define QT_POINTER_SIZE $?"
-fi
-
 if [ "$CFG_ATOMIC64" = "no" ]; then
     echo "#define QT_NO_STD_ATOMIC64"
 fi
