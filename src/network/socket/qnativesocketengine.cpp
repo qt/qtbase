@@ -651,6 +651,24 @@ int QNativeSocketEngine::accept()
     return d->nativeAccept();
 }
 
+/*!
+    Returns the number of bytes that are currently available for
+    reading. On error, -1 is returned.
+
+    For UDP sockets, this function returns the accumulated size of all
+    pending datagrams, and it is therefore more useful for UDP sockets
+    to call hasPendingDatagrams() and pendingDatagramSize().
+*/
+qint64 QNativeSocketEngine::bytesAvailable() const
+{
+    Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, -1);
+
+    return d->nativeBytesAvailable();
+}
+
+#ifndef QT_NO_UDPSOCKET
 #ifndef QT_NO_NETWORKINTERFACE
 
 /*!
@@ -711,23 +729,6 @@ bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 }
 
 #endif // QT_NO_NETWORKINTERFACE
-
-/*!
-    Returns the number of bytes that are currently available for
-    reading. On error, -1 is returned.
-
-    For UDP sockets, this function returns the accumulated size of all
-    pending datagrams, and it is therefore more useful for UDP sockets
-    to call hasPendingDatagrams() and pendingDatagramSize().
-*/
-qint64 QNativeSocketEngine::bytesAvailable() const
-{
-    Q_D(const QNativeSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
-    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, -1);
-
-    return d->nativeBytesAvailable();
-}
 
 /*!
     Returns \c true if there is at least one datagram pending. This
@@ -810,6 +811,7 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 size,
     Q_CHECK_TYPE(QNativeSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
     return d->nativeSendDatagram(data, size, d->adjustAddressProtocol(host), port);
 }
+#endif // QT_NO_UDPSOCKET
 
 /*!
     Writes a block of \a size bytes from \a data to the socket.
