@@ -503,14 +503,16 @@ static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const
 template<bool RGBA, bool maskAlpha>
 static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *src, int count)
 {
+    if (count <= 0)
+        return;
+
     const __m128i amask = _mm_set1_epi32(0xff000000);
     int i = 0;
-    if (((uintptr_t)buffer & 0xf) && count > 0) {
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i) {
         uint s = *src++;
         if (RGBA)
             s = RGBA2ARGB(s);
         *buffer++ = QRgba64::fromArgb32(s);
-        i++;
     }
     for (; i < count-3; i += 4) {
         __m128i vs = _mm_loadu_si128((const __m128i*)src);
@@ -641,15 +643,18 @@ static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const ui
 template<QtPixelOrder PixelOrder>
 static inline void qConvertA2RGB30PMToARGB64PM_sse2(QRgba64 *buffer, const uint *src, int count)
 {
+    if (count <= 0)
+        return;
+
     const __m128i rmask = _mm_set1_epi32(0x3ff00000);
     const __m128i gmask = _mm_set1_epi32(0x000ffc00);
     const __m128i bmask = _mm_set1_epi32(0x000003ff);
     const __m128i afactor = _mm_set1_epi16(0x5555);
     int i = 0;
-    if (((uintptr_t)buffer & 0xf) && count > 0) {
+
+    for (; ((uintptr_t)buffer & 0xf) && i < count; ++i)
         *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
-        i++;
-    }
+
     for (; i < count-3; i += 4) {
         __m128i vs = _mm_loadu_si128((const __m128i*)src);
         src += 4;
