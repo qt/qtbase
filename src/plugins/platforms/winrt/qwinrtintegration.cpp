@@ -244,8 +244,7 @@ QStringList QWinRTIntegration::themeNames() const
     return QStringList(QLatin1String("winrt"));
 }
 
-QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &
-name) const
+QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &name) const
 {
     if (name == QLatin1String("winrt"))
         return new QWinRTTheme();
