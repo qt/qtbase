@@ -1265,7 +1265,7 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 #ifdef Q_OS_OSX
     if (platformMenu)
         Q_FOREACH (QAction *action, q->actions())
-            if (QWidget *widget = widgetItems.value(const_cast<QAction *>(action)))
+            if (QWidget *widget = widgetItems.value(action))
                 if (widget->parent() == q) {
                     QPlatformMenuItem *menuItem = platformMenu->menuItemForTag(reinterpret_cast<quintptr>(action));
                     moveWidgetToPlatformItem(widget, menuItem);

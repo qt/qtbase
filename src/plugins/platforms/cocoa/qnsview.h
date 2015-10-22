@@ -77,6 +77,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     bool m_scrolling;
     bool m_exposedOnMoveToWindow;
     NSEvent *m_currentlyInterpretedKeyEvent;
+    bool m_isMenuView;
 }
 
 - (id)init;
