@@ -36,7 +36,7 @@
 #define SYM QT_MANGLE_NAMESPACE(qt_version_tag)
 //#define SSYM QT_STRINGIFY(SYM)
 
-#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF) && !defined(Q_OS_ANDROID)
 #  define make_versioned_symbol2(sym, m, n, separator)     \
     Q_CORE_EXPORT extern const char sym ## _ ## m ## _ ## n = 0; \
     asm(".symver " QT_STRINGIFY(sym) "_" QT_STRINGIFY(m) "_" QT_STRINGIFY(n) ", " \
