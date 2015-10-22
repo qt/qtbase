@@ -45,7 +45,6 @@
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtGui/QSurface>
 #include <QtGui/QOpenGLContext>
 #include <qfunctions_winrt.h>
@@ -258,21 +257,12 @@ QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &name) cons
 HRESULT QWinRTIntegration::onBackButtonPressed(IInspectable *, IBackPressedEventArgs *args)
 {
     Q_D(QWinRTIntegration);
-
-    QKeyEvent backPress(QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
-    QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
-    backPress.setAccepted(false);
-    backRelease.setAccepted(false);
-
     QWindow *window = d->mainScreen->topWindow();
-    QObject *receiver = window ? static_cast<QObject *>(window)
-                               : static_cast<QObject *>(QCoreApplication::instance());
-
-    // If the event is ignored, the app go to the background
-    QCoreApplication::sendEvent(receiver, &backPress);
-    QCoreApplication::sendEvent(receiver, &backRelease);
-    args->put_Handled(backPress.isAccepted() || backRelease.isAccepted());
-
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+    const bool pressed = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
+    const bool released = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(false);
+    args->put_Handled(pressed || released);
     return S_OK;
 }
 #endif // Q_OS_WINPHONE
