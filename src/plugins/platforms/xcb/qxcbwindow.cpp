@@ -652,7 +652,7 @@ void QXcbWindow::setGeometry(const QRect &rect)
     m_xcbScreen = newScreen;
     const QRect wmGeometry = windowToWmGeometry(rect);
 
-    if (newScreen != currentScreen)
+    if (newScreen && newScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->QPlatformScreen::screen());
 
     if (qt_window_private(window())->positionAutomatic) {
@@ -1606,7 +1606,7 @@ void QXcbWindow::requestActivateWindow()
         return;
     }
 
-    if (!m_mapped) {
+    if (!m_mapped || !xcbScreen()) {
         m_deferredActivation = true;
         return;
     }
