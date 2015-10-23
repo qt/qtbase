@@ -106,7 +106,7 @@ QGestureManager::QGestureManager(QObject *parent)
 
 QGestureManager::~QGestureManager()
 {
-    qDeleteAll(m_recognizers.values());
+    qDeleteAll(m_recognizers);
     foreach (QGestureRecognizer *recognizer, m_obsoleteGestures.keys()) {
         qDeleteAll(m_obsoleteGestures.value(recognizer));
         delete recognizer;
