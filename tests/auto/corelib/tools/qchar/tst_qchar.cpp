@@ -43,9 +43,6 @@
 class tst_QChar : public QObject
 {
     Q_OBJECT
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void operators_data();
     void operators();
@@ -80,26 +77,7 @@ private slots:
     void normalization_manual();
     void normalizationCorrections();
     void unicodeVersion();
-#if defined(Q_OS_WINCE)
-private:
-    QCoreApplication* app;
-#endif
 };
-
-void tst_QChar::init()
-{
-#if defined(Q_OS_WINCE)
-    int argc = 0;
-    app = new QCoreApplication(argc, NULL);
-#endif
-}
-
-void tst_QChar::cleanup()
-{
-#if defined(Q_OS_WINCE)
-    delete app;
-#endif
-}
 
 void tst_QChar::operators_data()
 {
