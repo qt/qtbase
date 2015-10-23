@@ -239,20 +239,24 @@ static bool pickFiles(IFileOpenPicker *picker, QWinRTFileDialogHelper *helper, b
         eventDispatcher->installEventFilter(helper);
     return true;
 #else
-    if (singleFile) {
-        ComPtr<IAsyncOperation<StorageFile *>> op;
-        hr = picker->PickSingleFileAsync(&op);
-        RETURN_FALSE_IF_FAILED("Failed to open single file picker");
-        hr = op->put_Completed(Callback<SingleFileHandler>(helper, &QWinRTFileDialogHelper::onSingleFilePicked).Get());
-        RETURN_FALSE_IF_FAILED("Failed to attach file picker callback");
-    } else {
-        ComPtr<IAsyncOperation<IVectorView<StorageFile *> *>> op;
-        hr = picker->PickMultipleFilesAsync(&op);
-        RETURN_FALSE_IF_FAILED("Failed to open multi file picker");
-        hr = op->put_Completed(Callback<MultipleFileHandler>(helper, &QWinRTFileDialogHelper::onMultipleFilesPicked).Get());
-        RETURN_FALSE_IF_FAILED("Failed to attach multi file callback");
-    }
-    return true;
+    hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper, singleFile]() {
+        HRESULT hr;
+        if (singleFile) {
+            ComPtr<IAsyncOperation<StorageFile *>> op;
+            hr = picker->PickSingleFileAsync(&op);
+            RETURN_HR_IF_FAILED("Failed to open single file picker");
+            hr = op->put_Completed(Callback<SingleFileHandler>(helper, &QWinRTFileDialogHelper::onSingleFilePicked).Get());
+            RETURN_HR_IF_FAILED("Failed to attach file picker callback");
+        } else {
+            ComPtr<IAsyncOperation<IVectorView<StorageFile *> *>> op;
+            hr = picker->PickMultipleFilesAsync(&op);
+            RETURN_HR_IF_FAILED("Failed to open multi file picker");
+            hr = op->put_Completed(Callback<MultipleFileHandler>(helper, &QWinRTFileDialogHelper::onMultipleFilesPicked).Get());
+            RETURN_HR_IF_FAILED("Failed to attach multi file callback");
+        }
+        return S_OK;
+    });
+    return SUCCEEDED(hr);
 #endif
 }
 
@@ -274,13 +278,17 @@ static bool pickFolder(IFolderPicker *picker, QWinRTFileDialogHelper *helper)
     Q_ASSERT(eventDispatcher);
     eventDispatcher->installEventFilter(helper);
 #else
-    ComPtr<IAsyncOperation<StorageFolder *>> op;
-    hr = picker->PickSingleFolderAsync(&op);
-    RETURN_FALSE_IF_FAILED("Failed to open folder picker");
-    hr = op->put_Completed(Callback<SingleFolderHandler>(helper, &QWinRTFileDialogHelper::onSingleFolderPicked).Get());
-    RETURN_FALSE_IF_FAILED("Failed to attach folder picker callback");
+    hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper]() {
+        HRESULT hr;
+        ComPtr<IAsyncOperation<StorageFolder *>> op;
+        hr = picker->PickSingleFolderAsync(&op);
+        RETURN_HR_IF_FAILED("Failed to open folder picker");
+        hr = op->put_Completed(Callback<SingleFolderHandler>(helper, &QWinRTFileDialogHelper::onSingleFolderPicked).Get());
+        RETURN_HR_IF_FAILED("Failed to attach folder picker callback");
+        return S_OK;
+    });
 #endif
-    return true;
+    return SUCCEEDED(hr);
 }
 
 static bool pickSaveFile(IFileSavePicker *picker, QWinRTFileDialogHelper *helper)
@@ -301,13 +309,17 @@ static bool pickSaveFile(IFileSavePicker *picker, QWinRTFileDialogHelper *helper
     Q_ASSERT(eventDispatcher);
     eventDispatcher->installEventFilter(helper);
 #else
-    ComPtr<IAsyncOperation<StorageFile *>> op;
-    hr = picker->PickSaveFileAsync(&op);
-    RETURN_FALSE_IF_FAILED("Failed to open save file picker");
-    hr = op->put_Completed(Callback<SingleFileHandler>(helper, &QWinRTFileDialogHelper::onSingleFilePicked).Get());
-    RETURN_FALSE_IF_FAILED("Failed to attach save file picker callback");
+    hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper]() {
+        HRESULT hr;
+        ComPtr<IAsyncOperation<StorageFile *>> op;
+        hr = picker->PickSaveFileAsync(&op);
+        RETURN_HR_IF_FAILED("Failed to open save file picker");
+        hr = op->put_Completed(Callback<SingleFileHandler>(helper, &QWinRTFileDialogHelper::onSingleFilePicked).Get());
+        RETURN_HR_IF_FAILED("Failed to attach save file picker callback");
+        return S_OK;
+    });
 #endif
-    return true;
+    return SUCCEEDED(hr);
 }
 
 class QWinRTFileDialogHelperPrivate
@@ -423,7 +435,12 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
                                                 filterTitle.length());
                 boolean replaced;
                 hr = choices->Insert(namedFilterRef.Get(), entry.Get(), &replaced);
-                RETURN_FALSE_IF_FAILED("Failed to insert file extension choice entry");
+                // Only print a warning as * or *.* is not a valid choice on Windows 10
+                // but used on a regular basis on all other platforms
+                if (FAILED(hr)) {
+                    qWarning("Failed to insert file extension choice entry: %s: %s",
+                             qPrintable(filterTitle), qPrintable(qt_error_string(hr)));
+                }
             }
         }
 
