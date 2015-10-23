@@ -58,6 +58,9 @@
 #if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
 #  define HAVE_WAITID   1
 #endif
+#if !defined(WEXITED) || !defined(WNOWAIT)
+#  undef HAVE_WAITID
+#endif
 
 #if defined(__FreeBSD__)
 #  define HAVE_PIPE2    1
