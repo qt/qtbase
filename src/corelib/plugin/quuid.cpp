@@ -963,7 +963,7 @@ QUuid QUuid::createUuid()
         {
             int *pseed = new int;
             static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-            qsrand(*pseed = QDateTime::currentDateTime().toTime_t()
+            qsrand(*pseed = QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&pseed)
                    + serial.fetchAndAddRelaxed(1));
             uuidseed.setLocalData(pseed);
@@ -971,7 +971,7 @@ QUuid QUuid::createUuid()
 #else
         static bool seeded = false;
         if (!seeded)
-            qsrand(QDateTime::currentDateTime().toTime_t()
+            qsrand(QDateTime::currentDateTimeUtc().toTime_t()
                    + quintptr(&seeded));
 #endif
 

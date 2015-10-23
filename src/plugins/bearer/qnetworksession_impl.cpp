@@ -279,7 +279,7 @@ quint64 QNetworkSessionPrivateImpl::bytesReceived() const
 quint64 QNetworkSessionPrivateImpl::activeTime() const
 {
     if (state == QNetworkSession::Connected && startTime != Q_UINT64_C(0))
-        return QDateTime::currentDateTime().toTime_t() - startTime;
+        return QDateTime::currentDateTimeUtc().toTime_t() - startTime;
     return Q_UINT64_C(0);
 }
 
