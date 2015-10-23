@@ -512,7 +512,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
             return false;
     }
 
-    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
     QDateTime expirationDate = metaData.expirationDate();
 
     bool response_is_fresh;
@@ -545,7 +545,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
             date_value = dateHeader.toTime_t();
         }
 
-        int now = currentDateTime.toUTC().toTime_t();
+        int now = currentDateTime.toTime_t();
         int request_time = now;
         int response_time = now;
 
