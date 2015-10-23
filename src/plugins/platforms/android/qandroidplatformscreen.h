@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformWindow;
-class QAndroidPlatformBackingStore;
 
 class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public AndroidSurfaceClient
 {
