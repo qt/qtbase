@@ -106,20 +106,6 @@ static QByteArray debugWinExStyle(DWORD exStyle)
     return rc;
 }
 
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
-QDebug operator<<(QDebug d, const MINMAXINFO &i)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
-        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
-        << ',' << i.ptMaxPosition.y << " mintrack="
-        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
-        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
-    return d;
-}
-#endif // !Q_OS_WINCE
-
 static inline QSize qSizeOfRect(const RECT &rect)
 {
     return QSize(rect.right -rect.left, rect.bottom - rect.top);
@@ -138,6 +124,7 @@ static inline RECT RECTfromQRect(const QRect &rect)
     return result;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const RECT &r)
 {
     QDebugStateSaver saver(d);
@@ -147,7 +134,13 @@ QDebug operator<<(QDebug d, const RECT &r)
     return d;
 }
 
-#ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_NCCALCSIZE
+QDebug operator<<(QDebug d, const POINT &p)
+{
+    d << p.x << ',' << p.y;
+    return d;
+}
+
+#  ifndef Q_OS_WINCE
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
     QDebugStateSaver saver(d);
@@ -156,7 +149,30 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
         << ' ' << qrectFromRECT(p.rgrc[1]) << ' ' << qrectFromRECT(p.rgrc[2]);
     return d;
 }
-#endif // !Q_OS_WINCE
+
+QDebug operator<<(QDebug d, const MINMAXINFO &i)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "MINMAXINFO maxSize=" << i.ptMaxSize.x << ','
+        << i.ptMaxSize.y << " maxpos=" << i.ptMaxPosition.x
+        << ',' << i.ptMaxPosition.y << " mintrack="
+        << i.ptMinTrackSize.x << ',' << i.ptMinTrackSize.y
+        << " maxtrack=" << i.ptMaxTrackSize.x << ',' << i.ptMaxTrackSize.y;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d <<  "WINDOWPLACEMENT(flags=0x" << hex << wp.flags << dec << ", showCmd="
+        << wp.showCmd << ", ptMinPosition=" << wp.ptMinPosition << ", ptMaxPosition=" << wp.ptMaxPosition
+        << ", rcNormalPosition=" << wp.rcNormalPosition;
+    return d;
+}
+#  endif // !Q_OS_WINCE
+#endif // !QT_NO_DEBUG_STREAM
 
 // QTBUG-43872, for windows that do not have WS_EX_TOOLWINDOW set, WINDOWPLACEMENT
 // is in workspace/available area coordinates.

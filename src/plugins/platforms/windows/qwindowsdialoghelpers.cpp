@@ -360,6 +360,7 @@ public:
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DEBUG_STREAM
 /* Output UID (IID, CLSID) as C++ constants.
  * The constants are contained in the Windows SDK libs, but not for MinGW. */
 static inline QString guidToString(const GUID &g)
@@ -385,6 +386,7 @@ inline QDebug operator<<(QDebug d, const GUID &g)
     d << guidToString(g);
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 // Return an allocated wchar_t array from a QString, reserve more memory if desired.
 static wchar_t *qStringToWCharArray(const QString &s, size_t reserveSize = 0)

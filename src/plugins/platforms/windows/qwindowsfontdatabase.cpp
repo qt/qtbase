@@ -606,6 +606,7 @@ static inline bool initDirectWrite(QWindowsFontEngineData *d)
     \ingroup qt-lighthouse-win
 */
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QFontDef &def)
 {
     QDebugStateSaver saver(d);
@@ -617,6 +618,7 @@ QDebug operator<<(QDebug d, const QFontDef &def)
         << def.hintingPreference;
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {

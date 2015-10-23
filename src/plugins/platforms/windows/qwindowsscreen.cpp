@@ -172,6 +172,7 @@ static inline WindowsScreenDataList monitorData()
     return result;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
 {
     QDebugStateSaver saver(dbg);
@@ -192,6 +193,7 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         dbg << " lock screen";
     return dbg;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 // Return the cursor to be shared by all screens (virtual desktop).
 static inline QSharedPointer<QPlatformCursor> sharedCursor()

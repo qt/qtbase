@@ -69,6 +69,7 @@ static const char formatTextHtmlC[] = "text/html";
     \ingroup qt-lighthouse-win
 */
 
+#ifndef QT_NO_DEBUG_STREAM
 static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 {
     QDebugStateSaver saver(d);
@@ -93,6 +94,7 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
     d << ')';
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 /*!
     \class QWindowsClipboardRetrievalMimeData

@@ -93,7 +93,7 @@ private:
     mutable int m_internalMimeCount;
 };
 
-#ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug, const FORMATETC &);
 QDebug operator<<(QDebug d, IDataObject *);
 #endif

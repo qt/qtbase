@@ -249,7 +249,7 @@ private:
     QWindowsDragCursorWindow *m_touchDragWindow;
 
     ULONG m_refs;
-#ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_STREAM
     friend QDebug operator<<(QDebug, const QWindowsOleDropSource::CursorEntry &);
 #endif
 };
@@ -271,14 +271,14 @@ QWindowsOleDropSource::~QWindowsOleDropSource()
     qCDebug(lcQpaMime) << __FUNCTION__;
 }
 
-#ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QWindowsOleDropSource::CursorEntry &e)
 {
     d << "CursorEntry:" << e.pixmap.size() << '#' << e.cacheKey
       << "HCURSOR" << e.cursor->cursor << "hotspot:" << e.hotSpot;
     return d;
 }
-#endif // !QT_NO_DEBUG_OUTPUT
+#endif // !QT_NO_DEBUG_STREAM
 
 static qreal dragScaleFactor()
 {

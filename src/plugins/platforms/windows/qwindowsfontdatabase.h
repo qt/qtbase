@@ -118,6 +118,10 @@ private:
     QMap<QString, UniqueFontData> m_uniqueFontData;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QFontDef &def);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QWINDOWSFONTDATABASE_H
