@@ -3143,7 +3143,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         d->activeMenu->d_func()->setCurrentAction(0);
 
     QMenuSloppyState::MouseEventResult sloppyEventResult = d->sloppyState.processMouseEvent(e->localPos(), action, d->currentAction);
-    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropogated) {
+    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropagated) {
         d->setCurrentAction(action, d->mousePopupDelay);
     } else if (sloppyEventResult == QMenuSloppyState::EventDiscardsSloppyState) {
         d->sloppyState.reset();
