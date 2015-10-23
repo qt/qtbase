@@ -420,6 +420,16 @@ void QNativeSocketEngine::close()
 {
     Q_D(QNativeSocketEngine);
 
+    if (d->closingDown)
+        return;
+
+    d->closingDown = true;
+
+
+    d->notifyOnRead = false;
+    d->notifyOnWrite = false;
+    d->notifyOnException = false;
+
     if (d->connectOp) {
         ComPtr<IAsyncInfo> info;
         d->connectOp.As(&info);
@@ -440,7 +450,6 @@ void QNativeSocketEngine::close()
         }
 
         if (socket) {
-            d->closingDown = true;
             socket->Close();
             d->socketDescriptor = -1;
         }
@@ -497,6 +506,14 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     Q_D(QNativeSocketEngine);
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
+
+    // There will be a read notification when the socket was closed by the remote host. If that
+    // happens and there isn't anything left in the buffer, we have to return -1 in order to signal
+    // the closing of the socket.
+    if (d->readBytes.pos() == d->readBytes.size() && d->socketState != QAbstractSocket::ConnectedState) {
+        close();
+        return -1;
+    }
 
     QMutexLocker mutexLocker(&d->readMutex);
     return d->readBytes.read(data, maxlen);
@@ -1184,8 +1201,16 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     if (wasDeleted || isDeletingChildren)
         return S_OK;
 
-    if (status == Error || status == Canceled)
+    // A read in UnconnectedState will close the socket and return -1 and thus tell the caller,
+    // that the connection was closed. The socket cannot be closed here, as the subsequent read
+    // might fail then.
+    if (status == Error || status == Canceled) {
+        setError(QAbstractSocket::NetworkError, RemoteHostClosedErrorString);
+        socketState = QAbstractSocket::UnconnectedState;
+        if (notifyOnRead)
+            emit q->readReady();
         return S_OK;
+    }
 
     ComPtr<IBuffer> buffer;
     HRESULT hr = asyncInfo->GetResults(&buffer);
@@ -1194,7 +1219,13 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     UINT32 bufferLength;
     hr = buffer->get_Length(&bufferLength);
     Q_ASSERT_SUCCEEDED(hr);
+    // A zero sized buffer length signals, that the remote host closed the connection. The socket
+    // cannot be closed though, as the following read might have socket descriptor -1 and thus and
+    // the closing of the socket won't be communicated to the caller. So only the error is set. The
+    // actual socket close happens inside of read.
     if (!bufferLength) {
+        setError(QAbstractSocket::NetworkError, RemoteHostClosedErrorString);
+        socketState = QAbstractSocket::UnconnectedState;
         if (notifyOnRead)
             emit q->readReady();
         return S_OK;

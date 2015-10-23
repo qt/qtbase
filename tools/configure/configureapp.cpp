@@ -199,20 +199,18 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
 
     QString version;
-    QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
-    if (qglobal_h.open(QFile::ReadOnly)) {
-        QTextStream read(&qglobal_h);
-        QRegExp version_regexp("^# *define *QT_VERSION_STR *\"([^\"]*)\"");
-        QString line;
-        while (!read.atEnd()) {
-            line = read.readLine();
-            if (version_regexp.exactMatch(line)) {
-                version = version_regexp.cap(1).trimmed();
-                if (!version.isEmpty())
-                    break;
-            }
+    QFile qmake_conf(sourcePath + "/.qmake.conf");
+    if (qmake_conf.open(QFile::ReadOnly)) {
+        while (!qmake_conf.atEnd()) {
+            static const char beginning[] = "MODULE_VERSION = ";
+            QByteArray line = qmake_conf.readLine();
+            if (!line.startsWith(beginning))
+                continue;
+
+            version = qMove(line).mid(int(strlen(beginning))).trimmed();
+            break;
         }
-        qglobal_h.close();
+        qmake_conf.close();
     }
 
     if (version.isEmpty())
@@ -3661,6 +3659,12 @@ void Configure::generateConfigfiles()
     {
         FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.h");
 
+        tmpStream << "#define QT_VERSION_MAJOR    " << dictionary["VERSION_MAJOR"] << endl
+                  << "#define QT_VERSION_MINOR    " << dictionary["VERSION_MINOR"] << endl
+                  << "#define QT_VERSION_PATCH    " << dictionary["VERSION_PATCH"] << endl
+                  << "#define QT_VERSION_STR      \"" << dictionary["VERSION"] << "\"\n"
+                  << endl;
+
         if (dictionary[ "QCONFIG" ] == "full") {
             tmpStream << "/* Everything */" << endl;
         } else {
@@ -4041,6 +4045,14 @@ void Configure::displayConfig()
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
     }
+    if (dictionary["C++STD"] == "c++98") {
+        sout << endl
+             << "NOTE: The -no-c++11 / -c++-level c++98 option is deprecated." << endl
+             << endl
+             << "Qt 5.7 will require C++11 support. The options are in effect for this" << endl
+             << "Qt 5.6 build, but you should update your build scripts to remove the" << endl
+             << "option and, if necessary, upgrade your compiler." << endl;
+    }
     if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
         sout << endl
              << dictionary["PREFIX_COMPLAINTS"] << endl
@@ -4067,7 +4079,7 @@ void Configure::generateHeaders()
             QStringList args;
             args << "perl" << "-w";
             args += sourcePath + "/bin/syncqt.pl";
-            args << "-minimal" << "-module" << "QtCore";
+            args << "-version" << dictionary["VERSION"] << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());
             if (retc) {
@@ -4330,7 +4342,10 @@ void Configure::buildQmake()
                     << "INC_PATH = " << QDir::toNativeSeparators(
                            (QFile::exists(sourcePath + "/.git") ? ".." : sourcePath)
                            + "/include") << endl;
-                stream << "QT_VERSION = " << dictionary["VERSION"] << endl;
+                stream << "QT_VERSION = " << dictionary["VERSION"] << endl
+                       << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
+                       << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
+                       << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
                 if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
                            << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl

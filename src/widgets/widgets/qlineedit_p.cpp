@@ -70,6 +70,12 @@ int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
     return control->xToPos(x, betweenOrOn);
 }
 
+bool QLineEditPrivate::inSelection(int x) const
+{
+    x -= adjustedContentsRect().x() - hscroll + horizontalMargin;
+    return control->inSelection(x);
+}
+
 QRect QLineEditPrivate::cursorRect() const
 {
     return adjustedControlRect(control->cursorRect());

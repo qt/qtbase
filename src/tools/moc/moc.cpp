@@ -1060,6 +1060,7 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         QByteArray v, v2;
         if (test(LPAREN)) {
             v = lexemUntil(RPAREN);
+            v = v.mid(1, v.length() - 2); // removes the '(' and ')'
         } else if (test(INTEGER_LITERAL)) {
             v = lexem();
             if (l != "REVISION")

@@ -115,10 +115,10 @@ TextEdit::TextEdit(QWidget *parent)
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
     actionRedo->setEnabled(textEdit->document()->isRedoAvailable());
 
+#ifndef QT_NO_CLIPBOARD
     actionCut->setEnabled(false);
     actionCopy->setEnabled(false);
 
-#ifndef QT_NO_CLIPBOARD
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &TextEdit::clipboardDataChanged);
 #endif
 
@@ -202,6 +202,7 @@ void TextEdit::setupEditActions()
     tb->addAction(actionRedo);
     menu->addSeparator();
 
+#ifndef QT_NO_CLIPBOARD
     const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon(rsrcPath + "/editcut.png"));
     actionCut = menu->addAction(cutIcon, tr("Cu&t"), textEdit, &QTextEdit::cut);
     actionCut->setPriority(QAction::LowPriority);
@@ -219,7 +220,6 @@ void TextEdit::setupEditActions()
     actionPaste->setPriority(QAction::LowPriority);
     actionPaste->setShortcut(QKeySequence::Paste);
     tb->addAction(actionPaste);
-#ifndef QT_NO_CLIPBOARD
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
         actionPaste->setEnabled(md->hasText());
 #endif

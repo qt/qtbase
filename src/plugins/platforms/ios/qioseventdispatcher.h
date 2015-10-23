@@ -34,7 +34,7 @@
 #ifndef QIOSEVENTDISPATCHER_H
 #define QIOSEVENTDISPATCHER_H
 
-#include <QtPlatformSupport/private/qeventdispatcher_cf_p.h>
+#include <QtCore/private/qeventdispatcher_cf_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -41,11 +41,10 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "5.7.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x050700
+#define QT_VERSION      QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH)
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -55,6 +54,7 @@
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
 #endif
+
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
@@ -1126,6 +1126,7 @@ QT_END_NAMESPACE
 #include <QtCore/qatomic.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */
 

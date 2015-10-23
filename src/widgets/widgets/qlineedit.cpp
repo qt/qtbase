@@ -1488,7 +1488,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
     int cursor = d->xToPos(e->pos().x());
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
-         e->button() == Qt::LeftButton && d->control->inSelection(e->pos().x())) {
+         e->button() == Qt::LeftButton && d->inSelection(e->pos().x())) {
         if (!d->dndTimer.isActive())
             d->dndTimer.start(QApplication::startDragTime(), this);
     } else

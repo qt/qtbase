@@ -36,6 +36,7 @@
 
 #include "qtwindows_additional.h"
 
+#include <QtCore/QLocale>
 #include <QtCore/QPointer>
 #include <qpa/qplatforminputcontext.h>
 
@@ -66,6 +67,8 @@ public:
     static void setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled);
 
     bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
+    QLocale locale() const Q_DECL_OVERRIDE { return m_locale; }
+
     void reset() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
@@ -79,6 +82,7 @@ public:
     int reconvertString(RECONVERTSTRING *reconv);
 
     bool handleIME_Request(WPARAM wparam, LPARAM lparam, LRESULT *result);
+    void handleInputLanguageChanged(WPARAM wparam, LPARAM lparam);
 
 private slots:
     void cursorRectChanged();
@@ -94,6 +98,8 @@ private:
     static HIMC m_defaultContext;
     CompositionContext m_compositionContext;
     bool m_endCompositionRecursionGuard;
+    LCID m_languageId;
+    QLocale m_locale;
 };
 
 QT_END_NAMESPACE

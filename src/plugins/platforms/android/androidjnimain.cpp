@@ -432,7 +432,6 @@ static void *startMainMethod(void */*data*/)
         params[i] = static_cast<const char *>(m_applicationParams[i].constData());
 
     int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
-    Q_UNUSED(ret);
 
     if (m_mainLibraryHnd) {
         int res = dlclose(m_mainLibraryHnd);
@@ -448,6 +447,8 @@ static void *startMainMethod(void */*data*/)
     if (vm != 0)
         vm->DetachCurrentThread();
 
+    // We must call exit() to ensure that all global objects will be destructed
+    exit(ret);
     return 0;
 }
 

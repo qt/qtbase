@@ -49,8 +49,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,9 +74,7 @@ public:
     bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
 
     bool setup_kms();
-
     bool query_egl_device();
-    bool query_egl_extensions(EGLDisplay display);
 
     // device bits
     QByteArray m_device;
@@ -92,44 +89,7 @@ public:
     quint32 m_drm_crtc;
 
     // EGLStream infrastructure
-    PFNEGLGETPLATFORMDISPLAYEXTPROC m_get_platform_display;
-    bool m_has_egl_platform_device;
-
-    PFNEGLQUERYDEVICESEXTPROC m_query_devices;
-    PFNEGLQUERYDEVICESTRINGEXTPROC m_query_device_string;
-    bool m_has_egl_device_base;
-
-    PFNEGLCREATESTREAMKHRPROC m_create_stream;
-    PFNEGLDESTROYSTREAMKHRPROC m_destroy_stream;
-    PFNEGLSTREAMATTRIBKHRPROC m_stream_attrib;
-    PFNEGLQUERYSTREAMKHRPROC m_query_stream;
-    PFNEGLQUERYSTREAMU64KHRPROC m_query_stream_u64;
-    bool m_has_egl_stream;
-
-    PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC m_create_stream_producer_surface;
-    bool m_has_egl_stream_producer_eglsurface;
-
-    PFNEGLSTREAMCONSUMEROUTPUTEXTPROC m_stream_consumer_output;
-    bool m_has_egl_stream_consumer_egloutput;
-
-    bool m_has_egl_output_drm;
-
-    PFNEGLGETOUTPUTLAYERSEXTPROC m_get_output_layers;
-    PFNEGLGETOUTPUTPORTSEXTPROC m_get_output_ports;
-    PFNEGLOUTPUTLAYERATTRIBEXTPROC m_output_layer_attrib;
-    PFNEGLQUERYOUTPUTLAYERATTRIBEXTPROC m_query_output_layer_attrib;
-    PFNEGLQUERYOUTPUTLAYERSTRINGEXTPROC m_query_output_layer_string;
-    PFNEGLQUERYOUTPUTPORTATTRIBEXTPROC m_query_output_port_attrib;
-    PFNEGLQUERYOUTPUTPORTSTRINGEXTPROC m_query_output_port_string;
-    bool m_has_egl_output_base;
-
-    PFNEGLGETSTREAMFILEDESCRIPTORKHRPROC m_get_stream_file_descriptor;
-    PFNEGLCREATESTREAMFROMFILEDESCRIPTORKHRPROC m_create_stream_from_file_descriptor;
-    bool m_has_egl_stream_cross_process_fd;
-
-    PFNEGLSTREAMCONSUMERGLTEXTUREEXTERNALKHRPROC m_stream_consumer_gltexture;
-    PFNEGLSTREAMCONSUMERACQUIREKHRPROC m_stream_consumer_acquire;
-    bool m_has_egl_stream_consumer_gltexture;
+    QEGLStreamConvenience *m_funcs;
 };
 
 QT_END_NAMESPACE

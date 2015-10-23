@@ -460,6 +460,8 @@ public:
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
     xcb_timestamp_t getTimestamp();
+    xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
+    xcb_window_t getQtSelectionOwner();
 
     void setButton(Qt::MouseButton button, bool down) { if (down) m_buttons |= button; else m_buttons &= ~button; }
     Qt::MouseButtons buttons() const { return m_buttons; }
@@ -649,6 +651,8 @@ private:
     QXcbSystemTrayTracker *m_systemTrayTracker;
     QXcbGlIntegration *m_glIntegration;
     bool m_xiGrab;
+
+    xcb_window_t m_qtSelectionOwner;
 
     friend class QXcbEventReader;
 };

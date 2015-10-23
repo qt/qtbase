@@ -1820,26 +1820,23 @@ QStringList QCompleter::splitPath(const QString& path) const
         return QStringList(completionPrefix());
 
     QString pathCopy = QDir::toNativeSeparators(path);
-    QString sep = QDir::separator();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
         return QStringList(pathCopy);
-    QString doubleSlash(QLatin1String("\\\\"));
-    if (pathCopy.startsWith(doubleSlash))
+    const bool startsWithDoubleSlash = pathCopy.startsWith(QLatin1String("\\\\"));
+    if (startsWithDoubleSlash)
         pathCopy = pathCopy.mid(2);
-    else
-        doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
-    QStringList parts = pathCopy.split(re);
+    const QChar sep = QDir::separator();
+    QStringList parts = pathCopy.split(sep);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    if (!doubleSlash.isEmpty())
-        parts[0].prepend(doubleSlash);
+    if (startsWithDoubleSlash)
+        parts[0].prepend(QLatin1String("\\\\"));
 #else
-    if (pathCopy[0] == sep[0]) // readd the "/" at the beginning as the split removed it
-        parts[0] = QDir::fromNativeSeparators(QString(sep[0]));
+    if (pathCopy[0] == sep) // readd the "/" at the beginning as the split removed it
+        parts[0] = QLatin1Char('/');
 #endif
 
     return parts;

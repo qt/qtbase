@@ -45,7 +45,6 @@
 #include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtGui/QSurface>
 #include <QtGui/QOpenGLContext>
 #include <qfunctions_winrt.h>
@@ -133,24 +132,14 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     Q_ASSERT_SUCCEEDED(hr);
 #endif // Q_OS_WINPHONE
 
-    hr = QEventDispatcherWinRT::runOnXamlThread([this, d]() {
-        HRESULT hr;
-        ComPtr<Xaml::IWindowStatics> windowStatics;
-        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Window).Get(),
-                                    IID_PPV_ARGS(&windowStatics));
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<Xaml::IWindow> window;
-        hr = windowStatics->get_Current(&window);
-        Q_ASSERT_SUCCEEDED(hr);
-        hr = window->Activate();
-        Q_ASSERT_SUCCEEDED(hr);
-
-        d->mainScreen = new QWinRTScreen(window.Get());
-        d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
-        screenAdded(d->mainScreen);
+    QEventDispatcherWinRT::runOnXamlThread([d]() {
+        d->mainScreen = new QWinRTScreen;
         return S_OK;
     });
-    Q_ASSERT_SUCCEEDED(hr);
+
+    d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
+    screenAdded(d->mainScreen);
+    d->platformServices = new QWinRTServices;
 }
 
 QWinRTIntegration::~QWinRTIntegration()
@@ -180,6 +169,15 @@ bool QWinRTIntegration::succeeded() const
 QAbstractEventDispatcher *QWinRTIntegration::createEventDispatcher() const
 {
     return new QWinRTEventDispatcher;
+}
+
+void QWinRTIntegration::initialize()
+{
+    Q_D(const QWinRTIntegration);
+    QEventDispatcherWinRT::runOnXamlThread([d]() {
+        d->mainScreen->initialize();
+        return S_OK;
+    });
 }
 
 bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -245,8 +243,7 @@ QStringList QWinRTIntegration::themeNames() const
     return QStringList(QLatin1String("winrt"));
 }
 
-QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &
-name) const
+QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &name) const
 {
     if (name == QLatin1String("winrt"))
         return new QWinRTTheme();
@@ -260,21 +257,12 @@ name) const
 HRESULT QWinRTIntegration::onBackButtonPressed(IInspectable *, IBackPressedEventArgs *args)
 {
     Q_D(QWinRTIntegration);
-
-    QKeyEvent backPress(QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
-    QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
-    backPress.setAccepted(false);
-    backRelease.setAccepted(false);
-
     QWindow *window = d->mainScreen->topWindow();
-    QObject *receiver = window ? static_cast<QObject *>(window)
-                               : static_cast<QObject *>(QCoreApplication::instance());
-
-    // If the event is ignored, the app go to the background
-    QCoreApplication::sendEvent(receiver, &backPress);
-    QCoreApplication::sendEvent(receiver, &backRelease);
-    args->put_Handled(backPress.isAccepted() || backRelease.isAccepted());
-
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+    const bool pressed = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
+    const bool released = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(false);
+    args->put_Handled(pressed || released);
     return S_OK;
 }
 #endif // Q_OS_WINPHONE

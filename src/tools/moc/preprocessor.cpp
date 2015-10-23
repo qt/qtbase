@@ -663,8 +663,11 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     expansion += s;
                 }
             } else if (mode == Hash) {
-                if (index < 0 || index >= arguments.size()) {
+                if (index < 0) {
                     that->error("'#' is not followed by a macro parameter");
+                    continue;
+                } else if (index >= arguments.size()) {
+                    that->error("Macro invoked with too few parameters for a use of '#'");
                     continue;
                 }
 

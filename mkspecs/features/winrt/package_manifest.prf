@@ -125,10 +125,14 @@
 
     # Dependencies are given as a string list. The CRT dependency is added automatically above.
     # For MSVC2015 the dependencies are added in conjunction with TargetDeviceFamily
+    # Due to the hard coded dependency on "Windows.Universal" the <Dependencies> tag
+    # is already inside the MSVC2015 manifest.
     WINRT_MANIFEST.dependencies = $$unique(WINRT_MANIFEST.dependencies)
     !isEmpty(WINRT_MANIFEST.dependencies) {
+        *-msvc2013: MANIFEST_DEPENDENCIES += "<Dependencies>"
         for(DEPENDENCY, WINRT_MANIFEST.dependencies): \
             MANIFEST_DEPENDENCIES += "  <PackageDependency Name=\"$$DEPENDENCY\" />"
+        *-msvc2013: MANIFEST_DEPENDENCIES += "</Dependencies>"
 
         WINRT_MANIFEST.dependencies = $$join(MANIFEST_DEPENDENCIES, $$INDENT, $$INDENT)
     }

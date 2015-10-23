@@ -59,6 +59,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -76,7 +77,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class QtActivityDelegate
 {
@@ -89,6 +89,7 @@ public class QtActivityDelegate
     private Method m_super_onKeyUp = null;
     private Method m_super_onConfigurationChanged = null;
     private Method m_super_onActivityResult = null;
+    private Method m_super_dispatchGenericMotionEvent = null;
 
     private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
@@ -131,37 +132,32 @@ public class QtActivityDelegate
         if (m_fullScreen = enterFullScreen) {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            if (Build.VERSION.SDK_INT >= 19) {
-                try {
-                    int ui_flag_immersive_sticky = View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
-                    int ui_flag_layout_stable = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_STABLE").getInt(null);
-                    int ui_flag_layout_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION").getInt(null);
-                    int ui_flag_layout_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN").getInt(null);
-                    int ui_flag_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_HIDE_NAVIGATION").getInt(null);
-                    int ui_flag_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_FULLSCREEN").getInt(null);
+            try {
+                if (Build.VERSION.SDK_INT >= 14) {
+                    int flags = View.class.getDeclaredField("SYSTEM_UI_FLAG_HIDE_NAVIGATION").getInt(null);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_STABLE").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN").getInt(null);
+                        flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_FULLSCREEN").getInt(null);
 
+                        if (Build.VERSION.SDK_INT >= 19)
+                            flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
+                    }
                     Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-                    m.invoke(m_activity.getWindow().getDecorView(),
-                             ui_flag_layout_stable
-                             | ui_flag_layout_hide_navigation
-                             | ui_flag_layout_fullscreen
-                             | ui_flag_hide_navigation
-                             | ui_flag_fullscreen
-                             | ui_flag_immersive_sticky
-                             | View.INVISIBLE);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    m.invoke(m_activity.getWindow().getDecorView(), flags | View.INVISIBLE);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            if (Build.VERSION.SDK_INT >= 19) {
+            if (Build.VERSION.SDK_INT >= 14) {
                 try {
                     int ui_flag_visible = View.class.getDeclaredField("SYSTEM_UI_FLAG_VISIBLE").getInt(null);
                     Method m = View.class.getMethod("setSystemUiVisibility", int.class);
-                    m.invoke(m_activity.getWindow().getDecorView(),
-                             ui_flag_visible);
+                    m.invoke(m_activity.getWindow().getDecorView(), ui_flag_visible);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -214,10 +210,10 @@ public class QtActivityDelegate
     private final int EnterKeyPrevious = 7;
 
     // application state
-    private final int ApplicationSuspended = 0x0;
-    private final int ApplicationHidden = 0x1;
-    private final int ApplicationInactive = 0x2;
-    private final int ApplicationActive = 0x4;
+    public static final int ApplicationSuspended = 0x0;
+    public static final int ApplicationHidden = 0x1;
+    public static final int ApplicationInactive = 0x2;
+    public static final int ApplicationActive = 0x4;
 
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
@@ -475,6 +471,13 @@ public class QtActivityDelegate
             m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
             m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
             m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+            if (Build.VERSION.SDK_INT >= 12) {
+                try {
+                    m_super_dispatchGenericMotionEvent = m_activity.getClass().getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
+                } catch (Exception e) {
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -915,24 +918,15 @@ public class QtActivityDelegate
 
     public void onPause()
     {
-        QtNative.updateApplicationState(ApplicationInactive);
+        QtNative.setApplicationState(ApplicationInactive);
     }
 
     public void onResume()
     {
-        // fire all lostActions
-        synchronized (QtNative.m_mainActivityMutex)
-        {
-            Iterator<Runnable> itr = QtNative.getLostActions().iterator();
-            while (itr.hasNext())
-                m_activity.runOnUiThread(itr.next());
-
-            QtNative.updateApplicationState(ApplicationActive);
-            if (m_started) {
-                QtNative.clearLostActions();
-                QtNative.updateWindow();
-                updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
-            }
+        QtNative.setApplicationState(ApplicationActive);
+        if (m_started) {
+            QtNative.updateWindow();
+            updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
         }
     }
 
@@ -955,7 +949,7 @@ public class QtActivityDelegate
 
     public void onStop()
     {
-        QtNative.updateApplicationState(ApplicationSuspended);
+        QtNative.setApplicationState(ApplicationSuspended);
     }
 
     public Object onRetainNonConfigurationInstance()
@@ -1059,6 +1053,9 @@ public class QtActivityDelegate
             QtNative.keyDown(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
             QtNative.keyUp(0, event.getCharacters().charAt(0), event.getMetaState(), event.getRepeatCount() > 0);
         }
+
+        if (QtNative.dispatchKeyEvent(event))
+            return true;
 
         try {
             return (Boolean) m_super_dispatchKeyEvent.invoke(m_activity, event);
@@ -1327,5 +1324,18 @@ public class QtActivityDelegate
             final int index = getSurfaceCount();
             m_layout.moveChild(view, index);
         }
+    }
+
+    public boolean dispatchGenericMotionEvent (MotionEvent ev)
+    {
+        if (m_started && QtNative.dispatchGenericMotionEvent(ev))
+            return true;
+
+        try {
+            return (Boolean) m_super_dispatchGenericMotionEvent.invoke(m_activity, ev);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

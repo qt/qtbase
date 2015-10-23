@@ -81,20 +81,21 @@ public:
 
     bool succeeded() const;
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QVariant styleHint(StyleHint hint) const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const;
-    Qt::KeyboardModifiers queryKeyboardModifiers() const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    void initialize() Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
 
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QStringList themeNames() const Q_DECL_OVERRIDE;
+    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
 
 private:
 #ifdef Q_OS_WINPHONE

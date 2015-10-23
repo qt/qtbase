@@ -1,9 +1,11 @@
 contains(QT_CONFIG,egl) {
     HEADERS += \
-        $$PWD/qeglconvenience_p.h
+        $$PWD/qeglconvenience_p.h \
+        $$PWD/qeglstreamconvenience_p.h
 
     SOURCES += \
-        $$PWD/qeglconvenience.cpp
+        $$PWD/qeglconvenience.cpp \
+        $$PWD/qeglstreamconvenience.cpp
 
     contains(QT_CONFIG,opengl) {
         HEADERS += $$PWD/qeglplatformcontext_p.h \

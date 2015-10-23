@@ -634,10 +634,14 @@ QString qt_mac_applicationName()
 int qt_mac_mainScreenHeight()
 {
     QMacAutoReleasePool pool;
-    // The first screen in the screens array is documented
-    // to have the (0,0) origin.
-    NSRect screenFrame = [[[NSScreen screens] firstObject] frame];
-    return screenFrame.size.height;
+    NSArray *screens = [NSScreen screens];
+    if ([screens count] > 0) {
+        // The first screen in the screens array is documented
+        // to have the (0,0) origin.
+        NSRect screenFrame = [[screens objectAtIndex: 0] frame];
+        return screenFrame.size.height;
+    }
+    return 0;
 }
 
 int qt_mac_flipYCoordinate(int y)

@@ -449,6 +449,9 @@ void QXcbConnection::initializeScreens()
         ++xcbScreenNumber;
     } // for each xcb screen
 
+    foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+        virtualDesktop->subscribeToXFixesSelectionNotify();
+
     // If there's no randr extension, or there was some error above, or we found a
     // screen which doesn't have outputs for some other reason (e.g. on VNC or ssh -X),
     // but the dimensions are known anyway, and we don't already have any lingering
@@ -507,6 +510,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_systemTrayTracker(0)
     , m_glIntegration(Q_NULLPTR)
     , m_xiGrab(false)
+    , m_qtSelectionOwner(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -551,12 +555,12 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_netWmUserTime = XCB_CURRENT_TIME;
 
     initializeXRandr();
+    initializeXFixes();
     initializeScreens();
 
     if (m_screens.isEmpty())
         qFatal("QXcbConnection: no screens available");
 
-    initializeXFixes();
     initializeXRender();
     m_xi2Enabled = false;
 #if defined(XCB_USE_XINPUT2)
@@ -1139,10 +1143,14 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 
     if (!handled) {
         if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
-            setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
+            xcb_xfixes_selection_notify_event_t *notify_event = (xcb_xfixes_selection_notify_event_t *)event;
+            setTime(notify_event->timestamp);
 #ifndef QT_NO_CLIPBOARD
-            m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+            m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
+            foreach (QXcbVirtualDesktop *virtualDesktop, m_virtualDesktops)
+                virtualDesktop->handleXFixesSelectionNotify(notify_event);
+
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_NOTIFY) {
             updateScreens((xcb_randr_notify_event_t *)event);
@@ -1369,6 +1377,37 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     xcb_delete_property(xcb_connection(), root_win, atom(QXcbAtom::CLIP_TEMPORARY));
 
     return timestamp;
+}
+
+xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
+{
+    xcb_connection_t *c = xcb_connection();
+    xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(c, atom);
+    xcb_get_selection_owner_reply_t *reply;
+    reply = xcb_get_selection_owner_reply(c, cookie, 0);
+    xcb_window_t win = reply->owner;
+    free(reply);
+    return win;
+}
+
+xcb_window_t QXcbConnection::getQtSelectionOwner()
+{
+    if (!m_qtSelectionOwner) {
+        xcb_screen_t *xcbScreen = primaryVirtualDesktop()->screen();
+        int x = 0, y = 0, w = 3, h = 3;
+        m_qtSelectionOwner = xcb_generate_id(xcb_connection());
+        Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                     XCB_COPY_FROM_PARENT,               // depth -- same as root
+                                     m_qtSelectionOwner,                 // window id
+                                     xcbScreen->root,                    // parent window id
+                                     x, y, w, h,
+                                     0,                                  // border width
+                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
+                                     xcbScreen->root_visual,             // visual
+                                     0,                                  // value mask
+                                     0));                                // value list
+    }
+    return m_qtSelectionOwner;
 }
 
 xcb_window_t QXcbConnection::rootWindow()

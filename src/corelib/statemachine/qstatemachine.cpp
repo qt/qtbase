@@ -406,6 +406,10 @@ QStateMachinePrivate::~QStateMachinePrivate()
 {
     qDeleteAll(internalEventQueue);
     qDeleteAll(externalEventQueue);
+
+    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.begin(), eit = delayedEvents.end(); it != eit; ++it) {
+        delete it.value().event;
+    }
 }
 
 QState *QStateMachinePrivate::rootState() const
@@ -1944,6 +1948,7 @@ void QStateMachinePrivate::_q_startDelayedEventTimer(int id, int delay)
         e.timerId = q->startTimer(delay);
         if (!e.timerId) {
             qWarning("QStateMachine::postDelayedEvent: failed to start timer (id=%d, delay=%d)", id, delay);
+            delete e.event;
             delayedEvents.erase(it);
             delayedEventIdFreeList.release(id);
         } else {

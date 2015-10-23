@@ -8,6 +8,8 @@ QT += core-private gui-private platformsupport-private eglfs_device_lib-private
 
 INCLUDEPATH += $$PWD/../..
 
+DEFINES += MESA_EGL_NO_X11_HEADERS
+
 CONFIG += egl
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

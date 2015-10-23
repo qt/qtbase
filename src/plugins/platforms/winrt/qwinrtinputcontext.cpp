@@ -131,7 +131,7 @@ HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
     return S_OK;
 }
 
-#ifdef Q_OS_WINPHONE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 {
@@ -160,13 +160,11 @@ static HRESULT getInputPane(ComPtr<IInputPane2> *inputPane2)
 
 void QWinRTInputContext::showInputPanel()
 {
-    ComPtr<IInputPane2> inputPane;
-    HRESULT hr = getInputPane(&inputPane);
-    if (FAILED(hr))
-        return;
-
-    QEventDispatcherWinRT::runOnXamlThread([&inputPane]() {
-        HRESULT hr;
+    QEventDispatcherWinRT::runOnXamlThread([&]() {
+        ComPtr<IInputPane2> inputPane;
+        HRESULT hr = getInputPane(&inputPane);
+        if (FAILED(hr))
+            return hr;
         boolean success;
         hr = inputPane->TryShow(&success);
         if (FAILED(hr) || !success)
@@ -177,13 +175,11 @@ void QWinRTInputContext::showInputPanel()
 
 void QWinRTInputContext::hideInputPanel()
 {
-    ComPtr<IInputPane2> inputPane;
-    HRESULT hr = getInputPane(&inputPane);
-    if (FAILED(hr))
-        return;
-
-    QEventDispatcherWinRT::runOnXamlThread([&inputPane]() {
-        HRESULT hr;
+    QEventDispatcherWinRT::runOnXamlThread([&]() {
+        ComPtr<IInputPane2> inputPane;
+        HRESULT hr = getInputPane(&inputPane);
+        if (FAILED(hr))
+            return hr;
         boolean success;
         hr = inputPane->TryHide(&success);
         if (FAILED(hr) || !success)
@@ -192,6 +188,6 @@ void QWinRTInputContext::hideInputPanel()
     });
 }
 
-#endif // Q_OS_WINPHONE
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 
 QT_END_NAMESPACE

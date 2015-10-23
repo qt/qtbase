@@ -110,9 +110,11 @@ private:
     QAction *actionAlignJustify;
     QAction *actionUndo;
     QAction *actionRedo;
+#ifndef QT_NO_CLIPBOARD
     QAction *actionCut;
     QAction *actionCopy;
     QAction *actionPaste;
+#endif
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;

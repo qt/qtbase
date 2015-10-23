@@ -539,23 +539,16 @@ fi
 #-----------------------------------------------------------------------------
 # Qt version detection
 #-----------------------------------------------------------------------------
-QT_VERSION=`grep '^# *define *QT_VERSION_STR' "$relpath"/src/corelib/global/qglobal.h`
+QT_VERSION=
 QT_MAJOR_VERSION=
 QT_MINOR_VERSION=0
 QT_PATCH_VERSION=0
-if [ -n "$QT_VERSION" ]; then
-   QT_VERSION=`echo $QT_VERSION | sed 's,^# *define *QT_VERSION_STR *"*\([^ ]*\)"$,\1,'`
-   MAJOR=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\1,'`
-   if [ -n "$MAJOR" ]; then
-     MINOR=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\2,'`
-      PATCH=`echo $QT_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\3,'`
-      QT_MAJOR_VERSION="$MAJOR"
-      [ -z "$MINOR" ] || QT_MINOR_VERSION="$MINOR"
-      [ -z "$PATCH" ] || QT_PATCH_VERSION="$PATCH"
-   fi
-fi
+eval `sed -n -e 's/^MODULE_VERSION = \(\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*\)$/QT_VERSION=\1\
+    QT_MAJOR_VERSION=\2\
+    QT_MINOR_VERSION=\3\
+    QT_PATCH_VERSION=\4/p' < "$relpath"/.qmake.conf`
 if [ -z "$QT_MAJOR_VERSION" ]; then
-   echo "Cannot process version from qglobal.h: $QT_VERSION"
+   echo "Cannot process version from .qmake.conf"
    echo "Cannot proceed."
    exit 1
 fi
@@ -3936,7 +3929,7 @@ if [ -e "$relpath/.git" ]; then
         exit 1
     fi
 
-    "$relpath/bin/syncqt.pl" -minimal -module QtCore "$relpath" || exit 1
+    "$relpath/bin/syncqt.pl" -version $QT_VERSION -minimal -module QtCore "$relpath" || exit 1
 fi
 
 # $1: input variable name (awk regexp)
@@ -4079,6 +4072,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
         echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
+        echo "QT_MAJOR_VERSION = $QT_MAJOR_VERSION" >> "$mkfile"
+        echo "QT_MINOR_VERSION = $QT_MINOR_VERSION" >> "$mkfile"
+        echo "QT_PATCH_VERSION = $QT_PATCH_VERSION" >> "$mkfile"
         echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
         echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
         echo "QTOBJS =" $EXTRA_OBJS >> "$mkfile"
@@ -6706,27 +6702,41 @@ esac
 
 echo "Done running configuration tests."
 
+# Save stdout in fd 3
+exec 3>&1
+
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
 #-------------------------------------------------------------------------------
 
+# Open qconfig.h.new
+exec > "$outpath/src/corelib/global/qconfig.h.new"
+
+# start with Qt's version number
+cat <<EOF
+#define QT_VERSION_MAJOR    $QT_MAJOR_VERSION
+#define QT_VERSION_MINOR    $QT_MINOR_VERSION
+#define QT_VERSION_PATCH    $QT_PATCH_VERSION
+#define QT_VERSION_STR      "$QT_VERSION"
+
+EOF
+
 case "$CFG_QCONFIG" in
 full)
-    echo "/* Everything */" >"$outpath/src/corelib/global/qconfig.h.new"
+    echo "/* Everything */"
     ;;
 *)
-    tmpconfig="$outpath/src/corelib/global/qconfig.h.new"
-    echo "#ifndef QT_BOOTSTRAPPED" >"$tmpconfig"
-    cat "$CFG_QCONFIG_PATH" >>"$tmpconfig"
-    echo "#endif" >>"$tmpconfig"
+    echo "#ifndef QT_BOOTSTRAPPED"
+    cat "$CFG_QCONFIG_PATH"
+    echo "#endif"
     ;;
 esac
 
-echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
-[ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\"" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo '/* Compile time features */'
+[ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\""
 
 if [ "$CFG_SHARED" = "no" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
+    cat <<EOF
 /* Qt was configured for a static build */
 #if !defined(QT_SHARED) && !defined(QT_STATIC)
 # define QT_STATIC
@@ -6736,20 +6746,20 @@ EOF
 fi
 
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
-    echo "#define QT_LARGEFILE_SUPPORT 64" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_LARGEFILE_SUPPORT 64"
 fi
 
 if [ "$CFG_QREAL" != double ]; then
-    echo "#define QT_COORD_TYPE $CFG_QREAL" >>"$outpath/src/corelib/global/qconfig.h.new"
-    echo "#define QT_COORD_TYPE_STRING $CFG_QREAL_STRING" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_COORD_TYPE $CFG_QREAL"
+    echo "#define QT_COORD_TYPE_STRING $CFG_QREAL_STRING"
 fi
 
 if [ "$CFG_FRAMEWORK" = "yes" ]; then
-    echo "#define QT_MAC_FRAMEWORK_BUILD" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_MAC_FRAMEWORK_BUILD"
 fi
 
 if [ "$XPLATFORM_MAC" = "yes" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
+    cat <<EOF
 #if defined(__LP64__)
 # define QT_POINTER_SIZE 8
 #else
@@ -6757,40 +6767,40 @@ if [ "$XPLATFORM_MAC" = "yes" ]; then
 #endif
 EOF
 else
-    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
-    echo "#define QT_POINTER_SIZE $?" >>"$outpath/src/corelib/global/qconfig.h.new"
+    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" >&3
+    echo "#define QT_POINTER_SIZE $?"
 fi
 
 if [ "$CFG_ATOMIC64" = "no" ]; then
-    echo "#define QT_NO_STD_ATOMIC64" >> "$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_NO_STD_ATOMIC64"
 fi
 
 #REDUCE_RELOCATIONS is a elf/unix only thing, so not in windows configure.exe
 if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
-    echo "#define QT_REDUCE_RELOCATIONS" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_REDUCE_RELOCATIONS"
 fi
 
 # Add compiler sub-architecture support
-echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
-echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo ""
+echo "// Compiler sub-arch support"
 for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
     MIPS_DSP MIPS_DSPR2; do
     eval "VAL=\$CFG_$SUBARCH"
     case "$VAL" in
         yes)
             echo "#define QT_COMPILER_SUPPORTS_$SUBARCH 1" \
-                >>"$outpath/src/corelib/global/qconfig.h.new"
+
             ;;
     esac
 done
 for feature in $CFG_AVX512_UPPER; do
-    echo "#define QT_COMPILER_SUPPORTS_$feature 1"  >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_COMPILER_SUPPORTS_$feature 1"
 done
 
-echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo ""
 
 if [ "$CFG_DEV" = "yes" ]; then
-    echo "#define QT_BUILD_INTERNAL" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_BUILD_INTERNAL"
 fi
 
 # Add QPA to config.h
@@ -6866,7 +6876,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 QCONFIG_FLAGS=`echo $QCONFIG_FLAGS`
 
 if [ -n "$QCONFIG_FLAGS" ]; then
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #ifndef QT_BOOTSTRAPPED
 
 EOF
@@ -6885,14 +6895,14 @@ EOF
         fi
 
         if [ -z $cfgdNeg ]; then
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #ifndef $cfgd
 # define $cfg
 #endif
 
 EOF
         else
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #if defined($cfgd) && defined($cfgdNeg)
 # undef $cfgd
 #elif !defined($cfgd) && !defined($cfgdNeg)
@@ -6902,27 +6912,30 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 EOF
         fi
     done
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #endif // QT_BOOTSTRAPPED
 
 EOF
 fi
 
 if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #define QT_VISIBILITY_AVAILABLE
 
 EOF
 fi
 
 if [ -n "$QT_LIBINFIX" ]; then
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+cat << EOF
 #define QT_LIBINFIX "$QT_LIBINFIX"
 
 EOF
 fi
 
-echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\""
+
+# Close qconfig.h.new (by restoring the original stdout)
+exec >&3
 
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
@@ -6934,9 +6947,12 @@ fi
 #-------------------------------------------------------------------------------
 # save configuration into qconfig.pri
 #-------------------------------------------------------------------------------
+
+# open qconfig.pri
 QTCONFIG="$outpath/mkspecs/qconfig.pri"
+exec > "$QTCONFIG.tmp"
+
 QTCONFIG_CONFIG="$QTCONFIG_CONFIG no_mocdepend"
-[ -f "$QTCONFIG.tmp" ] && rm -f "$QTCONFIG.tmp"
 if [ "$CFG_DEBUG" = "yes" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG debug"
     if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
@@ -6973,7 +6989,7 @@ else
     fi
 fi
 
-cat >>"$QTCONFIG.tmp" <<EOF
+cat <<EOF
 #configuration
 CONFIG += $QTCONFIG_CONFIG
 host_build {
@@ -7000,59 +7016,62 @@ QT_EDITION = $Edition
 EOF
 
 if [ "$Edition" != "OpenSource" ] && [ "$Edition" != "Preview" ]; then
-    echo "QT_LICHECK = $Licheck" >> "$QTCONFIG.tmp"
-    echo "QT_RELEASE_DATE = $ReleaseDate" >> "$QTCONFIG.tmp"
+    echo "QT_LICHECK = $Licheck"
+    echo "QT_RELEASE_DATE = $ReleaseDate"
 fi
-echo >> "$QTCONFIG.tmp"
+echo
 
 if [ "$CFG_SHARED" = "no" ]; then
-    echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
-    echo >> "$QTCONFIG.tmp"
+    echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM"
+    echo
 fi
 
 if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
-    echo "# pkgconfig" >> "$QTCONFIG.tmp"
-    echo "PKG_CONFIG_SYSROOT_DIR = $PKG_CONFIG_SYSROOT_DIR" >> "$QTCONFIG.tmp"
-    echo "PKG_CONFIG_LIBDIR = $PKG_CONFIG_LIBDIR" >> "$QTCONFIG.tmp"
-    echo >> "$QTCONFIG.tmp"
+    echo "# pkgconfig"
+    echo "PKG_CONFIG_SYSROOT_DIR = $PKG_CONFIG_SYSROOT_DIR"
+    echo "PKG_CONFIG_LIBDIR = $PKG_CONFIG_LIBDIR"
+    echo
 fi
 
 if [ -n "$CFG_SYSROOT" ] && [ "$CFG_GCC_SYSROOT" = "yes" ]; then
-    echo "# sysroot" >>"$QTCONFIG.tmp"
-    echo "!host_build {" >>"$QTCONFIG.tmp"
-    echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
-    echo "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
-    echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
-    echo "}" >> "$QTCONFIG.tmp"
-    echo >> "$QTCONFIG.tmp"
+    echo "# sysroot"
+    echo "!host_build {"
+    echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]"
+    echo "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]"
+    echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]"
+    echo "}"
+    echo
 fi
 if [ -n "$RPATH_FLAGS" ]; then
-    echo "QMAKE_RPATHDIR += $RPATH_FLAGS" >> "$QTCONFIG.tmp"
+    echo "QMAKE_RPATHDIR += $RPATH_FLAGS"
 fi
-echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT" >> "$QTCONFIG.tmp"
+echo "QT_COMPILER_STDCXX = $CFG_STDCXX_DEFAULT"
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
-    echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION"
+    echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION"
+    echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION"
 fi
 if [ -n "$QT_ICC_MAJOR_VERSION" ]; then
-    echo "QT_ICC_MAJOR_VERSION = $QT_ICC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_ICC_MINOR_VERSION = $QT_ICC_MINOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_ICC_PATCH_VERSION = $QT_ICC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_ICC_MAJOR_VERSION = $QT_ICC_MAJOR_VERSION"
+    echo "QT_ICC_MINOR_VERSION = $QT_ICC_MINOR_VERSION"
+    echo "QT_ICC_PATCH_VERSION = $QT_ICC_PATCH_VERSION"
 fi
 if [ -n "$QT_CLANG_MAJOR_VERSION" ]; then
-    echo "QT_CLANG_MAJOR_VERSION = $QT_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_CLANG_MINOR_VERSION = $QT_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_CLANG_MAJOR_VERSION = $QT_CLANG_MAJOR_VERSION"
+    echo "QT_CLANG_MINOR_VERSION = $QT_CLANG_MINOR_VERSION"
 fi
 if [ -n "$QT_APPLE_CLANG_MAJOR_VERSION" ]; then
-    echo "QT_APPLE_CLANG_MAJOR_VERSION = $QT_APPLE_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
-    echo "QT_APPLE_CLANG_MINOR_VERSION = $QT_APPLE_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_APPLE_CLANG_MAJOR_VERSION = $QT_APPLE_CLANG_MAJOR_VERSION"
+    echo "QT_APPLE_CLANG_MINOR_VERSION = $QT_APPLE_CLANG_MINOR_VERSION"
 fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
-    echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
-    echo "QMAKE_INCDIR_OPENGL_ES2 = `shellArgumentListToQMakeList "$QMAKE_INCDIR_OPENGL_ES2"`" >> "$QTCONFIG.tmp"
+    echo "#Qt opengl include path"
+    echo "QMAKE_INCDIR_OPENGL_ES2 = `shellArgumentListToQMakeList "$QMAKE_INCDIR_OPENGL_ES2"`"
 fi
+
+# Close qconfig.pri.tmp (by restoring the original stdout)
+exec >&3
 
 # replace qconfig.pri if it differs from the newly created temp file
 if cmp -s "$QTCONFIG.tmp" "$QTCONFIG"; then
@@ -7064,12 +7083,15 @@ fi
 #-------------------------------------------------------------------------------
 # save configuration into qmodule.pri
 #-------------------------------------------------------------------------------
-QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-echo "CONFIG += $QMAKE_CONFIG" >> "$QTMODULE.tmp"
-echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
+# open qmodule.pri
+QTMODULE="$outpath/mkspecs/qmodule.pri"
+exec > "$QTMODULE.tmp"
+
+echo "CONFIG += $QMAKE_CONFIG"
+echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS"
 if [ -n "$CFG_SKIP_MODULES" ]; then
-    echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
+    echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES"
 fi
 DISABLED_FEATURES=
 for cfg in $QCONFIG_FLAGS; do
@@ -7079,9 +7101,9 @@ for cfg in $QCONFIG_FLAGS; do
     fi
 done
 if [ -n "$DISABLED_FEATURES" ]; then
-    echo "QT_NO_DEFINES = $DISABLED_FEATURES" >> "$QTMODULE.tmp"
+    echo "QT_NO_DEFINES = $DISABLED_FEATURES"
 fi
-echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}" >> "$QTMODULE.tmp"
+echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}"
 
 cat >>"$QTMODULE.tmp" <<EOF
 host_build {
@@ -7090,43 +7112,46 @@ host_build {
     QT_CPU_FEATURES.$CFG_ARCH = $CFG_CPUFEATURES
 }
 EOF
-echo "QT_COORD_TYPE = $CFG_QREAL" >> "$QTMODULE.tmp"
+echo "QT_COORD_TYPE = $CFG_QREAL"
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
-    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
+    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL"
 fi
 if [ -n "$QT_LFLAGS_PSQL" ]; then
-    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL" >> "$QTMODULE.tmp"
+    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL"
 fi
 if [ -n "$QT_CFLAGS_MYSQL" ]; then
-    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL" >> "$QTMODULE.tmp"
+    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL"
 fi
 if [ -n "$QT_LFLAGS_MYSQL" ]; then
-    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL" >> "$QTMODULE.tmp"
+    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL"
 fi
 if [ -n "$QT_CFLAGS_SQLITE" ]; then
-    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE" >> "$QTMODULE.tmp"
+    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE"
 fi
 if [ -n "$QT_LFLAGS_SQLITE" ]; then
-    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$QTMODULE.tmp"
+    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE"
 fi
 if [ -n "$QT_LFLAGS_ODBC" ]; then
-    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$QTMODULE.tmp"
+    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC"
 fi
 if [ -n "$QT_LFLAGS_TDS" ]; then
-    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$QTMODULE.tmp"
+    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS"
 fi
 
 #dump in the OPENSSL_LIBS info
 if [ '!' -z "$OPENSSL_LIBS" ]; then
-    echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$QTMODULE.tmp"
+    echo "OPENSSL_LIBS = $OPENSSL_LIBS"
 elif [ "$CFG_OPENSSL" = "linked" ]; then
-    echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$QTMODULE.tmp"
+    echo "OPENSSL_LIBS = -lssl -lcrypto"
 fi
 
 # cmdline args
-cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
+cat "$QMAKE_VARS_FILE"
 # QMAKE_VARS_FILE will be still needed for a status message.
+
+# Close qmodule.pri.tmp (by restoring the original stdout)
+exec >&3
 
 # replace qmodule.pri if it differs from the newly created temp file
 if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
@@ -7138,7 +7163,7 @@ fi
 #-------------------------------------------------------------------------------
 # give feedback on configuration
 #-------------------------------------------------------------------------------
-exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary
+exec 1>$outpath/config.summary # redirect output temporarily to config.summary
 
 report_support()
 {
@@ -7483,6 +7508,20 @@ cat <<EOF
         output. Qt will be built using $CFG_ARCH for the target architecture
         and $CFG_HOST_ARCH for the host architecture (note that these two
         will be the same unless you are cross-compiling).
+EOF
+fi
+
+#-------------------------------------------------------------------------------
+# check if the user passed the deprecated -no-c++11 / --c++-level=c++98 option
+#-------------------------------------------------------------------------------
+if [ "$CFG_STDCXX" = "c++98" ]; then
+cat <<EOF
+
+        NOTICE: The -no-c++11 / --c++-level=c++98 option is deprecated.
+
+        Qt 5.7 will require C++11 support. The options are in effect for this
+        Qt 5.6 build, but you should update your build scripts to remove the
+        option and, if necessary, upgrade your compiler.
 EOF
 fi
 

@@ -786,6 +786,7 @@ while ( @ARGV ) {
 
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
+die "The -version argument is mandatory" if (!$module_version);
 
 our @ignore_headers = ();
 our @ignore_for_master_contents = ();
@@ -803,13 +804,6 @@ my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 
 $isunix = checkUnix; #cache checkUnix
 
-if (!$module_version) {
-    my $filco = fileContents($basedir."/src/corelib/global/qglobal.h");
-    if ($filco !~ m,.*^#[ \t]*define[ \t]+QT_VERSION_STR[ \t]+"([^"]+)".*,sm) {
-        die "Cannot determine Qt/Module version. Use -version.\n";
-    }
-    $module_version = $1;
-}
 foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
 
@@ -1196,6 +1190,7 @@ if($check_includes) {
                                     }
                                     if ($include) {
                                         if ($public_header) {
+                                            print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
                                             for my $trylib (keys(%modules)) {
                                                 if(-e "$out_basedir/include/$trylib/$include") {
                                                     print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";

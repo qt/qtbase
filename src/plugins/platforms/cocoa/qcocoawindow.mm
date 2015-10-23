@@ -894,10 +894,13 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         Qt::WindowType type = window()->type();
         if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
             NSWindowCollectionBehavior behavior = [m_nsWindow collectionBehavior];
-            if (flags & Qt::WindowFullscreenButtonHint)
+            if (flags & Qt::WindowFullscreenButtonHint) {
                 behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
-            else
+                behavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
+            } else {
+                behavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
                 behavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+            }
             [m_nsWindow setCollectionBehavior:behavior];
         }
         setWindowZoomButton(flags);

@@ -1845,6 +1845,22 @@
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \section1 QMAKE_LFLAGS_REL_RPATH
+
+    Specifies the linker flags needed to enable relative paths in
+    \l{QMAKE_RPATHDIR}.
+
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_REL_RPATH_BASE
+
+    Specifies the string the dynamic linker understands to be the
+    location of the referring executable or library.
+
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_LFLAGS_RPATHLINK
 
     Specifies the linker flags needed to use the values from
@@ -2094,6 +2110,13 @@
     Specifies a list of library paths that are added to the
     executable at link time so that the paths will be preferentially
     searched at runtime.
+
+    When relative paths are specified, qmake will mangle them into a form
+    understood by the dynamic linker to be relative to the location of
+    the referring executable or library.
+    This is supported only by some platforms (currently Linux and
+    Darwin-based ones) and is detectable by checking whether
+    \l{QMAKE_REL_RPATH_BASE} is set.
 
     \section1 QMAKE_RPATHLINKDIR
 

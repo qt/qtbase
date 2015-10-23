@@ -275,22 +275,8 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     m_clientClipboard[QClipboard::Selection] = 0;
     m_timestamp[QClipboard::Clipboard] = XCB_CURRENT_TIME;
     m_timestamp[QClipboard::Selection] = XCB_CURRENT_TIME;
+    m_owner = connection()->getQtSelectionOwner();
 
-    QXcbScreen *platformScreen = screen();
-
-    int x = 0, y = 0, w = 3, h = 3;
-
-    m_owner = xcb_generate_id(xcb_connection());
-    Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                 XCB_COPY_FROM_PARENT,            // depth -- same as root
-                                 m_owner,                        // window id
-                                 platformScreen->screen()->root,                   // parent window id
-                                 x, y, w, h,
-                                 0,                               // border width
-                                 XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                 platformScreen->screen()->root_visual, // visual
-                                 0,                               // value mask
-                                 0));                             // value list
 #ifndef QT_NO_DEBUG
     QByteArray ba("Qt clipboard window");
     Q_XCB_CALL(xcb_change_property(xcb_connection(),
@@ -353,13 +339,7 @@ void QXcbClipboard::incrTransactionPeeker(xcb_generic_event_t *ge, bool &accepte
 
 xcb_window_t QXcbClipboard::getSelectionOwner(xcb_atom_t atom) const
 {
-    xcb_connection_t *c = xcb_connection();
-    xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(c, atom);
-    xcb_get_selection_owner_reply_t *reply;
-    reply = xcb_get_selection_owner_reply(c, cookie, 0);
-    xcb_window_t win = reply->owner;
-    free(reply);
-    return win;
+    return connection()->getSelectionOwner(atom);
 }
 
 xcb_atom_t QXcbClipboard::atomForMode(QClipboard::Mode mode) const

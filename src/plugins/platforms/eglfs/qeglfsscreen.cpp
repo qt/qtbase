@@ -45,7 +45,6 @@ QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy),
-      m_pointerWindow(0),
       m_surface(EGL_NO_SURFACE),
       m_cursor(0)
 {

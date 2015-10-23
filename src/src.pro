@@ -28,12 +28,6 @@ src_tools_uic.CONFIG = host_build
 force_bootstrap: src_tools_uic.depends = src_tools_bootstrap
 else: src_tools_uic.depends = src_corelib
 
-src_tools_qdoc.subdir = tools/qdoc
-src_tools_qdoc.target = sub-qdoc
-src_tools_qdoc.CONFIG = host_build
-force_bootstrap: src_tools_qdoc.depends = src_tools_bootstrap
-else: src_tools_qdoc.depends = src_corelib src_xml
-
 src_tools_bootstrap_dbus.subdir = tools/bootstrap-dbus
 src_tools_bootstrap_dbus.target = sub-bootstrap_dbus
 src_tools_bootstrap_dbus.depends = src_tools_bootstrap
@@ -182,7 +176,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         }
     }
 }
-SUBDIRS += src_plugins src_tools_qdoc
+SUBDIRS += src_plugins
 
 nacl: SUBDIRS -= src_network src_testlib
 

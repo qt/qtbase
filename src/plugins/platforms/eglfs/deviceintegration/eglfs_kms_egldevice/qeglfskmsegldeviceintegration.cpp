@@ -45,6 +45,7 @@ QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
     , m_drm_connector(Q_NULLPTR)
     , m_drm_encoder(Q_NULLPTR)
     , m_drm_crtc(0)
+    , m_funcs(Q_NULLPTR)
 {
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS on EGLDevice integration created");
 }
@@ -54,7 +55,7 @@ void QEglFSKmsEglDeviceIntegration::platformInit()
     if (!query_egl_device())
         qFatal("Could not set up EGL device!");
 
-    const char *deviceName = m_query_device_string(m_egl_device, EGL_DRM_DEVICE_FILE_EXT);
+    const char *deviceName = m_funcs->query_device_string(m_egl_device, EGL_DRM_DEVICE_FILE_EXT);
     if (!deviceName)
         qFatal("Failed to query device name from EGLDevice");
 
@@ -76,6 +77,9 @@ void QEglFSKmsEglDeviceIntegration::platformDestroy()
         qErrnoWarning("Could not close DRM device");
 
     m_dri_fd = -1;
+
+    delete m_funcs;
+    m_funcs = Q_NULLPTR;
 }
 
 EGLNativeDisplayType QEglFSKmsEglDeviceIntegration::platformDisplay() const
@@ -87,18 +91,13 @@ EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nat
 {
     qCDebug(qLcEglfsKmsDebug, "Creating display");
 
-    const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-
-    m_get_platform_display = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
-    m_has_egl_platform_device = extensions && strstr(extensions, "EGL_EXT_platform_device");
-
     EGLDisplay display;
 
-    if (!m_has_egl_platform_device) {
+    if (m_funcs->has_egl_platform_device) {
+        display = m_funcs->get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, Q_NULLPTR);
+    } else {
         qWarning("EGL_EXT_platform_device not available, falling back to legacy path!");
         display = eglGetDisplay(nativeDisplay);
-    } else {
-        display = m_get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, Q_NULLPTR);
     }
 
     if (display == EGL_NO_DISPLAY)
@@ -165,7 +164,7 @@ public:
 void QEglJetsonTK1Window::invalidateSurface()
 {
     QEglFSWindow::invalidateSurface();
-    m_integration->m_destroy_stream(screen()->display(), m_egl_stream);
+    m_integration->m_funcs->destroy_stream(screen()->display(), m_egl_stream);
 }
 
 void QEglJetsonTK1Window::resetSurface()
@@ -176,7 +175,7 @@ void QEglJetsonTK1Window::resetSurface()
     EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
     EGLint count;
 
-    m_egl_stream = m_integration->m_create_stream(display, Q_NULLPTR);
+    m_egl_stream = m_integration->m_funcs->create_stream(display, Q_NULLPTR);
     if (m_egl_stream == EGL_NO_STREAM_KHR) {
         qWarning("resetSurface: Couldn't create EGLStream for native window");
         return;
@@ -184,7 +183,7 @@ void QEglJetsonTK1Window::resetSurface()
 
     qCDebug(qLcEglfsKmsDebug, "Created stream %p on display %p", m_egl_stream, display);
 
-    if (!m_integration->m_get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
+    if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
         qWarning("No output layers found");
         return;
     }
@@ -194,20 +193,20 @@ void QEglJetsonTK1Window::resetSurface()
     QVector<EGLOutputLayerEXT> layers;
     layers.resize(count);
     EGLint actualCount;
-    if (!m_integration->m_get_output_layers(display, Q_NULLPTR, layers.data(), count, &actualCount)) {
+    if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, layers.data(), count, &actualCount)) {
         qWarning("Failed to get layers");
         return;
     }
 
     for (int i = 0; i < actualCount; ++i) {
         EGLAttrib id;
-        if (m_integration->m_query_output_layer_attrib(display, layers[i], EGL_DRM_CRTC_EXT, &id)) {
-            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - crtc %d", i, layers[i], id);
+        if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_CRTC_EXT, &id)) {
+            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - crtc %d", i, layers[i], (int) id);
             if (id == EGLAttrib(m_integration->m_drm_crtc))
                 layer = layers[i];
-        } else if (m_integration->m_query_output_layer_attrib(display, layers[i], EGL_DRM_PLANE_EXT, &id)) {
+        } else if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_PLANE_EXT, &id)) {
             // Not used yet, just for debugging.
-            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - plane %d", i, layers[i], id);
+            qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - plane %d", i, layers[i], (int) id);
         } else {
             qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - unknown", i, layers[i]);
         }
@@ -227,7 +226,7 @@ void QEglJetsonTK1Window::resetSurface()
 
     qCDebug(qLcEglfsKmsDebug, "Using layer %p", layer);
 
-    if (!m_integration->m_stream_consumer_output(display, m_egl_stream, layer))
+    if (!m_integration->m_funcs->stream_consumer_output(display, m_egl_stream, layer))
         qWarning("resetSurface: Unable to connect stream");
 
     m_config = QEglFSIntegration::chooseConfig(display, m_integration->surfaceFormatFor(window()->requestedFormat()));
@@ -244,7 +243,7 @@ void QEglJetsonTK1Window::resetSurface()
         EGL_NONE
     };
 
-    m_surface = m_integration->m_create_stream_producer_surface(display, m_config, m_egl_stream, stream_producer_attribs);
+    m_surface = m_integration->m_funcs->create_stream_producer_surface(display, m_config, m_egl_stream, stream_producer_attribs);
     if (m_surface == EGL_NO_SURFACE)
         return;
 
@@ -255,7 +254,9 @@ QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
 {
     QEglJetsonTK1Window *eglWindow = new QEglJetsonTK1Window(window, this);
 
-    if (!const_cast<QEglFSKmsEglDeviceIntegration *>(this)->query_egl_extensions(eglWindow->screen()->display()))
+    m_funcs->initialize(eglWindow->screen()->display());
+    if (!(m_funcs->has_egl_output_base && m_funcs->has_egl_output_drm && m_funcs->has_egl_stream
+          && m_funcs->has_egl_stream_producer_eglsurface && m_funcs->has_egl_stream_consumer_egloutput))
         qFatal("Required extensions missing!");
 
     return eglWindow;
@@ -385,21 +386,12 @@ bool QEglFSKmsEglDeviceIntegration::setup_kms()
 
 bool QEglFSKmsEglDeviceIntegration::query_egl_device()
 {
-    const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-    if (!extensions) {
-        qWarning("eglQueryString failed");
-        return false;
-    }
-
-    m_has_egl_device_base = strstr(extensions, "EGL_EXT_device_base");
-    m_query_devices = reinterpret_cast<PFNEGLQUERYDEVICESEXTPROC>(eglGetProcAddress("eglQueryDevicesEXT"));
-    m_query_device_string = reinterpret_cast<PFNEGLQUERYDEVICESTRINGEXTPROC>(eglGetProcAddress("eglQueryDeviceStringEXT"));
-
-    if (!m_has_egl_device_base || !m_query_devices || !m_query_device_string)
+    m_funcs = new QEGLStreamConvenience;
+    if (!m_funcs->has_egl_device_base)
         qFatal("EGL_EXT_device_base missing");
 
     EGLint num_devices = 0;
-    if (m_query_devices(1, &m_egl_device, &num_devices) != EGL_TRUE) {
+    if (m_funcs->query_devices(1, &m_egl_device, &num_devices) != EGL_TRUE) {
         qWarning("eglQueryDevicesEXT failed: eglError: %x", eglGetError());
         return false;
     }
@@ -412,53 +404,6 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
     }
 
     return true;
-}
-
-bool QEglFSKmsEglDeviceIntegration::query_egl_extensions(EGLDisplay display)
-{
-    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-        qWarning() << Q_FUNC_INFO << "failed to bind EGL_OPENGL_ES_API";
-        return false;
-    }
-
-    m_create_stream = reinterpret_cast<PFNEGLCREATESTREAMKHRPROC>(eglGetProcAddress("eglCreateStreamKHR"));
-    m_destroy_stream = reinterpret_cast<PFNEGLDESTROYSTREAMKHRPROC>(eglGetProcAddress("eglDestroyStreamKHR"));
-    m_stream_attrib = reinterpret_cast<PFNEGLSTREAMATTRIBKHRPROC>(eglGetProcAddress("eglStreamAttribKHR"));
-    m_query_stream = reinterpret_cast<PFNEGLQUERYSTREAMKHRPROC>(eglGetProcAddress("eglQueryStreamKHR"));
-    m_query_stream_u64 = reinterpret_cast<PFNEGLQUERYSTREAMU64KHRPROC>(eglGetProcAddress("eglQueryStreamu64KHR"));
-    m_create_stream_producer_surface = reinterpret_cast<PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC>(eglGetProcAddress("eglCreateStreamProducerSurfaceKHR"));
-    m_stream_consumer_output = reinterpret_cast<PFNEGLSTREAMCONSUMEROUTPUTEXTPROC>(eglGetProcAddress("eglStreamConsumerOutputEXT"));
-    m_get_output_layers = reinterpret_cast<PFNEGLGETOUTPUTLAYERSEXTPROC>(eglGetProcAddress("eglGetOutputLayersEXT"));
-    m_get_output_ports = reinterpret_cast<PFNEGLGETOUTPUTPORTSEXTPROC>(eglGetProcAddress("eglGetOutputPortsEXT"));
-    m_output_layer_attrib = reinterpret_cast<PFNEGLOUTPUTLAYERATTRIBEXTPROC>(eglGetProcAddress("eglOutputLayerAttribEXT"));
-    m_query_output_layer_attrib = reinterpret_cast<PFNEGLQUERYOUTPUTLAYERATTRIBEXTPROC>(eglGetProcAddress("eglQueryOutputLayerAttribEXT"));
-    m_query_output_layer_string = reinterpret_cast<PFNEGLQUERYOUTPUTLAYERSTRINGEXTPROC>(eglGetProcAddress("eglQueryOutputLayerStringEXT"));
-    m_query_output_port_attrib = reinterpret_cast<PFNEGLQUERYOUTPUTPORTATTRIBEXTPROC>(eglGetProcAddress("eglQueryOutputPortAttribEXT"));
-    m_query_output_port_string = reinterpret_cast<PFNEGLQUERYOUTPUTPORTSTRINGEXTPROC>(eglGetProcAddress("eglQueryOutputPortStringEXT"));
-    m_get_stream_file_descriptor = reinterpret_cast<PFNEGLGETSTREAMFILEDESCRIPTORKHRPROC>(eglGetProcAddress("eglGetStreamFileDescriptorKHR"));
-    m_create_stream_from_file_descriptor = reinterpret_cast<PFNEGLCREATESTREAMFROMFILEDESCRIPTORKHRPROC>(eglGetProcAddress("eglCreateStreamFromFileDescriptorKHR"));
-    m_stream_consumer_gltexture = reinterpret_cast<PFNEGLSTREAMCONSUMERGLTEXTUREEXTERNALKHRPROC>(eglGetProcAddress("eglStreamConsumerGLTextureExternalKHR"));
-    m_stream_consumer_acquire = reinterpret_cast<PFNEGLSTREAMCONSUMERACQUIREKHRPROC>(eglGetProcAddress("eglStreamConsumerAcquireKHR"));
-
-    const char *extensions = eglQueryString(display, EGL_EXTENSIONS);
-    if (!extensions) {
-        qWarning() << Q_FUNC_INFO << "eglQueryString failed";
-        return false;
-    }
-
-    m_has_egl_stream = strstr(extensions, "EGL_KHR_stream");
-    m_has_egl_stream_producer_eglsurface = strstr(extensions, "EGL_KHR_stream_producer_eglsurface");
-    m_has_egl_stream_consumer_egloutput = strstr(extensions, "EGL_EXT_stream_consumer_egloutput");
-    m_has_egl_output_drm = strstr(extensions, "EGL_EXT_output_drm");
-    m_has_egl_output_base = strstr(extensions, "EGL_EXT_output_base");
-    m_has_egl_stream_cross_process_fd = strstr(extensions, "EGL_KHR_stream_cross_process_fd");
-    m_has_egl_stream_consumer_gltexture = strstr(extensions, "EGL_KHR_stream_consumer_gltexture");
-
-    return m_has_egl_output_base &&
-        m_has_egl_output_drm &&
-        m_has_egl_stream &&
-        m_has_egl_stream_producer_eglsurface &&
-        m_has_egl_stream_consumer_egloutput;
 }
 
 QT_END_NAMESPACE

@@ -169,6 +169,7 @@ public:
         }).Get());
         Q_ASSERT_SUCCEEDED(hr);
 
+        WaitForSingleObjectEx(mainThread, INFINITE, FALSE);
         DWORD exitCode;
         GetExitCodeThread(mainThread, &exitCode);
         return exitCode;

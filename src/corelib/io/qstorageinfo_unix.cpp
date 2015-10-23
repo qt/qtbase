@@ -238,7 +238,7 @@ inline QByteArray QStorageIterator::device() const
 
 #elif defined(Q_OS_ANDROID)
 
-static const char pathMounted[] = "/proc/mounts";
+static const QLatin1String pathMounted("/proc/mounts");
 
 inline QStorageIterator::QStorageIterator()
 {

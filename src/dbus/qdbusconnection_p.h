@@ -323,9 +323,6 @@ public:
     MetaObjectHash cachedMetaObjects;
     PendingCallList pendingCalls;
 
-    QMutex callDeliveryMutex;
-    QDBusCallDeliveryEvent *callDeliveryState; // protected by the callDeliveryMutex mutex
-
     bool anonymousAuthenticationAllowed;
 
 public:

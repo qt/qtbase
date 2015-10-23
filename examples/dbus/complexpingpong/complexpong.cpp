@@ -61,7 +61,7 @@ void Pong::setValue(const QString &newValue)
 
 void Pong::quit()
 {
-    QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
+    QTimer::singleShot(0, QCoreApplication::instance(), &QCoreApplication::quit);
 }
 
 QDBusVariant Pong::query(const QString &query)
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
     QObject obj;
     Pong *pong = new Pong(&obj);
-    pong->connect(&app, SIGNAL(aboutToQuit()), SIGNAL(aboutToQuit()));
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, pong, &Pong::aboutToQuit);
     pong->setProperty("value", "initial value");
     QDBusConnection::sessionBus().registerObject("/", &obj);
 

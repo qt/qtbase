@@ -856,16 +856,11 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
 {
     QWindowsOpenGLContextFormat result;
     const QByteArray version = QOpenGLStaticContext::getGlString(GL_VERSION);
-    const int majorDot = version.indexOf('.');
-    if (majorDot != -1) {
-        int minorDot = version.indexOf('.', majorDot + 1);
-        if (minorDot == -1)
-            minorDot = version.size();
-        result.version = (version.mid(0, majorDot).toInt() << 8)
-            + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
-    } else {
+    int major, minor;
+    if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor))
+        result.version = (major << 8) + minor;
+    else
         result.version = 0x0200;
-    }
     result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
         result.options |= QSurfaceFormat::DeprecatedFunctions;

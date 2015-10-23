@@ -591,7 +591,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
             if (xml.name() != QLatin1String("mime-type")) {
                 continue;
             }
-            const QString name = xml.attributes().value(QLatin1String("type")).toString();
+            const QStringRef name = xml.attributes().value(QLatin1String("type"));
             if (name.isEmpty())
                 continue;
             if (name != data.name) {

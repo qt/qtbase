@@ -676,7 +676,7 @@ void qDetectCpuFeatures()
         disable.prepend(' ');
         for (int i = 0; i < features_count; ++i) {
             if (disable.contains(features_string + features_indices[i]))
-                f &= ~(1 << i);
+                f &= ~(Q_UINT64_C(1) << i);
         }
     }
 

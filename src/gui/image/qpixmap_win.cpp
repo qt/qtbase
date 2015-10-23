@@ -345,9 +345,22 @@ static QImage qt_imageFromWinIconHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
     return image;
 }
 
+static inline bool hasAlpha(const QImage &image)
+{
+    const int w = image.width();
+    const int h = image.height();
+    for (int y = 0; y < h; ++y) {
+        const QRgb *scanLine = reinterpret_cast<const QRgb *>(image.scanLine(y));
+        for (int x = 0; x < w; ++x) {
+            if (qAlpha(scanLine[x]) != 0)
+                return true;
+        }
+    }
+    return false;
+}
+
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
 {
-    bool foundAlpha = false;
     HDC screenDevice = GetDC(0);
     HDC hdc = CreateCompatibleDC(screenDevice);
     ReleaseDC(0, screenDevice);
@@ -356,6 +369,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
     const bool result = GetIconInfo(icon, &iconinfo); //x and y Hotspot describes the icon center
     if (!result) {
         qErrnoWarning("QPixmap::fromWinHICON(), failed to GetIconInfo()");
+        DeleteDC(hdc);
         return QPixmap();
     }
 
@@ -371,17 +385,7 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
     DrawIconEx( hdc, 0, 0, icon, iconinfo.xHotspot * 2, iconinfo.yHotspot * 2, 0, 0, DI_NORMAL);
     QImage image = qt_imageFromWinIconHBITMAP(hdc, winBitmap, w, h);
 
-    for (int y = 0 ; y < h && !foundAlpha ; y++) {
-        const QRgb *scanLine= reinterpret_cast<const QRgb *>(image.scanLine(y));
-        for (int x = 0; x < w ; x++) {
-            if (qAlpha(scanLine[x]) != 0) {
-                foundAlpha = true;
-                break;
-            }
-        }
-    }
-    if (!foundAlpha) {
-        //If no alpha was found, we use the mask to set alpha values
+    if (!image.isNull() && !hasAlpha(image)) { //If no alpha was found, we use the mask to set alpha values
         DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_MASK);
         const QImage mask = qt_imageFromWinIconHBITMAP(hdc, winBitmap, w, h);
 

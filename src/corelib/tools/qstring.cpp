@@ -8222,14 +8222,25 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
     \snippet code/src_corelib_tools_qstring.cpp 6
 
+    \note If the function you're calling with a QLatin1String
+    argument isn't actually overloaded to take QLatin1String, the
+    implicit conversion to QString will trigger a memory allocation,
+    which is usually what you want to avoid by using QLatin1String
+    in the first place. In those cases, using QStringLiteral may be
+    the better option.
+
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
+*/
+
+/*! \fn QLatin1String::QLatin1String()
+    \since 5.6
+
+    Constructs a QLatin1String object that stores a nullptr.
 */
 
 /*! \fn QLatin1String::QLatin1String(const char *str)
 
-    Constructs a QLatin1String object that stores \a str. Note that if
-    \a str is 0, an empty string is created; this case is handled by
-    QString.
+    Constructs a QLatin1String object that stores \a str.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as
@@ -8241,8 +8252,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
 /*! \fn QLatin1String::QLatin1String(const char *str, int size)
 
     Constructs a QLatin1String object that stores \a str with \a size.
-    Note that if \a str is 0, an empty string is created; this case
-    is handled by QString.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as

@@ -88,7 +88,7 @@ static QWindow* topLevelAt(const QPoint &pos)
 QBasicDrag::QBasicDrag() :
     m_restoreCursor(false), m_eventLoop(0),
     m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
-    m_drag(0), m_drag_icon_window(0)
+    m_drag(0), m_drag_icon_window(0), m_useCompositing(true)
 {
 }
 
@@ -234,6 +234,7 @@ void QBasicDrag::recreateShapedPixmapWindow(QScreen *screen, const QPoint &pos)
     // when QDrag is used without a pixmap - QDrag::setPixmap()
     m_drag_icon_window = new QShapedPixmapWindow(screen);
 
+    m_drag_icon_window->setUseCompositing(m_useCompositing);
     m_drag_icon_window->setPixmap(m_drag->pixmap());
     m_drag_icon_window->setHotspot(m_drag->hotSpot());
     m_drag_icon_window->updateGeometry(pos);

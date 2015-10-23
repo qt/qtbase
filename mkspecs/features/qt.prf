@@ -155,7 +155,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 !no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
         contains(qt_module_deps, core) {
-    relative_qt_rpath:contains(INSTALLS, target):\
+    relative_qt_rpath:!isEmpty(QMAKE_LFLAGS_REL_RPATH):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
         mac {
             if(equals(TEMPLATE, app):app_bundle)|\
@@ -167,17 +167,11 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
             } else {
                 binpath = $$target.path
             }
-            rpath = @loader_path
         } else {
-            QMAKE_LFLAGS += -Wl,-z,origin
             binpath = $$target.path
-            rpath = $ORIGIN
         }
         # NOT the /dev property, as INSTALLS use host paths
-        relpath = $$relative_path($$[QT_INSTALL_LIBS], $$binpath)
-        !equals(relpath, .): \
-            rpath = $$rpath/$$relpath
-        QMAKE_RPATHDIR += $$rpath
+        QMAKE_RPATHDIR += $$relative_path($$[QT_INSTALL_LIBS], $$binpath)
     } else {
         QMAKE_RPATHDIR += $$[QT_INSTALL_LIBS/dev]
     }

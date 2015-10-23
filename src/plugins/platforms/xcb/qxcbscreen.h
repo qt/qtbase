@@ -39,6 +39,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
+#include <xcb/xfixes.h>
 
 #include "qxcbobject.h"
 #include "qxcbscreen.h"
@@ -69,11 +70,18 @@ public:
 
     QXcbXSettings *xSettings() const;
 
+    bool compositingActive() const;
+
+    void handleXFixesSelectionNotify(xcb_xfixes_selection_notify_event_t *notify_event);
+    void subscribeToXFixesSelectionNotify();
+
 private:
     xcb_screen_t *m_screen;
     int m_number;
 
     QXcbXSettings *m_xSettings;
+    xcb_atom_t m_net_wm_cm_atom;
+    bool m_compositingActive;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen

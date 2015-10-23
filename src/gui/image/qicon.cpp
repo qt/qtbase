@@ -45,6 +45,7 @@
 #include "qcache.h"
 #include "qdebug.h"
 #include "qpalette.h"
+#include "qmath.h"
 
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
@@ -1029,19 +1030,13 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
             d->engine = new QPixmapIconEngine;
         }
     }
+
     d->engine->addFile(fileName, size, mode, state);
 
-    // Check if a "@2x" file exists and add it.
-    static bool disable2xImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
-    if (!disable2xImageLoading && qApp->devicePixelRatio() > 1.0) {
-        QString at2xfileName = fileName;
-        int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
-        if (dotIndex == -1) /* no dot */
-            dotIndex = fileName.size(); /* append */
-        at2xfileName.insert(dotIndex, QStringLiteral("@2x"));
-        if (QFile::exists(at2xfileName))
-            d->engine->addFile(at2xfileName, size, mode, state);
-    }
+    // Check if a "@Nx" file exists and add it.
+    QString atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
+    if (atNxFileName != fileName)
+        d->engine->addFile(atNxFileName, size, mode, state);
 }
 
 /*!
@@ -1394,6 +1389,40 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
     \typedef QIcon::DataPtr
     \internal
 */
+
+/*!
+    \internal
+    \since 5.6
+    Attempts to find a suitable @Nx file for the given \a targetDevicePixelRatio
+    Returns the the \a baseFileName if no such file was found.
+
+    Given base foo.png and a target dpr of 2.5, this function will look for
+    foo@3x.png, then foo@2x, then fall back to foo.png if not found.
+*/
+QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio)
+{
+    if (targetDevicePixelRatio <= 1.0)
+        return baseFileName;
+
+    static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
+    if (disableNxImageLoading)
+        return baseFileName;
+
+    QString atNx = QLatin1String("@%1x");
+    int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
+    if (dotIndex == -1) /* no dot */
+        dotIndex = baseFileName.size(); /* append */
+
+    // Check for @Nx, ..., @3x, @2x file versions,
+    for (int n = qCeil(targetDevicePixelRatio); n > 1; --n) {
+        QString atNxfileName = baseFileName;
+        atNxfileName.insert(dotIndex, atNx.arg(n));
+        if (QFile::exists(atNxfileName))
+            return atNxfileName;
+    }
+
+    return baseFileName;
+}
 
 QT_END_NAMESPACE
 #endif //QT_NO_ICON

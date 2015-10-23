@@ -208,8 +208,7 @@ QPlatformServices *QPlatformIntegration::services() const
     behavior for desktop platforms.
 
     \value ForeignWindows The platform allows creating QWindows which represent
-    native windows created by other processes or anyway created by using native
-    libraries.
+    native windows created by other processes or by using native libraries.
 
     \value NonFullScreenWindows The platform supports top-level windows which do not
     fill the screen. The default implementation returns \c true. Returning false for

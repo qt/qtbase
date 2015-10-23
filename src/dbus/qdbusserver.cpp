@@ -54,15 +54,13 @@ QT_BEGIN_NAMESPACE
     \a parent.
 */
 QDBusServer::QDBusServer(const QString &address, QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d(0)
 {
     if (address.isEmpty())
         return;
 
-    if (!qdbus_loadLibDBus()) {
-        d = 0;
+    if (!qdbus_loadLibDBus())
         return;
-    }
 
     emit QDBusConnectionManager::instance()->serverRequested(address, this);
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
