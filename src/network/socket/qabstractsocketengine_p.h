@@ -78,7 +78,7 @@ public:
     QHostAddress destinationAddress;
 
     uint ifindex;
-    qint16 hopLimit;
+    int hopLimit;
     quint16 senderPort;
     quint16 destinationPort;
 };
