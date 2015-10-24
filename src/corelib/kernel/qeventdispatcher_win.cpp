@@ -513,7 +513,7 @@ QWindowsMessageWindowClassContext::QWindowsMessageWindowClassContext()
     wc.lpszClassName = className;
     atom = RegisterClass(&wc);
     if (!atom) {
-        qErrnoWarning("%s: RegisterClass() failed", Q_FUNC_INFO, qPrintable(qClassName));
+        qErrnoWarning("%s RegisterClass() failed", qPrintable(qClassName));
         delete [] className;
         className = 0;
     }
@@ -549,7 +549,7 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             0);                // windows creation data.
 
     if (!wnd) {
-        qErrnoWarning("%s: CreateWindow() for QEventDispatcherWin32 internal window failed", Q_FUNC_INFO);
+        qErrnoWarning("CreateWindow() for QEventDispatcherWin32 internal window failed");
         return 0;
     }
 

@@ -452,7 +452,7 @@ bool QSpdyProtocolHandler::uncompressHeader(const QByteArray &input, QByteArray 
             break;
         }
         default: {
-            qWarning() << Q_FUNC_INFO << "got unexpected zlib return value:" << zlibRet;
+            qWarning() << "got unexpected zlib return value:" << zlibRet;
             return false;
         }
         }
@@ -688,7 +688,7 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
     Q_ASSERT(replyPrivate);
 
     if (reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYHalfClosed || reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
-        qWarning() << Q_FUNC_INFO << "Trying to upload to closed stream";
+        qWarning("Trying to upload to closed stream");
         return false;
     }
 
@@ -843,7 +843,7 @@ void QSpdyProtocolHandler::handleControlFrame(const QByteArray &frameHeaders) //
         break;
     }
     default:
-        qWarning() << Q_FUNC_INFO << "cannot handle frame of type" << type;
+        qWarning() << "cannot handle frame of type" << type;
     }
 }
 
@@ -887,13 +887,13 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
 
     QByteArray uncompressedHeader;
     if (!uncompressHeader(headerValuePairs, &uncompressedHeader)) {
-        qWarning() << Q_FUNC_INFO << "error reading header from SYN_REPLY message";
+        qWarning("error reading header from SYN_REPLY message");
         return;
     }
 
     qint32 headerCount = fourBytesToInt(uncompressedHeader.constData());
     if (headerCount * 8 > uncompressedHeader.size()) {
-        qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+        qWarning("error parsing header from SYN_REPLY message");
         sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
         return;
     }
@@ -904,7 +904,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
         QByteArray name = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
         if (readPointer > uncompressedHeader.size()) {
-            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            qWarning("error parsing header from SYN_REPLY message");
             sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
             return;
         }
@@ -913,7 +913,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
         QByteArray value = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
         if (readPointer > uncompressedHeader.size()) {
-            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            qWarning("error parsing header from SYN_REPLY message");
             sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
             return;
         }
@@ -1014,7 +1014,7 @@ void QSpdyProtocolHandler::handleRST_STREAM(char /*flags*/, quint32 length,
         errorMessage = "server cannot process the frame because it is too large";
         break;
     default:
-        qWarning() << Q_FUNC_INFO << "could not understand servers RST_STREAM status code";
+        qWarning("could not understand servers RST_STREAM status code");
         errorCode = QNetworkReply::ProtocolFailure;
         errorMessage = "got SPDY RST_STREAM message with unknown error code";
     }
@@ -1078,7 +1078,7 @@ void QSpdyProtocolHandler::handleSETTINGS(char flags, quint32 /*length*/, const 
             break;
         }
         default:
-            qWarning() << Q_FUNC_INFO << "found unknown settings value" << value;
+            qWarning() << "found unknown settings value" << value;
         }
     }
 }
@@ -1117,7 +1117,7 @@ void QSpdyProtocolHandler::handleGOAWAY(char /*flags*/, quint32 /*length*/,
         break;
     }
     default:
-        qWarning() << Q_FUNC_INFO << "unexpected status code" << statusCode;
+        qWarning() << "unexpected status code" << statusCode;
         errorCode = QNetworkReply::ProtocolUnknownError;
     }
 
@@ -1252,7 +1252,7 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     }
 
     if (flag_compress) {
-        qWarning() << Q_FUNC_INFO << "SPDY level compression is not supported";
+        qWarning("SPDY level compression is not supported");
     }
 
     if (flag_fin) {

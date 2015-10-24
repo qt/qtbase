@@ -463,7 +463,7 @@ static int choosePixelFormat(HDC hdc, const QSurfaceFormat &format,
                             PIXELFORMATDESCRIPTOR *obtainedPfd)
 {
     if (QOpenGLStaticContext::opengl32.moduleIsNotOpengl32()) {
-        qWarning("%s: Attempted to use GDI functions with a non-opengl32.dll library", Q_FUNC_INFO);
+        qWarning("Attempted to use GDI functions with a non-opengl32.dll library");
         return 0;
     }
 
@@ -1018,7 +1018,7 @@ QByteArray QOpenGLStaticContext::getGlString(unsigned int which)
 QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
 {
     if (!opengl32.init(softwareRendering)) {
-        qWarning("%s: Failed to load and resolve WGL/OpenGL functions", Q_FUNC_INFO);
+        qWarning("Failed to load and resolve WGL/OpenGL functions");
         return 0;
     }
 

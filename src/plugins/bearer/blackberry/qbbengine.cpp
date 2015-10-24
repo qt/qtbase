@@ -151,14 +151,14 @@ void QBBEngine::disconnectFromId(const QString &id)
 void QBBEngine::initialize()
 {
     if (initialized) {
-        qWarning() << Q_FUNC_INFO << "called, but instance already initialized.";
+        qWarning("called, but instance already initialized.");
         return;
     }
 
     instanceStorage()->setLocalData(new EngineInstanceHolder(this));
 
     if (netstatus_request_events(0) != BPS_SUCCESS) {
-        qWarning() << Q_FUNC_INFO << "cannot register for network events. Polling enabled.";
+        qWarning("cannot register for network events. Polling enabled.");
 
         const QMutexLocker locker(&pollingMutex);
         pollingRequired = true;
@@ -176,12 +176,12 @@ void QBBEngine::requestUpdate()
 
 void QBBEngine::doRequestUpdate()
 {
-    qBearerDebug() << Q_FUNC_INFO << "entered method";
+    qBearerDebug("entered method");
 
     netstatus_interface_list_t interfaceList;
 
     if ((netstatus_get_interfaces(&interfaceList)) != BPS_SUCCESS) {
-        qBearerDebug() << Q_FUNC_INFO << "cannot retrieve interface list";
+        qBearerDebug("cannot retrieve interface list");
         return;
     }
 
@@ -193,7 +193,7 @@ void QBBEngine::doRequestUpdate()
     for (int i = 0; i < interfaceList.num_interfaces; i++) {
         const char *interface = interfaceList.interfaces[i];
 
-        qBearerDebug() << Q_FUNC_INFO << "discovered interface" << interface;
+        qBearerDebug() << "discovered interface" << interface;
 
         updateConfiguration(interface);
 
@@ -262,7 +262,7 @@ QNetworkConfigurationPrivatePointer QBBEngine::defaultConfiguration()
     const QMutexLocker locker(&mutex);
 
     if (accessPointConfigurations.contains(id)) {
-        qBearerDebug() << Q_FUNC_INFO << "found default interface:" << id;
+        qBearerDebug() << "found default interface:" << id;
 
         return accessPointConfigurations.value(id);
     }
@@ -287,7 +287,7 @@ bool QBBEngine::nativeEventFilter(const QByteArray &eventType, void *message, lo
     Q_ASSERT(event);
 
     if (bps_event_get_domain(event) == netstatus_get_domain()) {
-        qBearerDebug() << Q_FUNC_INFO << "got update request.";
+        qBearerDebug("got update request.");
         doRequestUpdate();
     }
 
@@ -299,7 +299,7 @@ void QBBEngine::updateConfiguration(const char *interface)
     netstatus_interface_details_t *details = 0;
 
     if (netstatus_get_interface_details(interface, &details) != BPS_SUCCESS) {
-        qBearerDebug() << Q_FUNC_INFO << "cannot retrieve details for interface" << interface;
+        qBearerDebug() << "cannot retrieve details for interface" << interface;
 
         return;
     }
@@ -355,12 +355,12 @@ void QBBEngine::updateConfiguration(const char *interface)
         locker.unlock();
 
         if (changed) {
-            qBearerDebug() << Q_FUNC_INFO << "configuration changed:" << interface;
+            qBearerDebug() << "configuration changed:" << interface;
 
             Q_EMIT configurationChanged(ptr);
         } else {
             // maybe Wifi has changed but gateway not yet ready etc.
-            qBearerDebug() << Q_FUNC_INFO << "configuration has not changed.";
+            qBearerDebug("configuration has not changed.");
             if (oldIpStatus != ipStatus) { // if IP status changed
                 if (ipStatus != NETSTATUS_IP_STATUS_OK
                         && ipStatus != NETSTATUS_IP_STATUS_ERROR_NOT_UP
@@ -389,7 +389,7 @@ void QBBEngine::updateConfiguration(const char *interface)
 
     locker.unlock();
 
-    qBearerDebug() << Q_FUNC_INFO << "configuration added:" << interface;
+    qBearerDebug() << "configuration added:" << interface;
 
     Q_EMIT configurationAdded(ptr);
 }

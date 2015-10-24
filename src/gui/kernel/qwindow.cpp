@@ -369,7 +369,7 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
 {
     Q_Q(QWindow);
     if (parentWindow) {
-        qWarning() << this << Q_FUNC_INFO << '(' << newScreen << "): Attempt to set a screen on a child window.";
+        qWarning() << this << '(' << newScreen << "): Attempt to set a screen on a child window.";
         return;
     }
     if (newScreen != topLevelScreen) {
@@ -604,7 +604,7 @@ void QWindow::setParent(QWindow *parent)
 
     QScreen *newScreen = parent ? parent->screen() : screen();
     if (d->windowRecreationRequired(newScreen)) {
-        qWarning() << this << Q_FUNC_INFO << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
+        qWarning() << this << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
         return;
     }
 
@@ -1160,7 +1160,7 @@ void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
     if (parent && !parent->isTopLevel()) {
-        qWarning() << Q_FUNC_INFO << parent << "must be a top level window.";
+        qWarning() << parent << "must be a top level window.";
         return;
     }
 

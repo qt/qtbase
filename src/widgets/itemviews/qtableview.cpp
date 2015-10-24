@@ -201,7 +201,6 @@ QDebug operator<<(QDebug str, const QSpanCollection::Span &span)
 void QSpanCollection::updateInsertedRows(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << Q_FUNC_INFO;
     qDebug() << start << end;
     qDebug() << index;
 #endif
@@ -251,7 +250,6 @@ void QSpanCollection::updateInsertedRows(int start, int end)
 void QSpanCollection::updateInsertedColumns(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << Q_FUNC_INFO;
     qDebug() << start << end;
     qDebug() << index;
 #endif
@@ -334,7 +332,6 @@ bool QSpanCollection::cleanSpanSubIndex(QSpanCollection::SubIndex &subindex, int
 void QSpanCollection::updateRemovedRows(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << Q_FUNC_INFO;
     qDebug() << start << end;
     qDebug() << index;
 #endif
@@ -463,7 +460,6 @@ void QSpanCollection::updateRemovedRows(int start, int end)
 void QSpanCollection::updateRemovedColumns(int start, int end)
 {
 #ifdef DEBUG_SPAN_UPDATE
-    qDebug() << Q_FUNC_INFO;
     qDebug() << start << end;
     qDebug() << index;
 #endif

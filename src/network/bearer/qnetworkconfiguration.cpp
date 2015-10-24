@@ -211,30 +211,30 @@ static QNetworkConfiguration::BearerType cellularStatus()
 
     int cellularStatusFD;
     if ((cellularStatusFD = qt_safe_open(cellularStatusFile, O_RDONLY)) == -1) {
-        qWarning() << Q_FUNC_INFO << "failed to open" << cellularStatusFile;
+        qWarning() << "failed to open" << cellularStatusFile;
         return ret;
     }
     char buf[2048];
     if (qt_safe_read(cellularStatusFD, &buf, sizeof(buf)) == -1) {
-        qWarning() << Q_FUNC_INFO << "read from PPS file failed:" << strerror(errno);
+        qWarning() << "read from PPS file failed:" << strerror(errno);
         qt_safe_close(cellularStatusFD);
         return ret;
     }
     pps_decoder_t ppsDecoder;
     if (pps_decoder_initialize(&ppsDecoder, buf) != PPS_DECODER_OK) {
-        qWarning() << Q_FUNC_INFO << "failed to initialize PPS decoder";
+        qWarning("failed to initialize PPS decoder");
         qt_safe_close(cellularStatusFD);
         return ret;
     }
     pps_decoder_error_t err;
     if ((err = pps_decoder_push(&ppsDecoder, 0)) != PPS_DECODER_OK) {
-        qWarning() << Q_FUNC_INFO << "pps_decoder_push failed" << err;
+        qWarning() << "pps_decoder_push failed" << err;
         pps_decoder_cleanup(&ppsDecoder);
         qt_safe_close(cellularStatusFD);
         return ret;
     }
     if (!pps_decoder_is_integer(&ppsDecoder, "network_technology")) {
-        qWarning() << Q_FUNC_INFO << "field has not the expected data type";
+        qWarning("field has not the expected data type");
         pps_decoder_cleanup(&ppsDecoder);
         qt_safe_close(cellularStatusFD);
         return ret;
@@ -242,7 +242,7 @@ static QNetworkConfiguration::BearerType cellularStatus()
     int type;
     if (!pps_decoder_get_int(&ppsDecoder, "network_technology", &type)
             == PPS_DECODER_OK) {
-        qWarning() << Q_FUNC_INFO << "could not read bearer type from PPS";
+        qWarning("could not read bearer type from PPS");
         pps_decoder_cleanup(&ppsDecoder);
         qt_safe_close(cellularStatusFD);
         return ret;
@@ -264,7 +264,7 @@ static QNetworkConfiguration::BearerType cellularStatus()
         ret = QNetworkConfiguration::BearerLTE;
         break;
     default:
-        qWarning() << Q_FUNC_INFO << "unhandled bearer type" << type;
+        qWarning() << "unhandled bearer type" << type;
         break;
     }
     pps_decoder_cleanup(&ppsDecoder);

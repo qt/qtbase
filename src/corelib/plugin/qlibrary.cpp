@@ -337,12 +337,10 @@ static void installCoverageTool(QLibraryPrivate *libPrivate)
 
     if (qt_debug_component()) {
         if (ret >= 0) {
-            qDebug("%s: coverage data for %s registered",
-                     Q_FUNC_INFO,
+            qDebug("coverage data for %s registered",
                      qPrintable(libPrivate->fileName));
         } else {
-            qWarning("%s: could not register %s: error %d; coverage data may be incomplete",
-                     Q_FUNC_INFO,
+            qWarning("could not register %s: error %d; coverage data may be incomplete",
                      qPrintable(libPrivate->fileName),
                      ret);
         }

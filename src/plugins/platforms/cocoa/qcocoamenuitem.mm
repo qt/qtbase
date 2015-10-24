@@ -281,7 +281,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
 
         default:
-            qWarning() << Q_FUNC_INFO << "menu item" << m_text << "has unsupported role" << (int)m_role;
+            qWarning() << "menu item" << m_text << "has unsupported role" << (int)m_role;
         }
 
         if (mergeItem) {
@@ -398,7 +398,7 @@ QKeySequence QCocoaMenuItem::mergeAccel()
 void QCocoaMenuItem::syncMerged()
 {
     if (!m_merged) {
-        qWarning() << Q_FUNC_INFO << "Trying to sync a non-merged item";
+        qWarning("Trying to sync a non-merged item");
         return;
     }
     [m_native setTag:reinterpret_cast<NSInteger>(this)];

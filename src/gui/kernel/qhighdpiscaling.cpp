@@ -227,7 +227,7 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     if (qFuzzyCompare(factor, m_factor))
         return;
     if (!QGuiApplication::allWindows().isEmpty())
-        qWarning() << Q_FUNC_INFO << "QHighDpiScaling::setFactor: Should only be called when no windows exist.";
+        qWarning("QHighDpiScaling::setFactor: Should only be called when no windows exist.");
 
     m_globalScalingActive = !qFuzzyCompare(factor, qreal(1));
     m_factor = m_globalScalingActive ? factor : qreal(1);

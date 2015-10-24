@@ -102,7 +102,7 @@ static int bpsUnblockDomain = -1;
 
 static int bpsIOHandler(int fd, int io_events, void *data)
 {
-    qEventDispatcherDebug << Q_FUNC_INFO;
+    qEventDispatcherDebug;
     // decode callback payload
     bpsIOHandlerData *ioData = static_cast<bpsIOHandlerData*>(data);
 
@@ -223,7 +223,7 @@ void QEventDispatcherBlackberry::registerSocketNotifier(QSocketNotifier *notifie
     int sockfd = notifier->socket();
     int type = notifier->type();
 
-    qEventDispatcherDebug << Q_FUNC_INFO << "fd =" << sockfd;
+    qEventDispatcherDebug << "fd =" << sockfd;
 
     if (Q_UNLIKELY(sockfd >= FD_SETSIZE)) {
         qWarning() << "QEventDispatcherBlackberry: cannot register QSocketNotifier (fd too high)"
@@ -267,7 +267,7 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
 
     int sockfd = notifier->socket();
 
-    qEventDispatcherDebug << Q_FUNC_INFO << "fd =" << sockfd;
+    qEventDispatcherDebug << "fd =" << sockfd;
 
     if (Q_UNLIKELY(sockfd >= FD_SETSIZE)) {
         qWarning() << "QEventDispatcherBlackberry: cannot unregister QSocketNotifier" << sockfd;

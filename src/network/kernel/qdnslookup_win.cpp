@@ -60,7 +60,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             // For supoprting IPv6 nameserver addresses, we'll need to switch
             // from DnsQuey() to DnsQueryEx() as it supports passing an IPv6
             // address in the nameserver list
-            qWarning() << Q_FUNC_INFO << "IPv6 addresses for nameservers is currently not supported";
+            qWarning("IPv6 addresses for nameservers is currently not supported");
             reply->error = QDnsLookup::ResolverError;
             reply->errorString = tr("IPv6 addresses for nameservers is currently not supported");
             return;

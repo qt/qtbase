@@ -154,7 +154,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_coverWindow(0),
       m_cursor(new QQnxCursor())
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
     // Cache initial orientation of this display
     int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION,
                                                 &m_initialRotation);
@@ -191,7 +191,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 
 QQnxScreen::~QQnxScreen()
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setScreen(0);
 
@@ -300,7 +300,7 @@ QPixmap QQnxScreen::grabWindow(WId window, int x, int y, int width, int height) 
 
 static int defaultDepth()
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
     static int defaultDepth = 0;
     if (defaultDepth == 0) {
         // check if display depth was specified in environment variable;
@@ -314,7 +314,7 @@ static int defaultDepth()
 
 QRect QQnxScreen::availableGeometry() const
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
     // available geometry = total geometry - keyboard
     return QRect(m_currentGeometry.x(), m_currentGeometry.y(),
                  m_currentGeometry.width(), m_currentGeometry.height() - m_keyboardHeight);
@@ -334,7 +334,7 @@ qreal QQnxScreen::refreshRate() const
         qWarning("QQnxScreen: Failed to query screen mode. Using default value of 60Hz");
         return 60.0;
     }
-    qScreenDebug() << Q_FUNC_INFO << "screen mode:" << endl
+    qScreenDebug() << "screen mode:" << endl
                    << "      width =" << displayMode.width << endl
                    << "     height =" << displayMode.height << endl
                    << "    refresh =" << displayMode.refresh << endl
@@ -372,7 +372,7 @@ Qt::ScreenOrientation QQnxScreen::orientation() const
         else
             orient = Qt::InvertedLandscapeOrientation;
     }
-    qScreenDebug() << Q_FUNC_INFO << "orientation =" << orient;
+    qScreenDebug() << "orientation =" << orient;
     return orient;
 }
 
@@ -398,7 +398,7 @@ static bool isOrthogonal(int angle1, int angle2)
 
 void QQnxScreen::setRotation(int rotation)
 {
-    qScreenDebug() << Q_FUNC_INFO << "orientation =" << rotation;
+    qScreenDebug() << "orientation =" << rotation;
     // Check if rotation changed
     // We only want to rotate if we are the primary screen
     if (m_currentRotation != rotation && isPrimaryScreen()) {
@@ -419,7 +419,7 @@ void QQnxScreen::setRotation(int rotation)
 
         // Resize root window if we've rotated 90 or 270 from previous orientation
         if (isOrthogonal(m_currentRotation, rotation)) {
-            qScreenDebug() << Q_FUNC_INFO << "resize, size =" << m_currentGeometry.size();
+            qScreenDebug() << "resize, size =" << m_currentGeometry.size();
             if (rootWindow())
                 rootWindow()->setGeometry(QRect(QPoint(0,0), m_currentGeometry.size()));
 
@@ -566,7 +566,7 @@ QQnxWindow *QQnxScreen::findWindow(screen_window_t windowHandle) const
 
 void QQnxScreen::addWindow(QQnxWindow *window)
 {
-    qScreenDebug() << Q_FUNC_INFO << "window =" << window;
+    qScreenDebug() << "window =" << window;
 
     if (m_childWindows.contains(window))
         return;
@@ -593,7 +593,7 @@ void QQnxScreen::addWindow(QQnxWindow *window)
 
 void QQnxScreen::removeWindow(QQnxWindow *window)
 {
-    qScreenDebug() << Q_FUNC_INFO << "window =" << window;
+    qScreenDebug() << "window =" << window;
 
     if (window != m_coverWindow) {
         const int numWindowsRemoved = m_childWindows.removeAll(window);
@@ -608,7 +608,7 @@ void QQnxScreen::removeWindow(QQnxWindow *window)
 
 void QQnxScreen::raiseWindow(QQnxWindow *window)
 {
-    qScreenDebug() << Q_FUNC_INFO << "window =" << window;
+    qScreenDebug() << "window =" << window;
 
     if (window != m_coverWindow) {
         removeWindow(window);
@@ -618,7 +618,7 @@ void QQnxScreen::raiseWindow(QQnxWindow *window)
 
 void QQnxScreen::lowerWindow(QQnxWindow *window)
 {
-    qScreenDebug() << Q_FUNC_INFO << "window =" << window;
+    qScreenDebug() << "window =" << window;
 
     if (window != m_coverWindow) {
         removeWindow(window);
@@ -628,7 +628,7 @@ void QQnxScreen::lowerWindow(QQnxWindow *window)
 
 void QQnxScreen::updateHierarchy()
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
 
     QList<QQnxWindow*>::const_iterator it;
     int result;
@@ -804,7 +804,7 @@ void QQnxScreen::windowClosed(void *window)
 
 void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState state)
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
 
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
@@ -819,7 +819,7 @@ void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState s
 
 void QQnxScreen::activateWindowGroup(const QByteArray &id)
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
 
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
@@ -838,7 +838,7 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
 
 void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
 {
-    qScreenDebug() << Q_FUNC_INFO;
+    qScreenDebug();
 
     if (!rootWindow() || id != rootWindow()->groupName())
         return;

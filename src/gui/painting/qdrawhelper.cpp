@@ -3885,7 +3885,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     Operator op = getOperator(data, spans, count);
     if (!op.funcSolid64) {
-        qDebug() << Q_FUNC_INFO << "unsupported 64bit blend attempted";
+        qDebug("unsupported 64bit blend attempted");
         return blend_color_generic(count, spans, userData);
     }
 
@@ -4180,7 +4180,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
 
     Operator op = getOperator(data, spans, count);
     if (!op.func64) {
-        qWarning() << Q_FUNC_INFO << "Unsupported blend";
+        qWarning("Unsupported blend");
         return blend_untransformed_generic(count, spans, userData);
     }
     QRgba64 buffer[buffer_size];

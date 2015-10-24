@@ -1129,7 +1129,7 @@ QLayoutItem *QToolBarAreaLayout::plug(const QList<int> &path)
 {
     QToolBarAreaLayoutItem *item = this->item(path);
     if (!item) {
-        qWarning() << Q_FUNC_INFO << "No item at" << path;
+        qWarning() << "No item at" << path;
         return 0;
     }
     Q_ASSERT(item->gap);

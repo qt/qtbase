@@ -51,13 +51,13 @@ QT_BEGIN_NAMESPACE
 QQnxBuffer::QQnxBuffer()
     : m_buffer(0)
 {
-    qBufferDebug() << Q_FUNC_INFO << "empty";
+    qBufferDebug("empty");
 }
 
 QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     : m_buffer(buffer)
 {
-    qBufferDebug() << Q_FUNC_INFO << "normal";
+    qBufferDebug("normal");
 
     // Get size of buffer
     int size[2];
@@ -118,17 +118,17 @@ QQnxBuffer::QQnxBuffer(const QQnxBuffer &other)
     : m_buffer(other.m_buffer),
       m_image(other.m_image)
 {
-    qBufferDebug() << Q_FUNC_INFO << "copy";
+    qBufferDebug("copy");
 }
 
 QQnxBuffer::~QQnxBuffer()
 {
-    qBufferDebug() << Q_FUNC_INFO;
+    qBufferDebug();
 }
 
 void QQnxBuffer::invalidateInCache()
 {
-    qBufferDebug() << Q_FUNC_INFO;
+    qBufferDebug();
 
     // Verify native buffer exists
     if (m_buffer == 0)

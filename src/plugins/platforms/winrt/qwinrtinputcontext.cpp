@@ -81,7 +81,7 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
     IInputPaneStatics *statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
                                     &statics))) {
-        qWarning(Q_FUNC_INFO ": failed to retrieve input pane statics.");
+        qWarning("failed to retrieve input pane statics.");
         return;
     }
 
@@ -98,7 +98,7 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
         m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
         m_isInputPanelVisible = !m_keyboardRect.isEmpty();
     } else {
-        qWarning(Q_FUNC_INFO ": failed to retrieve InputPane.");
+        qWarning("failed to retrieve InputPane.");
     }
 }
 

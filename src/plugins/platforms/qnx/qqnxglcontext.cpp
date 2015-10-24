@@ -56,7 +56,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
       m_glContext(glContext),
       m_currentEglSurface(EGL_NO_SURFACE)
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
     QSurfaceFormat format = m_glContext->format();
 
     // Set current rendering API
@@ -132,7 +132,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
 
 QQnxGLContext::~QQnxGLContext()
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // Cleanup EGL context if it exists
     if (m_eglContext != EGL_NO_CONTEXT)
@@ -166,7 +166,7 @@ EGLenum QQnxGLContext::checkEGLError(const char *msg)
 
 void QQnxGLContext::initializeContext()
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // Initialize connection to EGL
     ms_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -184,7 +184,7 @@ void QQnxGLContext::initializeContext()
 
 void QQnxGLContext::shutdownContext()
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // Close connection to EGL
     eglTerminate(ms_eglDisplay);
@@ -192,7 +192,7 @@ void QQnxGLContext::shutdownContext()
 
 bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
@@ -223,7 +223,7 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 
 void QQnxGLContext::doneCurrent()
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
@@ -238,7 +238,7 @@ void QQnxGLContext::doneCurrent()
 
 void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
     QQnxEglWindow *platformWindow = dynamic_cast<QQnxEglWindow*>(surface);
     if (!platformWindow)
         return;
@@ -248,7 +248,7 @@ void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 
 QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
@@ -270,7 +270,7 @@ EGLDisplay QQnxGLContext::getEglDisplay() {
 
 EGLint *QQnxGLContext::contextAttrs(const QSurfaceFormat &format)
 {
-    qGLContextDebug() << Q_FUNC_INFO;
+    qGLContextDebug();
 
     // Choose EGL settings based on OpenGL version
 #if defined(QT_OPENGL_ES_2)

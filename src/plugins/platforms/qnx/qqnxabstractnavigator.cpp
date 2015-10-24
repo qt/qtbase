@@ -62,7 +62,7 @@ bool QQnxAbstractNavigator::invokeUrl(const QUrl &url)
     // which is not recognized by the navigator anymore
     const bool result = requestInvokeUrl(url.toString().toUtf8());
 
-    qNavigatorDebug() << Q_FUNC_INFO << "url=" << url << "result=" << result;
+    qNavigatorDebug() << "url=" << url << "result=" << result;
 
     return result;
 }

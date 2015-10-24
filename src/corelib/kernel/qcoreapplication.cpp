@@ -350,7 +350,7 @@ struct QCoreApplicationData {
 
         QFile metafile(QStringLiteral("app/META-INF/MANIFEST.MF"));
         if (!metafile.open(QIODevice::ReadOnly)) {
-            qWarning() << Q_FUNC_INFO << "Could not open application metafile for reading";
+            qWarning("Could not open application metafile for reading")
         } else {
             while (!metafile.atEnd() && (application.isEmpty() || applicationVersion.isEmpty() || orgName.isEmpty())) {
                 QByteArray line = metafile.readLine();
