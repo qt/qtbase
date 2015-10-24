@@ -568,9 +568,9 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
         mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file); // pre-1.3
     }
     if (mimeFiles.isEmpty()) {
-        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.";
-        qWarning() << "Either it was just removed, or the directory doesn't have executable permission...";
-        qWarning() << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
+        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
+                      "Either it was just removed, or the directory doesn't have executable permission..."
+                   << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
         return;
     }
 

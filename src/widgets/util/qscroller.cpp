@@ -1870,8 +1870,8 @@ void QScrollerPrivate::setContentPositionHelperScrolling()
     newPos.setY(nextSegmentPosition(ySegments, now, newPos.y()));
 
     // -- set the position and handle overshoot
-    qScrollerDebug() << "QScroller::setContentPositionHelperScrolling()";
-    qScrollerDebug() << "  --> overshoot:" << overshootPosition << "- new pos:" << newPos;
+    qScrollerDebug() << "QScroller::setContentPositionHelperScrolling()\n"
+                        "  --> overshoot:" << overshootPosition << "- new pos:" << newPos;
 
     QPointF newClampedPos = clampToRect(newPos, contentPosRange);
 

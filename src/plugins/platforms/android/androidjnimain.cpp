@@ -498,8 +498,8 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     }
 
     if (!m_main) {
-        qCritical() << "dlsym failed:" << dlerror();
-        qCritical() << "Could not find main method";
+        qCritical() << "dlsym failed:" << dlerror() << endl
+                    << "Could not find main method";
         return false;
     }
 

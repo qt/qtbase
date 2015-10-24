@@ -69,39 +69,39 @@ QWindowsSockInit2::~QWindowsSockInit2()
 #ifdef BEARER_MANAGEMENT_DEBUG
 static void printBlob(NLA_BLOB *blob)
 {
-    qDebug() << "==== BEGIN NLA_BLOB ====";
+    qDebug() << "==== BEGIN NLA_BLOB ====" << endl
 
-    qDebug() << "type:" << blob->header.type;
-    qDebug() << "size:" << blob->header.dwSize;
-    qDebug() << "next offset:" << blob->header.nextOffset;
+             << "type:" << blob->header.type << endl
+             << "size:" << blob->header.dwSize << endl
+             << "next offset:" << blob->header.nextOffset;
 
     switch (blob->header.type) {
     case NLA_RAW_DATA:
-        qDebug() << "Raw Data";
-        qDebug() << '\t' << blob->data.rawData;
+        qDebug() << "Raw Data" << endl
+                 << '\t' << blob->data.rawData;
         break;
     case NLA_INTERFACE:
-        qDebug() << "Interface";
-        qDebug() << "\ttype:" << blob->data.interfaceData.dwType;
-        qDebug() << "\tspeed:" << blob->data.interfaceData.dwSpeed;
-        qDebug() << "\tadapter:" << blob->data.interfaceData.adapterName;
+        qDebug() << "Interface" << endl
+                 << "\ttype:" << blob->data.interfaceData.dwType << endl
+                 << "\tspeed:" << blob->data.interfaceData.dwSpeed  << endl
+                 << "\tadapter:" << blob->data.interfaceData.adapterName;
         break;
     case NLA_802_1X_LOCATION:
-        qDebug() << "802.1x Location";
-        qDebug() << '\t' << blob->data.locationData.information;
+        qDebug() << "802.1x Location" << endl
+                 << '\t' << blob->data.locationData.information;
         break;
     case NLA_CONNECTIVITY:
-        qDebug() << "Connectivity";
-        qDebug() << "\ttype:" << blob->data.connectivity.type;
-        qDebug() << "\tinternet:" << blob->data.connectivity.internet;
+        qDebug() << "Connectivity" << endl
+                 << "\ttype:" << blob->data.connectivity.type << endl
+                 << "\tinternet:" << blob->data.connectivity.internet;
         break;
     case NLA_ICS:
-        qDebug() << "ICS";
-        qDebug() << "\tspeed:" << blob->data.ICS.remote.speed;
-        qDebug() << "\ttype:" << blob->data.ICS.remote.type;
-        qDebug() << "\tstate:" << blob->data.ICS.remote.state;
-        qDebug() << "\tmachine name:" << blob->data.ICS.remote.machineName;
-        qDebug() << "\tshared adapter name:" << blob->data.ICS.remote.sharedAdapterName;
+        qDebug() << "ICS" << endl
+                 << "\tspeed:" << blob->data.ICS.remote.speed << endl
+                 << "\ttype:" << blob->data.ICS.remote.type << endl
+                 << "\tstate:" << blob->data.ICS.remote.state << endl
+                 << "\tmachine name:" << blob->data.ICS.remote.machineName << endl
+                 << "\tshared adapter name:" << blob->data.ICS.remote.sharedAdapterName;
         break;
     default:
         qDebug() << "UNKNOWN BLOB TYPE";
