@@ -36,6 +36,7 @@
 #include "qdesktopwidget_p.h"
 #include "qscreen.h"
 #include "qwidget_p.h"
+#include "qwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -99,13 +100,18 @@ void QDesktopWidgetPrivate::_q_updateScreens()
 
     QRegion virtualGeometry;
 
-    // update the geometry of each screen widget, determine virtual geometry
-    // and emit change signals afterwards.
+    // update the geometry of each screen widget, determine virtual geometry,
+    // set the new screen for window handle and emit change signals afterwards.
     QList<int> changedScreens;
     for (int i = 0; i < screens.length(); i++) {
-        const QRect screenGeometry = screenList.at(i)->geometry();
-        if (screenGeometry != screens.at(i)->geometry()) {
-            screens.at(i)->setGeometry(screenGeometry);
+        QDesktopScreenWidget *screenWidget = screens.at(i);
+        QScreen *qScreen = screenList.at(i);
+        QWindow *winHandle = screenWidget->windowHandle();
+        if (winHandle && winHandle->screen() != qScreen)
+            winHandle->setScreen(qScreen);
+        const QRect screenGeometry = qScreen->geometry();
+        if (screenGeometry != screenWidget->geometry()) {
+            screenWidget->setGeometry(screenGeometry);
             changedScreens.push_back(i);
         }
         virtualGeometry += screenGeometry;
@@ -191,6 +197,21 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     if (!w)
         return 0;
 
+    // Find the root widget, get a QScreen pointer from it and find
+    // the screen number.
+    const QWidget *root = w;
+    const QWidget *tmp = w;
+    while ((tmp = tmp->parentWidget()))
+        root = tmp;
+    QWindow *winHandle = root->windowHandle();
+    if (winHandle) {
+        int screenIdx = QGuiApplication::screens().indexOf(winHandle->screen());
+        if (screenIdx > -1)
+            return screenIdx;
+    }
+
+    // If the screen number cannot be obtained using QScreen pointer,
+    // get it from window position using screen geometry.
     QRect frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
