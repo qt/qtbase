@@ -9,6 +9,7 @@ HEADERS += \
         painting/qcolor.h \
         painting/qcolor_p.h \
         painting/qcosmeticstroker_p.h \
+        painting/qdatabuffer_p.h \
         painting/qdrawhelper_p.h \
         painting/qdrawhelper_x86_p.h \
         painting/qdrawingprimitive_sse2_p.h \
