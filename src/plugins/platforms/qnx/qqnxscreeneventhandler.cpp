@@ -147,7 +147,7 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
 
     default:
         // event ignored
-        qScreenEventDebug() << "unknown event" << qnxType;
+        qScreenEventDebug("unknown event %d", qnxType);
         return false;
     }
 

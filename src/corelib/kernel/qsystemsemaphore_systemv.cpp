@@ -187,7 +187,8 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         }
         setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-        qDebug() << QLatin1String("QSystemSemaphore::modify failed") << count << semctl(semaphore, 0, GETVAL) << errno << EIDRM << EINVAL;
+        qDebug("QSystemSemaphore::modify failed %d %d %d %d %d",
+               count, int(semctl(semaphore, 0, GETVAL)), int(errno), int(EIDRM), int(EINVAL);
 #endif
         return false;
     }

@@ -512,7 +512,7 @@ QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
     if (!iface) {
         QModelIndex index = view()->model()->index(row, column, view()->rootIndex());
         if (Q_UNLIKELY(!index.isValid())) {
-            qWarning() << "QAccessibleTable::child: Invalid index at: " << row << column;
+            qWarning("QAccessibleTable::child: Invalid index at: %d %d", row, column);
             return 0;
         }
         iface = new QAccessibleTableCell(view(), index, cellRole());
@@ -783,7 +783,7 @@ QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
 {
     QModelIndex index = indexFromLogical(row, column);
     if (Q_UNLIKELY(!index.isValid())) {
-        qWarning() << "Requested invalid tree cell: " << row << column;
+        qWarning("Requested invalid tree cell: %d %d", row, column);
         return 0;
     }
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());

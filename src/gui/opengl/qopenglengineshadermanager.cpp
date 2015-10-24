@@ -390,7 +390,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             fragShader->setObjectName(QString::fromLatin1(description));
 #endif
             if (!fragShader->compileSourceCode(fragSource)) {
-                qWarning() << "Warning:" << description << "failed to compile!";
+                qWarning("Warning: \"%s\" failed to compile!", description.constData());
                 break;
             }
 
@@ -405,7 +405,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             vertexShader->setObjectName(QString::fromLatin1(description));
 #endif
             if (!vertexShader->compileSourceCode(vertexSource)) {
-                qWarning() << "Warning:" << description << "failed to compile!";
+                qWarning("Warning: \"%s\" failed to compile!", description.constData());
                 break;
             }
 

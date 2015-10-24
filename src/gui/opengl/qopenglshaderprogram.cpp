@@ -337,9 +337,10 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
 
         // Dump the source code if we got it
         if (sourceCodeBuffer) {
-            qWarning("*** Problematic %s shader source code ***", type);
-            qWarning() << qPrintable(QString::fromLatin1(sourceCodeBuffer));
-            qWarning("***");
+            qWarning("*** Problematic %s shader source code ***\n"
+                     "%ls\n"
+                     "***",
+                     type, qUtf16Printable(QString::fromLatin1(sourceCodeBuffer)));
         }
 
         // Cleanup
@@ -1215,8 +1216,7 @@ int QOpenGLShaderProgram::attributeLocation(const char *name) const
     if (d->linked && d->programGuard && d->programGuard->id()) {
         return d->glfuncs->glGetAttribLocation(d->programGuard->id(), name);
     } else {
-        qWarning() << "QOpenGLShaderProgram::attributeLocation(" << name
-                   << "): shader program is not linked";
+        qWarning("QOpenGLShaderProgram::attributeLocation(%s): shader program is not linked", name);
         return -1;
     }
 }
@@ -1479,7 +1479,7 @@ void QOpenGLShaderProgram::setAttributeValue
     Q_D(QOpenGLShaderProgram);
     Q_UNUSED(d);
     if (rows < 1 || rows > 4) {
-        qWarning() << "QOpenGLShaderProgram::setAttributeValue: rows" << rows << "not supported";
+        qWarning("QOpenGLShaderProgram::setAttributeValue: rows %d not supported", rows);
         return;
     }
     if (location != -1) {
@@ -1891,8 +1891,7 @@ int QOpenGLShaderProgram::uniformLocation(const char *name) const
     if (d->linked && d->programGuard && d->programGuard->id()) {
         return d->glfuncs->glGetUniformLocation(d->programGuard->id(), name);
     } else {
-        qWarning() << "QOpenGLShaderProgram::uniformLocation(" << name
-                   << "): shader program is not linked";
+        qWarning("QOpenGLShaderProgram::uniformLocation(%s): shader program is not linked", name);
         return -1;
     }
 }
@@ -2819,7 +2818,7 @@ void QOpenGLShaderProgram::setUniformValueArray(int location, const GLfloat *val
         else if (tupleSize == 4)
             d->glfuncs->glUniform4fv(location, count, values);
         else
-            qWarning() << "QOpenGLShaderProgram::setUniformValue: size" << tupleSize << "not supported";
+            qWarning("QOpenGLShaderProgram::setUniformValue: size %d not supported", tupleSize);
     }
 }
 

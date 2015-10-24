@@ -97,7 +97,7 @@ void QQnxButtonEventNotifier::start()
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
     QObject::connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(updateButtonStates()));
 
-    qButtonDebug() << "successfully connected to Navigator. fd =" << m_fd;
+    qButtonDebug("successfully connected to Navigator. fd = %d", m_fd);
 }
 
 void QQnxButtonEventNotifier::updateButtonStates()
@@ -121,7 +121,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
     // Ensure data is null terminated
     buffer[bytes] = '\0';
 
-    qButtonDebug() << "received PPS message:\n" << buffer;
+    qButtonDebug("received PPS message:\n%s", buffer);
 
     // Process received message
     QByteArray ppsData = QByteArray::fromRawData(buffer, bytes);

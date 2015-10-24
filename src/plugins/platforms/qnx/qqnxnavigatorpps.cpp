@@ -79,7 +79,7 @@ bool QQnxNavigatorPps::openPpsConnection()
         return false;
     }
 
-    qNavigatorDebug() << "successfully connected to Navigator. fd=" << m_fd;
+    qNavigatorDebug("successfully connected to Navigator. fd=%d", m_fd);
 
     return true;
 }

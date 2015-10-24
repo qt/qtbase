@@ -340,11 +340,12 @@ qreal QQnxScreen::refreshRate() const
         qWarning("QQnxScreen: Failed to query screen mode. Using default value of 60Hz");
         return 60.0;
     }
-    qScreenDebug() << "screen mode:" << endl
-                   << "      width =" << displayMode.width << endl
-                   << "     height =" << displayMode.height << endl
-                   << "    refresh =" << displayMode.refresh << endl
-                   << " interlaced =" << displayMode.interlaced;
+    qScreenDebug("screen mode:\n"
+                 "      width = %u\n"
+                 "     height = %u\n"
+                 "    refresh = %u\n"
+                 " interlaced = %u",
+                 uint(displayMode.width), uint(displayMode.height), uint(displayMode.refresh), uint(displayMode.interlaced));
     return static_cast<qreal>(displayMode.refresh);
 }
 
@@ -404,7 +405,7 @@ static bool isOrthogonal(int angle1, int angle2)
 
 void QQnxScreen::setRotation(int rotation)
 {
-    qScreenDebug() << "orientation =" << rotation;
+    qScreenDebug("orientation = %d", rotation);
     // Check if rotation changed
     // We only want to rotate if we are the primary screen
     if (m_currentRotation != rotation && isPrimaryScreen()) {

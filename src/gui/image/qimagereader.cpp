@@ -450,8 +450,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
             if (handler) {
 #ifdef QIMAGEREADER_DEBUG
-                qDebug() << "QImageReader::createReadHandler: the" << _qt_BuiltInFormats[currentFormat].extension
-                         << "built-in handler can read this data";
+                qDebug("QImageReader::createReadHandler: the %s built-in handler can read this data",
+                       _qt_BuiltInFormats[currentFormat].extension);
 #endif
                 break;
             }

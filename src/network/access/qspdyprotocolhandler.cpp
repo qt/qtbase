@@ -458,7 +458,7 @@ bool QSpdyProtocolHandler::uncompressHeader(const QByteArray &input, QByteArray 
             break;
         }
         default: {
-            qWarning() << "got unexpected zlib return value:" << zlibRet;
+            qWarning("got unexpected zlib return value: %d", zlibRet);
             return false;
         }
         }
@@ -849,7 +849,7 @@ void QSpdyProtocolHandler::handleControlFrame(const QByteArray &frameHeaders) //
         break;
     }
     default:
-        qWarning() << "cannot handle frame of type" << type;
+        qWarning("cannot handle frame of type %d", int(type));
     }
 }
 
@@ -1085,7 +1085,7 @@ void QSpdyProtocolHandler::handleSETTINGS(char flags, quint32 /*length*/, const 
             break;
         }
         default:
-            qWarning() << "found unknown settings value" << value;
+            qWarning("found unknown settings value %u", uint(value));
         }
     }
 }
@@ -1124,7 +1124,7 @@ void QSpdyProtocolHandler::handleGOAWAY(char /*flags*/, quint32 /*length*/,
         break;
     }
     default:
-        qWarning() << "unexpected status code" << statusCode;
+        qWarning("unexpected status code %d", int(statusCode));
         errorCode = QNetworkReply::ProtocolUnknownError;
     }
 

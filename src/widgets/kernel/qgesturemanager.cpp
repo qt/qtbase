@@ -75,7 +75,7 @@ static inline int panTouchPoints()
         const int result = qEnvironmentVariableIntValue(panTouchPointVariable, &ok);
         if (ok && result >= 1)
             return result;
-        qWarning() << "Ignoring invalid value of " << panTouchPointVariable;
+        qWarning("Ignoring invalid value of %s", panTouchPointVariable);
     }
     // Pan should use 1 finger on a touch screen and 2 fingers on touch pads etc.
     // where 1 finger movements are used for mouse event synthetization. For now,

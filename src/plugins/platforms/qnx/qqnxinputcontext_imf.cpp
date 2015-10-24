@@ -721,7 +721,7 @@ void QQnxInputContext::update(Qt::InputMethodQueries queries)
             initEvent(&caretEvent.event, sInputSession, EVENT_CARET, CARET_POS_CHANGED, sizeof(caretEvent));
             caretEvent.old_pos = lastCaret;
             caretEvent.new_pos = m_caretPosition;
-            qInputContextDebug() << "ictrl_dispatch_event caret changed" << lastCaret << m_caretPosition;
+            qInputContextDebug("ictrl_dispatch_event caret changed %d %d", lastCaret, m_caretPosition);
             p_ictrl_dispatch_event(&caretEvent.event);
         }
     }
@@ -914,7 +914,7 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
             navigation_event_t navEvent;
             initEvent(&navEvent.event, sInputSession, EVENT_NAVIGATION, key, sizeof(navEvent));
             navEvent.magnitude = 1;
-            qInputContextDebug() << "ictrl_dispatch_even navigation" << key;
+            qInputContextDebug("ictrl_dispatch_even navigation %d", key);
             p_ictrl_dispatch_event(&navEvent.event);
         }
     } else {
@@ -927,7 +927,7 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
         keyEvent.sequence_id = sequenceId;
 
         p_ictrl_dispatch_event(&keyEvent.event);
-        qInputContextDebug() << "ictrl_dispatch_even key" << key;
+        qInputContextDebug("ictrl_dispatch_even key %d", key);
     }
 
     return true;
@@ -943,7 +943,7 @@ void QQnxInputContext::updateCursorPosition()
     QCoreApplication::sendEvent(input, &query);
     m_caretPosition = query.value(Qt::ImCursorPosition).toInt();
 
-    qInputContextDebug() << m_caretPosition;
+    qInputContextDebug("%d", m_caretPosition);
 }
 
 void QQnxInputContext::endComposition()
@@ -1116,7 +1116,7 @@ int32_t QQnxInputContext::processEvent(event_t *event)
         int flags = KEY_SYM_VALID | KEY_CAP_VALID;
         if (event->event_id == IMF_KEY_DOWN)
             flags |= KEY_DOWN;
-        qInputContextDebug() << "EVENT_KEY" << flags << keySym;
+        qInputContextDebug("EVENT_KEY %d %d", flags, keySym);
         QQnxScreenEventHandler::injectKeyboardEvent(flags, keySym, modifiers, 0, keyCap);
         result = 0;
         break;
@@ -1156,7 +1156,7 @@ int32_t QQnxInputContext::onCommitText(spannable_string_t *text, int32_t new_cur
 
 int32_t QQnxInputContext::onDeleteSurroundingText(int32_t left_length, int32_t right_length)
 {
-    qInputContextDebug() << "L:" << left_length << " R:" << right_length;
+    qInputContextDebug("L: %d R: %d", int(left_length), int(right_length));
 
     QObject *input = qGuiApp->focusObject();
     if (!input)

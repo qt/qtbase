@@ -397,12 +397,12 @@ QByteArray QPpsObjectPrivate::encode(const QVariantMap &ppsData, bool *ok)
 void QPpsObjectPrivate::encodeData(pps_encoder_t *encoder, const char *name, const QVariant &data,
                                    bool *ok)
 {
-    QString errorFunction;
+    const char *errorFunction;
     pps_encoder_error_t error = PPS_ENCODER_OK;
     switch (data.type()) {
     case QVariant::Bool:
         error = pps_encoder_add_bool(encoder, name, data.toBool());
-        errorFunction = QStringLiteral("pps_encoder_add_bool");
+        errorFunction = "pps_encoder_add_bool";
         break;
     // We want to support encoding uint even though libpps doesn't support it directly.
     // We can't encode uint as an int since that will lose precision (e.g. 2^31+1 can't be
@@ -411,41 +411,41 @@ void QPpsObjectPrivate::encodeData(pps_encoder_t *encoder, const char *name, con
     case QVariant::UInt:
     case QVariant::Double:
         error = pps_encoder_add_double(encoder, name, data.toDouble());
-        errorFunction = QStringLiteral("pps_encoder_add_double");
+        errorFunction = "pps_encoder_add_double";
         break;
     case QVariant::Int:
         error = pps_encoder_add_int(encoder, name, data.toInt());
-        errorFunction = QStringLiteral("pps_encoder_add_int");
+        errorFunction = "pps_encoder_add_int";
         break;
     case QVariant::LongLong:
         error = pps_encoder_add_int64(encoder, name, data.toLongLong());
-        errorFunction = QStringLiteral("pps_encoder_add_int64");
+        errorFunction = "pps_encoder_add_int64";
         break;
     case QVariant::String:
         error = pps_encoder_add_string(encoder, name, data.toString().toUtf8().constData());
-        errorFunction = QStringLiteral("pps_encoder_add_string");
+        errorFunction = "pps_encoder_add_string";
         break;
     case QVariant::List:
         error = pps_encoder_start_array(encoder, name);
-        errorFunction = QStringLiteral("pps_encoder_start_array");
+        errorFunction = "pps_encoder_start_array";
         if (error == PPS_ENCODER_OK) {
             encodeArray(encoder, data.toList(), ok);
             error = pps_encoder_end_array(encoder);
-            errorFunction = QStringLiteral("pps_encoder_end_array");
+            errorFunction = "pps_encoder_end_array";
         }
         break;
     case QVariant::Map:
         error = pps_encoder_start_object(encoder, name);
-        errorFunction = QStringLiteral("pps_encoder_start_object");
+        errorFunction = "pps_encoder_start_object";
         if (error == PPS_ENCODER_OK) {
             encodeObject(encoder, data.toMap(), ok);
             error = pps_encoder_end_object(encoder);
-            errorFunction = QStringLiteral("pps_encoder_end_object");
+            errorFunction = "pps_encoder_end_object";
         }
         break;
     case QVariant::Invalid:
         error = pps_encoder_add_null(encoder, name);
-        errorFunction = QStringLiteral("pps_encoder_add_null");
+        errorFunction = "pps_encoder_add_null";
         break;
     default:
         qWarning("QPpsObjectPrivate::encodeData: the type of the parameter data is invalid");
@@ -454,7 +454,7 @@ void QPpsObjectPrivate::encodeData(pps_encoder_t *encoder, const char *name, con
     }
 
     if (error != PPS_ENCODER_OK) {
-        qWarning() << "QPpsObjectPrivate::encodeData: " << errorFunction << " failed";
+        qWarning("QPpsObjectPrivate::encodeData: %s failed", errorFunction);
         *ok = false;
     } else {
         *ok = true;

@@ -527,7 +527,7 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
     // check whether there is really a converter for the name available.
     UConverter *conv = ucnv_open(standardName, &error);
     if (!conv) {
-        qDebug() << "codecForName: ucnv_open failed" << standardName << u_errorName(error);
+        qDebug("codecForName: ucnv_open failed %s %s", standardName, u_errorName(error));
         return 0;
     }
     //qDebug() << "QIcuCodec: Standard name for " << name << "is" << standardName;
@@ -577,7 +577,7 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
             ucnv_setSubstChars(static_cast<UConverter *>(state->d),
                                state->flags & QTextCodec::ConvertInvalidToNull ? "\0" : "?", 1, &error);
             if (U_FAILURE(error))
-                qDebug() << "getConverter(state) ucnv_open failed" << m_name << u_errorName(error);
+                qDebug("getConverter(state) ucnv_open failed %s %s", m_name, u_errorName(error));
         }
         conv = static_cast<UConverter *>(state->d);
     }
@@ -587,7 +587,7 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
         conv = ucnv_open(m_name, &error);
         ucnv_setSubstChars(conv, "?", 1, &error);
         if (U_FAILURE(error))
-            qDebug() << "getConverter(no state) ucnv_open failed" << m_name << u_errorName(error);
+            qDebug("getConverter(no state) ucnv_open failed %s %s", m_name, u_errorName(error));
     }
     return conv;
 }
@@ -610,7 +610,7 @@ QString QIcuCodec::convertToUnicode(const char *chars, int length, QTextCodec::C
                        &chars, end,
                        0, false, &error);
         if (!U_SUCCESS(error) && error != U_BUFFER_OVERFLOW_ERROR) {
-            qDebug() << "convertToUnicode failed:" << u_errorName(error);
+            qDebug("convertToUnicode failed: %s", u_errorName(error));
             break;
         }
 
@@ -647,7 +647,7 @@ QByteArray QIcuCodec::convertFromUnicode(const QChar *unicode, int length, QText
                          &uc, end,
                          0, false, &error);
         if (!U_SUCCESS(error))
-            qDebug() << "convertFromUnicode failed:" << u_errorName(error);
+            qDebug("convertFromUnicode failed: %s", u_errorName(error));
         convertedChars = ch - string.data();
         if (uc >= end)
             break;

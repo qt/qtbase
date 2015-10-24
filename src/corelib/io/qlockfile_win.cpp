@@ -100,7 +100,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
                 ? QLockFile::LockFailedError
                 : QLockFile::PermissionError;
         default:
-            qWarning() << "Got unexpected locking error" << lastError;
+            qWarning("Got unexpected locking error %llu", quint64(lastError));
             return QLockFile::UnknownError;
         }
     }

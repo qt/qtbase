@@ -63,14 +63,14 @@ bool QQnxNavigatorEventHandler::handleOrientationCheck(int angle)
 {
     // reply to navigator that (any) orientation is acceptable
     // TODO: check if top window flags prohibit orientation change
-    qNavigatorEventHandlerDebug() << "angle=" << angle;
+    qNavigatorEventHandlerDebug("angle=%d", angle);
     return true;
 }
 
 void QQnxNavigatorEventHandler::handleOrientationChange(int angle)
 {
     // update screen geometry and reply to navigator that we're ready
-    qNavigatorEventHandlerDebug() << "angle=" << angle;
+    qNavigatorEventHandlerDebug("angle=%d", angle);
     emit rotationChanged(angle);
 }
 

@@ -100,8 +100,9 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
         nativeInterface->nativeResourceFunctionForIntegration(functionName);
     if (Q_UNLIKELY(!function))
-         qWarning() << "Qt could not resolve function" << functionName
-                    << "from QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()";
+         qWarning("Qt could not resolve function %s from "
+                  "QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()",
+                  functionName.constData());
     return function;
 }
 } //namespsace

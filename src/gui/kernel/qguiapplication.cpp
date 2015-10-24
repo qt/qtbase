@@ -1186,7 +1186,7 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
         else
-            qWarning() << "No such plugin for spec " << pluginSpec;
+            qWarning("No such plugin for spec \"%s\"", pluginSpec.constData());
     }
 }
 

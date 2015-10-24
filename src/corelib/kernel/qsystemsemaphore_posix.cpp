@@ -147,7 +147,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
             if (::sem_post(semaphore) == -1) {
                 setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore (sem_post)"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-                qDebug() << QLatin1String("QSystemSemaphore::modify sem_post failed") << count << errno;
+                qDebug("QSystemSemaphore::modify sem_post failed %d %d", count, errno);
 #endif
                 // rollback changes to preserve the SysV semaphore behavior
                 for ( ; cnt < count; ++cnt) {
@@ -169,7 +169,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
             }
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore (sem_wait)"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
-            qDebug() << QLatin1String("QSystemSemaphore::modify sem_wait failed") << count << errno;
+            qDebug("QSystemSemaphore::modify sem_wait failed %d %d", count, errno);
 #endif
             return false;
         }

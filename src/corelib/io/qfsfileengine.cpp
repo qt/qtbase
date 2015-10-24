@@ -545,7 +545,7 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
     } else {
         // Unbuffered stdio mode.
         if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
-            qWarning() << "QFile::at: Cannot set file position" << pos;
+            qWarning("QFile::at: Cannot set file position %lld", pos);
             q->setError(QFile::PositionError, qt_error_string(errno));
             return false;
         }

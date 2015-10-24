@@ -164,7 +164,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 {
     ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-    qVirtualKeyboardDebug() << "keyboardMessage size: " << nread;
+    qVirtualKeyboardDebug("keyboardMessage size: %zd", nread);
     if (nread < 0){
         connect(); // reconnect
         return;
@@ -230,7 +230,7 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
     }
     setHeight(newHeight);
 
-    qVirtualKeyboardDebug() << "size=" << newHeight;
+    qVirtualKeyboardDebug("size=%d", newHeight);
 }
 
 bool QQnxVirtualKeyboardPps::showKeyboard()
