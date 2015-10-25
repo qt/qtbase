@@ -138,6 +138,23 @@ public:
 };
 
 template <>
+class Arg<QStringView> : ArgBase
+{
+    QStringView view() const
+    { return this->pinned.isNull() ? QStringView() : QStringView(this->pinned) ; }
+public:
+    explicit Arg(const char *str) : ArgBase(str) {}
+
+    template <typename MemFun>
+    void apply0(QString &s, MemFun mf) const
+    { (s.*mf)(view()); }
+
+    template <typename MemFun, typename A1>
+    void apply1(QString &s, MemFun mf, A1 a1) const
+    { (s.*mf)(a1, view()); }
+};
+
+template <>
 class Arg<QPair<const QChar *, int> > : ArgBase
 {
 public:
@@ -379,6 +396,8 @@ private slots:
     void prepend_qstring_data()       { prepend_data(true); }
     void prepend_qstringref()         { prepend_impl<QStringRef>(); }
     void prepend_qstringref_data()    { prepend_data(true); }
+    void prepend_qstringview()        { prepend_impl<QStringView, QString &(QString::*)(QStringView)>(); }
+    void prepend_qstringview_data()   { prepend_data(true); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void prepend_qlatin1string_data() { prepend_data(true); }
     void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, int)>(); }
@@ -398,6 +417,8 @@ private slots:
     void append_qstring_data()       { append_data(); }
     void append_qstringref()         { append_impl<QStringRef>(); }
     void append_qstringref_data()    { append_data(); }
+    void append_qstringview()        { append_impl<QStringView,  QString &(QString::*)(QStringView)>(); }
+    void append_qstringview_data()   { append_data(true); }
     void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void append_qlatin1string_data() { append_data(); }
     void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, int)>(); }
@@ -418,6 +439,8 @@ private slots:
     void operator_pluseq_qstring_data()       { operator_pluseq_data(); }
     void operator_pluseq_qstringref()         { operator_pluseq_impl<QStringRef>(); }
     void operator_pluseq_qstringref_data()    { operator_pluseq_data(); }
+    void operator_pluseq_qstringview()        { operator_pluseq_impl<QStringView, QString &(QString::*)(QStringView)>(); }
+    void operator_pluseq_qstringview_data()   { operator_pluseq_data(true); }
     void operator_pluseq_qlatin1string()      { operator_pluseq_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void operator_pluseq_qlatin1string_data() { operator_pluseq_data(); }
     void operator_pluseq_qchar()              { operator_pluseq_impl<QChar, QString &(QString::*)(QChar)>(); }
@@ -440,6 +463,8 @@ private slots:
     void insert_qstring_data()       { insert_data(true); }
     void insert_qstringref()         { insert_impl<QStringRef>(); }
     void insert_qstringref_data()    { insert_data(true); }
+    void insert_qstringview()        { insert_impl<QStringView, QString &(QString::*)(int, QStringView)>(); }
+    void insert_qstringview_data()   { insert_data(true); }
     void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(int, QLatin1String)>(); }
     void insert_qlatin1string_data() { insert_data(true); }
     void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(int, const QChar*, int) >(); }

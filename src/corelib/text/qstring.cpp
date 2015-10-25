@@ -2501,6 +2501,19 @@ QString &QString::operator=(QChar ch)
 
 
 /*!
+    \fn QString& QString::insert(int position, QStringView str)
+    \since 6.0
+    \overload insert()
+
+    Inserts the string view \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+*/
+
+
+/*!
     \fn QString& QString::insert(int position, const char *str)
     \since 5.5
     \overload insert()
@@ -2762,6 +2775,14 @@ QString &QString::append(QChar ch)
     \overload prepend()
 
     Prepends the string reference \a str to the beginning of this string and
+    returns a reference to this string.
+*/
+
+/*! \fn QString &QString::prepend(QStringView str)
+    \since 6.0
+    \overload prepend()
+
+    Prepends the string view \a str to the beginning of this string and
     returns a reference to this string.
 */
 
@@ -5912,6 +5933,13 @@ QString& QString::fill(QChar ch, int size)
     \overload operator+=()
 
     Appends the string section referenced by \a str to this string.
+*/
+
+/*! \fn QString &QString::operator+=(QStringView str)
+    \since 6.0
+    \overload operator+=()
+
+    Appends the string view \a str to this string.
 */
 
 /*! \fn QString &QString::operator+=(char ch)
@@ -11035,6 +11063,13 @@ QStringRef QStringRef::appendTo(QString *string) const
     The comparison is performed in a locale- and also
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
+*/
+
+/*!
+    \fn QString &QString::append(QStringView str)
+    \since 6.0
+
+    Appends the given string view \a str to this string and returns the result.
 */
 
 /*!

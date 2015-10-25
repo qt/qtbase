@@ -537,18 +537,29 @@ public:
 
     QString &insert(int i, QChar c);
     QString &insert(int i, const QChar *uc, int len);
+#if QT_STRINGVIEW_LEVEL < 2
     inline QString &insert(int i, const QString &s) { return insert(i, s.constData(), s.length()); }
     inline QString &insert(int i, const QStringRef &s);
+#endif
+    inline QString &insert(int i, QStringView v) { return insert(i, v.data(), v.length()); }
     QString &insert(int i, QLatin1String s);
+
     QString &append(QChar c);
     QString &append(const QChar *uc, int len);
+#if QT_STRINGVIEW_LEVEL < 2
     QString &append(const QString &s);
     QString &append(const QStringRef &s);
+#endif
+    inline QString &append(QStringView v) { return append(v.data(), v.length()); }
     QString &append(QLatin1String s);
+
     inline QString &prepend(QChar c) { return insert(0, c); }
     inline QString &prepend(const QChar *uc, int len) { return insert(0, uc, len); }
+#if QT_STRINGVIEW_LEVEL < 2
     inline QString &prepend(const QString &s) { return insert(0, s); }
     inline QString &prepend(const QStringRef &s) { return insert(0, s); }
+#endif
+    inline QString &prepend(QStringView v) { return prepend(v.data(), v.length()); }
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
@@ -560,8 +571,11 @@ public:
     }
 
     inline QString &operator+=(QChar::SpecialCharacter c) { return append(QChar(c)); }
+#if QT_STRINGVIEW_LEVEL < 2
     inline QString &operator+=(const QString &s) { return append(s); }
     inline QString &operator+=(const QStringRef &s) { return append(s); }
+#endif
+    inline QString &operator+=(QStringView v) { return append(v); }
     inline QString &operator+=(QLatin1String s) { return append(s); }
 
     QString &remove(int i, int len);
