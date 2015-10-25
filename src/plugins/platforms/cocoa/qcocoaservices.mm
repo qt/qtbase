@@ -33,8 +33,6 @@
 
 #include "qcocoaservices.h"
 
-#include "qt_mac_p.h"
-
 #include <AppKit/NSWorkspace.h>
 #include <Foundation/NSURL.h>
 
@@ -47,7 +45,7 @@ bool QCocoaServices::openUrl(const QUrl &url)
     const QString scheme = url.scheme();
     if (scheme.isEmpty())
         return openDocument(url);
-    return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:QCFString::toNSString(url.toString(QUrl::FullyEncoded))]];
+    return [[NSWorkspace sharedWorkspace] openURL:url.toNSURL()];
 }
 
 bool QCocoaServices::openDocument(const QUrl &url)
@@ -55,7 +53,7 @@ bool QCocoaServices::openDocument(const QUrl &url)
     if (!url.isValid())
         return false;
 
-    return [[NSWorkspace sharedWorkspace] openFile:QCFString::toNSString(url.toLocalFile())];
+    return [[NSWorkspace sharedWorkspace] openFile:url.toLocalFile().toNSString()];
 }
 
 QT_END_NAMESPACE
