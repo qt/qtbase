@@ -40,6 +40,8 @@
 
 #include <functional>
 
+#include <d3d11.h>
+
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
@@ -79,8 +81,21 @@ void QWinRTEGLContext::initialize()
 {
     Q_D(QWinRTEGLContext);
 
+    // Test if the hardware supports at least level 9_3
+    D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_9_3 }; // minimum feature level
+    HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevels, 1,
+                                   D3D11_SDK_VERSION, nullptr, nullptr, nullptr);
+    EGLint deviceType = SUCCEEDED(hr) ? EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE
+                                      : EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE;
+
     eglBindAPI(EGL_OPENGL_ES_API);
-    d->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    const EGLint displayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE, deviceType,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, true,
+        EGL_NONE,
+    };
+    d->eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
     if (d->eglDisplay == EGL_NO_DISPLAY)
         qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
 
