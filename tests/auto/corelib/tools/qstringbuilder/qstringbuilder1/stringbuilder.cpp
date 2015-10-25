@@ -60,6 +60,7 @@ template <typename T> QString toQString(const T &t);
 
 template <> QString toQString(const QString &s) { return s; }
 template <> QString toQString(const QStringRef &r) { return r.toString(); }
+template <> QString toQString(const QStringView &v) { return v.toString(); }
 template <> QString toQString(const QLatin1String &l) { return l; }
 template <> QString toQString(const QLatin1Char &l) { return QChar(l); }
 template <> QString toQString(const QChar &c) { return c; }
@@ -84,6 +85,7 @@ void runScenario()
     QLatin1String l1string(LITERAL);
     QString string(l1string);
     QStringRef stringref(&string, 2, 10);
+    QStringView stringview(stringref);
     QLatin1Char lchar('c');
     QChar qchar(lchar);
     QChar::SpecialCharacter special(QChar::Nbsp);
@@ -108,6 +110,7 @@ void runScenario()
     CHECK(P, l1string, l1string);
     CHECK(P, l1string, string);
     CHECK(P, l1string, stringref);
+    CHECK(Q, l1string, stringview);
     CHECK(P, l1string, lchar);
     CHECK(P, l1string, qchar);
     CHECK(P, l1string, special);
@@ -118,6 +121,7 @@ void runScenario()
 
     CHECK(P, string, string);
     CHECK(P, string, stringref);
+    CHECK(Q, string, stringview);
     CHECK(P, string, lchar);
     CHECK(P, string, qchar);
     CHECK(P, string, special);
@@ -127,6 +131,7 @@ void runScenario()
     CHECK(Q, string, u16charstar);
 
     CHECK(P, stringref, stringref);
+    CHECK(Q, stringref, stringview);
     CHECK(P, stringref, lchar);
     CHECK(P, stringref, qchar);
     CHECK(P, stringref, special);
@@ -134,6 +139,15 @@ void runScenario()
     CHECK(Q, stringref, u16char);
     CHECK(Q, stringref, u16chararray);
     CHECK(Q, stringref, u16charstar);
+
+    CHECK(Q, stringview, stringview);
+    CHECK(Q, stringview, lchar);
+    CHECK(Q, stringview, qchar);
+    CHECK(Q, stringview, special);
+    CHECK(P, stringview, QStringLiteral(LITERAL));
+    CHECK(Q, stringview, u16char);
+    CHECK(Q, stringview, u16chararray);
+    CHECK(Q, stringview, u16charstar);
 
     CHECK(P, lchar, lchar);
     CHECK(P, lchar, qchar);

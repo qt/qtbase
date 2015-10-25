@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     For building QStrings:
 
     \list
-    \li QString, QStringRef,
+    \li QString, QStringRef, (since 5.10:) QStringView
     \li QChar, QCharRef, QLatin1Char, (since 5.10:) \c char16_t,
     \li QLatin1String,
     \li (since 5.10:) \c{const char16_t[]} (\c{u"foo"}),

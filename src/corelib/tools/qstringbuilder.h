@@ -289,6 +289,20 @@ template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
     }
 };
 
+template <> struct QConcatenable<QStringView> : private QAbstractConcatenable
+{
+    typedef QStringView type;
+    typedef QString ConvertTo;
+    enum { ExactSize = true };
+    static int size(QStringView a) { return a.length(); }
+    static inline void appendTo(QStringView a, QChar *&out)
+    {
+        const auto n = a.size();
+        memcpy(out, a.data(), sizeof(QChar) * n);
+        out += n;
+    }
+};
+
 template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
 {
     typedef const char type[N];
