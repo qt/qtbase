@@ -803,6 +803,39 @@ QUuid::Version QUuid::version() const Q_DECL_NOTHROW
     return ver;
 }
 
+/*! \fn QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
+    \since 5.7
+
+    Constructs a new QUuid containing a copy of the \a uuid CFUUID.
+
+    \note this function is only available on Apple platforms.
+*/
+
+/*! \fn CFUUIDRef QUuid::toCFUUID() const
+    \since 5.7
+
+    Creates a CFUUID from a QUuid. The caller owns the CFUUID and is
+    responsible for releasing it.
+
+    \note this function is only available on Apple platforms.
+*/
+
+/*! \fn QUuid QUuid::fromNSUUID(const NSUUID *uuid)
+    \since 5.7
+
+    Constructs a new QUuid containing a copy of the \a uuid NSUUID.
+
+    \note this function is only available on Apple platforms.
+*/
+
+/*! \fn NSUUID QUuid::toNSUUID() const
+    \since 5.7
+
+    Creates a NSUUID from a QUuid. The NSUUID is autoreleased.
+
+    \note this function is only available on Apple platforms.
+*/
+
 /*!
     \fn bool QUuid::operator<(const QUuid &other) const
 

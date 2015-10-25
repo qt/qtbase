@@ -49,6 +49,12 @@ typedef struct _GUID
 #endif
 #endif
 
+#ifdef Q_OS_DARWIN
+Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
+#  ifdef __OBJC__
+Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
+#  endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -194,6 +200,15 @@ public:
 
     QUuid::Variant variant() const Q_DECL_NOTHROW;
     QUuid::Version version() const Q_DECL_NOTHROW;
+
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    static QUuid fromCFUUID(CFUUIDRef uuid);
+    CFUUIDRef toCFUUID() const Q_DECL_CF_RETURNS_RETAINED;
+#  if defined(__OBJC__) || defined(Q_QDOC)
+    static QUuid fromNSUUID(const NSUUID *uuid);
+    NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#  endif
+#endif
 
     uint    data1;
     ushort  data2;

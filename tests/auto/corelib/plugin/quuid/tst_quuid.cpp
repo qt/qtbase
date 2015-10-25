@@ -73,6 +73,8 @@ private slots:
     void qvariant();
     void qvariant_conversion();
 
+    void darwinTypes();
+
 public:
     // Variables
     QUuid uuidNS;
@@ -404,6 +406,16 @@ void tst_QUuid::qvariant_conversion()
     QCOMPARE(sv.type(), QVariant::String);
     QVERIFY(sv.canConvert<QUuid>());
     QCOMPARE(sv.value<QUuid>(), uuid);
+}
+
+void tst_QUuid::darwinTypes()
+{
+#ifndef Q_OS_DARWIN
+    QSKIP("This is a Darwin-only test");
+#else
+    extern void tst_QUuid_darwinTypes(); // in tst_quuid_darwin.mm
+    tst_QUuid_darwinTypes();
+#endif
 }
 
 QTEST_MAIN(tst_QUuid)

@@ -35,4 +35,8 @@ integrity {
 	SOURCES += plugin/qlibrary_unix.cpp
 }
 
+darwin {
+    OBJECTIVE_SOURCES += plugin/quuid_darwin.mm
+}
+
 LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
