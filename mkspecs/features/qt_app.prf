@@ -21,7 +21,7 @@ QMAKE_LFLAGS += $$QMAKE_LFLAGS_GCSECTIONS
 
 host_build: QT -= gui   # no host tool will ever use gui
 host_build:force_bootstrap {
-    !build_pass: CONFIG += release
+    !build_pass:contains(QT_CONFIG, release_tools): CONFIG += release
     contains(QT, core(-private)?|xml) {
         QT -= core core-private xml
         QT += bootstrap-private

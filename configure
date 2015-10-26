@@ -604,6 +604,7 @@ CFG_MYSQL_CONFIG=
 CFG_PSQL_CONFIG=
 CFG_DEBUG_RELEASE=no
 CFG_FORCEDEBUGINFO=no
+CFG_RELEASE_TOOLS=no
 CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
@@ -642,7 +643,6 @@ CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_SKIP_MODULES=""
 CFG_COMPILE_EXAMPLES=yes
-CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_QML_DEBUG=yes
 CFG_PKGCONFIG=auto
@@ -1433,13 +1433,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    optimized-qmake)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_RELEASE_QMAKE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     release)
         if [ "$VAL" = "yes" ]; then
             CFG_DEBUG=no
@@ -1454,6 +1447,13 @@ while [ "$#" -gt 0 ]; do
         ;;
     force-debug-info)
         CFG_FORCEDEBUGINFO="$VAL"
+        ;;
+    optimized-qmake|optimized-tools)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_RELEASE_TOOLS="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     developer-build)
         CFG_DEV="yes"
@@ -2433,6 +2433,9 @@ Configure options:
 
     -developer-build ... Compile and link Qt with Qt developer options (including auto-tests exporting)
 
+ *  -no-optimized-tools ... Do not build optimized host tools even in debug build.
+    -optimized-tools ...... Build optimized host tools even in debug build.
+
     -opensource ........ Compile and link the Open-Source Edition of Qt.
     -commercial ........ Compile and link the Commercial Edition of Qt.
 
@@ -2617,9 +2620,6 @@ Additional options:
 
     -silent ............ Reduce the build output so that warnings and errors
                          can be seen more easily.
-
- *  -no-optimized-qmake ... Do not build qmake optimized.
-    -optimized-qmake ...... Build qmake optimized.
 
     -no-nis ............ Do not compile NIS support.
  *  -nis ............... Compile NIS support.
@@ -3387,6 +3387,10 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
+if [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG release_tools"
+fi
+
 if [ "$XPLATFORM_MAC" = "yes" ]; then
     [ "$CFG_PKGCONFIG" = "auto" ] && CFG_PKGCONFIG="no"
 fi
@@ -4017,7 +4021,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_LFLAGS
         setBootstrapVariable QMAKE_LFLAGS_GCSECTIONS
 
-        if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
+        if [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
@@ -7237,10 +7241,12 @@ release="release"
 [ "$CFG_FORCEDEBUGINFO" = "yes" ] && release="release (with debug info)"
 [ "$CFG_DEBUG" = "yes" ] && build_mode="debug" || build_mode=$release
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-   echo "  Mode ................... debug and $release; default link: $build_mode"
-else
-   echo "  Mode ................... $build_mode"
+    build_mode="debug and $release; default link: $build_mode"
 fi
+if [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
+    build_mode="$build_mode; optimized tools"
+fi
+echo "  Mode ................... $build_mode"
 unset build_mode release
 echo "  Using sanitizer(s)...... $CFG_SANITIZERS"
 echo "  Using C++ standard ..... $CFG_STDCXX"
@@ -7405,6 +7411,11 @@ if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
     echo
     echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."
     echo "Configure with '-qreal float' to create a build that is binary compatible with 5.1."
+fi
+if [ "$CFG_RELEASE_TOOLS" = "yes" -a \( "$CFG_DEBUG" = "no" -o "$CFG_DEBUG_RELEASE" = "yes" \) ]; then
+    echo
+    echo "NOTE: -optimized-tools is not useful in -release mode."
+    echo
 fi
 
 exec 1>&3 3>&- # restore stdout

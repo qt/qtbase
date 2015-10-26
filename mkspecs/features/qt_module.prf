@@ -32,7 +32,7 @@ host_build {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_SPLIT_SECTIONS
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_SPLIT_SECTIONS
     force_bootstrap {
-        !build_pass: CONFIG += release
+        !build_pass:contains(QT_CONFIG, release_tools): CONFIG += release
         contains(QT, core(-private)?|xml) {
             QT -= core core-private xml
             QT += bootstrap-private
