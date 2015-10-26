@@ -255,6 +255,11 @@ int runRcc(int argc, char *argv[])
         // Make sure fwrite to stdout doesn't do LF->CRLF
         if (library.format() == RCCResourceLibrary::Binary)
             _setmode(_fileno(stdout), _O_BINARY);
+        // Make sure QIODevice does not do LF->CRLF,
+        // otherwise we'll end up in CRCRLF instead of
+        // CRLF.
+        if (list)
+            mode &= ~QIODevice::Text;
 #endif // Q_OS_WIN
         // using this overload close() only flushes.
         out.open(stdout, mode);
