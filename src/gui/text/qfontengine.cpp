@@ -961,7 +961,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
     pt.y = -glyph_y; // the baseline
     QPainterPath path;
     path.setFillRule(Qt::WindingFill);
-    QImage im(glyph_width + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
+    QImage im(glyph_width, glyph_height, QImage::Format_ARGB32_Premultiplied);
     im.fill(Qt::transparent);
     QPainter p(&im);
     p.setRenderHint(QPainter::Antialiasing);
