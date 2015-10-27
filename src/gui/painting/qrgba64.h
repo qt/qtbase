@@ -44,7 +44,7 @@ class QRgba64 {
 
     // Make sure that the representation always has the order: red green blue alpha, independent
     // of byte order. This way, vector operations that assume 4 16-bit values see the correct ones.
-    enum {
+    enum Shifts {
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
         RedShift = 48,
         GreenShift = 32,

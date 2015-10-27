@@ -511,7 +511,7 @@ static const quint8 requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] =
     { 14, 127 },  // Nko
 };
 
-enum {
+enum CsbBits {
     Latin1CsbBit = 0,
     CentralEuropeCsbBit = 1,
     TurkishCsbBit = 4,

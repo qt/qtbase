@@ -1856,6 +1856,8 @@ bool QPainterPath::contains(const QPointF &pt) const
             : ((winding_number % 2) != 0));
 }
 
+enum PainterDirections { Left, Right, Top, Bottom };
+
 static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y2,
                                            const QRectF &rect)
 {
@@ -1864,7 +1866,6 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
     qreal top = rect.top();
     qreal bottom = rect.bottom();
 
-    enum { Left, Right, Top, Bottom };
     // clip the lines, after cohen-sutherland, see e.g. http://www.nondot.org/~sabre/graphpro/line6.html
     int p1 = ((x1 < left) << Left)
              | ((x1 > right) << Right)

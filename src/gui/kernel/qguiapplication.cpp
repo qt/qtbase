@@ -3576,7 +3576,7 @@ void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)
     emit q->focusObjectChanged(object);
 }
 
-enum {
+enum MouseMasks {
     MouseCapsMask = 0xFF,
     MouseSourceMaskDst = 0xFF00,
     MouseSourceMaskSrc = MouseCapsMask,
