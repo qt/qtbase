@@ -31,6 +31,8 @@
 **
 ****************************************************************************/
 
+#include <qpa/qplatformtheme.h>
+
 #include "qcocoafiledialoghelper.h"
 
 #ifndef QT_NO_FILEDIALOG
@@ -180,7 +182,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 static QString strippedText(QString s)
 {
     s.remove( QString::fromLatin1("...") );
-    return qt_mac_removeMnemonics(s).trimmed();
+    return QPlatformTheme::removeMnemonics(s).trimmed();
 }
 
 - (NSString *)strip:(const QString &)label

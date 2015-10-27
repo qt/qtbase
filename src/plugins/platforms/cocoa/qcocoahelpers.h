@@ -90,7 +90,6 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
 
 // Misc
 void qt_mac_transformProccessToForegroundApplication();
-QString qt_mac_removeMnemonics(const QString &original);
 CGColorSpaceRef qt_mac_genericColorSpace();
 CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
 CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);

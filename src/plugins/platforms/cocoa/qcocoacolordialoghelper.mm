@@ -31,13 +31,13 @@
 **
 ****************************************************************************/
 
-#include "qcocoacolordialoghelper.h"
-
 #ifndef QT_NO_COLORDIALOG
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
+#include <qpa/qplatformtheme.h>
 
+#include "qcocoacolordialoghelper.h"
 #include "qcocoahelpers.h"
 
 #import <AppKit/AppKit.h>
@@ -52,7 +52,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     [button setButtonType:NSMomentaryLightButton];
     [button setBezelStyle:NSRoundedBezelStyle];
     [button setTitle:(NSString*)(CFStringRef)QCFString(
-            qt_mac_removeMnemonics(QCoreApplication::translate("QDialogButtonBox", text)))];
+            QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", text)))];
     [[button cell] setFont:[NSFont systemFontOfSize:
             [NSFont systemFontSizeForControlSize:NSRegularControlSize]]];
     [superview addSubview:button];

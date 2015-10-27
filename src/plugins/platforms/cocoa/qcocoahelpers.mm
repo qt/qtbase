@@ -31,6 +31,8 @@
 **
 ****************************************************************************/
 
+#include <qpa/qplatformtheme.h>
+
 #include "qcocoahelpers.h"
 
 
@@ -485,42 +487,6 @@ void qt_mac_transformProccessToForegroundApplication()
         }
     }
 }
-
-QString qt_mac_removeMnemonics(const QString &original)
-{
-    QString returnText(original.size(), 0);
-    int finalDest = 0;
-    int currPos = 0;
-    int l = original.length();
-    while (l) {
-        if (original.at(currPos) == QLatin1Char('&')
-            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
-            ++currPos;
-            --l;
-            if (l == 0)
-                break;
-        } else if (original.at(currPos) == QLatin1Char('(') && l >= 4 &&
-                   original.at(currPos + 1) == QLatin1Char('&') &&
-                   original.at(currPos + 2) != QLatin1Char('&') &&
-                   original.at(currPos + 3) == QLatin1Char(')')) {
-            /* remove mnemonics its format is "\s*(&X)" */
-            int n = 0;
-            while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
-                ++n;
-            finalDest -= n;
-            currPos += 4;
-            l -= 4;
-            continue;
-        }
-        returnText[finalDest] = original.at(currPos);
-        ++currPos;
-        ++finalDest;
-        --l;
-    }
-    returnText.truncate(finalDest);
-    return returnText;
-}
-
 static CGColorSpaceRef m_genericColorSpace = 0;
 static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
 static bool m_postRoutineRegistered = false;
@@ -774,7 +740,7 @@ bool qt_mac_execute_apple_script(const QString &script, AEDesc *ret)
 
 QString qt_mac_removeAmpersandEscapes(QString s)
 {
-    return qt_mac_removeMnemonics(s).trimmed();
+    return QPlatformTheme::removeMnemonics(s).trimmed();
 }
 
 /*! \internal

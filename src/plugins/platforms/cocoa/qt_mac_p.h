@@ -103,8 +103,6 @@ public:
     }
 };
 
-QString qt_mac_removeMnemonics(const QString &original); //implemented in qmacstyle_mac.cpp
-
 class Q_WIDGETS_EXPORT QMacWindowChangeEvent
 {
 private:

@@ -31,6 +31,8 @@
 **
 ****************************************************************************/
 
+#include <qpa/qplatformtheme.h>
+
 #include "qcocoamenuitem.h"
 
 #include "qcocoamenu.h"
@@ -316,7 +318,7 @@ NSMenuItem *QCocoaMenuItem::sync()
     if (accel.count() > 1)
         text += QLatin1String(" (") + accel.toString(QKeySequence::NativeText) + QLatin1String(")");
 
-    QString finalString = qt_mac_removeMnemonics(text);
+    QString finalString = QPlatformTheme::removeMnemonics(text);
     bool useAttributedTitle = false;
     // Cocoa Font and title
     if (m_font.resolve()) {

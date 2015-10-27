@@ -74,9 +74,6 @@ public:
     bool m_separator;
     QIOSMenu *m_menu;
     QKeySequence m_shortcut;
-
-private:
-    QString removeMnemonics(const QString &original);
 };
 
 typedef QList<QIOSMenuItem *> QIOSMenuItemList;
