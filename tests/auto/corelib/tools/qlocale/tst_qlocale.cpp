@@ -42,6 +42,7 @@
 #include <qdatetime.h>
 #include <qprocess.h>
 #include <float.h>
+#include <locale.h>
 
 #include <qlocale.h>
 #include <private/qlocale_p.h>
@@ -140,8 +141,10 @@ private slots:
     void legacyNames();
     void unixLocaleName();
     void matchingLocales();
-    void double_conversion_data();
-    void double_conversion();
+    void stringToDouble_data();
+    void stringToDouble();
+    void doubleToString_data();
+    void doubleToString();
     void long_long_conversion_data();
     void long_long_conversion();
     void long_long_conversion_extra();
@@ -664,7 +667,7 @@ void tst_QLocale::unixLocaleName()
 #undef TEST_NAME
 }
 
-void tst_QLocale::double_conversion_data()
+void tst_QLocale::stringToDouble_data()
 {
     QTest::addColumn<QString>("locale_name");
     QTest::addColumn<QString>("num_str");
@@ -786,7 +789,7 @@ void tst_QLocale::double_conversion_data()
     QTest::newRow("de_DE 9.876543,0e--2") << QString("de_DE") << QString("9.876543,0e")+QChar(8722)+QString("2")   << false << 0.0;
 }
 
-void tst_QLocale::double_conversion()
+void tst_QLocale::stringToDouble()
 {
 #define MY_DOUBLE_EPSILON (2.22045e-16)
 
@@ -802,6 +805,11 @@ void tst_QLocale::double_conversion()
     bool ok;
     double d = locale.toDouble(num_str, &ok);
     QCOMPARE(ok, good);
+
+    char *currentLocale = setlocale(LC_ALL, "de_DE");
+    QCOMPARE(locale.toDouble(num_str, &ok), d); // make sure result is independent of locale
+    QCOMPARE(ok, good);
+    setlocale(LC_ALL, currentLocale);
 
     if (ok) {
         double diff = d - num;
@@ -819,6 +827,90 @@ void tst_QLocale::double_conversion()
             diff = -diff;
         QVERIFY(diff <= MY_DOUBLE_EPSILON);
     }
+}
+
+void tst_QLocale::doubleToString_data()
+{
+    QTest::addColumn<QString>("locale_name");
+    QTest::addColumn<QString>("num_str");
+    QTest::addColumn<double>("num");
+    QTest::addColumn<char>("mode");
+    QTest::addColumn<int>("precision");
+
+    QTest::newRow("C 3.4 f 5")  << QString("C") << QString("3.40000")     << 3.4 << 'f' << 5;
+    QTest::newRow("C 3.4 f 0")  << QString("C") << QString("3")           << 3.4 << 'f' << 0;
+    QTest::newRow("C 3.4 e 5")  << QString("C") << QString("3.40000e+00") << 3.4 << 'e' << 5;
+    QTest::newRow("C 3.4 e 0")  << QString("C") << QString("3e+00")       << 3.4 << 'e' << 0;
+    QTest::newRow("C 3.4 g 5")  << QString("C") << QString("3.4")         << 3.4 << 'g' << 5;
+    QTest::newRow("C 3.4 g 1")  << QString("C") << QString("3")           << 3.4 << 'g' << 1;
+
+    QTest::newRow("C 3.4 f 1")  << QString("C") << QString("3.4")     << 3.4 << 'f' << 1;
+    QTest::newRow("C 3.4 e 1")  << QString("C") << QString("3.4e+00") << 3.4 << 'e' << 1;
+    QTest::newRow("C 3.4 g 2")  << QString("C") << QString("3.4")     << 3.4 << 'g' << 2;
+
+    QTest::newRow("de_DE 3,4 f 1")  << QString("de_DE") << QString("3,4")     << 3.4 << 'f' << 1;
+    QTest::newRow("de_DE 3,4 e 1")  << QString("de_DE") << QString("3,4e+00") << 3.4 << 'e' << 1;
+    QTest::newRow("de_DE 3,4 g 2")  << QString("de_DE") << QString("3,4")     << 3.4 << 'g' << 2;
+
+    QTest::newRow("C 0.035003945 f 12") << QString("C") << QString("0.035003945000")   << 0.035003945 << 'f' << 12;
+    QTest::newRow("C 0.035003945 f 6")  << QString("C") << QString("0.035004")         << 0.035003945 << 'f' << 6;
+    QTest::newRow("C 0.035003945 e 10") << QString("C") << QString("3.5003945000e-02") << 0.035003945 << 'e' << 10;
+    QTest::newRow("C 0.035003945 e 4")  << QString("C") << QString("3.5004e-02")       << 0.035003945 << 'e' << 4;
+    QTest::newRow("C 0.035003945 g 11") << QString("C") << QString("0.035003945")      << 0.035003945 << 'g' << 11;
+    QTest::newRow("C 0.035003945 g 5")  << QString("C") << QString("0.035004")         << 0.035003945 << 'g' << 5;
+
+    QTest::newRow("C 0.035003945 f 9")  << QString("C") << QString("0.035003945")   << 0.035003945 << 'f' << 9;
+    QTest::newRow("C 0.035003945 e 7")  << QString("C") << QString("3.5003945e-02") << 0.035003945 << 'e' << 7;
+    QTest::newRow("C 0.035003945 g 8")  << QString("C") << QString("0.035003945")   << 0.035003945 << 'g' << 8;
+
+    QTest::newRow("de_DE 0,035003945 f 9")  << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'f' << 9;
+    QTest::newRow("de_DE 0,035003945 e 7")  << QString("de_DE") << QString("3,5003945e-02") << 0.035003945 << 'e' << 7;
+    QTest::newRow("de_DE 0,035003945 g 8")  << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'g' << 8;
+
+    QTest::newRow("C 0.000003945 f 12") << QString("C") << QString("0.000003945000") << 0.000003945 << 'f' << 12;
+    QTest::newRow("C 0.000003945 f 6")  << QString("C") << QString("0.000004")       << 0.000003945 << 'f' << 6;
+    QTest::newRow("C 0.000003945 e 6")  << QString("C") << QString("3.945000e-06")   << 0.000003945 << 'e' << 6;
+    QTest::newRow("C 0.000003945 e 0")  << QString("C") << QString("4e-06")          << 0.000003945 << 'e' << 0;
+    QTest::newRow("C 0.000003945 g 7")  << QString("C") << QString("3.945e-06")      << 0.000003945 << 'g' << 7;
+    QTest::newRow("C 0.000003945 g 1")  << QString("C") << QString("4e-06")          << 0.000003945 << 'g' << 1;
+
+    QTest::newRow("C 0.000003945 f 9")  << QString("C") << QString("0.000003945") << 0.000003945 << 'f' << 9;
+    QTest::newRow("C 0.000003945 e 3")  << QString("C") << QString("3.945e-06")   << 0.000003945 << 'e' << 3;
+    QTest::newRow("C 0.000003945 g 4")  << QString("C") << QString("3.945e-06")   << 0.000003945 << 'g' << 4;
+
+    QTest::newRow("de_DE 0,000003945 f 9")  << QString("de_DE") << QString("0,000003945") << 0.000003945 << 'f' << 9;
+    QTest::newRow("de_DE 0,000003945 e 3")  << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'e' << 3;
+    QTest::newRow("de_DE 0,000003945 g 4")  << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'g' << 4;
+
+    QTest::newRow("C 12456789012 f 3")  << QString("C") << QString("12456789012.000")     << 12456789012.0 << 'f' << 3;
+    QTest::newRow("C 12456789012 e 13") << QString("C") << QString("1.2456789012000e+10") << 12456789012.0 << 'e' << 13;
+    QTest::newRow("C 12456789012 e 7")  << QString("C") << QString("1.2456789e+10")       << 12456789012.0 << 'e' << 7;
+    QTest::newRow("C 12456789012 g 14") << QString("C") << QString("12456789012")         << 12456789012.0 << 'g' << 14;
+    QTest::newRow("C 12456789012 g 8")  << QString("C") << QString("1.2456789e+10")       << 12456789012.0 << 'g' << 8;
+
+    QTest::newRow("C 12456789012 f 0")  << QString("C") << QString("12456789012")      << 12456789012.0 << 'f' << 0;
+    QTest::newRow("C 12456789012 e 10") << QString("C") << QString("1.2456789012e+10") << 12456789012.0 << 'e' << 10;
+    QTest::newRow("C 12456789012 g 11") << QString("C") << QString("12456789012")      << 12456789012.0 << 'g' << 11;
+
+    QTest::newRow("de_DE 12456789012 f 0")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'f' << 0;
+    QTest::newRow("de_DE 12456789012 e 10") << QString("de_DE") << QString("1,2456789012e+10") << 12456789012.0 << 'e' << 10;
+    QTest::newRow("de_DE 12456789012 g 11") << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'g' << 11;
+}
+
+void tst_QLocale::doubleToString()
+{
+    QFETCH(QString, locale_name);
+    QFETCH(QString, num_str);
+    QFETCH(double, num);
+    QFETCH(char, mode);
+    QFETCH(int, precision);
+
+    const QLocale locale(locale_name);
+    QCOMPARE(locale.toString(num, mode, precision), num_str);
+
+    char *currentLocale = setlocale(LC_ALL, "de_DE");
+    QCOMPARE(locale.toString(num, mode, precision), num_str);
+    setlocale(LC_ALL, currentLocale);
 }
 
 void tst_QLocale::long_long_conversion_data()
@@ -952,7 +1044,8 @@ void tst_QLocale::fpExceptions()
 #define _EM_INEXACT 0x00000001
 #endif
 
-    // check that qdtoa doesn't throw floating point exceptions when they are enabled
+    // check that double-to-string conversion doesn't throw floating point exceptions when they are
+    // enabled
 #ifdef Q_OS_WIN
     unsigned int oldbits = _control87(0, 0);
     _control87( 0 | _EM_INEXACT, _MCW_EM );
@@ -1830,13 +1923,27 @@ void tst_QLocale::underflowOverflow()
 a(QLatin1String("0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001e10"));
 
     bool ok = false;
-    a.toDouble(&ok);
+    double d = a.toDouble(&ok);
     QVERIFY(!ok);
+    QCOMPARE(d, 0.0);
 
     a = QLatin1String("1e600");
     ok = false;
-    a.toDouble(&ok);
+    d = a.toDouble(&ok);
+    QVERIFY(!ok); // detectable overflow
+    QCOMPARE(d, 0.0);
+
+    a = QLatin1String("-1e600");
+    ok = false;
+    d = a.toDouble(&ok);
+    QVERIFY(!ok); // detectable underflow
+    QCOMPARE(d, 0.0);
+
+    a = QLatin1String("1e-600");
+    ok = false;
+    d = a.toDouble(&ok);
     QVERIFY(!ok);
+    QCOMPARE(d, 0.0);
 
     a = QLatin1String("-9223372036854775809");
     a.toLongLong(&ok);
