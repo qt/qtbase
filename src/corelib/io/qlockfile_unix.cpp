@@ -44,7 +44,10 @@
 #include "private/qabstractfileengine_p.h"
 #include "private/qtemporaryfile_p.h"
 
+#if !defined(Q_OS_INTEGRITY)
 #include <sys/file.h>  // flock
+#endif
+
 #include <sys/types.h> // kill
 #include <signal.h>    // kill
 #include <unistd.h>    // gethostname
