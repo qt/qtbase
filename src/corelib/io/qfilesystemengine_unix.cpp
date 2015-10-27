@@ -345,17 +345,17 @@ QString QFileSystemEngine::resolveUserName(uint userId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-    struct passwd *pw = 0;
 #if !defined(Q_OS_INTEGRITY)
+    struct passwd *pw = 0;
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
     struct passwd entry;
     getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
 #else
     pw = getpwuid(userId);
 #endif
-#endif
     if (pw)
         return QFile::decodeName(QByteArray(pw->pw_name));
+#endif
     return QString();
 }
 
@@ -369,8 +369,8 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-    struct group *gr = 0;
 #if !defined(Q_OS_INTEGRITY)
+    struct group *gr = 0;
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (size_max == -1)
@@ -390,9 +390,9 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #else
     gr = getgrgid(groupId);
 #endif
-#endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
+#endif
     return QString();
 }
 
