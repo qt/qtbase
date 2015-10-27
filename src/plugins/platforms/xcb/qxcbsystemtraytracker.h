@@ -63,6 +63,7 @@ public:
 
     void handleDestroyNotifyEvent(const xcb_destroy_notify_event_t *) override;
 
+    xcb_visualid_t visualId();
     bool visualHasAlphaChannel();
 signals:
     void systemTrayWindowChanged(QScreen *screen);
@@ -73,6 +74,7 @@ private:
                                    xcb_atom_t selection);
     static xcb_window_t locateTrayWindow(const QXcbConnection *connection, xcb_atom_t selection);
     void emitSystemTrayWindowChanged();
+    xcb_visualid_t netSystemTrayVisual();
 
     const xcb_atom_t m_selection;
     const xcb_atom_t m_trayAtom;

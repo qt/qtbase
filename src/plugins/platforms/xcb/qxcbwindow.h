@@ -179,6 +179,8 @@ public:
     bool startSystemMoveResize(const QPoint &pos, int corner);
     bool doStartSystemMoveResize(const QPoint &globalPos, int corner);
 
+    bool isTrayIconWindow() const { return m_trayIconWindow; }
+
     virtual void create();
     virtual void destroy();
 
@@ -259,6 +261,7 @@ protected:
     bool m_embedded = false;
     bool m_alertState = false;
     bool m_minimized = false;
+    bool m_trayIconWindow = false;
     xcb_window_t m_netWmUserTimeWindow = XCB_NONE;
 
     QSurfaceFormat m_format;

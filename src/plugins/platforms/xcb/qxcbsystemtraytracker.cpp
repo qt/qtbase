@@ -162,10 +162,28 @@ void QXcbSystemTrayTracker::handleDestroyNotifyEvent(const xcb_destroy_notify_ev
     }
 }
 
+xcb_visualid_t QXcbSystemTrayTracker::visualId()
+{
+    xcb_visualid_t visual = netSystemTrayVisual();
+    if (visual == XCB_NONE)
+        visual = m_connection->primaryScreen()->screen()->root_visual;
+    return visual;
+}
+
 bool QXcbSystemTrayTracker::visualHasAlphaChannel()
 {
+    const xcb_visualid_t systrayVisualId = netSystemTrayVisual();
+    if (systrayVisualId != XCB_NONE) {
+        quint8 depth = m_connection->primaryScreen()->depthOfVisual(systrayVisualId);
+        return depth == 32;
+    }
+    return false;
+}
+
+xcb_visualid_t QXcbSystemTrayTracker::netSystemTrayVisual()
+{
     if (m_trayWindow == XCB_WINDOW_NONE)
-        return false;
+        return XCB_NONE;
 
     xcb_atom_t tray_atom = m_connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_VISUAL);
 
@@ -174,7 +192,7 @@ bool QXcbSystemTrayTracker::visualHasAlphaChannel()
                                                     false, m_trayWindow,
                                                     tray_atom, XCB_ATOM_VISUALID, 0, 1);
     if (!systray_atom_reply)
-        return false;
+        return XCB_NONE;
 
     xcb_visualid_t systrayVisualId = XCB_NONE;
     if (systray_atom_reply->value_len > 0 && xcb_get_property_value_length(systray_atom_reply.get()) > 0) {
@@ -182,12 +200,7 @@ bool QXcbSystemTrayTracker::visualHasAlphaChannel()
         systrayVisualId = vids[0];
     }
 
-    if (systrayVisualId != XCB_NONE) {
-        quint8 depth = m_connection->primaryScreen()->depthOfVisual(systrayVisualId);
-        return depth == 32;
-    }
-
-    return false;
+    return systrayVisualId;
 }
 
 QT_END_NAMESPACE

@@ -241,7 +241,8 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
-    if (window->type() != Qt::Desktop) {
+    const bool isTrayIconWindow = window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    if (window->type() != Qt::Desktop && !isTrayIconWindow) {
         if (window->supportsOpenGL()) {
             if (glIntegration) {
                 QXcbWindow *xcbWindow = glIntegration->createWindow(window);
@@ -257,7 +258,7 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
         }
     }
 
-    Q_ASSERT(window->type() == Qt::Desktop || !window->supportsOpenGL()
+    Q_ASSERT(window->type() == Qt::Desktop || isTrayIconWindow || !window->supportsOpenGL()
              || (!glIntegration && window->surfaceType() == QSurface::RasterGLSurface)); // for VNC
     QXcbWindow *xcbWindow = new QXcbWindow(window);
     xcbWindow->create();
@@ -284,6 +285,10 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
+    const bool isTrayIconWindow = window->objectName() == QLatin1String("QSystemTrayIconSysWindow");
+    if (isTrayIconWindow)
+        return new QXcbSystemTrayBackingStore(window);
+
 #if QT_CONFIG(xcb_native_painting)
     if (nativePaintingEnabled())
         return new QXcbNativeBackingStore(window);

@@ -299,6 +299,7 @@ void QXcbWindow::create()
     destroy();
 
     m_windowState = Qt::WindowNoState;
+    m_trayIconWindow = window()->objectName() == QLatin1String("QSystemTrayIconSysWindow");
 
     Qt::WindowType type = window()->type();
 
@@ -356,7 +357,9 @@ void QXcbWindow::create()
 
     const xcb_visualtype_t *visual = nullptr;
 
-    if (connection()->hasDefaultVisualId()) {
+    if (m_trayIconWindow && connection()->systemTrayTracker()) {
+        visual = platformScreen->visualForId(connection()->systemTrayTracker()->visualId());
+    } else if (connection()->hasDefaultVisualId()) {
         visual = platformScreen->visualForId(connection()->defaultVisualId());
         if (!visual)
             qWarning() << "Failed to use requested visual id.";
@@ -2669,11 +2672,6 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
     case XEMBED_EMBEDDED_NOTIFY:
         xcb_map_window(xcb_connection(), m_window);
         xcbScreen()->windowShown(this);
-        // Without Qt::WA_TranslucentBackground, we use a ParentRelative BackPixmap.
-        // Clear the whole tray icon window to its background color as early as possible
-        // so that we can get a clean result from grabWindow() later.
-        xcb_clear_area(xcb_connection(), false, m_window, 0, 0, geometry().width(), geometry().height());
-        xcb_flush(xcb_connection());
         break;
     case XEMBED_FOCUS_IN:
         Qt::FocusReason reason;
