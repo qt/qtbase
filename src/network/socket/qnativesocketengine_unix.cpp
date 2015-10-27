@@ -58,6 +58,9 @@
 #ifdef Q_OS_BSD4
 #include <net/if_dl.h>
 #endif
+#ifdef Q_OS_INTEGRITY
+#include <sys/uio.h>
+#endif
 
 #if defined QNATIVESOCKETENGINE_DEBUG
 #include <qstring.h>
