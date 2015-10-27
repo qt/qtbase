@@ -45,7 +45,7 @@
 #endif
 
 #include <stdlib.h> // mkdtemp
-#if defined(Q_OS_QNX) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_QNX) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID) || defined(Q_OS_INTEGRITY)
 #include <private/qfilesystemengine_p.h>
 #endif
 
@@ -91,7 +91,7 @@ static QString defaultTemplateName()
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
 
-#if defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#if defined(Q_OS_QNX ) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID) || defined(Q_OS_INTEGRITY)
 
 static int nextRand(int &v)
 {
