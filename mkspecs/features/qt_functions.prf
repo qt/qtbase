@@ -206,6 +206,7 @@ defineTest(qtAddTargetEnv) {
                 pluginpath.value += $$system_path($$qplug)
         }
         pluginpath.name = QT_PLUGIN_PATH
+        pluginpath.CONFIG = prepend
 
         QT_TOOL_ENV += deppath pluginpath
     }
