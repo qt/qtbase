@@ -568,6 +568,7 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
     return !operator==(v1, v2);
 }
 #endif
+Q_DECLARE_SHARED(QVariant)
 
 class Q_CORE_EXPORT QSequentialIterable
 {
@@ -846,7 +847,6 @@ inline QT_DEPRECATED bool qVariantCanConvert(const QVariant &variant)
 #endif
 
 #endif
-Q_DECLARE_SHARED(QVariant)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
