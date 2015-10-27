@@ -100,6 +100,9 @@ public:
 
     void aboutToRemoveCell(int from, int to);
 
+    static QTextCursor fromPosition(QTextDocumentPrivate *d, int pos)
+    { return QTextCursor(*d, pos); }
+
     QTextDocumentPrivate *priv;
     qreal x;
     int position;
