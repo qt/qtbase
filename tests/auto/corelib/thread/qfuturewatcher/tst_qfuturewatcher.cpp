@@ -313,22 +313,22 @@ void tst_QFutureWatcher::futureSignals()
         // (QSignalSpy does not trigger it.)
         connect(&f, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
         a.reportStarted();
-        f.setFuture(a.future());
 
         QSignalSpy progressSpy(&f, &QFutureWatcher<void>::progressValueChanged);
+        QSignalSpy finishedSpy(&f, &QFutureWatcher<void>::finished);
+        QSignalSpy resultReadySpy(&f, &QFutureWatcher<void>::resultReadyAt);
+
         QVERIFY(progressSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
+        QVERIFY(resultReadySpy.isValid());
+        f.setFuture(a.future());
+
         const int progress = 1;
         a.setProgressValue(progress);
         QTest::qWait(10);
         QCOMPARE(progressSpy.count(), 2);
         QCOMPARE(progressSpy.takeFirst().at(0).toInt(), 0);
         QCOMPARE(progressSpy.takeFirst().at(0).toInt(), 1);
-
-        QSignalSpy finishedSpy(&f, &QFutureWatcher<void>::finished);
-        QSignalSpy resultReadySpy(&f, &QFutureWatcher<void>::resultReadyAt);
-
-        QVERIFY(finishedSpy.isValid());
-        QVERIFY(resultReadySpy.isValid());
 
         const int result = 10;
         a.reportResult(&result);
@@ -427,16 +427,15 @@ void tst_QFutureWatcher::disconnectRunningFuture()
 
     QFuture<int> f = a.future();
     QFutureWatcher<int> *watcher = new QFutureWatcher<int>();
-    watcher->setFuture(f);
-
-    SignalSlotObject object;
-    connect(watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
-
     QSignalSpy finishedSpy(watcher, &QFutureWatcher<int>::finished);
     QSignalSpy resultReadySpy(watcher, &QFutureWatcher<int>::resultReadyAt);
 
     QVERIFY(finishedSpy.isValid());
     QVERIFY(resultReadySpy.isValid());
+    watcher->setFuture(f);
+
+    SignalSlotObject object;
+    connect(watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
 
     const int result = 10;
     a.reportResult(&result);
