@@ -42,6 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_MULTIPROCESS
+
 enum { debug = 0 };
 
 static inline QByteArray detectDesktopEnvironment()
@@ -148,5 +150,25 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
     }
     return launch(m_documentLauncher, url);
 }
+
+#else
+QByteArray QGenericUnixServices::desktopEnvironment() const
+{
+    return QByteArrayLiteral("UNKNOWN");
+}
+
+bool QGenericUnixServices::openUrl(const QUrl &url)
+{
+    qWarning("openUrl() not supported on this platform");
+    return false;
+}
+
+bool QGenericUnixServices::openDocument(const QUrl &url)
+{
+    qWarning("openDocument() not supported on this platform");
+    return false;
+}
+
+#endif // QT_NO_MULTIPROCESS
 
 QT_END_NAMESPACE
