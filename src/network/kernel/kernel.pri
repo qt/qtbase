@@ -26,7 +26,10 @@ SOURCES += kernel/qauthenticator.cpp \
            kernel/qnetworkproxy.cpp \
 	   kernel/qnetworkinterface.cpp
 
-unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+unix {
+    !integrity: SOURCES += kernel/qdnslookup_unix.cpp
+    SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+}
 
 android {
     SOURCES -= kernel/qdnslookup_unix.cpp
@@ -47,7 +50,6 @@ win32: {
                    kernel/qnetworkinterface_winrt.cpp
     }
 }
-integrity:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
 mac {
     LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation
