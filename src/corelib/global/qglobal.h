@@ -627,6 +627,13 @@ class QDataStream;
 #  define QT_NO_PROCESS
 #endif
 
+#if defined(Q_OS_INTEGRITY)
+#  define QT_NO_CRASHHANDLER     // no popen
+#  define QT_NO_PROCESS          // no exec*, no fork
+#  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a single AddressSpace
+#  define QT_NO_MULTIPROCESS      // no system
+#endif
+
 inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
