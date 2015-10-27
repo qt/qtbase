@@ -760,6 +760,7 @@ XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_QNX=no
 XPLATFORM_HAIKU=no
+XPLATFORM_INTEGRITY=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -3010,6 +3011,9 @@ case "$XPLATFORM" in
     *macx*)
         XPLATFORM_MAC=yes
         ;;
+    *integrity*)
+        XPLATFORM_INTEGRITY=yes
+        ;;
     # XPLATFORM_ANDROID should not be set for unsupported/android-g++
     *unsupported*)
         ;;
@@ -4709,6 +4713,11 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
     fi
 fi
 
+if [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    CFG_SHARED=no
+    CFG_LARGEFILE=no
+fi
+
 if [ "$CFG_ZLIB" = "auto" ]; then
     if compileTest unix/zlib "zlib"; then
        CFG_ZLIB=system
@@ -5938,7 +5947,7 @@ if [ "$CFG_MIRCLIENT" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG mirclient"
 fi
 
-if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ]; then
+if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ] && [ "$XPLATFORM_HAIKU" = "no" ] && [ "$XPLATFORM_INTEGRITY" = "no" ]; then
     if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_MIRCLIENT" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_MIRCLIENT" = "auto" ] ); then
