@@ -1104,7 +1104,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     } else {
         QString userName = tokens.first();
         userName.remove(0, 1);
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
         const QString homePath = QDir::homePath();
 #elif defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
         passwd pw;
