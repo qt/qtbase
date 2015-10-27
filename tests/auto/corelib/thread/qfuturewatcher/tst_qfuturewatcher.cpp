@@ -677,11 +677,6 @@ void tst_QFutureWatcher::pauseEvents()
         QFutureInterface<int> iface;
         iface.reportStarted();
 
-        QFuture<int> a = iface.future();
-
-        int value = 0;
-        iface.reportFinished(&value);
-
         QFutureWatcher<int> watcher;
 
         SignalSlotObject object;
@@ -689,14 +684,17 @@ void tst_QFutureWatcher::pauseEvents()
         QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
         QVERIFY(resultReadySpy.isValid());
 
-        watcher.setFuture(a);
+        watcher.setFuture(iface.future());
         watcher.pause();
+
+        int value = 0;
+        iface.reportFinished(&value);
 
         QTest::qWait(10);
         QCOMPARE(resultReadySpy.count(), 0);
 
         watcher.resume();
-        QTest::qWait(10);
+        QTRY_VERIFY2(!resultReadySpy.isEmpty(), "Result didn't arrive");
         QCOMPARE(resultReadySpy.count(), 1);
     }
     {
@@ -704,9 +702,6 @@ void tst_QFutureWatcher::pauseEvents()
         iface.reportStarted();
 
         QFuture<int> a = iface.future();
-
-        int value = 0;
-        iface.reportFinished(&value);
 
         QFutureWatcher<int> watcher;
 
@@ -717,6 +712,9 @@ void tst_QFutureWatcher::pauseEvents()
 
         watcher.setFuture(a);
         a.pause();
+
+        int value = 0;
+        iface.reportFinished(&value);
 
         QFuture<int> b;
         watcher.setFuture(b); // If we watch b instead, resuming a
