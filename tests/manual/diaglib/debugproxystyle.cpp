@@ -45,13 +45,36 @@ QDebug operator<<(QDebug debug, const QStyleOption *option)
 {
 #if QT_VERSION >= 0x050000
     QDebugStateSaver saver(debug);
+#  if QT_VERSION >= 0x050400
+    debug.noquote();
+#  endif
     debug.nospace();
 #endif
-    debug << "QStyleOption(";
-    if (option)
-        debug << "rec=" << option->rect;
-    else
-        debug << '0';
+    if (!option) {
+        debug << "QStyleOption(0)";
+        return debug;
+    }
+    if (const QStyleOptionViewItem *ivo = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+        debug << "QStyleOptionViewItem(";
+#if QT_VERSION >= 0x050000
+        debug << ivo->index;
+        if (const int textSize = ivo->text.size())
+            debug << ", \"" << (textSize < 20 ? ivo->text : ivo->text.left(20) + QLatin1String("...")) << '"';
+        debug << ", ";
+#else // Qt 5
+        Q_UNUSED(ivo)
+#endif
+    } else {
+        debug << "QStyleOption(";
+    }
+    debug << "rect=" << option->rect.width() << 'x' << option->rect.height()
+          << forcesign << option->rect.x() << option->rect.y() << noforcesign;
+    if (option->state != QStyle::State_None)
+        debug << ", state=" << option->state;
+#if QT_VERSION >= 0x050000
+    if (option->styleObject && !option->styleObject->isWidgetType())
+        debug << ", styleObject=" << option->styleObject;
+#endif
     debug << ')';
     return debug;
 }
@@ -129,6 +152,15 @@ QRect DebugProxyStyle::itemPixmapRect(const QRect &r, int flags, const QPixmap &
 {
     const QRect result = QProxyStyle::itemPixmapRect(r, flags, pixmap);
     qDebug() << __FUNCTION__ << r << "flags=" << flags  << pixmap << "returns" << result;
+    return result;
+}
+
+int DebugProxyStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget,
+                               QStyleHintReturn *returnData) const
+{
+    const int result = QProxyStyle::styleHint(hint, option, widget, returnData);
+    qDebug() << __FUNCTION__ << hint << option << widget << "returnData="
+        << returnData << "returns" << result;
     return result;
 }
 
