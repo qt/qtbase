@@ -318,14 +318,14 @@
    and PGI C++ 5.2-4 */
 #elif !defined(Q_OS_HPUX) && (defined(__EDG) || defined(__EDG__))
 #  define Q_CC_EDG
-/* From the EDG documentation (does not seem to apply to Compaq C++):
+/* From the EDG documentation (does not seem to apply to Compaq C++ or GHS C):
    _BOOL
         Defined in C++ mode when bool is a keyword. The name of this
         predefined macro is specified by a configuration flag. _BOOL
         is the default.
    __BOOL_DEFINED
         Defined in Microsoft C++ mode when bool is a keyword. */
-#  if !defined(_BOOL) && !defined(__BOOL_DEFINED)
+#  if !defined(_BOOL) && !defined(__BOOL_DEFINED) && !defined(__ghs)
 #    error "Compiler not supported"
 #  endif
 
@@ -347,6 +347,52 @@
 /* Uses CFront, make sure to read the manual how to tweak templates. */
 #  elif defined(__ghs)
 #    define Q_CC_GHS
+#    define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#    define Q_FUNC_INFO       __PRETTY_FUNCTION__
+#    define Q_TYPEOF(expr)      __typeof__(expr)
+#    define Q_ALIGNOF(type)     __alignof__(type)
+#    define Q_UNREACHABLE_IMPL()
+#    if defined(__cplusplus)
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_STATIC_ASSERT
+#      define Q_COMPILER_RANGE_FOR
+#      if __GHS_VERSION_NUMBER >= 201505
+#        define Q_COMPILER_ALIGNAS
+#        define Q_COMPILER_ALIGNOF
+#        define Q_COMPILER_ATOMICS
+#        define Q_COMPILER_ATTRIBUTES
+#        define Q_COMPILER_AUTO_FUNCTION
+#        define Q_COMPILER_CLASS_ENUM
+#        define Q_COMPILER_CONSTEXPR
+#        define Q_COMPILER_DECLTYPE
+#        define Q_COMPILER_DEFAULT_MEMBERS
+#        define Q_COMPILER_DELETE_MEMBERS
+#        define Q_COMPILER_DELEGATING_CONSTRUCTORS
+#        define Q_COMPILER_EXPLICIT_CONVERSIONS
+#        define Q_COMPILER_EXPLICIT_OVERRIDES
+#        define Q_COMPILER_EXTERN_TEMPLATES
+#        define Q_COMPILER_INHERITING_CONSTRUCTORS
+#        define Q_COMPILER_INITIALIZER_LISTS
+#        define Q_COMPILER_LAMBDA
+#        define Q_COMPILER_NONSTATIC_MEMBER_INIT
+#        define Q_COMPILER_NOEXCEPT
+#        define Q_COMPILER_NULLPTR
+#        define Q_COMPILER_RANGE_FOR
+#        define Q_COMPILER_RAW_STRINGS
+#        define Q_COMPILER_REF_QUALIFIERS
+#        define Q_COMPILER_RVALUE_REFS
+#        define Q_COMPILER_STATIC_ASSERT
+#        define Q_COMPILER_TEMPLATE_ALIAS
+#        define Q_COMPILER_THREAD_LOCAL
+#        define Q_COMPILER_THREADSAFE_STATICS
+#        define Q_COMPILER_UDL
+#        define Q_COMPILER_UNICODE_STRINGS
+#        define Q_COMPILER_UNIFORM_INIT
+#        define Q_COMPILER_UNRESTRICTED_UNIONS
+#        define Q_COMPILER_VARIADIC_MACROS
+#        define Q_COMPILER_VARIADIC_TEMPLATES
+#      endif
+#    endif //__cplusplus
 
 #  elif defined(__DCC__)
 #    define Q_CC_DIAB
