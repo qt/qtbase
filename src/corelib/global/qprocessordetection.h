@@ -109,7 +109,8 @@
       || defined(__ARM_ARCH_7S__) \
       || defined(_ARM_ARCH_7) \
       || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7) \
-      || (defined(_M_ARM) && _M_ARM-0 >= 7)
+      || (defined(_M_ARM) && _M_ARM-0 >= 7) \
+      || (defined(__ARMv7__))
 #    define Q_PROCESSOR_ARM_V7
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
@@ -178,11 +179,11 @@
 
 #  if defined(_M_IX86)
 #    define Q_PROCESSOR_X86     (_M_IX86/100)
-#  elif defined(__i686__) || defined(__athlon__) || defined(__SSE__)
+#  elif defined(__i686__) || defined(__athlon__) || defined(__SSE__) || defined(__pentiumpro__)
 #    define Q_PROCESSOR_X86     6
-#  elif defined(__i586__) || defined(__k6__)
+#  elif defined(__i586__) || defined(__k6__) || defined(__pentium__)
 #    define Q_PROCESSOR_X86     5
-#  elif defined(__i486__)
+#  elif defined(__i486__) || defined(__80486__)
 #    define Q_PROCESSOR_X86     4
 #  else
 #    define Q_PROCESSOR_X86     3
