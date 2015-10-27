@@ -68,6 +68,8 @@
 // copied from <linux/auxvec.h>
 #define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
 
+#elif defined(Q_CC_GHS)
+#include <INTEGRITY_types.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -179,6 +181,10 @@ static int maxBasicCpuidSupported()
     int info[4];
     __cpuid(info, 0);
     return info[0];
+#elif defined(Q_CC_GHS)
+    unsigned int info[4];
+    __CPUID(0, info);
+    return info[0];
 #else
     return 0;
 #endif
@@ -196,6 +202,11 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
 #elif defined(Q_OS_WIN)
     int info[4];
     __cpuid(info, 1);
+    ecx = info[2];
+    edx = info[3];
+#elif defined(Q_CC_GHS)
+    unsigned int info[4];
+    __CPUID(1, info);
     ecx = info[2];
     edx = info[3];
 #endif
@@ -223,6 +234,11 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx)
     __cpuidex(info, 7, 0);
     ebx = info[1];
     ecx = info[2];
+#elif defined(Q_CC_GHS)
+    unsigned int info[4];
+    __CPUIDEX(7, 0, info);
+    ebx = info[1];
+    ecx = info[2];
 #endif
 }
 
@@ -232,7 +248,7 @@ inline quint64 _xgetbv(__int64) { return 0; }
 #endif
 static void xgetbv(uint in, uint &eax, uint &edx)
 {
-#if defined(Q_CC_GNU)
+#if defined(Q_CC_GNU) || defined(Q_CC_GHS)
     asm (".byte 0x0F, 0x01, 0xD0" // xgetbv instruction
         : "=a" (eax), "=d" (edx)
         : "c" (in));
@@ -638,6 +654,15 @@ int ffsll(quint64 i)
 #endif
 #elif defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_OSX)
 # define ffsll __builtin_ffsll
+#elif defined(Q_OS_INTEGRITY)
+int ffsll(quint64 i)
+{
+    unsigned long result;
+    result = __CLZ32(i);
+    if (!result)
+        result = 32 + __CLZ32(i >> 32);
+    return result;
+}
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
