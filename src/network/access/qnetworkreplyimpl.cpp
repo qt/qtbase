@@ -67,7 +67,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 {
     // ensure this function is only being called once
     if (state == Working || state == Finished) {
-        qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
+        qDebug() << "QNetworkReplyImpl::_q_startOperation was called more than once" << url;
         return;
     }
     state = Working;

@@ -1733,7 +1733,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
 
     // ensure this function is only being called once
     if (state == Working) {
-        qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
+        qDebug() << "QNetworkReplyHttpImplPrivate::_q_startOperation was called more than once" << url;
         return;
     }
     state = Working;
