@@ -624,13 +624,13 @@ void tst_QUndoGroup::commandTextFormat()
 
     const QString tsFile = QFINDTESTDATA("testdata/qundogroup.ts");
     QVERIFY(!tsFile.isEmpty());
-    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile));
+    QFile::remove("qundogroup.qm"); // Avoid confusion by strays.
+    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile + " -qm qundogroup.qm"));
 
     QTranslator translator;
 
-    const QString qmFile = QFINDTESTDATA("testdata/qundogroup.qm");
-    QVERIFY(!qmFile.isEmpty());
-    QVERIFY(translator.load(qmFile));
+    QVERIFY(translator.load("qundogroup.qm"));
+    QFile::remove("qundogroup.qm");
     qApp->installTranslator(&translator);
 
     QUndoGroup group;
