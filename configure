@@ -4486,6 +4486,14 @@ else
     CFG_ATOMIC64=no
 fi
 
+# Detect whether std::atomic works for function pointers -- some implementations are buggy
+if ! compileTest common/atomicfptr "std::atomic for function pointers"; then
+    echo "ERROR: detected a std::atomic implementation that fails for function pointers."
+    echo "Please apply the patch corresponding to your Standard Library vendor, found in"
+    echo "  $relpath/config.tests/common/atomicfptr"
+    exit 101
+fi
+
 # detect sse2 support
 CFG_SSE_LIST=
 if [ "${CFG_SSE2}" = "auto" ]; then

@@ -1,0 +1,18 @@
+Patch for fixing std::atomic support for function pointers for the Intel
+Composer XE 2016 (compiler version 16.0).
+
+To apply:
+  cd /opt/intel/compilers_and_libraries_2016/mac/include
+  sudo patch -p1 < /path-to-this-file/icc2016_mac.diff
+
+--- include/stdatomic.h.orig 2015-08-28 15:05:13.000000000 -0700
++++ include/stdatomic.h      2015-08-28 15:19:25.000000000 -0700
+@@ -451,7 +451,7 @@
+     }
+     _STRONG_INLINE atomic() _DEFAULTED
+     _STRONG_INLINE _CONSTEXPR atomic(T* _Ptr)
+-    : atomic_address(_Ptr)
++    : atomic_address((void*)_Ptr)
+     {
+     }
+     _STRONG_INLINE T* operator+=(ptrdiff_t _V) volatile

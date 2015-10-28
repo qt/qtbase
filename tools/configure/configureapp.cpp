@@ -2172,6 +2172,9 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ATOMIC64-LIBATOMIC")
         available = tryCompileProject("common/atomic64", "LIBS+=-latomic");
 
+    else if (part == "ATOMICFPTR")
+        available = tryCompileProject("common/atomicfptr");
+
     else if (part == "ZLIB")
         available = findFile("zlib.h");
 
@@ -2337,6 +2340,15 @@ void Configure::autoDetection()
     if (dictionary["ATOMIC64"] == "auto")
         dictionary["ATOMIC64"] = checkAvailability("ATOMIC64") ? "yes" :
                                  checkAvailability("ATOMIC64-LIBATOMIC") ? "libatomic" : "no";
+
+    // special case:
+    if (!checkAvailability("ATOMICFPTR")) {
+        dictionary["DONE"] = "error";
+        cout << "ERROR: detected an std::atomic implementation that fails for function pointers." << endl
+             << "Please apply the patch corresponding to your Standard Library vendor, found in" << endl
+             << sourcePath << "/config.tests/common/atomicfptr" << endl;
+        return;
+    }
 
     // Style detection
     if (dictionary["STYLE_WINDOWSXP"] == "auto")
