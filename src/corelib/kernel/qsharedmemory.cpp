@@ -127,8 +127,8 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   specified. Interoperation with non-Qt applications is achieved by first creating
   a default shared memory with QSharedMemory() and then setting a native key with
   setNativeKey(). When using native keys, shared memory is not protected against
-  multiple accesses on it (e.g. unable to lock()) and a user-defined mechanism
-  should be used to achieve a such protection.
+  multiple accesses on it (for example, unable to lock()) and a user-defined mechanism
+  should be used to achieve such protection.
  */
 
 /*!
