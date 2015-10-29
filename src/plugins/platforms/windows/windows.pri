@@ -132,3 +132,6 @@ contains(QT_CONFIG, freetype) {
 }
 
 contains(QT_CONFIG, accessibility):include($$PWD/accessible/accessible.pri)
+
+DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
+DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}
