@@ -42,3 +42,5 @@ haiku {
 }
 
 contains(QT_CONFIG, mirclient): SUBDIRS += mirclient
+
+contains(QT_CONFIG, integrityfb): SUBDIRS += integrity
