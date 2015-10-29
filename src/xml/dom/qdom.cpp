@@ -3142,7 +3142,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::removeNamedItem(const QString& name)
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
-    if (index >= length())
+    if (index >= length() || index < 0)
         return 0;
     return *(map.constBegin() + index);
 }
