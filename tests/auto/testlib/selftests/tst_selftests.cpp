@@ -775,6 +775,10 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                 QRegularExpressionMatch match = durationRegExp.match(line);
                 QVERIFY2(match.hasMatch(), qPrintable(QString::fromLatin1("Invalid Duration tag at line %1 (%2): '%3'")
                                                       .arg(i).arg(loggers.at(n), output)));
+            } else if (line.startsWith("Totals:")) {
+                const int lastCommaPos = line.lastIndexOf(',');
+                if (lastCommaPos > 0)
+                    line.truncate(lastCommaPos); // Plain text logger: strip time (", 2323dms").
             } else {
                 QVERIFY2(output == expected,
                          qPrintable(QString::fromLatin1("Mismatch at line %1 (%2, %3):\n'%4'\n !=\n'%5'")

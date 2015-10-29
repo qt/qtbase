@@ -348,16 +348,17 @@ void QPlainTestLogger::startLogging()
 void QPlainTestLogger::stopLogging()
 {
     char buf[1024];
+    const int timeMs = qRound(QTestLog::msecsTotalTime());
     if (QTestLog::verboseLevel() < 0) {
-        qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped, %d blacklisted\n",
+        qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped, %d blacklisted, %dms\n",
                   QTestLog::passCount(), QTestLog::failCount(),
-                  QTestLog::skipCount(), QTestLog::blacklistCount());
+                  QTestLog::skipCount(), QTestLog::blacklistCount(), timeMs);
     } else {
         qsnprintf(buf, sizeof(buf),
-                  "Totals: %d passed, %d failed, %d skipped, %d blacklisted\n"
+                  "Totals: %d passed, %d failed, %d skipped, %d blacklisted, %dms\n"
                   "********* Finished testing of %s *********\n",
                   QTestLog::passCount(), QTestLog::failCount(),
-                  QTestLog::skipCount(), QTestLog::blacklistCount(),
+                  QTestLog::skipCount(), QTestLog::blacklistCount(), timeMs,
                   QTestResult::currentTestObjectName());
     }
     outputMessage(buf);
