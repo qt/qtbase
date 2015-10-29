@@ -703,6 +703,7 @@ CFG_OPENSSL=auto
 CFG_LIBPROXY=auto
 CFG_SECURETRANSPORT=auto
 CFG_PRECOMPILE=auto
+CFG_LTCG=no
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_REDUCE_EXPORTS=auto
 CFG_SSE2=auto
@@ -1571,6 +1572,13 @@ while [ "$#" -gt 0 ]; do
             CFG_PRECOMPILE="$VAL"
         else
             UNKNOWN_OPT=yes
+        fi
+        ;;
+    ltcg)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LTCG="$VAL"
+        else
+            UNKNOWN_OPT=no
         fi
         ;;
     separate-debug-info)
@@ -2640,6 +2648,9 @@ Additional options:
 
  *  -no-pch ............ Do not use precompiled header support.
     -pch ............... Use precompiled header support.
+
+ *  -no-ltcg             Do not use Link Time Code Generation
+    -ltcg                Use Link Time Code Generation.
 
     -no-dbus ........... Do not compile the Qt D-Bus module.
  +  -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
@@ -6476,6 +6487,10 @@ if [ "$CFG_FORCE_ASSERTS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_asserts"
 fi
 
+if [ "$CFG_LTCG" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG ltcg"
+fi
+
 if [ "$CFG_SANITIZERS" != "none" ]; then
 
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG sanitizer"
@@ -7232,6 +7247,7 @@ echo "  Using C++ standard ..... $CFG_STDCXX"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
 echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
+echo "  Using LTCG ............. $CFG_LTCG"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "    SSE2/SSE3/SSSE3 ...... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
