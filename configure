@@ -681,6 +681,7 @@ CFG_EGLFS_BRCM=no
 CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
+CFG_EGLFS_VIV_WL=no
 CFG_DIRECTFB=auto
 CFG_GBM=auto
 CFG_LINUXFB=auto
@@ -5776,6 +5777,11 @@ if [ "$CFG_EGLFS" != "no" ]; then
         else
             CFG_EGLFS_VIV=no
         fi
+        if [ "$CFG_EGLFS_VIV" = "yes" ] && compileTest qpa/wayland-server "wayland-server"; then
+            CFG_EGLFS_VIV_WL=yes
+        else
+            CFG_EGLFS_VIV_WL=no
+        fi
     else
         CFG_EGLFS="no"
     fi
@@ -6222,6 +6228,9 @@ if [ "$CFG_EGLFS_MALI" = "yes" ]; then
 fi
 if [ "$CFG_EGLFS_VIV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_viv"
+    if [ "$CFG_EGLFS_VIV_WL" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG eglfs_viv_wl"
+    fi
 fi
 
 # enable openvg
@@ -7299,6 +7308,7 @@ report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
 report_support "      EGLFS i.MX6 ........" "$CFG_EGLFS_VIV"
+report_support "      EGLFS i.MX6 Wayland." "$CFG_EGLFS_VIV_WL"
 report_support "      EGLFS EGLDevice ...." "$CFG_EGLFS_EGLDEVICE"
 report_support "      EGLFS GBM .........." "$CFG_EGLFS_GBM"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"

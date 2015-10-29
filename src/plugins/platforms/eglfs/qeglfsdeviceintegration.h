@@ -97,6 +97,8 @@ public:
     virtual int framebufferIndex() const;
     virtual bool supportsPBuffers() const;
     virtual bool supportsSurfacelessContexts() const;
+
+    virtual void *wlDisplay() const;
 };
 
 class Q_EGLFS_EXPORT QEGLDeviceIntegrationPlugin : public QObject
