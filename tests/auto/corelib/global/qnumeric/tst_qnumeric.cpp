@@ -55,6 +55,7 @@ private slots:
     void addOverflow();
     void mulOverflow_data();
     void mulOverflow();
+    void signedOverflow();
 };
 
 void tst_QNumeric::fuzzyCompare_data()
@@ -376,6 +377,36 @@ void tst_QNumeric::mulOverflow()
         MulOverflowDispatch<ulong>()();     // not really 48-bit
     if (size == 64)
         MulOverflowDispatch<quint64>()();
+}
+
+void tst_QNumeric::signedOverflow()
+{
+    const int minInt = std::numeric_limits<int>::min();
+    const int maxInt = std::numeric_limits<int>::max();
+    int r;
+
+    QCOMPARE(add_overflow(minInt + 1, int(-1), &r), false);
+    QCOMPARE(add_overflow(minInt, int(-1), &r), true);
+    QCOMPARE(add_overflow(minInt, minInt, &r), true);
+    QCOMPARE(add_overflow(maxInt - 1, int(1), &r), false);
+    QCOMPARE(add_overflow(maxInt, int(1), &r), true);
+    QCOMPARE(add_overflow(maxInt, maxInt, &r), true);
+
+    QCOMPARE(sub_overflow(minInt + 1, int(1), &r), false);
+    QCOMPARE(sub_overflow(minInt, int(1), &r), true);
+    QCOMPARE(sub_overflow(minInt, maxInt, &r), true);
+    QCOMPARE(sub_overflow(maxInt - 1, int(-1), &r), false);
+    QCOMPARE(sub_overflow(maxInt, int(-1), &r), true);
+    QCOMPARE(sub_overflow(maxInt, minInt, &r), true);
+
+    QCOMPARE(mul_overflow(minInt, int(1), &r), false);
+    QCOMPARE(mul_overflow(minInt, int(-1), &r), true);
+    QCOMPARE(mul_overflow(minInt, int(2), &r), true);
+    QCOMPARE(mul_overflow(minInt, minInt, &r), true);
+    QCOMPARE(mul_overflow(maxInt, int(1), &r), false);
+    QCOMPARE(mul_overflow(maxInt, int(-1), &r), false);
+    QCOMPARE(mul_overflow(maxInt, int(2), &r), true);
+    QCOMPARE(mul_overflow(maxInt, maxInt, &r), true);
 }
 
 QTEST_APPLESS_MAIN(tst_QNumeric)

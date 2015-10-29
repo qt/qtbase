@@ -161,7 +161,7 @@ static inline bool qt_is_finite(float f)
 }
 
 //
-// Overflow math
+// Unsigned overflow math
 //
 namespace {
 template <typename T> inline typename QtPrivate::QEnableIf<QtPrivate::is_unsigned<T>::value, bool>::Type
@@ -262,6 +262,97 @@ template <> inline bool mul_overflow(unsigned long v1, unsigned long v2, unsigne
 #else
 #  undef HAVE_MUL64_OVERFLOW
 #endif
+
+//
+// Signed overflow math
+//
+// In C++, signed overflow math is Undefined Behavior. However, many CPUs do implement some way to
+// check for overflow. Some compilers expose intrinsics to use this functionality. If the no
+// intrinsic is exposed, overflow checking can be done by widening the result type and "manually"
+// checking for overflow. Or, alternatively, by using inline assembly to use the CPU features.
+//
+// Only int overflow checking is implemented, because it's the only one used.
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_sadd_overflow)
+inline bool add_overflow(int v1, int v2, int *r)
+{ return __builtin_sadd_overflow(v1, v2, r); }
+#elif defined(Q_CC_GNU) && defined(Q_PROCESSOR_X86)
+inline bool add_overflow(int v1, int v2, int *r)
+{
+    quint8 overflow = 0;
+    int res = v1;
+
+    asm ("addl %2, %1\n"
+         "seto %0"
+         : "=q" (overflow), "=r" (res)
+         : "r" (v2), "1" (res)
+         : "cc"
+    );
+    *r = res;
+    return overflow;
+}
+#else
+inline bool add_overflow(int v1, int v2, int *r)
+{
+    qint64 t = qint64(v1) + v2;
+    *r = static_cast<int>(t);
+    return t > std::numeric_limits<int>::max() || t < std::numeric_limits<int>::min();
+}
+#endif
+
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_ssub_overflow)
+inline bool sub_overflow(int v1, int v2, int *r)
+{ return __builtin_ssub_overflow(v1, v2, r); }
+#elif defined(Q_CC_GNU) && defined(Q_PROCESSOR_X86)
+inline bool sub_overflow(int v1, int v2, int *r)
+{
+    quint8 overflow = 0;
+    int res = v1;
+
+    asm ("subl %2, %1\n"
+         "seto %0"
+         : "=q" (overflow), "=r" (res)
+         : "r" (v2), "1" (res)
+         : "cc"
+    );
+    *r = res;
+    return overflow;
+}
+#else
+inline bool sub_overflow(int v1, int v2, int *r)
+{
+    qint64 t = qint64(v1) - v2;
+    *r = static_cast<int>(t);
+    return t > std::numeric_limits<int>::max() || t < std::numeric_limits<int>::min();
+}
+#endif
+
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 500) || QT_HAS_BUILTIN(__builtin_smul_overflow)
+inline bool mul_overflow(int v1, int v2, int *r)
+{ return __builtin_smul_overflow(v1, v2, r); }
+#elif defined(Q_CC_GNU) && defined(Q_PROCESSOR_X86)
+inline bool mul_overflow(int v1, int v2, int *r)
+{
+    quint8 overflow = 0;
+    int res = v1;
+
+    asm ("imul %2, %1\n"
+         "seto %0"
+         : "=q" (overflow), "=r" (res)
+         : "r" (v2), "1" (res)
+         : "cc"
+    );
+    *r = res;
+    return overflow;
+}
+#else
+inline bool mul_overflow(int v1, int v2, int *r)
+{
+    qint64 t = qint64(v1) * v2;
+    *r = static_cast<int>(t);
+    return t > std::numeric_limits<int>::max() || t < std::numeric_limits<int>::min();
+}
+#endif
+
 }
 
 QT_END_NAMESPACE
