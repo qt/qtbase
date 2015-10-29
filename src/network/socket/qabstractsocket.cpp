@@ -1248,6 +1248,10 @@ void QAbstractSocketPrivate::_q_forceDisconnect()
 */
 bool QAbstractSocketPrivate::readFromSocket()
 {
+#ifdef QABSTRACTSOCKET_DEBUG
+    Q_Q(QAbstractSocket);
+#endif
+
     // Find how many bytes we can read from the socket layer.
     qint64 bytesToRead = socketEngine->bytesAvailable();
     if (bytesToRead == 0) {
