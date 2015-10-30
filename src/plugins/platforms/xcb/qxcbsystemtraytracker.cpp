@@ -91,8 +91,7 @@ xcb_window_t QXcbSystemTrayTracker::locateTrayWindow(const QXcbConnection *conne
     return reply->owner;
 }
 
-// API for QPlatformNativeInterface/QPlatformSystemTrayIcon: Request a window
-// to be docked on the tray.
+// Request a window to be docked on the tray.
 void QXcbSystemTrayTracker::requestSystemTrayWindowDock(xcb_window_t window) const
 {
     xcb_client_message_event_t trayRequest;
@@ -120,23 +119,6 @@ xcb_window_t QXcbSystemTrayTracker::trayWindow()
         }
     }
     return m_trayWindow;
-}
-
-// API for QPlatformNativeInterface/QPlatformSystemTrayIcon: Return the geometry of a
-// a window parented on the tray. Determines the global geometry via XCB since mapToGlobal
-// does not work for the QWindow parented on the tray.
-QRect QXcbSystemTrayTracker::systemTrayWindowGlobalGeometry(xcb_window_t window) const
-{
-    xcb_connection_t *conn = m_connection->xcb_connection();
-    auto geomReply = Q_XCB_REPLY(xcb_get_geometry, conn, window);
-    if (!geomReply)
-        return QRect();
-
-    auto translateReply = Q_XCB_REPLY(xcb_translate_coordinates, conn, window, m_connection->rootWindow(), 0, 0);
-    if (!translateReply)
-        return QRect();
-
-    return QRect(QPoint(translateReply->dst_x, translateReply->dst_y), QSize(geomReply->width, geomReply->height));
 }
 
 inline void QXcbSystemTrayTracker::emitSystemTrayWindowChanged()
@@ -168,16 +150,6 @@ xcb_visualid_t QXcbSystemTrayTracker::visualId()
     if (visual == XCB_NONE)
         visual = m_connection->primaryScreen()->screen()->root_visual;
     return visual;
-}
-
-bool QXcbSystemTrayTracker::visualHasAlphaChannel()
-{
-    const xcb_visualid_t systrayVisualId = netSystemTrayVisual();
-    if (systrayVisualId != XCB_NONE) {
-        quint8 depth = m_connection->primaryScreen()->depthOfVisual(systrayVisualId);
-        return depth == 32;
-    }
-    return false;
 }
 
 xcb_visualid_t QXcbSystemTrayTracker::netSystemTrayVisual()

@@ -63,8 +63,6 @@
 #include <private/qguiapplication_p.h>
 #include <qdebug.h>
 
-#include <QtPlatformHeaders/qxcbwindowfunctions.h>
-#include <QtPlatformHeaders/qxcbintegrationfunctions.h>
 #ifndef QT_NO_SYSTEMTRAYICON
 QT_BEGIN_NAMESPACE
 
@@ -98,8 +96,6 @@ private slots:
     void systemTrayWindowChanged(QScreen *screen);
 
 private:
-    bool addToTray();
-
     QSystemTrayIcon *q;
 };
 
@@ -117,30 +113,12 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
     setGeometry(QRect(QPoint(0, 0), size));
     setMinimumSize(size);
     setAttribute(Qt::WA_TranslucentBackground);
-
-    addToTray();
-}
-
-bool QSystemTrayIconSys::addToTray()
-{
-    if (!locateSystemTray())
-        return false;
-
-    createWinId();
     setMouseTracking(true);
-
-    if (!QXcbWindowFunctions::requestSystemTrayWindowDock(windowHandle()))
-        return false;
-
-    show();
-    return true;
 }
 
 void QSystemTrayIconSys::systemTrayWindowChanged(QScreen *)
 {
-    if (locateSystemTray()) {
-        addToTray();
-    } else {
+    if (!locateSystemTray()) {
         QBalloonTip::hideBalloon();
         hide(); // still no luck
         destroy();
@@ -149,7 +127,7 @@ void QSystemTrayIconSys::systemTrayWindowChanged(QScreen *)
 
 QRect QSystemTrayIconSys::globalGeometry() const
 {
-    return QXcbWindowFunctions::systemTrayWindowGlobalGeometry(windowHandle());
+    return QRect(mapToGlobal(QPoint(0, 0)), size());
 }
 
 void QSystemTrayIconSys::mousePressEvent(QMouseEvent *ev)
@@ -244,6 +222,7 @@ void QSystemTrayIconPrivate::install_sys()
         sys = new QSystemTrayIconSys(q);
         QObject::connect(QGuiApplication::platformNativeInterface(), SIGNAL(systemTrayWindowChanged(QScreen*)),
                          sys, SLOT(systemTrayWindowChanged(QScreen*)));
+        sys->show();
     }
 }
 

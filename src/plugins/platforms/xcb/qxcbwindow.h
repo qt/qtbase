@@ -159,14 +159,8 @@ public:
 
     static void setWindowIconTextStatic(QWindow *window, const QString &text);
 
-    static void setParentRelativeBackPixmapStatic(QWindow *window);
     void setParentRelativeBackPixmap();
-
-    static bool requestSystemTrayWindowDockStatic(const QWindow *window);
-    bool requestSystemTrayWindowDock() const;
-
-    static QRect systemTrayWindowGlobalGeometryStatic(const QWindow *window);
-    QRect systemTrayWindowGlobalGeometry() const;
+    bool requestSystemTrayWindowDock();
     uint visualId() const;
 
     bool needsSync() const;

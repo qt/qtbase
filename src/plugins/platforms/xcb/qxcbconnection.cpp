@@ -2287,22 +2287,6 @@ QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
     return m_systemTrayTracker;
 }
 
-bool QXcbConnection::xEmbedSystemTrayAvailable()
-{
-    if (!QGuiApplicationPrivate::platformIntegration())
-        return false;
-    QXcbConnection *connection = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->defaultConnection();
-    return connection->systemTrayTracker();
-}
-
-bool QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel()
-{
-    if (!QGuiApplicationPrivate::platformIntegration())
-        return false;
-    QXcbConnection *connection = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->defaultConnection();
-    return connection->systemTrayTracker() && connection->systemTrayTracker()->visualHasAlphaChannel();
-}
-
 Qt::MouseButtons QXcbConnection::queryMouseButtons() const
 {
     int stateMask = 0;

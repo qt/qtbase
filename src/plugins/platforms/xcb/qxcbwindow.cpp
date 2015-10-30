@@ -558,6 +558,9 @@ void QXcbWindow::create()
         QByteArray wmWindowRole = window()->property(wm_window_role_property_id).toByteArray();
         setWmWindowRole(wmWindowRole);
     }
+
+    if (m_trayIconWindow)
+        m_embedded = requestSystemTrayWindowDock();
 }
 
 QXcbWindow::~QXcbWindow()
@@ -792,7 +795,7 @@ void QXcbWindow::show()
     else if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
 
-    if (window()->objectName() == QLatin1String("QSystemTrayIconSysWindow"))
+    if (m_trayIconWindow)
         return; // defer showing until XEMBED_EMBEDDED_NOTIFY
 
     xcb_map_window(xcb_connection(), m_window);
@@ -1793,12 +1796,6 @@ void QXcbWindow::setWmWindowRole(const QByteArray &role)
                         role.size(), role.constData());
 }
 
-void QXcbWindow::setParentRelativeBackPixmapStatic(QWindow *window)
-{
-    if (window->handle())
-        static_cast<QXcbWindow *>(window->handle())->setParentRelativeBackPixmap();
-}
-
 void QXcbWindow::setParentRelativeBackPixmap()
 {
     const quint32 mask = XCB_CW_BACK_PIXMAP;
@@ -1806,33 +1803,12 @@ void QXcbWindow::setParentRelativeBackPixmap()
     xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
 }
 
-bool QXcbWindow::requestSystemTrayWindowDockStatic(const QWindow *window)
-{
-    if (window->handle())
-        return static_cast<QXcbWindow *>(window->handle())->requestSystemTrayWindowDock();
-    return false;
-}
-
-bool QXcbWindow::requestSystemTrayWindowDock() const
+bool QXcbWindow::requestSystemTrayWindowDock()
 {
     if (!connection()->systemTrayTracker())
         return false;
     connection()->systemTrayTracker()->requestSystemTrayWindowDock(m_window);
     return true;
-}
-
-QRect QXcbWindow::systemTrayWindowGlobalGeometryStatic(const QWindow *window)
-{
-    if (window->handle())
-        return static_cast<QXcbWindow *>(window->handle())->systemTrayWindowGlobalGeometry();
-    return QRect();
-}
-
-QRect QXcbWindow::systemTrayWindowGlobalGeometry() const
-{
-   if (!connection()->systemTrayTracker())
-       return QRect();
-   return connection()->systemTrayTracker()->systemTrayWindowGlobalGeometry(m_window);
 }
 
 class ExposeCompressor
@@ -2094,7 +2070,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
 
     updateNetWmUserTime(timestamp);
 
-    if (m_embedded) {
+    if (m_embedded && !m_trayIconWindow) {
         if (window() != QGuiApplication::focusWindow()) {
             const QXcbWindow *container = static_cast<const QXcbWindow *>(parent());
             Q_ASSERT(container != 0);
@@ -2554,7 +2530,7 @@ bool QXcbWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::FocusIn:
-        if (m_embedded && !event->spontaneous()) {
+        if (m_embedded && !m_trayIconWindow && !event->spontaneous()) {
             QFocusEvent *focusEvent = static_cast<QFocusEvent *>(event);
             switch (focusEvent->reason()) {
             case Qt::TabFocusReason:

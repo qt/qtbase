@@ -506,8 +506,6 @@ public:
     QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
 
     QXcbSystemTrayTracker *systemTrayTracker() const;
-    static bool xEmbedSystemTrayAvailable();
-    static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
     Qt::MouseButtons queryMouseButtons() const;
     Qt::KeyboardModifiers queryKeyboardModifiers() const;
