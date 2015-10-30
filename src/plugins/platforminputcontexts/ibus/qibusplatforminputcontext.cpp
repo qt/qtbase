@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qtQpaInputMethods, "qt.qpa.input.methods")
-
 enum { debug = 0 };
 
 class QIBusPlatformInputContextPrivate
@@ -87,6 +85,7 @@ public:
     bool busConnected;
     QString predit;
     bool needsSurroundingText;
+    QLocale locale;
 };
 
 
@@ -412,6 +411,11 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     call->deleteLater();
 }
 
+QLocale QIBusPlatformInputContext::locale() const
+{
+    return d->locale;
+}
+
 void QIBusPlatformInputContext::socketChanged(const QString &str)
 {
     qCDebug(qtQpaInputMethods) << "socketChanged";
@@ -421,6 +425,8 @@ void QIBusPlatformInputContext::socketChanged(const QString &str)
 
     if (d->context)
         disconnect(d->context);
+    if (d->bus && d->bus->isValid())
+        disconnect(d->bus);
     if (d->connection)
         d->connection->disconnectFromBus(QLatin1String("QIBusProxy"));
 
@@ -439,8 +445,26 @@ void QIBusPlatformInputContext::connectToBus()
         m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
 }
 
+void QIBusPlatformInputContext::globalEngineChanged(const QString &engine_name)
+{
+    if (!d->bus || !d->bus->isValid())
+        return;
+
+    QIBusEngineDesc desc = d->bus->getGlobalEngine();
+    Q_ASSERT(engine_name == desc.engine_name);
+    QLocale locale(desc.language);
+    if (d->locale != locale) {
+        d->locale = locale;
+        emitLocaleChanged();
+    }
+}
+
 void QIBusPlatformInputContext::connectToContextSignals()
 {
+    if (d->bus && d->bus->isValid()) {
+        connect(d->bus, SIGNAL(GlobalEngineChanged(QString)), this, SLOT(globalEngineChanged(QString)));
+    }
+
     if (d->context) {
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
@@ -461,6 +485,11 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     if (!valid)
         return;
     initBus();
+
+    if (bus && bus->isValid()) {
+        QIBusEngineDesc desc = bus->getGlobalEngine();
+        locale = QLocale(desc.language);
+    }
 }
 
 void QIBusPlatformInputContextPrivate::initBus()
