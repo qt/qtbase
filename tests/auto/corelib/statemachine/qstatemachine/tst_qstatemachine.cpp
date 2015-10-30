@@ -249,6 +249,7 @@ private slots:
     void qtbug_44783();
     void internalTransition();
     void conflictingTransition();
+    void conflictingTransition2();
     void qtbug_46059();
     void qtbug_46703();
 };
@@ -6444,6 +6445,71 @@ void tst_QStateMachine::conflictingTransition()
     QTRY_COMPARE(machine.configuration().contains(&f1), false);
     QTRY_COMPARE(machine.configuration().contains(&f2), true);
     QTRY_COMPARE(machine.configuration().contains(&a1), false);
+
+    QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::conflictingTransition2()
+{
+    SignalEmitter emitter;
+
+    QStateMachine machine;
+    QState s0(&machine);
+        QState p0(QState::ParallelStates, &s0);
+            QState p0s1(&p0);
+            QState p0s2(&p0);
+            QState p0s3(&p0);
+    QState s1(&machine);
+
+    machine.setInitialState(&s0);
+    s0.setInitialState(&p0);
+
+    QSignalTransition *t1 = new QSignalTransition(&emitter, SIGNAL(signalWithNoArg()));
+    p0s1.addTransition(t1);
+    QSignalTransition *t2 = p0s2.addTransition(&emitter, SIGNAL(signalWithNoArg()), &p0s1);
+    QSignalTransition *t3 = p0s3.addTransition(&emitter, SIGNAL(signalWithNoArg()), &s1);
+    QSignalSpy t1Spy(t1, &QAbstractTransition::triggered);
+    QSignalSpy t2Spy(t2, &QAbstractTransition::triggered);
+    QSignalSpy t3Spy(t3, &QAbstractTransition::triggered);
+    QVERIFY(t1Spy.isValid());
+    QVERIFY(t2Spy.isValid());
+    QVERIFY(t3Spy.isValid());
+
+    s0.setObjectName("s0");
+    p0.setObjectName("p0");
+    p0s1.setObjectName("p0s1");
+    p0s2.setObjectName("p0s2");
+    p0s3.setObjectName("p0s3");
+    s1.setObjectName("s1");
+    t1->setObjectName("p0s1->p0s1");
+    t2->setObjectName("p0s2->p0s1");
+    t3->setObjectName("p0s3->s1");
+
+    machine.start();
+
+    QTRY_COMPARE(machine.configuration().contains(&s0), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s1), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s2), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s3), true);
+    QTRY_COMPARE(machine.configuration().contains(&s1), false);
+
+    QCOMPARE(t1Spy.count(), 0);
+    QCOMPARE(t2Spy.count(), 0);
+    QCOMPARE(t3Spy.count(), 0);
+
+    emitter.emitSignalWithNoArg();
+
+    QTRY_COMPARE(machine.configuration().contains(&s0), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s1), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s2), true);
+    QTRY_COMPARE(machine.configuration().contains(&p0s3), true);
+    QTRY_COMPARE(machine.configuration().contains(&s1), false);
+
+    QCOMPARE(t1Spy.count(), 1);
+    QCOMPARE(t2Spy.count(), 1);
+    QCOMPARE(t3Spy.count(), 0); // t3 got preempted by t2
 
     QVERIFY(machine.isRunning());
 }
