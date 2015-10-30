@@ -89,6 +89,27 @@ typedef ITypedEventHandler<StatusBar*, IInspectable*> StatusBarHandler;
 
 QT_BEGIN_NAMESPACE
 
+struct KeyInfo {
+    KeyInfo()
+        : virtualKey(0)
+    {
+    }
+
+    KeyInfo(const QString &text, quint32 virtualKey)
+        : text(text)
+        , virtualKey(virtualKey)
+    {
+    }
+
+    KeyInfo(quint32 virtualKey)
+        : virtualKey(virtualKey)
+    {
+    }
+
+    QString text;
+    quint32 virtualKey;
+};
+
 static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
 {
     Qt::ScreenOrientations orientations = Qt::PrimaryOrientation;
@@ -435,10 +456,7 @@ public:
     Qt::ScreenOrientation nativeOrientation;
     Qt::ScreenOrientation orientation;
     QList<QWindow *> visibleWindows;
-#ifndef Q_OS_WINPHONE
-    QHash<quint32, QPair<Qt::Key, QString>> activeKeys;
-#endif
-
+    QHash<Qt::Key, KeyInfo> activeKeys;
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
     QHash<DisplayCallbackRemover, EventRegistrationToken> displayTokens;
 #ifdef Q_OS_WINPHONE
@@ -827,57 +845,94 @@ void QWinRTScreen::handleExpose()
 
 HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IKeyEventArgs *args)
 {
+    Q_D(QWinRTScreen);
     VirtualKey virtualKey;
-    args->get_VirtualKey(&virtualKey);
+    HRESULT hr = args->get_VirtualKey(&virtualKey);
+    Q_ASSERT_SUCCEEDED(hr);
+    CorePhysicalKeyStatus status;
+    hr = args->get_KeyStatus(&status);
+    Q_ASSERT_SUCCEEDED(hr);
+
     Qt::Key key = qKeyFromVirtual(virtualKey);
     // Defer character key presses to onCharacterReceived
-    if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis))
+    if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis)) {
+        d->activeKeys.insert(key, KeyInfo(virtualKey));
         return S_OK;
-    QWindowSystemInterface::handleKeyEvent(topWindow(), QEvent::KeyPress, key, keyboardModifiers());
+    }
+
+    QWindowSystemInterface::handleExtendedKeyEvent(
+                topWindow(),
+                QEvent::KeyPress,
+                key,
+                keyboardModifiers(),
+                !status.ScanCode ? -1 : status.ScanCode,
+                virtualKey,
+                0,
+                QString(),
+                status.RepeatCount > 1,
+                !status.RepeatCount ? 1 : status.RepeatCount,
+                false);
     return S_OK;
 }
 
 HRESULT QWinRTScreen::onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IKeyEventArgs *args)
 {
-    Qt::KeyboardModifiers mods = keyboardModifiers();
-#ifndef Q_OS_WINPHONE
     Q_D(QWinRTScreen);
-    CorePhysicalKeyStatus status; // Look for a pressed character key
-    if (SUCCEEDED(args->get_KeyStatus(&status)) && d->activeKeys.contains(status.ScanCode)) {
-        QPair<Qt::Key, QString> keyStatus = d->activeKeys.take(status.ScanCode);
-        QWindowSystemInterface::handleKeyEvent(topWindow(), QEvent::KeyRelease,
-                                               keyStatus.first, mods, keyStatus.second);
-        return S_OK;
-    }
-#endif // !Q_OS_WINPHONE
     VirtualKey virtualKey;
-    args->get_VirtualKey(&virtualKey);
-    QWindowSystemInterface::handleKeyEvent(topWindow(), QEvent::KeyRelease,
-                                           qKeyFromVirtual(virtualKey), mods);
+    HRESULT hr = args->get_VirtualKey(&virtualKey);
+    Q_ASSERT_SUCCEEDED(hr);
+    CorePhysicalKeyStatus status;
+    hr = args->get_KeyStatus(&status);
+    Q_ASSERT_SUCCEEDED(hr);
+
+    Qt::Key key = qKeyFromVirtual(virtualKey);
+    const KeyInfo info = d->activeKeys.take(key);
+    QWindowSystemInterface::handleExtendedKeyEvent(
+                topWindow(),
+                QEvent::KeyRelease,
+                key,
+                keyboardModifiers(),
+                !status.ScanCode ? -1 : status.ScanCode,
+                virtualKey,
+                0,
+                info.text,
+                status.RepeatCount > 1,
+                !status.RepeatCount ? 1 : status.RepeatCount,
+                false);
     return S_OK;
 }
 
 HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEventArgs *args)
 {
+    Q_D(QWinRTScreen);
     quint32 keyCode;
-    args->get_KeyCode(&keyCode);
+    HRESULT hr = args->get_KeyCode(&keyCode);
+    Q_ASSERT_SUCCEEDED(hr);
+    CorePhysicalKeyStatus status;
+    hr = args->get_KeyStatus(&status);
+    Q_ASSERT_SUCCEEDED(hr);
+
     // Don't generate character events for non-printables; the meta key stage is enough
     if (qIsNonPrintable(keyCode))
         return S_OK;
 
-    Qt::KeyboardModifiers mods = keyboardModifiers();
-    Qt::Key key = qKeyFromCode(keyCode, mods);
-    QString text = QChar(keyCode);
-    QWindowSystemInterface::handleKeyEvent(topWindow(), QEvent::KeyPress, key, mods, text);
-#ifndef Q_OS_WINPHONE
-    Q_D(QWinRTScreen);
-    CorePhysicalKeyStatus status; // Defer release to onKeyUp for physical keys
-    if (SUCCEEDED(args->get_KeyStatus(&status)) && !status.IsKeyReleased) {
-        d->activeKeys.insert(status.ScanCode, qMakePair(key, text));
-        return S_OK;
-    }
-#endif // !Q_OS_WINPHONE
-    QWindowSystemInterface::handleKeyEvent(topWindow(), QEvent::KeyRelease, key, mods, text);
+    const Qt::KeyboardModifiers modifiers = keyboardModifiers();
+    const Qt::Key key = qKeyFromCode(keyCode, modifiers);
+    const QString text = QChar(keyCode);
+    const quint32 virtualKey = d->activeKeys.value(key).virtualKey;
+    QWindowSystemInterface::handleExtendedKeyEvent(
+                topWindow(),
+                QEvent::KeyPress,
+                key,
+                modifiers,
+                !status.ScanCode ? -1 : status.ScanCode,
+                virtualKey,
+                0,
+                text,
+                status.RepeatCount > 1,
+                !status.RepeatCount ? 1 : status.RepeatCount,
+                false);
+    d->activeKeys.insert(key, KeyInfo(text, virtualKey));
     return S_OK;
 }
 
