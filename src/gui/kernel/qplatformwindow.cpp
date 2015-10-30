@@ -484,7 +484,9 @@ QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) co
 {
     QPlatformScreen *currentScreen = screen();
     QPlatformScreen *fallback = currentScreen;
-    QPoint center = newGeometry.center();
+    //QRect::center can return a value outside the rectangle if it's empty
+    const QPoint center = newGeometry.isEmpty() ? newGeometry.topLeft() : newGeometry.center();
+
     if (!parent() && currentScreen && !currentScreen->geometry().contains(center)) {
         Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
             if (screen->geometry().contains(center))
