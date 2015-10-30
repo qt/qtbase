@@ -186,6 +186,10 @@ void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
     case ERROR_PIPE_NOT_CONNECTED:
         pipeBroken = true;
         break;
+    case ERROR_OPERATION_ABORTED:
+        if (stopped)
+            break;
+        // fall through
     default:
         emit winError(errorCode, QLatin1String("QWindowsPipeReader::notified"));
         pipeBroken = true;
