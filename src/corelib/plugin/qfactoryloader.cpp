@@ -58,7 +58,9 @@ namespace {
 
 // avoid duplicate QStringLiteral data:
 inline QString iidKeyLiteral() { return QStringLiteral("IID"); }
+#ifdef QT_SHARED
 inline QString versionKeyLiteral() { return QStringLiteral("version"); }
+#endif
 inline QString metaDataKeyLiteral() { return QStringLiteral("MetaData"); }
 inline QString keysKeyLiteral() { return QStringLiteral("Keys"); }
 
