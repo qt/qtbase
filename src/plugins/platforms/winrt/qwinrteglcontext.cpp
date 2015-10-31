@@ -70,9 +70,11 @@ Q_GLOBAL_STATIC(WinRTEGLDisplay, g)
 class QWinRTEGLContextPrivate
 {
 public:
+    QWinRTEGLContextPrivate() : eglContext(EGL_NO_CONTEXT), eglShareContext(EGL_NO_CONTEXT) { }
     QSurfaceFormat format;
     EGLConfig eglConfig;
     EGLContext eglContext;
+    EGLContext eglShareContext;
 };
 
 QWinRTEGLContext::QWinRTEGLContext(QOpenGLContext *context)
@@ -81,6 +83,8 @@ QWinRTEGLContext::QWinRTEGLContext(QOpenGLContext *context)
     Q_D(QWinRTEGLContext);
     d->format = context->format();
     d->format.setRenderableType(QSurfaceFormat::OpenGLES);
+    if (QPlatformOpenGLContext *shareHandle = context->shareHandle())
+        d->eglShareContext = static_cast<QWinRTEGLContext *>(shareHandle)->d_ptr->eglContext;
 }
 
 QWinRTEGLContext::~QWinRTEGLContext()
@@ -126,7 +130,7 @@ void QWinRTEGLContext::initialize()
         EGL_CONTEXT_FLAGS_KHR, flags,
         EGL_NONE
     };
-    d->eglContext = eglCreateContext(g->eglDisplay, d->eglConfig, nullptr, attributes);
+    d->eglContext = eglCreateContext(g->eglDisplay, d->eglConfig, d->eglShareContext, attributes);
     if (d->eglContext == EGL_NO_CONTEXT) {
         qWarning("QEGLPlatformContext: Failed to create context: %x", eglGetError());
         return;
@@ -136,7 +140,7 @@ void QWinRTEGLContext::initialize()
 bool QWinRTEGLContext::makeCurrent(QPlatformSurface *windowSurface)
 {
     Q_D(QWinRTEGLContext);
-    Q_ASSERT(windowSurface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(windowSurface->surface()->supportsOpenGL());
 
     QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
     if (window->eglSurface() == EGL_NO_SURFACE)
@@ -166,7 +170,7 @@ void QWinRTEGLContext::doneCurrent()
 
 void QWinRTEGLContext::swapBuffers(QPlatformSurface *windowSurface)
 {
-    Q_ASSERT(windowSurface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(windowSurface->surface()->supportsOpenGL());
 
     const QWinRTWindow *window = static_cast<QWinRTWindow *>(windowSurface);
     eglSwapBuffers(g->eglDisplay, window->eglSurface());

@@ -188,6 +188,7 @@ bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case ApplicationState:
     case NonFullScreenWindows:
     case MultipleWindows:
+    case RasterGLSurface:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);

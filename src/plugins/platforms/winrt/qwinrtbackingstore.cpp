@@ -66,7 +66,8 @@ QWinRTBackingStore::QWinRTBackingStore(QWindow *window)
     d->initialized = false;
     d->screen = static_cast<QWinRTScreen*>(window->screen()->handle());
 
-    window->setSurfaceType(QSurface::OpenGLSurface); // Required for flipping, but could be done in the swap
+    if (window->surfaceType() == QSurface::RasterSurface)
+        window->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 bool QWinRTBackingStore::initialize()
