@@ -3136,7 +3136,7 @@ void Configure::generateOutputVars()
 
 void Configure::generateCachefile()
 {
-    // Generate qmodule.pri
+    // Generate qmodule.pri, which is loaded only by Qt modules
     {
         FileWriter moduleStream(buildPath + "/mkspecs/qmodule.pri");
 
@@ -3204,6 +3204,8 @@ void Configure::generateCachefile()
             moduleStream << " largefile";
         if (dictionary[ "STRIP" ] == "no")
             moduleStream << " nostrip";
+        if (dictionary[ "LTCG" ] == "yes")
+            moduleStream << " ltcg";
         moduleStream << endl;
 
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var)
@@ -3491,8 +3493,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary["STATIC_RUNTIME"] == "yes")
             configStream << " static_runtime";
-        if (dictionary[ "LTCG" ] == "yes")
-            configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
         if (dictionary["INCREDIBUILD_XGE"] == "yes")
