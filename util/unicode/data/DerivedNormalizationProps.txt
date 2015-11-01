@@ -1,8 +1,8 @@
-# DerivedNormalizationProps-7.0.0.txt
-# Date: 2013-12-03, 15:11:47 GMT [MD]
+# DerivedNormalizationProps-8.0.0.txt
+# Date: 2015-02-13, 13:30:23 GMT [MD]
 #
 # Unicode Character Database
-# Copyright (c) 1991-2013 Unicode, Inc.
+# Copyright (c) 1991-2015 Unicode, Inc.
 # For terms of use, see http://www.unicode.org/terms_of_use.html
 # For documentation, see http://www.unicode.org/reports/tr44/
 
@@ -3504,6 +3504,12 @@ FFE3          ; Expands_On_NFKC # Sk       FULLWIDTH MACRON
 10CD          ; NFKC_CF; 2D2D           # L&       GEORGIAN CAPITAL LETTER AEN
 10FC          ; NFKC_CF; 10DC           # Lm       MODIFIER LETTER GEORGIAN NAR
 115F..1160    ; NFKC_CF;                # Lo   [2] HANGUL CHOSEONG FILLER..HANGUL JUNGSEONG FILLER
+13F8          ; NFKC_CF; 13F0           # L&       CHEROKEE SMALL LETTER YE
+13F9          ; NFKC_CF; 13F1           # L&       CHEROKEE SMALL LETTER YI
+13FA          ; NFKC_CF; 13F2           # L&       CHEROKEE SMALL LETTER YO
+13FB          ; NFKC_CF; 13F3           # L&       CHEROKEE SMALL LETTER YU
+13FC          ; NFKC_CF; 13F4           # L&       CHEROKEE SMALL LETTER YV
+13FD          ; NFKC_CF; 13F5           # L&       CHEROKEE SMALL LETTER MV
 17B4..17B5    ; NFKC_CF;                # Mn   [2] KHMER VOWEL INHERENT AQ..KHMER VOWEL INHERENT AA
 180B..180D    ; NFKC_CF;                # Mn   [3] MONGOLIAN FREE VARIATION SELECTOR ONE..MONGOLIAN FREE VARIATION SELECTOR THREE
 180E          ; NFKC_CF;                # Cf       MONGOLIAN VOWEL SEPARATOR
@@ -5259,12 +5265,96 @@ A7AC          ; NFKC_CF; 0261           # L&       LATIN CAPITAL LETTER SCRIPT G
 A7AD          ; NFKC_CF; 026C           # L&       LATIN CAPITAL LETTER L WITH BELT
 A7B0          ; NFKC_CF; 029E           # L&       LATIN CAPITAL LETTER TURNED K
 A7B1          ; NFKC_CF; 0287           # L&       LATIN CAPITAL LETTER TURNED T
+A7B2          ; NFKC_CF; 029D           # L&       LATIN CAPITAL LETTER J WITH CROSSED-TAIL
+A7B3          ; NFKC_CF; AB53           # L&       LATIN CAPITAL LETTER CHI
+A7B4          ; NFKC_CF; A7B5           # L&       LATIN CAPITAL LETTER BETA
+A7B6          ; NFKC_CF; A7B7           # L&       LATIN CAPITAL LETTER OMEGA
 A7F8          ; NFKC_CF; 0127           # Lm       MODIFIER LETTER CAPITAL H WITH STROKE
 A7F9          ; NFKC_CF; 0153           # Lm       MODIFIER LETTER SMALL LIGATURE OE
 AB5C          ; NFKC_CF; A727           # Lm       MODIFIER LETTER SMALL HENG
 AB5D          ; NFKC_CF; AB37           # Lm       MODIFIER LETTER SMALL L WITH INVERTED LAZY S
 AB5E          ; NFKC_CF; 026B           # Lm       MODIFIER LETTER SMALL L WITH MIDDLE TILDE
 AB5F          ; NFKC_CF; AB52           # Lm       MODIFIER LETTER SMALL U WITH LEFT HOOK
+AB70          ; NFKC_CF; 13A0           # L&       CHEROKEE SMALL LETTER A
+AB71          ; NFKC_CF; 13A1           # L&       CHEROKEE SMALL LETTER E
+AB72          ; NFKC_CF; 13A2           # L&       CHEROKEE SMALL LETTER I
+AB73          ; NFKC_CF; 13A3           # L&       CHEROKEE SMALL LETTER O
+AB74          ; NFKC_CF; 13A4           # L&       CHEROKEE SMALL LETTER U
+AB75          ; NFKC_CF; 13A5           # L&       CHEROKEE SMALL LETTER V
+AB76          ; NFKC_CF; 13A6           # L&       CHEROKEE SMALL LETTER GA
+AB77          ; NFKC_CF; 13A7           # L&       CHEROKEE SMALL LETTER KA
+AB78          ; NFKC_CF; 13A8           # L&       CHEROKEE SMALL LETTER GE
+AB79          ; NFKC_CF; 13A9           # L&       CHEROKEE SMALL LETTER GI
+AB7A          ; NFKC_CF; 13AA           # L&       CHEROKEE SMALL LETTER GO
+AB7B          ; NFKC_CF; 13AB           # L&       CHEROKEE SMALL LETTER GU
+AB7C          ; NFKC_CF; 13AC           # L&       CHEROKEE SMALL LETTER GV
+AB7D          ; NFKC_CF; 13AD           # L&       CHEROKEE SMALL LETTER HA
+AB7E          ; NFKC_CF; 13AE           # L&       CHEROKEE SMALL LETTER HE
+AB7F          ; NFKC_CF; 13AF           # L&       CHEROKEE SMALL LETTER HI
+AB80          ; NFKC_CF; 13B0           # L&       CHEROKEE SMALL LETTER HO
+AB81          ; NFKC_CF; 13B1           # L&       CHEROKEE SMALL LETTER HU
+AB82          ; NFKC_CF; 13B2           # L&       CHEROKEE SMALL LETTER HV
+AB83          ; NFKC_CF; 13B3           # L&       CHEROKEE SMALL LETTER LA
+AB84          ; NFKC_CF; 13B4           # L&       CHEROKEE SMALL LETTER LE
+AB85          ; NFKC_CF; 13B5           # L&       CHEROKEE SMALL LETTER LI
+AB86          ; NFKC_CF; 13B6           # L&       CHEROKEE SMALL LETTER LO
+AB87          ; NFKC_CF; 13B7           # L&       CHEROKEE SMALL LETTER LU
+AB88          ; NFKC_CF; 13B8           # L&       CHEROKEE SMALL LETTER LV
+AB89          ; NFKC_CF; 13B9           # L&       CHEROKEE SMALL LETTER MA
+AB8A          ; NFKC_CF; 13BA           # L&       CHEROKEE SMALL LETTER ME
+AB8B          ; NFKC_CF; 13BB           # L&       CHEROKEE SMALL LETTER MI
+AB8C          ; NFKC_CF; 13BC           # L&       CHEROKEE SMALL LETTER MO
+AB8D          ; NFKC_CF; 13BD           # L&       CHEROKEE SMALL LETTER MU
+AB8E          ; NFKC_CF; 13BE           # L&       CHEROKEE SMALL LETTER NA
+AB8F          ; NFKC_CF; 13BF           # L&       CHEROKEE SMALL LETTER HNA
+AB90          ; NFKC_CF; 13C0           # L&       CHEROKEE SMALL LETTER NAH
+AB91          ; NFKC_CF; 13C1           # L&       CHEROKEE SMALL LETTER NE
+AB92          ; NFKC_CF; 13C2           # L&       CHEROKEE SMALL LETTER NI
+AB93          ; NFKC_CF; 13C3           # L&       CHEROKEE SMALL LETTER NO
+AB94          ; NFKC_CF; 13C4           # L&       CHEROKEE SMALL LETTER NU
+AB95          ; NFKC_CF; 13C5           # L&       CHEROKEE SMALL LETTER NV
+AB96          ; NFKC_CF; 13C6           # L&       CHEROKEE SMALL LETTER QUA
+AB97          ; NFKC_CF; 13C7           # L&       CHEROKEE SMALL LETTER QUE
+AB98          ; NFKC_CF; 13C8           # L&       CHEROKEE SMALL LETTER QUI
+AB99          ; NFKC_CF; 13C9           # L&       CHEROKEE SMALL LETTER QUO
+AB9A          ; NFKC_CF; 13CA           # L&       CHEROKEE SMALL LETTER QUU
+AB9B          ; NFKC_CF; 13CB           # L&       CHEROKEE SMALL LETTER QUV
+AB9C          ; NFKC_CF; 13CC           # L&       CHEROKEE SMALL LETTER SA
+AB9D          ; NFKC_CF; 13CD           # L&       CHEROKEE SMALL LETTER S
+AB9E          ; NFKC_CF; 13CE           # L&       CHEROKEE SMALL LETTER SE
+AB9F          ; NFKC_CF; 13CF           # L&       CHEROKEE SMALL LETTER SI
+ABA0          ; NFKC_CF; 13D0           # L&       CHEROKEE SMALL LETTER SO
+ABA1          ; NFKC_CF; 13D1           # L&       CHEROKEE SMALL LETTER SU
+ABA2          ; NFKC_CF; 13D2           # L&       CHEROKEE SMALL LETTER SV
+ABA3          ; NFKC_CF; 13D3           # L&       CHEROKEE SMALL LETTER DA
+ABA4          ; NFKC_CF; 13D4           # L&       CHEROKEE SMALL LETTER TA
+ABA5          ; NFKC_CF; 13D5           # L&       CHEROKEE SMALL LETTER DE
+ABA6          ; NFKC_CF; 13D6           # L&       CHEROKEE SMALL LETTER TE
+ABA7          ; NFKC_CF; 13D7           # L&       CHEROKEE SMALL LETTER DI
+ABA8          ; NFKC_CF; 13D8           # L&       CHEROKEE SMALL LETTER TI
+ABA9          ; NFKC_CF; 13D9           # L&       CHEROKEE SMALL LETTER DO
+ABAA          ; NFKC_CF; 13DA           # L&       CHEROKEE SMALL LETTER DU
+ABAB          ; NFKC_CF; 13DB           # L&       CHEROKEE SMALL LETTER DV
+ABAC          ; NFKC_CF; 13DC           # L&       CHEROKEE SMALL LETTER DLA
+ABAD          ; NFKC_CF; 13DD           # L&       CHEROKEE SMALL LETTER TLA
+ABAE          ; NFKC_CF; 13DE           # L&       CHEROKEE SMALL LETTER TLE
+ABAF          ; NFKC_CF; 13DF           # L&       CHEROKEE SMALL LETTER TLI
+ABB0          ; NFKC_CF; 13E0           # L&       CHEROKEE SMALL LETTER TLO
+ABB1          ; NFKC_CF; 13E1           # L&       CHEROKEE SMALL LETTER TLU
+ABB2          ; NFKC_CF; 13E2           # L&       CHEROKEE SMALL LETTER TLV
+ABB3          ; NFKC_CF; 13E3           # L&       CHEROKEE SMALL LETTER TSA
+ABB4          ; NFKC_CF; 13E4           # L&       CHEROKEE SMALL LETTER TSE
+ABB5          ; NFKC_CF; 13E5           # L&       CHEROKEE SMALL LETTER TSI
+ABB6          ; NFKC_CF; 13E6           # L&       CHEROKEE SMALL LETTER TSO
+ABB7          ; NFKC_CF; 13E7           # L&       CHEROKEE SMALL LETTER TSU
+ABB8          ; NFKC_CF; 13E8           # L&       CHEROKEE SMALL LETTER TSV
+ABB9          ; NFKC_CF; 13E9           # L&       CHEROKEE SMALL LETTER WA
+ABBA          ; NFKC_CF; 13EA           # L&       CHEROKEE SMALL LETTER WE
+ABBB          ; NFKC_CF; 13EB           # L&       CHEROKEE SMALL LETTER WI
+ABBC          ; NFKC_CF; 13EC           # L&       CHEROKEE SMALL LETTER WO
+ABBD          ; NFKC_CF; 13ED           # L&       CHEROKEE SMALL LETTER WU
+ABBE          ; NFKC_CF; 13EE           # L&       CHEROKEE SMALL LETTER WV
+ABBF          ; NFKC_CF; 13EF           # L&       CHEROKEE SMALL LETTER YA
 F900          ; NFKC_CF; 8C48           # Lo       CJK COMPATIBILITY IDEOGRAPH-F900
 F901          ; NFKC_CF; 66F4           # Lo       CJK COMPATIBILITY IDEOGRAPH-F901
 F902          ; NFKC_CF; 8ECA           # Lo       CJK COMPATIBILITY IDEOGRAPH-F902
@@ -6641,6 +6731,57 @@ FFF0..FFF8    ; NFKC_CF;                # Cn   [9] <reserved-FFF0>..<reserved-FF
 10425         ; NFKC_CF; 1044D          # L&       DESERET CAPITAL LETTER ENG
 10426         ; NFKC_CF; 1044E          # L&       DESERET CAPITAL LETTER OI
 10427         ; NFKC_CF; 1044F          # L&       DESERET CAPITAL LETTER EW
+10C80         ; NFKC_CF; 10CC0          # L&       OLD HUNGARIAN CAPITAL LETTER A
+10C81         ; NFKC_CF; 10CC1          # L&       OLD HUNGARIAN CAPITAL LETTER AA
+10C82         ; NFKC_CF; 10CC2          # L&       OLD HUNGARIAN CAPITAL LETTER EB
+10C83         ; NFKC_CF; 10CC3          # L&       OLD HUNGARIAN CAPITAL LETTER AMB
+10C84         ; NFKC_CF; 10CC4          # L&       OLD HUNGARIAN CAPITAL LETTER EC
+10C85         ; NFKC_CF; 10CC5          # L&       OLD HUNGARIAN CAPITAL LETTER ENC
+10C86         ; NFKC_CF; 10CC6          # L&       OLD HUNGARIAN CAPITAL LETTER ECS
+10C87         ; NFKC_CF; 10CC7          # L&       OLD HUNGARIAN CAPITAL LETTER ED
+10C88         ; NFKC_CF; 10CC8          # L&       OLD HUNGARIAN CAPITAL LETTER AND
+10C89         ; NFKC_CF; 10CC9          # L&       OLD HUNGARIAN CAPITAL LETTER E
+10C8A         ; NFKC_CF; 10CCA          # L&       OLD HUNGARIAN CAPITAL LETTER CLOSE E
+10C8B         ; NFKC_CF; 10CCB          # L&       OLD HUNGARIAN CAPITAL LETTER EE
+10C8C         ; NFKC_CF; 10CCC          # L&       OLD HUNGARIAN CAPITAL LETTER EF
+10C8D         ; NFKC_CF; 10CCD          # L&       OLD HUNGARIAN CAPITAL LETTER EG
+10C8E         ; NFKC_CF; 10CCE          # L&       OLD HUNGARIAN CAPITAL LETTER EGY
+10C8F         ; NFKC_CF; 10CCF          # L&       OLD HUNGARIAN CAPITAL LETTER EH
+10C90         ; NFKC_CF; 10CD0          # L&       OLD HUNGARIAN CAPITAL LETTER I
+10C91         ; NFKC_CF; 10CD1          # L&       OLD HUNGARIAN CAPITAL LETTER II
+10C92         ; NFKC_CF; 10CD2          # L&       OLD HUNGARIAN CAPITAL LETTER EJ
+10C93         ; NFKC_CF; 10CD3          # L&       OLD HUNGARIAN CAPITAL LETTER EK
+10C94         ; NFKC_CF; 10CD4          # L&       OLD HUNGARIAN CAPITAL LETTER AK
+10C95         ; NFKC_CF; 10CD5          # L&       OLD HUNGARIAN CAPITAL LETTER UNK
+10C96         ; NFKC_CF; 10CD6          # L&       OLD HUNGARIAN CAPITAL LETTER EL
+10C97         ; NFKC_CF; 10CD7          # L&       OLD HUNGARIAN CAPITAL LETTER ELY
+10C98         ; NFKC_CF; 10CD8          # L&       OLD HUNGARIAN CAPITAL LETTER EM
+10C99         ; NFKC_CF; 10CD9          # L&       OLD HUNGARIAN CAPITAL LETTER EN
+10C9A         ; NFKC_CF; 10CDA          # L&       OLD HUNGARIAN CAPITAL LETTER ENY
+10C9B         ; NFKC_CF; 10CDB          # L&       OLD HUNGARIAN CAPITAL LETTER O
+10C9C         ; NFKC_CF; 10CDC          # L&       OLD HUNGARIAN CAPITAL LETTER OO
+10C9D         ; NFKC_CF; 10CDD          # L&       OLD HUNGARIAN CAPITAL LETTER NIKOLSBURG OE
+10C9E         ; NFKC_CF; 10CDE          # L&       OLD HUNGARIAN CAPITAL LETTER RUDIMENTA OE
+10C9F         ; NFKC_CF; 10CDF          # L&       OLD HUNGARIAN CAPITAL LETTER OEE
+10CA0         ; NFKC_CF; 10CE0          # L&       OLD HUNGARIAN CAPITAL LETTER EP
+10CA1         ; NFKC_CF; 10CE1          # L&       OLD HUNGARIAN CAPITAL LETTER EMP
+10CA2         ; NFKC_CF; 10CE2          # L&       OLD HUNGARIAN CAPITAL LETTER ER
+10CA3         ; NFKC_CF; 10CE3          # L&       OLD HUNGARIAN CAPITAL LETTER SHORT ER
+10CA4         ; NFKC_CF; 10CE4          # L&       OLD HUNGARIAN CAPITAL LETTER ES
+10CA5         ; NFKC_CF; 10CE5          # L&       OLD HUNGARIAN CAPITAL LETTER ESZ
+10CA6         ; NFKC_CF; 10CE6          # L&       OLD HUNGARIAN CAPITAL LETTER ET
+10CA7         ; NFKC_CF; 10CE7          # L&       OLD HUNGARIAN CAPITAL LETTER ENT
+10CA8         ; NFKC_CF; 10CE8          # L&       OLD HUNGARIAN CAPITAL LETTER ETY
+10CA9         ; NFKC_CF; 10CE9          # L&       OLD HUNGARIAN CAPITAL LETTER ECH
+10CAA         ; NFKC_CF; 10CEA          # L&       OLD HUNGARIAN CAPITAL LETTER U
+10CAB         ; NFKC_CF; 10CEB          # L&       OLD HUNGARIAN CAPITAL LETTER UU
+10CAC         ; NFKC_CF; 10CEC          # L&       OLD HUNGARIAN CAPITAL LETTER NIKOLSBURG UE
+10CAD         ; NFKC_CF; 10CED          # L&       OLD HUNGARIAN CAPITAL LETTER RUDIMENTA UE
+10CAE         ; NFKC_CF; 10CEE          # L&       OLD HUNGARIAN CAPITAL LETTER EV
+10CAF         ; NFKC_CF; 10CEF          # L&       OLD HUNGARIAN CAPITAL LETTER EZ
+10CB0         ; NFKC_CF; 10CF0          # L&       OLD HUNGARIAN CAPITAL LETTER EZS
+10CB1         ; NFKC_CF; 10CF1          # L&       OLD HUNGARIAN CAPITAL LETTER ENT-SHAPED SIGN
+10CB2         ; NFKC_CF; 10CF2          # L&       OLD HUNGARIAN CAPITAL LETTER US
 118A0         ; NFKC_CF; 118C0          # L&       WARANG CITI CAPITAL LETTER NGAA
 118A1         ; NFKC_CF; 118C1          # L&       WARANG CITI CAPITAL LETTER A
 118A2         ; NFKC_CF; 118C2          # L&       WARANG CITI CAPITAL LETTER WI
@@ -8493,7 +8634,7 @@ E0080..E00FF  ; NFKC_CF;                # Cn [128] <reserved-E0080>..<reserved-E
 E0100..E01EF  ; NFKC_CF;                # Mn [240] VARIATION SELECTOR-17..VARIATION SELECTOR-256
 E01F0..E0FFF  ; NFKC_CF;                # Cn [3600] <reserved-E01F0>..<reserved-E0FFF>
 
-# Total code points: 10005
+# Total code points: 10146
 
 # ================================================
 
@@ -8827,6 +8968,7 @@ E01F0..E0FFF  ; NFKC_CF;                # Cn [3600] <reserved-E01F0>..<reserved-
 10CD          ; Changes_When_NFKC_Casefolded # L&       GEORGIAN CAPITAL LETTER AEN
 10FC          ; Changes_When_NFKC_Casefolded # Lm       MODIFIER LETTER GEORGIAN NAR
 115F..1160    ; Changes_When_NFKC_Casefolded # Lo   [2] HANGUL CHOSEONG FILLER..HANGUL JUNGSEONG FILLER
+13F8..13FD    ; Changes_When_NFKC_Casefolded # L&   [6] CHEROKEE SMALL LETTER YE..CHEROKEE SMALL LETTER MV
 17B4..17B5    ; Changes_When_NFKC_Casefolded # Mn   [2] KHMER VOWEL INHERENT AQ..KHMER VOWEL INHERENT AA
 180B..180D    ; Changes_When_NFKC_Casefolded # Mn   [3] MONGOLIAN FREE VARIATION SELECTOR ONE..MONGOLIAN FREE VARIATION SELECTOR THREE
 180E          ; Changes_When_NFKC_Casefolded # Cf       MONGOLIAN VOWEL SEPARATOR
@@ -9248,9 +9390,11 @@ A7A4          ; Changes_When_NFKC_Casefolded # L&       LATIN CAPITAL LETTER N W
 A7A6          ; Changes_When_NFKC_Casefolded # L&       LATIN CAPITAL LETTER R WITH OBLIQUE STROKE
 A7A8          ; Changes_When_NFKC_Casefolded # L&       LATIN CAPITAL LETTER S WITH OBLIQUE STROKE
 A7AA..A7AD    ; Changes_When_NFKC_Casefolded # L&   [4] LATIN CAPITAL LETTER H WITH HOOK..LATIN CAPITAL LETTER L WITH BELT
-A7B0..A7B1    ; Changes_When_NFKC_Casefolded # L&   [2] LATIN CAPITAL LETTER TURNED K..LATIN CAPITAL LETTER TURNED T
+A7B0..A7B4    ; Changes_When_NFKC_Casefolded # L&   [5] LATIN CAPITAL LETTER TURNED K..LATIN CAPITAL LETTER BETA
+A7B6          ; Changes_When_NFKC_Casefolded # L&       LATIN CAPITAL LETTER OMEGA
 A7F8..A7F9    ; Changes_When_NFKC_Casefolded # Lm   [2] MODIFIER LETTER CAPITAL H WITH STROKE..MODIFIER LETTER SMALL LIGATURE OE
 AB5C..AB5F    ; Changes_When_NFKC_Casefolded # Lm   [4] MODIFIER LETTER SMALL HENG..MODIFIER LETTER SMALL U WITH LEFT HOOK
+AB70..ABBF    ; Changes_When_NFKC_Casefolded # L&  [80] CHEROKEE SMALL LETTER A..CHEROKEE SMALL LETTER YA
 F900..FA0D    ; Changes_When_NFKC_Casefolded # Lo [270] CJK COMPATIBILITY IDEOGRAPH-F900..CJK COMPATIBILITY IDEOGRAPH-FA0D
 FA10          ; Changes_When_NFKC_Casefolded # Lo       CJK COMPATIBILITY IDEOGRAPH-FA10
 FA12          ; Changes_When_NFKC_Casefolded # Lo       CJK COMPATIBILITY IDEOGRAPH-FA12
@@ -9375,6 +9519,7 @@ FFE9..FFEC    ; Changes_When_NFKC_Casefolded # Sm   [4] HALFWIDTH LEFTWARDS ARRO
 FFED..FFEE    ; Changes_When_NFKC_Casefolded # So   [2] HALFWIDTH BLACK SQUARE..HALFWIDTH WHITE CIRCLE
 FFF0..FFF8    ; Changes_When_NFKC_Casefolded # Cn   [9] <reserved-FFF0>..<reserved-FFF8>
 10400..10427  ; Changes_When_NFKC_Casefolded # L&  [40] DESERET CAPITAL LETTER LONG I..DESERET CAPITAL LETTER EW
+10C80..10CB2  ; Changes_When_NFKC_Casefolded # L&  [51] OLD HUNGARIAN CAPITAL LETTER A..OLD HUNGARIAN CAPITAL LETTER US
 118A0..118BF  ; Changes_When_NFKC_Casefolded # L&  [32] WARANG CITI CAPITAL LETTER NGAA..WARANG CITI CAPITAL LETTER VIYO
 1BCA0..1BCA3  ; Changes_When_NFKC_Casefolded # Cf   [4] SHORTHAND FORMAT LETTER OVERLAP..SHORTHAND FORMAT UP STEP
 1D15E..1D164  ; Changes_When_NFKC_Casefolded # So   [7] MUSICAL SYMBOL HALF NOTE..MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH NOTE
@@ -9472,6 +9617,6 @@ E0080..E00FF  ; Changes_When_NFKC_Casefolded # Cn [128] <reserved-E0080>..<reser
 E0100..E01EF  ; Changes_When_NFKC_Casefolded # Mn [240] VARIATION SELECTOR-17..VARIATION SELECTOR-256
 E01F0..E0FFF  ; Changes_When_NFKC_Casefolded # Cn [3600] <reserved-E01F0>..<reserved-E0FFF>
 
-# Total code points: 10005
+# Total code points: 10146
 
 # EOF
