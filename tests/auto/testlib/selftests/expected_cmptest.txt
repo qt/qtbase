@@ -2,104 +2,108 @@
 Config: Using QtTest library
 PASS   : tst_Cmptest::initTestCase()
 FAIL!  : tst_Cmptest::compare_unregistered_enums() Compared values are not the same
-   Loc: [tst_cmptest.cpp(154)]
+   Loc: [tst_cmptest.cpp(159)]
 FAIL!  : tst_Cmptest::compare_registered_enums() Compared values are not the same
    Actual   (Qt::ArrowCursor): ArrowCursor
    Expected (Qt::BusyCursor) : BusyCursor
-   Loc: [tst_cmptest.cpp(160)]
+   Loc: [tst_cmptest.cpp(165)]
+FAIL!  : tst_Cmptest::compare_class_enums() Compared values are not the same
+   Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
+   Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2
+   Loc: [tst_cmptest.cpp(171)]
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_pointerfuncs()
 FAIL!  : tst_Cmptest::compare_tostring(int, string) Compared values are not the same
    Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)
-   Loc: [tst_cmptest.cpp(231)]
+   Loc: [tst_cmptest.cpp(242)]
 PASS   : tst_Cmptest::compare_tostring(both invalid)
 FAIL!  : tst_Cmptest::compare_tostring(null hash, invalid) Compared values are not the same
    Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()
-   Loc: [tst_cmptest.cpp(231)]
+   Loc: [tst_cmptest.cpp(242)]
 FAIL!  : tst_Cmptest::compare_tostring(string, null user type) Compared values are not the same
    Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)
-   Loc: [tst_cmptest.cpp(231)]
+   Loc: [tst_cmptest.cpp(242)]
 FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values are not the same
    Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)
-   Loc: [tst_cmptest.cpp(231)]
+   Loc: [tst_cmptest.cpp(242)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
 PASS   : tst_Cmptest::compareQStringLists(equal lists)
 FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"
-   Loc: [tst_cmptest.cpp(325)]
+   Loc: [tst_cmptest.cpp(336)]
 FAIL!  : tst_Cmptest::compareQStringLists(second-last item different) Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"
-   Loc: [tst_cmptest.cpp(325)]
+   Loc: [tst_cmptest.cpp(336)]
 FAIL!  : tst_Cmptest::compareQStringLists(prefix) Compared lists have different sizes.
    Actual   (opA) size: 2
    Expected (opB) size: 1
-   Loc: [tst_cmptest.cpp(325)]
+   Loc: [tst_cmptest.cpp(336)]
 FAIL!  : tst_Cmptest::compareQStringLists(short list second) Compared lists have different sizes.
    Actual   (opA) size: 12
    Expected (opB) size: 1
-   Loc: [tst_cmptest.cpp(325)]
+   Loc: [tst_cmptest.cpp(336)]
 FAIL!  : tst_Cmptest::compareQStringLists(short list first) Compared lists have different sizes.
    Actual   (opA) size: 1
    Expected (opB) size: 12
-   Loc: [tst_cmptest.cpp(325)]
+   Loc: [tst_cmptest.cpp(336)]
 FAIL!  : tst_Cmptest::compareQListInt() Compared lists differ at index 2.
    Actual   (int1): 3
    Expected (int2): 4
-   Loc: [tst_cmptest.cpp(332)]
+   Loc: [tst_cmptest.cpp(343)]
 FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1
-   Loc: [tst_cmptest.cpp(339)]
+   Loc: [tst_cmptest.cpp(350)]
 PASS   : tst_Cmptest::compareQPixmaps(both null)
 FAIL!  : tst_Cmptest::compareQPixmaps(one null) Compared QPixmaps differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0
-   Loc: [tst_cmptest.cpp(365)]
+   Loc: [tst_cmptest.cpp(376)]
 FAIL!  : tst_Cmptest::compareQPixmaps(other null) Compared QPixmaps differ.
    Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1
-   Loc: [tst_cmptest.cpp(365)]
+   Loc: [tst_cmptest.cpp(376)]
 PASS   : tst_Cmptest::compareQPixmaps(equal)
 FAIL!  : tst_Cmptest::compareQPixmaps(different size) Compared QPixmaps differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20
-   Loc: [tst_cmptest.cpp(365)]
+   Loc: [tst_cmptest.cpp(376)]
 FAIL!  : tst_Cmptest::compareQPixmaps(different pixels) Compared values are not the same
-   Loc: [tst_cmptest.cpp(365)]
+   Loc: [tst_cmptest.cpp(376)]
 PASS   : tst_Cmptest::compareQImages(both null)
 FAIL!  : tst_Cmptest::compareQImages(one null) Compared QImages differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0
-   Loc: [tst_cmptest.cpp(392)]
+   Loc: [tst_cmptest.cpp(403)]
 FAIL!  : tst_Cmptest::compareQImages(other null) Compared QImages differ.
    Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1
-   Loc: [tst_cmptest.cpp(392)]
+   Loc: [tst_cmptest.cpp(403)]
 PASS   : tst_Cmptest::compareQImages(equal)
 FAIL!  : tst_Cmptest::compareQImages(different size) Compared QImages differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20
-   Loc: [tst_cmptest.cpp(392)]
+   Loc: [tst_cmptest.cpp(403)]
 FAIL!  : tst_Cmptest::compareQImages(different format) Compared QImages differ in format.
    Actual   (opA): 6
    Expected (opB): 3
-   Loc: [tst_cmptest.cpp(392)]
+   Loc: [tst_cmptest.cpp(403)]
 FAIL!  : tst_Cmptest::compareQImages(different pixels) Compared values are not the same
-   Loc: [tst_cmptest.cpp(392)]
+   Loc: [tst_cmptest.cpp(403)]
 FAIL!  : tst_Cmptest::verify() 'opaqueFunc() < 2' returned FALSE. ()
-   Loc: [tst_cmptest.cpp(404)]
+   Loc: [tst_cmptest.cpp(415)]
 FAIL!  : tst_Cmptest::verify2() 'opaqueFunc() < 2' returned FALSE. (42)
-   Loc: [tst_cmptest.cpp(410)]
+   Loc: [tst_cmptest.cpp(421)]
 FAIL!  : tst_Cmptest::tryVerify() 'opaqueFunc() < 2' returned FALSE. ()
-   Loc: [tst_cmptest.cpp(416)]
+   Loc: [tst_cmptest.cpp(427)]
 FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
-   Loc: [tst_cmptest.cpp(422)]
+   Loc: [tst_cmptest.cpp(433)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 11 passed, 26 failed, 0 skipped, 0 blacklisted
+Totals: 11 passed, 27 failed, 0 skipped, 0 blacklisted
 ********* Finished testing of tst_Cmptest *********

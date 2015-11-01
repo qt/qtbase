@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="26" tests="16" name="tst_Cmptest">
+<testsuite errors="0" failures="27" tests="17" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -13,6 +13,11 @@
     <failure message="Compared values are not the same
    Actual   (Qt::ArrowCursor): ArrowCursor
    Expected (Qt::BusyCursor) : BusyCursor" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compare_class_enums">
+    <failure message="Compared values are not the same
+   Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
+   Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2" result="fail"/>
   </testcase>
   <testcase result="pass" name="compare_boolfuncs"/>
   <testcase result="pass" name="compare_pointerfuncs"/>

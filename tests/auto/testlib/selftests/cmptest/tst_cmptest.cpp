@@ -123,9 +123,14 @@ class tst_Cmptest: public QObject
 {
     Q_OBJECT
 
+public:
+    enum class MyClassEnum { MyClassEnumValue1, MyClassEnumValue2 };
+    Q_ENUM(MyClassEnum)
+
 private slots:
     void compare_unregistered_enums();
     void compare_registered_enums();
+    void compare_class_enums();
     void compare_boolfuncs();
     void compare_pointerfuncs();
     void compare_tostring();
@@ -158,6 +163,12 @@ void tst_Cmptest::compare_registered_enums()
 {
     QCOMPARE(Qt::ArrowCursor, Qt::ArrowCursor);
     QCOMPARE(Qt::ArrowCursor, Qt::BusyCursor);
+}
+
+void tst_Cmptest::compare_class_enums()
+{
+    QCOMPARE(MyClassEnum::MyClassEnumValue1, MyClassEnum::MyClassEnumValue1);
+    QCOMPARE(MyClassEnum::MyClassEnumValue1, MyClassEnum::MyClassEnumValue2);
 }
 
 static bool boolfunc() { return true; }
