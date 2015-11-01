@@ -155,8 +155,15 @@ void QXcbVirtualDesktop::updateWorkArea()
     }
 }
 
+static inline QSizeF sizeInMillimeters(const QSize &size, const QDpi &dpi)
+{
+    return QSizeF(Q_MM_PER_INCH * size.width() / dpi.first,
+                  Q_MM_PER_INCH * size.height() / dpi.second);
+}
+
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
-                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
+                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
+                       const xcb_xinerama_screen_info_t *xineramaScreenInfo, int xineramaScreenIdx)
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
@@ -188,8 +195,14 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
             updateRefreshRate(crtc->mode);
             free(crtc);
         }
-    } else {
-        updateGeometry(output ? output->timestamp : 0);
+    } else if (xineramaScreenInfo) {
+        m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
+                           xineramaScreenInfo->width, xineramaScreenInfo->height);
+        m_nativeGeometry = m_geometry;
+        m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
+        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), virtualDpi());
+        if (xineramaScreenIdx > -1)
+            m_outputName += QLatin1Char('-') + QString::number(xineramaScreenIdx);
     }
 
     if (m_geometry.isEmpty()) {
@@ -538,11 +551,8 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     // It can be that physical size is unknown while virtual size
     // is known (probably back-calculated from DPI and resolution),
     // e.g. on VNC or with some hardware.
-    if (m_sizeMillimeters.isEmpty()) {
-        QDpi dpi = virtualDpi();
-        m_sizeMillimeters = QSizeF(Q_MM_PER_INCH * xGeometry.width() / dpi.first,
-                                   Q_MM_PER_INCH * xGeometry.width() / dpi.second);
-    }
+    if (m_sizeMillimeters.isEmpty())
+        m_sizeMillimeters = sizeInMillimeters(xGeometry.size(), virtualDpi());
 
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qRound(dpi/96);
