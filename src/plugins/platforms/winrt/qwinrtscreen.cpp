@@ -914,6 +914,11 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     Point point;
     pointerPoint->get_Position(&point);
     QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
+    QPointF localPos = pos;
+    if (topWindow()) {
+        const QPointF globalPosDelta = pos - pos.toPoint();
+        localPos = topWindow()->mapFromGlobal(pos.toPoint()) + globalPosDelta;
+    }
 
     VirtualKeyModifiers modifiers;
     args->get_KeyModifiers(&modifiers);
@@ -947,7 +952,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             boolean isHorizontal;
             properties->get_IsHorizontalMouseWheel(&isHorizontal);
             QPoint angleDelta(isHorizontal ? delta : 0, isHorizontal ? 0 : delta);
-            QWindowSystemInterface::handleWheelEvent(topWindow(), pos, pos, QPoint(), angleDelta, mods);
+            QWindowSystemInterface::handleWheelEvent(topWindow(), localPos, pos, QPoint(), angleDelta, mods);
             break;
         }
 
@@ -973,7 +978,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         if (isPressed)
             buttons |= Qt::XButton2;
 
-        QWindowSystemInterface::handleMouseEvent(topWindow(), pos, pos, buttons, mods);
+        QWindowSystemInterface::handleMouseEvent(topWindow(), localPos, pos, buttons, mods);
 
         break;
     }
