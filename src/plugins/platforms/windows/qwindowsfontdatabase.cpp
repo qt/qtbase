@@ -40,6 +40,7 @@
 
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
@@ -1100,8 +1101,11 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
     QFontEngine *fontEngine = 0;
 
 #if !defined(QT_NO_DIRECTWRITE)
-    if (hintingPreference == QFont::PreferDefaultHinting
-        || hintingPreference == QFont::PreferFullHinting)
+    bool useDirectWrite = (hintingPreference == QFont::PreferNoHinting)
+                       || (hintingPreference == QFont::PreferVerticalHinting)
+                       || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
+
+    if (!useDirectWrite)
 #endif
     {
         GUID guid;
@@ -1704,7 +1708,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 
 #if !defined(QT_NO_DIRECTWRITE)
     bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
-                       || (request.hintingPreference == QFont::PreferVerticalHinting);
+                       || (request.hintingPreference == QFont::PreferVerticalHinting)
+                       || (QHighDpiScaling::isActive() && request.hintingPreference == QFont::PreferDefaultHinting);
     if (useDirectWrite && initDirectWrite(data.data())) {
         const QString fam = QString::fromWCharArray(lf.lfFaceName);
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
