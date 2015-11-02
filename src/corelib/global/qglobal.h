@@ -538,6 +538,12 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 #ifndef Q_FORWARD_DECLARE_MUTABLE_CF_TYPE
 #  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
 #endif
+#ifndef Q_FORWARD_DECLARE_CG_TYPE
+#define Q_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type ## Ref;
+#endif
+#ifndef Q_FORWARD_DECLARE_MUTABLE_CG_TYPE
+#define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
+#endif
 
 #ifdef Q_OS_DARWIN
 #  define QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios, tvos, watchos) \

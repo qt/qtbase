@@ -53,6 +53,8 @@ SOURCES += \
 
 win32:!winrt: SOURCES += image/qpixmap_win.cpp
 
+darwin: OBJECTIVE_SOURCES += image/qimage_darwin.mm
+
 NO_PCH_SOURCES += image/qimage_compat.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 

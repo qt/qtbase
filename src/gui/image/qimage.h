@@ -54,6 +54,10 @@
 #include <QtCore/qstringlist.h>
 #endif
 
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGImage);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -320,6 +324,11 @@ public:
     QPixelFormat pixelFormat() const Q_DECL_NOTHROW;
     static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
     static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
+
+    // Platform spesific conversion functions
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    CGImageRef toCGImage() const Q_DECL_CF_RETURNS_RETAINED;
+#endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QString text(const char *key, const char *lang = Q_NULLPTR) const;
