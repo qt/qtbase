@@ -156,8 +156,8 @@ void ArthurStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
         break;
 
     case PE_FrameGroupBox:
-        if (const QStyleOptionFrameV2 *group
-                = qstyleoption_cast<const QStyleOptionFrameV2 *>(option)) {
+        if (const QStyleOptionFrame *group
+                = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             const QRect &r = group->rect;
 
             painter->save();
