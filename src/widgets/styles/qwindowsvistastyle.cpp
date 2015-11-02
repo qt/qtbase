@@ -1007,12 +1007,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             bool isIndeterminate = (bar->minimum == 0 && bar->maximum == 0);
-            bool vertical = false;
-            bool inverted = false;
-            if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-                vertical = (pb2->orientation == Qt::Vertical);
-                inverted = pb2->invertedAppearance;
-            }
+            const bool vertical = bar->orientation == Qt::Vertical;
+            const bool inverted = bar->invertedAppearance;
 
             if (isIndeterminate || (bar->progress > 0 && (bar->progress < bar->maximum) && d->transitionsEnabled())) {
                 if (!d->animation(styleObject(option)))
@@ -1378,9 +1374,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 break; //otherwise fall through
             }
 
-            const QStyleOptionDockWidgetV2 *v2
-                = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(dwOpt);
-            bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+            const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
             if (verticalTitleBar) {
                 rect.setSize(rect.size().transposed());
