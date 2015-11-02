@@ -139,7 +139,7 @@ thai_pua_shape (hb_codepoint_t u, thai_action_t action, hb_font_t *font)
   };
 
   switch (action) {
-    default: assert (false); /* Fallthrough */
+    default: assert (false); HB_FALLTHROUGH;
     case NOP: return u;
     case SD:  pua_mappings = SD_mappings; break;
     case SDL: pua_mappings = SDL_mappings; break;
@@ -353,7 +353,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
     {
       /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
        * previous cluster. */
-      if (start)
+      if (start && buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
 	buffer->merge_out_clusters (start - 1, end);
     }
   }

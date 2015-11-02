@@ -224,7 +224,7 @@ position_mark (const hb_ot_shape_plan_t *plan,
 	pos.x_offset += base_extents.x_bearing + base_extents.width - mark_extents.width / 2 - mark_extents.x_bearing;
         break;
       }
-      /* Fall through */
+      HB_FALLTHROUGH;
 
     default:
     case HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW:
@@ -259,6 +259,7 @@ position_mark (const hb_ot_shape_plan_t *plan,
     case HB_UNICODE_COMBINING_CLASS_BELOW_RIGHT:
       /* Add gap, fall-through. */
       base_extents.height -= y_gap;
+      HB_FALLTHROUGH;
 
     case HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW_LEFT:
     case HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW:
@@ -279,6 +280,7 @@ position_mark (const hb_ot_shape_plan_t *plan,
       /* Add gap, fall-through. */
       base_extents.y_bearing += y_gap;
       base_extents.height -= y_gap;
+      HB_FALLTHROUGH;
 
     case HB_UNICODE_COMBINING_CLASS_ATTACHED_ABOVE:
     case HB_UNICODE_COMBINING_CLASS_ATTACHED_ABOVE_RIGHT:
@@ -418,13 +420,12 @@ _hb_ot_shape_fallback_position (const hb_ot_shape_plan_t *plan,
   _hb_buffer_assert_gsubgpos_vars (buffer);
 
   unsigned int start = 0;
-  unsigned int last_cluster = buffer->info[0].cluster;
   unsigned int count = buffer->len;
+  hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
-    if (buffer->info[i].cluster != last_cluster) {
+    if (likely (!HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&info[i])))) {
       position_cluster (plan, font, buffer, start, i);
       start = i;
-      last_cluster = buffer->info[i].cluster;
     }
   position_cluster (plan, font, buffer, start, count);
 }

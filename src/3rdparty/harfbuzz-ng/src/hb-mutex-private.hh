@@ -39,7 +39,13 @@
 
 /* We need external help for these */
 
-#if 0
+#if defined(HB_MUTEX_IMPL_INIT) \
+ && defined(hb_mutex_impl_init) \
+ && defined(hb_mutex_impl_lock) \
+ && defined(hb_mutex_impl_unlock) \
+ && defined(hb_mutex_impl_finish)
+
+/* Defined externally, i.e. in config.h; must have typedef'ed hb_mutex_impl_t as well. */
 
 
 #elif !defined(HB_NO_MT) && (defined(_WIN32) || defined(__CYGWIN__))
@@ -113,10 +119,12 @@ typedef int hb_mutex_impl_t;
 #define hb_mutex_impl_unlock(M)	HB_STMT_START {} HB_STMT_END
 #define hb_mutex_impl_finish(M)	HB_STMT_START {} HB_STMT_END
 
+
 #endif
 
 
 #define HB_MUTEX_INIT		{HB_MUTEX_IMPL_INIT}
+
 struct hb_mutex_t
 {
   /* TODO Add tracing. */

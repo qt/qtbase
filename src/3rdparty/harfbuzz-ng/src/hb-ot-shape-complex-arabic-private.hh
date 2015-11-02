@@ -1,5 +1,6 @@
 /*
- * Copyright © 2011,2012  Google, Inc.
+ * Copyright © 2015  Mozilla Foundation.
+ * Copyright © 2015  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,52 +22,29 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
+ * Mozilla Author(s): Jonathan Kew
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_OT_MAXP_TABLE_HH
-#define HB_OT_MAXP_TABLE_HH
+#ifndef HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH
+#define HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-private.hh"
 
-
-namespace OT {
-
-
-/*
- * maxp -- The Maximum Profile Table
- */
-
-#define HB_OT_TAG_maxp HB_TAG('m','a','x','p')
-
-struct maxp
-{
-  static const hb_tag_t tableTag	= HB_OT_TAG_maxp;
-
-  inline unsigned int get_num_glyphs (void) const
-  {
-    return numGlyphs;
-  }
-
-  inline bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-		  likely (version.major == 1 ||
-			  (version.major == 0 && version.minor == 0x5000u)));
-  }
-
-  /* We only implement version 0.5 as none of the extra fields in version 1.0 are useful. */
-  protected:
-  FixedVersion	version;		/* Version of the maxp table (0.5 or 1.0),
-					 * 0x00005000u or 0x00010000u. */
-  USHORT	numGlyphs;		/* The number of glyphs in the font. */
-  public:
-  DEFINE_SIZE_STATIC (6);
-};
+#include "hb-ot-shape-complex-private.hh"
 
 
-} /* namespace OT */
+struct arabic_shape_plan_t;
 
+HB_INTERNAL void *
+data_create_arabic (const hb_ot_shape_plan_t *plan);
 
-#endif /* HB_OT_MAXP_TABLE_HH */
+HB_INTERNAL void
+data_destroy_arabic (void *data);
+
+HB_INTERNAL void
+setup_masks_arabic_plan (const arabic_shape_plan_t *arabic_plan,
+			 hb_buffer_t               *buffer,
+			 hb_script_t                script);
+
+#endif /* HB_OT_SHAPE_COMPLEX_ARABIC_PRIVATE_HH */
