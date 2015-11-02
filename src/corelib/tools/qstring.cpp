@@ -5666,10 +5666,36 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 */
 
 namespace QUnicodeTables {
+/*!
+    \internal
+    Converts the \a str string starting from the position pointed to by the \a
+    it iterator, using the Unicode case traits \c Traits, and returns the
+    result. The input string must not be empty (the convertCase function below
+    guarantees that).
+
+    The string type \c{T} is also a template and is either \c{const QString} or
+    \c{QString}. This function can do both copy-conversion and in-place
+    conversion depending on the state of the \a str parameter:
+    \list
+       \li \c{T} is \c{const QString}: copy-convert
+       \li \c{T} is \c{QString} and its refcount != 1: copy-convert
+       \li \c{T} is \c{QString} and its refcount == 1: in-place convert
+    \endlist
+
+    In copy-convert mode, the local variable \c{s} is detached from the input
+    \a str. In the in-place convert mode, \a str is in moved-from state (which
+    this function requires to be a valid, empty string) and \c{s} contains the
+    only copy of the string, without reallocation (thus, \a it is still valid).
+
+    There's one pathological case left: when the in-place conversion needs to
+    reallocate memory to grow the buffer. In that case, we need to adjust the \a
+    it pointer.
+ */
 template <typename Traits, typename T>
 Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it)
 {
+    Q_ASSERT(!str.isEmpty());
     QString s = qMove(str);             // will copy if T is const QString
     QChar *pp = s.begin() + it.index(); // will detach if necessary
     uint uc = it.nextUnchecked();
@@ -5678,12 +5704,19 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
         signed short caseDiff = Traits::caseDiff(prop);
 
         if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
-            // slow path
+            // slow path: the string is growing
             const ushort *specialCase = specialCaseMap + caseDiff;
             ushort length = *specialCase++;
-            int pos = pp - s.constBegin();
-            s.replace(pos, 1, reinterpret_cast<const QChar *>(specialCase), length);
-            pp = const_cast<QChar *>(s.constBegin()) + pos + length;
+            int inpos = it.index() - 1;
+            int outpos = pp - s.constBegin();
+
+            s.replace(outpos, 1, reinterpret_cast<const QChar *>(specialCase), length);
+            pp = const_cast<QChar *>(s.constBegin()) + outpos + length;
+
+            // do we need to adjust the input iterator too?
+            // if it is pointing to s's data, str is empty
+            if (str.isEmpty())
+                it = QStringIterator(s.constBegin(), inpos + length, s.constEnd());
         } else if (QChar::requiresSurrogates(uc)) {
             *pp++ = QChar::highSurrogate(uc + caseDiff);
             *pp++ = QChar::lowSurrogate(uc + caseDiff);
