@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines for Indic writing system (body).        */
 /*                                                                         */
-/*  Copyright 2007, 2011-2013 by                                           */
+/*  Copyright 2007-2015 by                                                 */
 /*  Rahul Bhalerao <rahul.bhalerao@redhat.com>, <b.rahul.pm@gmail.com>.    */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -79,12 +79,13 @@
 
 
   static FT_Error
-  af_indic_hints_apply( AF_GlyphHints  hints,
+  af_indic_hints_apply( FT_UInt        glyph_index,
+                        AF_GlyphHints  hints,
                         FT_Outline*    outline,
                         AF_CJKMetrics  metrics )
   {
     /* use CJK routines */
-    return af_cjk_hints_apply( hints, outline, metrics );
+    return af_cjk_hints_apply( glyph_index, hints, outline, metrics );
   }
 
 

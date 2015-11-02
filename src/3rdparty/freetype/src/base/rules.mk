@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2000, 2002-2009, 2013 by
+# Copyright 1996-2015 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -23,7 +23,10 @@
 #                 layer proper.
 
 
-BASE_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(SRC_DIR)/base)
+BASE_COMPILE := $(CC) $(ANSIFLAGS)                             \
+                      $I$(subst /,$(COMPILER_SEP),$(BASE_DIR)) \
+                      $(INCLUDE_FLAGS)                         \
+                      $(FT_CFLAGS)
 
 
 # Base layer sources

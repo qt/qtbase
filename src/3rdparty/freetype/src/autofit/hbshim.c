@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    HarfBuzz interface for accessing OpenType features (body).           */
 /*                                                                         */
-/*  Copyright 2013, 2014 by                                                */
+/*  Copyright 2013-2015 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -98,7 +98,7 @@
   FT_Error
   af_get_coverage( AF_FaceGlobals  globals,
                    AF_StyleClass   style_class,
-                   FT_Byte*        gstyles )
+                   FT_UShort*      gstyles )
   {
     hb_face_t*  face;
 
@@ -187,7 +187,7 @@
     count = 0;
 #endif
 
-    for ( idx = -1; hb_set_next( gsub_lookups, &idx ); )
+    for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gsub_lookups, &idx ); )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
       FT_TRACE4(( " %d", idx ));
@@ -218,7 +218,7 @@
     count = 0;
 #endif
 
-    for ( idx = -1; hb_set_next( gpos_lookups, &idx ); )
+    for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gpos_lookups, &idx ); )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
       FT_TRACE4(( " %d", idx ));
@@ -267,7 +267,8 @@
 
           GET_UTF8_CHAR( ch, p );
 
-          for ( idx = -1; hb_set_next( gsub_lookups, &idx ); )
+          for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gsub_lookups,
+                                                         &idx ); )
           {
             hb_codepoint_t  gidx = FT_Get_Char_Index( globals->face, ch );
 
@@ -344,7 +345,7 @@
     count = 0;
 #endif
 
-    for ( idx = -1; hb_set_next( gsub_glyphs, &idx ); )
+    for ( idx = HB_SET_VALUE_INVALID; hb_set_next( gsub_glyphs, &idx ); )
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( !( count % 10 ) )
@@ -362,7 +363,7 @@
         continue;
 
       if ( gstyles[idx] == AF_STYLE_UNASSIGNED )
-        gstyles[idx] = (FT_Byte)style_class->style;
+        gstyles[idx] = (FT_UShort)style_class->style;
 #ifdef FT_DEBUG_LEVEL_TRACE
       else
         FT_TRACE4(( "*" ));
@@ -441,7 +442,7 @@
 
     if ( feature )
     {
-      FT_UInt  upem = metrics->globals->face->units_per_EM;
+      FT_Int  upem = (FT_Int)metrics->globals->face->units_per_EM;
 
       hb_font_t*    font = metrics->globals->hb_font;
       hb_buffer_t*  buf  = hb_buffer_create();
@@ -508,7 +509,7 @@
   FT_Error
   af_get_coverage( AF_FaceGlobals  globals,
                    AF_StyleClass   style_class,
-                   FT_Byte*        gstyles )
+                   FT_UShort*      gstyles )
   {
     FT_UNUSED( globals );
     FT_UNUSED( style_class );
