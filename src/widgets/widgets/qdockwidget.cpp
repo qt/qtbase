@@ -507,7 +507,7 @@ void QDockWidgetLayout::setGeometry(const QRect &geometry)
         if (QLayoutItem *item = item_list[TitleBar]) {
             item->setGeometry(_titleArea);
         } else {
-            QStyleOptionDockWidgetV2 opt;
+            QStyleOptionDockWidget opt;
             q->initStyleOption(&opt);
 
             if (QLayoutItem *item = item_list[CloseButton]) {
@@ -650,10 +650,7 @@ void QDockWidget::initStyleOption(QStyleOptionDockWidget *option) const
     option->floatable = hasFeature(this, QDockWidget::DockWidgetFloatable);
 
     QDockWidgetLayout *l = qobject_cast<QDockWidgetLayout*>(layout());
-    QStyleOptionDockWidgetV2 *v2
-        = qstyleoption_cast<QStyleOptionDockWidgetV2*>(option);
-    if (v2 != 0)
-        v2->verticalTitleBar = l->verticalTitleBar;
+    option->verticalTitleBar = l->verticalTitleBar;
 }
 
 void QDockWidgetPrivate::_q_toggleView(bool b)
@@ -1437,7 +1434,7 @@ void QDockWidget::paintEvent(QPaintEvent *event)
 
         // Title must be painted after the frame, since the areas overlap, and
         // the title may wish to extend out to all sides (eg. XP style)
-        QStyleOptionDockWidgetV2 titleOpt;
+        QStyleOptionDockWidget titleOpt;
         initStyleOption(&titleOpt);
         p.drawControl(QStyle::CE_DockWidgetTitle, titleOpt);
     }

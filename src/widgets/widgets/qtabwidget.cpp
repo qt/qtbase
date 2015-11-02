@@ -331,13 +331,11 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
 
     option->tabBarSize = t;
 
-    if (QStyleOptionTabWidgetFrameV2 *tabframe = qstyleoption_cast<QStyleOptionTabWidgetFrameV2*>(option)) {
-        QRect tbRect = tabBar()->geometry();
-        QRect selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
-        tabframe->tabBarRect = tbRect;
-        selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + tbRect.topLeft());
-        tabframe->selectedTabRect = selectedTabRect;
-    }
+    QRect tbRect = tabBar()->geometry();
+    QRect selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
+    option->tabBarRect = tbRect;
+    selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + tbRect.topLeft());
+    option->selectedTabRect = selectedTabRect;
 }
 
 /*!
@@ -768,7 +766,7 @@ void QTabWidget::setUpLayout(bool onlyCheck)
     if (onlyCheck && !d->dirty)
         return; // nothing to do
 
-    QStyleOptionTabWidgetFrameV2 option;
+    QStyleOptionTabWidgetFrame option;
     initStyleOption(&option);
 
     // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
@@ -817,7 +815,7 @@ QSize QTabWidget::sizeHint() const
 {
     Q_D(const QTabWidget);
     QSize lc(0, 0), rc(0, 0);
-    QStyleOptionTabWidgetFrameV2 opt;
+    QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
     opt.state = QStyle::State_None;
 
@@ -866,7 +864,7 @@ QSize QTabWidget::minimumSizeHint() const
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
-    QStyleOptionTabWidgetFrameV2 opt;
+    QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
     opt.palette = palette();
     opt.state = QStyle::State_None;
@@ -880,7 +878,7 @@ QSize QTabWidget::minimumSizeHint() const
 int QTabWidget::heightForWidth(int width) const
 {
     Q_D(const QTabWidget);
-    QStyleOptionTabWidgetFrameV2 opt;
+    QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
     opt.state = QStyle::State_None;
 
@@ -1226,14 +1224,14 @@ void QTabWidget::paintEvent(QPaintEvent *)
     if (documentMode()) {
         QStylePainter p(this, tabBar());
         if (QWidget *w = cornerWidget(Qt::TopLeftCorner)) {
-            QStyleOptionTabBarBaseV2 opt;
+            QStyleOptionTabBarBase opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
             opt.rect.moveLeft(w->x() + opt.rect.x());
             opt.rect.moveTop(w->y() + opt.rect.y());
             p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
         }
         if (QWidget *w = cornerWidget(Qt::TopRightCorner)) {
-            QStyleOptionTabBarBaseV2 opt;
+            QStyleOptionTabBarBase opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
             opt.rect.moveLeft(w->x() + opt.rect.x());
             opt.rect.moveTop(w->y() + opt.rect.y());
@@ -1243,7 +1241,7 @@ void QTabWidget::paintEvent(QPaintEvent *)
     }
     QStylePainter p(this);
 
-    QStyleOptionTabWidgetFrameV2 opt;
+    QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
     opt.rect = d->panelRect;
     p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);
