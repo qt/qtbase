@@ -179,8 +179,9 @@ QT_BEGIN_NAMESPACE
     \value Unicode_6_2  Version 6.2
     \value Unicode_6_3  Version 6.3  Since Qt 5.3
     \value Unicode_7_0  Version 7.0  Since Qt 5.5
+    \value Unicode_8_0  Version 8.0  Since Qt 5.6
     \value Unicode_Unassigned  The value is not assigned to any character
-                               in version 6.3 of Unicode.
+                               in version 8.0 of Unicode.
 
     \sa unicodeVersion(), currentUnicodeVersion()
 */
@@ -401,6 +402,12 @@ QT_BEGIN_NAMESPACE
     \value Script_Khudawadi
     \value Script_Tirhuta
     \value Script_WarangCiti
+    \value Script_Ahom
+    \value Script_AnatolianHieroglyphs
+    \value Script_Hatran
+    \value Script_Multani
+    \value Script_OldHungarian
+    \value Script_SignWriting
 
     \omitvalue ScriptCount
 

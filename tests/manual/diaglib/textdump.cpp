@@ -248,6 +248,15 @@ static const EnumLookup scriptEnumLookup[] =
     {QChar::Script_Tirhuta, "Script_Tirhuta"},
     {QChar::Script_WarangCiti, "Script_WarangCiti"},
 #endif // Qt 5.5
+
+#if QT_VERSION >= 0x050600
+    {QChar::Script_Ahom, "Script_Ahom"},
+    {QChar::Script_AnatolianHieroglyphs, "Script_AnatolianHieroglyphs"},
+    {QChar::Script_Hatran, "Script_Hatran"},
+    {QChar::Script_Multani, "Script_Multani"},
+    {QChar::Script_OldHungarian, "Script_OldHungarian"},
+    {QChar::Script_SignWriting, "Script_SignWriting"},
+#endif // Qt 5.5
 };
 
 #endif // Qt 5.1
@@ -364,6 +373,9 @@ static const EnumLookup unicodeVersionEnumLookup[] =
 #if QT_VERSION >= 0x050500
     {QChar::Unicode_7_0, "Unicode_7_0"},
 #endif // Qt 5.5
+#if QT_VERSION >= 0x050600
+    {QChar::Unicode_8_0, "Unicode_8_0"},
+#endif // Qt 5.6
 #endif // Qt 5
 };
 

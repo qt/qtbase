@@ -43,8 +43,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "7.0"
-#define DATA_VERSION_STR "QChar::Unicode_7_0"
+#define DATA_VERSION_S "8.0"
+#define DATA_VERSION_STR "QChar::Unicode_8_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -71,6 +71,7 @@ static void initAgeMap()
         { QChar::Unicode_6_2,   "6.2" },
         { QChar::Unicode_6_3,   "6.3" },
         { QChar::Unicode_7_0,   "7.0" },
+        { QChar::Unicode_8_0,   "8.0" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -719,6 +720,13 @@ static void initScriptMap()
         { QChar::Script_Khudawadi,              "Khudawadi" },
         { QChar::Script_Tirhuta,                "Tirhuta" },
         { QChar::Script_WarangCiti,             "WarangCiti" },
+        // 8.0
+        { QChar::Script_Ahom,                   "Ahom" },
+        { QChar::Script_AnatolianHieroglyphs,   "AnatolianHieroglyphs" },
+        { QChar::Script_Hatran,                 "Hatran" },
+        { QChar::Script_Multani,                "Multani" },
+        { QChar::Script_OldHungarian,           "OldHungarian" },
+        { QChar::Script_SignWriting,            "SignWriting" },
         // unhandled
         { QChar::Script_Unknown,                0 }
     };
@@ -946,13 +954,16 @@ struct UnicodeData {
         p.lineBreakClass = LineBreak_AL; // XX -> AL
         // LineBreak.txt
         // The unassigned code points that default to "ID" include ranges in the following blocks:
-        //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2F800..U+2FA1F, U+20000..U+2FFFD, U+30000..U+3FFFD]
+        //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2B820..U+2CEAF, U+2F800..U+2FA1F]
+        // and any other reserved code points on
+        //     [U+20000..U+2FFFD, U+30000..U+3FFFD]
         if ((codepoint >= 0x3400 && codepoint <= 0x4DBF)
             || (codepoint >= 0x4E00 && codepoint <= 0x9FFF)
             || (codepoint >= 0xF900 && codepoint <= 0xFAFF)
             || (codepoint >= 0x20000 && codepoint <= 0x2A6DF)
             || (codepoint >= 0x2A700 && codepoint <= 0x2B73F)
             || (codepoint >= 0x2B740 && codepoint <= 0x2B81F)
+            || (codepoint >= 0x2B820 && codepoint <= 0x2CEAF)
             || (codepoint >= 0x2F800 && codepoint <= 0x2FA1F)
             || (codepoint >= 0x20000 && codepoint <= 0x2FFFD)
             || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {

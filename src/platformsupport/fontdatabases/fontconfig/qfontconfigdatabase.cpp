@@ -242,7 +242,13 @@ static const char *specialLanguages[] = {
     "sa", // Siddham
     "sd", // Khudawadi
     "mai", // Tirhuta
-    "hoc"  // WarangCiti
+    "hoc", // WarangCiti
+    "", // Ahom
+    "", // AnatolianHieroglyphs
+    "", // Hatran
+    "", // Multani
+    "", // OldHungarian
+    ""  // SignWriting
 };
 Q_STATIC_ASSERT(sizeof(specialLanguages) / sizeof(const char *) == QChar::ScriptCount);
 

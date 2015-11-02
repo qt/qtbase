@@ -275,6 +275,14 @@ public:
         Script_Tirhuta,
         Script_WarangCiti,
 
+        // Unicode 8.0 additions
+        Script_Ahom,
+        Script_AnatolianHieroglyphs,
+        Script_Hatran,
+        Script_Multani,
+        Script_OldHungarian,
+        Script_SignWriting,
+
         ScriptCount
     };
 
@@ -365,7 +373,8 @@ public:
         Unicode_6_1,
         Unicode_6_2,
         Unicode_6_3,
-        Unicode_7_0
+        Unicode_7_0,
+        Unicode_8_0
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 
