@@ -131,8 +131,8 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionFrame::FrameFeatures)
 
-typedef QStyleOptionFrame QStyleOptionFrameV2;
-typedef QStyleOptionFrame QStyleOptionFrameV3;
+typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV2;
+typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV3;
 
 #ifndef QT_NO_TABWIDGET
 class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
@@ -158,7 +158,7 @@ protected:
     QStyleOptionTabWidgetFrame(int version);
 };
 
-typedef QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV2;
+typedef Q_DECL_DEPRECATED QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV2;
 #endif // QT_NO_TABWIDGET
 
 
@@ -181,7 +181,7 @@ protected:
     QStyleOptionTabBarBase(int version);
 };
 
-typedef QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
+typedef Q_DECL_DEPRECATED QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
 #endif // QT_NO_TABBAR
 
 class Q_WIDGETS_EXPORT QStyleOptionHeader : public QStyleOption
@@ -273,8 +273,8 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
-typedef QStyleOptionTab QStyleOptionTabV2;
-typedef QStyleOptionTab QStyleOptionTabV3;
+typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV2;
+typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
 #endif // QT_NO_TABBAR
 
 
@@ -328,7 +328,7 @@ protected:
     QStyleOptionProgressBar(int version);
 };
 
-typedef QStyleOptionProgressBar QStyleOptionProgressBarV2;
+typedef Q_DECL_DEPRECATED QStyleOptionProgressBar QStyleOptionProgressBarV2;
 
 class Q_WIDGETS_EXPORT QStyleOptionMenuItem : public QStyleOption
 {
@@ -377,7 +377,7 @@ protected:
     QStyleOptionDockWidget(int version);
 };
 
-typedef QStyleOptionDockWidget QStyleOptionDockWidgetV2;
+typedef Q_DECL_DEPRECATED QStyleOptionDockWidget QStyleOptionDockWidgetV2;
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -430,9 +430,9 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionViewItem::ViewItemFeatures)
 
-typedef QStyleOptionViewItem QStyleOptionViewItemV2;
-typedef QStyleOptionViewItem QStyleOptionViewItemV3;
-typedef QStyleOptionViewItem QStyleOptionViewItemV4;
+typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV2;
+typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV3;
+typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV4;
 
 #endif // QT_NO_ITEMVIEWS
 
@@ -458,7 +458,7 @@ protected:
     QStyleOptionToolBox(int version);
 };
 
-typedef QStyleOptionToolBox QStyleOptionToolBoxV2;
+typedef Q_DECL_DEPRECATED QStyleOptionToolBox QStyleOptionToolBoxV2;
 
 #ifndef QT_NO_RUBBERBAND
 class Q_WIDGETS_EXPORT QStyleOptionRubberBand : public QStyleOption
