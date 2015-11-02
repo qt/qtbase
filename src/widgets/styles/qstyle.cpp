@@ -896,7 +896,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CE_ToolBoxTabLabel  The toolbox's tab label.
     \value CE_HeaderEmptyArea  The area of a header view where there are no header sections.
 
-    \value CE_ShapedFrame The frame with the shape specified in the QStyleOptionFrameV3; see QFrame.
+    \value CE_ShapedFrame The frame with the shape specified in the QStyleOptionFrame; see QFrame.
 
     \omitvalue CE_ColumnViewGrip
 
@@ -1034,7 +1034,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \omitvalue SE_ViewItemCheckIndicator
 
     \value SE_FrameContents  Area for a frame's contents.
-    \value SE_ShapedFrameContents Area for a frame's contents using the shape in QStyleOptionFrameV3; see QFrame
+    \value SE_ShapedFrameContents Area for a frame's contents using the shape in QStyleOptionFrame; see QFrame
     \value SE_FrameLayoutItem  Area that counts for the parent layout.
 
     \value SE_HeaderArrow Area for the sort indicator for a header.
