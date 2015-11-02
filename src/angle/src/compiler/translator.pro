@@ -170,8 +170,10 @@ flex.dependency_type = TYPE_C
 flex.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += flex
 
+defineReplace(myDirName) { return($$dirname(1)) }
 bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_OUT} \
-                --output=${QMAKE_FILE_OUT_BASE}.cpp ${QMAKE_FILE_NAME}
+                --output=${QMAKE_FUNC_FILE_OUT_myDirName}$$QMAKE_DIR_SEP${QMAKE_FILE_OUT_BASE}.cpp \
+                ${QMAKE_FILE_NAME}
 bison.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
 bison.input = BISON_SOURCES
 bison.dependency_type = TYPE_C
