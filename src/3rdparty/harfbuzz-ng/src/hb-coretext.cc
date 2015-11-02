@@ -38,6 +38,19 @@
 #endif
 
 
+typedef bool (*qt_get_font_table_func_t) (void *user_data, unsigned int tag, unsigned char *buffer, unsigned int *length);
+
+struct FontEngineFaceData {
+  void *user_data;
+  qt_get_font_table_func_t get_font_table;
+};
+
+struct CoreTextFontEngineData {
+  CTFontRef ctFont;
+  CGFontRef cgFont;
+};
+
+
 static void
 release_table_data (void *user_data)
 {
@@ -92,6 +105,7 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
 {
   hb_coretext_shaper_face_data_t *data = NULL;
 
+#if 0
   if (face->destroy == (hb_destroy_func_t) CGFontRelease)
   {
     data = CGFontRetain ((CGFontRef) face->user_data);
@@ -111,6 +125,11 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
       CGDataProviderRelease (provider);
     }
   }
+#else
+  FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
+  CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
+  data = CGFontRetain (coreTextFontEngineData->cgFont);
+#endif
 
   if (unlikely (!data)) {
     DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
@@ -156,6 +175,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
     return NULL;
 
   hb_face_t *face = font->face;
+#if 0
   hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
 
   /* Choose a CoreText font size and calculate multipliers to convert to HarfBuzz space. */
@@ -170,6 +190,12 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
   data->x_mult = (CGFloat) font->x_scale / font_size;
   data->y_mult = (CGFloat) font->y_scale / font_size;
   data->ct_font = CTFontCreateWithGraphicsFont (face_data, font_size, NULL, NULL);
+#else
+  data->x_mult = data->y_mult = (CGFloat) 64.0f;
+  FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
+  CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
+  data->ct_font = (CTFontRef) CFRetain (coreTextFontEngineData->ctFont);
+#endif
   if (unlikely (!data->ct_font)) {
     DEBUG_MSG (CORETEXT, font, "Font CTFontCreateWithGraphicsFont() failed");
     free (data);
@@ -818,6 +844,8 @@ retry:
 	  run_advance = -run_advance;
       DEBUG_MSG (CORETEXT, run, "Run advance: %g", run_advance);
 
+      CFRange range = CTRunGetStringRange (run);
+
       /* CoreText does automatic font fallback (AKA "cascading") for  characters
        * not supported by the requested font, and provides no way to turn it off,
        * so we must detect if the returned run uses a font other than the requested
@@ -884,7 +912,6 @@ retry:
 	}
 	if (!matched)
 	{
-	  CFRange range = CTRunGetStringRange (run);
           DEBUG_MSG (CORETEXT, run, "Run used fallback font: %ld..%ld",
 		     range.location, range.location + range.length);
 	  if (!buffer->ensure_inplace (buffer->len + range.length))
@@ -936,7 +963,13 @@ retry:
       if (num_glyphs == 0)
 	continue;
 
-      if (!buffer->ensure_inplace (buffer->len + num_glyphs))
+      /* ### temporary fix for QTBUG-38113 */
+      /* CoreText throws away the PDF token, while the OpenType backend will add a zero-advance
+       * glyph for this. We need to make sure the two produce the same output. */
+      UniChar endGlyph = CFStringGetCharacterAtIndex (string_ref, range.location + range.length - 1);
+      bool endsWithPDF = endGlyph == 0x202c;
+
+      if (!buffer->ensure_inplace (buffer->len + num_glyphs + (endsWithPDF ? 1 : 0)))
 	goto resize_and_retry;
 
       hb_glyph_info_t *run_info = buffer->info + buffer->len;
@@ -1027,6 +1060,20 @@ retry:
 	    info++;
 	  }
 	}
+        if (endsWithPDF) {
+          /* Ensure a zero-advance glyph the PDF token */
+          if (unlikely (HB_DIRECTION_IS_BACKWARD (buffer->props.direction))) {
+            memmove (run_info + 1, run_info, num_glyphs * sizeof (hb_glyph_info_t));
+            info = run_info;
+          }
+          info->codepoint = 0xffff;
+          info->cluster = log_clusters[range.location + range.length - 1];
+          info->mask = 0;
+          info->var1.u32 = 0;
+          info->var2.u32 = 0;
+
+          buffer->len++;
+        }
 	SCRATCH_RESTORE();
 	advances_so_far += run_advance;
       }
