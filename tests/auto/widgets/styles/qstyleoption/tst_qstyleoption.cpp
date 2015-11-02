@@ -43,7 +43,6 @@ class tst_QStyleOption: public QObject
 private slots:
     void qstyleoptioncast_data();
     void qstyleoptioncast();
-    void copyconstructors();
 };
 
 // Just a simple container for QStyleOption-pointer
@@ -131,21 +130,6 @@ void tst_QStyleOption::qstyleoptioncast()
 
     // Deallocate
     delete testOption;
-}
-
-void tst_QStyleOption::copyconstructors()
-{
-    QStyleOptionFrame frame;
-    QStyleOptionFrameV2 frame2(frame);
-    QCOMPARE(frame2.version, int(QStyleOptionFrameV2::Version));
-    frame2 = frame;
-    QCOMPARE(frame2.version, int(QStyleOptionFrameV2::Version));
-
-    QStyleOptionProgressBar bar;
-    QStyleOptionProgressBarV2 bar2(bar);
-    QCOMPARE(bar2.version, int(QStyleOptionProgressBarV2::Version));
-    bar2 = bar;
-    QCOMPARE(bar2.version, int(QStyleOptionProgressBarV2::Version));
 }
 
 QTEST_MAIN(tst_QStyleOption)

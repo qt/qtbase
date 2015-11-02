@@ -3075,7 +3075,7 @@ void tst_QTreeView::styleOptionViewItem()
 {
     class MyDelegate : public QStyledItemDelegate
     {
-        static QString posToString(QStyleOptionViewItemV4::ViewItemPosition pos) {
+        static QString posToString(QStyleOptionViewItem::ViewItemPosition pos) {
             static const char* s_pos[] = { "Invalid", "Beginning", "Middle", "End", "OnlyOne" };
             return s_pos[pos];
         }
@@ -3088,8 +3088,7 @@ void tst_QTreeView::styleOptionViewItem()
 
             void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
             {
-                QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
-                QStyleOptionViewItemV4 opt(option);
+                QStyleOptionViewItem opt(option);
                 initStyleOption(&opt, index);
 
                 QVERIFY(!opt.text.isEmpty());
@@ -3097,20 +3096,20 @@ void tst_QTreeView::styleOptionViewItem()
                 //qDebug() << index << opt.text;
 
                 if (allCollapsed)
-                    QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
-                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
+                    QCOMPARE(!(opt.features & QStyleOptionViewItem::Alternate), !(index.row() % 2));
+                QCOMPARE(!(opt.features & QStyleOptionViewItem::HasCheckIndicator), !opt.text.contains("Checkable"));
 
                 if (opt.text.contains("Beginning"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::Beginning));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Beginning));
 
                 if (opt.text.contains("Middle"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::Middle));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Middle));
 
                 if (opt.text.contains("End"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::End));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::End));
 
                 if (opt.text.contains("OnlyOne"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItemV4::OnlyOne));
+                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::OnlyOne));
 
                 if (opt.text.contains("Checked"))
                     QCOMPARE(opt.checkState, Qt::Checked);
@@ -4192,7 +4191,7 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 
 #ifdef QT_BUILD_INTERNAL
     {
-        QStyleOptionViewItemV4 option;
+        QStyleOptionViewItem option;
 
         view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item1));
 
