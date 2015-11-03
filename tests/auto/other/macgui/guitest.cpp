@@ -145,7 +145,9 @@ namespace NativeEvents {
         CGEventType mouseDownType = (buttons & Qt::LeftButton) ? kCGEventLeftMouseDown :
                                     (buttons & Qt::RightButton) ? kCGEventRightMouseDown :
                                                                   kCGEventOtherMouseDown;
-        CGMouseButton mouseButton = mouseDownType == kCGEventOtherMouseDown ? kCGMouseButtonCenter : kCGEventLeftMouseDown;
+        // The mouseButton argument to CGEventCreateMouseEvent() is ignored unless the type
+        // is kCGEventOtherMouseDown, so defaulting to kCGMouseButtonLeft is fine.
+        CGMouseButton mouseButton = mouseDownType == kCGEventOtherMouseDown ? kCGMouseButtonCenter : kCGMouseButtonLeft;
         CGEventRef mouseEvent = CGEventCreateMouseEvent(NULL, mouseDownType, position, mouseButton);
         CGEventPost(kCGHIDEventTap, mouseEvent);
 
