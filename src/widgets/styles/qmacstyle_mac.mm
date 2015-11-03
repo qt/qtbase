@@ -4342,8 +4342,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, opt, w);
                 if (verticalTitleBar) {
                     QRect rect = dwOpt->rect;
-                    QRect r = rect;
-                    r.setSize(r.size().transposed());
+                    QRect r = rect.transposed();
 
                     titleRect = QRect(r.left() + rect.bottom()
                                         - titleRect.bottom(),
@@ -5167,7 +5166,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             // If this is a vertical titlebar, we transpose and work as if it was
             // horizontal, then transpose again.
             if (verticalTitleBar)
-                srect.setSize(srect.size().transposed());
+                srect = srect.transposed();
 
             do {
                 int right = srect.right();
