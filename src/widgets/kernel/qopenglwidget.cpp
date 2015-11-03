@@ -645,12 +645,6 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 
 GLuint QOpenGLWidgetPrivate::textureId() const
 {
-    Q_Q(const QOpenGLWidget);
-    if (!q->isWindow() && q->internalWinId()) {
-        qWarning("QOpenGLWidget cannot be used as a native child widget. Consider setting "
-                 "Qt::WA_DontCreateNativeAncestors and Qt::AA_DontCreateNativeWidgetSiblings");
-        return 0;
-    }
     return resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
 }
 
