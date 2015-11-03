@@ -2453,7 +2453,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     QTime tm;
     msecsToTime(localMsecs, &dt, &tm);
 
-    qint64 msecsMax = qint64(TIME_T_MAX) * 1000;
+    const qint64 msecsMax = qint64(TIME_T_MAX) * 1000;
 
     if (localMsecs <= qint64(MSECS_PER_DAY)) {
 
