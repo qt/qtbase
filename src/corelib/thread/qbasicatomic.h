@@ -60,8 +60,6 @@
 # include "QtCore/qatomic_armv5.h"
 #elif defined(Q_PROCESSOR_IA64)
 #  include "QtCore/qatomic_ia64.h"
-#elif defined(Q_PROCESSOR_MIPS)
-#  include "QtCore/qatomic_mips.h"
 #elif defined(Q_PROCESSOR_X86)
 #  include <QtCore/qatomic_x86.h>
 
