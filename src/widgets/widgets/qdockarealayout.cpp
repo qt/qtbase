@@ -2105,6 +2105,8 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     const QSignalBlocker blocker(tabBar);
     bool gap = false;
 
+    const quintptr oldCurrentId = currentTabId();
+
     int tab_idx = 0;
     for (int i = 0; i < item_list.count(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
@@ -2152,6 +2154,9 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     while (tab_idx < tabBar->count()) {
         tabBar->removeTab(tab_idx);
     }
+
+    if (oldCurrentId > 0 && currentTabId() != oldCurrentId)
+        that->setCurrentTabId(oldCurrentId);
 
     //returns if the tabbar is visible or not
     return ( (gap ? 1 : 0) + tabBar->count()) > 1;
