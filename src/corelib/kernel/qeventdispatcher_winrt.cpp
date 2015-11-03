@@ -97,8 +97,6 @@ public:
     ~QEventDispatcherWinRTPrivate();
 
 private:
-    ComPtr<IThreadPoolTimerStatics> timerFactory;
-
     QHash<int, QObject *> timerIdToObject;
     QVector<WinRTTimerInfo> timerInfos;
     QHash<HANDLE, int> timerHandleToId;
@@ -167,7 +165,7 @@ QEventDispatcherWinRT::~QEventDispatcherWinRT()
 {
 }
 
-HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &delegate)
+HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &delegate, bool waitForRun)
 {
     static __declspec(thread) ICoreDispatcher *dispatcher = nullptr;
     if (!dispatcher) {
@@ -194,7 +192,7 @@ HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &
 
     ComPtr<IAsyncAction> op;
     hr = dispatcher->RunAsync(CoreDispatcherPriority_Normal, Make<AgileDispatchedHandler>(delegate).Get(), &op);
-    if (FAILED(hr))
+    if (FAILED(hr) || !waitForRun)
         return hr;
     return QWinRTFunctions::await(op);
 }
@@ -292,9 +290,16 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
     period.Duration = qMax(qint64(1), qint64(interval) * 10000);
     const HANDLE handle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE | EVENT_MODIFY_STATE);
     const HANDLE cancelHandle = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE|EVENT_MODIFY_STATE);
-    HRESULT hr = runOnXamlThread([&]() {
+    HRESULT hr = runOnXamlThread([cancelHandle, handle, period]() {
+        static ComPtr<IThreadPoolTimerStatics> timerFactory;
+        HRESULT hr;
+        if (!timerFactory) {
+            hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(),
+                                      &timerFactory);
+            Q_ASSERT_SUCCEEDED(hr);
+        }
         IThreadPoolTimer *timer;
-        HRESULT hr = d->timerFactory->CreatePeriodicTimerWithCompletion(
+        hr = timerFactory->CreatePeriodicTimerWithCompletion(
         Callback<ITimerElapsedHandler>([handle, cancelHandle](IThreadPoolTimer *timer) {
             DWORD cancelResult = WaitForSingleObjectEx(cancelHandle, 0, TRUE);
             if (cancelResult == WAIT_OBJECT_0) {
@@ -314,14 +319,14 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
             return S_OK;
         }).Get(), &timer);
         RETURN_HR_IF_FAILED("Failed to create periodic timer");
-
-        d->addTimer(timerId, interval, timerType, object, handle, cancelHandle);
         return hr;
-    });
+    }, false);
     if (FAILED(hr)) {
         CloseHandle(handle);
         CloseHandle(cancelHandle);
+        return;
     }
+    d->addTimer(timerId, interval, timerType, object, handle, cancelHandle);
 }
 
 bool QEventDispatcherWinRT::unregisterTimer(int timerId)
@@ -495,9 +500,6 @@ QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
     const bool isGuiThread = QCoreApplication::instance() &&
             QThread::currentThread() == QCoreApplication::instance()->thread();
     CoInitializeEx(NULL, isGuiThread ? COINIT_APARTMENTTHREADED : COINIT_MULTITHREADED);
-    HRESULT hr;
-    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
-    Q_ASSERT_SUCCEEDED(hr);
     HANDLE interruptHandle = CreateEventEx(NULL, NULL, NULL, SYNCHRONIZE|EVENT_MODIFY_STATE);
     timerIdToHandle.insert(INTERRUPT_HANDLE, interruptHandle);
     timerHandleToId.insert(interruptHandle, INTERRUPT_HANDLE);
