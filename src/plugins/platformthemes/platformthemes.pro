@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 
-contains(QT_CONFIG, gtk2): SUBDIRS += gtk2
+contains(QT_CONFIG, gtk3): SUBDIRS += gtk3

@@ -713,9 +713,9 @@ QStringList QGenericUnixTheme::themeNames()
                 result.push_back(QLatin1String(QKdeTheme::name));
 #endif
             } else if (gtkBasedEnvironments.contains(desktopName)) {
-                // prefer the GTK2 theme implementation with native dialogs etc.
-                result.push_back(QStringLiteral("gtk2"));
-                // fallback to the generic Gnome theme if loading the GTK2 theme fails
+                // prefer the GTK3 theme implementation with native dialogs etc.
+                result.push_back(QStringLiteral("gtk3"));
+                // fallback to the generic Gnome theme if loading the GTK3 theme fails
                 result.push_back(QLatin1String(QGnomeTheme::name));
             }
         }

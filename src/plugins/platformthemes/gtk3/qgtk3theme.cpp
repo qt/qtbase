@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#include "qgtk2theme.h"
-#include "qgtk2dialoghelpers.h"
+#include "qgtk3theme.h"
+#include "qgtk3dialoghelpers.h"
 #include <QVariant>
 
 #undef signals
@@ -42,7 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const char *QGtk2Theme::name = "gtk2";
+const char *QGtk3Theme::name = "gtk3";
 
 static QString gtkSetting(const gchar *propertyName)
 {
@@ -54,7 +54,21 @@ static QString gtkSetting(const gchar *propertyName)
     return str;
 }
 
-QGtk2Theme::QGtk2Theme()
+void gtkMessageHandler(const gchar *log_domain,
+                       GLogLevelFlags log_level,
+                       const gchar *message,
+                       gpointer unused_data) {
+    /* Silence false-positive Gtk warnings (we are using Xlib to set
+     * the WM_TRANSIENT_FOR hint).
+     */
+    if (g_strcmp0(message, "GtkDialog mapped without a transient parent. "
+                           "This is discouraged.") != 0) {
+        /* For other messages, call the default handler. */
+        g_log_default_handler(log_domain, log_level, message, unused_data);
+    }
+}
+
+QGtk3Theme::QGtk3Theme()
 {
     // gtk_init will reset the Xlib error handler, and that causes
     // Qt applications to quit on X errors. Therefore, we need to manually restore it.
@@ -63,9 +77,18 @@ QGtk2Theme::QGtk2Theme()
     gtk_init(0, 0);
 
     XSetErrorHandler(oldErrorHandler);
+
+    /* Initialize some types here so that Gtk+ does not crash when reading
+     * the treemodel for GtkFontChooser.
+     */
+    g_type_ensure(PANGO_TYPE_FONT_FAMILY);
+    g_type_ensure(PANGO_TYPE_FONT_FACE);
+
+    /* Use our custom log handler. */
+    g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, NULL);
 }
 
-QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
+QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::SystemIconThemeName:
@@ -77,7 +100,7 @@ QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
 }
 
-QString QGtk2Theme::gtkFontName() const
+QString QGtk3Theme::gtkFontName() const
 {
     QString cfgFontName = gtkSetting("gtk-font-name");
     if (!cfgFontName.isEmpty())
@@ -85,7 +108,7 @@ QString QGtk2Theme::gtkFontName() const
     return QGnomeTheme::gtkFontName();
 }
 
-bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
+bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const
 {
     switch (type) {
     case ColorDialog:
@@ -99,15 +122,15 @@ bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
     }
 }
 
-QPlatformDialogHelper *QGtk2Theme::createPlatformDialogHelper(DialogType type) const
+QPlatformDialogHelper *QGtk3Theme::createPlatformDialogHelper(DialogType type) const
 {
     switch (type) {
     case ColorDialog:
-        return new QGtk2ColorDialogHelper;
+        return new QGtk3ColorDialogHelper;
     case FileDialog:
-        return new QGtk2FileDialogHelper;
+        return new QGtk3FileDialogHelper;
     case FontDialog:
-        return new QGtk2FontDialogHelper;
+        return new QGtk3FontDialogHelper;
     default:
         return 0;
     }

@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qgtk2dialoghelpers.h"
+#include "qgtk3dialoghelpers.h"
 
 #include <qeventloop.h>
 #include <qwindow.h>
@@ -50,13 +50,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGtk2Dialog : public QWindow
+class QGtk3Dialog : public QWindow
 {
     Q_OBJECT
 
 public:
-    QGtk2Dialog(GtkWidget *gtkWidget);
-    ~QGtk2Dialog();
+    QGtk3Dialog(GtkWidget *gtkWidget);
+    ~QGtk3Dialog();
 
     GtkDialog *gtkDialog() const;
 
@@ -69,30 +69,30 @@ Q_SIGNALS:
     void reject();
 
 protected:
-    static void onResponse(QGtk2Dialog *dialog, int response);
+    static void onResponse(QGtk3Dialog *dialog, int response);
 
 private:
     GtkWidget *gtkWidget;
 };
 
-QGtk2Dialog::QGtk2Dialog(GtkWidget *gtkWidget) : gtkWidget(gtkWidget)
+QGtk3Dialog::QGtk3Dialog(GtkWidget *gtkWidget) : gtkWidget(gtkWidget)
 {
     g_signal_connect_swapped(G_OBJECT(gtkWidget), "response", G_CALLBACK(onResponse), this);
     g_signal_connect(G_OBJECT(gtkWidget), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 }
 
-QGtk2Dialog::~QGtk2Dialog()
+QGtk3Dialog::~QGtk3Dialog()
 {
     gtk_clipboard_store(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD));
     gtk_widget_destroy(gtkWidget);
 }
 
-GtkDialog *QGtk2Dialog::gtkDialog() const
+GtkDialog *QGtk3Dialog::gtkDialog() const
 {
     return GTK_DIALOG(gtkWidget);
 }
 
-void QGtk2Dialog::exec()
+void QGtk3Dialog::exec()
 {
     if (modality() == Qt::ApplicationModal) {
         // block input to the whole app, including other GTK dialogs
@@ -106,7 +106,7 @@ void QGtk2Dialog::exec()
     }
 }
 
-bool QGtk2Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
+bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
     setParent(parent);
     setFlags(flags);
@@ -114,29 +114,31 @@ bool QGtk2Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
 
     gtk_widget_realize(gtkWidget); // creates X window
 
+    GdkWindow *gdkWindow = gtk_widget_get_window(gtkWidget);
     if (parent) {
-        XSetTransientForHint(gdk_x11_drawable_get_xdisplay(gtkWidget->window),
-                             gdk_x11_drawable_get_xid(gtkWidget->window),
+        GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
+        XSetTransientForHint(gdk_x11_display_get_xdisplay(gdkDisplay),
+                             gdk_x11_window_get_xid(gdkWindow),
                              parent->winId());
     }
 
     if (modality != Qt::NonModal) {
-        gdk_window_set_modal_hint(gtkWidget->window, true);
+        gdk_window_set_modal_hint(gdkWindow, true);
         QGuiApplicationPrivate::showModalWindow(this);
     }
 
     gtk_widget_show(gtkWidget);
-    gdk_window_focus(gtkWidget->window, 0);
+    gdk_window_focus(gdkWindow, GDK_CURRENT_TIME);
     return true;
 }
 
-void QGtk2Dialog::hide()
+void QGtk3Dialog::hide()
 {
     QGuiApplicationPrivate::hideModalWindow(this);
     gtk_widget_hide(gtkWidget);
 }
 
-void QGtk2Dialog::onResponse(QGtk2Dialog *dialog, int response)
+void QGtk3Dialog::onResponse(QGtk3Dialog *dialog, int response)
 {
     if (response == GTK_RESPONSE_OK)
         emit dialog->accept();
@@ -144,95 +146,78 @@ void QGtk2Dialog::onResponse(QGtk2Dialog *dialog, int response)
         emit dialog->reject();
 }
 
-QGtk2ColorDialogHelper::QGtk2ColorDialogHelper()
+QGtk3ColorDialogHelper::QGtk3ColorDialogHelper()
 {
-    d.reset(new QGtk2Dialog(gtk_color_selection_dialog_new("")));
+    d.reset(new QGtk3Dialog(gtk_color_chooser_dialog_new("", 0)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 
-    GtkWidget *gtkColorSelection = gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(d->gtkDialog()));
-    g_signal_connect_swapped(gtkColorSelection, "color-changed", G_CALLBACK(onColorChanged), this);
+    g_signal_connect_swapped(d->gtkDialog(), "color-activated", G_CALLBACK(onColorChanged), this);
 }
 
-QGtk2ColorDialogHelper::~QGtk2ColorDialogHelper()
+QGtk3ColorDialogHelper::~QGtk3ColorDialogHelper()
 {
 }
 
-bool QGtk2ColorDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
+bool QGtk3ColorDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
     applyOptions();
     return d->show(flags, modality, parent);
 }
 
-void QGtk2ColorDialogHelper::exec()
+void QGtk3ColorDialogHelper::exec()
 {
     d->exec();
 }
 
-void QGtk2ColorDialogHelper::hide()
+void QGtk3ColorDialogHelper::hide()
 {
     d->hide();
 }
 
-void QGtk2ColorDialogHelper::setCurrentColor(const QColor &color)
+void QGtk3ColorDialogHelper::setCurrentColor(const QColor &color)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    GtkWidget *gtkColorSelection = gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(gtkDialog));
-    GdkColor gdkColor;
-    gdkColor.red = color.red() << 8;
-    gdkColor.green = color.green() << 8;
-    gdkColor.blue = color.blue() << 8;
-    gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(gtkColorSelection), &gdkColor);
-    if (color.alpha() < 255) {
-        gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(gtkColorSelection), true);
-        gtk_color_selection_set_current_alpha(GTK_COLOR_SELECTION(gtkColorSelection), color.alpha() << 8);
-    }
+    if (color.alpha() < 255)
+        gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(gtkDialog), true);
+    GdkRGBA gdkColor;
+    gdkColor.red = color.redF();
+    gdkColor.green = color.greenF();
+    gdkColor.blue = color.blueF();
+    gdkColor.alpha = color.alphaF();
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(gtkDialog), &gdkColor);
 }
 
-QColor QGtk2ColorDialogHelper::currentColor() const
+QColor QGtk3ColorDialogHelper::currentColor() const
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    GtkWidget *gtkColorSelection = gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(gtkDialog));
-    GdkColor gdkColor;
-    gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(gtkColorSelection), &gdkColor);
-    guint16 alpha = gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(gtkColorSelection));
-    return QColor(gdkColor.red >> 8, gdkColor.green >> 8, gdkColor.blue >> 8, alpha >> 8);
+    GdkRGBA gdkColor;
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(gtkDialog), &gdkColor);
+    return QColor::fromRgbF(gdkColor.red, gdkColor.green, gdkColor.blue, gdkColor.alpha);
 }
 
-void QGtk2ColorDialogHelper::onAccepted()
+void QGtk3ColorDialogHelper::onAccepted()
 {
     emit accept();
     emit colorSelected(currentColor());
 }
 
-void QGtk2ColorDialogHelper::onColorChanged(QGtk2ColorDialogHelper *dialog)
+void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
 {
     emit dialog->currentColorChanged(dialog->currentColor());
 }
 
-void QGtk2ColorDialogHelper::applyOptions()
+void QGtk3ColorDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     gtk_window_set_title(GTK_WINDOW(gtkDialog), options()->windowTitle().toUtf8());
 
-    GtkWidget *gtkColorSelection = gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(gtkDialog));
-    gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(gtkColorSelection), options()->testOption(QColorDialogOptions::ShowAlphaChannel));
-
-    GtkWidget *okButton = 0;
-    GtkWidget *cancelButton = 0;
-    GtkWidget *helpButton = 0;
-    g_object_get(G_OBJECT(gtkDialog), "ok-button", &okButton, "cancel-button", &cancelButton, "help-button", &helpButton, NULL);
-    if (okButton)
-        g_object_set(G_OBJECT(okButton), "visible", !options()->testOption(QColorDialogOptions::NoButtons), NULL);
-    if (cancelButton)
-        g_object_set(G_OBJECT(cancelButton), "visible", !options()->testOption(QColorDialogOptions::NoButtons), NULL);
-    if (helpButton)
-        gtk_widget_hide(helpButton);
+    gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(gtkDialog), options()->testOption(QColorDialogOptions::ShowAlphaChannel));
 }
 
-QGtk2FileDialogHelper::QGtk2FileDialogHelper()
+QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 {
-    d.reset(new QGtk2Dialog(gtk_file_chooser_dialog_new("", 0,
+    d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", 0,
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
                                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                                         GTK_STOCK_OK, GTK_RESPONSE_OK, NULL)));
@@ -243,11 +228,11 @@ QGtk2FileDialogHelper::QGtk2FileDialogHelper()
     g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "current-folder-changed", G_CALLBACK(onCurrentFolderChanged), this);
 }
 
-QGtk2FileDialogHelper::~QGtk2FileDialogHelper()
+QGtk3FileDialogHelper::~QGtk3FileDialogHelper()
 {
 }
 
-bool QGtk2FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
+bool QGtk3FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
     _dir.clear();
     _selection.clear();
@@ -256,12 +241,12 @@ bool QGtk2FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modal
     return d->show(flags, modality, parent);
 }
 
-void QGtk2FileDialogHelper::exec()
+void QGtk3FileDialogHelper::exec()
 {
     d->exec();
 }
 
-void QGtk2FileDialogHelper::hide()
+void QGtk3FileDialogHelper::hide()
 {
     // After GtkFileChooserDialog has been hidden, gtk_file_chooser_get_current_folder()
     // & gtk_file_chooser_get_filenames() will return bogus values -> cache the actual
@@ -272,18 +257,18 @@ void QGtk2FileDialogHelper::hide()
     d->hide();
 }
 
-bool QGtk2FileDialogHelper::defaultNameFilterDisables() const
+bool QGtk3FileDialogHelper::defaultNameFilterDisables() const
 {
     return false;
 }
 
-void QGtk2FileDialogHelper::setDirectory(const QUrl &directory)
+void QGtk3FileDialogHelper::setDirectory(const QUrl &directory)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), directory.toLocalFile().toUtf8());
 }
 
-QUrl QGtk2FileDialogHelper::directory() const
+QUrl QGtk3FileDialogHelper::directory() const
 {
     // While GtkFileChooserDialog is hidden, gtk_file_chooser_get_current_folder()
     // returns a bogus value -> return the cached value before hiding
@@ -300,7 +285,7 @@ QUrl QGtk2FileDialogHelper::directory() const
     return QUrl::fromLocalFile(ret);
 }
 
-void QGtk2FileDialogHelper::selectFile(const QUrl &filename)
+void QGtk3FileDialogHelper::selectFile(const QUrl &filename)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
@@ -312,7 +297,7 @@ void QGtk2FileDialogHelper::selectFile(const QUrl &filename)
     }
 }
 
-QList<QUrl> QGtk2FileDialogHelper::selectedFiles() const
+QList<QUrl> QGtk3FileDialogHelper::selectedFiles() const
 {
     // While GtkFileChooserDialog is hidden, gtk_file_chooser_get_filenames()
     // returns a bogus value -> return the cached value before hiding
@@ -328,12 +313,12 @@ QList<QUrl> QGtk2FileDialogHelper::selectedFiles() const
     return selection;
 }
 
-void QGtk2FileDialogHelper::setFilter()
+void QGtk3FileDialogHelper::setFilter()
 {
     applyOptions();
 }
 
-void QGtk2FileDialogHelper::selectNameFilter(const QString &filter)
+void QGtk3FileDialogHelper::selectNameFilter(const QString &filter)
 {
     GtkFileFilter *gtkFilter = _filters.value(filter);
     if (gtkFilter) {
@@ -342,14 +327,14 @@ void QGtk2FileDialogHelper::selectNameFilter(const QString &filter)
     }
 }
 
-QString QGtk2FileDialogHelper::selectedNameFilter() const
+QString QGtk3FileDialogHelper::selectedNameFilter() const
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     GtkFileFilter *gtkFilter = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(gtkDialog));
     return _filterNames.value(gtkFilter);
 }
 
-void QGtk2FileDialogHelper::onAccepted()
+void QGtk3FileDialogHelper::onAccepted()
 {
     emit accept();
 
@@ -363,7 +348,7 @@ void QGtk2FileDialogHelper::onAccepted()
         emit fileSelected(files.first());
 }
 
-void QGtk2FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk2FileDialogHelper *helper)
+void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDialogHelper *helper)
 {
     QString selection;
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(gtkDialog));
@@ -374,7 +359,7 @@ void QGtk2FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk2FileDi
     emit helper->currentChanged(QUrl::fromLocalFile(selection));
 }
 
-void QGtk2FileDialogHelper::onCurrentFolderChanged(QGtk2FileDialogHelper *dialog)
+void QGtk3FileDialogHelper::onCurrentFolderChanged(QGtk3FileDialogHelper *dialog)
 {
     emit dialog->directoryEntered(dialog->directory());
 }
@@ -399,7 +384,7 @@ static GtkFileChooserAction gtkFileChooserAction(const QSharedPointer<QFileDialo
     }
 }
 
-void QGtk2FileDialogHelper::applyOptions()
+void QGtk3FileDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     const QSharedPointer<QFileDialogOptions> &opts = options();
@@ -430,7 +415,6 @@ void QGtk2FileDialogHelper::applyOptions()
     if (!initialNameFilter.isEmpty())
         selectNameFilter(initialNameFilter);
 
-#if GTK_CHECK_VERSION(2, 20, 0)
     GtkWidget *acceptButton = gtk_dialog_get_widget_for_response(gtkDialog, GTK_RESPONSE_OK);
     if (acceptButton) {
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
@@ -448,10 +432,9 @@ void QGtk2FileDialogHelper::applyOptions()
         else
             gtk_button_set_label(GTK_BUTTON(rejectButton), GTK_STOCK_CANCEL);
     }
-#endif
 }
 
-void QGtk2FileDialogHelper::setNameFilters(const QStringList &filters)
+void QGtk3FileDialogHelper::setNameFilters(const QStringList &filters)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     foreach (GtkFileFilter *filter, _filters)
@@ -476,29 +459,29 @@ void QGtk2FileDialogHelper::setNameFilters(const QStringList &filters)
     }
 }
 
-QGtk2FontDialogHelper::QGtk2FontDialogHelper()
+QGtk3FontDialogHelper::QGtk3FontDialogHelper()
 {
-    d.reset(new QGtk2Dialog(gtk_font_selection_dialog_new("")));
+    d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", 0)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 }
 
-QGtk2FontDialogHelper::~QGtk2FontDialogHelper()
+QGtk3FontDialogHelper::~QGtk3FontDialogHelper()
 {
 }
 
-bool QGtk2FontDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
+bool QGtk3FontDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
     applyOptions();
     return d->show(flags, modality, parent);
 }
 
-void QGtk2FontDialogHelper::exec()
+void QGtk3FontDialogHelper::exec()
 {
     d->exec();
 }
 
-void QGtk2FontDialogHelper::hide()
+void QGtk3FontDialogHelper::hide()
 {
     d->hide();
 }
@@ -569,43 +552,36 @@ static QFont qt_fontFromString(const QString &name)
     return font;
 }
 
-void QGtk2FontDialogHelper::setCurrentFont(const QFont &font)
+void QGtk3FontDialogHelper::setCurrentFont(const QFont &font)
 {
-    GtkFontSelectionDialog *gtkDialog = GTK_FONT_SELECTION_DIALOG(d->gtkDialog());
-    gtk_font_selection_dialog_set_font_name(gtkDialog, qt_fontToString(font).toUtf8());
+    GtkFontChooser *gtkDialog = GTK_FONT_CHOOSER(d->gtkDialog());
+    gtk_font_chooser_set_font(gtkDialog, qt_fontToString(font).toUtf8());
 }
 
-QFont QGtk2FontDialogHelper::currentFont() const
+QFont QGtk3FontDialogHelper::currentFont() const
 {
-    GtkFontSelectionDialog *gtkDialog = GTK_FONT_SELECTION_DIALOG(d->gtkDialog());
-    gchar *name = gtk_font_selection_dialog_get_font_name(gtkDialog);
+    GtkFontChooser *gtkDialog = GTK_FONT_CHOOSER(d->gtkDialog());
+    gchar *name = gtk_font_chooser_get_font(gtkDialog);
     QFont font = qt_fontFromString(QString::fromUtf8(name));
     g_free(name);
     return font;
 }
 
-void QGtk2FontDialogHelper::onAccepted()
+void QGtk3FontDialogHelper::onAccepted()
 {
     emit currentFontChanged(currentFont());
     emit accept();
     emit fontSelected(currentFont());
 }
 
-void QGtk2FontDialogHelper::applyOptions()
+void QGtk3FontDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     const QSharedPointer<QFontDialogOptions> &opts = options();
 
     gtk_window_set_title(GTK_WINDOW(gtkDialog), opts->windowTitle().toUtf8());
-
-    GtkWidget *okButton = gtk_font_selection_dialog_get_ok_button(GTK_FONT_SELECTION_DIALOG(gtkDialog));
-    GtkWidget *cancelButton = gtk_font_selection_dialog_get_cancel_button(GTK_FONT_SELECTION_DIALOG(gtkDialog));
-    if (okButton)
-        gtk_widget_set_visible(okButton, !options()->testOption(QFontDialogOptions::NoButtons));
-    if (cancelButton)
-        gtk_widget_set_visible(cancelButton, !options()->testOption(QFontDialogOptions::NoButtons));
 }
 
 QT_END_NAMESPACE
 
-#include "qgtk2dialoghelpers.moc"
+#include "qgtk3dialoghelpers.moc"

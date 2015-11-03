@@ -31,29 +31,27 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatformthemeplugin.h>
-#include "qgtk2theme.h"
+#ifndef QGTK3THEME_H
+#define QGTK3THEME_H
+
+#include <private/qgenericunixthemes_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QGtk2ThemePlugin : public QPlatformThemePlugin
+class QGtk3Theme : public QGnomeTheme
 {
-   Q_OBJECT
-   Q_PLUGIN_METADATA(IID QPlatformThemeFactoryInterface_iid FILE "gtk2.json")
-
 public:
-    QPlatformTheme *create(const QString &key, const QStringList &params) Q_DECL_OVERRIDE;
+    QGtk3Theme();
+
+    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    virtual QString gtkFontName() const Q_DECL_OVERRIDE;
+
+    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
+
+    static const char *name;
 };
-
-QPlatformTheme *QGtk2ThemePlugin::create(const QString &key, const QStringList &params)
-{
-    Q_UNUSED(params);
-    if (!key.compare(QLatin1String(QGtk2Theme::name), Qt::CaseInsensitive))
-        return new QGtk2Theme;
-
-    return 0;
-}
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#endif // QGTK3THEME_H
