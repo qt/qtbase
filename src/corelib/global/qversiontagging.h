@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_NO_VERSION_TAGGING)
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
-#elif defined(Q_CC_GNU)
+#elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))
 #    ifdef __LP64__
 #      define QT_VERSION_TAG_RELOC(sym) ".quad " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) "@GOTPCREL\n"
