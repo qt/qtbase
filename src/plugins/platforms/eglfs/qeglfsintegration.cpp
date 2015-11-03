@@ -264,7 +264,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("eglconfig"),
         QByteArrayLiteral("nativedisplay"),
         QByteArrayLiteral("display"),
-        QByteArrayLiteral("wl_display")
+        QByteArrayLiteral("server_wl_display")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
