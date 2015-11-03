@@ -37,6 +37,15 @@
 class tst_qvariant : public QObject
 {
     Q_OBJECT
+
+public:
+    enum ABenchmarkEnum {
+        FirstEnumValue,
+        SecondEnumValue,
+        ThirdEnumValue
+    };
+    Q_ENUM(ABenchmarkEnum)
+
 private slots:
     void testBound();
 
@@ -50,6 +59,7 @@ private slots:
     void stringListVariantCreation();
     void bigClassVariantCreation();
     void smallClassVariantCreation();
+    void enumVariantCreation();
 
     void doubleVariantSetValue();
     void floatVariantSetValue();
@@ -58,6 +68,7 @@ private slots:
     void stringListVariantSetValue();
     void bigClassVariantSetValue();
     void smallClassVariantSetValue();
+    void enumVariantSetValue();
 
     void doubleVariantAssignment();
     void floatVariantAssignment();
@@ -136,6 +147,16 @@ void variantCreation<SmallClass>(SmallClass val)
     }
 }
 
+template <>
+void variantCreation<tst_qvariant::ABenchmarkEnum>(tst_qvariant::ABenchmarkEnum val)
+{
+    QBENCHMARK {
+        for (int i = 0; i < ITERATION_COUNT; ++i) {
+            QVariant::fromValue(val);
+        }
+    }
+}
+
 
 void tst_qvariant::doubleVariantCreation()
 {
@@ -178,6 +199,12 @@ void tst_qvariant::smallClassVariantCreation()
 {
     variantCreation<SmallClass>(SmallClass());
 }
+
+void tst_qvariant::enumVariantCreation()
+{
+    variantCreation<ABenchmarkEnum>(FirstEnumValue);
+}
+
 
 template <typename T>
 static void variantSetValue(T d)
@@ -223,6 +250,11 @@ void tst_qvariant::bigClassVariantSetValue()
 void tst_qvariant::smallClassVariantSetValue()
 {
     variantSetValue<SmallClass>(SmallClass());
+}
+
+void tst_qvariant::enumVariantSetValue()
+{
+    variantSetValue<ABenchmarkEnum>(FirstEnumValue);
 }
 
 template <typename T>
