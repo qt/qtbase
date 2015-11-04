@@ -1689,6 +1689,30 @@ void tst_QDateTime::daylightSavingsTimeChange()
     // back again:
     dt = dt.addDays(-days).addSecs(60);
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 5, 0)));
+
+    // Now use the result of a UTC -> LocalTime conversion
+    dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime).toUTC();
+    dt = QDateTime(dt.date(), dt.time(), Qt::UTC).toLocalTime();
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
+
+    // using addDays:
+    dt = dt.addDays(-days).addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(1, 0, 0)));
+    // back again
+    dt = dt.addDays(days).addSecs(3600);
+    QCOMPARE(dt, QDateTime(outDST, QTime(2, 0, 0)));
+
+    // using addMonths:
+    dt = dt.addMonths(-months).addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(3, 0, 0)));
+    // back again:
+    dt = dt.addMonths(months).addSecs(3600);
+    QCOMPARE(dt, QDateTime(outDST, QTime(4, 0, 0)));
+
+    // using setDate:
+    dt.setDate(inDST);
+    dt = dt.addSecs(3600);
+    QCOMPARE(dt, QDateTime(inDST, QTime(5, 0, 0)));
 }
 
 void tst_QDateTime::springForward_data()
