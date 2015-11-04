@@ -40,6 +40,7 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
+#include <private/qlocale_tools_p.h>
 #include "qsimd_p.h"
 #include <qnumeric.h>
 #include <qdatastream.h>
@@ -5885,13 +5886,17 @@ static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
 
 static int parse_field_width(const char * &c)
 {
-    QString width_str;
-    while (*c != '\0' && qIsDigit(*c))
-        width_str.append(QLatin1Char(*c++));
+    Q_ASSERT(qIsDigit(*c));
 
     // can't be negative - started with a digit
     // contains at least one digit
-    return width_str.toInt();
+    const char *endp;
+    bool ok;
+    const qulonglong result = qstrtoull(c, &endp, 10, &ok);
+    c = endp;
+    while (qIsDigit(*c)) // preserve Qt 5.5 behavior of consuming all digits, no matter how many
+        ++c;
+    return ok && result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
 }
 
 /*!
