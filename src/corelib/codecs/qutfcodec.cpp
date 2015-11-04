@@ -256,8 +256,32 @@ QString QUtf8::convertToUnicode(const char *chars, int len)
     // The table holds for invalid sequences too: we'll insert one replacement char
     // per invalid byte.
     QString result(len, Qt::Uninitialized);
+    QChar *data = const_cast<QChar*>(result.constData()); // we know we're not shared
+    const QChar *end = convertToUnicode(data, chars, len);
+    result.truncate(end - data);
+    return result;
+}
 
-    ushort *dst = reinterpret_cast<ushort *>(const_cast<QChar *>(result.constData()));
+/*!
+    \since 5.7
+    \overload
+
+    Converts the UTF-8 sequence of \a len octets beginning at \a chars to
+    a sequence of QChar starting at \a buffer. The buffer is expected to be
+    large enough to hold the result. An upper bound for the size of the
+    buffer is \a len QChars.
+
+    If, during decoding, an error occurs, a QChar::ReplacementCharacter is
+    written.
+
+    Returns a pointer to one past the last QChar written.
+
+    This function never throws.
+*/
+
+QChar *QUtf8::convertToUnicode(QChar *buffer, const char *chars, int len) Q_DECL_NOTHROW
+{
+    ushort *dst = reinterpret_cast<ushort *>(buffer);
     const uchar *src = reinterpret_cast<const uchar *>(chars);
     const uchar *end = src + len;
 
@@ -288,8 +312,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len)
         }
     }
 
-    result.truncate(dst - reinterpret_cast<const ushort *>(result.constData()));
-    return result;
+    return reinterpret_cast<QChar *>(dst);
 }
 
 QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::ConverterState *state)
