@@ -5883,6 +5883,17 @@ static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
     }
 }
 
+static int parse_field_width(const char * &c)
+{
+    QString width_str;
+    while (*c != '\0' && qIsDigit(*c))
+        width_str.append(QLatin1Char(*c++));
+
+    // can't be negative - started with a digit
+    // contains at least one digit
+    return width_str.toInt();
+}
+
 /*!
     \fn QString::vasprintf(const char *cformat, va_list ap)
     \since 5.5
@@ -5942,15 +5953,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         // Parse field width
         int width = -1; // -1 means unspecified
         if (qIsDigit(*c)) {
-            QString width_str;
-            while (*c != '\0' && qIsDigit(*c))
-                width_str.append(QLatin1Char(*c++));
-
-            // can't be negative - started with a digit
-            // contains at least one digit
-            width = width_str.toInt();
-        }
-        else if (*c == '*') {
+            width = parse_field_width(c);
+        } else if (*c == '*') { // can't parse this in another function, not portably, at least
             width = va_arg(ap, int);
             if (width < 0)
                 width = -1; // treat all negative numbers as unspecified
@@ -5967,15 +5971,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         if (*c == '.') {
             ++c;
             if (qIsDigit(*c)) {
-                QString precision_str;
-                while (*c != '\0' && qIsDigit(*c))
-                    precision_str.append(QLatin1Char(*c++));
-
-                // can't be negative - started with a digit
-                // contains at least one digit
-                precision = precision_str.toInt();
-            }
-            else if (*c == '*') {
+                precision = parse_field_width(c);
+            } else if (*c == '*') { // can't parse this in another function, not portably, at least
                 precision = va_arg(ap, int);
                 if (precision < 0)
                     precision = -1; // treat all negative numbers as unspecified
