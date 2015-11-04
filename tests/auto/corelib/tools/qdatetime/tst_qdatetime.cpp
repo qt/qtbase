@@ -1616,9 +1616,7 @@ void tst_QDateTime::springForward_data()
 
     if (europeanTimeZone) {
         QTest::newRow("Europe from day before") << QDate(2015, 3, 29) << QTime(2, 30, 0) << 1 << 60;
-#if 0 // FIXME: fails
         QTest::newRow("Europe from day after") << QDate(2015, 3, 29) << QTime(2, 30, 0) << -1 << 120;
-#endif
  // } else if (otherZone) {
     } else {
         QSKIP("No spring forward test data for this TZ");
