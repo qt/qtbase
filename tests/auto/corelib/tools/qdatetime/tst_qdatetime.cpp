@@ -1614,8 +1614,14 @@ void tst_QDateTime::daylightSavingsTimeChange_data()
 {
     QTest::addColumn<QDate>("inDST");
     QTest::addColumn<QDate>("outDST");
-    QTest::newRow("Autumn") << QDate(2006, 8, 1) << QDate(2006, 12, 1);
-    QTest::newRow("Spring") << QDate(2006, 5, 1) << QDate(2006, 2, 1);
+    QTest::addColumn<int>("days"); // from in to out; -ve if reversed
+    QTest::addColumn<int>("months");
+
+    QTest::newRow("Autumn") << QDate(2006, 8, 1) << QDate(2006, 12, 1)
+                            << 122 << 4;
+
+    QTest::newRow("Spring") << QDate(2006, 5, 1) << QDate(2006, 2, 1)
+                            << -89 << -3;
 }
 
 void tst_QDateTime::daylightSavingsTimeChange()
@@ -1635,6 +1641,8 @@ void tst_QDateTime::daylightSavingsTimeChange()
 
     QFETCH(QDate, inDST);
     QFETCH(QDate, outDST);
+    QFETCH(int, days);
+    QFETCH(int, months);
 
     // First with simple construction
     QDateTime dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime);
@@ -1644,6 +1652,22 @@ void tst_QDateTime::daylightSavingsTimeChange()
     dt = dt.addSecs(1);
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 1)));
 
+    // now using addDays:
+    dt = dt.addDays(days).addSecs(1);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 2)));
+
+    // ... and back again:
+    dt = dt.addDays(-days).addSecs(1);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 3)));
+
+    // now using addMonths:
+    dt = dt.addMonths(months).addSecs(1);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 4)));
+
+    // ... and back again:
+    dt = dt.addMonths(-months).addSecs(1);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 5)));
+
     // now using fromTime_t
     dt = QDateTime::fromTime_t(outDSTsecs);
     QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
@@ -1651,6 +1675,20 @@ void tst_QDateTime::daylightSavingsTimeChange()
     dt.setDate(inDST);
     dt = dt.addSecs(60);
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 1, 0)));
+
+    // using addMonths:
+    dt = dt.addMonths(months).addSecs(60);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 2, 0)));
+    // back again:
+    dt = dt.addMonths(-months).addSecs(60);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 3, 0)));
+
+    // using addDays:
+    dt = dt.addDays(days).addSecs(60);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 4, 0)));
+    // back again:
+    dt = dt.addDays(-days).addSecs(60);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 5, 0)));
 }
 
 void tst_QDateTime::springForward_data()
