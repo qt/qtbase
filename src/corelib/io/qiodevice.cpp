@@ -973,7 +973,7 @@ QByteArray QIODevice::read(qint64 maxSize)
 /*!
     \overload
 
-    Reads all available data from the device, and returns it as a
+    Reads all remaining data from the device, and returns it as a
     byte array.
 
     This function has no way of reporting errors; returning an empty
