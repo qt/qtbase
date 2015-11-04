@@ -1728,7 +1728,7 @@ QTime QTime::addMSecs(int ms) const
     QTime t;
     if (isValid()) {
         if (ms < 0) {
-            // % not well-defined for -ve, but / is.
+            // %,/ not well-defined for -ve, so always work with +ve.
             int negdays = (MSECS_PER_DAY - ms) / MSECS_PER_DAY;
             t.mds = (ds() + ms + negdays * MSECS_PER_DAY) % MSECS_PER_DAY;
         } else {
