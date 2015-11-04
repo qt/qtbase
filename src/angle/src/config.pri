@@ -53,6 +53,8 @@ CONFIG(debug, debug|release) {
     DEFINES += NDEBUG
 }
 
+!isEmpty(BUILD_PASS): BUILDSUBDIR = $$lower($$BUILD_PASS)/
+
 # c++11 is needed by MinGW to get support for unordered_map.
 CONFIG += stl exceptions c++11
 

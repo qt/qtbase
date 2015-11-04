@@ -56,6 +56,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int &line, int &of
     do {
         curStart = curEnd;
         text->textAtOffset(curStart, QAccessible::LineBoundary, &curStart, &curEnd);
+        // If the text is empty then we just return
+        if (curStart == -1 || curEnd == -1) {
+            if (start)
+                *start = 0;
+            if (end)
+                *end = 0;
+            return;
+        }
         ++curLine;
         {
             // check for a case where a single word longer than the text edit's width and gets wrapped

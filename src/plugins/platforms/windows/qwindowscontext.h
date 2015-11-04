@@ -170,6 +170,9 @@ public:
     explicit QWindowsContext();
     ~QWindowsContext();
 
+    bool initTouch();
+    bool initTouch(unsigned integrationOptions); // For calls from QWindowsIntegration::QWindowsIntegration() only.
+
     int defaultDPI() const;
 
     QString registerWindowClass(const QWindow *w);

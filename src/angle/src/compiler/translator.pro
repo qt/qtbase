@@ -163,16 +163,18 @@ SOURCES += \
 
 
 # NOTE: 'flex' and 'bison' can be found in qt5/gnuwin32/bin
-flex.commands = $$addGnuPath(flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}
-flex.output = ${QMAKE_FILE_BASE}_lex.cpp
+flex.commands = $$addGnuPath(flex) --noline --nounistd --outfile=${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+flex.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_lex.cpp
 flex.input = FLEX_SOURCES
 flex.dependency_type = TYPE_C
 flex.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += flex
 
-bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_BASE}_tab.h \
-                --output=${QMAKE_FILE_BASE}_tab.cpp ${QMAKE_FILE_NAME}
-bison.output = ${QMAKE_FILE_BASE}_tab.h
+defineReplace(myDirName) { return($$dirname(1)) }
+bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_OUT} \
+                --output=${QMAKE_FUNC_FILE_OUT_myDirName}$$QMAKE_DIR_SEP${QMAKE_FILE_OUT_BASE}.cpp \
+                ${QMAKE_FILE_NAME}
+bison.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
 bison.input = BISON_SOURCES
 bison.dependency_type = TYPE_C
 bison.variable_out = GENERATED_SOURCES
@@ -182,10 +184,10 @@ QMAKE_EXTRA_COMPILERS += bison
 # have one output file even if the command generates two.
 MAKEFILE_NOOP_COMMAND = @echo -n
 msvc: MAKEFILE_NOOP_COMMAND = @echo >NUL
-bison_impl.output = ${QMAKE_FILE_BASE}_tab.cpp
+bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.input = BISON_SOURCES
 bison_impl.commands = $$MAKEFILE_NOOP_COMMAND
-bison_impl.depends = ${QMAKE_FILE_BASE}_tab.h
-bison_impl.output = ${QMAKE_FILE_BASE}_tab.cpp
+bison_impl.depends = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
+bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += bison_impl
