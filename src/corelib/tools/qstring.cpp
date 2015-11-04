@@ -5907,6 +5907,32 @@ static int parse_field_width(const char * &c)
     return ok && result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
 }
 
+enum LengthMod { lm_none, lm_hh, lm_h, lm_l, lm_ll, lm_L, lm_j, lm_z, lm_t };
+
+static inline bool can_consume(const char * &c, char ch) Q_DECL_NOTHROW
+{
+    if (*c == ch) {
+        ++c;
+        return true;
+    }
+    return false;
+}
+
+static LengthMod parse_length_modifier(const char * &c) Q_DECL_NOTHROW
+{
+    switch (*c++) {
+    case 'h': return can_consume(c, 'h') ? lm_hh : lm_h;
+    case 'l': return can_consume(c, 'l') ? lm_ll : lm_l;
+    case 'L': return lm_L;
+    case 'j': return lm_j;
+    case 'z':
+    case 'Z': return lm_z;
+    case 't': return lm_t;
+    }
+    --c; // don't consume *c - it wasn't a flag
+    return lm_none;
+}
+
 /*!
     \fn QString::vasprintf(const char *cformat, va_list ap)
     \since 5.5
@@ -5998,53 +6024,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
             break;
         }
 
-        // Parse the length modifier
-        enum LengthMod { lm_none, lm_hh, lm_h, lm_l, lm_ll, lm_L, lm_j, lm_z, lm_t };
-        LengthMod length_mod = lm_none;
-        switch (*c) {
-            case 'h':
-                ++c;
-                if (*c == 'h') {
-                    length_mod = lm_hh;
-                    ++c;
-                }
-                else
-                    length_mod = lm_h;
-                break;
-
-            case 'l':
-                ++c;
-                if (*c == 'l') {
-                    length_mod = lm_ll;
-                    ++c;
-                }
-                else
-                    length_mod = lm_l;
-                break;
-
-            case 'L':
-                ++c;
-                length_mod = lm_L;
-                break;
-
-            case 'j':
-                ++c;
-                length_mod = lm_j;
-                break;
-
-            case 'z':
-            case 'Z':
-                ++c;
-                length_mod = lm_z;
-                break;
-
-            case 't':
-                ++c;
-                length_mod = lm_t;
-                break;
-
-            default: break;
-        }
+        const LengthMod length_mod = parse_length_modifier(c);
 
         if (*c == '\0') {
             result.append(QLatin1String(escape_start)); // incomplete escape, treat as non-escape text
