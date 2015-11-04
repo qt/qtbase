@@ -5867,6 +5867,14 @@ QString &QString::vsprintf(const char *cformat, va_list ap)
     return *this = vasprintf(cformat, ap);
 }
 
+static void append_utf8(QString &qs, const char *cs, int len)
+{
+    const int oldSize = qs.size();
+    qs.resize(oldSize + len);
+    const QChar *newEnd = QUtf8::convertToUnicode(qs.data() + oldSize, cs, len);
+    qs.resize(newEnd - qs.constData());
+}
+
 static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
 {
     uint flags = 0;
@@ -5929,7 +5937,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         const char *cb = c;
         while (*c != '\0' && *c != '%')
             c++;
-        result.append(QString::fromUtf8(cb, (int)(c - cb)));
+        append_utf8(result, cb, int(c - cb));
 
         if (*c == '\0')
             break;
