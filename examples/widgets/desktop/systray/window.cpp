@@ -102,6 +102,11 @@ void Window::setVisible(bool visible)
 //! [2]
 void Window::closeEvent(QCloseEvent *event)
 {
+#ifdef Q_OS_OSX
+    if (!event->spontaneous() || !isVisible()) {
+        return;
+    }
+#endif
     if (trayIcon->isVisible()) {
         QMessageBox::information(this, tr("Systray"),
                                  tr("The program will keep running in the "

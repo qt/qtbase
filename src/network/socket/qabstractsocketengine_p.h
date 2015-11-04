@@ -78,7 +78,7 @@ public:
     QHostAddress destinationAddress;
 
     uint ifindex;
-    qint16 hopLimit;
+    int hopLimit;
     quint16 senderPort;
     quint16 destinationPort;
 };
@@ -125,9 +125,9 @@ public:
 
     enum PacketHeaderOption {
         WantNone = 0,
-        WantDatagramSender,
-        WantDatagramDestination,
-        WantDatagramHopLimit,
+        WantDatagramSender = 0x01,
+        WantDatagramDestination = 0x02,
+        WantDatagramHopLimit = 0x04,
 
         WantAll = 0xff
     };

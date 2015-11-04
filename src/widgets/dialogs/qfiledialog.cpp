@@ -977,7 +977,7 @@ void QFileDialog::setDirectoryUrl(const QUrl &directory)
     else if (directory.isLocalFile())
         setDirectory(directory.toLocalFile());
     else if (d->usingWidgets())
-        qWarning() << "Non-native QFileDialog supports only local files";
+        qWarning("Non-native QFileDialog supports only local files");
 }
 
 /*!
@@ -1087,7 +1087,7 @@ void QFileDialog::selectUrl(const QUrl &url)
     else if (url.isLocalFile())
         selectFile(url.toLocalFile());
     else
-        qWarning() << "Non-native QFileDialog supports only local files";
+        qWarning("Non-native QFileDialog supports only local files");
 }
 
 #ifdef Q_OS_UNIX

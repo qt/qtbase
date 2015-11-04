@@ -353,7 +353,7 @@ static bool addFontToDatabase(const QString &faceName,
     const QFont::Weight weight = QPlatformFontDatabase::weightFromInteger(tm->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
-#ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_STREAM
     if (QWindowsContext::verbose > 2) {
         QString message;
         QTextStream str(&message);

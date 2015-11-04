@@ -187,6 +187,8 @@ equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):compiler_support
     QMAKE_CXXFLAGS += -mfpmath=sse
 }
 
+android: CONFIG += qt_android_deps no_linker_version_script
+
 unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
     verscript = $$OUT_PWD/$${TARGET}.version
     QMAKE_LFLAGS += $${QMAKE_LFLAGS_VERSION_SCRIPT}$$verscript
@@ -225,8 +227,6 @@ unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!no_linker_version_script:!static {
     unset(verscript)
     unset(verscript_content)
 }
-
-android: CONFIG += qt_android_deps
 
 #install directives
 load(qt_installs)

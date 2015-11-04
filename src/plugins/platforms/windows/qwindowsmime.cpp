@@ -378,7 +378,7 @@ static bool canGetData(int cf, IDataObject * pDataObj)
     return true;
 }
 
-#ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const FORMATETC &tc)
 {
     QDebugStateSaver saver(d);
@@ -443,7 +443,7 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
     d << ')';
     return d;
 }
-#endif // !QT_NO_DEBUG_OUTPUT
+#endif // !QT_NO_DEBUG_STREAM
 
 /*!
     \class QWindowsMime

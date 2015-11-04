@@ -36,15 +36,13 @@
 #include <qpa/qplatforminputcontext.h>
 
 #include <QtCore/qpointer.h>
+#include <QtCore/QLocale>
 #include <QtDBus/qdbuspendingreply.h>
 #include <QFileSystemWatcher>
-#include <QLoggingCategory>
 #include <QTimer>
 #include <QWindow>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qtQpaInputMethods)
 
 class QIBusPlatformInputContextPrivate;
 class QDBusVariant;
@@ -90,6 +88,7 @@ public:
     void commit() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     bool filterEvent(const QEvent *event) Q_DECL_OVERRIDE;
+    QLocale locale() const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
@@ -100,6 +99,7 @@ public Q_SLOTS:
     void filterEventFinished(QDBusPendingCallWatcher *call);
     void socketChanged(const QString &str);
     void connectToBus();
+    void globalEngineChanged(const QString &engine_name);
 
 private:
     QIBusPlatformInputContextPrivate *d;

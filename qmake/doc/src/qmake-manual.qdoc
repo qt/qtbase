@@ -3965,25 +3965,27 @@
 
     \list 1
     \li In a directory listed in the \c QMAKEFEATURES environment variable that
-        contains a colon-separated list of directories.
+        contains a list of directories delimited by the platform's path list separator
+        (colon for Unix, semicolon for Windows).
     \li In a directory listed in the \c QMAKEFEATURES property variable that
-       contains a colon-spearated list of directories.
+        contains a list of directories delimited by the platform's path list separator.
     \omit
     \li In a features directory beneath the project's root directory (where
-       the \c{.qmake.cache} file is generated).
+        the \c{.qmake.cache} file is generated).
     \endomit
     \li In a features directory residing within a \c mkspecs directory.
-       \c mkspecs directories can be located beneath any of the directories
-       listed in the \c QMAKEPATH environment variable that contains a
-        colon-separated list of directories. For example:
+        \c mkspecs directories can be located beneath any of the directories
+        listed in the \c QMAKEPATH environment variable that contains a
+        list of directories delimited by the platform's path list separator.
+        For example:
         \c{$QMAKEPATH/mkspecs/<features>}.
     \li In a features directory residing beneath the directory provided by the
-       \l{QMAKESPEC} environment variable. For example: \c{$QMAKESPEC/<features>}.
+        \l{QMAKESPEC} environment variable. For example: \c{$QMAKESPEC/<features>}.
     \li In a features directory residing in the \c data_install/mkspecs directory.
-       For example: \c{data_install/mkspecs/<features>}.
+        For example: \c{data_install/mkspecs/<features>}.
     \li In a features directory that exists as a sibling of the directory
-       specified by the \c QMAKESPEC environment variable.
-       For example: \c{$QMAKESPEC/../<features>}.
+        specified by the \c QMAKESPEC environment variable.
+        For example: \c{$QMAKESPEC/../<features>}.
     \endlist
 
     The following features directories are searched for features files:

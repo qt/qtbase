@@ -25,6 +25,9 @@ HTML.postpostheader = \
     "<div class=\"line\">\n" \
     "<div class=\"content mainContent\">\n"
 
+HTML.navigationseparator = \
+    "<span class=\"naviSeparator\">  &#9702;  </span>\n"
+
 # Add some padding around code snippets, as we cannot
 # currectly style them for QTextBrowser using only CSS.
 codeindent         = 2

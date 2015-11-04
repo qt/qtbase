@@ -206,26 +206,24 @@ void QToolBoxButton::initStyleOption(QStyleOptionToolBox *option) const
     option->text = text();
     option->icon = icon();
 
-    if (QStyleOptionToolBoxV2 *optionV2 = qstyleoption_cast<QStyleOptionToolBoxV2 *>(option)) {
-        QToolBox *toolBox = static_cast<QToolBox *>(parentWidget()); // I know I'm in a tool box.
-        int widgetCount = toolBox->count();
-        int currIndex = toolBox->currentIndex();
-        if (widgetCount == 1) {
-            optionV2->position = QStyleOptionToolBoxV2::OnlyOneTab;
-        } else if (indexInPage == 0) {
-            optionV2->position = QStyleOptionToolBoxV2::Beginning;
-        } else if (indexInPage == widgetCount - 1) {
-            optionV2->position = QStyleOptionToolBoxV2::End;
-        } else {
-            optionV2->position = QStyleOptionToolBoxV2::Middle;
-        }
-        if (currIndex == indexInPage - 1) {
-            optionV2->selectedPosition = QStyleOptionToolBoxV2::PreviousIsSelected;
-        } else if (currIndex == indexInPage + 1) {
-            optionV2->selectedPosition = QStyleOptionToolBoxV2::NextIsSelected;
-        } else {
-            optionV2->selectedPosition = QStyleOptionToolBoxV2::NotAdjacent;
-        }
+    QToolBox *toolBox = static_cast<QToolBox *>(parentWidget()); // I know I'm in a tool box.
+    const int widgetCount = toolBox->count();
+    const int currIndex = toolBox->currentIndex();
+    if (widgetCount == 1) {
+        option->position = QStyleOptionToolBox::OnlyOneTab;
+    } else if (indexInPage == 0) {
+        option->position = QStyleOptionToolBox::Beginning;
+    } else if (indexInPage == widgetCount - 1) {
+        option->position = QStyleOptionToolBox::End;
+    } else {
+        option->position = QStyleOptionToolBox::Middle;
+    }
+    if (currIndex == indexInPage - 1) {
+        option->selectedPosition = QStyleOptionToolBox::PreviousIsSelected;
+    } else if (currIndex == indexInPage + 1) {
+        option->selectedPosition = QStyleOptionToolBox::NextIsSelected;
+    } else {
+        option->selectedPosition = QStyleOptionToolBox::NotAdjacent;
     }
 }
 
@@ -233,7 +231,7 @@ void QToolBoxButton::paintEvent(QPaintEvent *)
 {
     QPainter paint(this);
     QPainter *p = &paint;
-    QStyleOptionToolBoxV2 opt;
+    QStyleOptionToolBox opt;
     initStyleOption(&opt);
     style()->drawControl(QStyle::CE_ToolBoxTab, &opt, p, parentWidget());
 }

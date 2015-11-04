@@ -130,6 +130,8 @@ QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
 
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
+bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
+
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
@@ -1083,6 +1085,13 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         return;
     }
 
+    // Many platforms have created QScreens at this point. Finish initializing
+    // QHighDpiScaling to be prepared for early calls to qt_defaultDpi().
+    if (QGuiApplication::primaryScreen()) {
+        QGuiApplicationPrivate::highDpiScalingUpdated = true;
+        QHighDpiScaling::updateHighDpiScaling();
+    }
+
     // Create the platform theme:
 
     // 1) Fetch the platform name from the environment if present.
@@ -1252,9 +1261,10 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
     platform_integration->initialize();
 
-    // Do this here in order to play nice with platforms that add screens only
-    // in initialize().
-    QHighDpiScaling::updateHighDpiScaling();
+    // All platforms should have added screens at this point. Finish
+    // QHighDpiScaling initialization if it has not been done so already.
+    if (!QGuiApplicationPrivate::highDpiScalingUpdated)
+        QHighDpiScaling::updateHighDpiScaling();
 }
 
 void QGuiApplicationPrivate::init()

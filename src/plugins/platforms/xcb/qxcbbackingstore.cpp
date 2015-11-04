@@ -146,8 +146,8 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
     int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
     if (id == -1)
-        qWarning("QXcbShmImage: shmget() failed (%d) for size %d (%dx%d)",
-                 errno, segmentSize, size.width(), size.height());
+        qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %d (%dx%d)",
+                 errno, strerror(errno), segmentSize, size.width(), size.height());
     else
         m_shm_info.shmid = id;
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
@@ -311,9 +311,12 @@ QPaintDevice *QXcbBackingStore::paintDevice()
 
 void QXcbBackingStore::beginPaint(const QRegion &region)
 {
+    if (!m_image && !m_size.isEmpty())
+        resize(m_size, QRegion());
+
     if (!m_image)
         return;
-
+    m_size = QSize();
     m_paintRegion = region;
     m_image->preparePaint(m_paintRegion);
 
@@ -420,7 +423,8 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
         return;
     Q_XCB_NOOP(connection());
 
-    QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
+
+    QXcbScreen *screen = window()->screen() ? static_cast<QXcbScreen *>(window()->screen()->handle()) : 0;
     QPlatformWindow *pw = window()->handle();
     if (!pw) {
         window()->create();
@@ -429,6 +433,11 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
     delete m_image;
+    if (!screen) {
+        m_image = 0;
+        m_size = size;
+        return;
+    }
     m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
     // Slow path for bgr888 VNC: Create an additional image, paint into that and
     // swap R and B while copying to m_image after each paint.

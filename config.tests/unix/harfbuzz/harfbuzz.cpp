@@ -33,7 +33,7 @@
 
 #include <harfbuzz/hb.h>
 
-#if !HB_VERSION_ATLEAST(0, 9, 31)
+#if !HB_VERSION_ATLEAST(0, 9, 42)
 #  error "This version of harfbuzz is too old."
 #endif
 

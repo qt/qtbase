@@ -85,7 +85,11 @@ struct QWindowsOpenGLContextFormat
     QSurfaceFormat::FormatOptions options;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &);
 QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &);
+QDebug operator<<(QDebug d, const QOpenGLStaticContext &s);
+#endif
 
 struct QWindowsOpengl32DLL
 {
@@ -223,8 +227,6 @@ public:
 
     static QWindowsOpengl32DLL opengl32;
 };
-
-QDebug operator<<(QDebug d, const QOpenGLStaticContext &);
 
 class QWindowsGLContext : public QWindowsOpenGLContext
 {

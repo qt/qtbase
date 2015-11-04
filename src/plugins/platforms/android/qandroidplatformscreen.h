@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformWindow;
-class QAndroidPlatformBackingStore;
 
 class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public AndroidSurfaceClient
 {
@@ -96,6 +95,7 @@ protected:
 
 private:
     QDpi logicalDpi() const;
+    qreal pixelDensity()  const;
     Qt::ScreenOrientation orientation() const;
     Qt::ScreenOrientation nativeOrientation() const;
     void surfaceChanged(JNIEnv *env, jobject surface, int w, int h);

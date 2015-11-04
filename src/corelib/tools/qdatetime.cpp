@@ -2236,18 +2236,18 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
 #else
     // All other platforms provide standard C library time functions
     tm local;
+    memset(&local, 0, sizeof(local)); // tm_[wy]day plus any non-standard fields
     local.tm_sec = time->second();
     local.tm_min = time->minute();
     local.tm_hour = time->hour();
     local.tm_mday = dd;
     local.tm_mon = mm - 1;
     local.tm_year = yy - 1900;
-    local.tm_wday = 0;
-    local.tm_yday = 0;
     if (daylightStatus)
         local.tm_isdst = int(*daylightStatus);
     else
         local.tm_isdst = -1;
+
 #if defined(Q_OS_WIN)
     int hh = local.tm_hour;
 #endif // Q_OS_WIN
@@ -2453,7 +2453,7 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
     QTime tm;
     msecsToTime(localMsecs, &dt, &tm);
 
-    qint64 msecsMax = qint64(TIME_T_MAX) * 1000;
+    const qint64 msecsMax = qint64(TIME_T_MAX) * 1000;
 
     if (localMsecs <= qint64(MSECS_PER_DAY)) {
 

@@ -65,7 +65,7 @@ typedef HashReturn (SHA3Init)(hashState *state, int hashbitlen);
 typedef HashReturn (SHA3Update)(hashState *state, const BitSequence *data, DataLength databitlen);
 typedef HashReturn (SHA3Final)(hashState *state, BitSequence *hashval);
 
-#if QT_POINTER_SIZE == 8 // 64 bit version
+#if Q_PROCESSOR_WORDSIZE == 8 // 64 bit version
 
 #include "../../3rdparty/sha3/KeccakF-1600-opt64.c"
 

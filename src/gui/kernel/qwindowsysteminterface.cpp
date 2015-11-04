@@ -261,11 +261,11 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type typ
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
-                                                    ushort count)
+                                                    ushort count, bool tryShortcutOverride)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     return handleExtendedKeyEvent(w, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
-                           text, autorep, count);
+                           text, autorep, count, tryShortcutOverride);
 }
 
 bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, int key,

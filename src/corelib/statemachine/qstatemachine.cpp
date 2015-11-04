@@ -624,7 +624,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
 
     foreach (QAbstractTransition *t1, enabledTransitions) {
         bool t1Preempted = false;
-        QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
+        const QSet<QAbstractState*> exitSetT1 = computeExitSet_Unordered(t1, cache);
         QList<QAbstractTransition*>::iterator t2It = filteredTransitions.begin();
         while (t2It != filteredTransitions.end()) {
             QAbstractTransition *t2 = *t2It;
@@ -636,7 +636,7 @@ void QStateMachinePrivate::removeConflictingTransitions(QList<QAbstractTransitio
             }
 
             QSet<QAbstractState*> exitSetT2 = computeExitSet_Unordered(t2, cache);
-            if (exitSetT1.intersect(exitSetT2).isEmpty()) {
+            if (!exitSetT1.intersects(exitSetT2)) {
                 // No conflict, no cry. Next patient please.
                 ++t2It;
             } else {

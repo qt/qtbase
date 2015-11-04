@@ -60,7 +60,9 @@ struct GpuDescription
     QByteArray description;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const GpuDescription &gd);
+#endif
 
 class QWindowsOpenGLTester
 {

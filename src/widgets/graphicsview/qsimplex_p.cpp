@@ -140,7 +140,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
 
     // Remove constraints of type Var == K and replace them for their value.
     if (!simplifyConstraints(&constraints)) {
-        qWarning() << "QSimplex: No feasible solution!";
+        qWarning("QSimplex: No feasible solution!");
         clearDataStructures();
         return false;
     }
@@ -230,7 +230,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
 
     matrix = (qreal *)malloc(sizeof(qreal) * columns * rows);
     if (!matrix) {
-        qWarning() << "QSimplex: Unable to allocate memory!";
+        qWarning("QSimplex: Unable to allocate memory!");
         return false;
     }
     for (int i = columns * rows - 1; i >= 0; --i)
@@ -281,7 +281,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
     // Otherwise, we clean up our structures and report there is
     // no feasible solution.
     if ((valueAt(0, columns - 1) != 0.0) && (qAbs(valueAt(0, columns - 1)) > 0.00001)) {
-        qWarning() << "QSimplex: No feasible solution!";
+        qWarning("QSimplex: No feasible solution!");
         clearDataStructures();
         return false;
     }
@@ -471,7 +471,7 @@ bool QSimplex::iterate()
     // Find Pivot row for column
     int pivotRow = pivotRowForColumn(pivotColumn);
     if (pivotRow == -1) {
-        qWarning() << "QSimplex: Unbounded problem!";
+        qWarning("QSimplex: Unbounded problem!");
         return false;
     }
 

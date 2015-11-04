@@ -235,17 +235,17 @@ bool QTestResult::verify(bool statement, const char *statementStr,
 {
     QTEST_ASSERT(statementStr);
 
-    char msg[1024];
+    char msg[1024] = {'\0'};
 
     if (QTestLog::verboseLevel() >= 2) {
         qsnprintf(msg, 1024, "QVERIFY(%s)", statementStr);
         QTestLog::info(msg, file, line);
     }
 
-    const char * format = QTest::expectFailMode
-        ? "'%s' returned TRUE unexpectedly. (%s)"
-        : "'%s' returned FALSE. (%s)";
-    qsnprintf(msg, 1024, format, statementStr, description ? description : "");
+    if (!statement && !QTest::expectFailMode)
+        qsnprintf(msg, 1024, "'%s' returned FALSE. (%s)", statementStr, description ? description : "");
+    else if (statement && QTest::expectFailMode)
+        qsnprintf(msg, 1024, "'%s' returned TRUE unexpectedly. (%s)", statementStr, description ? description : "");
 
     return checkStatement(statement, msg, file, line);
 }
@@ -259,7 +259,7 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     QTEST_ASSERT(actual);
 
     const size_t maxMsgLen = 1024;
-    char msg[maxMsgLen];
+    char msg[maxMsgLen] = {'\0'};
 
     if (QTestLog::verboseLevel() >= 2) {
         qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
@@ -269,9 +269,11 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     if (!failureMsg)
         failureMsg = "Compared values are not the same";
 
-    if (success && QTest::expectFailMode) {
-        qsnprintf(msg, maxMsgLen,
-                  "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
+    if (success) {
+        if (QTest::expectFailMode) {
+            qsnprintf(msg, maxMsgLen,
+                      "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
+        }
     } else if (val1 || val2) {
         size_t len1 = mbstowcs(NULL, actual, maxMsgLen);    // Last parameter is not ignored on QNX
         size_t len2 = mbstowcs(NULL, expected, maxMsgLen);  // (result is never larger than this).

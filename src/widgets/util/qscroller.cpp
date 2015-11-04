@@ -1668,7 +1668,7 @@ bool QScrollerPrivate::releaseWhileDragging(const QPointF &position, qint64 time
 
 void QScrollerPrivate::timerEventWhileScrolling()
 {
-    qScrollerDebug() << "QScroller::timerEventWhileScrolling()";
+    qScrollerDebug("QScroller::timerEventWhileScrolling()");
 
     setContentPositionHelperScrolling();
     if (xSegments.isEmpty() && ySegments.isEmpty())

@@ -488,7 +488,7 @@ void QFileSystemModel::timerEvent(QTimerEvent *event)
                 d->fileInfoGatherer.fetchExtendedInformation(d->toFetch.at(i).dir,
                                                  QStringList(d->toFetch.at(i).file));
             } else {
-                // qDebug() << "yah!, you saved a little gerbil soul";
+                // qDebug("yah!, you saved a little gerbil soul");
             }
         }
 #endif

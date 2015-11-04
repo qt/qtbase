@@ -216,7 +216,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
 //     It does not implement a very good cross-domain verification yet.
 
     Q_D(const QNetworkCookieJar);
-    QDateTime now = QDateTime::currentDateTime();
+    const QDateTime now = QDateTime::currentDateTimeUtc();
     QList<QNetworkCookie> result;
     bool isEncrypted = url.scheme().toLower() == QLatin1String("https");
 
@@ -265,7 +265,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
 bool QNetworkCookieJar::insertCookie(const QNetworkCookie &cookie)
 {
     Q_D(QNetworkCookieJar);
-    QDateTime now = QDateTime::currentDateTime();
+    const QDateTime now = QDateTime::currentDateTimeUtc();
     bool isDeletion = !cookie.isSessionCookie() &&
                       cookie.expirationDate() < now;
 

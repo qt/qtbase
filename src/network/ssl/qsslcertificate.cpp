@@ -446,8 +446,8 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
 /*!
     Searches all files in the \a path for certificates encoded in the
-    specified \a format and returns them in a list. \e must be a file or a
-    pattern matching one or more files, as specified by \a syntax.
+    specified \a format and returns them in a list. \a path must be a file
+    or a pattern matching one or more files, as specified by \a syntax.
 
     Example:
 

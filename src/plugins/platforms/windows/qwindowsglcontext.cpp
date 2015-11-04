@@ -284,6 +284,7 @@ static inline void initPixelFormatDescriptor(PIXELFORMATDESCRIPTOR *d)
     d->nVersion = 1;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
 {
     QDebugStateSaver saver(d);
@@ -325,6 +326,32 @@ QDebug operator<<(QDebug d, const PIXELFORMATDESCRIPTOR &pd)
         << " cAccumAlphaBits=" << pd.cAccumAlphaBits;
     return d;
 }
+
+QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
+        <<  s.defaultFormat;
+    if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
+        d << ",SampleBuffers";
+    if (s.hasExtensions())
+        d << ", Extension-API present";
+    d << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
+    if (QWindowsContext::verbose > 1)
+        d << s.extensionNames;
+    return d;
+}
+
+QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "ContextFormat: v" << (f.version >> 8) << '.' << (f.version & 0xFF)
+        << " profile: " << f.profile << " options: " << f.options;
+    return d;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 // Check whether an obtained PIXELFORMATDESCRIPTOR matches the request.
 static inline bool
@@ -900,15 +927,6 @@ void QWindowsOpenGLContextFormat::apply(QSurfaceFormat *format) const
         format->setOption(QSurfaceFormat::DeprecatedFunctions);
 }
 
-QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "ContextFormat: v" << (f.version >> 8) << '.' << (f.version & 0xFF)
-        << " profile: " << f.profile << " options: " << f.options;
-    return d;
-}
-
 /*!
     \class QOpenGLTemporaryContext
     \brief A temporary context that can be instantiated on the stack.
@@ -1011,22 +1029,6 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
     QOpenGLStaticContext *result = new QOpenGLStaticContext;
     qCDebug(lcQpaGl) << __FUNCTION__ << *result;
     return result;
-}
-
-QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
-        <<  s.defaultFormat;
-    if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
-        d << ",SampleBuffers";
-    if (s.hasExtensions())
-        d << ", Extension-API present";
-    d << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
-    if (QWindowsContext::verbose > 1)
-        d <<  s.extensionNames;
-    return d;
 }
 
 /*!
