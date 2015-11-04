@@ -7876,8 +7876,9 @@ void QWidgetPrivate::show_sys()
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
         q->setAttribute(Qt::WA_Mapped);
-        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
-            // add our window to the modal window list
+        // add our window the modal window list (native dialogs)
+        if ((q->isWindow() && (!extra || !extra->proxyWidget))
+            && q->windowModality() != Qt::NonModal && window) {
             QGuiApplicationPrivate::showModalWindow(window);
         }
         return;
@@ -8008,8 +8009,9 @@ void QWidgetPrivate::hide_sys()
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);
-        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
-            // remove our window from the modal window list
+        // remove our window from the modal window list (native dialogs)
+        if ((q->isWindow() && (!extra || !extra->proxyWidget))
+            && q->windowModality() != Qt::NonModal && window) {
             QGuiApplicationPrivate::hideModalWindow(window);
         }
         // do not return here, if window non-zero, we must hide it
