@@ -1465,8 +1465,10 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     // Popups implicitly grab key events; forward to the active popup if there is one.
     // This allows popups to e.g. intercept shortcuts and close the popup in response.
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow())
-        window = popup->window();
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        if (!popup->m_windowFlags.testFlag(Qt::ToolTip))
+            window = popup->window();
+    }
 
     if (eventType == QEvent::KeyPress) {
 
