@@ -5866,6 +5866,23 @@ QString &QString::vsprintf(const char *cformat, va_list ap)
     return *this = vasprintf(cformat, ap);
 }
 
+static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
+{
+    uint flags = 0;
+    while (true) {
+        switch (*c) {
+        case '#': flags |= QLocaleData::Alternate; break;
+        case '0': flags |= QLocaleData::ZeroPadded; break;
+        case '-': flags |= QLocaleData::LeftAdjusted; break;
+        case ' ': flags |= QLocaleData::BlankBeforePositive; break;
+        case '+': flags |= QLocaleData::AlwaysShowSign; break;
+        case '\'': flags |= QLocaleData::ThousandsGroup; break;
+        default: return flags;
+        }
+        ++c;
+    }
+}
+
 /*!
     \fn QString::vasprintf(const char *cformat, va_list ap)
     \since 5.5
@@ -5915,23 +5932,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
             continue;
         }
 
-        // Parse flag characters
-        uint flags = 0;
-        bool no_more_flags = false;
-        do {
-            switch (*c) {
-                case '#': flags |= QLocaleData::Alternate; break;
-                case '0': flags |= QLocaleData::ZeroPadded; break;
-                case '-': flags |= QLocaleData::LeftAdjusted; break;
-                case ' ': flags |= QLocaleData::BlankBeforePositive; break;
-                case '+': flags |= QLocaleData::AlwaysShowSign; break;
-                case '\'': flags |= QLocaleData::ThousandsGroup; break;
-                default: no_more_flags = true; break;
-            }
-
-            if (!no_more_flags)
-                ++c;
-        } while (!no_more_flags);
+        uint flags = parse_flag_characters(c);
 
         if (*c == '\0') {
             result.append(QLatin1String(escape_start)); // incomplete escape, treat as non-escape text
