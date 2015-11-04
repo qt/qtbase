@@ -153,6 +153,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
         m_resendKeyEvent = false;
         m_scrolling = false;
+        m_updatingDrag = false;
         m_currentlyInterpretedKeyEvent = 0;
 
         if (!touchDevice) {
@@ -1917,6 +1918,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     // Make sure the cursor is updated correctly if the mouse does not move and window is under cursor
     // by creating a fake move event
+    if (m_updatingDrag)
+        return;
+
     const QPoint mousePos(QCursor::pos());
     CGEventRef moveEvent(CGEventCreateMouseEvent(
         NULL, kCGEventMouseMoved,
@@ -1934,7 +1938,11 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
 {
-    return [self handleDrag : sender];
+    m_updatingDrag = true;
+    const NSDragOperation ret([self handleDrag : sender]);
+    m_updatingDrag = false;
+
+    return ret;
 }
 
 // Sends drag update to Qt, return the action
