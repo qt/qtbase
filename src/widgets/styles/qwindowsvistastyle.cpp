@@ -1143,7 +1143,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                 alignment |= Qt::TextHideMnemonic;
 
-            if (widget) { // Not needed for QtQuick Controls
+            if (widget && mbi->palette.color(QPalette::Window) != Qt::transparent) { // Not needed for QtQuick Controls
                 //The rect adjustment is a workaround for the menu not really filling its background.
                 XPThemeData theme(widget, painter,
                                   QWindowsXPStylePrivate::MenuTheme,
