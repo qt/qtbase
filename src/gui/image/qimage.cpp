@@ -4285,6 +4285,8 @@ QImage QImage::smoothScaled(int w, int h) const {
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    out.setDotsPerMeterX(image.dotsPerMeterY());
+    out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4353,6 +4355,8 @@ static QImage rotated180(const QImage &image) {
 
 static QImage rotated270(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    out.setDotsPerMeterX(image.dotsPerMeterY());
+    out.setDotsPerMeterY(image.dotsPerMeterX());
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
