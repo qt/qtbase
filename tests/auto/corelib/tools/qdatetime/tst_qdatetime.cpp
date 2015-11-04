@@ -68,6 +68,7 @@ private slots:
     void timeSpec();
     void toTime_t_data();
     void toTime_t();
+    void daylightSavingsTimeChange_data();
     void daylightSavingsTimeChange();
     void springForward_data();
     void springForward();
@@ -1563,36 +1564,47 @@ void tst_QDateTime::toTime_t()
     }
 }
 
+void tst_QDateTime::daylightSavingsTimeChange_data()
+{
+    QTest::addColumn<QDate>("inDST");
+    QTest::addColumn<QDate>("outDST");
+    QTest::newRow("Autumn") << QDate(2006, 8, 1) << QDate(2006, 12, 1);
+    QTest::newRow("Spring") << QDate(2006, 5, 1) << QDate(2006, 2, 1);
+}
+
 void tst_QDateTime::daylightSavingsTimeChange()
 {
-    // This is a regression test for an old bug where starting with a date in
-    // DST and then moving to a date outside it (or vice-versa) caused 1-hour
-    // jumps in time when addSecs() was called.
+    // This has grown from a regression test for an old bug where starting with
+    // a date in DST and then moving to a date outside it (or vice-versa) caused
+    // 1-hour jumps in time when addSecs() was called.
     //
     // The bug was caused by QDateTime knowing more than it lets show.
     // Internally, if it knows, QDateTime stores a flag indicating if the time is
     // DST or not. If it doesn't, it sets to "LocalUnknown".  The problem happened
     // because some functions did not reset the flag when moving in or out of DST.
 
-    // WARNING: This test only works if there's a Daylight Savings Time change
-    // in the current locale between 2006-11-06 and 2006-10-16
-    // This is true for Central European Time
+    // WARNING: This only tests anything if there's a Daylight Savings Time change
+    // in the current locale between inDST and outDST.
+    // This is true for Central European Time and may be elsewhere.
 
-    if (!europeanTimeZone)
-        QSKIP("Not tested with timezone other than Central European (CET/CEST)");
+    QFETCH(QDate, inDST);
+    QFETCH(QDate, outDST);
 
-    QDateTime dt = QDateTime(QDate(2006, 11, 6), QTime(0, 0, 0), Qt::LocalTime);
-    dt.setDate(QDate(2006, 10, 16));
+    // First with simple construction
+    QDateTime dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime);
+    int outDSTsecs = dt.toTime_t();
+
+    dt.setDate(inDST);
     dt = dt.addSecs(1);
-    QCOMPARE(dt.date(), QDate(2006, 10, 16));
-    QCOMPARE(dt.time(), QTime(0, 0, 1));
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 0, 1)));
 
     // now using fromTime_t
-    dt = QDateTime::fromTime_t(1162767600); // 2006-11-06 00:00:00 +0100
-    dt.setDate(QDate(2006, 10, 16));
-    dt = dt.addSecs (1);
-    QCOMPARE(dt.date(), QDate(2006, 10, 16));
-    QCOMPARE(dt.time(), QTime(0, 0, 1));
+    dt = QDateTime::fromTime_t(outDSTsecs);
+    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
+
+    dt.setDate(inDST);
+    dt = dt.addSecs(60);
+    QCOMPARE(dt, QDateTime(inDST, QTime(0, 1, 0)));
 }
 
 void tst_QDateTime::springForward_data()
