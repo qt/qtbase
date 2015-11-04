@@ -303,31 +303,51 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
     d = conv.StringToDouble(num, numLen, &processed);
 
     if (!qIsFinite(d)) {
-        processed = 0;
         ok = false;
-        return 0.0;
+        if (qIsNaN(d)) {
+            // Garbage found. We don't accept it and return 0.
+            processed = 0;
+            return 0.0;
+        } else {
+            // Overflow. That's not OK, but we still return infinity.
+            return d;
+        }
     }
-
-    Q_ASSERT(processed == numLen); // Otherwise we would have gotten NaN
 #else
     if (qDoubleSscanf(num, QT_CLOCALE, "%lf%n", &d, &processed) < 1)
         processed = 0;
 
-    if (processed != numLen || !qIsFinite(d)) {
-        // We stopped at a non-digit character after converting some digits
-        // or we found an implementation-defined symbol for infinity or nan, which we don't accept.
+    if (processed != numLen || qIsNaN(d)) {
+        // Implementation defined nan symbol or garbage found. We don't accept it.
         processed = 0;
         ok = false;
         return 0.0;
     }
+
+    if (!qIsFinite(d)) {
+        // Overflow. Check for implementation-defined infinity symbols and reject them.
+        // We assume that any infinity symbol has to contain a character that cannot be part of a
+        // "normal" number (that is 0-9, ., -, +, e).
+        ok = false;
+        for (int i = 0; i < numLen; ++i) {
+            char c = num[i];
+            if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e') {
+                // Garbage found
+                processed = 0;
+                return 0.0;
+            }
+        }
+        return d;
+    }
 #endif // !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
+
+    Q_ASSERT(processed == numLen); // Otherwise we would have gotten NaN or sorted it out above.
 
     // Check if underflow has occurred.
     if (isZero(d)) {
         for (int i = 0; i < numLen; ++i) {
             if (num[i] >= '1' && num[i] <= '9') {
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
-                processed = 0;
                 ok = false;
                 return 0.0;
             } else if (num[i] == 'e') {

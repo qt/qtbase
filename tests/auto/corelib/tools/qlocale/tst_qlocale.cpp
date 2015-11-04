@@ -1931,13 +1931,13 @@ a(QLatin1String("0.0000000000000000000000000000000000000000000000000000000000000
     ok = false;
     d = a.toDouble(&ok);
     QVERIFY(!ok); // detectable overflow
-    QCOMPARE(d, 0.0);
+    QVERIFY(qIsInf(d));
 
     a = QLatin1String("-1e600");
     ok = false;
     d = a.toDouble(&ok);
     QVERIFY(!ok); // detectable underflow
-    QCOMPARE(d, 0.0);
+    QVERIFY(qIsInf(-d));
 
     a = QLatin1String("1e-600");
     ok = false;
