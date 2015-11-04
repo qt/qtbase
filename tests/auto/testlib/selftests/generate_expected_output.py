@@ -99,7 +99,7 @@ def generateTestData(testname):
         cmd = [getTestForPath(testname) + ' -' + format + ' ' + extraArgs.get(testname, '')]
         result = 'expected_' + testname + '.' + format
         data = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]
-        out = open(result, 'w')
+        out = open(result, 'wb')
         out.write(data)
         out.close()
         replaceInFile(result)
