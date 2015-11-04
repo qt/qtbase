@@ -69,6 +69,8 @@ private slots:
     void toTime_t_data();
     void toTime_t();
     void daylightSavingsTimeChange();
+    void springForward_data();
+    void springForward();
     void setDate();
     void setTime_data();
     void setTime();
@@ -1591,6 +1593,48 @@ void tst_QDateTime::daylightSavingsTimeChange()
     dt = dt.addSecs (1);
     QCOMPARE(dt.date(), QDate(2006, 10, 16));
     QCOMPARE(dt.time(), QTime(0, 0, 1));
+}
+
+void tst_QDateTime::springForward_data()
+{
+    QTest::addColumn<QDate>("day"); // day of DST transition
+    QTest::addColumn<QTime>("time"); // in the "missing hour"
+    QTest::addColumn<int>("step"); // days to step; +ve from before, -ve from after
+    QTest::addColumn<int>("adjust"); // minutes ahead of UTC on day stepped from
+
+    if (europeanTimeZone) {
+        QTest::newRow("Europe from day before") << QDate(2015, 3, 29) << QTime(2, 30, 0) << 1 << 60;
+#if 0 // FIXME: fails
+        QTest::newRow("Europe from day after") << QDate(2015, 3, 29) << QTime(2, 30, 0) << -1 << 120;
+#endif
+ // } else if (otherZone) {
+    } else {
+        QSKIP("No spring forward test data for this TZ");
+    }
+}
+
+void tst_QDateTime::springForward()
+{
+    QFETCH(QDate, day);
+    QFETCH(QTime, time);
+    QFETCH(int, step);
+    QFETCH(int, adjust);
+
+    QDateTime direct = QDateTime(day.addDays(-step), time, Qt::LocalTime).addDays(step);
+    QCOMPARE(direct.date(), day);
+    QCOMPARE(direct.time().minute(), time.minute());
+    QCOMPARE(direct.time().second(), time.second());
+    int off = direct.time().hour() - time.hour();
+    QVERIFY(off == 1 || off == -1);
+    // Note: function doc claims always +1, but this should be reviewed !
+
+    // Repeat, but getting there via .toLocalTime():
+    QDateTime detour = QDateTime(day.addDays(-step),
+                                 time.addSecs(-60 * adjust),
+                                 Qt::UTC).toLocalTime();
+    QCOMPARE(detour.time(), time);
+    detour = detour.addDays(step);
+    QCOMPARE(detour, direct); // Insist on consistency.
 }
 
 void tst_QDateTime::operator_eqeq_data()
