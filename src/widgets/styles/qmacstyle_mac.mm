@@ -93,6 +93,11 @@
 
 QT_USE_NAMESPACE
 
+static QWindow *qt_getWindow(const QWidget *widget)
+{
+    return widget ? widget->window()->windowHandle() : 0;
+}
+
 @interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject {
 QMacStylePrivate *mPrivate;
 }
@@ -260,7 +265,7 @@ QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
     return tabRect;
 }
 
-void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt, bool isUnified)
+void drawTabShape(QPainter *p, const QStyleOptionTab *tabOpt, bool isUnified)
 {
     QRect r = tabOpt->rect;
     p->translate(tabOpt->rect.x(), tabOpt->rect.y());
@@ -364,7 +369,7 @@ void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt, bool isUnified)
     }
 }
 
-void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget *w)
+void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *w)
 {
     QRect r = tbb->rect;
     if (isVerticalTabs(tbb->shape)) {
@@ -2820,7 +2825,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = QEvent::MouseButtonRelease;
         break;
     case SH_TabBar_SelectMouseType:
-        if (const QStyleOptionTabBarBaseV2 *opt2 = qstyleoption_cast<const QStyleOptionTabBarBaseV2 *>(opt)) {
+        if (const QStyleOptionTabBarBase *opt2 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
             ret = opt2->documentMode ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         } else {
             ret = QEvent::MouseButtonRelease;
@@ -3093,7 +3098,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
             size = 64;
             break;
     }
-    return icon.pixmap(size, size);
+    return icon.pixmap(qt_getWindow(widget), QSize(size, size));
 }
 
 void QMacStyle::setFocusRectPolicy(QWidget *w, FocusRectPolicy policy)
@@ -3186,8 +3191,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->restore();
         break; }
     case PE_FrameTabBarBase:
-        if (const QStyleOptionTabBarBaseV2 *tbb
-                = qstyleoption_cast<const QStyleOptionTabBarBaseV2 *>(opt)) {
+        if (const QStyleOptionTabBarBase *tbb
+                = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
             if (tbb->documentMode) {
                 p->save();
                 drawTabBase(p, tbb, w);
@@ -3225,8 +3230,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *groupBox = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            const QStyleOptionFrameV2 *frame2 = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt);
-            if (frame2 && frame2->features & QStyleOptionFrameV2::Flat) {
+            if (groupBox->features & QStyleOptionFrame::Flat) {
                 QCommonStyle::drawPrimitive(pe, groupBox, p, w);
             } else {
                 HIThemeGroupBoxDrawInfo gdi;
@@ -3654,7 +3658,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QIcon::Mode mode = QIcon::Disabled;
                 if (opt->state & State_Enabled)
                     mode = QIcon::Normal;
-                QPixmap pixmap = header->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), mode);
+                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                QPixmap pixmap = header->icon.pixmap(window, QSize(iconExtent, iconExtent), mode);
 
                 QRect pixr = header->rect;
                 pixr.setY(header->rect.center().y() - (pixmap.height() / pixmap.devicePixelRatio() - 1) / 2);
@@ -3706,7 +3711,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                                                             : QIcon::Disabled;
                         QIcon::State iconState = (tb->state & State_On) ? QIcon::On
                                                                          : QIcon::Off;
-                        QPixmap pixmap = tb->icon.pixmap(tb->rect.size().boundedTo(tb->iconSize), iconMode, iconState);
+                        QPixmap pixmap = tb->icon.pixmap(window,
+                                                         tb->rect.size().boundedTo(tb->iconSize),
+                                                         iconMode, iconState);
 
                         // Draw the text if it's needed.
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
@@ -4036,7 +4043,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         QIcon::State state = QIcon::Off;
                         if (btn.state & State_On)
                             state = QIcon::On;
-                        QPixmap pixmap = btn.icon.pixmap(btn.iconSize, mode, state);
+                        QPixmap pixmap = btn.icon.pixmap(window, btn.iconSize, mode, state);
                         int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                         int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                         contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
@@ -4074,20 +4081,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
 
-            if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
-                if (tabOptV3->documentMode) {
-                    p->save();
-                    bool isUnified = false;
-                    if (w) {
-                        QRect tabRect = tabOptV3->rect;
-                        QPoint windowTabStart = w->mapTo(w->window(), tabRect.topLeft());
-                        isUnified = isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowTabStart.y());
-                    }
-
-                    drawTabShape(p, tabOptV3, isUnified);
-                    p->restore();
-                    return;
+            if (tabOpt->documentMode) {
+                p->save();
+                bool isUnified = false;
+                if (w) {
+                    QRect tabRect = tabOpt->rect;
+                    QPoint windowTabStart = w->mapTo(w->window(), tabRect.topLeft());
+                    isUnified = isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowTabStart.y());
                 }
+
+                drawTabShape(p, tabOpt, isUnified);
+                p->restore();
+                return;
             }
 
             HIThemeTabDrawInfo tdi;
@@ -4197,7 +4202,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
     case CE_TabBarTabLabel:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            QStyleOptionTabV3 myTab = *tab;
+            QStyleOptionTab myTab = *tab;
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
@@ -4324,9 +4329,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         // Draw the text...
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             if (!dwOpt->title.isEmpty()) {
-                const QStyleOptionDockWidgetV2 *v2
-                    = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(dwOpt);
-                bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+
+                const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
                 QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, opt, w);
                 if (verticalTitleBar) {
@@ -4486,7 +4490,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 if (const QComboBox *comboBox = qobject_cast<const QComboBox *>(w)) {
                     iconSize = comboBox->iconSize();
                 }
-                QPixmap pixmap = mi->icon.pixmap(iconSize, mode);
+                QPixmap pixmap = mi->icon.pixmap(window, iconSize, mode);
                 int pixw = pixmap.width() / pixmap.devicePixelRatio();
                 int pixh = pixmap.height() / pixmap.devicePixelRatio();
                 QRect cr(xpos, contentRect.y(), checkcol, contentRect.height());
@@ -4591,10 +4595,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
 
             if (!mi->icon.isNull()) {
+                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                 drawItemPixmap(p, mi->rect,
                                   Qt::AlignCenter | Qt::TextHideMnemonic | Qt::TextDontClip
                                   | Qt::TextSingleLine,
-                                  mi->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize),
+                                  mi->icon.pixmap(window, QSize(iconExtent, iconExtent),
                           (mi->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled));
             } else {
                 drawItemText(p, mi->rect,
@@ -4622,12 +4627,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.version = qt_mac_hitheme_version;
             tdi.reserved = 0;
             bool isIndeterminate = (pb->minimum == 0 && pb->maximum == 0);
-            bool vertical = false;
-            bool inverted = false;
-            if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(opt)) {
-                vertical = (pb2->orientation == Qt::Vertical);
-                inverted = pb2->invertedAppearance;
-            }
+            const bool vertical = pb->orientation == Qt::Vertical;
+            const bool inverted = pb->invertedAppearance;
             bool reverse = (!vertical && (pb->direction == Qt::RightToLeft));
             if (inverted)
                 reverse = !reverse;
@@ -5090,7 +5091,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
     case SE_FrameLayoutItem:
-        // hack because QStyleOptionFrameV2 doesn't have a frameStyle member
+        // hack because QStyleOptionFrame doesn't have a frameStyle member
         if (const QFrame *frame = qobject_cast<const QFrame *>(widget)) {
             rect = opt->rect;
             switch (frame->frameStyle() & QFrame::Shape_Mask) {
@@ -5153,9 +5154,8 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 = qstyleoption_cast<const QStyleOptionDockWidget*>(opt);
             bool canClose = dwOpt == 0 ? true : dwOpt->closable;
             bool canFloat = dwOpt == 0 ? false : dwOpt->floatable;
-            const QStyleOptionDockWidgetV2 *v2
-                = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(opt);
-            bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+
+            const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
             // If this is a vertical titlebar, we transpose and work as if it was
             // horizontal, then transpose again.
@@ -5836,9 +5836,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         x += iw;
                     else
                         x += br.width() / 2 - p->fontMetrics().width(titlebar->text) / 2;
-                    if (iw)
+                    if (iw) {
+                        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                         p->drawPixmap(x - iw, y,
-                                      titlebar->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), QIcon::Normal));
+                                      titlebar->icon.pixmap(window, QSize(iconExtent, iconExtent), QIcon::Normal));
+                    }
                     drawItemText(p, br, Qt::AlignCenter, opt->palette, tds == kThemeStateActive,
                                     titlebar->text, QPalette::Text);
                     p->restore();
@@ -5851,7 +5853,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
 
             QStyleOptionGroupBox groupBox(*gb);
-            bool flat = (groupBox.features & QStyleOptionFrameV2::Flat);
+            const bool flat = groupBox.features & QStyleOptionFrame::Flat;
             if (!flat)
                 groupBox.state |= QStyle::State_Mini; // Force mini-sized checkbox to go with small-sized label
             else
@@ -6303,7 +6305,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             bool checkable = groupBox->subControls & SC_GroupBoxCheckBox;
-            bool flat = (groupBox->features & QStyleOptionFrameV2::Flat);
+            const bool flat = groupBox->features & QStyleOptionFrame::Flat;
             bool hasNoText = !checkable && groupBox->text.isEmpty();
             switch (sc) {
             case SC_GroupBoxLabel:
@@ -6582,7 +6584,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
         break;
     case QStyle::CT_TabBarTab:
-        if (const QStyleOptionTabV3 *tab = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             const QAquaWidgetSize AquaSize = d->aquaSizeConstrain(opt, widget);
             const bool differentFont = (widget && widget->testAttribute(Qt::WA_SetFont))
                                        || !QApplication::desktopSettingsAware();
@@ -7160,7 +7162,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
             ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
                                         8, image->bytesPerLine(), colorspace, flags);
         } else {
-            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
+            qDebug("qt_mac_cg_context: Unsupported pixmap class");
         }
 
         CGContextTranslateCTM(ret, 0, pm->height());
@@ -7172,7 +7174,7 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
         ///CGContextRetain(ret);
         //return ret;
-        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
+        qDebug("qt_mac_cg_context: not implemented: Widget class");
         return 0;
     }
     return 0;

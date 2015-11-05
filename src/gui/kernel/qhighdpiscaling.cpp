@@ -49,7 +49,7 @@ static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
 static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 static const char screenFactorsEnvVar[] = "QT_SCREEN_SCALE_FACTORS";
 
-static inline qreal initialScaleFactor()
+static inline qreal initialGlobalScaleFactor()
 {
 
     qreal result = 1;
@@ -134,19 +134,31 @@ QDpi QHighDpiScaling::m_logicalDpi = QDpi(-1,-1); // The scaled logical DPI of t
     Initializes the QHighDpiScaling global variables. Called before the
     platform plugin is created.
 */
+
+static inline bool usePixelDensity()
+{
+    // Determine if we should set a scale factor based on the pixel density
+    // reported by the platform plugin. There are several enablers and several
+    // disablers. A single disable may veto all other enablers.
+    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
+        return false;
+    bool screenEnvValueOk;
+    const int screenEnvValue = qEnvironmentVariableIntValue(autoScreenEnvVar, &screenEnvValueOk);
+    if (screenEnvValueOk && screenEnvValue < 1)
+        return false;
+    return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
+        || (screenEnvValueOk && screenEnvValue > 0)
+        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) && qgetenv(legacyDevicePixelEnvVar).toLower() == "auto");
+}
+
 void QHighDpiScaling::initHighDpiScaling()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling)) {
-        m_factor = 1;
-        m_active = false;
-        return;
-    }
-    m_factor = initialScaleFactor();
-    bool usePlatformPluginPixelDensity = qEnvironmentVariableIsSet(autoScreenEnvVar)
-                                         || qgetenv(legacyDevicePixelEnvVar).toLower() == "auto";
-
+    // Determine if there is a global scale factor set.
+    m_factor = initialGlobalScaleFactor();
     m_globalScalingActive = !qFuzzyCompare(m_factor, qreal(1));
-    m_usePixelDensity = usePlatformPluginPixelDensity;
+
+    m_usePixelDensity = usePixelDensity();
+
     m_pixelDensityScalingActive = false; //set in updateHighDpiScaling below
 
     // we update m_active in updateHighDpiScaling, but while we create the
@@ -156,7 +168,7 @@ void QHighDpiScaling::initHighDpiScaling()
 
 void QHighDpiScaling::updateHighDpiScaling()
 {
-    if (QCoreApplication::testAttribute(Qt::AA_NoHighDpiScaling))
+    if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
         return;
 
     if (m_usePixelDensity && !m_pixelDensityScalingActive) {

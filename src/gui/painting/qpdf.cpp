@@ -1498,7 +1498,7 @@ void QPdfEnginePrivate::writeInfo()
     printString(creator);
     xprintf("\n/Producer ");
     printString(QString::fromLatin1("Qt " QT_VERSION_STR));
-    QDateTime now = QDateTime::currentDateTime().toUTC();
+    QDateTime now = QDateTime::currentDateTimeUtc();
     QTime t = now.time();
     QDate d = now.date();
     xprintf("\n/CreationDate (D:%d%02d%02d%02d%02d%02d)\n",

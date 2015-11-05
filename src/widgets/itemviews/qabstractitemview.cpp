@@ -2636,6 +2636,11 @@ void QAbstractItemView::updateEditorGeometries()
     Q_D(QAbstractItemView);
     if(d->editorIndexHash.isEmpty())
         return;
+    if (d->delayedPendingLayout) {
+        // doItemsLayout() will end up calling this function again
+        d->executePostedLayout();
+        return;
+    }
     QStyleOptionViewItem option = d->viewOptionsV1();
     QEditorIndexHash::iterator it = d->editorIndexHash.begin();
     QWidgetList editorsToRelease;

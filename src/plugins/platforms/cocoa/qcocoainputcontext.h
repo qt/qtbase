@@ -35,6 +35,7 @@
 #define QCOCOAINPUTCONTEXT_H
 
 #include <qpa/qplatforminputcontext.h>
+#include <QtCore/QLocale>
 #include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE
@@ -50,12 +51,16 @@ public:
 
     void reset() Q_DECL_OVERRIDE;
 
+    QLocale locale() const Q_DECL_OVERRIDE { return m_locale; }
+    void updateLocale();
+
 private Q_SLOTS:
     void connectSignals();
     void focusObjectChanged(QObject *focusObject);
 
 private:
     QPointer<QWindow> mWindow;
+    QLocale m_locale;
 };
 
 QT_END_NAMESPACE

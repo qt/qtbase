@@ -1369,9 +1369,9 @@ void tst_QStyleSheetStyle::proxyStyle()
     QTest::qWait(100);
 
     // Test for QTBUG-7198 - style sheet overrides custom element size
-    QStyleOptionViewItemV4 opt;
+    QStyleOptionViewItem opt;
     opt.initFrom(w);
-    opt.features |= QStyleOptionViewItemV2::HasCheckIndicator;
+    opt.features |= QStyleOptionViewItem::HasCheckIndicator;
     QVERIFY(pb5->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator,
             &opt, pb5).width() == 3);
     delete w;

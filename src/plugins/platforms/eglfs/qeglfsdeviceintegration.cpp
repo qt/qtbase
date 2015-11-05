@@ -334,4 +334,9 @@ bool QEGLDeviceIntegration::supportsSurfacelessContexts() const
     return true;
 }
 
+void *QEGLDeviceIntegration::wlDisplay() const
+{
+    return Q_NULLPTR;
+}
+
 QT_END_NAMESPACE

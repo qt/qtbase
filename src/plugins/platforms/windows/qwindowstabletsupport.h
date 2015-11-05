@@ -97,7 +97,9 @@ struct QWindowsTabletDeviceData
     int currentPointerType;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t);
+#endif
 
 class QWindowsTabletSupport
 {

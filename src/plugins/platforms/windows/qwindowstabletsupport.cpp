@@ -302,8 +302,11 @@ static inline QTabletEvent::PointerType pointerType(unsigned currentCursor)
     return QTabletEvent::UnknownPointer;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t)
 {
+    QDebugStateSaver saver(d);
+    d.nospace();
     d << "TabletDevice id:" << t.uniqueId << " pressure: " << t.minPressure
       << ".." << t.maxPressure << " tan pressure: " << t.minTanPressure << ".."
       << t.maxTanPressure << " area:" << t.minX << t.minY <<t.minZ
@@ -311,6 +314,7 @@ QDebug operator<<(QDebug d, const QWindowsTabletDeviceData &t)
       << " pointer " << t.currentPointerType;
     return d;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 QWindowsTabletDeviceData QWindowsTabletSupport::tabletInit(const quint64 uniqueId, const UINT cursorType) const
 {

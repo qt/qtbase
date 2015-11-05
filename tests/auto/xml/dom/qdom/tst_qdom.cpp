@@ -119,6 +119,7 @@ private slots:
     void cloneDTD_QTBUG8398() const;
     void DTDNotationDecl();
     void DTDEntityDecl();
+    void QTBUG49113_dontCrashWithNegativeIndex() const;
 
     void cleanupTestCase() const;
 
@@ -1977,6 +1978,14 @@ void tst_QDom::DTDEntityDecl()
     QVERIFY(doctype.namedItem(QString("logo")).isEntity());
     QCOMPARE(doctype.namedItem(QString("logo")).toEntity().systemId(), QString("http://www.w3c.org/logo.gif"));
     QCOMPARE(doctype.namedItem(QString("logo")).toEntity().notationName(), QString("gif"));
+}
+
+void tst_QDom::QTBUG49113_dontCrashWithNegativeIndex() const
+{
+    QDomDocument doc;
+    QDomElement elem = doc.appendChild(doc.createElement("root")).toElement();
+    QDomNode node = elem.attributes().item(-1);
+    QVERIFY(node.isNull());
 }
 
 QTEST_MAIN(tst_QDom)

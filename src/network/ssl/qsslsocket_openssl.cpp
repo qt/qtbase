@@ -1660,6 +1660,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
     }
 
+    const QDateTime now = QDateTime::currentDateTimeUtc();
     foreach (const QSslCertificate &caCertificate, QSslConfiguration::defaultConfiguration().caCertificates()) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
         //
@@ -1672,7 +1673,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         // certificates mixed with valid ones.
         //
         // See also: QSslContext::fromConfiguration()
-        if (caCertificate.expiryDate() >= QDateTime::currentDateTime()) {
+        if (caCertificate.expiryDate() >= now) {
             q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));
         }
     }

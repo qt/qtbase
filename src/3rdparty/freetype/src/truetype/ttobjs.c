@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Objects manager (body).                                              */
 /*                                                                         */
-/*  Copyright 1996-2013                                                    */
+/*  Copyright 1996-2015 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -191,7 +191,7 @@
   {
     FT_Error   error;
     FT_UInt32  checksum = 0;
-    int        i;
+    FT_UInt    i;
 
 
     if ( FT_FRAME_ENTER( length ) )
@@ -200,8 +200,8 @@
     for ( ; length > 3; length -= 4 )
       checksum += (FT_UInt32)FT_GET_ULONG();
 
-    for ( i = 3; length > 0; length --, i-- )
-      checksum += (FT_UInt32)( FT_GET_BYTE() << ( i * 8 ) );
+    for ( i = 3; length > 0; length--, i-- )
+      checksum += (FT_UInt32)FT_GET_BYTE() << ( i * 8 );
 
     FT_FRAME_EXIT();
 
@@ -490,7 +490,10 @@
   /* <Input>                                                               */
   /*    stream     :: The source font stream.                              */
   /*                                                                       */
-  /*    face_index :: The index of the font face in the resource.          */
+  /*    face_index :: The index of the TrueType font, if we are opening a  */
+  /*                  collection, in bits 0-15.  The numbered instance     */
+  /*                  index~+~1 of a GX (sub)font, if applicable, in bits  */
+  /*                  16-30.                                               */
   /*                                                                       */
   /*    num_params :: Number of additional generic parameters.  Ignored.   */
   /*                                                                       */
@@ -599,7 +602,7 @@
         ttface->face_flags &= ~FT_FACE_FLAG_SCALABLE;
       }
 
-#else
+#else /* !FT_CONFIG_OPTION_INCREMENTAL */
 
       if ( !error )
         error = tt_face_load_loca( face, stream );
@@ -623,9 +626,55 @@
         ttface->face_flags &= ~FT_FACE_FLAG_SCALABLE;
       }
 
-#endif
+#endif /* !FT_CONFIG_OPTION_INCREMENTAL */
 
     }
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+
+    {
+      FT_Int  instance_index = face_index >> 16;
+
+
+      if ( FT_HAS_MULTIPLE_MASTERS( ttface ) &&
+           instance_index > 0                )
+      {
+        error = TT_Get_MM_Var( face, NULL );
+        if ( error )
+          goto Exit;
+
+        if ( face->blend->mmvar->namedstyle )
+        {
+          FT_Memory  memory = ttface->memory;
+
+          FT_Var_Named_Style*  named_style;
+          FT_String*           style_name;
+
+
+          /* in `face_index', the instance index starts with value 1 */
+          named_style = face->blend->mmvar->namedstyle + instance_index - 1;
+          error = sfnt->get_name( face,
+                                  (FT_UShort)named_style->strid,
+                                  &style_name );
+          if ( error )
+            goto Exit;
+
+          /* set style name; if already set, replace it */
+          if ( face->root.style_name )
+            FT_FREE( face->root.style_name );
+          face->root.style_name = style_name;
+
+          /* finally, select the named instance */
+          error = TT_Set_Var_Design( face,
+                                     face->blend->mmvar->num_axis,
+                                     named_style->coords );
+          if ( error )
+            goto Exit;
+        }
+      }
+    }
+
+#endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
 #if defined( TT_CONFIG_OPTION_UNPATENTED_HINTING    ) && \
     !defined( TT_CONFIG_OPTION_BYTECODE_INTERPRETER )
@@ -751,14 +800,7 @@
     FT_Error        error;
 
 
-    /* debugging instances have their own context */
-    if ( size->debug )
-      exec = size->context;
-    else
-      exec = ( (TT_Driver)FT_FACE_DRIVER( face ) )->context;
-
-    if ( !exec )
-      return FT_THROW( Could_Not_Find_Context );
+    exec = size->context;
 
     error = TT_Load_Context( exec, face, size );
     if ( error )
@@ -795,7 +837,7 @@
     TT_Set_CodeRange( exec,
                       tt_coderange_font,
                       face->font_program,
-                      face->font_program_size );
+                      (FT_Long)face->font_program_size );
 
     /* disable CVT and glyph programs coderange */
     TT_Clear_CodeRange( exec, tt_coderange_cvt );
@@ -845,14 +887,7 @@
     FT_Error        error;
 
 
-    /* debugging instances have their own context */
-    if ( size->debug )
-      exec = size->context;
-    else
-      exec = ( (TT_Driver)FT_FACE_DRIVER( face ) )->context;
-
-    if ( !exec )
-      return FT_THROW( Could_Not_Find_Context );
+    exec = size->context;
 
     error = TT_Load_Context( exec, face, size );
     if ( error )
@@ -868,7 +903,7 @@
     TT_Set_CodeRange( exec,
                       tt_coderange_cvt,
                       face->cvt_program,
-                      face->cvt_program_size );
+                      (FT_Long)face->cvt_program_size );
 
     TT_Clear_CodeRange( exec, tt_coderange_glyph );
 
@@ -876,12 +911,9 @@
     {
       TT_Goto_CodeRange( exec, tt_coderange_cvt, 0 );
 
-      if ( !size->debug )
-      {
-        FT_TRACE4(( "Executing `prep' table.\n" ));
+      FT_TRACE4(( "Executing `prep' table.\n" ));
 
-        error = face->interpreter( exec );
-      }
+      error = face->interpreter( exec );
     }
     else
       error = FT_Err_Ok;
@@ -924,12 +956,10 @@
     TT_Face    face   = (TT_Face)ftsize->face;
     FT_Memory  memory = face->root.memory;
 
-
-    if ( size->debug )
+    if ( size->context )
     {
-      /* the debug context must be deleted by the debugger itself */
+      TT_Done_Context( size->context );
       size->context = NULL;
-      size->debug   = FALSE;
     }
 
     FT_FREE( size->cvt );
@@ -973,8 +1003,20 @@
     TT_MaxProfile*  maxp = &face->max_profile;
 
 
+    /* clean up bytecode related data */
+    FT_FREE( size->function_defs );
+    FT_FREE( size->instruction_defs );
+    FT_FREE( size->cvt );
+    FT_FREE( size->storage );
+
+    if ( size->context )
+      TT_Done_Context( size->context );
+    tt_glyphzone_done( &size->twilight );
+
     size->bytecode_ready = -1;
     size->cvt_ready      = -1;
+
+    size->context = TT_New_Context( (TT_Driver)face->root.driver );
 
     size->max_function_defs    = maxp->maxFunctionDefs;
     size->max_instruction_defs = maxp->maxInstructionDefs;
@@ -1259,10 +1301,6 @@
 
     TT_Driver  driver = (TT_Driver)ttdriver;
 
-
-    if ( !TT_New_Context( driver ) )
-      return FT_THROW( Could_Not_Find_Context );
-
 #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
     driver->interpreter_version = TT_INTERPRETER_VERSION_38;
 #else
@@ -1293,20 +1331,7 @@
   FT_LOCAL_DEF( void )
   tt_driver_done( FT_Module  ttdriver )     /* TT_Driver */
   {
-#ifdef TT_USE_BYTECODE_INTERPRETER
-    TT_Driver  driver = (TT_Driver)ttdriver;
-
-
-    /* destroy the execution context */
-    if ( driver->context )
-    {
-      TT_Done_Context( driver->context );
-      driver->context = NULL;
-    }
-#else
     FT_UNUSED( ttdriver );
-#endif
-
   }
 
 

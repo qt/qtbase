@@ -989,9 +989,7 @@
     The style option for tabs (QStyleOptionTab) contains the necessary
     information for drawing tabs. The option contains the position of
     the tab in the tab bar, the position of the selected tab, the
-    shape of the tab, the text, and the icon. After Qt 4.1, the option
-    should be cast to a QStyleOptionTabV2, which also contains the
-    icon's size.
+    shape of the tab, the text, the icon, and the icon's size.
 
     As the Java style tabs don't overlap, we also present an image of
     a tab widget in the common style. Note that if you want the tabs
@@ -1024,7 +1022,7 @@
     Note that individual tabs may be disabled even if the tab bar
     is not. The tab will be active if the tab bar is active.
 
-    Here follows a table of QStyleOptionTabV2's members:
+    Here follows a table of QStyleOptionTab's members:
 
     \table 90%
         \header
@@ -1450,7 +1448,7 @@
             \li Content
         \row
             \li features
-            \li Flags of the QStyleOptionFrameV2::FrameFeatures
+            \li Flags of the QStyleOptionFrame::FrameFeatures
                enum describing the frame of the group box.
         \row
             \li lineWidth
@@ -1501,7 +1499,7 @@
 
     \image javastyle/progressbarimage.png
 
-    The style option for QProgressBar is QStyleOptionProgressBarV2.
+    The style option for QProgressBar is QStyleOptionProgressBar.
     The bar does not set any state flags, but the other members of the
     option are:
 

@@ -139,9 +139,10 @@ QString QCoreApplicationPrivate::appName() const
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
-// ### Qt6: FIXME: Remove this function. It is only there since for binary
-// compatibility for applications built with Qt 5.3 using qtmain.lib which calls it.
-// In Qt 5.4, qtmain.lib was changed to use CommandLineToArgvW() without calling into Qt5Core.
+// ### Qt6: FIXME: Consider removing this function. It is here for Active Qt
+// servers and for binary for compatibility to applications built with Qt 5.3
+// using qtmain.lib which calls it In Qt 5.4, qtmain.lib was changed to use
+// CommandLineToArgvW() without calling into Qt5Core.
 Q_CORE_EXPORT
 void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
               int cmdShow, int &argc, QVector<char *> &argv)

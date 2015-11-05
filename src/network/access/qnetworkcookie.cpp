@@ -901,7 +901,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
     // We do not support RFC 2965 Set-Cookie2-style cookies
 
     QList<QNetworkCookie> result;
-    QDateTime now = QDateTime::currentDateTime().toUTC();
+    const QDateTime now = QDateTime::currentDateTimeUtc();
 
     int position = 0;
     const int length = cookieString.length();

@@ -548,10 +548,10 @@ void SegmentTree::produceIntersectionsLeaf(const TreeNode &node, int segment)
 
         for (int k = 0; k < m_intersections.size(); ++k) {
             QPathSegments::Intersection i_isect, j_isect;
-            i_isect.vertex = j_isect.vertex = m_segments.addPoint(m_intersections.at(k).pos);
-
             i_isect.t = m_intersections.at(k).alphaA;
             j_isect.t = m_intersections.at(k).alphaB;
+
+            i_isect.vertex = j_isect.vertex = m_segments.addPoint(m_intersections.at(k).pos);
 
             i_isect.next = 0;
             j_isect.next = 0;

@@ -7182,7 +7182,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     bool needsShow = false;
 
-    if (q->isWindow()) {
+    if (q->isWindow() || q->windowHandle()) {
         if (!(data.window_state & Qt::WindowFullScreen) && (w == 0 || h == 0)) {
             q->setAttribute(Qt::WA_OutsideWSRange, true);
             if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
@@ -7889,8 +7889,9 @@ void QWidgetPrivate::show_sys()
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
         q->setAttribute(Qt::WA_Mapped);
-        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
-            // add our window to the modal window list
+        // add our window the modal window list (native dialogs)
+        if ((q->isWindow() && (!extra || !extra->proxyWidget))
+            && q->windowModality() != Qt::NonModal && window) {
             QGuiApplicationPrivate::showModalWindow(window);
         }
         return;
@@ -8021,8 +8022,9 @@ void QWidgetPrivate::hide_sys()
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);
-        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
-            // remove our window from the modal window list
+        // remove our window from the modal window list (native dialogs)
+        if ((q->isWindow() && (!extra || !extra->proxyWidget))
+            && q->windowModality() != Qt::NonModal && window) {
             QGuiApplicationPrivate::hideModalWindow(window);
         }
         // do not return here, if window non-zero, we must hide it
@@ -12116,7 +12118,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     return 0;
 #else
     if (!extra || !extra->topextra || !extra->topextra->window) {
-        qWarning() << "Asking for share context for widget that does not have a window handle";
+        qWarning("Asking for share context for widget that does not have a window handle");
         return 0;
     }
     QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);

@@ -172,6 +172,7 @@ static inline WindowsScreenDataList monitorData()
     return result;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
 {
     QDebugStateSaver saver(dbg);
@@ -192,6 +193,7 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         dbg << " lock screen";
     return dbg;
 }
+#endif // !QT_NO_DEBUG_STREAM
 
 // Return the cursor to be shared by all screens (virtual desktop).
 static inline QSharedPointer<QPlatformCursor> sharedCursor()
@@ -278,8 +280,11 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
 
 qreal QWindowsScreen::pixelDensity() const
 {
-    const qreal physicalDpi = m_data.geometry.width() / m_data.physicalSizeMM.width() * qreal(25.4);
-    return qRound(physicalDpi / 96);
+    // QTBUG-49195: Use logical DPI instead of physical DPI to calculate
+    // the pixel density since it is reflects the Windows UI scaling.
+    // High DPI auto scaling should be disabled when the user chooses
+    // small fonts on a High DPI monitor, resulting in lower logical DPI.
+    return qRound(logicalDpi().first / 96);
 }
 
 /*!

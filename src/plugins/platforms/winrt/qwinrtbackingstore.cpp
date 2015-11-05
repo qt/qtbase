@@ -42,8 +42,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFramebufferObject>
 
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +66,8 @@ QWinRTBackingStore::QWinRTBackingStore(QWindow *window)
     d->initialized = false;
     d->screen = static_cast<QWinRTScreen*>(window->screen()->handle());
 
-    window->setSurfaceType(QSurface::OpenGLSurface); // Required for flipping, but could be done in the swap
+    if (window->surfaceType() == QSurface::RasterSurface)
+        window->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 bool QWinRTBackingStore::initialize()
@@ -78,7 +79,6 @@ bool QWinRTBackingStore::initialize()
 
     d->context.reset(new QOpenGLContext);
     QSurfaceFormat format = window()->requestedFormat();
-    format.setVersion(3, 0); // Required for ES3 framebuffer blit
     d->context->setFormat(format);
     d->context->setScreen(window()->screen());
     if (!d->context->create())
@@ -121,13 +121,13 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
                     GL_RGBA, GL_UNSIGNED_BYTE, d->paintDevice.constScanLine(bounds.y()));
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, d->fbo->handle());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, d->fbo->handle());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, 0);
     const int y1 = bounds.y();
     const int y2 = y1 + bounds.height();
     const int x1 = bounds.x();
     const int x2 = x1 + bounds.width();
-    glBlitFramebuffer(x1, y1, x2, y2,
+    glBlitFramebufferANGLE(x1, y1, x2, y2,
                       x1, d->size.height() - y1, x2, d->size.height() - y2,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
 

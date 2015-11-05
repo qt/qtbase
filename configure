@@ -696,6 +696,7 @@ CFG_EGLFS_BRCM=no
 CFG_EGLFS_EGLDEVICE=no
 CFG_EGLFS_MALI=no
 CFG_EGLFS_VIV=no
+CFG_EGLFS_VIV_WL=no
 CFG_DIRECTFB=auto
 CFG_GBM=auto
 CFG_LINUXFB=auto
@@ -717,6 +718,7 @@ CFG_OPENSSL=auto
 CFG_LIBPROXY=auto
 CFG_SECURETRANSPORT=auto
 CFG_PRECOMPILE=auto
+CFG_LTCG=no
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_REDUCE_EXPORTS=auto
 CFG_SSE2=auto
@@ -1576,6 +1578,13 @@ while [ "$#" -gt 0 ]; do
             CFG_PRECOMPILE="$VAL"
         else
             UNKNOWN_OPT=yes
+        fi
+        ;;
+    ltcg)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LTCG="$VAL"
+        else
+            UNKNOWN_OPT=no
         fi
         ;;
     separate-debug-info)
@@ -2656,6 +2665,9 @@ Additional options:
 
  *  -no-pch ............ Do not use precompiled header support.
     -pch ............... Use precompiled header support.
+
+ *  -no-ltcg             Do not use Link Time Code Generation
+    -ltcg                Use Link Time Code Generation.
 
     -no-dbus ........... Do not compile the Qt D-Bus module.
  +  -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
@@ -5848,6 +5860,11 @@ if [ "$CFG_EGLFS" != "no" ]; then
         else
             CFG_EGLFS_VIV=no
         fi
+        if [ "$CFG_EGLFS_VIV" = "yes" ] && compileTest qpa/wayland-server "wayland-server"; then
+            CFG_EGLFS_VIV_WL=yes
+        else
+            CFG_EGLFS_VIV_WL=no
+        fi
     else
         CFG_EGLFS="no"
     fi
@@ -6311,6 +6328,9 @@ if [ "$CFG_EGLFS_MALI" = "yes" ]; then
 fi
 if [ "$CFG_EGLFS_VIV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs_viv"
+    if [ "$CFG_EGLFS_VIV_WL" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG eglfs_viv_wl"
+    fi
 fi
 
 # enable openvg
@@ -6564,6 +6584,10 @@ fi
 
 if [ "$CFG_FORCE_ASSERTS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_asserts"
+fi
+
+if [ "$CFG_LTCG" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG ltcg"
 fi
 
 if [ "$CFG_SANITIZERS" != "none" ]; then
@@ -6835,19 +6859,6 @@ fi
 
 if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD"
-fi
-
-if [ "$XPLATFORM_MAC" = "yes" ]; then
-    cat <<EOF
-#if defined(__LP64__)
-# define QT_POINTER_SIZE 8
-#else
-# define QT_POINTER_SIZE 4
-#endif
-EOF
-else
-    "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$CFG_QMAKE_PATH" "$QTCONFFILE" >&3
-    echo "#define QT_POINTER_SIZE $?"
 fi
 
 if [ "$CFG_ATOMIC64" = "no" ]; then
@@ -7332,6 +7343,7 @@ echo "  Using C++ standard ..... $CFG_STDCXX"
 echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
 echo "  Using new DTAGS ........ $CFG_ENABLE_NEW_DTAGS"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
+echo "  Using LTCG ............. $CFG_LTCG"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "    SSE .................. ${CFG_SSE_LIST:-<none>}"
@@ -7409,6 +7421,7 @@ report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
 report_support "      EGLFS i.MX6 ........" "$CFG_EGLFS_VIV"
+report_support "      EGLFS i.MX6 Wayland." "$CFG_EGLFS_VIV_WL"
 report_support "      EGLFS EGLDevice ...." "$CFG_EGLFS_EGLDEVICE"
 report_support "      EGLFS GBM .........." "$CFG_EGLFS_GBM"
 report_support "      EGLFS Mali ........." "$CFG_EGLFS_MALI"

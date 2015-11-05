@@ -192,6 +192,7 @@ Top navigation
      margin-left: 30px;
  }
 
+.naviSeparator { display: none }
 /*
 -----------
 footer and license

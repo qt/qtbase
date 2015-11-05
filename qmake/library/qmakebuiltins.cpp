@@ -514,7 +514,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             QString tmp = args.at(0).toQString(m_tmp1);
             for (int i = 1; i < args.count(); ++i)
                 tmp = tmp.arg(args.at(i).toQString(m_tmp2));
-            ret << ProString(tmp);
+            ret << (tmp.isSharedWith(m_tmp1) ? args.at(0) : ProString(tmp).setSource(args.at(0)));
         }
         break;
     case E_FORMAT_NUMBER:
@@ -1387,6 +1387,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         QString parseInto;
         LoadFlags flags = 0;
+        if (m_cumulative)
+            flags = LoadSilent;
         if (args.count() >= 2) {
             parseInto = args.at(1).toQString(m_tmp2);
             if (args.count() >= 3 && isTrue(args.at(2), m_tmp3))
@@ -1549,12 +1551,14 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         if (args.count() >= 2) {
             const ProStringList &vals = values(args.at(1).toKey());
             if (!vals.isEmpty())
-                contents = vals.join(fL1S("\n")) + QLatin1Char('\n');
+                contents = vals.join(QLatin1Char('\n')) + QLatin1Char('\n');
             if (args.count() >= 3)
                 if (!args.at(2).toQString(m_tmp1).compare(fL1S("append"), Qt::CaseInsensitive))
                     mode = QIODevice::Append;
         }
-        return writeFile(QString(), resolvePath(args.at(0).toQString(m_tmp1)), mode, contents);
+        QString path = resolvePath(args.at(0).toQString(m_tmp1));
+        path.detach(); // make sure to not leak m_tmp1 into the map of written files.
+        return writeFile(QString(), path, mode, contents);
     }
     case T_TOUCH: {
         if (args.count() != 2) {

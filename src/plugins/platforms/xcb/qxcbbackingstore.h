@@ -71,6 +71,7 @@ private:
     QXcbShmImage *m_image;
     QRegion m_paintRegion;
     QImage m_rgbImage;
+    QSize m_size;
 };
 
 QT_END_NAMESPACE

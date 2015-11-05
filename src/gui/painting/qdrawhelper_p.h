@@ -588,7 +588,7 @@ static Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b
     return x;
 }
 
-#if QT_POINTER_SIZE == 8 // 64-bit versions
+#if Q_PROCESSOR_WORDSIZE == 8 // 64-bit versions
 
 static Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
@@ -1093,7 +1093,7 @@ const uint qt_bayer_matrix[16][16] = {
     ((((argb >> 24) * alpha) >> 8) << 24) | (argb & 0x00ffffff)
 
 
-#if QT_POINTER_SIZE == 8 // 64-bit versions
+#if Q_PROCESSOR_WORDSIZE == 8 // 64-bit versions
 #define AMIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
 #define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
 #else // 32 bits

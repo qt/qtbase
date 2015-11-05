@@ -151,7 +151,7 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
         oldest = node;
     }
 
-    node->timestamp = QDateTime::currentDateTime().addSecs(ExpiryTime);
+    node->timestamp = QDateTime::currentDateTimeUtc().addSecs(ExpiryTime);
     newest = node;
 }
 
@@ -190,7 +190,7 @@ void QNetworkAccessCache::updateTimer()
     if (!oldest)
         return;
 
-    int interval = QDateTime::currentDateTime().secsTo(oldest->timestamp);
+    int interval = QDateTime::currentDateTimeUtc().secsTo(oldest->timestamp);
     if (interval <= 0) {
         interval = 0;
     } else {
@@ -216,7 +216,7 @@ bool QNetworkAccessCache::emitEntryReady(Node *node, QObject *target, const char
 void QNetworkAccessCache::timerEvent(QTimerEvent *)
 {
     // expire old items
-    QDateTime now = QDateTime::currentDateTime();
+    const QDateTime now = QDateTime::currentDateTimeUtc();
 
     while (oldest && oldest->timestamp < now) {
         Node *next = oldest->newer;

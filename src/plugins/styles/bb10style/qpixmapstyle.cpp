@@ -616,9 +616,9 @@ void QPixmapStyle::drawProgressBarBackground(const QStyleOption *option,
                                              QPainter *painter, const QWidget *) const
 {
     bool vertical = false;
-    if (const QStyleOptionProgressBarV2 *pb2 =
-            qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-        vertical = (pb2->orientation == Qt::Vertical);
+    if (const QStyleOptionProgressBar *pb =
+            qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+        vertical = pb->orientation == Qt::Vertical;
     }
     drawCachedPixmap(vertical ? PB_VBackground : PB_HBackground, option->rect, painter);
 }
@@ -628,11 +628,7 @@ void QPixmapStyle::drawProgressBarLabel(const QStyleOption *option,
 {
     if (const QStyleOptionProgressBar *pb =
                     qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-        bool vertical = false;
-        if (const QStyleOptionProgressBarV2 *pb2 =
-                        qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-            vertical = (pb2->orientation == Qt::Vertical);
-        }
+        const bool vertical = pb->orientation == Qt::Vertical;
         if (!vertical) {
             QPalette::ColorRole textRole = QPalette::ButtonText;
             proxy()->drawItemText(painter, pb->rect,
@@ -647,13 +643,8 @@ void QPixmapStyle::drawProgressBarFill(const QStyleOption *option,
 {
     const QStyleOptionProgressBar *pbar =
                 qstyleoption_cast<const QStyleOptionProgressBar*>(option);
-    bool vertical = false;
-    bool flip = pbar->direction == Qt::RightToLeft;
-    if (const QStyleOptionProgressBarV2 *pb2 =
-            qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-        vertical = (pb2->orientation == Qt::Vertical);
-        flip = flip ^ pb2->invertedAppearance;
-    }
+    const bool vertical = pbar->orientation == Qt::Vertical;
+    const bool flip = (pbar->direction == Qt::RightToLeft) ^ pbar->invertedAppearance;
 
     if (pbar->progress == pbar->maximum) {
         drawCachedPixmap(vertical ? PB_VComplete : PB_HComplete, option->rect, painter);
@@ -801,9 +792,9 @@ QSize QPixmapStyle::progressBarSizeFromContents(const QStyleOption *option,
                                                 const QWidget *widget) const
 {
     bool vertical = false;
-    if (const QStyleOptionProgressBarV2 *pb2 =
-                    qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option)) {
-        vertical = (pb2->orientation == Qt::Vertical);
+    if (const QStyleOptionProgressBar *pb =
+                    qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+        vertical = pb->orientation == Qt::Vertical;
     }
     QSize result = QCommonStyle::sizeFromContents(CT_Slider, option, contentsSize, widget);
     if (vertical) {

@@ -59,6 +59,7 @@ private slots:
 
     void peekBug();
     void readAllKeepPosition();
+    void writeInTextMode();
 };
 
 void tst_QIODevice::initTestCase()
@@ -626,6 +627,46 @@ void tst_QIODevice::readAllKeepPosition()
     QByteArray resultArray = buffer.readAll();
     QCOMPARE(buffer.pos(), qint64(0));
     QCOMPARE(resultArray, buffer.buffer());
+}
+
+class RandomAccessBuffer : public QIODevice
+{
+public:
+    RandomAccessBuffer(const char *data) : QIODevice(), buf(data) { }
+
+protected:
+    qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    {
+        maxSize = qMin(maxSize, qint64(buf.size() - pos()));
+        memcpy(data, buf.constData() + pos(), maxSize);
+        return maxSize;
+    }
+    qint64 writeData(const char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    {
+        maxSize = qMin(maxSize, qint64(buf.size() - pos()));
+        memcpy(buf.data() + pos(), data, maxSize);
+        return maxSize;
+    }
+
+private:
+    QByteArray buf;
+};
+
+// Test write() on skipping correct number of bytes in read buffer
+void tst_QIODevice::writeInTextMode()
+{
+    // Unlike other platforms, Windows implementation expands '\n' into
+    // "\r\n" sequence in write(). Ensure that write() properly works with
+    // a read buffer on random-access devices.
+#ifndef Q_OS_WIN
+    QSKIP("This is a Windows-only test");
+#else
+    RandomAccessBuffer buffer("one\r\ntwo\r\nthree\r\n");
+    buffer.open(QBuffer::ReadWrite | QBuffer::Text);
+    QCOMPARE(buffer.readLine(), QByteArray("one\n"));
+    QCOMPARE(buffer.write("two\n"), 4);
+    QCOMPARE(buffer.readLine(), QByteArray("three\n"));
+#endif
 }
 
 QTEST_MAIN(tst_QIODevice)

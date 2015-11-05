@@ -563,7 +563,7 @@ QByteArray QMimeData::data(const QString &mimeType) const
     operators must then be registered with the qRegisterMetaTypeStreamOperators()
     function.
 
-    \sa hasFormat(), QMetaType, qRegisterMetaTypeStreamOperators()
+    \sa hasFormat(), QMetaType, {QMetaType::}{qRegisterMetaTypeStreamOperators()}
 */
 void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 {

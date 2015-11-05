@@ -131,19 +131,18 @@
     before the handshake phase with setLocalCertificate() and
     setPrivateKey().
     \li The CA certificate database can be extended and customized with
-    addCaCertificate(), addCaCertificates(), setCaCertificates(),
-    addDefaultCaCertificate(), addDefaultCaCertificates(), and
-    setDefaultCaCertificates().
+    addCaCertificate(), addCaCertificates(), addDefaultCaCertificate(),
+    addDefaultCaCertificates(), and QSslConfiguration::defaultConfiguration().setCaCertificates().
     \endlist
 
     \note If available, root certificates on Unix (excluding OS X) will be
-    loaded on demand from the standard certificate directories. If
-    you do not want to load root certificates on demand, you need to call either
-    the static function setDefaultCaCertificates() before the first SSL handshake
-    is made in your application, (e.g. via
-    "QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());"),
-    or call setCaCertificates() on your QSslSocket instance prior to the SSL
-    handshake.
+    loaded on demand from the standard certificate directories. If you do not
+    want to load root certificates on demand, you need to call either
+    QSslConfiguration::defaultConfiguration().setCaCertificates() before the first
+    SSL handshake is made in your application (for example, via passing
+    QSslSocket::systemCaCertificates() to it), or call
+    QSslConfiguration::defaultConfiguration()::setCaCertificates() on your QSslSocket instance
+    prior to the SSL handshake.
 
     For more information about ciphers and certificates, refer to QSslCipher and
     QSslCertificate.
@@ -1311,8 +1310,8 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
 /*!
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
-  database. \a path can be explicit, or it can contain wildcards in
-  the format specified by \a syntax. Returns \c true if one or more
+  database. \a path must be a file or a pattern matching one or more
+  files, as specified by \a syntax. Returns \c true if one or more
   certificates are added to the socket's CA certificate database;
   otherwise returns \c false.
 

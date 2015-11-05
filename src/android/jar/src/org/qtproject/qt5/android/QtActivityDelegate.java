@@ -250,12 +250,18 @@ public class QtActivityDelegate
         if (m_imm == null)
             return;
 
-        if (m_softInputMode == 0 && height > m_layout.getHeight() * 2 / 3)
-           m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        else if (m_softInputMode == 0)
-            m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        else
+        if (m_softInputMode != 0) {
             m_activity.getWindow().setSoftInputMode(m_softInputMode);
+            // softInputIsHidden is true if SOFT_INPUT_STATE_HIDDEN or SOFT_INPUT_STATE_ALWAYS_HIDDEN is set.
+            final boolean softInputIsHidden = (m_softInputMode & WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) != 0;
+            if (softInputIsHidden)
+               return;
+        } else {
+            if (height > m_layout.getHeight() * 2 / 3)
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            else
+                m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        }
 
         int initialCapsMode = 0;
 
@@ -344,8 +350,7 @@ public class QtActivityDelegate
         m_editText.setImeOptions(imeOptions);
         m_editText.setInputType(inputType);
 
-        m_layout.removeView(m_editText);
-        m_layout.addView(m_editText, new QtLayout.LayoutParams(width, height, x, y));
+        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(width, height, x, y), false);
         m_editText.requestFocus();
         m_editText.postDelayed(new Runnable() {
             @Override
@@ -1141,12 +1146,10 @@ public class QtActivityDelegate
                     if (Build.VERSION.SDK_INT < 11 || w <= 0 || h <= 0) {
                         m_activity.openContextMenu(m_layout);
                     } else if (Build.VERSION.SDK_INT < 14) {
-                        m_layout.removeView(m_editText);
-                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(w, h, x, y), false);
                         QtPopupMenu.getInstance().showMenu(m_editText);
                     } else {
-                        m_layout.removeView(m_editText);
-                        m_layout.addView(m_editText, new QtLayout.LayoutParams(w, h, x, y));
+                        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(w, h, x, y), false);
                         QtPopupMenu14.getInstance().showMenu(m_editText);
                     }
                 }

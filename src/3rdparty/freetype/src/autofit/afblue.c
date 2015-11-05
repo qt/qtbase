@@ -7,7 +7,7 @@
 /*                                                                         */
 /*    Auto-fitter data for blue strings (body).                            */
 /*                                                                         */
-/*  Copyright 2013 by                                                      */
+/*  Copyright 2013-2015 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -26,6 +26,12 @@
   af_blue_strings[] =
   {
     /* */
+    '\xD8', '\xA7', '\xD8', '\xA5', '\xD9', '\x84', '\xD9', '\x83', '\xD8', '\xB7', '\xD8', '\xB8',  /* ا إ ل ك ط ظ */
+    '\0',
+    '\xD8', '\xAA', '\xD8', '\xAB', '\xD8', '\xB7', '\xD8', '\xB8', '\xD9', '\x83',  /* ت ث ط ظ ك */
+    '\0',
+    '\xD9', '\x80',  /* ـ */
+    '\0',
     '\xD0', '\x91', '\xD0', '\x92', '\xD0', '\x95', '\xD0', '\x9F', '\xD0', '\x97', '\xD0', '\x9E', '\xD0', '\xA1', '\xD0', '\xAD',  /* БВЕПЗОСЭ */
     '\0',
     '\xD0', '\x91', '\xD0', '\x92', '\xD0', '\x95', '\xD0', '\xA8', '\xD0', '\x97', '\xD0', '\x9E', '\xD0', '\xA1', '\xD0', '\xAD',  /* БВЕШЗОСЭ */
@@ -58,6 +64,16 @@
     '\0',
     '\xD7', '\xA7', '\xD7', '\x9A', '\xD7', '\x9F', '\xD7', '\xA3', '\xD7', '\xA5',  /* קךןףץ */
     '\0',
+    '\xE0', '\xBA', '\xB2', '\xE0', '\xBA', '\x94', '\xE0', '\xBA', '\xAD', '\xE0', '\xBA', '\xA1', '\xE0', '\xBA', '\xA5', '\xE0', '\xBA', '\xA7', '\xE0', '\xBA', '\xA3', '\xE0', '\xBA', '\x87',  /* າ ດ ອ ມ ລ ວ ຣ ງ */
+    '\0',
+    '\xE0', '\xBA', '\xB2', '\xE0', '\xBA', '\xAD', '\xE0', '\xBA', '\x9A', '\xE0', '\xBA', '\x8D', '\xE0', '\xBA', '\xA3', '\xE0', '\xBA', '\xAE', '\xE0', '\xBA', '\xA7', '\xE0', '\xBA', '\xA2',  /* າ ອ ບ ຍ ຣ ຮ ວ ຢ */
+    '\0',
+    '\xE0', '\xBA', '\x9B', '\xE0', '\xBA', '\xA2', '\xE0', '\xBA', '\x9F', '\xE0', '\xBA', '\x9D',  /* ປ ຢ ຟ ຝ */
+    '\0',
+    '\xE0', '\xBB', '\x82', '\xE0', '\xBB', '\x84', '\xE0', '\xBB', '\x83',  /* ໂ ໄ ໃ */
+    '\0',
+    '\xE0', '\xBA', '\x87', '\xE0', '\xBA', '\x8A', '\xE0', '\xBA', '\x96', '\xE0', '\xBA', '\xBD', '\xE0', '\xBB', '\x86', '\xE0', '\xBA', '\xAF',  /* ງ ຊ ຖ ຽ ໆ ຯ */
+    '\0',
     'T', 'H', 'E', 'Z', 'O', 'C', 'Q', 'S',  /* THEZOCQS */
     '\0',
     'H', 'E', 'Z', 'L', 'O', 'C', 'U', 'S',  /* HEZLOCUS */
@@ -68,9 +84,43 @@
     '\0',
     'p', 'q', 'g', 'j', 'y',  /* pqgjy */
     '\0',
+    '\xE2', '\x82', '\x80', '\xE2', '\x82', '\x83', '\xE2', '\x82', '\x85', '\xE2', '\x82', '\x87', '\xE2', '\x82', '\x88',  /* ₀₃₅₇₈ */
+    '\0',
+    '\xE2', '\x82', '\x80', '\xE2', '\x82', '\x81', '\xE2', '\x82', '\x82', '\xE2', '\x82', '\x83', '\xE2', '\x82', '\x88',  /* ₀₁₂₃₈ */
+    '\0',
+    '\xE1', '\xB5', '\xA2', '\xE2', '\xB1', '\xBC', '\xE2', '\x82', '\x95', '\xE2', '\x82', '\x96', '\xE2', '\x82', '\x97',  /* ᵢⱼₕₖₗ */
+    '\0',
+    '\xE2', '\x82', '\x90', '\xE2', '\x82', '\x91', '\xE2', '\x82', '\x92', '\xE2', '\x82', '\x93', '\xE2', '\x82', '\x99', '\xE2', '\x82', '\x9B', '\xE1', '\xB5', '\xA5', '\xE1', '\xB5', '\xA4', '\xE1', '\xB5', '\xA3',  /* ₐₑₒₓₙₛᵥᵤᵣ */
+    '\0',
+    '\xE1', '\xB5', '\xA6', '\xE1', '\xB5', '\xA7', '\xE1', '\xB5', '\xA8', '\xE1', '\xB5', '\xA9', '\xE2', '\x82', '\x9A',  /* ᵦᵧᵨᵩₚ */
+    '\0',
+    '\xE2', '\x81', '\xB0', '\xC2', '\xB3', '\xE2', '\x81', '\xB5', '\xE2', '\x81', '\xB7', '\xE1', '\xB5', '\x80', '\xE1', '\xB4', '\xB4', '\xE1', '\xB4', '\xB1', '\xE1', '\xB4', '\xBC',  /* ⁰³⁵⁷ᵀᴴᴱᴼ */
+    '\0',
+    '\xE2', '\x81', '\xB0', '\xC2', '\xB9', '\xC2', '\xB2', '\xC2', '\xB3', '\xE1', '\xB4', '\xB1', '\xE1', '\xB4', '\xB8', '\xE1', '\xB4', '\xBC', '\xE1', '\xB5', '\x81',  /* ⁰¹²³ᴱᴸᴼᵁ */
+    '\0',
+    '\xE1', '\xB5', '\x87', '\xE1', '\xB5', '\x88', '\xE1', '\xB5', '\x8F', '\xCA', '\xB0', '\xCA', '\xB2', '\xE1', '\xB6', '\xA0', '\xE2', '\x81', '\xB1',  /* ᵇᵈᵏʰʲᶠⁱ */
+    '\0',
+    '\xE1', '\xB5', '\x89', '\xE1', '\xB5', '\x92', '\xCA', '\xB3', '\xCB', '\xA2', '\xCB', '\xA3', '\xE1', '\xB6', '\x9C', '\xE1', '\xB6', '\xBB',  /* ᵉᵒʳˢˣᶜᶻ */
+    '\0',
+    '\xE1', '\xB5', '\x96', '\xCA', '\xB8', '\xE1', '\xB5', '\x8D',  /* ᵖʸᵍ */
+    '\0',
     '\xE0', '\xB0', '\x87', '\xE0', '\xB0', '\x8C', '\xE0', '\xB0', '\x99', '\xE0', '\xB0', '\x9E', '\xE0', '\xB0', '\xA3', '\xE0', '\xB0', '\xB1', '\xE0', '\xB1', '\xAF',  /* ఇ ఌ ఙ ఞ ణ ఱ ౯ */
     '\0',
     '\xE0', '\xB0', '\x85', '\xE0', '\xB0', '\x95', '\xE0', '\xB0', '\x9A', '\xE0', '\xB0', '\xB0', '\xE0', '\xB0', '\xBD', '\xE0', '\xB1', '\xA8', '\xE0', '\xB1', '\xAC',  /* అ క చ ర ఽ ౨ ౬ */
+    '\0',
+    '\xE0', '\xB8', '\x9A', '\xE0', '\xB9', '\x80', '\xE0', '\xB9', '\x81', '\xE0', '\xB8', '\xAD', '\xE0', '\xB8', '\x81', '\xE0', '\xB8', '\xB2',  /* บ เ แ อ ก า */
+    '\0',
+    '\xE0', '\xB8', '\x9A', '\xE0', '\xB8', '\x9B', '\xE0', '\xB8', '\xA9', '\xE0', '\xB8', '\xAF', '\xE0', '\xB8', '\xAD', '\xE0', '\xB8', '\xA2', '\xE0', '\xB8', '\xAE',  /* บ ป ษ ฯ อ ย ฮ */
+    '\0',
+    '\xE0', '\xB8', '\x9B', '\xE0', '\xB8', '\x9D', '\xE0', '\xB8', '\x9F',  /* ป ฝ ฟ */
+    '\0',
+    '\xE0', '\xB9', '\x82', '\xE0', '\xB9', '\x83', '\xE0', '\xB9', '\x84',  /* โ ใ ไ */
+    '\0',
+    '\xE0', '\xB8', '\x8E', '\xE0', '\xB8', '\x8F', '\xE0', '\xB8', '\xA4', '\xE0', '\xB8', '\xA6',  /* ฎ ฏ ฤ ฦ */
+    '\0',
+    '\xE0', '\xB8', '\x8D', '\xE0', '\xB8', '\x90',  /* ญ ฐ */
+    '\0',
+    '\xE0', '\xB9', '\x90', '\xE0', '\xB9', '\x91', '\xE0', '\xB9', '\x93',  /* ๐ ๑ ๓ */
 #ifdef AF_CONFIG_OPTION_CJK
     '\0',
     '\xE4', '\xBB', '\x96', '\xE4', '\xBB', '\xAC', '\xE4', '\xBD', '\xA0', '\xE4', '\xBE', '\x86', '\xE5', '\x80', '\x91', '\xE5', '\x88', '\xB0', '\xE5', '\x92', '\x8C', '\xE5', '\x9C', '\xB0',  /* 他们你來們到和地 */
@@ -121,6 +171,10 @@
   af_blue_stringsets[] =
   {
     /* */
+    { AF_BLUE_STRING_ARABIC_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     },
+    { AF_BLUE_STRING_ARABIC_BOTTOM, 0                              },
+    { AF_BLUE_STRING_ARABIC_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL },
+    { AF_BLUE_STRING_MAX,           0                              },
     { AF_BLUE_STRING_CYRILLIC_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
     { AF_BLUE_STRING_CYRILLIC_CAPITAL_BOTTOM,  0                                 },
     { AF_BLUE_STRING_CYRILLIC_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
@@ -149,6 +203,13 @@
     { AF_BLUE_STRING_HEBREW_BOTTOM,    0                             },
     { AF_BLUE_STRING_HEBREW_DESCENDER, 0                             },
     { AF_BLUE_STRING_MAX,              0                             },
+    { AF_BLUE_STRING_LAO_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
+                                          AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_LAO_BOTTOM,          0                                 },
+    { AF_BLUE_STRING_LAO_ASCENDER,        AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LAO_LARGE_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LAO_DESCENDER,       0                                 },
+    { AF_BLUE_STRING_MAX,                 0                                 },
     { AF_BLUE_STRING_LATIN_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
     { AF_BLUE_STRING_LATIN_CAPITAL_BOTTOM,  0                                 },
     { AF_BLUE_STRING_LATIN_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
@@ -157,9 +218,34 @@
     { AF_BLUE_STRING_LATIN_SMALL,           0                                 },
     { AF_BLUE_STRING_LATIN_SMALL_DESCENDER, 0                                 },
     { AF_BLUE_STRING_MAX,                   0                                 },
+    { AF_BLUE_STRING_LATIN_SUBS_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LATIN_SUBS_CAPITAL_BOTTOM,  0                                 },
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                 AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL,           0                                 },
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL_DESCENDER, 0                                 },
+    { AF_BLUE_STRING_MAX,                        0                                 },
+    { AF_BLUE_STRING_LATIN_SUPS_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LATIN_SUPS_CAPITAL_BOTTOM,  0                                 },
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                 AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL,           0                                 },
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL_DESCENDER, 0                                 },
+    { AF_BLUE_STRING_MAX,                        0                                 },
     { AF_BLUE_STRING_TELUGU_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_TELUGU_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,           0                          },
+    { AF_BLUE_STRING_THAI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
+                                           AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
+    { AF_BLUE_STRING_THAI_BOTTOM,          0                                 },
+    { AF_BLUE_STRING_THAI_ASCENDER,        AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_THAI_LARGE_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        },
+    { AF_BLUE_STRING_THAI_DESCENDER,       0                                 },
+    { AF_BLUE_STRING_THAI_LARGE_DESCENDER, 0                                 },
+    { AF_BLUE_STRING_THAI_DIGIT_TOP,       0                                 },
+    { AF_BLUE_STRING_MAX,                  0                                 },
 #ifdef AF_CONFIG_OPTION_CJK
     { AF_BLUE_STRING_CJK_TOP,    AF_BLUE_PROPERTY_CJK_TOP     },
     { AF_BLUE_STRING_CJK_BOTTOM, 0                            },

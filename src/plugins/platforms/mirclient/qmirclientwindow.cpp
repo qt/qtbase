@@ -158,7 +158,7 @@ QMirClientWindow::QMirClientWindow(QWindow* w, QSharedPointer<QMirClientClipboar
     d->id = id++;
 
     // Use client geometry if set explicitly, use available screen geometry otherwise.
-    QPlatformWindow::setGeometry(window()->geometry() != screen->geometry() ?
+    QPlatformWindow::setGeometry(window()->geometry().isValid() &&  window()->geometry() != screen->geometry() ?
         window()->geometry() : screen->availableGeometry());
     createWindow();
     DLOG("QMirClientWindow::QMirClientWindow (this=%p, w=%p, screen=%p, input=%p)", this, w, screen, input);
@@ -198,6 +198,8 @@ void QMirClientWindowPrivate::destroyEGLSurface()
 // we need to guess the panel height (3GU + 2DP)
 int QMirClientWindowPrivate::panelHeight()
 {
+    if (qEnvironmentVariableIsSet("QT_MIRCLIENT_IGNORE_PANEL"))
+        return 0;
     const int defaultGridUnit = 8;
     int gridUnit = defaultGridUnit;
     QByteArray gridUnitString = qgetenv("GRID_UNIT_PX");

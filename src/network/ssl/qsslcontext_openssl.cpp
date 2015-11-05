@@ -215,6 +215,8 @@ init_context:
         return sslContext;
     }
 
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
     // Add all our CAs to this store.
     foreach (const QSslCertificate &caCertificate, sslContext->sslConfiguration.caCertificates()) {
         // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
@@ -228,7 +230,7 @@ init_context:
         // certificates mixed with valid ones.
         //
         // See also: QSslSocketBackendPrivate::verify()
-        if (caCertificate.expiryDate() >= QDateTime::currentDateTime()) {
+        if (caCertificate.expiryDate() >= now) {
             q_X509_STORE_add_cert(q_SSL_CTX_get_cert_store(sslContext->ctx), (X509 *)caCertificate.handle());
         }
     }

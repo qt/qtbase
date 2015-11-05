@@ -1265,7 +1265,7 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 #ifdef Q_OS_OSX
     if (platformMenu)
         Q_FOREACH (QAction *action, q->actions())
-            if (QWidget *widget = widgetItems.value(const_cast<QAction *>(action)))
+            if (QWidget *widget = widgetItems.value(action))
                 if (widget->parent() == q) {
                     QPlatformMenuItem *menuItem = platformMenu->menuItemForTag(reinterpret_cast<quintptr>(action));
                     moveWidgetToPlatformItem(widget, menuItem);
@@ -3143,7 +3143,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         d->activeMenu->d_func()->setCurrentAction(0);
 
     QMenuSloppyState::MouseEventResult sloppyEventResult = d->sloppyState.processMouseEvent(e->localPos(), action, d->currentAction);
-    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropogated) {
+    if (sloppyEventResult == QMenuSloppyState::EventShouldBePropagated) {
         d->setCurrentAction(action, d->mousePopupDelay);
     } else if (sloppyEventResult == QMenuSloppyState::EventDiscardsSloppyState) {
         d->sloppyState.reset();

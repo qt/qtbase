@@ -831,6 +831,7 @@ public:
 
     Q_ENUM(Language)
     Q_ENUM(Country)
+    Q_ENUM(Script)
 
     enum MeasurementSystem {
         MetricSystem,

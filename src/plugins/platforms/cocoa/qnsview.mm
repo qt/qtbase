@@ -41,6 +41,7 @@
 #include "qcocoahelpers.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
+#include "qcocoainputcontext.h"
 #include <qpa/qplatformintegration.h>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -160,6 +161,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition | QTouchDevice::MouseEmulation);
             QWindowSystemInterface::registerTouchDevice(touchDevice);
         }
+
+        m_isMenuView = false;
     }
     return self;
 }
@@ -212,6 +215,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
                                           selector:@selector(updateGeometry)
                                           name:NSViewFrameDidChangeNotification
                                           object:self];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
+                                          name:NSTextInputContextKeyboardSelectionDidChangeNotification
+                                          object:nil];
 
     return self;
 }
@@ -269,11 +277,11 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 - (void)viewDidMoveToWindow
 {
+    m_isMenuView = [self.window.className isEqualToString:@"NSCarbonMenuWindow"];
     if (self.window) {
         // This is the case of QWidgetAction's generated QWidget inserted in an NSMenu.
         // 10.9 and newer get the NSWindowDidChangeOcclusionStateNotification
-        if ((!_q_NSWindowDidChangeOcclusionStateNotification
-            && [self.window.className isEqualToString:@"NSCarbonMenuWindow"])) {
+        if (!_q_NSWindowDidChangeOcclusionStateNotification && m_isMenuView) {
             m_exposedOnMoveToWindow = true;
             m_platformWindow->exposeWindow();
         }
@@ -402,7 +410,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     NSString *notificationName = [windowNotification name];
     if (notificationName == NSWindowDidBecomeKeyNotification) {
-        if (!m_platformWindow->windowIsPopupType())
+        if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
             QWindowSystemInterface::handleWindowActivated(m_window);
     } else if (notificationName == NSWindowDidResignKeyNotification) {
         // key window will be non-nil if another window became key... do not
@@ -411,7 +419,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         NSWindow *keyWindow = [NSApp keyWindow];
         if (!keyWindow) {
             // no new key window, go ahead and set the active window to zero
-            if (!m_platformWindow->windowIsPopupType())
+            if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
                 QWindowSystemInterface::handleWindowActivated(0);
         }
     } else if (notificationName == NSWindowDidMiniaturizeNotification
@@ -459,6 +467,15 @@ QT_WARNING_POP
         Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
                                    Qt::WindowFullScreen : Qt::WindowNoState;
         [self notifyWindowStateChanged:newState];
+    }
+}
+
+- (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
+{
+    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
+    if (([NSApp keyWindow] == [self window]) && [[self window] firstResponder] == self) {
+        QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext());
+        ic->updateLocale();
     }
 }
 
@@ -621,13 +638,15 @@ QT_WARNING_POP
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return NO;
-    if (!m_platformWindow->windowIsPopupType())
+    if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
         QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
 - (BOOL)acceptsFirstResponder
 {
+    if (m_isMenuView)
+        return NO;
     if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )

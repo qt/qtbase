@@ -156,7 +156,9 @@ public:
             AppContainer *app = reinterpret_cast<AppContainer *>(param);
             int argc = app->args.count();
             char **argv = app->args.data();
-            return main(argc, argv);
+            const int res = main(argc, argv);
+            app->core->Exit();
+            return res;
         }, this, CREATE_SUSPENDED, nullptr);
 
         HRESULT hr;

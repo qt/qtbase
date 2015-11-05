@@ -2098,7 +2098,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     \warning This function is useful only for registering an alias (typedef)
     for every other use case Q_DECLARE_METATYPE and qMetaTypeId() should be used instead.
 
-    \sa qRegisterMetaTypeStreamOperators(), QMetaType::isRegistered(),
+    \sa {QMetaType::}{qRegisterMetaTypeStreamOperators()}, {QMetaType::}{isRegistered()},
         Q_DECLARE_METATYPE()
 */
 

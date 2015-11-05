@@ -136,12 +136,12 @@ code {
 
 p.naviNextPrevious {
   text-align: right;
-  margin-right: 40px;
+  margin-right: 20px;
 }
 
-q.prevPage, a.nextPage {
-  margin-left: 30px;
- }
+span.naviSeparator {
+  white-space: pre;
+}
 
 .toc h3 {
   margin: 0px 0px 10px 6px;

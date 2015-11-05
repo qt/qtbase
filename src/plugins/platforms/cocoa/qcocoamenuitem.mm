@@ -199,6 +199,8 @@ void QCocoaMenuItem::setEnabled(bool enabled)
 void QCocoaMenuItem::setNativeContents(WId item)
 {
     NSView *itemView = (NSView *)item;
+    if (m_itemView == itemView)
+        return;
     [m_itemView release];
     m_itemView = [itemView retain];
     [m_itemView setAutoresizesSubviews:YES];
@@ -303,8 +305,8 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     if (!m_native) {
         m_native = [[NSMenuItem alloc] initWithTitle:QCFString::toNSString(m_text)
-            action:nil
-                keyEquivalent:@""];
+                                       action:nil
+                                       keyEquivalent:@""];
         [m_native setTag:reinterpret_cast<NSInteger>(this)];
     }
 

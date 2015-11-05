@@ -166,7 +166,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
-    dictionary[ "WMF_BACKEND" ]     = "auto";
+    dictionary[ "WMF_BACKEND" ]     = "no";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
@@ -2611,11 +2611,6 @@ void Configure::autoDetection()
             i.value() = defaultTo(i.key());
     }
 
-    if (tryCompileProject("unix/ptrsize"))
-        dictionary["QT_POINTER_SIZE"] = "8";
-    else
-        dictionary["QT_POINTER_SIZE"] = "4";
-
     cout << "Done running configuration tests." << endl;
 }
 
@@ -3180,7 +3175,7 @@ void Configure::generateOutputVars()
 
 void Configure::generateCachefile()
 {
-    // Generate qmodule.pri
+    // Generate qmodule.pri, which is loaded only by Qt modules
     {
         FileWriter moduleStream(buildPath + "/mkspecs/qmodule.pri");
 
@@ -3250,6 +3245,8 @@ void Configure::generateCachefile()
             moduleStream << " largefile";
         if (dictionary[ "STRIP" ] == "no")
             moduleStream << " nostrip";
+        if (dictionary[ "LTCG" ] == "yes")
+            moduleStream << " ltcg";
         moduleStream << endl;
 
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var)
@@ -3537,8 +3534,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary["STATIC_RUNTIME"] == "yes")
             configStream << " static_runtime";
-        if (dictionary[ "LTCG" ] == "yes")
-            configStream << " ltcg";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
         if (dictionary["INCREDIBUILD_XGE"] == "yes")
@@ -3803,8 +3798,6 @@ void Configure::generateConfigfiles()
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
         if (dictionary["QT_GETIFADDRS"] == "no")       qconfigList += "QT_NO_GETIFADDRS";
-
-        qconfigList += QString("QT_POINTER_SIZE=%1").arg(dictionary["QT_POINTER_SIZE"]);
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)

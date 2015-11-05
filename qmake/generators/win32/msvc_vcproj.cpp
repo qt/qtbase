@@ -1207,12 +1207,13 @@ void VcprojGenerator::initLinkerTool()
     if (!project->values("DEF_FILE").isEmpty())
         conf.linker.ModuleDefinitionFile = project->first("DEF_FILE").toQString();
 
-    foreach (const ProString &libs, project->values("QMAKE_LIBS") + project->values("QMAKE_LIBS_PRIVATE")) {
-        if (libs.left(9).toQString().toUpper() == "/LIBPATH:") {
-            ProStringList l = ProStringList(libs);
-            conf.linker.parseOptions(l);
-        } else {
-            conf.linker.AdditionalDependencies << escapeFilePath(libs.toQString());
+    static const char * const lflags[] = { "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", 0 };
+    for (int i = 0; lflags[i]; i++) {
+        foreach (const ProString &lib, fixLibFlags(lflags[i])) {
+            if (lib.startsWith("/LIBPATH:"))
+                conf.linker.AdditionalLibraryDirectories << lib.mid(9).toQString();
+            else
+                conf.linker.AdditionalDependencies << lib.toQString();
         }
     }
 

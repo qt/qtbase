@@ -37,6 +37,9 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qtQpaInputMethods, "qt.qpa.input.methods")
+Q_LOGGING_CATEGORY(qtQpaInputMethodsSerialize, "qt.qpa.input.methods.serialize")
+
 QIBusSerializable::QIBusSerializable()
 {
 }
@@ -202,7 +205,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &att
 
 const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &attrList)
 {
-//    qDebug() << "QIBusAttributeList::fromDBusArgument()" << arg.currentSignature();
+    qCDebug(qtQpaInputMethodsSerialize) << "QIBusAttributeList::fromDBusArgument()" << arg.currentSignature();
     arg.beginStructure();
 
     arg >> static_cast<QIBusSerializable &>(attrList);
@@ -277,7 +280,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text)
 
 const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text)
 {
-//    qDebug() << "QIBusText::fromDBusArgument()" << arg.currentSignature();
+    qCDebug(qtQpaInputMethodsSerialize) << "QIBusText::fromDBusArgument()" << argument.currentSignature();
     argument.beginStructure();
 
     argument >> static_cast<QIBusSerializable &>(text);
@@ -286,6 +289,109 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text)
     QDBusVariant variant;
     argument >> variant;
     variant.variant().value<QDBusArgument>() >> text.attributes;
+
+    argument.endStructure();
+    return argument;
+}
+
+QIBusEngineDesc::QIBusEngineDesc()
+    : engine_name(""),
+      longname(""),
+      description(""),
+      language(""),
+      license(""),
+      author(""),
+      icon(""),
+      layout(""),
+      rank(0),
+      hotkeys(""),
+      symbol(""),
+      setup(""),
+      layout_variant(""),
+      layout_option(""),
+      version(""),
+      textdomain(""),
+      iconpropkey("")
+{
+    name = "IBusEngineDesc";
+}
+
+QIBusEngineDesc::~QIBusEngineDesc()
+{
+}
+
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusEngineDesc &desc)
+{
+    argument.beginStructure();
+
+    argument << static_cast<const QIBusSerializable &>(desc);
+
+    argument << desc.engine_name;
+    argument << desc.longname;
+    argument << desc.description;
+    argument << desc.language;
+    argument << desc.license;
+    argument << desc.author;
+    argument << desc.icon;
+    argument << desc.layout;
+    argument << desc.rank;
+    argument << desc.hotkeys;
+    argument << desc.symbol;
+    argument << desc.setup;
+    argument << desc.layout_variant;
+    argument << desc.layout_option;
+    argument << desc.version;
+    argument << desc.textdomain;
+    argument << desc.iconpropkey;
+
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngineDesc &desc)
+{
+    qCDebug(qtQpaInputMethodsSerialize) << "QIBusEngineDesc::fromDBusArgument()" << argument.currentSignature();
+    argument.beginStructure();
+
+    argument >> static_cast<QIBusSerializable &>(desc);
+
+    argument >> desc.engine_name;
+    argument >> desc.longname;
+    argument >> desc.description;
+    argument >> desc.language;
+    argument >> desc.license;
+    argument >> desc.author;
+    argument >> desc.icon;
+    argument >> desc.layout;
+    argument >> desc.rank;
+    argument >> desc.hotkeys;
+    argument >> desc.symbol;
+    argument >> desc.setup;
+    // Previous IBusEngineDesc supports the arguments between engine_name
+    // and setup.
+    if (argument.currentSignature() == "") {
+        argument.endStructure();
+        return argument;
+    }
+    argument >> desc.layout_variant;
+    argument >> desc.layout_option;
+    // Previous IBusEngineDesc supports the arguments between engine_name
+    // and layout_option.
+    if (argument.currentSignature() == "") {
+        argument.endStructure();
+        return argument;
+    }
+    argument >> desc.version;
+    if (argument.currentSignature() == "") {
+        argument.endStructure();
+        return argument;
+    }
+    argument >> desc.textdomain;
+    if (argument.currentSignature() == "") {
+        argument.endStructure();
+        return argument;
+    }
+    argument >> desc.iconpropkey;
 
     argument.endStructure();
     return argument;

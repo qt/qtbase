@@ -20,6 +20,8 @@
 #include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
 
+#include "qibustypes.h"
+
 /*
  * Proxy class for interface org.freedesktop.IBus
  */
@@ -29,6 +31,8 @@ class QIBusProxy: public QDBusAbstractInterface
 public:
     static inline const char *staticInterfaceName()
     { return "org.freedesktop.IBus"; }
+    static inline QString dbusInterfaceProperties()
+    { return QStringLiteral("org.freedesktop.DBus.Properties"); }
 
 public:
     QIBusProxy(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
@@ -82,7 +86,26 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("RegisterComponent"), argumentList);
     }
 
+    inline QDBusPendingReply<QDBusVariant> GetGlobalEngine()
+    {
+        if (!this->isValid() || this->service().isEmpty() || this->path().isEmpty())
+             return QDBusMessage::createError(this->lastError());
+
+        QDBusMessage msg = QDBusMessage::createMethodCall(this->service(),
+                                                          this->path(),
+                                                          dbusInterfaceProperties(),
+                                                          QStringLiteral("Get"));
+        msg << this->interface() << QStringLiteral("GlobalEngine");
+        return this->connection().asyncCall(msg, this->timeout());
+    }
+
+    QIBusEngineDesc getGlobalEngine();
+
+private:
+    void globalEngineChanged(const QString &engine_name);
+
 Q_SIGNALS: // SIGNALS
+    void GlobalEngineChanged(const QString &engine_name);
 };
 
 #endif

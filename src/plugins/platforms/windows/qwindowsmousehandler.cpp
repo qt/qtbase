@@ -151,10 +151,17 @@ static inline QTouchDevice *createTouchDevice()
 QWindowsMouseHandler::QWindowsMouseHandler() :
     m_windowUnderMouse(0),
     m_trackedWindow(0),
-    m_touchDevice(createTouchDevice()),
+    m_touchDevice(Q_NULLPTR),
     m_leftButtonDown(false),
     m_previousCaptureWindow(0)
 {
+}
+
+QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
+{
+    if (!m_touchDevice)
+        m_touchDevice = createTouchDevice();
+    return m_touchDevice;
 }
 
 Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
@@ -477,7 +484,11 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     typedef QWindowSystemInterface::TouchPoint QTouchPoint;
     typedef QList<QWindowSystemInterface::TouchPoint> QTouchPointList;
 
-    Q_ASSERT(m_touchDevice);
+    if (!QWindowsContext::instance()->initTouch()) {
+        qWarning("Unable to initialize touch handling.");
+        return true;
+    }
+
     const QScreen *screen = window->screen();
     if (!screen)
         screen = QGuiApplication::primaryScreen();
@@ -492,8 +503,6 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
     Qt::TouchPointStates allStates = 0;
-
-    Q_ASSERT(QWindowsContext::user32dll.getTouchInputInfo);
 
     QWindowsContext::user32dll.getTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {

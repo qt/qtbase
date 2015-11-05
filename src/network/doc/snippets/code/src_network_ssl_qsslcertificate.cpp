@@ -39,7 +39,8 @@
 ****************************************************************************/
 
 //! [0]
-foreach (const QSslCertificate &cert, QSslCertificate::fromPath("C:/ssl/certificate.*.pem", QSsl::Pem,
+foreach (const QSslCertificate &cert, QSslCertificate::fromPath("C:/ssl/certificate.*.pem",
+                                                         QSsl::Pem,
                                                          QRegExp::Wildcard)) {
     qDebug() << cert.issuerInfo(QSslCertificate::Organization);
 }

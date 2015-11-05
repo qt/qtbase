@@ -304,3 +304,4 @@ void QCFSocketNotifier::enableSocketNotifiers(CFRunLoopObserverRef ref, CFRunLoo
 }
 
 QT_END_NAMESPACE
+

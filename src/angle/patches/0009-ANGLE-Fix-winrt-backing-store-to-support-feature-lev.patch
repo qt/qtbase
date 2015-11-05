@@ -1,0 +1,38 @@
+From 54461670e035ffcb41268a02e9b0c441cc008ddb Mon Sep 17 00:00:00 2001
+From: Samuel Nevala <samuel.nevala@intopalo.com>
+Date: Thu, 22 Oct 2015 14:02:28 +0300
+Subject: [PATCH] ANGLE: Fix winrt backing store to support feature level 9_3
+ devices.
+
+Partially revert c7abf81786f4a0c. Instead of using ES3 entry point
+use ES2 for blitting. Small change is also required to ANGLE that
+makes ES2 entry to behave same as ES3.
+
+Task-Id: QTBUG-48266
+Change-Id: Idc51f00a659c91f740876be071eb71bff69e0e38
+---
+ .../src/libGLESv2/entry_points_gles_2_0_ext.cpp    |  4 +++
+ ...inrt-backing-store-to-support-feature-lev.patch | 33 ++++++++++++++++++++++
+ src/plugins/platforms/winrt/qwinrtbackingstore.cpp | 11 ++++----
+ 3 files changed, 42 insertions(+), 6 deletions(-)
+ create mode 100644 src/angle/patches/0009-ANGLE-Fix-winrt-backing-store-to-support-feature-lev.patch
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/entry_points_gles_2_0_ext.cpp b/src/3rdparty/angle/src/libGLESv2/entry_points_gles_2_0_ext.cpp
+index 8be6ae7..d41c5a4 100644
+--- a/src/3rdparty/angle/src/libGLESv2/entry_points_gles_2_0_ext.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/entry_points_gles_2_0_ext.cpp
+@@ -659,7 +659,11 @@ void GL_APIENTRY BlitFramebufferANGLE(GLint srcX0, GLint srcY0, GLint srcX1, GLi
+     {
+         if (!ValidateBlitFramebufferParameters(context, srcX0, srcY0, srcX1, srcY1,
+                                                dstX0, dstY0, dstX1, dstY1, mask, filter,
++#ifndef ANGLE_ENABLE_WINDOWS_STORE
+                                                true))
++#else
++                                               false))
++#endif
+         {
+             return;
+         }
+-- 
+1.9.5.msysgit.1
+
