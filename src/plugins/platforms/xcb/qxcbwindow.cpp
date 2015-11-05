@@ -894,8 +894,13 @@ static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event
         return true;
     }
     uint response_type = event->response_type & ~0x80;
-    if (response_type == XCB_FOCUS_IN)
-        return true;
+    if (response_type == XCB_FOCUS_IN) {
+        // Ignore focus events that are being sent only because the pointer is over
+        // our window, even if the input focus is in a different window.
+        xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) event;
+        if (e->detail != XCB_NOTIFY_DETAIL_POINTER)
+            return true;
+    }
 
     /* We are also interested in XEMBED_FOCUS_IN events */
     if (response_type == XCB_CLIENT_MESSAGE) {
@@ -2415,14 +2420,22 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
     }
 }
 
-void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
+void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *event)
 {
+    // Ignore focus events that are being sent only because the pointer is over
+    // our window, even if the input focus is in a different window.
+    if (event->detail == XCB_NOTIFY_DETAIL_POINTER)
+        return;
     doFocusIn();
 }
 
 
-void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
+void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *event)
 {
+    // Ignore focus events that are being sent only because the pointer is over
+    // our window, even if the input focus is in a different window.
+    if (event->detail == XCB_NOTIFY_DETAIL_POINTER)
+        return;
     doFocusOut();
 }
 
