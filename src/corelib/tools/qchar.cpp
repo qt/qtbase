@@ -1430,48 +1430,18 @@ QChar::UnicodeVersion QChar::currentUnicodeVersion() Q_DECL_NOTHROW
 }
 
 
-template <typename T>
-Q_DECL_CONST_FUNCTION static inline T toLowerCase_helper(T uc) Q_DECL_NOTHROW
+template <typename Traits, typename T>
+Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc) Q_DECL_NOTHROW
 {
-    const QUnicodeTables::Properties *p = qGetProp(uc);
-    if (p->lowerCaseSpecial) {
-        const ushort *specialCase = specialCaseMap + p->lowerCaseDiff;
-        return (*specialCase == 1) ? specialCase[1] : uc;
-    }
-    return uc + p->lowerCaseDiff;
-}
+    const QUnicodeTables::Properties *prop = qGetProp(uc);
 
-template <typename T>
-Q_DECL_CONST_FUNCTION static inline T toUpperCase_helper(T uc) Q_DECL_NOTHROW
-{
-    const QUnicodeTables::Properties *p = qGetProp(uc);
-    if (p->upperCaseSpecial) {
-        const ushort *specialCase = specialCaseMap + p->upperCaseDiff;
-        return (*specialCase == 1) ? specialCase[1] : uc;
+    if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
+        const ushort *specialCase = specialCaseMap + Traits::caseDiff(prop);
+        // so far, there are no special cases beyond BMP (guaranteed by the qunicodetables generator)
+        return *specialCase == 1 ? specialCase[1] : uc;
     }
-    return uc + p->upperCaseDiff;
-}
 
-template <typename T>
-Q_DECL_CONST_FUNCTION static inline T toTitleCase_helper(T uc) Q_DECL_NOTHROW
-{
-    const QUnicodeTables::Properties *p = qGetProp(uc);
-    if (p->titleCaseSpecial) {
-        const ushort *specialCase = specialCaseMap + p->titleCaseDiff;
-        return (*specialCase == 1) ? specialCase[1] : uc;
-    }
-    return uc + p->titleCaseDiff;
-}
-
-template <typename T>
-Q_DECL_CONST_FUNCTION static inline T toCaseFolded_helper(T uc) Q_DECL_NOTHROW
-{
-    const QUnicodeTables::Properties *p = qGetProp(uc);
-    if (p->caseFoldSpecial) {
-        const ushort *specialCase = specialCaseMap + p->caseFoldDiff;
-        return (*specialCase == 1) ? specialCase[1] : uc;
-    }
-    return uc + p->caseFoldDiff;
+    return uc + Traits::caseDiff(prop);
 }
 
 /*!
@@ -1491,7 +1461,7 @@ uint QChar::toLower(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
-    return toLowerCase_helper<uint>(ucs4);
+    return convertCase_helper<QUnicodeTables::LowercaseTraits>(ucs4);
 }
 
 /*!
@@ -1511,7 +1481,7 @@ uint QChar::toUpper(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
-    return toUpperCase_helper<uint>(ucs4);
+    return convertCase_helper<QUnicodeTables::UppercaseTraits>(ucs4);
 }
 
 /*!
@@ -1531,29 +1501,29 @@ uint QChar::toTitleCase(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
-    return toTitleCase_helper<uint>(ucs4);
+    return convertCase_helper<QUnicodeTables::TitlecaseTraits>(ucs4);
 }
 
 static inline uint foldCase(const ushort *ch, const ushort *start)
 {
-    uint c = *ch;
-    if (QChar(c).isLowSurrogate() && ch > start && QChar(*(ch - 1)).isHighSurrogate())
-        c = QChar::surrogateToUcs4(*(ch - 1), c);
-    return toCaseFolded_helper<uint>(c);
+    uint ucs4 = *ch;
+    if (QChar::isLowSurrogate(ucs4) && ch > start && QChar::isHighSurrogate(*(ch - 1)))
+        ucs4 = QChar::surrogateToUcs4(*(ch - 1), ucs4);
+    return convertCase_helper<QUnicodeTables::CasefoldTraits>(ucs4);
 }
 
 static inline uint foldCase(uint ch, uint &last) Q_DECL_NOTHROW
 {
-    uint c = ch;
-    if (QChar(c).isLowSurrogate() && QChar(last).isHighSurrogate())
-        c = QChar::surrogateToUcs4(last, c);
+    uint ucs4 = ch;
+    if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
+        ucs4 = QChar::surrogateToUcs4(last, ucs4);
     last = ch;
-    return toCaseFolded_helper<uint>(c);
+    return convertCase_helper<QUnicodeTables::CasefoldTraits>(ucs4);
 }
 
 static inline ushort foldCase(ushort ch) Q_DECL_NOTHROW
 {
-    return toCaseFolded_helper<ushort>(ch);
+    return convertCase_helper<QUnicodeTables::CasefoldTraits>(ch);
 }
 
 /*!
@@ -1572,7 +1542,7 @@ uint QChar::toCaseFolded(uint ucs4) Q_DECL_NOTHROW
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
-    return toCaseFolded_helper<uint>(ucs4);
+    return convertCase_helper<QUnicodeTables::CasefoldTraits>(ucs4);
 }
 
 /*!
