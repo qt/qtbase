@@ -43,6 +43,7 @@
 
 #include <qplatformdefs.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
+#include <private/qhighdpiscaling_p.h>
 
 #include <errno.h>
 
@@ -141,7 +142,8 @@ bool QEvdevMouseHandler::getHardwareMaximum()
 
     m_hardwareHeight = absInfo.maximum - absInfo.minimum;
 
-    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    QRect g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
     m_hardwareScalerX = static_cast<qreal>(m_hardwareWidth) / (g.right() - g.left());
     m_hardwareScalerY = static_cast<qreal>(m_hardwareHeight) / (g.bottom() - g.top());
 
