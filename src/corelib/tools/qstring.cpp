@@ -5666,30 +5666,6 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 */
 
 namespace QUnicodeTables {
-struct LowercaseTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->lowerCaseDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->lowerCaseSpecial; }
-};
-
-struct UppercaseTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->upperCaseDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->upperCaseSpecial; }
-};
-
-struct CasefoldTraits
-{
-    static signed short caseDiff(const Properties *prop)
-    { return prop->caseFoldDiff; }
-    static bool caseSpecial(const Properties *prop)
-    { return prop->caseFoldSpecial; }
-};
-
 template <typename Traits, typename T>
 Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it)

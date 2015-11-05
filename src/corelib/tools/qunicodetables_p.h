@@ -82,6 +82,38 @@ struct Properties {
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW;
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW;
 
+struct LowercaseTraits
+{
+    static inline signed short caseDiff(const Properties *prop)
+    { return prop->lowerCaseDiff; }
+    static inline bool caseSpecial(const Properties *prop)
+    { return prop->lowerCaseSpecial; }
+};
+
+struct UppercaseTraits
+{
+    static inline signed short caseDiff(const Properties *prop)
+    { return prop->upperCaseDiff; }
+    static inline bool caseSpecial(const Properties *prop)
+    { return prop->upperCaseSpecial; }
+};
+
+struct TitlecaseTraits
+{
+    static inline signed short caseDiff(const Properties *prop)
+    { return prop->titleCaseDiff; }
+    static inline bool caseSpecial(const Properties *prop)
+    { return prop->titleCaseSpecial; }
+};
+
+struct CasefoldTraits
+{
+    static inline signed short caseDiff(const Properties *prop)
+    { return prop->caseFoldDiff; }
+    static inline bool caseSpecial(const Properties *prop)
+    { return prop->caseFoldSpecial; }
+};
+
 enum GraphemeBreakClass {
     GraphemeBreak_Other,
     GraphemeBreak_CR,
