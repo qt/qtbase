@@ -188,10 +188,10 @@ tst_QDateTime::tst_QDateTime()
 void tst_QDateTime::initTestCase()
 {
     // Never construct a message like this in an i18n context...
-    const char *typemsg1, *typemsg2 = "and therefore not";
+    const char *typemsg1 = "exactly";
+    const char *typemsg2 = "and therefore not";
     switch (localTimeType) {
     case LocalTimeIsUtc:
-        typemsg1 = "exactly";
         break;
     case LocalTimeBehindUtc:
         typemsg1 = "behind";
