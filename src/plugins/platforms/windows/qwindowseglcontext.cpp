@@ -39,7 +39,7 @@
 #include <QtGui/QOpenGLContext>
 
 #if defined(QT_OPENGL_ES_2_ANGLE) || defined(QT_OPENGL_DYNAMIC)
-#  include <QtANGLE/EGL/eglext.h>
+#  include <EGL/eglext.h>
 #endif
 
 QT_BEGIN_NAMESPACE
