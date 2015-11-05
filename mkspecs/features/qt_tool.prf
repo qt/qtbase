@@ -24,13 +24,10 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_tool_$${MODULE}.pri
 
-    vars = binary
+    vars = binary depends
 
     isEmpty(HOST_QT_TOOLS) {
         load(resolve_target)
-
-        vars += depends
-        depends_var = "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")"
 
         !host_build|!force_bootstrap: MODULE_DEPENDS = $$replace(QT, -private$, _private)
 
@@ -61,7 +58,7 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 
     TOOL_PRI_CONT = \
         "QT_TOOL.$${MODULE}.binary = $$val_escape(bin)" \
-        $$depends_var \
+        "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_envvars
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
 
