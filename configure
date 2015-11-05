@@ -651,7 +651,7 @@ CFG_EGL_X=auto
 CFG_DOUBLECONVERSION=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
-CFG_HARFBUZZ=qt
+CFG_HARFBUZZ=auto
 CFG_SQL_AVAILABLE=
 QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
@@ -2557,10 +2557,10 @@ Third Party Libraries:
                           See http://www.freetype.org
 
     -no-harfbuzz ........ Do not compile HarfBuzz-NG support.
- *  -qt-harfbuzz ........ Use HarfBuzz-NG bundled with Qt to do text shaping.
+    -qt-harfbuzz ........ Use HarfBuzz-NG bundled with Qt to do text shaping.
                           It can still be disabled by setting
                           the QT_HARFBUZZ environment variable to "old".
-    -system-harfbuzz .... Use HarfBuzz-NG from the operating system
+ +  -system-harfbuzz .... Use HarfBuzz-NG from the operating system
                           to do text shaping. It can still be disabled
                           by setting the QT_HARFBUZZ environment variable to "old".
                           See http://www.harfbuzz.org
@@ -5977,9 +5977,12 @@ if [ "$CFG_FREETYPE" = "auto" ]; then
 fi
 
 # harfbuzz support
-if [ "$CFG_HARFBUZZ" = "system" ]; then
-    if ! compileTest unix/harfbuzz "HarfBuzz"; then
-        if [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+[ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=qt
+if [ "$CFG_HARFBUZZ" = "auto" ] || [ "$CFG_HARFBUZZ" = "system" ]; then
+    if compileTest unix/harfbuzz "HarfBuzz"; then
+        CFG_HARFBUZZ=system
+    else
+        if [ "$CFG_HARFBUZZ" = "system" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo " HarfBuzz system library support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
