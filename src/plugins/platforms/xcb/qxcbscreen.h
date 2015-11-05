@@ -68,6 +68,11 @@ public:
     xcb_window_t root() const { return m_screen->root; }
     QXcbScreen *screenAt(const QPoint &pos) const;
 
+    QList<QPlatformScreen *> screens() const { return m_screens; }
+    void setScreens(QList<QPlatformScreen *> sl) { m_screens = sl; }
+    void removeScreen(QPlatformScreen *s) { m_screens.removeOne(s); }
+    void addScreen(QPlatformScreen *s);
+
     QXcbXSettings *xSettings() const;
 
     bool compositingActive() const;
@@ -78,6 +83,7 @@ public:
 private:
     xcb_screen_t *m_screen;
     int m_number;
+    QList<QPlatformScreen *> m_screens;
 
     QXcbXSettings *m_xSettings;
     xcb_atom_t m_net_wm_cm_atom;
@@ -110,10 +116,7 @@ public:
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
-    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
-    void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
-    void removeVirtualSibling(QPlatformScreen *s) { m_siblings.removeOne(s); }
-    void addVirtualSibling(QPlatformScreen *s) { ((QXcbScreen *) s)->isPrimary() ? m_siblings.prepend(s) : m_siblings.append(s); }
+    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_virtualDesktop->screens(); }
     QXcbVirtualDesktop *virtualDesktop() const { return m_virtualDesktop; }
 
     void setPrimary(bool primary) { m_primary = primary; }
@@ -171,7 +174,6 @@ private:
     QRect m_availableGeometry;
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;
-    QList<QPlatformScreen *> m_siblings;
     Qt::ScreenOrientation m_orientation;
     QString m_windowManagerName;
     bool m_syncRequestSupported;

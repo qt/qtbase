@@ -74,6 +74,11 @@ QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
     return Q_NULLPTR;
 }
 
+void QXcbVirtualDesktop::addScreen(QPlatformScreen *s)
+{
+    ((QXcbScreen *) s)->isPrimary() ? m_screens.prepend(s) : m_screens.append(s);
+}
+
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
 {
     if (!m_xSettings) {
