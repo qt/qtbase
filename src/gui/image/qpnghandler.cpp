@@ -43,13 +43,8 @@
 #include <qvariant.h>
 #include <qvector.h>
 
-#ifdef QT_USE_BUNDLED_LIBPNG
-#include <../../3rdparty/libpng/png.h>
-#include <../../3rdparty/libpng/pngconf.h>
-#else
 #include <png.h>
 #include <pngconf.h>
-#endif
 
 #if PNG_LIBPNG_VER >= 10400 && PNG_LIBPNG_VER <= 10502 \
         && defined(PNG_PEDANTIC_WARNINGS_SUPPORTED)
