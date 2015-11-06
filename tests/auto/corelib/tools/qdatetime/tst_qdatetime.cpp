@@ -1663,12 +1663,44 @@ void tst_QDateTime::springForward_data()
     QTest::addColumn<int>("step"); // days to step; +ve from before, -ve from after
     QTest::addColumn<int>("adjust"); // minutes ahead of UTC on day stepped from
 
-    if (zoneIsCET) {
+    /*
+      Zone tests compare a summer and winter moment's time_t to known values.
+      This could in principle be flawed (two DST-using zones in the same
+      hemisphere with the same DST and standard times but different transition
+      times) but no actual example is known where this is a problem.  Please
+      document any such conflicts, if discovered.
+
+      See http://www.timeanddate.com/time/zones/ for data on more candidates to
+      test.
+     */
+
+    uint winter = QDateTime(QDate(2015, 1, 1), QTime()).toTime_t();
+    uint summer = QDateTime(QDate(2015, 7, 1), QTime()).toTime_t();
+
+    if (winter == 1420066800 && summer == 1435701600) {
         QTest::newRow("CET from day before") << QDate(2015, 3, 29) << QTime(2, 30, 0) << 1 << 60;
         QTest::newRow("CET from day after") << QDate(2015, 3, 29) << QTime(2, 30, 0) << -1 << 120;
- // } else if (otherZone) {
+    } else if (winter == 1420063200 && summer == 1435698000) {
+        // e.g. Finland, where our CI runs ...
+        QTest::newRow("EET from day before") << QDate(2015, 3, 29) << QTime(3, 30, 0) << 1 << 120;
+        QTest::newRow("EET from day after") << QDate(2015, 3, 29) << QTime(3, 30, 0) << -1 << 180;
+    } else if (winter == 1420070400 && summer == 1435705200) {
+        // Western European Time, WET/WEST; a.k.a. GMT/BST
+        QTest::newRow("WET from day before") << QDate(2015, 3, 29) << QTime(1, 30, 0) << 1 << 0;
+        QTest::newRow("WET from day after") << QDate(2015, 3, 29) << QTime(1, 30, 0) << -1 << 60;
+    } else if (winter == 1420099200 && summer == 1435734000) {
+        // Western USA, Canada: Pacific Time (e.g. US/Pacific)
+        QTest::newRow("PT from day before") << QDate(2015, 3, 8) << QTime(2, 30, 0) << 1 << -480;
+        QTest::newRow("PT from day after") << QDate(2015, 3, 8) << QTime(2, 30, 0) << -1 << -420;
+    } else if (winter == 1420088400 && summer == 1435723200) {
+        // Eastern USA, Canada: Eastern Time (e.g. US/Eastern)
+        QTest::newRow("ET from day before") << QDate(2015, 3, 8) << QTime(2, 30, 0) << 1 << -300;
+        QTest::newRow("ET from day after") << QDate(2015, 3, 8) << QTime(2, 30, 0) << -1 << -240;
     } else {
-        QSKIP("No spring forward test data for this TZ");
+        // Includes the numbers you need to test for your zone, as above:
+        QString msg(QString::fromLatin1("No spring forward test data for this TZ (%1, %2)"
+                        ).arg(winter).arg(summer));
+        QSKIP(qPrintable(msg));
     }
 }
 
