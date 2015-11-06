@@ -221,9 +221,12 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
 
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 {
-    if (!readWriteLock || readWriteLock->d->accessCount == 0)
+    if (!readWriteLock)
         return false;
-    if (readWriteLock->d->accessCount < -1) {
+    auto previousState = readWriteLock->stateForWaitCondition();
+    if (previousState == QReadWriteLock::Unlocked)
+        return false;
+    if (previousState == QReadWriteLock::RecursivelyLocked) {
         qWarning("QWaitCondition: cannot wait on QReadWriteLocks with recursive lockForWrite()");
         return false;
     }
@@ -231,12 +234,11 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
     report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
     ++d->waiters;
 
-    int previousAccessCount = readWriteLock->d->accessCount;
     readWriteLock->unlock();
 
     bool returnValue = d->wait(time);
 
-    if (previousAccessCount < 0)
+    if (previousState == QReadWriteLock::LockedForWrite)
         readWriteLock->lockForWrite();
     else
         readWriteLock->lockForRead();

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,29 +54,47 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qhash.h>
+#include <QtCore/QWaitCondition>
 
 #ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
 
-struct QReadWriteLockPrivate
+class QReadWriteLockPrivate
 {
-    QReadWriteLockPrivate(QReadWriteLock::RecursionMode recursionMode)
-        : accessCount(0), waitingReaders(0), waitingWriters(0),
-          recursive(recursionMode == QReadWriteLock::Recursive), currentWriter(0)
-    { }
+public:
+    QReadWriteLockPrivate(bool isRecursive = false)
+        : readerCount(0), writerCount(0), waitingReaders(0), waitingWriters(0),
+        recursive(isRecursive), id(0) {}
 
     QMutex mutex;
-    QWaitCondition readerWait;
-    QWaitCondition writerWait;
-
-    int accessCount;
+    QWaitCondition writerCond;
+    QWaitCondition readerCond;
+    int readerCount;
+    int writerCount;
     int waitingReaders;
     int waitingWriters;
-
     bool recursive;
+
+    //Called with the mutex locked
+    bool lockForWrite(int timeout);
+    bool lockForRead(int timeout);
+    void unlock();
+
+    //memory management
+    int id;
+    void release();
+    static QReadWriteLockPrivate *allocate();
+
+    // Recusive mutex handling
     Qt::HANDLE currentWriter;
     QHash<Qt::HANDLE, int> currentReaders;
+
+    // called with the mutex unlocked
+    bool recursiveLockForWrite(int timeout);
+    bool recursiveLockForRead(int timeout);
+    void recursiveUnlock();
+
 };
 
 QT_END_NAMESPACE

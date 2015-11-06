@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_THREAD
 
-struct QReadWriteLockPrivate;
+class QReadWriteLockPrivate;
 
 class Q_CORE_EXPORT QReadWriteLock
 {
@@ -69,8 +69,10 @@ public:
 
 private:
     Q_DISABLE_COPY(QReadWriteLock)
-    QReadWriteLockPrivate *d;
+    QAtomicPointer<QReadWriteLockPrivate> d_ptr;
 
+    enum StateForWaitCondition { LockedForRead, LockedForWrite, Unlocked, RecursivelyLocked };
+    StateForWaitCondition stateForWaitCondition() const;
     friend class QWaitCondition;
 };
 
