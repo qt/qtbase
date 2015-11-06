@@ -40,7 +40,7 @@ QT_BEGIN_NAMESPACE
 namespace QUnicodeTables {
 
 static const unsigned short uc_property_trie[] = {
-    // 0 - 0x11000
+    // [0x0..0x11000)
 
     6256, 6288, 6320, 6352, 6384, 6416, 6448, 6480,
     6512, 6544, 6576, 6608, 6640, 6672, 6704, 6736,
@@ -331,7 +331,7 @@ static const unsigned short uc_property_trie[] = {
     8400, 8400, 8400, 23088, 8400, 8400, 8400, 8400,
     8400, 8400, 8400, 8400, 8400, 8400, 8400, 8400,
 
-    // 0x11000 - 0x110000
+    // [0x11000..0x110000)
 
     23120, 23376, 23632, 23888, 24144, 24400, 24656, 24912,
     25168, 25424, 25680, 25424, 25424, 25424, 25424, 25424,
@@ -5738,7 +5738,7 @@ static const unsigned short uc_property_trie[] = {
     2494, 2494, 2494, 2494, 2494, 2494, 2494, 2494,
     2494, 2494, 2494, 2494, 2494, 2494, 2494, 2494,
     2494, 2494, 2494, 2494, 2494, 2494, 2494, 2494,
-    2494, 2494, 2494, 2494, 2494, 2494, 2489, 2489,
+    2494, 2494, 2494, 2494, 2494, 2494, 2489, 2489
 };
 
 #define GET_PROP_INDEX(ucs4) \
@@ -8249,14 +8249,12 @@ static const Properties uc_properties[] = {
 
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) Q_DECL_NOTHROW
 {
-    const int index = GET_PROP_INDEX(ucs4);
-    return uc_properties + index;
+    return uc_properties + GET_PROP_INDEX(ucs4);
 }
 
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) Q_DECL_NOTHROW
 {
-    const int index = GET_PROP_INDEX_UCS2(ucs2);
-    return uc_properties + index;
+    return uc_properties + GET_PROP_INDEX_UCS2(ucs2);
 }
 
 Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW
@@ -8271,26 +8269,26 @@ Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(us
 
 Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
-    return (GraphemeBreakClass)qGetProp(ucs4)->graphemeBreakClass;
+    return static_cast<GraphemeBreakClass>(qGetProp(ucs4)->graphemeBreakClass);
 }
 
 Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
-    return (WordBreakClass)qGetProp(ucs4)->wordBreakClass;
+    return static_cast<WordBreakClass>(qGetProp(ucs4)->wordBreakClass);
 }
 
 Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
-    return (SentenceBreakClass)qGetProp(ucs4)->sentenceBreakClass;
+    return static_cast<SentenceBreakClass>(qGetProp(ucs4)->sentenceBreakClass);
 }
 
 Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) Q_DECL_NOTHROW
 {
-    return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;
+    return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);
 }
 
 
-static const ushort specialCaseMap[] = {
+static const unsigned short specialCaseMap[] = {
     0x0, // placeholder
     0x1, 0x2c65,
     0x1, 0x2c66,
@@ -10407,8 +10405,8 @@ static const unsigned short uc_decomposition_trie[] = {
 #define GET_DECOMPOSITION_INDEX(ucs4) \
        (ucs4 < 0x3400 \
         ? (uc_decomposition_trie[uc_decomposition_trie[ucs4>>4] + (ucs4 & 0xf)]) \
-        : (ucs4 < 0x30000\
-           ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x3400)>>8) + 0x340] + (ucs4 & 0xff)]\
+        : (ucs4 < 0x30000 \
+           ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x3400)>>8) + 0x340] + (ucs4 & 0xff)] \
            : 0xffff))
 
 static const unsigned short uc_decomposition_map[] = {
@@ -12608,8 +12606,8 @@ static const unsigned short uc_ligature_trie[] = {
 #define GET_LIGATURE_INDEX(ucs4) \
        (ucs4 < 0x3100 \
         ? (uc_ligature_trie[uc_ligature_trie[ucs4>>5] + (ucs4 & 0x1f)]) \
-        : (ucs4 < 0x12000\
-           ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x3100)>>8) + 0x188] + (ucs4 & 0xff)]\
+        : (ucs4 < 0x12000 \
+           ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x3100)>>8) + 0x188] + (ucs4 & 0xff)] \
            : 0xffff))
 
 static const unsigned short uc_ligature_map[] = {
@@ -12874,7 +12872,7 @@ static const NormalizationCorrection uc_normalization_corrections[] = {
     { 0x2f874, 0x5f33, 7 },
     { 0x2f91f, 0x43ab, 7 },
     { 0x2f95f, 0x7aae, 7 },
-    { 0x2f9bf, 0x4d57, 7 },
+    { 0x2f9bf, 0x4d57, 7 }
 };
 
 enum { NumNormalizationCorrections = 6 };
