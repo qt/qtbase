@@ -976,7 +976,6 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
             else
                 return NotAccessible;
         } else {
-            // Network accessibility is either disabled or unknown.
             if (d->defaultAccessControl) {
                 if (d->online)
                     return d->networkAccessible;
@@ -1161,7 +1160,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (!d->networkAccessible && !isLocalFile) {
+    if (d->networkAccessible == NotAccessible && !isLocalFile) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
