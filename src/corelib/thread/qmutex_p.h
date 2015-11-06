@@ -55,11 +55,14 @@
 
 #if defined(Q_OS_MAC)
 # include <mach/semaphore.h>
-#endif
-
-#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+#elif defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
 // use Linux mutexes everywhere except for LSB builds
 #  define QT_LINUX_FUTEX
+#elif defined(Q_OS_UNIX)
+# if _POSIX_VERSION-0 >= 200112L || _XOPEN_VERSION-0 >= 600
+#  include <semaphore.h>
+#  define QT_UNIX_SEMAPHORE
+# endif
 #endif
 
 struct timespec;
@@ -120,6 +123,8 @@ public:
     //platform specific stuff
 #if defined(Q_OS_MAC)
     semaphore_t mach_semaphore;
+#elif defined(QT_UNIX_SEMAPHORE)
+    sem_t semaphore;
 #elif defined(Q_OS_UNIX)
     bool wakeup;
     pthread_mutex_t mutex;
