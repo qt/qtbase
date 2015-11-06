@@ -51,7 +51,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int keyboardAutoRepeatRate READ keyboardAutoRepeatRate STORED false CONSTANT FINAL)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval NOTIFY keyboardInputIntervalChanged FINAL)
     Q_PROPERTY(int mouseDoubleClickInterval READ mouseDoubleClickInterval NOTIFY mouseDoubleClickIntervalChanged FINAL)
-    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval STORED false CONSTANT FINAL)
+    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval NOTIFY mousePressAndHoldIntervalChanged FINAL)
     Q_PROPERTY(QChar passwordMaskCharacter READ passwordMaskCharacter STORED false CONSTANT FINAL)
     Q_PROPERTY(int passwordMaskDelay READ passwordMaskDelay STORED false CONSTANT FINAL)
     Q_PROPERTY(bool setFocusOnTouchRelease READ setFocusOnTouchRelease STORED false CONSTANT FINAL)
@@ -66,6 +66,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
     int mouseDoubleClickInterval() const;
+    void setMousePressAndHoldInterval(int mousePressAndHoldInterval);
     int mousePressAndHoldInterval() const;
     void setStartDragDistance(int startDragDistance);
     int startDragDistance() const;
@@ -90,6 +91,7 @@ Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
     void keyboardInputIntervalChanged(int keyboardInputInterval);
     void mouseDoubleClickIntervalChanged(int mouseDoubleClickInterval);
+    void mousePressAndHoldIntervalChanged(int mousePressAndHoldInterval);
     void startDragDistanceChanged(int startDragDistance);
     void startDragTimeChanged(int startDragTime);
 

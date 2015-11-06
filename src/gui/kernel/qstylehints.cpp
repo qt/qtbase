@@ -65,6 +65,7 @@ class QStyleHintsPrivate : public QObjectPrivate
 public:
     inline QStyleHintsPrivate()
         : m_mouseDoubleClickInterval(-1)
+        , m_mousePressAndHoldInterval(-1)
         , m_startDragDistance(-1)
         , m_startDragTime(-1)
         , m_keyboardInputInterval(-1)
@@ -72,6 +73,7 @@ public:
         {}
 
     int m_mouseDoubleClickInterval;
+    int m_mousePressAndHoldInterval;
     int m_startDragDistance;
     int m_startDragTime;
     int m_keyboardInputInterval;
@@ -129,6 +131,21 @@ int QStyleHints::mouseDoubleClickInterval() const
 }
 
 /*!
+    Sets the \a mousePressAndHoldInterval.
+    \internal
+    \sa mousePressAndHoldInterval()
+    \since 5.7
+*/
+void QStyleHints::setMousePressAndHoldInterval(int mousePressAndHoldInterval)
+{
+    Q_D(QStyleHints);
+    if (d->m_mousePressAndHoldInterval == mousePressAndHoldInterval)
+        return;
+    d->m_mousePressAndHoldInterval = mousePressAndHoldInterval;
+    emit mousePressAndHoldIntervalChanged(mousePressAndHoldInterval);
+}
+
+/*!
     \property QStyleHints::mousePressAndHoldInterval
     \brief the time limit in milliseconds that activates
     a press and hold.
@@ -137,7 +154,10 @@ int QStyleHints::mouseDoubleClickInterval() const
 */
 int QStyleHints::mousePressAndHoldInterval() const
 {
-    return themeableHint(QPlatformTheme::MousePressAndHoldInterval, QPlatformIntegration::MousePressAndHoldInterval).toInt();
+    Q_D(const QStyleHints);
+    return d->m_mousePressAndHoldInterval >= 0 ?
+           d->m_mousePressAndHoldInterval :
+           themeableHint(QPlatformTheme::MousePressAndHoldInterval, QPlatformIntegration::MousePressAndHoldInterval).toInt();
 }
 
 /*!
