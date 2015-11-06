@@ -663,6 +663,8 @@ QTextFrame::iterator::iterator(QTextFrame *frame, int block, int begin, int end)
     cb = block;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+
 /*!
     Copy constructor. Constructs a copy of the \a other iterator.
 */
@@ -688,6 +690,8 @@ QTextFrame::iterator &QTextFrame::iterator::operator=(const iterator &other)
     cb = other.cb;
     return *this;
 }
+
+#endif
 
 /*!
     Returns the current frame pointed to by the iterator, or 0 if the
