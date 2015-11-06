@@ -46,30 +46,36 @@ struct QPair
     typedef T2 second_type;
 
     Q_DECL_CONSTEXPR QPair()
-        Q_DECL_NOEXCEPT_EXPR(noexcept(T1()) && noexcept(T2()))
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_default_constructible<T1>::value &&
+                              std::is_nothrow_default_constructible<T2>::value))
         : first(), second() {}
     Q_DECL_CONSTEXPR QPair(const T1 &t1, const T2 &t2)
-        Q_DECL_NOEXCEPT_EXPR(noexcept(T1(t1)) && noexcept(T2(t2)))
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_copy_constructible<T1>::value &&
+                              std::is_nothrow_copy_constructible<T2>::value))
         : first(t1), second(t2) {}
     // compiler-generated copy/move ctor/assignment operators are fine!
 
     template <typename TT1, typename TT2>
     Q_DECL_CONSTEXPR QPair(const QPair<TT1, TT2> &p)
-        Q_DECL_NOEXCEPT_EXPR(noexcept(T1(p.first)) && noexcept(T2(p.second)))
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_constructible<T1, TT1&>::value &&
+                              std::is_nothrow_constructible<T2, TT2&>::value))
         : first(p.first), second(p.second) {}
     template <typename TT1, typename TT2>
     Q_DECL_RELAXED_CONSTEXPR QPair &operator=(const QPair<TT1, TT2> &p)
-        Q_DECL_NOEXCEPT_EXPR(noexcept(std::declval<T1&>() = p.first) && noexcept(std::declval<T2&>() = p.second))
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_assignable<T1, TT1&>::value &&
+                              std::is_nothrow_assignable<T2, TT2&>::value))
     { first = p.first; second = p.second; return *this; }
 #ifdef Q_COMPILER_RVALUE_REFS
     template <typename TT1, typename TT2>
     Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p)
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_constructible<T1, TT1>::value &&
+                              std::is_nothrow_constructible<T2, TT2>::value))
         // can't use std::move here as it's not constexpr in C++11:
-        Q_DECL_NOEXCEPT_EXPR(noexcept(T1(static_cast<TT1 &&>(p.first))) && noexcept(T2(static_cast<TT2 &&>(p.second))))
         : first(static_cast<TT1 &&>(p.first)), second(static_cast<TT2 &&>(p.second)) {}
     template <typename TT1, typename TT2>
     Q_DECL_RELAXED_CONSTEXPR QPair &operator=(QPair<TT1, TT2> &&p)
-        Q_DECL_NOEXCEPT_EXPR(noexcept(std::declval<T1&>() = std::move(p.first)) && noexcept(std::declval<T2&>() = std::move(p.second)))
+        Q_DECL_NOEXCEPT_EXPR((std::is_nothrow_assignable<T1, TT1>::value &&
+                              std::is_nothrow_assignable<T2, TT2>::value))
     { first = std::move(p.first); second = std::move(p.second); return *this; }
 #endif
 
