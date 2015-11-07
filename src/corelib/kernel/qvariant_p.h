@@ -202,7 +202,6 @@ class QVariantIsNull
     /// \internal
     /// This class checks if a type T has method called isNull. Result is kept in the Value property
     /// TODO Can we somehow generalize it? A macro version?
-#if defined(Q_COMPILER_DECLTYPE) // C++11 version
     template<typename T>
     class HasIsNullMethod {
         struct Yes { char unused[1]; };
@@ -214,44 +213,6 @@ class QVariantIsNull
     public:
         static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));
     };
-#elif defined(Q_CC_MSVC) && _MSC_VER >= 1400 && !defined(Q_CC_INTEL) // MSVC 2005, 2008 version: no decltype, but 'sealed' classes (>=2010 has decltype)
-    template<typename T>
-    class HasIsNullMethod {
-        struct Yes { char unused[1]; };
-        struct No { char unused[2]; };
-        Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
-
-        template<class C> static Yes test(char (*)[(&C::isNull == 0) + 1]);
-        template<class C> static No test(...);
-    public:
-        static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));
-    };
-#else // C++98 version (doesn't work for final classes)
-    template<typename T, bool IsClass = QTypeInfo<T>::isComplex>
-    class HasIsNullMethod
-    {
-        struct Yes { char unused[1]; };
-        struct No { char unused[2]; };
-        Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
-
-        struct FallbackMixin { bool isNull() const; };
-        struct Derived : public T, public FallbackMixin {}; // <- doesn't work for final classes
-        template<class C, C> struct TypeCheck {};
-
-        template<class C> static Yes test(...);
-        template<class C> static No test(TypeCheck<bool (FallbackMixin::*)() const, &C::isNull> *);
-    public:
-        static const bool Value = (sizeof(test<Derived>(0)) == sizeof(Yes));
-    };
-
-    // We need to exclude primitive types as they won't compile with HasIsNullMethod::Check classes
-    // anyway it is not a problem as the types do not have isNull method.
-    template<typename T>
-    class HasIsNullMethod<T, /* IsClass = */ false> {
-    public:
-        static const bool Value = false;
-    };
-#endif
 
     // TODO This part should go to autotests during HasIsNullMethod generalization.
     Q_STATIC_ASSERT(!HasIsNullMethod<bool>::Value);
