@@ -293,7 +293,7 @@ public:
             connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, const QObject *context, Func2 slot,
                     Qt::ConnectionType type = Qt::AutoConnection)
     {
-#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+#if defined (Q_COMPILER_VARIADIC_TEMPLATES)
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         const int FunctorArgumentCount = QtPrivate::ComputeFunctorArgumentCount<Func2 , typename SignalType::Arguments>::Value;
 
@@ -313,15 +313,7 @@ public:
         Functors with overloaded or templated operator() are only supported if the compiler supports
         C++11 variadic templates
       */
-#ifndef Q_COMPILER_DECLTYPE  //Workaround the lack of decltype using another function as indirection
-        return connect_functor(sender, signal, context, slot, &Func2::operator(), type); }
-    template <typename Func1, typename Func2, typename Func2Operator>
-    static inline QMetaObject::Connection connect_functor(const QObject *sender, Func1 signal, const QObject *context,
-                                                          Func2 slot, Func2Operator, Qt::ConnectionType type) {
-        typedef QtPrivate::FunctionPointer<Func2Operator> SlotType ;
-#else
         typedef QtPrivate::FunctionPointer<decltype(&Func2::operator())> SlotType ;
-#endif
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef typename SlotType::ReturnType SlotReturnType;
         const int SlotArgumentCount = SlotType::ArgumentCount;

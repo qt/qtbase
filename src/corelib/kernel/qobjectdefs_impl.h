@@ -593,7 +593,7 @@ namespace QtPrivate {
     };
 #endif
 
-#if defined(Q_COMPILER_DECLTYPE) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
+#if defined(Q_COMPILER_VARIADIC_TEMPLATES)
     /*
        Find the maximum number of arguments a functor object can take and be still compatible with
        the arguments from the signal.
