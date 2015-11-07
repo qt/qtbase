@@ -915,8 +915,6 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
-#if defined(Q_COMPILER_DECLTYPE) || defined(Q_CC_GNU)
-/* make use of decltype or GCC's __typeof__ extension */
 template <typename T>
 class QForeachContainer {
     QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
@@ -927,17 +925,6 @@ public:
     int control;
 };
 
-// We need to use __typeof__ if we don't have decltype or if the compiler
-// hasn't been updated to the fix of Core Language Defect Report 382
-// (http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#382).
-// GCC 4.3 and 4.4 have support for decltype, but are affected by DR 382.
-#  if defined(Q_COMPILER_DECLTYPE) && \
-    (defined(Q_CC_CLANG) || defined(Q_CC_INTEL) || !defined(Q_CC_GNU) || Q_CC_GNU >= 405)
-#    define QT_FOREACH_DECLTYPE(x) typename QtPrivate::remove_reference<decltype(x)>::type
-#  else
-#    define QT_FOREACH_DECLTYPE(x) __typeof__((x))
-#  endif
-
 // Explanation of the control word:
 //  - it's initialized to 1
 //  - that means both the inner and outer loops start
@@ -947,60 +934,11 @@ public:
 //    the outer loop to continue executing
 //  - if there was a break inside the inner loop, it will exit with control still
 //    set to 1; in that case, the outer loop will invert it to 0 and will exit too
-#  define Q_FOREACH(variable, container)                                \
-for (QForeachContainer<QT_FOREACH_DECLTYPE(container)> _container_((container)); \
+#define Q_FOREACH(variable, container)                                \
+for (QForeachContainer<typename QtPrivate::remove_reference<decltype(container)>::type> _container_((container)); \
      _container_.control && _container_.i != _container_.e;         \
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)
-
-#else
-
-struct QForeachContainerBase {};
-
-template <typename T>
-class QForeachContainer : public QForeachContainerBase {
-    QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
-public:
-    inline QForeachContainer(const T& t): c(t), brk(0), i(c.begin()), e(c.end()){}
-    QForeachContainer(const QForeachContainer &other)
-        : c(other.c), brk(other.brk), i(other.i), e(other.e) {}
-    const T c;
-    mutable int brk;
-    mutable typename T::const_iterator i, e;
-    inline bool condition() const { return (!brk++ && i != e); }
-};
-
-template <typename T> inline T *qForeachPointer(const T &) { return 0; }
-
-template <typename T> inline QForeachContainer<T> qForeachContainerNew(const T& t)
-{ return QForeachContainer<T>(t); }
-
-template <typename T>
-inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase *base, const T *)
-{ return static_cast<const QForeachContainer<T> *>(base); }
-
-#if defined(Q_CC_DIAB)
-// VxWorks DIAB generates unresolvable symbols, if container is a function call
-#  define Q_FOREACH(variable,container)                                                             \
-    if(0){}else                                                                                     \
-    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
-         qForeachContainer(&_container_, (__typeof__(container) *) 0)->condition();       \
-         ++qForeachContainer(&_container_, (__typeof__(container) *) 0)->i)               \
-        for (variable = *qForeachContainer(&_container_, (__typeof__(container) *) 0)->i; \
-             qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk;           \
-             --qForeachContainer(&_container_, (__typeof__(container) *) 0)->brk)
-
-#else
-#  define Q_FOREACH(variable, container) \
-    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container); \
-         qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->condition();       \
-         ++qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i)               \
-        for (variable = *qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i; \
-             qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
-             --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
-#endif // MSVC6 || MIPSpro
-
-#endif
 
 #define Q_FOREVER for(;;)
 #ifndef QT_NO_KEYWORDS
