@@ -534,25 +534,18 @@ QFontEngineFT::Glyph::~Glyph()
     delete [] data;
 }
 
-static const uint subpixel_filter[3][3] = {
-    { 180, 60, 16 },
-    { 38, 180, 38 },
-    { 16, 60, 180 }
-};
-
-static inline uint filterPixel(uint red, uint green, uint blue, bool legacyFilter)
+static inline uint filterPixel(uchar red, uchar green, uchar blue, bool legacyFilter)
 {
-    uint res;
     if (legacyFilter) {
-        uint high = (red*subpixel_filter[0][0] + green*subpixel_filter[0][1] + blue*subpixel_filter[0][2]) >> 8;
-        uint mid = (red*subpixel_filter[1][0] + green*subpixel_filter[1][1] + blue*subpixel_filter[1][2]) >> 8;
-        uint low = (red*subpixel_filter[2][0] + green*subpixel_filter[2][1] + blue*subpixel_filter[2][2]) >> 8;
-        res = (mid << 24) + (high << 16) + (mid << 8) + low;
-    } else {
-        uint alpha = green;
-        res = (alpha << 24) + (red << 16) + (green << 8) + blue;
+        uint r = red, g = green, b = blue;
+        // intra-pixel filter used by the legacy filter (adopted from _ft_lcd_filter_legacy)
+        red   = (r * uint(65538 * 9/13) + g * uint(65538 * 1/6) + b * uint(65538 * 1/13)) / 65536;
+        green = (r * uint(65538 * 3/13) + g * uint(65538 * 4/6) + b * uint(65538 * 3/13)) / 65536;
+        blue  = (r * uint(65538 * 1/13) + g * uint(65538 * 1/6) + b * uint(65538 * 9/13)) / 65536;
     }
-    return res;
+
+    // alpha = green
+    return (green << 24) + (red << 16) + (green << 8) + blue;
 }
 
 static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
@@ -563,9 +556,9 @@ static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height,
     while (h--) {
         uint *dd = dst;
         for (int x = 0; x < w; x += 3) {
-            uint red = src[x+1-offs];
-            uint green = src[x+1];
-            uint blue = src[x+1+offs];
+            uchar red = src[x + 1 - offs];
+            uchar green = src[x + 1];
+            uchar blue = src[x + 1 + offs];
             *dd = filterPixel(red, green, blue, legacyFilter);
             ++dd;
         }
@@ -580,9 +573,9 @@ static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int heigh
     const int offs = bgr ? -src_pitch : src_pitch;
     while (h--) {
         for (int x = 0; x < width; x++) {
-            uint red = src[x+src_pitch-offs];
-            uint green = src[x+src_pitch];
-            uint blue = src[x+src_pitch+offs];
+            uchar red = src[x + src_pitch - offs];
+            uchar green = src[x + src_pitch];
+            uchar blue = src[x + src_pitch + offs];
             dst[x] = filterPixel(red, green, blue, legacyFilter);
         }
         dst += width;
