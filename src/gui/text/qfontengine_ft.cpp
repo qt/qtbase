@@ -534,53 +534,75 @@ QFontEngineFT::Glyph::~Glyph()
     delete [] data;
 }
 
-static inline uint filterPixel(uchar red, uchar green, uchar blue, bool legacyFilter)
+struct LcdFilterDummy
 {
-    if (legacyFilter) {
+    static inline void filterPixel(uchar &, uchar &, uchar &)
+    {}
+};
+
+struct LcdFilterLegacy
+{
+    static inline void filterPixel(uchar &red, uchar &green, uchar &blue)
+    {
         uint r = red, g = green, b = blue;
         // intra-pixel filter used by the legacy filter (adopted from _ft_lcd_filter_legacy)
         red   = (r * uint(65538 * 9/13) + g * uint(65538 * 1/6) + b * uint(65538 * 1/13)) / 65536;
         green = (r * uint(65538 * 3/13) + g * uint(65538 * 4/6) + b * uint(65538 * 3/13)) / 65536;
         blue  = (r * uint(65538 * 1/13) + g * uint(65538 * 1/6) + b * uint(65538 * 9/13)) / 65536;
     }
+};
 
-    // alpha = green
-    return (green << 24) + (red << 16) + (green << 8) + blue;
-}
-
-static void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+template <typename LcdFilter>
+static void convertRGBToARGB_helper(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
 {
-    int h = height;
     const int offs = bgr ? -1 : 1;
     const int w = width * 3;
-    while (h--) {
+    while (height--) {
         uint *dd = dst;
         for (int x = 0; x < w; x += 3) {
             uchar red = src[x + 1 - offs];
             uchar green = src[x + 1];
             uchar blue = src[x + 1 + offs];
-            *dd = filterPixel(red, green, blue, legacyFilter);
-            ++dd;
+            LcdFilter::filterPixel(red, green, blue);
+            // alpha = green
+            *dd++ = (green << 24) | (red << 16) | (green << 8) | blue;
         }
         dst += width;
         src += src_pitch;
     }
 }
 
-static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+static inline void convertRGBToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
 {
-    int h = height;
+    if (!legacyFilter)
+        convertRGBToARGB_helper<LcdFilterDummy>(src, dst, width, height, src_pitch, bgr);
+    else
+        convertRGBToARGB_helper<LcdFilterLegacy>(src, dst, width, height, src_pitch, bgr);
+}
+
+template <typename LcdFilter>
+static void convertRGBToARGB_V_helper(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr)
+{
     const int offs = bgr ? -src_pitch : src_pitch;
-    while (h--) {
+    while (height--) {
         for (int x = 0; x < width; x++) {
             uchar red = src[x + src_pitch - offs];
             uchar green = src[x + src_pitch];
             uchar blue = src[x + src_pitch + offs];
-            dst[x] = filterPixel(red, green, blue, legacyFilter);
+            LcdFilter::filterPixel(red, green, blue);
+            // alpha = green
+            *dst++ = (green << 24) | (red << 16) | (green << 8) | blue;
         }
-        dst += width;
         src += 3*src_pitch;
     }
+}
+
+static inline void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int height, int src_pitch, bool bgr, bool legacyFilter)
+{
+    if (!legacyFilter)
+        convertRGBToARGB_V_helper<LcdFilterDummy>(src, dst, width, height, src_pitch, bgr);
+    else
+        convertRGBToARGB_V_helper<LcdFilterLegacy>(src, dst, width, height, src_pitch, bgr);
 }
 
 static inline void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch)
