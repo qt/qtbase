@@ -590,13 +590,16 @@ static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int heigh
     }
 }
 
-static void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch) {
-    for (int y = 0; y < height; ++y) {
-        int readpos =  (y * src_pitch);
-        int writepos = (y * width);
-        for (int x = 0; x < width; ++x) {
-            dst[writepos + x] = (0xFF << 24) + (src[readpos + x] << 16) + (src[readpos + x] << 8) + src[readpos + x];
+static inline void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch)
+{
+    while (height--) {
+        const uchar *p = src;
+        const uchar * const e = p + width;
+        while (p < e) {
+            uchar gray = *p++;
+            *dst++ = (0xFF << 24) | (gray << 16) | (gray << 8) | gray;
         }
+        src += src_pitch;
     }
 }
 
