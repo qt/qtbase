@@ -699,7 +699,8 @@ Xaml::IDependencyObject *QWinRTScreen::canvas() const
 void QWinRTScreen::setStatusBarVisibility(bool visible, QWindow *window)
 {
     Q_D(QWinRTScreen);
-    if (!window || (window->flags() & Qt::WindowType_Mask) != Qt::Window)
+    const Qt::WindowFlags windowType = window->flags() & Qt::WindowType_Mask;
+    if (!window || (windowType != Qt::Window && windowType != Qt::Dialog))
         return;
 
     QEventDispatcherWinRT::runOnXamlThread([d, visible]() {
