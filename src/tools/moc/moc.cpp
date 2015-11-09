@@ -801,9 +801,30 @@ void Moc::parse()
     }
 }
 
-static void findRequiredContainers(ClassDef *cdef, QSet<QByteArray> *requiredQtContainers)
+static bool any_type_contains(const QList<PropertyDef> &properties, const QByteArray &pattern)
 {
-    static const QVector<QByteArray> candidates = QVector<QByteArray>()
+    for (const auto &p : properties) {
+        if (p.type.contains(pattern))
+            return true;
+    }
+    return false;
+}
+
+static bool any_arg_contains(const QList<FunctionDef> &functions, const QByteArray &pattern)
+{
+    for (const auto &f : functions) {
+        for (const auto &arg : f.arguments) {
+            if (arg.normalizedType.contains(pattern))
+                return true;
+        }
+    }
+    return false;
+}
+
+static QByteArrayList make_candidates()
+{
+    QByteArrayList result;
+    result
 #define STREAM_SMART_POINTER(SMART_POINTER) << #SMART_POINTER
         QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(STREAM_SMART_POINTER)
 #undef STREAM_SMART_POINTER
@@ -811,26 +832,31 @@ static void findRequiredContainers(ClassDef *cdef, QSet<QByteArray> *requiredQtC
         QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(STREAM_1ARG_TEMPLATE)
 #undef STREAM_1ARG_TEMPLATE
         ;
+    return result;
+}
 
-    for (int i = 0; i < cdef->propertyList.count(); ++i) {
-        const PropertyDef &p = cdef->propertyList.at(i);
-        foreach (const QByteArray &candidate, candidates) {
-            if (p.type.contains(candidate + "<"))
-                requiredQtContainers->insert(candidate);
-        }
-    }
+static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
+{
+    static const QByteArrayList candidates = make_candidates();
 
-    QList<FunctionDef> allFunctions = cdef->slotList + cdef->signalList + cdef->methodList;
+    QByteArrayList required;
+    required.reserve(candidates.size());
 
-    for (int i = 0; i < allFunctions.count(); ++i) {
-        const FunctionDef &f = allFunctions.at(i);
-        foreach (const ArgumentDef &arg, f.arguments) {
-            foreach (const QByteArray &candidate, candidates) {
-                if (arg.normalizedType.contains(candidate + "<"))
-                    requiredQtContainers->insert(candidate);
+    for (const auto &candidate : candidates) {
+        const QByteArray pattern = candidate + '<';
+
+        for (const auto &c : classes) {
+            if (any_type_contains(c.propertyList, pattern) ||
+                    any_arg_contains(c.slotList, pattern) ||
+                    any_arg_contains(c.signalList, pattern) ||
+                    any_arg_contains(c.methodList, pattern)) {
+                required.push_back(candidate);
+                break;
             }
         }
     }
+
+    return required;
 }
 
 void Moc::generate(FILE *out)
@@ -869,19 +895,9 @@ void Moc::generate(FILE *out)
     if (mustIncludeQPluginH)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
 
-    QSet<QByteArray> requiredQtContainers;
-    for (i = 0; i < classList.size(); ++i) {
-        findRequiredContainers(&classList[i], &requiredQtContainers);
-    }
-
-    // after finding the containers, we sort them into a list to avoid
-    // non-deterministic behavior which may cause rebuilds unnecessarily.
-    QList<QByteArray> requiredContainerList = requiredQtContainers.toList();
-    std::sort(requiredContainerList.begin(), requiredContainerList.end());
-
-    foreach (const QByteArray &qtContainer, requiredContainerList) {
+    const auto qtContainers = requiredQtContainers(classList);
+    for (const QByteArray &qtContainer : qtContainers)
         fprintf(out, "#include <QtCore/%s>\n", qtContainer.constData());
-    }
 
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
