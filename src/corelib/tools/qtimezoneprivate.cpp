@@ -246,8 +246,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) const
 {
     if (!hasDaylightTime() ||!hasTransitions()) {
-        // No daylight time means same offset for all local msecs
-        // Having daylight time but no transitions means we can't calculate, so use nearest
+        // No DST means same offset for all local msecs
+        // Having DST but no transitions means we can't calculate, so use nearest
         return data(forLocalMSecs - (standardTimeOffset(forLocalMSecs) * 1000));
     }
 
@@ -276,16 +276,16 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
     }
 
     if (tran.daylightTimeOffset == 0) {
-        // If tran is in StandardTime, then need to check if falls close either daylight transition
+        // If tran is in StandardTime, then need to check if falls close to either DST transition.
         // If it does, then it may need adjusting for missing hour or for second occurrence
         qint64 diffPrevTran = forLocalMSecs
                               - (tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000));
         qint64 diffNextTran = nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)
                               - forLocalMSecs;
         if (diffPrevTran >= 0 && diffPrevTran < MSECS_TRAN_WINDOW) {
-            // If tran picked is for standard time check if changed from daylight in last 6 hours,
+            // If tran picked is for standard time check if changed from DST in last 6 hours,
             // as the local msecs may be ambiguous and represent two valid utc msecs.
-            // If in last 6 hours then get prev tran and if diff falls within the daylight offset
+            // If in last 6 hours then get prev tran and if diff falls within the DST offset
             // then use the prev tran as we default to the FirstOccurrence
             // TODO Check if faster to just always get prev tran, or if faster using 6 hour check.
             Data dstTran = previousTransition(tran.atMSecsSinceEpoch);

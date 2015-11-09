@@ -199,14 +199,15 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     The difference between UTC and the local time in a time zone is expressed
     as an offset in seconds from UTC, i.e. the number of seconds to add to UTC
     to obtain the local time.  The total offset is comprised of two component
-    parts, the standard time offset and the daylight time offset.  The standard
-    time offset is the number of seconds to add to UTC to obtain standard time
-    in the time zone.  The daylight time offset is the number of seconds to add
-    to the standard time offset to obtain daylight time in the time zone.
+    parts, the standard time offset and the daylight-saving time offset.  The
+    standard time offset is the number of seconds to add to UTC to obtain
+    standard time in the time zone.  The daylight-saving time offset is the
+    number of seconds to add to the standard time offset to obtain
+    daylight-saving time (abbreviated DST and sometimes called "daylight time"
+    or "summer time") in the time zone.
 
-    Note that the standard and daylight offsets for a time zone may change over
-    time as countries have changed daylight time laws or even their standard
-    time offset.
+    Note that the standard and DST offsets for a time zone may change over time
+    as countries have changed DST laws or even their standard time offset.
 
     \section2 License
 
@@ -241,21 +242,20 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \enum QTimeZone::TimeType
 
     The type of time zone time, for example when requesting the name.  In time
-    zones that do not apply daylight time, all three values may return the
-    same result.
+    zones that do not apply DST, all three values may return the same result.
 
     \value StandardTime
-           The standard time in a time zone, i.e. when Daylight Savings is not
+           The standard time in a time zone, i.e. when Daylight-Saving is not
            in effect.
            For example when formatting a display name this will show something
            like "Pacific Standard Time".
     \value DaylightTime
-           A time when Daylight Savings is in effect.
+           A time when Daylight-Saving is in effect.
            For example when formatting a display name this will show something
-           like "Pacific daylight time".
+           like "Pacific daylight-saving time".
     \value GenericTime
-           A time which is not specifically Standard or Daylight time, either
-           an unknown time or a neutral form.
+           A time which is not specifically Standard or Daylight-Saving time,
+           either an unknown time or a neutral form.
            For example when formatting a display name this will show something
            like "Pacific Time".
 */
@@ -286,11 +286,11 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \li OffsetData::atUtc  The datetime of the offset data in UTC time.
     \li OffsetData::offsetFromUtc  The total offset from UTC in effect at the datetime.
     \li OffsetData::standardTimeOffset  The standard time offset component of the total offset.
-    \li OffsetData::daylightTimeOffset  The daylight time offset component of the total offset.
+    \li OffsetData::daylightTimeOffset  The DST offset component of the total offset.
     \li OffsetData::abbreviation  The abbreviation in effect at the datetime.
     \endlist
 
-    For example, for time zone "Europe/Berlin" the OffsetDate in standard and daylight time might be:
+    For example, for time zone "Europe/Berlin" the OffsetDate in standard and DST might be:
 
     \list
     \li atUtc = QDateTime(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::UTC)
@@ -531,8 +531,7 @@ QString QTimeZone::comment() const
     If the \a locale is not provided then the application default locale will
     be used.
 
-    The display name may change depending on daylight time or historical
-    events.
+    The display name may change depending on DST or historical events.
 
     \sa abbreviation()
 */
@@ -572,8 +571,7 @@ QString QTimeZone::displayName(TimeType timeType, NameType nameType,
 
 /*!
     Returns the time zone abbreviation at the given \a atDateTime.  The
-    abbreviation may change depending on daylight time or even
-    historical events.
+    abbreviation may change depending on DST or even historical events.
 
     Note that the abbreviation is not guaranteed to be unique to this time zone
     and should not be used in place of the ID or display name.
@@ -592,13 +590,13 @@ QString QTimeZone::abbreviation(const QDateTime &atDateTime) const
 /*!
     Returns the total effective offset at the given \a atDateTime, i.e. the
     number of seconds to add to UTC to obtain the local time.  This includes
-    any daylight time offset that may be in effect, i.e. it is the sum of
+    any DST offset that may be in effect, i.e. it is the sum of
     standardTimeOffset() and daylightTimeOffset() for the given datetime.
 
     For example, for the time zone "Europe/Berlin" the standard time offset is
-    +3600 seconds and the daylight time offset is +3600 seconds.  During standard
-    time offsetFromUtc() will return +3600 (UTC+01:00), and during daylight time
-    it will return +7200 (UTC+02:00).
+    +3600 seconds and the DST offset is +3600 seconds.  During standard time
+    offsetFromUtc() will return +3600 (UTC+01:00), and during DST it will
+    return +7200 (UTC+02:00).
 
     \sa standardTimeOffset(), daylightTimeOffset()
 */
@@ -614,11 +612,11 @@ int QTimeZone::offsetFromUtc(const QDateTime &atDateTime) const
 /*!
     Returns the standard time offset at the given \a atDateTime, i.e. the
     number of seconds to add to UTC to obtain the local Standard Time.  This
-    excludes any daylight time offset that may be in effect.
+    excludes any DST offset that may be in effect.
 
     For example, for the time zone "Europe/Berlin" the standard time offset is
-    +3600 seconds.  During both standard and daylight time offsetFromUtc() will
-    return +3600 (UTC+01:00).
+    +3600 seconds.  During both standard and DST offsetFromUtc() will return
+    +3600 (UTC+01:00).
 
     \sa offsetFromUtc(), daylightTimeOffset()
 */
@@ -632,13 +630,13 @@ int QTimeZone::standardTimeOffset(const QDateTime &atDateTime) const
 }
 
 /*!
-    Returns the daylight time offset at the given \a atDateTime, i.e. the
-    number of seconds to add to the standard time offset to obtain the local
-    daylight time.
+    Returns the daylight-saving time offset at the given \a atDateTime,
+    i.e. the number of seconds to add to the standard time offset to obtain the
+    local daylight-saving time.
 
-    For example, for the time zone "Europe/Berlin" the daylight time offset
-    is +3600 seconds.  During standard time daylightTimeOffset() will return
-    0, and during daylight time it will return +3600.
+    For example, for the time zone "Europe/Berlin" the DST offset is +3600
+    seconds.  During standard time daylightTimeOffset() will return 0, and when
+    daylight-saving is in effect it will return +3600.
 
     \sa offsetFromUtc(), standardTimeOffset()
 */
@@ -652,7 +650,7 @@ int QTimeZone::daylightTimeOffset(const QDateTime &atDateTime) const
 }
 
 /*!
-    Returns \c true if the time zone has observed daylight time at any time.
+    Returns \c true if the time zone has practiced daylight-saving at any time.
 
     \sa isDaylightTime(), daylightTimeOffset()
 */
@@ -666,7 +664,7 @@ bool QTimeZone::hasDaylightTime() const
 }
 
 /*!
-    Returns \c true if the given \a atDateTime is in daylight time.
+    Returns \c true if daylight-saving was in effect at the given \a atDateTime.
 
     \sa hasDaylightTime(), daylightTimeOffset()
 */
