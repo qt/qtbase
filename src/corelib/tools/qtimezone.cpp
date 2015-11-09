@@ -116,8 +116,9 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \class QTimeZone
     \inmodule QtCore
     \since 5.2
-    \brief The QTimeZone class converts between between UTC and local time in a
-           specific time zone.
+
+    \brief The QTimeZone class converts between UTC and local time in a specific
+           time zone.
 
     \threadsafe
 
