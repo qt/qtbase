@@ -52,13 +52,15 @@ public:
 
     static QWindowsDirect2DIntegration *instance();
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
     QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
 
     QWindowsDirect2DContext *direct2DContext() const;
+
+protected:
+    QWindowsWindow *createPlatformWindowHelper(QWindow *window, const QWindowsWindowData &) const Q_DECL_OVERRIDE;
 
 private:
     explicit QWindowsDirect2DIntegration(const QStringList &paramList);

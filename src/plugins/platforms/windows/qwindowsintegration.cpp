@@ -288,7 +288,7 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     return false;
 }
 
-QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
+QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowsWindowData requested;
     requested.flags = window->flags();
@@ -307,22 +307,30 @@ QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
         << "\n    Obtained : " << obtained.geometry << " margins=" << obtained.frame
         << " handle=" << obtained.hwnd << ' ' << obtained.flags << '\n';
 
-    if (obtained.hwnd) {
-        if (requested.flags != obtained.flags)
-            window->setFlags(obtained.flags);
-        // Trigger geometry change signals of QWindow.
-        if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
+    if (Q_UNLIKELY(!obtained.hwnd))
+        return Q_NULLPTR;
+
+    QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
+    Q_ASSERT(result);
+
+    if (requested.flags != obtained.flags)
+        window->setFlags(obtained.flags);
+    // Trigger geometry/screen change signals of QWindow.
+    if ((obtained.flags & Qt::Desktop) != Qt::Desktop) {
+        if (requested.geometry != obtained.geometry)
             QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
+        QPlatformScreen *screen = result->screenForGeometry(obtained.geometry);
+        if (screen && result->screen() != screen)
+            QWindowSystemInterface::handleWindowScreenChanged(window, screen->screen());
     }
 
-    return obtained;
+    return result;
 }
 
-QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
+// Overridden to return a QWindowsDirect2DWindow in Direct2D plugin.
+QWindowsWindow *QWindowsIntegration::createPlatformWindowHelper(QWindow *window, const QWindowsWindowData &data) const
 {
-    QWindowsWindowData data = createWindowData(window);
-    return data.hwnd ? new QWindowsWindow(window, data)
-                     : Q_NULLPTR;
+    return new QWindowsWindow(window, data);
 }
 
 #ifndef QT_NO_OPENGL

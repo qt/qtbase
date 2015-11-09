@@ -143,6 +143,8 @@ public:
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
+    using QPlatformWindow::screenForGeometry;
+
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
     QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }

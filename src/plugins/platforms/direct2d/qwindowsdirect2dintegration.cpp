@@ -219,12 +219,11 @@ QWindowsDirect2DIntegration::~QWindowsDirect2DIntegration()
      return static_cast<QWindowsDirect2DIntegration *>(QWindowsIntegration::instance());
  }
 
- QPlatformWindow *QWindowsDirect2DIntegration::createPlatformWindow(QWindow *window) const
- {
-     QWindowsWindowData data = createWindowData(window);
-     return data.hwnd ? new QWindowsDirect2DWindow(window, data)
-                      : Q_NULLPTR;
- }
+
+QWindowsWindow *QWindowsDirect2DIntegration::createPlatformWindowHelper(QWindow *window, const QWindowsWindowData &data) const
+{
+    return new QWindowsDirect2DWindow(window, data);
+}
 
  QPlatformNativeInterface *QWindowsDirect2DIntegration::nativeInterface() const
  {
