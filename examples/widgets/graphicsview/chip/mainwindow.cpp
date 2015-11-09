@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::populateScene()
 {
-    scene = new QGraphicsScene;
+    scene = new QGraphicsScene(this);
 
     QImage image(":/qt4logo.png");
 
