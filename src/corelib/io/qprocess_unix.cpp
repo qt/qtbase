@@ -714,7 +714,7 @@ report_errno:
 }
 #endif
 
-bool QProcessPrivate::processStarted()
+bool QProcessPrivate::processStarted(QString *errorMessage)
 {
     ushort buf[errorBufferMax];
     int i = qt_safe_read(childStartedPipe[0], &buf, sizeof buf);
@@ -731,8 +731,8 @@ bool QProcessPrivate::processStarted()
 #endif
 
     // did we read an error message?
-    if (i > 0)
-        q_func()->setErrorString(QString((const QChar *)buf, i / sizeof(QChar)));
+    if ((i > 0) && errorMessage)
+        *errorMessage = QString((const QChar *)buf, i / sizeof(QChar));
 
     return i <= 0;
 }

@@ -1179,14 +1179,15 @@ bool QProcessPrivate::_q_startupNotification()
 
     if (startupSocketNotifier)
         startupSocketNotifier->setEnabled(false);
-    if (processStarted()) {
+    QString errorMessage;
+    if (processStarted(&errorMessage)) {
         q->setProcessState(QProcess::Running);
         emit q->started(QProcess::QPrivateSignal());
         return true;
     }
 
     q->setProcessState(QProcess::NotRunning);
-    setErrorAndEmit(QProcess::FailedToStart);
+    setErrorAndEmit(QProcess::FailedToStart, errorMessage);
 #ifdef Q_OS_UNIX
     // make sure the process manager removes this entry
     waitForDeadChild();
