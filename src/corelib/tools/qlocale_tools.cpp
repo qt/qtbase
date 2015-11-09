@@ -267,6 +267,8 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
         }
     }
 #endif // QT_NO_DOUBLECONVERSION || QT_BOOTSTRAPPED
+    while (length > 1 && buf[length - 1] == '0') // drop trailing zeroes
+        --length;
 }
 
 double asciiToDouble(const char *num, int numLen, bool &ok, int &processed)
@@ -545,10 +547,6 @@ QString qdtoa(qreal d, int *decpt, int *sign)
     char result[QLocaleData::DoubleMaxSignificant + 1];
     doubleToAscii(d, QLocaleData::DFSignificantDigits, QLocale::FloatingPointShortest, result,
                   QLocaleData::DoubleMaxSignificant + 1, nonNullSign, length, nonNullDecpt);
-
-    // Skip trailing zeroes. The DoubleMaxSignificant precision is the worst case.
-    while (length > 0 && result[length - 1] == '0')
-        --length;
 
     if (sign)
         *sign = nonNullSign ? 1 : 0;

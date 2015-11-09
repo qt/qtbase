@@ -2757,12 +2757,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
     if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
         num_str = QString::fromLatin1(buf.data(), length);
     } else { // Handle normal numbers
-
-        // Chop trailing zeros
-        int last_nonzero_idx = length - 1;
-        while (last_nonzero_idx > 0 && buf[last_nonzero_idx] == '0')
-             --last_nonzero_idx;
-        QString digits = QString::fromLatin1(buf.data(), last_nonzero_idx + 1);
+        QString digits = QString::fromLatin1(buf.data(), length);
 
         if (_zero.unicode() != '0') {
             ushort z = _zero.unicode() - '0';
