@@ -1265,9 +1265,11 @@ void tst_Compiler::cxx14_decltype_auto()
 }
 
 #if __cpp_return_type_deduction >= 201304
-auto returnTypeDeduction()
+auto returnTypeDeduction(bool choice)
 {
-    return 1U;
+    if (choice)
+        return 1U;
+    return returnTypeDeduction(!choice);
 }
 #endif
 
@@ -1276,7 +1278,7 @@ void tst_Compiler::cxx14_return_type_deduction()
 #if __cpp_return_type_deduction-0 < 201304
     QSKIP("Compiler does not support this C++14 feature");
 #else
-    QCOMPARE(returnTypeDeduction(), 1U);
+    QCOMPARE(returnTypeDeduction(false), 1U);
 #endif
 }
 
