@@ -558,7 +558,8 @@ void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
         for (; modesIter.rem; xcb_randr_mode_info_next(&modesIter)) {
             xcb_randr_mode_info_t *modeInfo = modesIter.data;
             if (modeInfo->id == mode) {
-                m_refreshRate = modeInfo->dot_clock / (modeInfo->htotal * modeInfo->vtotal);
+                const uint32_t dotCount = modeInfo->htotal * modeInfo->vtotal;
+                m_refreshRate = (dotCount != 0) ? modeInfo->dot_clock / dotCount : 0;
                 m_mode = mode;
                 break;
             }
