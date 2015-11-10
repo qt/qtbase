@@ -911,6 +911,25 @@ QT_WARNING_POP
         }
     }
 
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    Q_UNUSED(qtScreenPoint);
+
+    bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+
+    // Maintain masked state for the button for use by MouseDragged and Up.
+    if (masked)
+        m_acceptedMouseDowns.remove(Qt::LeftButton);
+    else
+        m_acceptedMouseDowns.insert(Qt::LeftButton);
+
+    // Forward masked out events to the next responder
+    if (masked) {
+        [super mouseDown:theEvent];
+        return;
+    }
+
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
@@ -1483,7 +1502,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return qtMods;
 }
 
-- (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
+- (bool)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
@@ -1553,26 +1572,46 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
             m_sendKeyEvent = true;
     }
 
-    if (m_sendKeyEvent && m_composingText.isEmpty())
+    bool accepted = true;
+    if (m_sendKeyEvent && m_composingText.isEmpty()) {
         QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
-
+        accepted = QWindowSystemInterface::flushWindowSystemEvents();
+    }
     m_sendKeyEvent = false;
     m_resendKeyEvent = false;
+    return accepted;
 }
 
 - (void)keyDown:(NSEvent *)nsevent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyDown:nsevent];
-    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+
+    const bool accepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+
+    // Track keyDown acceptance state for later acceptance of the keyUp.
+    if (accepted)
+        m_acceptedKeyDowns.insert([nsevent keyCode]);
+
+    // Propagate the keyDown to the next responder if Qt did not accept it.
+    if (!accepted)
+        [super keyDown:nsevent];
 }
 
 - (void)keyUp:(NSEvent *)nsevent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
         return [super keyUp:nsevent];
-    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+
+    const bool keyUpAccepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+
+    // Propagate the keyUp if neither Qt accepted it nor the corresponding KeyDown was
+    // accepted. Qt text controls wil often not use and ignore keyUp events, but we
+    // want to avoid propagating unmatched keyUps.
+    const bool keyDownAccepted = m_acceptedKeyDowns.remove([nsevent keyCode]);
+    if (!keyUpAccepted && !keyDownAccepted)
+        [super keyUp:nsevent];
 }
 
 - (void)cancelOperation:(id)sender
