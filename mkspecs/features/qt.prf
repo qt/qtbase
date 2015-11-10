@@ -76,11 +76,6 @@ for(ever) {
             next()
         }
 
-        target_qt:isEqual(TARGET, $$MODULE_NAME) {
-            warning("$$TARGET cannot have a QT$$var_sfx of $$QTLIB")
-            next()
-        }
-
         contains(MODULE_CONFIG, internal_module): \
             using_privates = true
         contains(MODULE_CONFIG, ltcg): \
@@ -349,11 +344,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
        QT_PLUGINPATH = $$eval(QT_PLUGIN.$${QTPLUG}.TYPE)
 
         # Generate the plugin linker line
-        target_qt:isEqual(TARGET, QTPLUG) {
-            warning($$TARGET cannot have a QTPLUGIN of $$QTPLUG)
-        } else {
-            QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
-        }
+        QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {

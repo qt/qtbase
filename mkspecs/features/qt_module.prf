@@ -53,6 +53,8 @@ internal_module: \
 else: \
     MODULE_DEPENDS = $$replace(QT, -private$, )
 MODULE_DEPENDS = $$unique(MODULE_DEPENDS)
+contains(MODULE_DEPENDS, $$MODULE): \
+    error("$$TARGET depends on itself.")
 
 contains(TARGET, QtAddOn.*): \
     MODULE_DEFINE = QT_ADDON_$${ucmodule}_LIB
