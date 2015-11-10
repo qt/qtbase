@@ -35,7 +35,6 @@
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
 #include "qwindowswindow.h"
-#include "qwindowsguieventdispatcher.h"
 #include "qwindowsinputcontext.h"
 
 #include <QtGui/QWindow>
@@ -43,6 +42,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/QKeyEvent>
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 #if defined(WM_APPCOMMAND)
 #  ifndef FAPPCOMMAND_MOUSE

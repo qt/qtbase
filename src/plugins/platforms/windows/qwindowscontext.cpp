@@ -36,7 +36,6 @@
 #include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
-#include "qwindowsguieventdispatcher.h"
 #include "qwindowsmousehandler.h"
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
@@ -65,6 +64,8 @@
 #include <QtCore/QSysInfo>
 #include <QtCore/QScopedArrayPointer>
 #include <QtCore/private/qsystemlibrary_p.h>
+
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <stdlib.h>
 #include <stdio.h>

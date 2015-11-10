@@ -44,7 +44,6 @@
 #  include "qwindowsfontdatabase_ft.h"
 #endif
 #include "qwindowsfontdatabase.h"
-#include "qwindowsguieventdispatcher.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
 #  ifndef QT_NO_DRAGANDDROP
@@ -66,7 +65,8 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
-#include <QtCore/private/qeventdispatcher_win_p.h>
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>
 
