@@ -1128,24 +1128,88 @@ void tst_Compiler::cxx11_ref_qualifiers()
 #endif
 }
 
+class MoveDefinedQString {
+    QString s;
+public:
+    MoveDefinedQString() : s() {}
+    explicit MoveDefinedQString(const QString &s) : s(s) {}
+    MoveDefinedQString(const MoveDefinedQString &other) : s(other.s) {}
+#ifdef Q_COMPILER_RVALUE_REFS
+    MoveDefinedQString(MoveDefinedQString &&other) : s(std::move(other.s)) { other.s.clear(); }
+    MoveDefinedQString &operator=(MoveDefinedQString &&other)
+    { s = std::move(other.s); other.s.clear(); return *this; }
+#endif
+    MoveDefinedQString &operator=(const MoveDefinedQString &other) { s = other.s; return *this; }
+
+private:
+    friend bool operator==(const MoveDefinedQString &lhs, const MoveDefinedQString &rhs)
+    { return lhs.s == rhs.s; }
+    friend bool operator!=(const MoveDefinedQString &lhs, const MoveDefinedQString &rhs)
+    { return !operator==(lhs, rhs); }
+    friend char* toString(const MoveDefinedQString &mds)
+    { using namespace QTest; return toString(mds.s); }
+};
+
 void tst_Compiler::cxx11_rvalue_refs()
 {
 #ifndef Q_COMPILER_RVALUE_REFS
     QSKIP("Compiler does not support C++11 feature");
 #else
-    int i = 1;
-    i = std::move(i);
+    // we require std::move:
+    {
+        int i = 1;
+        i = std::move(i);
 
-    QString s = "Hello";
-    QString t = std::move(s);
-    QCOMPARE(t, QString("Hello"));
+        MoveDefinedQString s("Hello");
+        MoveDefinedQString t = std::move(s);
+        QCOMPARE(t, MoveDefinedQString("Hello"));
+        QCOMPARE(s, MoveDefinedQString());
 
-    s = t;
-    t = std::move(s);
-    QCOMPARE(t, QString("Hello"));
+        s = t;
+        t = std::move(s);
+        QCOMPARE(t, MoveDefinedQString("Hello"));
+        QCOMPARE(s, MoveDefinedQString());
 
-    QString &&r = std::move(s);
-    QCOMPARE(r, QString("Hello"));
+        MoveDefinedQString &&r = std::move(t); // no actual move!
+        QCOMPARE(r, MoveDefinedQString("Hello"));
+        QCOMPARE(t, MoveDefinedQString("Hello")); // so 't' is unchanged
+    }
+
+    // we require std::forward:
+    {
+        MoveDefinedQString s("Hello");
+        MoveDefinedQString s2 = std::forward<MoveDefinedQString>(s); // forward as rvalue
+        QCOMPARE(s2, MoveDefinedQString("Hello"));
+        QCOMPARE(s, MoveDefinedQString());
+
+        MoveDefinedQString s3 = std::forward<MoveDefinedQString&>(s2); // forward as lvalue
+        QCOMPARE(s2, MoveDefinedQString("Hello"));
+        QCOMPARE(s3, MoveDefinedQString("Hello"));
+    }
+
+    // supported by MSVC only from November 2013 CTP, but only check for VC2015:
+# if !defined(Q_CC_MSVC) || defined(Q_CC_INTEL) || _MSC_VER >= 1900 // VS14 == VC2015
+    // we require automatic generation of move special member functions:
+    {
+        struct M { MoveDefinedQString s1, s2; };
+        M m1 = { MoveDefinedQString("Hello"), MoveDefinedQString("World") };
+        QCOMPARE(m1.s1, MoveDefinedQString("Hello"));
+        QCOMPARE(m1.s2, MoveDefinedQString("World"));
+        M m2 = std::move(m1);
+        QCOMPARE(m1.s1, MoveDefinedQString());
+        QCOMPARE(m1.s2, MoveDefinedQString());
+        QCOMPARE(m2.s1, MoveDefinedQString("Hello"));
+        QCOMPARE(m2.s2, MoveDefinedQString("World"));
+        M m3;
+        QCOMPARE(m3.s1, MoveDefinedQString());
+        QCOMPARE(m3.s2, MoveDefinedQString());
+        m3 = std::move(m2);
+        QCOMPARE(m2.s1, MoveDefinedQString());
+        QCOMPARE(m2.s2, MoveDefinedQString());
+        QCOMPARE(m3.s1, MoveDefinedQString("Hello"));
+        QCOMPARE(m3.s2, MoveDefinedQString("World"));
+    }
+# endif // MSVC < 2015
 #endif
 }
 
