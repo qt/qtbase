@@ -921,6 +921,49 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
     \sa qMin(), qMax()
 */
 
+/*! \fn auto qOverload(T functionPointer)
+    \relates <QtGlobal>
+    \since 5.7
+
+    qOverload() returns a pointer to an overloaded function. The template
+    parameter is the list of the argument types of the function.
+    \a functionPointer is the pointer to the (member) function:
+
+    \snippet code/src_corelib_global_qglobal.cpp 52
+
+    If a member function is also const-overladed \l qConstOverload and
+    \l qNonConstOverload needs to be used.
+
+    qOverload() needs C++14 enabled. In C++11 only code the helper
+    classes QOverload, QConstOverload, and QNonConstOverload could be used directly:
+
+    \snippet code/src_corelib_global_qglobal.cpp 53
+
+    \sa qConstOverload(), qNonConstOverload()
+*/
+
+/*! \fn auto qConstOverload(T memberFunctionPointer)
+    \relates <QtGlobal>
+    \since 5.7
+
+    qConstOverload() returns a pointer to an constant member function:
+
+    \snippet code/src_corelib_global_qglobal.cpp 54
+
+    \sa qOverload, qNonConstOverload
+*/
+
+/*! \fn auto qNonConstOverload(T memberFunctionPointer)
+    \relates <QtGlobal>
+    \since 5.7
+
+    qNonConstOverload() eturns a pointer to an non constant member function:
+
+    \snippet code/src_corelib_global_qglobal.cpp 54
+
+    \sa qOverload, qNonConstOverload
+*/
+
 /*!
     \macro QT_VERSION_CHECK
     \relates <QtGlobal>

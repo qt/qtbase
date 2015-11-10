@@ -4538,6 +4538,8 @@ void qDeleteInEventHandler(QObject *o)
 
     make sure to declare the argument type with Q_DECLARE_METATYPE
 
+    Overloaded functions can be resolved with help of \l qOverload.
+
     \note The number of arguments in the signal or slot are limited to 6 if
     the compiler does not support C++11 variadic templates.
  */
@@ -4572,6 +4574,8 @@ void qDeleteInEventHandler(QObject *o)
     The connection will automatically disconnect if the sender is destroyed.
     However, you should take care that any objects used within the functor
     are still alive when the signal is emitted.
+
+    Overloaded functions can be resolved with help of \l qOverload.
 
     \note If the compiler does not support C++11 variadic templates, the number
     of arguments in the signal or slot are limited to 6, and the functor object
@@ -4611,6 +4615,8 @@ void qDeleteInEventHandler(QObject *o)
     is destroyed.
     However, you should take care that any objects used within the functor
     are still alive when the signal is emitted.
+
+    Overloaded functions can be resolved with help of \l qOverload.
 
     \note If the compiler does not support C++11 variadic templates, the number
     of arguments in the signal or slot are limited to 6, and the functor object
