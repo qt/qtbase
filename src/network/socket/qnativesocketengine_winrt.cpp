@@ -47,11 +47,13 @@
 
 #include <private/qthread_p.h>
 #include <private/qabstractsocket_p.h>
+#include <private/qeventdispatcher_winrt_p.h>
 
 #ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
 
+#include <functional>
 #include <wrl.h>
 #include <windows.foundation.collections.h>
 #include <windows.storage.streams.h>
@@ -315,9 +317,11 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
             Q_ASSERT_SUCCEEDED(hr);
         }
 
-        hr = d->tcpListener->add_ConnectionReceived(
-                    Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(),
-                    &d->connectionToken);
+        hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
+            return d->tcpListener->add_ConnectionReceived(
+                        Callback<ClientConnectedHandler>(d, &QNativeSocketEnginePrivate::handleClientConnection).Get(),
+                        &d->connectionToken);
+        });
         Q_ASSERT_SUCCEEDED(hr);
         hr = d->tcpListener->BindEndpointAsync(hostAddress.Get(), portString.Get(), &op);
     } else if (d->socketType == QAbstractSocket::UdpSocket) {
