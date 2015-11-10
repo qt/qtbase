@@ -38,6 +38,9 @@ git_build: \
 else: \
     INC_PATH = $$MODULE_BASE_INDIR
 include($$INC_PATH/include/$$MODULE_INCNAME/headers.pri, "", true)
+CONFIG += qt_install_headers
+
+alien_syncqt: return()
 
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
@@ -81,8 +84,6 @@ SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 !if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
     isEmpty(PRECOMPILED_HEADER): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
 }
-
-CONFIG += qt_install_headers
 
 headersclean:!internal_module {
     # Make sure that the header compiles with our strict options

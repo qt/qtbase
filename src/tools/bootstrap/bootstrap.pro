@@ -39,10 +39,7 @@ MODULE_PRIVATE_INCLUDES = \
 # We need the forwarding headers before their respective modules are built,
 # so do a minimal syncqt run.
 CONFIG += minimal_syncqt
-QMAKE_SYNCQT_OPTIONS = -module QtCore -module QtDBus -module QtXml
-contains(QT_CONFIG, zlib): \
-    QMAKE_SYNCQT_OPTIONS += -module QtZlib
-QMAKE_SYNCQT_OPTIONS += -version $$QT_VERSION
+QMAKE_SYNCQT_OPTIONS = -module QtCore -module QtDBus -module QtXml -version $$QT_VERSION
 
 load(qt_module)
 
