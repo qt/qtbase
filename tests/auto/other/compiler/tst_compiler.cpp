@@ -979,6 +979,20 @@ void tst_Compiler::cxx11_nullptr()
 #endif
 }
 
+namespace SomeNamespace {
+class AdlOnly {
+    QVector<int> v;
+public:
+    AdlOnly() : v(5) { std::fill_n(v.begin(), v.size(), 42); }
+
+private:
+    friend QVector<int>::const_iterator begin(const AdlOnly &x) { return x.v.begin(); }
+    friend QVector<int>::const_iterator end(const AdlOnly &x) { return x.v.end(); }
+    friend QVector<int>::iterator begin(AdlOnly &x) { return x.v.begin(); }
+    friend QVector<int>::iterator end(AdlOnly &x) { return x.v.end(); }
+};
+}
+
 void tst_Compiler::cxx11_range_for()
 {
 #ifndef Q_COMPILER_RANGE_FOR
@@ -998,6 +1012,85 @@ void tst_Compiler::cxx11_range_for()
     l << 2;
     for (int i : ll)
         QCOMPARE(i, 2);
+
+    {
+        const int array[] = { 0, 1, 2, 3, 4 };
+        int i = 0;
+        for (const int &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (int e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (const int e : array)
+            QCOMPARE(e, array[i++]);
+#ifdef Q_COMPILER_AUTO_TYPE
+        i = 0;
+        for (const auto &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (auto &e : array) // auto deducing const
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (auto e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (const auto e : array)
+            QCOMPARE(e, array[i++]);
+#endif
+    }
+
+    {
+        int array[] = { 0, 1, 2, 3, 4 };
+        const int array2[] = { 10, 11, 12, 13, 14 };
+        int i = 0;
+        for (const int &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (int &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (int e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (const int e : array)
+            QCOMPARE(e, array[i++]);
+#ifdef Q_COMPILER_AUTO_TYPE
+        i = 0;
+        for (const auto &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (auto &e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (auto e : array)
+            QCOMPARE(e, array[i++]);
+        i = 0;
+        for (const auto e : array)
+            QCOMPARE(e, array[i++]);
+#endif
+        for (int &e : array)
+            e += 10;
+        i = 0;
+        for (const int &e : array)
+            QCOMPARE(e, array2[i++]);
+    }
+
+    {
+        const SomeNamespace::AdlOnly x;
+        for (const int &e : x)
+            QCOMPARE(e, 42);
+    }
+
+    {
+        SomeNamespace::AdlOnly x;
+        for (const int &e : x)
+            QCOMPARE(e, 42);
+        for (int &e : x)
+            e += 10;
+        for (const int &e : x)
+            QCOMPARE(e, 52);
+    }
 #endif
 }
 
