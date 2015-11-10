@@ -818,6 +818,61 @@ QT_WARNING_POP
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    if (button == Qt::RightButton)
+        m_sendUpAsRightButton = true;
+
+    m_buttons |= button;
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    // Forward the event to the next responder if Qt did not accept the
+    // corresponding mouse down for this button
+    if (!m_acceptedMouseDowns.contains(button))
+        return false;
+
+    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton))) {
+        qCWarning(lcQpaCocoaWindow) << "QNSView mouseDragged: Internal mouse button tracking"
+                                    << "invalid (missing Qt::LeftButton)";
+    }
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent
+{
+    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput))
+        return false;
+
+    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    if (m_sendUpAsRightButton && button == Qt::LeftButton)
+        button = Qt::RightButton;
+    if (button == Qt::RightButton)
+        m_sendUpAsRightButton = false;
+
+    m_buttons &= ~button;
+
+    [self handleMouseEvent:theEvent];
+    return true;
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
     if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
@@ -871,24 +926,58 @@ QT_WARNING_POP
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super mouseDragged:theEvent];
-    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton)))
-        qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
-    [self handleMouseEvent:theEvent];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super mouseDragged:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super mouseUp:theEvent];
-    if (m_sendUpAsRightButton) {
-        m_buttons &= ~Qt::RightButton;
-        m_sendUpAsRightButton = false;
-    } else {
-        m_buttons &= ~Qt::LeftButton;
-    }
-    [self handleMouseEvent:theEvent];
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super mouseUp:theEvent];
+}
+
+- (void)rightMouseDown:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDownEvent:theEvent];
+    if (!accepted)
+        [super rightMouseDown:theEvent];
+}
+
+- (void)rightMouseDragged:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super rightMouseDragged:theEvent];
+}
+
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super rightMouseUp:theEvent];
+}
+
+- (void)otherMouseDown:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDownEvent:theEvent];
+    if (!accepted)
+        [super otherMouseDown:theEvent];
+}
+
+- (void)otherMouseDragged:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    if (!accepted)
+        [super otherMouseDragged:theEvent];
+}
+
+- (void)otherMouseUp:(NSEvent *)theEvent
+{
+    const bool accepted = [self handleMouseUpEvent:theEvent];
+    if (!accepted)
+        [super otherMouseUp:theEvent];
 }
 
 - (void)updateTrackingAreas
@@ -997,58 +1086,6 @@ QT_WARNING_POP
 
     QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
     m_platformWindow->m_enterLeaveTargetWindow = 0;
-}
-
-- (void)rightMouseDown:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseDown:theEvent];
-    m_buttons |= Qt::RightButton;
-    m_sendUpAsRightButton = true;
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseDragged:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseDragged:theEvent];
-    if (!(m_buttons & Qt::RightButton))
-        qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)rightMouseUp:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super rightMouseUp:theEvent];
-    m_buttons &= ~Qt::RightButton;
-    m_sendUpAsRightButton = false;
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDown:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseDown:theEvent];
-    m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseDragged:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseDragged:theEvent];
-    if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
-        qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
-    [self handleMouseEvent:theEvent];
-}
-
-- (void)otherMouseUp:(NSEvent *)theEvent
-{
-    if (m_window && (m_window->flags() & Qt::WindowTransparentForInput) )
-        return [super otherMouseUp:theEvent];
-    m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
-    [self handleMouseEvent:theEvent];
 }
 
 struct QCocoaTabletDeviceData
