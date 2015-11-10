@@ -1175,9 +1175,16 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         type.construct(&d->data.ptr, copy);
         d->is_shared = false;
     } else {
-        void *ptr = type.create(copy);
+        // Private::Data contains long long, and long double is the biggest standard type.
+        const size_t maxAlignment =
+            qMax(Q_ALIGNOF(QVariant::Private::Data), Q_ALIGNOF(long double));
+        const size_t s = sizeof(QVariant::PrivateShared);
+        const size_t offset = s + ((s * maxAlignment - s) % maxAlignment);
+        void *data = operator new(offset + size);
+        void *ptr = static_cast<char *>(data) + offset;
+        type.construct(ptr, copy);
         d->is_shared = true;
-        d->data.shared = new QVariant::PrivateShared(ptr);
+        d->data.shared = new (data) QVariant::PrivateShared(ptr);
     }
 }
 
@@ -1186,7 +1193,7 @@ static void customClear(QVariant::Private *d)
     if (!d->is_shared) {
         QMetaType::destruct(d->type, &d->data.ptr);
     } else {
-        QMetaType::destroy(d->type, d->data.shared->ptr);
+        QMetaType::destruct(d->type, d->data.shared->ptr);
         delete d->data.shared;
     }
 }
