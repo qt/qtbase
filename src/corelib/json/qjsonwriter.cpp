@@ -32,6 +32,7 @@
 **
 ****************************************************************************/
 
+#include <qlocale.h>
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
 #include "private/qutfcodec_p.h"
@@ -123,7 +124,7 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
     case QJsonValue::Double: {
         const double d = v.toDouble(b);
         if (qIsFinite(d)) // +2 to format to ensure the expected precision
-            json += QByteArray::number(d, 'g', std::numeric_limits<double>::digits10 + 2); // ::digits10 is 15
+            json += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
         else
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
         break;

@@ -1408,9 +1408,7 @@ void tst_QtJson::toJsonLargeNumericValues()
             "    \"Array\": [\n"
             "        1.234567,\n"
             "        1.7976931348623157e+308,\n"
-            //     ((4.9406564584124654e-324 == 5e-324) == true)
-            // I can only think JavaScript has a special formatter to
-            //  emit this value for this IEEE754 bit pattern.
+#ifdef QT_NO_DOUBLECONVERSION // "shortest" double conversion is not very short then
             "        4.9406564584124654e-324,\n"
             "        2.2250738585072014e-308,\n"
             "        1.7976931348623157e+308,\n"
@@ -1421,6 +1419,18 @@ void tst_QtJson::toJsonLargeNumericValues()
             "        -1.7976931348623157e+308,\n"
             "        -2.2204460492503131e-16,\n"
             "        -4.9406564584124654e-324,\n"
+#else
+            "        5e-324,\n"
+            "        2.2250738585072014e-308,\n"
+            "        1.7976931348623157e+308,\n"
+            "        2.220446049250313e-16,\n"
+            "        5e-324,\n"
+            "        0,\n"
+            "        -2.2250738585072014e-308,\n"
+            "        -1.7976931348623157e+308,\n"
+            "        -2.220446049250313e-16,\n"
+            "        -5e-324,\n"
+#endif
             "        0,\n"
             "        9007199254740992,\n"
             "        -9007199254740992\n"
