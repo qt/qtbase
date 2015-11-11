@@ -145,6 +145,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
+        m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
@@ -529,7 +530,7 @@ QT_WARNING_POP
 
 - (BOOL) hasMask
 {
-    return m_maskImage != 0;
+    return !m_maskRegion.isEmpty();
 }
 
 - (BOOL) isOpaque
@@ -542,6 +543,7 @@ QT_WARNING_POP
 - (void) setMaskRegion:(const QRegion *)region
 {
     m_shouldInvalidateWindowShadow = true;
+    m_maskRegion = *region;
     if (m_maskImage)
         CGImageRelease(m_maskImage);
     if (region->isEmpty()) {
@@ -825,6 +827,22 @@ QT_WARNING_POP
 
     Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
 
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    Q_UNUSED(qtScreenPoint);
+
+    // Maintain masked state for the button for use by MouseDragged and MouseUp.
+    const bool masked = m_maskRegion.contains(qtWindowPoint.toPoint());
+    if (masked)
+        m_acceptedMouseDowns &= ~button;
+    else
+        m_acceptedMouseDowns |= button;
+
+    // Forward masked out events to the next responder
+    if (masked)
+        return false;
+
     if (button == Qt::RightButton)
         m_sendUpAsRightButton = true;
 
@@ -843,7 +861,7 @@ QT_WARNING_POP
 
     // Forward the event to the next responder if Qt did not accept the
     // corresponding mouse down for this button
-    if (!m_acceptedMouseDowns.contains(button))
+    if (!(m_acceptedMouseDowns & button) == button)
         return false;
 
     if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton))) {
@@ -861,6 +879,11 @@ QT_WARNING_POP
         return false;
 
     Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+
+    // Forward the event to the next responder if Qt did not accept the
+    // corresponding mouse down for this button
+    if (!(m_acceptedMouseDowns & button) == button)
+        return false;
 
     if (m_sendUpAsRightButton && button == Qt::LeftButton)
         button = Qt::RightButton;
@@ -920,9 +943,9 @@ QT_WARNING_POP
 
     // Maintain masked state for the button for use by MouseDragged and Up.
     if (masked)
-        m_acceptedMouseDowns.remove(Qt::LeftButton);
+        m_acceptedMouseDowns &= ~Qt::LeftButton;
     else
-        m_acceptedMouseDowns.insert(Qt::LeftButton);
+        m_acceptedMouseDowns |= Qt::LeftButton;
 
     // Forward masked out events to the next responder
     if (masked) {
