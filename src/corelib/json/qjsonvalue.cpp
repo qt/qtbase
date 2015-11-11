@@ -173,7 +173,7 @@ QJsonValue::QJsonValue(int n)
 QJsonValue::QJsonValue(qint64 n)
     : d(0), t(Double)
 {
-    this->dbl = n;
+    this->dbl = double(n);
 }
 
 /*!
@@ -515,7 +515,7 @@ bool QJsonValue::toBool(bool defaultValue) const
 int QJsonValue::toInt(int defaultValue) const
 {
     if (t == Double && int(dbl) == dbl)
-        return dbl;
+        return int(dbl);
     return defaultValue;
 }
 
