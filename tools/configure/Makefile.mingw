@@ -6,7 +6,7 @@ RAW_PCH       = configure_pch.h
 PCH           = $(RAW_PCH).gch/c++
 DEFINES       = -DUNICODE -DQT_NO_DATASTREAM -DQT_NO_CODECS -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_COMPRESS -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DQT_BUILD_CONFIGURE -DQT_VERSION_STR=\"$(QTVERSION)\" -DQT_VERSION_MAJOR=$(QT_VERSION_MAJOR) -DQT_VERSION_MINOR=$(QT_VERSION_MINOR) -DQT_VERSION_PATCH=$(QT_VERSION_PATCH)
 INCPATH       = -I"../../include" -I"../../include/QtCore" -I"../../include/QtCore/$(QTVERSION)" -I"../../include/QtCore/$(QTVERSION)/QtCore" -I"$(TOOLSRC)/shared" -I"$(QTSRC)mkspecs/win32-g++"
-CXXFLAGS_BARE = -fno-rtti -fno-exceptions -mthreads -Wall -Wextra $(DEFINES) $(INCPATH)
+CXXFLAGS_BARE = -std=c++11 -fno-rtti -fno-exceptions -mthreads -Wall -Wextra $(DEFINES) $(INCPATH)
 CXXFLAGS      = -include $(RAW_PCH) $(CXXFLAGS_BARE)
 LINK          = g++
 LFLAGS        = -Wl,-subsystem,console -mthreads
