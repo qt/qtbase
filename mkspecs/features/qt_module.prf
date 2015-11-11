@@ -42,6 +42,9 @@ host_build {
     }
 }
 
+mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
+    CONFIG += qt_framework
+
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
 
 ucmodule = $$upper($$MODULE)
@@ -103,11 +106,11 @@ else: \
     DEFINES += QT_BUILD_$${ucmodule}_LIB
 
 # OS X and iOS frameworks
-mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
+qt_framework {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
-   CONFIG += sliced_bundle qt_framework
+   CONFIG += sliced_bundle
    header_module {
         CONFIG += bundle
         QMAKE_BUNDLE_EXTENSION = .framework
