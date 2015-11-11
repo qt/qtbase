@@ -515,13 +515,24 @@ li {
     margin-bottom: 10px;
     padding-left: 8px;
     list-style: outside;
-    list-style-type: square;
     text-align: left;
 }
+
+ ul > li {
+    list-style-type: square;
+ }
 
 ol {
     margin: 10px;
     padding: 0;
+}
+
+ol.A > li {
+    list-style-type: upper-alpha;
+}
+
+ol.a > li{
+    list-style-type: lower-alpha;
 }
 
  ol > li {
