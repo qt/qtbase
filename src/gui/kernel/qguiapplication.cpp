@@ -127,6 +127,8 @@ Qt::MouseButtons QGuiApplicationPrivate::tabletState = Qt::NoButton;
 QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
 QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
 
+QString QGuiApplicationPrivate::styleOverride;
+
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
@@ -1256,6 +1258,7 @@ void QGuiApplicationPrivate::init()
     session_key = QString::fromWCharArray(guidstr);
 # endif
 #endif
+    QString s;
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
         if (argv[i] && *argv[i] != '-') {
@@ -1298,9 +1301,16 @@ void QGuiApplicationPrivate::init()
 #endif
         } else if (arg == "-testability") {
             loadTestability = true;
+        } else if (arg.indexOf("-style=", 0) != -1) {
+            s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
+        } else if (arg == "-style" && i < argc-1) {
+            s = QString::fromLocal8Bit(argv[++i]).toLower();
         } else {
             argv[j++] = argv[i];
         }
+
+        if (!s.isEmpty())
+            styleOverride = s;
     }
 
     if (j < argc) {
