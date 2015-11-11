@@ -563,8 +563,9 @@ void tst_QWindow::childWindowPositioning()
     }
 
     // Creation order shouldn't affect the geometry
-    QCOMPARE(topLevelWindowFirst.geometry(), topLevelWindowAfter.geometry());
-    QCOMPARE(childWindowAfter.geometry(), childWindowFirst.geometry());
+    // Use try compare since on X11 the window manager may still re-position the window after expose
+    QTRY_COMPARE(topLevelWindowFirst.geometry(), topLevelWindowAfter.geometry());
+    QTRY_COMPARE(childWindowAfter.geometry(), childWindowFirst.geometry());
 
     // Creation order shouldn't affect the child ending up at 0,0
     QCOMPARE(childWindowFirst.framePosition(), topLeftOrigin);
