@@ -439,6 +439,11 @@ qWarning("%s: %s", qUtf8Printable(key), qUtf8Printable(value));
 //! [37]
 
 
+//! [qUtf16Printable]
+qWarning("%ls: %ls", qUtf16Printable(key), qUtf16Printable(value));
+//! [qUtf16Printable]
+
+
 //! [38]
 struct Point2D
 {

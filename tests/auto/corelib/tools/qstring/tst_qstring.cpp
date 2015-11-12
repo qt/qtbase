@@ -1279,21 +1279,21 @@ void tst_QString::sprintfS()
     QCOMPARE(a, QString("foobarwhiz"));
 
     { // %ls
-        QCOMPARE(a.sprintf("%.3ls",     QString("Hello").utf16() ), QLatin1String("Hel"));
-        QCOMPARE(a.sprintf("%10.3ls",   QString("Hello").utf16() ), QLatin1String("       Hel"));
-        QCOMPARE(a.sprintf("%.10ls",    QString("Hello").utf16() ), QLatin1String("Hello"));
-        QCOMPARE(a.sprintf("%10.10ls",  QString("Hello").utf16() ), QLatin1String("     Hello"));
-        QCOMPARE(a.sprintf("%-10.10ls", QString("Hello").utf16() ), QLatin1String("Hello     "));
-        QCOMPARE(a.sprintf("%-10.3ls",  QString("Hello").utf16() ), QLatin1String("Hel       "));
-        QCOMPARE(a.sprintf("%-5.5ls",   QString("Hello").utf16() ), QLatin1String("Hello"));
+        QCOMPARE(a.sprintf("%.3ls",     qUtf16Printable("Hello")), QLatin1String("Hel"));
+        QCOMPARE(a.sprintf("%10.3ls",   qUtf16Printable("Hello")), QLatin1String("       Hel"));
+        QCOMPARE(a.sprintf("%.10ls",    qUtf16Printable("Hello")), QLatin1String("Hello"));
+        QCOMPARE(a.sprintf("%10.10ls",  qUtf16Printable("Hello")), QLatin1String("     Hello"));
+        QCOMPARE(a.sprintf("%-10.10ls", qUtf16Printable("Hello")), QLatin1String("Hello     "));
+        QCOMPARE(a.sprintf("%-10.3ls",  qUtf16Printable("Hello")), QLatin1String("Hel       "));
+        QCOMPARE(a.sprintf("%-5.5ls",   qUtf16Printable("Hello")), QLatin1String("Hello"));
 
         // Check utf16 is preserved for %ls
         QCOMPARE(a.sprintf("%ls",
-                           QString::fromUtf8("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205").utf16()),
+                           qUtf16Printable("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")),
                  QLatin1String("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
         int n;
-        a.sprintf("%ls%n%s", QString("hello").utf16(), &n, "goodbye");
+        a.sprintf("%ls%n%s", qUtf16Printable("hello"), &n, "goodbye");
         QCOMPARE(n, 5);
         QCOMPARE(a, QLatin1String("hellogoodbye"));
     }

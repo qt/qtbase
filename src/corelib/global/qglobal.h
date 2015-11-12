@@ -687,6 +687,15 @@ Q_CORE_EXPORT bool qSharedBuild() Q_DECL_NOTHROW;
 #  define qUtf8Printable(string) QString(string).toUtf8().constData()
 #endif
 
+/*
+    Wrap QString::utf16() with enough casts to allow passing it
+    to QString::asprintf("%ls") without warnings.
+*/
+#ifndef qUtf16Printable
+#  define qUtf16Printable(string) \
+    static_cast<const wchar_t*>(static_cast<const void*>(QString(string).utf16()))
+#endif
+
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
 

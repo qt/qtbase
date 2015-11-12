@@ -3825,6 +3825,29 @@ int qrand()
 */
 
 /*!
+    \macro const wchar_t *qUtf16Printable(const QString &str)
+    \relates <QtGlobal>
+    \since 5.7
+
+    Returns \a str as a \c{const ushort *}, but cast to a \c{const wchar_t *}
+    to avoid warnings. This is equivalent to \a{str}.utf16() plus some casting.
+
+    The only useful thing you can do with the return value of this macro is to
+    pass it to QString::asprintf() for use in a \c{%ls} conversion. In particular,
+    the return value is \e{not} a valid \c{const wchar_t*}!
+
+    In general, the pointer will be invalid after the statement in which
+    qUtf16Printable() is used. This is because the pointer may have been
+    obtained from a temporary expression, which will fall out of scope.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qUtf16Printable
+
+    \sa qPrintable(), qDebug(), qInfo(), qWarning(), qCritical(), qFatal()
+*/
+
+/*!
     \macro Q_DECLARE_TYPEINFO(Type, Flags)
     \relates <QtGlobal>
 
