@@ -25,9 +25,12 @@ load(qt_build_paths)
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 
-    include-distclean.commands = $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME))
-    QMAKE_EXTRA_TARGETS += include-distclean
-    DISTCLEAN_DEPS += include-distclean
+    !minimal_syncqt {
+        include-distclean.commands = \
+            $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME))
+        QMAKE_EXTRA_TARGETS += include-distclean
+        DISTCLEAN_DEPS += include-distclean
+    }
 }
 
 minimal_syncqt: return()
