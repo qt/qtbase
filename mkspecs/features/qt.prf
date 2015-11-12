@@ -155,7 +155,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 !no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
         contains(qt_module_deps, core) {
-    relative_qt_rpath:!isEmpty(QMAKE_LFLAGS_REL_RPATH):contains(INSTALLS, target):\
+    relative_qt_rpath:!isEmpty(QMAKE_REL_RPATH_BASE):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
         mac {
             if(equals(TEMPLATE, app):app_bundle)|\
