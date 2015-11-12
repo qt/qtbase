@@ -480,6 +480,7 @@ private slots:
     void indexOf3_data();
 //  void indexOf3();
     void sprintf();
+    void sprintfS();
     void fill();
     void truncate();
     void constructor();
@@ -1252,7 +1253,11 @@ void tst_QString::sprintf()
     double d = -514.25683;
     S1.sprintf("%f",d);
     QCOMPARE(S1, QString("-514.256830"));
+}
 
+void tst_QString::sprintfS()
+{
+    QString a;
     QCOMPARE(a.sprintf("%.3s", "Hello" ), QLatin1String("Hel"));
     QCOMPARE(a.sprintf("%10.3s", "Hello" ), QLatin1String("       Hel"));
     QCOMPARE(a.sprintf("%.10s", "Hello" ), QLatin1String("Hello"));
@@ -1272,6 +1277,26 @@ void tst_QString::sprintf()
     a.sprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz");
     QCOMPARE((int)n2, 6);
     QCOMPARE(a, QString("foobarwhiz"));
+
+    { // %ls
+        QCOMPARE(a.sprintf("%.3ls",     QString("Hello").utf16() ), QLatin1String("Hel"));
+        QCOMPARE(a.sprintf("%10.3ls",   QString("Hello").utf16() ), QLatin1String("       Hel"));
+        QCOMPARE(a.sprintf("%.10ls",    QString("Hello").utf16() ), QLatin1String("Hello"));
+        QCOMPARE(a.sprintf("%10.10ls",  QString("Hello").utf16() ), QLatin1String("     Hello"));
+        QCOMPARE(a.sprintf("%-10.10ls", QString("Hello").utf16() ), QLatin1String("Hello     "));
+        QCOMPARE(a.sprintf("%-10.3ls",  QString("Hello").utf16() ), QLatin1String("Hel       "));
+        QCOMPARE(a.sprintf("%-5.5ls",   QString("Hello").utf16() ), QLatin1String("Hello"));
+
+        // Check utf16 is preserved for %ls
+        QCOMPARE(a.sprintf("%ls",
+                           QString::fromUtf8("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205").utf16()),
+                 QLatin1String("\366\344\374\326\304\334\370\346\345\330\306\305"));
+
+        int n;
+        a.sprintf("%ls%n%s", QString("hello").utf16(), &n, "goodbye");
+        QCOMPARE(n, 5);
+        QCOMPARE(a, QLatin1String("hellogoodbye"));
+    }
 }
 
 /*
