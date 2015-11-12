@@ -33,6 +33,7 @@
 
 #include "qxcbnativeinterface.h"
 
+#include "qxcbcursor.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qxcbintegration.h"
@@ -288,6 +289,20 @@ void *QXcbNativeInterface::nativeResourceForBackingStore(const QByteArray &resou
     return result;
 }
 
+#ifndef QT_NO_CURSOR
+void *QXcbNativeInterface::nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor)
+{
+    if (resource == QByteArrayLiteral("xcbcursor")) {
+        if (const QScreen *primaryScreen = QGuiApplication::primaryScreen()) {
+            if (const QPlatformCursor *pCursor= primaryScreen->handle()->cursor()) {
+                xcb_cursor_t xcbCursor = static_cast<const QXcbCursor *>(pCursor)->xcbCursor(cursor);
+                return reinterpret_cast<void *>(quintptr(xcbCursor));
+            }
+        }
+    }
+    return Q_NULLPTR;
+}
+#endif // !QT_NO_CURSOR
 
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
 {

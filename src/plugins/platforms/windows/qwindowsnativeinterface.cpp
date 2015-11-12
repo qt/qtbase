@@ -34,6 +34,7 @@
 #include "qwindowsnativeinterface.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
+#include "qwindowscursor.h"
 #include "qwindowsfontdatabase.h"
 #include "qwindowsopenglcontext.h"
 #include "qwindowsopengltester.h"
@@ -42,6 +43,8 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QScreen>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,6 +104,19 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
 }
+
+#ifndef QT_NO_CURSOR
+void *QWindowsNativeInterface::nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor)
+{
+    if (resource == QByteArrayLiteral("hcursor")) {
+        if (const QScreen *primaryScreen = QGuiApplication::primaryScreen()) {
+            if (const QPlatformCursor *pCursor= primaryScreen->handle()->cursor())
+                return static_cast<const QWindowsCursor *>(pCursor)->hCursor(cursor);
+        }
+    }
+    return Q_NULLPTR;
+}
+#endif // !QT_NO_CURSOR
 
 static const char customMarginPropertyC[] = "WindowsCustomMargins";
 

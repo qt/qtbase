@@ -115,6 +115,8 @@ public:
 
     QPixmap dragDefaultCursor(Qt::DropAction action) const;
 
+    HCURSOR hCursor(const QCursor &c) const;
+
 private:
     typedef QHash<Qt::CursorShape, CursorHandlePtr> StandardCursorCache;
     typedef QHash<QWindowsPixmapCursorCacheKey, CursorHandlePtr> PixmapCursorCache;

@@ -780,6 +780,21 @@ QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
     return m_ignoreDragCursor;
 }
 
+HCURSOR QWindowsCursor::hCursor(const QCursor &c) const
+{
+    const Qt::CursorShape shape = c.shape();
+    if (shape == Qt::BitmapCursor) {
+        const auto pit = m_pixmapCursorCache.constFind(QWindowsPixmapCursorCacheKey(c));
+        if (pit != m_pixmapCursorCache.constEnd())
+            return pit.value()->handle();
+    } else {
+        const auto sit = m_standardCursorCache.constFind(shape);
+        if (sit != m_standardCursorCache.constEnd())
+            return sit.value()->handle();
+    }
+    return HCURSOR(0);
+}
+
 /*!
     \class QWindowsWindowCursor
     \brief Per-Window cursor. Contains a QCursor and manages its associated system

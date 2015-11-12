@@ -65,6 +65,9 @@ public:
     virtual void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore);
+#ifndef QT_NO_CURSOR
+    virtual void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor);
+#endif
 
     typedef void * (*NativeResourceForIntegrationFunction)();
     typedef void * (*NativeResourceForContextFunction)(QOpenGLContext *context);

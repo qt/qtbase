@@ -78,6 +78,9 @@ public:
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
     void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore) Q_DECL_OVERRIDE;
+#ifndef QT_NO_CURSOR
+    void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) Q_DECL_OVERRIDE;
+#endif
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;

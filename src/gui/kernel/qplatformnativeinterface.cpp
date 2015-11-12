@@ -80,6 +80,15 @@ void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray 
     return 0;
 }
 
+#ifndef QT_NO_CURSOR
+void *QPlatformNativeInterface::nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(cursor);
+    return Q_NULLPTR;
+}
+#endif // !QT_NO_CURSOR
+
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QPlatformNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
 {
     Q_UNUSED(resource);

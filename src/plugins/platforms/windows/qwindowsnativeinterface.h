@@ -66,7 +66,9 @@ public:
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
 #endif
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
-
+#ifndef QT_NO_CURSOR
+    void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) Q_DECL_OVERRIDE;
+#endif
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
                                           void *eventProc) const;

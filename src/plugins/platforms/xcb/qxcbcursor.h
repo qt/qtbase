@@ -77,6 +77,11 @@ public:
 
     static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = 0);
 
+#ifndef QT_NO_CURSOR
+    xcb_cursor_t xcbCursor(const QCursor &c) const
+        { return m_cursorHash.value(QXcbCursorCacheKey(c), xcb_cursor_t(0)); }
+#endif
+
 private:
 #ifndef QT_NO_CURSOR
     typedef QHash<QXcbCursorCacheKey, xcb_cursor_t> CursorHash;
