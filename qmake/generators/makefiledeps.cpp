@@ -554,8 +554,8 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 
                 // quoted strings
                 if (buffer[x] == '\'' || buffer[x] == '"') {
-                    const char term = buffer[x++];
-                    for(; x < buffer_len; ++x) {
+                    const char term = buffer[x];
+                    while (++x < buffer_len) {
                         if (buffer[x] == term) {
                             ++x;
                             break;
