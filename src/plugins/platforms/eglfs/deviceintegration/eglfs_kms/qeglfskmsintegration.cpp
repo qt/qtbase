@@ -77,7 +77,7 @@ void QEglFSKmsIntegration::platformInit()
         qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
         d->deleteLater();
 
-        if (devices.isEmpty())
+        if (Q_UNLIKELY(devices.isEmpty()))
             qFatal("Could not find DRM device!");
 
         m_devicePath = devices.first();
@@ -85,7 +85,7 @@ void QEglFSKmsIntegration::platformInit()
     }
 
     m_device = new QEglFSKmsDevice(this, m_devicePath);
-    if (!m_device->open())
+    if (Q_UNLIKELY(!m_device->open()))
         qFatal("Could not open device %s - aborting!", qPrintable(m_devicePath));
 }
 

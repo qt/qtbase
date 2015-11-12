@@ -127,7 +127,7 @@ bool QQnxVirtualKeyboardPps::connect()
     }
 
     m_buffer = new char[ms_bufferSize];
-    if (!m_buffer) {
+    if (Q_UNLIKELY(!m_buffer)) {
         qCritical("QQnxVirtualKeyboard: Unable to allocate buffer of %d bytes. "
                   "Size is unavailable.",  ms_bufferSize);
         return false;
@@ -170,7 +170,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
         return;
 
     // nread is the real space necessary, not the amount read.
-    if (static_cast<size_t>(nread) > ms_bufferSize - 1) {
+    if (Q_UNLIKELY(static_cast<size_t>(nread) > ms_bufferSize - 1)) {
         qCritical("QQnxVirtualKeyboard: Keyboard buffer size too short; need %u.", nread + 1);
         connect(); // reconnect
         return;
@@ -184,7 +184,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 #endif
 
     const char *value;
-    if (pps_decoder_get_string(m_decoder, "error", &value) == PPS_DECODER_OK) {
+    if (Q_UNLIKELY(pps_decoder_get_string(m_decoder, "error", &value) == PPS_DECODER_OK)) {
         qCritical("QQnxVirtualKeyboard: Keyboard PPS decoder error: %s", value ? value : "[null]");
         return;
     }
@@ -214,11 +214,11 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
 {
     int newHeight = 0;
 
-    if (pps_decoder_push(m_decoder, "dat") != PPS_DECODER_OK) {
+    if (Q_UNLIKELY(pps_decoder_push(m_decoder, "dat") != PPS_DECODER_OK)) {
         qCritical("QQnxVirtualKeyboard: Keyboard PPS dat object not found");
         return;
     }
-    if (pps_decoder_get_int(m_decoder, "size", &newHeight) != PPS_DECODER_OK) {
+    if (Q_UNLIKELY(pps_decoder_get_int(m_decoder, "size", &newHeight) != PPS_DECODER_OK)) {
         qCritical("QQnxVirtualKeyboard: Keyboard PPS size field not found");
         return;
     }

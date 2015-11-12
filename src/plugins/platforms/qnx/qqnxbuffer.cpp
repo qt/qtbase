@@ -76,7 +76,7 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
             screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, (void **)&dataPtr),
             "Failed to query buffer pointer");
 
-    if (dataPtr == 0)
+    if (Q_UNLIKELY(!dataPtr))
         qFatal("QQNX: buffer pointer is NULL, errno=%d", errno);
 
     // Get format of buffer
@@ -131,13 +131,13 @@ void QQnxBuffer::invalidateInCache()
     qBufferDebug() << Q_FUNC_INFO;
 
     // Verify native buffer exists
-    if (m_buffer == 0)
+    if (Q_UNLIKELY(!m_buffer))
         qFatal("QQNX: can't invalidate cache for null buffer");
 
     // Evict buffer's data from cache
     errno = 0;
     int result = msync(m_image.bits(), m_image.height() * m_image.bytesPerLine(), MS_INVALIDATE | MS_CACHE_ONLY);
-    if (result != 0)
+    if (Q_UNLIKELY(result != 0))
         qFatal("QQNX: failed to invalidate cache, errno=%d", errno);
 }
 

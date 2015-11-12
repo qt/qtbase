@@ -1074,7 +1074,7 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
         previousFlags = QMetaType::typeFlags(idx);
     }
 
-    if (previousSize != size) {
+    if (Q_UNLIKELY(previousSize != size)) {
         qFatal("QMetaType::registerType: Binary compatibility break "
             "-- Size mismatch for type '%s' [%i]. Previously registered "
             "size %i, now registering size %i.",
@@ -1084,7 +1084,7 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
     // these flags cannot change in a binary compatible way:
     const int binaryCompatibilityFlag = PointerToQObject | IsEnumeration | SharedPointerToQObject
                                                 | WeakPointerToQObject | TrackingPointerToQObject;
-    if ((previousFlags ^ flags) & binaryCompatibilityFlag) {
+    if (Q_UNLIKELY((previousFlags ^ flags) & binaryCompatibilityFlag)) {
 
         const char *msg = "QMetaType::registerType: Binary compatibility break. "
                 "\nType flags for type '%s' [%i] don't match. Previously "

@@ -180,7 +180,7 @@ QWinRTWindow::~QWinRTWindow()
 
     EGLBoolean value = eglDestroySurface(d->display, d->surface);
     d->surface = EGL_NO_SURFACE;
-    if (value == EGL_FALSE)
+    if (Q_UNLIKELY(value == EGL_FALSE))
         qCritical("Failed to destroy EGL window surface: 0x%x", eglGetError());
 }
 
@@ -321,7 +321,7 @@ void QWinRTWindow::createEglSurface(EGLDisplay display, EGLConfig config)
             d->surface = eglCreateWindowSurface(display, config,
                                                 reinterpret_cast<EGLNativeWindowType>(winId()),
                                                 nullptr);
-            if (d->surface == EGL_NO_SURFACE)
+            if (Q_UNLIKELY(d->surface == EGL_NO_SURFACE))
                 qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
             return S_OK;
         });

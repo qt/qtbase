@@ -44,8 +44,8 @@ void qScreenCheckError(int rc, const char *funcInfo, const char *message, bool c
         rc = screen_flush_context(QQnxIntegration::screenContext(), 0);
     }
 
-    if (rc) {
-        if (critical)
+    if (Q_UNLIKELY(rc)) {
+        if (Q_UNLIKELY(critical))
             qCritical("%s - Screen: %s - Error: %s (%i)", funcInfo, message, strerror(errno), errno);
         else
             qWarning("%s - Screen: %s - Error: %s (%i)", funcInfo, message, strerror(errno), errno);

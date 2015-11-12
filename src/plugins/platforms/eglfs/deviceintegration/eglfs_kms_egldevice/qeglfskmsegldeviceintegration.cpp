@@ -52,20 +52,20 @@ QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
 
 void QEglFSKmsEglDeviceIntegration::platformInit()
 {
-    if (!query_egl_device())
+    if (Q_UNLIKELY(!query_egl_device()))
         qFatal("Could not set up EGL device!");
 
     const char *deviceName = m_funcs->query_device_string(m_egl_device, EGL_DRM_DEVICE_FILE_EXT);
-    if (!deviceName)
+    if (Q_UNLIKELY(!deviceName))
         qFatal("Failed to query device name from EGLDevice");
 
     qCDebug(qLcEglfsKmsDebug, "Opening %s", deviceName);
 
     m_dri_fd = drmOpen(deviceName, Q_NULLPTR);
-    if (m_dri_fd < 0)
+    if (Q_UNLIKELY(m_dri_fd < 0))
         qFatal("Could not open DRM device");
 
-    if (!setup_kms())
+    if (Q_UNLIKELY(!setup_kms()))
         qFatal("Could not set up KMS on device %s!", m_device.constData());
 
     qCDebug(qLcEglfsKmsDebug, "DRM/KMS initialized");
@@ -100,14 +100,14 @@ EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nat
         display = eglGetDisplay(nativeDisplay);
     }
 
-    if (display == EGL_NO_DISPLAY)
+    if (Q_UNLIKELY(display == EGL_NO_DISPLAY))
         qFatal("Could not get EGL display");
 
     EGLint major, minor;
-    if (!eglInitialize(display, &major, &minor))
+    if (Q_UNLIKELY(!eglInitialize(display, &major, &minor)))
         qFatal("Could not initialize egl display");
 
-    if (!eglBindAPI(EGL_OPENGL_ES_API))
+    if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Failed to bind EGL_OPENGL_ES_API\n");
 
     return display;
@@ -255,8 +255,8 @@ QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
     QEglJetsonTK1Window *eglWindow = new QEglJetsonTK1Window(window, this);
 
     m_funcs->initialize(eglWindow->screen()->display());
-    if (!(m_funcs->has_egl_output_base && m_funcs->has_egl_output_drm && m_funcs->has_egl_stream
-          && m_funcs->has_egl_stream_producer_eglsurface && m_funcs->has_egl_stream_consumer_egloutput))
+    if (Q_UNLIKELY(!(m_funcs->has_egl_output_base && m_funcs->has_egl_output_drm && m_funcs->has_egl_stream &&
+                     m_funcs->has_egl_stream_producer_eglsurface && m_funcs->has_egl_stream_consumer_egloutput)))
         qFatal("Required extensions missing!");
 
     return eglWindow;
@@ -298,7 +298,7 @@ void QEglFSKmsEglDeviceIntegration::waitForVSync(QPlatformSurface *) const
                                  -1, 0, 0,
                                  &m_drm_connector->connector_id, 1,
                                  const_cast<const drmModeModeInfoPtr>(&m_drm_mode));
-        if (ret)
+        if (Q_UNLIKELY(ret))
             qFatal("drmModeSetCrtc failed");
     }
 }
@@ -367,7 +367,7 @@ bool QEglFSKmsEglDeviceIntegration::setup_kms()
         }
     }
 
-    if (crtc == 0)
+    if (Q_UNLIKELY(crtc == 0))
         qFatal("No suitable CRTC available");
 
     m_drm_connector = connector;
@@ -387,7 +387,7 @@ bool QEglFSKmsEglDeviceIntegration::setup_kms()
 bool QEglFSKmsEglDeviceIntegration::query_egl_device()
 {
     m_funcs = new QEGLStreamConvenience;
-    if (!m_funcs->has_egl_device_base)
+    if (Q_UNLIKELY(!m_funcs->has_egl_device_base))
         qFatal("EGL_EXT_device_base missing");
 
     EGLint num_devices = 0;

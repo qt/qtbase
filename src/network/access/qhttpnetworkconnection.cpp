@@ -263,7 +263,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
             request.setContentLength(uploadByteDevice->size());
         } else if (request.contentLength() != -1 && uploadByteDevice->size() == -1) {
             // everything OK, the user supplied us the contentLength
-        } else if (request.contentLength() == -1 && uploadByteDevice->size() == -1) {
+        } else if (Q_UNLIKELY(request.contentLength() == -1 && uploadByteDevice->size() == -1)) {
             qFatal("QHttpNetworkConnectionPrivate: Neither content-length nor upload device size were given");
         }
     }

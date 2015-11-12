@@ -212,7 +212,7 @@ void QWindowPrivate::init()
 
     // If your application aborts here, you are probably creating a QWindow
     // before the screen list is populated.
-    if (!parentWindow && !topLevelScreen) {
+    if (Q_UNLIKELY(!parentWindow && !topLevelScreen)) {
         qFatal("Cannot create window: no screens available");
         exit(1);
     }

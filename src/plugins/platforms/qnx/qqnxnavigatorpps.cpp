@@ -100,7 +100,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
     // send pps message to navigator
     errno = 0;
     int bytes = qt_safe_write(m_fd, ppsMessage.constData(), ppsMessage.size());
-    if (bytes == -1)
+    if (Q_UNLIKELY(bytes == -1))
         qFatal("QQNX: failed to write navigator pps, errno=%d", errno);
 
     // allocate buffer for pps data
@@ -110,7 +110,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
     do {
         errno = 0;
         bytes = qt_safe_read(m_fd, buffer, ppsBufferSize - 1);
-        if (bytes == -1)
+        if (Q_UNLIKELY(bytes == -1))
             qFatal("QQNX: failed to read navigator pps, errno=%d", errno);
     } while (bytes == 0);
 
@@ -125,7 +125,7 @@ bool QQnxNavigatorPps::sendPpsMessage(const QByteArray &message, const QByteArra
     parsePPS(ppsData, responseFields);
 
     if (responseFields.contains("res") && responseFields.value("res") == message) {
-        if (responseFields.contains("err")) {
+        if (Q_UNLIKELY(responseFields.contains("err"))) {
             qCritical() << "navigator responded with error: " << responseFields.value("err");
             return false;
         }
@@ -142,7 +142,7 @@ void QQnxNavigatorPps::parsePPS(const QByteArray &ppsData, QHash<QByteArray, QBy
     QList<QByteArray> lines = ppsData.split('\n');
 
     // validate pps object
-    if (lines.size() == 0 || lines.at(0) != "@control")
+    if (Q_UNLIKELY(lines.empty() || lines.at(0) != "@control"))
         qFatal("QQNX: unrecognized pps object, data=%s", ppsData.constData());
 
     // parse pps object attributes and extract values

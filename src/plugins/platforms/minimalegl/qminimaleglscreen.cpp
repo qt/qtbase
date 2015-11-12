@@ -74,19 +74,19 @@ QMinimalEglScreen::QMinimalEglScreen(EGLNativeDisplayType display)
 
     EGLint major, minor;
 
-    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+    if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API))) {
         qWarning("Could not bind GL_ES API\n");
         qFatal("EGL error");
     }
 
     m_dpy = eglGetDisplay(display);
-    if (m_dpy == EGL_NO_DISPLAY) {
+    if (Q_UNLIKELY(m_dpy == EGL_NO_DISPLAY)) {
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
     }
     qWarning("Opened display %p\n", m_dpy);
 
-    if (!eglInitialize(m_dpy, &major, &minor)) {
+    if (Q_UNLIKELY(!eglInitialize(m_dpy, &major, &minor))) {
         qWarning("Could not initialize egl display\n");
         qFatal("EGL error");
     }
@@ -135,9 +135,9 @@ void QMinimalEglScreen::createAndSetPlatformContext()
 
     EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
-    if (kdInitializeNV() == KD_ENOTINITIALIZED) {
+    if (Q_UNLIKELY(kdInitializeNV() == KD_ENOTINITIALIZED))
         qFatal("Did not manage to initialize openkode");
-    }
+
     KDWindow *window = kdCreateWindow(m_dpy,config,0);
 
     kdRealizeWindow(window,&eglWindow);
@@ -148,7 +148,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
 #endif
 
     m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
-    if (m_surface == EGL_NO_SURFACE) {
+    if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
         qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
         eglTerminate(m_dpy);
         qFatal("EGL error");

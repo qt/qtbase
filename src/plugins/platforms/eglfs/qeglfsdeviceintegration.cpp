@@ -155,7 +155,7 @@ void QEGLDeviceIntegration::platformInit()
 
     framebuffer = qt_safe_open(fbDev, O_RDONLY);
 
-    if (framebuffer == -1) {
+    if (Q_UNLIKELY(framebuffer == -1)) {
         qWarning("EGLFS: Failed to open %s", fbDev.constData());
         qFatal("EGLFS: Can't continue without a display");
     }

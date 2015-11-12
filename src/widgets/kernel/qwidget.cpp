@@ -289,7 +289,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , qd_hd(0)
 #endif
 {
-    if (!qApp) {
+    if (Q_UNLIKELY(!qApp)) {
         qFatal("QWidget: Must construct a QApplication before a QWidget");
         return;
     }
@@ -299,7 +299,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
     // This allows incompatible versions to be loaded, possibly for testing.
     Q_UNUSED(version);
 #else
-    if (version != QObjectPrivateVersion)
+    if (Q_UNLIKELY(version != QObjectPrivateVersion))
         qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
                 version, QObjectPrivateVersion);
 #endif
@@ -1116,7 +1116,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-    if (!qobject_cast<QApplication *>(QCoreApplication::instance()))
+    if (Q_UNLIKELY(!qobject_cast<QApplication *>(QCoreApplication::instance())))
         qFatal("QWidget: Cannot create a QWidget without QApplication");
 
     Q_ASSERT(allWidgets);

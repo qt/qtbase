@@ -127,7 +127,7 @@ QHaikuWindow::QHaikuWindow(QWindow *window)
 
     m_window = haikuWindow;
 
-    if (!m_window)
+    if (Q_UNLIKELY(!m_window))
         qFatal("QHaikuWindow: failed to create window");
 
     setGeometry(rect);

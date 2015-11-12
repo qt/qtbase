@@ -1910,7 +1910,7 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
                                     (isc_callback)qEventCallback,
 #endif
                                    eBuffer->resultBuffer);
-            if (status[0] == 1 && status[1]) {
+            if (Q_UNLIKELY(status[0] == 1 && status[1])) {
                 qCritical("QIBaseDriver::qHandleEventNotification: could not resubscribe to '%s'",
                     qPrintable(i.key()));
             }

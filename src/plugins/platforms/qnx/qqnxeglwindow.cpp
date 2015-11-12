@@ -59,7 +59,7 @@ QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool nee
     // Set window usage
     const int val = SCREEN_USAGE_OPENGL_ES2;
     const int result = screen_set_window_property_iv(nativeHandle(), SCREEN_PROPERTY_USAGE, &val);
-    if (result != 0)
+    if (Q_UNLIKELY(result != 0))
         qFatal("QQnxEglWindow: failed to set window alpha usage, errno=%d", errno);
 
     m_requestedBufferSize = shouldMakeFullScreen() ? screen()->geometry().size() : window->geometry().size();
@@ -106,7 +106,7 @@ void QQnxEglWindow::destroyEGLSurface()
     // Destroy EGL surface if it exists
     if (m_eglSurface != EGL_NO_SURFACE) {
         EGLBoolean eglResult = eglDestroySurface(platformOpenGLContext()->getEglDisplay(), m_eglSurface);
-        if (eglResult != EGL_TRUE)
+        if (Q_UNLIKELY(eglResult != EGL_TRUE))
             qFatal("QQNX: failed to destroy EGL surface, err=%d", eglGetError());
     }
 
@@ -118,12 +118,12 @@ void QQnxEglWindow::swapEGLBuffers()
     qEglWindowDebug() << Q_FUNC_INFO;
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE)
+    if (Q_UNLIKELY(eglResult != EGL_TRUE))
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
 
     // Post EGL surface to window
     eglResult = eglSwapBuffers(m_platformOpenGLContext->getEglDisplay(), m_eglSurface);
-    if (eglResult != EGL_TRUE)
+    if (Q_UNLIKELY(eglResult != EGL_TRUE))
         qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
 
     windowPosted();
@@ -178,15 +178,15 @@ int QQnxEglWindow::pixelFormat() const
     const QSurfaceFormat format = m_platformOpenGLContext->format();
     // Extract size of color channels from window format
     const int redSize = format.redBufferSize();
-    if (redSize == -1)
+    if (Q_UNLIKELY(redSize == -1))
         qFatal("QQnxWindow: red size not defined");
 
     const int greenSize = format.greenBufferSize();
-    if (greenSize == -1)
+    if (Q_UNLIKELY(greenSize == -1))
         qFatal("QQnxWindow: green size not defined");
 
     const int blueSize = format.blueBufferSize();
-    if (blueSize == -1)
+    if (Q_UNLIKELY(blueSize == -1))
         qFatal("QQnxWindow: blue size not defined");
 
     // select matching native format

@@ -95,7 +95,7 @@ QMirClientClientIntegration::QMirClientClientIntegration()
     // Create new application instance
     mInstance = u_application_instance_new_from_description_with_options(mDesc, mOptions);
 
-    if (mInstance == nullptr)
+    if (Q_UNLIKELY(!mInstance))
         qFatal("QMirClientClientIntegration: connection to Mir server failed. Check that a Mir server is\n"
                "running, and the correct socket is being used and is accessible. The shell may have\n"
                "rejected the incoming connection, so check its log file");

@@ -96,9 +96,8 @@ void QOpenWFDPort::attach()
     mPhysicalSize = QSizeF(physicalWFDSize[0],physicalWFDSize[1]);
 
     WFDint numAvailablePipelines = wfdGetPortAttribi(mDevice->handle(),mPort,WFD_PORT_PIPELINE_ID_COUNT);
-    if (!numAvailablePipelines) {
+    if (Q_UNLIKELY(!numAvailablePipelines))
         qFatal("Not possible to make screen that is not possible to create WFPort with no pipline");
-    }
 
     WFDint pipeIds[numAvailablePipelines];
     wfdGetPortAttribiv(mDevice->handle(),mPort,WFD_PORT_BINDABLE_PIPELINE_IDS,numAvailablePipelines,pipeIds);
@@ -109,9 +108,9 @@ void QOpenWFDPort::attach()
             mDevice-> addToUsedPipelineSet(mPipelineId,this);
 
             mPipeline = wfdCreatePipeline(mDevice->handle(),mPipelineId,WFD_NONE);
-            if (mPipeline == WFD_INVALID_HANDLE) {
+            if (Q_UNLIKELY(mPipeline == WFD_INVALID_HANDLE))
                 qFatal("Failed to create pipeline for port %p", this);
-            }
+
             break;
         }
     }

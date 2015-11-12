@@ -130,11 +130,11 @@ void (*qdbus_resolve_conditionally(const char *name))()
 void (*qdbus_resolve_me(const char *name))()
 {
 #ifndef QT_NO_LIBRARY
-    if (!qdbus_loadLibDBus())
+    if (Q_UNLIKELY(!qdbus_loadLibDBus()))
         qFatal("Cannot find libdbus-1 in your system to resolve symbol '%s'.", name);
 
     QFunctionPointer ptr = qdbus_libdbus->resolve(name);
-    if (!ptr)
+    if (Q_UNLIKELY(!ptr))
         qFatal("Cannot resolve '%s' in your libdbus-1.", name);
 
     return ptr;

@@ -172,7 +172,7 @@ void QEglFSX11Integration::sendConnectionEvent(xcb_atom_t a)
 void QEglFSX11Integration::platformInit()
 {
     m_display = XOpenDisplay(0);
-    if (!m_display)
+    if (Q_UNLIKELY(!m_display))
         qFatal("Could not open display");
 
     XSetEventQueueOwner(DISPLAY, XCBOwnsEventQueue);

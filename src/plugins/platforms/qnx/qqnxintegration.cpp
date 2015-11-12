@@ -425,7 +425,7 @@ void QQnxIntegration::createDisplays()
                                                 &displayCount);
     Q_SCREEN_CRITICALERROR(result, "Failed to query display count");
 
-    if (displayCount < 1) {
+    if (Q_UNLIKELY(displayCount < 1)) {
         // Never happens, even if there's no display, libscreen returns 1
         qFatal("QQnxIntegration: displayCount=%d", displayCount);
     }

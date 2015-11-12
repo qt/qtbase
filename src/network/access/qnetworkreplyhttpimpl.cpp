@@ -993,7 +993,7 @@ void QNetworkReplyHttpImplPrivate::initCacheSaveDevice()
         q->connect(cacheSaveDevice, SIGNAL(aboutToClose()), SLOT(_q_cacheSaveDeviceAboutToClose()));
 
     if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
-        if (cacheSaveDevice && !cacheSaveDevice->isOpen())
+        if (Q_UNLIKELY(cacheSaveDevice && !cacheSaveDevice->isOpen()))
             qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
                   "class %s probably needs to be fixed",
                   managerPrivate->networkCache->metaObject()->className());
@@ -2216,7 +2216,7 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
         return;                 // nothing to do either!
 
     if (enable) {
-        if (bytesDownloaded) {
+        if (Q_UNLIKELY(bytesDownloaded)) {
             qDebug() << "setCachingEnabled: " << bytesDownloaded << " bytesDownloaded";
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");

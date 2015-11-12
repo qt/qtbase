@@ -667,7 +667,7 @@ void QEventDispatcherWin32::installMessageHook()
 #ifndef Q_OS_WINCE
     // setup GetMessage hook needed to drive our posted events
     d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
-    if (!d->getMessageHook) {
+    if (Q_UNLIKELY(!d->getMessageHook)) {
         int errorCode = GetLastError();
         qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %s",
                errorCode, qPrintable(qt_error_string(errorCode)));

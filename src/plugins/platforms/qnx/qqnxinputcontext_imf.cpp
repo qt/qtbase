@@ -530,29 +530,28 @@ static bool imfAvailable()
 
     if ( p_imf_client_init == 0 ) {
         void *handle = dlopen("libinput_client.so.1", 0);
-        if ( handle ) {
-            p_imf_client_init = (int32_t (*)()) dlsym(handle, "imf_client_init");
-            p_imf_client_disconnect = (void (*)()) dlsym(handle, "imf_client_disconnect");
-            p_ictrl_open_session = (const input_session_t *(*)(connection_interface_t *))dlsym(handle, "ictrl_open_session");
-            p_ictrl_close_session = (void (*)(input_session_t *))dlsym(handle, "ictrl_close_session");
-            p_ictrl_dispatch_event = (int32_t (*)(event_t *))dlsym(handle, "ictrl_dispatch_event");
-            p_vkb_init_selection_service = (int32_t (*)())dlsym(handle, "vkb_init_selection_service");
-            p_ictrl_get_num_active_sessions = (int32_t (*)())dlsym(handle, "ictrl_get_num_active_sessions");
-        } else {
+        if (Q_UNLIKELY(!handle)) {
             qCritical() << Q_FUNC_INFO << "libinput_client.so.1 is not present - IMF services are disabled.";
             s_imfDisabled = true;
             return false;
         }
+        p_imf_client_init = (int32_t (*)()) dlsym(handle, "imf_client_init");
+        p_imf_client_disconnect = (void (*)()) dlsym(handle, "imf_client_disconnect");
+        p_ictrl_open_session = (const input_session_t *(*)(connection_interface_t *))dlsym(handle, "ictrl_open_session");
+        p_ictrl_close_session = (void (*)(input_session_t *))dlsym(handle, "ictrl_close_session");
+        p_ictrl_dispatch_event = (int32_t (*)(event_t *))dlsym(handle, "ictrl_dispatch_event");
+        p_vkb_init_selection_service = (int32_t (*)())dlsym(handle, "vkb_init_selection_service");
+        p_ictrl_get_num_active_sessions = (int32_t (*)())dlsym(handle, "ictrl_get_num_active_sessions");
 
-        if ( p_imf_client_init && p_ictrl_open_session && p_ictrl_dispatch_event ) {
-            s_imfReady = true;
-        } else {
+        if (Q_UNLIKELY(!p_imf_client_init || !p_ictrl_open_session || !p_ictrl_dispatch_event)) {
             p_ictrl_open_session = 0;
             p_ictrl_dispatch_event = 0;
             s_imfDisabled = true;
             qCritical() << Q_FUNC_INFO << "libinput_client.so.1 did not contain the correct symbols, library mismatch? IMF services are disabled.";
             return false;
         }
+
+        s_imfReady = true;
     }
 
     return s_imfReady;
@@ -581,7 +580,7 @@ QQnxInputContext::QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVir
     Q_ASSERT(sInputContextInstance == 0);
     sInputContextInstance = this;
 
-    if (p_imf_client_init() != 0) {
+    if (Q_UNLIKELY(p_imf_client_init() != 0)) {
         s_imfInitFailed = true;
         qCritical("imf_client_init failed - IMF services will be unavailable");
     }

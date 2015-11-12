@@ -102,17 +102,15 @@ void QEglFSWindow::create()
     QEglFSScreen *screen = this->screen();
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
-        if (isRaster() && compositor->targetWindow()) {
-            m_format = compositor->targetWindow()->format();
+        if (Q_UNLIKELY(!isRaster() || !compositor->targetWindow())) {
+#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
+            // We can have either a single OpenGL window or multiple raster windows.
+            // Other combinations cannot work.
+            qFatal("EGLFS: OpenGL windows cannot be mixed with others.");
+#endif
             return;
         }
-
-#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
-        // We can have either a single OpenGL window or multiple raster windows.
-        // Other combinations cannot work.
-        qFatal("EGLFS: OpenGL windows cannot be mixed with others.");
-#endif
-
+        m_format = compositor->targetWindow()->format();
         return;
     }
 
@@ -122,7 +120,7 @@ void QEglFSWindow::create()
 
     resetSurface();
 
-    if (m_surface == EGL_NO_SURFACE) {
+    if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
         EGLint error = eglGetError();
         eglTerminate(screen->display());
         qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
@@ -135,7 +133,7 @@ void QEglFSWindow::create()
         context->setShareContext(qt_gl_global_share_context());
         context->setFormat(m_format);
         context->setScreen(window()->screen());
-        if (!context->create())
+        if (Q_UNLIKELY(!context->create()))
             qFatal("EGLFS: Failed to create compositing context");
         compositor->setTarget(context, window());
     }

@@ -2132,7 +2132,7 @@ public:
             int t = timeout.load();
             if (!t)
                 break;
-            if (!waitCondition.wait(&mutex, t)) {
+            if (Q_UNLIKELY(!waitCondition.wait(&mutex, t))) {
                 stackTrace();
                 qFatal("Test function timed out");
             }
@@ -2256,12 +2256,12 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
 
     int idx = data->parent()->indexOf(tagName);
 
-    if (idx == -1 || idx >= data->dataCount()) {
+    if (Q_UNLIKELY(idx == -1 || idx >= data->dataCount())) {
         qFatal("QFETCH: Requested testdata '%s' not available, check your _data function.",
                 tagName);
     }
 
-    if (typeId != data->parent()->elementTypeId(idx)) {
+    if (Q_UNLIKELY(typeId != data->parent()->elementTypeId(idx))) {
         qFatal("Requested type '%s' does not match available type '%s'.",
                QMetaType::typeName(typeId),
                QMetaType::typeName(data->parent()->elementTypeId(idx)));
@@ -2940,7 +2940,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
-        if (!qApp)
+        if (Q_UNLIKELY(!qApp))
             qFatal("QtTest: -callgrind option is not available with QTEST_APPLESS_MAIN");
 
         const QStringList origAppArgs(QCoreApplication::arguments());

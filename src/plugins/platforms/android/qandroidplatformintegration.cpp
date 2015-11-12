@@ -120,14 +120,14 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidPlatformNativeInterface = new QAndroidPlatformNativeInterface();
 
     m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (m_eglDisplay == EGL_NO_DISPLAY)
+    if (Q_UNLIKELY(m_eglDisplay == EGL_NO_DISPLAY))
         qFatal("Could not open egl display");
 
     EGLint major, minor;
-    if (!eglInitialize(m_eglDisplay, &major, &minor))
+    if (Q_UNLIKELY(!eglInitialize(m_eglDisplay, &major, &minor)))
         qFatal("Could not initialize egl display");
 
-    if (!eglBindAPI(EGL_OPENGL_ES_API))
+    if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
     m_primaryScreen = new QAndroidPlatformScreen();

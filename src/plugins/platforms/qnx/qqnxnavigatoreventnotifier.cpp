@@ -102,7 +102,7 @@ void QQnxNavigatorEventNotifier::parsePPS(const QByteArray &ppsData, QByteArray 
     QList<QByteArray> lines = ppsData.split('\n');
 
     // validate pps object
-    if (lines.size() == 0 || lines.at(0) != "@control")
+    if (Q_UNLIKELY(lines.empty() || lines.at(0) != "@control"))
         qFatal("QQNX: unrecognized pps object, data=%s", ppsData.constData());
 
     // parse pps object attributes and extract values
@@ -160,7 +160,7 @@ void QQnxNavigatorEventNotifier::replyPPS(const QByteArray &res, const QByteArra
     // send pps message to navigator
     errno = 0;
     int bytes = write(m_fd, ppsData.constData(), ppsData.size());
-    if (bytes == -1)
+    if (Q_UNLIKELY(bytes == -1))
         qFatal("QQNX: failed to write navigator pps, errno=%d", errno);
 }
 
@@ -198,7 +198,7 @@ void QQnxNavigatorEventNotifier::readData()
     // attempt to read pps data
     errno = 0;
     int bytes = qt_safe_read(m_fd, buffer, ppsBufferSize - 1);
-    if (bytes == -1)
+    if (Q_UNLIKELY(bytes == -1))
         qFatal("QQNX: failed to read navigator pps, errno=%d", errno);
 
     // check if pps data was received

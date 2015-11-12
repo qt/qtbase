@@ -129,7 +129,7 @@ namespace
 
             // Which we verify, just in case
             struct rlimit stackLimit = {0, 0};
-            if (getrlimit(RLIMIT_STACK, &stackLimit) == 0 && stackSize > stackLimit.rlim_cur)
+            if (Q_UNLIKELY(getrlimit(RLIMIT_STACK, &stackLimit) == 0 && stackSize > stackLimit.rlim_cur))
                 qFatal("Unexpectedly exceeded stack limit");
 
             return stackSize;
@@ -250,7 +250,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
         unsigned int bufferSize = [arg lengthOfBytesUsingEncoding:cStringEncoding] + 1;
         argv[i] = reinterpret_cast<char *>(malloc(bufferSize));
 
-        if (![arg getCString:argv[i] maxLength:bufferSize encoding:cStringEncoding])
+        if (Q_UNLIKELY(![arg getCString:argv[i] maxLength:bufferSize encoding:cStringEncoding]))
             qFatal("Could not convert argv[%d] to C string", i);
     }
 

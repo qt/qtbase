@@ -1065,9 +1065,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
 
    // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, argc, argv, platformPluginPath);
-    if (QGuiApplicationPrivate::platform_integration) {
-        QGuiApplicationPrivate::platform_name = new QString(name);
-    } else {
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platform_integration)) {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 
         QString fatalMessage
@@ -1086,6 +1084,8 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         qFatal("%s", qPrintable(fatalMessage));
         return;
     }
+
+    QGuiApplicationPrivate::platform_name = new QString(name);
 
     // Many platforms have created QScreens at this point. Finish initializing
     // QHighDpiScaling to be prepared for early calls to qt_defaultDpi().
@@ -1414,16 +1414,16 @@ void QGuiApplicationPrivate::init()
 
     if (loadTestability) {
         QLibrary testLib(QStringLiteral("qttestability"));
-        if (testLib.load()) {
+        if (Q_UNLIKELY(!testLib.load())) {
+            qCritical() << "Library qttestability load failed:" << testLib.errorString();
+        } else {
             typedef void (*TasInitialize)(void);
             TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
-            if (initFunction) {
-                initFunction();
-            } else {
+            if (Q_UNLIKELY(!initFunction)) {
                 qCritical() << "Library qttestability resolve failed!";
+            } else {
+                initFunction();
             }
-        } else {
-            qCritical() << "Library qttestability load failed:" << testLib.errorString();
         }
     }
 #else

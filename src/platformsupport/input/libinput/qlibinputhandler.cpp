@@ -85,18 +85,18 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     Q_UNUSED(spec);
 
     m_udev = udev_new();
-    if (!m_udev)
+    if (Q_UNLIKELY(!m_udev))
         qFatal("Failed to get udev context for libinput");
 
     m_li = libinput_udev_create_context(&liInterface, Q_NULLPTR, m_udev);
-    if (!m_li)
+    if (Q_UNLIKELY(!m_li))
         qFatal("Failed to get libinput context");
 
     libinput_log_set_handler(m_li, liLogHandler);
     if (qLcLibInput().isDebugEnabled())
         libinput_log_set_priority(m_li, LIBINPUT_LOG_PRIORITY_DEBUG);
 
-    if (libinput_udev_assign_seat(m_li, "seat0"))
+    if (Q_UNLIKELY(libinput_udev_assign_seat(m_li, "seat0")))
         qFatal("Failed to assign seat");
 
     m_liFd = libinput_get_fd(m_li);

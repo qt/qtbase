@@ -685,7 +685,7 @@ void qDetectCpuFeatures()
 #else
     bool runningOnValgrind = false;
 #endif
-    if (!runningOnValgrind && (minFeature != 0 && (f & minFeature) != minFeature)) {
+    if (Q_UNLIKELY(!runningOnValgrind && minFeature != 0 && (f & minFeature) != minFeature)) {
         quint64 missing = minFeature & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (int i = 0; i < features_count; ++i) {

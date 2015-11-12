@@ -100,7 +100,7 @@ void QMirClientClipboard::onDBusClipboardGetContentsFinished(QDBusPendingCallWat
     Q_ASSERT(call == mPendingGetContentsCall.data());
 
     QDBusPendingReply<QByteArray> reply = *call;
-    if (reply.isError()) {
+    if (Q_UNLIKELY(reply.isError())) {
         qCritical("QMirClientClipboard - Failed to get system clipboard contents via D-Bus. %s, %s",
                 qPrintable(reply.error().name()), qPrintable(reply.error().message()));
         // TODO: Might try again later a number of times...
@@ -114,7 +114,7 @@ void QMirClientClipboard::onDBusClipboardGetContentsFinished(QDBusPendingCallWat
 void QMirClientClipboard::onDBusClipboardSetContentsFinished(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<void> reply = *call;
-    if (reply.isError()) {
+    if (Q_UNLIKELY(reply.isError())) {
         qCritical("QMirClientClipboard - Failed to set the system clipboard contents via D-Bus. %s, %s",
                 qPrintable(reply.error().name()), qPrintable(reply.error().message()));
         // TODO: Might try again later a number of times...
@@ -148,9 +148,8 @@ void QMirClientClipboard::setupDBus()
             "com.canonical.QtMir.Clipboard",
             "ContentsChanged",
             this, SLOT(updateMimeData(QByteArray)));
-    if (!ok) {
+    if (Q_UNLIKELY(!ok))
         qCritical("QMirClientClipboard - Failed to connect to ContentsChanged signal form the D-Bus system clipboard.");
-    }
 
     mDBusClipboard = new QDBusInterface("com.canonical.QtMir",
             "/com/canonical/QtMir/Clipboard",

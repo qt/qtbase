@@ -579,12 +579,12 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
 
     errno = 0;
     screen_window_t window = 0;
-    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+    if (Q_UNLIKELY(screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0))
         qFatal("QQnx: failed to query window property, errno=%d", errno);
 
     errno = 0;
     int property;
-    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0)
+    if (Q_UNLIKELY(screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0))
         qFatal("QQnx: failed to query window property, errno=%d", errno);
 
     switch (property) {
@@ -601,7 +601,7 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
 {
     errno = 0;
     int focus = 0;
-    if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0)
+    if (Q_UNLIKELY(window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0))
         qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
 
     QWindow *focusWindow = QQnxIntegration::window(window);

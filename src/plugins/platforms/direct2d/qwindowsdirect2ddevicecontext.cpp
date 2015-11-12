@@ -51,7 +51,7 @@ public:
             HRESULT hr = QWindowsDirect2DContext::instance()->d2dDevice()->CreateDeviceContext(
                         D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
                         &deviceContext);
-            if (FAILED(hr))
+            if (Q_UNLIKELY(FAILED(hr)))
                 qFatal("%s: Couldn't create Direct2D Device Context: %#x", __FUNCTION__, hr);
         }
 

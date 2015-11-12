@@ -515,7 +515,7 @@ void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
         return;                 // nothing to do either!
 
     if (enable) {
-        if (bytesDownloaded) {
+        if (Q_UNLIKELY(bytesDownloaded)) {
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");
             return;
@@ -604,7 +604,7 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
     cacheSaveDevice = networkCache()->prepare(metaData);
 
     if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
-        if (cacheSaveDevice && !cacheSaveDevice->isOpen())
+        if (Q_UNLIKELY(cacheSaveDevice && !cacheSaveDevice->isOpen()))
             qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
                   "class %s probably needs to be fixed",
                   networkCache()->metaObject()->className());
@@ -678,7 +678,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
         return;
 
     // read until EOF from data
-    if (copyDevice) {
+    if (Q_UNLIKELY(copyDevice)) {
         qCritical("QNetworkReplyImpl: copy from QIODevice already in progress -- "
                   "backend probly needs to be fixed");
         return;

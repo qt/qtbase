@@ -188,7 +188,7 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 #if defined(QT_DEBUG)
         // Check that all the elements have been filled:
         for (int i = 0; i < TotalSnippetCount; ++i) {
-            if (qShaderSnippets[i] == 0) {
+            if (Q_UNLIKELY(!qShaderSnippets[i])) {
                 qFatal("Shader snippet for %s (#%d) is missing!",
                        snippetNameStr(SnippetName(i)).constData(), i);
             }
@@ -237,11 +237,11 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
     simpleShaderProg->link();
 
-    if (simpleShaderProg->isLinked()) {
+    if (Q_UNLIKELY(!simpleShaderProg->isLinked())) {
+        qCritical("Errors linking simple shader: %s", qPrintable(simpleShaderProg->log()));
+    } else {
         if (!inCache)
             simpleShaderCache.store(simpleShaderProg, context);
-    } else {
-        qCritical("Errors linking simple shader: %s", qPrintable(simpleShaderProg->log()));
     }
 
     // Compile the blit shader:
@@ -278,11 +278,11 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     }
 
     blitShaderProg->link();
-    if (blitShaderProg->isLinked()) {
+    if (Q_UNLIKELY(!blitShaderProg->isLinked())) {
+        qCritical("Errors linking blit shader: %s", qPrintable(blitShaderProg->log()));
+    } else {
         if (!inCache)
             blitShaderCache.store(blitShaderProg, context);
-    } else {
-        qCritical("Errors linking blit shader: %s", qPrintable(blitShaderProg->log()));
     }
 
 #ifdef QT_GL_SHARED_SHADER_DEBUG

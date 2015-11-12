@@ -96,7 +96,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
             break;
         }
     }
-    if (!valSeen)
+    if (Q_UNLIKELY(!valSeen))
         qFatal("Failed to extract result");
     return val;
 }

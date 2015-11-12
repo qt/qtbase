@@ -5795,7 +5795,9 @@ QOpenGLES3Helper::QOpenGLES3Helper()
 {
     m_supportedVersion = qMakePair(2, 0);
 
-    if (init()) {
+    if (Q_UNLIKELY(!init())) {
+        qFatal("Failed to load libGLESv2");
+    } else {
         const QPair<int, int> contextVersion = QOpenGLContext::currentContext()->format().version();
 
         qCDebug(lcGLES3, "Resolving OpenGL ES 3.0 entry points");
@@ -5993,8 +5995,6 @@ QOpenGLES3Helper::QOpenGLES3Helper()
             }
             m_supportedVersion = qMakePair(3, 1);
         }
-    } else {
-        qFatal("Failed to load libGLESv2");
     }
 }
 

@@ -143,7 +143,7 @@ static Window createDummyWindow(QOffscreenX11Info *x11, XVisualInfo *visualInfo)
 static Window createDummyWindow(QOffscreenX11Info *x11, GLXFBConfig config)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(x11->display(), config);
-    if (!visualInfo)
+    if (Q_UNLIKELY(!visualInfo))
         qFatal("Could not initialize GLX");
     Window window = createDummyWindow(x11, visualInfo);
     XFree(visualInfo);
@@ -177,7 +177,7 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         d->window = createDummyWindow(x11, config);
     } else {
         XVisualInfo *visualInfo = qglx_findVisualInfo(x11->display(), 0, &d->format);
-        if (!visualInfo)
+        if (Q_UNLIKELY(!visualInfo))
             qFatal("Could not initialize GLX");
         d->context = glXCreateContext(x11->display(), visualInfo, d->shareContext, true);
         if (!d->context && d->shareContext) {

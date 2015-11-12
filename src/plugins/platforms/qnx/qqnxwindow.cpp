@@ -372,7 +372,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
         screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount),
         "Failed to query render buffer count");
 
-    if (bufferCount != MAX_BUFFER_COUNT) {
+    if (Q_UNLIKELY(bufferCount != MAX_BUFFER_COUNT)) {
         qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d.",
                 MAX_BUFFER_COUNT, bufferCount);
     }
@@ -450,10 +450,10 @@ void QQnxWindow::removeFromParent()
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
     // Remove from old Hierarchy position
     if (m_parentWindow) {
-        if (m_parentWindow->m_childWindows.removeAll(this))
-            m_parentWindow = 0;
-        else
+        if (Q_UNLIKELY(!m_parentWindow->m_childWindows.removeAll(this)))
             qFatal("QQnxWindow: Window Hierarchy broken; window has parent, but parent hasn't got child.");
+        else
+            m_parentWindow = 0;
     } else if (m_screen) {
         m_screen->removeWindow(this);
     }

@@ -47,7 +47,7 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
     QString fontpath = fontDir();
     QDir dir(fontpath);
 
-    if (!dir.exists()) {
+    if (Q_UNLIKELY(!dir.exists())) {
         qFatal("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
                qPrintable(fontpath));
     }

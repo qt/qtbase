@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 static bool qt_pixmap_thread_test()
 {
-    if (!QCoreApplication::instance()) {
+    if (Q_UNLIKELY(!QCoreApplication::instance())) {
         qFatal("QPixmap: Must construct a QGuiApplication before a QPixmap");
         return false;
     }

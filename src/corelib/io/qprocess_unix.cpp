@@ -560,7 +560,7 @@ static int doSpawn(pid_t *ppid, const posix_spawn_file_actions_t *file_actions,
             qWarning("ThreadCtl(): failed to chdir to %s", oldWorkingDir);
 
 #  ifdef Q_OS_QNX
-        if (ThreadCtl(_NTO_TCTL_THREADS_CONT, 0) == -1)
+        if (Q_UNLIKELY(ThreadCtl(_NTO_TCTL_THREADS_CONT, 0) == -1))
             qFatal("ThreadCtl(): cannot resume threads: %s", qPrintable(qt_error_string(errno)));
 #  endif
     }

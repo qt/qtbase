@@ -1508,7 +1508,7 @@ void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile v
     //qDebug("Adding d=%p value=%p", d_ptr, ptr);
 
     const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
-    if (other_d_ptr) {
+    if (Q_UNLIKELY(other_d_ptr)) {
 #  ifdef BACKTRACE_SUPPORTED
         printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);
 #  endif
@@ -1539,7 +1539,7 @@ void QtSharedPointer::internalSafetyCheckRemove(const void *d_ptr)
     QMutexLocker lock(&kp->mutex);
 
     QHash<const void *, Data>::iterator it = kp->dPointers.find(d_ptr);
-    if (it == kp->dPointers.end()) {
+    if (Q_UNLIKELY(it == kp->dPointers.end())) {
         qFatal("QSharedPointer: internal self-check inconsistency: pointer %p was not tracked. "
                "To use QT_SHAREDPOINTER_TRACK_POINTERS, you have to enable it throughout "
                "in your code.", d_ptr);
@@ -1566,10 +1566,10 @@ void QtSharedPointer::internalSafetyCheckCleanCheck()
     KnownPointers *const kp = knownPointers();
     Q_ASSERT_X(kp, "internalSafetyCheckSelfCheck()", "Called after global statics deletion!");
 
-    if (kp->dPointers.size() != kp->dataPointers.size())
+    if (Q_UNLIKELY(kp->dPointers.size() != kp->dataPointers.size()))
         qFatal("Internal consistency error: the number of pointers is not equal!");
 
-    if (!kp->dPointers.isEmpty())
+    if (Q_UNLIKELY(!kp->dPointers.isEmpty()))
         qFatal("Pointer cleaning failed: %d entries remaining", kp->dPointers.size());
 #  endif
 }

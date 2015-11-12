@@ -203,7 +203,7 @@ QObjectPrivate::QObjectPrivate(int version)
     // This allows incompatible versions to be loaded, possibly for testing.
     Q_UNUSED(version);
 #else
-    if (version != QObjectPrivateVersion)
+    if (Q_UNLIKELY(version != QObjectPrivateVersion))
         qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
                 version, QObjectPrivateVersion);
 #endif

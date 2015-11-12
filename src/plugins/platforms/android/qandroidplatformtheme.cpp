@@ -203,12 +203,12 @@ QJsonObject AndroidStyle::loadStyleData()
 
     QJsonParseError error;
     QJsonDocument document = QJsonDocument::fromJson(f.readAll(), &error);
-    if (document.isNull()) {
+    if (Q_UNLIKELY(document.isNull())) {
         qCritical() << error.errorString();
         return QJsonObject();
     }
 
-    if (!document.isObject()) {
+    if (Q_UNLIKELY(!document.isObject())) {
         qCritical() << "Style.json does not contain a valid style.";
         return QJsonObject();
     }

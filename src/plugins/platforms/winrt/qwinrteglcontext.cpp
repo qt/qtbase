@@ -55,7 +55,7 @@ struct WinRTEGLDisplay
 {
     WinRTEGLDisplay() {
         eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (eglDisplay == EGL_NO_DISPLAY)
+        if (Q_UNLIKELY(eglDisplay == EGL_NO_DISPLAY))
             qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
     }
     ~WinRTEGLDisplay() {
@@ -114,10 +114,10 @@ void QWinRTEGLContext::initialize()
         EGL_NONE,
     };
     g->eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
-    if (g->eglDisplay == EGL_NO_DISPLAY)
+    if (Q_UNLIKELY(g->eglDisplay == EGL_NO_DISPLAY))
         qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
 
-    if (!eglInitialize(g->eglDisplay, nullptr, nullptr))
+    if (Q_UNLIKELY(!eglInitialize(g->eglDisplay, nullptr, nullptr)))
         qCritical("Failed to initialize EGL: 0x%x", eglGetError());
 
     d->eglConfig = q_configFromGLFormat(g->eglDisplay, d->format);

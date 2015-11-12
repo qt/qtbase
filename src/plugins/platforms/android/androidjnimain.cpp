@@ -487,7 +487,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         // Obtain a handle to the main library (the library that contains the main() function).
         // This library should already be loaded, and calling dlopen() will just return a reference to it.
         m_mainLibraryHnd = dlopen(m_applicationParams.first().data(), 0);
-        if (m_mainLibraryHnd == nullptr) {
+        if (Q_UNLIKELY(!m_mainLibraryHnd)) {
             qCritical() << "dlopen failed:" << dlerror();
             return false;
         }
@@ -497,7 +497,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         m_main = (Main)dlsym(RTLD_DEFAULT, "main");
     }
 
-    if (!m_main) {
+    if (Q_UNLIKELY(!m_main)) {
         qCritical() << "dlsym failed:" << dlerror();
         qCritical() << "Could not find main method";
         return false;

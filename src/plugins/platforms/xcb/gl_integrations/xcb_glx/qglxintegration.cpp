@@ -99,7 +99,7 @@ static Window createDummyWindow(Display *dpy, XVisualInfo *visualInfo, int scree
 static Window createDummyWindow(Display *dpy, GLXFBConfig config, int screenNumber, Window rootWin)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(dpy, config);
-    if (!visualInfo)
+    if (Q_UNLIKELY(!visualInfo))
         qFatal("Could not initialize GLX");
     Window window = createDummyWindow(dpy, visualInfo, screenNumber, rootWin);
     XFree(visualInfo);
@@ -301,7 +301,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
         // Note that m_format gets updated with the used surface format
         visualInfo = qglx_findVisualInfo(m_display, screen->screenNumber(), &m_format);
-        if (!visualInfo)
+        if (Q_UNLIKELY(!visualInfo))
             qFatal("Could not initialize GLX");
         m_context = glXCreateContext(m_display, visualInfo, m_shareContext, true);
         if (!m_context && m_shareContext) {

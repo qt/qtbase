@@ -135,7 +135,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     }
 #endif
 
-    if (pipefail)
+    if (Q_UNLIKELY(pipefail))
         qFatal("QEventDispatcherUNIXPrivate(): Can not continue without a thread pipe");
 
     sn_highest = -1;

@@ -118,11 +118,11 @@ void QEglFSIntegration::initialize()
     qt_egl_device_integration()->platformInit();
 
     m_display = qt_egl_device_integration()->createDisplay(nativeDisplay());
-    if (m_display == EGL_NO_DISPLAY)
+    if (Q_UNLIKELY(m_display == EGL_NO_DISPLAY))
         qFatal("Could not open egl display");
 
     EGLint major, minor;
-    if (!eglInitialize(m_display, &major, &minor))
+    if (Q_UNLIKELY(!eglInitialize(m_display, &major, &minor)))
         qFatal("Could not initialize egl display");
 
     m_inputContext = QPlatformInputContextFactory::create();

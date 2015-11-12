@@ -521,7 +521,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreenNumber);
 #endif //XCB_USE_XLIB
 
-    if (!m_connection || xcb_connection_has_error(m_connection))
+    if (Q_UNLIKELY(!m_connection || xcb_connection_has_error(m_connection)))
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
 
 
@@ -553,7 +553,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXFixes();
     initializeScreens();
 
-    if (m_screens.isEmpty())
+    if (Q_UNLIKELY(m_screens.isEmpty()))
         qFatal("QXcbConnection: no screens available");
 
     initializeXRender();

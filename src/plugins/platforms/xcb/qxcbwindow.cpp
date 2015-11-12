@@ -395,7 +395,7 @@ void QXcbWindow::create()
         if (!visualInfo)
             visualInfo = static_cast<XVisualInfo *>(createVisual());
 
-        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
+        if (Q_UNLIKELY(!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface))
             qFatal("Could not initialize OpenGL");
 
         if (!visualInfo && window()->surfaceType() == QSurface::RasterGLSurface) {

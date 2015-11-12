@@ -190,7 +190,7 @@ void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
     sig.reserve(count + count / 2);
     for (int i = 0; i < count; ++i) {
         const char *typeSig = QDBusMetaType::typeToSignature(types[i]);
-        if (!typeSig) {
+        if (Q_UNLIKELY(!typeSig)) {
             qFatal("QDBusPendingReply: type %s is not registered with QtDBus",
                    QMetaType::typeName(types[i]));
         }

@@ -682,17 +682,17 @@ void QHashData::dump()
 
 void QHashData::checkSanity()
 {
-    if (fakeNext)
+    if (Q_UNLIKELY(fakeNext))
         qFatal("Fake next isn't 0");
 
     for (int i = 0; i < numBuckets; ++i) {
         Node *n = buckets[i];
         Node *p = n;
-        if (!n)
+        if (Q_UNLIKELY(!n))
             qFatal("%d: Bucket entry is 0", i);
         if (n != reinterpret_cast<Node *>(this)) {
             while (n != reinterpret_cast<Node *>(this)) {
-                if (!n->next)
+                if (Q_UNLIKELY(!n->next))
                     qFatal("%d: Next of %p is 0, should be %p", i, n, this);
                 n = n->next;
             }
