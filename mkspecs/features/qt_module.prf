@@ -236,7 +236,7 @@ load(qt_installs)
 load(qt_targets)
 
 # this builds on top of qt_common
-unix|mingw {
+!internal_module:!qt_framework:if(unix|mingw) {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
     host_build: \
