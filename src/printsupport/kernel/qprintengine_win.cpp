@@ -1633,7 +1633,7 @@ void QWin32PrintEnginePrivate::updatePageLayout()
 
     // Update orientation first as is needed to obtain printable margins when changing page size
     m_pageLayout.setOrientation(devMode->dmOrientation == DMORIENT_LANDSCAPE ? QPageLayout::Landscape : QPageLayout::Portrait);
-    if (devMode->dmPaperSize >= DMPAPER_USER) {
+    if (devMode->dmPaperSize >= DMPAPER_LAST) {
         // Is a custom size
         QPageSize pageSize = QPageSize(QSizeF(devMode->dmPaperWidth / 10.0f, devMode->dmPaperLength / 10.0f),
                                        QPageSize::Millimeter);
