@@ -6186,8 +6186,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     }
                     case lm_ll: {
                         qint64 *n = va_arg(ap, qint64*);
-                        volatile uint tmp = result.length(); // egcs-2.91.66 gets internal
-                        *n = tmp;                             // compiler error without volatile
+                        *n = result.length();
                         break;
                     }
                     default: {
