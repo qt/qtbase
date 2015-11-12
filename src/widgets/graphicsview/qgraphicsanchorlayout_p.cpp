@@ -2983,7 +2983,7 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 {
     QFile file(QString::fromLatin1("anchorlayout.%1.dot").arg(name));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
-        qWarning("Could not write to %s", file.fileName().toLocal8Bit().constData());
+        qWarning("Could not write to %ls", qUtf16Printable(file.fileName()));
 
     QString str = QString::fromLatin1("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
     QString dotContents = graph[0].serializeToDot();
