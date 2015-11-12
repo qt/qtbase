@@ -1,13 +1,6 @@
 TARGET     = QtXcbQpa
 CONFIG += no_module_headers internal_module
 
-MODULE_INCLUDES = \
-    \$\$QT_MODULE_INCLUDE_BASE \
-    \$\$QT_MODULE_INCLUDE_BASE/QtQGui
-MODULE_PRIVATE_INCLUDES = \
-    \$\$QT_MODULE_INCLUDE_BASE/QtGui/$$QT.gui.VERSION \
-    \$\$QT_MODULE_INCLUDE_BASE/QtGui/$$QT.gui.VERSION/QtGui
-
 load(qt_module)
 
 QT += core-private gui-private platformsupport-private
