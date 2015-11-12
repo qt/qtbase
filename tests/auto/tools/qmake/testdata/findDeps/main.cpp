@@ -31,6 +31,9 @@
 **
 ****************************************************************************/
 
+#define spurious \
+ / #include "needed.cpp"
+// if not ignored, symbol needed() won't be available ...
 
             #include <moc_object1.cpp>
 /**/        #include <moc_object2.cpp>
@@ -49,5 +52,7 @@ static void function2(); /**/
 static void function3(); //
 #include <moc_object9.cpp>
 
-int main () {}
-
+int main () {
+    extern int needed(void);
+    return needed();
+}

@@ -509,22 +509,21 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 for(; x < buffer_len; ++x) {
                     if (buffer[x] == ' ' || buffer[x] == '\t') {
                         // keep going
-                    } else if (buffer[x] == '/') {
+                    } else if (buffer[x] == '/' && x + 1 < buffer_len &&
+                               (buffer[x + 1] == '/' || buffer[x + 1] == '*')) {
                         ++x;
-                        if(buffer_len >= x) {
-                            if (buffer[x] == '/') { // C++-style comment
-                                for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
-                                beginning = 1;
-                            } else if (buffer[x] == '*') { // C-style comment
-                                for(++x; x < buffer_len; ++x) {
-                                    if (buffer[x] == '*') {
-                                        if (x + 1 < buffer_len && buffer[x + 1] == '/') {
-                                            ++x;
-                                            break;
-                                        }
-                                    } else if (qmake_endOfLine(buffer[x])) {
-                                        ++line_count;
+                        if (buffer[x] == '/') { // C++-style comment
+                            for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
+                            beginning = 1;
+                        } else { // C-style comment
+                            while (++x < buffer_len) {
+                                if (buffer[x] == '*') {
+                                    if (x + 1 < buffer_len && buffer[x + 1] == '/') {
+                                        ++x; // skip '*'; for loop skips '/'.
+                                        break;
                                     }
+                                } else if (qmake_endOfLine(buffer[x])) {
+                                    ++line_count;
                                 }
                             }
                         }
