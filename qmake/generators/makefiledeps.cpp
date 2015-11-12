@@ -56,6 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// FIXME: a line ending in CRLF gets counted as two lines.
 #if 1
 #define qmake_endOfLine(c) (c == '\r' || c == '\n')
 #else
