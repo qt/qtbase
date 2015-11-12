@@ -1958,7 +1958,7 @@ void QTableWidget::setItem(int row, int column, QTableWidgetItem *item)
 {
     Q_D(QTableWidget);
     if (item) {
-        if (item->view != 0) {
+        if (Q_UNLIKELY(item->view)) {
             qWarning("QTableWidget: cannot insert an item that is already owned by another QTableWidget");
         } else {
             item->view = this;

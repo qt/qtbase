@@ -57,7 +57,7 @@ QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
     if (idx < 0 || idx >= list.size() || !newitem)
         return 0;
     QWidget *wdg = newitem->widget();
-    if (!wdg) {
+    if (Q_UNLIKELY(!wdg)) {
         qWarning("QStackedLayout::replaceAt: Only widgets can be added");
         return 0;
     }
@@ -367,7 +367,7 @@ int QStackedLayout::currentIndex() const
 void QStackedLayout::setCurrentWidget(QWidget *widget)
 {
     int index = indexOf(widget);
-    if (index == -1) {
+    if (Q_UNLIKELY(index == -1)) {
         qWarning("QStackedLayout::setCurrentWidget: Widget %p not contained in stack", widget);
         return;
     }
@@ -420,12 +420,12 @@ int QStackedLayout::count() const
 void QStackedLayout::addItem(QLayoutItem *item)
 {
     QWidget *widget = item->widget();
-    if (widget) {
-        addWidget(widget);
-        delete item;
-    } else {
+    if (Q_UNLIKELY(!widget)) {
         qWarning("QStackedLayout::addItem: Only widgets can be added");
+        return;
     }
+    addWidget(widget);
+    delete item;
 }
 
 /*!

@@ -1368,7 +1368,7 @@ int QApplication::colorSpec()
 
 void QApplication::setColorSpec(int spec)
 {
-    if (qApp)
+    if (Q_UNLIKELY(qApp))
         qWarning("QApplication::setColorSpec: This function must be "
                  "called before the QApplication object is created");
     QApplicationPrivate::app_cspec = spec;
@@ -2485,7 +2485,7 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
 bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWindow) const
 {
     QWindow *unused = 0;
-    if (!window) {
+    if (Q_UNLIKELY(!window)) {
         qWarning().nospace() << "window == 0 passed.";
         return false;
     }
@@ -3007,7 +3007,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     if (QApplicationPrivate::is_app_closing)
         return true;
 
-    if (receiver == 0) {                        // serious error
+    if (Q_UNLIKELY(!receiver)) {                        // serious error
         qWarning("QApplication::notify: Unexpected null receiver");
         return true;
     }
@@ -3256,7 +3256,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                         QObject *obj = d->extraData->eventFilters.at(i);
                         if (!obj)
                             continue;
-                        if (obj->d_func()->threadData != w->d_func()->threadData) {
+                        if (Q_UNLIKELY(obj->d_func()->threadData != w->d_func()->threadData)) {
                             qWarning("QApplication: Object event filter cannot be in a different thread.");
                             continue;
                         }

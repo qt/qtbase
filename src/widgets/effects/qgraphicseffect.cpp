@@ -316,8 +316,8 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
         return pixmapItem->pixmap();
     }
 
-    if (system == Qt::DeviceCoordinates && item
-        && !static_cast<const QGraphicsItemEffectSourcePrivate *>(d_func())->info) {
+    if (Q_UNLIKELY(system == Qt::DeviceCoordinates && item &&
+                   !static_cast<const QGraphicsItemEffectSourcePrivate *>(d_func())->info)) {
         qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
         return QPixmap();
     }

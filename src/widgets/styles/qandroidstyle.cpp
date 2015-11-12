@@ -84,7 +84,7 @@ QAndroidStyle::QAndroidStyle()
          ++objectIterator) {
         QString key = objectIterator.key();
         QJsonValue value = objectIterator.value();
-        if (!value.isObject()) {
+        if (Q_UNLIKELY(!value.isObject())) {
             qWarning("Style.json structure is unrecognized.");
             continue;
         }

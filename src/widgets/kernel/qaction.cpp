@@ -45,7 +45,7 @@
 #include <private/qmenu_p.h>
 
 #define QAPP_CHECK(functionName) \
-    if (!qApp) { \
+    if (Q_UNLIKELY(!qApp)) { \
         qWarning("QAction: Initialize QApplication before calling '" functionName "'."); \
         return; \
     }

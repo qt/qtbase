@@ -129,7 +129,7 @@ QLayout::QLayout(QLayoutPrivate &dd, QLayout *lay, QWidget *w)
     if (lay) {
         lay->addItem(this);
     } else if (w) {
-        if (w->layout()) {
+        if (Q_UNLIKELY(w->layout())) {
             qWarning("QLayout: Attempting to add QLayout \"%ls\" to %s \"%ls\", which"
                      " already has a layout",
                      qUtf16Printable(QObject::objectName()), w->metaObject()->className(),
@@ -469,7 +469,7 @@ QWidget *QLayout::parentWidget() const
     if (!d->topLevel) {
         if (parent()) {
             QLayout *parentLayout = qobject_cast<QLayout*>(parent());
-            if (!parentLayout) {
+            if (Q_UNLIKELY(!parentLayout)) {
                 qWarning("QLayout::parentWidget: A layout can only have another layout as a parent.");
                 return 0;
             }
@@ -776,7 +776,7 @@ QLayout::~QLayout()
 */
 void QLayout::addChildLayout(QLayout *l)
 {
-    if (l->parent()) {
+    if (Q_UNLIKELY(l->parent())) {
         qWarning("QLayout::addChildLayout: layout \"%ls\" already has a parent",
                  qUtf16Printable(l->objectName()));
         return;
@@ -826,7 +826,7 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
         if (QWidget *w = item->widget()) {
             QWidget *pw = w->parentWidget();
 #ifdef QT_DEBUG
-            if (pw && pw != mw && layoutDebug()) {
+            if (Q_UNLIKELY(pw && pw != mw && layoutDebug())) {
                 qWarning("QLayout::addChildLayout: widget %s \"%ls\" in wrong parent; moved to correct parent",
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
             }
@@ -849,12 +849,12 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
 bool QLayoutPrivate::checkWidget(QWidget *widget) const
 {
     Q_Q(const QLayout);
-    if (!widget) {
+    if (Q_UNLIKELY(!widget)) {
         qWarning("QLayout: Cannot add a null widget to %s/%ls", q->metaObject()->className(),
                   qUtf16Printable(q->objectName()));
         return false;
     }
-    if (widget == q->parentWidget()) {
+    if (Q_UNLIKELY(widget == q->parentWidget())) {
         qWarning("QLayout: Cannot add parent widget %s/%ls to its child layout %s/%ls",
                   widget->metaObject()->className(), qUtf16Printable(widget->objectName()),
                   q->metaObject()->className(), qUtf16Printable(q->objectName()));
@@ -870,12 +870,12 @@ bool QLayoutPrivate::checkWidget(QWidget *widget) const
 bool QLayoutPrivate::checkLayout(QLayout *otherLayout) const
 {
     Q_Q(const QLayout);
-    if (!otherLayout) {
+    if (Q_UNLIKELY(!otherLayout)) {
         qWarning("QLayout: Cannot add a null layout to %s/%ls",
                  q->metaObject()->className(), qUtf16Printable(q->objectName()));
         return false;
     }
-    if (otherLayout == q) {
+    if (Q_UNLIKELY(otherLayout == q)) {
         qWarning("QLayout: Cannot add layout %s/%ls to itself",
                  q->metaObject()->className(), qUtf16Printable(q->objectName()));
         return false;
@@ -902,7 +902,7 @@ void QLayout::addChildWidget(QWidget *w)
         QLayout *l = pw->layout();
         if (l && removeWidgetRecursively(l, w)) {
 #ifdef QT_DEBUG
-            if (layoutDebug())
+            if (Q_UNLIKELY(layoutDebug()))
                 qWarning("QLayout::addChildWidget: %s \"%ls\" is already in a layout; moved to new layout",
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
 #endif
@@ -910,7 +910,7 @@ void QLayout::addChildWidget(QWidget *w)
     }
     if (pw && mw && pw != mw) {
 #ifdef QT_DEBUG
-            if (layoutDebug())
+            if (Q_UNLIKELY(layoutDebug()))
                 qWarning("QLayout::addChildWidget: %s \"%ls\" in wrong parent; moved to correct parent",
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
 #endif
@@ -1064,7 +1064,7 @@ bool QLayout::activate()
     if (d->activated)
         return false;
     QWidget *mw = static_cast<QWidget*>(parent());
-    if (mw == 0) {
+    if (Q_UNLIKELY(!mw)) {
         qWarning("QLayout::activate: %s \"%ls\" does not have a main widget",
                  metaObject()->className(), qUtf16Printable(objectName()));
         return false;

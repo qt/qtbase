@@ -740,7 +740,7 @@ void QOpenGLWidgetPrivate::initialize()
     // texture usable by the underlying window's backingstore.
     QWidget *tlw = q->window();
     QOpenGLContext *shareContext = get(tlw)->shareContext();
-    if (!shareContext) {
+    if (Q_UNLIKELY(!shareContext)) {
         qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
         return;
     }
@@ -756,7 +756,7 @@ void QOpenGLWidgetPrivate::initialize()
     ctx->setShareContext(shareContext);
     ctx->setFormat(requestedFormat);
     ctx->setScreen(shareContext->screen());
-    if (!ctx->create()) {
+    if (Q_UNLIKELY(!ctx->create())) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
     }
@@ -782,7 +782,7 @@ void QOpenGLWidgetPrivate::initialize()
     surface->setScreen(ctx->screen());
     surface->create();
 
-    if (!ctx->makeCurrent(surface)) {
+    if (Q_UNLIKELY(!ctx->makeCurrent(surface))) {
         qWarning("QOpenGLWidget: Failed to make context current");
         return;
     }
@@ -915,10 +915,10 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*(new QOpenGLWidgetPrivate), parent, f)
 {
     Q_D(QOpenGLWidget);
-    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface))
-        d->setRenderToTexture();
-    else
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)))
         qWarning("QOpenGLWidget is not supported on this platform.");
+    else
+        d->setRenderToTexture();
 }
 
 /*!
@@ -984,7 +984,7 @@ void QOpenGLWidget::setFormat(const QSurfaceFormat &format)
 {
     Q_UNUSED(format);
     Q_D(QOpenGLWidget);
-    if (d->initialized) {
+    if (Q_UNLIKELY(d->initialized)) {
         qWarning("QOpenGLWidget: Already initialized, setting the format has no effect");
         return;
     }

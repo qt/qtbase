@@ -1022,7 +1022,7 @@ bool QDirModel::rmdir(const QModelIndex &index)
         return false;
 
     QDirModelPrivate::QDirNode *n = d_func()->node(index);
-    if (!n->info.isDir()) {
+    if (Q_UNLIKELY(!n->info.isDir())) {
         qWarning("rmdir: the node is not a directory");
         return false;
     }
@@ -1172,7 +1172,7 @@ QDirModelPrivate::QDirNode *QDirModelPrivate::node(int row, QDirNode *parent) co
     if (isDir && !p->populated)
         populate(p); // will also resolve symlinks
 
-    if (row >= p->children.count()) {
+    if (Q_UNLIKELY(row >= p->children.count())) {
         qWarning("node: the row does not exist");
         return 0;
     }

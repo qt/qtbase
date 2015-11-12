@@ -264,12 +264,12 @@ void QTipLabel::hideTipImmediately()
 
 void QTipLabel::setTipRect(QWidget *w, const QRect &r)
 {
-    if (!r.isNull() && !w)
+    if (Q_UNLIKELY(!r.isNull() && !w)) {
         qWarning("QToolTip::setTipRect: Cannot pass null widget if rect is set");
-    else{
-        widget = w;
-        rect = r;
+        return;
     }
+    widget = w;
+    rect = r;
 }
 
 void QTipLabel::timerEvent(QTimerEvent *e)

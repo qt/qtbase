@@ -945,7 +945,7 @@ void QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutIte
 {
     const bool fullRow = role == QFormLayout::SpanningRole;
     const int column =  role == QFormLayout::SpanningRole ? 1 : static_cast<int>(role);
-    if (uint(row) >= uint(m_matrix.rowCount()) || uint(column) > 1U) {
+    if (Q_UNLIKELY(uint(row) >= uint(m_matrix.rowCount()) || uint(column) > 1U)) {
         qWarning("QFormLayoutPrivate::setItem: Invalid cell (%d, %d)", row, column);
         return;
     }
@@ -953,7 +953,7 @@ void QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutIte
     if (!item)
         return;
 
-    if (m_matrix(row, column)) {
+    if (Q_UNLIKELY(m_matrix(row, column))) {
         qWarning("QFormLayoutPrivate::setItem: Cell (%d, %d) already occupied", row, column);
         return;
     }
@@ -1000,7 +1000,7 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
     if (!newitem)
         return 0;
     const int storageIndex = storageIndexFromLayoutItem(m_matrix, m_things.value(index));
-    if (storageIndex == -1) {
+    if (Q_UNLIKELY(storageIndex == -1)) {
         // ### Qt6 - fix warning too when this class becomes public
         qWarning("QFormLayoutPrivate::replaceAt: Invalid index %d", index);
         return 0;
@@ -1414,7 +1414,7 @@ QLayoutItem *QFormLayout::takeAt(int index)
     Q_D(QFormLayout);
 
     const int storageIndex = storageIndexFromLayoutItem(d->m_matrix, d->m_things.value(index));
-    if (storageIndex == -1) {
+    if (Q_UNLIKELY(storageIndex == -1)) {
         qWarning("QFormLayout::takeAt: Invalid index %d", index);
         return 0;
     }

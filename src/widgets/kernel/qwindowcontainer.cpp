@@ -193,7 +193,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     : QWidget(*new QWindowContainerPrivate, parent, flags)
 {
     Q_D(QWindowContainer);
-    if (!embeddedWindow) {
+    if (Q_UNLIKELY(!embeddedWindow)) {
         qWarning("QWindowContainer: embedded window cannot be null");
         return;
     }

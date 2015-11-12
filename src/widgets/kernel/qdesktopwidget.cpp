@@ -48,7 +48,7 @@ int QDesktopScreenWidget::screenNumber() const
 
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
-    if (!widget) {
+    if (Q_UNLIKELY(!widget)) {
         qWarning("QDesktopWidget::screenGeometry(): Attempt "
                  "to get the screen geometry of a null widget");
         return QRect();
@@ -61,7 +61,7 @@ const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 
 const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
 {
-    if (!widget) {
+    if (Q_UNLIKELY(!widget)) {
         qWarning("QDesktopWidget::availableGeometry(): Attempt "
                  "to get the available geometry of a null widget");
         return QRect();

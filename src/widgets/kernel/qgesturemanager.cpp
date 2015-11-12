@@ -117,7 +117,7 @@ QGestureManager::~QGestureManager()
 Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *recognizer)
 {
     QGesture *dummy = recognizer->create(0);
-    if (!dummy) {
+    if (Q_UNLIKELY(!dummy)) {
         qWarning("QGestureManager::registerGestureRecognizer: "
                  "the recognizer fails to create a gesture object, skipping registration.");
         return Qt::GestureType(0);
@@ -640,17 +640,17 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
         Q_ASSERT(gestureType != Qt::CustomGesture);
         Q_UNUSED(gestureType);
 
-        if (target) {
+        if (Q_UNLIKELY(!target)) {
+            qCDebug(lcGestureManager) << "QGestureManager::deliverEvent: could not find the target for gesture"
+                    << gesture->gestureType();
+            qWarning("QGestureManager::deliverEvent: could not find the target for gesture");
+            undeliveredGestures->insert(gesture);
+        } else {
             if (gesture->state() == Qt::GestureStarted) {
                 startedGestures.insert(gesture);
             } else {
                 normalStartedGestures[target].append(gesture);
             }
-        } else {
-            qCDebug(lcGestureManager) << "QGestureManager::deliverEvent: could not find the target for gesture"
-                    << gesture->gestureType();
-            qWarning("QGestureManager::deliverEvent: could not find the target for gesture");
-            undeliveredGestures->insert(gesture);
         }
     }
 

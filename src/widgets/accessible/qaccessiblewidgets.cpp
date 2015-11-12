@@ -282,7 +282,7 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
              r.y() + edit->verticalScrollBar()->value());
 
     // E V I L, but ensureVisible is not public
-    if (!QMetaObject::invokeMethod(edit, "_q_ensureVisible", Q_ARG(QRectF, r)))
+    if (Q_UNLIKELY(!QMetaObject::invokeMethod(edit, "_q_ensureVisible", Q_ARG(QRectF, r))))
         qWarning("AccessibleTextEdit::scrollToSubstring failed!");
 }
 

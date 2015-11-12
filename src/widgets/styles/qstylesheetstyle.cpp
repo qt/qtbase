@@ -1547,7 +1547,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
             if (ss.startsWith(QLatin1String("file:///")))
                 ss.remove(0, 8);
             parser.init(ss, qApp->styleSheet() != ss);
-            if (!parser.parse(&appSs))
+            if (Q_UNLIKELY(!parser.parse(&appSs)))
                 qWarning("Could not parse application stylesheet");
             appSs.origin = StyleSheetOrigin_Inline;
             appSs.depth = 1;
@@ -1569,7 +1569,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
             parser.init(styleSheet);
             if (!parser.parse(&ss)) {
                 parser.init(QLatin1String("* {") + styleSheet + QLatin1Char('}'));
-                if (!parser.parse(&ss))
+                if (Q_UNLIKELY(!parser.parse(&ss)))
                    qWarning("Could not parse stylesheet of object %p", o);
             }
             ss.origin = StyleSheetOrigin_Inline;
@@ -2515,12 +2515,12 @@ void QStyleSheetStyle::setProperties(QWidget *w)
 
         const QMetaObject *metaObject = w->metaObject();
         int index = metaObject->indexOfProperty(property.toLatin1());
-        if (index == -1) {
+        if (Q_UNLIKELY(index == -1)) {
             qWarning() << w << " does not have a property named " << property;
             continue;
         }
         const QMetaProperty metaProperty = metaObject->property(index);
-        if (!metaProperty.isWritable() || !metaProperty.isDesignable()) {
+        if (Q_UNLIKELY(!metaProperty.isWritable() || !metaProperty.isDesignable())) {
             qWarning() << w << " cannot design property named " << property;
             continue;
         }

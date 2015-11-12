@@ -1554,7 +1554,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         QWidgetBackingStore::unflushPaint(q, toBePainted);
 #endif
 
-    if (q->paintingActive())
+    if (Q_UNLIKELY(q->paintingActive()))
         qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
 }
 

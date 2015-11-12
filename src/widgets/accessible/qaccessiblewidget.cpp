@@ -274,7 +274,7 @@ public:
 void QAccessibleWidget::addControllingSignal(const QString &signal)
 {
     QByteArray s = QMetaObject::normalizedSignature(signal.toLatin1());
-    if (object()->metaObject()->indexOfSignal(s) < 0)
+    if (Q_UNLIKELY(object()->metaObject()->indexOfSignal(s) < 0))
         qWarning("Signal %s unknown in %s", s.constData(), object()->metaObject()->className());
     d->primarySignals << QLatin1String(s);
 }

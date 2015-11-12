@@ -669,7 +669,7 @@ void QTableViewPrivate::trimHiddenSelections(QItemSelectionRange *range) const
 */
 void QTableViewPrivate::setSpan(int row, int column, int rowSpan, int columnSpan)
 {
-    if (row < 0 || column < 0 || rowSpan <= 0 || columnSpan <= 0) {
+    if (Q_UNLIKELY(row < 0 || column < 0 || rowSpan <= 0 || columnSpan <= 0)) {
         qWarning("QTableView::setSpan: invalid span given: (%d, %d, %d, %d)",
                  row, column, rowSpan, columnSpan);
         return;
@@ -688,7 +688,7 @@ void QTableViewPrivate::setSpan(int row, int column, int rowSpan, int columnSpan
         sp->m_right = column + columnSpan - 1;
         spans.updateSpan(sp, old_height);
         return;
-    } else if (rowSpan == 1 && columnSpan == 1) {
+    } else if (Q_UNLIKELY(rowSpan == 1 && columnSpan == 1)) {
         qWarning("QTableView::setSpan: single cell span won't be added");
         return;
     }

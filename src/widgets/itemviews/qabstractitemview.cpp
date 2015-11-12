@@ -758,7 +758,7 @@ void QAbstractItemView::setSelectionModel(QItemSelectionModel *selectionModel)
     Q_ASSERT(selectionModel);
     Q_D(QAbstractItemView);
 
-    if (selectionModel->model() != d->model) {
+    if (Q_UNLIKELY(selectionModel->model() != d->model)) {
         qWarning("QAbstractItemView::setSelectionModel() failed: "
                  "Trying to set a selection model, which works on "
                  "a different model than the view.");
@@ -1113,7 +1113,7 @@ void QAbstractItemView::reset()
 void QAbstractItemView::setRootIndex(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (index.isValid() && index.model() != d->model) {
+    if (Q_UNLIKELY(index.isValid() && index.model() != d->model)) {
         qWarning("QAbstractItemView::setRootIndex failed : index must be from the currently set model");
         return;
     }
@@ -1166,9 +1166,9 @@ void QAbstractItemView::selectAll()
 void QAbstractItemView::edit(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (!d->isIndexValid(index))
+    if (Q_UNLIKELY(!d->isIndexValid(index)))
         qWarning("edit: index was invalid");
-    if (!edit(index, AllEditTriggers, 0))
+    if (Q_UNLIKELY(!edit(index, AllEditTriggers, 0)))
         qWarning("edit: editing failed");
 }
 

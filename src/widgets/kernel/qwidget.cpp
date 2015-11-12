@@ -1528,7 +1528,7 @@ QWidget::~QWidget()
     d->data.in_destructor = true;
 
 #if defined (QT_CHECK_STATE)
-    if (paintingActive())
+    if (Q_UNLIKELY(paintingActive()))
         qWarning("QWidget: %s (%s) deleted while being painted", className(), name());
 #endif
 
@@ -3267,7 +3267,7 @@ void QWidget::addActions(QList<QAction*> actions)
 */
 void QWidget::insertAction(QAction *before, QAction *action)
 {
-    if(!action) {
+    if (Q_UNLIKELY(!action)) {
         qWarning("QWidget::insertAction: Attempt to insert null action");
         return;
     }
@@ -3913,7 +3913,7 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         mw = 0;
     if (mh == QWIDGETSIZE_MAX)
         mh = 0;
-    if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
+    if (Q_UNLIKELY(minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX)) {
         qWarning("QWidget::setMinimumSize: (%s/%s) "
                 "The largest allowed size is (%d,%d)",
                  q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
@@ -3921,7 +3921,7 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         minw = mw = qMin<int>(minw, QWIDGETSIZE_MAX);
         minh = mh = qMin<int>(minh, QWIDGETSIZE_MAX);
     }
-    if (minw < 0 || minh < 0) {
+    if (Q_UNLIKELY(minw < 0 || minh < 0)) {
         qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
                 "are not possible",
                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
@@ -3995,7 +3995,7 @@ void QWidget::setMinimumSize(int minw, int minh)
 bool QWidgetPrivate::setMaximumSize_helper(int &maxw, int &maxh)
 {
     Q_Q(QWidget);
-    if (maxw > QWIDGETSIZE_MAX || maxh > QWIDGETSIZE_MAX) {
+    if (Q_UNLIKELY(maxw > QWIDGETSIZE_MAX || maxh > QWIDGETSIZE_MAX)) {
         qWarning("QWidget::setMaximumSize: (%s/%s) "
                 "The largest allowed size is (%d,%d)",
                  q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
@@ -4003,7 +4003,7 @@ bool QWidgetPrivate::setMaximumSize_helper(int &maxw, int &maxh)
         maxw = qMin<int>(maxw, QWIDGETSIZE_MAX);
         maxh = qMin<int>(maxh, QWIDGETSIZE_MAX);
     }
-    if (maxw < 0 || maxh < 0) {
+    if (Q_UNLIKELY(maxw < 0 || maxh < 0)) {
         qWarning("QWidget::setMaximumSize: (%s/%s) Negative sizes (%d,%d) "
                 "are not possible",
                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), maxw, maxh);
@@ -5104,12 +5104,12 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
 void QWidget::render(QPainter *painter, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)
 {
-    if (!painter) {
+    if (Q_UNLIKELY(!painter)) {
         qWarning("QWidget::render: Null pointer to painter");
         return;
     }
 
-    if (!painter->isActive()) {
+    if (Q_UNLIKELY(!painter->isActive())) {
         qWarning("QWidget::render: Cannot render with an inactive painter");
         return;
     }
@@ -5498,7 +5498,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     if (!toBePainted.isEmpty()) {
         if (!onScreen || alsoOnScreen) {
             //update the "in paint event" flag
-            if (q->testAttribute(Qt::WA_WState_InPaintEvent))
+            if (Q_UNLIKELY(q->testAttribute(Qt::WA_WState_InPaintEvent)))
                 qWarning("QWidget::repaint: Recursive repaint detected");
             q->setAttribute(Qt::WA_WState_InPaintEvent);
 
@@ -5605,7 +5605,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 setSystemClip(pdev, QRegion());
             }
             q->setAttribute(Qt::WA_WState_InPaintEvent, false);
-            if (q->paintingActive())
+            if (Q_UNLIKELY(q->paintingActive()))
                 qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
 
             if (paintEngine && paintEngine->autoDestruct()) {
@@ -5654,7 +5654,7 @@ void QWidgetPrivate::sendPaintEvent(const QRegion &toBePainted)
 void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
                             const QRegion &sourceRegion, QWidget::RenderFlags renderFlags)
 {
-    if (!target) {
+    if (Q_UNLIKELY(!target)) {
         qWarning("QWidget::render: null pointer to paint device");
         return;
     }
@@ -5788,7 +5788,7 @@ QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) con
     if (system != Qt::DeviceCoordinates)
         return m_widget->rect();
 
-    if (!context) {
+    if (Q_UNLIKELY(!context)) {
         // Device coordinates without context not yet supported.
         qWarning("QGraphicsEffectSource::boundingRect: Not yet implemented, lacking device context");
         return QRectF();
@@ -5820,7 +5820,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
                                            QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
-    if (!context && deviceCoordinates) {
+    if (Q_UNLIKELY(!context && deviceCoordinates)) {
         // Device coordinates without context not yet supported.
         qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
         return QPixmap();
@@ -6353,7 +6353,7 @@ void QWidget::setFocusProxy(QWidget * w)
         return;
 
     for (QWidget* fp  = w; fp; fp = fp->focusProxy()) {
-        if (fp == this) {
+        if (Q_UNLIKELY(fp == this)) {
             qWarning("QWidget: %s (%s) already in focus proxy chain", metaObject()->className(), objectName().toLocal8Bit().constData());
             return;
         }
@@ -6867,7 +6867,7 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
     if (!first || !second || first->focusPolicy() == Qt::NoFocus || second->focusPolicy() == Qt::NoFocus)
         return;
 
-    if (first->window() != second->window()) {
+    if (Q_UNLIKELY(first->window() != second->window())) {
         qWarning("QWidget::setTabOrder: 'first' and 'second' must be in the same window");
         return;
     }
@@ -10024,12 +10024,12 @@ QLayout *QWidget::layout() const
 
 void QWidget::setLayout(QLayout *l)
 {
-    if (!l) {
+    if (Q_UNLIKELY(!l)) {
         qWarning("QWidget::setLayout: Cannot set layout to 0");
         return;
     }
     if (layout()) {
-        if (layout() != l)
+        if (Q_UNLIKELY(layout() != l))
             qWarning("QWidget::setLayout: Attempting to set QLayout \"%s\" on %s \"%s\", which already has a"
                      " layout", l->objectName().toLocal8Bit().data(), metaObject()->className(),
                      objectName().toLocal8Bit().data());
@@ -11374,7 +11374,7 @@ void QWidgetPrivate::setWindowModified_helper()
         return;
     bool on = q->testAttribute(Qt::WA_WindowModified);
     if (!platformWindow->setWindowModified(on)) {
-        if (!q->windowTitle().contains(QLatin1String("[*]")) && on)
+        if (Q_UNLIKELY(on && !q->windowTitle().contains(QLatin1String("[*]"))))
             qWarning("QWidget::setWindowModified: The window title does not contain a '[*]' placeholder");
         setWindowTitle_helper(q->windowTitle());
         setWindowIconText_helper(q->windowIconText());
@@ -12124,7 +12124,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
 #ifdef QT_NO_OPENGL
     return 0;
 #else
-    if (!extra || !extra->topextra || !extra->topextra->window) {
+    if (Q_UNLIKELY(!extra || !extra->topextra || !extra->topextra->window)) {
         qWarning("Asking for share context for widget that does not have a window handle");
         return 0;
     }

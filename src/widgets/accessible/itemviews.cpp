@@ -132,7 +132,7 @@ QAccessibleInterface *QAccessibleTable::cellAt(int row, int column) const
         return 0;
     Q_ASSERT(role() != QAccessible::Tree);
     QModelIndex index = view()->model()->index(row, column, view()->rootIndex());
-    if (!index.isValid()) {
+    if (Q_UNLIKELY(!index.isValid())) {
         qWarning() << "QAccessibleTable::cellAt: invalid index: " << index << " for " << view();
         return 0;
     }
@@ -505,7 +505,7 @@ QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
 
     if (!iface) {
         QModelIndex index = view()->model()->index(row, column, view()->rootIndex());
-        if (!index.isValid()) {
+        if (Q_UNLIKELY(!index.isValid())) {
             qWarning() << "QAccessibleTable::child: Invalid index at: " << row << column;
             return 0;
         }
@@ -666,7 +666,7 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
         return QModelIndex();
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    if ((row < 0) || (column < 0) || (treeView->d_func()->viewItems.count() <= row)) {
+    if (Q_UNLIKELY(row < 0 || column < 0 || treeView->d_func()->viewItems.count() <= row)) {
         qWarning() << "QAccessibleTree::indexFromLogical: invalid index: " << row << column << " for " << treeView;
         return QModelIndex();
     }
@@ -776,7 +776,7 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
 QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
 {
     QModelIndex index = indexFromLogical(row, column);
-    if (!index.isValid()) {
+    if (Q_UNLIKELY(!index.isValid())) {
         qWarning() << "Requested invalid tree cell: " << row << column;
         return 0;
     }
@@ -835,7 +835,7 @@ bool QAccessibleTree::selectRow(int row)
 QAccessibleTableCell::QAccessibleTableCell(QAbstractItemView *view_, const QModelIndex &index_, QAccessible::Role role_)
     : /* QAccessibleSimpleEditableTextInterface(this), */ view(view_), m_index(index_), m_role(role_)
 {
-    if (!index_.isValid())
+    if (Q_UNLIKELY(!index_.isValid()))
         qWarning() << "QAccessibleTableCell::QAccessibleTableCell with invalid index: " << index_;
 }
 
