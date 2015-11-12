@@ -31,15 +31,13 @@
 **
 ****************************************************************************/
 
-#include <private/qdrawhelper_p.h>
+#include <private/qdrawhelper_neon_p.h>
 #include <private/qblendfunctions_p.h>
 #include <private/qmath_p.h>
 
 #ifdef __ARM_NEON__
 
-#include <private/qdrawhelper_neon_p.h>
 #include <private/qpaintengine_raster_p.h>
-#include <arm_neon.h>
 
 QT_BEGIN_NAMESPACE
 
