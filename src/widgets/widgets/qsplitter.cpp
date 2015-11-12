@@ -1058,7 +1058,7 @@ void QSplitter::setCollapsible(int index, bool collapse)
 {
     Q_D(QSplitter);
 
-    if (index < 0 || index >= d->list.size()) {
+    if (Q_UNLIKELY(index < 0 || index >= d->list.size())) {
         qWarning("QSplitter::setCollapsible: Index %d out of range", index);
         return;
     }
@@ -1071,7 +1071,7 @@ void QSplitter::setCollapsible(int index, bool collapse)
 bool QSplitter::isCollapsible(int index) const
 {
     Q_D(const QSplitter);
-    if (index < 0 || index >= d->list.size()) {
+    if (Q_UNLIKELY(index < 0 || index >= d->list.size())) {
         qWarning("QSplitter::isCollapsible: Index %d out of range", index);
         return false;
     }
@@ -1215,7 +1215,7 @@ void QSplitter::childEvent(QChildEvent *c)
 {
     Q_D(QSplitter);
     if (!c->child()->isWidgetType()) {
-        if (c->type() == QEvent::ChildAdded && qobject_cast<QLayout *>(c->child()))
+        if (Q_UNLIKELY(c->type() == QEvent::ChildAdded && qobject_cast<QLayout *>(c->child())))
             qWarning("Adding a QLayout to a QSplitter is not supported.");
         return;
     }

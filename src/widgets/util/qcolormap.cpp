@@ -58,7 +58,7 @@ static QColormapPrivate *screenMap = 0;
 void QColormap::initialize()
 {
     screenMap = new QColormapPrivate;
-    if (!QGuiApplication::primaryScreen()) {
+    if (Q_UNLIKELY(!QGuiApplication::primaryScreen())) {
         qWarning("no screens available, assuming 24-bit color");
         screenMap->depth = 24;
         screenMap->mode = QColormap::Direct;

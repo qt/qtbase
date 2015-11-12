@@ -693,7 +693,7 @@ void QMainWindow::setCorner(Qt::Corner corner, Qt::DockWidgetArea area)
         valid = (area == Qt::BottomDockWidgetArea || area == Qt::RightDockWidgetArea);
         break;
     }
-    if (!valid)
+    if (Q_UNLIKELY(!valid))
         qWarning("QMainWindow::setCorner(): 'area' is not valid for 'corner'");
     else
         d_func()->layout->setCorner(corner, area);

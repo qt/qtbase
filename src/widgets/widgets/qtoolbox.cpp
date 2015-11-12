@@ -521,10 +521,10 @@ QWidget * QToolBox::currentWidget() const
 void QToolBox::setCurrentWidget(QWidget *widget)
 {
     int i = indexOf(widget);
-    if (i >= 0)
-        setCurrentIndex(i);
-    else
+    if (Q_UNLIKELY(i < 0))
         qWarning("QToolBox::setCurrentWidget: widget not contained in tool box");
+    else
+        setCurrentIndex(i);
 }
 
 /*!

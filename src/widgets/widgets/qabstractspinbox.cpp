@@ -1931,7 +1931,7 @@ void QSpinBoxValidator::fixup(QString &input) const
 QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 {
     QVariant ret;
-    if (arg1.type() != arg2.type())
+    if (Q_UNLIKELY(arg1.type() != arg2.type()))
         qWarning("QAbstractSpinBox: Internal error: Different types (%s vs %s) (%s:%d)",
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
     switch (arg1.type()) {
@@ -1970,7 +1970,7 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 QVariant operator-(const QVariant &arg1, const QVariant &arg2)
 {
     QVariant ret;
-    if (arg1.type() != arg2.type())
+    if (Q_UNLIKELY(arg1.type() != arg2.type()))
         qWarning("QAbstractSpinBox: Internal error: Different types (%s vs %s) (%s:%d)",
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
     switch (arg1.type()) {

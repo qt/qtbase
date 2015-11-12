@@ -438,7 +438,7 @@ void QSpinBox::setDisplayIntegerBase(int base)
 {
     Q_D(QSpinBox);
     // Falls back to base 10 on invalid bases (like QString)
-    if (base < 2 || base > 36) {
+    if (Q_UNLIKELY(base < 2 || base > 36)) {
         qWarning("QSpinBox::setDisplayIntegerBase: Invalid base (%d)", base);
         base = 10;
     }

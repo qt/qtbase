@@ -1128,7 +1128,7 @@ QRect QToolBarAreaLayout::itemRect(const QList<int> &path) const
 QLayoutItem *QToolBarAreaLayout::plug(const QList<int> &path)
 {
     QToolBarAreaLayoutItem *item = this->item(path);
-    if (!item) {
+    if (Q_UNLIKELY(!item)) {
         qWarning() << Q_FUNC_INFO << "No item at" << path;
         return 0;
     }
@@ -1260,7 +1260,7 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
                 const QToolBarAreaLayoutItem &item = line.toolBarItems.at(k);
                 QWidget *widget = const_cast<QLayoutItem*>(item.widgetItem)->widget();
                 QString objectName = widget->objectName();
-                if (objectName.isEmpty()) {
+                if (Q_UNLIKELY(objectName.isEmpty())) {
                     qWarning("QMainWindow::saveState(): 'objectName' not set for QToolBar %p '%s'",
                                 widget, widget->windowTitle().toLocal8Bit().constData());
                 }

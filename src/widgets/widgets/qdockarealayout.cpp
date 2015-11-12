@@ -1802,7 +1802,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
             stream << (uchar) WidgetMarker;
             QWidget *w = item.widgetItem->widget();
             QString name = w->objectName();
-            if (name.isEmpty()) {
+            if (Q_UNLIKELY(name.isEmpty())) {
                 qWarning("QMainWindow::saveState(): 'objectName' not set for QDockWidget %p '%ls;",
                          w, qUtf16Printable(w->windowTitle()));
             }
@@ -3109,7 +3109,7 @@ void QDockAreaLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
                                   const QList<int> &sizes, Qt::Orientation o)
 {
-    if (docks.count() != sizes.count()) {
+    if (Q_UNLIKELY(docks.count() != sizes.count())) {
         qWarning("QMainWidget::resizeDocks: size of the lists are not the same");
         return;
     }
@@ -3117,12 +3117,12 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
     fallbackToSizeHints = false;
     for (int i = 0; i < count; ++i) {
         QList<int> path = indexOf(docks[i]);
-        if (path.isEmpty()) {
+        if (Q_UNLIKELY(path.isEmpty())) {
             qWarning("QMainWidget::resizeDocks: one QDockWidget is not part of the layout");
             continue;
         }
         int size = sizes[i];
-        if (size <= 0) {
+        if (Q_UNLIKELY(size <= 0)) {
             qWarning("QMainWidget::resizeDocks: all sizes need to be larger than 0");
             size = 1;
         }

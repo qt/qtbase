@@ -353,7 +353,7 @@ void QProgressDialog::setLabel(QLabel *label)
 {
     Q_D(QProgressDialog);
     if (label == d->label) {
-        if (label)
+        if (Q_UNLIKELY(label))
             qWarning("QProgressDialog::setLabel: Attempt to set the same label again");
         return;
     }
@@ -402,7 +402,7 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
 {
     Q_D(QProgressDialog);
     if (d->cancel == cancelButton) {
-        if (cancelButton)
+        if (Q_UNLIKELY(cancelButton))
             qWarning("QProgressDialog::setCancelButton: Attempt to set the same button again");
         return;
     }
@@ -465,16 +465,16 @@ void QProgressDialogPrivate::setCancelButtonText(const QString &cancelButtonText
 void QProgressDialog::setBar(QProgressBar *bar)
 {
     Q_D(QProgressDialog);
-    if (!bar) {
+    if (Q_UNLIKELY(!bar)) {
         qWarning("QProgressDialog::setBar: Cannot set a null progress bar");
         return;
     }
 #ifndef QT_NO_DEBUG
-    if (value() > 0)
+    if (Q_UNLIKELY(value() > 0))
         qWarning("QProgressDialog::setBar: Cannot set a new progress bar "
                   "while the old one is active");
 #endif
-    if (bar == d->bar) {
+    if (Q_UNLIKELY(bar == d->bar)) {
         qWarning("QProgressDialog::setBar: Attempt to set the same progress bar again");
         return;
     }

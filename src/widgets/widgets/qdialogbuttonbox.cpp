@@ -405,11 +405,10 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         button->setStyle(style);
     standardButtonHash.insert(button, sbutton);
     QPlatformDialogHelper::ButtonRole role = QPlatformDialogHelper::buttonRole(static_cast<QPlatformDialogHelper::StandardButton>(sbutton));
-    if (role != QPlatformDialogHelper::InvalidRole) {
-        addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), doLayout);
-    } else {
+    if (Q_UNLIKELY(role == QPlatformDialogHelper::InvalidRole))
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
-    }
+    else
+        addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), doLayout);
 
 #ifdef Q_DEAD_CODE_FROM_QT4_MAC
     // Since mnemonics is off by default on Mac, we add a Cmd-D
@@ -753,7 +752,7 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
 void QDialogButtonBox::addButton(QAbstractButton *button, ButtonRole role)
 {
     Q_D(QDialogButtonBox);
-    if (role <= InvalidRole || role >= NRoles) {
+    if (Q_UNLIKELY(role <= InvalidRole || role >= NRoles)) {
         qWarning("QDialogButtonBox::addButton: Invalid ButtonRole, button not added");
         return;
     }
@@ -772,7 +771,7 @@ void QDialogButtonBox::addButton(QAbstractButton *button, ButtonRole role)
 QPushButton *QDialogButtonBox::addButton(const QString &text, ButtonRole role)
 {
     Q_D(QDialogButtonBox);
-    if (role <= InvalidRole || role >= NRoles) {
+    if (Q_UNLIKELY(role <= InvalidRole || role >= NRoles)) {
         qWarning("QDialogButtonBox::addButton: Invalid ButtonRole, button not added");
         return 0;
     }

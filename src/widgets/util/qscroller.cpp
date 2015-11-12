@@ -159,8 +159,8 @@ static qreal differentialForProgress(const QEasingCurve &curve, qreal pos)
 
 static qreal progressForValue(const QEasingCurve &curve, qreal value)
 {
-    if (curve.type() >= QEasingCurve::InElastic &&
-        curve.type() < QEasingCurve::Custom) {
+    if (Q_UNLIKELY(curve.type() >= QEasingCurve::InElastic &&
+                   curve.type() < QEasingCurve::Custom)) {
         qWarning("progressForValue(): QEasingCurves of type %d do not have an inverse, since they are not injective.", curve.type());
         return value;
     }

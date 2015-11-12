@@ -309,7 +309,7 @@ void QWidgetLineControl::setSelection(int start, int length)
 {
     commitPreedit();
 
-    if(start < 0 || start > (int)m_text.length()){
+    if (Q_UNLIKELY(start < 0 || start > m_text.size())) {
         qWarning("QWidgetLineControl::setSelection: Invalid start position");
         return;
     }

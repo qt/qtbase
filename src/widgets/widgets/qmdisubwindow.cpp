@@ -2309,7 +2309,7 @@ void QMdiSubWindow::setWidget(QWidget *widget)
         return;
     }
 
-    if (widget == d->baseWidget) {
+    if (Q_UNLIKELY(widget == d->baseWidget)) {
         qWarning("QMdiSubWindow::setWidget: widget is already set");
         return;
     }
@@ -2507,7 +2507,7 @@ void QMdiSubWindow::setKeyboardPageStep(int step)
 void QMdiSubWindow::setSystemMenu(QMenu *systemMenu)
 {
     Q_D(QMdiSubWindow);
-    if (systemMenu && systemMenu == d->systemMenu) {
+    if (Q_UNLIKELY(systemMenu && systemMenu == d->systemMenu)) {
         qWarning("QMdiSubWindow::setSystemMenu: system menu is already set");
         return;
     }

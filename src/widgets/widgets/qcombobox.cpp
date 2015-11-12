@@ -1360,7 +1360,7 @@ int QComboBox::maxVisibleItems() const
 void QComboBox::setMaxVisibleItems(int maxItems)
 {
     Q_D(QComboBox);
-    if (maxItems < 0) {
+    if (Q_UNLIKELY(maxItems < 0)) {
         qWarning("QComboBox::setMaxVisibleItems: "
                  "Invalid max visible items (%d) must be >= 0", maxItems);
         return;
@@ -1395,7 +1395,7 @@ int QComboBox::count() const
 void QComboBox::setMaxCount(int max)
 {
     Q_D(QComboBox);
-    if (max < 0) {
+    if (Q_UNLIKELY(max < 0)) {
         qWarning("QComboBox::setMaxCount: Invalid count (%d) must be >= 0", max);
         return;
     }
@@ -1448,7 +1448,7 @@ void QComboBox::setAutoCompletion(bool enable)
     Q_D(QComboBox);
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled() && !enable && isEditable())
+    if (Q_UNLIKELY(QApplication::keypadNavigationEnabled() && !enable && isEditable()))
         qWarning("QComboBox::setAutoCompletion: auto completion is mandatory when combo box editable");
 #endif
 
@@ -1758,7 +1758,7 @@ void QComboBox::setEditable(bool editable)
 void QComboBox::setLineEdit(QLineEdit *edit)
 {
     Q_D(QComboBox);
-    if (!edit) {
+    if (Q_UNLIKELY(!edit)) {
         qWarning("QComboBox::setLineEdit: cannot set a 0 line edit");
         return;
     }
@@ -1917,7 +1917,7 @@ QAbstractItemDelegate *QComboBox::itemDelegate() const
 */
 void QComboBox::setItemDelegate(QAbstractItemDelegate *delegate)
 {
-    if (!delegate) {
+    if (Q_UNLIKELY(!delegate)) {
         qWarning("QComboBox::setItemDelegate: cannot set a 0 delegate");
         return;
     }
@@ -1949,7 +1949,7 @@ void QComboBox::setModel(QAbstractItemModel *model)
 {
     Q_D(QComboBox);
 
-    if (!model) {
+    if (Q_UNLIKELY(!model)) {
         qWarning("QComboBox::setModel: cannot set a 0 model");
         return;
     }
@@ -2395,7 +2395,7 @@ QAbstractItemView *QComboBox::view() const
 void QComboBox::setView(QAbstractItemView *itemView)
 {
     Q_D(QComboBox);
-    if (!itemView) {
+    if (Q_UNLIKELY(!itemView)) {
         qWarning("QComboBox::setView: cannot set a 0 view");
         return;
     }

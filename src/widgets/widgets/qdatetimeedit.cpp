@@ -760,17 +760,17 @@ QCalendarWidget *QDateTimeEdit::calendarWidget() const
 void QDateTimeEdit::setCalendarWidget(QCalendarWidget *calendarWidget)
 {
     Q_D(QDateTimeEdit);
-    if (!calendarWidget) {
+    if (Q_UNLIKELY(!calendarWidget)) {
         qWarning("QDateTimeEdit::setCalendarWidget: Cannot set a null calendar widget");
         return;
     }
 
-    if (!d->calendarPopup) {
+    if (Q_UNLIKELY(!d->calendarPopup)) {
         qWarning("QDateTimeEdit::setCalendarWidget: calendarPopup is set to false");
         return;
     }
 
-    if (!(d->display & QDateTimeParser::DateSectionMask)) {
+    if (Q_UNLIKELY(!(d->display & QDateTimeParser::DateSectionMask))) {
         qWarning("QDateTimeEdit::setCalendarWidget: no date sections specified");
         return;
     }
@@ -1864,7 +1864,7 @@ void QDateTimeEditPrivate::clearSection(int index)
     const QSignalBlocker blocker(edit);
     QString t = edit->text();
     const int pos = sectionPos(index);
-    if (pos == -1) {
+    if (Q_UNLIKELY(pos == -1)) {
         qWarning("QDateTimeEdit: Internal error (%s:%d)", __FILE__, __LINE__);
         return;
     }

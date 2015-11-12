@@ -1291,7 +1291,7 @@ void QPlainTextEdit::setDocument(QTextDocument *document)
         document->setDocumentLayout(documentLayout);
     } else {
         documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document->documentLayout());
-        if (!documentLayout) {
+        if (Q_UNLIKELY(!documentLayout)) {
             qWarning("QPlainTextEdit::setDocument: Document set does not support QPlainTextDocumentLayout");
             return;
         }

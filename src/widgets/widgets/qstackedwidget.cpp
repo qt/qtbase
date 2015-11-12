@@ -237,7 +237,7 @@ QWidget *QStackedWidget::currentWidget() const
 void QStackedWidget::setCurrentWidget(QWidget *widget)
 {
     Q_D(QStackedWidget);
-    if (d->layout->indexOf(widget) == -1) {
+    if (Q_UNLIKELY(d->layout->indexOf(widget) == -1)) {
         qWarning("QStackedWidget::setCurrentWidget: widget %p not contained in stack", widget);
         return;
     }
