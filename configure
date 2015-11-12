@@ -7103,7 +7103,7 @@ if [ -n "$DISABLED_FEATURES" ]; then
 fi
 echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}"
 
-cat >>"$QTMODULE.tmp" <<EOF
+cat <<EOF
 host_build {
     QT_CPU_FEATURES.$CFG_HOST_ARCH = $CFG_HOST_CPUFEATURES
 } else {
