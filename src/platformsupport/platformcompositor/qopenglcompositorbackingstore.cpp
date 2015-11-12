@@ -67,6 +67,7 @@ QOpenGLCompositorBackingStore::QOpenGLCompositorBackingStore(QWindow *window)
     : QPlatformBackingStore(window),
       m_window(window),
       m_bsTexture(0),
+      m_bsTextureContext(0),
       m_textures(new QPlatformTextureList),
       m_lockedWidgetTextures(0)
 {
@@ -74,6 +75,14 @@ QOpenGLCompositorBackingStore::QOpenGLCompositorBackingStore(QWindow *window)
 
 QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
 {
+    if (m_bsTexture) {
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        if (ctx && m_bsTextureContext && ctx->shareGroup() == m_bsTextureContext->shareGroup())
+            glDeleteTextures(1, &m_bsTexture);
+        else
+            qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");
+    }
+
     delete m_textures;
 }
 
@@ -85,6 +94,8 @@ QPaintDevice *QOpenGLCompositorBackingStore::paintDevice()
 void QOpenGLCompositorBackingStore::updateTexture()
 {
     if (!m_bsTexture) {
+        m_bsTextureContext = QOpenGLContext::currentContext();
+        Q_ASSERT(m_bsTextureContext);
         glGenTextures(1, &m_bsTexture);
         glBindTexture(GL_TEXTURE_2D, m_bsTexture);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -65,6 +65,10 @@ public:
     ~QPlatformBackingStorePrivate()
     {
 #ifndef QT_NO_OPENGL
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        Q_ASSERT(ctx);
+        if (textureId)
+            ctx->functions()->glDeleteTextures(1, &textureId);
         if (blitter)
             blitter->destroy();
         delete blitter;
