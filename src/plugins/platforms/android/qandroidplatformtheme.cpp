@@ -46,6 +46,7 @@
 #include <QVariant>
 
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <qandroidplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
@@ -217,7 +218,7 @@ QJsonObject AndroidStyle::loadStyleData()
 
 static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
 {
-    double pixelDensity = qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR") ? QtAndroid::pixelDensity() : 1.0;
+    double pixelDensity = QHighDpiScaling::isActive() ? QtAndroid::pixelDensity() : 1.0;
     std::shared_ptr<AndroidStyle> style(new AndroidStyle);
     style->m_styleData = AndroidStyle::loadStyleData();
     if (style->m_styleData.isEmpty())
