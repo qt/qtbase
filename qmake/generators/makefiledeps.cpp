@@ -539,8 +539,18 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                     break;
 
                 // preprocessor directive
-                if (beginning && buffer[x] == '#')
+                if (beginning && buffer[x] == '#') {
+                    // Advance to start of preprocessing directive
+                    while (++x < buffer_len
+                           && (buffer[x] == ' ' || buffer[x] == '\t')) {} // skip
+
+                    if (qmake_endOfLine(buffer[x])) {
+                        ++line_count;
+                        beginning = 1;
+                        continue;
+                    }
                     break;
+                }
 
                 // quoted strings
                 if (buffer[x] == '\'' || buffer[x] == '"') {
@@ -561,13 +571,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
             if(x >= buffer_len)
                 break;
 
-            //got a preprocessor symbol
-            ++x;
-            while(x < buffer_len) {
-                if (buffer[x] != ' ' && buffer[x] != '\t')
-                    break;
-                ++x;
-            }
+            // Got a preprocessor directive
 
             int keyword_len = 0;
             const char *const keyword = buffer + x;
