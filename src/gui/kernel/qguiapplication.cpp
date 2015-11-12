@@ -603,6 +603,8 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::platform_name = 0;
     delete QGuiApplicationPrivate::displayName;
     QGuiApplicationPrivate::displayName = 0;
+    delete QGuiApplicationPrivate::m_inputDeviceManager;
+    QGuiApplicationPrivate::m_inputDeviceManager = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
