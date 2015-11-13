@@ -40,8 +40,6 @@ HEADERS = \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h
 
-LIBS += $$QMAKE_LIBS_DYNLOAD
-
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
