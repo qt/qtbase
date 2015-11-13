@@ -43,7 +43,11 @@
 
 #include <limits>
 
-#include <UIKit/UIApplication.h>
+#ifdef Q_OS_OSX
+#  include <AppKit/NSApplication.h>
+#else
+#  include <UIKit/UIApplication.h>
+#endif
 
 @interface RunLoopModeTracker : NSObject {
     QStack<CFStringRef> m_runLoopModes;
@@ -61,7 +65,11 @@
             addObserver:self
             selector:@selector(receivedNotification:)
             name:nil
+#ifdef Q_OS_OSX
+            object:[NSApplication sharedApplication]];
+#else
             object:[UIApplication sharedApplication]];
+#endif
     }
 
     return self;
