@@ -684,25 +684,105 @@ void tst_Compiler::cxx11_atomics()
 #endif
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wignored-attributes")
+QT_WARNING_DISABLE_CLANG("-Wunused-local-typedefs")
+QT_WARNING_DISABLE_GCC("-Wattributes")
+QT_WARNING_DISABLE_GCC("-Wunused-local-typedefs")
+
+#ifndef __has_cpp_attribute
+#  define __has_cpp_attribute(x) 0
+#endif
+#ifdef Q_COMPILER_ATTRIBUTES
+[[noreturn]] void attribute_f1();
+void attribute_f2 [[noreturn]] ();
+#  if (defined(__cpp_namespace_attributes) && __cpp_namespace_attributes >= 201411) && __has_cpp_attribute(deprecated)
+namespace NS [[deprecated]] { }
+#  endif
+#endif
+
 void tst_Compiler::cxx11_attributes()
 {
 #ifndef Q_COMPILER_ATTRIBUTES
     QSKIP("Compiler does not support C++11 feature");
 #else
-    struct [[deprecated]] C {};
+    // Attributes in function parameters and using clauses cause MSVC 2015 to crash
+    // https://connect.microsoft.com/VisualStudio/feedback/details/2011594
+#  if (!defined(Q_CC_MSVC) || _MSC_FULL_VER >= 190023811) && !defined(Q_CC_INTEL)
+    void f([[ ]] int);
+    [[ ]] using namespace QtPrivate;
+    [[ ]] try {
+    } catch ([[]] int) {
+    }
+#  endif
+
+    struct [[ ]] A { };
+    struct B : A {
+        [[ ]] int m_i : 32;
+        [[noreturn]] void f() const { ::exit(0); }
+
+#  ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
+        [[ ]] ~B() = default;
+        [[ ]] B(const B &) = delete;
+#  endif
+    };
+#  if __has_cpp_attribute(deprecated)
+    struct [[deprecated]] C { };
+#  endif
+    enum [[ ]] E { };
+    [[ ]] void [[ ]] * [[ ]] * [[ ]] ptr = 0;
+    int B::* [[ ]] pmm = 0;
+
+#  if __has_cpp_attribute(deprecated)
+    enum [[deprecated]] E2 {
+#    if defined(__cpp_enumerator_attributes) && __cpp_enumerator_attributes >= 201411
+        value [[deprecated]] = 0
+#    endif
+    };
+#  endif
+#  ifdef Q_COMPILER_LAMBDA
+    []()[[ ]] {}();
+#  endif
+#  ifdef Q_COMPILER_TEMPLATE_ALIAS
+    using B2 [[ ]] = B;
+#  endif
+
+    [[ ]] goto end;
+#  ifdef Q_CC_GNU
+    // Attributes in gnu:: namespace
+    [[gnu::unused]] end:
+        ;
     [[gnu::unused]] struct D {} d;
-    [[noreturn]] void f();
     struct D e [[gnu::used, gnu::unused]];
-    [[gnu::aligned(8)]] int i;
+    [[gnu::aligned(8)]] int i [[ ]];
+    int array[][[]] = { 1 };
+#  else
+    // Non GNU, so use an empty attribute
+    [[ ]] end:
+        ;
+    [[ ]] struct D {} d;
+    struct D e [[ ]];
+    [[ ]] int i [[ ]];
+    int array[][[]] = { 1 };
+#  endif
 
-[[gnu::unused]] end:
-    ;
+    int & [[ ]] lref = i;
+    int && [[ ]] rref = 1;
+    [[ ]] (void)1;
+    [[ ]] for (i = 0; i < 2; ++i)
+        ;
 
+    Q_UNUSED(ptr);
+    Q_UNUSED(pmm);
     Q_UNUSED(d);
     Q_UNUSED(e);
     Q_UNUSED(i);
+    Q_UNUSED(array);
+    Q_UNUSED(lref);
+    Q_UNUSED(rref);
 #endif
 }
+QT_WARNING_POP
 
 #ifdef Q_COMPILER_AUTO_FUNCTION
 auto autoFunction() -> unsigned
