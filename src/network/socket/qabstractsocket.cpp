@@ -2414,30 +2414,17 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
 {
     Q_D(QAbstractSocket);
 
-    // Check if the read notifier can be enabled again.
-    if (d->socketEngine && !d->socketEngine->isReadNotificationEnabled() && d->socketEngine->isValid())
-        d->socketEngine->setReadNotificationEnabled(true);
+    // if we're not connected, return -1 indicating EOF
+    if (!d->socketEngine || !d->socketEngine->isValid() || d->state != QAbstractSocket::ConnectedState)
+        return maxSize ? qint64(-1) : qint64(0);
 
-    if (!maxSize)
-        return 0;
-
-    // This is for a buffered QTcpSocket
-    if (d->isBuffered)
-        // if we're still connected, return 0 indicating there may be more data in the future
-        // if we're not connected, return -1 indicating EOF
-        return d->state == QAbstractSocket::ConnectedState ? qint64(0) : qint64(-1);
-
-    if (!d->socketEngine)
-        return -1;          // no socket engine is probably EOF
-    if (!d->socketEngine->isValid())
-        return -1; // This is for unbuffered TCP when we already had been disconnected
-    if (d->state != QAbstractSocket::ConnectedState)
-        return -1; // This is for unbuffered TCP if we're not connected yet
-    qint64 readBytes = d->socketEngine->read(data, maxSize);
+    qint64 readBytes = (maxSize && !d->isBuffered) ? d->socketEngine->read(data, maxSize)
+                                                   : qint64(0);
     if (readBytes == -2) {
         // -2 from the engine means no bytes available (EAGAIN) so read more later
-        return 0;
-    } else if (readBytes < 0) {
+        readBytes = 0;
+    }
+    if (readBytes < 0) {
         d->setError(d->socketEngine->error(), d->socketEngine->errorString());
         d->resetSocketLayer();
         d->state = QAbstractSocket::UnconnectedState;
@@ -2452,7 +2439,6 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
            readBytes);
 #endif
     return readBytes;
-
 }
 
 /*! \reimp
