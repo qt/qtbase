@@ -609,8 +609,9 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::DialogButtonBoxLayout:
         return QVariant(QPlatformDialogHelper::GnomeLayout);
     case QPlatformTheme::SystemIconThemeName:
+        return QVariant(QStringLiteral("Adwaita"));
     case QPlatformTheme::SystemIconFallbackThemeName:
-        return QVariant(QString(QStringLiteral("gnome")));
+        return QVariant(QStringLiteral("gnome"));
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths());
     case QPlatformTheme::StyleNames: {
