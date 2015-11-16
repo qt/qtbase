@@ -914,6 +914,13 @@
 //#      define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
+#    if _MSC_FULL_VER >= 190023419
+#      define Q_COMPILER_ATTRIBUTES
+// Almost working, see https://connect.microsoft.com/VisualStudio/feedback/details/2011648
+//#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_THREADSAFE_STATICS
+#      define Q_COMPILER_UNIFORM_INIT
+#    endif
 #  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
