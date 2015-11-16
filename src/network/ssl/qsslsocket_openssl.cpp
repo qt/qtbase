@@ -76,15 +76,6 @@
 
 #include <string.h>
 
-#ifdef Q_OS_DARWIN
-#  include <private/qcore_mac_p.h>
-#endif
-
-#ifdef Q_OS_OSX
-#  include <Security/Security.h>
-#endif
-
-
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_WIN)
@@ -668,6 +659,7 @@ void QSslSocketPrivate::resetDefaultEllipticCurves()
     setDefaultSupportedEllipticCurves(curves);
 }
 
+#ifndef Q_OS_DARWIN // Apple implementation in qsslsocket_mac_shared.cpp
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
     ensureInitialized();
@@ -676,25 +668,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     timer.start();
 #endif
     QList<QSslCertificate> systemCerts;
-    // note: also check implementation in openssl_mac.cpp
-#if defined(Q_OS_OSX)
-    // SecTrustSettingsCopyCertificates is not defined on iOS.
-    QCFType<CFArrayRef> cfCerts;
-
-    OSStatus status = SecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
-    if (status == noErr ) {
-        const CFIndex size = CFArrayGetCount(cfCerts);
-        for (CFIndex i = 0; i < size; ++i) {
-            SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
-            QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
-            if (derData == NULL) {
-                qCWarning(lcSsl, "error retrieving a CA certificate from the system store");
-            } else {
-                systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
-            }
-        }
-    }
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     if (ptrCertOpenSystemStoreW && ptrCertFindCertificateInStore && ptrCertCloseStore) {
         HCERTSTORE hSystemStore;
 #if defined(Q_OS_WINCE)
@@ -771,6 +745,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 
     return systemCerts;
 }
+#endif // Q_OS_DARWIN
 
 void QSslSocketBackendPrivate::startClientEncryption()
 {

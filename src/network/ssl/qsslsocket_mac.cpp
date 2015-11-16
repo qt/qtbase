@@ -213,29 +213,6 @@ void QSslSocketPrivate::resetDefaultEllipticCurves()
     Q_UNIMPLEMENTED();
 }
 
-
-QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
-{
-    QList<QSslCertificate> systemCerts;
-#ifdef Q_OS_OSX
-    // SecTrustSettingsCopyCertificates is not defined on iOS.
-    QCFType<CFArrayRef> cfCerts;
-    OSStatus status = SecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
-    if (status == noErr) {
-        const CFIndex size = CFArrayGetCount(cfCerts);
-        for (CFIndex i = 0; i < size; ++i) {
-            SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
-            QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
-            systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
-        }
-    } else {
-       // no detailed error handling here
-       qCWarning(lcSsl) << "SecTrustSettingsCopyCertificates failed:" << status;
-    }
-#endif
-    return systemCerts;
-}
-
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
     : context(Q_NULLPTR)
 {

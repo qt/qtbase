@@ -1507,6 +1507,10 @@ QList<QSslCertificate> QSslSocket::defaultCaCertificates()
     returned by defaultCaCertificates(). You can replace that database
     with your own with setDefaultCaCertificates().
 
+    \note: On OS X, only certificates that are either trusted for all
+    purposes or trusted for the purpose of SSL in the keychain will be
+    returned.
+
     \sa caCertificates(), defaultCaCertificates(), setDefaultCaCertificates()
 */
 QList<QSslCertificate> QSslSocket::systemCaCertificates()
