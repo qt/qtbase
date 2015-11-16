@@ -661,8 +661,9 @@ void QCoreApplicationPrivate::initLocale()
 
     The command line arguments which are passed to QCoreApplication's
     constructor should be accessed using the arguments() function.
-    Note that some arguments supplied by the user may have been
-    processed and removed by QCoreApplication.
+
+    \note QCoreApplication removes option \c -qmljsdebugger="...". It parses the
+    argument of \c qmljsdebugger, and then removes this option plus its argument.
 
     For more advanced command line option handling, create a QCommandLineParser.
 
