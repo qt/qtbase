@@ -379,9 +379,9 @@ static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uin
 template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutRGB()
 {
     return QPixelLayout{
-        redWidth<Format>(), redShift<Format>(),
-        greenWidth<Format>(), greenShift<Format>(),
-        blueWidth<Format>(), blueShift<Format>(),
+        uchar(redWidth<Format>()), uchar(redShift<Format>()),
+        uchar(greenWidth<Format>()), uchar(greenShift<Format>()),
+        uchar(blueWidth<Format>()), uchar(blueShift<Format>()),
         0, 0,
         false, bitsPerPixel<Format>(),
         convertToRGB32<Format>,
@@ -394,10 +394,10 @@ template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixe
 template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutARGBPM()
 {
     return QPixelLayout{
-        redWidth<Format>(), redShift<Format>(),
-        greenWidth<Format>(), greenShift<Format>(),
-        blueWidth<Format>(), blueShift<Format>(),
-        alphaWidth<Format>(), alphaShift<Format>(),
+        uchar(redWidth<Format>()), uchar(redShift<Format>()),
+        uchar(greenWidth<Format>()), uchar(greenShift<Format>()),
+        uchar(blueWidth<Format>()), uchar(blueShift<Format>()),
+        uchar(alphaWidth<Format>()), uchar(alphaShift<Format>()),
         true, bitsPerPixel<Format>(),
         convertARGBPMToARGB32PM<Format>,
         convertARGBPMFromARGB32PM<Format>,
