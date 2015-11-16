@@ -329,6 +329,7 @@
 {
     QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
     QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 #ifndef QT_NO_SHORTCUT
@@ -875,7 +876,6 @@
     // UITextInput selects the text to be deleted before calling this method. To avoid
     // drawing the selection, we flush after posting the key press/release.
     [self sendKeyPressRelease:Qt::Key_Backspace modifiers:Qt::NoModifier];
-    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 @end
