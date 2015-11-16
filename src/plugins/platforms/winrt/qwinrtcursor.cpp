@@ -161,15 +161,19 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
 QPoint QWinRTCursor::pos() const
 {
-    ICoreWindow *coreWindow =
-            static_cast<QWinRTScreen *>(QGuiApplication::primaryScreen()->handle())->coreWindow();
-    HRESULT hr;
+    const QWinRTScreen *screen = static_cast<QWinRTScreen *>(QGuiApplication::primaryScreen()->handle());
+    Q_ASSERT(screen);
+    ICoreWindow *coreWindow = screen->coreWindow();
+    Q_ASSERT(coreWindow);
     Point point;
-    hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &point]() {
+    HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow, &point]() {
         return coreWindow->get_PointerPosition(&point);
     });
-    RETURN_IF_FAILED("Failed to get native cursor position", QPoint());
-    return QPoint(point.X, point.Y);
+    Q_ASSERT_SUCCEEDED(hr);
+    const QPoint position = QPoint(point.X, point.Y) * screen->scaleFactor();
+    // If no cursor get_PointerPosition returns SHRT_MIN for x and y
+    return position.x() == SHRT_MIN && position.y() == SHRT_MIN || FAILED(hr) ? QPointF(Q_INFINITY, Q_INFINITY).toPoint()
+                                                                              : position;
 }
 
 QT_END_NAMESPACE
