@@ -260,8 +260,10 @@ HRESULT QWinRTIntegration::onBackButtonPressed(IInspectable *, IBackPressedEvent
     Q_D(QWinRTIntegration);
     QWindow *window = d->mainScreen->topWindow();
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    const bool pressed = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
-    const bool released = QWindowSystemInterface::handleKeyEvent(window, QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
+    const bool pressed = QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier,
+                                                                        0, 0, 0, QString(), false, 1, false);
+    const bool released = QWindowSystemInterface::handleExtendedKeyEvent(window, QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier,
+                                                                         0, 0, 0, QString(), false, 1, false);
     QWindowSystemInterface::setSynchronousWindowSystemEvents(false);
     args->put_Handled(pressed || released);
     return S_OK;
