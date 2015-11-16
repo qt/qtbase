@@ -224,6 +224,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("PPM: runners") << QString("runners.ppm") << true << QByteArray("ppm");
     QTest::newRow("PPM: test") << QString("test.ppm") << true << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << true << QByteArray("xbm");
+    QTest::newRow("PGM: longcomment") << QString("longcomment.pgm") << true << QByteArray("pgm");
 
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
     QTest::newRow("JPEG: qtbug13653") << QString("qtbug13653-no_eoi.jpg") << true << QByteArray("jpeg");
