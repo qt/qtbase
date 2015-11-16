@@ -151,11 +151,7 @@ public:
     static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
 
-#if defined(Q_OS_MACX)
-    static PtrSecCertificateCopyData ptrSecCertificateCopyData;
-    static PtrSecTrustSettingsCopyCertificates ptrSecTrustSettingsCopyCertificates;
-    static PtrSecTrustCopyAnchorCertificates ptrSecTrustCopyAnchorCertificates;
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     static PtrCertOpenSystemStoreW ptrCertOpenSystemStoreW;
     static PtrCertFindCertificateInStore ptrCertFindCertificateInStore;
     static PtrCertCloseStore ptrCertCloseStore;

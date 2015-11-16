@@ -76,14 +76,18 @@
 
 #include <string.h>
 
+#ifdef Q_OS_DARWIN
+#  include <private/qcore_mac_p.h>
+#endif
+
+#ifdef Q_OS_OSX
+#  include <Security/Security.h>
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MACX)
-#define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
-    PtrSecCertificateCopyData QSslSocketPrivate::ptrSecCertificateCopyData = 0;
-    PtrSecTrustSettingsCopyCertificates QSslSocketPrivate::ptrSecTrustSettingsCopyCertificates = 0;
-    PtrSecTrustCopyAnchorCertificates QSslSocketPrivate::ptrSecTrustCopyAnchorCertificates = 0;
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = 0;
     PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = 0;
     PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = 0;
@@ -506,23 +510,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 
 #ifndef QT_NO_LIBRARY
     //load symbols needed to receive certificates from system store
-#if defined(Q_OS_MACX)
-    QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
-    if (securityLib.load()) {
-        ptrSecCertificateCopyData = (PtrSecCertificateCopyData) securityLib.resolve("SecCertificateCopyData");
-        if (!ptrSecCertificateCopyData)
-            qCWarning(lcSsl, "could not resolve symbols in security library"); // should never happen
-
-        ptrSecTrustSettingsCopyCertificates = (PtrSecTrustSettingsCopyCertificates) securityLib.resolve("SecTrustSettingsCopyCertificates");
-        if (!ptrSecTrustSettingsCopyCertificates) { // method was introduced in Leopard, use legacy method if it's not there
-            ptrSecTrustCopyAnchorCertificates = (PtrSecTrustCopyAnchorCertificates) securityLib.resolve("SecTrustCopyAnchorCertificates");
-            if (!ptrSecTrustCopyAnchorCertificates)
-                qCWarning(lcSsl, "could not resolve symbols in security library"); // should never happen
-        }
-    } else {
-        qCWarning(lcSsl, "could not load security library");
-    }
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     HINSTANCE hLib = LoadLibraryW(L"Crypt32");
     if (hLib) {
 #if defined(Q_OS_WINCE)
@@ -688,40 +676,22 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     timer.start();
 #endif
     QList<QSslCertificate> systemCerts;
-#if defined(Q_OS_MACX)
-    CFArrayRef cfCerts;
-    OSStatus status = 1;
+    // note: also check implementation in openssl_mac.cpp
+#if defined(Q_OS_OSX)
+    // SecTrustSettingsCopyCertificates is not defined on iOS.
+    QCFType<CFArrayRef> cfCerts;
 
-    CFDataRef SecCertificateCopyData (
-       SecCertificateRef certificate
-    );
-
-    if (ptrSecCertificateCopyData) {
-        if (ptrSecTrustSettingsCopyCertificates)
-            status = ptrSecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
-        else if (ptrSecTrustCopyAnchorCertificates)
-            status = ptrSecTrustCopyAnchorCertificates(&cfCerts);
-        if (!status) {
-            CFIndex size = CFArrayGetCount(cfCerts);
-            for (CFIndex i = 0; i < size; ++i) {
-                SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
-                CFDataRef data;
-
-                data = ptrSecCertificateCopyData(cfCert);
-
-                if (data == NULL) {
-                    qCWarning(lcSsl, "error retrieving a CA certificate from the system store");
-                } else {
-                    QByteArray rawCert = QByteArray::fromRawData((const char *)CFDataGetBytePtr(data), CFDataGetLength(data));
-                    systemCerts.append(QSslCertificate::fromData(rawCert, QSsl::Der));
-                    CFRelease(data);
-                }
+    OSStatus status = SecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
+    if (status == noErr ) {
+        const CFIndex size = CFArrayGetCount(cfCerts);
+        for (CFIndex i = 0; i < size; ++i) {
+            SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
+            QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
+            if (derData == NULL) {
+                qCWarning(lcSsl, "error retrieving a CA certificate from the system store");
+            } else {
+                systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
             }
-            CFRelease(cfCerts);
-        }
-        else {
-           // no detailed error handling here
-           qCWarning(lcSsl, "could not retrieve system CA certificates");
         }
     }
 #elif defined(Q_OS_WIN)
