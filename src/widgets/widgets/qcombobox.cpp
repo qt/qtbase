@@ -3242,6 +3242,9 @@ void QComboBox::keyReleaseEvent(QKeyEvent *e)
 #ifndef QT_NO_WHEELEVENT
 void QComboBox::wheelEvent(QWheelEvent *e)
 {
+#ifdef Q_OS_DARWIN
+    Q_UNUSED(e);
+#else
     Q_D(QComboBox);
     if (!d->viewContainer()->isVisible()) {
         int newIndex = currentIndex();
@@ -3262,6 +3265,7 @@ void QComboBox::wheelEvent(QWheelEvent *e)
         }
         e->accept();
     }
+#endif
 }
 #endif
 
