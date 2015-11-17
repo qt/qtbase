@@ -4586,6 +4586,9 @@ if [ "${CFG_AVX2}" = "auto" ]; then
 fi
 
 # detect avx512 support
+if [ "${CFG_AVX2}" = "no" ]; then
+    CFG_AVX512=
+fi
 if [ "${CFG_AVX512}" = "auto" ]; then
     # First, test for AVX-512 Foundation
     if compileTest common/avx512 "avx512f" AVX512=F; then
