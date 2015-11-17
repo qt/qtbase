@@ -1126,6 +1126,13 @@ template <typename... Args> Q_CONSTEXPR Q_DECL_UNUSED QNonConstOverload<Args...>
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
+#ifdef Q_QDOC
+Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName,
+                                           const QString &defaultValue = QString());
+#else // need it as two functions because QString is only forward-declared here
+Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName);
+Q_CORE_EXPORT QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+#endif
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
 Q_CORE_EXPORT bool qunsetenv(const char *varName);
 

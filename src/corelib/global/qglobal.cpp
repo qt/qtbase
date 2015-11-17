@@ -3152,24 +3152,27 @@ void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 // add thread-safety for the Qt wrappers.
 static QBasicMutex environmentMutex;
 
-// getenv is declared as deprecated in VS2005. This function
-// makes use of the new secure getenv function.
 /*!
     \relates <QtGlobal>
+    \threadsafe
 
-    Returns the value of the environment variable with name \a
-    varName. To get the variable string, use QByteArray::constData().
+    Returns the value of the environment variable with name \a varName as a
+    QByteArray. If no variable by that name is found in the environment, this
+    function returns a default-constructed QByteArray.
+
+    The Qt environment manipulation functions are thread-safe, but this
+    requires that the C library equivalent functions like getenv and putenv are
+    not directly called.
+
     To convert the data to a QString use QString::fromLocal8Bit().
 
-    \note qgetenv() was introduced because getenv() from the standard
-    C library was deprecated in VC2005 (and later versions). qgetenv()
-    uses the new replacement function in VC, and calls the standard C
-    library's implementation on all other platforms.
+    \note on desktop Windows, qgetenv() may produce data loss if the
+    original string contains Unicode characters not representable in the
+    ANSI encoding. Use qEnvironmentVariable() instead.
+    On Unix systems, this function is lossless.
 
-    \warning Don't use qgetenv on Windows if the content may contain
-    non-US-ASCII characters, like file paths.
-
-    \sa qputenv(), qEnvironmentVariableIsSet(), qEnvironmentVariableIsEmpty()
+    \sa qputenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet(),
+    qEnvironmentVariableIsEmpty()
 */
 QByteArray qgetenv(const char *varName)
 {
@@ -3191,6 +3194,87 @@ QByteArray qgetenv(const char *varName)
 #endif
 }
 
+
+/*!
+    \relates <QtGlobal>
+    \since 5.10
+
+    Returns the value of the environment variable with name \a varName as a
+    QString. If no variable by that name is found in the environment, this
+    function returns \a defaultValue.
+
+    The Qt environment manipulation functions are thread-safe, but this
+    requires that the C library equivalent functions like getenv and putenv are
+    not directly called.
+
+    The following table describes how to choose between qgetenv() and
+    qEnvironmentVariable():
+    \table
+      \header \li Condition         \li Recommendation
+      \row
+        \li Variable contains file paths or user text
+        \li qEnvironmentVariable()
+      \row
+        \li Windows-specific code
+        \li qEnvironmentVariable()
+      \row
+        \li Unix-specific code, destination variable is not QString and/or is
+            used to interface with non-Qt APIs
+        \li qgetenv()
+      \row
+        \li Destination variable is a QString
+        \li qEnvironmentVariable()
+      \row
+        \li Destination variable is a QByteArray or std::string
+        \li qgetenv()
+    \endtable
+
+    \note on Unix systems, this function may produce data loss if the original
+    string contains arbitrary binary data that cannot be decoded by the locale
+    codec. Use qgetenv() instead for that case. On Windows, this function is
+    lossless.
+
+    \note the variable name \a varName must contain only US-ASCII characters.
+
+    \sa qputenv(), qgetenv(), qEnvironmentVariableIsSet(), qEnvironmentVariableIsEmpty()
+*/
+QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    QMutexLocker locker(&environmentMutex);
+    QVarLengthArray<wchar_t, 32> wname(int(strlen(varName)) + 1);
+    for (int i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
+        wname[i] = uchar(varName[i]);
+    size_t requiredSize = 0;
+    QString buffer;
+    _wgetenv_s(&requiredSize, 0, 0, wname.data());
+    if (requiredSize == 0)
+        return defaultValue;
+    buffer.resize(int(requiredSize));
+    _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
+               wname.data());
+    // requiredSize includes the terminating null, which we don't want.
+    Q_ASSERT(buffer.endsWith(QLatin1Char('\0')));
+    buffer.chop(1);
+    return buffer;
+#else
+    QByteArray value = qgetenv(varName);
+    if (value.isNull())
+        return defaultValue;
+// duplicated in qfile.h (QFile::decodeName)
+#if defined(Q_OS_DARWIN)
+    return QString::fromUtf8(value).normalized(QString::NormalizationForm_C);
+#else // other Unix
+    return QString::fromLocal8Bit(value);
+#endif
+#endif
+}
+
+QString qEnvironmentVariable(const char *varName)
+{
+    return qEnvironmentVariable(varName, QString());
+}
+
 /*!
     \relates <QtGlobal>
     \since 5.1
@@ -3203,7 +3287,7 @@ QByteArray qgetenv(const char *varName)
     \endcode
     except that it's potentially much faster, and can't throw exceptions.
 
-    \sa qgetenv(), qEnvironmentVariableIsSet()
+    \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
 bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 {
@@ -3240,7 +3324,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
     are too long will either be truncated or this function will set \a ok to \c
     false.
 
-    \sa qgetenv(), qEnvironmentVariableIsSet()
+    \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsSet()
 */
 int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 {
@@ -3291,7 +3375,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
     \endcode
     except that it's potentially much faster, and can't throw exceptions.
 
-    \sa qgetenv(), qEnvironmentVariableIsEmpty()
+    \sa qgetenv(), qEnvironmentVariable(), qEnvironmentVariableIsEmpty()
 */
 bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 {
@@ -3321,7 +3405,7 @@ bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
     uses the replacement function in VC, and calls the standard C
     library's implementation on all other platforms.
 
-    \sa qgetenv()
+    \sa qgetenv(), qEnvironmentVariable()
 */
 bool qputenv(const char *varName, const QByteArray& value)
 {
@@ -3352,7 +3436,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 
     \since 5.1
 
-    \sa qputenv(), qgetenv()
+    \sa qputenv(), qgetenv(), qEnvironmentVariable()
 */
 bool qunsetenv(const char *varName)
 {

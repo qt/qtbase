@@ -81,6 +81,7 @@ public:
     }
     static QString decodeName(const QByteArray &localFileName)
     {
+        // note: duplicated in qglobal.cpp (qEnvironmentVariable)
         return QString::fromUtf8(localFileName).normalized(QString::NormalizationForm_C);
     }
 #else
