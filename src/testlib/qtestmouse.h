@@ -95,7 +95,7 @@ namespace QTest
         }
 
         if (pos.isNull())
-            pos = window->geometry().center();
+            pos = QPoint(window->width() / 2, window->height() / 2);
 
         QTEST_ASSERT(uint(stateKey) == 0 || stateKey & Qt::KeyboardModifierMask);
 
