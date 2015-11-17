@@ -55,6 +55,7 @@
 #include "QtNetwork/qhostaddress.h"
 #include "QtNetwork/qabstractsocket.h"
 #include "private/qobject_p.h"
+#include "private/qnetworkdatagram_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,30 +65,6 @@ class QAbstractSocketEnginePrivate;
 class QNetworkInterface;
 #endif
 class QNetworkProxy;
-
-class QIpPacketHeader
-{
-public:
-    QIpPacketHeader(const QHostAddress &dstAddr = QHostAddress(), quint16 port = 0)
-        : destinationAddress(dstAddr), ifindex(0), hopLimit(-1), destinationPort(port)
-    {}
-
-    void clear()
-    {
-        senderAddress.clear();
-        destinationAddress.clear();
-        ifindex = 0;
-        hopLimit = -1;
-    }
-
-    QHostAddress senderAddress;
-    QHostAddress destinationAddress;
-
-    uint ifindex;
-    int hopLimit;
-    quint16 senderPort;
-    quint16 destinationPort;
-};
 
 class QAbstractSocketEngineReceiver {
 public:
