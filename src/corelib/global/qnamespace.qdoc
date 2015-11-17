@@ -1704,8 +1704,8 @@
     \value Key_unknown
 
     \value Key_Call     A key to answer or initiate a call (see Qt::Key_ToggleCallHangup for a key to toggle current call state)
-    \value Key_Camera   A key to activate the camera shutter
-    \value Key_CameraFocus  A key to focus the camera
+    \value Key_Camera   A key to activate the camera shutter. On Windows Runtime, the environment variable QT_QPA_ENABLE_CAMERA_KEYS must be set to receive the event.
+    \value Key_CameraFocus  A key to focus the camera. On Windows Runtime, the environment variable QT_QPA_ENABLE_CAMERA_KEYS must be set to receive the event.
     \value Key_Context1
     \value Key_Context2
     \value Key_Context3
