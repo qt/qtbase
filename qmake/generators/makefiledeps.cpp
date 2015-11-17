@@ -573,8 +573,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
             int keyword_len = 0;
             const char *keyword = buffer+x;
             while(x+keyword_len < buffer_len) {
-                if(((*(buffer+x+keyword_len) < 'a' || *(buffer+x+keyword_len) > 'z')) &&
-                   *(buffer+x+keyword_len) != '_') {
+                if ((*(buffer+x+keyword_len) < 'a' || *(buffer+x+keyword_len) > 'z')) {
                     for(x+=keyword_len; //skip spaces after keyword
                         x < buffer_len && (*(buffer+x) == ' ' || *(buffer+x) == '\t');
                         x++) ;
@@ -603,21 +602,6 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 *(buffer + x + inc_len) = '\0';
                 inc = buffer + x;
                 x += inc_len;
-            } else if(keyword_len == 13 && !strncmp(keyword, "qmake_warning", keyword_len)) {
-                char term = 0;
-                if(*(buffer + x) == '"')
-                    term = '"';
-                if(*(buffer + x) == '\'')
-                    term = '\'';
-                if(term)
-                    x++;
-
-                int msg_len;
-                for(msg_len = 0; (term && *(buffer + x + msg_len) != term) &&
-                              !qmake_endOfLine(*(buffer + x + msg_len)); ++msg_len) ;
-                *(buffer + x + msg_len) = '\0';
-                debug_msg(0, "%s:%d %s -- %s", file->file.local().toLatin1().constData(), line_count, keyword, buffer+x);
-                x += msg_len;
             } else if(*(buffer+x) == '\'' || *(buffer+x) == '"') {
                 const char term = *(buffer+(x++));
                 while(x < buffer_len) {
