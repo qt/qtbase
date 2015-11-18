@@ -475,11 +475,14 @@ static inline QString retrieveLabel(const QByteArray &device)
 #ifdef Q_OS_LINUX
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
 
+    QFileInfo devinfo(QFile::decodeName(device));
+    QString devicePath = devinfo.canonicalFilePath();
+
     QDirIterator it(QLatin1String(pathDiskByLabel), QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo(it.fileInfo());
-        if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLocal8Bit() == device)
+        if (fileInfo.isSymLink() && fileInfo.symLinkTarget() == devicePath)
             return fileInfo.fileName();
     }
 #elif defined Q_OS_HAIKU
