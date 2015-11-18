@@ -10,14 +10,7 @@
 #
 
 load(qt_build_paths)
-# Pre-generated headers in the source tree and
-# - shadow build or
-# - non-shadow non-prefix build of a module which is not qtbase (because the build-time
-#   generated headers all end up in qtbase).
-!git_build:if(!equals(_PRO_FILE_PWD_, $$OUT_PWD) \
-              |if(!prefix_build:!equals(MODULE_BASE_INDIR, $$[QT_HOST_PREFIX]))): \
-    CONFIG += split_incpath
-force_independent|split_incpath: \
+force_independent|!isEmpty(MODULE_FWD_INCLUDES): \
     CONFIG += need_fwd_pri
 mod_work_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
 need_fwd_pri: \
@@ -77,27 +70,6 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_master = "QT.$${MODULE_ID}.master_header = $$MODULE_MASTER_HEADER"
     else: \
         module_master =
-    !no_module_headers:!minimal_syncqt {
-        MODULE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME
-        MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
-                                  \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME
-    }
-    split_incpath {
-        MODULE_SHADOW_INCLUDES = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, \
-                                                            $$MODULE_BASE_OUTDIR/include)
-        generated_privates: \
-            MODULE_SHADOW_PRIVATE_INCLUDES = $$replace(MODULE_PRIVATE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, \
-                                                                                $$MODULE_BASE_OUTDIR/include)
-    }
-    MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
-    MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
-    internal_module: \
-        MODULE_INCLUDES += $$MODULE_PRIVATE_INCLUDES
-    split_incpath {
-        MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE_ID}.includes += $$val_escape(MODULE_SHADOW_INCLUDES)"
-        generated_privates: \
-            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}_private.includes += $$val_escape(MODULE_SHADOW_PRIVATE_INCLUDES)"
-    }
     MODULE_PRI_CONT = \
         "QT.$${MODULE_ID}.VERSION = $${VERSION}" \
         "QT.$${MODULE_ID}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
@@ -143,7 +115,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
 
     need_fwd_pri {
 
-        split_incpath: \
+        !git_build: \
             MODULE_BASE_INCDIR = $$MODULE_BASE_INDIR
         else: \
             MODULE_BASE_INCDIR = $$MODULE_BASE_OUTDIR
@@ -163,7 +135,15 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         !internal_module:!no_private_module: MODULE_FWD_PRI_CONT += \
             "include($$val_escape(MODULE_PRIVATE_PRI))" \
             "QT.$${MODULE}_private.priority = 1"
-        MODULE_FWD_PRI_CONT += $$MODULE_FWD_PRI_CONT_SUFFIX
+        !isEmpty(MODULE_FWD_INCLUDES) {
+            !lib_bundle: \
+                pls = +
+            MODULE_FWD_PRI_CONT += \
+                "QT.$${MODULE_ID}.includes $$pls= $$MODULE_FWD_INCLUDES"
+            !internal_module: \
+                MODULE_FWD_PRI_CONT += \
+                    "QT.$${MODULE}_private.includes $$pls= $$MODULE_FWD_PRIVATE_INCLUDES"
+        }
         write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
         touch($$MODULE_FWD_PRI, $$MODULE_PRI)
         MODULE_PRI_FILES += $$MODULE_FWD_PRI
