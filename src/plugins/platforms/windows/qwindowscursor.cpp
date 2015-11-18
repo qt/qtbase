@@ -47,11 +47,12 @@
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
 
-static void initResources()
+static bool initResources()
 {
 #if !defined (Q_OS_WINCE) && !defined (QT_NO_IMAGEFORMAT_PNG)
     Q_INIT_RESOURCE(cursors);
 #endif
+    return true;
 }
 
 QT_BEGIN_NAMESPACE
@@ -590,9 +591,11 @@ CursorHandlePtr QWindowsCursor::pixmapWindowCursor(const QCursor &c)
     return it.value();
 }
 
-QWindowsCursor::QWindowsCursor()
+QWindowsCursor::QWindowsCursor(const QPlatformScreen *screen)
+    : m_screen(screen)
 {
-    initResources();
+    static const bool dummy = initResources();
+    Q_UNUSED(dummy)
 }
 
 /*!

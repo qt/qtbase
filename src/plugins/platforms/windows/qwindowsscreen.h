@@ -42,7 +42,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVector>
 #include <QtCore/QPair>
-#include <QtCore/QSharedPointer>
+#include <QtCore/QScopedPointer>
 #include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +74,7 @@ class QWindowsScreen : public QPlatformScreen
 {
 public:
 #ifndef QT_NO_CURSOR
-    typedef QSharedPointer<QPlatformCursor> CursorPtr;
+    typedef QScopedPointer<QPlatformCursor> CursorPtr;
 #endif
 
     explicit QWindowsScreen(const QWindowsScreenData &data);

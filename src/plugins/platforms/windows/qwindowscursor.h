@@ -96,7 +96,7 @@ public:
         QPoint hotSpot;
     };
 
-    QWindowsCursor();
+    explicit QWindowsCursor(const QPlatformScreen *screen);
 
     void changeCursor(QCursor * widgetCursor, QWindow * widget) Q_DECL_OVERRIDE;
     QPoint pos() const Q_DECL_OVERRIDE;
@@ -117,6 +117,7 @@ private:
     typedef QHash<Qt::CursorShape, CursorHandlePtr> StandardCursorCache;
     typedef QHash<QWindowsPixmapCursorCacheKey, CursorHandlePtr> PixmapCursorCache;
 
+    const QPlatformScreen *const m_screen;
     StandardCursorCache m_standardCursorCache;
     PixmapCursorCache m_pixmapCursorCache;
 };
