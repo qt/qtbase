@@ -33,6 +33,7 @@
 
 #include "qhostinfo_p.h"
 
+#include <qfunctions_winrt.h>
 #include <qurl.h>
 
 #include <wrl.h>
@@ -76,19 +77,22 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     ComPtr<IHostNameFactory> hostnameFactory;
     HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
                                         IID_PPV_ARGS(&hostnameFactory));
-    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IHostName> host;
     HStringReference hostNameRef((const wchar_t*)hostName.utf16());
-    hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
+    hr = hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IDatagramSocketStatics> datagramSocketStatics;
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IAsyncOperation<IVectorView<EndpointPair *> *>> op;
-    datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
+    hr = datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
                                                  HString::MakeReference(L"0").Get(),
                                                  &op);
+    Q_ASSERT_SUCCEEDED(hr);
 
     ComPtr<IVectorView<EndpointPair *>> endpointPairs;
     hr = op->GetResults(&endpointPairs);
@@ -105,24 +109,30 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         results.setErrorString(tr("Host %1 could not be found.").arg(hostName));
         return results;
     }
+    Q_ASSERT_SUCCEEDED(hr);
 
     unsigned int size;
-    endpointPairs->get_Size(&size);
+    hr = endpointPairs->get_Size(&size);
+    Q_ASSERT_SUCCEEDED(hr);
     QList<QHostAddress> addresses;
     for (unsigned int i = 0; i < size; ++i) {
         ComPtr<IEndpointPair> endpointpair;
-        endpointPairs->GetAt(i, &endpointpair);
+        hr = endpointPairs->GetAt(i, &endpointpair);
+        Q_ASSERT_SUCCEEDED(hr);
         ComPtr<IHostName> remoteHost;
-        endpointpair->get_RemoteHostName(&remoteHost);
+        hr = endpointpair->get_RemoteHostName(&remoteHost);
+        Q_ASSERT_SUCCEEDED(hr);
         if (!remoteHost)
             continue;
         HostNameType type;
-        remoteHost->get_Type(&type);
+        hr = remoteHost->get_Type(&type);
+        Q_ASSERT_SUCCEEDED(hr);
         if (type == HostNameType_DomainName)
             continue;
 
         HString name;
-        remoteHost->get_CanonicalName(name.GetAddressOf());
+        hr = remoteHost->get_CanonicalName(name.GetAddressOf());
+        Q_ASSERT_SUCCEEDED(hr);
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         QHostAddress addr;
