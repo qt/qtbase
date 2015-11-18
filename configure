@@ -489,7 +489,7 @@ HostVar()
             eq="="
             ;;
         *)
-            echo >&2 "BUG: wrong command to QMakeVar: $1"
+            echo >&2 "BUG: wrong command to HostVar: $1"
             ;;
     esac
 
