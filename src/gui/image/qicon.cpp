@@ -1398,8 +1398,12 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
 
     Given base foo.png and a target dpr of 2.5, this function will look for
     foo@3x.png, then foo@2x, then fall back to foo.png if not found.
+
+    \a sourceDevicePixelRatio will be set to the value of N if the argument is
+    a non-null pointer
 */
-QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio)
+QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
+                        qreal *sourceDevicePixelRatio)
 {
     if (targetDevicePixelRatio <= 1.0)
         return baseFileName;
@@ -1417,8 +1421,11 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
     for (int n = qCeil(targetDevicePixelRatio); n > 1; --n) {
         QString atNxfileName = baseFileName;
         atNxfileName.insert(dotIndex, atNx.arg(n));
-        if (QFile::exists(atNxfileName))
+        if (QFile::exists(atNxfileName)) {
+            if (sourceDevicePixelRatio)
+                *sourceDevicePixelRatio = n;
             return atNxfileName;
+        }
     }
 
     return baseFileName;

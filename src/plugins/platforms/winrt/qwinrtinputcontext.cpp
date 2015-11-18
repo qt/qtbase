@@ -54,6 +54,14 @@ typedef ITypedEventHandler<InputPane*, InputPaneVisibilityEventArgs*> InputPaneV
 
 QT_BEGIN_NAMESPACE
 
+inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
+{
+    Rect rect;
+    pane->get_OccludedRect(&rect);
+    return QRectF(qRound(rect.X * scaleFactor), qRound(rect.Y * scaleFactor),
+                  qRound(rect.Width * scaleFactor), qRound(rect.Height * scaleFactor));
+}
+
 /*!
     \class QWinRTInputContext
     \brief Manages Input Method visibility
@@ -87,7 +95,7 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
         inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
                                   this, &QWinRTInputContext::onHiding).Get(), &hideToken);
 
-        handleVisibilityChange(inputPane);
+        m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
         m_isInputPanelVisible = !m_keyboardRect.isEmpty();
     } else {
         qWarning(Q_FUNC_INFO ": failed to retrieve InputPane.");
@@ -120,10 +128,7 @@ HRESULT QWinRTInputContext::onHiding(IInputPane *pane, IInputPaneVisibilityEvent
 
 HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
 {
-    Rect rect;
-    pane->get_OccludedRect(&rect);
-    const QRectF keyboardRect = QRectF(qRound(rect.X * m_screen->scaleFactor()), qRound(rect.Y * m_screen->scaleFactor()),
-                                       qRound(rect.Width * m_screen->scaleFactor()), qRound(rect.Height * m_screen->scaleFactor()));
+    const QRectF keyboardRect = getInputPaneRect(pane, m_screen->scaleFactor());
     if (m_keyboardRect != keyboardRect) {
         m_keyboardRect = keyboardRect;
         emitKeyboardRectChanged();

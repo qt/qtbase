@@ -76,11 +76,6 @@ for(ever) {
             next()
         }
 
-        target_qt:isEqual(TARGET, $$MODULE_NAME) {
-            warning("$$TARGET cannot have a QT$$var_sfx of $$QTLIB")
-            next()
-        }
-
         contains(MODULE_CONFIG, internal_module): \
             using_privates = true
         contains(MODULE_CONFIG, ltcg): \
@@ -155,7 +150,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 !no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
         contains(qt_module_deps, core) {
-    relative_qt_rpath:!isEmpty(QMAKE_LFLAGS_REL_RPATH):contains(INSTALLS, target):\
+    relative_qt_rpath:!isEmpty(QMAKE_REL_RPATH_BASE):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
         mac {
             if(equals(TEMPLATE, app):app_bundle)|\
@@ -349,11 +344,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
        QT_PLUGINPATH = $$eval(QT_PLUGIN.$${QTPLUG}.TYPE)
 
         # Generate the plugin linker line
-        target_qt:isEqual(TARGET, QTPLUG) {
-            warning($$TARGET cannot have a QTPLUGIN of $$QTPLUG)
-        } else {
-            QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
-        }
+        QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {

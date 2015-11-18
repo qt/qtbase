@@ -62,7 +62,6 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QWindowsWindowData createWindowData(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
@@ -100,6 +99,9 @@ public:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
 #endif
+
+protected:
+    virtual QWindowsWindow *createPlatformWindowHelper(QWindow *window, const QWindowsWindowData &) const;
 
 private:
     QScopedPointer<QWindowsIntegrationPrivate> d;

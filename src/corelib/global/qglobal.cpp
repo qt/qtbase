@@ -3842,7 +3842,8 @@ int qrand()
        independent copy of the object.
     \li \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
        and/or a destructor but can be moved in memory using \c
-       memcpy().
+       memcpy(). Note: despite the name, this has nothing to do with move
+       constructors or C++ move semantics.
     \li \c Q_COMPLEX_TYPE (the default) specifies that \a Type has
        constructors and/or a destructor and that it may not be moved
        in memory.

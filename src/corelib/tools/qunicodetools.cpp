@@ -49,7 +49,7 @@ namespace QUnicodeTools {
 // -----------------------------------------------------------------------------------------------------
 //
 // The text boundaries determination algorithm.
-// See http://www.unicode.org/reports/tr29/tr29-25.html
+// See http://www.unicode.org/reports/tr29/tr29-27.html
 //
 // -----------------------------------------------------------------------------------------------------
 
@@ -244,8 +244,9 @@ namespace SB {
 
 enum State {
     Initial,
+    Lower,
     Upper,
-    UpATerm,
+    LUATerm,
     ATerm,
     ATermC,
     ACS,
@@ -260,10 +261,11 @@ enum State {
 
 static const uchar breakTable[BAfter + 1][QUnicodeTables::SentenceBreak_Close + 1] = {
 //     Other     CR       LF      Sep     Extend     Sp      Lower   Upper    OLetter  Numeric  ATerm   SContinue STerm     Close
-    { Initial, BAfterC, BAfter , BAfter , Initial, Initial, Initial, Upper  , Initial, Initial, ATerm  , Initial, STerm  , Initial }, // Initial
-    { Initial, BAfterC, BAfter , BAfter , Upper  , Initial, Initial, Upper  , Initial, Initial, UpATerm, STerm  , STerm  , Initial }, // Upper
+    { Initial, BAfterC, BAfter , BAfter , Initial, Initial, Lower  , Upper  , Initial, Initial, ATerm  , Initial, STerm  , Initial }, // Initial
+    { Initial, BAfterC, BAfter , BAfter , Lower  , Initial, Initial, Initial, Initial, Initial, LUATerm, Initial, STerm  , Initial }, // Lower
+    { Initial, BAfterC, BAfter , BAfter , Upper  , Initial, Initial, Upper  , Initial, Initial, LUATerm, STerm  , STerm  , Initial }, // Upper
 
-    { Lookup , BAfterC, BAfter , BAfter , UpATerm, ACS    , Initial, Upper  , Break  , Initial, ATerm  , STerm  , STerm  , ATermC  }, // UpATerm
+    { Lookup , BAfterC, BAfter , BAfter , LUATerm, ACS    , Initial, Upper  , Break  , Initial, ATerm  , STerm  , STerm  , ATermC  }, // LUATerm
     { Lookup , BAfterC, BAfter , BAfter , ATerm  , ACS    , Initial, Break  , Break  , Initial, ATerm  , STerm  , STerm  , ATermC  }, // ATerm
     { Lookup , BAfterC, BAfter , BAfter , ATermC , ACS    , Initial, Break  , Break  , Lookup , ATerm  , STerm  , STerm  , ATermC  }, // ATermC
     { Lookup , BAfterC, BAfter , BAfter , ACS    , ACS    , Initial, Break  , Break  , Lookup , ATerm  , STerm  , STerm  , Lookup  }, // ACS
@@ -341,7 +343,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
 // -----------------------------------------------------------------------------------------------------
 //
 // The line breaking algorithm.
-// See http://www.unicode.org/reports/tr14/tr14-33.html
+// See http://www.unicode.org/reports/tr14/tr14-35.html
 //
 // -----------------------------------------------------------------------------------------------------
 
@@ -408,26 +410,29 @@ inline Class toClass(QUnicodeTables::LineBreakClass lbc, QChar::Category categor
 /* In order to support the tailored implementation of LB25 properly
    the following changes were made in the pair table to allow breaks
    where the numeric expression doesn't match the template (i.e. [^NU](IS|SY)NU):
-   CL->PO from IB to DB
-   CP->PO from IB to DB
-   CL->PR from IB to DB
-   CP->PR from IB to DB
-   PO->OP from IB to DB
-   PR->OP from IB to DB
-   IS->NU from IB to DB
-   SY->NU from IB to DB
+   (CL)(PO) from IB to DB
+   (CP)(PO) from IB to DB
+   (CL)(PR) from IB to DB
+   (CP)(PR) from IB to DB
+   (PO)(OP) from IB to DB
+   (PR)(OP) from IB to DB
+   (IS)(NU) from IB to DB
+   (SY)(NU) from IB to DB
 */
 
-// The following line break classes are not treated by the pair table
-// and must be resolved outside:
-//  AI, BK, CB, CJ, CR, LF, NL, SA, SG, SP, XX
+/* In order to implementat LB21a properly a special rule HH has been introduced and
+   the following changes were made in the pair table to disallow breaks after Hebrew + Hyphen:
+   (HL)(HY|BA) from IB to CI
+   (HY|BA)(!CB) from DB to HH
+*/
 
 enum Action {
     ProhibitedBreak, PB = ProhibitedBreak,
     DirectBreak, DB = DirectBreak,
     IndirectBreak, IB = IndirectBreak,
     CombiningIndirectBreak, CI = CombiningIndirectBreak,
-    CombiningProhibitedBreak, CP = CombiningProhibitedBreak
+    CombiningProhibitedBreak, CP = CombiningProhibitedBreak,
+    ProhibitedBreakAfterHebrewPlusHyphen, HH = ProhibitedBreakAfterHebrewPlusHyphen
 };
 
 static const uchar breakTable[QUnicodeTables::LineBreak_CB + 1][QUnicodeTables::LineBreak_CB + 1] = {
@@ -438,18 +443,18 @@ static const uchar breakTable[QUnicodeTables::LineBreak_CB + 1][QUnicodeTables::
 /* QU */ { PB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB },
 /* GL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, IB },
 /* NS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
-/* EX */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
-/* SY */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
+/* EX */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
+/* SY */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* IS */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* PR */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, IB, DB, IB, IB, DB, DB, PB, CI, PB, IB, IB, IB, IB, IB, DB, DB },
 /* PO */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* NU */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* AL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
-/* HL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
+/* HL */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, IB, IB, IB, DB, IB, CI, CI, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* ID */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, IB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* IN */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, IB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
-/* HY */ { DB, PB, PB, IB, DB, IB, PB, PB, PB, DB, DB, IB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
-/* BA */ { DB, PB, PB, IB, DB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
+/* HY */ { HH, PB, PB, IB, HH, IB, PB, PB, PB, HH, HH, IB, HH, HH, HH, HH, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB },
+/* BA */ { HH, PB, PB, IB, HH, IB, PB, PB, PB, HH, HH, HH, HH, HH, HH, HH, IB, IB, HH, HH, PB, CI, PB, HH, HH, HH, HH, HH, HH, DB },
 /* BB */ { IB, PB, PB, IB, IB, IB, PB, PB, PB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, IB, PB, CI, PB, IB, IB, IB, IB, IB, IB, DB },
 /* B2 */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, PB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB },
 /* ZW */ { DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB },
@@ -463,6 +468,10 @@ static const uchar breakTable[QUnicodeTables::LineBreak_CB + 1][QUnicodeTables::
 /* RI */ { DB, PB, PB, IB, IB, IB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, IB, IB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, IB, DB },
 /* CB */ { DB, PB, PB, IB, IB, DB, PB, PB, PB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, DB, PB, CI, PB, DB, DB, DB, DB, DB, DB, DB }
 };
+
+// The following line break classes are not treated by the pair table
+// and must be resolved outside:
+//  AI, BK, CB, CJ, CR, LF, NL, SA, SG, SP, XX
 
 } // namespace LB
 
@@ -554,6 +563,10 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
         case LB::CombiningProhibitedBreak:
             if (lcls != QUnicodeTables::LineBreak_SP)
                 goto next_no_cls_update;
+            break;
+        case LB::ProhibitedBreakAfterHebrewPlusHyphen:
+            if (lcls != QUnicodeTables::LineBreak_HL)
+                attributes[pos].lineBreak = true;
             break;
         case LB::ProhibitedBreak:
             // nothing to do
@@ -659,7 +672,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
 // ----------------------------------------------------------------------------
 //
-// The Unicode script property. See http://www.unicode.org/reports/tr24/tr24-22.html
+// The Unicode script property. See http://www.unicode.org/reports/tr24/tr24-24.html
 //
 // ----------------------------------------------------------------------------
 

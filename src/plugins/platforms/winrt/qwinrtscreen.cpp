@@ -507,11 +507,7 @@ QWinRTScreen::QWinRTScreen()
     hr = d->displayInformation->get_NativeOrientation(&displayOrientation);
     Q_ASSERT_SUCCEEDED(hr);
     d->nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
-
-    // Set initial orientation & pixel density
-    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
     d->orientation = d->nativeOrientation;
-    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
 
     ComPtr<IApplicationViewStatics2> applicationViewStatics;
     hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
@@ -699,7 +695,8 @@ Xaml::IDependencyObject *QWinRTScreen::canvas() const
 void QWinRTScreen::setStatusBarVisibility(bool visible, QWindow *window)
 {
     Q_D(QWinRTScreen);
-    if (!window || (window->flags() & Qt::WindowType_Mask) != Qt::Window)
+    const Qt::WindowFlags windowType = window->flags() & Qt::WindowType_Mask;
+    if (!window || (windowType != Qt::Window && windowType != Qt::Dialog))
         return;
 
     QEventDispatcherWinRT::runOnXamlThread([d, visible]() {
@@ -756,6 +753,8 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_DpiChanged]);
     Q_ASSERT_SUCCEEDED(hr);
+    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
+    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
     onVisibilityChanged(nullptr, nullptr);
 }
 

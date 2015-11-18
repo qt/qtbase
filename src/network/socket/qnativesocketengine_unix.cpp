@@ -899,8 +899,10 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %lli, %s, %i) == %lli",
            data, qt_prettyDebug(data, qMin(recvResult, ssize_t(16)), recvResult).data(), maxSize,
-           address ? address->toString().toLatin1().constData() : "(nil)",
-           port ? *port : 0, (qint64) recvResult);
+           (recvResult != -1 && options != QAbstractSocketEngine::WantNone)
+           ? header->senderAddress.toString().toLatin1().constData() : "(unknown)",
+           (recvResult != -1 && options != QAbstractSocketEngine::WantNone)
+           ? header->senderPort : 0, (qint64) recvResult);
 #endif
 
     return qint64(maxSize ? recvResult : recvResult == -1 ? -1 : 0);
@@ -996,8 +998,9 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEngine::sendDatagram(%p \"%s\", %lli, \"%s\", %i) == %lli", data,
-           qt_prettyDebug(data, qMin<int>(len, 16), len).data(), len, host.toString().toLatin1().constData(),
-           port, (qint64) sentBytes);
+           qt_prettyDebug(data, qMin<int>(len, 16), len).data(), len,
+           header.destinationAddress.toString().toLatin1().constData(),
+           header.destinationPort, (qint64) sentBytes);
 #endif
 
     return qint64(sentBytes);

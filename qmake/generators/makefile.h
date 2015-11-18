@@ -185,7 +185,7 @@ protected:
     virtual bool doDepends() const { return Option::mkfile::do_deps; }
 
     void filterIncludedFiles(const char *);
-    virtual void processSources() {
+    void processSources() {
         filterIncludedFiles("SOURCES");
         filterIncludedFiles("GENERATED_SOURCES");
     }

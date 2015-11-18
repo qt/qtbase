@@ -47,7 +47,7 @@
            "id": 4,
           "description": "Intel HD Graphics 3000 crashes when initializing the OpenGL driver (QTBUG-42240)",
           "vendor_id": "0x8086",
-          "device_id": [ "0x0102", "0x0116" ],
+          "device_id": [ "0x0102", "0x0106", "0x010A", "0x0112", "0x0116", "0x0122", "0x0126" ],
           "os": {
               "type": "win"
           },

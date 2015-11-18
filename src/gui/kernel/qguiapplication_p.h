@@ -221,6 +221,7 @@ public:
 
     static QFont *app_font;
 
+    static QString styleOverride;
     static QStyleHints *styleHints;
     static bool obey_desktop_settings;
     QInputMethod *inputMethod;

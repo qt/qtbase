@@ -853,8 +853,15 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                                 QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
                                                 suffixSetting = "$(" + suffixSetting + ")";
                                                 if (!librarySuffix.isEmpty()) {
-                                                    library.replace(librarySuffix, suffixSetting);
-                                                    name.remove(librarySuffix);
+                                                    int pos = library.lastIndexOf(librarySuffix + '.');
+                                                    if (pos == -1) {
+                                                        warn_msg(WarnLogic, "Failed to find expected suffix '%s' for library '%s'.",
+                                                                            qPrintable(librarySuffix), qPrintable(library));
+                                                    } else {
+                                                        library.replace(pos, librarySuffix.length(), suffixSetting);
+                                                        if (name.endsWith(librarySuffix))
+                                                            name.chop(librarySuffix.length());
+                                                    }
                                                 } else {
                                                     library.replace(name, name + suffixSetting);
                                                 }

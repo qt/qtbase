@@ -4711,9 +4711,11 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
                 if (!naturalFont.isCopyOf(QApplication::font())) {
-                    QFont inheritedFont = p->font();
-                    inheritedFont.resolve(inheritedMask);
-                    naturalFont = inheritedFont.resolve(naturalFont);
+                    if (inheritedMask != 0) {
+                        QFont inheritedFont = p->font();
+                        inheritedFont.resolve(inheritedMask);
+                        naturalFont = inheritedFont.resolve(naturalFont);
+                    } // else nothing to do (naturalFont = naturalFont)
                 } else {
                     naturalFont = p->font();
                 }
@@ -4721,9 +4723,11 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
         }
 #ifndef QT_NO_GRAPHICSVIEW
         else if (extra && extra->proxyWidget) {
-            QFont inheritedFont = extra->proxyWidget->font();
-            inheritedFont.resolve(inheritedMask);
-            naturalFont = inheritedFont.resolve(naturalFont);
+            if (inheritedMask != 0) {
+                QFont inheritedFont = extra->proxyWidget->font();
+                inheritedFont.resolve(inheritedMask);
+                naturalFont = inheritedFont.resolve(naturalFont);
+            } // else nothing to do (naturalFont = naturalFont)
         }
 #endif //QT_NO_GRAPHICSVIEW
     }

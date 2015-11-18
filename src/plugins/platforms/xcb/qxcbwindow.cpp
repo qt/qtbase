@@ -2378,8 +2378,6 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
         return;
     } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
         m_dirtyFrameMargins = true;
-    } else if (event->atom == atom(QXcbAtom::_NET_WORKAREA) && xcbScreen() && event->window == xcbScreen()->root()) {
-        xcbScreen()->updateGeometry(event->time);
     }
 }
 

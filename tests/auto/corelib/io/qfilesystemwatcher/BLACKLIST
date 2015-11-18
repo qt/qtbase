@@ -1,9 +1,9 @@
 # QTBUG-33574 QTBUG-30943
 [signalsEmittedAfterFileMoved]
-windows 32bit msvc-2010
-windows 64bit msvc
+windows
 [watchFileAndItsDirectory:native backend-testfile]
 osx
+windows
 [watchFileAndItsDirectory:native backend-specialchars]
 osx
 windows

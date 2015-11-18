@@ -58,6 +58,8 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     cmAtomName += QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
     m_compositingActive = connection->getSelectionOwner(m_net_wm_cm_atom);
+
+    m_workArea = getWorkArea();
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
@@ -72,6 +74,11 @@ QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
             return screen;
     }
     return Q_NULLPTR;
+}
+
+void QXcbVirtualDesktop::addScreen(QPlatformScreen *s)
+{
+    ((QXcbScreen *) s)->isPrimary() ? m_screens.prepend(s) : m_screens.append(s);
 }
 
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
@@ -104,6 +111,40 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
         Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->getQtSelectionOwner(), m_net_wm_cm_atom, mask));
+    }
+}
+
+QRect QXcbVirtualDesktop::getWorkArea() const
+{
+    QRect r;
+    xcb_get_property_reply_t * workArea =
+        xcb_get_property_reply(xcb_connection(),
+            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
+                             atom(QXcbAtom::_NET_WORKAREA),
+                             XCB_ATOM_CARDINAL, 0, 1024), NULL);
+    if (workArea && workArea->type == XCB_ATOM_CARDINAL && workArea->format == 32 && workArea->value_len >= 4) {
+        // If workArea->value_len > 4, the remaining ones seem to be for WM's virtual desktops
+        // (don't mess with QXcbVirtualDesktop which represents an X screen).
+        // But QScreen doesn't know about that concept.  In reality there could be a
+        // "docked" panel (with _NET_WM_STRUT_PARTIAL atom set) on just one desktop.
+        // But for now just assume the first 4 values give us the geometry of the
+        // "work area", AKA "available geometry"
+        uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea);
+        r = QRect(geom[0], geom[1], geom[2], geom[3]);
+    } else {
+        r = QRect(QPoint(), size());
+    }
+    free(workArea);
+    return r;
+}
+
+void QXcbVirtualDesktop::updateWorkArea()
+{
+    QRect workArea = getWorkArea();
+    if (m_workArea != workArea) {
+        m_workArea = workArea;
+        foreach (QPlatformScreen *screen, m_screens)
+            ((QXcbScreen *)screen)->updateAvailableGeometry();
     }
 }
 
@@ -450,7 +491,6 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
 {
     QRect xGeometry = geom;
-    QRect xAvailableGeometry = xGeometry;
     switch (rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
@@ -479,32 +519,21 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
                                    Q_MM_PER_INCH * xGeometry.width() / dpi.second);
     }
 
-    xcb_get_property_reply_t * workArea =
-        xcb_get_property_reply(xcb_connection(),
-            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
-                             atom(QXcbAtom::_NET_WORKAREA),
-                             XCB_ATOM_CARDINAL, 0, 1024), NULL);
-
-    if (workArea && workArea->type == XCB_ATOM_CARDINAL && workArea->format == 32 && workArea->value_len >= 4) {
-        // If workArea->value_len > 4, the remaining ones seem to be for virtual desktops.
-        // But QScreen doesn't know about that concept.  In reality there could be a
-        // "docked" panel (with _NET_WM_STRUT_PARTIAL atom set) on just one desktop.
-        // But for now just assume the first 4 values give us the geometry of the
-        // "work area", AKA "available geometry"
-        uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea);
-        QRect virtualAvailableGeometry(geom[0], geom[1], geom[2], geom[3]);
-        // Take the intersection of the desktop's available geometry with this screen's geometry
-        // to get the part of the available geometry which belongs to this screen.
-        xAvailableGeometry = xGeometry & virtualAvailableGeometry;
-    }
-    free(workArea);
-
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qRound(dpi/96);
     m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_nativeGeometry = QRect(xGeometry.topLeft(), xGeometry.size());
-    m_availableGeometry = QRect(xAvailableGeometry.topLeft(), xAvailableGeometry.size());
+    m_availableGeometry = xGeometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
+}
+
+void QXcbScreen::updateAvailableGeometry()
+{
+    QRect availableGeometry = m_geometry & m_virtualDesktop->workArea();
+    if (m_availableGeometry != availableGeometry) {
+        m_availableGeometry = availableGeometry;
+        QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
+    }
 }
 
 void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)

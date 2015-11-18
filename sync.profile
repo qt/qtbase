@@ -16,7 +16,7 @@
     "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",
     "QtANGLE/GLES3" => "!$basedir/src/3rdparty/angle/include/GLES3",
     "QtANGLE/EGL" => "!$basedir/src/3rdparty/angle/include/EGL",
-    "QtZlib" => "!$basedir/src/3rdparty/zlib",
+    "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtOpenGLExtensions" => "$basedir/src/openglextensions",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path

@@ -1383,7 +1383,7 @@ bool QDate::isLeapYear(int y)
 
     QTime uses the 24-hour clock format; it has no concept of AM/PM.
     Unlike QDateTime, QTime knows nothing about time zones or
-    daylight savings time (DST).
+    daylight-saving time (DST).
 
     A QTime object is typically created either by giving the number
     of hours, minutes, seconds, and milliseconds explicitly, or by
@@ -1728,7 +1728,7 @@ QTime QTime::addMSecs(int ms) const
     QTime t;
     if (isValid()) {
         if (ms < 0) {
-            // % not well-defined for -ve, but / is.
+            // %,/ not well-defined for -ve, so always work with +ve.
             int negdays = (MSECS_PER_DAY - ms) / MSECS_PER_DAY;
             t.mds = (ds() + ms + negdays * MSECS_PER_DAY) % MSECS_PER_DAY;
         } else {
@@ -2059,7 +2059,7 @@ void QTime::start()
 
     \warning If the system's clock setting has been changed since the
     last time start() or restart() was called, the result is
-    undefined. This can happen when daylight savings time is turned on
+    undefined. This can happen when daylight-saving time is turned on
     or off.
 
     \sa start(), elapsed(), currentTime()
@@ -2087,7 +2087,7 @@ int QTime::restart()
 
     \warning If the system's clock setting has been changed since the
     last time start() or restart() was called, the result is
-    undefined. This can happen when daylight savings time is turned on
+    undefined. This can happen when daylight-saving time is turned on
     or off.
 
     \sa start(), restart()
@@ -2301,7 +2301,7 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
 }
 
 // Calls the platform variant of localtime for the given msecs, and updates
-// the date, time, and daylight status with the returned values.
+// the date, time, and DST status with the returned values.
 static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localTime,
                          QDateTimePrivate::DaylightStatus *daylightStatus)
 {
@@ -2417,7 +2417,7 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
             *daylightStatus = QDateTimePrivate::StandardTime;
         return true;
     } else if (msecs > (qint64(TIME_T_MAX) * 1000)) {
-        // Docs state any LocalTime after 2037-12-31 *will* have any Daylight Time applied
+        // Docs state any LocalTime after 2037-12-31 *will* have any DST applied
         // but this may fall outside the supported time_t range, so need to fake it.
         // Use existing method to fake the conversion, but this is deeply flawed as it may
         // apply the conversion from the wrong day number, e.g. if rule is last Sunday of month
@@ -2442,7 +2442,7 @@ static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTi
 }
 
 // Convert a LocalTime expressed in local msecs encoding and the corresponding
-// daylight status into a UTC epoch msecs. Optionally populate the returned
+// DST status into a UTC epoch msecs. Optionally populate the returned
 // values from mktime for the adjusted local date and time.
 static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
                                      QDateTimePrivate::DaylightStatus *daylightStatus,
@@ -2457,10 +2457,10 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
 
     if (localMsecs <= qint64(MSECS_PER_DAY)) {
 
-        // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
+        // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
 
         // First, if localMsecs is within +/- 1 day of minimum time_t try mktime in case it does
-        // fall after minimum and needs proper daylight conversion
+        // fall after minimum and needs proper DST conversion
         if (localMsecs >= -qint64(MSECS_PER_DAY)) {
             bool valid;
             qint64 utcMsecs = qt_mktime(&dt, &tm, daylightStatus, abbreviation, &valid);
@@ -2488,11 +2488,11 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
 
     } else if (localMsecs >= msecsMax - MSECS_PER_DAY) {
 
-        // Docs state any LocalTime after 2037-12-31 *will* have any Daylight Time applied
+        // Docs state any LocalTime after 2037-12-31 *will* have any DST applied
         // but this may fall outside the supported time_t range, so need to fake it.
 
         // First, if localMsecs is within +/- 1 day of maximum time_t try mktime in case it does
-        // fall before maximum and can use proper daylight conversion
+        // fall before maximum and can use proper DST conversion
         if (localMsecs <= msecsMax + MSECS_PER_DAY) {
             bool valid;
             qint64 utcMsecs = qt_mktime(&dt, &tm, daylightStatus, abbreviation, &valid);
@@ -2662,7 +2662,7 @@ void QDateTimePrivate::setDaylightStatus(QDateTimePrivate::DaylightStatus status
     }
 }
 
-// Get the Daylight Status if LocalTime set via msecs
+// Get the DST Status if LocalTime set via msecs
 QDateTimePrivate::DaylightStatus QDateTimePrivate::daylightStatus() const
 {
     if ((m_status & SetToDaylightTime) == SetToDaylightTime)
@@ -2746,7 +2746,7 @@ void QDateTimePrivate::refreshDateTime()
 #endif // QT_BOOTSTRAPPED
 
     // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
-    // LocalTime and TimeZone might fall into "missing" DaylightTime transition hour
+    // LocalTime and TimeZone might fall into a "missing" DST transition hour
     // Calling toEpochMSecs will adjust the returned date/time if it does
     QDate testDate;
     QTime testTime;
@@ -2776,8 +2776,8 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
 {
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs);
-    // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
-    // but all times afterwards will have Daylight Time applied.
+    // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
+    // but all affected times afterwards will have DST applied.
     if (data.atMSecsSinceEpoch >= 0) {
         msecsToTime(data.atMSecsSinceEpoch + (data.offsetFromUtc * 1000), localDate, localTime);
         return data.atMSecsSinceEpoch;
@@ -2836,7 +2836,7 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     QDateTime expressed as local time; use toUTC() to convert it to
     UTC. You can also use timeSpec() to find out if a QDateTime
     object stores a UTC time or a local time. Operations such as
-    addSecs() and secsTo() are aware of daylight saving time (DST).
+    addSecs() and secsTo() are aware of daylight-saving time (DST).
 
     \note QDateTime does not account for leap seconds.
 
@@ -2866,7 +2866,7 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     correctly or not up-to-date, QDateTime will give wrong results as
     well.
 
-    \section2 Daylight Savings Time (DST)
+    \section2 Daylight-Saving Time (DST)
 
     QDateTime takes into account the system's time zone information
     when dealing with DST. On modern Unix systems, this means it
@@ -2884,7 +2884,7 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     time zone before 1970, even if the system's time zone database
     supports that information.
 
-    QDateTime takes into consideration the Standard Time to Daylight Time
+    QDateTime takes into consideration the Standard Time to Daylight-Saving Time
     transition.  For example if the transition is at 2am and the clock goes
     forward to 3am, then there is a "missing" hour from 02:00:00 to 02:59:59.999
     which QDateTime considers to be invalid.  Any date maths performed
@@ -2896,7 +2896,7 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     to define a QDateTime relative to UTC at a fixed offset of a given number
     of seconds from UTC.  For example, an offset of +3600 seconds is one hour
     ahead of UTC and is usually written in ISO standard notation as
-    "UTC+01:00".  Daylight Savings Time never applies with this TimeSpec.
+    "UTC+01:00".  Daylight-Saving Time never applies with this TimeSpec.
 
     There is no explicit size restriction to the offset seconds, but there is
     an implicit limit imposed when using the toString() and fromString()
@@ -2908,8 +2908,8 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
 
     A Qt::TimeSpec of Qt::TimeZone is also supported in conjunction with the
     QTimeZone class.  This allows you to define a datetime in a named time zone
-    adhering to a consistent set of daylight savings transition rules.  For
-    example a time zone of "Europe/Berlin" will apply the daylight savings
+    adhering to a consistent set of daylight-saving transition rules.  For
+    example a time zone of "Europe/Berlin" will apply the daylight-saving
     rules as used in Germany since 1970.  Note that the transition rules
     applied depend on the platform support.  See the QTimeZone documentation
     for more details.
@@ -3051,7 +3051,7 @@ bool QDateTime::isNull() const
     the current Qt::TimeSpec, otherwise returns \c false.
 
     If the timeSpec() is Qt::LocalTime or Qt::TimeZone then the date and time are
-    checked to see if they fall in the Standard Time to Daylight Time transition
+    checked to see if they fall in the Standard Time to Daylight-Saving Time transition
     hour, i.e. if the transition is at 2am and the clock goes forward to 3am
     then the time from 02:00:00 to 02:59:59.999 is considered to be invalid.
 
@@ -3142,10 +3142,10 @@ QTimeZone QDateTime::timeZone() const
     If the timeSpec() is Qt::OffsetFromUTC this will be the value originally set.
 
     If the timeSpec() is Qt::TimeZone this will be the offset effective in the
-    Time Zone including any Daylight Saving Offset.
+    Time Zone including any Daylight-Saving Offset.
 
     If the timeSpec() is Qt::LocalTime this will be the difference between the
-    Local Time and UTC including any Daylight Saving Offset.
+    Local Time and UTC including any Daylight-Saving Offset.
 
     If the timeSpec() is Qt::UTC this will be 0.
 
@@ -3202,7 +3202,7 @@ QString QDateTime::timeZoneAbbreviation() const
 /*!
     \since 5.2
 
-    Returns if this datetime falls in Daylight Savings Time.
+    Returns if this datetime falls in Daylight-Saving Time.
 
     If the Qt::TimeSpec is not Qt::LocalTime or Qt::TimeZone then will always
     return false.
@@ -3415,8 +3415,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         break;
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
-        // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
-        // but all times afterwards will have Daylight Time applied.
+        // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
+        // but all affected times afterwards will have DST applied.
         if (msecs >= 0)
             d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
         else
@@ -3658,7 +3658,7 @@ QString QDateTime::toString(const QString& format) const
     negative).
 
     If the timeSpec() is Qt::LocalTime and the resulting
-    date and time fall in the Standard Time to Daylight Time transition
+    date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between
     2am and 3am then the result will be adjusted to fall after 3am.
@@ -3693,7 +3693,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     is negative).
 
     If the timeSpec() is Qt::LocalTime and the resulting
-    date and time fall in the Standard Time to Daylight Time transition
+    date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between
     2am and 3am then the result will be adjusted to fall after 3am.
@@ -3728,7 +3728,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
     negative).
 
     If the timeSpec() is Qt::LocalTime and the resulting
-    date and time fall in the Standard Time to Daylight Time transition
+    date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between
     2am and 3am then the result will be adjusted to fall after 3am.
@@ -3788,7 +3788,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
 
     QDateTime dt(*this);
     if (d->m_spec == Qt::LocalTime || d->m_spec == Qt::TimeZone)
-        // Convert to real UTC first in case crosses daylight transition
+        // Convert to real UTC first in case crosses DST transition
         dt.setMSecsSinceEpoch(d->toMSecsSinceEpoch() + msecs);
     else
         // No need to convert, just add on
@@ -3823,8 +3823,8 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
     the value returned is negative.
 
     Before performing the comparison, the two datetimes are converted
-    to Qt::UTC to ensure that the result is correct if one of the two
-    datetimes has daylight saving time (DST) and the other doesn't.
+    to Qt::UTC to ensure that the result is correct if daylight-saving
+    (DST) applies to one of the two datetimes but not the other.
 
     Returns 0 if either datetime is invalid.
 
@@ -3845,8 +3845,8 @@ qint64 QDateTime::secsTo(const QDateTime &other) const
     the value returned is negative.
 
     Before performing the comparison, the two datetimes are converted
-    to Qt::UTC to ensure that the result is correct if one of the two
-    datetimes has daylight saving time (DST) and the other doesn't.
+    to Qt::UTC to ensure that the result is correct if daylight-saving
+    (DST) applies to one of the two datetimes and but not the other.
 
     Returns 0 if either datetime is invalid.
 

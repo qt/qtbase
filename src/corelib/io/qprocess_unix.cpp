@@ -720,7 +720,7 @@ report_errno:
 }
 #endif
 
-bool QProcessPrivate::processStarted()
+bool QProcessPrivate::processStarted(QString *errorMessage)
 {
     char buf[errorBufferMax];
     int i = 0;
@@ -744,8 +744,8 @@ bool QProcessPrivate::processStarted()
 #endif
 
     // did we read an error message?
-    if (i > 0)
-        q_func()->setErrorString(QString::fromLocal8Bit(buf, i));
+    if ((i > 0) && errorMessage)
+        *errorMessage = QString::fromLocal8Bit(buf, i);
 
     return i <= 0;
 }

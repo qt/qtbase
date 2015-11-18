@@ -285,9 +285,9 @@
 
     \snippet tools/plugandpaint/main.cpp 0
 
-    The argument to Q_IMPORT_PLUGIN() is the plugin's name, as
-    specified with Q_PLUGIN_METADATA() in the \l{Exporting the
-    Plugin}{plugin}.
+    The argument to Q_IMPORT_PLUGIN() is the plugin name, which corresponds
+    with the name of the class that declares metadata for the plugin with
+    Q_PLUGIN_METADATA().
 
     In the \c .pro file, we need to specify the static library.
     Here's the project file for building Plug & Paint:

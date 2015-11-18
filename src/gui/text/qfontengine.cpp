@@ -370,17 +370,15 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         return true;
     }
 
-#ifdef Q_OS_MAC
-    {
+#ifdef QT_ENABLE_HARFBUZZ_NG
+    if (qt_useHarfbuzzNG()) {
+#if defined(Q_OS_DARWIN)
         // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table
         uint len;
         if (getSfntTableData(MAKE_TAG('m','o','r','t'), 0, &len) || getSfntTableData(MAKE_TAG('m','o','r','x'), 0, &len))
             return true;
-    }
 #endif
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
-    if (qt_useHarfbuzzNG()) {
         bool ret = false;
         if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
             hb_tag_t script_tag_1, script_tag_2;
@@ -1837,7 +1835,10 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.family = fallbackFamilyAt(at - 1);
 
     if (QFontEngine *engine = QFontDatabase::findFont(request, m_script)) {
-        engine->fontDef = request;
+        if (request.weight > QFont::Normal)
+            engine->fontDef.weight = request.weight;
+        if (request.style > QFont::StyleNormal)
+            engine->fontDef.style = request.style;
         return engine;
     }
 

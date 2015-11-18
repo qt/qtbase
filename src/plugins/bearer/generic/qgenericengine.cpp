@@ -44,7 +44,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/private/qcoreapplication_p.h>
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #include "../platformdefs_win.h"
 #endif
 
@@ -54,6 +54,24 @@ typedef ULONG NDIS_OID, *PNDIS_OID;
 #    include <nuiouser.h>
 #  endif
 #endif // Q_OS_WINCE
+
+#ifdef Q_OS_WINRT
+#include <qfunctions_winrt.h>
+
+#include <wrl.h>
+#include <windows.foundation.h>
+#include <windows.foundation.collections.h>
+#include <windows.networking.connectivity.h>
+
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Foundation::Collections;
+using namespace ABI::Windows::Networking;
+using namespace ABI::Windows::Networking::Connectivity;
+// needed as interface is used as parameter name in qGetInterfaceType
+#undef interface
+#endif // Q_OS_WINRT
 
 #ifdef Q_OS_LINUX
 #include <sys/socket.h>
@@ -68,7 +86,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_NETWORKINTERFACE
 static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     DWORD bytesWritten;
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
@@ -163,6 +181,84 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
     if (result >= 0 && request.ifr_hwaddr.sa_family == ARPHRD_ETHER)
         return QNetworkConfiguration::BearerEthernet;
+#elif defined(Q_OS_WINRT)
+    ComPtr<INetworkInformationStatics> networkInfoStatics;
+    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &networkInfoStatics);
+    Q_ASSERT_SUCCEEDED(hr);
+    ComPtr<IVectorView<ConnectionProfile *>> connectionProfiles;
+    hr = networkInfoStatics->GetConnectionProfiles(&connectionProfiles);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (!connectionProfiles)
+        return QNetworkConfiguration::BearerUnknown;
+
+    unsigned int size;
+    hr = connectionProfiles->get_Size(&size);
+    Q_ASSERT_SUCCEEDED(hr);
+    for (unsigned int i = 0; i < size; ++i) {
+        ComPtr<IConnectionProfile> profile;
+        hr = connectionProfiles->GetAt(i, &profile);
+        Q_ASSERT_SUCCEEDED(hr);
+
+        ComPtr<INetworkAdapter> adapter;
+        hr = profile->get_NetworkAdapter(&adapter);
+        Q_ASSERT_SUCCEEDED(hr);
+        GUID id;
+        hr = adapter->get_NetworkAdapterId(&id);
+        Q_ASSERT_SUCCEEDED(hr);
+        OLECHAR adapterName[39]={0};
+        int length = StringFromGUID2(id, adapterName, 39);
+        // "length - 1" as we have to remove the null terminator from it in order to compare
+        if (!length
+                || QString::fromRawData(reinterpret_cast<const QChar *>(adapterName), length - 1) != interface)
+            continue;
+
+        ComPtr<IConnectionProfile2> profile2;
+        hr = profile.As(&profile2);
+        Q_ASSERT_SUCCEEDED(hr);
+        boolean isWLan;
+        hr = profile2->get_IsWlanConnectionProfile(&isWLan);
+        Q_ASSERT_SUCCEEDED(hr);
+        if (isWLan)
+            return QNetworkConfiguration::BearerWLAN;
+
+        boolean isWWan;
+        hr = profile2->get_IsWwanConnectionProfile(&isWWan);
+        Q_ASSERT_SUCCEEDED(hr);
+        if (isWWan) {
+            ComPtr<IWwanConnectionProfileDetails> details;
+            hr = profile2->get_WwanConnectionProfileDetails(&details);
+            Q_ASSERT_SUCCEEDED(hr);
+            WwanDataClass dataClass;
+            hr = details->GetCurrentDataClass(&dataClass);
+            Q_ASSERT_SUCCEEDED(hr);
+            switch (dataClass) {
+            case WwanDataClass_Edge:
+            case WwanDataClass_Gprs:
+                return QNetworkConfiguration::Bearer2G;
+            case WwanDataClass_Umts:
+                return QNetworkConfiguration::BearerWCDMA;
+            case WwanDataClass_LteAdvanced:
+                return QNetworkConfiguration::BearerLTE;
+            case WwanDataClass_Hsdpa:
+            case WwanDataClass_Hsupa:
+                return QNetworkConfiguration::BearerHSPA;
+            case WwanDataClass_Cdma1xRtt:
+            case WwanDataClass_Cdma3xRtt:
+            case WwanDataClass_CdmaUmb:
+                return QNetworkConfiguration::BearerCDMA2000;
+            case WwanDataClass_Cdma1xEvdv:
+            case WwanDataClass_Cdma1xEvdo:
+            case WwanDataClass_Cdma1xEvdoRevA:
+            case WwanDataClass_Cdma1xEvdoRevB:
+                return QNetworkConfiguration::BearerEVDO;
+            case WwanDataClass_Custom:
+            case WwanDataClass_None:
+            default:
+                return QNetworkConfiguration::BearerUnknown;
+            }
+        }
+        return QNetworkConfiguration::BearerEthernet;
+    }
 #else
     Q_UNUSED(interface);
 #endif
@@ -243,9 +339,11 @@ void QGenericEngine::doRequestUpdate()
         if (interface.flags() & QNetworkInterface::IsLoopBack)
             continue;
 
+#ifndef Q_OS_WINRT
         // ignore WLAN interface handled in separate engine
         if (qGetInterfaceType(interface.name()) == QNetworkConfiguration::BearerWLAN)
             continue;
+#endif
 
         uint identifier;
         if (interface.index())

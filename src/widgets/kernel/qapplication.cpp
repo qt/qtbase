@@ -399,8 +399,6 @@ void qt_cleanup();
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
 bool QApplicationPrivate::overrides_native_style = false; // whether native QApplication style is
                                                           // overridden, i.e. not native
-QString QApplicationPrivate::styleOverride;        // style override
-
 #ifndef QT_NO_STYLE_STYLESHEET
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
 #endif
@@ -466,6 +464,13 @@ QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
+    if (!styleOverride.isEmpty()) {
+        if (app_style) {
+            delete app_style;
+            app_style = 0;
+        }
+    }
+
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
         return;
@@ -481,13 +486,8 @@ void QApplicationPrivate::process_cmdline()
         QByteArray arg = argv[i];
         if (arg.startsWith("--"))
             arg.remove(0, 1);
-        QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
-        } else if (arg.indexOf("-style=", 0) != -1) {
-            s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
-        } else if (arg == "-style" && i < argc-1) {
-            s = QString::fromLocal8Bit(argv[++i]).toLower();
 #ifndef QT_NO_STYLE_STYLESHEET
         } else if (arg == "-stylesheet" && i < argc -1) {
             styleSheet = QLatin1String("file:///");
@@ -500,13 +500,6 @@ void QApplicationPrivate::process_cmdline()
             widgetCount = true;
         } else {
             argv[j++] = argv[i];
-        }
-        if (!s.isEmpty()) {
-            if (app_style) {
-                delete app_style;
-                app_style = 0;
-            }
-            styleOverride = s;
         }
     }
 

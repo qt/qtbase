@@ -1646,6 +1646,7 @@ QModelIndexList QItemSelectionModel::selectedIndexes() const
 /*!
     \since 4.2
     Returns the indexes in the given \a column for the rows where all columns are selected.
+    The list is not sorted.
 
     \sa selectedIndexes(), selectedColumns()
 */

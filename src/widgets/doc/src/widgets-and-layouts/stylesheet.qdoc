@@ -843,7 +843,7 @@
            \l{#selected-ps}{:selected},
            and \l{#checked-ps}{:checked} pseudo states.
 
-           Sort indicator in can be styled using the
+           The sort indicator can be styled using the
            \l{#up-arrow-sub}{::up-arrow} and the
            \l{#down-arrow-sub}{::down-arrow} Sub-control.
 

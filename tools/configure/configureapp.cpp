@@ -231,6 +231,7 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
     dictionary[ "FORCEDEBUGINFO" ]  = "no";
+    dictionary[ "OPTIMIZED_TOOLS" ] = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
 
@@ -461,6 +462,10 @@ void Configure::parseCmdLine()
             dictionary[ "SEPARATE_DEBUG_INFO" ] = "no";
         else if (configCmdLine.at(i) == "-separate-debug-info")
             dictionary[ "SEPARATE_DEBUG_INFO" ] = "yes";
+        else if (configCmdLine.at(i) == "-optimized-tools")
+            dictionary[ "RELEASE_TOOLS" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-optimized-tools")
+            dictionary[ "RELEASE_TOOLS" ] = "no";
 
         else if (configCmdLine.at(i) == "-compile-examples") {
             dictionary[ "COMPILE_EXAMPLES" ] = "yes";
@@ -1817,6 +1822,9 @@ bool Configure::displayHelp()
 
         desc("BUILDDEV", "yes", "-developer-build",      "Compile and link Qt with Qt developer options (including auto-tests exporting)\n");
 
+        desc("RELEASE_TOOLS", "yes", "-optimized-tools", "Do not build optimized host tools even in debug build.");
+        desc("RELEASE_TOOLS", "no", "-no-optimized-tools", "Build optimized host tools even in debug build.\n");
+
         desc("OPENSOURCE", "opensource", "-opensource",   "Compile and link the Open-Source Edition of Qt.");
         desc("COMMERCIAL", "commercial", "-commercial",   "Compile and link the Commercial Edition of Qt.\n");
 
@@ -2769,6 +2777,8 @@ void Configure::generateOutputVars()
             qtConfig += "debug_and_release build_all debug";
         qtConfig += "release";
     }
+    if (dictionary[ "RELEASE_TOOLS" ] == "yes")
+        qtConfig += "release_tools";
 
     if (dictionary[ "C++STD" ] == "c++11")
         qtConfig += "c++11";
@@ -3879,6 +3889,8 @@ void Configure::displayConfig()
     }
     if (dictionary[ "BUILD" ] == "release" || dictionary[ "BUILDALL" ] == "yes")
         sout << "Force debug info............" << dictionary[ "FORCEDEBUGINFO" ] << endl;
+    if (dictionary[ "BUILD" ] == "debug")
+        sout << "Force optimized tools......." << dictionary[ "RELEASE_TOOLS" ] << endl;
     sout << "C++ language standard......." << dictionary[ "C++STD" ] << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
@@ -4050,6 +4062,10 @@ void Configure::displayConfig()
              << "and " << dictionary["QT_HOST_ARCH"] << " for the host architecture (note that these two" << endl
              << "will be the same unless you are cross-compiling)." << endl
              << endl;
+    }
+    if (dictionary["RELEASE_TOOLS"] == "yes" && dictionary["BUILD"] != "debug" ) {
+        sout << endl
+             << "NOTE:  -optimized-tools is not useful in -release mode." << endl;
     }
     if (!dictionary["PREFIX_COMPLAINTS"].isEmpty()) {
         sout << endl

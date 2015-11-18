@@ -812,6 +812,7 @@ foreach my $lib (@modules_to_sync) {
     my $is_qt = !($module =~ s/^!//);
     my @dirs = split(/;/, $module);
     my $dir = $dirs[0];
+    shift @dirs if ($dir =~ s/^>//);
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});

@@ -32,16 +32,12 @@
 **
 ****************************************************************************/
 
-#include "qwindowsguieventdispatcher.h"
-#include "qwindowscontext.h"
+#include "qwindowsguieventdispatcher_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QStack>
 #include <QtCore/QDebug>
-
-#include <windowsx.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,11 +65,7 @@ bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
 {
     const QEventLoop::ProcessEventsFlags oldFlags = m_flags;
     m_flags = flags;
-    if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
-        qCDebug(lcQpaEvents) << '>' << __FUNCTION__ << objectName() << flags;
     const bool rc = QEventDispatcherWin32::processEvents(flags);
-    if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
-        qCDebug(lcQpaEvents) << '<' << __FUNCTION__ << "returns" << rc;
     m_flags = oldFlags;
     return rc;
 }
@@ -100,10 +92,6 @@ messageDebugEntries[] = {
     {WM_DESTROY, "WM_DESTROY", true},
     {WM_MOVE, "WM_MOVE", true},
     {WM_SIZE, "WM_SIZE", true},
-    {WM_MOUSEACTIVATE,"WM_MOUSEACTIVATE", true},
-    {WM_CHILDACTIVATE, "WM_CHILDACTIVATE", true},
-    {WM_PARENTNOTIFY, "WM_PARENTNOTIFY", true},
-    {WM_ENTERIDLE, "WM_ENTERIDLE", false},
     {WM_GETICON, "WM_GETICON", false},
     {WM_KEYDOWN, "WM_KEYDOWN", true},
     {WM_SYSKEYDOWN, "WM_SYSKEYDOWN", true},
@@ -119,16 +107,13 @@ messageDebugEntries[] = {
     {WM_CHAR, "WM_CHAR", true},
     {WM_DEADCHAR, "WM_DEADCHAR", true},
     {WM_ACTIVATE, "WM_ACTIVATE", true},
-    {WM_GETMINMAXINFO, "WM_GETMINMAXINFO", true},
     {WM_SETFOCUS, "WM_SETFOCUS", true},
     {WM_KILLFOCUS, "WM_KILLFOCUS", true},
     {WM_ENABLE, "WM_ENABLE", true},
     {WM_SHOWWINDOW, "WM_SHOWWINDOW", true},
-    {WM_WINDOWPOSCHANGING, "WM_WINDOWPOSCHANGING", true},
     {WM_WINDOWPOSCHANGED, "WM_WINDOWPOSCHANGED", true},
     {WM_SETCURSOR, "WM_SETCURSOR", false},
     {WM_GETFONT, "WM_GETFONT", true},
-    {WM_NCMOUSEMOVE, "WM_NCMOUSEMOVE", true},
     {WM_LBUTTONDOWN, "WM_LBUTTONDOWN", true},
     {WM_LBUTTONUP, "WM_LBUTTONUP", true},
     {WM_LBUTTONDBLCLK, "WM_LBUTTONDBLCLK", true},
@@ -143,18 +128,6 @@ messageDebugEntries[] = {
     {WM_XBUTTONUP, "WM_XBUTTONUP", true},
     {WM_XBUTTONDBLCLK, "WM_XBUTTONDBLCLK", true},
     {WM_MOUSEHWHEEL, "WM_MOUSEHWHEEL", true},
-    {WM_NCCREATE, "WM_NCCREATE", true},
-    {WM_NCCALCSIZE, "WM_NCCALCSIZE", true},
-    {WM_NCACTIVATE, "WM_NCACTIVATE", true},
-    {WM_NCMOUSELEAVE, "WM_NCMOUSELEAVE", true},
-    {WM_NCLBUTTONDOWN, "WM_NCLBUTTONDOWN", true},
-    {WM_NCLBUTTONUP, "WM_NCLBUTTONUP", true},
-    {WM_ACTIVATEAPP, "WM_ACTIVATEAPP", true},
-    {WM_NCPAINT, "WM_NCPAINT", true},
-    {WM_ERASEBKGND, "WM_ERASEBKGND", true},
-    {WM_MOUSEMOVE, "WM_MOUSEMOVE", true},
-    {WM_MOUSELEAVE, "WM_MOUSELEAVE", true},
-    {WM_NCHITTEST, "WM_NCHITTEST", false},
     {WM_IME_SETCONTEXT, "WM_IME_SETCONTEXT", true},
     {WM_INPUTLANGCHANGE, "WM_INPUTLANGCHANGE", true},
     {WM_IME_NOTIFY, "WM_IME_NOTIFY", true},
@@ -163,9 +136,6 @@ messageDebugEntries[] = {
 #endif
     {WM_IME_SETCONTEXT, "WM_IME_SETCONTEXT", true},
     {WM_IME_NOTIFY, "WM_IME_NOTIFY", true},
-    {WM_TOUCH, "WM_TOUCH", true},
-    {WM_CHANGECBCHAIN, "WM_CHANGECBCHAIN", true},
-    {WM_DRAWCLIPBOARD, "WM_DRAWCLIPBOARD", true},
     {WM_RENDERFORMAT, "WM_RENDERFORMAT", true},
     {WM_RENDERALLFORMATS, "WM_RENDERALLFORMATS", true},
     {WM_DESTROYCLIPBOARD, "WM_DESTROYCLIPBOARD", true},
@@ -179,7 +149,33 @@ messageDebugEntries[] = {
     {WM_QUERYENDSESSION, "WM_QUERYENDSESSION", true},
     {WM_ENDSESSION, "WM_ENDSESSION", true},
 #endif
+#ifndef Q_OS_WINCE
+    {WM_MOUSEACTIVATE,"WM_MOUSEACTIVATE", true},
+    {WM_CHILDACTIVATE, "WM_CHILDACTIVATE", true},
+    {WM_PARENTNOTIFY, "WM_PARENTNOTIFY", true},
+    {WM_ENTERIDLE, "WM_ENTERIDLE", false},
+    {WM_GETMINMAXINFO, "WM_GETMINMAXINFO", true},
+    {WM_WINDOWPOSCHANGING, "WM_WINDOWPOSCHANGING", true},
+    {WM_NCCREATE, "WM_NCCREATE", true},
+    {WM_NCCALCSIZE, "WM_NCCALCSIZE", true},
+    {WM_NCACTIVATE, "WM_NCACTIVATE", true},
+    {WM_NCMOUSEMOVE, "WM_NCMOUSEMOVE", true},
+    {WM_NCMOUSELEAVE, "WM_NCMOUSELEAVE", true},
+    {WM_NCLBUTTONDOWN, "WM_NCLBUTTONDOWN", true},
+    {WM_NCLBUTTONUP, "WM_NCLBUTTONUP", true},
+    {WM_ACTIVATEAPP, "WM_ACTIVATEAPP", true},
+    {WM_NCPAINT, "WM_NCPAINT", true},
+    {WM_ERASEBKGND, "WM_ERASEBKGND", true},
+    {WM_MOUSEMOVE, "WM_MOUSEMOVE", true},
+    {WM_MOUSELEAVE, "WM_MOUSELEAVE", true},
+    {WM_NCHITTEST, "WM_NCHITTEST", false},
+#ifdef WM_TOUCH
+    {WM_TOUCH, "WM_TOUCH", true},
+#endif
+    {WM_CHANGECBCHAIN, "WM_CHANGECBCHAIN", true},
     {WM_DISPLAYCHANGE, "WM_DISPLAYCHANGE", true},
+    {WM_DRAWCLIPBOARD, "WM_DRAWCLIPBOARD", true},
+#endif // !Q_OS_WINCE
     {WM_THEMECHANGED, "WM_THEMECHANGED", true}
 };
 

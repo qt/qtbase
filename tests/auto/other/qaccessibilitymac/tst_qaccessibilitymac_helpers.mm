@@ -199,7 +199,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     CFRange cfRange;
     NSRange range = NSMakeRange(0, 0);
 
-    if (!AXValueGetValue((AXValueRef)value, kAXValueCFRangeType, &cfRange))
+    if (!AXValueGetValue(AXValueRef(value), AXValueType(kAXValueCFRangeType), &cfRange))
         qDebug() << "Could not get CFRange value out of AXValueRef";
     else if (cfRange.location < 0 || cfRange.length < 0)
         qDebug() << "Cannot convert CFRange with negative location or length to NSRange";
@@ -217,7 +217,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 + (NSRect)_rectFromValue:(CFTypeRef)value
 {
     NSRect rect = NSMakeRect(0, 0, 0, 0);
-    if (!AXValueGetValue((AXValueRef)value, kAXValueCGRectType, reinterpret_cast<CGRect*>(&rect)))
+    if (!AXValueGetValue(AXValueRef(value), AXValueType(kAXValueCGRectType), reinterpret_cast<CGRect*>(&rect)))
     {
         qDebug() << "Could not get CGRect value out of AXValueRef";
     }
@@ -227,7 +227,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 + (NSPoint)_pointFromValue:(CFTypeRef)value
 {
     NSPoint point = NSMakePoint(0, 0);
-    if (!AXValueGetValue((AXValueRef)value, kAXValueCGPointType, reinterpret_cast<CGPoint*>(&point)))
+    if (!AXValueGetValue(AXValueRef(value), AXValueType(kAXValueCGPointType), reinterpret_cast<CGPoint*>(&point)))
     {
         qDebug() << "Could not get CGPoint value out of AXValueRef";
     }
@@ -237,7 +237,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 + (NSSize)_sizeFromValue:(CFTypeRef)value
 {
     NSSize size = NSMakeSize(0, 0);
-    if (!AXValueGetValue((AXValueRef)value, kAXValueCGSizeType, reinterpret_cast<CGSize*>(&size)))
+    if (!AXValueGetValue(AXValueRef(value), AXValueType(kAXValueCGSizeType), reinterpret_cast<CGSize*>(&size)))
     {
         qDebug() << "Could not get CGSize value out of AXValueRef";
     }
@@ -308,7 +308,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 - (CFTypeRef)_attributeValue:(CFStringRef)attribute forRange:(NSRange)aRange
 {
     CFRange cfRange = CFRangeMake(aRange.location, aRange.length);
-    AXValueRef range = AXValueCreate(kAXValueCFRangeType, &cfRange);
+    AXValueRef range = AXValueCreate(AXValueType(kAXValueCFRangeType), &cfRange);
     CFTypeRef value =  [self _attributeValue:attribute forParameter:range];
     CFRelease(range);
     return value;
@@ -324,7 +324,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
 - (CFTypeRef)_attributeValue:(CFStringRef)attribute forPoint:(CGPoint)aPoint
 {
-    AXValueRef point = AXValueCreate(kAXValueCGPointType, &aPoint);
+    AXValueRef point = AXValueCreate(AXValueType(kAXValueCGPointType), &aPoint);
     CFTypeRef value = [self _attributeValue:attribute forParameter:point];
     CFRelease(point);
     return value;

@@ -35,7 +35,6 @@
 #include "qwindowscontext.h"
 #include "qwindowsole.h"
 #include "qwindowsmime.h"
-#include "qwindowsguieventdispatcher.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
@@ -47,6 +46,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtCore/QUrl>
+
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 

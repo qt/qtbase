@@ -43,8 +43,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "7.0"
-#define DATA_VERSION_STR "QChar::Unicode_7_0"
+#define DATA_VERSION_S "8.0"
+#define DATA_VERSION_STR "QChar::Unicode_8_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -71,6 +71,7 @@ static void initAgeMap()
         { QChar::Unicode_6_2,   "6.2" },
         { QChar::Unicode_6_3,   "6.3" },
         { QChar::Unicode_7_0,   "7.0" },
+        { QChar::Unicode_8_0,   "8.0" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -719,6 +720,13 @@ static void initScriptMap()
         { QChar::Script_Khudawadi,              "Khudawadi" },
         { QChar::Script_Tirhuta,                "Tirhuta" },
         { QChar::Script_WarangCiti,             "WarangCiti" },
+        // 8.0
+        { QChar::Script_Ahom,                   "Ahom" },
+        { QChar::Script_AnatolianHieroglyphs,   "AnatolianHieroglyphs" },
+        { QChar::Script_Hatran,                 "Hatran" },
+        { QChar::Script_Multani,                "Multani" },
+        { QChar::Script_OldHungarian,           "OldHungarian" },
+        { QChar::Script_SignWriting,            "SignWriting" },
         // unhandled
         { QChar::Script_Unknown,                0 }
     };
@@ -757,6 +765,38 @@ static const char *property_string =
     "};\n\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW;\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) Q_DECL_NOTHROW;\n"
+    "\n"
+    "struct LowercaseTraits\n"
+    "{\n"
+    "    static inline signed short caseDiff(const Properties *prop)\n"
+    "    { return prop->lowerCaseDiff; }\n"
+    "    static inline bool caseSpecial(const Properties *prop)\n"
+    "    { return prop->lowerCaseSpecial; }\n"
+    "};\n"
+    "\n"
+    "struct UppercaseTraits\n"
+    "{\n"
+    "    static inline signed short caseDiff(const Properties *prop)\n"
+    "    { return prop->upperCaseDiff; }\n"
+    "    static inline bool caseSpecial(const Properties *prop)\n"
+    "    { return prop->upperCaseSpecial; }\n"
+    "};\n"
+    "\n"
+    "struct TitlecaseTraits\n"
+    "{\n"
+    "    static inline signed short caseDiff(const Properties *prop)\n"
+    "    { return prop->titleCaseDiff; }\n"
+    "    static inline bool caseSpecial(const Properties *prop)\n"
+    "    { return prop->titleCaseSpecial; }\n"
+    "};\n"
+    "\n"
+    "struct CasefoldTraits\n"
+    "{\n"
+    "    static inline signed short caseDiff(const Properties *prop)\n"
+    "    { return prop->caseFoldDiff; }\n"
+    "    static inline bool caseSpecial(const Properties *prop)\n"
+    "    { return prop->caseFoldSpecial; }\n"
+    "};\n"
     "\n";
 
 static const char *methods =
@@ -840,12 +880,14 @@ static int appendToSpecialCaseMap(const QList<int> &map)
 {
     QList<int> utf16map;
     for (int i = 0; i < map.size(); ++i) {
-        int val = map.at(i);
-        if (QChar::requiresSurrogates(val)) {
-            utf16map << QChar::highSurrogate(val);
-            utf16map << QChar::lowSurrogate(val);
+        uint codepoint = map.at(i);
+        // if the condition below doesn't hold anymore we need to modify our special case mapping code
+        Q_ASSERT(!QChar::requiresSurrogates(codepoint));
+        if (QChar::requiresSurrogates(codepoint)) {
+            utf16map << QChar::highSurrogate(codepoint);
+            utf16map << QChar::lowSurrogate(codepoint);
         } else {
-            utf16map << val;
+            utf16map << codepoint;
         }
     }
     int length = utf16map.size();
@@ -946,13 +988,16 @@ struct UnicodeData {
         p.lineBreakClass = LineBreak_AL; // XX -> AL
         // LineBreak.txt
         // The unassigned code points that default to "ID" include ranges in the following blocks:
-        //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2F800..U+2FA1F, U+20000..U+2FFFD, U+30000..U+3FFFD]
+        //     [U+3400..U+4DBF, U+4E00..U+9FFF, U+F900..U+FAFF, U+20000..U+2A6DF, U+2A700..U+2B73F, U+2B740..U+2B81F, U+2B820..U+2CEAF, U+2F800..U+2FA1F]
+        // and any other reserved code points on
+        //     [U+20000..U+2FFFD, U+30000..U+3FFFD]
         if ((codepoint >= 0x3400 && codepoint <= 0x4DBF)
             || (codepoint >= 0x4E00 && codepoint <= 0x9FFF)
             || (codepoint >= 0xF900 && codepoint <= 0xFAFF)
             || (codepoint >= 0x20000 && codepoint <= 0x2A6DF)
             || (codepoint >= 0x2A700 && codepoint <= 0x2B73F)
             || (codepoint >= 0x2B740 && codepoint <= 0x2B81F)
+            || (codepoint >= 0x2B820 && codepoint <= 0x2CEAF)
             || (codepoint >= 0x2F800 && codepoint <= 0x2FA1F)
             || (codepoint >= 0x20000 && codepoint <= 0x2FFFD)
             || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {
@@ -1122,40 +1167,38 @@ static void readUnicodeData()
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = upperCase - codepoint;
+            // if the conditions below doesn't hold anymore we need to modify our upper casing code
+            Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(upperCase));
+            if (QChar::requiresSurrogates(codepoint)) {
+                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(upperCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(upperCase));
+            }
             if (qAbs(diff) >= (1<<13)) {
                 qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << "); map it for special case";
-                // if the condition below doesn't hold anymore we need to modify our special upper casing code in qchar.cpp
-                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(upperCase));
                 data.p.upperCaseSpecial = true;
                 data.p.upperCaseDiff = appendToSpecialCaseMap(QList<int>() << upperCase);
             } else {
                 data.p.upperCaseDiff = diff;
                 maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
             }
-            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(upperCase)) {
-                // if the conditions below doesn't hold anymore we need to modify our upper casing code
-                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(upperCase));
-                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(upperCase));
-            }
         }
         if (!properties[UD_LowerCase].isEmpty()) {
             int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = lowerCase - codepoint;
+            // if the conditions below doesn't hold anymore we need to modify our lower casing code
+            Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(lowerCase));
+            if (QChar::requiresSurrogates(codepoint)) {
+                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(lowerCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(lowerCase));
+            }
             if (qAbs(diff) >= (1<<13)) {
                 qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << "); map it for special case";
-                // if the condition below doesn't hold anymore we need to modify our special lower casing code in qchar.cpp
-                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(lowerCase));
                 data.p.lowerCaseSpecial = true;
                 data.p.lowerCaseDiff = appendToSpecialCaseMap(QList<int>() << lowerCase);
             } else {
                 data.p.lowerCaseDiff = diff;
                 maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
-            }
-            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(lowerCase)) {
-                // if the conditions below doesn't hold anymore we need to modify our lower casing code
-                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(lowerCase));
-                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(lowerCase));
             }
         }
         // we want toTitleCase to map to ToUpper in case we don't have any titlecase.
@@ -1165,20 +1208,19 @@ static void readUnicodeData()
             int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
             Q_ASSERT(ok);
             int diff = titleCase - codepoint;
+            // if the conditions below doesn't hold anymore we need to modify our title casing code
+            Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(titleCase));
+            if (QChar::requiresSurrogates(codepoint)) {
+                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(titleCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(titleCase));
+            }
             if (qAbs(diff) >= (1<<13)) {
                 qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << "); map it for special case";
-                // if the condition below doesn't hold anymore we need to modify our special title casing code in qchar.cpp
-                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(titleCase));
                 data.p.titleCaseSpecial = true;
                 data.p.titleCaseDiff = appendToSpecialCaseMap(QList<int>() << titleCase);
             } else {
                 data.p.titleCaseDiff = diff;
                 maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
-            }
-            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(titleCase)) {
-                // if the conditions below doesn't hold anymore we need to modify our title casing code
-                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(titleCase));
-                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(titleCase));
             }
         }
 
@@ -1535,8 +1577,10 @@ static QByteArray createNormalizationCorrections()
         ++numCorrections;
         maxVersion = qMax(c.version, maxVersion);
     }
+    if (out.endsWith(",\n"))
+        out.chop(2);
 
-    out += "};\n\n"
+    out += "\n};\n\n"
 
            "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n"
            "enum { NormalizationCorrectionsVersionMax = " + QByteArray::number(maxVersion) + " };\n\n";
@@ -1731,23 +1775,20 @@ static void readCaseFolding()
         if (foldMap.size() == 1) {
             int caseFolded = foldMap.at(0);
             int diff = caseFolded - codepoint;
+            // if the conditions below doesn't hold anymore we need to modify our case folding code
+            Q_ASSERT(QChar::requiresSurrogates(codepoint) == QChar::requiresSurrogates(caseFolded));
+            if (QChar::requiresSurrogates(codepoint)) {
+                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(caseFolded));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(caseFolded));
+            }
             if (qAbs(diff) >= (1<<13)) {
                 qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << "); map it for special case";
-                // if the condition below doesn't hold anymore we need to modify our special case folding code in qchar.cpp
-                Q_ASSERT(!QChar::requiresSurrogates(codepoint) && !QChar::requiresSurrogates(caseFolded));
                 ud.p.caseFoldSpecial = true;
                 ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
             } else {
                 ud.p.caseFoldDiff = diff;
                 maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(diff));
             }
-            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(caseFolded)) {
-                // if the conditions below doesn't hold anymore we need to modify our case folding code
-                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(caseFolded));
-                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(caseFolded));
-            }
-//            if (caseFolded != codepoint + ud.p.lowerCaseDiff)
-//                qDebug() << hex << codepoint;
         } else {
             qFatal("we currently don't support full case foldings");
 //             qDebug() << "special" << hex << foldMap;
@@ -2290,7 +2331,7 @@ static QByteArray createPropertyInfo()
 
     out += "static const unsigned short uc_property_trie[] = {\n";
     // first write the map
-    out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
+    out += "    // [0x0..0x" + QByteArray::number(BMP_END, 16) + ")";
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
             if (out.endsWith(' '))
@@ -2304,7 +2345,7 @@ static QByteArray createPropertyInfo()
     }
     if (out.endsWith(' '))
         out.chop(1);
-    out += "\n\n    // 0x" + QByteArray::number(BMP_END, 16) + " - 0x" + QByteArray::number(SMP_END, 16) + "\n";
+    out += "\n\n    // [0x" + QByteArray::number(BMP_END, 16) + "..0x" + QByteArray::number(SMP_END, 16) + ")\n";
     for (int i = BMP_END/BMP_BLOCKSIZE; i < blockMap.size(); ++i) {
         if (!(i % 8)) {
             if (out.endsWith(' '))
@@ -2335,8 +2376,8 @@ static QByteArray createPropertyInfo()
             out += ", ";
         }
     }
-    if (out.endsWith(' '))
-        out.chop(1);
+    if (out.endsWith(", "))
+        out.chop(2);
     out += "\n};\n\n";
 
     out += "#define GET_PROP_INDEX(ucs4) \\\n"
@@ -2419,20 +2460,19 @@ static QByteArray createPropertyInfo()
         out += QByteArray::number( p.script );
         out += " },";
     }
-    out.chop(1);
+    if (out.endsWith(','))
+        out.chop(1);
     out += "\n};\n\n";
 
 
     out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) Q_DECL_NOTHROW\n"
            "{\n"
-           "    const int index = GET_PROP_INDEX(ucs4);\n"
-           "    return uc_properties + index;\n"
+           "    return uc_properties + GET_PROP_INDEX(ucs4);\n"
            "}\n"
            "\n"
            "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) Q_DECL_NOTHROW\n"
            "{\n"
-           "    const int index = GET_PROP_INDEX_UCS2(ucs2);\n"
-           "    return uc_properties + index;\n"
+           "    return uc_properties + GET_PROP_INDEX_UCS2(ucs2);\n"
            "}\n"
            "\n"
            "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) Q_DECL_NOTHROW\n"
@@ -2447,22 +2487,22 @@ static QByteArray createPropertyInfo()
 
     out += "Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
            "{\n"
-           "    return (GraphemeBreakClass)qGetProp(ucs4)->graphemeBreakClass;\n"
+           "    return static_cast<GraphemeBreakClass>(qGetProp(ucs4)->graphemeBreakClass);\n"
            "}\n"
            "\n"
            "Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
            "{\n"
-           "    return (WordBreakClass)qGetProp(ucs4)->wordBreakClass;\n"
+           "    return static_cast<WordBreakClass>(qGetProp(ucs4)->wordBreakClass);\n"
            "}\n"
            "\n"
            "Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
            "{\n"
-           "    return (SentenceBreakClass)qGetProp(ucs4)->sentenceBreakClass;\n"
+           "    return static_cast<SentenceBreakClass>(qGetProp(ucs4)->sentenceBreakClass);\n"
            "}\n"
            "\n"
            "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) Q_DECL_NOTHROW\n"
            "{\n"
-           "    return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;\n"
+           "    return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);\n"
            "}\n"
            "\n";
 
@@ -2475,7 +2515,7 @@ static QByteArray createSpecialCaseMap()
 
     QByteArray out;
 
-    out += "static const ushort specialCaseMap[] = {\n"
+    out += "static const unsigned short specialCaseMap[] = {\n"
            "    0x0, // placeholder";
     int i = 1;
     while (i < specialCaseMap.size()) {
@@ -2675,10 +2715,10 @@ static QByteArray createCompositionInfo()
            "       (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + " \\\n"
            "        ? (uc_decomposition_trie[uc_decomposition_trie[ucs4>>" + QByteArray::number(BMP_SHIFT) +
            "] + (ucs4 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")]) \\\n"
-           "        : (ucs4 < 0x" + QByteArray::number(SMP_END, 16) + "\\\n"
+           "        : (ucs4 < 0x" + QByteArray::number(SMP_END, 16) + " \\\n"
            "           ? uc_decomposition_trie[uc_decomposition_trie[((ucs4 - 0x" + QByteArray::number(BMP_END, 16) +
            ")>>" + QByteArray::number(SMP_SHIFT) + ") + 0x" + QByteArray::number(BMP_END/BMP_BLOCKSIZE, 16) + "]"
-           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")]\\\n"
+           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")] \\\n"
            "           : 0xffff))\n\n";
 
     out += "static const unsigned short uc_decomposition_map[] = {";
@@ -2874,10 +2914,10 @@ static QByteArray createLigatureInfo()
            "       (ucs4 < 0x" + QByteArray::number(BMP_END, 16) + " \\\n"
            "        ? (uc_ligature_trie[uc_ligature_trie[ucs4>>" + QByteArray::number(BMP_SHIFT) +
            "] + (ucs4 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")]) \\\n"
-           "        : (ucs4 < 0x" + QByteArray::number(SMP_END, 16) + "\\\n"
+           "        : (ucs4 < 0x" + QByteArray::number(SMP_END, 16) + " \\\n"
            "           ? uc_ligature_trie[uc_ligature_trie[((ucs4 - 0x" + QByteArray::number(BMP_END, 16) +
            ")>>" + QByteArray::number(SMP_SHIFT) + ") + 0x" + QByteArray::number(BMP_END/BMP_BLOCKSIZE, 16) + "]"
-           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")]\\\n"
+           " + (ucs4 & 0x" + QByteArray::number(SMP_BLOCKSIZE-1, 16) + ")] \\\n"
            "           : 0xffff))\n\n";
 
     out += "static const unsigned short uc_ligature_map[] = {";

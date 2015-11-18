@@ -2142,6 +2142,22 @@ void tst_QString::toUpper()
     QCOMPARE( QString("`abyz{").toUpper(), QString("`ABYZ{"));
 
     QCOMPARE( QString(1, QChar(0xdf)).toUpper(), QString("SS"));
+    {
+        QString s = QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e");
+
+        // call lvalue-ref version, mustn't change the original
+        QCOMPARE(s.toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(s, QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e"));
+
+        // call rvalue-ref while shared (the original mustn't change)
+        QString copy = s;
+        QCOMPARE(qMove(copy).toUpper(), QString("GROSSSTRASSE"));
+        QCOMPARE(s, QString::fromUtf8("Gro\xc3\x9fstra\xc3\x9f""e"));
+
+        // call rvalue-ref version on detached case
+        copy.clear();
+        QCOMPARE(qMove(s).toUpper(), QString("GROSSSTRASSE"));
+    }
 
     QString lower, upper;
     lower += QChar(QChar::highSurrogate(0x10428));

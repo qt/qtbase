@@ -2029,6 +2029,8 @@ QTableWidgetItem *QTableWidget::horizontalHeaderItem(int column) const
 
 /*!
   Sets the horizontal header item for column \a column to \a item.
+  If necessary, the column count is increased to fit the item.
+  The previous header item (if there was one) is deleted.
 */
 void QTableWidget::setHorizontalHeaderItem(int column, QTableWidgetItem *item)
 {

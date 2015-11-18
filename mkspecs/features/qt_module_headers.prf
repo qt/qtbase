@@ -25,9 +25,12 @@ load(qt_build_paths)
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 
-    include-distclean.commands = $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME))
-    QMAKE_EXTRA_TARGETS += include-distclean
-    DISTCLEAN_DEPS += include-distclean
+    !minimal_syncqt {
+        include-distclean.commands = \
+            $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME))
+        QMAKE_EXTRA_TARGETS += include-distclean
+        DISTCLEAN_DEPS += include-distclean
+    }
 }
 
 minimal_syncqt: return()
@@ -38,6 +41,9 @@ git_build: \
 else: \
     INC_PATH = $$MODULE_BASE_INDIR
 include($$INC_PATH/include/$$MODULE_INCNAME/headers.pri, "", true)
+CONFIG += qt_install_headers
+
+alien_syncqt: return()
 
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
@@ -81,8 +87,6 @@ SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 !if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
     isEmpty(PRECOMPILED_HEADER): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
 }
-
-CONFIG += qt_install_headers
 
 headersclean:!internal_module {
     # Make sure that the header compiles with our strict options

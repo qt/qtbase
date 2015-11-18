@@ -2,6 +2,9 @@ TEMPLATE = subdirs
 
 load(qfeatures)
 
+src_qtzlib.file = $$PWD/corelib/qtzlib.pro
+src_qtzlib.target = sub-zlib
+
 src_tools_bootstrap.subdir = tools/bootstrap
 src_tools_bootstrap.target = sub-bootstrap
 src_tools_bootstrap.CONFIG = host_build
@@ -125,6 +128,7 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
+contains(QT_CONFIG, zlib)|cross_compile: SUBDIRS += src_qtzlib
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
 !contains(QT_DISABLED_FEATURES, regularexpression):pcre {
     SUBDIRS += src_3rdparty_pcre

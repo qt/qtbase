@@ -93,6 +93,8 @@ public:
         online = (networkConfiguration.state().testFlag(QNetworkConfiguration::Active));
         if (online)
             networkAccessible = QNetworkAccessManager::Accessible;
+        else if (networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
+            networkAccessible = QNetworkAccessManager::UnknownAccessibility;
         else
             networkAccessible = QNetworkAccessManager::NotAccessible;
 #endif

@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
     platforms that support it (see QElapsedTimer::isMonotonic()). This has
     the added benefit that QElapsedTimer is immune to time adjustments, such
     as the user correcting the time. Also unlike QTime, QElapsedTimer is
-    immune to changes in the timezone settings, such as daylight saving
+    immune to changes in the timezone settings, such as daylight-saving
     periods.
 
     On the other hand, this means QElapsedTimer values can only be compared

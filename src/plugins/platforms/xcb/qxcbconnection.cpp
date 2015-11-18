@@ -263,8 +263,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
 
             // Known screen removed -> delete it
             m_screens.removeOne(screen);
-            foreach (QXcbScreen *otherScreen, m_screens)
-                otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
+            virtualDesktop->removeScreen(screen);
 
             QXcbIntegration::instance()->destroyScreen(screen);
 
@@ -283,9 +282,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
 
                 screen->setPrimary(checkOutputIsPrimary(output.window, output.output));
-                foreach (QXcbScreen *otherScreen, m_screens)
-                    if (otherScreen->root() == output.window)
-                        otherScreen->addVirtualSibling(screen);
+                virtualDesktop->addScreen(screen);
                 m_screens << screen;
                 QXcbIntegration::instance()->screenAdded(screen, screen->isPrimary());
 
@@ -308,8 +305,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 if (outputInfo->crtc == XCB_NONE) {
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
                     m_screens.removeOne(screen);
-                    foreach (QXcbScreen *otherScreen, m_screens)
-                        otherScreen->removeVirtualSibling((QPlatformScreen *) screen);
+                    virtualDesktop->removeScreen(screen);
                     QXcbIntegration::instance()->destroyScreen(screen);
                 } else {
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "has been temporarily disabled for the mode switch";
@@ -443,8 +439,7 @@ void QXcbConnection::initializeScreens()
                 }
             }
         }
-        foreach (QPlatformScreen* s, siblings)
-            ((QXcbScreen*)s)->setVirtualSiblings(siblings);
+        virtualDesktop->setScreens(siblings);
         xcb_screen_next(&it);
         ++xcbScreenNumber;
     } // for each xcb screen
@@ -460,7 +455,7 @@ void QXcbConnection::initializeScreens()
     QXcbVirtualDesktop *virtualDesktop = m_virtualDesktops.value(0);
     if (virtualDesktop && !hasOutputs && !virtualDesktop->size().isEmpty() && m_screens.isEmpty()) {
         QXcbScreen *screen = createScreen(virtualDesktop, 0, Q_NULLPTR);
-        screen->setVirtualSiblings(QList<QPlatformScreen *>() << screen);
+        virtualDesktop->setScreens(QList<QPlatformScreen *>() << screen);
         m_screens << screen;
         primaryScreen = screen;
         primaryScreen->setPrimary(true);
@@ -1126,8 +1121,17 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = false;
             break;
         case XCB_PROPERTY_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+        {
+            xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+            if (pn->atom == atom(QXcbAtom::_NET_WORKAREA)) {
+                QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(pn->window);
+                if (virtualDesktop)
+                    virtualDesktop->updateWorkArea();
+            } else {
+                HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+            }
             break;
+        }
 #if defined(XCB_USE_XINPUT2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()

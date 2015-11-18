@@ -75,7 +75,6 @@ public:
 protected:
     virtual VCProjectWriter *createProjectWriter();
     virtual bool doDepends() const { return false; } //never necesary
-    virtual void processSources() { filterIncludedFiles("SOURCES"); filterIncludedFiles("GENERATED_SOURCES"); }
     using Win32MakefileGenerator::replaceExtraCompilerVariables;
     virtual QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &, ReplaceFor);
     virtual bool supportsMetaBuild() { return true; }
