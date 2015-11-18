@@ -271,6 +271,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
+#ifndef QT_NO_OPENGL
+      , renderToTextureReallyDirty(1)
+#endif
 #if defined(Q_OS_WIN)
       , noPaintOnScreen(0)
 #endif
@@ -5547,7 +5550,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                      << "geometry ==" << QRect(q->mapTo(q->window(), QPoint(0, 0)), q->size());
 #endif
 
-            bool grabbed = false;
+            bool skipPaintEvent = false;
 #ifndef QT_NO_OPENGL
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
@@ -5561,14 +5564,18 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     } else {
                         // We are not drawing to a backingstore: fall back to QImage
                         p.drawImage(q->rect(), grabFramebuffer());
-                        grabbed = true;
+                        skipPaintEvent = true;
                     }
                     endBackingStorePainting();
                 }
+                if (renderToTextureReallyDirty)
+                    renderToTextureReallyDirty = 0;
+                else
+                    skipPaintEvent = true;
             }
 #endif // QT_NO_OPENGL
 
-            if (!grabbed) {
+            if (!skipPaintEvent) {
                 //actually send the paint event
                 sendPaintEvent(toBePainted);
             }

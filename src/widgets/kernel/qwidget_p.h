@@ -743,6 +743,9 @@ public:
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
 #endif
+#ifndef QT_NO_OPENGL
+    uint renderToTextureReallyDirty : 1;
+#endif
 
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)

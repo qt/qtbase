@@ -1230,6 +1230,9 @@ void QWidgetBackingStore::doSync()
             QWidget *w = static_cast<QWidget *>(tl->source(i));
             if (dirtyRenderToTextureWidgets.contains(w)) {
                 const QRect rect = tl->geometry(i); // mapped to the tlw already
+                // Set a flag to indicate that the paint event for this
+                // render-to-texture widget must not to be optimized away.
+                w->d_func()->renderToTextureReallyDirty = 1;
                 dirty += rect;
                 toClean += rect;
             }
