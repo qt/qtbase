@@ -76,6 +76,9 @@ static QNetworkInterfacePrivate *interfaceFromProfile(IConnectionProfile *profil
 
     ComPtr<INetworkAdapter> adapter;
     hr = profile->get_NetworkAdapter(&adapter);
+    // Indicates that no internet connection is available/the device is in airplane mode
+    if (hr == E_INVALIDARG)
+        return 0;
     Q_ASSERT_SUCCEEDED(hr);
     UINT32 type;
     hr = adapter->get_IanaInterfaceType(&type);

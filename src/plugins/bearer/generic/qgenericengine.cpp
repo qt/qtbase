@@ -201,6 +201,9 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 
         ComPtr<INetworkAdapter> adapter;
         hr = profile->get_NetworkAdapter(&adapter);
+        // Indicates that no internet connection is available/the device is in airplane mode
+        if (hr == E_INVALIDARG)
+            return QNetworkConfiguration::BearerUnknown;
         Q_ASSERT_SUCCEEDED(hr);
         GUID id;
         hr = adapter->get_NetworkAdapterId(&id);
