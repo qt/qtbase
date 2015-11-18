@@ -431,7 +431,23 @@ static inline quint64 qCpuFeatures()
 #define qCpuHasFeature(feature)     ((qCompilerCpuFeatures & (Q_UINT64_C(1) << CpuFeature ## feature)) \
                                      || (qCpuFeatures() & (Q_UINT64_C(1) << CpuFeature ## feature)))
 
-#ifdef Q_PROCESSOR_X86
+#if QT_HAS_BUILTIN(__builtin_clz) && QT_HAS_BUILTIN(__builtin_ctz) && defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+static Q_ALWAYS_INLINE unsigned _bit_scan_reverse(unsigned val)
+{
+    Q_ASSERT(val != 0); // if val==0, the result is undefined.
+    unsigned result = static_cast<unsigned>(__builtin_clz(val)); // Count Leading Zeros
+    // Now Invert the result: clz will count *down* from the msb to the lsb, so the msb index is 31
+    // and the lsb inde is 0. The result for _bit_scan_reverse is expected to be the index when
+    // counting up: msb index is 0 (because it starts there), and the lsb index is 31.
+    result ^= sizeof(unsigned) * 8 - 1;
+    return result;
+}
+static Q_ALWAYS_INLINE unsigned _bit_scan_forward(unsigned val)
+{
+    Q_ASSERT(val != 0); // if val==0, the result is undefined.
+    return static_cast<unsigned>(__builtin_ctz(val)); // Count Trailing Zeros
+}
+#elif defined(Q_PROCESSOR_X86)
 // Bit scan functions for x86
 #  if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
 // MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
