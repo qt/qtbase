@@ -66,10 +66,11 @@ int main(int argc, char *argv[])
 
     printf("Filesystem (Type)            Size  Available BSize  Label            Mounted on\n");
     foreach (const QStorageInfo &info, volumes) {
-        const QString fsAndType = info.device() + QLatin1String(" (") +
-                                  info.fileSystemType() + QLatin1Char(')');
+        QByteArray fsAndType = info.device();
+        if (info.fileSystemType() != fsAndType)
+            fsAndType += " (" + info.fileSystemType() + ')';
 
-        printf("%-19s R%c ", qPrintable(fsAndType), info.isReadOnly() ? 'O' : 'W');
+        printf("%-19s R%c ", fsAndType.constData(), info.isReadOnly() ? 'O' : 'W');
         if (fsAndType.size() > 19)
             printf("\n%23s", "");
 

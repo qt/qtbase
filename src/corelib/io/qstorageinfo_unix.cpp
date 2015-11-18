@@ -160,11 +160,14 @@ static bool isPseudoFs(const QStorageIterator &it)
 
     QByteArray type = it.fileSystemType();
     if (type == "tmpfs")
-        return true;
+        return false;
 #if defined(Q_OS_LINUX)
     if (type == "rootfs" || type == "rpc_pipefs")
         return true;
 #endif
+
+    if (!it.device().startsWith('/'))
+        return true;
 
     return false;
 }
