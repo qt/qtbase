@@ -453,7 +453,7 @@ DeviceVar()
             eq="="
             ;;
         *)
-            echo >&2 "BUG: wrong command to QMakeVar: $1"
+            echo >&2 "BUG: wrong command to DeviceVar: $1"
             ;;
     esac
 
