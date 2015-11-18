@@ -35,6 +35,9 @@
  / #include "needed.cpp"
 // if not ignored, symbol needed() won't be available ...
 
+// Check we're not confused by string juxtaposition:
+static const char text[] = "lorem ""ipsum /*";
+
             #include <moc_object1.cpp>
 /**/        #include <moc_object2.cpp>
 /**//**/    #include <moc_object3.cpp>

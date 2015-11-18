@@ -584,17 +584,14 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         // buffer[x] is '"'
                     } else {
                         const char term = buffer[x];
-                        while (++x < buffer_len) {
-                            if (buffer[x] == term) {
+                        while (++x < buffer_len && buffer[x] != term) {
+                            if (buffer[x] == '\\')
                                 ++x;
-                                break;
-                            } else if (buffer[x] == '\\') {
-                                ++x;
-                            } else if (qmake_endOfLine(buffer[x])) {
+                            else if (qmake_endOfLine(buffer[x]))
                                 ++line_count;
-                            }
                         }
                     }
+                    // for loop's ++x shall step over the closing quote.
                 }
                 beginning = 0;
             }
