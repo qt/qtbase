@@ -108,6 +108,10 @@
 
     INDENT = "$$escape_expand(\\r\\n)  "
 
+    # All Windows 10 applications need to have internetClient. It is also not marked as additional
+    # capability anymore and is assumed to be standard.
+    *-msvc2015: WINRT_MANIFEST.capabilities += internetClient
+
     # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
     WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
     WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
