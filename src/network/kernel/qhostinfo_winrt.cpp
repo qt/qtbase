@@ -49,6 +49,8 @@ using namespace ABI::Windows::Networking::Sockets;
 
 QT_BEGIN_NAMESPACE
 
+#define E_NO_SUCH_HOST 0x80072af9
+
 //#define QHOSTINFO_DEBUG
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
@@ -98,8 +100,11 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             return results;
     }
 
-    if (!endpointPairs)
+    if (hr == E_NO_SUCH_HOST || !endpointPairs) {
+        results.setError(QHostInfo::HostNotFound);
+        results.setErrorString(tr("Host %1 could not be found.").arg(hostName));
         return results;
+    }
 
     unsigned int size;
     endpointPairs->get_Size(&size);
