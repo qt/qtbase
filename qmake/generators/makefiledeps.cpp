@@ -572,22 +572,18 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 break;
 
             // Got a preprocessor directive
-
-            int keyword_len = 0;
             const char *const keyword = buffer + x;
-            while(x+keyword_len < buffer_len) {
-                if (buffer[x + keyword_len] < 'a' || buffer[x + keyword_len] > 'z') {
-                    for (x += keyword_len;
-                         x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t');
-                         x++) {} // skip spaces after keyword
-                    break;
-                } else if (qmake_endOfLine(buffer[x + keyword_len])) {
-                    x += keyword_len-1;
-                    keyword_len = 0;
-                    break;
-                }
-                keyword_len++;
-            }
+            for (;
+                 x < buffer_len && buffer[x] >= 'a' && buffer[x] <= 'z';
+                 x++) {} // skip over identifier
+            int keyword_len = buffer + x - keyword;
+            for (;
+                 x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t');
+                 x++) {} // skip spaces after keyword
+
+            /* Keyword with nothing after it, e.g. #endif: not interesting. */
+            if (qmake_endOfLine(buffer[x]))
+                keyword_len = 0;
 
             if((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
                || (keyword_len == 6 && !strncmp(keyword, "import", 6))) { // Obj-C
