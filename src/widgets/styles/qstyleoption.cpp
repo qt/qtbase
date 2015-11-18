@@ -475,6 +475,7 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
 /*!
     \typedef QStyleOptionFrameV2
     \relates QStyleOptionFrame
+    \obsolete
 
     Synonym for QStyleOptionFrame.
 */
@@ -482,6 +483,7 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
 /*!
     \typedef QStyleOptionFrameV3
     \relates QStyleOptionFrame
+    \obsolete
 
     Synonym for QStyleOptionFrame.
 */
@@ -1253,6 +1255,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 /*!
     \typedef QStyleOptionTabV2
     \relates QStyleOptionTab
+    \obsolete
 
     Synonym for QStyleOptionTab.
 */
@@ -1260,6 +1263,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 /*!
     \typedef QStyleOptionTabV3
     \relates QStyleOptionTab
+    \obsolete
 
     Synonym for QStyleOptionTab.
 */
@@ -1497,6 +1501,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
 /*!
     \typedef QStyleOptionProgressBarV2
     \relates QStyleOptionProgressBar
+    \obsolete
 
     Synonym for QStyleOptionProgressBar.
 */
@@ -2270,6 +2275,7 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
 /*!
     \typedef QStyleOptionDockWidgetV2
     \relates QStyleOptionDockWidget
+    \obsolete
 
     Synonym for QStyleOptionDockWidget.
 */
@@ -2675,6 +2681,7 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
 /*!
     \typedef QStyleOptionToolBoxV2
     \relates QStyleOptionToolBox
+    \obsolete
 
     Synonym for QStyleOptionToolBox.
 */
@@ -3012,6 +3019,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
 /*!
     \typedef QStyleOptionViewItemV2
     \relates QStyleOptionViewItem
+    \obsolete
 
     Synonym for QStyleOptionViewItem.
 */
@@ -3019,6 +3027,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
 /*!
     \typedef QStyleOptionViewItemV3
     \relates QStyleOptionViewItem
+    \obsolete
 
     Synonym for QStyleOptionViewItem.
 */
@@ -3026,6 +3035,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
 /*!
     \typedef QStyleOptionViewItemV4
     \relates QStyleOptionViewItem
+    \obsolete
 
     Synonym for QStyleOptionViewItem.
 */
@@ -3298,6 +3308,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
 /*!
     \typedef QStyleOptionTabWidgetFrameV2
     \relates QStyleOptionTabWidgetFrame
+    \obsolete
 
     Synonym for QStyleOptionTabWidgetFrame.
 */
@@ -3447,6 +3458,7 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
 /*!
     \typedef QStyleOptionTabBarBaseV2
     \relates QStyleOptionTabBarBase
+    \obsolete
 
     Synonym for QStyleOptionTabBarBase.
 */
