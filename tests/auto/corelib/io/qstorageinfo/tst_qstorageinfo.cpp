@@ -162,6 +162,7 @@ void tst_QStorageInfo::tempFile()
 #endif
 
     qint64 free = storage1.bytesFree();
+    QVERIFY(free != -1);
 
     file.write(QByteArray(1024*1024, '1'));
     file.flush();
@@ -185,6 +186,7 @@ void tst_QStorageInfo::caching()
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QVERIFY(free == storage2.bytesFree());
+    QVERIFY(free != -1);
 
     file.write(QByteArray(1024*1024, '\0'));
     file.flush();
