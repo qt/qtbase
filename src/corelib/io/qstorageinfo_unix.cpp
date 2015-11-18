@@ -458,8 +458,6 @@ void QStorageInfoPrivate::initRootPath()
     while (it.next()) {
         const QString mountDir = it.rootPath();
         const QByteArray fsName = it.fileSystemType();
-        if (isPseudoFs(it))
-            continue;
         // we try to find most suitable entry
         if (isParentOf(mountDir, oldRootPath) && maxLength < mountDir.length()) {
             maxLength = mountDir.length();
