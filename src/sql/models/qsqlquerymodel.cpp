@@ -471,6 +471,7 @@ void QSqlQueryModel::setQuery(const QString &query, const QSqlDatabase &db)
 void QSqlQueryModel::clear()
 {
     Q_D(QSqlQueryModel);
+    beginResetModel();
     d->error = QSqlError();
     d->atEnd = true;
     d->query.clear();
@@ -478,6 +479,7 @@ void QSqlQueryModel::clear()
     d->colOffsets.clear();
     d->bottom = QModelIndex();
     d->headers.clear();
+    endResetModel();
 }
 
 /*!

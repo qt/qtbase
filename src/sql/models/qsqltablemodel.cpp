@@ -1262,8 +1262,10 @@ void QSqlTableModel::setFilter(const QString &filter)
 void QSqlTableModel::clear()
 {
     Q_D(QSqlTableModel);
+    beginResetModel();
     d->clear();
     QSqlQueryModel::clear();
+    endResetModel();
 }
 
 /*! \reimp

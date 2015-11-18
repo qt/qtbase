@@ -593,7 +593,7 @@ public:
         connect(this, SIGNAL(modelReset()), this, SLOT(modelResetSlot()));
     }
 
-    void testme()
+    void testNested()
     {
         // Only the outermost beginResetModel/endResetModel should
         // emit signals.
@@ -618,6 +618,14 @@ public:
         QCOMPARE(gotReset, true);
     }
 
+    void testClear() // QTBUG-49404: Basic test whether clear() emits signals.
+    {
+        gotAboutToBeReset = gotReset = false;
+        clear();
+        QVERIFY(gotAboutToBeReset);
+        QVERIFY(gotReset);
+    }
+
 private slots:
     void modelAboutToBeResetSlot() { gotAboutToBeReset = true; }
     void modelResetSlot() { gotReset = true; }
@@ -634,7 +642,8 @@ void tst_QSqlQueryModel::nestedResets()
     CHECK_DATABASE(db);
 
     NestedResetsTest t;
-    t.testme();
+    t.testClear();
+    t.testNested();
 }
 
 // For task 180617
