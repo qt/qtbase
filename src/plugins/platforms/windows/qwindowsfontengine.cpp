@@ -1362,6 +1362,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
                 if (fontEngine->fontDef.style > QFont::StyleNormal)
                     fedw->fontDef.style = fontEngine->fontDef.style;
                 fedw->fontDef.family = fam;
+                fedw->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
                 return fedw;
             } else {
                 qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
@@ -1379,6 +1380,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
     if (fontEngine->fontDef.style > QFont::StyleNormal)
         fe->fontDef.style = fontEngine->fontDef.style;
     fe->fontDef.family = fam;
+    fe->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
     return fe;
 }
 

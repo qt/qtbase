@@ -1239,11 +1239,13 @@ QT_WARNING_POP
 
         fontFile->Release();
 
-        fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace, pixelSize,
+        fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace,
+                                                       pixelSize,
                                                        fontEngineData);
 
         // Get font family from font data
         fontEngine->fontDef.family = font.familyName();
+        fontEngine->fontDef.hintingPreference = hintingPreference;
 
         directWriteFontFace->Release();
     }
