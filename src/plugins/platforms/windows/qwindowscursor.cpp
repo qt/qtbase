@@ -43,6 +43,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/private/qguiapplication_p.h> // getPixmapCursor()
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
@@ -93,9 +94,14 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
     \sa QWindowsWindowCursor
 */
 
-HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot)
+HCURSOR QWindowsCursor::createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor)
 {
     HCURSOR cur = 0;
+    scaleFactor /= pixmap.devicePixelRatioF();
+    if (!qFuzzyCompare(scaleFactor, 1)) {
+        pixmap = pixmap.scaled((scaleFactor * QSizeF(pixmap.size())).toSize(),
+                               Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
     QBitmap mask = pixmap.mask();
     if (mask.isNull()) {
         mask = QBitmap(pixmap.size());
@@ -203,11 +209,19 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
 }
 
 // Create a cursor from image and mask of the format QImage::Format_Mono.
-static HCURSOR createBitmapCursor(const QCursor &cursor)
+static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
 {
     Q_ASSERT(cursor.shape() == Qt::BitmapCursor && cursor.bitmap());
-    const QImage bbits = cursor.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
-    const QImage mbits = cursor.mask()->toImage().convertToFormat(QImage::Format_Mono);
+    QImage bbits = cursor.bitmap()->toImage();
+    QImage mbits = cursor.mask()->toImage();
+    scaleFactor /= bbits.devicePixelRatioF();
+    if (!qFuzzyCompare(scaleFactor, 1)) {
+        const QSize scaledSize = (QSizeF(bbits.size()) * scaleFactor).toSize();
+        bbits = bbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        mbits = mbits.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+    bbits = bbits.convertToFormat(QImage::Format_Mono);
+    mbits = mbits.convertToFormat(QImage::Format_Mono);
     const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
     const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
@@ -583,9 +597,11 @@ CursorHandlePtr QWindowsCursor::pixmapWindowCursor(const QCursor &c)
                     ++it;
             }
         }
+        const qreal scaleFactor = QHighDpiScaling::factor(m_screen);
         const QPixmap pixmap = c.pixmap();
         const HCURSOR hc = pixmap.isNull()
-            ? createBitmapCursor(c) : QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot());
+            ? createBitmapCursor(c, scaleFactor)
+            : QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot(), scaleFactor);
         it = m_pixmapCursorCache.insert(cacheKey, CursorHandlePtr(new CursorHandle(hc)));
     }
     return it.value();

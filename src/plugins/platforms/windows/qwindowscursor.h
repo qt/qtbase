@@ -102,8 +102,8 @@ public:
     QPoint pos() const Q_DECL_OVERRIDE;
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
-    static HCURSOR createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot);
-    static HCURSOR createPixmapCursor(const PixmapCursor &pc) { return createPixmapCursor(pc.pixmap, pc.hotSpot); }
+    static HCURSOR createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor = 1);
+    static HCURSOR createPixmapCursor(const PixmapCursor &pc, qreal scaleFactor = 1) { return createPixmapCursor(pc.pixmap, pc.hotSpot, scaleFactor); }
     static PixmapCursor customCursor(Qt::CursorShape cursorShape);
 
     static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape);
