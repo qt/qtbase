@@ -48,12 +48,18 @@
 #include <QtSql/qsqldriver.h>
 #include <ibase.h>
 
+#ifdef QT_PLUGIN
+#define Q_EXPORT_SQLDRIVER_IBASE
+#else
+#define Q_EXPORT_SQLDRIVER_IBASE Q_SQL_EXPORT
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSqlResult;
 class QIBaseDriverPrivate;
 
-class QIBaseDriver : public QSqlDriver
+class Q_EXPORT_SQLDRIVER_IBASE QIBaseDriver : public QSqlDriver
 {
     friend class QIBaseResultPrivate;
     Q_DECLARE_PRIVATE(QIBaseDriver)

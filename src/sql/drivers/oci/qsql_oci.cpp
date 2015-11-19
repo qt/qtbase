@@ -158,7 +158,7 @@ QT_END_INCLUDE_NAMESPACE
 class QOCICols;
 struct QOCIResultPrivate;
 
-class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
+class QOCIResult: public QSqlCachedResult
 {
     friend class QOCIDriver;
     friend struct QOCIResultPrivate;

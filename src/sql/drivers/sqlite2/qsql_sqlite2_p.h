@@ -53,12 +53,18 @@
 
 struct sqlite;
 
+#ifdef QT_PLUGIN
+#define Q_EXPORT_SQLDRIVER_SQLITE2
+#else
+#define Q_EXPORT_SQLDRIVER_SQLITE2 Q_SQL_EXPORT
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSqlResult;
 class QSQLite2DriverPrivate;
 
-class QSQLite2Driver : public QSqlDriver
+class Q_EXPORT_SQLDRIVER_SQLITE2 QSQLite2Driver : public QSqlDriver
 {
     friend class QSQLite2Result;
     Q_DECLARE_PRIVATE(QSQLite2Driver)
