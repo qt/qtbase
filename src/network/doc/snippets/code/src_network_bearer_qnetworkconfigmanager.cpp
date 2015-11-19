@@ -40,9 +40,9 @@
 
 //! [0]
 QNetworkConfigurationManager mgr;
-QList<QNetworkConfiguration> activeConfigs = mgr.allConfigurations(QNetworkConfiguration::Active)
+QList<QNetworkConfiguration> activeConfigs = mgr.allConfigurations(QNetworkConfiguration::Active);
 if (activeConfigs.count() > 0)
-    Q_ASSERT(mgr.isOnline())
+    Q_ASSERT(mgr.isOnline());
 else
-    Q_ASSERT(!mgr.isOnline())
+    Q_ASSERT(!mgr.isOnline());
 //! [0]
