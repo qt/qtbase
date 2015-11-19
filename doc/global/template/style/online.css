@@ -1261,6 +1261,9 @@ table td,table th {
 table.alignedsummary,table.propsummary {
   width:initial
 }
+table.valuelist td.tblval {
+  font-size:0.75em
+}
 div.main_index .row {
   border-bottom:1px solid #eee
 }
