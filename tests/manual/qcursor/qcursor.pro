@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 
-SUBDIRS = allcursors grab_override
+SUBDIRS = allcursors grab_override qcursorhighdpi
