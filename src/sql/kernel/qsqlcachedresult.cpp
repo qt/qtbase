@@ -58,7 +58,6 @@ QSqlCachedResultPrivate::QSqlCachedResultPrivate(QSqlCachedResult *q, const QSql
     : QSqlResultPrivate(q, drv),
       rowCacheEnd(0),
       colCount(0),
-      forwardOnly(false),
       atEnd(false)
 {
 }
@@ -66,7 +65,6 @@ QSqlCachedResultPrivate::QSqlCachedResultPrivate(QSqlCachedResult *q, const QSql
 void QSqlCachedResultPrivate::cleanup()
 {
     cache.clear();
-    forwardOnly = false;
     atEnd = false;
     colCount = 0;
     rowCacheEnd = 0;

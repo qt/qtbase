@@ -105,7 +105,6 @@ public:
     QSqlCachedResult::ValueCache cache;
     int rowCacheEnd;
     int colCount;
-    bool forwardOnly;
     bool atEnd;
 };
 
