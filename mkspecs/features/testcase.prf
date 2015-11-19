@@ -27,7 +27,7 @@ check.commands += $(TESTRUNNER)
 unix {
     isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = .
 
-    mac:app_bundle: \
+    app_bundle: \
         check.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
     else: \
         check.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)

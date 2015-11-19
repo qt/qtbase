@@ -42,7 +42,7 @@ host_build {
     }
 }
 
-mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
+CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
     CONFIG += lib_bundle
 
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
