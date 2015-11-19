@@ -161,7 +161,6 @@ public:
 
     QVariant lastInsertId() const Q_DECL_OVERRIDE;
     QVariant handle() const Q_DECL_OVERRIDE;
-    void setForwardOnly(bool forward) Q_DECL_OVERRIDE;
 
 protected:
     bool fetchNext() Q_DECL_OVERRIDE;
@@ -190,8 +189,7 @@ public:
         : QSqlResultPrivate(q, db),
           hStmt(0),
           useSchema(false),
-          hasSQLFetchScroll(true),
-          userForwardOnly(false)
+          hasSQLFetchScroll(true)
     {
         unicode = drv_d_func()->unicode;
         useSchema = drv_d_func()->useSchema;
@@ -214,7 +212,6 @@ public:
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
-    bool userForwardOnly;
 
     bool isStmtHandleValid();
     void updateStmtHandleState();
@@ -997,7 +994,7 @@ bool QODBCResult::reset (const QString& query)
 
     d->updateStmtHandleState();
 
-    if (d->userForwardOnly) {
+    if (isForwardOnly()) {
         r = SQLSetStmtAttr(d->hStmt,
                             SQL_ATTR_CURSOR_TYPE,
                             (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
@@ -1027,7 +1024,7 @@ bool QODBCResult::reset (const QString& query)
     SQLULEN isScrollable = 0;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
-        QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
+        setForwardOnly(isScrollable == SQL_NONSCROLLABLE);
 
     SQLSMALLINT count = 0;
     SQLNumResultCols(d->hStmt, &count);
@@ -1345,7 +1342,7 @@ bool QODBCResult::prepare(const QString& query)
 
     d->updateStmtHandleState();
 
-    if (d->userForwardOnly) {
+    if (isForwardOnly()) {
         r = SQLSetStmtAttr(d->hStmt,
                             SQL_ATTR_CURSOR_TYPE,
                             (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
@@ -1658,7 +1655,7 @@ bool QODBCResult::exec()
     SQLULEN isScrollable = 0;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
-        QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
+        setForwardOnly(isScrollable == SQL_NONSCROLLABLE);
 
     SQLSMALLINT count = 0;
     SQLNumResultCols(d->hStmt, &count);
@@ -1822,13 +1819,6 @@ void QODBCResult::detachFromResultSet()
     Q_D(QODBCResult);
     if (d->hStmt)
         SQLCloseCursor(d->hStmt);
-}
-
-void QODBCResult::setForwardOnly(bool forward)
-{
-    Q_D(QODBCResult);
-    d->userForwardOnly = forward;
-    QSqlResult::setForwardOnly(forward);
 }
 
 ////////////////////////////////////////
