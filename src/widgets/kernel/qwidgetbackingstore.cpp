@@ -1000,6 +1000,16 @@ void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
     if (!isLocked())
         m_backingStore->sync();
 }
+
+#else
+
+static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
+{
+    Q_UNUSED(tlw);
+    Q_UNUSED(widget);
+    return Q_NULLPTR;
+}
+
 #endif // QT_NO_OPENGL
 
 static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
