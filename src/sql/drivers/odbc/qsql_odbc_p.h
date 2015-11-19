@@ -75,7 +75,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QODBCPrivate;
+class QODBCResultPrivate;
 class QODBCDriverPrivate;
 class QODBCDriver;
 class QSqlRecordInfo;
@@ -110,7 +110,7 @@ protected:
     bool nextResult();
 
 private:
-    QODBCPrivate *d;
+    QODBCResultPrivate *d;
 };
 
 class Q_EXPORT_SQLDRIVER_ODBC QODBCDriver : public QSqlDriver
@@ -149,7 +149,7 @@ protected:
 private:
     bool endTrans();
     void cleanup();
-    friend class QODBCPrivate;
+    friend class QODBCResultPrivate;
 };
 
 QT_END_NAMESPACE

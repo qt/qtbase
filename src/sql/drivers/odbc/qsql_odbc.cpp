@@ -143,10 +143,10 @@ private:
     QChar quote;
 };
 
-class QODBCPrivate
+class QODBCResultPrivate
 {
 public:
-    QODBCPrivate(QODBCDriverPrivate *dpp)
+    QODBCResultPrivate(QODBCDriverPrivate *dpp)
     : hStmt(0), useSchema(false), hasSQLFetchScroll(true), driverPrivate(dpp), userForwardOnly(false)
     {
         unicode = dpp->unicode;
@@ -177,13 +177,13 @@ public:
     void updateStmtHandleState(const QSqlDriver *driver);
 };
 
-bool QODBCPrivate::isStmtHandleValid(const QSqlDriver *driver)
+bool QODBCResultPrivate::isStmtHandleValid(const QSqlDriver *driver)
 {
     const QODBCDriver *odbcdriver = static_cast<const QODBCDriver*> (driver);
     return disconnectCount == odbcdriver->d_func()->disconnectCount;
 }
 
-void QODBCPrivate::updateStmtHandleState(const QSqlDriver *driver)
+void QODBCResultPrivate::updateStmtHandleState(const QSqlDriver *driver)
 {
     const QODBCDriver *odbcdriver = static_cast<const QODBCDriver*> (driver);
     disconnectCount = odbcdriver->d_func()->disconnectCount;
@@ -261,7 +261,7 @@ static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
     return result;
 }
 
-static QString qODBCWarn(const QODBCPrivate* odbc, int *nativeCode = 0)
+static QString qODBCWarn(const QODBCResultPrivate* odbc, int *nativeCode = 0)
 {
     return qODBCWarn(odbc->hStmt, odbc->dpEnv(), odbc->dpDbc(), nativeCode);
 }
@@ -271,7 +271,7 @@ static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = 0)
     return qODBCWarn(0, odbc->hEnv, odbc->hDbc, nativeCode);
 }
 
-static void qSqlWarning(const QString& message, const QODBCPrivate* odbc)
+static void qSqlWarning(const QString& message, const QODBCResultPrivate* odbc)
 {
     qWarning() << message << "\tError:" << qODBCWarn(odbc);
 }
@@ -286,7 +286,7 @@ static void qSqlWarning(const QString &message, const SQLHANDLE hStmt)
     qWarning() << message << "\tError:" << qODBCWarn(hStmt);
 }
 
-static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, const QODBCPrivate* p)
+static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, const QODBCResultPrivate* p)
 {
     int nativeCode = -1;
     QString message = qODBCWarn(p, &nativeCode);
@@ -626,7 +626,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate*
     return f;
 }
 
-static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
+static QSqlField qMakeFieldInfo(const QODBCResultPrivate* p, int i )
 {
     QString errorMessage;
     const QSqlField result = qMakeFieldInfo(p->hStmt, i, &errorMessage);
@@ -914,7 +914,7 @@ QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
 QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
 : QSqlResult(db)
 {
-    d = new QODBCPrivate(p);
+    d = new QODBCResultPrivate(p);
 }
 
 QODBCResult::~QODBCResult()
