@@ -104,9 +104,9 @@ public:
 
     static HCURSOR createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor = 1);
     static HCURSOR createPixmapCursor(const PixmapCursor &pc, qreal scaleFactor = 1) { return createPixmapCursor(pc.pixmap, pc.hotSpot, scaleFactor); }
-    static PixmapCursor customCursor(Qt::CursorShape cursorShape);
+    static PixmapCursor customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
 
-    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape);
+    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
     static QPoint mousePosition();
     static CursorState cursorState();
 

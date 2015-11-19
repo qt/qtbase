@@ -227,7 +227,25 @@ static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
 }
 
-static inline QSize systemCursorSize() { return QSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)); }
+static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
+{
+    const QSize primaryScreenCursorSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
+    if (screen) {
+        // Correct the size if the DPI value of the screen differs from
+        // that of the primary screen.
+        if (const QScreen *primaryQScreen = QGuiApplication::primaryScreen()) {
+            const QPlatformScreen *primaryScreen = primaryQScreen->handle();
+            if (screen != primaryScreen) {
+                const qreal logicalDpi = screen->logicalDpi().first;
+                const qreal primaryScreenLogicalDpi = primaryScreen->logicalDpi().first;
+                if (!qFuzzyCompare(logicalDpi, primaryScreenLogicalDpi))
+                    return (QSizeF(primaryScreenCursorSize) * logicalDpi / primaryScreenLogicalDpi).toSize();
+            }
+        }
+    }
+    return primaryScreenCursorSize;
+}
+
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 
 #if defined (Q_OS_WINCE) || defined (QT_NO_IMAGEFORMAT_PNG)
@@ -257,7 +275,8 @@ static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &syst
     return QWindowsCursor::PixmapCursor(rawImage, hotSpot);
 }
 
-QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape,
+                                                          const QPlatformScreen *screen)
 {
     // Non-standard Windows cursors are created from bitmaps
     static const uchar vsplit_bits[] = {
@@ -425,13 +444,13 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
 
     switch (cursorShape) {
     case Qt::SplitVCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
     case Qt::SplitHCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
     case Qt::OpenHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, openhand_bits, openhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, openhand_bits, openhandm_bits);
     case Qt::ClosedHandCursor:
-        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(screen), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
         return QWindowsCursor::PixmapCursor(QPixmap(copyDragCursorXpmC), QPoint(0, 0));
     case Qt::DragMoveCursor:
@@ -451,7 +470,7 @@ struct QWindowsCustomPngCursor {
     int hotSpotY;
 };
 
-QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen)
 {
     static const QWindowsCustomPngCursor pngCursors[] = {
         { Qt::SplitVCursor, 32, "splitvcursor_32.png", 11, 11 },
@@ -477,14 +496,14 @@ QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursor
         { Qt::DragLinkCursor, 64, "draglinkcursor_64.png", 0, 0 }
     };
 
-    const int cursorSize = GetSystemMetrics(SM_CXCURSOR);
+    const QSize cursorSize = systemCursorSize(screen);
     const QWindowsCustomPngCursor *sEnd = pngCursors + sizeof(pngCursors) / sizeof(pngCursors[0]);
     const QWindowsCustomPngCursor *bestFit = 0;
     int sizeDelta = INT_MAX;
     for (const QWindowsCustomPngCursor *s = pngCursors; s < sEnd; ++s) {
         if (s->shape != cursorShape)
             continue;
-        const int currentSizeDelta = qMax(s->size, cursorSize) - qMin(s->size, cursorSize);
+        const int currentSizeDelta = qMax(s->size, cursorSize.width()) - qMin(s->size, cursorSize.width());
         if (currentSizeDelta < sizeDelta) {
             bestFit = s;
             if (currentSizeDelta == 0)
@@ -507,7 +526,7 @@ struct QWindowsStandardCursorMapping {
     LPCWSTR resource;
 };
 
-HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
+HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen)
 {
     Q_ASSERT(cursorShape != Qt::BitmapCursor);
 
@@ -530,7 +549,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
 
     switch (cursorShape) {
     case Qt::BlankCursor: {
-        QImage blank = QImage(systemCursorSize(), QImage::Format_Mono);
+        QImage blank = QImage(systemCursorSize(screen), QImage::Format_Mono);
         blank.fill(0); // ignore color table
         return createBitmapCursor(blank, blank);
     }
@@ -541,7 +560,7 @@ HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
     case Qt::DragLinkCursor:
-        return QWindowsCursor::createPixmapCursor(customCursor(cursorShape));
+        return QWindowsCursor::createPixmapCursor(customCursor(cursorShape, screen));
     default:
         break;
     }
@@ -570,7 +589,7 @@ CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 {
     StandardCursorCache::Iterator it = m_standardCursorCache.find(shape);
     if (it == m_standardCursorCache.end()) {
-        if (const HCURSOR hc = QWindowsCursor::createCursorFromShape(shape))
+        if (const HCURSOR hc = QWindowsCursor::createCursorFromShape(shape, m_screen))
             it = m_standardCursorCache.insert(shape, CursorHandlePtr(new CursorHandle(hc)));
     }
     return it != m_standardCursorCache.end() ? it.value() : CursorHandlePtr(new CursorHandle);
