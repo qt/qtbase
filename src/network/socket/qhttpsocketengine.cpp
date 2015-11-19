@@ -768,7 +768,6 @@ void QHttpSocketEngine::emitPendingConnectionNotification()
 void QHttpSocketEngine::emitReadNotification()
 {
     Q_D(QHttpSocketEngine);
-    d->readNotificationActivated = true;
     // if there is a connection notification pending we have to emit the readNotification
     // incase there is connection error. This is only needed for Windows, but it does not
     // hurt in other cases.
@@ -781,7 +780,6 @@ void QHttpSocketEngine::emitReadNotification()
 void QHttpSocketEngine::emitWriteNotification()
 {
     Q_D(QHttpSocketEngine);
-    d->writeNotificationActivated = true;
     if (d->writeNotificationEnabled && !d->writeNotificationPending) {
         d->writeNotificationPending = true;
         QMetaObject::invokeMethod(this, "emitPendingWriteNotification", Qt::QueuedConnection);
@@ -801,8 +799,6 @@ QHttpSocketEnginePrivate::QHttpSocketEnginePrivate()
     : readNotificationEnabled(false)
     , writeNotificationEnabled(false)
     , exceptNotificationEnabled(false)
-    , readNotificationActivated(false)
-    , writeNotificationActivated(false)
     , readNotificationPending(false)
     , writeNotificationPending(false)
     , connectionNotificationPending(false)

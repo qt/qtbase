@@ -172,8 +172,6 @@ public:
     bool readNotificationEnabled;
     bool writeNotificationEnabled;
     bool exceptNotificationEnabled;
-    bool readNotificationActivated;
-    bool writeNotificationActivated;
     bool readNotificationPending;
     bool writeNotificationPending;
     bool connectionNotificationPending;
