@@ -113,6 +113,8 @@ public:
     CursorHandlePtr standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
     CursorHandlePtr pixmapWindowCursor(const QCursor &c);
 
+    QPixmap dragDefaultCursor(Qt::DropAction action) const;
+
 private:
     typedef QHash<Qt::CursorShape, CursorHandlePtr> StandardCursorCache;
     typedef QHash<QWindowsPixmapCursorCacheKey, CursorHandlePtr> PixmapCursorCache;
@@ -120,6 +122,11 @@ private:
     const QPlatformScreen *const m_screen;
     StandardCursorCache m_standardCursorCache;
     PixmapCursorCache m_pixmapCursorCache;
+
+    mutable QPixmap m_copyDragCursor;
+    mutable QPixmap m_moveDragCursor;
+    mutable QPixmap m_linkDragCursor;
+    mutable QPixmap m_ignoreDragCursor;
 };
 
 QT_END_NAMESPACE

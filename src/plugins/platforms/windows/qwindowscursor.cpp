@@ -692,6 +692,94 @@ void QWindowsCursor::setPos(const QPoint &pos)
     SetCursorPos(pos.x() , pos.y());
 }
 
+QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const
+{
+    switch (action) {
+    case Qt::CopyAction:
+        if (m_copyDragCursor.isNull())
+            m_copyDragCursor = QWindowsCursor::customCursor(Qt::DragCopyCursor, m_screen).pixmap;
+        return m_copyDragCursor;
+    case Qt::TargetMoveAction:
+    case Qt::MoveAction:
+        if (m_moveDragCursor.isNull())
+            m_moveDragCursor = QWindowsCursor::customCursor(Qt::DragMoveCursor, m_screen).pixmap;
+        return m_moveDragCursor;
+    case Qt::LinkAction:
+        if (m_linkDragCursor.isNull())
+            m_linkDragCursor = QWindowsCursor::customCursor(Qt::DragLinkCursor, m_screen).pixmap;
+        return m_linkDragCursor;
+    default:
+        break;
+    }
+
+    static const char * const ignoreDragCursorXpmC[] = {
+    "24 30 3 1",
+    ".        c None",
+    "a        c #000000",
+    "X        c #FFFFFF",
+    "aa......................",
+    "aXa.....................",
+    "aXXa....................",
+    "aXXXa...................",
+    "aXXXXa..................",
+    "aXXXXXa.................",
+    "aXXXXXXa................",
+    "aXXXXXXXa...............",
+    "aXXXXXXXXa..............",
+    "aXXXXXXXXXa.............",
+    "aXXXXXXaaaa.............",
+    "aXXXaXXa................",
+    "aXXaaXXa................",
+    "aXa..aXXa...............",
+    "aa...aXXa...............",
+    "a.....aXXa..............",
+    "......aXXa.....XXXX.....",
+    ".......aXXa..XXaaaaXX...",
+    ".......aXXa.XaaaaaaaaX..",
+    "........aa.XaaaXXXXaaaX.",
+    "...........XaaaaX..XaaX.",
+    "..........XaaXaaaX..XaaX",
+    "..........XaaXXaaaX.XaaX",
+    "..........XaaX.XaaaXXaaX",
+    "..........XaaX..XaaaXaaX",
+    "...........XaaX..XaaaaX.",
+    "...........XaaaXXXXaaaX.",
+    "............XaaaaaaaaX..",
+    ".............XXaaaaXX...",
+    "...............XXXX....."};
+
+    if (m_ignoreDragCursor.isNull()) {
+#if !defined (Q_OS_WINCE)
+        HCURSOR cursor = LoadCursor(NULL, IDC_NO);
+        ICONINFO iconInfo = {0, 0, 0, 0, 0};
+        GetIconInfo(cursor, &iconInfo);
+        BITMAP bmColor = {0, 0, 0, 0, 0, 0, 0};
+
+        if (iconInfo.hbmColor
+            && GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmColor)
+            && bmColor.bmWidth == bmColor.bmWidthBytes / 4) {
+            const int colorBitsLength = bmColor.bmHeight * bmColor.bmWidthBytes;
+            uchar *colorBits = new uchar[colorBitsLength];
+            GetBitmapBits(iconInfo.hbmColor, colorBitsLength, colorBits);
+            const QImage colorImage(colorBits, bmColor.bmWidth, bmColor.bmHeight,
+                                    bmColor.bmWidthBytes, QImage::Format_ARGB32);
+
+            m_ignoreDragCursor = QPixmap::fromImage(colorImage);
+            delete [] colorBits;
+        } else {
+            m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+        }
+
+        DeleteObject(iconInfo.hbmMask);
+        DeleteObject(iconInfo.hbmColor);
+        DestroyCursor(cursor);
+#else // !Q_OS_WINCE
+        m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+#endif // !Q_OS_WINCE
+    }
+    return m_ignoreDragCursor;
+}
+
 /*!
     \class QWindowsWindowCursor
     \brief Per-Window cursor. Contains a QCursor and manages its associated system
