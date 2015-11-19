@@ -43,7 +43,7 @@ host_build {
 }
 
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
-    CONFIG += qt_framework
+    CONFIG += lib_bundle
 
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
 
@@ -106,7 +106,7 @@ else: \
     DEFINES += QT_BUILD_$${ucmodule}_LIB
 
 # OS X and iOS frameworks
-qt_framework {
+lib_bundle {
    # Set the CFBundleIdentifier prefix for Qt frameworks
    QMAKE_TARGET_BUNDLE_PREFIX = org.qt-project
    #QMAKE_FRAMEWORK_VERSION = 4.0
@@ -115,8 +115,6 @@ qt_framework {
         CONFIG += bundle
         QMAKE_BUNDLE_EXTENSION = .framework
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
-   } else {
-        CONFIG += lib_bundle
    }
    CONFIG -= qt_install_headers #no need to install these as well
    !debug_and_release|!build_all|CONFIG(release, debug|release) {
@@ -239,7 +237,7 @@ load(qt_installs)
 load(qt_targets)
 
 # this builds on top of qt_common
-!internal_module:!qt_framework:if(unix|mingw) {
+!internal_module:!lib_bundle:if(unix|mingw) {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
     host_build: \
