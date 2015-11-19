@@ -38,6 +38,14 @@
 #ifndef _CRT_RAND_S
 #define _CRT_RAND_S
 #endif
+
+// Windows Runtime and CE use a QHash to fake environment variables. To avoid
+// deadlock, disable reading the QT_HASH_SEED environment variable within
+// QHash.
+#if defined(Q_OS_WINRT) || defined(Q_OS_WINCE)
+#  define QHASH_NO_ENV_SEED
+#endif
+
 #include <stdlib.h>
 
 #include "qhash.h"
@@ -223,9 +231,11 @@ static uint qt_create_qhash_seed()
     uint seed = 0;
 
 #ifndef QT_BOOTSTRAPPED
+#ifdef QHASH_NO_ENV_SEED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
     if (!envSeed.isNull())
         return envSeed.toUInt();
+#endif // QHASH_NO_ENV_SEED
 
 #ifdef Q_OS_UNIX
     int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
@@ -327,8 +337,10 @@ int qGlobalQHashSeed()
  */
 void qSetGlobalQHashSeed(int newSeed)
 {
+#ifdef QHASH_NO_ENV_SEED
     if (qEnvironmentVariableIsSet("QT_HASH_SEED"))
         return;
+#endif // QHASH_NO_ENV_SEED
     if (newSeed == -1) {
         int x(qt_create_qhash_seed() & INT_MAX);
         qt_qhash_seed.store(x);
@@ -1181,6 +1193,9 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     variable \c QT_HASH_SEED. The contents of that variable, interpreted as a
     decimal value, will be used as the seed for qHash(). Alternatively, you can
     call the qSetGlobalQHashSeed() function.
+
+    \note The environment variable \c QT_HASH_SEED is unsupported on Windows
+    Runtime and CE. Use qSetGlobalQHashSeed() instead on those platforms.
 
     \sa QHashIterator, QMutableHashIterator, QMap, QSet
 */
