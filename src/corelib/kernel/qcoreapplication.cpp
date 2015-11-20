@@ -625,7 +625,7 @@ void QCoreApplicationPrivate::initLocale()
 
     \section1 The Event Loop and Event Handling
 
-    The event loop is started with a call to exec(). Long running
+    The event loop is started with a call to exec(). Long-running
     operations can call processEvents() to keep the application
     responsive.
 
@@ -707,7 +707,7 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
 #ifndef QT_NO_QOBJECT
 /*!
-    Flushes the platform specific event queues.
+    Flushes the platform-specific event queues.
 
     If you are doing graphical changes inside a loop that does not
     return to the event loop on asynchronous window systems like X11
@@ -725,9 +725,9 @@ void QCoreApplication::flush()
 #endif
 
 /*!
-    Constructs a Qt kernel application. Kernel applications are
-    applications without a graphical user interface. These type of
-    applications are used at the console or as server processes.
+    Constructs a Qt core application. Core applications are applications without
+    a graphical user interface. Such applications are used at the console or as
+    server processes.
 
     The \a argc and \a argv arguments are processed by the application,
     and made available in a more convenient form by the arguments()
@@ -1209,7 +1209,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     milliseconds or until there are no more events to process,
     whichever is shorter.
 
-    You can call this function occasionally when you program is busy
+    You can call this function occasionally when your program is busy
     doing a long operation (e.g. copying a file).
 
     Calling this function processes events only for the calling thread.
@@ -1236,9 +1236,9 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
  *****************************************************************************/
 
 /*!
-    Enters the main event loop and waits until exit() is called.
-    Returns the value that was set to exit() (which is 0 if exit() is
-    called via quit()).
+    Enters the main event loop and waits until exit() is called.  Returns
+    the value that was passed to exit() (which is 0 if exit() is called via
+    quit()).
 
     It is necessary to call this function to start event handling. The
     main event loop receives events from the window system and
@@ -1494,7 +1494,8 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
   If \a receiver is null, the events of \a event_type are sent for all
   objects. If \a event_type is 0, all the events are sent for \a receiver.
 
-  \note This method must be called from the same thread as its QObject parameter, \a receiver.
+  \note This method must be called from the thread in which its QObject
+  parameter, \a receiver, lives.
 
   \sa flush(), postEvent()
 */
@@ -1840,7 +1841,7 @@ void QCoreApplication::quit()
   This signal is emitted when the application is about to quit the
   main event loop, e.g. when the event loop level drops to zero.
   This may happen either after a call to quit() from inside the
-  application or when the users shuts down the entire desktop session.
+  application or when the user shuts down the entire desktop session.
 
   The signal is particularly useful if your application has to do some
   last-second cleanup. Note that no user interaction is possible in
@@ -2070,8 +2071,8 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
     directory, and you run the \c{regexp} example, this function will
     return "C:/Qt/examples/tools/regexp".
 
-    On OS X and iOS this will point to the directory actually containing the
-    executable, which may be inside of an application bundle (if the
+    On OS X and iOS this will point to the directory actually containing
+    the executable, which may be inside an application bundle (if the
     application is bundled).
 
     \warning On Linux, this function will try to get the path from the
@@ -2684,11 +2685,11 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     The event filter \a filterObj receives events via its \l {QAbstractNativeEventFilter::}{nativeEventFilter()}
     function, which is called for all native events received in the main thread.
 
-    The QAbstractNativeEventFilter::nativeEventFilter() function should return true if the event should
-    be filtered, (i.e. stopped). It should return false to allow
-    normal Qt processing to continue: the native event can then be translated
-    into a QEvent and handled by the standard Qt \l{QEvent} {event} filtering,
-    e.g. QObject::installEventFilter().
+    The QAbstractNativeEventFilter::nativeEventFilter() function should
+    return true if the event should be filtered, i.e. stopped. It should
+    return false to allow normal Qt processing to continue: the native
+    event can then be translated into a QEvent and handled by the standard
+    Qt \l{QEvent} {event} filtering, e.g. QObject::installEventFilter().
 
     If multiple event filters are installed, the filter that was
     installed last is activated first.
@@ -2696,7 +2697,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     \note The filter function set here receives native messages,
     i.e. MSG or XCB event structs.
 
-    \note Native event filters will be disabled when the application the
+    \note Native event filters will be disabled in the application when the
     Qt::AA_MacPluginApplication attribute is set.
 
     For maximum portability, you should always try to use QEvent
@@ -2885,7 +2886,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 7
 
     The \a context parameter is normally the class name, but it can
-    be any string.
+    be any text.
 
     \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
 */
