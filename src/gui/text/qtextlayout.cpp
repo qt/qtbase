@@ -2617,7 +2617,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
     inside the line, taking account of the \a edge.
 
     If \a cursorPos is not a valid cursor position, the nearest valid
-    cursor position will be used instead, and cpos will be modified to
+    cursor position will be used instead, and \a cursorPos will be modified to
     point to this valid cursor position.
 
     \sa xToCursor()
