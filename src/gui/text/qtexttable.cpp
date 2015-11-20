@@ -986,8 +986,8 @@ void QTextTable::removeColumns(int pos, int num)
 
     Merges the cell at the specified \a row and \a column with the adjacent cells
     into one cell. The new cell will span \a numRows rows and \a numCols columns.
-    If \a numRows or \a numCols is less than the current number of rows or columns
-    the cell spans then this method does nothing.
+    This method does nothing if \a numRows or \a numCols is less than the current
+    number of rows or columns spanned by the cell.
 
     \sa splitCell()
 */
