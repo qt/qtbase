@@ -512,7 +512,7 @@ public:
 
     void freeMemory();
 
-    int findItem(int strPos) const;
+    int findItem(int strPos, int firstItem = 0) const;
     inline QTextFormatCollection *formatCollection() const {
         if (block.docHandle())
             return block.docHandle()->formatCollection();
