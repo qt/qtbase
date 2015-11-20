@@ -2663,17 +2663,13 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     const QScriptItem *si = &eng->layoutData->items[itm];
     if (!si->num_glyphs)
         eng->shape(itm);
-    pos -= si->position;
+
+    const int l = eng->length(itm);
+    pos = qBound(0, pos - si->position, l);
 
     QGlyphLayout glyphs = eng->shapedGlyphs(si);
     unsigned short *logClusters = eng->logClusters(si);
     Q_ASSERT(logClusters);
-
-    int l = eng->length(itm);
-    if (pos > l)
-        pos = l;
-    if (pos < 0)
-        pos = 0;
 
     int glyph_pos = pos == l ? si->num_glyphs : logClusters[pos];
     if (edge == Trailing && glyph_pos < si->num_glyphs) {
@@ -2683,7 +2679,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             glyph_pos++;
     }
 
-    bool reverse = eng->layoutData->items[itm].analysis.bidiLevel % 2;
+    bool reverse = si->analysis.bidiLevel % 2;
 
 
     // add the items left of the cursor
@@ -2710,13 +2706,15 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             x += si.width;
             continue;
         }
+
+        const int itemLength = eng->length(item);
         int start = qMax(line.from, si.position);
-        int end = qMin(lineEnd, si.position + eng->length(item));
+        int end = qMin(lineEnd, si.position + itemLength);
 
         logClusters = eng->logClusters(&si);
 
         int gs = logClusters[start-si.position];
-        int ge = (end == si.position + eng->length(item)) ? si.num_glyphs-1 : logClusters[end-si.position-1];
+        int ge = (end == si.position + itemLength) ? si.num_glyphs-1 : logClusters[end-si.position-1];
 
         QGlyphLayout glyphs = eng->shapedGlyphs(&si);
 
