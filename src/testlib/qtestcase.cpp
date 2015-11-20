@@ -97,6 +97,8 @@
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #endif
 
+#include <vector>
+
 QT_BEGIN_NAMESPACE
 
 using QtMiscUtils::toHexUpper;
@@ -157,43 +159,74 @@ static bool installCoverageTool(const char * appname, const char * testname)
 #endif
 }
 
+static bool isValidSlot(const QMetaMethod &sl)
+{
+    if (sl.access() != QMetaMethod::Private || sl.parameterCount() != 0
+        || sl.returnType() != QMetaType::Void || sl.methodType() != QMetaMethod::Slot)
+        return false;
+    const QByteArray name = sl.name();
+    return !(name.isEmpty() || name.endsWith("_data")
+        || name == "initTestCase" || name == "cleanupTestCase"
+        || name == "init" || name == "cleanup");
+}
+
 namespace QTest
 {
+    class WatchDog;
+
     static QObject *currentTestObject = 0;
     static QString mainSourcePath;
 
-    class TestFunction {
+    class TestMethods {
+        Q_DISABLE_COPY(TestMethods)
     public:
-        TestFunction() : function_(-1), data_(0) {}
-        void set(int function, char *data) { function_ = function; data_ = data; }
-        char *data() const { return data_; }
-        int function() const { return function_; }
-        ~TestFunction() { delete[] data_; }
+        typedef std::vector<QMetaMethod> MetaMethods;
+
+        explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
+
+        void invokeTests(QObject *testObject) const;
+
+        static QMetaMethod findMethod(const QObject *obj, const char *signature);
+
     private:
-        int function_;
-        char *data_;
+        bool invokeTest(int index, const char *data, WatchDog *watchDog) const;
+        void invokeTestOnData(int index) const;
+
+        QMetaMethod m_initTestCaseMethod; // might not exist, check isValid().
+        QMetaMethod m_initTestCaseDataMethod;
+        QMetaMethod m_cleanupTestCaseMethod;
+        QMetaMethod m_initMethod;
+        QMetaMethod m_cleanupMethod;
+
+        MetaMethods m_methods;
     };
-    /**
-     * Contains the list of test functions that was supplied
-     * on the command line, if any. Hence, if not empty,
-     * those functions should be run instead of
-     * all appearing in the test case.
-     */
-    static TestFunction * testFuncs = 0;
-    static int testFuncCount = 0;
 
-    /** Don't leak testFuncs on exit even on error */
-    static struct TestFuncCleanup
+    TestMethods::TestMethods(const QObject *o, const MetaMethods &m)
+        : m_initTestCaseMethod(TestMethods::findMethod(o, "initTestCase()"))
+        , m_initTestCaseDataMethod(TestMethods::findMethod(o, "initTestCase_data()"))
+        , m_cleanupTestCaseMethod(TestMethods::findMethod(o, "cleanupTestCase()"))
+        , m_initMethod(TestMethods::findMethod(o, "init()"))
+        , m_cleanupMethod(TestMethods::findMethod(o, "cleanup()"))
+        , m_methods(m)
     {
-        void cleanup()
-        {
-            delete[] testFuncs;
-            testFuncCount = 0;
-            testFuncs = 0;
+        if (m.empty()) {
+            const QMetaObject *metaObject = o->metaObject();
+            const int count = metaObject->methodCount();
+            m_methods.reserve(count);
+            for (int i = 0; i < count; ++i) {
+                const QMetaMethod me = metaObject->method(i);
+                if (isValidSlot(me))
+                    m_methods.push_back(me);
+            }
         }
+    }
 
-        ~TestFuncCleanup() { cleanup(); }
-    } testFuncCleaner;
+    QMetaMethod TestMethods::findMethod(const QObject *obj, const char *signature)
+    {
+        const QMetaObject *metaObject = obj->metaObject();
+        const int funcIndex = metaObject->indexOfMethod(signature);
+        return funcIndex >= 0 ? metaObject->method(funcIndex) : QMetaMethod();
+    }
 
     static int keyDelay = -1;
     static int mouseDelay = -1;
@@ -247,22 +280,6 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
             keyDelay = defaultEventDelay();
     }
     return keyDelay;
-}
-
-static bool isValidSlot(const QMetaMethod &sl)
-{
-    if (sl.access() != QMetaMethod::Private || sl.parameterCount() != 0
-        || sl.returnType() != QMetaType::Void || sl.methodType() != QMetaMethod::Slot)
-        return false;
-    QByteArray name = sl.name();
-    if (name.isEmpty())
-        return false;
-    if (name.endsWith("_data"))
-        return false;
-    if (name == "initTestCase" || name == "cleanupTestCase"
-        || name == "cleanup" || name == "init")
-        return false;
-    return true;
 }
 
 Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
@@ -361,6 +378,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 {
     QTestLog::LogMode logFormat = QTestLog::Plain;
     const char *logFilename = 0;
+
+    QTest::testFunctions.clear();
+    QTest::testTags.clear();
 
 #if defined(Q_OS_MAC) && defined(HAVE_XCTEST)
     if (QXcodeTestLogger::canLogTestProgress())
@@ -642,7 +662,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             fprintf(stderr, "\n"
                             " -help      : This help\n");
             exit(1);
-        } else if (qml) {
+        } else {
             // We can't check the availability of test functions until
             // we load the QML files.  So just store the data for now.
             int colon = -1;
@@ -668,36 +688,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 QTest::testTags +=
                     QString::fromLatin1(argv[i] + colon + 1);
             }
-        } else {
-            if (!QTest::testFuncs) {
-                QTest::testFuncs = new QTest::TestFunction[512];
-            }
-
-            int colon = -1;
-            char buf[512], *data=0;
-            int off;
-            for (off = 0; *(argv[i]+off); ++off) {
-                if (*(argv[i]+off) == ':') {
-                    colon = off;
-                    break;
-                }
-            }
-            if (colon != -1) {
-                data = qstrdup(argv[i]+colon+1);
-            }
-            qsnprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
-            qsnprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
-            int idx = QTest::currentTestObject->metaObject()->indexOfMethod(buf);
-            if (idx < 0 || !isValidSlot(QTest::currentTestObject->metaObject()->method(idx))) {
-                fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n", buf);
-                buf[off] = 0;
-                qPrintTestSlots(stderr, buf);
-                fprintf(stderr, "\n%s -functions\nlists all available test functions.\n", argv[0]);
-                exit(1);
-            }
-            testFuncs[testFuncCount].set(idx, data);
-            testFuncCount++;
-            QTEST_ASSERT(QTest::testFuncCount < 512);
         }
     }
 
@@ -750,7 +740,7 @@ qreal addResult(qreal current, const QBenchmarkResult& r)
 
 }
 
-static void qInvokeTestMethodDataEntry(char *slot)
+void TestMethods::invokeTestOnData(int index) const
 {
     /* Benchmarking: for each median iteration*/
 
@@ -765,7 +755,8 @@ static void qInvokeTestMethodDataEntry(char *slot)
         /* Benchmarking: for each accumulation iteration*/
         bool invokeOk;
         do {
-            invokeMethod(QTest::currentTestObject, "init()");
+            if (m_initMethod.isValid())
+                m_initMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
             if (QTestResult::skipCurrentTest() || QTestResult::currentTestFailed())
                 break;
 
@@ -777,8 +768,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
                     QTestResult::currentDataTag()
                     ? QTestResult::currentDataTag() : "");
 
-            invokeOk = QMetaObject::invokeMethod(QTest::currentTestObject, slot,
-                                                 Qt::DirectConnection);
+            invokeOk = m_methods[index].invoke(QTest::currentTestObject, Qt::DirectConnection);
             if (!invokeOk)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
@@ -786,7 +776,8 @@ static void qInvokeTestMethodDataEntry(char *slot)
 
             QTestResult::finishedCurrentTestData();
 
-            invokeMethod(QTest::currentTestObject, "cleanup()");
+            if (m_cleanupMethod.isValid())
+                m_cleanupMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
 
             // If the test isn't a benchmark, finalize the result after cleanup() has finished.
             if (!isBenchmark)
@@ -900,21 +891,18 @@ private:
     If the function was successfully called, true is returned, otherwise
     false.
  */
-static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *watchDog)
+bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) const
 {
-    QTEST_ASSERT(slotName);
-
     QBenchmarkTestMethodData benchmarkData;
     QBenchmarkTestMethodData::current = &benchmarkData;
 
-    QBenchmarkGlobalData::current->context.slotName = QLatin1String(slotName);
+    const QByteArray &name = m_methods[index].name();
+    QBenchmarkGlobalData::current->context.slotName = QLatin1String(name) + QStringLiteral("()");
 
     char member[512];
     QTestTable table;
 
-    char *slot = qstrdup(slotName);
-    slot[strlen(slot) - 2] = '\0';
-    QTestResult::setCurrentTestFunction(slot);
+    QTestResult::setCurrentTestFunction(name.constData());
 
     const QTestTable *gTable = QTestTable::globalTestTable();
     const int globalDataCount = gTable->dataCount();
@@ -926,7 +914,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
             QTestResult::setCurrentGlobalTestData(gTable->testData(curGlobalDataIndex));
 
         if (curGlobalDataIndex == 0) {
-            qsnprintf(member, 512, "%s_data()", slot);
+            qsnprintf(member, 512, "%s_data()", name.constData());
             invokeMethod(QTest::currentTestObject, member);
         }
 
@@ -941,7 +929,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
                 if (!*data)
                     data = 0;
                 else {
-                    fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
+                    fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), data);
                     fprintf(stderr, "Function has no testdata.\n");
                     return false;
                 }
@@ -954,14 +942,14 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
 
-                    QTestPrivate::checkBlackLists(slot, dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+                    QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
 
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
                     if (watchDog)
                         watchDog->beginTest();
-                    qInvokeTestMethodDataEntry(slot);
+                    invokeTestOnData(index);
                     if (watchDog)
                         watchDog->testFinished();
 
@@ -973,7 +961,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
         }
 
         if (data && !foundFunction) {
-            fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
+            fprintf(stderr, "Unknown testdata for function %s: '%s()'\n", name.constData(), data);
             fprintf(stderr, "Available testdata:\n");
             for (int i = 0; i < table.dataCount(); ++i)
                 fprintf(stderr, "%s\n", table.testData(i)->dataTag());
@@ -988,7 +976,6 @@ static bool qInvokeTestMethod(const char *slotName, const char *data, WatchDog *
     QTestResult::setSkipCurrentTest(false);
     QTestResult::setBlacklistCurrentTest(false);
     QTestResult::setCurrentTestData(0);
-    delete[] slot;
 
     return true;
 }
@@ -1266,21 +1253,23 @@ static bool debuggerPresent()
 #endif
 }
 
-static void qInvokeTestMethods(QObject *testObject)
+void TestMethods::invokeTests(QObject *testObject) const
 {
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
     QTestLog::startLogging();
     QTestResult::setCurrentTestFunction("initTestCase");
     QTestTable::globalTestTable();
-    invokeMethod(testObject, "initTestCase_data()");
+    if (m_initTestCaseDataMethod.isValid())
+        m_initTestCaseDataMethod.invoke(testObject, Qt::DirectConnection);
 
     QScopedPointer<WatchDog> watchDog;
     if (!debuggerPresent())
         watchDog.reset(new WatchDog);
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
-        invokeMethod(testObject, "initTestCase()");
+        if (m_initTestCaseMethod.isValid())
+            m_initTestCaseMethod.invoke(testObject, Qt::DirectConnection);
 
         // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
         const bool previousFailed = QTestResult::currentTestFailed();
@@ -1289,35 +1278,22 @@ static void qInvokeTestMethods(QObject *testObject)
         QTestResult::finishedCurrentTestFunction();
 
         if (!QTestResult::skipCurrentTest() && !previousFailed) {
-
-            if (QTest::testFuncs) {
-                for (int i = 0; i != QTest::testFuncCount; i++) {
-                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
-                                                              QTest::testFuncs[i].data(), watchDog.data())) {
-                        break;
-                    }
-                }
-                testFuncCleaner.cleanup();
-            } else {
-                int methodCount = metaObject->methodCount();
-                QMetaMethod *testMethods = new QMetaMethod[methodCount];
-                for (int i = 0; i != methodCount; i++)
-                    testMethods[i] = metaObject->method(i);
-                for (int i = 0; i != methodCount; i++) {
-                    if (!isValidSlot(testMethods[i]))
-                        continue;
-                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData(), 0, watchDog.data()))
-                        break;
-                }
-                delete[] testMethods;
-                testMethods = 0;
+            for (int i = 0, count = int(m_methods.size()); i < count; ++i) {
+                const char *data = Q_NULLPTR;
+                if (i < QTest::testTags.size() && !QTest::testTags.at(i).isEmpty())
+                    data = qstrdup(QTest::testTags.at(i).toLatin1().constData());
+                const bool ok = invokeTest(i, data, watchDog.data());
+                delete [] data;
+                if (!ok)
+                    break;
             }
         }
 
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setBlacklistCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
-        invokeMethod(testObject, "cleanupTestCase()");
+        if (m_cleanupTestCaseMethod.isValid())
+            m_cleanupTestCaseMethod.invoke(testObject, Qt::DirectConnection);
         QTestResult::finishedCurrentTestData();
         QTestResult::finishedCurrentTestDataCleanup();
     }
@@ -1702,7 +1678,23 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);
 #endif
-        qInvokeTestMethods(testObject);
+        TestMethods::MetaMethods commandLineMethods;
+        if (!QTest::testFunctions.isEmpty()) {
+            foreach (const QString &tf, QTest::testFunctions) {
+                const QByteArray tfB = tf.toLatin1();
+                const QByteArray signature = tfB + QByteArrayLiteral("()");
+                QMetaMethod m = TestMethods::findMethod(testObject, signature.constData());
+                if (!m.isValid() || !isValidSlot(m)) {
+                    fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n", tfB.constData());
+                    qPrintTestSlots(stderr, tfB.constData());
+                    fprintf(stderr, "\n%s -functions\nlists all available test functions.\n", argv[0]);
+                    exit(1);
+                }
+                commandLineMethods.push_back(m);
+            }
+        }
+        TestMethods test(testObject, commandLineMethods);
+        test.invokeTests(testObject);
     }
 
 #ifndef QT_NO_EXCEPTIONS
