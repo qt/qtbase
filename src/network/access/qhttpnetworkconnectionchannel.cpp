@@ -1070,6 +1070,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             connection->d_func()->dequeueRequest(socket);
         if (reply) {
             reply->setSpdyWasUsed(false);
+            Q_ASSERT(reply->d_func()->connectionChannel == this);
             emit reply->encrypted();
         }
         if (reply)
@@ -1109,8 +1110,6 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     connection->d_func()->pauseConnection();
     if (pendingEncrypt && !reply)
         connection->d_func()->dequeueRequest(socket);
-    if (reply) // a reply was actually dequeued.
-        reply->d_func()->connectionChannel = this; // set correct channel like in sendRequest() and queueRequest();
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP) {
         if (reply)
             emit reply->sslErrors(errors);

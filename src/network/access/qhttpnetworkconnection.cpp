@@ -666,8 +666,7 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
         HttpMessagePair messagePair = highPriorityQueue.takeLast();
         if (!messagePair.second->d_func()->requestIsPrepared)
             prepareRequest(messagePair);
-        channels[i].request = messagePair.first;
-        channels[i].reply = messagePair.second;
+        updateChannel(i, messagePair);
         return true;
     }
 
@@ -676,11 +675,19 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
         HttpMessagePair messagePair = lowPriorityQueue.takeLast();
         if (!messagePair.second->d_func()->requestIsPrepared)
             prepareRequest(messagePair);
-        channels[i].request = messagePair.first;
-        channels[i].reply = messagePair.second;
+        updateChannel(i, messagePair);
         return true;
     }
     return false;
+}
+
+void QHttpNetworkConnectionPrivate::updateChannel(int i, const HttpMessagePair &messagePair)
+{
+    channels[i].request = messagePair.first;
+    channels[i].reply = messagePair.second;
+    // Now that reply is assigned a channel, correct reply to channel association
+    // previously set in queueRequest.
+    channels[i].reply->d_func()->connectionChannel = &channels[i];
 }
 
 QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
