@@ -219,7 +219,7 @@ QT_BEGIN_NAMESPACE
     \value TouchEnd                         End of touch-event sequence (QTouchEvent).
     \value TouchUpdate                      Touch-screen event (QTouchEvent).
     \value UngrabKeyboard                   Item loses keyboard grab (QGraphicsItem only).
-    \value UngrabMouse                      Item loses mouse grab (QGraphicsItem only).
+    \value UngrabMouse                      Item loses mouse grab (QGraphicsItem, QQuickItem).
     \value UpdateLater                      The widget should be queued to be repainted at a later time.
     \value UpdateRequest                    The widget should be repainted.
     \value WhatsThis                        The widget should reveal "What's This?" help (QHelpEvent).
