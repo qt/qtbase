@@ -1132,8 +1132,8 @@ QDB2Driver::QDB2Driver(Qt::HANDLE env, Qt::HANDLE con, QObject* parent)
     : QSqlDriver(*new QDB2DriverPrivate, parent)
 {
     Q_D(QDB2Driver);
-    d->hEnv = (SQLHANDLE)env;
-    d->hDbc = (SQLHANDLE)con;
+    d->hEnv = reinterpret_cast<intptr_t>(env);
+    d->hDbc = reinterpret_cast<intptr_t>(con);
     if (env && con) {
         setOpen(true);
         setOpenError(false);
@@ -1197,10 +1197,10 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
                          tmp.toLocal8Bit().constData());
                 continue;
             }
-            r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_ACCESS_MODE, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_ACCESS_MODE, reinterpret_cast<SQLPOINTER>(v), 0);
         } else if (opt == QLatin1String("SQL_ATTR_LOGIN_TIMEOUT")) {
             v = val.toUInt();
-            r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(d->hDbc, SQL_ATTR_LOGIN_TIMEOUT, reinterpret_cast<SQLPOINTER>(v), 0);
         } else if (opt.compare(QLatin1String("PROTOCOL"), Qt::CaseInsensitive) == 0) {
                         protocol = tmp;
         }
@@ -1506,6 +1506,7 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case LastInsertId:
         case SimpleLocking:
         case EventNotifications:
+        case CancelQuery:
             return false;
         case BLOB:
         case Transactions:
@@ -1572,7 +1573,7 @@ bool QDB2Driver::setAutoCommit(bool autoCommit)
     SQLUINTEGER ac = autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF;
     SQLRETURN r  = SQLSetConnectAttr(d->hDbc,
                                       SQL_ATTR_AUTOCOMMIT,
-                                      (SQLPOINTER)ac,
+                                      reinterpret_cast<SQLPOINTER>(ac),
                                       sizeof(ac));
     if (r != SQL_SUCCESS) {
         setLastError(qMakeError(tr("Unable to set autocommit"),
