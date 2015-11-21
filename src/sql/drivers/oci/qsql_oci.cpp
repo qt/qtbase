@@ -497,8 +497,8 @@ public:
     OCIError *err;
     bool transaction;
     int serverVersion;
-    ub4 prefetchRows;
-    ub2 prefetchMem;
+    int prefetchRows;
+    int prefetchMem;
     QString user;
 
     void allocErrorHandle();
