@@ -1374,7 +1374,7 @@ QSqlRecord QIBaseResult::record() const
         f.setPrecision(qAbs(v.sqlscale));
         f.setRequiredStatus((v.sqltype & 1) == 0 ? QSqlField::Required : QSqlField::Optional);
         if(v.sqlscale < 0) {
-            QSqlQuery q(new QIBaseResult(d->db));
+            QSqlQuery q(driver()->createResult());
             q.setForwardOnly(true);
             q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
                     "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
