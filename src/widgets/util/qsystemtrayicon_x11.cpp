@@ -194,6 +194,9 @@ void QSystemTrayIconSys::mouseDoubleClickEvent(QMouseEvent *ev)
 bool QSystemTrayIconSys::event(QEvent *e)
 {
     switch (e->type()) {
+    case QEvent::ToolTip:
+        QApplication::sendEvent(q, e);
+        break;
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         return QApplication::sendEvent(q, e);

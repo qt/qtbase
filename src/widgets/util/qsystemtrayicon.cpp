@@ -284,12 +284,6 @@ bool QSystemTrayIcon::isVisible() const
 */
 bool QSystemTrayIcon::event(QEvent *e)
 {
-#if defined(Q_DEAD_CODE_FROM_QT4_X11)
-    if (e->type() == QEvent::ToolTip) {
-        Q_D(QSystemTrayIcon);
-        return d->sys->deliverToolTipEvent(e);
-    }
-#endif
     return QObject::event(e);
 }
 
