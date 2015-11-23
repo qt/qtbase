@@ -78,10 +78,6 @@ private slots:
     void indexPath();
 
     void rootPath();
-#ifdef QT_BUILD_INTERNAL
-    void naturalCompare_data();
-    void naturalCompare();
-#endif
     void readOnly();
     void iconProvider();
 
@@ -241,78 +237,6 @@ void tst_QFileSystemModel::rootPath()
         QCOMPARE(model->rootDirectory().absolutePath(), newdir.path());
     }
 }
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QFileSystemModel::naturalCompare_data()
-{
-    QTest::addColumn<QString>("s1");
-    QTest::addColumn<QString>("s2");
-    QTest::addColumn<int>("caseSensitive");
-    QTest::addColumn<int>("result");
-    QTest::addColumn<int>("swap");
-
-#define ROWNAME(name) (qPrintable(QString("prefix=%1, postfix=%2, num=%3, i=%4, test=%5").arg(prefix).arg(postfix).arg(num).arg(i).arg(name)))
-
-    for (int j = 0; j < 4; ++j) { // <- set a prefix and a postfix string (not numbers)
-        QString prefix = (j == 0 || j == 1) ? "b" : "";
-        QString postfix = (j == 1 || j == 2) ? "y" : "";
-
-        for (int k = 0; k < 3; ++k) { // <- make 0 not a special case
-            QString num = QString("%1").arg(k);
-            QString nump = QString("%1").arg(k + 1);
-            for (int i = 10; i < 12; ++i) { // <- swap s1 and s2 and reverse the result
-                QTest::newRow(ROWNAME("basic"))          << prefix + "0" + postfix << prefix + "0" + postfix << int(Qt::CaseInsensitive) << 0;
-
-                // s1 should always be less then s2
-                QTest::newRow(ROWNAME("just text"))      << prefix + "fred" + postfix     << prefix + "jane" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("just numbers"))   << prefix + num + postfix        << prefix + "9" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("zero"))           << prefix + num + postfix        << prefix + "0" + nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("space b"))        << prefix + num + postfix        << prefix + " " + nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("space a"))        << prefix + num + postfix        << prefix + nump + " " + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("tab b"))          << prefix + num + postfix        << prefix + "    " + nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("tab a"))          << prefix + num + postfix        << prefix + nump + "   " + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("10 vs 2"))        << prefix + num + postfix        << prefix + "10" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("diff len"))       << prefix + num + postfix        << prefix + nump + postfix + "x" << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("01 before 1"))    << prefix + "0" + num + postfix  << prefix + nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums 2nd 1")) << prefix + "1-" + num + postfix << prefix + "1-" + nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums 2nd 2")) << prefix + "10-" + num + postfix<< prefix + "10-10" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums 2nd 3")) << prefix + "10-0"+ num + postfix<< prefix + "10-10" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums 2nd 4")) << prefix + "10-" + num + postfix<< prefix + "10-010" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums big 1")) << prefix + "10-" + num + postfix<< prefix + "20-0" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums big 2")) << prefix + "2-" + num + postfix << prefix + "10-0" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul alphabet 1")) << prefix + num + "-a" + postfix << prefix + num + "-c" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul alphabet 2")) << prefix + num + "-a9" + postfix<< prefix + num + "-c0" + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("mul nums w\\0"))  << prefix + num + "-"+ num + postfix<< prefix + num+"-0"+nump + postfix << int(Qt::CaseInsensitive) << i;
-                QTest::newRow(ROWNAME("num first"))      << prefix + num + postfix  << prefix + "a" + postfix << int(Qt::CaseInsensitive) << i;
-            }
-        }
-    }
-#undef ROWNAME
-}
-#endif
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QFileSystemModel::naturalCompare()
-{
-    QFETCH(QString, s1);
-    QFETCH(QString, s2);
-    QFETCH(int, caseSensitive);
-    QFETCH(int, result);
-
-    if (result == 10)
-        QCOMPARE(QFileSystemModelPrivate::naturalCompare(s1, s2, Qt::CaseSensitivity(caseSensitive)), -1);
-    else
-        if (result == 11)
-            QCOMPARE(QFileSystemModelPrivate::naturalCompare(s2, s1, Qt::CaseSensitivity(caseSensitive)), 1);
-    else
-        QCOMPARE(QFileSystemModelPrivate::naturalCompare(s2, s1, Qt::CaseSensitivity(caseSensitive)), result);
-#if defined(Q_OS_WINCE)
-    // On Windows CE we need to wait after each test, otherwise no new threads can be
-    // created. The scheduler takes its time to recognize ended threads.
-    QTest::qWait(300);
-#endif
-}
-#endif
 
 void tst_QFileSystemModel::readOnly()
 {
