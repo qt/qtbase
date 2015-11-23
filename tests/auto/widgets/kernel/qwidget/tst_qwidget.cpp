@@ -4562,8 +4562,18 @@ void tst_QWidget::setWindowGeometry_data()
     QList<int> windowFlags;
     windowFlags << 0 << Qt::FramelessWindowHint;
 
+    const bool skipEmptyRects = (m_platform == QStringLiteral("windows"));
     foreach (QList<QRect> l, rects) {
         QRect rect = l.first();
+        if (skipEmptyRects) {
+            QList<QRect>::iterator it = l.begin();
+            while (it != l.end()) {
+                if (it->isEmpty())
+                    it = l.erase(it);
+                else
+                    ++it;
+            }
+        }
         foreach (int windowFlag, windowFlags) {
             QTest::newRow(QString("%1,%2 %3x%4, flags %5")
                           .arg(rect.x())
@@ -4612,8 +4622,13 @@ void tst_QWidget::setWindowGeometry()
 
         widget.setGeometry(rect);
         widget.showNormal();
-        if (rect.isValid())
+        if (rect.isValid()) {
             QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        } else {
+            // in case of an invalid rect, wait for the geometry to become
+            // adjusted to the actual (valid) value.
+            QApplication::processEvents();
+        }
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown
