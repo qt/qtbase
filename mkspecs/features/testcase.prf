@@ -9,6 +9,11 @@ testcase_exceptions: CONFIG += exceptions
 check.files                =
 check.path                 = .
 
+# Add environment for non-installed builds. Do this first, so the
+# 'make' variable expansions don't end up in a batch file/script.
+QT_TOOL_NAME = target
+qtAddTargetEnv(check.commands, QT)
+
 # If the test ends up in a different directory, we should cd to that directory.
 TESTRUN_CWD = $$DESTDIR
 
@@ -40,10 +45,6 @@ unix {
 # Allow for custom arguments to tests
 check.commands += $(TESTARGS)
 
-# Add environment for non-installed builds
-qtAddTargetEnv(check.commands, QT)
-
-# This must happen after adding the environment.
 !isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
     check.commands = cd $$shell_path($$TESTRUN_CWD) && $$check.commands
 
