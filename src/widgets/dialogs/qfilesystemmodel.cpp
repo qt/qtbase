@@ -154,6 +154,11 @@ QT_BEGIN_NAMESPACE
     Returns the QFileInfo for the item stored in the model under the given
     \a index.
 */
+QFileInfo QFileSystemModel::fileInfo(const QModelIndex &index) const
+{
+    Q_D(const QFileSystemModel);
+    return d->node(index)->fileInfo();
+}
 
 /*!
     \fn void QFileSystemModel::rootPathChanged(const QString &newPath);

@@ -107,6 +107,7 @@ public:
                 return true;
             return false;
         }
+        inline QFileInfo fileInfo() const { if (info) return info->fileInfo(); return QFileInfo(); }
         inline bool isFile() const { if (info) return info->isFile(); return true; }
         inline bool isSystem() const { if (info) return info->isSystem(); return true; }
         inline bool isHidden() const { if (info) return info->isHidden(); return false; }
