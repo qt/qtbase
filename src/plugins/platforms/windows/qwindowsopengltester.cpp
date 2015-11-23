@@ -268,7 +268,10 @@ QWindowsOpenGLTester::Renderers QWindowsOpenGLTester::detectSupportedRenderers(c
             result &= ~QWindowsOpenGLTester::AngleRendererD3d9;
         }
     }
-
+    if (features.contains(QStringLiteral("disable_rotation"))) {
+        qCDebug(lcQpaGl) << "Disabling rotation: " << gpu;
+        result |= DisableRotationFlag;
+    }
     srCache->insert(qgpu, result);
     return result;
 #endif // !Q_OS_WINCE && !QT_NO_OPENGL
