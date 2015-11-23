@@ -2622,6 +2622,13 @@ QXmlStreamEntityDeclaration::~QXmlStreamEntityDeclaration()
 {
 }
 
+/*! \fn QXmlStreamStringRef::swap(QXmlStreamStringRef &other)
+    \since 5.6
+
+    Swaps this string reference's contents with \a other.
+    This function is very fast and never fails.
+*/
+
 /*! \fn QStringRef QXmlStreamEntityDeclaration::name() const
 
 Returns the entity name.

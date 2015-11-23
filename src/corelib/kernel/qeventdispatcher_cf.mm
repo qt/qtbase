@@ -49,6 +49,8 @@
 #  include <UIKit/UIApplication.h>
 #endif
 
+QT_USE_NAMESPACE
+
 @interface RunLoopModeTracker : NSObject {
     QStack<CFStringRef> m_runLoopModes;
 }
@@ -119,7 +121,6 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
 @end
 
 QT_BEGIN_NAMESPACE
-QT_USE_NAMESPACE
 
 class RunLoopDebugger : public QObject
 {

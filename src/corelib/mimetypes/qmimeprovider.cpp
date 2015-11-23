@@ -578,11 +578,8 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
     QString mainPattern;
     const QString preferredLanguage = QLocale::system().name();
 
-    QListIterator<QString> mimeFilesIter(mimeFiles);
-    mimeFilesIter.toBack();
-    while (mimeFilesIter.hasPrevious()) { // global first, then local.
-        const QString fullPath = mimeFilesIter.previous();
-        QFile qfile(fullPath);
+    for (QStringList::const_reverse_iterator it = mimeFiles.crbegin(), end = mimeFiles.crend(); it != end; ++it) { // global first, then local.
+        QFile qfile(*it);
         if (!qfile.open(QFile::ReadOnly))
             continue;
 

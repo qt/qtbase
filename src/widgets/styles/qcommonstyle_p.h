@@ -104,7 +104,7 @@ public:
 #endif
     mutable QIcon tabBarcloseButtonIcon;
 #ifndef QT_NO_TABBAR
-    void tabLayout(const QStyleOptionTabV3 *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
+    void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
 
     int animationFps;

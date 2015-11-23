@@ -60,6 +60,7 @@
 # include <private/qmainwindowlayout_p.h>
 #endif
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformbackingstore.h>
 #include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
 #include "qtooltip.h"
@@ -1834,6 +1835,8 @@ void QWidgetPrivate::deleteTLSysExtra()
         delete extra->topextra->backingStore;
         extra->topextra->backingStore = 0;
 #ifndef QT_NO_OPENGL
+        qDeleteAll(extra->topextra->widgetTextures);
+        extra->topextra->widgetTextures.clear();
         if (textureChildSeen && extra->topextra->shareContext)
             extra->topextra->shareContext->doneCurrent();
         delete extra->topextra->shareContext;

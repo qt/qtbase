@@ -39,12 +39,12 @@
 #include "qwindowsdirect2dwindow.h"
 
 #include "qwindowscontext.h"
-#include "qwindowsguieventdispatcher.h"
 
 #include <qplatformdefs.h>
 #include <QtCore/QCoreApplication>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
+#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 

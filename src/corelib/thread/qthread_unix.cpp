@@ -36,9 +36,14 @@
 #include "qplatformdefs.h"
 
 #include <private/qcoreapplication_p.h>
+#include <private/qcore_unix_p.h>
 
-#if !defined(QT_NO_GLIB)
-# include "../kernel/qeventdispatcher_glib_p.h"
+#if defined(Q_OS_OSX)
+#  include <private/qeventdispatcher_cf_p.h>
+#else
+#  if !defined(QT_NO_GLIB)
+#    include "../kernel/qeventdispatcher_glib_p.h"
+#  endif
 #endif
 
 #include <private/qeventdispatcher_unix_p.h>
@@ -243,14 +248,23 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-#if !defined(QT_NO_GLIB)
+#if defined(Q_OS_OSX)
+    bool ok = false;
+    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
+    if (ok && value > 0)
+        data->eventDispatcher.storeRelease(new QEventDispatcherCoreFoundation);
+    else
+        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+#elif !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
         && QEventDispatcherGlib::versionSupported())
         data->eventDispatcher.storeRelease(new QEventDispatcherGlib);
     else
-#endif
+        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+#else
     data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+#endif
 
     data->eventDispatcher.load()->startingUp();
 }

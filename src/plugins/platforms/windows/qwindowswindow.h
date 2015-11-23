@@ -225,9 +225,9 @@ public:
 #endif // !Q_OS_WINCE
 
 #ifndef QT_NO_CURSOR
-    QWindowsWindowCursor cursor() const { return m_cursor; }
+    CursorHandlePtr cursor() const { return m_cursor; }
 #endif
-    void setCursor(const QWindowsWindowCursor &c);
+    void setCursor(const CursorHandlePtr &c);
     void applyCursor();
 
     inline bool testFlag(unsigned f) const  { return (m_flags & f) != 0; }
@@ -278,7 +278,7 @@ private:
     Qt::WindowState m_windowState;
     qreal m_opacity;
 #ifndef QT_NO_CURSOR
-    QWindowsWindowCursor m_cursor;
+    CursorHandlePtr m_cursor;
 #endif
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;

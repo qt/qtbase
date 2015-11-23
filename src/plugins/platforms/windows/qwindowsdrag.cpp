@@ -218,23 +218,14 @@ public:
     STDMETHOD(GiveFeedback)(DWORD dwEffect);
 
 private:
-    class DragCursorHandle {
-        Q_DISABLE_COPY(DragCursorHandle)
-    public:
-        DragCursorHandle(HCURSOR c) : cursor(c) {}
-        ~DragCursorHandle() { DestroyCursor(cursor); }
-        const HCURSOR cursor;
-    };
-    typedef QSharedPointer<DragCursorHandle> DragCursorHandlePtr;
-
     struct CursorEntry {
         CursorEntry() : cacheKey(0) {}
-        CursorEntry(const QPixmap &p, qint64 cK, const DragCursorHandlePtr &c, const QPoint &h) :
+        CursorEntry(const QPixmap &p, qint64 cK, const CursorHandlePtr &c, const QPoint &h) :
             pixmap(p), cacheKey(cK), cursor(c), hotSpot(h) {}
 
         QPixmap pixmap;
         qint64 cacheKey; // Cache key of cursor
-        DragCursorHandlePtr cursor;
+        CursorHandlePtr cursor;
         QPoint hotSpot;
     };
 
@@ -273,7 +264,7 @@ QWindowsOleDropSource::~QWindowsOleDropSource()
 QDebug operator<<(QDebug d, const QWindowsOleDropSource::CursorEntry &e)
 {
     d << "CursorEntry:" << e.pixmap.size() << '#' << e.cacheKey
-      << "HCURSOR" << e.cursor->cursor << "hotspot:" << e.hotSpot;
+      << "HCURSOR" << e.cursor->handle() << "hotspot:" << e.hotSpot;
     return d;
 }
 #endif // !QT_NO_DEBUG_STREAM
@@ -343,7 +334,7 @@ void QWindowsOleDropSource::createCursors()
         }
 
         if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newPixmap, newHotSpot)) {
-            const CursorEntry entry(newPixmap, cacheKey, DragCursorHandlePtr(new DragCursorHandle(sysCursor)), newHotSpot);
+            const CursorEntry entry(newPixmap, cacheKey, CursorHandlePtr(new CursorHandle(sysCursor)), newHotSpot);
             if (it == m_cursors.end())
                 m_cursors.insert(action, entry);
             else
@@ -456,7 +447,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
         const CursorEntry &e = it.value();
         switch (m_mode) {
         case MouseDrag:
-            SetCursor(e.cursor->cursor);
+            SetCursor(e.cursor->handle());
             break;
         case TouchDrag:
             if (!m_touchDragWindow)
@@ -718,16 +709,16 @@ QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const
     switch (action) {
     case Qt::CopyAction:
         if (m_copyDragCursor.isNull())
-            m_copyDragCursor = QWindowsCursor::customCursor(Qt::DragCopyCursor).pixmap();
+            m_copyDragCursor = QWindowsCursor::customCursor(Qt::DragCopyCursor).pixmap;
         return m_copyDragCursor;
     case Qt::TargetMoveAction:
     case Qt::MoveAction:
         if (m_moveDragCursor.isNull())
-            m_moveDragCursor = QWindowsCursor::customCursor(Qt::DragMoveCursor).pixmap();
+            m_moveDragCursor = QWindowsCursor::customCursor(Qt::DragMoveCursor).pixmap;
         return m_moveDragCursor;
     case Qt::LinkAction:
         if (m_linkDragCursor.isNull())
-            m_linkDragCursor = QWindowsCursor::customCursor(Qt::DragLinkCursor).pixmap();
+            m_linkDragCursor = QWindowsCursor::customCursor(Qt::DragLinkCursor).pixmap;
         return m_linkDragCursor;
     default:
         break;

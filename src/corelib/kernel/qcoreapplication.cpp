@@ -66,8 +66,12 @@
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
-# if !defined(QT_NO_GLIB)
-#  include "qeventdispatcher_glib_p.h"
+# if defined(Q_OS_OSX)
+#  include "qeventdispatcher_cf_p.h"
+# else
+#  if !defined(QT_NO_GLIB)
+#   include "qeventdispatcher_glib_p.h"
+#  endif
 # endif
 # include "qeventdispatcher_unix_p.h"
 #endif
@@ -469,12 +473,21 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if !defined(QT_NO_GLIB)
+#  if defined(Q_OS_OSX)
+    bool ok = false;
+    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
+    if (ok && value > 0)
+        eventDispatcher = new QEventDispatcherCoreFoundation(q);
+    else
+        eventDispatcher = new QEventDispatcherUNIX(q);
+#  elif !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
-#  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
+#  else
+        eventDispatcher = new QEventDispatcherUNIX(q);
+#  endif
 #elif defined(Q_OS_WINRT)
     eventDispatcher = new QEventDispatcherWinRT(q);
 #elif defined(Q_OS_WIN)
@@ -613,8 +626,9 @@ void QCoreApplicationPrivate::initLocale()
 
     The command line arguments which are passed to QCoreApplication's
     constructor should be accessed using the arguments() function.
-    Note that some arguments supplied by the user may have been
-    processed and removed by QCoreApplication.
+
+    \note QCoreApplication removes option \c -qmljsdebugger="...". It parses the
+    argument of \c qmljsdebugger, and then removes this option plus its argument.
 
     For more advanced command line option handling, create a QCommandLineParser.
 

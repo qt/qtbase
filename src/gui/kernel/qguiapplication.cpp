@@ -1853,15 +1853,22 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
-    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers, e->source);
-    ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
     if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
-            if (QPlatformCursor *cursor = screen->handle()->cursor())
+            if (QPlatformCursor *cursor = screen->handle()->cursor()) {
+                const QPointF nativeLocalPoint = QHighDpi::toNativePixels(localPoint, screen);
+                const QPointF nativeGlobalPoint = QHighDpi::toNativePixels(globalPoint, screen);
+                QMouseEvent ev(type, nativeLocalPoint, nativeLocalPoint, nativeGlobalPoint,
+                                          button, buttons, e->modifiers, e->source);
+                ev.setTimestamp(e->timestamp);
                 cursor->pointerEvent(ev);
+            }
     }
 #endif
+
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers, e->source);
+    ev.setTimestamp(e->timestamp);
 
     if (window->d_func()->blockedByModalWindow) {
         // a modal window is blocking this window, don't allow mouse events through

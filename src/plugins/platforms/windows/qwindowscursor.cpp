@@ -67,19 +67,14 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
     \ingroup qt-lighthouse-win
 */
 
-QWindowsCursorCacheKey::QWindowsCursorCacheKey(const QCursor &c)
-    : shape(c.shape()), bitmapCacheKey(0), maskCacheKey(0)
+QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
+    : bitmapCacheKey(c.pixmap().cacheKey()), maskCacheKey(0)
 {
-    if (shape == Qt::BitmapCursor) {
-        const qint64 pixmapCacheKey = c.pixmap().cacheKey();
-        if (pixmapCacheKey) {
-            bitmapCacheKey = pixmapCacheKey;
-        } else {
-            Q_ASSERT(c.bitmap());
-            Q_ASSERT(c.mask());
-            bitmapCacheKey = c.bitmap()->cacheKey();
-            maskCacheKey = c.mask()->cacheKey();
-        }
+    if (!bitmapCacheKey) {
+        Q_ASSERT(c.bitmap());
+        Q_ASSERT(c.mask());
+        bitmapCacheKey = c.bitmap()->cacheKey();
+        maskCacheKey = c.mask()->cacheKey();
     }
 }
 
@@ -206,6 +201,17 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
 #endif
 }
 
+// Create a cursor from image and mask of the format QImage::Format_Mono.
+static HCURSOR createBitmapCursor(const QCursor &cursor)
+{
+    Q_ASSERT(cursor.shape() == Qt::BitmapCursor && cursor.bitmap());
+    const QImage bbits = cursor.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
+    const QImage mbits = cursor.mask()->toImage().convertToFormat(QImage::Format_Mono);
+    const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
+    const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
+    return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
+}
+
 static inline QSize systemCursorSize() { return QSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)); }
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 
@@ -215,7 +221,7 @@ static inline QSize standardCursorSize() { return QSize(32, 32); }
 // createBitmapCursor() only work for standard sizes (32,48,64...), which does
 // not work when scaling the 16x16 openhand cursor bitmaps to 150% (resulting
 // in a non-standard 24x24 size).
-static QCursor createPixmapCursorFromData(const QSize &systemCursorSize,
+static QWindowsCursor::PixmapCursor createPixmapCursorFromData(const QSize &systemCursorSize,
                                           // The cursor size the bitmap is targeted for
                                           const QSize &bitmapTargetCursorSize,
                                           // The actual size of the bitmap data
@@ -233,10 +239,10 @@ static QCursor createPixmapCursorFromData(const QSize &systemCursorSize,
         rawImage = rawImage.transformed(transform, Qt::SmoothTransformation);
     }
     const QPoint hotSpot(rawImage.width() / 2, rawImage.height() / 2);
-    return QCursor(rawImage, hotSpot.x(), hotSpot.y());
+    return QWindowsCursor::PixmapCursor(rawImage, hotSpot);
 }
 
-QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
 {
     // Non-standard Windows cursors are created from bitmaps
     static const uchar vsplit_bits[] = {
@@ -412,14 +418,14 @@ QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
     case Qt::ClosedHandCursor:
         return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
-        return QCursor(QPixmap(copyDragCursorXpmC), 0, 0);
+        return QWindowsCursor::PixmapCursor(QPixmap(copyDragCursorXpmC), QPoint(0, 0));
     case Qt::DragMoveCursor:
-        return QCursor(QPixmap(moveDragCursorXpmC), 0, 0);
+        return QWindowsCursor::PixmapCursor(QPixmap(moveDragCursorXpmC), QPoint(0, 0));
     case Qt::DragLinkCursor:
-        return QCursor(QPixmap(linkDragCursorXpmC), 0, 0);
+        return QWindowsCursor::PixmapCursor(QPixmap(linkDragCursorXpmC), QPoint(0, 0));
     }
 
-    return QCursor();
+    return QWindowsCursor::PixmapCursor();
 }
 #else // Q_OS_WINCE || QT_NO_IMAGEFORMAT_PNG
 struct QWindowsCustomPngCursor {
@@ -430,7 +436,7 @@ struct QWindowsCustomPngCursor {
     int hotSpotY;
 };
 
-QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
+QWindowsCursor::PixmapCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
 {
     static const QWindowsCustomPngCursor pngCursors[] = {
         { Qt::SplitVCursor, 32, "splitvcursor_32.png", 11, 11 },
@@ -473,11 +479,11 @@ QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
     }
 
     if (!bestFit)
-        return QCursor();
+        return PixmapCursor();
 
     const QPixmap rawImage(QStringLiteral(":/qt-project.org/windows/cursors/images/") +
                            QString::fromLatin1(bestFit->fileName));
-    return QCursor(rawImage, bestFit->hotSpotX, bestFit->hotSpotY);
+    return PixmapCursor(rawImage, QPoint(bestFit->hotSpotX, bestFit->hotSpotY));
 }
 #endif // Q_OS_WINCE || QT_NO_IMAGEFORMAT_PNG
 
@@ -486,8 +492,10 @@ struct QWindowsStandardCursorMapping {
     LPCWSTR resource;
 };
 
-HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
+HCURSOR QWindowsCursor::createCursorFromShape(Qt::CursorShape cursorShape)
 {
+    Q_ASSERT(cursorShape != Qt::BitmapCursor);
+
     static const QWindowsStandardCursorMapping standardCursors[] = {
         { Qt::ArrowCursor, IDC_ARROW},
         { Qt::UpArrowCursor, IDC_UPARROW },
@@ -505,18 +513,7 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         { Qt::PointingHandCursor, IDC_HAND }
     };
 
-    const Qt::CursorShape cursorShape = c.shape();
     switch (cursorShape) {
-    case Qt::BitmapCursor: {
-        const QPixmap pixmap = c.pixmap();
-        if (!pixmap.isNull())
-            return QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot());
-        const QImage bbits = c.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
-        const QImage mbits = c.mask()->toImage().convertToFormat(QImage::Format_Mono);
-        const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
-        const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
-        return createBitmapCursor(bbits, mbits, c.hotSpot(), invb, invm);
-    }
     case Qt::BlankCursor: {
         QImage blank = QImage(systemCursorSize(), QImage::Format_Mono);
         blank.fill(0); // ignore color table
@@ -529,7 +526,7 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
     case Qt::DragLinkCursor:
-        return createSystemCursor(customCursor(cursorShape));
+        return QWindowsCursor::createPixmapCursor(customCursor(cursorShape));
     default:
         break;
     }
@@ -554,37 +551,41 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
     \brief Return cached standard cursor resources or create new ones.
 */
 
-QWindowsWindowCursor QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
+CursorHandlePtr QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 {
-    const QWindowsCursorCacheKey key(shape);
-    CursorCache::iterator it = m_cursorCache.find(key);
-    if (it == m_cursorCache.end())
-        it = m_cursorCache.insert(key, QWindowsWindowCursor(QCursor(shape)));
-    return it.value();
+    StandardCursorCache::Iterator it = m_standardCursorCache.find(shape);
+    if (it == m_standardCursorCache.end()) {
+        if (const HCURSOR hc = QWindowsCursor::createCursorFromShape(shape))
+            it = m_standardCursorCache.insert(shape, CursorHandlePtr(new CursorHandle(hc)));
+    }
+    return it != m_standardCursorCache.end() ? it.value() : CursorHandlePtr(new CursorHandle);
 }
 
 /*!
     \brief Return cached pixmap cursor or create new one.
 */
 
-QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
+CursorHandlePtr QWindowsCursor::pixmapWindowCursor(const QCursor &c)
 {
-    const  QWindowsCursorCacheKey cacheKey(c);
-    CursorCache::iterator it = m_cursorCache.find(cacheKey);
-    if (it == m_cursorCache.end()) {
-        if (m_cursorCache.size() > 50) {
+    const QWindowsPixmapCursorCacheKey cacheKey(c);
+    PixmapCursorCache::iterator it = m_pixmapCursorCache.find(cacheKey);
+    if (it == m_pixmapCursorCache.end()) {
+        if (m_pixmapCursorCache.size() > 50) {
             // Prevent the cursor cache from growing indefinitely hitting GDI resource
             // limits if new pixmap cursors are created repetitively by purging out
             // all-noncurrent pixmap cursors (QTBUG-43515)
             const HCURSOR currentCursor = GetCursor();
-            for (it = m_cursorCache.begin(); it != m_cursorCache.end() ; ) {
-                if (it.key().bitmapCacheKey && it.value().handle() != currentCursor)
-                    it = m_cursorCache.erase(it);
+            for (it = m_pixmapCursorCache.begin(); it != m_pixmapCursorCache.end() ; ) {
+                if (it.value()->handle() != currentCursor)
+                    it = m_pixmapCursorCache.erase(it);
                 else
                     ++it;
             }
         }
-        it = m_cursorCache.insert(cacheKey, QWindowsWindowCursor(c));
+        const QPixmap pixmap = c.pixmap();
+        const HCURSOR hc = pixmap.isNull()
+            ? createBitmapCursor(c) : QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot());
+        it = m_pixmapCursorCache.insert(cacheKey, CursorHandlePtr(new CursorHandle(hc)));
     }
     return it.value();
 }
@@ -606,13 +607,13 @@ void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
     if (!window)
         return;
     if (!cursorIn) {
-        QWindowsWindow::baseWindowOf(window)->setCursor(QWindowsWindowCursor());
+        QWindowsWindow::baseWindowOf(window)->setCursor(CursorHandlePtr(new CursorHandle));
         return;
     }
-    const QWindowsWindowCursor wcursor =
+    const CursorHandlePtr wcursor =
         cursorIn->shape() == Qt::BitmapCursor ?
         pixmapWindowCursor(*cursorIn) : standardWindowCursor(cursorIn->shape());
-    if (wcursor.handle()) {
+    if (wcursor->handle()) {
         QWindowsWindow::baseWindowOf(window)->setCursor(wcursor);
     } else {
         qWarning("%s: Unable to obtain system cursor for %d",
@@ -658,77 +659,10 @@ void QWindowsCursor::setPos(const QPoint &pos)
     \brief Per-Window cursor. Contains a QCursor and manages its associated system
      cursor handle resource.
 
-    Based on QSharedDataPointer, so that it can be passed around and
-    used as a property of QWindowsBaseWindow.
-
     \internal
     \ingroup qt-lighthouse-win
     \sa QWindowsCursor
 */
-
-class QWindowsWindowCursorData : public QSharedData
-{
-public:
-    QWindowsWindowCursorData() : m_cursor(Qt::ArrowCursor), m_handle(0) {}
-    explicit QWindowsWindowCursorData(const QCursor &c);
-    ~QWindowsWindowCursorData();
-
-    const QCursor m_cursor;
-    const HCURSOR m_handle;
-};
-
-QWindowsWindowCursorData::QWindowsWindowCursorData(const QCursor &c) :
-    m_cursor(c),
-    m_handle(QWindowsCursor::createSystemCursor(c))
-{
-}
-
-QWindowsWindowCursorData::~QWindowsWindowCursorData()
-{
-    if (m_handle)
-        DestroyCursor(m_handle);
-}
-
-QWindowsWindowCursor::QWindowsWindowCursor() :
-    m_data(new QWindowsWindowCursorData)
-{
-}
-
-QWindowsWindowCursor::QWindowsWindowCursor(const QCursor &c) :
-    m_data(new QWindowsWindowCursorData(c))
-{
-}
-
-QWindowsWindowCursor::~QWindowsWindowCursor()
-{
-}
-
-QWindowsWindowCursor::QWindowsWindowCursor(const QWindowsWindowCursor &rhs) :
-    m_data(rhs.m_data)
-{
-}
-
-QWindowsWindowCursor & QWindowsWindowCursor::operator =(const QWindowsWindowCursor &rhs)
-{
-    if (this != &rhs)
-        m_data.operator =(rhs.m_data);
-    return *this;
-}
-
-bool QWindowsWindowCursor::isNull() const
-{
-    return m_data->m_handle == 0;
-}
-
-QCursor QWindowsWindowCursor::cursor() const
-{
-    return m_data->m_cursor;
-}
-
-HCURSOR QWindowsWindowCursor::handle() const
-{
-    return m_data->m_handle;
-}
 
 QT_END_NAMESPACE
 

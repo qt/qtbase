@@ -928,6 +928,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
+    m_cursor(new CursorHandle),
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->requestedFormat()),
@@ -2113,13 +2114,13 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
 
 #ifndef QT_NO_CURSOR
 // Return the default cursor (Arrow) from QWindowsCursor's cache.
-static inline QWindowsWindowCursor defaultCursor(const QWindow *w)
+static inline CursorHandlePtr defaultCursor(const QWindow *w)
 {
     if (QScreen *screen = w->screen())
         if (const QPlatformScreen *platformScreen = screen->handle())
             if (QPlatformCursor *cursor = platformScreen->cursor())
                 return static_cast<QWindowsCursor *>(cursor)->standardWindowCursor(Qt::ArrowCursor);
-    return QWindowsWindowCursor(Qt::ArrowCursor);
+    return CursorHandlePtr(new CursorHandle(QWindowsCursor::createCursorFromShape(Qt::ArrowCursor)));
 }
 
 // Check whether to apply a new cursor. Either the window in question is
@@ -2133,7 +2134,7 @@ static inline bool applyNewCursor(const QWindow *w)
     for (const QWindow *p = underMouse; p ; p = p->parent()) {
         if (p == w)
             return true;
-        if (!QWindowsWindow::baseWindowOf(p)->cursor().isNull())
+        if (!QWindowsWindow::baseWindowOf(p)->cursor()->isNull())
             return false;
     }
     return false;
@@ -2149,25 +2150,25 @@ static inline bool applyNewCursor(const QWindow *w)
 void QWindowsWindow::applyCursor()
 {
 #ifndef QT_NO_CURSOR
-    if (m_cursor.isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
+    if (m_cursor->isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
         if (const QWindow *p = window()->parent()) {
             QWindowsWindow::baseWindowOf(p)->applyCursor();
         } else {
-            SetCursor(defaultCursor(window()).handle());
+            SetCursor(defaultCursor(window())->handle());
         }
     } else {
-        SetCursor(m_cursor.handle());
+        SetCursor(m_cursor->handle());
     }
 #endif
 }
 
-void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
+void QWindowsWindow::setCursor(const CursorHandlePtr &c)
 {
 #ifndef QT_NO_CURSOR
-    if (c.handle() != m_cursor.handle()) {
+    if (c->handle() != m_cursor->handle()) {
         const bool apply = applyNewCursor(window());
         qCDebug(lcQpaWindows) << window() << __FUNCTION__
-            << c.cursor().shape() << " doApply=" << apply;
+            << c->handle() << " doApply=" << apply;
         m_cursor = c;
         if (apply)
             applyCursor();

@@ -57,9 +57,9 @@
        },
        {
            "id": 5,
-           "description": "Intel GMA 3150 crashes (QTBUG-43243)",
+           "description": "Intel GMA 3150 (QTBUG-43243), Mobile Intel 945GM (QTBUG-47435) crash",
            "vendor_id": "0x8086",
-           "device_id": [ "0xA001", "0xA011" ],
+           "device_id": [ "0xA001", "0xA011", "0x27A0" ],
            "os": {
                "type": "win"
            },

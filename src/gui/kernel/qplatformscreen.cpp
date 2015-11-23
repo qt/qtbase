@@ -90,7 +90,7 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
     QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = list.size()-1; i >= 0; --i) {
         QWindow *w = list[i];
-        if (w->isVisible() && w->geometry().contains(pos))
+        if (w->isVisible() && QHighDpi::toNativePixels(w->geometry(), w).contains(pos))
             return w;
     }
 

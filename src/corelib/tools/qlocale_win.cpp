@@ -48,6 +48,8 @@
 #endif
 
 #ifdef Q_OS_WINRT
+#include <qfunctions_winrt.h>
+
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
@@ -644,19 +646,51 @@ QVariant QSystemLocalePrivate::uiLanguages()
     }
 
     ComPtr<ABI::Windows::Foundation::Collections::IVectorView<HSTRING> > languageList;
-    appLanguagesStatics->get_ManifestLanguages(&languageList);
-
-    if (!languageList)
-        return QStringList();
-
+    // Languages is a ranked list of "long names" (e.g. en-US) of preferred languages, which matches
+    // languages from the manifest with languages from the user's system.
+    HRESULT hr = appLanguagesStatics->get_Languages(&languageList);
+    Q_ASSERT_SUCCEEDED(hr);
     unsigned int size;
-    languageList->get_Size(&size);
+    hr = languageList->get_Size(&size);
+    Q_ASSERT_SUCCEEDED(hr);
+    result.reserve(size);
     for (unsigned int i = 0; i < size; ++i) {
         HString language;
-        languageList->GetAt(i, language.GetAddressOf());
+        hr = languageList->GetAt(i, language.GetAddressOf());
+        Q_ASSERT_SUCCEEDED(hr);
         UINT32 length;
         PCWSTR rawString = language.GetRawBuffer(&length);
         result << QString::fromWCharArray(rawString, length);
+    }
+
+    // ManifestLanguages covers all languages given in the manifest and uses short names (like "en").
+    hr = appLanguagesStatics->get_ManifestLanguages(&languageList);
+    Q_ASSERT_SUCCEEDED(hr);
+    hr = languageList->get_Size(&size);
+    Q_ASSERT_SUCCEEDED(hr);
+    for (unsigned int i = 0; i < size; ++i) {
+        HString language;
+        hr = languageList->GetAt(i, language.GetAddressOf());
+        Q_ASSERT_SUCCEEDED(hr);
+        UINT32 length;
+        PCWSTR rawString = language.GetRawBuffer(&length);
+        const QString qLanguage = QString::fromWCharArray(rawString, length);
+        bool found = false;
+        // Since ApplicationLanguages:::Languages uses long names, we compare the "pre-dash" part of
+        // the language and filter it out, if it is already covered by a more specialized form.
+        foreach (const QString &lang, result) {
+            int dashIndex = lang.indexOf('-');
+            // There will not be any long name after the first short name was found, so we can stop.
+            if (dashIndex == -1)
+                break;
+
+            if (lang.leftRef(dashIndex) == qLanguage) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            result << qLanguage;
     }
 
     return result;

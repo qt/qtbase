@@ -219,6 +219,11 @@ QDpi QEGLDeviceIntegration::logicalDpi() const
                 25.4 * s.height() / ps.height());
 }
 
+qreal QEGLDeviceIntegration::pixelDensity() const
+{
+    return logicalDpi().first / qreal(100);
+}
+
 Qt::ScreenOrientation QEGLDeviceIntegration::nativeOrientation() const
 {
     return Qt::PrimaryOrientation;
