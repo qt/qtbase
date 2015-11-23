@@ -94,6 +94,8 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *SetProcessDPIAware)();
     typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
+    typedef BOOL (WINAPI *GetDisplayAutoRotationPreferences)(DWORD *);
+    typedef BOOL (WINAPI *SetDisplayAutoRotationPreferences)(DWORD);
 
     // Functions missing in Q_CC_GNU stub libraries.
     SetLayeredWindowAttributes setLayeredWindowAttributes;
@@ -116,6 +118,10 @@ struct QWindowsUser32DLL
     // Clipboard listeners, Windows Vista onwards
     AddClipboardFormatListener addClipboardFormatListener;
     RemoveClipboardFormatListener removeClipboardFormatListener;
+
+    // Rotation API
+    GetDisplayAutoRotationPreferences getDisplayAutoRotationPreferences;
+    SetDisplayAutoRotationPreferences setDisplayAutoRotationPreferences;
 };
 
 struct QWindowsShell32DLL
