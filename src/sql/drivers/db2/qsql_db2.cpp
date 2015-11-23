@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include "qsql_db2_p.h"
-#include <QtSql/private/qsqldriver_p.h>
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qsqlfield.h>
@@ -43,6 +42,8 @@
 #include <qvarlengtharray.h>
 #include <qvector.h>
 #include <QDebug>
+#include <QtSql/private/qsqldriver_p.h>
+#include <QtSql/private/qsqlresult_p.h>
 
 #if defined(Q_CC_BOR)
 // DB2's sqlsystm.h (included through sqlcli1.h) defines the SQL_BIGINT_TYPE
@@ -70,6 +71,36 @@ public:
     SQLHANDLE hEnv;
     SQLHANDLE hDbc;
     QString user;
+};
+
+class QDB2ResultPrivate;
+
+class QDB2Result: public QSqlResult
+{
+public:
+    QDB2Result(const QDB2Driver *dr, const QDB2DriverPrivate *dp);
+    ~QDB2Result();
+    bool prepare(const QString &query);
+    bool exec();
+    QVariant handle() const;
+
+protected:
+    QVariant data(int field);
+    bool reset (const QString &query);
+    bool fetch(int i);
+    bool fetchNext();
+    bool fetchFirst();
+    bool fetchLast();
+    bool isNull(int i);
+    int size();
+    int numRowsAffected();
+    QSqlRecord record() const;
+    void virtual_hook(int id, void *data);
+    void detachFromResultSet();
+    bool nextResult();
+
+private:
+    QDB2ResultPrivate *d;
 };
 
 class QDB2ResultPrivate

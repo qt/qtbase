@@ -50,6 +50,7 @@
 #include <QDebug>
 #include <QSqlQuery>
 #include <QtSql/private/qsqldriver_p.h>
+#include <QtSql/private/qsqlresult_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -141,6 +142,41 @@ public:
 private:
     bool isQuoteInitialized;
     QChar quote;
+};
+
+class QODBCResultPrivate;
+
+class QODBCResult: public QSqlResult
+{
+public:
+    QODBCResult(const QODBCDriver *db, QODBCDriverPrivate *p);
+    virtual ~QODBCResult();
+
+    bool prepare(const QString &query);
+    bool exec();
+
+    QVariant lastInsertId() const;
+    QVariant handle() const;
+    virtual void setForwardOnly(bool forward);
+
+protected:
+    bool fetchNext();
+    bool fetchFirst();
+    bool fetchLast();
+    bool fetchPrevious();
+    bool fetch(int i);
+    bool reset (const QString &query);
+    QVariant data(int field);
+    bool isNull(int field);
+    int size();
+    int numRowsAffected();
+    QSqlRecord record() const;
+    void virtual_hook(int id, void *data);
+    void detachFromResultSet();
+    bool nextResult();
+
+private:
+    QODBCResultPrivate *d;
 };
 
 class QODBCResultPrivate

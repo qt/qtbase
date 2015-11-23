@@ -33,7 +33,6 @@
 
 #include "qsql_mysql_p.h"
 
-#include <QtSql/private/qsqldriver_p.h>
 #include <qcoreapplication.h>
 #include <qvariant.h>
 #include <qdatetime.h>
@@ -46,8 +45,9 @@
 #include <qtextcodec.h>
 #include <qvector.h>
 #include <qfile.h>
-
 #include <qdebug.h>
+#include <QtSql/private/qsqldriver_p.h>
+#include <QtSql/private/qsqlresult_p.h>
 
 #ifdef Q_OS_WIN32
 // comment the next line out if you want to use MySQL/embedded on Win32 systems.
@@ -155,6 +155,41 @@ static inline QVariant qDateTimeFromString(QString &val)
     return QVariant(QDateTime::fromString(val, Qt::ISODate));
 #endif
 }
+
+class QMYSQLResultPrivate;
+
+class QMYSQLResult : public QSqlResult
+{
+    friend class QMYSQLDriver;
+    friend class QMYSQLResultPrivate;
+public:
+    explicit QMYSQLResult(const QMYSQLDriver *db);
+    ~QMYSQLResult();
+
+    QVariant handle() const Q_DECL_OVERRIDE;
+protected:
+    void cleanup();
+    bool fetch(int i) Q_DECL_OVERRIDE;
+    bool fetchNext() Q_DECL_OVERRIDE;
+    bool fetchLast() Q_DECL_OVERRIDE;
+    bool fetchFirst() Q_DECL_OVERRIDE;
+    QVariant data(int field) Q_DECL_OVERRIDE;
+    bool isNull(int field) Q_DECL_OVERRIDE;
+    bool reset (const QString& query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QVariant lastInsertId() const Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    bool nextResult() Q_DECL_OVERRIDE;
+
+#if MYSQL_VERSION_ID >= 40108
+    bool prepare(const QString &stmt) Q_DECL_OVERRIDE;
+    bool exec() Q_DECL_OVERRIDE;
+#endif
+private:
+    QMYSQLResultPrivate *d;
+};
 
 class QMYSQLResultPrivate : public QObject
 {

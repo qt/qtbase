@@ -45,7 +45,6 @@
 // We mean it.
 //
 
-#include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
 
 #ifdef QT_PLUGIN
@@ -59,44 +58,12 @@ typedef struct pg_result PGresult;
 
 QT_BEGIN_NAMESPACE
 
-class QPSQLResultPrivate;
-class QPSQLDriver;
-class QSqlRecordInfo;
-
-class QPSQLResult : public QSqlResult
-{
-    Q_DECLARE_PRIVATE(QPSQLResult)
-
-public:
-    QPSQLResult(const QPSQLDriver* db);
-    ~QPSQLResult();
-
-    QVariant handle() const Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-
-protected:
-    void cleanup();
-    bool fetch(int i) Q_DECL_OVERRIDE;
-    bool fetchFirst() Q_DECL_OVERRIDE;
-    bool fetchLast() Q_DECL_OVERRIDE;
-    QVariant data(int i) Q_DECL_OVERRIDE;
-    bool isNull(int field) Q_DECL_OVERRIDE;
-    bool reset (const QString& query) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    bool prepare(const QString& query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-};
-
 class QPSQLDriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_PSQL QPSQLDriver : public QSqlDriver
 {
     friend class QPSQLResultPrivate;
     Q_DECLARE_PRIVATE(QPSQLDriver)
-
     Q_OBJECT
 public:
     enum Protocol {

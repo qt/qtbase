@@ -119,6 +119,35 @@ inline void qPQfreemem(void *buffer)
     PQfreemem(buffer);
 }
 
+class QPSQLResultPrivate;
+
+class QPSQLResult: public QSqlResult
+{
+    Q_DECLARE_PRIVATE(QPSQLResult)
+
+public:
+    QPSQLResult(const QPSQLDriver *db);
+    ~QPSQLResult();
+
+    QVariant handle() const Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+
+protected:
+    void cleanup();
+    bool fetch(int i) Q_DECL_OVERRIDE;
+    bool fetchFirst() Q_DECL_OVERRIDE;
+    bool fetchLast() Q_DECL_OVERRIDE;
+    QVariant data(int i) Q_DECL_OVERRIDE;
+    bool isNull(int field) Q_DECL_OVERRIDE;
+    bool reset (const QString &query) Q_DECL_OVERRIDE;
+    int size() Q_DECL_OVERRIDE;
+    int numRowsAffected() Q_DECL_OVERRIDE;
+    QSqlRecord record() const Q_DECL_OVERRIDE;
+    QVariant lastInsertId() const Q_DECL_OVERRIDE;
+    bool prepare(const QString &query) Q_DECL_OVERRIDE;
+    bool exec() Q_DECL_OVERRIDE;
+};
+
 class QPSQLDriverPrivate : public QSqlDriverPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLDriver)

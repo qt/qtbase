@@ -46,7 +46,6 @@
 //
 
 #include <QtSql/qsqldriver.h>
-#include <QtSql/qsqlresult.h>
 
 #if defined (Q_OS_WIN32)
 #include <QtCore/qt_windows.h>
@@ -75,43 +74,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QODBCResultPrivate;
 class QODBCDriverPrivate;
-class QODBCDriver;
-class QSqlRecordInfo;
-
-class QODBCResult : public QSqlResult
-{
-public:
-    QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p);
-    virtual ~QODBCResult();
-
-    bool prepare(const QString& query);
-    bool exec();
-
-    QVariant lastInsertId() const;
-    QVariant handle() const;
-    virtual void setForwardOnly(bool forward);
-
-protected:
-    bool fetchNext();
-    bool fetchFirst();
-    bool fetchLast();
-    bool fetchPrevious();
-    bool fetch(int i);
-    bool reset (const QString& query);
-    QVariant data(int field);
-    bool isNull(int field);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    void virtual_hook(int id, void *data);
-    void detachFromResultSet();
-    bool nextResult();
-
-private:
-    QODBCResultPrivate *d;
-};
 
 class Q_EXPORT_SQLDRIVER_ODBC QODBCDriver : public QSqlDriver
 {
