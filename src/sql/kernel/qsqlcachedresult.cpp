@@ -126,10 +126,6 @@ QSqlCachedResult::QSqlCachedResult(QSqlCachedResultPrivate &d)
 {
 }
 
-QSqlCachedResult::~QSqlCachedResult()
-{
-}
-
 void QSqlCachedResult::init(int colCount)
 {
     Q_D(QSqlCachedResult);

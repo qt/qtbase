@@ -349,7 +349,6 @@ class QIBaseResult : public QSqlCachedResult
 
 public:
     explicit QIBaseResult(const QIBaseDriver* db);
-    virtual ~QIBaseResult();
 
     bool prepare(const QString &query) Q_DECL_OVERRIDE;
     bool exec() Q_DECL_OVERRIDE;
@@ -898,10 +897,6 @@ bool QIBaseResultPrivate::commit()
 
 QIBaseResult::QIBaseResult(const QIBaseDriver *db)
     : QSqlCachedResult(*new QIBaseResultPrivate(this, db))
-{
-}
-
-QIBaseResult::~QIBaseResult()
 {
 }
 

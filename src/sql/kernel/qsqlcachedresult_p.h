@@ -60,8 +60,6 @@ class Q_SQL_EXPORT QSqlCachedResult: public QSqlResult
     Q_DECLARE_PRIVATE(QSqlCachedResult)
 
 public:
-    virtual ~QSqlCachedResult();
-
     typedef QVector<QVariant> ValueCache;
 
 protected:
