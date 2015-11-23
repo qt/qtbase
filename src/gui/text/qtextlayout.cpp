@@ -2624,26 +2624,26 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 */
 qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 {
-    if (!eng->layoutData)
-        eng->itemize();
-
     const QScriptLine &line = eng->lines[index];
     bool lastLine = index >= eng->lines.size() - 1;
 
     QFixed x = line.x;
-    x += eng->alignLine(line) - eng->leadingSpaceWidth(line);
 
-    if (!index && !eng->layoutData->items.size()) {
-        *cursorPos = 0;
+    if (!eng->layoutData)
+        eng->itemize();
+    if (!eng->layoutData->items.size()) {
+        *cursorPos = line.from;
         return x.toReal();
     }
 
+    x += eng->alignLine(line) - eng->leadingSpaceWidth(line);
+
     int lineEnd = line.from + line.length + line.trailingSpaces;
-    int pos = qBound(0, *cursorPos, lineEnd);
+    int pos = qBound(line.from, *cursorPos, lineEnd);
     int itm;
     const QCharAttributes *attributes = eng->attributes();
     if (!attributes) {
-        *cursorPos = 0;
+        *cursorPos = line.from;
         return x.toReal();
     }
     while (pos < lineEnd && !attributes[pos].graphemeBoundary)
@@ -2655,7 +2655,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     else
         itm = eng->findItem(pos);
     if (itm < 0) {
-        *cursorPos = 0;
+        *cursorPos = line.from;
         return x.toReal();
     }
     eng->shapeLine(line);
