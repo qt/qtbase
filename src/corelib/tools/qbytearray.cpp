@@ -2883,9 +2883,9 @@ QByteArray QByteArray::toUpper_helper(QByteArray &a)
 
 /*! \fn void QByteArray::clear()
 
-    Clears the contents of the byte array and makes it empty.
+    Clears the contents of the byte array and makes it null.
 
-    \sa resize(), isEmpty()
+    \sa resize(), isNull()
 */
 
 void QByteArray::clear()
