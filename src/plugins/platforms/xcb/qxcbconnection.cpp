@@ -934,17 +934,20 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
     int i = 0;
     for (; i < m_callLog.size(); ++i) {
         if (m_callLog.at(i).sequence == error->sequence) {
-            qDebug("Caused by: %s:%d", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            qDebug("Caused by: %s:%d", m_callLog.at(i).file.constData(), m_callLog.at(i).line);
             break;
         } else if (m_callLog.at(i).sequence > error->sequence) {
-            qDebug("Caused some time before: %s:%d", qPrintable(m_callLog.at(i).file), m_callLog.at(i).line);
+            qDebug("Caused some time before: %s:%d", m_callLog.at(i).file.constData(),
+                   m_callLog.at(i).line);
             if (i > 0)
-                qDebug("and after: %s:%d", qPrintable(m_callLog.at(i-1).file), m_callLog.at(i-1).line);
+                qDebug("and after: %s:%d", m_callLog.at(i-1).file.constData(),
+                       m_callLog.at(i-1).line);
             break;
         }
     }
     if (i == m_callLog.size() && !m_callLog.isEmpty())
-        qDebug("Caused some time after: %s:%d", qPrintable(m_callLog.first().file), m_callLog.first().line);
+        qDebug("Caused some time after: %s:%d", m_callLog.first().file.constData(),
+               m_callLog.first().line);
 #endif
 }
 

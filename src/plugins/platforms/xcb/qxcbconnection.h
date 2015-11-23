@@ -626,7 +626,11 @@ private:
     QMutex m_callLogMutex;
     void log(const char *file, int line, int sequence);
     template <typename cookie_t>
-    friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
+    friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
+                                        const char *file, int line);
+    template <typename reply_t>
+    friend reply_t *q_xcb_call_template(reply_t *reply, QXcbConnection *connection,
+                                        const char *file, int line);
 #endif
 
     WindowMapper m_mapper;
@@ -689,10 +693,18 @@ private:
 
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>
-cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line)
+cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file,
+                             int line)
 {
     connection->log(file, line, cookie.sequence);
     return cookie;
+}
+
+template <typename reply_t>
+reply_t *q_xcb_call_template(reply_t *reply, QXcbConnection *connection, const char *file, int line)
+{
+    connection->log(file, line, reply->sequence);
+    return reply;
 }
 #define Q_XCB_CALL(x) q_xcb_call_template(x, connection(), __FILE__, __LINE__)
 #define Q_XCB_CALL2(x, connection) q_xcb_call_template(x, connection, __FILE__, __LINE__)
