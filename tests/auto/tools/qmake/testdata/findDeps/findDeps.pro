@@ -9,4 +9,4 @@ HEADERS += object1.h \
            object7.h \
            object8.h \
            object9.h
-SOURCES += main.cpp
+SOURCES += main.cpp needed.cpp

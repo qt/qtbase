@@ -73,7 +73,7 @@ private:
     QRect m_geometry;
     QRect m_availableGeometry;
     int m_depth;
-    uint m_unscaledDpi;
+    uint m_pixelDensity;
     QSizeF m_physicalSize;
     QIOSOrientationListener *m_orientationListener;
 };

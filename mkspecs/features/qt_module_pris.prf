@@ -55,7 +55,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_rundep =
     static: \
         module_build_type = staticlib
-    else: qt_framework: \
+    else: lib_bundle: \
         module_build_type = lib_bundle
     else: \
         module_build_type =

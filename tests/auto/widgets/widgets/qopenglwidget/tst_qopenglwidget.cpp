@@ -57,6 +57,8 @@ private slots:
     void asViewport();
     void requestUpdate();
     void fboRedirect();
+    void showHide();
+    void nativeWindow();
 };
 
 void tst_QOpenGLWidget::create()
@@ -81,7 +83,8 @@ public:
         : QOpenGLWidget(parent),
           m_initCalled(false), m_paintCalled(false), m_resizeCalled(false),
           m_resizeOk(false),
-          m_w(expectedWidth), m_h(expectedHeight) { }
+          m_w(expectedWidth), m_h(expectedHeight),
+          r(1.0f), g(0.0f), b(0.0f) { }
 
     void initializeGL() Q_DECL_OVERRIDE {
         m_initCalled = true;
@@ -89,12 +92,15 @@ public:
     }
     void paintGL() Q_DECL_OVERRIDE {
         m_paintCalled = true;
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(r, g, b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
     void resizeGL(int w, int h) Q_DECL_OVERRIDE {
         m_resizeCalled = true;
         m_resizeOk = w == m_w && h == m_h;
+    }
+    void setClearColor(float r, float g, float b) {
+        this->r = r; this->g = g; this->b = b;
     }
 
     bool m_initCalled;
@@ -103,6 +109,7 @@ public:
     bool m_resizeOk;
     int m_w;
     int m_h;
+    float r, g, b;
 };
 
 void tst_QOpenGLWidget::clearAndGrab()
@@ -353,6 +360,69 @@ void tst_QOpenGLWidget::fboRedirect()
     GLuint reportedDefaultFbo = QOpenGLContext::currentContext()->defaultFramebufferObject();
     GLuint widgetFbo = w.defaultFramebufferObject();
     QVERIFY(reportedDefaultFbo != widgetFbo);
+}
+
+void tst_QOpenGLWidget::showHide()
+{
+    QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+    w->resize(800, 600);
+    w->show();
+    QTest::qWaitForWindowExposed(w.data());
+
+    w->hide();
+
+    QImage image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(255, 0, 0));
+
+    w->setClearColor(0, 0, 1);
+    w->show();
+    QTest::qWaitForWindowExposed(w.data());
+
+    image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+}
+
+void tst_QOpenGLWidget::nativeWindow()
+{
+    QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+    w->resize(800, 600);
+    w->show();
+    w->winId();
+    QTest::qWaitForWindowExposed(w.data());
+
+    QImage image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(255, 0, 0));
+    QVERIFY(w->internalWinId());
+
+    // Now as a native child.
+    QWidget nativeParent;
+    nativeParent.resize(800, 600);
+    nativeParent.setAttribute(Qt::WA_NativeWindow);
+    ClearWidget *child = new ClearWidget(0, 800, 600);
+    child->setClearColor(0, 1, 0);
+    child->setParent(&nativeParent);
+    child->resize(400, 400);
+    child->move(23, 34);
+    nativeParent.show();
+    QTest::qWaitForWindowExposed(&nativeParent);
+
+    QVERIFY(nativeParent.internalWinId());
+    QVERIFY(!child->internalWinId());
+
+    image = child->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), child->width());
+    QCOMPARE(image.height(), child->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(0, 255, 0));
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)

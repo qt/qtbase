@@ -53,13 +53,37 @@ public:
     inline QXmlStreamStringRef(const QStringRef &aString)
         :m_string(aString.string()?*aString.string():QString()), m_position(aString.position()), m_size(aString.size()){}
     inline QXmlStreamStringRef(const QString &aString):m_string(aString), m_position(0), m_size(aString.size()){}
-    inline ~QXmlStreamStringRef(){}
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QXmlStreamStringRef(const QXmlStreamStringRef &other) // = default
+        : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
+#ifdef Q_COMPILER_RVALUE_REFS
+    QXmlStreamStringRef(QXmlStreamStringRef &&other) Q_DECL_NOTHROW // = default
+        : m_string(std::move(other.m_string)), m_position(other.m_position), m_size(other.m_size) {}
+    QXmlStreamStringRef &operator=(QXmlStreamStringRef &&other) Q_DECL_NOTHROW // = default
+    { swap(other); return *this; }
+#endif
+    QXmlStreamStringRef &operator=(const QXmlStreamStringRef &other) // = default
+    { m_string = other.m_string; m_position = other.m_position; m_size = other.m_size; return *this; }
+    inline ~QXmlStreamStringRef() {} // ### this prevents (or deprecates) all the move/copy special member functions,
+                                     // ### that's why we need to provide them by hand above. We can't remove it in
+                                     // ### Qt 5, since that would change the way its passed to functions. In Qt 6, remove all.
+#endif // Qt < 6.0
+
+    void swap(QXmlStreamStringRef &other) Q_DECL_NOTHROW
+    {
+        qSwap(m_string, other.m_string);
+        qSwap(m_position, other.m_position);
+        qSwap(m_size, other.m_size);
+    }
+
     inline void clear() { m_string.clear(); m_position = m_size = 0; }
     inline operator QStringRef() const { return QStringRef(&m_string, m_position, m_size); }
     inline const QString *string() const { return &m_string; }
     inline int position() const { return m_position; }
     inline int size() const { return m_size; }
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlStreamStringRef)
 
 
 class QXmlStreamReaderPrivate;

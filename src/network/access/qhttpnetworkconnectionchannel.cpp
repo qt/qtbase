@@ -254,6 +254,10 @@ void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
         close();
         reply->d_func()->errorString = connection->d_func()->errorDetail(QNetworkReply::RemoteHostClosedError, socket);
         emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
+        reply = 0;
+        if (protocolHandler)
+            protocolHandler->setReply(0);
+        request = QHttpNetworkRequest();
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else {
         reconnectAttempts--;

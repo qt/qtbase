@@ -170,23 +170,28 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     if (screen == [UIScreen mainScreen]) {
         QString deviceIdentifier = deviceModelIdentifier();
 
-        if (deviceIdentifier == QLatin1String("iPhone2,1") /* iPhone 3GS */
-            || deviceIdentifier == QLatin1String("iPod3,1") /* iPod touch 3G */) {
-            m_depth = 18;
-        } else {
-            m_depth = 24;
-        }
+        // Based on https://en.wikipedia.org/wiki/List_of_iOS_devices#Display
 
-        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
-            && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
-            m_unscaledDpi = 132;
+        // iPhone (1st gen), 3G, 3GS, and iPod Touch (1st–3rd gen) are 18-bit devices
+        if (deviceIdentifier.contains(QRegularExpression("^(iPhone1,[12]|iPhone2,1|iPod[1-3],1)$")))
+            m_depth = 18;
+        else
+            m_depth = 24;
+
+        if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2)$"))) {
+            // iPhone 6 Plus or iPhone 6S Plus
+            m_pixelDensity = 401;
+        } else if (deviceIdentifier.contains(QRegularExpression("^iPad(1,1|2,[1-4]|3,[1-6]|4,[1-3]|5,[3-4]|6,[7-8])$"))) {
+            // All iPads except the iPad Mini series
+            m_pixelDensity = 132 * devicePixelRatio();
         } else {
-            m_unscaledDpi = 163; // Regular iPhone DPI
+            // All non-Plus iPhones, and iPad Minis
+            m_pixelDensity = 163 * devicePixelRatio();
         }
     } else {
         // External display, hard to say
         m_depth = 24;
-        m_unscaledDpi = 96;
+        m_pixelDensity = 96;
     }
 
     for (UIWindow *existingWindow in [[UIApplication sharedApplication] windows]) {
@@ -249,7 +254,7 @@ void QIOSScreen::updateProperties()
 
     if (m_geometry != previousGeometry) {
         const qreal millimetersPerInch = 25.4;
-        m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
+        m_physicalSize = QSizeF(m_geometry.size() * devicePixelRatio()) / m_pixelDensity * millimetersPerInch;
     }
 
     // At construction time, we don't yet have an associated QScreen, but we still want

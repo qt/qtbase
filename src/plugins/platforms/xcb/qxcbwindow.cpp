@@ -500,10 +500,7 @@ void QXcbWindow::create()
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
-    if (platformScreen->syncRequestSupported())
-        m_usingSyncProtocol = supportsSyncProtocol();
-    else
-        m_usingSyncProtocol = false;
+    m_usingSyncProtocol = platformScreen->syncRequestSupported();
 
     if (m_usingSyncProtocol)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);

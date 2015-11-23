@@ -192,11 +192,10 @@ void QMenuPrivate::syncPlatformMenu()
         return;
 
     QPlatformMenuItem *beforeItem = Q_NULLPTR;
-    QListIterator<QAction*> it(q->actions());
-    it.toBack();
-    while (it.hasPrevious()) {
+    const QList<QAction*> actions = q->actions();
+    for (QList<QAction*>::const_reverse_iterator it = actions.rbegin(), end = actions.rend(); it != end; ++it) {
         QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
-        QAction *action = it.previous();
+        QAction *action = *it;
         menuItem->setTag(reinterpret_cast<quintptr>(action));
         QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
         QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);

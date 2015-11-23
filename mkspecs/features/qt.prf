@@ -89,7 +89,7 @@ for(ever) {
         MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
 
         LINKAGE =
-        mac:contains(MODULE_CONFIG, lib_bundle) {
+        contains(MODULE_CONFIG, lib_bundle) {
             FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
             !qt_no_framework_direct_includes {
                 INCLUDEPATH *= $$FRAMEWORK_INCLUDE
@@ -111,7 +111,7 @@ for(ever) {
 
             # Re-insert the major version in the library name (cf qt5LibraryTarget above)
             # unless it's a framework build
-            !mac|!contains(MODULE_CONFIG, lib_bundle): \
+            !contains(MODULE_CONFIG, lib_bundle): \
                 MODULE_NAME ~= s,^Qt,Qt$$QT_MAJOR_VERSION,
 
             isEmpty(LINKAGE) {

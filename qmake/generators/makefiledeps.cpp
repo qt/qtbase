@@ -56,6 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// FIXME: a line ending in CRLF gets counted as two lines.
 #if 1
 #define qmake_endOfLine(c) (c == '\r' || c == '\n')
 #else
@@ -431,104 +432,103 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
         char *inc = 0;
         if(file->type == QMakeSourceFileInfo::TYPE_UI) {
             // skip whitespaces
-            while(x < buffer_len && (*(buffer+x) == ' ' || *(buffer+x) == '\t'))
+            while (x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t'))
                 ++x;
-            if(*(buffer + x) == '<') {
+            if (buffer[x] == '<') {
                 ++x;
-                if(buffer_len >= x + 12 && !strncmp(buffer + x, "includehint", 11) &&
-                   (*(buffer + x + 11) == ' ' || *(buffer + x + 11) == '>')) {
-                    for(x += 11; *(buffer + x) != '>'; ++x) ;
+                if (buffer_len >= x + 12 && !strncmp(buffer + x, "includehint", 11) &&
+                    (buffer[x + 11] == ' ' || buffer[x + 11] == '>')) {
+                    for (x += 11; buffer[x] != '>'; ++x) {} // skip
                     int inc_len = 0;
-                    for(x += 1 ; *(buffer + x + inc_len) != '<'; ++inc_len) ;
-                    *(buffer + x + inc_len) = '\0';
+                    for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
+                    buffer[x + inc_len] = '\0';
                     inc = buffer + x;
-                } else if(buffer_len >= x + 13 && !strncmp(buffer + x, "customwidget", 12) &&
-                          (*(buffer + x + 12) == ' ' || *(buffer + x + 12) == '>')) {
-                    for(x += 13; *(buffer + x) != '>'; ++x) ; //skip up to >
+                } else if (buffer_len >= x + 13 && !strncmp(buffer + x, "customwidget", 12) &&
+                           (buffer[x + 12] == ' ' || buffer[x + 12] == '>')) {
+                    for (x += 13; buffer[x] != '>'; ++x) {} // skip up to >
                     while(x < buffer_len) {
-                        for(x++; *(buffer + x) != '<'; ++x) ; //skip up to <
+                        for (x++; buffer[x] != '<'; ++x) {} // skip up to <
                         x++;
                         if(buffer_len >= x + 7 && !strncmp(buffer+x, "header", 6) &&
-                           (*(buffer + x + 6) == ' ' || *(buffer + x + 6) == '>')) {
-                            for(x += 7; *(buffer + x) != '>'; ++x) ; //skip up to >
+                           (buffer[x + 6] == ' ' || buffer[x + 6] == '>')) {
+                            for (x += 7; buffer[x] != '>'; ++x) {} // skip up to >
                             int inc_len = 0;
-                            for(x += 1 ; *(buffer + x + inc_len) != '<'; ++inc_len) ;
-                            *(buffer + x + inc_len) = '\0';
+                            for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
+                            buffer[x + inc_len] = '\0';
                             inc = buffer + x;
                             break;
                         } else if(buffer_len >= x + 14 && !strncmp(buffer+x, "/customwidget", 13) &&
-                                  (*(buffer + x + 13) == ' ' || *(buffer + x + 13) == '>')) {
+                                  (buffer[x + 13] == ' ' || buffer[x + 13] == '>')) {
                             x += 14;
                             break;
                         }
                     }
                 } else if(buffer_len >= x + 8 && !strncmp(buffer + x, "include", 7) &&
-                          (*(buffer + x + 7) == ' ' || *(buffer + x + 7) == '>')) {
-                    for(x += 8; *(buffer + x) != '>'; ++x) {
-                        if(buffer_len >= x + 9 && *(buffer + x) == 'i' &&
-                           !strncmp(buffer + x, "impldecl", 8)) {
-                            for(x += 8; *(buffer + x) != '='; ++x) ;
-                            if(*(buffer + x) != '=')
+                          (buffer[x + 7] == ' ' || buffer[x + 7] == '>')) {
+                    for (x += 8; buffer[x] != '>'; ++x) {
+                        if (buffer_len >= x + 9 && buffer[x] == 'i' &&
+                            !strncmp(buffer + x, "impldecl", 8)) {
+                            for (x += 8; buffer[x] != '='; ++x) {} // skip
+                            if (buffer[x] != '=')
                                 continue;
-                            for(++x; *(buffer+x) == '\t' || *(buffer+x) == ' '; ++x) ;
+                            for (++x; buffer[x] == '\t' || buffer[x] == ' '; ++x) {} // skip
                             char quote = 0;
-                            if(*(buffer+x) == '\'' || *(buffer+x) == '"') {
-                                quote = *(buffer + x);
+                            if (buffer[x] == '\'' || buffer[x] == '"') {
+                                quote = buffer[x];
                                 ++x;
                             }
                             int val_len;
                             for(val_len = 0; true; ++val_len) {
                                 if(quote) {
-                                    if(*(buffer+x+val_len) == quote)
+                                    if (buffer[x + val_len] == quote)
                                         break;
-                                } else if(*(buffer + x + val_len) == '>' ||
-                                          *(buffer + x + val_len) == ' ') {
+                                } else if (buffer[x + val_len] == '>' ||
+                                           buffer[x + val_len] == ' ') {
                                     break;
                                 }
                             }
-//?                            char saved = *(buffer + x + val_len);
-                            *(buffer + x + val_len) = '\0';
+//?                            char saved = buffer[x + val_len];
+                            buffer[x + val_len] = '\0';
                             if(!strcmp(buffer+x, "in implementation")) {
                                 //### do this
                             }
                         }
                     }
                     int inc_len = 0;
-                    for(x += 1 ; *(buffer + x + inc_len) != '<'; ++inc_len) ;
-                    *(buffer + x + inc_len) = '\0';
+                    for (x += 1 ; buffer[x + inc_len] != '<'; ++inc_len) {} // skip
+                    buffer[x + inc_len] = '\0';
                     inc = buffer + x;
                 }
             }
             //read past new line now..
-            for(; x < buffer_len && !qmake_endOfLine(*(buffer + x)); ++x) ;
+            for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
             ++line_count;
         } else if(file->type == QMakeSourceFileInfo::TYPE_QRC) {
         } else if(file->type == QMakeSourceFileInfo::TYPE_C) {
             for(int beginning=1; x < buffer_len; ++x) {
-                // whitespace comments and line-endings
+                // Seek code or directive, skipping comments and space:
                 for(; x < buffer_len; ++x) {
-                    if(*(buffer+x) == ' ' || *(buffer+x) == '\t') {
+                    if (buffer[x] == ' ' || buffer[x] == '\t') {
                         // keep going
-                    } else if(*(buffer+x) == '/') {
+                    } else if (buffer[x] == '/' && x + 1 < buffer_len &&
+                               (buffer[x + 1] == '/' || buffer[x + 1] == '*')) {
                         ++x;
-                        if(buffer_len >= x) {
-                            if(*(buffer+x) == '/') { //c++ style comment
-                                for(; x < buffer_len && !qmake_endOfLine(*(buffer + x)); ++x) ;
-                                beginning = 1;
-                            } else if(*(buffer+x) == '*') { //c style comment
-                                for(++x; x < buffer_len; ++x) {
-                                    if(*(buffer+x) == '*') {
-                                        if(x+1 < buffer_len && *(buffer + (x+1)) == '/') {
-                                            ++x;
-                                            break;
-                                        }
-                                    } else if(qmake_endOfLine(*(buffer+x))) {
-                                        ++line_count;
+                        if (buffer[x] == '/') { // C++-style comment
+                            for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
+                            beginning = 1;
+                        } else { // C-style comment
+                            while (++x < buffer_len) {
+                                if (buffer[x] == '*') {
+                                    if (x + 1 < buffer_len && buffer[x + 1] == '/') {
+                                        ++x; // skip '*'; for loop skips '/'.
+                                        break;
                                     }
+                                } else if (qmake_endOfLine(buffer[x])) {
+                                    ++line_count;
                                 }
                             }
                         }
-                    } else if(qmake_endOfLine(*(buffer+x))) {
+                    } else if (qmake_endOfLine(buffer[x])) {
                         ++line_count;
                         beginning = 1;
                     } else {
@@ -540,19 +540,29 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                     break;
 
                 // preprocessor directive
-                if(beginning && *(buffer+x) == '#')
+                if (beginning && buffer[x] == '#') {
+                    // Advance to start of preprocessing directive
+                    while (++x < buffer_len
+                           && (buffer[x] == ' ' || buffer[x] == '\t')) {} // skip
+
+                    if (qmake_endOfLine(buffer[x])) {
+                        ++line_count;
+                        beginning = 1;
+                        continue;
+                    }
                     break;
+                }
 
                 // quoted strings
-                if(*(buffer+x) == '\'' || *(buffer+x) == '"') {
-                    const char term = *(buffer+(x++));
-                    for(; x < buffer_len; ++x) {
-                        if(*(buffer+x) == term) {
+                if (buffer[x] == '\'' || buffer[x] == '"') {
+                    const char term = buffer[x];
+                    while (++x < buffer_len) {
+                        if (buffer[x] == term) {
                             ++x;
                             break;
-                        } else if(*(buffer+x) == '\\') {
+                        } else if (buffer[x] == '\\') {
                             ++x;
-                        } else if(qmake_endOfLine(*(buffer+x))) {
+                        } else if (qmake_endOfLine(buffer[x])) {
                             ++line_count;
                         }
                     }
@@ -562,34 +572,23 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
             if(x >= buffer_len)
                 break;
 
-            //got a preprocessor symbol
-            ++x;
-            while(x < buffer_len) {
-                if(*(buffer+x) != ' ' && *(buffer+x) != '\t')
-                    break;
-                ++x;
-            }
+            // Got a preprocessor directive
+            const char *const keyword = buffer + x;
+            for (;
+                 x < buffer_len && buffer[x] >= 'a' && buffer[x] <= 'z';
+                 x++) {} // skip over identifier
+            int keyword_len = buffer + x - keyword;
+            for (;
+                 x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t');
+                 x++) {} // skip spaces after keyword
 
-            int keyword_len = 0;
-            const char *keyword = buffer+x;
-            while(x+keyword_len < buffer_len) {
-                if(((*(buffer+x+keyword_len) < 'a' || *(buffer+x+keyword_len) > 'z')) &&
-                   *(buffer+x+keyword_len) != '_') {
-                    for(x+=keyword_len; //skip spaces after keyword
-                        x < buffer_len && (*(buffer+x) == ' ' || *(buffer+x) == '\t');
-                        x++) ;
-                    break;
-                } else if(qmake_endOfLine(*(buffer+x+keyword_len))) {
-                    x += keyword_len-1;
-                    keyword_len = 0;
-                    break;
-                }
-                keyword_len++;
-            }
+            /* Keyword with nothing after it, e.g. #endif: not interesting. */
+            if (qmake_endOfLine(buffer[x]))
+                keyword_len = 0;
 
             if((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
                || (keyword_len == 6 && !strncmp(keyword, "import", 6))) { // Obj-C
-                char term = *(buffer + x);
+                char term = buffer[x];
                 if(term == '<') {
                     try_local = false;
                     term = '>';
@@ -599,34 +598,21 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 x++;
 
                 int inc_len;
-                for(inc_len = 0; *(buffer + x + inc_len) != term && !qmake_endOfLine(*(buffer + x + inc_len)); ++inc_len) ;
-                *(buffer + x + inc_len) = '\0';
+                for (inc_len = 0;
+                     buffer[x + inc_len] != term && !qmake_endOfLine(buffer[x + inc_len]);
+                     ++inc_len) {} // skip until end of include name
+                buffer[x + inc_len] = '\0';
                 inc = buffer + x;
                 x += inc_len;
-            } else if(keyword_len == 13 && !strncmp(keyword, "qmake_warning", keyword_len)) {
-                char term = 0;
-                if(*(buffer + x) == '"')
-                    term = '"';
-                if(*(buffer + x) == '\'')
-                    term = '\'';
-                if(term)
-                    x++;
-
-                int msg_len;
-                for(msg_len = 0; (term && *(buffer + x + msg_len) != term) &&
-                              !qmake_endOfLine(*(buffer + x + msg_len)); ++msg_len) ;
-                *(buffer + x + msg_len) = '\0';
-                debug_msg(0, "%s:%d %s -- %s", file->file.local().toLatin1().constData(), line_count, keyword, buffer+x);
-                x += msg_len;
-            } else if(*(buffer+x) == '\'' || *(buffer+x) == '"') {
-                const char term = *(buffer+(x++));
+            } else if (buffer[x] == '\'' || buffer[x] == '"') {
+                const char term = buffer[x++];
                 while(x < buffer_len) {
-                    if(*(buffer+x) == term)
+                    if (buffer[x] == term)
                         break;
-                    if(*(buffer+x) == '\\') {
+                    if (buffer[x] == '\\') {
                         x+=2;
                     } else {
-                        if(qmake_endOfLine(*(buffer+x)))
+                        if (qmake_endOfLine(buffer[x]))
                             ++line_count;
                         ++x;
                     }
@@ -702,6 +688,13 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
     return true;
 }
 
+static bool isCWordChar(char c) {
+    return c == '_'
+        || (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9');
+}
+
 bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 {
     if(file->moc_checked)
@@ -739,14 +732,14 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
     for(int x = 0; x < buffer_len; x++) {
-        if(*(buffer + x) == '/') {
+        if (buffer[x] == '/') {
             ++x;
             if(buffer_len >= x) {
-                if(*(buffer + x) == '/') { //c++ style comment
-                    for(;x < buffer_len && !qmake_endOfLine(*(buffer + x)); ++x) ;
-                } else if(*(buffer + x) == '*') { //c style comment
+                if (buffer[x] == '/') { // C++-style comment
+                    for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
+                } else if (buffer[x] == '*') { // C-style comment
                     for(++x; x < buffer_len; ++x) {
-                        if(*(buffer + x) == 't' || *(buffer + x) == 'q') { //ignore
+                        if (buffer[x] == 't' || buffer[x] == 'q') { // ignore
                             if(buffer_len >= (x + 20) &&
                                !strncmp(buffer + x + 1, "make ignore Q_OBJECT", 20)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_OBJECT\"",
@@ -760,38 +753,35 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                 x += 20;
                                 ignore_qgadget = true;
                             }
-                        } else if(*(buffer + x) == '*') {
-                            if(buffer_len >= (x+1) && *(buffer + (x+1)) == '/') {
+                        } else if (buffer[x] == '*') {
+                            if (buffer_len >= x + 1 && buffer[x + 1] == '/') {
                                 ++x;
                                 break;
                             }
-                        } else if(Option::debug_level && qmake_endOfLine(*(buffer + x))) {
+                        } else if (Option::debug_level && qmake_endOfLine(buffer[x])) {
                             ++line_count;
                         }
                     }
                 }
             }
-        } else if(*(buffer+x) == '\'' || *(buffer+x) == '"') {
-            const char term = *(buffer+(x++));
+        } else if (buffer[x] == '\'' || buffer[x] == '"') {
+            const char term = buffer[x++];
             while(x < buffer_len) {
-                if(*(buffer+x) == term)
+                if (buffer[x] == term)
                     break;
-                if(*(buffer+x) == '\\') {
+                if (buffer[x] == '\\') {
                     x+=2;
                 } else {
-                    if(qmake_endOfLine(*(buffer+x)))
+                    if (qmake_endOfLine(buffer[x]))
                         ++line_count;
                     ++x;
                 }
             }
         }
-        if(Option::debug_level && qmake_endOfLine(*(buffer+x)))
+        if (Option::debug_level && qmake_endOfLine(buffer[x]))
             ++line_count;
-        if (buffer_len > x + 2 && buffer[x + 1] == 'Q' && buffer[x + 2] == '_' &&
-                  *(buffer + x) != '_' &&
-                  (*(buffer + x) < 'a' || *(buffer + x) > 'z') &&
-                  (*(buffer + x) < 'A' || *(buffer + x) > 'Z') &&
-                  (*(buffer + x) < '0' || *(buffer + x) > '9')) {
+        if (buffer_len > x + 2 && buffer[x + 1] == 'Q' &&
+            buffer[x + 2] == '_' && !isCWordChar(buffer[x])) {
             ++x;
             int match = 0;
             static const char *interesting[] = { "OBJECT", "GADGET" };
@@ -800,8 +790,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                     continue;
                 else if(interest == 1 && ignore_qgadget)
                     continue;
-                for(m1 = 0, m2 = 0; *(interesting[interest]+m1); ++m1) {
-                    if(*(interesting[interest]+m1) != *(buffer+x+2+m1)) {
+                for (m1 = 0, m2 = 0; interesting[interest][m1]; ++m1) {
+                    if (interesting[interest][m1] != buffer[x + 2 + m1]) {
                         m2 = -1;
                         break;
                     }
@@ -812,14 +802,12 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                     break;
                 }
             }
-            if(match && *(buffer+x+match) != '_' &&
-               (*(buffer+x+match) < 'a' || *(buffer+x+match) > 'z') &&
-               (*(buffer+x+match) < 'A' || *(buffer+x+match) > 'Z') &&
-               (*(buffer+x+match) < '0' || *(buffer+x+match) > '9')) {
-                if(Option::debug_level) {
-                    *(buffer+x+match) = '\0';
-                    debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s", file->file.real().toLatin1().constData(),
-                              line_count, buffer+x);
+            if (match && !isCWordChar(buffer[x + match])) {
+                if (Option::debug_level) {
+                    buffer[x + match] = '\0';
+                    debug_msg(2, "Mocgen: %s:%d Found MOC symbol %s",
+                              file->file.real().toLatin1().constData(),
+                              line_count, buffer + x);
                 }
                 file->mocable = true;
                 return true;

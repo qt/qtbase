@@ -23,6 +23,7 @@ contains(QT_CONFIG,egl) {
             $$PWD/qxlibeglintegration_p.h
         SOURCES += \
             $$PWD/qxlibeglintegration.cpp
+        LIBS_PRIVATE += $$QMAKE_LIBS_X11
     }
     CONFIG += egl
 }
