@@ -94,6 +94,7 @@ private slots:
 
     void task208001_stylesheet();
     void activeSubMenuPosition();
+    void activeSubMenuPositionExec();
     void task242454_sizeHint();
     void task176201_clear();
     void task250673_activeMultiColumnSubMenuPosition();
@@ -692,6 +693,61 @@ void tst_QMenu::activeSubMenuPosition()
     QVERIFY(sub->pos().x() > main->pos().x());
     QCOMPARE(sub->activeAction(), subAction);
 #endif
+}
+
+// QTBUG-49588, QTBUG-48396: activeSubMenuPositionExec() is the same as
+// activeSubMenuPosition(), but uses QMenu::exec(), which produces a different
+// sequence of events. Verify that the sub menu is positioned to the right of the
+// main menu.
+class SubMenuPositionExecMenu : public QMenu
+{
+    Q_OBJECT
+public:
+    SubMenuPositionExecMenu() : QMenu("Menu-Title"), m_timerId(-1), m_timerTick(0)
+    {
+        addAction("Item 1");
+        m_subMenu = addMenu("Submenu");
+        m_subAction = m_subMenu->addAction("Sub-Item1");
+        setActiveAction(m_subMenu->menuAction());
+    }
+
+protected:
+    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE
+    {
+        QVERIFY(m_subMenu->isVisible());
+        QVERIFY2(m_subMenu->x() > x(),
+                 (QByteArray::number(m_subMenu->x()) + ' ' + QByteArray::number(x())).constData());
+        m_timerId = startTimer(50);
+        QMenu::showEvent(e);
+    }
+
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE
+    {
+        if (e->timerId() == m_timerId) {
+            switch (m_timerTick++) {
+            case 0:
+                m_subMenu->close();
+                break;
+            case 1:
+                close();
+                break;
+            }
+        }
+    }
+
+private:
+    int m_timerId;
+    int m_timerTick;
+    QMenu *m_subMenu;
+    QAction *m_subAction;
+};
+
+void tst_QMenu::activeSubMenuPositionExec()
+{
+#ifndef Q_OS_WINCE
+    SubMenuPositionExecMenu menu;
+    menu.exec(QGuiApplication::primaryScreen()->availableGeometry().center());
+#endif // !Q_OS_WINCE
 }
 
 void tst_QMenu::task242454_sizeHint()

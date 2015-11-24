@@ -12327,6 +12327,12 @@ QPaintEngine *QWidget::paintEngine() const
     return 0; //##### @@@
 }
 
+// Do not call QWindow::mapToGlobal() until QPlatformWindow is properly showing.
+static inline bool canMapPosition(QWindow *window)
+{
+    return window->handle() && !qt_window_private(window)->resizeEventPending;
+}
+
 /*!
     \fn QPoint QWidget::mapToGlobal(const QPoint &pos) const
 
@@ -12354,7 +12360,7 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 #endif // !QT_NO_GRAPHICSVIEW
 
         QWindow *window = w->windowHandle();
-        if (window && window->handle())
+        if (window && canMapPosition(window))
             return window->mapToGlobal(QPoint(x, y));
 
         x += w->data->crect.x();
@@ -12390,7 +12396,7 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 #endif // !QT_NO_GRAPHICSVIEW
 
         QWindow *window = w->windowHandle();
-        if (window && window->handle())
+        if (window && canMapPosition(window))
             return window->mapFromGlobal(QPoint(x, y));
 
         x -= w->data->crect.x();
