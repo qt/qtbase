@@ -10,5 +10,4 @@ QT += widgets widgets-private opengl-private gui-private core-private testlib
 SOURCES   += tst_qgl.cpp
 RESOURCES  = qgl.qrc
 
-linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = lucid ]"): CONFIG+=insignificant_test # QTBUG-25293
 win32-msvc2010:contains(QT_CONFIG, angle):CONFIG += insignificant_test # QTQAINFRA-711
