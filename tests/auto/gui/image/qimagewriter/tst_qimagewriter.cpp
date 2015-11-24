@@ -89,6 +89,7 @@ private slots:
 
     void saveToTemporaryFile();
 private:
+    QTemporaryDir m_temporaryDir;
     QString prefix;
     QString writePrefix;
 };
@@ -112,14 +113,11 @@ static void initializePadding(QImage *image)
 
 void tst_QImageWriter::initTestCase()
 {
+    QVERIFY(m_temporaryDir.isValid());
     prefix = QFINDTESTDATA("images/");
     if (prefix.isEmpty())
         QFAIL("Can't find images directory!");
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
-    writePrefix = QDir::homePath();
-#else
-    writePrefix = prefix;
-#endif
+    writePrefix = m_temporaryDir.path();
 }
 
 // Testing get/set functions
