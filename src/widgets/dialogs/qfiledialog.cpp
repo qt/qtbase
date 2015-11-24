@@ -1938,6 +1938,8 @@ void QFileDialog::setIconProvider(QFileIconProvider *provider)
 QFileIconProvider *QFileDialog::iconProvider() const
 {
     Q_D(const QFileDialog);
+    if (!d->model)
+        return Q_NULLPTR;
     return d->model->iconProvider();
 }
 
