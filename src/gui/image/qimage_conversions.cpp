@@ -375,7 +375,32 @@ static void convert_RGB888_to_RGB(QImageData *dest, const QImageData *src, Qt::I
     }
 }
 
+#ifdef __SSE2__
 extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
+#else
+static bool convert_ARGB_to_ARGB_PM_inplace(QImageData *data,Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format == QImage::Format_ARGB32 || data->format == QImage::Format_RGBA8888);
+
+    const int pad = (data->bytes_per_line >> 2) - data->width;
+    QRgb *rgb_data = (QRgb *) data->data;
+
+    for (int i = 0; i < data->height; ++i) {
+        const QRgb *end = rgb_data + data->width;
+        while (rgb_data < end) {
+            *rgb_data = qPremultiply(*rgb_data);
+            ++rgb_data;
+        }
+        rgb_data += pad;
+    }
+
+    if (data->format == QImage::Format_ARGB32)
+        data->format = QImage::Format_ARGB32_Premultiplied;
+    else
+        data->format = QImage::Format_RGBA8888_Premultiplied;
+    return true;
+}
+#endif
 
 static void convert_ARGB_to_RGBx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
@@ -2592,7 +2617,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
 #ifdef __SSE2__
         convert_ARGB_to_ARGB_PM_inplace_sse2,
 #else
-        0,
+        convert_ARGB_to_ARGB_PM_inplace,
 #endif
         0,
         0,
@@ -2705,11 +2730,12 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         mask_alpha_converter_rgbx_inplace,
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN && __SSE2__
         0,
+#ifdef __SSE2__
         convert_ARGB_to_ARGB_PM_inplace_sse2,
+#elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        convert_ARGB_to_ARGB_PM_inplace,
 #else
-        0,
         0,
 #endif
         0, 0, 0, 0, 0, 0
