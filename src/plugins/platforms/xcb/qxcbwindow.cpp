@@ -143,7 +143,7 @@ const quint32 XEMBED_VERSION = 0;
 
 QXcbScreen *QXcbWindow::parentScreen()
 {
-    return parent() ? static_cast<QXcbWindow*>(parent())->parentScreen() : m_xcbScreen;
+    return parent() ? static_cast<QXcbWindow*>(parent())->parentScreen() : xcbScreen();
 }
 
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
@@ -266,7 +266,6 @@ static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_window(0)
-    , m_xcbScreen(0)
     , m_syncCounter(0)
     , m_gravity(XCB_GRAVITY_STATIC)
     , m_mapped(false)
@@ -322,7 +321,6 @@ void QXcbWindow::create()
     QRect rect = windowGeometry();
     QXcbScreen *platformScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
-    m_xcbScreen = platformScreen;
     if (type == Qt::Desktop) {
         m_window = platformScreen->root();
         m_depth = platformScreen->screen()->root_depth;
@@ -638,13 +636,12 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
     propagateSizeHints();
 
-    QXcbScreen *currentScreen = m_xcbScreen;
+    QXcbScreen *currentScreen = xcbScreen();
     QXcbScreen *newScreen = parent() ? parentScreen() : static_cast<QXcbScreen*>(screenForGeometry(rect));
 
     if (!newScreen)
         newScreen = xcbScreen();
 
-    m_xcbScreen = newScreen;
     const QRect wmGeometry = windowToWmGeometry(rect);
 
     if (newScreen && newScreen != currentScreen)
@@ -2013,9 +2010,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
     const QRect actualGeometry = QRect(pos, QSize(event->width, event->height));
     QPlatformScreen *newScreen = parent() ? parent()->screen() : screenForGeometry(actualGeometry);
-
-    QXcbScreen *currentScreen = m_xcbScreen;
-    m_xcbScreen = static_cast<QXcbScreen*>(newScreen);
     if (!newScreen)
         return;
 
@@ -2032,8 +2026,10 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QWindowSystemInterface::handleGeometryChange(window(), actualGeometry,
         requestedGeometry != actualGeometry ? requestedGeometry : QRect());
 
-    if (newScreen != currentScreen)
-        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    // QPlatformScreen::screen() is updated asynchronously, so we can't compare it
+    // with the newScreen. Just send the WindowScreenChanged event and QGuiApplication
+    // will make the comparison later.
+    QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
     // For expose events we have no way of telling QGuiApplication to used the locally
     // cached version of the previous state, so we may in some situations end up with

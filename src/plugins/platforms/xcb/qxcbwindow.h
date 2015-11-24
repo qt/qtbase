@@ -214,8 +214,6 @@ protected:
 
     xcb_window_t m_window;
 
-    QXcbScreen *m_xcbScreen;
-
     uint m_depth;
     QImage::Format m_imageFormat;
     bool m_imageRgbSwap;
