@@ -106,7 +106,7 @@ public:
     QString holderAt(int index) const;
 
     QSqlResult *q_ptr;
-    QPointer<QSqlDriver> sqldriver;
+    QPointer<const QSqlDriver> sqldriver;
     int idx;
     QString sql;
     bool active;

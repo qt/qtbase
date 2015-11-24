@@ -221,7 +221,7 @@ QSqlResult::QSqlResult(const QSqlDriver *db)
     d_ptr = new QSqlResultPrivate;
     Q_D(QSqlResult);
     d->q_ptr = this;
-    d->sqldriver = const_cast<QSqlDriver *>(db);
+    d->sqldriver = db;
     if (d->sqldriver)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
 }
@@ -233,7 +233,7 @@ QSqlResult::QSqlResult(QSqlResultPrivate &dd, const QSqlDriver *db)
     d_ptr = &dd;
     Q_D(QSqlResult);
     d->q_ptr = this;
-    d->sqldriver = const_cast<QSqlDriver *>(db);
+    d->sqldriver = db;
     if (d->sqldriver)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
 }
