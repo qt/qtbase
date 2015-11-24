@@ -45,14 +45,13 @@
 // We mean it.
 //
 
-#include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
 #include <ibase.h>
 
 QT_BEGIN_NAMESPACE
 
+class QSqlResult;
 class QIBaseDriverPrivate;
-class QIBaseDriver;
 
 class QIBaseDriver : public QSqlDriver
 {

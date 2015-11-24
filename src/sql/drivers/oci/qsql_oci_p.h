@@ -45,7 +45,6 @@
 // We mean it.
 //
 
-#include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
 
 #ifdef QT_PLUGIN
@@ -59,8 +58,7 @@ typedef struct OCISvcCtx OCISvcCtx;
 
 QT_BEGIN_NAMESPACE
 
-class QOCIDriver;
-class QOCICols;
+class QSqlResult;
 class QOCIDriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver

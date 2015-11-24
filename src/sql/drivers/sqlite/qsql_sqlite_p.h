@@ -46,7 +46,6 @@
 //
 
 #include <QtSql/qsqldriver.h>
-#include <QtSql/qsqlresult.h>
 
 struct sqlite3;
 
@@ -58,8 +57,8 @@ struct sqlite3;
 
 QT_BEGIN_NAMESPACE
 
+class QSqlResult;
 class QSQLiteDriverPrivate;
-class QSQLiteDriver;
 
 class Q_EXPORT_SQLDRIVER_SQLITE QSQLiteDriver : public QSqlDriver
 {

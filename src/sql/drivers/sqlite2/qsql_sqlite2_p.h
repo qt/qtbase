@@ -46,9 +46,6 @@
 //
 
 #include <QtSql/qsqldriver.h>
-#include <QtSql/qsqlresult.h>
-#include <QtSql/qsqlrecord.h>
-#include <QtSql/qsqlindex.h>
 
 #if defined (Q_OS_WIN32)
 # include <QtCore/qt_windows.h>
@@ -58,8 +55,8 @@ struct sqlite;
 
 QT_BEGIN_NAMESPACE
 
+class QSqlResult;
 class QSQLite2DriverPrivate;
-class QSQLite2Driver;
 
 class QSQLite2Driver : public QSqlDriver
 {

@@ -45,7 +45,6 @@
 // We mean it.
 //
 
-#include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
 
 #ifdef Q_OS_WIN32
@@ -71,8 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSqlResult;
 class QTDSDriverPrivate;
-class QTDSDriver;
 
 class Q_EXPORT_SQLDRIVER_TDS QTDSDriver : public QSqlDriver
 {

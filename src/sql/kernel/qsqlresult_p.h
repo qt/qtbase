@@ -46,7 +46,6 @@
 //
 
 #include <QtCore/qpointer.h>
-#include <QtSql/qsqldriver.h>
 #include "qsqlerror.h"
 #include "qsqlresult.h"
 
@@ -59,6 +58,8 @@ struct QHolder {
     QString holderName;
     int holderPos;
 };
+
+class QSqlDriver;
 
 class Q_SQL_EXPORT QSqlResultPrivate
 {
