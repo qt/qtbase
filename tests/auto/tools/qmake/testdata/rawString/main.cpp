@@ -31,7 +31,8 @@
 **
 ****************************************************************************/
 
-static const char raw[] = R"blah(lorem " ipsum /*)blah";
+static const char raw[] = R"blah(lorem " ipsum /*)blah"\
+;
 #include <moc_object1.cpp>
 
 int main () { return 0; }

@@ -388,6 +388,40 @@ QFileInfo QMakeSourceFileInfo::findFileInfo(const QMakeLocalFileName &dep)
     return QFileInfo(dep.real());
 }
 
+static int skipEscapedLineEnds(const char *buffer, int buffer_len, int offset, int *lines)
+{
+    // Join physical lines to make logical lines, as in the C preprocessor
+    while (offset + 1 < buffer_len
+           && buffer[offset] == '\\'
+           && qmake_endOfLine(buffer[offset + 1])) {
+        offset += 2;
+        ++*lines;
+        if (offset < buffer_len
+            && buffer[offset - 1] == '\r'
+            && buffer[offset] == '\n') // CRLF
+            offset++;
+    }
+    return offset;
+}
+
+static bool matchWhileUnsplitting(const char *buffer, int buffer_len, int start,
+                                  const char *needle, int needle_len,
+                                  int *matchlen, int *lines)
+{
+    int x = start;
+    for (int n = 0; n < needle_len && x < buffer_len;
+         n++, x = skipEscapedLineEnds(buffer, buffer_len, x + 1, lines)) {
+        if (buffer[x] != needle[n])
+            return false;
+    }
+    // That also skipped any remaining BSNLs immediately after the match.
+
+    // Tell caller how long the match was:
+    *matchlen = x - start;
+
+    return true;
+}
+
 bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 {
     if(file->dep_checked || file->type == TYPE_UNKNOWN)
@@ -426,6 +460,18 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
         file->deps = new SourceDependChildren;
 
     int line_count = 1;
+    enum {
+        /*
+          States of C preprocessing (for TYPE_C only), after backslash-newline
+          elimination and skipping comments and spaces (i.e. in ANSI X3.159-1989
+          section 2.1.1.2's phase 4).  We're about to study buffer[x] to decide
+          on which transition to do.
+         */
+        AtStart, // start of logical line; a # may start a preprocessor directive
+        HadHash, // saw a # at start, looking for preprocessor keyword
+        WantName, // saw #include or #import, waiting for name
+        InCode // after directive, parsing non-#include directive or in actual code
+    } cpp_state = AtStart;
 
     for(int x = 0; x < buffer_len; ++x) {
         bool try_local = true;
@@ -505,144 +551,232 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
             ++line_count;
         } else if(file->type == QMakeSourceFileInfo::TYPE_QRC) {
         } else if(file->type == QMakeSourceFileInfo::TYPE_C) {
-            for(int beginning=1; x < buffer_len; ++x) {
+            // We've studied all buffer[i] for i < x
+            for (; x < buffer_len; ++x) {
+                // How to handle backslash-newline (BSNL) pairs:
+#define SKIP_BSNL(pos) skipEscapedLineEnds(buffer, buffer_len, (pos), &line_count)
+
                 // Seek code or directive, skipping comments and space:
                 for(; x < buffer_len; ++x) {
+                    x = SKIP_BSNL(x);
                     if (buffer[x] == ' ' || buffer[x] == '\t') {
                         // keep going
-                    } else if (buffer[x] == '/' && x + 1 < buffer_len &&
-                               (buffer[x + 1] == '/' || buffer[x + 1] == '*')) {
-                        ++x;
-                        if (buffer[x] == '/') { // C++-style comment
-                            for (; x < buffer_len && !qmake_endOfLine(buffer[x]); ++x) {} // skip
-                            beginning = 1;
-                        } else { // C-style comment
+                    } else if (buffer[x] == '/') {
+                        int extralines = 0;
+                        int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &extralines);
+                        if (buffer[y] == '/') { // C++-style comment
+                            line_count += extralines;
+                            x = SKIP_BSNL(y + 1);
+                            while (x < buffer_len && !qmake_endOfLine(buffer[x]))
+                                x = SKIP_BSNL(x + 1); // skip
+
+                            cpp_state = AtStart;
+                            ++line_count;
+                        } else if (buffer[y] == '*') { // C-style comment
+                            line_count += extralines;
+                            x = y;
                             while (++x < buffer_len) {
+                                x = SKIP_BSNL(x);
                                 if (buffer[x] == '*') {
-                                    if (x + 1 < buffer_len && buffer[x + 1] == '/') {
-                                        ++x; // skip '*'; for loop skips '/'.
+                                    extralines = 0;
+                                    y = skipEscapedLineEnds(buffer, buffer_len,
+                                                            x + 1, &extralines);
+                                    if (y < buffer_len && buffer[y] == '/') {
+                                        line_count += extralines;
+                                        x = y; // for loop shall step past this
                                         break;
                                     }
                                 } else if (qmake_endOfLine(buffer[x])) {
                                     ++line_count;
                                 }
                             }
+                        } else {
+                            // buffer[x] is the division operator
+                            break;
                         }
                     } else if (qmake_endOfLine(buffer[x])) {
                         ++line_count;
-                        beginning = 1;
+                        cpp_state = AtStart;
                     } else {
+                        /* Drop out of phases 1, 2, 3, into phase 4 */
                         break;
                     }
                 }
+                // Phase 4 study of buffer[x]:
 
                 if(x >= buffer_len)
                     break;
 
-                // preprocessor directive
-                if (beginning && buffer[x] == '#') {
-                    // Advance to start of preprocessing directive
-                    while (++x < buffer_len
-                           && (buffer[x] == ' ' || buffer[x] == '\t')) {} // skip
+                switch (cpp_state) {
+                case HadHash:
+                {
+                    // Read keyword; buffer[x] starts first preprocessing token after #
+                    const char *const keyword = buffer + x;
+                    int clean = x;
+                    while (x < buffer_len && buffer[x] >= 'a' && buffer[x] <= 'z') {
+                        // skip over keyword, consolidating it if it contains BSNLs
+                        // (see WantName's similar code consolidating inc, below)
+                        if (clean < x)
+                            buffer[clean++] = buffer[x];
+                        else
+                            clean++;
 
-                    if (qmake_endOfLine(buffer[x])) {
-                        ++line_count;
-                        beginning = 1;
-                        continue;
+                        x = SKIP_BSNL(x + 1);
                     }
+                    const int keyword_len = buffer + clean - keyword;
+                    x--; // Still need to study buffer[x] next time round for loop.
+
+                    cpp_state =
+                        ((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
+                      || (keyword_len == 6 && !strncmp(keyword, "import", 6))) // Obj-C
+                        ? WantName : InCode;
                     break;
                 }
 
-                // quoted strings
-                if (buffer[x] == '\'' || buffer[x] == '"') {
-                    // It might be a C++11 raw string.
-                    bool israw = false;
-                    if (buffer[x] == '"' && x > 0) {
-                        int y = x;
-                        while (--y > 0 && (buffer[y] == '8' || buffer[y] == 'u' || buffer[y] == 'U')) {} // skip
-                        israw = (buffer[y] == 'R');
-                    }
-                    if (israw) {
-                        x++;
-                        const char *const delim = buffer + x;
-                        while (x < buffer_len && buffer[x] != '(')
-                            x++;
+                case WantName:
+                {
+                    char term = buffer[x];
+                    if (term == '<') {
+                        try_local = false;
+                        term = '>';
+                    } else if (term != '"') {
                         /*
-                          Not checking correctness (trust real compiler to do that):
-                          - no controls, spaces, '(', ')', '\\' or (presumably) '"' in delim;
-                          - at most 16 bytes in delim
-                         */
-
-                        const int delimlen = buffer + x - delim;
-                        while (++x < buffer_len
-                               && (buffer[x] != ')'
-                                   || (delimlen > 0 &&
-                                       strncmp(buffer + x + 1, delim, delimlen))
-                                   || buffer[x + 1 + delimlen] != '"')) {} // skip
-                        // buffer[x] is ')'
-                        x += 1 + delimlen; // 1 for ')', then delim
-                        // buffer[x] is '"'
-                    } else {
-                        const char term = buffer[x];
-                        while (++x < buffer_len && buffer[x] != term) {
-                            if (buffer[x] == '\\')
-                                ++x;
-                            else if (qmake_endOfLine(buffer[x]))
-                                ++line_count;
-                        }
+                          Possibly malformed, but this may be something like:
+                          #include IDENTIFIER
+                          which does work, if #define IDENTIFIER "filename" is
+                          in effect.  This is beyond this noddy preprocessor's
+                          powers of tracking.  So give up and resume searching
+                          for a directive.  We haven't made sense of buffer[x],
+                          so back up to ensure we do study it (now as code) next
+                          time round the loop.
+                        */
+                        x--;
+                        cpp_state = InCode;
+                        continue;
                     }
-                    // for loop's ++x shall step over the closing quote.
+
+                    x = SKIP_BSNL(x + 1);
+                    inc = buffer + x;
+                    int clean = x; // offset if we need to clear \-newlines
+                    for (; x < buffer_len && buffer[x] != term; x = SKIP_BSNL(x + 1)) {
+                        if (qmake_endOfLine(buffer[x])) { // malformed
+                            cpp_state = AtStart;
+                            ++line_count;
+                            break;
+                        }
+
+                        /*
+                          If we do skip any BSNLs, we need to consolidate the
+                          surviving text by copying to lower indices.  For that
+                          to be possible, we also have to keep 'clean' advanced
+                          in step with x even when we've yet to see any BSNLs.
+                        */
+                        if (clean < x)
+                            buffer[clean++] = buffer[x];
+                        else
+                            clean++;
+                    }
+                    if (cpp_state == WantName)
+                        buffer[clean] = '\0';
+                    else // i.e. malformed
+                        inc = 0;
+
+                    cpp_state = InCode; // hereafter
+                    break;
                 }
-                beginning = 0;
+
+                case AtStart:
+                    // Preprocessor directive?
+                    if (buffer[x] == '#') {
+                        cpp_state = HadHash;
+                        break;
+                    }
+                    cpp_state = InCode;
+                    // ... and fall through to handle buffer[x] as such.
+                case InCode:
+                    // matching quotes (string literals and character literals)
+                    if (buffer[x] == '\'' || buffer[x] == '"') {
+                        // It might be a C++11 raw string.
+                        bool israw = false;
+                        if (buffer[x] == '"' && x > 0) {
+                            int y = x - 1;
+                            while (y > 0 && buffer[y] != 'R') {
+                                if (buffer[y] == '8' || buffer[y] == 'u' || buffer[y] == 'U')
+                                    y--;
+                                else if (y > 1 && qmake_endOfLine(buffer[y])
+                                         && buffer[y - 1] == '\\')
+                                    y -= 2;
+                                else if (y > 2 && buffer[y] == '\n'
+                                         && buffer[y - 1] == '\r'
+                                         && buffer[y - 2] == '\\')
+                                    y -= 3;
+                                else
+                                    break;
+                            }
+                            israw = (buffer[y] == 'R');
+                        }
+                        if (israw) {
+                            x = SKIP_BSNL(x + 1);
+                            const char *const delim = buffer + x;
+                            int clean = x;
+                            while (x < buffer_len && buffer[x] != '(') {
+                                if (clean < x)
+                                    buffer[clean++] = buffer[x];
+                                else
+                                    clean++;
+
+                                x = SKIP_BSNL(x + 1);
+                            }
+                            /*
+                              Not checking correctness (trust real compiler to do that):
+                              - no controls, spaces, '(', ')', '\\' or (presumably) '"' in delim;
+                              - at most 16 bytes in delim
+
+                              Raw strings are surely defined after phase 2, when
+                              BSNLs are resolved; so the delimiter's exclusion
+                              of '\\' and space (including newlines) applies too
+                              late to save us the need to cope with BSNLs in it.
+                            */
+
+                            const int delimlen = buffer + clean - delim;
+                            int matchlen = delimlen, extralines = 0;
+                            while ((x = SKIP_BSNL(x + 1)) < buffer_len
+                                   && (buffer[x] != ')'
+                                       || (delimlen > 0 &&
+                                           !matchWhileUnsplitting(buffer, buffer_len,
+                                                                  x + 1, delim, delimlen,
+                                                                  &matchlen, &extralines))
+                                       || buffer[x + 1 + matchlen] != '"')) {
+                                // skip, but keep track of lines
+                                if (qmake_endOfLine(buffer[x]))
+                                    ++line_count;
+                                extralines = 0;
+                            }
+                            line_count += extralines; // from the match
+                            // buffer[x] is ')'
+                            x += 1 + matchlen; // 1 for ')', then delim
+                            // buffer[x] is '"'
+                        } else {
+                            const char term = buffer[x];
+                            while (++x < buffer_len && buffer[x] != term) {
+                                if (buffer[x] == '\\')
+                                    ++x;
+                                else if (qmake_endOfLine(buffer[x]))
+                                    ++line_count;
+                            }
+                        }
+                        // for loop's ++x shall step over the closing quote.
+                    }
+                    // else: buffer[x] is just some code; move on.
+                    break;
+                }
+
+                if (inc) // We were in WantName and found a name.
+                    break;
+#undef SKIP_BSNL
             }
             if(x >= buffer_len)
                 break;
-
-            // Got a preprocessor directive
-            const char *const keyword = buffer + x;
-            for (;
-                 x < buffer_len && buffer[x] >= 'a' && buffer[x] <= 'z';
-                 x++) {} // skip over identifier
-            int keyword_len = buffer + x - keyword;
-            for (;
-                 x < buffer_len && (buffer[x] == ' ' || buffer[x] == '\t');
-                 x++) {} // skip spaces after keyword
-
-            /* Keyword with nothing after it, e.g. #endif: not interesting. */
-            if (qmake_endOfLine(buffer[x]))
-                keyword_len = 0;
-
-            if((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
-               || (keyword_len == 6 && !strncmp(keyword, "import", 6))) { // Obj-C
-                char term = buffer[x];
-                if(term == '<') {
-                    try_local = false;
-                    term = '>';
-                } else if(term != '"') { //wtf?
-                    continue;
-                }
-                x++;
-                inc = buffer + x;
-                for (;
-                     buffer[x] != term && !qmake_endOfLine(buffer[x]);
-                     ++x) {} // skip until end of include name
-                buffer[x] = '\0';
-            } else if (buffer[x] == '\'' || buffer[x] == '"') {
-                const char term = buffer[x++];
-                while(x < buffer_len) {
-                    if (buffer[x] == term)
-                        break;
-                    if (buffer[x] == '\\') {
-                        x+=2;
-                    } else {
-                        if (qmake_endOfLine(buffer[x]))
-                            ++line_count;
-                        ++x;
-                    }
-                }
-            } else {
-                --x;
-            }
         }
 
         if(inc) {
