@@ -36,7 +36,6 @@
 
 #include <QBuffer>
 #include <QDebug>
-#include <QFile>
 #include <QImage>
 #include <QImageReader>
 #include <QImageWriter>
@@ -46,12 +45,29 @@
 #include <QTcpServer>
 #include <QTimer>
 #include <QTemporaryDir>
+#include <QTemporaryFile>
 
 #include <algorithm>
 
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage::Format)
+
+static QByteArray msgFileOpenWriteFailed(const QFile &file)
+{
+    const QString result = QLatin1String("Cannot open \"")
+        + QDir::toNativeSeparators(file.fileName())
+        + QLatin1String("\" for writing: ") + file.errorString();
+    return result.toLocal8Bit();
+}
+
+static QByteArray msgFileOpenReadFailed(const QFile &file)
+{
+    const QString result = QLatin1String("Cannot open \"")
+        + QDir::toNativeSeparators(file.fileName())
+        + QLatin1String("\" for reading: ") + file.errorString();
+    return result.toLocal8Bit();
+}
 
 class tst_QImageReader : public QObject
 {
@@ -1051,7 +1067,7 @@ void tst_QImageReader::readFromDevice()
     const QString imageFileName = prefix + fileName;
     QImage expectedImage(imageFileName, format);
     QFile file(imageFileName);
-    QVERIFY(file.open(QFile::ReadOnly));
+    QVERIFY2(file.open(QFile::ReadOnly), msgFileOpenReadFailed(file).constData());
     QByteArray imageData = file.readAll();
     QVERIFY(!imageData.isEmpty());
     {
@@ -1129,12 +1145,11 @@ void tst_QImageReader::readFromFileAfterJunk()
 
     SKIP_IF_UNSUPPORTED(format);
 
-    QFile::remove("junk");
-    QFile junkFile("junk");
-    QVERIFY(junkFile.open(QFile::WriteOnly));
+    QTemporaryFile junkFile(m_temporaryDir.path() + QLatin1String("/junkXXXXXX"));
+    QVERIFY2(junkFile.open(), msgFileOpenWriteFailed(junkFile).constData());
 
     QFile imageFile(prefix + fileName);
-    QVERIFY(imageFile.open(QFile::ReadOnly));
+    QVERIFY2(imageFile.open(QFile::ReadOnly), msgFileOpenReadFailed(imageFile).constData());
     QByteArray imageData = imageFile.readAll();
     QVERIFY(!imageData.isNull());
 
@@ -1155,7 +1170,7 @@ void tst_QImageReader::readFromFileAfterJunk()
         }
     }
     junkFile.close();
-    junkFile.open(QFile::ReadOnly);
+    QVERIFY2(junkFile.open(), msgFileOpenReadFailed(junkFile).constData());
 
     for (int i = 0; i < iterations; ++i) {
         QByteArray ole = junkFile.read(9);
@@ -1205,7 +1220,7 @@ void tst_QImageReader::devicePosition()
     QVERIFY(!expected.isNull());
 
     QFile imageFile(prefix + fileName);
-    QVERIFY(imageFile.open(QFile::ReadOnly));
+    QVERIFY2(imageFile.open(QFile::ReadOnly), msgFileOpenReadFailed(imageFile).constData());
     QByteArray imageData = imageFile.readAll();
     QVERIFY(!imageData.isNull());
     int imageDataSize = imageData.size();
