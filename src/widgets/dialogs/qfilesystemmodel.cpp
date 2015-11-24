@@ -1024,7 +1024,7 @@ public:
         }
         case 2:
         {
-            int compare = QString::localeAwareCompare(l->type(), r->type());
+            int compare = naturalCompare.compare(l->type(), r->type());
             if (compare == 0)
                 return naturalCompare.compare(l->fileName, r->fileName) < 0;
 
