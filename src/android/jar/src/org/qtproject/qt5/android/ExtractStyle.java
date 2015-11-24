@@ -671,7 +671,7 @@ public class ExtractStyle {
             json.put("gradient",gradientStateClass.getField("mGradient").getInt(obj));
             GradientDrawable.Orientation orientation=(Orientation) gradientStateClass.getField("mOrientation").get(obj);
             json.put("orientation",orientation.name());
-            int [] intArray=(int[]) gradientStateClass.getField("mColors").get(obj);
+            int [] intArray=(int[]) gradientStateClass.getField((Build.VERSION.SDK_INT < 23) ? "mColors" : "mGradientColors").get(obj);
             if (intArray != null)
                 json.put("colors",getJsonArray(intArray, 0, intArray.length));
             json.put("positions",getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
@@ -707,7 +707,10 @@ public class ExtractStyle {
             json.put("type", "rotate");
             Object obj = drawable.getConstantState();
             Class<?> rotateStateClass = obj.getClass();
-            json.put("drawable", getDrawable(getAccessibleField(rotateStateClass, "mDrawable").get(obj), filename, null));
+            if (Build.VERSION.SDK_INT < 23)
+                json.put("drawable", getDrawable(getAccessibleField(rotateStateClass, "mDrawable").get(obj), filename, null));
+            else
+                json.put("drawable", getDrawable(drawable.getClass().getMethod("getDrawable").invoke(drawable), filename, null));
             json.put("pivotX", getAccessibleField(rotateStateClass, "mPivotX").getFloat(obj));
             json.put("pivotXRel", getAccessibleField(rotateStateClass, "mPivotXRel").getBoolean(obj));
             json.put("pivotY", getAccessibleField(rotateStateClass, "mPivotY").getFloat(obj));
