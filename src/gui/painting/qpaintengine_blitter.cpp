@@ -190,7 +190,7 @@ private:
     }
 
     void setSourcePixmapMask() {
-        updateStateBits(&drawPixmapMask, STATE_XFORM_SCALE, true);
+        updateStateBits(&drawPixmapMask, STATE_XFORM_SCALE, false);
         updateStateBits(&drawPixmapMask, STATE_XFORM_COMPLEX, false);
 
         updateStateBits(&drawPixmapMask, STATE_BRUSH_PATTERN, true);
@@ -212,7 +212,7 @@ private:
 
     void setSourceOverScaledPixmapMask() {
         setSourceOverPixmapMask();
-        updateStateBits(&drawRectMask, STATE_XFORM_SCALE, true);
+        updateStateBits(&drawPixmapMask, STATE_XFORM_SCALE, true);
     }
 
     void setOpacityPixmapMask() {
