@@ -978,9 +978,8 @@ extern "C" void qt_convert_rgb888_to_rgb32_mips_dspr2_asm(quint32 *dst, const uc
 QJpegHandler::QJpegHandler()
     : d(new QJpegHandlerPrivate(this))
 {
-#if defined(__ARM_NEON__) && !defined(Q_PROCESSOR_ARM_64)
+#if defined(__ARM_NEON__)
     // from qimage_neon.cpp
-
     if (qCpuHasFeature(NEON))
         d->rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
 #endif
