@@ -5709,37 +5709,42 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
     Q_ASSERT(!str.isEmpty());
     QString s = qMove(str);             // will copy if T is const QString
     QChar *pp = s.begin() + it.index(); // will detach if necessary
-    uint uc = it.nextUnchecked();
-    forever {
+
+    do {
+        uint uc = it.nextUnchecked();
+
         const QUnicodeTables::Properties *prop = qGetProp(uc);
         signed short caseDiff = Traits::caseDiff(prop);
 
         if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
-            // slow path: the string is growing
             const ushort *specialCase = specialCaseMap + caseDiff;
             ushort length = *specialCase++;
-            int inpos = it.index() - 1;
-            int outpos = pp - s.constBegin();
 
-            s.replace(outpos, 1, reinterpret_cast<const QChar *>(specialCase), length);
-            pp = const_cast<QChar *>(s.constBegin()) + outpos + length;
+            if (Q_LIKELY(length == 1)) {
+                *pp++ = QChar(*specialCase);
+            } else {
+                // slow path: the string is growing
+                int inpos = it.index() - 1;
+                int outpos = pp - s.constBegin();
 
-            // do we need to adjust the input iterator too?
-            // if it is pointing to s's data, str is empty
-            if (str.isEmpty())
-                it = QStringIterator(s.constBegin(), inpos + length, s.constEnd());
-        } else if (QChar::requiresSurrogates(uc)) {
-            *pp++ = QChar::highSurrogate(uc + caseDiff);
+                s.replace(outpos, 1, reinterpret_cast<const QChar *>(specialCase), length);
+                pp = const_cast<QChar *>(s.constBegin()) + outpos + length;
+
+                // do we need to adjust the input iterator too?
+                // if it is pointing to s's data, str is empty
+                if (str.isEmpty())
+                    it = QStringIterator(s.constBegin(), inpos + length, s.constEnd());
+            }
+        } else if (Q_UNLIKELY(QChar::requiresSurrogates(uc))) {
+            // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
+            pp++;
             *pp++ = QChar::lowSurrogate(uc + caseDiff);
         } else {
             *pp++ = QChar(uc + caseDiff);
         }
+    } while (it.hasNext());
 
-        if (!it.hasNext())
-            return s;
-
-        uc = it.nextUnchecked();
-    }
+    return s;
 }
 
 template <typename Traits, typename T>
@@ -5752,12 +5757,13 @@ static QString convertCase(T &str)
     while (e != p && e[-1].isHighSurrogate())
         --e;
 
-    const QUnicodeTables::Properties *prop;
     QStringIterator it(p, e);
-    for ( ; it.hasNext(); it.advanceUnchecked()) {
-        prop = qGetProp(it.peekNextUnchecked());
-        if (Traits::caseDiff(prop))
+    while (it.hasNext()) {
+        uint uc = it.nextUnchecked();
+        if (Traits::caseDiff(qGetProp(uc))) {
+            it.recedeUnchecked();
             return detachAndConvertCase<Traits>(str, it);
+        }
     }
     return qMove(str);
 }
