@@ -502,8 +502,8 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     if (activeMenu == menu)
         activeMenu = 0;
     menu->d_func()->causedPopup.action = 0;
-    menu->d_func()->causedPopup.widget = 0;
     menu->close();
+    menu->d_func()->causedPopup.widget = 0;
     if (previousMouseMenu.data() == menu)
         handleEnterLeaveEvents(&previousMouseMenu, Q_NULLPTR);
 }
