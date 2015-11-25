@@ -215,6 +215,8 @@ void QCoreTextFontEngine::init()
     Q_ASSERT((void *)(&ctfont + 1) == (void *)&cgFont);
     faceData.user_data = &ctfont;
     faceData.get_font_table = ct_getSfntTable;
+
+    kerningPairsLoaded = false;
 }
 
 glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
@@ -786,6 +788,19 @@ QFontEngine::Properties QCoreTextFontEngine::properties() const
     }
 
     return result;
+}
+
+void QCoreTextFontEngine::doKerning(QGlyphLayout *g, ShaperFlags flags) const
+{
+    if (!kerningPairsLoaded) {
+        kerningPairsLoaded = true;
+        qreal emSquare = CTFontGetUnitsPerEm(ctfont);
+        qreal scale = emSquare / CTFontGetSize(ctfont);
+
+        const_cast<QCoreTextFontEngine *>(this)->loadKerningPairs(QFixed::fromReal(scale));
+    }
+
+    QFontEngine::doKerning(g, flags);
 }
 
 QT_END_NAMESPACE

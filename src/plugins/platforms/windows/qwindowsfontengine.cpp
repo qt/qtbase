@@ -197,7 +197,7 @@ void QWindowsFontEngine::getCMap()
         designToDevice = QFixed((int)otm->otmEMSquare)/QFixed::fromReal(fontDef.pixelSize);
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
-        loadKerningPairs(QFixed((int)otm->otmEMSquare)/int(otm->otmTextMetrics.tmHeight));
+        loadKerningPairs(designToDevice);
         _faceId.filename = QFile::encodeName(QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFullName)));
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;

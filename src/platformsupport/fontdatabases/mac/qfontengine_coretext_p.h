@@ -97,6 +97,7 @@ public:
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
     QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
     QFixed emSquareSize() const Q_DECL_OVERRIDE;
+    void doKerning(QGlyphLayout *g, ShaperFlags flags) const Q_DECL_OVERRIDE;
 
     bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
 
@@ -134,6 +135,7 @@ private:
     CGAffineTransform transform;
     QFixed avgCharWidth;
     QFontEngine::FaceId face_id;
+    mutable bool kerningPairsLoaded;
 };
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);

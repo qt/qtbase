@@ -93,6 +93,8 @@ private slots:
     void multipleRawFontsFromData();
 
     void rawFontFromInvalidData();
+
+    void kernedAdvances();
 private:
     QString testFont;
     QString testFontBoldItalic;
@@ -952,6 +954,38 @@ void tst_QRawFont::rawFontFromInvalidData()
     font.loadFromData(invalidData, 10, QFont::PreferDefaultHinting);
 
     QVERIFY(!font.isValid());
+}
+
+#define FUZZY_LTEQ(X, Y) (X < Y || qFuzzyCompare(X, Y))
+
+void tst_QRawFont::kernedAdvances()
+{
+    const int emSquareSize = 1000;
+    const qreal pixelSize = 16.0;
+    const int underScoreAW = 500;
+    const int underscoreTwoKerning = -500;
+    const qreal errorMargin = 1.0 / 16.0; // Fixed point error margin
+
+    QRawFont font(testFont, pixelSize);
+    QVERIFY(font.isValid());
+
+    QVector<quint32> glyphIndexes = font.glyphIndexesForString(QStringLiteral("__"));
+    QCOMPARE(glyphIndexes.size(), 2);
+
+    QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndexes, QRawFont::KernedAdvances);
+    QCOMPARE(advances.size(), 2);
+
+    qreal expectedAdvanceWidth = pixelSize * underScoreAW / emSquareSize;
+    QVERIFY(FUZZY_LTEQ(qAbs(advances.at(0).x() - expectedAdvanceWidth), errorMargin));
+
+    glyphIndexes = font.glyphIndexesForString(QStringLiteral("_2"));
+    QCOMPARE(glyphIndexes.size(), 2);
+
+    advances = font.advancesForGlyphIndexes(glyphIndexes, QRawFont::KernedAdvances);
+    QCOMPARE(advances.size(), 2);
+
+    expectedAdvanceWidth = pixelSize * (underScoreAW + underscoreTwoKerning) / emSquareSize;
+    QVERIFY(FUZZY_LTEQ(qAbs(advances.at(0).x() - expectedAdvanceWidth), errorMargin));
 }
 
 #endif // QT_NO_RAWFONT
