@@ -9,5 +9,3 @@ QT += widgets widgets-private opengl-private gui-private core-private testlib
 
 SOURCES   += tst_qgl.cpp
 RESOURCES  = qgl.qrc
-
-win32-msvc2010:contains(QT_CONFIG, angle):CONFIG += insignificant_test # QTQAINFRA-711
