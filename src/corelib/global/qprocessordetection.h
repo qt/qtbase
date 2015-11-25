@@ -95,7 +95,9 @@
 #  else
 #    define Q_PROCESSOR_ARM_32
 #  endif
-#  if defined(__ARM64_ARCH_8__)
+#  if defined(__ARM64_ARCH_8__) \
+      || defined(__ARM_ARCH_8A) \
+      || (defined(__ARM_ARCH) && __ARM_ARCH == 8)
 #    define Q_PROCESSOR_ARM_V8
 #    define Q_PROCESSOR_ARM_V7
 #    define Q_PROCESSOR_ARM_V6
