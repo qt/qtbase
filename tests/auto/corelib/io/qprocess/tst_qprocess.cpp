@@ -54,14 +54,6 @@ Q_DECLARE_METATYPE(QProcess::ExitStatus);
 Q_DECLARE_METATYPE(QProcess::ProcessState);
 #endif
 
-#define QPROCESS_VERIFY(Process, Fn) \
-{ \
-const bool ret = Process.Fn; \
-if (ret == false) \
-    qWarning("QProcess error: %d: %s", Process.error(), qPrintable(Process.errorString())); \
-QVERIFY(ret); \
-}
-
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
 typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
 typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
@@ -1957,7 +1949,7 @@ void tst_QProcess::setStandardInputFile()
     process.setStandardInputFile("data");
     process.start("testProcessEcho/testProcessEcho");
 
-    QPROCESS_VERIFY(process, waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
         QByteArray all = process.readAll();
@@ -1967,7 +1959,7 @@ void tst_QProcess::setStandardInputFile()
     QProcess process2;
     process2.setStandardInputFile(QProcess::nullDevice());
     process2.start("testProcessEcho/testProcessEcho");
-    QPROCESS_VERIFY(process2, waitForFinished());
+    QVERIFY(process2.waitForFinished());
     all = process2.readAll();
     QCOMPARE(all.size(), 0);
 }
@@ -2031,7 +2023,7 @@ void tst_QProcess::setStandardOutputFile()
 
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
-    QPROCESS_VERIFY(process,waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
@@ -2062,7 +2054,7 @@ void tst_QProcess::setStandardOutputFileNullDevice()
     process.setStandardOutputFile(QProcess::nullDevice());
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
-    QPROCESS_VERIFY(process,waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
     QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
@@ -2080,7 +2072,7 @@ void tst_QProcess::setStandardOutputFileAndWaitForBytesWritten()
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
     process.waitForBytesWritten();
-    QPROCESS_VERIFY(process, waitForFinished());
+    QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 
@@ -2122,10 +2114,10 @@ void tst_QProcess::setStandardOutputProcess()
     if (waitForBytesWritten)
         source.waitForBytesWritten();
     source.closeWriteChannel();
-    QPROCESS_VERIFY(source, waitForFinished());
+    QVERIFY(source.waitForFinished());
     QCOMPARE(source.exitStatus(), QProcess::NormalExit);
     QCOMPARE(source.exitCode(), 0);
-    QPROCESS_VERIFY(sink, waitForFinished());
+    QVERIFY(sink.waitForFinished());
     QCOMPARE(sink.exitStatus(), QProcess::NormalExit);
     QCOMPARE(sink.exitCode(), 0);
     QByteArray all = sink.readAll();
