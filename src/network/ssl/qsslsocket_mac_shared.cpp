@@ -91,7 +91,7 @@ bool hasTrustedSslServerPolicy(SecPolicyRef policy, CFDictionaryRef props) {
 bool isCaCertificateTrusted(SecCertificateRef cfCert, int domain)
 {
     QCFType<CFArrayRef> cfTrustSettings;
-    OSStatus status = SecTrustSettingsCopyTrustSettings(cfCert, domain, &cfTrustSettings);
+    OSStatus status = SecTrustSettingsCopyTrustSettings(cfCert, SecTrustSettingsDomain(domain), &cfTrustSettings);
     if (status == noErr) {
         CFIndex size = CFArrayGetCount(cfTrustSettings);
         // if empty, trust for everything (as per the Security Framework documentation)
@@ -125,8 +125,8 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     QCFType<CFArrayRef> cfCerts;
     // iterate through all enum members, order:
     // kSecTrustSettingsDomainUser, kSecTrustSettingsDomainAdmin, kSecTrustSettingsDomainSystem
-    for (int dom = kSecTrustSettingsDomainUser; dom <= kSecTrustSettingsDomainSystem; dom++) {
-        OSStatus status = SecTrustSettingsCopyCertificates(dom, &cfCerts);
+    for (int dom = kSecTrustSettingsDomainUser; dom <= int(kSecTrustSettingsDomainSystem); dom++) {
+        OSStatus status = SecTrustSettingsCopyCertificates(SecTrustSettingsDomain(dom), &cfCerts);
         if (status == noErr) {
             const CFIndex size = CFArrayGetCount(cfCerts);
             for (CFIndex i = 0; i < size; ++i) {
