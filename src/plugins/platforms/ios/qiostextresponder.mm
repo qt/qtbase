@@ -364,6 +364,32 @@
     [self sendKeyPressRelease:key modifiers:modifiers];
 }
 
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+    bool isEditAction = (action == @selector(cut:)
+        || action == @selector(copy:)
+        || action == @selector(paste:)
+        || action == @selector(delete:)
+        || action == @selector(toggleBoldface:)
+        || action == @selector(toggleItalics:)
+        || action == @selector(toggleUnderline:)
+        || action == @selector(undo)
+        || action == @selector(redo));
+
+    bool isSelectAction = (action == @selector(select:)
+        || action == @selector(selectAll:)
+        || action == @selector(paste:)
+        || action == @selector(undo)
+        || action == @selector(redo));
+
+    const bool unknownAction = !isEditAction && !isSelectAction;
+    const bool hasSelection = ![self selectedTextRange].empty;
+
+    if (unknownAction)
+        return [super canPerformAction:action withSender:sender];
+    return (hasSelection && isEditAction) || (!hasSelection && isSelectAction);
+}
+
 - (void)cut:(id)sender
 {
     Q_UNUSED(sender);
