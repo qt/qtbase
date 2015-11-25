@@ -184,6 +184,7 @@ protected:
     void setNetWmStates(NetWmStates);
 
     void setMotifWindowFlags(Qt::WindowFlags flags);
+    void setNetWmStateWindowFlags(Qt::WindowFlags flags);
 
     void updateMotifWmHintsBeforeMap();
     void updateNetWmStateBeforeMap();

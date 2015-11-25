@@ -1098,6 +1098,7 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     setWmWindowType(wmWindowTypes, flags);
+    setNetWmStateWindowFlags(flags);
     setMotifWindowFlags(flags);
 
     setTransparentForMouseEvents(flags & Qt::WindowTransparentForInput);
@@ -1331,6 +1332,15 @@ void QXcbWindow::updateNetWmStateBeforeMap()
         states |= NetWmStateModal;
 
     setNetWmStates(states);
+}
+
+void QXcbWindow::setNetWmStateWindowFlags(Qt::WindowFlags flags)
+{
+    changeNetWmState(flags & Qt::WindowStaysOnTopHint,
+                     atom(QXcbAtom::_NET_WM_STATE_ABOVE),
+                     atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP));
+    changeNetWmState(flags & Qt::WindowStaysOnBottomHint,
+                     atom(QXcbAtom::_NET_WM_STATE_BELOW));
 }
 
 void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
