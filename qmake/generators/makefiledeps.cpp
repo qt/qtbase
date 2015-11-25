@@ -555,15 +555,44 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 
                 // quoted strings
                 if (buffer[x] == '\'' || buffer[x] == '"') {
-                    const char term = buffer[x];
-                    while (++x < buffer_len) {
-                        if (buffer[x] == term) {
-                            ++x;
-                            break;
-                        } else if (buffer[x] == '\\') {
-                            ++x;
-                        } else if (qmake_endOfLine(buffer[x])) {
-                            ++line_count;
+                    // It might be a C++11 raw string.
+                    bool israw = false;
+                    if (buffer[x] == '"' && x > 0) {
+                        int y = x;
+                        while (--y > 0 && (buffer[y] == '8' || buffer[y] == 'u' || buffer[y] == 'U')) {} // skip
+                        israw = (buffer[y] == 'R');
+                    }
+                    if (israw) {
+                        x++;
+                        const char *const delim = buffer + x;
+                        while (x < buffer_len && buffer[x] != '(')
+                            x++;
+                        /*
+                          Not checking correctness (trust real compiler to do that):
+                          - no controls, spaces, '(', ')', '\\' or (presumably) '"' in delim;
+                          - at most 16 bytes in delim
+                         */
+
+                        const int delimlen = buffer + x - delim;
+                        while (++x < buffer_len
+                               && (buffer[x] != ')'
+                                   || (delimlen > 0 &&
+                                       strncmp(buffer + x + 1, delim, delimlen))
+                                   || buffer[x + 1 + delimlen] != '"')) {} // skip
+                        // buffer[x] is ')'
+                        x += 1 + delimlen; // 1 for ')', then delim
+                        // buffer[x] is '"'
+                    } else {
+                        const char term = buffer[x];
+                        while (++x < buffer_len) {
+                            if (buffer[x] == term) {
+                                ++x;
+                                break;
+                            } else if (buffer[x] == '\\') {
+                                ++x;
+                            } else if (qmake_endOfLine(buffer[x])) {
+                                ++line_count;
+                            }
                         }
                     }
                 }
