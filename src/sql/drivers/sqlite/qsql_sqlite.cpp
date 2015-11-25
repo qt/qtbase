@@ -150,8 +150,6 @@ public:
     void initColumns(bool emptyResultset);
     void finalize();
 
-    sqlite3 *access;
-
     sqlite3_stmt *stmt;
 
     bool skippedStatus; // the status of the fetchNext() that's skipped
@@ -326,7 +324,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
         // SQLITE_ERROR is a generic error code and we must call sqlite3_reset()
         // to get the specific error message.
         res = sqlite3_reset(stmt);
-        q->setLastError(qMakeError(access, QCoreApplication::translate("QSQLiteResult",
+        q->setLastError(qMakeError(drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
                         "Unable to fetch row"), QSqlError::ConnectionError, res));
         q->setAt(QSql::AfterLastRow);
         return false;
@@ -334,7 +332,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
     case SQLITE_BUSY:
     default:
         // something wrong, don't get col info, but still return false
-        q->setLastError(qMakeError(access, QCoreApplication::translate("QSQLiteResult",
+        q->setLastError(qMakeError(drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
                         "Unable to fetch row"), QSqlError::ConnectionError, res));
         sqlite3_reset(stmt);
         q->setAt(QSql::AfterLastRow);
@@ -347,7 +345,6 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
     : QSqlCachedResult(*new QSQLiteResultPrivate(this, db))
 {
     Q_D(QSQLiteResult);
-    d->access = d->drv_d_func()->access;
     const_cast<QSQLiteDriverPrivate*>(d->drv_d_func())->results.append(this);
 }
 
@@ -383,7 +380,7 @@ bool QSQLiteResult::prepare(const QString &query)
     const void *pzTail = NULL;
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
-    int res = sqlite3_prepare16_v2(d->access, query.constData(), (query.size() + 1) * sizeof(QChar),
+    int res = sqlite3_prepare16_v2(d->drv_d_func()->access, query.constData(), (query.size() + 1) * sizeof(QChar),
                                    &d->stmt, &pzTail);
 #else
     int res = sqlite3_prepare16(d->access, query.constData(), (query.size() + 1) * sizeof(QChar),
@@ -391,12 +388,12 @@ bool QSQLiteResult::prepare(const QString &query)
 #endif
 
     if (res != SQLITE_OK) {
-        setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
+        setLastError(qMakeError(d->drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
                      "Unable to execute statement"), QSqlError::StatementError, res));
         d->finalize();
         return false;
     } else if (pzTail && !QString(reinterpret_cast<const QChar *>(pzTail)).trimmed().isEmpty()) {
-        setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
+        setLastError(qMakeError(d->drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
             "Unable to execute multiple statements at a time"), QSqlError::StatementError, SQLITE_MISUSE));
         d->finalize();
         return false;
@@ -417,7 +414,7 @@ bool QSQLiteResult::exec()
 
     int res = sqlite3_reset(d->stmt);
     if (res != SQLITE_OK) {
-        setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
+        setLastError(qMakeError(d->drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
                      "Unable to reset statement"), QSqlError::StatementError, res));
         d->finalize();
         return false;
@@ -477,7 +474,7 @@ bool QSQLiteResult::exec()
                 }
             }
             if (res != SQLITE_OK) {
-                setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
+                setLastError(qMakeError(d->drv_d_func()->access, QCoreApplication::translate("QSQLiteResult",
                              "Unable to bind parameters"), QSqlError::StatementError, res));
                 d->finalize();
                 return false;
@@ -513,14 +510,14 @@ int QSQLiteResult::size()
 int QSQLiteResult::numRowsAffected()
 {
     Q_D(const QSQLiteResult);
-    return sqlite3_changes(d->access);
+    return sqlite3_changes(d->drv_d_func()->access);
 }
 
 QVariant QSQLiteResult::lastInsertId() const
 {
     Q_D(const QSQLiteResult);
     if (isActive()) {
-        qint64 id = sqlite3_last_insert_rowid(d->access);
+        qint64 id = sqlite3_last_insert_rowid(d->drv_d_func()->access);
         if (id)
             return id;
     }

@@ -127,8 +127,6 @@ public:
     void init(const char **cnames, int numCols);
     void finalize();
 
-    sqlite *access;
-
     // and we have too keep our own struct for the data (sqlite works via
     // callback.
     const char *currentTail;
@@ -136,7 +134,6 @@ public:
 
     bool skippedStatus; // the status of the fetchNext() that's skipped
     bool skipRow; // skip the next fetchNext()?
-    bool utf8;
     QSqlRecord rInf;
     QVector<QVariant> firstRow;
 };
@@ -148,8 +145,7 @@ QSQLite2ResultPrivate::QSQLite2ResultPrivate(QSQLite2Result *q, const QSQLite2Dr
       currentTail(0),
       currentMachine(0),
       skippedStatus(false),
-      skipRow(false),
-      utf8(false)
+      skipRow(false)
 {
 }
 
@@ -261,7 +257,7 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
         if (idx < 0 && !initialFetch)
             return true;
         for (i = 0; i < colNum; ++i)
-            values[i + idx] = utf8 ? QString::fromUtf8(fvals[i]) : QString::fromLatin1(fvals[i]);
+            values[i + idx] = drv_d_func()->utf8 ? QString::fromUtf8(fvals[i]) : QString::fromLatin1(fvals[i]);
         return true;
     case SQLITE_DONE:
         if (rInf.isEmpty())
@@ -283,9 +279,6 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
 QSQLite2Result::QSQLite2Result(const QSQLite2Driver* db)
     : QSqlCachedResult(*new QSQLite2ResultPrivate(this, db))
 {
-    Q_D(QSQLite2Result);
-    d->access = d->drv_d_func()->access;
-    d->utf8 = d->drv_d_func()->utf8;
 }
 
 QSQLite2Result::~QSQLite2Result()
@@ -316,8 +309,8 @@ bool QSQLite2Result::reset (const QString& query)
     // Um, ok.  callback based so.... pass private static function for this.
     setSelect(false);
     char *err = 0;
-    int res = sqlite_compile(d->access,
-                                d->utf8 ? query.toUtf8().constData()
+    int res = sqlite_compile(d->drv_d_func()->access,
+                                d->drv_d_func()->utf8 ? query.toUtf8().constData()
                                         : query.toLatin1().constData(),
                                 &(d->currentTail),
                                 &(d->currentMachine),
@@ -359,8 +352,8 @@ int QSQLite2Result::size()
 
 int QSQLite2Result::numRowsAffected()
 {
-    Q_D(const QSQLite2Result);
-    return sqlite_changes(d->access);
+    Q_D(QSQLite2Result);
+    return sqlite_changes(d->drv_d_func()->access);
 }
 
 QSqlRecord QSQLite2Result::record() const
