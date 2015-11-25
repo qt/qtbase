@@ -42,6 +42,7 @@ class tst_QPair : public QObject
 private Q_SLOTS:
     void testConstexpr();
     void testConversions();
+    void taskQTBUG_48780_pairContainingCArray();
 };
 
 class C { char _[4]; };
@@ -164,6 +165,16 @@ void tst_QPair::testConversions()
         QCOMPARE(pif.second, 4.5f);
 #undef rhs
     }
+}
+
+void tst_QPair::taskQTBUG_48780_pairContainingCArray()
+{
+    // compile-only:
+    QPair<int[2], int> pair;
+    pair.first[0] = 0;
+    pair.first[1] = 1;
+    pair.second = 2;
+    Q_UNUSED(pair);
 }
 
 QTEST_APPLESS_MAIN(tst_QPair)
