@@ -41,6 +41,7 @@ class tst_QPair : public QObject
     Q_OBJECT
 private Q_SLOTS:
     void testConstexpr();
+    void testConversions();
 };
 
 class C { char _[4]; };
@@ -106,6 +107,63 @@ void tst_QPair::testConstexpr()
 
     Q_CONSTEXPR QPair<QSize, int> pSI = qMakePair(QSize(4, 5), 6);
     Q_UNUSED(pSI);
+}
+
+void tst_QPair::testConversions()
+{
+    // construction from lvalue:
+    {
+        const QPair<int, double> rhs(42, 4.5);
+        const QPair<int, int> pii = rhs;
+        QCOMPARE(pii.first, 42);
+        QCOMPARE(pii.second, 4);
+
+        const QPair<int, float> pif = rhs;
+        QCOMPARE(pif.first, 42);
+        QCOMPARE(pif.second, 4.5f);
+    }
+
+    // assignment from lvalue:
+    {
+        const QPair<int, double> rhs(42, 4.5);
+        QPair<int, int> pii;
+        pii = rhs;
+        QCOMPARE(pii.first, 42);
+        QCOMPARE(pii.second, 4);
+
+        QPair<int, float> pif;
+        pif = rhs;
+        QCOMPARE(pif.first, 42);
+        QCOMPARE(pif.second, 4.5f);
+    }
+
+    // construction from rvalue:
+    {
+#define rhs qMakePair(42, 4.5)
+        const QPair<int, int> pii = rhs;
+        QCOMPARE(pii.first, 42);
+        QCOMPARE(pii.second, 4);
+
+        const QPair<int, float> pif = rhs;
+        QCOMPARE(pif.first, 42);
+        QCOMPARE(pif.second, 4.5f);
+#undef rhs
+    }
+
+    // assignment from rvalue:
+    {
+#define rhs qMakePair(42, 4.5)
+        QPair<int, int> pii;
+        pii = rhs;
+        QCOMPARE(pii.first, 42);
+        QCOMPARE(pii.second, 4);
+
+        QPair<int, float> pif;
+        pif = rhs;
+        QCOMPARE(pif.first, 42);
+        QCOMPARE(pif.second, 4.5f);
+#undef rhs
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QPair)
