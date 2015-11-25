@@ -2627,7 +2627,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     const QScriptLine &line = eng->lines[index];
     bool lastLine = index >= eng->lines.size() - 1;
 
-    QFixed x = line.x;
+    QFixed x = line.x + eng->alignLine(line) - eng->leadingSpaceWidth(line);
 
     if (!eng->layoutData)
         eng->itemize();
@@ -2635,8 +2635,6 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         *cursorPos = line.from;
         return x.toReal();
     }
-
-    x += eng->alignLine(line) - eng->leadingSpaceWidth(line);
 
     int lineEnd = line.from + line.length + line.trailingSpaces;
     int pos = qBound(line.from, *cursorPos, lineEnd);
