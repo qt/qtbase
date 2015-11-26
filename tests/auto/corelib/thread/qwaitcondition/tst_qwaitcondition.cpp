@@ -33,6 +33,7 @@
 
 #include <QtTest/QtTest>
 
+#include <qatomic.h>
 #include <qcoreapplication.h>
 #include <qmutex.h>
 #include <qthread.h>
@@ -54,7 +55,25 @@ private slots:
 static const int iterations = 4;
 static const int ThreadCount = 4;
 
-class wait_QMutex_Thread_1 : public QThread
+// Terminate thread in destructor for threads instantiated on the stack
+class TerminatingThread : public QThread
+{
+public:
+    explicit TerminatingThread()
+    {
+        setTerminationEnabled(true);
+    }
+
+    ~TerminatingThread()
+    {
+        if (isRunning()) {
+            qWarning() << "forcibly terminating " << objectName();
+            terminate();
+        }
+    }
+};
+
+class wait_QMutex_Thread_1 : public TerminatingThread
 {
 public:
     QMutex mutex;
@@ -72,7 +91,7 @@ public:
     }
 };
 
-class wait_QMutex_Thread_2 : public QThread
+class wait_QMutex_Thread_2 : public TerminatingThread
 {
 public:
     QWaitCondition started;
@@ -93,7 +112,7 @@ public:
     }
 };
 
-class wait_QReadWriteLock_Thread_1 : public QThread
+class wait_QReadWriteLock_Thread_1 : public TerminatingThread
 {
 public:
     QReadWriteLock readWriteLock;
@@ -111,7 +130,7 @@ public:
     }
 };
 
-class wait_QReadWriteLock_Thread_2 : public QThread
+class wait_QReadWriteLock_Thread_2 : public TerminatingThread
 {
 public:
     QWaitCondition started;
@@ -155,7 +174,11 @@ void tst_QWaitCondition::wait_QMutex()
             // test multiple threads waiting on separate wait conditions
             wait_QMutex_Thread_1 thread[ThreadCount];
 
+            const QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_mutex_")
+                + QString::number(i) + QLatin1Char('_');
+
             for (x = 0; x < ThreadCount; ++x) {
+                thread[x].setObjectName(prefix + QString::number(x));
                 thread[x].mutex.lock();
                 thread[x].start();
                 // wait for thread to start
@@ -185,8 +208,12 @@ void tst_QWaitCondition::wait_QMutex()
             QWaitCondition cond1, cond2;
             wait_QMutex_Thread_2 thread[ThreadCount];
 
+            const QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_mutex_")
+                + QString::number(i) + QLatin1Char('_');
+
             mutex.lock();
             for (x = 0; x < ThreadCount; ++x) {
+                thread[x].setObjectName(prefix + QString::number(x));
                 thread[x].mutex = &mutex;
                 thread[x].cond = (x < ThreadCount / 2) ? &cond1 : &cond2;
                 thread[x].start();
@@ -289,7 +316,10 @@ void tst_QWaitCondition::wait_QReadWriteLock()
             // test multiple threads waiting on separate wait conditions
             wait_QReadWriteLock_Thread_1 thread[ThreadCount];
 
+            const QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_lockforread_");
+
             for (x = 0; x < ThreadCount; ++x) {
+                thread[x].setObjectName(prefix + QString::number(x));
                 thread[x].readWriteLock.lockForRead();
                 thread[x].start();
                 // wait for thread to start
@@ -319,8 +349,11 @@ void tst_QWaitCondition::wait_QReadWriteLock()
             QWaitCondition cond1, cond2;
             wait_QReadWriteLock_Thread_2 thread[ThreadCount];
 
+            const QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_lockforwrite_");
+
             readWriteLock.lockForWrite();
             for (x = 0; x < ThreadCount; ++x) {
+                thread[x].setObjectName(prefix + QString::number(x));
                 thread[x].readWriteLock = &readWriteLock;
                 thread[x].cond = (x < ThreadCount / 2) ? &cond1 : &cond2;
                 thread[x].start();
@@ -346,11 +379,17 @@ void tst_QWaitCondition::wait_QReadWriteLock()
     }
 }
 
-class wake_Thread : public QThread
+class WakeThreadBase : public TerminatingThread
 {
 public:
-    static int count;
+    QAtomicInt *count;
 
+    WakeThreadBase() : count(Q_NULLPTR) {}
+};
+
+class wake_Thread : public WakeThreadBase
+{
+public:
     QWaitCondition started;
     QWaitCondition dummy;
 
@@ -366,24 +405,23 @@ public:
 
     void run()
     {
+        Q_ASSERT(count);
+        Q_ASSERT(mutex);
+        Q_ASSERT(cond);
         mutex->lock();
-        ++count;
+        ++*count;
         dummy.wakeOne(); // this wakeup should be lost
         started.wakeOne();
         dummy.wakeAll(); // this one too
         cond->wait(mutex);
-        --count;
+        --*count;
         mutex->unlock();
     }
 };
 
-int wake_Thread::count = 0;
-
-class wake_Thread_2 : public QThread
+class wake_Thread_2 : public WakeThreadBase
 {
 public:
-    static int count;
-
     QWaitCondition started;
     QWaitCondition dummy;
 
@@ -399,22 +437,24 @@ public:
 
     void run()
     {
+        Q_ASSERT(count);
+        Q_ASSERT(readWriteLock);
+        Q_ASSERT(cond);
         readWriteLock->lockForWrite();
-        ++count;
+        ++*count;
         dummy.wakeOne(); // this wakeup should be lost
         started.wakeOne();
         dummy.wakeAll(); // this one too
         cond->wait(readWriteLock);
-        --count;
+        --*count;
         readWriteLock->unlock();
     }
 };
 
-int wake_Thread_2::count = 0;
-
 void tst_QWaitCondition::wakeOne()
 {
     int x;
+    QAtomicInt count;
     // wake up threads, one at a time
     for (int i = 0; i < iterations; ++i) {
         QMutex mutex;
@@ -424,8 +464,13 @@ void tst_QWaitCondition::wakeOne()
         wake_Thread thread[ThreadCount];
         bool thread_exited[ThreadCount];
 
+        QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_mutex_")
+            + QString::number(i) + QLatin1Char('_');
+
         mutex.lock();
         for (x = 0; x < ThreadCount; ++x) {
+            thread[x].setObjectName(prefix + QString::number(x));
+            thread[x].count = &count;
             thread[x].mutex = &mutex;
             thread[x].cond = &cond;
             thread_exited[x] = false;
@@ -438,7 +483,7 @@ void tst_QWaitCondition::wakeOne()
         }
         mutex.unlock();
 
-        QCOMPARE(wake_Thread::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; ++x) {
@@ -459,17 +504,22 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 1);
-            QCOMPARE(wake_Thread::count, ThreadCount - (x + 1));
+            QCOMPARE(count.load(), ThreadCount - (x + 1));
         }
 
-        QCOMPARE(wake_Thread::count, 0);
+        QCOMPARE(count.load(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
         wake_Thread_2 rwthread[ThreadCount];
 
+        prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_readwritelock_")
+            + QString::number(i) + QLatin1Char('_');
+
         readWriteLock.lockForWrite();
         for (x = 0; x < ThreadCount; ++x) {
+            rwthread[x].setObjectName(prefix + QString::number(x));
+            rwthread[x].count = &count;
             rwthread[x].readWriteLock = &readWriteLock;
             rwthread[x].cond = &cond;
             thread_exited[x] = false;
@@ -482,7 +532,7 @@ void tst_QWaitCondition::wakeOne()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(wake_Thread_2::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; ++x) {
@@ -503,10 +553,10 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 1);
-            QCOMPARE(wake_Thread_2::count, ThreadCount - (x + 1));
+            QCOMPARE(count.load(), ThreadCount - (x + 1));
         }
 
-        QCOMPARE(wake_Thread_2::count, 0);
+        QCOMPARE(count.load(), 0);
     }
 
     // wake up threads, two at a time
@@ -518,8 +568,13 @@ void tst_QWaitCondition::wakeOne()
         wake_Thread thread[ThreadCount];
         bool thread_exited[ThreadCount];
 
+        QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_mutex2_")
+            + QString::number(i) + QLatin1Char('_');
+
         mutex.lock();
         for (x = 0; x < ThreadCount; ++x) {
+            thread[x].setObjectName(prefix + QString::number(x));
+            thread[x].count = &count;
             thread[x].mutex = &mutex;
             thread[x].cond = &cond;
             thread_exited[x] = false;
@@ -532,7 +587,7 @@ void tst_QWaitCondition::wakeOne()
         }
         mutex.unlock();
 
-        QCOMPARE(wake_Thread::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; x += 2) {
@@ -555,17 +610,22 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 2);
-            QCOMPARE(wake_Thread::count, ThreadCount - (x + 2));
+            QCOMPARE(count.load(), ThreadCount - (x + 2));
         }
 
-        QCOMPARE(wake_Thread::count, 0);
+        QCOMPARE(count.load(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
         wake_Thread_2 rwthread[ThreadCount];
 
+        prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_readwritelock_")
+            + QString::number(i) + QLatin1Char('_');
+
         readWriteLock.lockForWrite();
         for (x = 0; x < ThreadCount; ++x) {
+            rwthread[x].setObjectName(prefix + QString::number(x));
+            rwthread[x].count = &count;
             rwthread[x].readWriteLock = &readWriteLock;
             rwthread[x].cond = &cond;
             thread_exited[x] = false;
@@ -578,7 +638,7 @@ void tst_QWaitCondition::wakeOne()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(wake_Thread_2::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up threads one at a time
         for (x = 0; x < ThreadCount; x += 2) {
@@ -601,16 +661,17 @@ void tst_QWaitCondition::wakeOne()
             }
 
             QCOMPARE(exited, 2);
-            QCOMPARE(wake_Thread_2::count, ThreadCount - (x + 2));
+            QCOMPARE(count.load(), ThreadCount - (x + 2));
         }
 
-        QCOMPARE(wake_Thread_2::count, 0);
+        QCOMPARE(count.load(), 0);
     }
 }
 
 void tst_QWaitCondition::wakeAll()
 {
     int x;
+    QAtomicInt count;
     for (int i = 0; i < iterations; ++i) {
         QMutex mutex;
         QWaitCondition cond;
@@ -618,8 +679,13 @@ void tst_QWaitCondition::wakeAll()
         // QMutex
         wake_Thread thread[ThreadCount];
 
+        QString prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_mutex_")
+            + QString::number(i) + QLatin1Char('_');
+
         mutex.lock();
         for (x = 0; x < ThreadCount; ++x) {
+            thread[x].setObjectName(prefix + QString::number(x));
+            thread[x].count = &count;
             thread[x].mutex = &mutex;
             thread[x].cond = &cond;
             thread[x].start();
@@ -628,7 +694,7 @@ void tst_QWaitCondition::wakeAll()
         }
         mutex.unlock();
 
-        QCOMPARE(wake_Thread::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up all threads at once
         mutex.lock();
@@ -643,14 +709,19 @@ void tst_QWaitCondition::wakeAll()
         }
 
         QCOMPARE(exited, ThreadCount);
-        QCOMPARE(wake_Thread::count, 0);
+        QCOMPARE(count.load(), 0);
 
         // QReadWriteLock
         QReadWriteLock readWriteLock;
         wake_Thread_2 rwthread[ThreadCount];
 
+        prefix = QLatin1String(QTest::currentTestFunction()) + QLatin1String("_readwritelock_")
+            + QString::number(i) + QLatin1Char('_');
+
         readWriteLock.lockForWrite();
         for (x = 0; x < ThreadCount; ++x) {
+            rwthread[x].setObjectName(prefix + QString::number(x));
+            rwthread[x].count = &count;
             rwthread[x].readWriteLock = &readWriteLock;
             rwthread[x].cond = &cond;
             rwthread[x].start();
@@ -659,7 +730,7 @@ void tst_QWaitCondition::wakeAll()
         }
         readWriteLock.unlock();
 
-        QCOMPARE(wake_Thread_2::count, ThreadCount);
+        QCOMPARE(count.load(), ThreadCount);
 
         // wake up all threads at once
         readWriteLock.lockForWrite();
@@ -674,11 +745,11 @@ void tst_QWaitCondition::wakeAll()
         }
 
         QCOMPARE(exited, ThreadCount);
-        QCOMPARE(wake_Thread_2::count, 0);
+        QCOMPARE(count.load(), 0);
     }
 }
 
-class wait_RaceConditionThread : public QThread
+class wait_RaceConditionThread : public TerminatingThread
 {
 public:
     wait_RaceConditionThread(QMutex *mutex, QWaitCondition *startup, QWaitCondition *waitCondition,
@@ -707,7 +778,7 @@ public:
     }
 };
 
-class wait_RaceConditionThread_2 : public QThread
+class wait_RaceConditionThread_2 : public TerminatingThread
 {
 public:
     wait_RaceConditionThread_2(QReadWriteLock *readWriteLock,
