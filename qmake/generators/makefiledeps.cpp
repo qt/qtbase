@@ -919,6 +919,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                             ++line_count;
                         }
                     }
+                } else { // not a comment, in fact; undo the extra x++ we did.
+                    x--;
                 }
             }
         } else if (buffer[x] == '\'' || buffer[x] == '"') {
